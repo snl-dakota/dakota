@@ -8,6 +8,7 @@
 
 
 set(surrogates_sources
+  Surrogate.cpp
   GaussianProcess.cpp 
   GP_Objective.cpp
   PolynomialRegression.cpp
@@ -15,6 +16,7 @@ set(surrogates_sources
 )
 
 set(surrogates_headers
+  Surrogate.hpp
   GaussianProcess.hpp
   GP_Objective.hpp
   PolynomialRegression.hpp

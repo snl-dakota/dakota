@@ -9,10 +9,10 @@
 #ifndef DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 #define DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 
-#include <memory>
+#include "Surrogate.hpp"
 #include "DataScaler.hpp"
 #include "Eigen/StdVector"
-#include "Teuchos_ParameterList.hpp"
+#include <memory>
 
 namespace dakota {
 namespace surrogates {
@@ -39,7 +39,7 @@ namespace surrogates {
  *  and covariance matrix can be computed for a set of prediction
  *  points.
  */
-class GaussianProcess {
+class GaussianProcess: public Surrogate {
 
 public:
 
@@ -51,7 +51,7 @@ public:
   ~GaussianProcess();
 
   GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
-		  const Teuchos::ParameterList& param_list);
+                  const Teuchos::ParameterList& param_list);
 
   // BMA: Leaving both ctors during refactoring; consider making
   // following constructor protected or removing
@@ -77,6 +77,40 @@ public:
                   const double nugget_val = 1.0e-10,
                   const int seed = 129);
 
+  // ------------------------------------------------------------
+  // Public utility functions
+
+  /**
+   *  \brief Evaluate the negative marginal loglikelihood and its 
+   *  gradient.
+   *  \param[out] obj_value Value of the objection function.
+   *  \param[out] obj_gradient Gradient of the objective function.
+   */
+  void negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient);
+
+  /**
+   *  \brief Evaluate the Gaussian Process at a set of prediction points.
+   *  \param[in] samples Matrix of prediction points - (num_samples by num_features).
+   *  \param[out] approx_values Mean of the Gaussian process at the prediction
+   *  points - (num_samples by num_qoi = 1) 
+   */
+  void value(const MatrixXd &samples, MatrixXd &approx_values) override;
+
+  /**
+   *  \brief Evaluate the gradient of the Gaussian process at a single point.
+   *  \param[in] samples Coordinates of the prediction points - (num_samples by num_features).
+   *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
+   *  (num_samples by num_features).
+   */
+  void gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi = 0) override;
+
+  /**
+   *  \brief Evaluate the Hessian of the Gaussian process at a single point.
+   *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
+   *  \param[out] hessian Hessian matrix at the prediction point - 
+   *  (num_features by num_features).
+   */
+  void hessian(const MatrixXd &sample, MatrixXd &hessian, int qoi = 0) override;
 
   // ------------------------------------------------------------
   // Getters
@@ -118,49 +152,16 @@ public:
   void set_theta(const std::vector<double> theta_new);
 
 
-  // ------------------------------------------------------------
-  // Public utility functions
-
-  /**
-   *  \brief Evaluate the negative marginal loglikelihood and its 
-   *  gradient.
-   *  \param[out] obj_value Value of the objection function.
-   *  \param[out] obj_gradient Gradient of the objective function.
-   */
-  void negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient);
-
-  /**
-   *  \brief Evaluate the Gaussian Process at a set of prediction points.
-   *  \param[in] samples Matrix of prediction points - (num_samples by num_features).
-   *  \param[out] approx_values Mean of the Gaussian process at the prediction
-   *  points - (num_samples by num_qoi = 1) 
-   */
-  void value(const MatrixXd &samples, MatrixXd &approx_values);
-
-  /**
-   *  \brief Evaluate the gradient of the Gaussian process at a single point.
-   *  \param[in] samples Coordinates of the prediction points - (num_samples by num_features).
-   *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
-   *  (num_samples by num_features).
-   */
-  void gradient(const MatrixXd &samples, MatrixXd &gradient);
-
-  /**
-   *  \brief Evaluate the Hessian of the Gaussian process at a single point.
-   *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
-   *  \param[out] hessian Hessian matrix at the prediction point - 
-   *  (num_features by num_features).
-   */
-  void hessian(const MatrixXd &sample, MatrixXd &hessian);
-
-
 private:
 
   /// Key/value options to configure the surrogate (encapsulates
   /// defaults, but can be overridden by user)
-  Teuchos::ParameterList configOptions;
+  Teuchos::ParameterList defaultConfigOptions;
 
   /// runtime build once data are finalized
+  void build(const MatrixXd &samples, const MatrixXd &response);
+
+  /*
   void build(const MatrixXd &samples,
 	     const MatrixXd &response,
 	     const VectorXd &sigma_bounds,
@@ -169,15 +170,16 @@ private:
 	     const int num_restarts,
 	     const double nugget_val,
 	     const int seed);
+  */
 
   /// Dimension of the feature space.
-  int numVariables = 0;
+  //int numVariables = 0;
   /// Number of samples in the surrogate dataset.
-  int numSamples = 0;
+  //int numSamples = 0;
 
   /// Small constant added to the diagonal of the Gram matrix to avoid
   /// ill-conditioning.
-  double nuggetValue = 0.0;
+  double nuggetValue;
 
   /// Corresponding target values for the surrogate dataset.
   std::shared_ptr<MatrixXd> targetValues;
@@ -309,6 +311,7 @@ private:
    *  \param[in] rol_params RCP to a Teuchos::ParameterList of ROL's options.
    */
   void set_default_optimization_params(Teuchos::RCP<Teuchos::ParameterList> rol_params);
+
 
 }; // class GaussianProcess
 

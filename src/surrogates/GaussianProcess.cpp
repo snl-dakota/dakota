@@ -24,7 +24,73 @@ using util::StandardizationScaler;
 namespace surrogates {
 
 GaussianProcess::GaussianProcess(){}
+
 GaussianProcess::~GaussianProcess(){}
+
+// BMA NOTE: ParameterList::get() can throw, so direct delegation
+// probably not good; might want to give a helpful message
+GaussianProcess::GaussianProcess(const MatrixXd &samples,
+				 const MatrixXd &response,
+				 const ParameterList& param_list)
+{
+  configOptions = param_list;
+  default_options();
+  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
+
+  // check that the passed parameters are valid for this surrogate
+  // (doesn't allow unused parameters, which we might want)
+  // (also overwrites the defaults, which we might want to preserve)
+  /*
+  try {
+    configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
+  }
+  catch (const Teuchos::Exceptions::InvalidParameter& e) {
+    std::cerr << "Invalid parameter passed to GaussianProcess; details:\n"
+	      << e.what() << std::endl;
+    throw;
+  }
+  configOptions.setParameters(param_list);
+  */
+  std::cout << "Building GaussianProcess with final parameters\n"
+	    << configOptions << std::endl;
+
+  /*
+  build(samples,
+	response,
+	configOptions.get<VectorXd>("sigma_bounds"),
+	configOptions.get<MatrixXd>("length_scale_bounds"),
+	configOptions.get<std::string>("scaler_name"),
+	configOptions.get<int>("num_restarts"),
+	configOptions.get<double>("nugget"),
+	configOptions.get<int>("gp_seed")
+	);
+  */
+
+  build(samples, response);
+}
+
+
+/*
+GaussianProcess::GaussianProcess(const MatrixXd &samples,
+                                 const MatrixXd &response,
+                                 const VectorXd &sigma_bounds,
+                                 const MatrixXd &length_scale_bounds,
+                                 const std::string scaler_name,
+                                 const int num_restarts,
+                                 const double nugget_val,
+                                 const int seed)
+{
+  build(samples,
+	response,
+	sigma_bounds,
+	length_scale_bounds,
+	scaler_name,
+	num_restarts,
+	nugget_val,
+	seed);
+}
+*/
+
 
 const VectorXd & GaussianProcess::get_posterior_std_dev() const { return *posteriorStdDev; }
 
@@ -38,6 +104,7 @@ void GaussianProcess::set_theta(const std::vector<double> theta_new) {
   for (int i = 0; i < thetaValues->size(); i++)
     (*thetaValues)(i) = theta_new[i];
 }
+
 
 void GaussianProcess::generate_initial_guesses(MatrixXd &initial_guesses, int num_restarts,
                                                const VectorXd &sigma_bounds,
@@ -202,87 +269,35 @@ void GaussianProcess::default_options()
   length_scale_bounds(0,0) = 1.0e-2;
   length_scale_bounds(0,1) = 1.0e2;
 
-  configOptions.set("sigma_bounds", sigma_bounds, "sigma [lb, ub]");
+  defaultConfigOptions.set("sigma_bounds", sigma_bounds, "sigma [lb, ub]");
   // BMA: Do we want to allow 1 x 2 always as a fallback?
-  configOptions.set("length_scale_bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
-  configOptions.set("scaler_name", "mean_normalization", "scaler for variables");
-  configOptions.set("num_restarts", 5, "local optimizer number of initial iterates");
+  defaultConfigOptions.set("length_scale_bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
+  defaultConfigOptions.set("scaler_name", "mean_normalization", "scaler for variables");
+  defaultConfigOptions.set("num_restarts", 5, "local optimizer number of initial iterates");
   // BMA: Should default be 0.0?
-  configOptions.set("nugget", 1.0e-10, "diagonal nugget");
-  configOptions.set("gp_seed", 129, "random seed for initial iterate generation");
+  defaultConfigOptions.set("nugget", 1.0e-10, "diagonal nugget");
+  defaultConfigOptions.set("gp_seed", 129, "random seed for initial iterate generation");
 }
 
 
-// BMA NOTE: ParameterList::get() can throw, so direct delegation
-// probably not good; might want to give a helpful message
-GaussianProcess::GaussianProcess(const MatrixXd &samples,
-				 const MatrixXd &response,
-				 const Teuchos::ParameterList& param_list)
+void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
 {
-  default_options();
-
-  // check that the passed parameters are valid for this surrogate
-  // (doesn't allow unused parameters, which we might want)
-  // (also overwrites the defaults, which we might want to preserve)
-  try {
-    param_list.validateParameters(configOptions);
-  }
-  catch (const Teuchos::Exceptions::InvalidParameter& e) {
-    std::cerr << "Invalid parameter passed to GaussianProcess; details:\n"
-	      << e.what() << std::endl;
-    throw;
-  }
-  configOptions.setParameters(param_list);
-  std::cout << "Building GaussianProcess with final parameters\n"
-	    << param_list << std::endl;
-
-  build(samples,
-	response,
-	param_list.get<VectorXd>("sigma_bounds"),
-	param_list.get<MatrixXd>("length_scale_bounds"),
-	param_list.get<std::string>("scaler_name"),
-	param_list.get<int>("num_restarts"),
-	param_list.get<double>("nugget"),
-	param_list.get<int>("gp_seed")
-	);
-}
-
-
-GaussianProcess::GaussianProcess(const MatrixXd &samples,
-                                 const MatrixXd &response,
-                                 const VectorXd &sigma_bounds,
-                                 const MatrixXd &length_scale_bounds,
-                                 const std::string scaler_name,
-                                 const int num_restarts,
-                                 const double nugget_val,
-                                 const int seed)
-{
-  build(samples,
-	response,
-	sigma_bounds,
-	length_scale_bounds,
-	scaler_name,
-	num_restarts,
-	nugget_val,
-	seed);
-}
-
-
-void GaussianProcess::build(const MatrixXd &samples,
-			    const MatrixXd &response,
-			    const VectorXd &sigma_bounds,
-			    const MatrixXd &length_scale_bounds,
-			    const std::string scaler_name,
-			    const int num_restarts,
-			    const double nugget_val,
-			    const int seed)
-{
+  numQOI = response.cols();
   numSamples = samples.rows();
   numVariables = samples.cols();
   targetValues = std::make_shared<MatrixXd>(response);
+
+  /* Optimization-related data*/
+  std::shared_ptr<VectorXd> sigma_bounds = 
+    std::make_shared<VectorXd>(configOptions.get<VectorXd>("sigma_bounds"));
+  std::shared_ptr<MatrixXd> length_scale_bounds = 
+    std::make_shared<MatrixXd>(configOptions.get<MatrixXd>("length_scale_bounds"));
+  const int num_restarts = configOptions.get<int>("num_restarts");
   
   /* Scale the data */
-  dataScaler = util::scaler_factory(util::DataScaler::scaler_type(scaler_name), samples);
+  dataScaler = util::scaler_factory(
+    util::DataScaler::scaler_type(configOptions.get<std::string>("scaler_name")),
+    samples);
   MatrixXd scaled_samples = dataScaler->get_scaled_features();
 
   /* size of thetaValues for squared exponential kernel and one QoI */
@@ -296,7 +311,7 @@ void GaussianProcess::build(const MatrixXd &samples,
   }
 
   /* set the nugget */
-  nuggetValue = nugget_val;
+	nuggetValue = configOptions.get<double>("nugget"),
 
   /* compute Euclidean distances squared */
   componentwiseDistances.resize(numVariables);
@@ -313,11 +328,10 @@ void GaussianProcess::build(const MatrixXd &samples,
 
 
   /* set up the initial guesses */
-  srand(seed);
+  srand(configOptions.get<int>("gp_seed"));
   MatrixXd initial_guesses;
   generate_initial_guesses(initial_guesses, num_restarts,
-                           sigma_bounds, length_scale_bounds);
-
+                           *sigma_bounds, *length_scale_bounds);
   ROL::Ptr<std::ostream> outStream;
   Teuchos::oblackholestream bhs;
   outStream = ROL::makePtrFromRef(bhs);
@@ -332,11 +346,11 @@ void GaussianProcess::build(const MatrixXd &samples,
 
   /*
   std::string paramfile = "rol_params.xml";
-  auto rol_params = Teuchos::rcp(new Teuchos::ParameterList);
+  auto rol_params = Teuchos::rcp(new ParameterList);
   Teuchos::updateParametersFromXmlFile(paramfile, rol_params.ptr());
   */
 
-  auto gp_mle_rol_params = Teuchos::rcp(new Teuchos::ParameterList("GP_MLE_Optimization"));
+  auto gp_mle_rol_params = Teuchos::rcp(new ParameterList("GP_MLE_Optimization"));
   set_default_optimization_params(gp_mle_rol_params);
 
   auto gp_objective = std::make_shared<GP_Objective>(this);
@@ -350,12 +364,12 @@ void GaussianProcess::build(const MatrixXd &samples,
   ROL::Ptr<std::vector<double> > lo_ptr = ROL::makePtr<std::vector<double> >(dim,0.0);
   ROL::Ptr<std::vector<double> > hi_ptr = ROL::makePtr<std::vector<double> >(dim,0.0);
   /* sigma bounds */
-  (*lo_ptr)[0] = log(sigma_bounds(0));
-  (*hi_ptr)[0] = log(sigma_bounds(1));
+  (*lo_ptr)[0] = log((*sigma_bounds)(0));
+  (*hi_ptr)[0] = log((*sigma_bounds)(1));
   /* length scale bounds */
   for (int i = 0; i < numVariables; i++) {
-    (*lo_ptr)[i+1] = log(length_scale_bounds(i,0));
-    (*hi_ptr)[i+1] = log(length_scale_bounds(i,1));
+    (*lo_ptr)[i+1] = log((*length_scale_bounds)(i,0));
+    (*hi_ptr)[i+1] = log((*length_scale_bounds)(i,1));
   }
 
   ROL::Ptr<ROL::Vector<double> > lop = ROL::makePtr<ROL::StdVector<double> >(lo_ptr);
@@ -444,7 +458,8 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   }
 }
 
-void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient) {
+void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
+  int qoi) {
 
   if (samples.cols() != numVariables) {
     throw(std::runtime_error("Gaussian Process gradient inputs are not consistent."
@@ -478,7 +493,8 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient) {
 
 }
 
-void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian) {
+void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
+  int qoi) {
 
   if (sample.rows() != 1) {
     throw(std::runtime_error("Gaussian Process Hessian evaluation is for a single point."
@@ -512,7 +528,7 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian) {
 
 }
 
-void GaussianProcess::set_default_optimization_params(Teuchos::RCP<Teuchos::ParameterList> rol_params) {
+void GaussianProcess::set_default_optimization_params(Teuchos::RCP<ParameterList> rol_params) {
   /* Secant */
   rol_params->sublist("General").sublist("Secant").
              set("Type","Limited-Memory BFGS");
@@ -570,6 +586,7 @@ void GaussianProcess::set_default_optimization_params(Teuchos::RCP<Teuchos::Para
   rol_params->sublist("General").sublist("Status Test").
              set("Iteration Limit",100);
 }
+
 
 
 }  // namespace surrogates

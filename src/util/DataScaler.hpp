@@ -50,7 +50,7 @@ class DataScaler {
   public: 
     DataScaler();
 
-    ~DataScaler();
+    virtual ~DataScaler();
 /**
  *  \brief Apply scaling to a set of unscaled samples.
  *  \param[in] unscaled_samples Unscaled matrix of samples.
