@@ -41,10 +41,10 @@ struct SPrintArgs
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
-  //numSamplesOnEmulator(problem_db.get_int("method.nond.samples_on_emulator")),
-  //numSamplesOnModel(problem_db.get_sizet(
-  //  "method.c3function_train.num_samples_for_construction")),
+  startRankSpec(
+    problem_db.get_sizet("method.nond.c3function_train.start_rank")),
+  startOrderSpec(
+    problem_db.get_sizet("method.nond.c3function_train.start_order")),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file"))
 {
@@ -74,13 +74,14 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  Iterator u_space_sampler; // evaluates true model
-
-  //if (!expansionImportFile.empty())
-  //  approx_type = "global_function_train";
-  //else
-  if (!config_regression(probDescDB.get_sizet("method.nond.collocation_points"),
-			 u_space_sampler, g_u_model)) {
+  Iterator u_space_sampler; // evaluates truth model
+  // compute initial regression size using a static helper
+  // (uSpaceModel.shared_approximation() is not yet available)
+  size_t colloc_pts = probDescDB.get_sizet("method.nond.collocation_points"),
+    regress_size = SharedC3ApproxData::
+      regression_size(numContinuousVars, startRankSpec, startOrderSpec);
+  // configure u-space sampler and model
+  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -125,10 +126,10 @@ NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
 		    Model& model):
   NonDExpansion(problem_db, model),
-  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
-  //numSamplesOnEmulator(problem_db.get_int("method.nond.samples_on_emulator")),
-  //numSamplesOnModel(problem_db.get_sizet(
-  //  "method.c3function_train.num_samples_for_construction")),
+  startRankSpec(
+    problem_db.get_sizet("method.nond.c3function_train.start_rank")),
+  startOrderSpec(
+    problem_db.get_sizet("method.nond.c3function_train.start_order")),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file"))
 {
@@ -160,16 +161,29 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 
 bool NonDC3FunctionTrain::
-config_regression(size_t colloc_pts, Iterator& u_space_sampler,
-		  Model& g_u_model)
+config_regression(size_t colloc_pts, size_t regress_size,
+		  Iterator& u_space_sampler, Model& g_u_model)
 {
   // Adapted from NonDPolynomialChaos::config_regression()
 
-  if (colloc_pts == std::numeric_limits<size_t>::max())
+  // Note: colloc_pts and regress_size are passed so that they can be defined
+  // either from scalar (this class) or sequence (derived class) specifications
+
+  // given regression size, either compute numSamplesOnModel from collocRatio
+  // or vice versa
+  if (colloc_pts != std::numeric_limits<size_t>::max()) {
+    numSamplesOnModel = colloc_pts;
+    if (collocRatio == 0.) // default (no user spec)
+      collocRatio = 2.; // assign method-specific default for sample refinement
+    // Another option: infer from pilot (terms_samples_to_ratio()) & fix for
+    // iters to follow (may require averaging for shaped pilot/order/rank)
+  }
+  else if (collocRatio > 0.) // define colloc pts from collocRatio
+    numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
+  else
     return false;
 
-  numSamplesOnModel = colloc_pts;
-
+  // given numSamplesOnModel, configure u_space_sampler
   if (probDescDB.get_bool("method.nond.tensor_grid")) {
     // structured grid: uniform sub-sampling of TPQ
     UShortArray dim_quad_order
@@ -218,11 +232,10 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
   //configure_pecos_options(); // C3 does not use Pecos options
 
-  // Note: method and model spec are redundant, without a good way to
-  // encapsulate XML entities that differ only in their bindings.
-  // > Defining a shared spec class with instances in Data{Method,Model} works
-  //   fine for XML and Data ops, but not for {NIDR,}ProblemDescDB macros
-  push_c3_options(); // needs to precede construct_basis()
+  // needs to precede construct_basis()
+  push_c3_options(
+    probDescDB.get_sizet("method.nond.c3function_train.start_rank"),
+    probDescDB.get_sizet("method.nond.c3function_train.start_order"));
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   const Pecos::MultivariateDistribution& u_dist
@@ -231,7 +244,8 @@ void NonDC3FunctionTrain::initialize_u_space_model()
 }
 
 
-void NonDC3FunctionTrain::push_c3_options()
+void NonDC3FunctionTrain::
+push_c3_options(size_t start_rank, size_t start_order)
 {
   // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
   // passed through the DataFitSurrModel ctor chain.  Additional data needed
@@ -241,12 +255,13 @@ void NonDC3FunctionTrain::push_c3_options()
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
 
-  shared_data_rep->set_parameter("start_poly_order",
-    probDescDB.get_sizet("method.nond.c3function_train.start_order"));
+  // These are passed in since they may be a scalar or part of a sequence:
+  shared_data_rep->set_parameter("start_poly_order", start_order);
+  shared_data_rep->set_parameter("start_rank",       start_rank);
+
+  // These are pulled from the DB as they are always scalars:
   shared_data_rep->set_parameter("max_poly_order",
     probDescDB.get_sizet("method.nond.c3function_train.max_order"));
-  shared_data_rep->set_parameter("start_rank",
-    probDescDB.get_sizet("method.nond.c3function_train.start_rank"));
   shared_data_rep->set_parameter("kick_rank",
     probDescDB.get_sizet("method.nond.c3function_train.kick_rank"));
   shared_data_rep->set_parameter("max_rank",
@@ -261,6 +276,8 @@ void NonDC3FunctionTrain::push_c3_options()
     probDescDB.get_real("method.nond.c3function_train.solver_tolerance"));
   shared_data_rep->set_parameter("rounding_tol",
     probDescDB.get_real("method.nond.c3function_train.rounding_tolerance"));
+  shared_data_rep->set_parameter("arithmetic_tol",
+    probDescDB.get_real("method.nond.c3function_train.arithmetic_tolerance"));
   shared_data_rep->set_parameter("max_cross_iterations",
     probDescDB.get_int("method.nond.c3function_train.max_cross_iterations"));
   shared_data_rep->set_parameter("max_solver_iterations",
@@ -276,7 +293,88 @@ void NonDC3FunctionTrain::push_c3_options()
 }
 
 
-/* No overrride appears to be required (NonDExp is sufficient)
+void NonDC3FunctionTrain::push_increment()
+{
+  // Reverse order relative to NonDExpansion base implementation since
+  // required sample resolution is inferred from the state of the FT
+
+  uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
+  increment_grid(false); // don't recompute anisotropy
+}
+
+
+void NonDC3FunctionTrain::update_samples_from_order_increment()
+{
+  // Given a candidate advancement since the last solve (e.g., NonDExpansion::
+  // increment_order_and_grid()), we can't just rely on size of the last solve
+  // > sample_allocation_metric() uses recovered QoI ranks + order advancements
+  // > collocRatio is then applied to number of unknowns within floor() below
+  Real pow_mean_qoi_regress;
+  sample_allocation_metric(pow_mean_qoi_regress, 2.);//DBL_MAX);
+
+  // This function computes an update to the total points.  The increment
+  // induced relative to the current data set is managed in DataFitSurrModel::
+  // rebuild_global())
+  //prevSamplesOnModel = numSamplesOnModel;//requires level mgmt for persistence
+  numSamplesOnModel = (int)std::floor(collocRatio * pow_mean_qoi_regress + .5);
+}
+
+
+/** inconvenient to recompute: store previous samples rather than
+    previous ranks
+void NonDC3FunctionTrain::update_samples_from_order_decrement()
+{ numSamplesOnModel = prevSamplesOnModel; }//requires level mgmt for persistence
+*/
+
+
+/* Compute power mean of rank (common power values: 1 = average value,
+   2 = root mean square, DBL_MAX = max value). */
+void NonDC3FunctionTrain::
+sample_allocation_metric(Real& regress_metric, Real power)
+{
+  // case RANK_SAMPLING in NonDExpansion::multilevel_regression() as well as
+  // uniform refinements:
+
+  // > sample requirements scale as O(p r^2 d) -- see regression_size()
+  //   implementations in SharedC3ApproxData (scalar spec) and C3Approximation
+  //   (adapted ranks per dimension along with latest startOrder increment)
+  // > The function function_train_get_nparams(const struct FunctionTrain*),
+  //   which is one implementation of C3Approximation::regression_size(),
+  //   returns the number of unknowns from the most recent FT regression
+  //   (per QoI, per model level) which provides the sample requirements
+  //   prior to over-sampling/collocRaio.  Given this, only need to compute
+  //   power mean over numFunctions (below) and then add any over-sampling
+  //   factor (applied in compute_sample_increment())
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  Real sum = 0., max = 0.;
+  bool pow_1   = (power == 1.), // detect special cases
+       pow_inf = (power == std::numeric_limits<Real>::max());
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    C3Approximation* poly_approx_q
+      = (C3Approximation*)poly_approxs[qoi].approx_rep();
+    Real regress_q = poly_approx_q->regression_size(); // number of unknowns
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "System size(" /*lev " << lev << ", "*/ << "qoi " << qoi
+	/* << ", iter " << iter */ << ") = " << regress_q << '\n';
+
+    if (pow_inf) {
+      if (regress_q > max)
+	max = regress_q;
+    }
+    else
+      sum += (pow_1) ? regress_q : std::pow(regress_q, power);
+  }
+  if (pow_inf)
+    regress_metric = max;
+  else {
+    sum /= numFunctions;
+    regress_metric = (pow_1) ? sum : std::pow(sum, 1. / power);
+  }
+}
+
+
+/* No override appears to be required (NonDExp is sufficient)
    > initialize_expansion()
    > compute_expansion()
    Overrides needed:

@@ -38,10 +38,8 @@ public:
   /*
   /// alternate constructor for helper iterator
   NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
-			      short exp_coeffs_approach,
-			      const UShortArray& exp_order_seq,
-			      const RealVector& dim_pref,
 			      const SizetArray& colloc_pts_seq,
+			      const RealVector& dim_pref,
 			      Real colloc_ratio, const SizetArray& pilot,
 			      int seed, short u_space_type, short refine_type,
 			      short refine_control, short covar_control,
@@ -68,17 +66,17 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void initialize_u_space_model();
+  void initialize_u_space_model();
   void core_run();
 
   void assign_specification_sequence();
   void increment_specification_sequence();
 
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
+  void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
-				 size_t lev);
-  void level_metric(Real& regress_metric_l, Real power);
-  void compute_sample_increment(Real factor, const RealVector& regress_metrics,
+				 size_t step);
+  void compute_sample_increment(const RealVector& regress_metrics,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -97,6 +95,12 @@ private:
   //- Heading: Utility functions
   //
 
+  size_t collocation_points() const;
+  size_t start_rank(size_t index) const;
+  size_t start_order(size_t index) const;
+  size_t start_rank() const;
+  size_t start_order() const;
+
   /// perform specification updates (shared code from
   // {assign,increment}_specification_sequence())
   void update_from_specification();
@@ -108,11 +112,51 @@ private:
   //- Heading: Data
   //
 
-  /// user specification for collocation_points (array for multifidelity)
-  SizetArray collocPtsSeqSpec;
+  /// user specification for start_rank_sequence
+  SizetArray startRankSeqSpec;
+  /// user specification for start_order_sequence
+  SizetArray startOrderSeqSpec;
+
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
 };
+
+
+inline size_t NonDMultilevelFunctionTrain::collocation_points() const
+{
+  if (collocPtsSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  else
+    return (sequenceIndex < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+}
+
+
+inline size_t NonDMultilevelFunctionTrain::start_rank(size_t index) const
+{
+  if (startRankSeqSpec.empty())
+    return startRankSpec; // use default provided by DataMethod
+  else
+    return (index < startRankSeqSpec.size()) ?
+      startRankSeqSpec[index] : startRankSeqSpec.back();
+}
+
+
+inline size_t NonDMultilevelFunctionTrain::start_order(size_t index) const
+{
+  if (startOrderSeqSpec.empty())
+    return startOrderSpec; // use default provided by DataMethod
+  else
+    return (index < startOrderSeqSpec.size()) ?
+      startOrderSeqSpec[index] : startOrderSeqSpec.back();
+}
+
+
+inline size_t NonDMultilevelFunctionTrain::start_rank() const
+{ return start_rank(sequenceIndex); }
+
+
+inline size_t NonDMultilevelFunctionTrain::start_order() const
+{ return start_order(sequenceIndex); }
 
 } // namespace Dakota
 

@@ -115,12 +115,22 @@ public:
   /// retrieve the variance of the predicted value for a given parameter vector
   virtual Real prediction_variance(const RealVector& c_vars);
 
-  /// Statistics
-  virtual Real mean();                            
-  virtual Real mean(const RealVector& x);          
-  virtual const RealVector& mean_gradient();      
+  /// return the mean of the expansion, where all active vars are random
+  virtual Real mean();
+  /// return the mean of the expansion for a given parameter vector,
+  /// where a subset of the active variables are random
+  virtual Real mean(const RealVector& x);
+  /// return the mean of the combined expansion, where all active vars
+  /// are random
+  virtual Real combined_mean();
+  /// return the mean of the combined expansion for a given parameter vector,
+  /// where a subset of the active variables are random
+  virtual Real combined_mean(const RealVector& x);
+  /// return the gradient of the expansion mean
+  virtual const RealVector& mean_gradient();
+  /// return the gradient of the expansion mean
   virtual const RealVector& mean_gradient(const RealVector& x,
-					  const SizetArray& dvv);     
+					  const SizetArray& dvv);
 
   /// return the variance of the expansion, where all active vars are random
   virtual Real variance();
@@ -148,9 +158,16 @@ public:
 			       bool combined_stats = false);
   virtual void compute_moments(const RealVector& x, bool full_stats = true,
 			       bool combined_stats = false);
+
   virtual const RealVector& moments() const;
+  virtual const RealVector& expansion_moments() const;
+  virtual const RealVector& numerical_integration_moments() const;
+  virtual const RealVector& combined_moments() const;
+
   virtual Real moment(size_t i) const;
   virtual void moment(Real mom, size_t i);
+  virtual Real combined_moment(size_t i) const;
+  virtual void combined_moment(Real mom, size_t i);
 
   virtual void clear_component_effects();
   virtual void compute_component_effects();
@@ -158,9 +175,6 @@ public:
   virtual const RealVector& sobol_indices() const;
   virtual const RealVector& total_sobol_indices() const;
   virtual ULongULongMap sparse_sobol_index_map() const;
-
-  virtual const RealVector& expansion_moments() const;
-  virtual const RealVector& numerical_integration_moments() const;
 
   /// check if diagnostics are available for this approximation type
   virtual bool diagnostics_available();

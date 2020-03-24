@@ -38,10 +38,9 @@ public:
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
 		short exp_coeffs_approach, short refine_type,
-		short refine_control, short covar_control,
-		short ml_alloc_control, short ml_discrep,
-		const SizetArray& pilot, short rule_nest, short rule_growth,
-		bool piecewise_basis, bool use_derivs);
+		short refine_control, short covar_control, Real colloc_ratio,
+		short rule_nest, short rule_growth, bool piecewise_basis,
+		bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
@@ -94,6 +93,8 @@ public:
   /// multilevel/multifidelity expansions
   virtual void assign_hierarchical_response_mode();
 
+  virtual void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
+
   //
   //- Heading: Member functions
   //
@@ -119,12 +120,6 @@ protected:
   virtual void compute_expansion();
   /// finalize mappings for the uSpaceModel
   virtual void finalize_expansion();
-  /// uniformly increment the expansion order and structured/unstructured
-  /// grid (PCE only)
-  virtual void increment_order_and_grid();
-  /// uniformly decrement the expansion order and structured/unstructured
-  /// grid (PCE only)
-  virtual void decrement_order_and_grid();
   /// assign the current values from the input specification sequence
   virtual void assign_specification_sequence();
   /// increment the input specification sequence and assign values
@@ -138,6 +133,11 @@ protected:
 
   /// perform any required expansion roll-ups prior to metric computation
   virtual void metric_roll_up();
+
+  /// helper function to manage different push increment cases
+  virtual void push_increment();
+  /// helper function to manage different pop increment cases
+  virtual void pop_increment();
 
   /// compute 2-norm of change in response covariance
   virtual Real compute_covariance_metric(bool revert, bool print_metric);
@@ -158,16 +158,20 @@ protected:
   virtual void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   /// increment sequence in numSamplesOnModel for multilevel_regression()
   virtual void increment_sample_sequence(size_t new_samp, size_t total_samp,
-					 size_t lev);
+					 size_t step);
   /// accumulate one of the level metrics for {RIP,RANK}_SAMPLING cases
-  virtual void level_metric(Real& lev_metric_l, Real power);
+  virtual void sample_allocation_metric(Real& metric, Real power);
   /// compute delta_N_l for {RIP,RANK}_SAMPLING cases
-  virtual void compute_sample_increment(Real factor,
-					const RealVector& lev_metrics,
+  virtual void compute_sample_increment(const RealVector& lev_metrics,
 					const SizetArray& N_l,
 					SizetArray& delta_N_l);
   /// finalizations for multilevel_regression()
   virtual void finalize_ml_regression();
+
+  /// update numSamplesOnModel after an order increment
+  virtual void update_samples_from_order_increment();  
+  /// update (restore previous) numSamplesOnModel after an order decrement
+  virtual void update_samples_from_order_decrement();  
 
   /// print global sensitivity indices
   virtual void print_sobol_indices(std::ostream& s);
@@ -281,10 +285,15 @@ protected:
   /// helper function to manage different grid merge cases
   void merge_grid();
 
-  /// helper function to manage different push increment cases
-  void push_increment();
-  /// helper function to manage different pop increment cases
-  void pop_increment();
+  /// uniformly increment the expansion order and structured/unstructured grid
+  /// (PCE and FT)
+  void increment_order_and_grid();
+  /// uniformly decrement the expansion order and structured/unstructured grid
+  /// (PCE and FT)
+  void decrement_order_and_grid();
+
+  /// publish numSamplesOnModel update to the DataFitSurrModel instance
+  void update_model_from_samples();
 
   /// update statsType, here and in Pecos::ExpansionConfigOptions
   void statistics_type(short stats_type, bool clear_bits = true);
@@ -354,6 +363,13 @@ protected:
   void push_lower_triangle(const RealVector& vec, RealSymMatrix& mat,
 			   size_t offset = 0);
 
+  /// convert number of regression terms and collocation ratio to a
+  /// number of collocation samples
+  int  terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio);
+  /// convert number of regression terms and number of collocation samples
+  /// to a collocation ratio
+  Real terms_samples_to_ratio(size_t num_exp_terms, int samples);
+
   //
   //- Heading: Data
   //
@@ -373,9 +389,23 @@ protected:
   /// ACTIVE_EXPANSION_STATS, or COMBINED_EXPANSION_STATS
   short statsType;
 
+  /// user specification of number of initial samples per model instance,
+  /// including adaptive cases where an optimal sample profile is the
+  /// target of iteration (e.g., multilevel_regression())
+  SizetArray collocPtsSeqSpec;
+  /// factor applied to terms^termsOrder in computing number of regression
+  /// points, either user-specified or inferred
+  Real collocRatio;
+  /// exponent applied to number of expansion terms for computing
+  /// number of regression points (usually 1)
+  Real termsOrder;
+
   /// flag for combined variable expansions which include a
   /// non-probabilistic subset (design, epistemic, state)
   bool allVars;
+  /// option for regression FT using a filtered set of tensor-product
+  /// quadrature points
+  bool tensorRegression;
 
   /// type of sample allocation scheme for discretization levels / model forms
   /// within multilevel / multifidelity methods
@@ -383,9 +413,7 @@ protected:
   /// emulation approach for multilevel / multifidelity discrepancy:
   /// distinct or recursive
   short multilevDiscrepEmulation;
-  /// number of initial samples per level, when an optimal sample profile is
-  /// the target of iteration (e.g. multilevel_regression())
-  SizetArray pilotSamples;
+
   /// number of samples allocated to each level of a discretization/model
   /// hierarchy within multilevel/multifidelity methods
   SizetArray NLev;
@@ -778,6 +806,39 @@ check_dimension_preference(const RealVector& dim_pref) const
 	  abort_handler(METHOD_ERROR);
 	}
   }
+}
+
+
+inline int NonDExpansion::
+terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio)
+{
+  // for under-determined solves (compressed sensing), colloc_ratio can be < 1
+  size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;
+  Real min_pts = std::pow((Real)num_exp_terms, termsOrder) / (Real)data_per_pt;
+  int tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5); // rounded
+  if (colloc_ratio >= 1.) {
+    // logic is to round to the nearest integral sample count for the given
+    // colloc_ratio, but with a lower bound determined by rounding up with a
+    // unit colloc_ratio.  The lower bound prevents creating an under-determined
+    // system due to rounding down when the intent is over- or uniquely
+    // determined (can only happen with non-integral min_pts due to use of
+    // derivative enhancement).
+    int min_samples = (int)std::ceil(min_pts); // lower bound
+    return std::max(min_samples, tgt_samples);
+  }
+  else
+    // for under-determined systems, data starvation is not a problem and we
+    // just need at least one sample.
+    return std::max(tgt_samples, 1);
+}
+
+
+inline Real NonDExpansion::
+terms_samples_to_ratio(size_t num_exp_terms, int samples)
+{
+  size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;
+  return (Real)(samples * data_per_pt) /
+    std::pow((Real)num_exp_terms, termsOrder);
 }
 
 } // namespace Dakota

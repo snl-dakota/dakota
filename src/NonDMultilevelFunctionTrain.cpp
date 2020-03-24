@@ -29,7 +29,10 @@ namespace Dakota {
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, model),
-  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
+  startRankSeqSpec(
+    problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),
+  startOrderSeqSpec(
+    problem_db.get_sza("method.nond.c3function_train.start_order_sequence")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   assign_discrepancy_mode();
@@ -54,20 +57,16 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  // extract sequences and invoke shared helper fn with a scalar...
-  size_t colloc_pts = std::numeric_limits<size_t>::max();
-  if (!collocPtsSeqSpec.empty())
-    colloc_pts = (sequenceIndex < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-  Iterator u_space_sampler;
-  if (!config_regression(colloc_pts, u_space_sampler, g_u_model)) {
+  Iterator u_space_sampler; // evaluates truth model
+  // extract (initial) values from sequences
+  // TO DO: average the regression size over range of sequenceIndex
+  size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
+    regression_size(numContinuousVars, start_rank(), start_order());
+  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-
-  // Configure settings for ML allocation (following solver config)
-  assign_allocation_control();
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -95,6 +94,9 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.export_approx_format")), false);
   initialize_u_space_model();
 
+  // Configure settings for ML allocation (requires uSpaceModel)
+  assign_allocation_control();
+
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
@@ -113,12 +115,9 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     that employ regression.
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
-			    short exp_coeffs_approach,
-			    const UShortArray& exp_order_seq,
-			    const RealVector& dim_pref,
 			    const SizetArray& colloc_pts_seq,
-			    Real colloc_ratio, const SizetArray& pilot,
-			    int seed, short u_space_type,
+			    const RealVector& dim_pref,
+			    Real colloc_ratio, int seed, short u_space_type,
 			    short refine_type, short refine_control,
 			    short covar_control, short ml_alloc_control,
 			    short ml_discrep,
@@ -129,11 +128,10 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 			    bool import_build_active_only):
   NonDC3FunctionTrain(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, refine_type, refine_control, covar_control,
-		      ml_alloc_control, ml_discrep, pilot,
-		      //rule_nest, rule_growth,
-		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
-  expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
-  sequenceIndex(0)
+		      colloc_pts_seq, colloc_ratio, ml_alloc_control,
+		      ml_discrep, //rule_nest, rule_growth,
+		      piecewise_basis, use_derivs, seed, cv_flag),
+  expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -154,27 +152,14 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  unsigned short exp_order_spec = USHRT_MAX;
-  size_t colloc_pts = std::numeric_limits<size_t>::max();
-  UShortArray exp_orders; // defined for expansion_samples/regression
-  if (!expOrderSeqSpec.empty()) {
-    exp_order_spec = (sequenceIndex  < expOrderSeqSpec.size()) ?
-      expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-    config_expansion_orders(exp_order_spec, dimPrefSpec, exp_orders);
-  }
-  if (!collocPtsSeqSpec.empty())
-    colloc_pts =      (sequenceIndex  < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-
   Iterator u_space_sampler;
-  UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
-  String approx_type, rng("mt19937"), pt_reuse;
-  config_regression(exp_orders, colloc_pts, 1, exp_coeffs_approach,
-		    Pecos::DEFAULT_LEAST_SQ_REGRESSION, tensor_grid_order,
-		    SUBMETHOD_LHS, rng, pt_reuse, u_space_sampler,
-		    g_u_model, approx_type);
-
-  assign_allocation_control();
+  size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
+    regression_size(numContinuousVars, start_rank(), start_order());
+  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
+    Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
+	 << "constructor." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -195,6 +180,9 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
     import_build_active_only), false);
   initialize_u_space_model();
 
+  // Configure settings for ML allocation (requires uSpaceModel)
+  assign_allocation_control();
+
   // no expansionSampler, no numSamplesOnExpansion
 }
 */
@@ -204,7 +192,6 @@ NonDMultilevelFunctionTrain::~NonDMultilevelFunctionTrain()
 { }
 
 
-/*
 void NonDMultilevelFunctionTrain::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
@@ -212,14 +199,16 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   //if (multilevAllocControl == GREEDY_REFINEMENT)
   //  statsType = Pecos::COMBINED_EXPANSION_STATS;
 
-  // initializes ExpansionConfigOptions, among other things
-  NonDC3FunctionTrain::initialize_u_space_model();
+  NonDExpansion::initialize_u_space_model();
 
-  // Bind more than one SurrogateData instance via DataFitSurrModel ->
-  // PecosApproximation
-  //uSpaceModel.link_multilevel_approximation_data();
+  // needs to precede construct_basis()
+  push_c3_options(start_rank(), start_order());// extract scalars from sequences
+
+  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.truth_model().multivariate_distribution();
+  uSpaceModel.shared_approximation().construct_basis(u_dist);
 }
-*/
 
 
 void NonDMultilevelFunctionTrain::core_run()
@@ -276,8 +265,15 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
     switch (multilevAllocControl) {
     case DEFAULT_MLMF_CONTROL: // define MLFT-specific default
       multilevAllocControl = RANK_SAMPLING; break;
-    case RANK_SAMPLING:
-      //crossValidation = crossValidNoiseOnly = true;
+    case RANK_SAMPLING: {
+      // ensure adaptRank is on (cross-validation is not yet supported)
+      SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+	uSpaceModel.shared_approximation().data_rep();
+      shared_data_rep->set_parameter("adapt_rank", true);
+      break;
+    }
+    case ESTIMATOR_VARIANCE:
+      // estimator variance is not dependent on rank: adapt rank is optional
       break;
     default:
       Cerr << "Error: unsupported multilevAllocControl in "
@@ -293,9 +289,21 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
 
 void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
-  // regression
-  if (sequenceIndex < collocPtsSeqSpec.size())
-    numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+  size_t colloc_pts = collocation_points();
+  if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined
+    if (collocRatio > 0.) {
+      size_t regress_size = SharedC3ApproxData::
+	regression_size(numContinuousVars, start_rank(), start_order());
+      numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
+    }
+    else {
+      Cerr << "Error: incomplete specification in NonDMultilevelFunctionTrain"
+	   << "::assign_specification_sequence()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  }
+  else
+    numSamplesOnModel = colloc_pts;
 
   update_from_specification();
 }
@@ -306,38 +314,21 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
   // regression
   // advance expansionOrder and/or collocationPoints, as admissible
   size_t next_i = sequenceIndex + 1;
-  if (next_i < collocPtsSeqSpec.size())
-    { numSamplesOnModel = collocPtsSeqSpec[next_i]; ++sequenceIndex; }
-  //else leave at previous value
-
-  update_from_specification();
+  if (next_i < collocPtsSeqSpec.size() || next_i < startRankSeqSpec.size() ||
+      next_i < startOrderSeqSpec.size())
+    ++sequenceIndex;
+  assign_specification_sequence();
 }
 
 
-void NonDMultilevelFunctionTrain::update_from_specification()
+void NonDMultilevelFunctionTrain::
+infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
 {
-  // udpate sampler settings (NonDQuadrature or NonDSampling)
-  if (tensorRegression) {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_quad->samples(numSamplesOnModel);
-    if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
-      SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-	uSpaceModel.shared_approximation().data_rep();
-      size_t ft_start_order = shared_data_rep->polynomial_order();
-      UShortArray dim_quad_order(numContinuousVars);
-      for (size_t i=0; i<numContinuousVars; ++i)
-	//dim_quad_order[i] = exp_order[i] + 1;
-	dim_quad_order[i] = ft_start_order + 1;// or tensor order user spec ?
-      nond_quad->quadrature_order(dim_quad_order);
-    }
-    nond_quad->update(); // sanity check on sizes, likely a no-op
-  }
-  else { // enforce increment through sampling_reset()
-    // no lower bound on samples in the subiterator
-    uSpaceModel.subordinate_iterator().sampling_reference(0);
-    DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-    dfs_model->total_points(numSamplesOnModel);
+  size_t i, num_steps = pilot.size(), regress_i;
+  for (i=0; i<num_steps; ++i) {
+    regress_i = SharedC3ApproxData::
+      regression_size(numContinuousVars, start_rank(i), start_order(i));
+    pilot[i] = (size_t)std::floor(collocRatio * (Real)regress_i + .5);
   }
 }
 
@@ -348,7 +339,13 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
   numSamplesOnModel = new_samp;
   // total_samp,lev not required for this derived implementation
 
-  // update sampler settings (NonDQuadrature or NonDSampling)
+  update_from_specification();
+}
+
+
+void NonDMultilevelFunctionTrain::update_from_specification()
+{
+  // udpate sampler settings (NonDQuadrature or NonDSampling)
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
   if (tensorRegression) {
     NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
@@ -356,7 +353,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
     if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
       SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
 	uSpaceModel.shared_approximation().data_rep();
-      size_t ft_start_order = shared_data_rep->polynomial_order();
+      size_t ft_start_order = shared_data_rep->start_order();
       UShortArray dim_quad_order(numContinuousVars);
       for (size_t i=0; i<numContinuousVars; ++i)
 	//dim_quad_order[i] = exp_order[i] + 1;
@@ -369,8 +366,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
   else if (sub_iter_rep != NULL) { // enforce increment using sampling_reset()
     sub_iter_rep->sampling_reference(0);// no lower bnd on samples in sub-iter
     DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-    // total including reuse from DB/file (does not include previous ML iter)
-    dfs_model->total_points(numSamplesOnModel);
+    dfs_model->total_points(numSamplesOnModel); // total including previous 
   }
 }
 
@@ -396,42 +392,8 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 }
 
 
-/* Compute power mean of rank (common power values: 1 = average, 2 = RMS). */
 void NonDMultilevelFunctionTrain::
-level_metric(Real& regress_metric_l, Real power)
-{
-  // case RANK_SAMPLING in NonDExpansion::multilevel_regression():
-
-  // > sample requirements scale as O(p r^2 d), which shapes the profile
-  // > there is a weak dependence on the polynomial order p, but this should
-  //   not grow very high (could just fix this factor at ~10).
-  // > The function function_train_get_nparams(const struct FunctionTrain*),
-  //   accessed through C3Approximation::regression_size(), returns the number
-  //   of unknowns in the regression (per QoI, per level) which is directly
-  //   O(p r^2 d) without over-sampling.  Given this, only need to average
-  //   over numFunctions (below) and then add any over-sampling factor
-  //   (applied in compute_sample_increment())
-
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real sum = 0.; bool pow1 = (power == 1.); // detect simple average
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    C3Approximation* poly_approx_q
-      = (C3Approximation*)poly_approxs[qoi].approx_rep();
-    // Don't need to track average ranks as regression_size() is more direct:
-    //Real regress_l = poly_approx_q->average_rank(); // average rank over dims
-    Real regress_l = poly_approx_q->regression_size(); // number of unknowns
-    sum += (pow1) ? regress_l : std::pow(regress_l, power);
-    //if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "System size(" /*lev " << lev << ", "*/ << "qoi " << qoi
-	/* << ", iter " << iter */ << ") = " << regress_l << '\n';
-  }
-  sum /= numFunctions;
-  regress_metric_l = (pow1) ? sum : std::pow(sum, 1. / power);
-}
-
-
-void NonDMultilevelFunctionTrain::
-compute_sample_increment(Real factor, const RealVector& regress_metrics,
+compute_sample_increment(const RealVector& regress_metrics,
 			 const SizetArray& N_l, SizetArray& delta_N_l)
 {
   // case RANK_SAMPLING in NonDExpansion::multilevel_regression():
@@ -440,7 +402,7 @@ compute_sample_increment(Real factor, const RealVector& regress_metrics,
   // O(p r^2 d), which shapes the profile
   //size_t lev, num_lev = N_l.size();
   //RealVector new_N_l(num_lev, false);
-  //Real r, fact_var = factor * numContinuousVars;
+  //Real r, fact_var = collocRatio * numContinuousVars;
   //for (lev=0; lev<num_lev; ++lev)
   //  { r = rank[lev];  new_N_l[lev] = fact_var * r * r; }
 
@@ -451,9 +413,9 @@ compute_sample_increment(Real factor, const RealVector& regress_metrics,
   // > May need to tune this user spec (and its default)
 
   // update targets based on regression size
-  // > TO DO: repurpose collocation_ratio spec to allow user tuning of factor
   RealVector new_N_l = regress_metrics; // number of unknowns (RMS across QoI)
-  new_N_l.scale(factor); // over-sample
+  if (collocRatio > 0.)  new_N_l.scale(collocRatio);
+  else                   new_N_l.scale(2.); // default: over-sample 2x
 
   // Retain the shape of the profile but enforce an upper bound
   //scale_profile(..., new_N_l);

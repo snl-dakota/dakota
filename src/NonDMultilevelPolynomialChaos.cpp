@@ -31,7 +31,6 @@ NonDMultilevelPolynomialChaos::
 NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDPolynomialChaos(DEFAULT_METHOD, problem_db, model), // bypass PCE ctor
   expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order")),
-  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
   expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples")),
   quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
@@ -63,52 +62,24 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-
-  // pull DB settings
-  unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
-  const String& rng = probDescDB.get_string("method.random_number_generator");
-  short regress_type = probDescDB.get_short("method.nond.regression_type"),
-    ls_regress_type
-      = probDescDB.get_short("method.nond.least_squares_regression_type");
-  Real colloc_ratio_terms_order
-    = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
-  const UShortArray& tensor_grid_order
-    = probDescDB.get_usa("method.nond.tensor_grid_order");
-
-  // extract sequences and invoke shared helper fn with a scalar...
-  unsigned short exp_order = USHRT_MAX, quad_order = USHRT_MAX,
-    ssg_level = USHRT_MAX, cub_int = USHRT_MAX;
-  size_t SZ_MAX = std::numeric_limits<size_t>::max(),
-    colloc_pts = SZ_MAX, exp_samples = SZ_MAX;
-  if (!expOrderSeqSpec.empty())
-    exp_order = (sequenceIndex < expOrderSeqSpec.size()) ?
-      expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-  if (!collocPtsSeqSpec.empty())
-    colloc_pts = (sequenceIndex < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-  if (!expSamplesSeqSpec.empty())
-    exp_samples = (sequenceIndex < expSamplesSeqSpec.size()) ?
-      expSamplesSeqSpec[sequenceIndex] : expSamplesSeqSpec.back();
-  if (!quadOrderSeqSpec.empty())
-    quad_order = (sequenceIndex < quadOrderSeqSpec.size()) ?
-      quadOrderSeqSpec[sequenceIndex] : quadOrderSeqSpec.back();
-  if (!ssgLevelSeqSpec.empty())
-    ssg_level = (sequenceIndex < ssgLevelSeqSpec.size()) ?
-      ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
-
   Iterator u_space_sampler;
   String approx_type;
-  UShortArray exp_orders; // defined for expansion_samples/regression
-  config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
+  unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
+  const String& rng = probDescDB.get_string("method.random_number_generator");
 
-  if (!config_integration(quad_order, ssg_level, cubIntSpec,
-			  u_space_sampler, g_u_model, approx_type) &&
-      !config_expectation(exp_samples, sample_type, rng, u_space_sampler,
-			  g_u_model, approx_type) &&
-      !config_regression(exp_orders, colloc_pts, colloc_ratio_terms_order,
-			 regress_type, ls_regress_type, tensor_grid_order,
-			 sample_type, rng, pt_reuse, u_space_sampler,
-			 g_u_model, approx_type)) {
+  UShortArray exp_orders; // defined for expansion_samples/regression
+  config_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
+
+  if (!config_integration(quadrature_order(), sparse_grid_level(), cubIntSpec,
+	u_space_sampler, g_u_model, approx_type) &&
+      !config_expectation(expansion_samples(), sample_type, rng,
+	u_space_sampler, g_u_model, approx_type) &&
+      !config_regression(exp_orders, collocation_points(),
+	probDescDB.get_real("method.nond.collocation_ratio_terms_order"),
+	probDescDB.get_short("method.nond.regression_type"),
+	probDescDB.get_short("method.nond.least_squares_regression_type"),
+	probDescDB.get_usa("method.nond.tensor_grid_order"), sample_type, rng,
+	pt_reuse, u_space_sampler, g_u_model, approx_type)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelPolynomialChaos "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -241,8 +212,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 			      const UShortArray& exp_order_seq,
 			      const RealVector& dim_pref,
 			      const SizetArray& colloc_pts_seq,
-			      Real colloc_ratio, const SizetArray& pilot,
-			      int seed, short u_space_type,
+			      Real colloc_ratio, int seed, short u_space_type,
 			      short refine_type, short refine_control,
 			      short covar_control, short ml_alloc_control,
 			      short ml_discrep,
@@ -253,11 +223,10 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 			      bool import_build_active_only):
   NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, refine_type, refine_control, covar_control,
-		      ml_alloc_control, ml_discrep, pilot,
-		      //rule_nest, rule_growth,
-		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
-  expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
-  sequenceIndex(0)
+		      colloc_pts_seq, colloc_ratio, ml_alloc_control,
+		      ml_discrep, //rule_nest, rule_growth,
+		      piecewise_basis, use_derivs, seed, cv_flag),
+  expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -278,17 +247,9 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  unsigned short exp_order_spec = USHRT_MAX;
-  size_t colloc_pts = std::numeric_limits<size_t>::max();
+  size_t colloc_pts = collocation_points();
   UShortArray exp_orders; // defined for expansion_samples/regression
-  if (!expOrderSeqSpec.empty()) {
-    exp_order_spec = (sequenceIndex  < expOrderSeqSpec.size()) ?
-      expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-    config_expansion_orders(exp_order_spec, dimPrefSpec, exp_orders);
-  }
-  if (!collocPtsSeqSpec.empty())
-    colloc_pts =      (sequenceIndex  < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+  config_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
 
   Iterator u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
@@ -375,25 +336,24 @@ bool NonDMultilevelPolynomialChaos::resize()
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  UShortArray exp_order; // empty for numerical integration approaches
+  UShortArray exp_orders; // empty for numerical integration approaches
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
     construct_quadrature(u_space_sampler,  g_u_model,
-                         quadOrderSeqSpec[sequenceIndex], dimPrefSpec);
+                         quadrature_order(), dimPrefSpec);
     break;
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
     construct_sparse_grid(u_space_sampler, g_u_model,
-                          ssgLevelSeqSpec[sequenceIndex], dimPrefSpec);
+                          sparse_grid_level(), dimPrefSpec);
     break;
   case Pecos::CUBATURE:
     construct_cubature(u_space_sampler, g_u_model, cubIntSpec);
     break;
   default:
+    numSamplesOnModel = collocation_points();
     if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
 	expOrderSeqSpec.empty()) {
       // extract number of collocation points
-      numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
-	collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
       // Construct u_space_sampler
       String rng("mt19937");
       construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
@@ -404,21 +364,20 @@ bool NonDMultilevelPolynomialChaos::resize()
       if (!expansionBasisType)
 	expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
 	  Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
-      unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
-	expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-      NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
-	dimPrefSpec, numContinuousVars, exp_order);
+      unsigned short exp_order = expansion_order();
+      NonDIntegration::dimension_preference_to_anisotropic_order(exp_order,
+	dimPrefSpec, numContinuousVars, exp_orders);
 
       size_t exp_terms;
       switch (expansionBasisType) {
       case Pecos::TOTAL_ORDER_BASIS:
       case Pecos::ADAPTED_BASIS_GENERALIZED:
       case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
-	exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+	exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_orders);
 	break;
       case Pecos::TENSOR_PRODUCT_BASIS:
 	exp_terms
-	  = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
+	  = Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders);
 	break;
       }
     
@@ -431,7 +390,8 @@ bool NonDMultilevelPolynomialChaos::resize()
       if (tensorRegression) // tensor sub-sampling
 	// define nominal quadrature order as exp_order + 1
 	// (m > p avoids most of the 0's in the Psi measurement matrix)
-	construct_quadrature(u_space_sampler, g_u_model, scalar+1, dimPrefSpec);
+	construct_quadrature(u_space_sampler, g_u_model, exp_order+1,
+			     dimPrefSpec);
       else {
 	String rng("mt19937");
 	construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
@@ -459,7 +419,7 @@ bool NonDMultilevelPolynomialChaos::resize()
       expansionCoeffsApproach == Pecos::CUBATURE) {
     String pt_reuse, approx_type = "global_projection_orthogonal_polynomial";
     uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-      pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
+      pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
       outputLevel, pt_reuse), false);
   }
   else {
@@ -474,7 +434,7 @@ bool NonDMultilevelPolynomialChaos::resize()
     //bool      import_active_only = orig_dfs_model->import_build_active_only();
 
     uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-      pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
+      pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
       outputLevel, pt_reuse), false); // no import after resize
     //, importBuildPointsFile, import_format, import_active_only), false);
   }
@@ -704,7 +664,7 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
   case Pecos::ORTHOG_LEAST_INTERPOLATION:
     // advance collocationPoints
     if (sequenceIndex+1 < collocPtsSeqSpec.size()) {
-      update_sampler = true; ++sequenceIndex;
+      update_sampler = true;  ++sequenceIndex;
       numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
     }
     break;
@@ -729,19 +689,18 @@ void NonDMultilevelPolynomialChaos::
 update_from_specification(bool update_exp, bool update_sampler,
 			  bool update_from_ratio)
 {
-  UShortArray exp_order;
+  UShortArray exp_orders;
   if (update_exp) {
     // update expansion order within Pecos::SharedOrthogPolyApproxData
     NonDIntegration::dimension_preference_to_anisotropic_order(
-      expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars,
-      exp_order);
+      expansion_order(), dimPrefSpec, numContinuousVars, exp_orders);
     SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
       uSpaceModel.shared_approximation().data_rep();
-    shared_data_rep->expansion_order(exp_order);
+    shared_data_rep->expansion_order(exp_orders);
     if (update_from_ratio) { // update numSamplesOnModel from collocRatio
       size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
-	Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
-	Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+	Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders) :
+	Pecos::SharedPolyApproxData::total_order_terms(exp_orders);
       numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
     }
   }
@@ -749,7 +708,7 @@ update_from_specification(bool update_exp, bool update_sampler,
     // extract unchanged expansion order from Pecos::SharedOrthogPolyApproxData
     SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
       uSpaceModel.shared_approximation().data_rep();
-    exp_order = shared_data_rep->expansion_order();
+    exp_orders = shared_data_rep->expansion_order();
   }
 
   // udpate sampler settings (NonDQuadrature or NonDSampling)
@@ -761,7 +720,7 @@ update_from_specification(bool update_exp, bool update_sampler,
       if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
 	UShortArray dim_quad_order(numContinuousVars);
 	for (size_t i=0; i<numContinuousVars; ++i)
-	  dim_quad_order[i] = exp_order[i] + 1;
+	  dim_quad_order[i] = exp_orders[i] + 1;
         nond_quad->quadrature_order(dim_quad_order);
       }
       nond_quad->update(); // sanity check on sizes, likely a no-op
@@ -777,7 +736,23 @@ update_from_specification(bool update_exp, bool update_sampler,
 
 
 void NonDMultilevelPolynomialChaos::
-increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
+infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
+{
+  size_t i, num_steps = pilot.size();
+  UShortArray exp_orders;
+  for (i=0; i<num_steps; ++i) {
+    NonDIntegration::dimension_preference_to_anisotropic_order(
+      expansion_order(i), dimPrefSpec, numContinuousVars, exp_orders);
+    size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
+      Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders) :
+      Pecos::SharedPolyApproxData::total_order_terms(exp_orders);
+    pilot[i] = terms_ratio_to_samples(exp_terms, collocRatio);
+  }
+}
+
+
+void NonDMultilevelPolynomialChaos::
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   numSamplesOnModel = new_samp;
 
@@ -796,21 +771,29 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
   default: // regression
     update_exp = update_sampler = true;
     // fix the basis cardinality in the case of RIP_SAMPLING
-    if (multilevAllocControl != RIP_SAMPLING) {
-      if (collocPtsSeqSpec.empty()) // (fixed) collocation ratio
+    if (multilevAllocControl != RIP_SAMPLING) { // ESTIMATOR_VARIANCE
+      if (collocRatio > 0.) // (fixed) collocation ratio
 	update_from_ratio = true;
-      else // config via collocation pts sequence not supported
+      else // collocPtsSeqSpec is used in load_pilot_sample(), not here
 	err_flag = true;
     }
     break;
   }
+  if (err_flag) {
+    Cerr << "Error: option not yet supported in NonDMultilevelPolynomialChaos::"
+	 << "increment_sample_sequence." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
   if (update_exp) {
-    //increment_order_from_grid(); // need total samples
-    unsigned short exp_order = (lev < expOrderSeqSpec.size()) ?
-      expOrderSeqSpec[lev] : expOrderSeqSpec.back();
-    // reset lower bound for each level
+    //increment_order_from_grid(total_samp); // not sufficient in this context
+
+    // reset lower bound for each level:
     UShortArray exp_orders;
+    unsigned short exp_order = 0;
+    if (!expOrderSeqSpec.empty())
+      exp_order = (step < expOrderSeqSpec.size()) ?
+	expOrderSeqSpec[step] : expOrderSeqSpec.back();
     config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
 
     if (update_from_ratio) // update the exp_orders based on total_samp
@@ -846,12 +829,6 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
       dfs_model->total_points(numSamplesOnModel);
     }
   }
-
-  if (err_flag) {
-    Cerr << "Error: option not yet supported in NonDMultilevelPolynomialChaos::"
-	 << "increment_sample_sequence." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
 }
 
 
@@ -876,51 +853,32 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 }
 
 
-/* Compute power mean of sparsity (common power values: 1 = average,
-   2 = root mean square). */
 void NonDMultilevelPolynomialChaos::
-level_metric(Real& sparsity_metric_l, Real power)
-{
-  // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
-
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real sum = 0.; bool pow1 = (power == 1.); // simple average
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    PecosApproximation* poly_approx_q
-      = (PecosApproximation*)poly_approxs[qoi].approx_rep();
-    size_t sparsity_l = poly_approx_q->sparsity();
-    sum += (pow1) ? sparsity_l : std::pow((Real)sparsity_l, power);
-    //if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi
-	/* << ", iter " << iter */ << ") = " << sparsity_l << '\n';
-  }
-  sum /= numFunctions;
-  sparsity_metric_l = (pow1) ? sum : std::pow(sum, 1. / power);
-}
-
-
-void NonDMultilevelPolynomialChaos::
-compute_sample_increment(Real factor, const RealVector& sparsity,
-			 const SizetArray& N_l, SizetArray& delta_N_l)
+compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
+			 SizetArray& delta_N_l)
 {
   // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
   // update targets based on sparsity estimates
-  Real s/*, card*/; size_t lev, num_lev = N_l.size();
+  Real s_l/*, card_l*/; size_t lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);
-  for (lev=0; lev<num_lev; ++lev) {
-    s = sparsity[lev]; //card = (Real)cit->second.size();
-    // RIP samples ~= s log^3(s) log(C), but we are more interested in the shape
-    // of the profile, since the actual values are conservative upper bounds
-    // --> can omit constant terms that don't affect shape, e.g. log(C)
-    new_N_l[lev] = s * std::pow(std::log(s), 3.); //* std::log(card);
+  for (lev=0; lev<num_lev; ++lev) { //cit=mi_map.begin(); ++cit;
+    s_l = sparsity[lev]; //card_l = (Real)cit->second.size();
+    // RIP samples ~= s_l log^3(s_l) log(card_l) but we are currently omitting
+    // card_l since the actual sample reqmts are conservative upper bounds
+    new_N_l[lev] = s_l * std::pow(std::log(s_l), 3.); //* std::log(card_l);
   }
 
   // Sparsity estimates tend to grow for compressible QoI as increased samples
   // drive increased accuracy in less important terms --> CV scores improve for
   // dense solutions.  To control this effect, we retain the shape of the
   // profile but enforce an upper bound on one of the levels.
-  Real curr_factor, max_curr_factor = 0., factor_ratio;
+  // > ML  FT factor: collocRatio multiplier is applied to regression size
+  // > ML PCE factor: provides an upper bound on all samples within the profile
+  //                  to control feedback, so not used as a sample target
+
+  Real curr_factor, max_curr_factor = 0., factor_ratio,
+    factor_bound = 2.; // hard-wired (bound is separate from collocRatio)
   SharedPecosApproxData* data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   const std::map<UShortArray, UShort2DArray>& mi_map
@@ -932,7 +890,7 @@ compute_sample_increment(Real factor, const RealVector& sparsity,
     if (curr_factor > max_curr_factor)
       max_curr_factor = curr_factor;
   }
-  factor_ratio = factor / max_curr_factor;
+  factor_ratio = factor_bound / max_curr_factor;
   if (factor_ratio < 1.) // exceeds upper bound -> scale back
     for (lev=0; lev<num_lev; ++lev)
       new_N_l[lev] *= factor_ratio;

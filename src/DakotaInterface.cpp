@@ -1172,6 +1172,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   }
 }
 
+
 void Interface::export_approximation()
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1184,11 +1185,12 @@ void Interface::export_approximation()
   }
 }
 
+
 void Interface::
-rebuild_approximation(const BoolDeque& rebuild_deque)
+rebuild_approximation(const BitArray& rebuild_fns)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->rebuild_approximation(rebuild_deque);
+    interfaceRep->rebuild_approximation(rebuild_fns);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
 	 << "approximation() function.\n       This interface does not "
@@ -1281,6 +1283,18 @@ void Interface::combined_to_active(bool clear_combined)
 	 << " combination." << std::endl;
     abort_handler(-1);
   }
+}
+
+
+bool Interface::formulation_updated() const
+{
+  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
+	 << "() function.\n       This interface does not define approximation "
+	 << "formulations." << std::endl;
+    abort_handler(-1);
+  }
+  return interfaceRep->formulation_updated();
 }
 
 

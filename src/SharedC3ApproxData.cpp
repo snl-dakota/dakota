@@ -27,16 +27,18 @@ namespace Dakota {
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   SharedApproxData(BaseConstructor(), problem_db, num_vars),
-  startOrder(problem_db.get_sizet("model.c3function_train.start_order")),
+  startOrderSpec(problem_db.get_sizet("model.c3function_train.start_order")),
   maxOrder(problem_db.get_sizet("model.c3function_train.max_order")),
-  startRank(problem_db.get_sizet("model.c3function_train.start_rank")),
+  startRankSpec(problem_db.get_sizet("model.c3function_train.start_rank")),
   kickRank(problem_db.get_sizet("model.c3function_train.kick_rank")),
   maxRank(problem_db.get_sizet("model.c3function_train.max_rank")),
   adaptRank(problem_db.get_bool("model.c3function_train.adapt_rank")),
   regressType(problem_db.get_short("model.surrogate.regression_type")),
   regressRegParam(problem_db.get_real("model.surrogate.regression_penalty")),
-  roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
   solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
+  roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
+  arithmeticTol(
+    problem_db.get_real("model.c3function_train.arithmetic_tolerance")),
   maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
@@ -46,21 +48,13 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
 
-  approxOpts = multi_approx_opts_alloc(num_vars);
-  oneApproxOpts = (struct OneApproxOpts **)
-    malloc(num_vars * sizeof(struct OneApproxOpts *));
-  for (size_t ii = 0; ii < num_vars; ii++) {
-    //struct OpeOpts * opts = ope_opts_alloc(LEGENDRE);
-    //ope_opts_set_lb(opts,-2);
-    //ope_opts_set_ub(opts, 2);
-    //ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
-    // Note: maxOrder unused for regression;
-    //       to be used for adaptation by cross-approximation
-    //ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
-    //oneApproxOpts[ii] = one_approx_opts_alloc(POLYNOMIAL,opts);
-    //multi_approx_opts_set_dim(approxOpts,ii,oneApproxOpts[ii]);
-    oneApproxOpts[ii] = NULL;
-  }
+  multiApproxOpts = multi_approx_opts_alloc(num_vars);
+
+  //oneApproxOpts = (struct OneApproxOpts **)
+  //  malloc(num_vars * sizeof(struct OneApproxOpts *));
+  //for (size_t i=0; i<num_vars; ++i)
+  //  oneApproxOpts[i] = NULL;
+  oneApproxOpts.assign(num_vars, NULL);
 }
 
   
@@ -71,84 +65,95 @@ SharedC3ApproxData(const String& approx_type,
   SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars, data_order,
 		   output_level),
   // default values overridden by set_parameter
-  startOrder(2), maxOrder(4), //maxnum(5),
-  startRank(5), kickRank(2), maxRank(10), adaptRank(false),
+  startOrderSpec(2), maxOrder(4), //maxnum(5),
+  startRankSpec(5), kickRank(2), maxRank(10), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
-  solverTol(), roundingTol(1.e-10), crossMaxIter(5), maxSolverIterations(1000),
-  c3Verbosity(0), adaptConstruct(false), crossVal(false)
+  solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
+  crossMaxIter(5), maxSolverIterations(1000), c3Verbosity(0),
+  adaptConstruct(false), crossVal(false)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)
 
   // short basis_type; approx_type_to_basis_type(approxType, basis_type);
 
-  approxOpts = multi_approx_opts_alloc(num_vars);
-  oneApproxOpts = (struct OneApproxOpts **)
-    malloc(num_vars * sizeof(struct OneApproxOpts *));
-  for (size_t ii = 0; ii < num_vars; ii++)
-    oneApproxOpts[ii] = NULL;
+  multiApproxOpts = multi_approx_opts_alloc(num_vars);
+
+  //oneApproxOpts = (struct OneApproxOpts **)
+  //  malloc(num_vars * sizeof(struct OneApproxOpts *));
+  //for (size_t i=0; i<num_vars; ++i)
+  //  oneApproxOpts[i] = NULL;
+  oneApproxOpts.assign(num_vars, NULL);
 }
 
 
 SharedC3ApproxData::~SharedC3ApproxData()
 {
-  multi_approx_opts_free(approxOpts); approxOpts = NULL;
-
+  multi_approx_opts_free(multiApproxOpts); multiApproxOpts = NULL;
   for (size_t i=0; i<numVars; ++i) {
-    one_approx_opts_free_deep(&oneApproxOpts[i]);
-    oneApproxOpts[i] = NULL;
+    struct OneApproxOpts*& a_opts = oneApproxOpts[i]; // ref to ptr
+    if (a_opts) { one_approx_opts_free_deep(&a_opts); a_opts = NULL; }
   }
-  free(oneApproxOpts); oneApproxOpts = NULL;
+  //free(oneApproxOpts); oneApproxOpts = NULL;
 }
 
 
 void SharedC3ApproxData::
 construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 {
-  const ShortArray& rv_types = mv_dist.random_variable_types();
-  assert (rv_types.size() == numVars);
+  const ShortArray& rv_types  = mv_dist.random_variable_types();
+  const BitArray& active_vars = mv_dist.active_variables();
+  bool no_mask = active_vars.empty();
+  size_t i, av_cntr = 0, num_rv = rv_types.size(),
+    num_active_rv = (no_mask) ? num_rv : active_vars.count();
+  assert (num_active_rv == numVars);
 
-  for (size_t i=0; i < numVars; ++i) {
-    // printf("i = %zu\n",i);
-    struct OpeOpts * opts;
-    switch (rv_types[i]) {
-    case Pecos::STD_NORMAL:
-      opts = ope_opts_alloc(HERMITE);  break;
-    case Pecos::STD_UNIFORM:
-      opts = ope_opts_alloc(LEGENDRE); break;
-    default:
-      opts = NULL;
-      PCerr << "Error: unsupported RV type (" << rv_types[i] << ") in "
-	    << "SharedC3ApproxData::distribution_parameters()" << std::endl;
-      abort_handler(-1);               break;
+  struct OpeOpts * o_opts;
+  // use startOrderSpec at construct time (initialize_u_space_model()) since
+  // startOrder[activeKey] not meaningful until run time active key assignment
+  size_t nparam = startOrderSpec + 1, max_np = maxOrder + 1;
+  for (i=0; i<num_rv; ++i)
+    if (no_mask || active_vars[i]) {
+      switch (rv_types[i]) {
+      case Pecos::STD_NORMAL:
+	o_opts = ope_opts_alloc(HERMITE);  break;
+      case Pecos::STD_UNIFORM:
+	o_opts = ope_opts_alloc(LEGENDRE); break;
+      default:
+	o_opts = NULL;
+	PCerr << "Error: unsupported RV type (" << rv_types[i] << ") in "
+	      << "SharedC3ApproxData::distribution_parameters()" << std::endl;
+	abort_handler(-1);                 break;
+      }
+
+      ope_opts_set_nparams(o_opts, nparam); // startnum = startord + 1
+      // Note: maxOrder not used for regression (only limits increment_order());
+      //       to be used for adaptation by cross-approximation
+      ope_opts_set_maxnum(o_opts,  max_np); //   maxnum =   maxord + 1
+ 
+      struct OneApproxOpts*& a_opts = oneApproxOpts[av_cntr]; // ref to ptr
+      if (a_opts) one_approx_opts_free_deep(&a_opts); // a_opts frees o_opts
+      a_opts = one_approx_opts_alloc(POLYNOMIAL, o_opts);
+      multi_approx_opts_set_dim(multiApproxOpts, av_cntr, a_opts);
+
+      ++av_cntr;
     }
-    // printf("push_back\n");
-    ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
-    // Note: maxOrder unused for regression;
-    //       to be used for adaptation by cross-approximation
-    ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
-    one_approx_opts_free_deep(&oneApproxOpts[i]);
-    oneApproxOpts[i] = one_approx_opts_alloc(POLYNOMIAL,opts);
-    // printf("set i\n");
-    multi_approx_opts_set_dim(approxOpts,i,oneApproxOpts[i]);
+
+  formUpdated[activeKey] = true;
+}
+
+
+void SharedC3ApproxData::update_basis()
+{
+  // use startOrder[activeKey] for run time updates
+  size_t nparam = startOrder[activeKey] + 1, max_np = maxOrder + 1;
+  for (size_t i=0; i<numVars; ++i) {
+    struct OneApproxOpts*& a_opts = oneApproxOpts[i];
+    one_approx_opts_set_nparams(a_opts, nparam); // updated
+    one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
   }
-}
 
-    
-size_t SharedC3ApproxData::pre_combine(short combine_type)
-{
-  Cerr << "Error: SharedC3ApproxData::pre_combine() not yet implemented."
-       << std::endl;
-  abort_handler(APPROX_ERROR);
-  return 0;
-}
-
-
-void SharedC3ApproxData::post_combine(short combine_type)
-{
-  Cerr << "Error: SharedC3ApproxData::post_combine() not yet implemented."
-       << std::endl;
-  abort_handler(APPROX_ERROR);
+  formUpdated[activeKey] = true;
 }
 
 } // namespace Dakota

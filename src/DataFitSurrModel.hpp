@@ -182,6 +182,12 @@ protected:
   /// Rebuilds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate an increment of appended data
   void rebuild_approximation();
+  /// Rebuilds the local/multipoint/global approximation using
+  /// the passed response data for a single sample
+  void rebuild_approximation(const IntResponsePair& response_pr);
+  /// Rebuilds the local/multipoint/global approximation using
+  /// the passed response data for a set of samples
+  void rebuild_approximation(const IntResponseMap& all_resp);
 
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
@@ -337,7 +343,8 @@ private:
   //
 
   /// optionally read surrogate data points from provided file
-  void import_points(unsigned short tabular_format, bool use_var_labels, bool active_only);
+  void import_points(unsigned short tabular_format, bool use_var_labels,
+		     bool active_only);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
   /// finalize file stream for exporting surrogate evaluations
@@ -725,6 +732,36 @@ approximation_coefficients(const RealVectorArray& approx_coeffs,
   ++approxBuilds;
   if (strbegins(surrogateType, "global_")) update_global_reference();
   else                                      update_local_reference();
+}
+
+
+inline void DataFitSurrModel::
+rebuild_approximation(const IntResponsePair& response_pr)
+{
+  // decide which surrogates to rebuild based on resp_map content
+  BitArray rebuild_fns(numFns); // init to false
+  const ShortArray& asv = response_pr.second.active_set_request_vector();
+  for (size_t i=0; i<numFns; ++i)
+    if (asv[i])
+      rebuild_fns.set(i);
+  // rebuild the designated surrogates
+  approxInterface.rebuild_approximation(rebuild_fns);
+  ++approxBuilds;
+}
+
+
+inline void DataFitSurrModel::
+rebuild_approximation(const IntResponseMap& all_resp)
+{
+  // decide which surrogates to rebuild based on resp_map content
+  BitArray rebuild_fns(numFns); // init to false
+  for (size_t i=0; i<numFns; ++i)
+    for (IntRespMCIter r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it)
+      if (r_it->second.active_set_request_vector()[i])
+	{ rebuild_fns.set(i); break; }
+  // rebuild the designated surrogates
+  approxInterface.rebuild_approximation(rebuild_fns);
+  ++approxBuilds;
 }
 
 
