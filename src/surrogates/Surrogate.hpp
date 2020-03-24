@@ -41,9 +41,12 @@ public:
   /* returns num_vars by num_vars for a single sample and a given qoi */
   virtual void hessian(const MatrixXd &samples, MatrixXd &hessian, int qoi);
 
-  virtual void set_options(const ParameterList &options);
+  void set_options(const ParameterList &options);
 
-  virtual void get_options(ParameterList &options);
+  void get_options(ParameterList &options);
+
+  /* default options for the surrogate */
+  virtual void default_options() = 0;
 
 protected:
   int numSamples;
