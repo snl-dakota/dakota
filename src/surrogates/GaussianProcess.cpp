@@ -33,9 +33,9 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 				 const MatrixXd &response,
 				 const ParameterList& param_list)
 {
-  configOptions = param_list;
   default_options();
-  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
+  configOptions = param_list;
+  //configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 
   // check that the passed parameters are valid for this surrogate
   // (doesn't allow unused parameters, which we might want)
@@ -51,8 +51,8 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
   }
   configOptions.setParameters(param_list);
   */
-  std::cout << "Building GaussianProcess with final parameters\n"
-	    << configOptions << std::endl;
+  //std::cout << "Building GaussianProcess with final parameters\n"
+	//    << configOptions << std::endl;
 
   /*
   build(samples,
@@ -282,6 +282,10 @@ void GaussianProcess::default_options()
 
 void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
 {
+  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
+  std::cout << "Building GaussianProcess with configuration options\n"
+	  << configOptions << std::endl;
+
   numQOI = response.cols();
   numSamples = samples.rows();
   numVariables = samples.cols();

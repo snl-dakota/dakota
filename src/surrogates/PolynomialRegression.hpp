@@ -11,26 +11,33 @@
 
 #include <iostream>
 #include <memory>
+#include "Surrogate.hpp"
 #include "DataScaler.hpp"
-#include "../util/LinearSolvers.hpp"
+#include "LinearSolvers.hpp"
 
 #include "Teuchos_ParameterList.hpp"
+
+using Teuchos::ParameterList;
 
 namespace dakota {
 namespace surrogates {
 
-class PolynomialRegression {
+class PolynomialRegression: public Surrogate {
 
 public:
 
   // Constructor
 
   // Options-based constructor
-  PolynomialRegression(std::shared_ptr<Teuchos::ParameterList> options);
+  PolynomialRegression(std::shared_ptr<ParameterList> options);
 
   // Options-based constructor to model defaults like GP
+  //PolynomialRegression(const MatrixXd& samples, const MatrixXd& response,
+	//	       ParameterList& options);
+
+  // Options-based constructor for Surrogate
   PolynomialRegression(const MatrixXd& samples, const MatrixXd& response,
-		       Teuchos::ParameterList& options);
+		       const ParameterList& options);
 
   // Simple constructor
   PolynomialRegression(int total_order, int nvars);
@@ -63,7 +70,12 @@ public:
   void build_surrogate();
   void surrogate_value(const MatrixXd &eval_points, MatrixXd &approx_values);
 
+  // Surrogate parent API
+  void build(const MatrixXd &samples, const MatrixXd &response) override;
+  void value(const MatrixXd &eval_points, MatrixXd &approx_values) override;
+
 private:
+  void default_options();
 
   // Input fields
   int numTerms;
@@ -73,6 +85,7 @@ private:
   std::shared_ptr<MatrixXi> basisIndices;
   int polynomialOrder;
   util::SCALER_TYPE scalerType;
+  util::SOLVER_TYPE solverType;
   std::shared_ptr<util::DataScaler> scaler;
   std::shared_ptr<util::LinearSolverBase> solver;
 

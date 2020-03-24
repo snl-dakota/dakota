@@ -28,7 +28,9 @@ public:
   /// Default destructor
   virtual ~Surrogate();
 
-  /* samples is num_samples by num_vars */
+  /// Construct the surrogate from the given data and parameterList member
+  // variable
+  virtual void build(const MatrixXd &samples, const MatrixXd &response) = 0;
 
   /* returns num_samples by num_qoi */
   virtual void value(const MatrixXd &samples, MatrixXd &value) = 0;

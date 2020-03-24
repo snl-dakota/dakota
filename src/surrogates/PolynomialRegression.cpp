@@ -8,15 +8,26 @@
 
 #include "PolynomialRegression.hpp"
 #include "SurrogatesTools.hpp"
+#include <boost/assign.hpp>
+#include <boost/bimap.hpp>
 
 namespace dakota {
 namespace surrogates {
 
 // ------------------------------------------------------------
 
-// Constructor using "options"
+// Constructor that mirrors GP
+PolynomialRegression::PolynomialRegression(const MatrixXd &samples,
+                                           const MatrixXd &response,
+                                           const ParameterList &param_list) {
+  default_options();
+  configOptions = param_list;
 
-PolynomialRegression::PolynomialRegression(std::shared_ptr<Teuchos::ParameterList> options)
+  build(samples, response);
+}
+
+// Constructor using "options"
+PolynomialRegression::PolynomialRegression(std::shared_ptr<ParameterList> options)
 {
   numVars        = options->get<int>("Num Vars");
   int max_degree = options->get<int>("Max Degree");
@@ -29,9 +40,10 @@ PolynomialRegression::PolynomialRegression(std::shared_ptr<Teuchos::ParameterLis
   scalerType = util::SCALER_TYPE::NONE;
 }
 
+/*
 PolynomialRegression::
 PolynomialRegression(const MatrixXd& samples_in, const MatrixXd& response_in,
-		     Teuchos::ParameterList& options)
+		     ParameterList& options)
 {
   // BMA: delegation only required due to shared_ptr
   set_samples(samples_in);
@@ -49,6 +61,7 @@ PolynomialRegression(const MatrixXd& samples_in, const MatrixXd& response_in,
 
   scalerType = util::DataScaler::scaler_type(options.get<std::string>("scaler_name", "none"));
 }
+*/
 
 
 // ------------------------------------------------------------
@@ -165,6 +178,72 @@ PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd &app
   // Find the polynomial regression values.
   approx_values = scaled_basis_matrix * (get_polynomial_coeffs());
   approx_values = (approx_values.array() + polynomial_intercept).matrix();
+}
+
+void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &response) {
+
+  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
+  std::cout << "Building Polynomial with configuration options\n"
+	  << configOptions << std::endl;
+
+
+  numQOI = response.cols();
+  numSamples = samples.rows();
+  numVariables = samples.cols();
+  numVars = samples.cols();
+  //set_samples(samples);
+  //set_response(response);
+
+  int max_degree = configOptions.get<int>("max degree");
+  double p_norm  = configOptions.get<double>("p-norm");
+  basisIndices   = std::make_shared<MatrixXi>();
+  compute_hyperbolic_indices(numVariables, max_degree, p_norm, *basisIndices);
+  numTerms       = basisIndices->cols();
+
+  // Generate the basis matrix
+  MatrixXd unscaled_basis_matrix;
+  compute_basis_matrix(samples, unscaled_basis_matrix);
+
+  // Scale the basis matrix.
+  scalerType = util::DataScaler::scaler_type(configOptions.get<std::string>("scaler type"));
+  scaler = util::scaler_factory(scalerType, unscaled_basis_matrix);
+  MatrixXd scaled_basis_matrix = scaler->get_scaled_features();
+
+  // Solve the basis matrix.
+  solverType = util::LinearSolverBase::solver_type(configOptions.get<std::string>("regression solver type"));
+  solver = util::solver_factory(solverType);
+  /* DTS: I get why this is here but it seems to be an artifact due to
+   * the use of a shared pointer for polynomial_coeffs.*/
+  polynomial_coeffs = std::make_shared<MatrixXd>(response);
+  solver->solve(scaled_basis_matrix, response, *polynomial_coeffs);
+
+  // Compute the intercept
+  //polynomial_intercept = get_response().mean() - (scaled_basis_matrix*(get_polynomial_coeffs())).mean();
+  polynomial_intercept = response.mean() - (scaled_basis_matrix*(get_polynomial_coeffs())).mean();
+
+
+}
+
+void PolynomialRegression::value(const MatrixXd &eval_points, 
+                                 MatrixXd &approx_values)
+{
+  // Generate the basis matrix for the eval points
+  MatrixXd unscaled_basis_matrix;
+  compute_basis_matrix(eval_points, unscaled_basis_matrix);
+
+  // Scale sample points.
+  MatrixXd scaled_basis_matrix = *(scaler->scale_samples(unscaled_basis_matrix));
+
+  // Find the polynomial regression values.
+  approx_values = scaled_basis_matrix * (get_polynomial_coeffs());
+  approx_values = (approx_values.array() + polynomial_intercept).matrix();
+}
+
+void PolynomialRegression::default_options() {
+  defaultConfigOptions.set("max degree", 1, "Maximum polynomial order");
+  defaultConfigOptions.set("p-norm", 1.0, "P-Norm in hyperbolic cross");
+  defaultConfigOptions.set("scaler type", "none", "Type of data scaling");
+  defaultConfigOptions.set("regression solver type", "SVD", "Type of regression solver");
 }
 
 // ------------------------------------------------------------

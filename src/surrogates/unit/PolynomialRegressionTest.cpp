@@ -219,6 +219,7 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
 
 
   // Now use the options-based API
+  /*
   auto options = std::make_shared<Teuchos::ParameterList>();
   options->set("Num Vars", num_vars);
   options->set("Max Degree", degree);
@@ -232,9 +233,28 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   const MatrixXd& polynomial_coeffs2 = pr2.get_polynomial_coeffs();
   double polynomial_intercept2 = pr2.get_polynomial_intercept();
   BOOST_CHECK( std::abs(polynomial_intercept2) < 1.0e-10 );
-
-  // Check correctness of computed polynomial coefficients against the one used to construct the model
   BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs2, 1.0e-10));
+  */
+
+  // Use the Surrogates API
+  MatrixXd test_responses3;
+  Teuchos::ParameterList param_list("Polynomial Test Parameters");
+  param_list.set("max degree", degree);
+  /* Default configOptions: */
+  //param_list.set<double>("p-norm", 1.0);
+  //param_list.set("regression solver type", "SVD");
+  param_list.set("scaler type", "none");
+
+  PolynomialRegression pr3(samples, responses, param_list);
+
+  const MatrixXd& polynomial_coeffs3 = pr3.get_polynomial_coeffs();
+  double polynomial_intercept3 = pr3.get_polynomial_intercept();
+  pr3.value(eval_points, test_responses3);
+
+  BOOST_CHECK( std::abs(polynomial_intercept3) < 1.0e-10 );
+  BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs3, 1.0e-10));
+  BOOST_CHECK(matrix_equals(gold_responses, test_responses3, 1.0e-10));
+  
 }
 
 } // namespace
