@@ -29,15 +29,24 @@ public:
   // Constructor
 
   // Options-based constructor
-  PolynomialRegression(std::shared_ptr<ParameterList> options);
+  //PolynomialRegression(std::shared_ptr<ParameterList> options);
 
   // Options-based constructor to model defaults like GP
   //PolynomialRegression(const MatrixXd& samples, const MatrixXd& response,
 	//	       ParameterList& options);
+  //
 
-  // Options-based constructor for Surrogate
-  PolynomialRegression(const MatrixXd& samples, const MatrixXd& response,
-		       const ParameterList& options);
+  // Default constructor that initializes default options 
+  // and does not build surrogate.
+  PolynomialRegression();
+
+  // Constructor that sets user-provided options but 
+  // does not build the surrogate.
+  PolynomialRegression(const ParameterList &options);
+
+  // Constructor that will build surrogate from given data and options.
+  PolynomialRegression(const MatrixXd &samples, const MatrixXd &response,
+		                   const ParameterList &options);
 
   // Simple constructor
   PolynomialRegression(int total_order, int nvars);
@@ -75,8 +84,7 @@ public:
   void value(const MatrixXd &eval_points, MatrixXd &approx_values) override;
 
 private:
-  void default_options();
-
+  void default_options() override;
   // Input fields
   int numTerms;
   int numVars;

@@ -53,7 +53,7 @@ int test_gp(double atol){
   length_scale_bounds(0,0) = 1.0e-2;
   length_scale_bounds(0,1) = 1.0e2;
 
-  Teuchos::ParameterList param_list("GP Test Parameters");
+  ParameterList param_list("GP Test Parameters");
   param_list.set("sigma_bounds", sigma_bounds);
   param_list.set("length_scale_bounds", length_scale_bounds);
   param_list.set("scaler_name",
@@ -64,7 +64,8 @@ int test_gp(double atol){
   param_list.set("nugget", 1.0e-12);
   param_list.set("gp_seed", 42);
 
-  /* 1D GP test */
+  /* 1D GP test #1: Construct GP and build surrogate all
+   * at once */
   GaussianProcess gp(xs_u, response, param_list);
 
   gp.value(eval_pts, pred);
@@ -107,6 +108,61 @@ int test_gp(double atol){
   if (!matrix_equals(cov,gold_cov,atol)){
     std::cout << "3\n";
     return 3;
+  }
+  
+  /* 1D GP test #2:
+   * Separate constructor with given options
+   * and build steps */
+  GaussianProcess gp2(param_list);
+  gp2.build(xs_u, response);
+  gp2.value(eval_pts, pred);
+  std_dev = gp2.get_posterior_std_dev();
+  cov = gp2.get_posterior_covariance();
+
+  if (!matrix_equals(pred,gold_value,atol)){
+    std::cout << "7\n";
+    return 7;
+  }
+
+  if (!matrix_equals(std_dev,gold_std,atol)){
+    std::cout << "8\n";
+    return 8;
+  }
+
+  if (!matrix_equals(cov,gold_cov,atol)){
+    std::cout << "9\n";
+    return 9;
+  }
+
+  /* 1D GP test #3:
+   * use defaultConfigOptions and adjust as needed
+   * for proper behavior */
+  GaussianProcess gp3;
+  ParameterList current_opts;
+  gp3.get_options(current_opts);
+  current_opts.set("scaler_name", "standardization");
+  current_opts.set("nugget", 1.0e-12);
+  current_opts.set("gp_seed", 42);
+  gp3.set_options(current_opts);
+  gp3.build(xs_u, response);
+
+  gp3.value(eval_pts, pred);
+  std_dev = gp3.get_posterior_std_dev();
+  cov = gp3.get_posterior_covariance();
+
+  if (!matrix_equals(pred,gold_value,atol)){
+    std::cout << "10\n";
+    return 10;
+  }
+
+  if (!matrix_equals(std_dev,gold_std,atol)){
+    std::cout << "11\n";
+    return 11;
+  }
+
+  if (!matrix_equals(cov,gold_cov,atol)){
+    std::cout << "12\n";
+    return 12;
   }
 
   /* 2D GP test */

@@ -23,18 +23,28 @@ using util::StandardizationScaler;
 
 namespace surrogates {
 
-GaussianProcess::GaussianProcess(){}
+// Constuctor with default parameters.
+GaussianProcess::GaussianProcess(){
+  default_options();
+}
 
-GaussianProcess::~GaussianProcess(){}
+// Constructor that sets user-defined params but does not build.
+GaussianProcess::GaussianProcess(const ParameterList& param_list) {
+  default_options();
+  configOptions = param_list;
+}
 
 // BMA NOTE: ParameterList::get() can throw, so direct delegation
 // probably not good; might want to give a helpful message
+// Constructor that will set user-defined parameters and build with
+// given data.
 GaussianProcess::GaussianProcess(const MatrixXd &samples,
 				 const MatrixXd &response,
 				 const ParameterList& param_list)
 {
   default_options();
   configOptions = param_list;
+  build(samples, response);
   //configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 
   // check that the passed parameters are valid for this surrogate
@@ -65,8 +75,6 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 	configOptions.get<int>("gp_seed")
 	);
   */
-
-  build(samples, response);
 }
 
 
@@ -91,6 +99,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 }
 */
 
+GaussianProcess::~GaussianProcess(){}
 
 const VectorXd & GaussianProcess::get_posterior_std_dev() const { return *posteriorStdDev; }
 
@@ -272,7 +281,7 @@ void GaussianProcess::default_options()
   defaultConfigOptions.set("sigma_bounds", sigma_bounds, "sigma [lb, ub]");
   // BMA: Do we want to allow 1 x 2 always as a fallback?
   defaultConfigOptions.set("length_scale_bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
-  defaultConfigOptions.set("scaler_name", "mean_normalization", "scaler for variables");
+  defaultConfigOptions.set("scaler_name", "mean normalization", "scaler for variables");
   defaultConfigOptions.set("num_restarts", 5, "local optimizer number of initial iterates");
   // BMA: Should default be 0.0?
   defaultConfigOptions.set("nugget", 1.0e-10, "diagonal nugget");

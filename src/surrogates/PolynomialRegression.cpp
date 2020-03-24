@@ -15,6 +15,17 @@ namespace dakota {
 namespace surrogates {
 
 // ------------------------------------------------------------
+// Default constructor that initializes defaultConfigOptions
+
+PolynomialRegression::PolynomialRegression() {
+  default_options();
+}
+
+// Constructor that only sets parameters
+PolynomialRegression::PolynomialRegression(const ParameterList &param_list) {
+  default_options();
+  configOptions = param_list;
+}
 
 // Constructor that mirrors GP
 PolynomialRegression::PolynomialRegression(const MatrixXd &samples,
@@ -22,11 +33,12 @@ PolynomialRegression::PolynomialRegression(const MatrixXd &samples,
                                            const ParameterList &param_list) {
   default_options();
   configOptions = param_list;
-
   build(samples, response);
 }
 
 // Constructor using "options"
+//
+/*
 PolynomialRegression::PolynomialRegression(std::shared_ptr<ParameterList> options)
 {
   numVars        = options->get<int>("Num Vars");
@@ -39,6 +51,7 @@ PolynomialRegression::PolynomialRegression(std::shared_ptr<ParameterList> option
 
   scalerType = util::SCALER_TYPE::NONE;
 }
+*/
 
 /*
 PolynomialRegression::

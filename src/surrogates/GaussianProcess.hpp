@@ -48,7 +48,7 @@ public:
 
   GaussianProcess();
 
-  ~GaussianProcess();
+  GaussianProcess(const Teuchos::ParameterList& param_list);
 
   GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
                   const Teuchos::ParameterList& param_list);
@@ -77,6 +77,7 @@ public:
                   const double nugget_val = 1.0e-10,
                   const int seed = 129);
 
+  ~GaussianProcess();
   // ------------------------------------------------------------
   // Public utility functions
 
@@ -151,15 +152,10 @@ public:
    */
   void set_theta(const std::vector<double> theta_new);
 
+  /// runtime build
+  void build(const MatrixXd &samples, const MatrixXd &response) override;
 
 private:
-
-  /// Key/value options to configure the surrogate (encapsulates
-  /// defaults, but can be overridden by user)
-  Teuchos::ParameterList defaultConfigOptions;
-
-  /// runtime build once data are finalized
-  void build(const MatrixXd &samples, const MatrixXd &response);
 
   /*
   void build(const MatrixXd &samples,
@@ -225,7 +221,7 @@ private:
 
   /// setup default options: one possible way to encode the defaults
   /// when using a ParameterList
-  void default_options();
+  void default_options() override;
 
 
   /**
