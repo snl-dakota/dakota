@@ -62,7 +62,7 @@ public:
   // Derivatives
 
   void gradient(const MatrixXd &samples, MatrixXd &gradient);
-  void hessian(const MatrixXd &sample, MatrixXd &hessian); 
+  // void hessian(const MatrixXd &sample, MatrixXd &hessian); 
 
 private:
 

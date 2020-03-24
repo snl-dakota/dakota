@@ -8,6 +8,7 @@
 
 #include "PolynomialRegression.hpp"
 #include "SurrogatesTools.hpp"
+#include "../util/CommonUtils.hpp"
 
 namespace dakota {
 namespace surrogates {
@@ -147,72 +148,93 @@ PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd &app
 
 // ------------------------------------------------------------
 
+int find_matching_row ( const MatrixXi &hyperbolic_indices, const VectorXi &decremented_indices )
+{
+  for ( int i = 0; i < hyperbolic_indices.cols(); i++ )
+  {
+    VectorXi this_col = hyperbolic_indices.col(i);
+    if ( matrix_equals ( this_col, decremented_indices ))
+    {
+      return i;
+    }
+  }
+  return -1;
+}
+
+// ------------------------------------------------------------
+
 void
-PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient) {
+PolynomialRegression::gradient ( const MatrixXd &samples, MatrixXd &gradient ) {
   MatrixXd polynomial_coeffs = get_polynomial_coeffs();
   const int num_variables = samples.cols();
   const int p_norm = 1.0;
 
   Eigen::MatrixXi basis_indices;
-  compute_hyperbolic_indices( num_variables, polynomial_order, p_norm, basis_indices);
+  compute_hyperbolic_indices( num_variables, polynomialOrder, p_norm, basis_indices );
+
+  std::cout << "polynomial basis:" << std::endl;
+  std::cout << basis_indices << std::endl;
+
+  gradient.resize(num_variables, basis_indices.cols());
 
   for ( int i = 0; i < num_variables; i++ )
   {
-    MatrixXi derivative_matrix;
-    VectorXi scaling_factors;
+    int num_derivatives = 0;
+    MatrixXi derivative_matrix = basis_indices.replicate(1,1);
+    VectorXi scaling_factors(basis_indices.cols());
 
-    for ( int j = 0; j < basis_indices.size(); j++ )
+    for ( int j = 0; j < basis_indices.cols(); j++ )
     {
-      VectorXi next_row;
-      bool fail = false;
-      for ( int k = 0; k < num_variables; k++ )
+      int derivative = basis_indices(i, j) - 1;
+      if ( derivative > -1 )
       {
-        if ( i == k )
+        derivative_matrix(i, j) = derivative;
+        num_derivatives++;
+      }
+      else
+      {
+        for ( int k = 0; k < num_variables; k++ )
         {
-          int derivative = basis_indices(i, j) - 1;
-          if ( derivative > -1 )
-          {
-            next_row << derivative;
-          }
-          else
-          {
-            fail = true;
-            break;
-          }
+          derivative_matrix(k,j) = -1;
+        }
+      }
+      scaling_factors(j) = basis_indices(i,j);
+    }
+
+    std::cout << "derivative_matrix:" << std::endl;
+    std::cout << "for variable " << i << std::endl;
+    std::cout << derivative_matrix << std::endl;
+
+    int gradient_index = 0;
+    for ( int j = 0; j < basis_indices.cols(); j++ )
+    {
+      int beta_index = find_matching_row(basis_indices, derivative_matrix.col(j));
+      if ( beta_index != -1 )
+      {
+        double gradient_value = polynomial_coeffs(beta_index, 0) * scaling_factors(beta_index);
+        if ( std::abs(gradient_value) < 1.0e-12 )
+        {
+          gradient(i, gradient_index) = 0.0;
         }
         else
         {
-          next_row << basis_indices(i, j);
+          gradient(i, gradient_index) = gradient_value;
         }
-      }
-
-      if ( !fail )
-      {
-        derivative_matrix << next_row;
+        gradient_index ++;
       }
     }
-
-    for ( int l = 0; l < beta_indices.size(); l++ )
+    for ( int j = gradient_index; j < basis_indices.cols(); j++)
     {
-      int beta_index = find_matching_row(basis_indices, derivative_matrix(l));
-      gradient(i, l) = polynomial_coeffs(beta_indices(l), 0) * scaling_factors(beta_index);
+      gradient(i, j) = 0.0;
     }
   }
 }
-
-int find_matching_row(MatrixXd &hyperbolic_indices, MatrixXd &decremented_indices, VectorXd &target_row) {
-  MatrixXd c = hyperbolic_indices - decremented_indices;
-  VectorXd d = c.rowwise().sum();
-
-  MatrixXd::Index minRow, minCol;
-  double min = d.cwiseAbs().minCoeff(&minRow, &minCol);
-  return minRow.index();
-}
-
+/*
 void
 PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian) {
 
 }
+*/
 
 } // namespace surrogates
 } // namespace dakota

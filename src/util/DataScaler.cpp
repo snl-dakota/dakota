@@ -7,9 +7,33 @@
     _______________________________________________________________________ */
 
 #include "DataScaler.hpp"
+#include <boost/assign.hpp>
+#include <boost/bimap.hpp>
 
 namespace dakota {
 namespace util {
+
+typedef boost::bimap<SCALER_TYPE, std::string> BimapIntStr;
+
+static BimapIntStr type_name_bimap =
+  boost::assign::list_of< BimapIntStr::relation >
+  (SCALER_TYPE::NONE, "none")
+  (SCALER_TYPE::STANDARDIZATION, "standardization")
+  (SCALER_TYPE::MEAN_NORMALIZATION, "mean normalization")
+  (SCALER_TYPE::MINMAX_NORMALIZATION, "min-max normalization")
+  ;
+
+
+SCALER_TYPE DataScaler::scaler_type(const std::string& scaler_name)
+{
+  BimapIntStr::right_const_iterator rc_iter
+    = type_name_bimap.right.find(scaler_name);
+  if (rc_iter == type_name_bimap.right.end()) {
+    throw std::runtime_error("Invalid DataScaler scaler_name");
+  }
+  return rc_iter->second;
+}
+
 
 DataScaler::DataScaler(){}
 
@@ -121,10 +145,13 @@ bool DataScaler::check_for_zero_scaler_factor(int index) {
 }
 
 std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd & unscaled_matrix) {
-  if(scaler_type == util::SCALER_TYPE::STANDARDIZATION) {
+  if (scaler_type == util::SCALER_TYPE::STANDARDIZATION) {
     return std::make_shared<util::StandardizationScaler>(unscaled_matrix);
-  } else if(scaler_type == util::SCALER_TYPE::NORMALIZATION) {
-    return std::make_shared<util::NormalizationScaler>(unscaled_matrix, true); //TODO: Mean normalization should be an option
+  }
+  else if (scaler_type == util::SCALER_TYPE::MEAN_NORMALIZATION) {
+    return std::make_shared<util::NormalizationScaler>(unscaled_matrix, true);   }
+  else if (scaler_type == util::SCALER_TYPE::MINMAX_NORMALIZATION) {
+    return std::make_shared<util::NormalizationScaler>(unscaled_matrix, false); 
   }
   return std::make_shared<util::NoScaler>(unscaled_matrix);
 }

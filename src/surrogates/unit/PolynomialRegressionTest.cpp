@@ -87,7 +87,7 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   double expected_constant_term = 2.0;        // unscaled intercept via coeffs array
   double expected_first_term =    1.0;        // unscaled slope via coeffs array
   double expected_polynomial_intercept = 0.0;
-  if( scaler_type == dakota::util::SCALER_TYPE::NORMALIZATION ||
+  if( scaler_type == dakota::util::SCALER_TYPE::MEAN_NORMALIZATION ||
       scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
   {
     expected_constant_term = 0.0;
@@ -173,6 +173,27 @@ another_additive_quadratic_function(const MatrixXd & samples, MatrixXd & func_va
   }
 }
 
+ // ------------------------------------------------------------
+
+void
+cubic_bivariate_function(const MatrixXd & samples, MatrixXd & func_vals)
+{
+  func_vals.resize(samples.rows(),1);
+  const int num_vars = samples.cols();
+
+  for( int i=0; i<samples.rows(); ++i )
+  {
+    double x = samples(i,0);
+    double y = samples(i,1);
+    func_vals(i,0) =
+      1 + x + y + (x*y) +
+      (std::pow(x,2) * std::pow(y,2)) +
+      (std::pow(x,2) * y) +
+      (std::pow(y,2) * x) +
+      std::pow(x,3) + std::pow(y,3);
+  }
+}
+
 
   // ------------------------------------------------------------
 
@@ -237,6 +258,35 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs2, 1.0e-10));
 }
 
+void
+PolynomialRegressionSurrogate_gradient()
+{
+  int num_vars    = 2,
+      num_samples = 20,
+      degree      = 3;
+
+  MatrixXd samples, responses;
+  get_samples(num_vars, num_samples, samples);
+  cubic_bivariate_function(samples, responses);
+
+  PolynomialRegression pr(degree, num_vars);
+  pr.set_samples(samples);
+  pr.set_polynomial_order(degree);
+  pr.set_response(responses);
+  pr.set_scaler_type(dakota::util::SCALER_TYPE::NONE);
+  pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
+  pr.build_surrogate();
+
+  MatrixXd gradient;
+  pr.gradient(samples, gradient);
+
+  MatrixXd gold_gradient(2,10);
+  gold_gradient << 0, 1.03534, 0, -0.00404883, 0.796469, 0, 0, 0, 0, 0,
+                   0, 1.05451, 0,  -0.0354835, 0, 0.796469, 0, 0, 0, 0;
+
+  BOOST_CHECK( matrix_equals(gold_gradient, gradient, 1.0e-4) );
+}
+
 } // namespace
 
 // --------------------------------------------------------------------------------
@@ -246,8 +296,9 @@ int test_main( int argc, char* argv[] ) // note the name!
   // Univariate tests
   PolynomialRegressionSurrogate_getters_and_setters();
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NONE);
-  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NORMALIZATION);
+  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::MEAN_NORMALIZATION);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::STANDARDIZATION);
+  PolynomialRegressionSurrogate_gradient();
 
   // Multivariate tests
   PolynomialRegressionSurrogate_multivariate_regression_builder();
