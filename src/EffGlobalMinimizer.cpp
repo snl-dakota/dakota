@@ -335,19 +335,23 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
          globalIterCount       >= maxIterations )
         approx_converged = true;
     else {
-
-        // // Update constraints -- temporarily disabled
-        // if (numNonlinearConstraints) {
-        //   // Update the merit function parameters
-        //   // Logic follows Conn, Gould, and Toint, section 14.4:
-        //   const RealVector& fns_star_truth = resp_star_truth.second.function_values();
-        //   Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
-        //   if (norm_cv_star < etaSequence)
-        //     update_augmented_lagrange_multipliers(fns_star_truth);
-        //   else
-        //     update_penalty();
-        // }
-      }
+        // Update constraints -- temporarily disabled
+        if (numNonlinearConstraints) {
+            // adopted from NonDMultilevelSampling.cpp
+            IntRespMCIter batch_response_it;
+            for (batch_response_it = resp_star_truth.begin(); batch_response_it != resp_star_truth.end(); batch_response_it++) {
+              // Update the merit function parameters
+              // Logic follows Conn, Gould, and Toint, section 14.4:
+              // const RealVector& fns_star_truth = resp_star_truth.second.function_values(); // old implementation
+              const RealVector& fns_star_truth = batch_response_it->second.function_values(); // current implementation
+              Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
+              if (norm_cv_star < etaSequence)
+                update_augmented_lagrange_multipliers(fns_star_truth);
+              else
+                update_penalty();
+            }
+        }
+    }
 
   } // end approx convergence while loop
 
