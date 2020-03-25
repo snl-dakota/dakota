@@ -37,10 +37,10 @@ public:
   NonDExpansion(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
-		short exp_coeffs_approach, short refine_type,
-		short refine_control, short covar_control, Real colloc_ratio,
-		short rule_nest, short rule_growth, bool piecewise_basis,
-		bool use_derivs);
+		short exp_coeffs_approach, const RealVector& dim_pref,
+		short refine_type, short refine_control, short covar_control,
+		Real colloc_ratio, short rule_nest, short rule_growth,
+		bool piecewise_basis, bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
@@ -224,6 +224,11 @@ protected:
   //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
 
+  /// configure exp_orders from inputs
+  void configure_expansion_orders(unsigned short exp_order,
+				  const RealVector& dim_pref,
+				  UShortArray& exp_orders);
+
   /// configure expansion and basis configuration options for Pecos
   /// polynomial approximations
   void configure_pecos_options();
@@ -388,6 +393,9 @@ protected:
   /// type of statistical metric: NO_EXPANSION_STATS,
   /// ACTIVE_EXPANSION_STATS, or COMBINED_EXPANSION_STATS
   short statsType;
+
+  /// user specification for dimension_preference
+  RealVector dimPrefSpec;
 
   /// user specification of number of initial samples per model instance,
   /// including adaptive cases where an optimal sample profile is the

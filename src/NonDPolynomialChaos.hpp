@@ -141,10 +141,6 @@ protected:
   //- Heading: Member functions
   //
 
-  /// configure exp_orders from inputs
-  void config_expansion_orders(unsigned short exp_order,
-			       const RealVector& dim_pref,
-			       UShortArray& exp_orders);
   /// configure u_space_sampler and approx_type based on numerical
   /// integration specification
   bool config_integration(unsigned short quad_order, unsigned short ssg_level,
@@ -182,9 +178,6 @@ protected:
 
   /// cubature integrand
   unsigned short cubIntSpec;
-
-  /// user specification for dimension_preference
-  RealVector dimPrefSpec;
 
   /// flag for use of cross-validation for selection of parameter settings
   /// in regression approaches

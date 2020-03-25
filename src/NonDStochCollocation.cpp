@@ -104,9 +104,9 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     short refine_control, short covar_control,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, 0., rule_nest, rule_growth,
-		piecewise_basis, use_derivs)
+  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, dim_pref,
+		refine_type, refine_control, covar_control, 0., rule_nest,
+		rule_growth, piecewise_basis, use_derivs)
 {
   // ----------------
   // Resolve settings
@@ -127,8 +127,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  config_integration(exp_coeffs_approach, num_int, dim_pref,
-		     u_space_sampler, g_u_model);
+  config_integration(exp_coeffs_approach, num_int, dim_pref, u_space_sampler,
+		     g_u_model);
   String pt_reuse, approx_type;
   config_approximation_type(approx_type);
 
@@ -169,11 +169,12 @@ NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, Model& model,
-		     short exp_coeffs_approach, short refine_type,
-		     short refine_control, short covar_control,
-		     short ml_alloc_control, short ml_discrep, short rule_nest,
-		     short rule_growth, bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
+		     short exp_coeffs_approach, const RealVector& dim_pref,
+		     short refine_type, short refine_control,
+		     short covar_control, short ml_alloc_control,
+		     short ml_discrep, short rule_nest, short rule_growth,
+		     bool piecewise_basis, bool use_derivs):
+  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, refine_type,
 		refine_control, covar_control, 0., rule_nest, rule_growth,
 		piecewise_basis, use_derivs)
 {
@@ -193,11 +194,6 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 		   const RealVector& dim_pref, short u_space_type, 
 		   Iterator& u_space_sampler, Model& g_u_model)
 {
-  // -------------------
-  // input sanity checks
-  // -------------------
-  check_dimension_preference(dim_pref);
-
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
@@ -263,11 +259,6 @@ config_integration(short exp_coeffs_approach, unsigned short num_int,
 		   const RealVector& dim_pref, Iterator& u_space_sampler,
 		   Model& g_u_model)
 {
-  // -------------------
-  // input sanity checks
-  // -------------------
-  check_dimension_preference(dim_pref);
-
   // -------------------------
   // Construct u_space_sampler
   // -------------------------

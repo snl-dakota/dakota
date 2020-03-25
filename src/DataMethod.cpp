@@ -115,8 +115,8 @@ DataMethodRep::DataMethodRep():
   useSurrogate("none"),
   // C3 FT
   maxCrossIterations(1), solverTol(1.e-10), roundingTol(1.e-8),
-  arithmeticTol(1.e-2), startOrder(2), maxOrder(4),
-  startRank(2), kickRank(2), maxRank(3), adaptRank(false),
+  arithmeticTol(1.e-2), startOrder(2), maxOrder(5),
+  startRank(2), kickRank(2), maxRank(10), adaptRank(false),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns

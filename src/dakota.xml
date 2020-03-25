@@ -778,13 +778,13 @@
 	     ' >
 
     <!ENTITY ft_method_max_order '
-		  <keyword  id="max_order" name="max_order" code="{N_mdm(sizet,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
+		  <keyword  id="max_order" name="max_order" code="{N_mdm(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 	     ' >
 
     <!ENTITY ft_method_order '
-		  <keyword  id="start_order" name="start_order" code="{N_mdm(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
+		  <keyword  id="start_order" name="start_order" code="{N_mdm(ushint,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
 		    <alias name="order"/>
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
@@ -792,7 +792,7 @@
 	     ' >
 
     <!ENTITY mlft_method_order_sequence '
-		  <keyword  id="start_order_sequence" name="start_order_sequence" code="{N_mdm(szarray,startOrderSeq)}" label="Starting univariate polynomial order for approximation sequence" help="" minOccurs="0" default="2">
+		  <keyword  id="start_order_sequence" name="start_order_sequence" code="{N_mdm(usharray,startOrderSeq)}" label="Starting univariate polynomial order for approximation sequence" help="" minOccurs="0" default="2">
 		    <alias name="order_sequence"/>
 		    <param type="INTEGERLIST" />
 		  </keyword>
@@ -897,11 +897,11 @@
 	     ' >
 
     <!ENTITY ft_model_order '
-		  <keyword  id="start_order" name="start_order" code="{N_mom(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
+		  <keyword  id="start_order" name="start_order" code="{N_mom(ushint,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
 		    <alias name="order"/>
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="max_order" name="max_order" code="{N_mom(sizet,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
+		  <keyword  id="max_order" name="max_order" code="{N_mom(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 	     ' >
@@ -4072,10 +4072,10 @@
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
 	  <oneOf label="Expansion Basis Control">
-	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(int,adaptedBasisSparseGridLev)}" label="Adapted Basis Sparse Grid Level" >
+	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(ushint,adaptedBasisSparseGridLev)}" label="Adapted Basis Sparse Grid Level" >
 	      <param type="INTEGER" />
 	    </keyword>
-	    <keyword  id="expansion_order" name="expansion_order" code="{N_mom(int,adaptedBasisExpOrder)}" label="Adapted Basis Expansion Order" >
+	    <keyword  id="expansion_order" name="expansion_order" code="{N_mom(ushint,adaptedBasisExpOrder)}" label="Adapted Basis Expansion Order" >
 	      <param type="INTEGER" />
 	      <keyword  id="collocation_ratio4" name="collocation_ratio" code="{N_mom(Real,adaptedBasisCollocRatio)}" label="Adapted Basis Collocation Ratio" >
 		<param type="REAL" />

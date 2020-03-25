@@ -42,6 +42,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
   expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
   statsType(Pecos::ACTIVE_EXPANSION_STATS),
+  dimPrefSpec(problem_db.get_rv("method.nond.dimension_preference")),
   collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
   collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   termsOrder(1.),
@@ -82,6 +83,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     problem_db.get_ushort("method.nond.integration_refinement")),
   refinementSamples(problem_db.get_iv("method.nond.refinement_samples"))
 {
+  check_dimension_preference(dimPrefSpec);
   initialize_counts();
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
@@ -90,14 +92,14 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
 NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
-	      short exp_coeffs_approach, short refine_type,
-	      short refine_control, short covar_control,
+	      short exp_coeffs_approach, const RealVector& dim_pref,
+	      short refine_type, short refine_control, short covar_control,
 	      Real colloc_ratio, short rule_nest, short rule_growth,
 	      bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
-  statsType(Pecos::ACTIVE_EXPANSION_STATS), collocRatio(colloc_ratio),
-  termsOrder(1.), tensorRegression(false),
+  statsType(Pecos::ACTIVE_EXPANSION_STATS), dimPrefSpec(dim_pref),
+  collocRatio(colloc_ratio), termsOrder(1.), tensorRegression(false),
   multilevAllocControl(DEFAULT_MLMF_CONTROL),
   multilevDiscrepEmulation(DEFAULT_EMULATION), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), numSamplesOnModel(0), numSamplesOnExpansion(0),
@@ -109,6 +111,7 @@ NonDExpansion(unsigned short method_name, Model& model,
   ruleGrowthOverride(rule_growth), vbdFlag(false), vbdOrderLimit(0),
   vbdDropTol(-1.), covarianceControl(covar_control)
 {
+  check_dimension_preference(dimPrefSpec);
   initialize_counts();
 
   // level mappings not yet available
@@ -144,6 +147,7 @@ bool NonDExpansion::resize()
 {
   bool parent_reinit_comms = NonD::resize();
 
+  check_dimension_preference(dimPrefSpec);
   initialize_counts();
 
   return parent_reinit_comms;
@@ -476,6 +480,19 @@ void NonDExpansion::initialize_u_space_model()
     assign_value(random_vars_key, true, startCAUV, numCAUV);
     shared_data_rep->random_variables_key(random_vars_key);
   }
+}
+
+
+void NonDExpansion::
+configure_expansion_orders(unsigned short exp_order, const RealVector& dim_pref,
+			UShortArray& exp_orders)
+{
+  // expansion_order defined for expansion_samples/regression
+  if (exp_order == USHRT_MAX)
+    exp_orders.clear();
+  else
+    NonDIntegration::dimension_preference_to_anisotropic_order(exp_order,
+      dim_pref, numContinuousVars, exp_orders);
 }
 
 

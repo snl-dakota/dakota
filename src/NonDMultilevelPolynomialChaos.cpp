@@ -68,7 +68,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   const String& rng = probDescDB.get_string("method.random_number_generator");
 
   UShortArray exp_orders; // defined for expansion_samples/regression
-  config_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
+  configure_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
 
   if (!config_integration(quadrature_order(), sparse_grid_level(), cubIntSpec,
 	u_space_sampler, g_u_model, approx_type) &&
@@ -249,7 +249,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // -------------------------
   size_t colloc_pts = collocation_points();
   UShortArray exp_orders; // defined for expansion_samples/regression
-  config_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
+  configure_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
 
   Iterator u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
@@ -312,11 +312,6 @@ bool NonDMultilevelPolynomialChaos::resize()
 
   bool parent_reinit_comms = NonDExpansion::resize();
   
-  // -------------------
-  // input sanity checks
-  // -------------------
-  check_dimension_preference(dimPrefSpec);
-
   // ----------------
   // Resolve settings
   // ----------------
@@ -365,8 +360,7 @@ bool NonDMultilevelPolynomialChaos::resize()
 	expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
 	  Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
       unsigned short exp_order = expansion_order();
-      NonDIntegration::dimension_preference_to_anisotropic_order(exp_order,
-	dimPrefSpec, numContinuousVars, exp_orders);
+      configure_expansion_orders(exp_order, dimPrefSpec, exp_orders);
 
       size_t exp_terms;
       switch (expansionBasisType) {
@@ -692,8 +686,7 @@ update_from_specification(bool update_exp, bool update_sampler,
   UShortArray exp_orders;
   if (update_exp) {
     // update expansion order within Pecos::SharedOrthogPolyApproxData
-    NonDIntegration::dimension_preference_to_anisotropic_order(
-      expansion_order(), dimPrefSpec, numContinuousVars, exp_orders);
+    configure_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
     SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
       uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->expansion_order(exp_orders);
@@ -741,8 +734,7 @@ infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
   size_t i, num_steps = pilot.size();
   UShortArray exp_orders;
   for (i=0; i<num_steps; ++i) {
-    NonDIntegration::dimension_preference_to_anisotropic_order(
-      expansion_order(i), dimPrefSpec, numContinuousVars, exp_orders);
+    configure_expansion_orders(expansion_order(i), dimPrefSpec, exp_orders);
     size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
       Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders) :
       Pecos::SharedPolyApproxData::total_order_terms(exp_orders);
@@ -790,11 +782,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 
     // reset lower bound for each level:
     UShortArray exp_orders;
-    unsigned short exp_order = 0;
-    if (!expOrderSeqSpec.empty())
-      exp_order = (step < expOrderSeqSpec.size()) ?
-	expOrderSeqSpec[step] : expOrderSeqSpec.back();
-    config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
+    configure_expansion_orders(expansion_order(step), dimPrefSpec, exp_orders);
 
     if (update_from_ratio) // update the exp_orders based on total_samp
       ratio_samples_to_order(collocRatio, total_samp, exp_orders, false);

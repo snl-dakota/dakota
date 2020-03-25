@@ -1504,6 +1504,28 @@ model_type(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+model_ushint(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Mod_Info**)g)->dmo->**(unsigned short DataModelRep::**)v = *val->i;
+}
+
+void NIDRProblemDescDB::
+model_usharray(const char *keyname, Values *val, void **g, void *v)
+{
+  UShortArray *usa
+    = &((*(Mod_Info**)g)->dmo->**(UShortArray DataModelRep::**)v);
+  int *z = val->i;
+  size_t i, n = val->n;
+
+  usa->resize(n);
+  for (i=0; i<n; ++i)
+    if (z[i] >= 0)
+      (*usa)[i] = z[i];
+    else
+      botch("%s must have non-negative values", keyname);
+}
+
+void NIDRProblemDescDB::
 model_utype(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_utype*)v)->sp = 
@@ -6889,9 +6911,11 @@ static unsigned short
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
         MP_(expansionOrder),
+        MP_(maxOrder),
         MP_(quadratureOrder),
 	MP_(softConvLimit),
 	MP_(sparseGridLevel),
+        MP_(startOrder),
 	MP_(vbdOrder),
 	MP_(wilksOrder);
 
@@ -6899,13 +6923,13 @@ static SizetArray
 	MP_(collocationPointsSeq),
         MP_(expansionSamplesSeq),
   	MP_(pilotSamples),
-  	MP_(startOrderSeq),
   	MP_(startRankSeq);
 
 static UShortArray
         MP_(expansionOrderSeq),
         MP_(quadratureOrderSeq),
 	MP_(sparseGridLevelSeq),
+  	MP_(startOrderSeq),
         MP_(tensorGridOrder),
 	MP_(varPartitions);
 
@@ -7052,7 +7076,6 @@ static size_t
 	MP_(collocationPoints),
         MP_(expansionSamples),
         MP_(kickRank),
-        MP_(maxOrder),        
         MP_(maxRank),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
@@ -7062,7 +7085,6 @@ static size_t
 	MP_(numOffspring),
 	MP_(numParents),
   	MP_(numPredConfigs),
-        MP_(startOrder),
         MP_(startRank);
 
 static Method_mp_type
@@ -7518,7 +7540,9 @@ static bool
 
 static unsigned short
 	MP_(adaptedBasisSparseGridLev),
-	MP_(adaptedBasisExpOrder);
+	MP_(adaptedBasisExpOrder),
+	MP_(maxOrder),
+	MP_(startOrder);
 
 static short
 	MP_(annNodes),
@@ -7553,9 +7577,7 @@ static int
 static size_t
 	MP_(collocationPoints),
 	MP_(kickRank),
-	MP_(maxOrder),        
 	MP_(maxRank),
-	MP_(startOrder),
 	MP_(startRank);
 //	MP_(verbosity);
     

@@ -135,12 +135,12 @@ public:
   C3FnTrainPtrs& combined_ftp();
 
   size_t regression_size();                   // uses active ftp
-  size_t regression_size(const SizetVector& ranks, size_t order);
-  //size_t regression_size(const SizetArray& ranks, const SizetArray& orders);
-  // Note: SharedC3ApproxData implements regression_size() for scalars from spec
+  //size_t regression_size(const SizetVector& ranks, size_t order);
+  size_t regression_size(const SizetVector& ranks, const UShortArray& orders);
+  // SharedC3ApproxData::regression_size() supports scalar rank from user spec
 
-  size_t average_rank();
-  size_t maximum_rank();
+  //size_t average_rank();
+  //size_t maximum_rank();
 
   void expansion_coefficient_flag(bool coeff_flag);
   bool expansion_coefficient_flag() const;

@@ -776,9 +776,9 @@ public:
   /// arithmetic (rounding) tolerance for FT sums and products
   Real arithmeticTol;
   /// starting polynomial order
-  size_t startOrder;
+  unsigned short startOrder;
   /// maximum order of basis polynomials
-  size_t maxOrder;
+  unsigned short maxOrder;
   /// starting rank
   size_t startRank;
   /// rank increase increment
@@ -788,7 +788,7 @@ public:
   /// whether or not to adapt rank
   bool adaptRank;
   /// starting polynomial order
-  SizetArray startOrderSeq;
+  UShortArray startOrderSeq;
   /// starting rank
   SizetArray startRankSeq;
 

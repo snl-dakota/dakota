@@ -27,8 +27,7 @@ namespace Dakota {
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   SharedApproxData(BaseConstructor(), problem_db, num_vars),
-  startOrderSpec(problem_db.get_sizet("model.c3function_train.start_order")),
-  maxOrder(problem_db.get_sizet("model.c3function_train.max_order")),
+  maxOrder(problem_db.get_ushort("model.c3function_train.max_order")),
   startRankSpec(problem_db.get_sizet("model.c3function_train.start_rank")),
   kickRank(problem_db.get_sizet("model.c3function_train.kick_rank")),
   maxRank(problem_db.get_sizet("model.c3function_train.max_rank")),
@@ -48,6 +47,12 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
 
+  RealVector dim_pref_spec; // isotropic for now, prior to XML support
+  NonDIntegration::dimension_preference_to_anisotropic_order(
+    problem_db.get_sizet("model.c3function_train.start_order"),
+    dim_pref_spec,//problem_db.get_rv("model.dimension_preference"),
+    numVars, startOrderSpec);
+
   multiApproxOpts = multi_approx_opts_alloc(num_vars);
 
   //oneApproxOpts = (struct OneApproxOpts **)
@@ -57,16 +62,15 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   oneApproxOpts.assign(num_vars, NULL);
 }
 
-  
+
 SharedC3ApproxData::
-SharedC3ApproxData(const String& approx_type,
-		   const UShortArray& approx_order, size_t num_vars,
-		   short data_order, short output_level):
+SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
+		   size_t num_vars, short data_order, short output_level):
   SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars, data_order,
 		   output_level),
   // default values overridden by set_parameter
-  startOrderSpec(2), maxOrder(4), //maxnum(5),
-  startRankSpec(5), kickRank(2), maxRank(10), adaptRank(false),
+  startOrderSpec(approx_order), maxOrder(5),
+  startRankSpec(2), kickRank(2), maxRank(10), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
   crossMaxIter(5), maxSolverIterations(1000), c3Verbosity(0),
@@ -109,9 +113,10 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
   assert (num_active_rv == numVars);
 
   struct OpeOpts * o_opts;
-  // use startOrderSpec at construct time (initialize_u_space_model()) since
+  // uses startOrderSpec at construct time (initialize_u_space_model()) since
   // startOrder[activeKey] not meaningful until run time active key assignment
-  size_t nparam = startOrderSpec + 1, max_np = maxOrder + 1;
+  const UShortArray& so = start_orders();
+  size_t np, max_np = maxOrder + 1;
   for (i=0; i<num_rv; ++i)
     if (no_mask || active_vars[i]) {
       switch (rv_types[i]) {
@@ -126,7 +131,8 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 	abort_handler(-1);                 break;
       }
 
-      ope_opts_set_nparams(o_opts, nparam); // startnum = startord + 1
+      np = so[i] + 1;
+      ope_opts_set_nparams(o_opts, np);     // startnum = startord + 1
       // Note: maxOrder not used for regression (only limits increment_order());
       //       to be used for adaptation by cross-approximation
       ope_opts_set_maxnum(o_opts,  max_np); //   maxnum =   maxord + 1
@@ -139,17 +145,21 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
       ++av_cntr;
     }
 
-  formUpdated[activeKey] = true;
+  // don't bother to assign formUpdated prior to an active key definition
+  if (!activeKey.empty())
+    formUpdated[activeKey] = true;
 }
 
 
 void SharedC3ApproxData::update_basis()
 {
   // use startOrder[activeKey] for run time updates
-  size_t nparam = startOrder[activeKey] + 1, max_np = maxOrder + 1;
+  const UShortArray& so = start_orders();
+  size_t np, max_np = maxOrder + 1;
   for (size_t i=0; i<numVars; ++i) {
     struct OneApproxOpts*& a_opts = oneApproxOpts[i];
-    one_approx_opts_set_nparams(a_opts, nparam); // updated
+    np = so[i] + 1;
+    one_approx_opts_set_nparams(a_opts, np);     // updated
     one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
   }
 

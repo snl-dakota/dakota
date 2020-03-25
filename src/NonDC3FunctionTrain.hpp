@@ -78,9 +78,15 @@ protected:
   bool config_regression(size_t colloc_pts, size_t regress_size,
 			 Iterator& u_space_sampler, Model& g_u_model);
 
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_core_rank(size_t start_rank);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_core_orders(const UShortArray& start_orders);
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)
-  void push_c3_options(size_t start_rank, size_t start_order);
+  void push_c3_options();
 
   //
   //- Heading: Data
@@ -92,7 +98,7 @@ protected:
   /// scalar specification for initial rank (prior to adapt_rank)
   size_t startRankSpec;
   /// scalar specification for initial basis order (prior to uniform refinement)
-  size_t startOrderSpec;
+  unsigned short startOrderSpec;
 
 private:
 

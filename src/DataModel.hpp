@@ -389,9 +389,9 @@ public:
   /// sub-sample a tensor grid for generating regression data
   bool tensorGridFlag;
   /// starting polynomial order
-  size_t startOrder;
+  unsigned short startOrder;
   /// maximum order of basis polynomials
-  size_t maxOrder;
+  unsigned short maxOrder;
   /// starting rank
   size_t startRank;
   /// rank increase increment

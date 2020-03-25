@@ -926,12 +926,12 @@ size_t C3Approximation::regression_size()
   struct FunctionTrain * ft = levApproxIter->second.function_train();
   SizetVector ft_ranks(Teuchos::View, function_train_get_ranks(ft),
 		       data_rep->numVars+1);
-  return regression_size(ft_ranks, data_rep->start_order());
+  return regression_size(ft_ranks, data_rep->start_orders());
 }
 
 
-/** compute the regression size (number of unknowns) for a set of ranks per
-    dimension and a single expansion (polynomial) order */
+/* compute the regression size (number of unknowns) for a set of ranks per
+   dimension and a single expansion (polynomial) order
 size_t C3Approximation::
 regression_size(const SizetVector& ranks, size_t order)
 {
@@ -962,11 +962,13 @@ regression_size(const SizetVector& ranks, size_t order)
   }
   }
 }
+*/
 
 
-/* For future use where poly order can vary per core:
+/** compute the regression size (number of unknowns) for ranks per
+    dimension and (polynomial) orders per dimension */
 size_t C3Approximation::
-regression_size(const SizetArray& ranks, const SizetArray& orders)
+regression_size(const SizetVector& ranks, const UShortArray& orders)
 {
   // Each dimension has its own rank within the product of function cores.
   // This fn estimates for the case where rank varies per dimension/core
@@ -979,33 +981,32 @@ regression_size(const SizetArray& ranks, const SizetArray& orders)
   // > could also allow p to vary per dimension in an orders array, should this
   //   granularity become warranted in the future
   size_t num_v = sharedDataRep->numVars;
-  if ( ranks.size() != num_v + 1 || // both ends padded with 1's
-      orders.size() != num_v) {     // no padding
+  if (ranks.length() != num_v + 1 || // both ends padded with 1's
+      orders.size()  != num_v) {     // no padding
     Cerr << "Error: wrong ranks/orders array sizes in C3Approximation::"
 	 << "regression_size()." << std::endl;
     abort_handler(APPROX_ERROR);
   }
   switch (num_v) {
-  case 1:  return  orders[0]+1;                   break; // collapses to 1D PCE
-  case 2:  return (orders[0]+orders[1])*ranks[1]; break; // first,last core
+  case 1:  return  orders[0]+1;                     break;// collapses to 1D PCE
+  case 2:  return (orders[0]+orders[1]+2)*ranks[1]; break;// first,last core
   default: { // first, last, and num_v-2 middle cores
     size_t core, num_vm1 = num_v - 1,
-      sum = orders[0]*ranks[1] + orders[vm1]*ranks[num_vm1];
+      sum = (orders[0]+1)*ranks[1] + (orders[num_vm1]+1)*ranks[num_vm1];
     for (core=1; core<num_vm1; ++core)
-      sum += ranks[core] * ranks[core+1] * orders[core];
+      sum += ranks[core] * ranks[core+1] * (orders[core]+1);
     return sum;  break;
   }
   }
 }
-*/
 
 
-size_t C3Approximation::average_rank()
-{ return function_train_get_avgrank(levApproxIter->second.function_train()); }
+//size_t C3Approximation::average_rank()
+//{ return function_train_get_avgrank(levApproxIter->second.function_train()); }
 
 
-size_t C3Approximation::maximum_rank()
-{ return function_train_get_maxrank(levApproxIter->second.function_train()); }
+//size_t C3Approximation::maximum_rank()
+//{ return function_train_get_maxrank(levApproxIter->second.function_train()); }
 
 
 Real C3Approximation::main_sobol_index(size_t dim)

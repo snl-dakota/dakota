@@ -97,9 +97,9 @@ private:
 
   size_t collocation_points() const;
   size_t start_rank(size_t index) const;
-  size_t start_order(size_t index) const;
   size_t start_rank() const;
-  size_t start_order() const;
+  unsigned short start_order(size_t index) const;
+  unsigned short start_order() const;
 
   /// perform specification updates (shared code from
   // {assign,increment}_specification_sequence())
@@ -115,7 +115,7 @@ private:
   /// user specification for start_rank_sequence
   SizetArray startRankSeqSpec;
   /// user specification for start_order_sequence
-  SizetArray startOrderSeqSpec;
+  UShortArray startOrderSeqSpec;
 
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
@@ -134,20 +134,10 @@ inline size_t NonDMultilevelFunctionTrain::collocation_points() const
 inline size_t NonDMultilevelFunctionTrain::start_rank(size_t index) const
 {
   if (startRankSeqSpec.empty())
-    return startRankSpec; // use default provided by DataMethod
+    return startRankSpec; // use single-level default provided by DataMethod
   else
     return (index < startRankSeqSpec.size()) ?
       startRankSeqSpec[index] : startRankSeqSpec.back();
-}
-
-
-inline size_t NonDMultilevelFunctionTrain::start_order(size_t index) const
-{
-  if (startOrderSeqSpec.empty())
-    return startOrderSpec; // use default provided by DataMethod
-  else
-    return (index < startOrderSeqSpec.size()) ?
-      startOrderSeqSpec[index] : startOrderSeqSpec.back();
 }
 
 
@@ -155,7 +145,18 @@ inline size_t NonDMultilevelFunctionTrain::start_rank() const
 { return start_rank(sequenceIndex); }
 
 
-inline size_t NonDMultilevelFunctionTrain::start_order() const
+inline unsigned short NonDMultilevelFunctionTrain::
+start_order(size_t index) const
+{
+  if (startOrderSeqSpec.empty())
+    return startOrderSpec; // use single-level default provided by DataMethod
+  else
+    return (index < startOrderSeqSpec.size()) ?
+      startOrderSeqSpec[index] : startOrderSeqSpec.back();
+}
+
+
+inline unsigned short NonDMultilevelFunctionTrain::start_order() const
 { return start_order(sequenceIndex); }
 
 } // namespace Dakota

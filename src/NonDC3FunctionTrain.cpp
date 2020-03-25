@@ -44,7 +44,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   startRankSpec(
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
   startOrderSpec(
-    problem_db.get_sizet("method.nond.c3function_train.start_order")),
+    problem_db.get_ushort("method.nond.c3function_train.start_order")),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file"))
 {
@@ -75,11 +75,13 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Construct u_space_sampler
   // -------------------------
   Iterator u_space_sampler; // evaluates truth model
+  UShortArray approx_orders;
+  configure_expansion_orders(startOrderSpec, dimPrefSpec, approx_orders);
   // compute initial regression size using a static helper
   // (uSpaceModel.shared_approximation() is not yet available)
   size_t colloc_pts = probDescDB.get_sizet("method.nond.collocation_points"),
     regress_size = SharedC3ApproxData::
-      regression_size(numContinuousVars, startRankSpec, startOrderSpec);
+      regression_size(numContinuousVars, startRankSpec, approx_orders);
   // configure u-space sampler and model
   if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
@@ -99,11 +101,10 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
   String approx_type = "global_function_train";
-  UShortArray approx_order; // unused by C3
   ActiveSet ft_set = g_u_model.current_response().active_set(); // copy
   ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    ft_set, approx_type, approx_order, corr_type, corr_order, data_order,
+    ft_set, approx_type, approx_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, importBuildPointsFile,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
@@ -129,7 +130,7 @@ NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
   startRankSpec(
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
   startOrderSpec(
-    problem_db.get_sizet("method.nond.c3function_train.start_order")),
+    problem_db.get_ushort("method.nond.c3function_train.start_order")),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file"))
 {
@@ -233,9 +234,11 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   //configure_pecos_options(); // C3 does not use Pecos options
 
   // needs to precede construct_basis()
-  push_c3_options(
-    probDescDB.get_sizet("method.nond.c3function_train.start_rank"),
-    probDescDB.get_sizet("method.nond.c3function_train.start_order"));
+  push_c3_core_rank(startRankSpec);
+  UShortArray approx_orders;
+  configure_expansion_orders(startOrderSpec, dimPrefSpec, approx_orders);
+  push_c3_core_orders(approx_orders);
+  push_c3_options();
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   const Pecos::MultivariateDistribution& u_dist
@@ -244,24 +247,36 @@ void NonDC3FunctionTrain::initialize_u_space_model()
 }
 
 
-void NonDC3FunctionTrain::
-push_c3_options(size_t start_rank, size_t start_order)
+void NonDC3FunctionTrain::push_c3_core_rank(size_t start_rank)
 {
-  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
-  // passed through the DataFitSurrModel ctor chain.  Additional data needed
-  // by OrthogPolyApproximation are passed using Pecos::BasisConfigOptions.
-  // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
+  // rank is passed in since they may be a scalar or part of a sequence:
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->set_parameter("start_rank", start_rank);
+}
+
+
+void NonDC3FunctionTrain::push_c3_core_orders(const UShortArray& start_orders)
+{
+  // These are passed in since they may be a scalar or part of a sequence:
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->set_parameter("start_poly_order", start_orders);
+}
+
+
+void NonDC3FunctionTrain::push_c3_options()
+{
+  // Commonly used approx settings (e.g., basis orders, outputLevel, useDerivs)
+  // are passed through the DataFitSurrModel ctor chain.  Additional options
+  // are passed here.
 
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
 
-  // These are passed in since they may be a scalar or part of a sequence:
-  shared_data_rep->set_parameter("start_poly_order", start_order);
-  shared_data_rep->set_parameter("start_rank",       start_rank);
-
   // These are pulled from the DB as they are always scalars:
   shared_data_rep->set_parameter("max_poly_order",
-    probDescDB.get_sizet("method.nond.c3function_train.max_order"));
+    probDescDB.get_ushort("method.nond.c3function_train.max_order"));
   shared_data_rep->set_parameter("kick_rank",
     probDescDB.get_sizet("method.nond.c3function_train.kick_rank"));
   shared_data_rep->set_parameter("max_rank",

@@ -20,8 +20,8 @@ method,
 # > spec supports start_{rank,order}_seq and colloc_pts_seq/plot_samples, which
 #   specify _initial_ resolutions per level, prior to refinement/adaptation
 # > Uniform refinement could support poly order (default) vs. rank (option)
-#	  collocation_points_sequence = 100 40 30 20 10	      	#s2,#s3
-#	  collocation_ratio = 1.75     	     	     		#s4
+#	  collocation_points_sequence = 100 40 30 20 10	      	#s3
+#	  collocation_ratio = 1.75     	     	     		#s2,#s4
 #	  p_refinement uniform					#s2,#s3,#s4
 #	  allocation_control greedy				#s3
 	  start_rank_sequence = 3 2 2 1 1			#s0,#s1,#s2,#s4
@@ -37,7 +37,7 @@ method,
 	  kick_rank = 2  max_rank  = 10
 	  start_order_sequence = 2 2 2 2 2   max_order = 10
           solver_tolerance = 1e-8  rounding_tolerance = 1e-8
-	  convergence_tol  = 1e-4
+	  convergence_tol  = 1e-3
 	  seed = 1237
 	  output silent
 

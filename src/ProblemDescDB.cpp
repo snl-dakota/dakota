@@ -1794,7 +1794,6 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<SizetArray, DataMethodRep> SZAdme[] = {	
       // must be sorted by string (key)
-      {"nond.c3function_train.start_order_sequence", P startOrderSeq},
       {"nond.c3function_train.start_rank_sequence", P startRankSeq},
       {"nond.collocation_points", P collocationPointsSeq},
       {"nond.expansion_samples", P expansionSamplesSeq},
@@ -1823,6 +1822,7 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<UShortArray, DataMethodRep> USAdme[] = {	
       // must be sorted by string (key)
+	{"nond.c3function_train.start_order_sequence", P startOrderSeq},
 	{"nond.expansion_order", P expansionOrderSeq},
 	{"nond.quadrature_order", P quadratureOrderSeq},
 	{"nond.sparse_grid_level", P sparseGridLevelSeq},
@@ -2871,6 +2871,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"import_prediction_configs_format", P importPredConfigFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
+        {"nond.c3function_train.max_order", P maxOrder},
+        {"nond.c3function_train.start_order", P startOrder},
 	{"nond.calibrate_error_mode", P calibrateErrorMode},
 	{"nond.cubature_integrand", P cubIntOrder},
 	{"nond.expansion_order", P expansionOrder},
@@ -2906,6 +2908,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"active_subspace.sample_type", P subspaceSampleType},
 	{"adapted_basis.expansion_order", P adaptedBasisExpOrder},
 	{"adapted_basis.sparse_grid_level", P adaptedBasisSparseGridLev},
+        {"c3function_train.max_order", P maxOrder},
+        {"c3function_train.start_order", P startOrder},
 	{"rf.analytic_covariance", P analyticCovIdForm},
 	{"rf.expansion_form", P randomFieldIdForm},
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
@@ -2969,9 +2973,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_offspring", P numOffspring},
 	{"jega.num_parents", P numParents},
         {"nond.c3function_train.kick_rank", P kickRank},
-        {"nond.c3function_train.max_order", P maxOrder},
       	{"nond.c3function_train.max_rank", P maxRank},
-        {"nond.c3function_train.start_order", P startOrder},
         {"nond.c3function_train.start_rank", P startRank},
 	{"nond.collocation_points", P collocationPoints},
 	{"nond.expansion_samples", P expansionSamples},
@@ -2994,9 +2996,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
       // must be sorted by string (key)
 	{"c3function_train.collocation_points", P collocationPoints},
         {"c3function_train.kick_rank", P kickRank},
-        {"c3function_train.max_order", P maxOrder},
       	{"c3function_train.max_rank", P maxRank},
-        {"c3function_train.start_order", P startOrder},
         {"c3function_train.start_rank", P startRank}//,
       //{"c3function_train.verbosity", P verbosity}
     };
