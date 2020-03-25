@@ -205,7 +205,7 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
 
   push_c3_core_rank(start_rank());
-  push_c3_options();
+  push_c3_db_options();
   // Pushing initial approx_orders is redundant with DataFitSurrModel ctor:
   //UShortArray approx_orders;
   //configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
@@ -296,11 +296,18 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
 
 void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+
+  push_c3_core_rank(start_rank());
+  UShortArray approx_orders;
+  configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
+  push_c3_core_orders(approx_orders);
+  shared_data_rep->update_basis(); // propagate updates to oneApproxOpts
+
   size_t colloc_pts = collocation_points();
   if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined
     if (collocRatio > 0.) {
-      UShortArray approx_orders;
-      configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
       size_t regress_size = SharedC3ApproxData::
 	regression_size(numContinuousVars, start_rank(), approx_orders);
       numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
@@ -313,8 +320,7 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   }
   else
     numSamplesOnModel = colloc_pts;
-
-  update_from_specification();
+  update_sampler();
 }
 
 
@@ -327,8 +333,6 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
       next_i < startOrderSeqSpec.size())
     ++sequenceIndex;
 
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
   assign_specification_sequence();
 }
 
@@ -350,20 +354,13 @@ infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
 void NonDMultilevelFunctionTrain::
 increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 {
-  numSamplesOnModel = new_samp;
-  // total_samp,lev not required for this derived implementation
-
-  update_from_specification();
+  numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
+  update_sampler();
 }
 
 
-void NonDMultilevelFunctionTrain::update_from_specification()
+void NonDMultilevelFunctionTrain::update_sampler()
 {
-  push_c3_core_rank(start_rank());
-  UShortArray approx_orders;
-  configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
-  push_c3_core_orders(approx_orders);
-
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
   if (tensorRegression) {
@@ -372,6 +369,7 @@ void NonDMultilevelFunctionTrain::update_from_specification()
     if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
       SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
 	uSpaceModel.shared_approximation().data_rep();
+      const UShortArray& approx_orders = shared_data_rep->start_orders();
       UShortArray dim_quad_order(numContinuousVars);
       for (size_t i=0; i<numContinuousVars; ++i)
 	dim_quad_order[i] = approx_orders[i] + 1;

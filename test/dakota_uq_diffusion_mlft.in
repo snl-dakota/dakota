@@ -37,7 +37,7 @@ method,
 	  kick_rank = 2  max_rank  = 10
 	  start_order_sequence = 2 2 2 2 2   max_order = 10
           solver_tolerance = 1e-8  rounding_tolerance = 1e-8
-	  convergence_tol  = 1e-3
+	  convergence_tol  = 1e-2
 	  seed = 1237
 	  output silent
 

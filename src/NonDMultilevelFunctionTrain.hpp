@@ -101,9 +101,9 @@ private:
   unsigned short start_order(size_t index) const;
   unsigned short start_order() const;
 
-  /// perform specification updates (shared code from
-  // {assign,increment}_specification_sequence())
-  void update_from_specification();
+  /// perform sampler updates after a change to numSamplesOnModel
+  /// (shared code from {assign,increment}_specification_sequence())
+  void update_sampler();
 
   // scale sample profile to retain shape while enforcing an upper bound
   //void scale_profile(..., RealVector& new_N_l);

@@ -238,7 +238,7 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   UShortArray approx_orders;
   configure_expansion_orders(startOrderSpec, dimPrefSpec, approx_orders);
   push_c3_core_orders(approx_orders);
-  push_c3_options();
+  push_c3_db_options();
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   const Pecos::MultivariateDistribution& u_dist
@@ -265,7 +265,7 @@ void NonDC3FunctionTrain::push_c3_core_orders(const UShortArray& start_orders)
 }
 
 
-void NonDC3FunctionTrain::push_c3_options()
+void NonDC3FunctionTrain::push_c3_db_options()
 {
   // Commonly used approx settings (e.g., basis orders, outputLevel, useDerivs)
   // are passed through the DataFitSurrModel ctor chain.  Additional options

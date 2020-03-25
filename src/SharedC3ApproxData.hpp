@@ -81,6 +81,9 @@ public:
   /// return current expansion rank (active key in startRank)
   size_t start_rank() const;
 
+  /// update oneApproxOpts after a change in basis order
+  void update_basis();
+
 protected:
 
   //
@@ -201,7 +204,6 @@ private:
   //- Heading: Convenience functions
   //
 
-  void update_basis();
 
   //
   //- Heading: Data
@@ -301,14 +303,15 @@ inline void SharedC3ApproxData::
 set_parameter(String var, const UShortArray& val)
 {
   if (var.compare("start_poly_order") == 0)
-    startOrders[activeKey] = /*startOrderSpec =*/ val;
+    { startOrders[activeKey] = /*startOrderSpec =*/ val; /*update_basis();*/ }
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
 inline void SharedC3ApproxData::set_parameter(String var, unsigned short val)
 {
-  if (var.compare("max_poly_order")  == 0) maxOrder = val;
+  if (var.compare("max_poly_order")  == 0)
+    { maxOrder = val; /*update_basis();*/ }
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 

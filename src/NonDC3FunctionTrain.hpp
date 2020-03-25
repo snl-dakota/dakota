@@ -86,7 +86,7 @@ protected:
   void push_c3_core_orders(const UShortArray& start_orders);
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)
-  void push_c3_options();
+  void push_c3_db_options();
 
   //
   //- Heading: Data
