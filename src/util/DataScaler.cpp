@@ -39,6 +39,29 @@ DataScaler::DataScaler(){}
 
 DataScaler::~DataScaler(){}
 
+void DataScaler::scale_samples(const MatrixXd &unscaled_samples,
+                               MatrixXd &scaled_samples) {
+  const int num_features = unscaled_samples.cols();
+  if (num_features != scalerFeaturesOffsets->size()) {
+    throw(std::runtime_error("scaleSamples input is not consistent."
+          "Number of features does not match."));
+  }
+  const int num_samples = unscaled_samples.rows();
+  scaled_samples.resize(num_samples,num_features);
+  for (int j = 0; j < num_features; j++) {
+    if( check_for_zero_scaler_factor(j) ) {
+      for (int i = 0; i < num_samples; i++) {
+        scaled_samples(i,j) = unscaled_samples(i,j)  - (*scalerFeaturesOffsets)(j);
+      }
+    }
+    else {
+      for (int i = 0; i < num_samples; i++) {
+        scaled_samples(i,j) = (unscaled_samples(i,j) - (*scalerFeaturesOffsets)(j))/(*scalerFeaturesScaleFactors)(j);
+      }
+    }
+  }
+}
+
 std::shared_ptr<MatrixXd> DataScaler::scale_samples(const MatrixXd &unscaled_samples) {
   const int num_features = unscaled_samples.cols();
   if (num_features != scalerFeaturesOffsets->size()) {
@@ -48,12 +71,16 @@ std::shared_ptr<MatrixXd> DataScaler::scale_samples(const MatrixXd &unscaled_sam
   const int num_samples = unscaled_samples.rows();
   MatrixXd scaledSamples(num_samples,num_features);
   for (int j = 0; j < num_features; j++) {
-    if( check_for_zero_scaler_factor(j) )
-      for (int i = 0; i < num_samples; i++)
+    if( check_for_zero_scaler_factor(j) ) {
+      for (int i = 0; i < num_samples; i++) {
         scaledSamples(i,j) = unscaled_samples(i,j)  - (*scalerFeaturesOffsets)(j);
-    else
-      for (int i = 0; i < num_samples; i++)
+      }
+    }
+    else {
+      for (int i = 0; i < num_samples; i++) {
         scaledSamples(i,j) = (unscaled_samples(i,j) - (*scalerFeaturesOffsets)(j))/(*scalerFeaturesScaleFactors)(j);
+      }
+    }
   }
   return std::make_shared<MatrixXd>(scaledSamples);
 }
@@ -133,7 +160,9 @@ NoScaler::NoScaler(const MatrixXd &features) {
   const int num_features = features.cols();
   scaledFeatures = std::make_shared<MatrixXd>(features);
   scalerFeaturesOffsets = std::make_shared<VectorXd>(num_features);
+  (*scalerFeaturesOffsets).setZero();
   scalerFeaturesScaleFactors = std::make_shared<VectorXd>(num_features);
+  (*scalerFeaturesScaleFactors).setOnes();
 
   has_scaling = true;
 }
@@ -149,12 +178,17 @@ std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const Matrix
     return std::make_shared<util::StandardizationScaler>(unscaled_matrix);
   }
   else if (scaler_type == util::SCALER_TYPE::MEAN_NORMALIZATION) {
-    return std::make_shared<util::NormalizationScaler>(unscaled_matrix, true);   }
+    return std::make_shared<util::NormalizationScaler>(unscaled_matrix, true);   
+  }
   else if (scaler_type == util::SCALER_TYPE::MINMAX_NORMALIZATION) {
     return std::make_shared<util::NormalizationScaler>(unscaled_matrix, false); 
   }
-  // BMA TODO: This should likely error on unknown scaler
-  return std::make_shared<util::NoScaler>(unscaled_matrix);
+  else if (scaler_type == util::SCALER_TYPE::NONE) {
+    return std::make_shared<util::NoScaler>(unscaled_matrix);
+  }
+  else {
+    throw("Error: Invalid scaler_type for DataScaler");
+  }
 }
 
 }  // namespace util

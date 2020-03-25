@@ -59,6 +59,13 @@ class DataScaler {
     std::shared_ptr<MatrixXd> scale_samples(const MatrixXd &unscaled_samples);
 
 /**
+ *  \brief Apply scaling to a set of unscaled samples.
+ *  \param[in] unscaled_samples Unscaled matrix of samples.
+ *  \param[out] scaled_samples Scaled matrix of samples.
+*/
+    void scale_samples(const MatrixXd &unscaled_samples, MatrixXd &scaled_samples);
+
+/**
  *  \brief Get the vector of offsets.
  *  \returns Vector of scaler offsets - (num_features).
 */

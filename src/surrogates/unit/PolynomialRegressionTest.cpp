@@ -237,8 +237,6 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   pr.surrogate_value(eval_points, test_responses);
   BOOST_CHECK(matrix_equals(gold_responses, test_responses, 1.0e-10));
 
-
-
   // Now use the options-based API
   auto options = std::make_shared<Teuchos::ParameterList>();
   options->set("Num Vars", num_vars);
@@ -259,7 +257,7 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
 }
 
 void
-PolynomialRegressionSurrogate_gradient()
+PolynomialRegressionSurrogate_gradient_and_hessian()
 {
   int num_vars    = 2,
       num_samples = 20,
@@ -277,15 +275,27 @@ PolynomialRegressionSurrogate_gradient()
   pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
-  MatrixXd gradient;
-  pr.gradient(samples, gradient);
+  MatrixXd gradient, hessian;
+  pr.gradient(samples.topRows(2), gradient);
+  pr.hessian(samples.topRows(1), hessian);
 
-  MatrixXd gold_gradient(2,10);
-  gold_gradient << 0, 1.03534, 0, -0.00404883, 0.796469, 0, 0, 0, 0, 0,
-                   0, 1.05451, 0,  -0.0354835, 0, 0.796469, 0, 0, 0, 0;
+  /*
+  std::cout << "samples" << std::endl;
+  std::cout << samples.topRows(2) << std::endl;
+  std::cout << "\n";
+  */
 
-  BOOST_CHECK( matrix_equals(gold_gradient, gradient, 1.0e-4) );
+  MatrixXd gold_gradient(2,2);
+  gold_gradient << 1.59711,  1.06684, 
+                   0.691654, 2.90352;
+
+  MatrixXd gold_hessian(2,2);
+  gold_hessian << -2.75852, 0.04462,
+                   0.04462, -1.83287;
+
+  BOOST_CHECK( matrix_equals(gold_hessian, hessian, 1.0e-4) );
 }
+
 
 } // namespace
 
@@ -298,10 +308,10 @@ int test_main( int argc, char* argv[] ) // note the name!
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NONE);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::MEAN_NORMALIZATION);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::STANDARDIZATION);
-  PolynomialRegressionSurrogate_gradient();
 
   // Multivariate tests
   PolynomialRegressionSurrogate_multivariate_regression_builder();
+  PolynomialRegressionSurrogate_gradient_and_hessian();
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
