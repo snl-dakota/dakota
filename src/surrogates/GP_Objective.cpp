@@ -13,8 +13,9 @@ namespace surrogates {
 
 GP_Objective::GP_Objective(GaussianProcess* gp_model) {
   gp = gp_model;
-  VectorXd theta = gp->get_theta_values();
-  nopt = theta.size();
+  //VectorXd theta = gp->get_theta_values();
+  //nopt = theta.size();
+  nopt = gp->get_num_opt_variables();
   grad_old.resize(nopt);
   pold.resize(nopt);
   grad_old.setConstant(-5.0e99);

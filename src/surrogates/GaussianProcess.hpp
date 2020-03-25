@@ -9,9 +9,10 @@
 #ifndef DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 #define DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 
-#include "Surrogate.hpp"
 #include "DataScaler.hpp"
 #include "Eigen/StdVector"
+#include "PolynomialRegression.hpp"
+#include "Surrogate.hpp"
 #include <memory>
 
 namespace dakota {
@@ -103,7 +104,7 @@ public:
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
    *  (num_samples by num_features).
    */
-  void gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi = 0) override;
+  void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi = 0) override;
 
   /**
    *  \brief Evaluate the Hessian of the Gaussian process at a single point.
@@ -111,7 +112,7 @@ public:
    *  \param[out] hessian Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    */
-  void hessian(const MatrixXd &sample, MatrixXd &hessian, int qoi = 0) override;
+  void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
 
   // ------------------------------------------------------------
   // Getters
@@ -135,6 +136,8 @@ public:
    *  \returns Vector of log-space hyperparameters (theta).
    */
   const VectorXd & get_theta_values() const;
+
+  int get_num_opt_variables();
 
   /**
    *  \brief Get the dimension of the feature space.
@@ -175,22 +178,37 @@ private:
 
   /// Small constant added to the diagonal of the Gram matrix to avoid
   /// ill-conditioning.
-  double nuggetValue;
+  double fixedNuggetValue;
+
+  /// Basis matrix for the sample points in polynomial regression
+  MatrixXd basisMatrix;
 
   /// Corresponding target values for the surrogate dataset.
-  std::shared_ptr<MatrixXd> targetValues;
+  MatrixXd targetValues;
 
   /// Vector of log-space hyperparameters (theta).
-  std::shared_ptr<VectorXd> thetaValues;
+  VectorXd thetaValues;
+
+  /// Vector of polynomial coefficients
+  VectorXd betaValues;
+
+  /// Estimated nugget term
+  double estimatedNuggetValue;
 
   /// Vector of best hyperparameters from MLE with restarts.
-  std::shared_ptr<VectorXd> bestThetaValues;
+  VectorXd bestThetaValues;
+
+  /// Vector of best polynomial coefficients from MLE with restarts.
+  VectorXd bestBetaValues;
+
+  /// Best estimated nugget value from MLE with restarts.
+  double bestEstimatedNuggetValue;
 
   /// Final objective function values for each optimization run.
-  std::shared_ptr<VectorXd> objectiveFunctionHistory;
+  VectorXd objectiveFunctionHistory;
 
   /// Gram matrix for the GaussianProcess kernel.
-  std::shared_ptr<MatrixXd> GramMatrix;
+  MatrixXd GramMatrix;
 
   /// Derivatives of the Gram matrix w.r.t. the hyperparameters.
   std::vector<MatrixXd> GramMatrixDerivs;
@@ -202,16 +220,34 @@ private:
   Eigen::LDLT<MatrixXd> CholFact;
 
   /// Posterior covariance matrix for prediction points.
-  std::shared_ptr<MatrixXd> posteriorCov;
+  MatrixXd posteriorCov;
 
   /// Vector of posterior standard deviation at prediction points.
-  std::shared_ptr<VectorXd> posteriorStdDev;
+  VectorXd posteriorStdDev;
 
   /// DataScaler for the surrogate data.
   std::shared_ptr<util::DataScaler> dataScaler;
 
+  /// PolynomialRegression for trend
+  std::shared_ptr<PolynomialRegression> polyRegression;
+
   /// Numerical constant -- needed for negative marginal log-likelihood.
   const double PI = 3.14159265358979323846;
+
+  /// Large constant for polynomial coefficients upper/lower bounds
+  const double betaBound = 1.0e20;
+
+  /// Bool for polynomial trend (i.e. semi-parametric GP) estimation
+  bool estimateTrend;
+
+  /// Number of terms in polynomial trend
+  int numPolyTerms = 0;
+
+  /// Number of terms for the (estimated) nugget parameter
+  int numNuggetTerms = 0;
+
+  /// Bool for nugget estimation
+  bool estimateNugget;
 
   /// Final objective function value.
   double bestObjFunValue = std::numeric_limits<double>::max();
@@ -299,7 +335,8 @@ private:
   */
   void generate_initial_guesses(MatrixXd &initial_guesses, int num_restarts,
                                 const VectorXd &sigma_bounds,
-                                const MatrixXd &length_scale_bounds);
+                                const MatrixXd &length_scale_bounds,
+                                const VectorXd &nugget_bounds);
 
   /**
    *  \brief Set the default optimization parameters for ROL for GP hyperparameter

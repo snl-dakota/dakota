@@ -22,8 +22,8 @@ namespace util {
 enum class SCALER_TYPE {
                          NONE,
                          STANDARDIZATION,
-		         MEAN_NORMALIZATION,   // formerly just NORMALIZATION
-			 MINMAX_NORMALIZATION
+                         MEAN_NORMALIZATION,   // formerly just NORMALIZATION
+                         MINMAX_NORMALIZATION
                        };
 
 /**
@@ -59,22 +59,30 @@ class DataScaler {
     std::shared_ptr<MatrixXd> scale_samples(const MatrixXd &unscaled_samples);
 
 /**
+ *  \brief Apply scaling to a set of unscaled samples.
+ *  \param[in] unscaled_samples Unscaled matrix of samples.
+ *  \param[out] scaled_samples Scaled matrix of samples.
+*/
+    void scale_samples(const MatrixXd &unscaled_samples,
+                       MatrixXd &scaled_samples);
+
+/**
  *  \brief Get the vector of offsets.
  *  \returns Vector of scaler offsets - (num_features).
 */
-    const VectorXd& get_scaler_features_offsets() const { return *scalerFeaturesOffsets; }
+    const VectorXd& get_scaler_features_offsets() const { return scalerFeaturesOffsets; }
 
 /**
  *  \brief Get the vector of scaling factors
  *  \returns Vector of scaling factors - (num_features).
 */
-    const VectorXd& get_scaler_features_scale_factors() const { return *scalerFeaturesScaleFactors; }
+    const VectorXd& get_scaler_features_scale_factors() const { return scalerFeaturesScaleFactors; }
 
 /**
  *  \brief Get the the scaled data matrix.
  *  \returns Scaled features - (num_samples by num_features).
 */
-    const MatrixXd& get_scaled_features() const { return *scaledFeatures; }
+    const MatrixXd& get_scaled_features() const { return scaledFeatures; }
 
 /**
  *  \brief Checks an individual scaler feature scale factor for being close to zero.  If it is
@@ -97,11 +105,11 @@ class DataScaler {
   protected: 
 
     /// Vector of offsets - (num_features).
-    std::shared_ptr<VectorXd> scalerFeaturesOffsets;
+    VectorXd scalerFeaturesOffsets;
     /// Vector of scaling factors - (num_features).
-    std::shared_ptr<VectorXd> scalerFeaturesScaleFactors;
+    VectorXd scalerFeaturesScaleFactors;
     /// Scaled surrogate data matrix - (num_samples by num_features).
-    std::shared_ptr<MatrixXd> scaledFeatures;
+    MatrixXd scaledFeatures;
 
 
 };

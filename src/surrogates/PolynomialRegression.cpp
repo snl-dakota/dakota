@@ -8,8 +8,6 @@
 
 #include "PolynomialRegression.hpp"
 #include "SurrogatesTools.hpp"
-#include <boost/assign.hpp>
-#include <boost/bimap.hpp>
 
 namespace dakota {
 namespace surrogates {
@@ -84,9 +82,9 @@ PolynomialRegression(const MatrixXd& samples_in, const MatrixXd& response_in,
 PolynomialRegression::PolynomialRegression(int total_order, int nvars) :
   numVars(nvars)
 {
-  basisIndices   = std::make_shared<MatrixXi>();
-  compute_hyperbolic_indices(numVars, total_order, 1.0, *basisIndices);
-  numTerms       = basisIndices->cols();
+  //basisIndices   = std::make_shared<MatrixXi>();
+  compute_hyperbolic_indices(numVars, total_order, 1.0, basisIndices);
+  numTerms       = basisIndices.cols();
 
   scalerType = util::SCALER_TYPE::NONE;
 }
@@ -99,31 +97,35 @@ PolynomialRegression::~PolynomialRegression() {}
 // ------------------------------------------------------------
 // Getters
 
-const MatrixXd & PolynomialRegression::get_samples() const { return *samples_; }
+const MatrixXd & PolynomialRegression::get_samples() const { return samples_; }
 
-const MatrixXd & PolynomialRegression::get_response() const { return *response; }
+const MatrixXd & PolynomialRegression::get_response() const { return response_; }
 
 int PolynomialRegression::get_polynomial_order() const { return polynomialOrder; }
 
 util::SCALER_TYPE PolynomialRegression::get_scaler_type() const { return scalerType; }
 
-const MatrixXd & PolynomialRegression::get_polynomial_coeffs() const { return *polynomial_coeffs; }
+const MatrixXd & PolynomialRegression::get_polynomial_coeffs() const { return polynomial_coeffs; }
 
 double PolynomialRegression::get_polynomial_intercept() const { return polynomial_intercept; }
 
 const util::LinearSolverBase & PolynomialRegression::get_solver() const { return *solver; }
 
+int PolynomialRegression::get_num_terms() const { return numTerms; }
+
 // Setters
 
-void PolynomialRegression::set_samples(const MatrixXd & samples) { samples_ = std::make_shared<MatrixXd>(samples); }
+void PolynomialRegression::set_samples(const MatrixXd & samples) { samples_ = samples; }
 
-void PolynomialRegression::set_response(const MatrixXd & response_) { response = std::make_shared<MatrixXd>(response_); }
+void PolynomialRegression::set_response(const MatrixXd & response) { response_ = response; }
 
 void PolynomialRegression::set_polynomial_order(int polynomial_order) { polynomialOrder = polynomial_order; }
 
 void PolynomialRegression::set_scaler_type(const util::SCALER_TYPE scaler_type) { scalerType = scaler_type; }
 
 void PolynomialRegression::set_solver(util::SOLVER_TYPE solver_type_) { solver = solver_factory(solver_type_); }
+
+void PolynomialRegression::set_polynomial_coeffs(const MatrixXd &coeffs) { polynomial_coeffs = coeffs; }
 
 // ------------------------------------------------------------
 // Surrogate
@@ -139,11 +141,14 @@ PolynomialRegression::compute_basis_matrix(const MatrixXd & samples, MatrixXd & 
   // Generate the basis matrix
   basis_matrix = MatrixXd::Zero(num_samples, numTerms);
 
-  for(int j=0; j<numTerms; ++j) {
-    for(int i=0; i<num_samples; ++i) {
-      double val = 1.0;
-      for( int d=0; d<numVars; ++d )
-	val *= std::pow(samples(i,d), (*basisIndices)(d,j));
+  double val;
+
+  for (int j = 0; j < numTerms; ++j) {
+    for (int i = 0; i < num_samples; ++i) {
+      val = 1.0;
+      for (int d = 0; d < numVars; ++d) {
+	      val *= std::pow(samples(i,d), basisIndices(d,j));
+      }
       basis_matrix(i,j) = val;
     }
   }
@@ -162,18 +167,18 @@ PolynomialRegression::build_surrogate()
 
   // Generate the basis matrix
   MatrixXd unscaled_basis_matrix;
-  compute_basis_matrix(get_samples(), unscaled_basis_matrix);
+  compute_basis_matrix(samples_, unscaled_basis_matrix);
 
   // Scale the basis matrix.
   scaler = util::scaler_factory(scalerType, unscaled_basis_matrix);
   MatrixXd scaled_basis_matrix = scaler->get_scaled_features();
 
   // Solve the basis matrix.
-  polynomial_coeffs = std::make_shared<MatrixXd>(*response);
-  solver->solve(scaled_basis_matrix, *response, *polynomial_coeffs);
+  //polynomial_coeffs = std::make_shared<MatrixXd>(*response);
+  solver->solve(scaled_basis_matrix, response_, polynomial_coeffs);
 
   // Compute the intercept
-  polynomial_intercept = get_response().mean() - (scaled_basis_matrix*(get_polynomial_coeffs())).mean();
+  polynomial_intercept = response_.mean() - (scaled_basis_matrix*polynomial_coeffs).mean();
 }
 
 // ------------------------------------------------------------
@@ -189,7 +194,7 @@ PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd &app
   MatrixXd scaled_basis_matrix = *(scaler->scale_samples(unscaled_basis_matrix));
 
   // Find the polynomial regression values.
-  approx_values = scaled_basis_matrix * (get_polynomial_coeffs());
+  approx_values = scaled_basis_matrix*polynomial_coeffs;
   approx_values = (approx_values.array() + polynomial_intercept).matrix();
 }
 
@@ -209,9 +214,9 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
 
   int max_degree = configOptions.get<int>("max degree");
   double p_norm  = configOptions.get<double>("p-norm");
-  basisIndices   = std::make_shared<MatrixXi>();
-  compute_hyperbolic_indices(numVariables, max_degree, p_norm, *basisIndices);
-  numTerms       = basisIndices->cols();
+  //basisIndices   = std::make_shared<MatrixXi>();
+  compute_hyperbolic_indices(numVariables, max_degree, p_norm, basisIndices);
+  numTerms       = basisIndices.cols();
 
   // Generate the basis matrix
   MatrixXd unscaled_basis_matrix;
@@ -227,12 +232,12 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
   solver = util::solver_factory(solverType);
   /* DTS: I get why this is here but it seems to be an artifact due to
    * the use of a shared pointer for polynomial_coeffs.*/
-  polynomial_coeffs = std::make_shared<MatrixXd>(response);
-  solver->solve(scaled_basis_matrix, response, *polynomial_coeffs);
+  //polynomial_coeffs = std::make_shared<MatrixXd>(response);
+  solver->solve(scaled_basis_matrix, response, polynomial_coeffs);
 
   // Compute the intercept
   //polynomial_intercept = get_response().mean() - (scaled_basis_matrix*(get_polynomial_coeffs())).mean();
-  polynomial_intercept = response.mean() - (scaled_basis_matrix*(get_polynomial_coeffs())).mean();
+  polynomial_intercept = response.mean() - (scaled_basis_matrix*polynomial_coeffs).mean();
 
 
 }
@@ -248,7 +253,7 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
   MatrixXd scaled_basis_matrix = *(scaler->scale_samples(unscaled_basis_matrix));
 
   // Find the polynomial regression values.
-  approx_values = scaled_basis_matrix * (get_polynomial_coeffs());
+  approx_values = scaled_basis_matrix*(get_polynomial_coeffs());
   approx_values = (approx_values.array() + polynomial_intercept).matrix();
 }
 
@@ -257,6 +262,89 @@ void PolynomialRegression::default_options() {
   defaultConfigOptions.set("p-norm", 1.0, "P-Norm in hyperbolic cross");
   defaultConfigOptions.set("scaler type", "none", "Type of data scaling");
   defaultConfigOptions.set("regression solver type", "SVD", "Type of regression solver");
+}
+
+void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
+                                    const int qoi) {
+
+  MatrixXd basis_indices = basisIndices.cast<double>();
+  basis_indices.transposeInPlace();
+  MatrixXd deriv_coeffs = MatrixXd::Zero(numTerms, numVars);
+  MatrixXd diff;
+  MatrixXd::Index index;
+
+  for (int i = 0; i < numVars; i++) {
+    MatrixXd dec_basis_indices = basis_indices;
+    dec_basis_indices.col(i).array() -= 1.0;
+    for (int k = 0; k < numTerms; k++) {
+      /* check for a -1 entries in the relevant row
+       * of the decremented basis indices array */
+      if (dec_basis_indices(k,i) > -0.5) {
+        diff = basis_indices;
+        (diff.rowwise() - dec_basis_indices.row(k)).rowwise().squaredNorm().minCoeff(&index);
+        deriv_coeffs(index,i) = basis_indices(k,i)*polynomial_coeffs(k);
+      }
+    }
+  }
+
+  /* Generate the basis matrix */
+  MatrixXd unscaled_eval_pts_basis_matrix, scaled_eval_pts_basis_matrix;
+  compute_basis_matrix(samples, unscaled_eval_pts_basis_matrix);
+
+  /* Scale the basis matrix */
+  scaler->scale_samples(unscaled_eval_pts_basis_matrix,
+                        scaled_eval_pts_basis_matrix);
+
+  /* Compute the gradient */
+  gradient = scaled_eval_pts_basis_matrix*deriv_coeffs;
+}
+
+void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
+                                   const int qoi) {
+
+  hessian.resize(numVars, numVars);
+  MatrixXd basis_indices = basisIndices.cast<double>();
+  basis_indices.transposeInPlace();
+  MatrixXd deriv_coeffs = VectorXd::Zero(numTerms);
+  MatrixXd dec_basis_indices, diff;
+  MatrixXd::Index index;
+
+  /* Generate the (row) basis matrix */
+  MatrixXd unscaled_eval_pts_basis_matrix, scaled_eval_pts_basis_matrix;
+  compute_basis_matrix(sample, unscaled_eval_pts_basis_matrix);
+
+  /* Scale the (row) basis matrix */
+  scaler->scale_samples(unscaled_eval_pts_basis_matrix,
+                        scaled_eval_pts_basis_matrix);
+
+  for (int i = 0; i < numVars; i++) {
+    for (int j = i; j < numVars; j++) {
+      deriv_coeffs.setZero();
+      dec_basis_indices = basis_indices;
+      dec_basis_indices.col(i).array() -= 1.0;
+      dec_basis_indices.col(j).array() -= 1.0;
+      for (int k = 0; k < numTerms; k++) {
+        /* check for any -1 entries in the relevant row
+         * of the decremented basis indices array */
+        if (!(dec_basis_indices.row(k).any() < -0.5)) {
+          diff = basis_indices;
+          (diff.rowwise() - dec_basis_indices.row(k)).rowwise().squaredNorm().minCoeff(&index);
+          if (i == j) {
+            deriv_coeffs(index) = basis_indices(k,i)*(basis_indices(k,i) - 1.0)*
+                                  polynomial_coeffs(k);
+          }
+          else {
+            deriv_coeffs(index) = basis_indices(k,i)*basis_indices(k,j)*
+                                  polynomial_coeffs(k);
+          }
+        }
+      }
+      hessian(i,j) = (scaled_eval_pts_basis_matrix*deriv_coeffs)(0,0);
+      if (i != j) {
+        hessian(j,i) = hessian(i,j);
+      }
+    }
+  }
 }
 
 // ------------------------------------------------------------

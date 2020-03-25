@@ -54,15 +54,12 @@ int test_gp(double atol){
   length_scale_bounds(0,1) = 1.0e2;
 
   ParameterList param_list("GP Test Parameters");
-  param_list.set("sigma_bounds", sigma_bounds);
-  param_list.set("length_scale_bounds", length_scale_bounds);
-  param_list.set("scaler_name",
-		 "standardization"
-		 // "none"
-		 );
-  param_list.set("num_restarts", 10);
-  param_list.set("nugget", 1.0e-12);
-  param_list.set("gp_seed", 42);
+  param_list.set("sigma bounds", sigma_bounds);
+  param_list.set("length-scale bounds", length_scale_bounds);
+  param_list.set("scaler name","standardization");
+  param_list.set("num restarts", 10);
+  param_list.sublist("Nugget").set("fixed nugget", 1.0e-12);
+  param_list.set("gp seed", 42);
 
   /* 1D GP test #1: Construct GP and build surrogate all
    * at once */
@@ -140,9 +137,9 @@ int test_gp(double atol){
   GaussianProcess gp3;
   ParameterList current_opts;
   gp3.get_options(current_opts);
-  current_opts.set("scaler_name", "standardization");
-  current_opts.set("nugget", 1.0e-12);
-  current_opts.set("gp_seed", 42);
+  current_opts.set("scaler name", "standardization");
+  current_opts.sublist("Nugget").set("fixed nugget", 1.0e-12);
+  current_opts.set("gp seed", 42);
   gp3.set_options(current_opts);
   gp3.build(xs_u, response);
 
@@ -163,6 +160,75 @@ int test_gp(double atol){
   if (!matrix_equals(cov,gold_cov,atol)){
     std::cout << "12\n";
     return 12;
+  }
+
+  std::cout << "old gp value:" << std::endl;
+  std::cout << pred << std::endl;
+  std::cout << "\n";
+
+  /* 1D GP test #4:
+   * use defaultConfigOptions and introduce a polynomial trend
+   * and nugget estimation */
+  // gold values
+  MatrixXd gold_value4(6,1);
+  VectorXd gold_std4(6);
+  MatrixXd gold_cov4(6,6);
+
+  gold_value4 << -0.05312219, -0.27214983, -0.033252, 0.02527716, -0.12356696, -0.18573136;
+  gold_std4 << 0.02028642, 0.00536066, 0.00064835, 0.00459461, 0.00395678, 0.14659393;
+  gold_cov4 << 0.000411539, -9.13625e-05,  6.17757e-08,  -1.9461e-05,  5.94823e-06, -0.000256977,
+             -9.13625e-05,  2.87366e-05, -5.31468e-07,  6.01025e-06, -4.53635e-06, -5.15403e-05,
+              6.17757e-08, -5.31468e-07,  4.20359e-07,  8.39709e-07, -4.44025e-07, -8.63467e-06,
+             -1.9461e-05,  6.01025e-06,  8.39709e-07,  2.11104e-05, -1.52399e-05, -0.000388392,
+              5.94823e-06, -4.53635e-06, -4.44025e-07, -1.52399e-05,  1.56561e-05,  0.000499163,
+             -0.000256977, -5.15403e-05, -8.63467e-06, -0.000388392,  0.000499163,    0.0214898;
+
+
+  GaussianProcess gp4;
+  ParameterList current_opts4;
+  gp4.get_options(current_opts4);
+  current_opts4.set("scaler name", "standardization");
+  current_opts4.sublist("Nugget").set("fixed nugget", 0.0);
+  current_opts4.set("gp seed", 42);
+  current_opts4.sublist("Nugget").set("estimate nugget", true);
+  current_opts4.sublist("Trend").set("estimate trend", true);
+  current_opts4.sublist("Trend").sublist("Options").set("max degree", 1);
+  /* debugging */
+  current_opts4.set("num restarts", 20);
+  gp4.set_options(current_opts4);
+  gp4.build(xs_u, response);
+
+  gp4.value(eval_pts, pred);
+  std_dev = gp4.get_posterior_std_dev();
+  cov = gp4.get_posterior_covariance();
+
+  if (print_output) {
+    std::cout << "gp4 value:" << std::endl;
+    std::cout << pred << std::endl;
+    std::cout << "\n";
+
+    std::cout << "gp4 std_dev:" << std::endl;
+    std::cout << std_dev << std::endl;
+    std::cout << "\n";
+
+    std::cout << "gp4 cov:" << std::endl;
+    std::cout << cov << std::endl;
+    std::cout << "\n";
+  }
+
+  if (!matrix_equals(pred,gold_value4,atol)){
+    std::cout << "13\n";
+    return 13;
+  }
+
+  if (!matrix_equals(std_dev,gold_std4,atol)){
+    std::cout << "14\n";
+    return 14;
+  }
+
+  if (!matrix_equals(cov,gold_cov4,atol)){
+    std::cout << "15\n";
+    return 15;
   }
 
   /* 2D GP test */
@@ -203,9 +269,9 @@ int test_gp(double atol){
   */
 
   // Update ParameterList for this test
-  param_list.set("sigma_bounds", sigma_bounds);
-  param_list.set("length_scale_bounds", length_scale_bounds);
-  param_list.set("nugget", 1.0e-10);
+  param_list.set("sigma bounds", sigma_bounds);
+  param_list.set("length-scale bounds", length_scale_bounds);
+  param_list.sublist("Nugget").set("fixed nugget", 1.0e-10);
 
   std::string samples_fname = "gp_test_data/lhs_data_64.txt";
   std::string responses_fname = "gp_test_data/smooth_herbie_64.txt";

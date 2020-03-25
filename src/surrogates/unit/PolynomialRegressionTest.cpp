@@ -173,6 +173,24 @@ another_additive_quadratic_function(const MatrixXd & samples, MatrixXd & func_va
   }
 }
 
+void
+cubic_bivariate_function(const MatrixXd & samples, MatrixXd & func_vals)
+{
+  func_vals.resize(samples.rows(),1);
+  const int num_vars = samples.cols();
+
+  for( int i=0; i<samples.rows(); ++i )
+  {
+    double x = samples(i,0);
+    double y = samples(i,1);
+    func_vals(i,0) =
+      1 + x + y + (x*y) +
+      (std::pow(x,2) * std::pow(y,2)) +
+      (std::pow(x,2) * y) +
+      (std::pow(y,2) * x) +
+      std::pow(x,3) + std::pow(y,3);
+  }
+}
 
   // ------------------------------------------------------------
 
@@ -303,6 +321,40 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   
 }
 
+void
+PolynomialRegressionSurrogate_gradient_and_hessian()
+{
+  int num_vars    = 2,
+      num_samples = 20,
+      degree      = 3;
+
+  MatrixXd samples, responses;
+  get_samples(num_vars, num_samples, samples);
+  cubic_bivariate_function(samples, responses);
+
+  PolynomialRegression pr(degree, num_vars);
+  pr.set_samples(samples);
+  pr.set_polynomial_order(degree);
+  pr.set_response(responses);
+  pr.set_scaler_type(dakota::util::SCALER_TYPE::NONE);
+  pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
+  pr.build_surrogate();
+
+  MatrixXd gradient, hessian;
+  pr.gradient(samples.topRows(2), gradient);
+  pr.hessian(samples.topRows(1), hessian);
+
+  MatrixXd gold_gradient(2,2);
+  gold_gradient << 1.59711,  1.06684, 
+                   0.691654, 2.90352;
+
+  MatrixXd gold_hessian(2,2);
+  gold_hessian << -2.75852, 0.04462,
+                   0.04462, -1.83287;
+
+  BOOST_CHECK( matrix_equals(gold_hessian, hessian, 1.0e-4) );
+}
+
 } // namespace
 
 // --------------------------------------------------------------------------------
@@ -317,6 +369,7 @@ int test_main( int argc, char* argv[] ) // note the name!
 
   // Multivariate tests
   PolynomialRegressionSurrogate_multivariate_regression_builder();
+  PolynomialRegressionSurrogate_gradient_and_hessian();
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );

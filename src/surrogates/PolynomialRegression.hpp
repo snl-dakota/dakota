@@ -64,6 +64,7 @@ public:
   const MatrixXd & get_polynomial_coeffs() const;
   double get_polynomial_intercept() const;
   const util::LinearSolverBase & get_solver() const;
+  int get_num_terms() const;
 
   // Setters
 
@@ -72,6 +73,7 @@ public:
   void set_polynomial_order(int);
   void set_scaler_type(const util::SCALER_TYPE);
   void set_solver(const util::SOLVER_TYPE);
+  void set_polynomial_coeffs(const MatrixXd &coeffs);
 
   // Surrogate
 
@@ -82,15 +84,17 @@ public:
   // Surrogate parent API
   void build(const MatrixXd &samples, const MatrixXd &response) override;
   void value(const MatrixXd &eval_points, MatrixXd &approx_values) override;
+  void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi = 0) override;
+  void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
 
 private:
   void default_options() override;
   // Input fields
   int numTerms;
   int numVars;
-  std::shared_ptr<MatrixXd> samples_;
-  std::shared_ptr<MatrixXd> response;
-  std::shared_ptr<MatrixXi> basisIndices;
+  MatrixXd samples_;
+  MatrixXd response_;
+  MatrixXi basisIndices;
   int polynomialOrder;
   util::SCALER_TYPE scalerType;
   util::SOLVER_TYPE solverType;
@@ -98,7 +102,7 @@ private:
   std::shared_ptr<util::LinearSolverBase> solver;
 
   // Polynomial surrogate fields
-  std::shared_ptr<MatrixXd> polynomial_coeffs;
+  MatrixXd polynomial_coeffs;
   double polynomial_intercept;
 };
 } // namespace surrogates
