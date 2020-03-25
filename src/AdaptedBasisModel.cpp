@@ -411,7 +411,9 @@ void AdaptedBasisModel::identify_subspace()
       for (k=0; k<numFullspaceVars; ++k)
 	      A_q(row_cntr,k) = A_i_trans(k,j);
   }
-  Cout << "\n Matrix A_q \n" << A_q << std::endl;
+  
+  rotationMatrix = A_q;
+  Cout << "\n Rotation Matrix \n" << rotationMatrix << std::endl;
 
   // TO DO
 
@@ -426,7 +428,7 @@ void AdaptedBasisModel::identify_subspace()
 
   //////////////////////////////////////////////////////////////////////////////
 
-  Cout << "\nAdapted Basis Model: Composing composite reduction"  << std::endl;
+  //// Cout << "\nAdapted Basis Model: Composing composite reduction"  << std::endl;
 
   // Given A_i for i=1,..,numFunctions, we need to compute a composite eta:
   // Refer to board notes / emerging article:
@@ -445,11 +447,11 @@ void AdaptedBasisModel::identify_subspace()
   //          uses svd() helper from dakota_linear_algebra.hpp.
   //          Apply truncation criterion
 
-  RealVector singular_values;
-  RealMatrix V_transpose; // right eigenvectors, not used
+  //// RealVector singular_values;
+  //// RealMatrix V_transpose; // right eigenvectors, not used
   // we want left singular vectors but don't overwrite A, so make a deep copy
-  RealMatrix left_singular_vectors = A_q;
-  svd(left_singular_vectors, singular_values, V_transpose);
+  //// RealMatrix left_singular_vectors = A_q;
+  //// svd(left_singular_vectors, singular_values, V_transpose);
 
   //   Truncate eigenvalues of covariance at some pre-selected level
   //     --> dimension \nu reduced from dimension d
@@ -459,7 +461,7 @@ void AdaptedBasisModel::identify_subspace()
   //RealVector truncated_singular_values       = singular_values;
   //RealMatrix truncated_left_singular_vectors = left_singular_vectors;
 
-  reducedRank = /*truncated_*/singular_values.length(); // TO DO
+  //// reducedRank = /*truncated_*/singular_values.length(); // TO DO
 
   // Rewrite KLE as
   //   \eta = \Phi \Lamba \mu   where   \eta = A \xi
@@ -473,19 +475,19 @@ void AdaptedBasisModel::identify_subspace()
   //   \xi (full dimension d) = 1/n A' \Phi \Lambda \mu (reduced dimension)
 
   // Pre-compute 1/n A' \Phi \Lambda:
-  rotationMatrix.shapeUninitialized(numFullspaceVars, reducedRank);
-  for (i=0; i<numFullspaceVars; ++i) {
-    const Real* A_col = A_q[i]; // row of A'
-    for (j=0; j<reducedRank; ++j) {
-      const Real* U_col = /*truncated_*/left_singular_vectors[j];
-      Real sum_prod = 0.;
-      for (k=0; k<numFullspaceVars*numFunctions; ++k)
-	      sum_prod += A_col[k] * U_col[k];
-      rotationMatrix(i,j) = sum_prod * /*truncated_*/singular_values[j];
-    }
-  }
-  rotationMatrix.scale(1./numFunctions);
-  Cout << "\nRotation matrix\n" << rotationMatrix << std::endl;
+  //// rotationMatrix.shapeUninitialized(numFullspaceVars, reducedRank);
+  //// for (i=0; i<numFullspaceVars; ++i) {
+  ////   const Real* A_col = A_q[i]; // row of A'
+  ////  for (j=0; j<reducedRank; ++j) {
+  ////    const Real* U_col = /*truncated_*/left_singular_vectors[j];
+  ////    Real sum_prod = 0.;
+  ////    for (k=0; k<numFullspaceVars*numFunctions; ++k)
+  ////	      sum_prod += A_col[k] * U_col[k];
+  ////    rotationMatrix(i,j) = sum_prod * /*truncated_*/singular_values[j];
+  ////  }
+  ////}
+  ////rotationMatrix.scale(1./numFunctions);
+  ////Cout << "\nRotation matrix\n" << rotationMatrix << std::endl;
 
 
   //////////////////////////////////////////////////////////////////////////////
@@ -497,12 +499,12 @@ void AdaptedBasisModel::identify_subspace()
   A = RealMatrix(reducedRank, numFullspaceVars);
   */
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nAdapted Basis Model: rotation matrix is:\n" << rotationMatrix;
-  Cout << "\n****************************************************************"
-       << "**********\nAdapted Basis Model: Build Statistics"
-       << "\nsubspace size: " << reducedRank << "\n**************************"
-       << "************************************************\n";
+  //// if (outputLevel >= DEBUG_OUTPUT)
+  ////   Cout << "\nAdapted Basis Model: rotation matrix is:\n" << rotationMatrix;
+  //// Cout << "\n****************************************************************"
+  ////      << "**********\nAdapted Basis Model: Build Statistics"
+  ////      << "\nsubspace size: " << reducedRank << "\n**************************"
+  ////      << "************************************************\n";
 }
 
 
