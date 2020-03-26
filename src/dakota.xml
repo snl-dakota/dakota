@@ -187,7 +187,7 @@
 	     <keyword  id="scaling" name="scaling" code="{N_mdm(true,methodScaling)}" label="Scaling flag"  minOccurs="0" default="no scaling" />
 	     ' >
     <!-- # TO DO: flatten this group and review contexts for inclusion: -->
-    <!-- Defaults from old reference manual to be inserted: 
+    <!-- Defaults from old reference manual to be inserted:
 	 local_reliability: 0
 	 PCE: 0 (samples on approximation)
 	 MCMC: 10000
@@ -573,7 +573,7 @@
 
     <!ENTITY ml_pilot_samples '
       	     <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples"  minOccurs="0" >
-	       <alias name="initial_samples"/> 
+	       <alias name="initial_samples"/>
 	       <param type="INTEGERLIST" />
 	     </keyword>
 	     ' >
@@ -1341,7 +1341,7 @@
               <keyword id="freeform" name="freeform" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="Freeform"   default="annotated format" />
             </oneOf>
           </optional>
-        </keyword>      
+        </keyword>
       <keyword  id="output_file" name="output_file" code="{N_stm(str,outputFile)}" label="Output File"  minOccurs="0" default="output to console, not file" complexity="0">
         <param type="OUTPUT_FILE" />
       </keyword>
@@ -1384,8 +1384,8 @@
 	       </oneOf>
 	       </keyword>
 
-          </keyword>        
-        </keyword>        
+          </keyword>
+        </keyword>
         <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Enable Graphics Window"  minOccurs="0" default="graphics off" complexity="1"/>
       </group>
       <group label="Run Modes">
@@ -1441,8 +1441,8 @@
         <alias name="method_pointer"/>
         <param type="STRING" in_taglist="method" />
       </keyword>
-    </keyword>    
-    
+    </keyword>
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="method" name="method" minOccurs="1" maxOccurs="unbounded" code="{N_mdm3(start,0,stop)}" label="Method" >
       <keyword  id="id_method" name="id_method" code="{N_mdm(str,idMethod)}" label="Method set identifier"  minOccurs="0" default="strategy use of last method parsed" >
@@ -1472,7 +1472,7 @@
               <alias name="uncoupled"/>
               <!-- #	      [ adaptive {N_mdm(lit,seqHybridType_adaptive)}
                    #	      	progress_threshold REAL {N_mdm(Real,hybridProgThresh)} ]
-                -->	
+                -->
               <oneOf label="Sub-method Selection">
                 <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  minOccurs="1" >
                   <param type="STRINGLIST" />
@@ -2311,6 +2311,12 @@
           <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
+          <keyword  id="batch_size_acquisition" name="batch_size_acquisition" code="{N_mdm(int,batchSize)}" label="Number of concurrent sampling points selected per acquisition batch"  minOccurs="0" >
+  	      <param type="INTEGER" constraint=">= 1" />
+    	    </keyword>
+          <keyword  id="batch_size_exploration" name="batch_size_exploration" code="{N_mdm(int,batchSizeExplore)}" label="Number of concurrent sampling points selected per exploration batch"  minOccurs="0" >
+  	      <param type="INTEGER" constraint=">= 0" />
+    	    </keyword>
           &default_max_iterations;
 	  <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance"  minOccurs="0" default="1.e-12" >
             <param type="REAL" />
@@ -2452,7 +2458,7 @@
 	    <param type="INTEGER" />
 	  </keyword>
 	  &method_seed;
-	  <!-- BMA: May want to restore these if it's a helper iterator, e.g., for subspace methods 
+	  <!-- BMA: May want to restore these if it's a helper iterator, e.g., for subspace methods
 	       &default_max_iterations;
 	       &default_convergence_tolerance;
 	    -->
@@ -2467,7 +2473,7 @@
 	  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples"  minOccurs="0" >
 	    <param type="INTEGERLIST" />
 	  </keyword>
-	  <keyword  id="d_optimal" name="d_optimal" code="{N_mdm(true,dOptimal)}" label="D-Optimal Sample Design"  minOccurs="0" default="off"> 
+	  <keyword  id="d_optimal" name="d_optimal" code="{N_mdm(true,dOptimal)}" label="D-Optimal Sample Design"  minOccurs="0" default="off">
 	    <optional>
 	      <oneOf label="Design Strategy">
 		<keyword  id="candidate_designs" name="candidate_designs" code="{N_mdm(sizet,numCandidateDesigns)}" label="Number of Candidate Designs"  minOccurs="1" default="100" >
@@ -2817,7 +2823,7 @@
 		<param type="INTEGER" constraint="> 0" />
 	      </keyword>
 	      &bayes_emulator;
-	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space"  minOccurs="0" />		  
+	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space"  minOccurs="0" />
 	      <keyword  id="data_distribution" name="data_distribution" label="Data distribution type"  minOccurs="1" code="{0}">
 		<oneOf label="Data Distribution">
 		  <keyword  id="gaussian" name="gaussian" code="{0}" label="gaussian"  >
@@ -2841,7 +2847,7 @@
 	      <keyword id="generate_posterior_samples" name="generate_posterior_samples" code="{N_mdm(true,generatePosteriorSamples)}" label="Flag specifying whether to generate samples from the posterior"  minOccurs="0">
 	      <keyword id="posterior_samples_export_filename" name="posterior_samples_export_filename" code="{N_mdm(str,posteriorSamplesExportFilename)}" label="Filename to which samples from posterior will be written"  minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
 	      </keyword>
-	      <keyword id="evaluate_posterior_density" name="evaluate_posterior_density" code="{N_mdm(true,evaluatePosteriorDensity)}" label="Flag specifying whether to evaluate the posterior density at a set of samples"  minOccurs="0"> 
+	      <keyword id="evaluate_posterior_density" name="evaluate_posterior_density" code="{N_mdm(true,evaluatePosteriorDensity)}" label="Flag specifying whether to evaluate the posterior density at a set of samples"  minOccurs="0">
 	      <keyword id="posterior_density_export_filename" name="posterior_density_export_filename" code="{N_mdm(str,posteriorDensityExportFilename)}" label="Filename to which posterior density evaluations will be written"  minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
 	      </keyword>
 	    </keyword>
@@ -2906,7 +2912,7 @@
 	      </optional>
             </keyword>
 	    <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
-	  </keyword> 
+	  </keyword>
 	  <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers"  minOccurs="0" default="none" >
 	    <oneOf label="Calibrate Error Multipliers">
 	      <keyword  id="one" name="one" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}" label="one multiplier"   />
@@ -2994,7 +3000,7 @@
 		</oneOf>
 	      </optional>
 	    </keyword>
-	    <keyword  id="export_corrected_model_file" name="export_corrected_model_file" code="{N_mdm(str,exportCorrModelFile)}" label="File export of corrected model values"  minOccurs="0" default="corrected model export to default filename" > 
+	    <keyword  id="export_corrected_model_file" name="export_corrected_model_file" code="{N_mdm(str,exportCorrModelFile)}" label="File export of corrected model values"  minOccurs="0" default="corrected model export to default filename" >
 	      <param type="OUTPUT_FILE" />
 	      <optional>
 		<oneOf label="Tabular Format" >
@@ -3008,7 +3014,7 @@
 		</oneOf>
 	      </optional>
 	    </keyword>
-	    <keyword  id="export_corrected_variance_file" name="export_corrected_variance_file" code="{N_mdm(str,exportCorrVarFile)}" label="File export of variance values of corrected model"  minOccurs="0" default="corrected model variance export to default filename" > 
+	    <keyword  id="export_corrected_variance_file" name="export_corrected_variance_file" code="{N_mdm(str,exportCorrVarFile)}" label="File export of variance values of corrected model"  minOccurs="0" default="corrected model variance export to default filename" >
 	      <param type="OUTPUT_FILE" />
 	      <optional>
 		<oneOf label="Tabular Format" >
@@ -3321,7 +3327,7 @@
 
       </oneOf>
     </keyword>
-    
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="model" name="model" minOccurs="0" maxOccurs="unbounded" code="{N_mom3(start,0,stop)}" label="Model" >
       <keyword  id="id_model" name="id_model" code="{N_mom(str,idModel)}" label="Model Identifier"  minOccurs="0" default="method use of last model parsed" complexity="0">
@@ -3422,9 +3428,8 @@
                 </keyword>
 
 		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" minOccurs="1" group="Surrogate-based Methods">
-		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
+		  <!-- Model includes solver {iterations,tolerance} -->
+		  &default_max_solver_iterations;
 		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
 		    <param type="REAL" />
 		  </keyword>
@@ -3442,7 +3447,7 @@
 		  <keyword  id="max_order" name="max_order" code="{N_mom(sizet,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <!-- 
+		  <!--
 		  <keyword id="num_coeff_check" name="num_coeff_check" code="{N_mom(sizet,numCoeffCheck)}" label="Number of polynomial coefficients to check for convergence" help="" minOccurs="0" default="2">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
@@ -3494,7 +3499,7 @@
 		  <keyword  id="verbosity" name="verbosity" code="{N_mom(sizet,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword> -->
-		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,crossMaxIter)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(sizet,crossMaxIter)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 		  <!--
@@ -3787,7 +3792,7 @@
                 <keyword  id="peer1" name="peer" code="{N_mom(type,subMethodScheduling_PEER_SCHEDULING)}" label="Peer"   />
 				<!-- #	      | ( peer {0}
                      #	          dynamic  {N_mom(type,subMethodScheduling_PEER_DYNAMIC_SCHEDULING)}
-                     #	      	  | static {N_mom(type,subMethodScheduling_PEER_STATIC_SCHEDULING)} ) 
+                     #	      	  | static {N_mom(type,subMethodScheduling_PEER_STATIC_SCHEDULING)} )
 				  -->
               </oneOf>
             </keyword>
@@ -3860,16 +3865,16 @@
             <param type="INTEGER" />
 	  </keyword>
 	  <keyword id="build_surrogate" name="build_surrogate" label="Build Surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
-            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement Samples"  minOccurs="0" default="0"> 
+            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement Samples"  minOccurs="0" default="0">
               <param type="INTEGERLIST" />
             </keyword>
 	  </keyword>
-	  <keyword id="normalization" name="normalization" label="Normalization" code="{0}" minOccurs="0"> 
-      <oneOf label="Normalize By..."> 
-        <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" /> 
-        <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" /> 
-        <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" /> 
-      </oneOf> 
+	  <keyword id="normalization" name="normalization" label="Normalization" code="{0}" minOccurs="0">
+      <oneOf label="Normalize By...">
+        <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" />
+        <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" />
+        <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" />
+      </oneOf>
 	  </keyword>
 	</keyword>
 	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="Adapted Basis"  minOccurs="1" >
@@ -3921,7 +3926,7 @@
 	      <keyword  id="propagation_model_pointer" name="propagation_model_pointer" code="{N_mom(str,propagationModelPointer)}" label="Pointer to Model Accepting RF"  minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
-        </keyword>	
+        </keyword>
     </oneOf>
      <keyword  id="variables_pointer" name="variables_pointer" code="{N_mom(str,variablesPointer)}" label="Variables Pointer"  minOccurs="0" default="model use of last variables parsed" complexity="0">
        <param type="STRING" in_taglist="variables" />
@@ -3931,7 +3936,7 @@
      </keyword>
      <keyword  id="hierarchical_tagging" name="hierarchical_tagging" code="{N_mom(true,hierarchicalTags)}" label="Hierarchical Evaluation Tags"  minOccurs="0" default="no hierarchical tagging" complexity="1" />
     </keyword>
-    
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="variables" name="variables" minOccurs="1" maxOccurs="unbounded" code="{N_vam3(start,0,stop)}" label="Variables" >
       <keyword  id="id_variables" name="id_variables" code="{N_vam(str,idVariables)}" label="Variables set identifier"  minOccurs="0" default="use of last variables parsed" >
@@ -4721,7 +4726,7 @@
       </keyword>
     </keyword>
 
-    
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="interface" name="interface" minOccurs="1" maxOccurs="unbounded" code="{N_ifm3(start,0,stop)}" label="Interface" >
       <keyword  id="id_interface" name="id_interface" code="{N_ifm(str,idInterface)}" label="Interface Set Identifier"  minOccurs="0" default="use of last interface parsed" complexity="0">
@@ -4917,7 +4922,7 @@
 	    </keyword>
       </group>
     </keyword>
-    
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="responses" name="responses" minOccurs="1" maxOccurs="unbounded" code="{N_rem3(start,0,stop)}" label="Responses" >
       <keyword  id="id_responses" name="id_responses" code="{N_rem(str,idResponses)}" label="Responses set identifier"  minOccurs="0" default="use of last responses parsed" >
@@ -5042,7 +5047,7 @@
                #             )
                #  	    |
                # The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
-               #  	    ( 
+               #  	    (
            -->
 	  <optional>
 	    <oneOf label="Calibration Data">
@@ -5150,6 +5155,6 @@
       &response_gradients;
       &response_hessians;
      </keyword>
-    
+
   </input>
 </document>

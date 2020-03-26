@@ -106,7 +106,7 @@ typedef std::vector<Iterator>          IteratorArray;
 typedef std::vector<RealMultiArray>    BoostMAArray;
 typedef std::vector<RealMulti2DArray>  BoostMA2DArray;
 typedef std::vector<RealMulti3DArray>  BoostMA3DArray;
- 
+
 typedef std::list<bool>                BoolList;
 typedef std::list<int>                 IntList;
 typedef std::list<size_t>              SizetList;

@@ -201,9 +201,9 @@ derived_parse_inputs(const std::string& dakota_input_file,
 
 
 void NIDRProblemDescDB::derived_broadcast()
-{ 
-  check_variables(&dataVariablesList); 
-  check_responses(&dataResponsesList); 
+{
+  check_variables(&dataVariablesList);
+  check_responses(&dataResponsesList);
 }
 // check_variables() invokes check_variables_node(), either directly or after
 // some manip of interval/histogram/correlation data.  check_variables_node
@@ -465,12 +465,12 @@ struct Var_Info {
   VarLabel DAUIv[DAUIVar_Nkinds], DAUSv[DAUSVar_Nkinds], DAURv[DAURVar_Nkinds];
   VarLabel DEUIv[DEUIVar_Nkinds], DEUSv[DEUSVar_Nkinds], DEURv[DEURVar_Nkinds];
   IntArray   *nddsi, *nddss, *nddsr, *nCI, *nDI, *nhbp,
-             *nhpip, *nhpsp, *nhprp, 
+             *nhpip, *nhpsp, *nhprp,
              *ndusi, *nduss, *ndusr,
              *ndssi, *ndsss, *ndssr;
-             
+
   RealVector *ddsr, *CIlb, *CIub, *CIp, *DIp, *DSIp, *DSSp, *DSRp, *dusr,
-             *hba, *hbo, *hbc, 
+             *hba, *hbo, *hbc,
              *hpic, *hpsc, *hpra, *hprc,
              *ucm, *dssr;
   IntVector  *ddsi, *DIlb, *DIub, *hpia, *dusi, *dssi, *ddsia, *ddssa, *ddsra;
@@ -624,7 +624,7 @@ iface_true(const char *keyname, Values *val, void **g, void *v)
 extern const char** arg_list_adjust(const char **, void **);
 
 /*
- *  not_executable(const char *driver_name) checks whether driver_name is an 
+ *  not_executable(const char *driver_name) checks whether driver_name is an
  *  executable file appearing somewhere in $PATH and returns 0 if so,
  *  1 if not found, 2 if found but not executable.
  */
@@ -846,7 +846,7 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
   }
 
   // validate each of the analysis_drivers
-  if ( di->interfaceType == SYSTEM_INTERFACE || 
+  if ( di->interfaceType == SYSTEM_INTERFACE ||
        di->interfaceType == FORK_INTERFACE )
     for(size_t i = 0; i < nd; ++i) {
       // trim any leading whitespace from the driver, in place
@@ -1487,17 +1487,6 @@ model_pint(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-model_nnint(const char *keyname, Values *val, void **g, void *v)
-{
-  int n = *val->i;
-#ifdef REDUNDANT_INT_CHECKS
-  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
-    botch("%s must be non-negative", keyname);
-#endif
-  (*(Mod_Info**)g)->dmo->**(int DataModelRep::**)v = n;
-}
-
-void NIDRProblemDescDB::
 model_type(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_type*)v)->sp = ((Model_mp_type*)v)->type;
@@ -1506,14 +1495,14 @@ model_type(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 model_utype(const char *keyname, Values *val, void **g, void *v)
 {
-  (*(Mod_Info**)g)->dmo->*((Model_mp_utype*)v)->sp = 
+  (*(Mod_Info**)g)->dmo->*((Model_mp_utype*)v)->sp =
     ((Model_mp_utype*)v)->utype;
 }
 
 void NIDRProblemDescDB::
 model_augment_utype(const char *keyname, Values *val, void **g, void *v)
 {
-  (*(Mod_Info**)g)->dmo->*((Model_mp_utype*)v)->sp |= 
+  (*(Mod_Info**)g)->dmo->*((Model_mp_utype*)v)->sp |=
     ((Model_mp_utype*)v)->utype;
 }
 
@@ -1535,7 +1524,7 @@ model_sizet(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(size_t DataModelRep::**)v = n;
 }
 
-    
+
 void NIDRProblemDescDB::
 model_start(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1565,7 +1554,7 @@ model_str(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(String DataModelRep::**)v = *val->s;
 }
 
-   
+
 void NIDRProblemDescDB::
 model_strL(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1759,10 +1748,10 @@ check_descriptors_for_repeats(const StringArray& labels) {
   std::copy(labels.begin(), labels.end(), sorted.begin());
   // error if descriptors are repeated
   std::sort(sorted.begin(), sorted.end());
-  StringArray::iterator sorted_i = 
+  StringArray::iterator sorted_i =
     std::adjacent_find(sorted.begin(), sorted.end());
   if(sorted_i != sorted.end())
-    Squawk("Repeated descriptors (\"%s\") are not permitted",sorted_i->c_str()); 
+    Squawk("Repeated descriptors (\"%s\") are not permitted",sorted_i->c_str());
 }
 
 void NIDRProblemDescDB::
@@ -1804,10 +1793,10 @@ check_descriptors_for_repeats(const StringArray &cd_labels,
   std::copy(dseu_labels.begin(), dseu_labels.end(), std::back_inserter(sorted));
   std::copy(dreu_labels.begin(), dreu_labels.end(), std::back_inserter(sorted));
   std::sort(sorted.begin(), sorted.end());
-  StringArray::iterator sorted_i = 
+  StringArray::iterator sorted_i =
     std::adjacent_find(sorted.begin(), sorted.end());
   if(sorted_i != sorted.end())
-    Squawk("Repeated descriptors (\"%s\") are not permitted",sorted_i->c_str()); 
+    Squawk("Repeated descriptors (\"%s\") are not permitted",sorted_i->c_str());
 }
 
 
@@ -2043,7 +2032,7 @@ env_str(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 env_utype(const char *keyname, Values *val, void **g, void *v)
 {
-  (*(DataEnvironmentRep**)g)->*((Env_mp_utype*)v)->sp = 
+  (*(DataEnvironmentRep**)g)->*((Env_mp_utype*)v)->sp =
     ((Env_mp_utype*)v)->utype;
 }
 
@@ -2051,7 +2040,7 @@ env_utype(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 env_augment_utype(const char *keyname, Values *val, void **g, void *v)
 {
-  (*(DataEnvironmentRep**)g)->*((Env_mp_utype*)v)->sp |= 
+  (*(DataEnvironmentRep**)g)->*((Env_mp_utype*)v)->sp |=
     ((Env_mp_utype*)v)->utype;
 }
 
@@ -2673,7 +2662,7 @@ static void Vgen_LognormalUnc(DataVariablesRep *dv, size_t offset)
   n  = dv->numLognormalUncVars;    Lam = &dv->lognormalUncLambdas;
   Z  = &dv->lognormalUncZetas;     Ef  = &dv->lognormalUncErrFacts;
   M  = &dv->lognormalUncMeans;     Sd  = &dv->lognormalUncStdDevs;
-  L  = &dv->lognormalUncLowerBnds; U   = &dv->lognormalUncUpperBnds; 
+  L  = &dv->lognormalUncLowerBnds; U   = &dv->lognormalUncUpperBnds;
   IP = &dv->lognormalUncVars;      V   = &dv->continuousAleatoryUncVars;
 
   size_t num_Sd = Sd->length(), num_Lam = Lam->length(), num_IP = IP->length(),
@@ -2772,7 +2761,7 @@ static void Vgen_UniformUnc(DataVariablesRep *dv, size_t offset)
 	moments_from_params((*L)[j], (*U)[j], (*V)[i], stdev);
 }
 
-static void 
+static void
 Vchk_LoguniformUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t j, n;
@@ -2875,7 +2864,7 @@ static void Vgen_TriangularUnc(DataVariablesRep *dv, size_t offset)
   }
 }
 
-static void 
+static void
 Vchk_ExponentialUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n = dv->numExponentialUncVars;
@@ -3074,7 +3063,7 @@ static void Vgen_WeibullUnc(DataVariablesRep *dv, size_t offset)
 /// Check the histogram bin input data, normalize the counts and populate
 /// the histogramUncBinPairs map data structure; map keys are guaranteed
 /// unique since the abscissas must increase
-static void 
+static void
 Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   IntArray *nhbp;
@@ -3257,7 +3246,7 @@ static void Vgen_BinomialUnc(DataVariablesRep *dv, size_t offset)
   }
 }
 
-static void 
+static void
 Vchk_NegBinomialUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n = dv->numNegBinomialUncVars;
@@ -3371,7 +3360,7 @@ static void Vgen_HyperGeomUnc(DataVariablesRep *dv, size_t offset)
 /// Check the histogram point integer input data, normalize the
 /// counts, and populate DataVariables::histogramUncPointIntPairs; map
 /// keys are guaranteed unique since the abscissas must increase
-static void 
+static void
 Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   IntArray *nhpip;
@@ -3451,7 +3440,7 @@ Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 /// mean if no initial point.
 static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
 {
-  const IntRealMapArray& A = dv->histogramUncPointIntPairs; 
+  const IntRealMapArray& A = dv->histogramUncPointIntPairs;
 
   IntVector& L = dv->discreteIntAleatoryUncLowerBnds;
   IntVector& U = dv->discreteIntAleatoryUncUpperBnds;
@@ -3495,7 +3484,7 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
 /// and populate DataVariables::histogramUncPointStrPairs; map keys
 /// are guaranteed unique since the abscissas must increase
 /// (lexicographically)
-static void 
+static void
 Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   IntArray *nhpsp;
@@ -3574,7 +3563,7 @@ Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 /// mean index if no initial point.
 static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
 {
-  const StringRealMapArray& A = dv->histogramUncPointStrPairs; 
+  const StringRealMapArray& A = dv->histogramUncPointStrPairs;
 
   StringArray& L = dv->discreteStrAleatoryUncLowerBnds;
   StringArray& U = dv->discreteStrAleatoryUncUpperBnds;
@@ -3618,7 +3607,7 @@ static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
 /// Check the histogram point integer real data, normalize the counts,
 /// and populate DataVariables::histogramUncPointRealPairs; map keys
 /// are guaranteed unique since the abscissas must increase
-static void 
+static void
 Vchk_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   IntArray *nhprp;
@@ -3696,7 +3685,7 @@ Vchk_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 /// mean if no initial point.
 static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
 {
-  const RealRealMapArray& A = dv->histogramUncPointRealPairs; 
+  const RealRealMapArray& A = dv->histogramUncPointRealPairs;
 
   RealVector& L = dv->discreteRealAleatoryUncLowerBnds;
   RealVector& U = dv->discreteRealAleatoryUncUpperBnds;
@@ -3800,28 +3789,28 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       else
 	avg_nI = num_lb / m;
     }
-    RealRealPairRealMapArray& P = dv->continuousIntervalUncBasicProbs;   
+    RealRealPairRealMapArray& P = dv->continuousIntervalUncBasicProbs;
     P.resize(m);
     for(i = k = 0; i < m; ++i) {
       nIi = (key) ? (*nI)[i] : avg_nI;
       RealRealPairRealMap& Pi = P[i];  // map from an interval to a probability
       lb = dbl_inf;
       ub = -dbl_inf;
-      if (!num_p) 
+      if (!num_p)
         default_p = 1./nIi; // default = equal probability per cell
       else {
-        double total_prob=0.0; 
+        double total_prob=0.0;
         size_t s = k;
         for(j=0; j<nIi; ++j, ++s) {  // normalize the probabilities to sum to one
           total_prob+=(*Ip)[s];
-        }         
+        }
         if (fabs(total_prob-1.0) > 1.E-10) {
           s = k;
           {for(j=0; j<nIi; ++j,++s)  // normalize the probabilities to sum to one
             (*Ip)[s]/=total_prob;
-          }       
+          }
           Warn("Renormalized probability assignments to sum to one for variable %d",i);
-        } 
+        }
       }
       for(j=0; j<nIi; ++j, ++k) {
 	lbj = (*Ilb)[k];
@@ -3863,7 +3852,7 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
     RealRealPairRealMap::const_iterator it_end = Pj.end();
     for ( ; it != it_end; ++it) {
       const RealRealPair& interval = it->first;
-      lbk = interval.first; 
+      lbk = interval.first;
       ubk = interval.second;
       if (lb > lbk) lb = lbk;
       if (ub < ubk) ub = ubk;
@@ -3884,7 +3873,7 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
 /// DataVariables::discreteIntervalUncBasicProbs; map keys (integer
 /// intervals) are checked for uniqueness because we don't have a
 /// theoretically sound way to combine duplicate intervals
-static void 
+static void
 Vchk_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t i, j, k, m, num_p = 0, num_lb, num_ub;
@@ -3943,7 +3932,7 @@ Vchk_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       else
 	avg_nI = num_lb / m;
     }
-    IntIntPairRealMapArray& P = dv->discreteIntervalUncBasicProbs;   
+    IntIntPairRealMapArray& P = dv->discreteIntervalUncBasicProbs;
     P.resize(m);
     for(i = k = 0; i < m; ++i) {
       nIi = (key) ? (*nI)[i] : avg_nI;
@@ -3951,7 +3940,7 @@ Vchk_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       lb = INT_MAX; ub = INT_MIN;
       if (!num_p) default_p = 1./nIi; // default = equal probability per cell
       for(j=0; j<nIi; ++j, ++k) {
-	lbj = (*Ilb)[k];      
+	lbj = (*Ilb)[k];
 	ubj = (*Iub)[k];
 	IntIntPair interval(lbj, ubj);
 	Real probability =  (num_p) ? (*Ip)[k] : default_p;
@@ -3986,11 +3975,11 @@ static void Vgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
     IntIntPairRealMap::const_iterator it_end = Pj.end();
     for ( ; it != it_end; ++it) {
       const IntIntPair& interval = it->first;
-      lbk = interval.first; 
+      lbk = interval.first;
       ubk = interval.second;
       if (lb > lbk) lb = lbk;
       if (ub < ubk) ub = ubk;
-    }    
+    }
     (*deuLB)[i] = lb; (*deuUB)[i] = ub;
     if (num_IP) {
       if      ((*IP)[j] < lb) (*V)[i] = lb;
@@ -4008,7 +3997,7 @@ static void Vgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
 /// variables and an optional apportionment with
 /// elements_per_variable; return the average number per variable if
 /// equally distributed
-static bool 
+static bool
 check_set_keys(size_t num_v, size_t ds_len, const char *kind,
 	       IntArray *input_nds, int& avg_num_ds)
 {
@@ -4041,7 +4030,7 @@ check_set_keys(size_t num_v, size_t ds_len, const char *kind,
 /// check discrete sets of integers (design and state variables);
 /// error if a duplicate value is specified
 /// error if not ordered to prevent user confusion
-static void 
+static void
 Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 	   IntVector *input_dsi, IntSetArray& dsi_all, IntVector& dsi_init_pt)
 {
@@ -4092,7 +4081,7 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 /// check discrete sets of integers (uncertain variables);
 /// error if a duplicate value is specified
 /// error if not ordered to prevent user confusion
-static void 
+static void
 Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 	   IntVector *input_dsi, RealVector *input_dsip,
 	   IntRealMapArray& dsi_vals_probs, IntVector& dsi_init_pt)
@@ -4151,7 +4140,7 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
   //else: default initialization performed in Vgen_DIset
 }
 
-static void 
+static void
 Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
 	   StringArray *input_dss, StringSetArray& dss_all, StringArray& dss_init_pt)
 {
@@ -4208,7 +4197,7 @@ Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
   //else: default initialization performed in Vgen_DSset
 }
 
-static void 
+static void
 Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
 	   StringArray *input_dss, RealVector *input_dssp,
 	   StringRealMapArray& dss_vals_probs, StringArray& dss_init_pt)
@@ -4269,7 +4258,7 @@ Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
 }
 
 
-static void 
+static void
 Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
 	   RealVector *input_dsr, RealSetArray& dsr_all,
 	   RealVector& dsr_init_pt)
@@ -4319,7 +4308,7 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
   //else: default initialization performed in Vgen_DRset
 }
 
-static void 
+static void
 Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
 	   RealVector *input_dsr, RealVector* input_dsrp,
 	   RealRealMapArray& dsr_vals_probs, RealVector& dsr_init_pt)
@@ -4378,8 +4367,8 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
   //else: default initialization performed in Vgen_DIset
 }
 
-// Validate adjacency matrices 
-static void 
+// Validate adjacency matrices
+static void
 Vchk_Adjacency(size_t num_v, const char *kind, const IntArray &num_e,
 		const IntVector &input_ddsa, RealMatrixArray &dda_all)  {
   size_t expected_size = 0;
@@ -4391,15 +4380,15 @@ Vchk_Adjacency(size_t num_v, const char *kind, const IntArray &num_e,
       size_t e_ctr = 0;
       for(size_t i = 0; i < num_v; ++i) {
         RealMatrix a_tmp(num_e[i],num_e[i]);
-        for(size_t j = 0; j < num_e[i]; ++j)  
-          for(size_t k = 0; k < num_e[i]; ++k) 
+        for(size_t j = 0; j < num_e[i]; ++j)
+          for(size_t k = 0; k < num_e[i]; ++k)
             a_tmp[j][k] = input_ddsa[e_ctr++];
         dda_all.push_back(a_tmp);
       }
     }
 }
 
-static bool 
+static bool
 check_LUV_size(size_t num_v, IntVector& L, IntVector& U, IntVector& V,
 	       bool aggregate_LUV, size_t offset)
 {
@@ -4425,7 +4414,7 @@ check_LUV_size(size_t num_v, IntVector& L, IntVector& U, IntVector& V,
   return init_V;
 }
 
-static bool 
+static bool
 check_LUV_size(size_t num_v, StringArray& L, StringArray& U, StringArray& V,
 	       bool aggregate_LUV, size_t offset)
 {
@@ -4453,7 +4442,7 @@ check_LUV_size(size_t num_v, StringArray& L, StringArray& U, StringArray& V,
 
 
 
-static bool 
+static bool
 check_LUV_size(size_t num_v, RealVector& L, RealVector& U, RealVector& V,
 	       bool aggregate_LUV, size_t offset)
 {
@@ -4479,7 +4468,7 @@ check_LUV_size(size_t num_v, RealVector& L, RealVector& U, RealVector& V,
   return init_V;
 }
 
-static void 
+static void
 Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
 	   IntVector& V, bool aggregate_LUV = false, size_t offset = 0)
 {
@@ -4530,7 +4519,7 @@ Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
 
 
 /// generate lower, upper, and initial point for string-valued sets
-static void 
+static void
 Vgen_DSset(size_t num_v, StringSetArray& sets, StringArray& L, StringArray& U,
 	   StringArray& V, bool aggregate_LUV = false, size_t offset = 0)
 {
@@ -4556,7 +4545,7 @@ Vgen_DSset(size_t num_v, StringSetArray& sets, StringArray& L, StringArray& U,
 	if ( (num_set_i % 2 == 0) )
 	  // initial value is to the left of middle
 	  mid_index = num_set_i / 2 - 1;
-	else 
+	else
 	  mid_index = (num_set_i + 1) / 2 - 1;
 	std::advance(it, mid_index);
 	V[offset] = *it;
@@ -4565,7 +4554,7 @@ Vgen_DSset(size_t num_v, StringSetArray& sets, StringArray& L, StringArray& U,
   }
 }
 
-static void 
+static void
 Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs, IntVector& IP,
 	   IntVector& L, IntVector& U, IntVector& V,
 	   bool aggregate_LUV = false, size_t offset = 0)
@@ -4620,7 +4609,7 @@ Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs, IntVector& IP,
   }
 }
 
-static void 
+static void
 Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
 	   RealVector& V, bool aggregate_LUV = false, size_t offset = 0)
 {
@@ -4669,7 +4658,7 @@ Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
   }
 }
 
-static void 
+static void
 Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs, RealVector& IP,
 	   RealVector& L, RealVector& U, RealVector& V,
 	   bool aggregate_LUV = false, size_t offset = 0)
@@ -4723,7 +4712,7 @@ Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs, RealVector& IP,
   }
 }
 
-static void 
+static void
 Vgen_DSset(size_t num_v, StringRealMapArray& vals_probs, StringArray& IP,
 	   StringArray& L, StringArray& U, StringArray& V,
 	   bool aggregate_LUV = false, size_t offset = 0)
@@ -4755,7 +4744,7 @@ Vgen_DSset(size_t num_v, StringRealMapArray& vals_probs, StringArray& IP,
 	if ( (num_vp_j % 2 == 0) )
 	  // initial value is to the left of middle
 	  mid_index = num_vp_j / 2 - 1;
-	else 
+	else
 	  mid_index = (num_vp_j + 1) / 2 - 1;
 	std::advance(it, mid_index);
 	V[i] = it->first;
@@ -4764,7 +4753,7 @@ Vgen_DSset(size_t num_v, StringRealMapArray& vals_probs, StringArray& IP,
   }
 }
 
-static void 
+static void
 Vchk_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_design_set_integer";
@@ -4787,7 +4776,7 @@ static void Vgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset)
 	     dv->discreteDesignSetIntVars); // no offset, not aggregate L/U/V
 }
 
-static void 
+static void
 Vchk_DiscreteDesSetStr(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_design_set_string";
@@ -4810,7 +4799,7 @@ static void Vgen_DiscreteDesSetStr(DataVariablesRep *dv, size_t offset)
 	     dv->discreteDesignSetStrVars); // no offset, not aggregate L/U/V
 }
 
-static void 
+static void
 Vchk_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_design_set_real";
@@ -4833,7 +4822,7 @@ static void Vgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset)
 	     dv->discreteDesignSetRealVars); // no offset, not aggregate L/U/V
 }
 
-static void 
+static void
 Vchk_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_uncertain_set_integer";
@@ -4850,7 +4839,7 @@ static void Vgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
   if (dv->discreteUncSetIntVars.length()) dv->uncertainVarsInitPt = true;
 }
 
-static void 
+static void
 Vchk_DiscreteUncSetStr(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_uncertain_set_string";
@@ -4867,7 +4856,7 @@ static void Vgen_DiscreteUncSetStr(DataVariablesRep *dv, size_t offset)
   if (dv->discreteUncSetStrVars.size()) dv->uncertainVarsInitPt = true;
 }
 
-static void 
+static void
 Vchk_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_uncertain_set_real";
@@ -4884,11 +4873,11 @@ static void Vgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
   if (dv->discreteUncSetRealVars.length()) dv->uncertainVarsInitPt = true;
 }
 
-static void 
+static void
 Vchk_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_state_set_integer";
-  Vchk_DIset(dv->numDiscreteStateSetIntVars, kind, vi->ndssi, vi->dssi, 
+  Vchk_DIset(dv->numDiscreteStateSetIntVars, kind, vi->ndssi, vi->dssi,
 	     dv->discreteStateSetInt, dv->discreteStateSetIntVars);
 }
 
@@ -4900,11 +4889,11 @@ static void Vgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset)
 	     dv->discreteStateSetIntVars); // no offset, not aggregate L/U/V
 }
 
-static void 
+static void
 Vchk_DiscreteStateSetStr(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_state_set_string";
-  Vchk_DSset(dv->numDiscreteStateSetStrVars, kind, vi->ndsss, vi->dsss, 
+  Vchk_DSset(dv->numDiscreteStateSetStrVars, kind, vi->ndsss, vi->dsss,
 	     dv->discreteStateSetStr, dv->discreteStateSetStrVars);
 }
 
@@ -4916,7 +4905,7 @@ static void Vgen_DiscreteStateSetStr(DataVariablesRep *dv, size_t offset)
 	     dv->discreteStateSetStrVars); // no offset, not aggregate L/U/V
 }
 
-static void 
+static void
 Vchk_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_state_set_real";
@@ -5229,9 +5218,9 @@ struct VLstr {
 /// number of real-valued   uncertain contiguous containers
 enum { NUM_UNC_REAL_CONT = 4 };
 /// number of int-valued    uncertain contiguous containers
-enum { NUM_UNC_INT_CONT = 2 }; 
+enum { NUM_UNC_INT_CONT = 2 };
 /// number of string-valued uncertain contiguous containers
-enum { NUM_UNC_STR_CONT = 2 }; 
+enum { NUM_UNC_STR_CONT = 2 };
 
 #define AVI (VarLabel Var_Info::*) &Var_Info::	// cast to bypass g++ bug
 #define DVR &DataVariablesRep::
@@ -5424,7 +5413,7 @@ make_variable_defaults(std::list<DataVariables>* dvl)
   VarLabelChk *vlc, *vlce;
   Var_uinfo *vui, *vuie;
   char buf[32];
-  size_t i, j, k, n, nu, nursave[NUM_UNC_REAL_CONT], nuisave[NUM_UNC_INT_CONT], 
+  size_t i, j, k, n, nu, nursave[NUM_UNC_REAL_CONT], nuisave[NUM_UNC_INT_CONT],
     nussave[NUM_UNC_STR_CONT];
   static const char Inconsistent_bounds[] =
     "Inconsistent bounds on %s uncertain variables";
@@ -5496,7 +5485,7 @@ make_variable_defaults(std::list<DataVariables>* dvl)
     // loop over cdv/csv
     Var_check *c, *ce;
     // the offset into the aggregated aleatory or epistemic arrays
-    size_t offset = 0; 
+    size_t offset = 0;
     for(c=var_mp_check_cv, ce = c + Numberof(var_mp_check_cv); c < ce; ++c)
       if ((n = dv->*c->n) > 0)
 	(*c->vgen)(dv, offset); // offset not used
@@ -5556,7 +5545,7 @@ make_variable_defaults(std::list<DataVariables>* dvl)
     for(c=var_mp_check_deur, ce=c + Numberof(var_mp_check_deur); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
-    
+
     // check discrete design and state set types
     // these don't use an offset passed into Vgen_Discrete*Set*
     offset = 0;
@@ -5692,14 +5681,14 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 #define AVI &Var_Info::
   // Used for deallocation of Var_Info temporary data
   static IntArray   *Var_Info::* Ia_delete[]
-    = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, 
-	AVI nhpip, AVI nhpsp, AVI nhprp, AVI ndusi, AVI nduss, AVI ndusr, 
+    = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp,
+	AVI nhpip, AVI nhpsp, AVI nhprp, AVI ndusi, AVI nduss, AVI ndusr,
 	AVI ndssi, AVI ndsss, AVI ndssr };
   static RealVector *Var_Info::* Rv_delete[]
     = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp,
 	AVI DSIp, AVI DSSp, AVI DSRp,
-	AVI dusr, AVI hba, AVI hbo, AVI hbc, 
-	AVI hpic, AVI hpsc, AVI hpra, AVI hprc, 
+	AVI dusr, AVI hba, AVI hbo, AVI hbc,
+	AVI hpic, AVI hpsc, AVI hpra, AVI hprc,
 	AVI ucm,
 	AVI dssr };
   static IntVector *Var_Info::* Iv_delete[]
@@ -5714,7 +5703,7 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 
   // check label lengths for design and state variables, if present
   nv = 0;
-  for(vlc = DesignAndStateLabelsCheck, vlce = vlc + Numberof(DesignAndStateLabelsCheck); 
+  for(vlc = DesignAndStateLabelsCheck, vlce = vlc + Numberof(DesignAndStateLabelsCheck);
       vlc < vlce; ++vlc)
     if ((n = dv->*vlc->n)) {
       if (vlc->stub)
@@ -5908,7 +5897,7 @@ void NIDRProblemDescDB::check_variables_node(void *v)
   Var_icheck *ic, *ice;
   for(ic = var_mp_drange, ice = ic + Numberof(var_mp_drange); ic < ice; ++ic)
     Var_IntBoundIPCheck(dv, ic);
-  
+
 
   // deallocate temporary Var_Info data
   n = Numberof(Ia_delete);
@@ -6150,8 +6139,8 @@ static void flatten_srma_values(StringRealMapArray *srma, RealVector **prv)
 
 /// Flatten real-valued interval uncertain variable intervals and
 /// probabilities back into separate arrays.
-static void flatten_real_intervals(const RealRealPairRealMapArray& rrprma, 
-				   RealVector **probs, 
+static void flatten_real_intervals(const RealRealPairRealMapArray& rrprma,
+				   RealVector **probs,
 				   RealVector **lb, RealVector** ub)
 {
   size_t i, j, k, m, n;
@@ -6179,8 +6168,8 @@ static void flatten_real_intervals(const RealRealPairRealMapArray& rrprma,
 
 /// Flatten integer-valued interval uncertain variable intervals and
 /// probabilities back into separate arrays.
-static void flatten_int_intervals(const IntIntPairRealMapArray& iiprma, 
-				  RealVector **probs, 
+static void flatten_int_intervals(const IntIntPairRealMapArray& iiprma,
+				  RealVector **probs,
 				  IntVector **lb, IntVector** ub)
 {
   size_t i, j, k, m, n;
@@ -6216,12 +6205,12 @@ check_descriptor_format(const StringArray& labels) {
     // error if descriptor contains whitespace
     for(si = li->begin(); si != li->end(); ++si) {
       if(isspace(*si)) {
-        Squawk("Descriptor \"%s\" is invalid: whitespace not permitted", 
+        Squawk("Descriptor \"%s\" is invalid: whitespace not permitted",
               li->c_str());
         break;
       }
     }
-    if(isfloat(*li)) 
+    if(isfloat(*li))
       Squawk("Descriptor \"%s\" is invalid: floating point numbers not permitted",
           li->c_str());
     if(li->empty())
@@ -6380,14 +6369,14 @@ check_variables(std::list<DataVariables>* dvl)
       if ((n = dv->numContinuousIntervalUncVars)) {
 	flatten_num_array(dv->continuousIntervalUncBasicProbs, &vi->nCI);
 	// unroll the array of maps in to separate variables (p, lb, ub)
-	flatten_real_intervals(dv->continuousIntervalUncBasicProbs, 
+	flatten_real_intervals(dv->continuousIntervalUncBasicProbs,
 			       &vi->CIp, &vi->CIlb, &vi->CIub);
       }
       // discrete interval uncertain vars
       if ((n = dv->numDiscreteIntervalUncVars)) {
 	flatten_num_array(dv->discreteIntervalUncBasicProbs, &vi->nDI);
 	// unroll the array of maps in to separate variables (p, lb, ub)
-	flatten_int_intervals(dv->discreteIntervalUncBasicProbs, 
+	flatten_int_intervals(dv->discreteIntervalUncBasicProbs,
 			      &vi->DIp, &vi->DIlb, &vi->DIub);
       }
       // discrete uncertain set int vars
@@ -7004,6 +6993,7 @@ static short
 
 static int
 	MP_(batchSize),
+  MP_(batchSizeExplore),
 	MP_(buildSamples),
 	MP_(burnInSamples),
 	MP_(chainSamples),
@@ -7376,7 +7366,7 @@ static Model_mp_type
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),
       //MP2s(subMethodScheduling,PEER_STATIC_SCHEDULING),
-        
+
 
 static Model_mp_utype
         MP2s(analyticCovIdForm,EXP_L2),
@@ -7426,8 +7416,8 @@ static Real
 	MP_(percentFold),
 	MP_(truncationTolerance),
 	MP_(relTolerance),
-	MP_(solverTolerance),
-	MP_(roundingTolerance),
+    MP_(solverTolerance),
+    MP_(roundingTolerance),
 	MP_(decreaseTolerance);
 
 static RealVector
@@ -7509,12 +7499,10 @@ static short
 	MP_(rbfMinPartition);
 
 static int
-        MP_(crossMaxIter),
         MP_(decompSupportLayers),
         MP_(initialSamples),
         MP_(maxFunctionEvals),
         MP_(maxIterations),
-	MP_(maxSolverIterations),
         MP_(numFolds),
         MP_(numReplicates),
         MP_(pointsTotal),
@@ -7526,13 +7514,14 @@ static int
         MP_(subspaceCVMaxRank);
 
 static size_t
+    MP_(crossMaxIter),
     MP_(kickRank),
-    MP_(maxOrder),        
+    MP_(maxOrder),
     MP_(maxRank),
     MP_(startOrder),
     MP_(startRank);
 //  MP_(verbosity);
-    
+
 #undef MP2s
 #undef MP2
 #undef MP_
@@ -7629,7 +7618,7 @@ static Resp_mp_utype
         MP2s(scalarDataFormat,TABULAR_HEADER),
         MP2s(scalarDataFormat,TABULAR_EVAL_ID),
         MP2s(scalarDataFormat,TABULAR_EXPER_ANNOT);
- 
+
 #undef MP2s
 #undef MP2
 #undef MP_

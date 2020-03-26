@@ -189,8 +189,17 @@ private:
   short dataOrder;
 
   /// counter for convergence
-  // unsigned short eif_convergence_cntr, dist_convergence_cntr; // Edited by AT
+  /// unsigned short eif_convergence_cntr, dist_convergence_cntr; // Edited by AT
   Real distCStar; // Edited by AT
+
+  /// declare batch size for BatchSizeAcquisition
+  /// sampling point located at maximum acquisition function
+  int BatchSizeAcquisition;
+
+  /// declare batch size for BatchSizeExploration
+  /// sampling point located at maximum posterior variance
+  int BatchSizeExploration;
+
 
 };
 

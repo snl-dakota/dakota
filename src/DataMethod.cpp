@@ -53,9 +53,9 @@ DataMethodRep::DataMethodRep():
   absConvTol(-1.), xConvTol(-1.), singConvTol(-1.), singRadius(-1.),
   falseConvTol(-1.), initTRRadius(-1.), covarianceType(0), regressDiag(false),
   // OPT++
-  // searchMethod default is null since "trust_region" is preferred for 
+  // searchMethod default is null since "trust_region" is preferred for
   // unconstrained opt., whereas "line_search" is preferred for bc opt.
-  gradientTolerance(0.0001), maxStep(1.e+3), 
+  gradientTolerance(0.0001), maxStep(1.e+3),
 #if HAVE_OPTPP
   meritFn(OPTPP::ArgaezTapia),
 #else
@@ -71,7 +71,7 @@ DataMethodRep::DataMethodRep():
   localBalanceParam(-1.), maxBoxSize(-1.), minBoxSize(-1.),
   //boxDivision("major_dimension"), // leave empty string as default
   mutationAdaptive(true), showMiscOptions(false),
-  // These attributes must replicate the Coliny defaults due to Coliny 
+  // These attributes must replicate the Coliny defaults due to Coliny
   // member fn. structure:
   mutationRate(1.0),
   mutationScale(0.1), contractFactor(0.5),
@@ -81,8 +81,8 @@ DataMethodRep::DataMethodRep():
   // defaults:
   solnTarget(-DBL_MAX), // COLINY default of 1.e-5 can cause premature term.
   // These attributes use dummy defaults which are used to trigger conditional
-  // option processing (since we don't want to get out of synch with SGOPT's 
-  // defaults which may change).  The dummy defaults should be values which 
+  // option processing (since we don't want to get out of synch with SGOPT's
+  // defaults which may change).  The dummy defaults should be values which
   // are _not_ reasonable user inputs.
   mutationMinScale(-1.), initDelta(-1.), threshDelta(-1.),
   newSolnsGenerated(-9999), numberRetained(-9999),
@@ -100,7 +100,7 @@ DataMethodRep::DataMethodRep():
   initializationType("unique_random"),
   //mutationType(""), replacementType(""), fitnessType(""),
   populationSize(50), //flatFile(),
-  // NCSU 
+  // NCSU
   volBoxSize(-1.),
   // DDACE
   numSymbols(0),mainEffectsFlag(false),
@@ -157,10 +157,11 @@ DataMethodRep::DataMethodRep():
   modelDiscrepancyType("global_kriging"),
   approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
-  exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false), 
+  exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
   mutualInfoKSG2(false),
-  importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(-1.),  
+  importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(-1.),
   batchSize(1),
+  batchSizeExplore(0), // EGO batch exploration default
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),
@@ -168,7 +169,7 @@ DataMethodRep::DataMethodRep():
   // Wasabi
   numPushforwardSamples(10000),
   // Parameter Study
-  numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
+  numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
   // Verification
   refinementRate(2.),
   // Point import/export files
@@ -251,13 +252,13 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << initializationType << flatFile << logFile << populationSize
     << printPopFlag;
 
-  // NCSU 
+  // NCSU
   s << volBoxSize;
 
   // DDACE
   s << numSymbols << mainEffectsFlag;
 
-  // FSUDace 
+  // FSUDace
   s << latinizeFlag << volQualityFlag << sequenceStart << sequenceLeap
     << primeBase << numTrials << trialType;
 
@@ -299,7 +300,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
     << chainDiagnostics << chainDiagnosticsCI
-    << modelEvidence << modelEvidLaplace << modelEvidMC 
+    << modelEvidence << modelEvidLaplace << modelEvidMC
     << preSolveMethod << proposalCovType << priorPropCovMult
     << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
@@ -311,7 +312,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
-    << importCandFormat << numCandidates << maxHifiEvals << batchSize
+    << importCandFormat << numCandidates << maxHifiEvals << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
     << dataDistType << dataDistCovInputType << dataDistMeans
@@ -406,13 +407,13 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> initializationType >> flatFile >> logFile >> populationSize
     >> printPopFlag;
 
-  // NCSU 
+  // NCSU
   s >> volBoxSize;
 
   // DDACE
   s >> numSymbols >> mainEffectsFlag;
 
-  // FSUDace 
+  // FSUDace
   s >> latinizeFlag >> volQualityFlag >> sequenceStart >> sequenceLeap
     >> primeBase >> numTrials >> trialType;
 
@@ -454,7 +455,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
     >> chainDiagnostics >> chainDiagnosticsCI
-    >> modelEvidence >> modelEvidLaplace >> modelEvidMC 
+    >> modelEvidence >> modelEvidLaplace >> modelEvidMC
     >> preSolveMethod >> proposalCovType >> priorPropCovMult
     >> proposalCovUpdatePeriod
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
@@ -466,7 +467,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> approxCorrectionOrder >> exportCorrModelFile >> exportCorrModelFormat
     >> exportCorrVarFile >> exportCorrVarFormat >> exportDiscrepFile
     >> exportDiscrepFormat >> adaptExpDesign >> importCandPtsFile
-    >> importCandFormat >> numCandidates >> maxHifiEvals >> batchSize
+    >> importCandFormat >> numCandidates >> maxHifiEvals >> batchSize >> batchSizeExplore
     >> mutualInfoKSG2 >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> numPushforwardSamples
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
@@ -561,13 +562,13 @@ void DataMethodRep::write(std::ostream& s) const
   s << initializationType << flatFile << logFile << populationSize
     << printPopFlag;
 
-  // NCSU 
+  // NCSU
   s << volBoxSize;
 
   // DDACE
   s << numSymbols << mainEffectsFlag;
 
-  // FSUDace 
+  // FSUDace
   s << latinizeFlag << volQualityFlag << sequenceStart << sequenceLeap
     << primeBase << numTrials << trialType;
 
@@ -609,7 +610,7 @@ void DataMethodRep::write(std::ostream& s) const
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
     << chainDiagnostics << chainDiagnosticsCI
-    << modelEvidence << modelEvidLaplace << modelEvidMC 
+    << modelEvidence << modelEvidLaplace << modelEvidMC
     << preSolveMethod << proposalCovType << priorPropCovMult
     << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
@@ -621,7 +622,7 @@ void DataMethodRep::write(std::ostream& s) const
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
-    << importCandFormat << numCandidates << maxHifiEvals << batchSize
+    << importCandFormat << numCandidates << maxHifiEvals << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
     << dataDistType << dataDistCovInputType << dataDistMeans
@@ -675,7 +676,7 @@ DataMethod& DataMethod::operator=(const DataMethod& data_method)
   if (dataMethodRep != data_method.dataMethodRep) { // normal case: old != new
     // Decrement old
     if (dataMethodRep) // Check for NULL
-      if ( --dataMethodRep->referenceCount == 0 ) 
+      if ( --dataMethodRep->referenceCount == 0 )
 	delete dataMethodRep;
     // Assign and increment new
     dataMethodRep = data_method.dataMethodRep;

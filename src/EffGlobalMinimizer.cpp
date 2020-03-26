@@ -43,6 +43,8 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 // This constructor accepts a Model
 EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
+  BatchSizeAcquisition(probDescDB.get_int("method.batch_size")),
+  BatchSizeExploration(probDescDB.get_int("method.batch_size_exploration")),
   setUpType("model"), dataOrder(1)
 {
   // historical default convergence tolerances
@@ -258,8 +260,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
     // Define batch settings // Edited by AT
 
-    int BatchSizeAcquisition = 3; // size of the first batch (acquisition batch)
-    int BatchSizeExploration = 0; // size of the second batch (exploration batch)
+    // int BatchSizeAcquisition = 3; // size of the first batch (acquisition batch)
+    // int BatchSizeExploration = 0; // size of the second batch (exploration batch)
 
     // Initialize the input array for the batch // Edit by AT
     // RealMatrix input_array_batch_acquisition(numContinuousVars, BatchSizeAcquisition);
@@ -335,10 +337,10 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
          globalIterCount       >= maxIterations )
         approx_converged = true;
     else {
-        // Update constraints -- temporarily disabled
+        // Update constraints
         if (numNonlinearConstraints) {
             // adopted from NonDMultilevelSampling.cpp
-            IntRespMCIter batch_response_it;
+            IntRespMCIter batch_response_it; // IntRMMIter (iterator)? IntRMMCIter (const_iterator)?
             for (batch_response_it = resp_star_truth.begin(); batch_response_it != resp_star_truth.end(); batch_response_it++) {
               // Update the merit function parameters
               // Logic follows Conn, Gould, and Toint, section 14.4:
