@@ -848,13 +848,19 @@ compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
   // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
   // update targets based on sparsity estimates
-  Real s_l/*, card_l*/; size_t lev, num_lev = N_l.size();
+  SharedPecosApproxData* data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  const std::map<UShortArray, UShort2DArray>& mi_map
+    = data_rep->multi_index_map();
+  std::map<UShortArray, UShort2DArray>::const_iterator cit;
+  Real s_l;  size_t card_l, lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);
-  for (lev=0; lev<num_lev; ++lev) { //cit=mi_map.begin(); ++cit;
-    s_l = sparsity[lev]; //card_l = (Real)cit->second.size();
-    // RIP samples ~= s_l log^3(s_l) log(card_l) but we are currently omitting
-    // card_l since the actual sample reqmts are conservative upper bounds
-    new_N_l[lev] = s_l * std::pow(std::log(s_l), 3.); //* std::log(card_l);
+  for (lev=0, cit=mi_map.begin(); lev<num_lev; ++lev, ++cit) {
+    s_l = sparsity[lev];  card_l = cit->second.size();
+    // Shape of RIP sample profile ~= s_l log^3(s_l) log(card_l) where we
+    // are omitting a mutual coherence term (actual sample requirements
+    // are conservative upper bounds and relative shape is most important)
+    new_N_l[lev] = s_l * std::pow(std::log(s_l), 3.) * std::log((Real)card_l);
   }
 
   // Sparsity estimates tend to grow for compressible QoI as increased samples
@@ -867,11 +873,6 @@ compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
 
   Real curr_factor, max_curr_factor = 0., factor_ratio,
     factor_bound = 2.; // hard-wired (bound is separate from collocRatio)
-  SharedPecosApproxData* data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  const std::map<UShortArray, UShort2DArray>& mi_map
-    = data_rep->multi_index_map();
-  std::map<UShortArray, UShort2DArray>::const_iterator cit;
   for (lev=0, cit=mi_map.begin(); lev<num_lev && cit!=mi_map.end();
        ++lev, ++cit) {
     curr_factor = new_N_l[lev] / cit->second.size();// samples/cardinality ratio
