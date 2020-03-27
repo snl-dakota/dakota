@@ -787,6 +787,7 @@
 		  <keyword  id="start_order" name="start_order" code="{N_mdm(ushint,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
 		    <alias name="order"/>
 		    <param type="INTEGER" constraint=">= 0" />
+		    &expansion_dim_pref;
 		  </keyword>
 		  &ft_method_max_order;
 	     ' >
@@ -795,6 +796,7 @@
 		  <keyword  id="start_order_sequence" name="start_order_sequence" code="{N_mdm(usharray,startOrderSeq)}" label="Starting univariate polynomial order for approximation sequence" help="" minOccurs="0" default="2">
 		    <alias name="order_sequence"/>
 		    <param type="INTEGERLIST" />
+		    &expansion_dim_pref;
 		  </keyword>
 		  &ft_method_max_order;
 	     ' >
@@ -900,6 +902,7 @@
 		  <keyword  id="start_order" name="start_order" code="{N_mom(ushint,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
 		    <alias name="order"/>
 		    <param type="INTEGER" constraint=">= 0" />
+		    &expansion_dim_pref;
 		  </keyword>
 		  <keyword  id="max_order" name="max_order" code="{N_mom(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
 		    <param type="INTEGER" constraint=">= 0" />

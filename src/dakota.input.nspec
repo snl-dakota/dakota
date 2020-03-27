@@ -1144,7 +1144,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
     [ rounding_tolerance REAL {N_mdm(Real,roundingTol)} ]
     [ arithmetic_tolerance REAL {N_mdm(Real,arithmeticTol)} ]
-    [ start_order ALIAS order INTEGER >= 0 {N_mdm(ushint,startOrder)} ]
+    [ start_order ALIAS order INTEGER >= 0 {N_mdm(ushint,startOrder)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+     ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
     [ start_rank ALIAS rank INTEGER >= 0 {N_mdm(sizet,startRank)} ]
     [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
@@ -1275,7 +1277,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     [ collocation_points_sequence ALIAS pilot_samples INTEGERLIST {N_mdm(szarray,collocationPointsSeq)} ]
     [ collocation_ratio REAL {N_mdm(Realp,collocationRatio)} ]
-    [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)} ]
+    [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+     ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
     [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
@@ -1407,7 +1411,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     [ collocation_points_sequence ALIAS pilot_samples INTEGERLIST {N_mdm(szarray,collocationPointsSeq)} ]
     [ collocation_ratio REAL {N_mdm(Realp,collocationRatio)} ]
-    [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)} ]
+    [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+     ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
     [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
@@ -5711,7 +5717,9 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ tensor_grid {N_mom(true,tensorGridFlag)} ]
         [ rounding_tolerance REAL {N_mom(Real,roundingTol)} ]
         [ arithmetic_tolerance REAL {N_mom(Real,arithmeticTol)} ]
-        [ start_order ALIAS order INTEGER >= 0 {N_mom(ushint,startOrder)} ]
+        [ start_order ALIAS order INTEGER >= 0 {N_mom(ushint,startOrder)}
+          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+         ]
         [ max_order INTEGER >= 0 {N_mom(ushint,maxOrder)} ]
         [ start_rank ALIAS rank INTEGER >= 0 {N_mom(sizet,startRank)} ]
         [ kick_rank INTEGER >= 0 {N_mom(sizet,kickRank)} ]
