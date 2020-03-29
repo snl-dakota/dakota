@@ -9,12 +9,9 @@
 #ifndef DAKOTA_UTIL_LINEAR_SOLVERS_HPP
 #define DAKOTA_UTIL_LINEAR_SOLVERS_HPP
 
-#include "Eigen/Dense"
-#include <iostream>
-#include <memory>
+#include "util_data_types.hpp"
 
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
+#include <memory>
 
 namespace dakota {
 namespace util {
@@ -259,4 +256,4 @@ class CholeskySolver : public LinearSolverBase
 } // namespace util
 } // namespace dakota
 
-#endif //LINEAR_SOLVERS_PECOS_SRC_HPP
+#endif // include guard

@@ -15,29 +15,22 @@
 // Defines //
 /////////////
 
-#ifndef DAKOTA_COMMON_TEST_UTILS_HPP
-#define DAKOTA_COMMON_TEST_UTILS_HPP
+#ifndef DAKOTA_UTIL_COMMON_UTILS_HPP
+#define DAKOTA_UTIL_COMMON_UTILS_HPP
 
 /////////////
 // Imports //
 /////////////
 
-#include "Eigen/Dense"
-#include "Teuchos_SerialDenseHelpers.hpp"
+#include "util_data_types.hpp"
 
-///////////////////////
-// Using / Namespace //
-///////////////////////
-
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-using RealMatrix = Teuchos::SerialDenseMatrix<int,double>;
-
-using namespace Eigen;
 
 /////////////
 // Headers //
 /////////////
+
+namespace dakota {
+namespace util {
 
 /**
  *  \brief Throws a std::runtime_error based on the message argument.
@@ -99,4 +92,7 @@ void populateMatricesFromFile(std::string fileName, std::vector<MatrixXd> &S, in
 */
 double variance(VectorXd vec);
 
-#endif // DAKOTA_COMMON_TEST_UTILS_HPP
+} // namespace util
+} // namespace dakota
+
+#endif // include guard

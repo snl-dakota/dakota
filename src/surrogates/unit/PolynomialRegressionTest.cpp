@@ -9,19 +9,21 @@
 
 // Includes
 
-#include <boost/test/minimal.hpp> // Boost.Test
-#include "../../util/CommonUtils.hpp"
-#include "../SurrogatesTools.hpp"
+#include "CommonUtils.hpp"
+#include "SurrogatesTools.hpp"
+
 #include "PolynomialRegression.hpp"
 #include "LinearSolvers.hpp"
 
 #include <boost/random.hpp>
 #include <boost/random/uniform_real.hpp>
+#include <boost/test/minimal.hpp>
 
 // Namespace
 
+using namespace dakota;
+using namespace dakota::util;
 using namespace dakota::surrogates;
-using namespace Eigen;
 
 namespace {
 

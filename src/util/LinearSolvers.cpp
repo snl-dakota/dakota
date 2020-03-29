@@ -7,6 +7,7 @@
     _______________________________________________________________________ */
 
 #include "LinearSolvers.hpp"
+
 #include <boost/assign.hpp>
 #include <boost/bimap.hpp>
 

@@ -17,44 +17,27 @@
 
 #include "Eigen/Dense"
 
-#include <complex>
-#include <memory>
-
 
 namespace dakota {
 
 // TODO: May want to have distinct Dakota names such as EigMatrixXd
 
+/// Eigen generic vector of doubles in Dakota namespace
+using VectorXd = Eigen::VectorXd;
 /// Eigen generic matrix of doubles in Dakota namespace
 using MatrixXd = Eigen::MatrixXd;
+/// Eigen generic matrix of integers in Dakota namespace
+using MatrixXi = Eigen::MatrixXi;
+
+/// Dakota real floating point type
+using Real = double;
+/// Dakota matrix of reals
+using RealMatrix = Teuchos::SerialDenseMatrix<int, Real>;
+/// Dakota vector of reals
+using RealVector = Teuchos::SerialDenseVector<int, Real>;
 
 /// Teuchos ParameterList for options management in Dakota namespace
 using ParameterList = Teuchos::ParameterList;
-
-
-namespace util {
-
-typedef double Real;
-typedef std::complex<double> Complex;
-
-typedef Teuchos::SerialDenseMatrix<int,int> IntMatrix;
-typedef Teuchos::SerialDenseMatrix<int,Real> RealMatrix;
-typedef Teuchos::SerialDenseMatrix<int,Complex> ComplexMatrix;
-
-typedef Teuchos::SerialDenseVector<int,int> IntVector;
-typedef Teuchos::SerialDenseVector<int,Real> RealVector;
-typedef std::vector<RealVector>  RealVectorArray;
-typedef Teuchos::SerialDenseVector<int,Complex> ComplexVector;
-
-typedef std::vector<IntMatrix> IntMatrixList;
-typedef std::vector<RealMatrix> RealMatrixList;
-typedef std::vector<ComplexMatrix> ComplexMatrixList;
-
-typedef Teuchos::SerialSymDenseMatrix<int, int> IntSymMatrix;
-typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
-typedef Teuchos::SerialSymDenseMatrix<int, Complex> ComplexSymMatrix;
-
-}  // namespace util
 
 }  // namespace dakota
 

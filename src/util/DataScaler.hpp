@@ -9,12 +9,9 @@
 #ifndef DAKOTA_UTIL_DATA_SCALER_HPP
 #define DAKOTA_UTIL_DATA_SCALER_HPP
 
-#include "Eigen/Dense"
-#include <memory>
+#include "util_data_types.hpp"
 
-using Eigen::MatrixXi;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
+#include <memory>
 
 namespace dakota {
 namespace util {
