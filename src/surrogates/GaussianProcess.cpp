@@ -7,13 +7,14 @@
     _______________________________________________________________________ */
 
 #include "GaussianProcess.hpp"
-
-#include "Teuchos_XMLParameterListHelpers.hpp"
-#include "Teuchos_oblackholestream.hpp"
-
 #include "GP_Objective.hpp"
+
 #include "ROL_Algorithm.hpp"
 #include "ROL_Bounds.hpp"
+
+#include "Teuchos_oblackholestream.hpp"
+#include "Teuchos_XMLParameterListHelpers.hpp"
+
 
 namespace dakota {
 
@@ -474,7 +475,7 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   auto gp_mle_rol_params = Teuchos::rcp(new ParameterList("GP_MLE_Optimization"));
   set_default_optimization_params(gp_mle_rol_params);
 
-  auto gp_objective = std::make_shared<GP_Objective>(this);
+  auto gp_objective = std::make_shared<GP_Objective>(*this);
   int dim = numVariables + 1 + numPolyTerms + numNuggetTerms;
   ROL::Algorithm<double> algo("Line Search",*gp_mle_rol_params);
 

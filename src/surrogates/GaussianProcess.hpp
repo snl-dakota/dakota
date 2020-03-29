@@ -10,10 +10,11 @@
 #define DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 
 #include "DataScaler.hpp"
-#include "Eigen/StdVector"
 #include "PolynomialRegression.hpp"
 #include "Surrogate.hpp"
+
 #include <memory>
+
 
 namespace dakota {
 namespace surrogates {

@@ -14,10 +14,10 @@
 namespace dakota {
 namespace util {
 
-typedef boost::bimap<SOLVER_TYPE, std::string> BimapIntStr;
+using BimapSolvertypeStr = boost::bimap<SOLVER_TYPE, std::string>;
 
-static BimapIntStr type_name_bimap =
-  boost::assign::list_of< BimapIntStr::relation >
+static BimapSolvertypeStr type_name_bimap =
+  boost::assign::list_of< BimapSolvertypeStr::relation >
   (SOLVER_TYPE::CHOLESKY, "cholesky")
   (SOLVER_TYPE::EQ_CONS_LEAST_SQ_REGRESSION, "equality-constrained lsq regression")
   (SOLVER_TYPE::LASSO_REGRESSION, "lasso regression")
@@ -31,7 +31,7 @@ static BimapIntStr type_name_bimap =
 
 SOLVER_TYPE LinearSolverBase::solver_type(const std::string& solver_name)
 {
-  BimapIntStr::right_const_iterator rc_iter
+  BimapSolvertypeStr::right_const_iterator rc_iter
     = type_name_bimap.right.find(solver_name);
   if (rc_iter == type_name_bimap.right.end()) {
     throw std::runtime_error("Invalid solver_name");

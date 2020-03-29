@@ -9,11 +9,7 @@
 #ifndef DAKOTA_SURROGATES_SURROGATE_HPP
 #define DAKOTA_SURROGATES_SURROGATE_HPP
 
-#include <Eigen/Dense>
-#include "Teuchos_ParameterList.hpp"
-
-using Eigen::MatrixXd;
-using Teuchos::ParameterList;
+#include "util_data_types.hpp"
 
 namespace dakota {
 namespace surrogates {
@@ -61,4 +57,5 @@ protected:
 
 } // namespace surrogates
 } // namespace dakota
+
 #endif // include guard

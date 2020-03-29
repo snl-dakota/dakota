@@ -13,10 +13,10 @@
 namespace dakota {
 namespace util {
 
-typedef boost::bimap<SCALER_TYPE, std::string> BimapIntStr;
+using BimapScalertypeStr = boost::bimap<SCALER_TYPE, std::string>;
 
-static BimapIntStr type_name_bimap =
-  boost::assign::list_of< BimapIntStr::relation >
+static BimapScalertypeStr type_name_bimap =
+  boost::assign::list_of< BimapScalertypeStr::relation >
   (SCALER_TYPE::NONE, "none")
   (SCALER_TYPE::STANDARDIZATION, "standardization")
   (SCALER_TYPE::MEAN_NORMALIZATION, "mean normalization")
@@ -26,7 +26,7 @@ static BimapIntStr type_name_bimap =
 
 SCALER_TYPE DataScaler::scaler_type(const std::string& scaler_name)
 {
-  BimapIntStr::right_const_iterator rc_iter
+  BimapScalertypeStr::right_const_iterator rc_iter
     = type_name_bimap.right.find(scaler_name);
   if (rc_iter == type_name_bimap.right.end()) {
     throw std::runtime_error("Invalid DataScaler scaler_name");

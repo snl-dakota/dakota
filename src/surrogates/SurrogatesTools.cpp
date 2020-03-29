@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include "MathTools.hpp"
 #include "SurrogatesTools.hpp"
-#include "../util/MathTools.hpp"
 #include <Eigen/Dense>
 
 using Eigen::VectorXi;

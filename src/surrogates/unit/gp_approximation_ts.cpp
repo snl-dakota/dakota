@@ -6,13 +6,16 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include <fstream>
-#include <Teuchos_UnitTestHarness.hpp>
-#include <Teuchos_ParameterList.hpp>
 #include "CommonUtils.hpp"
 #include "GaussianProcess.hpp"
+#include "util_data_types.hpp"
+
+#include <Teuchos_UnitTestHarness.hpp>
+
+#include <fstream>
 
 // BMA TODO: Review with team for best practice
+using namespace dakota;
 using namespace dakota::surrogates;
 using namespace dakota::util;
 

@@ -9,15 +9,13 @@
 #ifndef DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 #define DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 
-#include <iostream>
-#include <memory>
-#include "Surrogate.hpp"
 #include "DataScaler.hpp"
 #include "LinearSolvers.hpp"
+#include "Surrogate.hpp"
+#include "util_data_types.hpp"
 
-#include "Teuchos_ParameterList.hpp"
+#include <memory>
 
-using Teuchos::ParameterList;
 
 namespace dakota {
 namespace surrogates {

@@ -9,17 +9,22 @@
 #ifndef DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
 #define DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
 
-#include <ROL_Objective.hpp>
-#include <ROL_StdVector.hpp>
-#include <ROL_Types.hpp>
 #include "GaussianProcess.hpp"
 #include "util_data_types.hpp"
 
-using V = ROL::Vector<double>;
-using SV = ROL::StdVector<double>;
+#include <ROL_Objective.hpp>
+#include <ROL_StdVector.hpp>
+#include <ROL_Types.hpp>
+
 
 namespace dakota {
 namespace surrogates {
+
+/// Bring ROL Vector into surrogates namespace instead of "using" in header
+using RolVec = ROL::Vector<double>;
+/// Bring ROL StdVector into surrogates namespace instead of "using" in header
+using RolStdVec = ROL::StdVector<double>;
+
 
 /**
  *  \brief ROL objective function for the Gaussian Process (GP)
@@ -36,7 +41,7 @@ class GP_Objective : public ROL::Objective<double> {
  *  \param[in] gp_model Pointer to the GaussianProcess surrogate.
  *
  */
-    GP_Objective(GaussianProcess* gp_model);
+    GP_Objective(GaussianProcess& gp_model);
     ~GP_Objective();
 
 /**
@@ -45,7 +50,7 @@ class GP_Objective : public ROL::Objective<double> {
  *  \param[in] tol Tolerance for inexact evaluation? (not used).
  *
  */
-    double value(const V& p, double& tol);
+    double value(const RolVec& p, double& tol);
 /**
  *  \brief Get the gradient of the objective function at a point.
  *  \param[out] g Gradient of the objective function.
@@ -53,12 +58,12 @@ class GP_Objective : public ROL::Objective<double> {
  *  \param[in] tol Tolerance for inexact evaluation? (not used).
  *
  */
-    void gradient(V& g, const V& p, double&);
+    void gradient(RolVec& g, const RolVec& p, double&);
 
   private:
 
     /// Pointer to the GaussianProcess surrogate.
-    GaussianProcess* gp;
+    GaussianProcess& gp;
 
     /// Number of optimization variables.
     int nopt;
@@ -76,16 +81,16 @@ class GP_Objective : public ROL::Objective<double> {
  *  \param[in] vec const ROL vector
  *
  */
-    ROL::Ptr<const std::vector<double> > getVector(const V& vec) {
-      return dynamic_cast<const SV&>(vec).getVector();
+    ROL::Ptr<const std::vector<double> > getVector(const RolVec& vec) {
+      return dynamic_cast<const RolStdVec&>(vec).getVector();
     }
 /**
  *  \brief Convert a ROL Vector to a ROL::Ptr<std::vector>
  *  \param[in] vec ROL vector
  *
  */
-    ROL::Ptr<std::vector<double> > getVector(V& vec) {
-      return dynamic_cast<SV&>(vec).getVector();
+    ROL::Ptr<std::vector<double> > getVector(RolVec& vec) {
+      return dynamic_cast<RolStdVec&>(vec).getVector();
     }
 
 /**

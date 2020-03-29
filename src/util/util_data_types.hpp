@@ -9,12 +9,29 @@
 #ifndef DAKOTA_UTIL_DATA_TYPES_HPP
 #define DAKOTA_UTIL_DATA_TYPES_HPP
 
+// TODO: Consider organizing typedefs by purpose / category, including what's needed
+
+#include "Teuchos_ParameterList.hpp"
+#include "Teuchos_SerialDenseHelpers.hpp"
+#include "Teuchos_SerialDenseVector.hpp"
+
+#include "Eigen/Dense"
+
 #include <complex>
 #include <memory>
-#include "Teuchos_SerialDenseVector.hpp"
-#include "Teuchos_SerialDenseHelpers.hpp"
+
 
 namespace dakota {
+
+// TODO: May want to have distinct Dakota names such as EigMatrixXd
+
+/// Eigen generic matrix of doubles in Dakota namespace
+using MatrixXd = Eigen::MatrixXd;
+
+/// Teuchos ParameterList for options management in Dakota namespace
+using ParameterList = Teuchos::ParameterList;
+
+
 namespace util {
 
 typedef double Real;
@@ -38,6 +55,7 @@ typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
 typedef Teuchos::SerialSymDenseMatrix<int, Complex> ComplexSymMatrix;
 
 }  // namespace util
+
 }  // namespace dakota
 
 #endif  // include guard

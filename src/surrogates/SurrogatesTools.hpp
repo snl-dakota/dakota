@@ -9,7 +9,6 @@
 #ifndef DAKOTA_SURROGATES_TOOLS_HPP
 #define DAKOTA_SURROGATES_TOOLS_HPP
 
-#include "util_data_types.hpp"
 #include <Eigen/Dense>
 
 namespace dakota {
