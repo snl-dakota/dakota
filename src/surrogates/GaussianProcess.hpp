@@ -70,14 +70,15 @@ public:
    * \param[in] nugget_val Value of the Gaussian process's nugget - a small positive constant
    * \param[in] seed Seed for the random number generator. This affects the initial guesses.
    */
-  GaussianProcess(const MatrixXd &samples,
-                  const MatrixXd &response,
-                  const VectorXd &sigma_bounds,
-                  const MatrixXd &length_scale_bounds,
-                  const std::string scaler_name = "mean_normalization",
-                  const int num_restarts = 5,
-                  const double nugget_val = 1.0e-10,
-                  const int seed = 129);
+
+//  GaussianProcess(const MatrixXd &samples,
+//                  const MatrixXd &response,
+//                  const VectorXd &sigma_bounds,
+//                  const MatrixXd &length_scale_bounds,
+//                  const std::string scaler_name = "mean_normalization",
+//                  const int num_restarts = 5,
+//                  const double nugget_val = 1.0e-10,
+//                  const int seed = 129);
 
   ~GaussianProcess();
   // ------------------------------------------------------------

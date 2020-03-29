@@ -16,6 +16,7 @@
 #define DAKOTA_SURROGATES_H 
 
 #include "DakotaApproximation.hpp"
+
 #include <memory>
 
 namespace dakota {
