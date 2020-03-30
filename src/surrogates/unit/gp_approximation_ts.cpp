@@ -8,6 +8,7 @@
 
 #include "CommonUtils.hpp"
 #include "GaussianProcess.hpp"
+#include "SurrogatesTools.hpp"
 #include "util_data_types.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
@@ -234,6 +235,32 @@ int test_gp(double atol){
     return 15;
   }
 
+  /* compute derivatives of GP with trend and check */
+  MatrixXd gp4_gradient, gp4_hessian;
+
+  gp4.gradient(eval_pts.row(0), gp4_gradient);
+  gp4.hessian(eval_pts.row(0), gp4_hessian);
+
+  std::cout << "GP with trend gradient:" << std::endl;
+  std::cout << gp4_gradient;
+  std::cout << "\n";
+
+  std::cout << "GP with trend hessian:" << std::endl;
+  std::cout << gp4_hessian;
+  std::cout << "\n";
+
+  MatrixXd grad_fd_error_trend;
+  fd_check_gradient(gp4, eval_pts.row(0), grad_fd_error_trend); 
+  std::cout << "\nGP with trend gradient fd error:" << std::endl;
+  std::cout << grad_fd_error_trend << std::endl;
+  std::cout << "\n";
+
+  MatrixXd hessian_fd_error_trend;
+  fd_check_hessian(gp4, eval_pts.row(0), hessian_fd_error_trend); 
+  std::cout << "\nGP with trend hessian fd error:" << std::endl;
+  std::cout << hessian_fd_error_trend << std::endl;
+  std::cout << "\n";
+
   /* 2D GP test */
   int num_datasets = 1;
   int num_vars = 2;
@@ -381,6 +408,20 @@ int test_gp(double atol){
     std::cout << "8\n";
     return 8;
   }
+
+  /* Now build 2D function with trend and check gradient/hessian */
+
+  MatrixXd grad_fd_error;
+  fd_check_gradient(gp_2D, eval_point, grad_fd_error);
+  std::cout << "\ngradient fd error:" << std::endl;
+  std::cout << grad_fd_error << std::endl;
+  std::cout << "\n";
+
+  MatrixXd hessian_fd_error;
+  fd_check_hessian(gp_2D, eval_point, hessian_fd_error);
+  std::cout << "\nhessian fd error:" << std::endl;
+  std::cout << hessian_fd_error << std::endl;
+  std::cout << "\n";
 
   std::cout << "\n\n";
 

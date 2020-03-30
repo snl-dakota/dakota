@@ -160,6 +160,10 @@ public:
   /// runtime build
   void build(const MatrixXd &samples, const MatrixXd &response) override;
 
+  /* needs to be public */
+  /// DataScaler for the surrogate data.
+  //std::shared_ptr<util::DataScaler> dataScaler;
+
 private:
 
   /*
@@ -227,8 +231,6 @@ private:
   /// Vector of posterior standard deviation at prediction points.
   VectorXd posteriorStdDev;
 
-  /// DataScaler for the surrogate data.
-  std::shared_ptr<util::DataScaler> dataScaler;
 
   /// PolynomialRegression for trend
   std::shared_ptr<PolynomialRegression> polyRegression;

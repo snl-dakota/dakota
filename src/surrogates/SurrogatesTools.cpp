@@ -201,5 +201,141 @@ void compute_hyperbolic_indices( int num_dims, int level, double p, MatrixXi & i
   }
 }
 
+void fd_check_gradient(Surrogate &surr, 
+                       const MatrixXd &sample,
+                       MatrixXd &fd_error, const int num_steps) {
+
+  int num_vars = sample.cols();
+  fd_error.resize(num_steps, num_vars);
+
+  MatrixXd ref_sample_repeated(num_steps, num_vars);
+  MatrixXd ref_grad;
+  MatrixXd perturb_plus(num_steps, num_vars);
+  MatrixXd perturb_minus(num_steps, num_vars);
+  MatrixXd value_perturb_plus, value_perturb_minus;
+  VectorXd ref_grad_repeated(num_steps);
+  surr.gradient(sample, ref_grad, 0);
+  VectorXd scale_factors = surr.dataScaler->get_scaler_features_scale_factors();
+
+  /* create h array */
+  VectorXd h(num_steps);
+  for (int i = 0; i < num_steps; i++)
+    h(i) = pow(10.0, -(i+1));
+
+  /* set up array of anchor points */
+  for (int i = 0; i < num_vars; i++)
+    ref_sample_repeated.col(i).setConstant(sample(0,i));
+
+  for (int i = 0; i < num_vars; i++) {
+    perturb_plus = ref_sample_repeated;
+    perturb_minus = ref_sample_repeated;
+    perturb_plus.col(i) += h*scale_factors(i);
+    perturb_minus.col(i) -= h*scale_factors(i);
+    surr.value(perturb_plus, value_perturb_plus);
+    surr.value(perturb_minus, value_perturb_minus);
+    ref_grad_repeated.setConstant(ref_grad(0,i));
+    fd_error.col(i) = ((value_perturb_plus - value_perturb_minus)
+                       .cwiseQuotient(2.0*h)
+                       - ref_grad_repeated).cwiseAbs();
+  }
+}
+
+void fd_check_hessian(Surrogate &surr, 
+                      const MatrixXd &sample,
+                      MatrixXd &fd_error, const int num_steps) {
+
+  int num_vars = sample.cols();
+
+  /* compute the fd error for each independent 
+   * component of the hessian */
+  int num_hess_components = num_vars*(num_vars+1)/2;
+  fd_error.resize(num_steps, num_hess_components);
+
+  MatrixXd ref_sample_repeated(num_steps, num_vars);
+  MatrixXd ref_hessian;
+  MatrixXd perturb_plus_single(num_steps, num_vars);
+  MatrixXd perturb_minus_single(num_steps, num_vars);
+  MatrixXd perturb_plus_both(num_steps, num_vars);
+  MatrixXd perturb_minus_both(num_steps, num_vars);
+  MatrixXd perturb_plus_minus(num_steps, num_vars);
+  MatrixXd perturb_minus_plus(num_steps, num_vars);
+  MatrixXd value_perturb_plus_single, value_perturb_minus_single;
+  MatrixXd value_perturb_plus_both, value_perturb_minus_both;
+  MatrixXd value_perturb_plus_minus, value_perturb_minus_plus;
+  VectorXd ref_hessian_repeated(num_steps);
+  VectorXd scale_factors = surr.dataScaler->get_scaler_features_scale_factors();
+  MatrixXd ref_value;
+  VectorXd ref_value_repeated(num_steps);
+
+  /* unperturbed value and hessian */
+  surr.value(sample, ref_value);
+  surr.hessian(sample, ref_hessian, 0);
+
+  /* create h and reference value arrays */
+  VectorXd h(num_steps);
+  for (int i = 0; i < num_steps; i++) {
+    h(i) = pow(10.0, -(i+1));
+    ref_value_repeated.setConstant(ref_value(0,0));
+  }
+
+  /* set up array of anchor points */
+  for (int i = 0; i < num_vars; i++) {
+    ref_sample_repeated.col(i).setConstant(sample(0,i));
+  }
+
+  int k = 0;
+  for (int i = 0; i < num_vars; i++) {
+    for (int j = i; j < num_vars; j++) {
+      ref_hessian_repeated.setConstant(ref_hessian(i,j));
+      perturb_plus_single = ref_sample_repeated;
+      perturb_minus_single = ref_sample_repeated;
+
+      perturb_plus_single.col(i) += h*scale_factors(i);
+      perturb_minus_single.col(i) -= h*scale_factors(i);
+
+      surr.value(perturb_plus_single, value_perturb_plus_single);
+      surr.value(perturb_minus_single, value_perturb_minus_single);
+
+      if (i == j) {
+        fd_error.col(k) = ((value_perturb_plus_single
+                          - 2.0*ref_value_repeated
+                          + value_perturb_minus_single)
+                          .cwiseQuotient(h
+                          .cwiseProduct(h))
+                          - ref_hessian_repeated).cwiseAbs();
+      }
+      else {
+        perturb_plus_both = ref_sample_repeated;
+        perturb_minus_both = ref_sample_repeated;
+        perturb_plus_minus = ref_sample_repeated;
+        perturb_minus_plus = ref_sample_repeated;
+
+        perturb_plus_both.col(i) += h*scale_factors(i);
+        perturb_plus_both.col(j) += h*scale_factors(j);
+        perturb_minus_both.col(i) -= h*scale_factors(i);
+        perturb_minus_both.col(j) -= h*scale_factors(j);
+        perturb_plus_minus.col(i) += h*scale_factors(i);
+        perturb_plus_minus.col(j) -= h*scale_factors(j);
+        perturb_minus_plus.col(i) -= h*scale_factors(i);
+        perturb_minus_plus.col(j) += h*scale_factors(j);
+
+        surr.value(perturb_plus_both, value_perturb_plus_both);
+        surr.value(perturb_minus_both, value_perturb_minus_both);
+        surr.value(perturb_plus_minus, value_perturb_plus_minus);
+        surr.value(perturb_minus_plus, value_perturb_minus_plus);
+
+        fd_error.col(k) = ((value_perturb_plus_both
+                          + value_perturb_minus_both
+                          - value_perturb_plus_minus
+                          - value_perturb_minus_plus)
+                          .cwiseQuotient(2.0*h
+                          .cwiseProduct(2.0*h))
+                          - ref_hessian_repeated).cwiseAbs();
+      }
+      k += 1;
+    }
+  }
+}
+
 }  // namespace surrogates
 }  // namespace dakota

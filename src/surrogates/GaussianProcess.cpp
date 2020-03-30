@@ -121,10 +121,16 @@ void GaussianProcess::set_theta(const std::vector<double> theta_new) {
     (thetaValues)(i) = theta_new[i];
    */
   for (int i = 0; i < numVariables + 1; i++) 
-    (thetaValues)(i) = theta_new[i];
-  for (int i = 0; i < numPolyTerms; i++)
-    betaValues(i) = theta_new[numVariables+1+i];
-  estimatedNuggetValue = theta_new[numVariables+1+numPolyTerms];
+    thetaValues(i) = theta_new[i];
+
+  if (estimateTrend) {
+    for (int i = 0; i < numPolyTerms; i++)
+      betaValues(i) = theta_new[numVariables+1+i];
+  }
+
+  if (estimateNugget) {
+    estimatedNuggetValue = theta_new[numVariables+1+numPolyTerms];
+  }
 }
 
 
@@ -574,17 +580,22 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   }
 
   thetaValues = bestThetaValues;
-  if (estimateTrend)
+  if (estimateTrend) {
     betaValues = bestBetaValues;
+    /* set the betas in the polynomialRegression class */
+    polyRegression->set_polynomial_coeffs(bestBetaValues);
+  }
   if (estimateNugget)
     estimatedNuggetValue = bestEstimatedNuggetValue;
 
+  /*
   std::cout << "\n";
   std::cout << objectiveFunctionHistory << std::endl;
   std::cout << "optimal theta values in log-space:" << std::endl;
   std::cout << bestThetaValues << std::endl;
   std::cout << "best objective function value is " <<  bestObjFunValue << std::endl;
   std::cout << "best objective function gradient norm is " <<  final_obj_gradient.norm() << std::endl;
+  */
 }
 
 void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
@@ -673,17 +684,25 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
   compute_gram(false);
   CholFact.compute(GramMatrix);
 
-  MatrixXd pred_mat, chol_solve_target, first_deriv_pred_mat;
+  MatrixXd pred_mat, chol_solve_resid, first_deriv_pred_mat,
+           grad_components, resid;
   compute_prediction_matrix(scaled_pred_pts,pred_mat);
-  chol_solve_target = CholFact.solve(targetValues);
+  resid = targetValues;
+  if (estimateTrend)
+    resid -= basisMatrix*betaValues;
+  chol_solve_resid = CholFact.solve(resid);
 
-  /* gradient */
-  for (int i = 0; i < numPredictionPts; i++) {
-    for (int j = 0; j < numVariables; j++) {
-      compute_first_deriv_pred_mat(pred_mat,scaled_pred_pts,j,first_deriv_pred_mat);
-      auto grad_components = first_deriv_pred_mat*chol_solve_target;
-      gradient(i,j) = grad_components(i,0);
-    }
+  for (int i = 0; i < numVariables; i++) {
+    compute_first_deriv_pred_mat(pred_mat,scaled_pred_pts,i,first_deriv_pred_mat);
+    grad_components = first_deriv_pred_mat*chol_solve_resid;
+    gradient.col(i) = grad_components.col(0);
+  }
+
+  /* extra terms for GP with a trend */
+  if (estimateTrend) {
+    MatrixXd poly_grad_pred_pts;
+    polyRegression->gradient(scaled_pred_pts, poly_grad_pred_pts);
+    gradient += poly_grad_pred_pts;
   }
 
 }
@@ -709,19 +728,27 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
   compute_gram(false);
   CholFact.compute(GramMatrix);
 
-  MatrixXd pred_mat, chol_solve_target, second_deriv_pred_mat;
+  MatrixXd pred_mat, chol_solve_resid, second_deriv_pred_mat, resid;
   compute_prediction_matrix(scaled_pred_point,pred_mat);
-  chol_solve_target = CholFact.solve(targetValues);
+  resid = targetValues;
+  if (estimateTrend)
+    resid -= basisMatrix*betaValues;
+  chol_solve_resid = CholFact.solve(resid);
 
   /* Hessian */
   for (int i = 0; i < numVariables; i++) {
     for (int j = i; j < numVariables; j++) {
       compute_second_deriv_pred_mat(pred_mat,scaled_pred_point,i,j,second_deriv_pred_mat);
-      auto hessian_component = second_deriv_pred_mat*chol_solve_target;
-      hessian(i,j) = hessian_component(0,0);
+      hessian(i,j) = (second_deriv_pred_mat*chol_solve_resid)(0,0);
       if (i != j)
         hessian(j,i) = hessian(i,j);
     }
+  }
+
+  if (estimateTrend) {
+    MatrixXd poly_hessian_pred_pt;
+    polyRegression->hessian(scaled_pred_point, poly_hessian_pred_pt);
+    hessian += poly_hessian_pred_pt;
   }
 
 }

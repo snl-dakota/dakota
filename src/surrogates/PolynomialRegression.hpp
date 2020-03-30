@@ -96,7 +96,7 @@ private:
   int polynomialOrder;
   util::SCALER_TYPE scalerType;
   util::SOLVER_TYPE solverType;
-  std::shared_ptr<util::DataScaler> scaler;
+  //std::shared_ptr<util::DataScaler> scaler;
   std::shared_ptr<util::LinearSolverBase> solver;
 
   // Polynomial surrogate fields

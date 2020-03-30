@@ -9,6 +9,7 @@
 #ifndef DAKOTA_SURROGATES_SURROGATE_HPP
 #define DAKOTA_SURROGATES_SURROGATE_HPP
 
+#include "DataScaler.hpp"
 #include "util_data_types.hpp"
 
 namespace dakota {
@@ -43,6 +44,8 @@ public:
 
   /* default options for the surrogate */
   virtual void default_options() = 0;
+
+  std::shared_ptr<util::DataScaler> dataScaler;
 
 protected:
   int numSamples;
