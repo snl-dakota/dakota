@@ -653,6 +653,9 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
 void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
                                const int qoi) {
 
+  // Surrogate models don't yet support multiple responses
+  assert(qoi == 0);
+
   if (samples.cols() != numVariables) {
     throw(std::runtime_error("Gaussian Process gradient inputs are not consistent."
           " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
@@ -687,6 +690,9 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
 void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
                               const int qoi) {
+
+  // Surrogate models don't yet support multiple responses
+  assert(qoi == 0);
 
   if (sample.rows() != 1) {
     throw(std::runtime_error("Gaussian Process Hessian evaluation is for a single point."

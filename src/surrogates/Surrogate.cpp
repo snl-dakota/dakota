@@ -17,12 +17,14 @@ Surrogate::~Surrogate(){}
 
 /* returns num_samples by num_vars for a given qoi */
 void Surrogate::gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi) {
-  throw(std::string("This Surrogate type does not provide gradients"));
+  silence_unused_args(samples, gradient, qoi);
+  throw(std::runtime_error("Surrogate does not implement gradient(...)"));
 }
 
 /* returns num_vars by num_vars for a single sample and a given qoi */
 void Surrogate::hessian(const MatrixXd &samples, MatrixXd &hessian, int qoi) {
-  throw(std::string("This Surrogate type does not provide Hessians"));
+  silence_unused_args(samples, hessian, qoi);
+  throw(std::runtime_error("Surrogate does not implement hessian(...)"));
 }
 
 void Surrogate::set_options(const ParameterList &options) {

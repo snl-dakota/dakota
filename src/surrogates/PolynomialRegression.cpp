@@ -267,6 +267,9 @@ void PolynomialRegression::default_options() {
 void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
                                     const int qoi) {
 
+  // Surrogate models don't yet support multiple responses
+  assert(qoi == 0);
+
   MatrixXd basis_indices = basisIndices.cast<double>();
   basis_indices.transposeInPlace();
   MatrixXd deriv_coeffs = MatrixXd::Zero(numTerms, numVars);
@@ -301,6 +304,10 @@ void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
 void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
                                    const int qoi) {
+
+
+  // Surrogate models don't yet support multiple responses
+  assert(qoi == 0);
 
   hessian.resize(numVars, numVars);
   MatrixXd basis_indices = basisIndices.cast<double>();
