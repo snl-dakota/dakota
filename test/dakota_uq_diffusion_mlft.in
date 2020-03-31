@@ -1,4 +1,4 @@
-@ *: DakotaConfig=HAVE_C3
+#@ *: DakotaConfig=HAVE_C3
 
 #environment,
 #	graphics
