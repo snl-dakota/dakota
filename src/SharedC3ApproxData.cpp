@@ -151,19 +151,38 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 }
 
 
-void SharedC3ApproxData::update_basis()
+void SharedC3ApproxData::
+update_basis(const UShortArray& start_orders, unsigned short max_order)
 {
   // use startOrder[activeKey] for run time updates
-  const UShortArray& so = start_orders();
-  size_t np, max_np = maxOrder + 1;
+  size_t np, max_np = max_order + 1;
   for (size_t i=0; i<numVars; ++i) {
     struct OneApproxOpts*& a_opts = oneApproxOpts[i];
-    np = so[i] + 1;
+    np = start_orders[i] + 1;
     one_approx_opts_set_nparams(a_opts, np);     // updated
     one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
   }
 
   formUpdated[activeKey] = true;
 }
+
+
+void SharedC3ApproxData::pre_combine()
+{
+  combinedOrders.assign(numVars, 0);
+  std::map<UShortArray, UShortArray>::const_iterator cit;  size_t i;
+  for (cit=startOrders.begin(); cit!=startOrders.end(); ++cit) {
+    const UShortArray& so = cit->second;
+    for (i=0; i<numVars; ++i)
+      if (so[i] > combinedOrders[i])
+	combinedOrders[i] = so[i];
+  }
+
+  update_basis(combinedOrders, maxOrder);
+}
+
+
+//void SharedC3ApproxData::post_combine()
+//{ update_basis(); } // restore to active
 
 } // namespace Dakota

@@ -357,7 +357,8 @@ void C3Approximation::push_coefficients()
 
 void C3Approximation::combine_coefficients()
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  // SharedC3ApproxData::pre_combine() invokes update_basis(combinedOrders)
+  // > opts below reflect the maximum basis order from all model indices
 
   // Option 1: adds x to y and overwrites y (I allocate x and y)
   combinedC3FTPtrs.free_ft();
@@ -368,6 +369,7 @@ void C3Approximation::combine_coefficients()
   // tight for this context --> use arithmetic tol.  Memory overhead is strongly
   // correlated with this tolerance and 1.e-3 did not result in significant
   // accuracy gain in some numerical experiments (dakota_uq_heat_eq_mlft.in).
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   Real arith_tol = data_rep->arithmeticTol;
   struct MultiApproxOpts * opts = data_rep->multiApproxOpts;
   for (; it!= levelApprox.end(); ++it)

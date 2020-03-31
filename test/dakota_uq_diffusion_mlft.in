@@ -10,31 +10,37 @@
 method,
 	model_pointer = 'HIERARCH'
 ### MULTIFIDELITY ###
-	multifidelity_function_train			     #s0,#s1,#s2,#s3,#s4
+	multifidelity_function_train		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
 ## No refinement:
-	  collocation_points_sequence = 1000 400 300 200 100	#s0
-#	  collocation_ratio = 1.75     	     	     		#s1
-## Adaptive refinement: (individual, integrated)
+	  collocation_points_sequence = 1000 400 300 200 100	#s0,#s2
+#	  collocation_ratio = 1.75     	     	     		#s1,#s3
+	  start_rank_sequence = 3 2 2 1 1			#s0,#s1
+## C3 adapt_rank refinement (only):
+#	  start_rank_sequence = 2 2 2 2 2 adapt_rank		#s2,#s3
+## Dakota refinement: (individual, integrated)
 # > FT can adapt along dimensions of both rank and order.  For now, we refine
 #   order and rely on C3 adapt_rank (optionally):
 # > spec supports start_{rank,order}_seq and colloc_pts_seq/plot_samples, which
 #   specify _initial_ resolutions per level, prior to refinement/adaptation
 # > Uniform refinement could support poly order (default) vs. rank (option)
-#	  collocation_points_sequence = 100 40 30 20 10	      	#s3
-#	  collocation_ratio = 1.75     	     	     		#s2,#s4
-#	  p_refinement uniform					#s2,#s3,#s4
-#	  allocation_control greedy				#s3
-	  start_rank_sequence = 3 2 2 1 1			#s0,#s1,#s2,#s4
-#	  start_rank_sequence = 2 2 2 2	2 adapt_rank		#s3
+#	  collocation_ratio = 1.75     	     	     		#s4,#s5,#s6,#s7
+#	  p_refinement uniform					#s4,#s5,#s6,#s7
+#	  allocation_control greedy				#s6,#s7
+#	  start_rank_sequence = 3 2 2 1 1			#s4,#s6
+#	  start_rank_sequence = 2 2 2 2 2 adapt_rank		#s5,#s7
+#	  max_refinement_iterations = 5				#s4,#s5
+#	  max_refinement_iterations = 10			#s6,#s7
 #
 ### MULTILEVEL ###
-#	multilevel_function_train				#s5,#s6,#s7
-#	  pilot_samples = 100 40 30 20 10			#s5,#s6 
-#	  collocation_ratio = 1.75				#s7
-#	  allocation_control rank_sampling			#s5,#s7
-#	  allocation_control estimator_variance			#s6
-#	  start_rank_sequence  = 2 2 2 2 2			#s5,#s6,#s7	
-	  kick_rank = 2  max_rank  = 10
+#	multilevel_function_train				#s8,#s9,#s10
+#	  pilot_samples = 100 40 30 20 10			#s8,#s9
+#	  collocation_ratio = 1.75				#s10
+#	  allocation_control rank_sampling			#s8,#s10
+#	  allocation_control estimator_variance			#s9
+#	  start_rank_sequence = 3 2 2 1 1			#s9
+#	  start_rank_sequence = 2 2 2 2 2 adapt_rank		#s8,#s10
+#
+	  kick_rank = 2                      max_rank  = 10
 	  start_order_sequence = 2 2 2 2 2   max_order = 10
           solver_tolerance = 1e-8  rounding_tolerance = 1e-8
 	  convergence_tol  = 1e-2

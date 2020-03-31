@@ -81,8 +81,10 @@ public:
   /// return current expansion rank (active key in startRank)
   size_t start_rank() const;
 
-  /// update oneApproxOpts after a change in basis order
+  /// update oneApproxOpts with active basis orders after an order change
   void update_basis();
+  /// update oneApproxOpts with passed basis orders after an order change
+  void update_basis(const UShortArray& start_orders, unsigned short max_order);
 
 protected:
 
@@ -122,7 +124,7 @@ protected:
   size_t push_index(const UShortArray& key);
   void   post_push();
 
-  //void pre_combine();
+  void pre_combine();
   //void post_combine();
 
   //
@@ -139,18 +141,22 @@ protected:
   // these are stored in oneApproxOpts, but currently need to be cached
   // to persist between set_parameter() and construct_basis()
 
-  /// starting specification for polynomial orders (from start_order scalar
-  /// plus anisotropic dimension preference)
+  /// starting user specification for polynomial orders (from start_order
+  /// scalar plus anisotropic dimension preference)
   UShortArray startOrderSpec;
   /// starting values for polynomial order (prior to adaptive refinement);
   /// for each model key, there is an array of polynomial orders per variable
   std::map<UShortArray, UShortArray> startOrders;
+  /// polynomial basis order for combined expansion for each variable core
+  UShortArray combinedOrders;
   /// maximum value for polynomial order (if adapted)
   unsigned short maxOrder;
 
   // the remaining data are separate as can be seen in C3Approximation::build()
 
-  /// user specification for start_rank
+  /// starting user specification for rank (not augmented by dimension
+  /// preference); Note: rank sequence spec is managed externally and becomes
+  /// reflected in startRank model index mapping
   size_t startRankSpec; // or SizetArray for start_rank_sequence spec
   /// starting values for rank (note: adapt_rank currently covers refinement);
   /// for each model index key, there is a scalar starting rank (recovered
@@ -229,6 +235,10 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
     { startRank[key]   = startRankSpec;   form = true; }
   if (form) formUpdated[key] = true;
 }
+
+
+inline void SharedC3ApproxData::update_basis()
+{ update_basis(startOrders[activeKey], maxOrder); }
 
 
 inline short SharedC3ApproxData::discrepancy_type() const
@@ -414,7 +424,7 @@ inline void SharedC3ApproxData::increment_order()
       { ++oi; incremented = true; }
   }
   if (incremented)
-    update_basis();
+    update_basis(active_so, maxOrder);
   else {
     Cerr << "Error: SharedC3ApproxData::increment_order() cannot advance "
 	 << "beyond maxOrder." << std::endl;
@@ -435,7 +445,7 @@ inline void SharedC3ApproxData::decrement_order()
       { --oi; decremented = true; }
   }
   if (decremented)
-    update_basis();
+    update_basis(active_so, maxOrder);
   else {
     Cerr << "Error: SharedC3ApproxData::decrement_order() has reached 0."
 	 << std::endl;
