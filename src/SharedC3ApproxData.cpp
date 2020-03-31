@@ -49,7 +49,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
 
   RealVector dim_pref_spec; // isotropic for now, prior to XML support
   NonDIntegration::dimension_preference_to_anisotropic_order(
-    problem_db.get_sizet("model.c3function_train.start_order"),
+    problem_db.get_ushort("model.c3function_train.start_order"),
     dim_pref_spec,//problem_db.get_rv("model.dimension_preference"),
     numVars, startOrderSpec);
 
