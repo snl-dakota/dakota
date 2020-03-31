@@ -1,8 +1,4 @@
-#@ s*: Label=FastTest
-#@ p0: MPIProcs=2
-#@ p1: MPIProcs=3
-#@ s*: TimeoutAbsolute=3600
-#@ s*: TimeoutDelay=1200
+@ *: DakotaConfig=HAVE_C3
 
 #environment,
 #	graphics
