@@ -4486,6 +4486,13 @@ int TestDriverInterface::problem18(){
   std::map<var_t, Real>::iterator Ac_iter = xDRM.find(VAR_Ac);
   Real Ac = (Ac_iter == xDRM.end()) ? 1. : Ac_iter->second; // Correlation Ac for constraint
 
+  if(Af < 0){
+    Af = problem18_Ax(Af, x);
+  }
+  if(Ac < 0){
+    Ac = problem18_Ax(Ac, x);
+  }
+
   fnVals[0] = problem18_f(x) + Af * xi * xi * xi;
   fnVals[1] = problem18_g(x) - problem18_f(x) + Ac * xi * xi * xi;
 
@@ -4510,6 +4517,19 @@ double TestDriverInterface::problem18_f(const double &x){
 
 double TestDriverInterface::problem18_g(const double &x){
   return (2. * std::log(3.5 - 2))/(3.5 - 1) * x + 1 - (2. *std::log(3.5 - 2))/(3.5 - 1);
+}
+
+double TestDriverInterface::problem18_Ax(const double &A, const double &x){
+  if(A == -1)
+    return 0.5/6. * x + 0.4;
+  else if(A == -2)
+    return 0.5/6. * sin(x) + 0.4;
+  else if(A == -3)
+    return 0.5/6. * log(x) + 0.4;
+  else if(A == -4)
+    return 0.69*1./exp(2.*x)+0.3;
+  else
+    throw INTERFACE_ERROR;
 }
 
 

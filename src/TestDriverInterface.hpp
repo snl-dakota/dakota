@@ -143,6 +143,7 @@ private:
   int problem18();
   double problem18_f(const double &x);
   double problem18_g(const double &x);
+  double problem18_Ax(const double &A, const double &x);
 
   /// utility to combine components of separable fns
   void separable_combine(Real mult_scale_factor, std::vector<Real> & w,
