@@ -95,7 +95,8 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1), 
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1), 
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
@@ -240,8 +241,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   supportsEstimDerivs(true), mappingInitialized(false), probDescDB(problem_db),
   parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
-  outputLevel(output_level), hierarchicalTagging(false),
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1), outputLevel(output_level), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), // to be replaced by derived ctors
@@ -282,8 +283,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   probDescDB(problem_db), parallelLib(parallel_lib),
   evaluationsDB(evaluation_store_db),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
-  outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1), outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), // to be replaced by derived ctors
@@ -3449,34 +3450,12 @@ Model& Model::surrogate_model()
 }
 
 
-void Model::
-surrogate_model_key(unsigned short lf_model_index,
-		    unsigned short lf_soln_lev_index)
+const Model& Model::surrogate_model() const
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->surrogate_model_key(lf_model_index, lf_soln_lev_index);
-  //else no-op
-}
-
-
-void Model::surrogate_model_key(const UShortArray& lf_key)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->surrogate_model_key(lf_key);
-  //else no-op
-}
-
-
-const UShortArray& Model::surrogate_model_key() const
-{
-  if (!modelRep) {
-    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model_key"
-	 << "() function.\n       active surrogate model indices are not "
-	 << "supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
-  return modelRep->surrogate_model_key();
+    return modelRep->surrogate_model();
+  else // letter lacking redefinition of virtual fn.
+    return dummy_model; // default is no surrogate -> return empty envelope
 }
 
 
@@ -3492,33 +3471,12 @@ Model& Model::truth_model()
 }
 
 
-void Model::
-truth_model_key(unsigned short hf_model_index, unsigned short hf_soln_lev_index)
+const Model& Model::truth_model() const
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->truth_model_key(hf_model_index, hf_soln_lev_index);
-  //else no-op
-}
-
-
-void Model::truth_model_key(const UShortArray& hf_key)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->truth_model_key(hf_key);
-  //else no-op
-}
-
-
-const UShortArray& Model::truth_model_key() const
-{
-  if (!modelRep) {
-    Cerr << "Error: Letter lacking redefinition of virtual truth_model_key() "
-	 << "function.\n       active truth_model indices are not supported "
-	 << "by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
-  return modelRep->truth_model_key();
+    return modelRep->truth_model();
+  else // letter lacking redefinition of virtual fn.
+    return *this; // default is no surrogate -> return this model instance
 }
 
 
@@ -3575,20 +3533,16 @@ void Model::update_from_subordinate_model(size_t depth)
     be performed on the original envelope object. */
 Interface& Model::derived_interface()
 {
-  if (modelRep)
-    return modelRep->derived_interface(); // envelope fwd to letter
-  else // letter lacking redefinition of virtual fn.
-    return dummy_interface; // return null/empty envelope
+  if (modelRep) return modelRep->derived_interface(); // fwd to letter
+  else          return dummy_interface; // return null/empty envelope
 }
 
 
 /** return the number of levels within a solution / discretization hierarchy. */
 size_t Model::solution_levels(bool lwr_bnd) const
 {
-  if (modelRep)
-    return modelRep->solution_levels(lwr_bnd); // envelope fwd to letter
-  else // letter lacking redefinition of virtual fn.
-    return (lwr_bnd) ? 1 : 0;
+  if (modelRep) return modelRep->solution_levels(lwr_bnd); // fwd to letter
+  else          return (lwr_bnd) ? 1 : 0; // default
 }
 
 
@@ -3597,7 +3551,8 @@ void Model::solution_level_index(unsigned short index)
 {
   if (modelRep)
     modelRep->solution_level_index(index); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.
+  else if (index != USHRT_MAX) {
+    // letter lacking redefinition of virtual fn (for case that requires fwd)
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
          << "() function.\n       solution_level_index is not supported by this"
 	 << " Model class." << std::endl;
@@ -3608,14 +3563,8 @@ void Model::solution_level_index(unsigned short index)
 
 unsigned short Model::solution_level_index() const
 {
-  if (!modelRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
-         << "() function.\n       solution_level_index is not supported by this"
-	 << " Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
-  return modelRep->solution_level_index(); // envelope fwd to letter
+  if (modelRep) return modelRep->solution_level_index(); // fwd to letter
+  else          return USHRT_MAX; // not defined (default)
 }
 
 
@@ -4003,8 +3952,7 @@ void Model::clear_inactive()
 {
   if (modelRep) // envelope fwd to letter
     modelRep->clear_inactive();
-  //else // letter lacking redefinition of virtual fn.
-  //  default: no inactive data to clear
+  //else no op: no inactive data to clear
 }
 
 
@@ -4142,8 +4090,7 @@ const RealVector& Model::error_estimates()
 }
 
 
-const Pecos::SurrogateData& Model::
-approximation_data(size_t fn_index, size_t d_index)
+const Pecos::SurrogateData& Model::approximation_data(size_t fn_index)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data()"
@@ -4153,7 +4100,7 @@ approximation_data(size_t fn_index, size_t d_index)
   }
 
   // envelope fwd to letter
-  return modelRep->approximation_data(fn_index, d_index);
+  return modelRep->approximation_data(fn_index);
 }
 
 
@@ -4174,6 +4121,7 @@ short Model::surrogate_response_mode() const
 }
 
 
+/*
 void Model::link_multilevel_approximation_data()
 {
   if (modelRep) // envelope fwd to letter
@@ -4185,6 +4133,7 @@ void Model::link_multilevel_approximation_data()
     abort_handler(MODEL_ERROR);
   }
 }
+*/
 
 
 DiscrepancyCorrection& Model::discrepancy_correction()
@@ -4219,10 +4168,10 @@ void Model::correction_type(short corr_type)
 
 
 void Model::single_apply(const Variables& vars, Response& resp,
-			 const UShortArrayPair& keys)
+			 const UShortArray& paired_key)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->single_apply(vars, resp, keys);
+    modelRep->single_apply(vars, resp, paired_key);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual single_apply() "
 	 << "function.\n." << std::endl;

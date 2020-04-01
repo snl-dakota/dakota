@@ -1047,22 +1047,6 @@ void Interface::clear_model_keys()
 }
 
 
-void Interface::surrogate_model_key(const UShortArray& key)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->surrogate_model_key(key);
-  // else: default implementation is no-op
-}
-
-
-void Interface::truth_model_key(const UShortArray& key)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->truth_model_key(key);
-  // else: default implementation is no-op
-}
-
-
 void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1071,6 +1055,7 @@ void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 }
 
 
+/*
 void Interface::link_multilevel_approximation_data()
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1082,6 +1067,7 @@ void Interface::link_multilevel_approximation_data()
     abort_handler(-1);
   }
 }
+*/
 
 
 void Interface::
@@ -1186,6 +1172,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   }
 }
 
+
 void Interface::export_approximation()
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1198,11 +1185,12 @@ void Interface::export_approximation()
   }
 }
 
+
 void Interface::
-rebuild_approximation(const BoolDeque& rebuild_deque)
+rebuild_approximation(const BitArray& rebuild_fns)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->rebuild_approximation(rebuild_deque);
+    interfaceRep->rebuild_approximation(rebuild_fns);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
 	 << "approximation() function.\n       This interface does not "
@@ -1298,6 +1286,18 @@ void Interface::combined_to_active(bool clear_combined)
 }
 
 
+bool Interface::formulation_updated() const
+{
+  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
+	 << "() function.\n       This interface does not define approximation "
+	 << "formulations." << std::endl;
+    abort_handler(-1);
+  }
+  return interfaceRep->formulation_updated();
+}
+
+
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {
@@ -1372,8 +1372,7 @@ std::vector<Approximation>& Interface::approximations()
 }
 
 
-const Pecos::SurrogateData& Interface::
-approximation_data(size_t fn_index, size_t d_index)
+const Pecos::SurrogateData& Interface::approximation_data(size_t fn_index)
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data "
@@ -1381,9 +1380,9 @@ approximation_data(size_t fn_index, size_t d_index)
 	 << std::endl;
     abort_handler(-1);
   }
-  
+
   // envelope fwd to letter
-  return interfaceRep->approximation_data(fn_index, d_index);
+  return interfaceRep->approximation_data(fn_index);
 }
 
 
@@ -1395,7 +1394,7 @@ const RealVectorArray& Interface::approximation_coefficients(bool normalized)
          << "approximations." << std::endl;
     abort_handler(-1);
   }
-  
+
   // envelope fwd to letter
   return interfaceRep->approximation_coefficients(normalized);
 }

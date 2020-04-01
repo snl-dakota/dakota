@@ -209,6 +209,8 @@ public:
   KWH(model_strL);
   KWH(model_true);
   KWH(model_type);
+  KWH(model_usharray);
+  KWH(model_ushint);
   KWH(model_utype);
   KWH(model_augment_utype);
 

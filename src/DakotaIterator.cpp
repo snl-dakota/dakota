@@ -26,6 +26,7 @@
 #include "NonDStochCollocation.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
 //#include "NonDMultilevelStochCollocation.hpp"
+#include "NonDSurrogateExpansion.hpp"
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
@@ -107,6 +108,7 @@
 #endif
 #ifdef HAVE_C3
 #include "NonDC3FunctionTrain.hpp"
+#include "NonDMultilevelFunctionTrain.hpp"
 #endif
 #ifdef HAVE_QUESO_GPMSA
 #include "NonDGPMSABayesCalibration.hpp"
@@ -159,13 +161,12 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
 		   std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
-  myModelLayers(0),
-  methodName(probDescDB.get_ushort("method.algorithm")),
-  convergenceTol(probDescDB.get_real("method.convergence_tolerance")),
-  maxIterations(probDescDB.get_int("method.max_iterations")),
-  maxFunctionEvals(probDescDB.get_int("method.max_function_evaluations")),
+  myModelLayers(0), methodName(problem_db.get_ushort("method.algorithm")),
+  convergenceTol(problem_db.get_real("method.convergence_tolerance")),
+  maxIterations(problem_db.get_int("method.max_iterations")),
+  maxFunctionEvals(problem_db.get_int("method.max_function_evaluations")),
   subIteratorFlag(false),
-  numFinalSolutions(probDescDB.get_sizet("method.final_solutions")),
+  numFinalSolutions(problem_db.get_sizet("method.final_solutions")),
   // Output verbosity is observed within Iterator (algorithm verbosity),
   // Model (synchronize/estimate_derivatives verbosity), Interface
   // (map/synch verbosity, file operations verbosity), and Approximation
@@ -179,11 +180,12 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   // where "silent," "quiet", "verbose" and "debug" must be user specified and
   // "normal" is the default for no user specification.  Note that iterators
   // and interfaces have the most granularity in verbosity.
-  outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
-  topLevel(false), resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  outputLevel(problem_db.get_short("method.output")), summaryOutputFlag(true),
+  topLevel(false), resultsDB(iterator_results_db),
+  evaluationsDB(evaluation_store_db),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-   methodId(probDescDB.get_string("method.id")),
-  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  methodId(problem_db.get_string("method.id")), execNum(0),
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   if (methodId.empty())
     methodId = user_auto_id();
@@ -207,14 +209,13 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
 	 std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
-  myModelLayers(0),
-  iteratedModel(model), methodName(method_name), convergenceTol(0.0001),
-  maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
-  subIteratorFlag(false), numFinalSolutions(1),
-  outputLevel(model.output_level()), summaryOutputFlag(false),
-  topLevel(false), resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
-  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()), execNum(0),
-  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  myModelLayers(0), iteratedModel(model), methodName(method_name),
+  convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
+  maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
+  outputLevel(model.output_level()), summaryOutputFlag(false), topLevel(false),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
+  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
 #ifdef REFCOUNT_DEBUG
@@ -254,7 +255,8 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
-Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), parallelLib(dummy_lib),
+Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
+  probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   myModelLayers(0), methodName(DEFAULT_METHOD),
@@ -270,7 +272,8 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), pa
 /** This constructor assigns a representation pointer and optionally
     increments its reference count.  It behaves the same as a default
     construction followed by assign_rep(). */
-Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr, std::shared_ptr<TraitsBase> traits):
+Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr,
+		   std::shared_ptr<TraitsBase> traits):
   // same as default ctor above
   probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
@@ -294,12 +297,13 @@ Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr, std::shared_ptr<
     data.  This version is used for top-level ProblemDescDB-driven
     construction of all Iterators and MetaIterators, which construct
     their own Model instances. */
-Iterator::Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits):
+Iterator::Iterator(ProblemDescDB& problem_db,
+		   std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), methodTraits(traits),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
-
   iteratorRep = get_iterator(problem_db);
   
   if ( !iteratorRep ) // bad name or insufficient memory
@@ -314,11 +318,11 @@ bool Iterator::resize()
   else {
     // Update activeSet:
     activeSet = iteratedModel.current_response().active_set();
-
     return false; // No need to re-initialize communicators base on what
                   // was done here.
   }
 }
+
 
 void Iterator::declare_sources() {
   evaluationsDB.declare_source(method_id(), 
@@ -326,6 +330,7 @@ void Iterator::declare_sources() {
                                iterated_model().model_id(),
                                iterated_model().model_type());
 }
+
 
 /** Used only by the envelope constructor to initialize iteratorRep to
     the appropriate derived type, as given by the DB's method_name.
@@ -459,15 +464,17 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #ifdef HAVE_C3
   case C3_FUNCTION_TRAIN:
     return new NonDC3FunctionTrain(problem_db, model); break;
-  //case MULTIFIDELITY_FUNCTION_TRAIN:
-  //  return new NonDMultilevelFunctionTrain(problem_db, model); break;
+  case MULTILEVEL_FUNCTION_TRAIN: case MULTIFIDELITY_FUNCTION_TRAIN:
+    return new NonDMultilevelFunctionTrain(problem_db, model); break;
 #endif
+  case SURROGATE_BASED_UQ:
+    return new NonDSurrogateExpansion(problem_db, model); break;
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
     case SUBMETHOD_GPMSA:
 #ifdef HAVE_QUESO_GPMSA
-      return new NonDGPMSABayesCalibration(problem_db, model); break;
+      return new NonDGPMSABayesCalibration(problem_db, model);  break;
 #else
       Cerr << "\nError: QUESO/GPMSA Bayesian calibration method unavailable.\n"
 	   << "(Not enabled in some Dakota distributions due to dependence on "
@@ -476,7 +483,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #endif
     case SUBMETHOD_QUESO:
 #ifdef HAVE_QUESO
-      return new NonDQUESOBayesCalibration(problem_db, model); break;
+      return new NonDQUESOBayesCalibration(problem_db, model);  break;
 #else
       Cerr << "\nError: QUESO Bayesian calibration method unavailable.\n"
 	   << "(Not enabled in some Dakota distributions due to dependence on "
@@ -485,16 +492,17 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #endif
 #ifdef HAVE_DREAM
     case SUBMETHOD_DREAM:
-      return new NonDDREAMBayesCalibration(problem_db, model); break;
+      return new NonDDREAMBayesCalibration(problem_db, model);  break;
 #endif
     case SUBMETHOD_WASABI:
       return new NonDWASABIBayesCalibration(problem_db, model); break;
     default:
       Cerr << "\nError: Bayesian calibration method '"
-	   << submethod_enum_to_string(probDescDB.get_ushort("method.sub_method"))
-	   << "' unavailable.\n";
-      return NULL;                                            break;
-    } break;
+	   << submethod_enum_to_string(
+	      probDescDB.get_ushort("method.sub_method")) << "' unavailable.\n";
+      return NULL;                                              break;
+    }
+    break;
   case GPAIS:     return new NonDGPImpSampling(problem_db, model);     break;
   case POF_DARTS: return new NonDPOFDarts(problem_db, model);          break;
   case RKD_DARTS: return new NonDRKDDarts(problem_db, model);          break;
@@ -901,6 +909,7 @@ static UShortStrBimap method_map =
   (GLOBAL_RELIABILITY,              "global_reliability")
   (GLOBAL_INTERVAL_EST,             "global_interval_est")
   (GLOBAL_EVIDENCE,                 "global_evidence")
+  (SURROGATE_BASED_UQ,              "surrogate_based_uq")
   (POLYNOMIAL_CHAOS,                "polynomial_chaos")
   (MULTIFIDELITY_POLYNOMIAL_CHAOS,  "multifidelity_polynomial_chaos")
   (MULTILEVEL_POLYNOMIAL_CHAOS,     "multilevel_polynomial_chaos")
@@ -908,6 +917,7 @@ static UShortStrBimap method_map =
   (MULTIFIDELITY_STOCH_COLLOCATION, "multifidelity_stoch_collocation")
   (C3_FUNCTION_TRAIN,               "c3_function_train")
   (MULTIFIDELITY_FUNCTION_TRAIN,    "multifidelity_function_train")
+  (MULTILEVEL_FUNCTION_TRAIN,       "multilevel_function_train")
   (BAYES_CALIBRATION,               "bayes_calibration")
   (CUBATURE_INTEGRATION,            "cubature")
   (QUADRATURE_INTEGRATION,          "quadrature")
@@ -1004,7 +1014,8 @@ static UShortStrBimap submethod_map =
 
 String Iterator::method_enum_to_string(unsigned short method_enum) const
 {
-  UShortStrBimap::left_const_iterator lc_iter = method_map.left.find(method_enum);
+  UShortStrBimap::left_const_iterator lc_iter
+    = method_map.left.find(method_enum);
   if (lc_iter == method_map.left.end()) {
     Cerr << "\nError: Invalid method_enum_to_string conversion: "
 	 << method_enum << " not available." << std::endl;
@@ -1016,7 +1027,8 @@ String Iterator::method_enum_to_string(unsigned short method_enum) const
 
 unsigned short Iterator::method_string_to_enum(const String& method_str) const
 {
-  UShortStrBimap::right_const_iterator rc_iter = method_map.right.find(method_str);
+  UShortStrBimap::right_const_iterator rc_iter
+    = method_map.right.find(method_str);
   if (rc_iter == method_map.right.end()) {
     Cerr << "\nError: Invalid method_string_to_enum conversion: "
 	 << method_str << " not available." << std::endl;
@@ -1028,7 +1040,8 @@ unsigned short Iterator::method_string_to_enum(const String& method_str) const
 
 String Iterator::submethod_enum_to_string(unsigned short submethod_enum) const
 {
-  UShortStrBimap::left_const_iterator lc_iter = submethod_map.left.find(submethod_enum);
+  UShortStrBimap::left_const_iterator lc_iter
+    = submethod_map.left.find(submethod_enum);
   if (lc_iter == submethod_map.left.end()) {
     Cerr << "\nError: Invalid submethod_enum_to_string conversion: "
 	 << submethod_enum << " not available." << std::endl;

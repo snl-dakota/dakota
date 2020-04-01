@@ -12,6 +12,7 @@
 //- Checked by:
 
 #include "SurrBasedLevelData.hpp"
+#include "DiscrepancyCalculator.hpp"
 
 namespace Dakota {
 
@@ -45,24 +46,25 @@ initialize_data(const Variables& vars, const Response& approx_resp,
 
 
 void SurrBasedLevelData::
-initialize_keys(unsigned short approx_form,  unsigned short truth_form,
-		unsigned short approx_level, unsigned short truth_level)
+initialize_keys(unsigned short group,
+		unsigned short truth_form,  unsigned short approx_form,
+		unsigned short truth_level, unsigned short approx_level)
 {
-  if (approx_level == USHRT_MAX)
-    approxModelKey.resize(1);
-  else {
-    approxModelKey.resize(2);
-    approxModelKey[1] = approx_level;
-  }    
-  approxModelKey[0] = approx_form;
+  truthModelKey.resize(3);  approxModelKey.resize(3);
+  truthModelKey[0]  = approxModelKey[0] = group;
+  truthModelKey[1]  =  truth_form;  truthModelKey[2]  =  truth_level;
+  approxModelKey[1] = approx_form;  approxModelKey[2] = approx_level;
 
-  if (truth_level == USHRT_MAX)
-    truthModelKey.resize(1);
-  else {
-    truthModelKey.resize(2);
-    truthModelKey[1] = truth_level;
-  }
-  truthModelKey[0] = truth_form;
+  Pecos::DiscrepancyCalculator::
+    aggregate_keys(truthModelKey, approxModelKey, pairedModelKey);
+}
+
+
+void SurrBasedLevelData::initialize_keys(const UShortArray& aggregate_key)
+{
+  pairedModelKey = aggregate_key;
+  Pecos::DiscrepancyCalculator::
+    extract_keys(aggregate_key, truthModelKey, approxModelKey);
 }
 
 

@@ -41,13 +41,8 @@ NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
 	 << "NonDIntegration." << std::endl;
     abort_handler(-1);
   }
-
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(EXTENDED_U);
-  // Note: initialize_random_variable_parameters() is performed at run time
-  initialize_random_variable_correlations();
-  verify_correlation_support(EXTENDED_U);
   */
+
   initialize_final_statistics(); // default statistics set
 }
 
@@ -93,9 +88,7 @@ bool NonDIntegration::resize()
 
 void NonDIntegration::core_run()
 {
-  //if (standAloneMode)
-  //  initialize_random_variable_parameters(); // capture any dist param updates
-  //else
+  //if (!standAloneMode)
   //  check_variables(x_dist.random_variables());//deferred from alt ctors
 
   // generate integration points

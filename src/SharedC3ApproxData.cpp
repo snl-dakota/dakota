@@ -23,196 +23,166 @@
 
 namespace Dakota {
 
-SharedC3ApproxData::SharedC3ApproxData()
-{
-  this->constructed = 0;
-  printf("In the default constructor\n");
-}
 
-// *** This ctor is not currently active:
-  
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   SharedApproxData(BaseConstructor(), problem_db, num_vars),
-  startOrder(problem_db.get_sizet("model.c3function_train.start_order")),
-  maxOrder(problem_db.get_sizet("model.c3function_train.max_order")),
-  startRank(problem_db.get_sizet("model.c3function_train.start_rank")),
+  maxOrder(problem_db.get_ushort("model.c3function_train.max_order")),
+  startRankSpec(problem_db.get_sizet("model.c3function_train.start_rank")),
   kickRank(problem_db.get_sizet("model.c3function_train.kick_rank")),
   maxRank(problem_db.get_sizet("model.c3function_train.max_rank")),
   adaptRank(problem_db.get_bool("model.c3function_train.adapt_rank")),
-  roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
+  regressType(problem_db.get_short("model.surrogate.regression_type")),
+  regressRegParam(problem_db.get_real("model.surrogate.regression_penalty")),
   solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
+  roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
+  arithmeticTol(
+    problem_db.get_real("model.c3function_train.arithmetic_tolerance")),
   maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
-  c3Verbosity(0)//problem_db.get_int("model.c3function_train.verbosity")),
+  c3Verbosity(0),//problem_db.get_int("model.c3function_train.verbosity")),
+  adaptConstruct(false), crossVal(false)
 {
-  // printf("CONSTRUCTING SHAREDC3APPROX\n");
+  // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
+  // used by generic surrogate-based UQ in NonDSurrogateExpansion)
 
-  // std::cout << "Solver Tolerance is " << solverTol << std::endl;
-  this->approxOpts = multi_approx_opts_alloc(num_vars);
-  this->oneApproxOpts = (struct OneApproxOpts **)
-    malloc(num_vars * sizeof(struct OneApproxOpts *));
-  for (size_t ii = 0; ii < num_vars; ii++){
-    struct OpeOpts * opts = ope_opts_alloc(LEGENDRE);
-    ope_opts_set_lb(opts,-2);
-    ope_opts_set_ub(opts,2);
-    ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
-    // Note: maxOrder unused for regression;
-    //       to be used for adaptation by cross-approximation
-    ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
-    this->oneApproxOpts[ii] = one_approx_opts_alloc(POLYNOMIAL,opts);
-    multi_approx_opts_set_dim(this->approxOpts,ii,this->oneApproxOpts[ii]);
-    // this->oneApproxOpts[ii] = NULL;
-    // multi_approx_opts_set_dim(this->approxOpts,ii,this->oneApproxOpts[ii]);
-  }
-  this->constructed = 1;
+  RealVector dim_pref_spec; // isotropic for now, prior to XML support
+  NonDIntegration::dimension_preference_to_anisotropic_order(
+    problem_db.get_ushort("model.c3function_train.start_order"),
+    dim_pref_spec,//problem_db.get_rv("model.dimension_preference"),
+    numVars, startOrderSpec);
+
+  multiApproxOpts = multi_approx_opts_alloc(num_vars);
+
+  //oneApproxOpts = (struct OneApproxOpts **)
+  //  malloc(num_vars * sizeof(struct OneApproxOpts *));
+  //for (size_t i=0; i<num_vars; ++i)
+  //  oneApproxOpts[i] = NULL;
+  oneApproxOpts.assign(num_vars, NULL);
 }
 
-// *** This ctor is active due to lightweight DataFitSurrModel ctor:
-  
+
 SharedC3ApproxData::
-SharedC3ApproxData(const String& approx_type,
-		   const UShortArray& approx_order, size_t num_vars,
-		   short data_order, short output_level):
+SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
+		   size_t num_vars, short data_order, short output_level):
   SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars, data_order,
-		   output_level)
+		   output_level),
+  // default values overridden by set_parameter
+  startOrderSpec(approx_order), maxOrder(5),
+  startRankSpec(2), kickRank(2), maxRank(10), adaptRank(false),
+  regressType(FT_LS), // non-regularized least sq
+  solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
+  crossMaxIter(5), maxSolverIterations(1000), c3Verbosity(0),
+  adaptConstruct(false), crossVal(false)
 {
+  // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
+  // (used to build an FT on top of a user model in NonDC3FuntionTrain)
+
   // short basis_type; approx_type_to_basis_type(approxType, basis_type);
 
-  // printf("IN THIS CONSTRUCTOR\n");
-  this->approxOpts = multi_approx_opts_alloc(num_vars);
-  this->oneApproxOpts = (struct OneApproxOpts **)
-    malloc(num_vars * sizeof(struct OneApproxOpts *));
-  for (size_t ii = 0; ii < num_vars; ii++){
-    this->oneApproxOpts[ii] = NULL;
-  }
-  this->constructed = 1;
+  multiApproxOpts = multi_approx_opts_alloc(num_vars);
 
-  // default values overridden by set_parameter
-  this->startOrder = 2;
-  this->maxOrder = 4; // maxnum = 5
-
-  this->startRank = 5;
-  this->kickRank = 2;
-  this->maxRank = 10;
-  this->adaptRank = false;
-
-  this->solverTol = 1e-10;
-  this->roundingTol = 1e-10;
-  this->maxSolverIterations = 1000;
-  this->crossMaxIter = 5;
-  this->c3Verbosity = 0;
+  //oneApproxOpts = (struct OneApproxOpts **)
+  //  malloc(num_vars * sizeof(struct OneApproxOpts *));
+  //for (size_t i=0; i<num_vars; ++i)
+  //  oneApproxOpts[i] = NULL;
+  oneApproxOpts.assign(num_vars, NULL);
 }
+
 
 SharedC3ApproxData::~SharedC3ApproxData()
 {
-  multi_approx_opts_free(this->approxOpts); this->approxOpts = NULL;
-
-  for (size_t ii = 0; ii < this->numVars; ii++){
-    one_approx_opts_free_deep(&(this->oneApproxOpts[ii]));
-    this->oneApproxOpts[ii] = NULL;
+  multi_approx_opts_free(multiApproxOpts); multiApproxOpts = NULL;
+  for (size_t i=0; i<numVars; ++i) {
+    struct OneApproxOpts*& a_opts = oneApproxOpts[i]; // ref to ptr
+    if (a_opts) { one_approx_opts_free_deep(&a_opts); a_opts = NULL; }
   }
-  free(this->oneApproxOpts); this->oneApproxOpts = NULL;
+  //free(oneApproxOpts); oneApproxOpts = NULL;
 }
 
-void SharedC3ApproxData::set_parameter(String var, void * val)
-{
-  if (var.compare("start_poly_order") == 0)
-    this->startOrder= *(size_t*)val;
-  else if (var.compare("max_poly_order") == 0)
-    this->maxOrder = *(size_t*)val;
-  else if (var.compare("start_rank") == 0)
-    this->startRank = *(size_t*)val;
-  else if (var.compare("kick_rank") == 0)
-    this->kickRank = *(size_t*)val;
-  else if (var.compare("max_rank") == 0)
-    this->maxRank = *(size_t*)val;
-  else if (var.compare("adapt_rank") == 0)
-    this->adaptRank = *(bool*)val;
-  else if (var.compare("solver_tol") == 0)
-    this->solverTol = *(double*)val;
-  else if (var.compare("rounding_tol") == 0)
-    this->roundingTol = *(double*)val;
-  else if (var.compare("max_cross_iterations") == 0)
-    this->crossMaxIter = *(int*)val;
-  else if (var.compare("max_solver_iterations") == 0)
-    this->maxSolverIterations = *(int*)val;
-  else if (var.compare("verbosity") == 0)
-    this->c3Verbosity = *(int*)val;
-  else
-    std::cerr << "Unrecognized approximation parameter: " << var << std::endl;
-}
 
 void SharedC3ApproxData::
-construct_basis(const Pecos::MultivariateDistribution& u_dist)
+construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 {
-  // printf("constructed = %d\n",this->constructed);
-  const ShortArray& u_types = u_dist.random_variable_types();
-  assert (u_types.size() == this->numVars);
+  const ShortArray& rv_types  = mv_dist.random_variable_types();
+  const BitArray& active_vars = mv_dist.active_variables();
+  bool no_mask = active_vars.empty();
+  size_t i, av_cntr = 0, num_rv = rv_types.size(),
+    num_active_rv = (no_mask) ? num_rv : active_vars.count();
+  assert (num_active_rv == numVars);
 
-  for (size_t i=0; i < this->numVars; ++i){
-    // printf("i = %zu\n",i);
-    struct OpeOpts * opts = NULL;
-    switch (u_types[i]) {
-    case Pecos::STD_NORMAL:
-      opts = ope_opts_alloc(HERMITE);
-      break;
-    case Pecos::STD_UNIFORM:
-      opts = ope_opts_alloc(LEGENDRE);
-      break;
-    default:
-      PCerr << "Error: unsupported u-space type (" << u_types[i] << ") in "
-	    << "SharedC3ApproxData::distribution_parameters()" << std::endl;
-      abort_handler(-1);
-      break;
+  struct OpeOpts * o_opts;
+  // uses startOrderSpec at construct time (initialize_u_space_model()) since
+  // startOrder[activeKey] not meaningful until run time active key assignment
+  const UShortArray& so = start_orders();
+  size_t np, max_np = maxOrder + 1;
+  for (i=0; i<num_rv; ++i)
+    if (no_mask || active_vars[i]) {
+      switch (rv_types[i]) {
+      case Pecos::STD_NORMAL:
+	o_opts = ope_opts_alloc(HERMITE);  break;
+      case Pecos::STD_UNIFORM:
+	o_opts = ope_opts_alloc(LEGENDRE); break;
+      default:
+	o_opts = NULL;
+	PCerr << "Error: unsupported RV type (" << rv_types[i] << ") in "
+	      << "SharedC3ApproxData::distribution_parameters()" << std::endl;
+	abort_handler(-1);                 break;
+      }
+
+      np = so[i] + 1;
+      ope_opts_set_nparams(o_opts, np);     // startnum = startord + 1
+      // Note: maxOrder not used for regression (only limits increment_order());
+      //       to be used for adaptation by cross-approximation
+      ope_opts_set_maxnum(o_opts,  max_np); //   maxnum =   maxord + 1
+ 
+      struct OneApproxOpts*& a_opts = oneApproxOpts[av_cntr]; // ref to ptr
+      if (a_opts) one_approx_opts_free_deep(&a_opts); // a_opts frees o_opts
+      a_opts = one_approx_opts_alloc(POLYNOMIAL, o_opts);
+      multi_approx_opts_set_dim(multiApproxOpts, av_cntr, a_opts);
+
+      ++av_cntr;
     }
-    // printf("push_back\n");
-    ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
-    // Note: maxOrder unused for regression;
-    //       to be used for adaptation by cross-approximation
-    ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
-    one_approx_opts_free_deep(&(this->oneApproxOpts[i]));
-    this->oneApproxOpts[i] = one_approx_opts_alloc(POLYNOMIAL,opts);
-    // printf("set i\n");
-    multi_approx_opts_set_dim(this->approxOpts,i,this->oneApproxOpts[i]);
-  }
-  // do nothing
+
+  // don't bother to assign formUpdated prior to an active key definition
+  if (!activeKey.empty())
+    formUpdated[activeKey] = true;
 }
 
-void SharedC3ApproxData::store(size_t index)
+
+void SharedC3ApproxData::
+update_basis(const UShortArray& start_orders, unsigned short max_order)
 {
-  size_t stored_len = storeOne.size();
-  if (index == _NPOS || index == stored_len) { // append
-    storeOne.push_back(this->oneApproxOpts);
-    storeMulti.push_back(this->approxOpts);
-  }
-  else if (index < stored_len) { // replace
-    storeOne[index] = this->oneApproxOpts;
-    storeMulti[index] = this->approxOpts;
+  // use startOrder[activeKey] for run time updates
+  size_t np, max_np = max_order + 1;
+  for (size_t i=0; i<numVars; ++i) {
+    struct OneApproxOpts*& a_opts = oneApproxOpts[i];
+    np = start_orders[i] + 1;
+    one_approx_opts_set_nparams(a_opts, np);     // updated
+    one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
   }
 
-}
-    
-size_t SharedC3ApproxData::pre_combine(short combine_type)
-{
-  (void) (combine_type);
-  return 0;
+  formUpdated[activeKey] = true;
 }
 
-void SharedC3ApproxData::post_combine(short combine_type)
+
+void SharedC3ApproxData::pre_combine()
 {
-  (void) (combine_type);
+  combinedOrders.assign(numVars, 0);
+  std::map<UShortArray, UShortArray>::const_iterator cit;  size_t i;
+  for (cit=startOrders.begin(); cit!=startOrders.end(); ++cit) {
+    const UShortArray& so = cit->second;
+    for (i=0; i<numVars; ++i)
+      if (so[i] > combinedOrders[i])
+	combinedOrders[i] = so[i];
+  }
+
+  update_basis(combinedOrders, maxOrder);
 }
 
-void SharedC3ApproxData::restore(size_t index)
-{
-  (void) (index);        
-}
 
-void SharedC3ApproxData::remove_stored(size_t index)
-{
-  (void)(index);
-}
+//void SharedC3ApproxData::post_combine()
+//{ update_basis(); } // restore to active
 
 } // namespace Dakota

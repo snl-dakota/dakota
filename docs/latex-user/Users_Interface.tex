@@ -180,7 +180,7 @@ or results files to filter and driver strings. The \texttt{verbatim} keyword pre
 this behavior, and causes Dakota to execute filter and driver strings "as is".
 
 Beginning with version 6.10, Dakota will substitute the tokens \texttt{\{PARAMETERS\}} 
-and \texttt{\{RESULTS\}} in driver and filter strings with the names of the paramters 
+and \texttt{\{RESULTS\}} in driver and filter strings with the names of the parameters 
 and results files for that analysis/evaluation just prior to execution.
 
 For example, if an \texttt{interface} block in the input file included:
@@ -1080,7 +1080,7 @@ hierarchical\_tagging} will yield function evaluation identifiers
 (``tags'') composed of the evaluation IDs of the models involved,
 e.g., outermodel.innermodel.interfaceid = 4.9.2.  This communicates
 the outer contexts to the analysis driver when performing a function
-evaluation.  For an example of using hierarhical tagging in a nested
+evaluation.  For an example of using hierarchical tagging in a nested
 model context,
 see \path{dakota/share/dakota/test/dakota_uq_timeseries_*_optinterf.in}.
 
@@ -1225,7 +1225,7 @@ runs.  If, say, \path{my/special/directory/} is such a directory
 would cause Dakota to start the simulator and any filters in that
 directory.  If the directory did not already exist, Dakota would
 create it and would remove it after the simulator (or output filter,
-if specifed) finished, unless instructed not to do so by the
+if specified) finished, unless instructed not to do so by the
 appearance of \texttt{directory\_save} (or its deprecated synonym
 \texttt{dir\_save}) in the interface specification.  If \texttt{named
   '$...$'} does not appear, then \texttt{directory\_save} cannot
@@ -1233,7 +1233,7 @@ appear either, and Dakota creates a temporary directory (using the
 \texttt{tmpnam} function to determine its name) for use by the
 simulator and any filters.  If you specify \texttt{directory\_tag} (or
 the deprecated \texttt{dir\_tag}), Dakota causes each invocation of
-the simulator and any filters to start in a a subdirectory of the work
+the simulator and any filters to start in a subdirectory of the work
 directory with a name composed of the work directory's name followed
 by a period and the invocation number (1, 2, $...$); this might be
 useful in debugging.
@@ -1668,19 +1668,29 @@ and the corresponding results would appear as
 
 The Python module {\tt dakota.interfacing} first was made available with Dakota 6.6. (It was released with 
 Dakota 6.5 as the module {\tt dipy}.) By providing a Python interface to read and write, respectively,
-Dakota parameters and results files, {\tt dakota.interfacing} can greatly simplify development of black-box
+Dakota parameters and results files, {\tt dakota.interfacing} can simplify development of black-box
 interfaces. The benefit may be greatest when one or more phases of the interface (pre-processing, execution,
 post-processing) is written in Python.
 
-The following sections describe the components of {\tt dakota.interfacing}. These include a {\tt Parameters}
-class for making variable information available, a {\tt Results} class for collecting results and writing
-them to file, and a convenience function {\tt read\_parameters\_file}, the preferred way to construct 
-{\tt Parameters} and {\tt Results} objects from a Dakota parameters file.
+The following sections describe the components of {\tt dakota.interfacing}. These components include:
+\begin{itemize}
+  \item The {\tt Parameters} class. Makes availabile the variable information for a single evaluation
+  \item The {\tt Results} class. Collects results for a single evaluation and writes them to file 
+  \item The {\tt BatchParameters} and {\tt BatchResults} classes. Containers for multiple {\tt Parameters} and 
+        {\\tt Results} objects; used when evaluations are performed by Dakota in batch mode
+  \item The {\tt read\_parameters\_file} function. Constructs {\tt Parameters}, 
+        {\tt Results}, {\tt BatchParameters}, and {\tt BatchResults} objects from a Dakota 
+        parameters file.
+\end{itemize}
 
 \subsection{Creating Parameters and Results objects}
 
-{\tt dakota.interfacing} has one free function, {\tt read\_parameters\_file}, which creates {\tt Parameters}
-and {\tt Results} objects based on a Dakota parameters file. Its signature is:
+{\tt dakota.interfacing} has one free function, {\tt read\_parameters\_file}, which creates {\tt Parameters}, 
+{\tt Results}, {\tt BatchParameters}, and {\tt BatchResults} objects from a Dakota parameters file. For
+single, non-batch evaluation, it returns a tuple that contains {\tt (Parameters, Results)}. For batch evaluations,
+it instead returns a tuple containing {\tt (BatchParameters, BatchResults)}.
+
+Its signature is:
 
 \phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None}, \emph{ignore\_asv=False}}){}
 
@@ -1691,14 +1701,15 @@ line arguments. (The results filename is assumed to be the last command line arg
 file the second to last.) Note that if the working directory has changed since script invocation, filenames
 provided as command line arguments by Dakota's {\tt fork} or {\tt system} interfaces may be incorrect.
 
-If \emph{results\_file} is set to the constant {\tt dakota.interfacing.UNNAMED}, the {\tt Results} object
-is constructed without a results file name.  In this case, an output stream must be provided when {\tt Results.write()}
-is called. Unnamed results files are most helpful when no results file will be written, as with a script
-intended purely for pre-processing.
+If \emph{results\_file} is set to the constant {\tt dakota.interfacing.UNNAMED}, the {\tt Results} or 
+{\tt BatchResults} object is constructed without a results file name.  In this case, an output stream must be 
+provided when {\tt Results.write()} or {\tt BatchResults.write()} is called. Unnamed results files are most 
+helpful when no results file will be written, as with a script intended purely for pre-processing.
 
-By default, the returned {\tt Results} object enforces the active set vector (see the {\tt Results} class section).
-This behavior can be overriden, allowing any property (function, gradient, Hessian) of a response to be set, by
-setting \emph{ignore\_asv} to True.
+By default, the returned {\tt Results} or {\tt BatchResults} object enforces the active set vector (see the 
+{\tt Results} class section). This behavior can be overridden, allowing any property (function, gradient, Hessian) of 
+a response to be set, by setting \emph{ignore\_asv} to {\tt True}. The \emph{ignore\_asv} option can be useful
+when setting up or debugging a driver.
 
 
 \subsection{Parameters objects}
@@ -1794,7 +1805,9 @@ Results objects have the methods:
 
 \item \index{write() (dakota.interfacing.Results method)}
 	\phantomsection\label{index:dakota.interfacing.Results.write}\textbf{\texttt{write}}({\emph{stream=None}, \emph{ignore\_asv=None}}){}
-Write the results to the Dakota results file. If \emph{stream} is set, it overrides the results file name provided at construct time. It must be an open file-like object, rather than the name of a file. If \emph{ignore\_asv} is True, the file will be written even if information requested via the active set vector is missing.
+Write the results to the Dakota results file. If \emph{stream} is set, it overrides the results file name provided at construct time. It must be an open file-like object, rather than the name of a file. If \emph{ignore\_asv} is True, the file will be written even if information requested via the active set vector is missing. Calling {\tt write()} on a {\tt Results} object that was
+generated by reading a batch parameters file will raise a {\tt BatchWriteError}. Instead, {\tt write()} should be called on
+the containing {\tt BatchResults} object.
 
 \end{itemize}
 
@@ -1819,6 +1832,39 @@ ignore\_asv is False).
 
 \end{itemize}
 
+\subsection{BatchParameters object}
+
+{\tt BatchParameters} objects are collections of {\tt Parameters} objects. The individuual {\tt Parameters} objects can be
+accesed by index ({[}{]}) or by iterating the {\tt BatchParameters} object. Although {\tt BatchParameters} objects may be 
+constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
+
+{\tt BatchParameters} objects have one attribute.
+
+\begin{itemize}
+  \item\index{batch\_id (dakota.interfacing.BatchParameters attribute)} \phantomsection\label{index:dakota.interfacing.BatchParameters.batch_id}\textbf{\texttt{batch\_id}} The "id" of this batch of evaluations, reported by Dakota (string).
+\end{itemize}
+
+{\tt BatchParameters} objects have no methods.
+
+\subsection{ResultsResults object}
+
+{\tt BatchResults} objects are collections of {\tt Results} objects. The individuual {\tt Results} objects can be
+accesed by index ({[}{]}) or by iterating the {\tt BatchResults} object. Although {\tt BatchResults} objects may be 
+constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
+
+{\tt BatchResults} objects have a single attribute:
+
+\begin{itemize}
+  \item\index{batch\_id (dakota.interfacing.BatchResults attribute)} \phantomsection\label{index:dakota.interfacing.BatchResults.batch_id}\textbf{\texttt{batch\_id}} The "id" of this batch of evaluations, reported by Dakota (string)
+\end{itemize}
+
+{\tt BatchResults} objects have a single method:
+
+\begin{itemize}
+\item \index{write() (dakota.interfacing.BatchResults method)}
+	\phantomsection\label{index:dakota.interfacing.Results.write}\textbf{\texttt{write}}({\emph{stream=None}, \emph{ignore\_asv=None}}){}
+	Write results for all evaluations to the Dakota results file. If \emph{stream} is set, it overrides the results file name provided at construct time. It must be an open file-like object, rather than the name of a file. If \emph{ignore\_asv} is True, the file will be written even if information requested via the active set vector is missing.
+\end{itemize}
 \subsection{Processing Templates}
 
 Dakota is packaged with a sophisticated command-line template processor
@@ -1839,7 +1885,7 @@ object.)
 
 \texttt{Parameters} and \texttt{Results} objects can be made available to the
 template using The \emph{parameters} and \emph{results} keyword arguments, and 
-additional variable defintions can be provided in a \texttt{dict} via the
+additional variable definitions can be provided in a \texttt{dict} via the
 \emph{include} argument.
 
 The \emph{output} keyword is used to specify an output file for the processed 
@@ -1933,7 +1979,7 @@ language. As such, templates can contain loops, conditionals, lists,
 dictionaries, and other Python language features.
 
 The second tool, \texttt{dprepro}, uses the same template engine
-as \texttt{pyprepro}, and in addition undertands Dakota's parameter
+as \texttt{pyprepro}, and in addition understands Dakota's parameter
 file formats. In particular, when using \texttt{dprepro} in an analysis driver, 
 Dakota variables become available for use within templates. \texttt{dprepro} 
 is also integrated with the \texttt{dakota.interfacing} module to provide direct
@@ -1993,7 +2039,7 @@ The remaining options are used to
   \item Set custom delimiters for Python code lines (\texttt{-\/-code}) and blocks 
     (\texttt{-\/-code-block}) and for inline statements that print 
     (\texttt{-\/-inline}). The last of these is equivalent to Perl \texttt{dprepro}'s 
-    \texttt{-\/-left-delimiter} and \texttt{-\/-right-delimter} switches, which also
+    \texttt{-\/-left-delimiter} and \texttt{-\/-right-delimiter} switches, which also
     have been preserved to maintain backward compatibility. They default to 
     \texttt{"\{ \}"}.
   \item Insert additional parameters for substitution, either from a JSON file
@@ -2252,7 +2298,7 @@ Note that any variable set on the command line by any of these three means:
  \item \texttt{-\/-include} file
  \item \texttt{-\/-json-include} file
 \end{itemize}
-is immutable. This listing is in order of precendence; variables set by a 
+is immutable. This listing is in order of precedence; variables set by a 
 \texttt{-\/-var} argument cannot be modified by \texttt{-\/-include}
 or \texttt{-\/-json-include} files. This feature is useful for overriding
 defaults set in templates.
@@ -2345,7 +2391,7 @@ Because Dakota itself has few such restrictions on variable names,
 \texttt{d/pyprepro} "mangles" noncompliant names in the following ways
 before making them available in templates:
 \begin{itemize}
- \item Variables/paramters that begin with a number are prepended by the lowercase
+ \item Variables/parameters that begin with a number are prepended by the lowercase
 	 letter 'i'.
  \item Disallowed characters such as \# are replaced by underscores (\texttt{\_}).
  \item In Python 2, non-ASCII letters are normalized to their rough ASCII
@@ -2482,7 +2528,7 @@ I want a lion
 \subsubsection{Lists}\label{interfaces:lists}
 
 Lists are \emph{zero\ indexed}. Negative indices are also supported, and
-are interperted as offsets from the last element in the negative direction. 
+are interpreted as offsets from the last element in the negative direction. 
 Elements are accessed using square brackets (\texttt{[]}).
 
 Consider:
@@ -2862,7 +2908,7 @@ returns:
 \subsubsection{Other Functions}\label{interfaces:other-functions}
 
 Other functions, modules, and packages that are part of the Python standard 
-library or that are availble for import on the host system can be used in
+library or that are available for import on the host system can be used in
 templates. Use of NumPy to perform element-wise operations on arrays was
 demonstrated in a previous section. The following example illustrates using
 Python's \texttt{random} module to draw a sample from a uniform distribution:

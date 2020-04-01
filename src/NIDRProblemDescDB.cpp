@@ -1493,6 +1493,28 @@ model_type(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+model_ushint(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Mod_Info**)g)->dmo->**(unsigned short DataModelRep::**)v = *val->i;
+}
+
+void NIDRProblemDescDB::
+model_usharray(const char *keyname, Values *val, void **g, void *v)
+{
+  UShortArray *usa
+    = &((*(Mod_Info**)g)->dmo->**(UShortArray DataModelRep::**)v);
+  int *z = val->i;
+  size_t i, n = val->n;
+
+  usa->resize(n);
+  for (i=0; i<n; ++i)
+    if (z[i] >= 0)
+      (*usa)[i] = z[i];
+    else
+      botch("%s must have non-negative values", keyname);
+}
+
+void NIDRProblemDescDB::
 model_utype(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_utype*)v)->sp =
@@ -6796,6 +6818,7 @@ static Method_mp_ord
 
 static Real
 	MP_(absConvTol),
+	MP_(arithmeticTol),
 	MP_(centeringParam),
 	MP_(collocationRatio),
 	MP_(collocRatioTermsOrder),
@@ -6830,11 +6853,13 @@ static Real
         MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
+	MP_(roundingTol),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
         MP_(smoothFactor),
  	MP_(solnTarget),
+	MP_(solverTol),
 	MP_(stepLenToBoundary),
 	MP_(threshDelta),
 	MP_(threshStepLength),
@@ -6875,21 +6900,25 @@ static unsigned short
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
         MP_(expansionOrder),
+        MP_(maxOrder),
         MP_(quadratureOrder),
 	MP_(softConvLimit),
 	MP_(sparseGridLevel),
+        MP_(startOrder),
 	MP_(vbdOrder),
 	MP_(wilksOrder);
 
 static SizetArray
 	MP_(collocationPointsSeq),
         MP_(expansionSamplesSeq),
-  	MP_(pilotSamples);
+  	MP_(pilotSamples),
+  	MP_(startRankSeq);
 
 static UShortArray
         MP_(expansionOrderSeq),
         MP_(quadratureOrderSeq),
 	MP_(sparseGridLevelSeq),
+  	MP_(startOrderSeq),
         MP_(tensorGridOrder),
 	MP_(varPartitions);
 
@@ -6938,6 +6967,7 @@ static StringArray
 static bool
 	MP_(adaptExpDesign),
 	MP_(adaptPosteriorRefine),
+        MP_(adaptRank),
 	MP_(backfillFlag),
 	MP_(calModelDiscrepancy),
 	MP_(chainDiagnostics),
@@ -7006,6 +7036,7 @@ static int
         MP_(evidenceSamples),
         MP_(iteratorServers),
 	MP_(jumpStep),
+	MP_(maxCrossIterations),
 	MP_(maxFunctionEvaluations),
 	MP_(maxHifiEvals),
 	MP_(maxIterations),
@@ -7034,15 +7065,17 @@ static int
 static size_t
 	MP_(collocationPoints),
         MP_(expansionSamples),
+        MP_(kickRank),
+        MP_(maxRank),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
-    MP_(numDesigns),
-    MP_(numFinalSolutions),
+	MP_(numDesigns),
+	MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents),
-  	MP_(numPredConfigs);
-
+  	MP_(numPredConfigs),
+        MP_(startRank);
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
@@ -7084,9 +7117,10 @@ static Method_mp_type
 	MP2s(methodOutput,QUIET_OUTPUT),
 	MP2s(methodOutput,SILENT_OUTPUT),
 	MP2s(methodOutput,VERBOSE_OUTPUT),
-	MP2s(mlmfAllocControl,ESTIMATOR_VARIANCE),
-	MP2s(mlmfAllocControl,GREEDY_REFINEMENT),
-	MP2s(mlmfAllocControl,RIP_SAMPLING),
+	MP2s(multilevAllocControl,ESTIMATOR_VARIANCE),
+	MP2s(multilevAllocControl,GREEDY_REFINEMENT),
+	MP2s(multilevAllocControl,RANK_SAMPLING),
+	MP2s(multilevAllocControl,RIP_SAMPLING),
 	MP2s(multilevDiscrepEmulation,DISTINCT_EMULATION),
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
@@ -7105,6 +7139,8 @@ static Method_mp_type
 	MP2p(regressionType,LEAST_ANGLE_REGRESSION),       // Pecos enumeration
 	MP2p(regressionType,ORTHOG_LEAST_INTERPOLATION),   // Pecos enumeration
 	MP2p(regressionType,ORTHOG_MATCH_PURSUIT),         // Pecos enumeration
+	MP2s(regressionType,FT_LS),
+	MP2s(regressionType,FT_RLS2),
 	MP2s(responseLevelTarget,GEN_RELIABILITIES),
 	MP2s(responseLevelTarget,PROBABILITIES),
 	MP2s(responseLevelTarget,RELIABILITIES),
@@ -7231,13 +7267,15 @@ static Method_mp_utype
 	MP2s(methodName,MULTIFIDELITY_FUNCTION_TRAIN),
 	MP2s(methodName,MULTIFIDELITY_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTIFIDELITY_STOCH_COLLOCATION),
+	MP2s(methodName,MULTILEVEL_FUNCTION_TRAIN),
 	MP2s(methodName,MULTILEVEL_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTILEVEL_SAMPLING),
         MP2s(methodName,POF_DARTS),
 	MP2s(methodName,RKD_DARTS),
 	MP2s(methodName,POLYNOMIAL_CHAOS),
-	MP2s(methodName,RANDOM_SAMPLING),
 	MP2s(methodName,STOCH_COLLOCATION),
+	MP2s(methodName,SURROGATE_BASED_UQ),
+	MP2s(methodName,RANDOM_SAMPLING),
 	MP2s(methodName,NONLINEAR_CG),
 	MP2s(methodName,NPSOL_SQP),
 	MP2s(methodName,OPTPP_CG),
@@ -7314,6 +7352,7 @@ static Method_mp_utype
 #define MP_(x) DataModelRep::* model_mp_##x = &DataModelRep::x
 #define MP2(x,y) model_mp_##x##_##y = {&DataModelRep::x,#y}
 #define MP2s(x,y) model_mp_##x##_##y = {&DataModelRep::x,y}
+#define MP2p(x,y) model_mp_##x##_##y = {&DataModelRep::x,Pecos::y}
 
 static IntSet
 	MP_(surrogateFnIndices);
@@ -7362,6 +7401,10 @@ static Model_mp_type
 	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
+	MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
+	MP2p(refinementType,P_REFINEMENT),        // Pecos
+	MP2s(regressionType,FT_LS),
+	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),
@@ -7397,28 +7440,31 @@ static Model_mp_utype
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
         MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
         MP2s(randomFieldIdForm,RF_PCA_GP),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_VALUE),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_GRAD),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_LOCAL_GRAD),
-	      MP2s(subspaceSampleType,SUBMETHOD_LHS),
-	      MP2s(subspaceSampleType,SUBMETHOD_RANDOM),
-	      MP2s(subspaceIdCVMethod,MINIMUM_METRIC),
-	      MP2s(subspaceIdCVMethod,RELATIVE_TOLERANCE),
-	      MP2s(subspaceIdCVMethod,DECREASE_TOLERANCE);
+	MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_VALUE),
+	MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_GRAD),
+	MP2s(subspaceNormalization,SUBSPACE_NORM_LOCAL_GRAD),
+	MP2s(subspaceSampleType,SUBMETHOD_LHS),
+	MP2s(subspaceSampleType,SUBMETHOD_RANDOM),
+	MP2s(subspaceIdCVMethod,MINIMUM_METRIC),
+	MP2s(subspaceIdCVMethod,RELATIVE_TOLERANCE),
+	MP2s(subspaceIdCVMethod,DECREASE_TOLERANCE);
 
 static Real
         MP_(adaptedBasisCollocRatio),
         MP_(annRange),
+	MP_(arithmeticTol),
+	MP_(collocationRatio),
 	MP_(convergenceTolerance),
+	MP_(decreaseTolerance),
         MP_(discontGradThresh),
         MP_(discontJumpThresh),
 	MP_(krigingNugget),
 	MP_(percentFold),
-	MP_(truncationTolerance),
+	MP_(regressionL2Penalty),
 	MP_(relTolerance),
-    MP_(solverTolerance),
-    MP_(roundingTolerance),
-	MP_(decreaseTolerance);
+	MP_(roundingTol),
+	MP_(solverTol),
+	MP_(truncationTolerance);
 
 static RealVector
 	MP_(krigingCorrelations),
@@ -7474,16 +7520,19 @@ static bool
         MP_(domainDecomp),
         MP_(pointSelection),
         MP_(pressFlag),
-  MP_(subspaceIdBingLi),
-  MP_(subspaceIdConstantine),
-  MP_(subspaceIdEnergy),
-  MP_(subspaceBuildSurrogate),
-  MP_(subspaceIdCV),
-  MP_(subspaceCVIncremental);
+        MP_(subspaceIdBingLi),
+        MP_(subspaceIdConstantine),
+        MP_(subspaceIdEnergy),
+        MP_(subspaceBuildSurrogate),
+        MP_(subspaceIdCV),
+        MP_(subspaceCVIncremental),
+	MP_(tensorGridFlag);
 
 static unsigned short
 	MP_(adaptedBasisSparseGridLev),
-	MP_(adaptedBasisExpOrder);
+	MP_(adaptedBasisExpOrder),
+	MP_(maxOrder),
+	MP_(startOrder);
 
 static short
 	MP_(annNodes),
@@ -7501,6 +7550,7 @@ static short
 static int
         MP_(decompSupportLayers),
         MP_(initialSamples),
+        MP_(maxCrossIterations),
         MP_(maxFunctionEvals),
         MP_(maxIterations),
         MP_(numFolds),
@@ -7514,14 +7564,14 @@ static int
         MP_(subspaceCVMaxRank);
 
 static size_t
-    MP_(crossMaxIter),
-    MP_(kickRank),
-    MP_(maxOrder),
-    MP_(maxRank),
-    MP_(startOrder),
-    MP_(startRank);
-//  MP_(verbosity);
-
+	MP_(collocationPoints),
+	MP_(kickRank),
+	MP_(maxRank),
+	MP_(startRank);
+//	MP_(verbosity);
+    
+#undef MP2p
+>>>>>>> origin/devel
 #undef MP2s
 #undef MP2
 #undef MP_

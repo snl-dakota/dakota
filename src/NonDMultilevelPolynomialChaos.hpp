@@ -54,10 +54,10 @@ public:
 				const UShortArray& exp_order_seq,
 				const RealVector& dim_pref,
 				const SizetArray& colloc_pts_seq,
-				Real colloc_ratio, const SizetArray& pilot,
-				int seed, short u_space_type, short refine_type,
-				short refine_control, short covar_control,
-				short ml_alloc_cntl, short ml_discrep,
+				Real colloc_ratio, int seed, short u_space_type,
+				short refine_type, short refine_control,
+				short covar_control, short ml_alloc_cntl,
+				short ml_discrep,
 				//short rule_nest, short rule_growth,
 				bool piecewise_basis, bool use_derivs,
 				bool cv_flag,
@@ -79,39 +79,28 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_u_space_model();
+  //void initialize_u_space_model();
   void core_run();
+
   void assign_specification_sequence();
   void increment_specification_sequence();
+
+  void initialize_ml_regression(size_t num_lev, bool& import_pilot);
+  void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
+  void increment_sample_sequence(size_t new_samp, size_t total_samp,
+				 size_t step);
+  void compute_sample_increment(const RealVector& sparsity,
+				const SizetArray& N_l, SizetArray& delta_N_l);
+
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Member functions
   //
 
-  /// option within core_run() for multilevel allocation of samples
-  /// (mirroring NonDMultilevelSampling for PCE regression)
-  void multilevel_regression();
-
-  /// increment the sequence in numSamplesOnModel for multilevel_regression()
-  void increment_sample_sequence(size_t new_samp,size_t total_samp,size_t lev);
-
-  /// Aggregate variance across the set of QoI for a particular model level
-  void aggregate_variance(Real& agg_var_l);
-  /// Retrieve the cardinality of the basis and the maximum number of sparse
-  /// coefficients across the set of QoI for a particular model level
-  void sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l,
-			Real power);
-
-  /// compute delta_N_l for ESTIMATOR_VARIANCE case
-  void compute_sample_increment(const RealVector& agg_var,
-				const RealVector& cost, Real sum_root_var_cost,
-				Real eps_sq_div_2, const SizetArray& N_l,
-				SizetArray& delta_N_l);
-  /// compute delta_N_l for RIP_SAMPLING case
-  void compute_sample_increment(const SizetArray& cardinality, Real factor,
-				const RealVector& sparsity,
-				const SizetArray& N_l, SizetArray& delta_N_l);
+  /// assign defaults related to allocation control (currently for ML
+  /// regression approaches)
+  void assign_allocation_control();
 
 private:
 
@@ -119,34 +108,29 @@ private:
   //- Heading: Utility functions
   //
 
+  size_t collocation_points(size_t index) const;
+  size_t expansion_samples(size_t index) const;
+  unsigned short expansion_order(size_t index) const;
+  unsigned short quadrature_order(size_t index) const;
+  unsigned short sparse_grid_level(size_t index) const;
+
+  size_t collocation_points() const;
+  size_t expansion_samples() const;
+  unsigned short expansion_order() const;
+  unsigned short quadrature_order() const;
+  unsigned short sparse_grid_level() const;
+
   /// perform specification updates (shared code from
   // {assign,increment}_specification_sequence())
   void update_from_specification(bool update_exp, bool update_sampler,
 				 bool update_from_ratio);
 
-  /// scale sample profile new_N_l to retain shape while enforcing an upper
-  /// bound of cardinality * factor
-  void scale_profile(const SizetArray& cardinality, Real factor,
-		     RealVector& new_N_l);
-
-  /// verify supported and define default discrepancy emulation mode
-  void assign_discrepancy_mode();
-  /// define the surrogate response mode for a hierarchical model in 
-  /// multilevel/multifidelity expansions
-  void assign_hierarchical_response_mode();
-
   //
   //- Heading: Data
   //
 
-  /// type of sample allocation scheme for discretization levels / model forms
-  /// within multilevel / multifidelity methods
-  short mlmfAllocControl;
-
   /// user specification for expansion_order (array for multifidelity)
   UShortArray expOrderSeqSpec;
-  /// user specification for collocation_points (array for multifidelity)
-  SizetArray collocPtsSeqSpec;
   /// user specification for expansion_samples (array for multifidelity)
   SizetArray expSamplesSeqSpec;
   /// user request of quadrature order
@@ -155,15 +139,77 @@ private:
   UShortArray ssgLevelSeqSpec;
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
-
-  /// rate parameter for estimator variance in ML PCE
-  Real kappaEstimatorRate;
-  /// scale parameter for estimator variance in ML PCE
-  Real gammaEstimatorScale;
-
-  /// number of initial samples specified by the user
-  SizetArray pilotSamples;
 };
+
+
+inline size_t NonDMultilevelPolynomialChaos::
+collocation_points(size_t index) const
+{
+  if (collocPtsSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  else
+    return (index < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[index] : collocPtsSeqSpec.back();
+}
+
+
+inline size_t NonDMultilevelPolynomialChaos::
+expansion_samples(size_t index) const
+{
+  if (expSamplesSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  else
+    return (index < expSamplesSeqSpec.size()) ?
+      expSamplesSeqSpec[index] : expSamplesSeqSpec.back();
+}
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::
+expansion_order(size_t index) const
+{
+  if (expOrderSeqSpec.empty()) return USHRT_MAX;
+  else
+    return (index < expOrderSeqSpec.size()) ?
+      expOrderSeqSpec[index] : expOrderSeqSpec.back();
+}
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::
+quadrature_order(size_t index) const
+{
+  if (quadOrderSeqSpec.empty()) return USHRT_MAX;
+  else
+    return (index < quadOrderSeqSpec.size()) ?
+      quadOrderSeqSpec[index] : quadOrderSeqSpec.back();
+}
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::
+sparse_grid_level(size_t index) const
+{
+  if (ssgLevelSeqSpec.empty()) return USHRT_MAX;
+  else
+    return (index < ssgLevelSeqSpec.size()) ?
+      ssgLevelSeqSpec[index] : ssgLevelSeqSpec.back();
+}
+
+
+inline size_t NonDMultilevelPolynomialChaos::collocation_points() const
+{ return collocation_points(sequenceIndex); }
+
+
+inline size_t NonDMultilevelPolynomialChaos::expansion_samples() const
+{ return expansion_samples(sequenceIndex); }
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::expansion_order() const
+{ return expansion_order(sequenceIndex); }
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::quadrature_order() const
+{ return quadrature_order(sequenceIndex); }
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::sparse_grid_level() const
+{ return sparse_grid_level(sequenceIndex); }
 
 } // namespace Dakota
 

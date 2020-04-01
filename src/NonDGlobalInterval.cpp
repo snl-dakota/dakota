@@ -474,7 +474,7 @@ void NonDGlobalInterval::post_process_run_results(bool maximize)
 
 void NonDGlobalInterval::evaluate_response_star_truth()
 {
-  //fHatModel.component_parallel_mode(TRUTH_MODEL);
+  //fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
   const Variables& vars_star = intervalOptimizer.variables_results();
   iteratedModel.active_variables(vars_star);
   ActiveSet set = iteratedModel.current_response().active_set();

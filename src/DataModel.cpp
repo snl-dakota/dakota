@@ -13,6 +13,7 @@
 #include "DataModel.hpp"
 #include "DataMethod.hpp" // shared scheduling enums
 #include "dakota_data_io.hpp"
+#include "pecos_global_defs.hpp"
 
 
 namespace Dakota {
@@ -48,10 +49,14 @@ DataModelRep::DataModelRep():
   subspaceNormalization(SUBSPACE_NORM_DEFAULT),
   numReplicates(100), relTolerance(1.0e-6),
   decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
-  subspaceIdCVMethod(CV_ID_DEFAULT),
-  maxSolverIterations(1000), solverTolerance(1.e-10),
-  roundingTolerance(1.e-8), startOrder(2), maxOrder(4), startRank(2),
-  kickRank(2), maxRank(3), adaptRank(false), crossMaxIter(1),//verbosity(0),
+  subspaceIdCVMethod(CV_ID_DEFAULT), regressionType(FT_LS),
+  regressionL2Penalty(0.), maxSolverIterations(1000), maxCrossIterations(1),
+  solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-8),
+  tensorGridFlag(false), startOrder(2), maxOrder(5),
+  startRank(2), kickRank(2), maxRank(10), adaptRank(false),
+  collocationPoints(std::numeric_limits<size_t>::max()),
+  collocationRatio(0.), refinementType(Pecos::NO_REFINEMENT),
+  refinementControl(Pecos::NO_CONTROL),
   autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
@@ -91,10 +96,13 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
-    << maxSolverIterations << solverTolerance << roundingTolerance
-    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
-    << crossMaxIter << autoRefine << maxFunctionEvals << refineCVMetric
-    << refineCVFolds << adaptedBasisSparseGridLev << adaptedBasisExpOrder
+    << regressionType << regressionL2Penalty << maxSolverIterations
+    << maxCrossIterations << solverTol << roundingTol << arithmeticTol
+    << tensorGridFlag << startOrder << maxOrder
+    << startRank << kickRank << maxRank << adaptRank << collocationPoints
+    << collocationRatio << refinementType << refinementControl
+    << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
+    << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance
@@ -134,10 +142,13 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> convergenceTolerance >> softConvergenceLimit >> subspaceIdBingLi 
     >> subspaceIdConstantine >> subspaceIdEnergy >> subspaceBuildSurrogate
     >> subspaceDimension >> subspaceNormalization >> numReplicates
-    >> maxSolverIterations >> solverTolerance >> roundingTolerance
-    >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
-    >> crossMaxIter >> autoRefine >> maxFunctionEvals >> refineCVMetric
-    >> refineCVFolds >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
+    >> regressionType >> regressionL2Penalty >> maxSolverIterations
+    >> maxCrossIterations >> solverTol >> roundingTol >> arithmeticTol
+    >> tensorGridFlag >> startOrder >> maxOrder
+    >> startRank >> kickRank >> maxRank >> adaptRank >> collocationPoints
+    >> collocationRatio >> refinementType >> refinementControl
+    >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
+    >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
     >> adaptedBasisCollocRatio >> propagationModelPointer >> truncationTolerance
     >> rfDataFileName >> randomFieldIdForm >> analyticCovIdForm
     >> subspaceSampleType >> subspaceIdCV >> relTolerance
@@ -177,10 +188,13 @@ void DataModelRep::write(std::ostream& s) const
     << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
-    << maxSolverIterations << solverTolerance << roundingTolerance
-    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
-    << crossMaxIter << autoRefine << maxFunctionEvals << refineCVMetric
-    << refineCVFolds << adaptedBasisSparseGridLev << adaptedBasisExpOrder
+    << regressionType << regressionL2Penalty << maxSolverIterations
+    << maxCrossIterations << solverTol << roundingTol << arithmeticTol
+    << tensorGridFlag << startOrder << maxOrder
+    << startRank << kickRank << maxRank << adaptRank << collocationPoints
+    << collocationRatio << refinementType << refinementControl
+    << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
+    << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance

@@ -103,6 +103,12 @@ public:
   /// return the mean of the expansion for a given parameter vector,
   /// where a subset of the active variables are random
   Real mean(const Pecos::RealVector& x);
+  /// return the mean of the combined expansion, treating all variables
+  /// as random
+  Real combined_mean();
+  /// return the mean of the combined expansion for a given parameter vector,
+  /// where a subset of the active variables are treated as random
+  Real combined_mean(const Pecos::RealVector& x);
   /// return the gradient of the expansion mean for a given parameter
   /// vector, where all active variables are random
   const Pecos::RealVector& mean_gradient();
@@ -237,18 +243,24 @@ public:
   /// by the Pecos polynomial approximation
   void compute_moments(const Pecos::RealVector& x, bool full_stats = true,
 		       bool combined_stats = false);
-  /// return Pecos::PolynomialApproximation::moments()
+
+  /// return primary moments using Pecos::PolynomialApproximation::moments()
   const RealVector& moments() const;
-  /// set Pecos::PolynomialApproximation::moments()
-  void moments(const RealVector& mom);
-  /// return Pecos::PolynomialApproximation::moment(i)
-  Real moment(size_t i) const;
-  /// set Pecos::PolynomialApproximation::moment(i)
-  void moment(Real mom, size_t i);
-  /// return Pecos::PolynomialApproximation::expansionMoments
+  /// return expansion moments from Pecos::PolynomialApproximation
   const RealVector& expansion_moments() const;
-  /// return Pecos::PolynomialApproximation::numericalMoments
+  /// return numerical moments from Pecos::PolynomialApproximation
   const RealVector& numerical_integration_moments() const;
+  /// return combined moments from multilevel-muktifidelity expansion roll-up
+  const RealVector& combined_moments() const;
+
+  /// return primary moment using Pecos::PolynomialApproximation::moment(i)
+  Real moment(size_t i) const;
+  /// set primary moment using Pecos::PolynomialApproximation::moment(i)
+  void moment(Real mom, size_t i);
+  /// return Pecos::PolynomialApproximation::combinedMoments[i]
+  Real combined_moment(size_t i) const;
+  /// set Pecos::PolynomialApproximation::combinedMoments[i]
+  void combined_moment(Real mom, size_t i);
 
   /// clear tracking of computed moments, due to a change that invalidates
   /// previous results
@@ -301,7 +313,7 @@ protected:
   void approximation_coefficients(const RealVector& approx_coeffs,
 				  bool normalized);
 
-  void link_multilevel_surrogate_data();
+  //void link_multilevel_surrogate_data();
 
   void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
@@ -423,6 +435,14 @@ inline Real PecosApproximation::mean()
 
 inline Real PecosApproximation::mean(const Pecos::RealVector& x)
 { return polyApproxRep->mean(x); }
+
+
+inline Real PecosApproximation::combined_mean()
+{ return polyApproxRep->combined_mean(); }
+
+
+inline Real PecosApproximation::combined_mean(const Pecos::RealVector& x)
+{ return polyApproxRep->combined_mean(x); }
 
 
 inline const Pecos::RealVector& PecosApproximation::mean_gradient()
@@ -630,8 +650,17 @@ inline const RealVector& PecosApproximation::moments() const
 { return polyApproxRep->moments(); }
 
 
-inline void PecosApproximation::moments(const RealVector& mom)
-{ polyApproxRep->moments(mom); }
+inline const RealVector& PecosApproximation::expansion_moments() const
+{ return polyApproxRep->expansion_moments(); }
+
+
+inline const RealVector& PecosApproximation::
+numerical_integration_moments() const
+{ return polyApproxRep->numerical_integration_moments(); }
+
+
+inline const RealVector& PecosApproximation::combined_moments() const
+{ return polyApproxRep->combined_moments(); }
 
 
 inline Real PecosApproximation::moment(size_t i) const
@@ -642,13 +671,12 @@ inline void PecosApproximation::moment(Real mom, size_t i)
 { polyApproxRep->moment(mom, i); }
 
 
-inline const RealVector& PecosApproximation::expansion_moments() const
-{ return polyApproxRep->expansion_moments(); }
+inline Real PecosApproximation::combined_moment(size_t i) const
+{ return polyApproxRep->combined_moment(i); }
 
 
-inline const RealVector& PecosApproximation::
-numerical_integration_moments() const
-{ return polyApproxRep->numerical_integration_moments(); }
+inline void PecosApproximation::combined_moment(Real mom, size_t i)
+{ polyApproxRep->combined_moment(mom, i); }
 
 
 inline void PecosApproximation::
@@ -703,9 +731,7 @@ inline int PecosApproximation::min_coefficients() const
 inline void PecosApproximation::build()
 {
   // base class implementation checks data set against min required
-  //Approximation::build();
-  // For simplicity, ignore approxData[1] since it may or may not be active
-  check_points(approxData[0].points());
+  Approximation::build();
 
   // map to Pecos::BasisApproximation
   pecosBasisApprox.compute_coefficients();
@@ -719,7 +745,7 @@ inline void PecosApproximation::rebuild()
   // support of both update and append, need a mechanism to detect
   // the +/- direction of discrepancy between data and coefficients.
 
-  //size_t curr_pts  = approxData[activeDataIndex].points(),
+  //size_t curr_pts  = data_rep->surrogate_data().points(),
   //  curr_pecos_pts = polyApproxRep->data_size();
   //if (curr_pts > curr_pecos_pts)
     pecosBasisApprox.increment_coefficients();

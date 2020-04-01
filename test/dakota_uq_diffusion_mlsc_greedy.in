@@ -1,5 +1,7 @@
 #@ s1: TimeoutAbsolute=3600
 #@ s1: TimeoutDelay=1200
+#@ s3: TimeoutAbsolute=3600
+#@ s3: TimeoutDelay=1200
 
 environment,
 	output_precision = 16

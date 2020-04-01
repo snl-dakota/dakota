@@ -4,7 +4,7 @@ Activate adaptive procedure for determining best rank representation
 Description::
 The adaptive algorithm proceeds as follows:
 -# Start from rank \c start_rank and form an approximation
--# Adapt the current approximation by searching for a solution with lower rank that achieves L2 accuracy within epsilon accuracy of the reference.
+-# Adapt the current approximation by searching for a solution with lower rank that achieves L2 accuracy within epsilon tolerance of the reference.
 -# If a lower rank solution is found with comparable accuracy, then stop.  If not, increase the rank by an amount specified by \c kick_rank.
 -# Return to step 2 and continue until either \c max_rank is reached or a converged rank (rank less than current reference with comparable accuracy) is found.
 

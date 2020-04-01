@@ -23,9 +23,6 @@ using namespace std;
 
 namespace Dakota {
 
-// define special values for componentParallelMode
-#define INTERFACE 1
-
 
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
@@ -33,7 +30,7 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   solnCntlVarType(EMPTY_TYPE), solnCntlADVIndex(0), solnCntlRVIndex(0),
   simModelEvalCntr(0)
 {
-  componentParallelMode = INTERFACE;
+  componentParallelMode = INTERFACE_MODE;
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   centralHess  = problem_db.get_bool("responses.central_hess");
   
@@ -378,8 +375,8 @@ Real SimulationModel::solution_level_cost() const
 /*
 void SimulationModel::component_parallel_mode(short mode)
 {
-  if (mode != INTERFACE) {
-    Cerr << "Error: SimulationModel only supports the INTERFACE component "
+  if (mode != INTERFACE_MODE) {
+    Cerr << "Error: SimulationModel only supports the INTERFACE_MODE component "
 	 << "parallel mode." << std::endl;
     abort_handler(MODEL_ERROR);
   }

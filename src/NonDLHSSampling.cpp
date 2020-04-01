@@ -187,18 +187,6 @@ void NonDLHSSampling::pre_run()
   bool increm_lhs_active
     = (sampleType == SUBMETHOD_LHS && !refineSamples.empty());
 
-  /* TO DO: update for refactor...
-  if (dOptimal)
-    // initialize nataf transform for generating basis
-    initialize_random_variables(EXTENDED_U);
-  else if (increm_lhs_active) {
-    // incremental LHS needs CDF to compute ranks
-    initialize_random_variable_transformation();
-    initialize_random_variable_types(); // x_types only
-    // Capture any run-time updates for x-space distributions
-    initialize_random_variable_parameters();
-  }
-  */
   resize_final_statistics_gradients(); // finalStats ASV available at run time
 
   // BMA TODO: D-optimal incremental LHS (challenging due to set/get ranks)

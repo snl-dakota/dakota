@@ -39,7 +39,6 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   short data_order,
     u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -105,8 +104,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     short refine_control, short covar_control,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, DEFAULT_EMULATION, rule_nest,
+  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, dim_pref,
+		refine_type, refine_control, covar_control, 0., rule_nest,
 		rule_growth, piecewise_basis, use_derivs)
 {
   // ----------------
@@ -114,7 +113,6 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // ----------------
   short data_order;
   resolve_inputs(u_space_type, data_order);
-  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -129,8 +127,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  config_integration(exp_coeffs_approach, num_int, dim_pref,
-		     u_space_sampler, g_u_model);
+  config_integration(exp_coeffs_approach, num_int, dim_pref, u_space_sampler,
+		     g_u_model);
   String pt_reuse, approx_type;
   config_approximation_type(approx_type);
 
@@ -157,10 +155,11 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 }
 
 
-/** This constructor is called for a standard letter-envelope iterator
-    instantiation using the ProblemDescDB. */
+/** This constructor is called derived class constructors that
+    customize the object construction. */
 NonDStochCollocation::
-NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
+		     Model& model):
   NonDExpansion(problem_db, model)
 {
   // Logic delegated to derived class constructor...
@@ -170,14 +169,18 @@ NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, Model& model,
-		     short exp_coeffs_approach, short refine_type,
-		     short refine_control, short covar_control,
+		     short exp_coeffs_approach, const RealVector& dim_pref,
+		     short refine_type, short refine_control,
+		     short covar_control, short ml_alloc_control,
 		     short ml_discrep, short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, ml_discrep, rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, refine_type,
+		refine_control, covar_control, 0., rule_nest, rule_growth,
+		piecewise_basis, use_derivs)
 {
+  multilevAllocControl     = ml_alloc_control;
+  multilevDiscrepEmulation = ml_discrep;
+
   // Logic delegated to derived class constructor...
 }
 
@@ -191,11 +194,6 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 		   const RealVector& dim_pref, short u_space_type, 
 		   Iterator& u_space_sampler, Model& g_u_model)
 {
-  // -------------------
-  // input sanity checks
-  // -------------------
-  check_dimension_preference(dim_pref);
-
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
@@ -261,11 +259,6 @@ config_integration(short exp_coeffs_approach, unsigned short num_int,
 		   const RealVector& dim_pref, Iterator& u_space_sampler,
 		   Model& g_u_model)
 {
-  // -------------------
-  // input sanity checks
-  // -------------------
-  check_dimension_preference(dim_pref);
-
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
@@ -380,6 +373,7 @@ resolve_inputs(short& u_space_type, short& data_order)
 void NonDStochCollocation::initialize_u_space_model()
 {
   NonDExpansion::initialize_u_space_model();
+  configure_pecos_options(); // pulled out of base because C3 does not use it
 
   // initialize product accumulators with PolynomialApproximation pointers
   // used in covariance calculations
@@ -389,18 +383,17 @@ void NonDStochCollocation::initialize_u_space_model()
     initialize_covariance();
 
   // Precedes construct_basis() since basis is stored in Pecos driver
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->integration_iterator(uSpaceModel.subordinate_iterator());
+  SharedApproxData& shared_data = uSpaceModel.shared_approximation();
+  shared_data.integration_iterator(uSpaceModel.subordinate_iterator());
 
   // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
   const Pecos::MultivariateDistribution& u_mvd
     = uSpaceModel.multivariate_distribution();
   // construct the polynomial basis (shared by integration drivers)
-  shared_data_rep->construct_basis(u_mvd);
+  shared_data.construct_basis(u_mvd);
   // mainly a run-time requirement, but also needed at construct time
   // (e.g., to initialize NumericGenOrthogPolynomial::distributionType)
-  //shared_data_rep->update_basis_distribution_parameters(u_mvd);
+  //shared_data.update_basis_distribution_parameters(u_mvd);
 
   initialize_u_space_grid();
 }
@@ -423,14 +416,15 @@ void NonDStochCollocation::initialize_covariance()
 void NonDStochCollocation::compute_delta_mean(bool update_ref)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false;
+  bool   warn_flag = false,
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
 
   if (deltaRespMean.empty()) deltaRespMean.sizeUninitialized(numFunctions);
   for (size_t i=0; i<numFunctions; ++i) {
     PecosApproximation* pa_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (pa_rep_i->expansion_coefficient_flag()) {
-      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+      if (combined_stats)
 	// refinement assessed for impact on combined expansion from roll up
 	deltaRespMean[i] = (allVars) ?
 	  pa_rep_i->delta_combined_mean(initialPtU) :
@@ -440,8 +434,14 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
 	  pa_rep_i->delta_mean(initialPtU) : pa_rep_i->delta_mean();
 
       if (update_ref) {
-	Real new_mean = pa_rep_i->moment(0) + deltaRespMean[i];
-	pa_rep_i->moment(new_mean, 0);
+	if (combined_stats) {
+	  Real new_mean = pa_rep_i->combined_moment(0) + deltaRespMean[i];
+	  pa_rep_i->combined_moment(new_mean, 0);
+	}
+	else {
+	  Real new_mean = pa_rep_i->moment(0) + deltaRespMean[i];
+	  pa_rep_i->moment(new_mean, 0);
+	}
       }
     }
     else
@@ -463,7 +463,8 @@ void NonDStochCollocation::
 compute_delta_variance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false;
+  bool   warn_flag = false,
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
 
   if (deltaRespVariance.empty())
     deltaRespVariance.sizeUninitialized(numFunctions);
@@ -472,7 +473,7 @@ compute_delta_variance(bool update_ref, bool print_metric)
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     Real& delta = deltaRespVariance[i];
     if (pa_rep_i->expansion_coefficient_flag()) {
-      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+      if (combined_stats)
 	// refinement assessed for impact on combined expansion from roll up
 	delta = (allVars) ? pa_rep_i->delta_combined_variance(initialPtU) :
 	  pa_rep_i->delta_combined_variance();
@@ -482,7 +483,8 @@ compute_delta_variance(bool update_ref, bool print_metric)
 
       if (update_ref) {
 	respVariance[i] += delta;
-	pa_rep_i->moment(respVariance[i], 1);
+	if (combined_stats) pa_rep_i->combined_moment(respVariance[i], 1);
+	else                pa_rep_i->moment(respVariance[i], 1);
       }
     }
     else
@@ -501,7 +503,8 @@ void NonDStochCollocation::
 compute_delta_covariance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false;
+  bool   warn_flag = false,
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
   size_t i, j;
 
   if (deltaRespCovariance.empty())
@@ -514,7 +517,7 @@ compute_delta_covariance(bool update_ref, bool print_metric)
 	Approximation& approx_j = poly_approxs[j];
 	Real& delta = deltaRespCovariance(i,j);
 	if (approx_j.expansion_coefficient_flag()) {
-	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+	  if (combined_stats)
 	    // refinement assessed for impact on combined exp from roll up
 	    delta = (allVars) ?
 	      pa_rep_i->delta_combined_covariance(initialPtU, approx_j) :
@@ -526,7 +529,12 @@ compute_delta_covariance(bool update_ref, bool print_metric)
 
 	  if (update_ref) {
 	    respCovariance(i,j) += delta;
-	    if (i == j) pa_rep_i->moment(respCovariance(i,i), 1);
+	    if (i == j) {
+	      if (combined_stats)
+		pa_rep_i->combined_moment(respCovariance(i,i), 1);
+	      else
+		pa_rep_i->moment(respCovariance(i,i), 1);
+	    }
 	  }
 	}
 	else
@@ -940,7 +948,9 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
       // pull means
       for (size_t i=0; i<numFunctions; ++i) {
 	poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-	stats_star[i] = poly_approx_rep->moment(0) + deltaRespMean[i];
+	stats_star[i] = (combined_stats) ?
+	  poly_approx_rep->combined_moment(0) + deltaRespMean[i] :
+	  poly_approx_rep->moment(0)          + deltaRespMean[i];
       }
       // pull resp{V,Cov}ariance
       if (full_covar) {

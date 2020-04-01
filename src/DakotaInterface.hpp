@@ -128,17 +128,12 @@ public:
   /// reset initial state by removing all model keys for an approximation
   virtual void clear_model_keys();
 
-  /// assign key for the surrogate model within a {truth,surrogate} pairing
-  virtual void surrogate_model_key(const UShortArray& key);
-  /// assign key for the truth model within a {truth,surrogate} pairing
-  virtual void truth_model_key(const UShortArray& key);
-
   /// set the (currently active) approximation function index set
   virtual void approximation_function_indices(const IntSet& approx_fn_indices);
 
-  /// link together more than one SurrogateData instance within an
-  /// ApproximationInterface
-  virtual void link_multilevel_approximation_data();
+  // link together more than one SurrogateData instance within an
+  // ApproximationInterface
+  //virtual void link_multilevel_approximation_data();
 
   /// updates the anchor point for an approximation
   virtual void update_approximation(const Variables& vars,
@@ -170,7 +165,7 @@ public:
   virtual void export_approximation();
 
   /// rebuilds the approximation after a data update
-  virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
+  virtual void rebuild_approximation(const BitArray& rebuild_fns);
 
   /// removes data from last append from the approximation
   virtual void pop_approximation(bool save_data);
@@ -191,6 +186,9 @@ public:
   /// clear inactive approximation data
   virtual void clear_inactive();
 
+  /// query for change in approximation formulation
+  virtual bool formulation_updated() const;
+
   /// approximation cross-validation quality metrics per response function
   virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 
 				     unsigned num_folds);
@@ -209,8 +207,7 @@ public:
   virtual std::vector<Approximation>& approximations();
   /// retrieve the approximation data from a particular Approximation
   /// within an ApproximationInterface
-  virtual const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  virtual const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within an ApproximationInterface
@@ -237,7 +234,6 @@ public:
 
   /// clean up any interface parameter/response files when aborting
   virtual void file_cleanup() const;
-
 
   //
   //- Heading: Set and Inquire functions

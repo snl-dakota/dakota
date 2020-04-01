@@ -76,12 +76,9 @@ protected:
   void active_model_key(const UShortArray& key);
   void clear_model_keys();
 
-  void surrogate_model_key(const UShortArray& key);
-  void truth_model_key(const UShortArray& key);
-  
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
-  void link_multilevel_approximation_data();
+  //void link_multilevel_approximation_data();
 
   void update_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr);
@@ -106,7 +103,7 @@ protected:
 
   void export_approximation();
 
-  void rebuild_approximation(const BoolDeque& rebuild_deque);
+  void rebuild_approximation(const BitArray& rebuild_fns);
   void pop_approximation(bool save_data);
   void push_approximation();
   bool push_available();
@@ -121,14 +118,15 @@ protected:
 
   SharedApproxData& shared_approximation();
   std::vector<Approximation>& approximations();
-  const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   const RealVectorArray& approximation_coefficients(bool normalized = false);
   void approximation_coefficients(const RealVectorArray& approx_coeffs,
 				  bool normalized = false);
 
   const RealVector& approximation_variances(const Variables& vars);
+
+  bool formulation_updated() const;
 
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
   Real2DArray challenge_diagnostics(const StringArray& metric_types,
@@ -168,8 +166,9 @@ private:
   /// based on the active set definitions within a map of incoming responses
   void update_pop_counts(const IntResponseMap& resp_map);
 
-  /// following add() and pop_count() operations which may enumerate
-  /// multiple keys, restore the active approxData to the nominal key
+  /// following Approximation::add() and Approximation::pop_count() operations,
+  /// which may enumerate multiple approxDataKeys, restore the active
+  /// approxData to the nominal key
   void restore_data_key();
 
   /// Load approximation test points from user challenge points file
@@ -292,24 +291,13 @@ inline void ApproximationInterface::clear_model_keys()
 }
 
 
-inline void ApproximationInterface::surrogate_model_key(const UShortArray& key)
-{
-  //sharedData.surrogate_data_index(d_index); // if also passed
-  sharedData.surrogate_model_key(key);
-}
-
-
-inline void ApproximationInterface::truth_model_key(const UShortArray& key)
-{
-  //sharedData.surrogate_data_index(d_index); // if also passed
-  sharedData.truth_model_key(key);
-}
-
-
-/** Restore active key to leading key for first approxData
-    (only updates model key if needed). */
+/** Restore active key in approxData using shared key. */
 inline void ApproximationInterface::restore_data_key()
-{ active_model_key(sharedData.truth_model_key()); }
+{
+  const UShortArray& active_key = sharedData.active_model_key();
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].active_model_key(active_key);
+}
 
 
 inline void ApproximationInterface::
@@ -317,6 +305,7 @@ approximation_function_indices(const IntSet& approx_fn_indices)
 { approxFnIndices = approx_fn_indices; }
 
 
+/*
 inline void ApproximationInterface::link_multilevel_approximation_data()
 {
   // define approx data keys and active index
@@ -326,6 +315,7 @@ inline void ApproximationInterface::link_multilevel_approximation_data()
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].link_multilevel_surrogate_data();
 }
+*/
 
 
 /** This function removes data provided by a previous append_approximation()
@@ -432,6 +422,10 @@ inline void ApproximationInterface::clear_active_data()
 }
 
 
+inline bool ApproximationInterface::formulation_updated() const
+{ return sharedData.formulation_updated(); }
+
+
 inline SharedApproxData& ApproximationInterface::shared_approximation()
 { return sharedData; }
 
@@ -441,14 +435,14 @@ inline std::vector<Approximation>& ApproximationInterface::approximations()
 
 
 inline const Pecos::SurrogateData& ApproximationInterface::
-approximation_data(size_t fn_index, size_t d_index)
+approximation_data(size_t fn_index)
 {
   if (approxFnIndices.find(fn_index) == approxFnIndices.end()) {
     Cerr << "Error: index passed to ApproximationInterface::approximation_data"
 	 << "() does not correspond to an approximated function." << std::endl;
     abort_handler(APPROX_ERROR);
   }
-  return functionSurfaces[fn_index].surrogate_data(d_index);
+  return functionSurfaces[fn_index].surrogate_data();
 }
 
 

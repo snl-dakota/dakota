@@ -11,6 +11,7 @@ method,
 	model_pointer = 'HIERARCH'
         multifidelity_polynomial_chaos			#s0	
 	  sparse_grid_level_sequence = 3 2 1 		#s0
+# defaulting to estimator_variance control, pilot_samples = .9 * exp terms
 #	multilevel_polynomial_chaos			#s1
 #	  expansion_order_sequence = 3 2 1		#s1
 #	    collocation_ratio = .9			#s1
