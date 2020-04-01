@@ -383,7 +383,7 @@ int test_gp(double atol){
   MatrixXd gp_grad;
   MatrixXd gold_gp_grad(1,2);
   gold_gp_grad << -0.31280824, -0.25430975;
-  gp_2D.gradient(eval_point,gp_grad);
+  gp_2D.gradient(eval_point, gp_grad);
 
   
   if (print_output) {
@@ -398,7 +398,7 @@ int test_gp(double atol){
   MatrixXd gp_hessian;
   MatrixXd gold_gp_hessian(2,2);
   gold_gp_hessian << 0.87452373, 0.1014484, 0.1014484, -0.84271328;
-  gp_2D.hessian(eval_point,gp_hessian);
+  gp_2D.hessian(eval_point, gp_hessian);
 
   if (print_output) {
     std::cout << "\nGP Hessian value at evaluation point:\n" << gp_hessian << std::endl;
@@ -413,15 +413,77 @@ int test_gp(double atol){
 
   MatrixXd grad_fd_error;
   fd_check_gradient(gp_2D, eval_point, grad_fd_error);
-  std::cout << "\ngradient fd error:" << std::endl;
-  std::cout << grad_fd_error << std::endl;
-  std::cout << "\n";
+  if (print_output) {
+    std::cout << "\ngradient fd error:" << std::endl;
+    std::cout << grad_fd_error << std::endl;
+    std::cout << "\n";
+  }
 
   MatrixXd hessian_fd_error;
   fd_check_hessian(gp_2D, eval_point, hessian_fd_error);
-  std::cout << "\nhessian fd error:" << std::endl;
-  std::cout << hessian_fd_error << std::endl;
-  std::cout << "\n";
+  if (print_output) {
+    std::cout << "\nhessian fd error:" << std::endl;
+    std::cout << hessian_fd_error << std::endl;
+    std::cout << "\n";
+  }
+  
+  /* test a 2D gp with a quadratic trend and nugget estimation */
+  ParameterList pl_2D_quad("2D Quadratic GP with Nugget Estimation Test Parameters");
+  pl_2D_quad.set("scaler name","standardization");
+  pl_2D_quad.set("num restarts", 20);
+  pl_2D_quad.sublist("Nugget").set("fixed nugget", 0.0);
+  pl_2D_quad.set("gp seed", 42);
+  pl_2D_quad.set("sigma bounds", sigma_bounds);
+  pl_2D_quad.set("length-scale bounds", length_scale_bounds);
+  pl_2D_quad.sublist("Nugget").set("estimate nugget", true);
+  pl_2D_quad.sublist("Trend").set("estimate trend", true);
+  pl_2D_quad.sublist("Trend").sublist("Options").set("max degree", 2);
+
+  GaussianProcess gp_2D_quad(samples_list[0], responses_list[0], pl_2D_quad);
+  gp_2D_quad.value(eval_pts_2D, pred_2D);
+  gp_2D.gradient(eval_point, gp_grad);
+  gp_2D.hessian(eval_point, gp_hessian);
+
+  if (print_output) {
+    std::cout << "2D trend gp gradient:\n";
+    std::cout << gp_grad;
+    std::cout << "\n\n";
+    std::cout << "2D trend gp hessian:\n";
+    std::cout << gp_hessian << "\n\n";
+  }
+
+  fd_check_gradient(gp_2D_quad, eval_point, grad_fd_error);
+  if (print_output) {
+    std::cout << "\n2D trend gradient fd error:" << std::endl;
+    std::cout << grad_fd_error << std::endl;
+    std::cout << "\n";
+  }
+
+  fd_check_hessian(gp_2D_quad, eval_point, hessian_fd_error);
+  if (print_output) {
+    std::cout << "\n2D trend hessian fd error:" << std::endl;
+    std::cout << hessian_fd_error << std::endl;
+    std::cout << "\n";
+  }
+
+  gold_value_2D << 0.77987534, 0.84715045, 0.74437935, 0.74654155;
+  gold_gp_grad << -0.312808, -0.25431;
+  gold_gp_hessian << 0.874524,  0.101448, 0.101448, -0.842713;
+
+  if (!matrix_equals(pred_2D,gold_value_2D,atol)){
+    std::cout << "16\n";
+    return 16;
+  }
+
+  if (!matrix_equals(gp_grad,gold_gp_grad,atol)){
+    std::cout << "8\n";
+    return 17;
+  }
+
+  if (!matrix_equals(gp_hessian,gold_gp_hessian,atol)){
+    std::cout << "8\n";
+    return 18;
+  }
 
   std::cout << "\n\n";
 

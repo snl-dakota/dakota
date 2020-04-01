@@ -522,37 +522,10 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   double final_obj_value;
   VectorXd final_obj_gradient(dim);
 
-#if 0
-  /* debugging: manually set the initial guesses */
-  /* manually check the nll and its gradient */
-  //if (estimateTrend) {
-  //if (estimateNugget) {
-  int nopt = get_num_opt_variables();
-  VectorXd chk_params(nopt);
-  //chk_params << 1.78385437, -4.03673568, 0., 0. , -8.44344602;
-  //chk_params << 1.78385437, -4.03673568, -8.44344602;
-  //chk_params << 1.78385437, -4.03673568, 0., 0.;
-  chk_params << 1.78385437, -4.03673568, 0.2, 0.1;
-  (thetaValues)(0) = chk_params(0);
-  (thetaValues)(1) = chk_params(1);
-  betaValues(0) = chk_params(2);
-  betaValues(1) = chk_params(3);
-  //estimatedNuggetValue = chk_params(4);
-  //estimatedNuggetValue = chk_params(2);
-  negative_marginal_log_likelihood(final_obj_value, final_obj_gradient);
-  //}
-#endif
-
   for (int i = 0; i < num_restarts; i++) {
     for (int j = 0; j < dim; ++j) {
       (*x_ptr)[j] = initial_guesses(i,j);
     }
-    /*
-    (*x_ptr)[0] = chk_params(0);
-    (*x_ptr)[1] = chk_params(1);
-    (*x_ptr)[2] = chk_params(2);
-    (*x_ptr)[3] = chk_params(3);
-    */
     output = algo.run(x, *gp_objective, *bound, true, *outStream);
     for (int j = 0; j < thetaValues.size(); ++j) {
       (thetaValues)(j) = (*x_ptr)[j];
@@ -626,9 +599,6 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
 
   if (estimateTrend) {
     resid = targetValues - basisMatrix*betaValues;
-    std::cout << "beta values" << std::endl;
-    std::cout << betaValues << std::endl;
-    std::cout << "\n";
   }
   else
     resid = targetValues;
