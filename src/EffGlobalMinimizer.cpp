@@ -318,7 +318,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
     // Query the batch
     for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
-        fHatModel.component_parallel_mode(TRUTH_MODEL);
+        fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
         iteratedModel.active_variables(input_array_batch_acquisition[i_batch_acquisition]);
         ActiveSet set = iteratedModel.current_response().active_set();
         set.request_values(dataOrder);

@@ -7023,7 +7023,7 @@ static short
 
 static int
 	MP_(batchSize),
-  MP_(batchSizeExplore),
+	MP_(batchSizeExplore),
 	MP_(buildSamples),
 	MP_(burnInSamples),
 	MP_(chainSamples),
@@ -7553,6 +7553,7 @@ static int
         MP_(maxCrossIterations),
         MP_(maxFunctionEvals),
         MP_(maxIterations),
+	MP_(maxSolverIterations),
         MP_(numFolds),
         MP_(numReplicates),
         MP_(pointsTotal),
@@ -7571,7 +7572,6 @@ static size_t
 //	MP_(verbosity);
     
 #undef MP2p
->>>>>>> origin/devel
 #undef MP2s
 #undef MP2
 #undef MP_

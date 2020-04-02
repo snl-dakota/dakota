@@ -741,9 +741,7 @@
                  <!-- <keyword id="rls1" name="rls1" code="{N_mdm(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
 	       </oneOf>
 	     </keyword>
-	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
-	       <param type="INTEGER" constraint=">= 0" />
-	     </keyword>
+	     &default_max_solver_iterations;
 	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mdm(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 	       <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
@@ -864,10 +862,10 @@
                  <!-- <keyword id="rls1" name="rls1" code="{N_mom(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
 	       </oneOf>
 	     </keyword>
-	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(int,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
 	       <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
-	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(int,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 	       <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
@@ -3677,7 +3675,7 @@
 		  <keyword id="adapt_coeff_tolerance" name="adapt_coeff_tolerance" code="{N_mom(Real,adaptCoeffTolerance)}" label="Polynomial coefficient adaptation tolerance" help="" minOccurs="0" default="1.0e-10">
 		    <param type="REAL" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="verbosity" name="verbosity" code="{N_mom(nnint,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
+		  <keyword  id="verbosity" name="verbosity" code="{N_mom(int,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 		  -->

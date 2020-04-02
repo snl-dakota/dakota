@@ -5713,8 +5713,8 @@ KEYWORD model {N_mom3(start,0,stop)}
             l2_penalty REAL {N_mom(Real,regressionL2Penalty)}
            )
          ]
-        [ max_solver_iterations INTEGER >= 0 {N_mom(nnint,maxSolverIterations)} ]
-        [ max_cross_iterations INTEGER >= 0 {N_mom(nnint,maxCrossIterations)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mom(int,maxSolverIterations)} ]
+        [ max_cross_iterations INTEGER >= 0 {N_mom(int,maxCrossIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTol)} ]
         [ tensor_grid {N_mom(true,tensorGridFlag)} ]
         [ rounding_tolerance REAL {N_mom(Real,roundingTol)} ]

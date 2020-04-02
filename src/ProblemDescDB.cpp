@@ -2688,6 +2688,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"initial_samples", P initialSamples},
         {"max_function_evals", P maxFunctionEvals},
         {"max_iterations", P maxIterations},
+	{"max_solver_iterations", P maxSolverIterations},
         {"nested.iterator_servers", P subMethodServers},
         {"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
