@@ -820,6 +820,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
     ////TODO
     //// Problem 18
+    /*
     Real N_L_exact, N_H_exact;
 
     Real x = iteratedModel.current_variables().all_continuous_variables()[0];
@@ -843,8 +844,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     Real mu_H_four_exact = half_pow_six*half_pow_six/13.;
     Real C_H = 1.1;
     Real C_L = 0.1;
-    ////
     {
+    */
+    ////
       //// Cantilever
       /*
       IntRealMatrixMap sum_Ql_ref, sum_Qlm1_ref;
@@ -912,7 +914,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       */
 
       //// Problem 18
-      if(targetMoment == 1) {
+      /*if(targetMoment == 1) {
         convergenceTol = var_H / N_MC;
         Real lagrange_mult = 1. / convergenceTol * (std::sqrt(var_L * C_L) + std::sqrt(var_deltaHL * C_H));
 
@@ -976,7 +978,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
         throw IO_ERROR;
       }
 
-    }
+    }*/
     ////
 
     // now converge on sample counts per level (N_l)
@@ -1128,7 +1130,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
           Cout << "\n\tN_target for Qoi: " << qoi << ", with lagrange: " << fact_qoi << std::endl;
         for (step = 0; step < num_steps; ++step) {
           N_target_qoi(qoi, step) = std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
-          N_target_qoi_FN(qoi, step) = N_target_qoi(qoi, step);
+          //N_target_qoi_FN(qoi, step) = N_target_qoi(qoi, step);
           if (outputLevel == DEBUG_OUTPUT) {
             Cout << "\t\tVar of target: " << agg_var_qoi(qoi, step) << std::endl;
             Cout << "\t\tCost: " << level_cost_vec[step] << "\n";
@@ -1199,6 +1201,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
           assign_static_member(nonlin_eq_targets[0], qoi, level_cost_vec, sum_Ql, sum_Qlm1, sum_QlQlm1, pilot_samples);
 
+          /*
           if(iter == 0 && false) {
             int mode = 1;
             int result_mode = 0;
@@ -1253,6 +1256,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
             }
             myfile.close();
           }
+          */
 
           Cout << "Before SNL Run. Initial point: \n";
           for (int i = 0; i < initial_point.length(); ++i) {
@@ -1388,6 +1392,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
          << std::endl;
 
     //// TODO Problem 18
+    /*
     std::ofstream myfile;
     Real thought_convergence_tol;
     Real exact_var_of_moment;
@@ -1457,6 +1462,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
                               << "\t" << N_target_qoi(1, 0) << "\t" << (N_target_qoi(1, 1)) << "\t" << thought_opt_var_of_moment << "\t" << exact_opt_var_of_moment // Actual sample allocation found and its seen tolerance
                               << "\t" << N_target_qoi_FN(1, 0) << "\t" << (N_target_qoi_FN(1, 1)) << "\t" << thought_FN_var_of_moment << "\t" << exact_FN_var_of_moment << "\n"; // FN sample allocation found and its seen tolerance
     myfile.close();
+    */
     ////
 
     // Roll up expected value estimators for central moments.  Final expected
