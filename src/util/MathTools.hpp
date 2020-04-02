@@ -15,15 +15,14 @@
 // Defines //
 /////////////
 
-#ifndef DAKOTA_MATH_TOOLS_HPP
-#define DAKOTA_MATH_TOOLS_HPP
+#ifndef DAKOTA_UTIL_MATH_TOOLS_HPP
+#define DAKOTA_UTIL_MATH_TOOLS_HPP
 
 /////////////
 // Imports //
 /////////////
 
-#include "Teuchos_SerialDenseHelpers.hpp"
-#include <Eigen/Dense>
+#include "util_data_types.hpp"
 
 ///////////////////////
 // Using / Namespace //
@@ -107,4 +106,4 @@ double p_norm( const T & v, double p )
 } // namespace util
 } // namespace dakota
 
-#endif // DAKOTA_MATH_TOOLS_HPP
+#endif // include guard

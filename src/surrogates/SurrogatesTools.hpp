@@ -9,7 +9,7 @@
 #ifndef DAKOTA_SURROGATES_TOOLS_HPP
 #define DAKOTA_SURROGATES_TOOLS_HPP
 
-#include "util_data_types.hpp"
+#include "Surrogate.hpp"
 #include <Eigen/Dense>
 
 namespace dakota {
@@ -44,6 +44,15 @@ void compute_hyperbolic_level_indices( int num_dims, int level,
 void compute_hyperbolic_indices( int num_dims, int level,
                                  double p,
                                  Eigen::MatrixXi & indices );
+
+void fd_check_gradient(Surrogate &surr, 
+                       const MatrixXd &sample,
+                       MatrixXd &fd_error, const int num_steps = 10);
+
+void fd_check_hessian(Surrogate &surr, 
+                      const MatrixXd &sample,
+                      MatrixXd &fd_error, const int num_steps = 10);
+
 
 }  // namespace surrogates
 }  // namespace dakota

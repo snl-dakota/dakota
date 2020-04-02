@@ -7,22 +7,18 @@
     _______________________________________________________________________ */
 
 
-#include "Eigen/Dense"
-#include <Teuchos_UnitTestHarness.hpp>
+#include "CommonUtils.hpp"
+#include "util_data_types.hpp"
+
+#include "Teuchos_UnitTestHarness.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
-#include "../CommonUtils.hpp"
 
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
 
-using MatrixMap = Eigen::Map<MatrixXd>;
-using VectorMap = Eigen::Map<VectorXd>;
+using MatrixMap = Eigen::Map<Eigen::MatrixXd>;
+using VectorMap = Eigen::Map<Eigen::VectorXd>;
 
-using RealMatrix = Teuchos::SerialDenseMatrix<int,double>;
-using RealVector = Teuchos::SerialDenseVector<int,double>;
-
-namespace dakota {
-namespace util {
+using namespace dakota;
+using namespace dakota::util;
 
 namespace {
 
@@ -133,6 +129,4 @@ TEUCHOS_UNIT_TEST(util, vector_teuchos_to_eigen)
 
 }
 
-}
-}  // namespace util
-}  // namespace dakota
+}  // namespace

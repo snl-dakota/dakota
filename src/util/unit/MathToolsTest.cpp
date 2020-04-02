@@ -15,12 +15,10 @@
 // Imports //
 /////////////
 
-#include <cmath>
+#include "CommonUtils.hpp"
+#include "MathTools.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
-#include <Eigen/Dense>
-#include "../CommonUtils.hpp"
-#include "../MathTools.hpp"
 
 ///////////////
 // Namespace //

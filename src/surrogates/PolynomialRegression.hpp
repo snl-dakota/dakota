@@ -9,28 +9,42 @@
 #ifndef DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 #define DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 
-#include <iostream>
-#include <memory>
 #include "DataScaler.hpp"
-#include "../util/LinearSolvers.hpp"
+#include "LinearSolvers.hpp"
+#include "Surrogate.hpp"
+#include "util_data_types.hpp"
 
-#include "Teuchos_ParameterList.hpp"
+#include <memory>
+
 
 namespace dakota {
 namespace surrogates {
 
-class PolynomialRegression {
+class PolynomialRegression: public Surrogate {
 
 public:
 
   // Constructor
 
   // Options-based constructor
-  PolynomialRegression(std::shared_ptr<Teuchos::ParameterList> options);
+  //PolynomialRegression(std::shared_ptr<ParameterList> options);
 
   // Options-based constructor to model defaults like GP
-  PolynomialRegression(const MatrixXd& samples, const MatrixXd& response,
-		       Teuchos::ParameterList& options);
+  //PolynomialRegression(const MatrixXd& samples, const MatrixXd& response,
+	//	       ParameterList& options);
+  //
+
+  // Default constructor that initializes default options 
+  // and does not build surrogate.
+  PolynomialRegression();
+
+  // Constructor that sets user-provided options but 
+  // does not build the surrogate.
+  PolynomialRegression(const ParameterList &options);
+
+  // Constructor that will build surrogate from given data and options.
+  PolynomialRegression(const MatrixXd &samples, const MatrixXd &response,
+		                   const ParameterList &options);
 
   // Simple constructor
   PolynomialRegression(int total_order, int nvars);
@@ -48,6 +62,7 @@ public:
   const MatrixXd & get_polynomial_coeffs() const;
   double get_polynomial_intercept() const;
   const util::LinearSolverBase & get_solver() const;
+  int get_num_terms() const;
 
   // Setters
 
@@ -56,6 +71,7 @@ public:
   void set_polynomial_order(int);
   void set_scaler_type(const util::SCALER_TYPE);
   void set_solver(const util::SOLVER_TYPE);
+  void set_polynomial_coeffs(const MatrixXd &coeffs);
 
   // Surrogate
 
@@ -63,31 +79,28 @@ public:
   void build_surrogate();
   void surrogate_value(const MatrixXd &eval_points, MatrixXd &approx_values);
 
-  // Derivatives
-
-  void gradient(const MatrixXd &samples, MatrixXd &gradient);
-  void hessian(const MatrixXd &sample, MatrixXd &hessian); 
+  // Surrogate parent API
+  void build(const MatrixXd &samples, const MatrixXd &response) override;
+  void value(const MatrixXd &eval_points, MatrixXd &approx_values) override;
+  void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi = 0) override;
+  void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
 
 private:
-
-  /*
-  int find_matching_row(const MatrixXd &hyperbolic_indices, 
-                        const VectorXd &decremented_indices);
-                        */
-
+  void default_options() override;
   // Input fields
   int numTerms;
   int numVars;
-  std::shared_ptr<MatrixXd> samples_;
-  std::shared_ptr<MatrixXd> response;
-  std::shared_ptr<MatrixXi> basisIndices;
+  MatrixXd samples_;
+  MatrixXd response_;
+  MatrixXi basisIndices;
   int polynomialOrder;
   util::SCALER_TYPE scalerType;
-  std::shared_ptr<util::DataScaler> scaler;
+  util::SOLVER_TYPE solverType;
+  //std::shared_ptr<util::DataScaler> scaler;
   std::shared_ptr<util::LinearSolverBase> solver;
 
   // Polynomial surrogate fields
-  std::shared_ptr<MatrixXd> polynomial_coeffs;
+  MatrixXd polynomial_coeffs;
   double polynomial_intercept;
 };
 } // namespace surrogates

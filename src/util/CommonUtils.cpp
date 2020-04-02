@@ -15,17 +15,19 @@
 // Imports //
 /////////////
 
-#include <fstream>
-#include <math.h>
+#include "CommonUtils.hpp"
+
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
-#include "CommonUtils.hpp"
+
+#include <fstream>
 
 ///////////////////////
 // Using / Namespace //
 ///////////////////////
 
-using namespace Eigen;
+namespace dakota {
+namespace util {
 
 ///////////////
 // Utilities //
@@ -121,3 +123,7 @@ void populateMatricesFromFile(std::string fileName, std::vector<MatrixXd> &S, in
 
   in.close();
 }
+
+
+} // namespace util
+} // namespace dakota

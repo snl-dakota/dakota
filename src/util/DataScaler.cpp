@@ -7,16 +7,17 @@
     _______________________________________________________________________ */
 
 #include "DataScaler.hpp"
+
 #include <boost/assign.hpp>
 #include <boost/bimap.hpp>
 
 namespace dakota {
 namespace util {
 
-typedef boost::bimap<SCALER_TYPE, std::string> BimapIntStr;
+using BimapScalertypeStr = boost::bimap<SCALER_TYPE, std::string>;
 
-static BimapIntStr type_name_bimap =
-  boost::assign::list_of< BimapIntStr::relation >
+static BimapScalertypeStr type_name_bimap =
+  boost::assign::list_of< BimapScalertypeStr::relation >
   (SCALER_TYPE::NONE, "none")
   (SCALER_TYPE::STANDARDIZATION, "standardization")
   (SCALER_TYPE::MEAN_NORMALIZATION, "mean normalization")
@@ -26,7 +27,7 @@ static BimapIntStr type_name_bimap =
 
 SCALER_TYPE DataScaler::scaler_type(const std::string& scaler_name)
 {
-  BimapIntStr::right_const_iterator rc_iter
+  BimapScalertypeStr::right_const_iterator rc_iter
     = type_name_bimap.right.find(scaler_name);
   if (rc_iter == type_name_bimap.right.end()) {
     throw std::runtime_error("Invalid DataScaler scaler_name");
@@ -42,21 +43,21 @@ DataScaler::~DataScaler(){}
 void DataScaler::scale_samples(const MatrixXd &unscaled_samples,
                                MatrixXd &scaled_samples) {
   const int num_features = unscaled_samples.cols();
-  if (num_features != scalerFeaturesOffsets->size()) {
+  if (num_features != scalerFeaturesOffsets.size()) {
     throw(std::runtime_error("scaleSamples input is not consistent."
           "Number of features does not match."));
   }
   const int num_samples = unscaled_samples.rows();
   scaled_samples.resize(num_samples,num_features);
   for (int j = 0; j < num_features; j++) {
-    if( check_for_zero_scaler_factor(j) ) {
+    if (check_for_zero_scaler_factor(j)) {
       for (int i = 0; i < num_samples; i++) {
-        scaled_samples(i,j) = unscaled_samples(i,j)  - (*scalerFeaturesOffsets)(j);
+        scaled_samples(i,j) = unscaled_samples(i,j)  - scalerFeaturesOffsets(j);
       }
     }
     else {
       for (int i = 0; i < num_samples; i++) {
-        scaled_samples(i,j) = (unscaled_samples(i,j) - (*scalerFeaturesOffsets)(j))/(*scalerFeaturesScaleFactors)(j);
+        scaled_samples(i,j) = (unscaled_samples(i,j) - scalerFeaturesOffsets(j))/scalerFeaturesScaleFactors(j);
       }
     }
   }
@@ -64,21 +65,21 @@ void DataScaler::scale_samples(const MatrixXd &unscaled_samples,
 
 std::shared_ptr<MatrixXd> DataScaler::scale_samples(const MatrixXd &unscaled_samples) {
   const int num_features = unscaled_samples.cols();
-  if (num_features != scalerFeaturesOffsets->size()) {
+  if (num_features != scalerFeaturesOffsets.size()) {
     throw(std::runtime_error("scaleSamples input is not consistent."
           "Number of features does not match."));
   }
   const int num_samples = unscaled_samples.rows();
   MatrixXd scaledSamples(num_samples,num_features);
   for (int j = 0; j < num_features; j++) {
-    if( check_for_zero_scaler_factor(j) ) {
+    if (check_for_zero_scaler_factor(j)) {
       for (int i = 0; i < num_samples; i++) {
-        scaledSamples(i,j) = unscaled_samples(i,j)  - (*scalerFeaturesOffsets)(j);
+        scaledSamples(i,j) = unscaled_samples(i,j)  - scalerFeaturesOffsets(j);
       }
     }
     else {
       for (int i = 0; i < num_samples; i++) {
-        scaledSamples(i,j) = (unscaled_samples(i,j) - (*scalerFeaturesOffsets)(j))/(*scalerFeaturesScaleFactors)(j);
+        scaledSamples(i,j) = (unscaled_samples(i,j) - scalerFeaturesOffsets(j))/scalerFeaturesScaleFactors(j);
       }
     }
   }
@@ -95,9 +96,9 @@ NormalizationScaler::NormalizationScaler(const MatrixXd &features,
   const int num_samples  = features.rows();
   const int num_features = features.cols();
 
-  scalerFeaturesOffsets = std::make_shared<VectorXd>(num_features);
-  scalerFeaturesScaleFactors = std::make_shared<VectorXd>(num_features);
-  scaledFeatures = std::make_shared<MatrixXd>(num_samples,num_features);
+  scalerFeaturesOffsets.resize(num_features);
+  scalerFeaturesScaleFactors.resize(num_features);
+  scaledFeatures.resize(num_samples,num_features);
 
   double min_val, max_val, mean_val;
   
@@ -105,14 +106,18 @@ NormalizationScaler::NormalizationScaler(const MatrixXd &features,
     min_val = features.col(j).minCoeff();
     max_val = features.col(j).maxCoeff();
     mean_val = features.col(j).mean();
-    (*scalerFeaturesOffsets)(j) = (mean_normalization) ? mean_val : min_val;
-    (*scalerFeaturesScaleFactors)(j) = (max_val - min_val)/norm_factor;
-    if( check_for_zero_scaler_factor(j) )
-      for (int i = 0; i < num_samples; i++)
-        (*scaledFeatures)(i,j) = features(i,j)  - (*scalerFeaturesOffsets)(j);
-    else
-      for (int i = 0; i < num_samples; i++)
-        (*scaledFeatures)(i,j) = (features(i,j) - (*scalerFeaturesOffsets)(j)) / (*scalerFeaturesScaleFactors)(j);
+    scalerFeaturesOffsets(j) = (mean_normalization) ? mean_val : min_val;
+    scalerFeaturesScaleFactors(j) = (max_val - min_val)/norm_factor;
+    if (check_for_zero_scaler_factor(j)) {
+      for (int i = 0; i < num_samples; i++) {
+        scaledFeatures(i,j) = features(i,j)  - scalerFeaturesOffsets(j);
+      }
+    }
+    else {
+      for (int i = 0; i < num_samples; i++) {
+        scaledFeatures(i,j) = (features(i,j) - scalerFeaturesOffsets(j)) / scalerFeaturesScaleFactors(j);
+      }
+    }
   }
 
   has_scaling = true;
@@ -129,23 +134,23 @@ StandardizationScaler::StandardizationScaler(const MatrixXd &features,
   const int num_samples = features.rows();
   const int num_features = features.cols();
 
-  scalerFeaturesOffsets = std::make_shared<VectorXd>(num_features);
-  scalerFeaturesScaleFactors = std::make_shared<VectorXd>(num_features);
-  scaledFeatures = std::make_shared<MatrixXd>(num_samples,num_features);
+  scalerFeaturesOffsets.resize(num_features);
+  scalerFeaturesScaleFactors.resize(num_features);
+  scaledFeatures.resize(num_samples,num_features);
 
   double mean_val, var_val;
   
   for (int j = 0; j < num_features; j++) {
     mean_val = features.col(j).mean();
     var_val = ((features.col(j).array() - mean_val).pow(2.0)).mean();
-    (*scalerFeaturesOffsets)(j) = mean_val;
-    (*scalerFeaturesScaleFactors)(j) = std::sqrt(var_val)/norm_factor;
+    scalerFeaturesOffsets(j) = mean_val;
+    scalerFeaturesScaleFactors(j) = std::sqrt(var_val)/norm_factor;
     if( check_for_zero_scaler_factor(j) )
       for (int i = 0; i < num_samples; i++)
-        (*scaledFeatures)(i,j) = features(i,j) - (*scalerFeaturesOffsets)(j);
+        scaledFeatures(i,j) = features(i,j) - scalerFeaturesOffsets(j);
     else
       for (int i = 0; i < num_samples; i++)
-        (*scaledFeatures)(i,j) = (features(i,j) - (*scalerFeaturesOffsets)(j))/(*scalerFeaturesScaleFactors)(j);      
+        scaledFeatures(i,j) = (features(i,j) - scalerFeaturesOffsets(j))/scalerFeaturesScaleFactors(j);      
   }
 
   has_scaling = true;
@@ -158,17 +163,15 @@ NoScaler::~NoScaler(){}
 NoScaler::NoScaler(const MatrixXd &features) {
 
   const int num_features = features.cols();
-  scaledFeatures = std::make_shared<MatrixXd>(features);
-  scalerFeaturesOffsets = std::make_shared<VectorXd>(num_features);
-  (*scalerFeaturesOffsets).setZero();
-  scalerFeaturesScaleFactors = std::make_shared<VectorXd>(num_features);
-  (*scalerFeaturesScaleFactors).setOnes();
+  scaledFeatures = features;
+  scalerFeaturesOffsets = VectorXd::Zero(num_features);
+  scalerFeaturesScaleFactors = VectorXd::Ones(num_features);
 
   has_scaling = true;
 }
 
 bool DataScaler::check_for_zero_scaler_factor(int index) {
-  double value     = std::abs((*scalerFeaturesScaleFactors)(index));
+  double value     = std::abs(scalerFeaturesScaleFactors(index));
   double near_zero = std::abs(100.0*std::numeric_limits<double>::min());
   return value < near_zero;
 }
@@ -178,16 +181,16 @@ std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const Matrix
     return std::make_shared<util::StandardizationScaler>(unscaled_matrix);
   }
   else if (scaler_type == util::SCALER_TYPE::MEAN_NORMALIZATION) {
-    return std::make_shared<util::NormalizationScaler>(unscaled_matrix, true);   
+    return std::make_shared<util::NormalizationScaler>(unscaled_matrix, true);
   }
   else if (scaler_type == util::SCALER_TYPE::MINMAX_NORMALIZATION) {
     return std::make_shared<util::NormalizationScaler>(unscaled_matrix, false); 
   }
   else if (scaler_type == util::SCALER_TYPE::NONE) {
-    return std::make_shared<util::NoScaler>(unscaled_matrix);
+    return std::make_shared<util::NoScaler>(unscaled_matrix); 
   }
   else {
-    throw("Error: Invalid scaler_type for DataScaler");
+    throw("Error: invalid data scaler type");
   }
 }
 

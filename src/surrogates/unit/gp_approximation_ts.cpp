@@ -6,13 +6,17 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include <fstream>
-#include <Teuchos_UnitTestHarness.hpp>
-#include <Teuchos_ParameterList.hpp>
 #include "CommonUtils.hpp"
 #include "GaussianProcess.hpp"
+#include "SurrogatesTools.hpp"
+#include "util_data_types.hpp"
+
+#include <Teuchos_UnitTestHarness.hpp>
+
+#include <fstream>
 
 // BMA TODO: Review with team for best practice
+using namespace dakota;
 using namespace dakota::surrogates;
 using namespace dakota::util;
 
@@ -53,18 +57,16 @@ int test_gp(double atol){
   length_scale_bounds(0,0) = 1.0e-2;
   length_scale_bounds(0,1) = 1.0e2;
 
-  Teuchos::ParameterList param_list("GP Test Parameters");
-  param_list.set("sigma_bounds", sigma_bounds);
-  param_list.set("length_scale_bounds", length_scale_bounds);
-  param_list.set("scaler_name",
-		 "standardization"
-		 // "none"
-		 );
-  param_list.set("num_restarts", 10);
-  param_list.set("nugget", 1.0e-12);
-  param_list.set("gp_seed", 42);
+  ParameterList param_list("GP Test Parameters");
+  param_list.set("sigma bounds", sigma_bounds);
+  param_list.set("length-scale bounds", length_scale_bounds);
+  param_list.set("scaler name","standardization");
+  param_list.set("num restarts", 10);
+  param_list.sublist("Nugget").set("fixed nugget", 1.0e-12);
+  param_list.set("gp seed", 42);
 
-  /* 1D GP test */
+  /* 1D GP test #1: Construct GP and build surrogate all
+   * at once */
   GaussianProcess gp(xs_u, response, param_list);
 
   gp.value(eval_pts, pred);
@@ -108,6 +110,156 @@ int test_gp(double atol){
     std::cout << "3\n";
     return 3;
   }
+  
+  /* 1D GP test #2:
+   * Separate constructor with given options
+   * and build steps */
+  GaussianProcess gp2(param_list);
+  gp2.build(xs_u, response);
+  gp2.value(eval_pts, pred);
+  std_dev = gp2.get_posterior_std_dev();
+  cov = gp2.get_posterior_covariance();
+
+  if (!matrix_equals(pred,gold_value,atol)){
+    std::cout << "7\n";
+    return 7;
+  }
+
+  if (!matrix_equals(std_dev,gold_std,atol)){
+    std::cout << "8\n";
+    return 8;
+  }
+
+  if (!matrix_equals(cov,gold_cov,atol)){
+    std::cout << "9\n";
+    return 9;
+  }
+
+  /* 1D GP test #3:
+   * use defaultConfigOptions and adjust as needed
+   * for proper behavior */
+  GaussianProcess gp3;
+  ParameterList current_opts;
+  gp3.get_options(current_opts);
+  current_opts.set("scaler name", "standardization");
+  current_opts.sublist("Nugget").set("fixed nugget", 1.0e-12);
+  current_opts.set("gp seed", 42);
+  gp3.set_options(current_opts);
+  gp3.build(xs_u, response);
+
+  gp3.value(eval_pts, pred);
+  std_dev = gp3.get_posterior_std_dev();
+  cov = gp3.get_posterior_covariance();
+
+  if (!matrix_equals(pred,gold_value,atol)){
+    std::cout << "10\n";
+    return 10;
+  }
+
+  if (!matrix_equals(std_dev,gold_std,atol)){
+    std::cout << "11\n";
+    return 11;
+  }
+
+  if (!matrix_equals(cov,gold_cov,atol)){
+    std::cout << "12\n";
+    return 12;
+  }
+
+  std::cout << "old gp value:" << std::endl;
+  std::cout << pred << std::endl;
+  std::cout << "\n";
+
+  /* 1D GP test #4:
+   * use defaultConfigOptions and introduce a polynomial trend
+   * and nugget estimation */
+  // gold values
+  MatrixXd gold_value4(6,1);
+  VectorXd gold_std4(6);
+  MatrixXd gold_cov4(6,6);
+
+  gold_value4 << -0.05312219, -0.27214983, -0.033252, 0.02527716, -0.12356696, -0.18573136;
+  gold_std4 << 0.02028642, 0.00536066, 0.00064835, 0.00459461, 0.00395678, 0.14659393;
+  gold_cov4 << 0.000411539, -9.13625e-05,  6.17757e-08,  -1.9461e-05,  5.94823e-06, -0.000256977,
+             -9.13625e-05,  2.87366e-05, -5.31468e-07,  6.01025e-06, -4.53635e-06, -5.15403e-05,
+              6.17757e-08, -5.31468e-07,  4.20359e-07,  8.39709e-07, -4.44025e-07, -8.63467e-06,
+             -1.9461e-05,  6.01025e-06,  8.39709e-07,  2.11104e-05, -1.52399e-05, -0.000388392,
+              5.94823e-06, -4.53635e-06, -4.44025e-07, -1.52399e-05,  1.56561e-05,  0.000499163,
+             -0.000256977, -5.15403e-05, -8.63467e-06, -0.000388392,  0.000499163,    0.0214898;
+
+
+  GaussianProcess gp4;
+  ParameterList current_opts4;
+  gp4.get_options(current_opts4);
+  current_opts4.set("scaler name", "standardization");
+  current_opts4.sublist("Nugget").set("fixed nugget", 0.0);
+  current_opts4.set("gp seed", 42);
+  current_opts4.sublist("Nugget").set("estimate nugget", true);
+  current_opts4.sublist("Trend").set("estimate trend", true);
+  current_opts4.sublist("Trend").sublist("Options").set("max degree", 1);
+  /* debugging */
+  current_opts4.set("num restarts", 20);
+  gp4.set_options(current_opts4);
+  gp4.build(xs_u, response);
+
+  gp4.value(eval_pts, pred);
+  std_dev = gp4.get_posterior_std_dev();
+  cov = gp4.get_posterior_covariance();
+
+  if (print_output) {
+    std::cout << "gp4 value:" << std::endl;
+    std::cout << pred << std::endl;
+    std::cout << "\n";
+
+    std::cout << "gp4 std_dev:" << std::endl;
+    std::cout << std_dev << std::endl;
+    std::cout << "\n";
+
+    std::cout << "gp4 cov:" << std::endl;
+    std::cout << cov << std::endl;
+    std::cout << "\n";
+  }
+
+  if (!matrix_equals(pred,gold_value4,atol)){
+    std::cout << "13\n";
+    return 13;
+  }
+
+  if (!matrix_equals(std_dev,gold_std4,atol)){
+    std::cout << "14\n";
+    return 14;
+  }
+
+  if (!matrix_equals(cov,gold_cov4,atol)){
+    std::cout << "15\n";
+    return 15;
+  }
+
+  /* compute derivatives of GP with trend and check */
+  MatrixXd gp4_gradient, gp4_hessian;
+
+  gp4.gradient(eval_pts.row(0), gp4_gradient);
+  gp4.hessian(eval_pts.row(0), gp4_hessian);
+
+  std::cout << "GP with trend gradient:" << std::endl;
+  std::cout << gp4_gradient;
+  std::cout << "\n";
+
+  std::cout << "GP with trend hessian:" << std::endl;
+  std::cout << gp4_hessian;
+  std::cout << "\n";
+
+  MatrixXd grad_fd_error_trend;
+  fd_check_gradient(gp4, eval_pts.row(0), grad_fd_error_trend); 
+  std::cout << "\nGP with trend gradient fd error:" << std::endl;
+  std::cout << grad_fd_error_trend << std::endl;
+  std::cout << "\n";
+
+  MatrixXd hessian_fd_error_trend;
+  fd_check_hessian(gp4, eval_pts.row(0), hessian_fd_error_trend); 
+  std::cout << "\nGP with trend hessian fd error:" << std::endl;
+  std::cout << hessian_fd_error_trend << std::endl;
+  std::cout << "\n";
 
   /* 2D GP test */
   int num_datasets = 1;
@@ -147,9 +299,9 @@ int test_gp(double atol){
   */
 
   // Update ParameterList for this test
-  param_list.set("sigma_bounds", sigma_bounds);
-  param_list.set("length_scale_bounds", length_scale_bounds);
-  param_list.set("nugget", 1.0e-10);
+  param_list.set("sigma bounds", sigma_bounds);
+  param_list.set("length-scale bounds", length_scale_bounds);
+  param_list.sublist("Nugget").set("fixed nugget", 1.0e-10);
 
   std::string samples_fname = "gp_test_data/lhs_data_64.txt";
   std::string responses_fname = "gp_test_data/smooth_herbie_64.txt";
@@ -231,7 +383,7 @@ int test_gp(double atol){
   MatrixXd gp_grad;
   MatrixXd gold_gp_grad(1,2);
   gold_gp_grad << -0.31280824, -0.25430975;
-  gp_2D.gradient(eval_point,gp_grad);
+  gp_2D.gradient(eval_point, gp_grad);
 
   
   if (print_output) {
@@ -246,7 +398,7 @@ int test_gp(double atol){
   MatrixXd gp_hessian;
   MatrixXd gold_gp_hessian(2,2);
   gold_gp_hessian << 0.87452373, 0.1014484, 0.1014484, -0.84271328;
-  gp_2D.hessian(eval_point,gp_hessian);
+  gp_2D.hessian(eval_point, gp_hessian);
 
   if (print_output) {
     std::cout << "\nGP Hessian value at evaluation point:\n" << gp_hessian << std::endl;
@@ -255,6 +407,82 @@ int test_gp(double atol){
   if (!matrix_equals(gp_hessian,gold_gp_hessian,atol)){
     std::cout << "8\n";
     return 8;
+  }
+
+  /* Now build 2D function with trend and check gradient/hessian */
+
+  MatrixXd grad_fd_error;
+  fd_check_gradient(gp_2D, eval_point, grad_fd_error);
+  if (print_output) {
+    std::cout << "\ngradient fd error:" << std::endl;
+    std::cout << grad_fd_error << std::endl;
+    std::cout << "\n";
+  }
+
+  MatrixXd hessian_fd_error;
+  fd_check_hessian(gp_2D, eval_point, hessian_fd_error);
+  if (print_output) {
+    std::cout << "\nhessian fd error:" << std::endl;
+    std::cout << hessian_fd_error << std::endl;
+    std::cout << "\n";
+  }
+  
+  /* test a 2D gp with a quadratic trend and nugget estimation */
+  ParameterList pl_2D_quad("2D Quadratic GP with Nugget Estimation Test Parameters");
+  pl_2D_quad.set("scaler name","standardization");
+  pl_2D_quad.set("num restarts", 20);
+  pl_2D_quad.sublist("Nugget").set("fixed nugget", 0.0);
+  pl_2D_quad.set("gp seed", 42);
+  pl_2D_quad.set("sigma bounds", sigma_bounds);
+  pl_2D_quad.set("length-scale bounds", length_scale_bounds);
+  pl_2D_quad.sublist("Nugget").set("estimate nugget", true);
+  pl_2D_quad.sublist("Trend").set("estimate trend", true);
+  pl_2D_quad.sublist("Trend").sublist("Options").set("max degree", 2);
+
+  GaussianProcess gp_2D_quad(samples_list[0], responses_list[0], pl_2D_quad);
+  gp_2D_quad.value(eval_pts_2D, pred_2D);
+  gp_2D.gradient(eval_point, gp_grad);
+  gp_2D.hessian(eval_point, gp_hessian);
+
+  if (print_output) {
+    std::cout << "2D trend gp gradient:\n";
+    std::cout << gp_grad;
+    std::cout << "\n\n";
+    std::cout << "2D trend gp hessian:\n";
+    std::cout << gp_hessian << "\n\n";
+  }
+
+  fd_check_gradient(gp_2D_quad, eval_point, grad_fd_error);
+  if (print_output) {
+    std::cout << "\n2D trend gradient fd error:" << std::endl;
+    std::cout << grad_fd_error << std::endl;
+    std::cout << "\n";
+  }
+
+  fd_check_hessian(gp_2D_quad, eval_point, hessian_fd_error);
+  if (print_output) {
+    std::cout << "\n2D trend hessian fd error:" << std::endl;
+    std::cout << hessian_fd_error << std::endl;
+    std::cout << "\n";
+  }
+
+  gold_value_2D << 0.77987534, 0.84715045, 0.74437935, 0.74654155;
+  gold_gp_grad << -0.312808, -0.25431;
+  gold_gp_hessian << 0.874524,  0.101448, 0.101448, -0.842713;
+
+  if (!matrix_equals(pred_2D,gold_value_2D,atol)){
+    std::cout << "16\n";
+    return 16;
+  }
+
+  if (!matrix_equals(gp_grad,gold_gp_grad,atol)){
+    std::cout << "8\n";
+    return 17;
+  }
+
+  if (!matrix_equals(gp_hessian,gold_gp_hessian,atol)){
+    std::cout << "8\n";
+    return 18;
   }
 
   std::cout << "\n\n";

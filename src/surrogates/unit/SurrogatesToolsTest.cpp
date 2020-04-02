@@ -15,18 +15,19 @@
 // Imports //
 /////////////
 
-#include <cmath>
+#include "CommonUtils.hpp"
+
+#include "SurrogatesTools.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
-#include "../SurrogatesTools.hpp"
-#include "../../util/CommonUtils.hpp"
 
 ///////////////
 // Namespace //
 ///////////////
 
+using namespace dakota;
+using namespace dakota::util;
 using namespace dakota::surrogates;
-using namespace Eigen;
 
 // ------------------------------------------------------------
 

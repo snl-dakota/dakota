@@ -11,18 +11,16 @@
 //-               
 //- Owner:        .....
 
-#include <stdexcept>
-#include <typeinfo>
-
 #include "DakotaSurrogates.hpp"
 #include "DakotaVariables.hpp"
 
 // Headers from Surrogates module
 #include "GaussianProcess.hpp"
+#include "util_data_types.hpp"
  
-#include <algorithm>
-#include <boost/math/special_functions/round.hpp>
 
+using dakota::VectorXd;
+using dakota::MatrixXd;
 
 namespace Dakota {
 
@@ -56,27 +54,32 @@ GPApproximation::min_coefficients() const
 void
 GPApproximation::build()
 {
+  size_t num_v = sharedDataRep->numVars;
+  int num_qoi             = 1; // only using 1 for now
+
   // Hard-coded values to quickly get things working ...
   // See src/surrogates/unit/gp_approximation_ts.cpp for correspondence
 
-  size_t num_v = sharedDataRep->numVars;
-  int num_qoi             = 1; // only using 1 for now
-  std::string scaler_type = "standardization";
-  int num_restarts        = 10;
-  int gp_seed             = 42;
-  double nugget           = 1.0e-12;
+  dakota::ParameterList gp_opts;
+  gp_opts.set("scaler name", "standardization");
+  gp_opts.set("num restarts", 10);
+  gp_opts.set("gp seed", 42);
+  gp_opts.sublist("Nugget").set("fixed nugget", 1.0e-12);
 
   // bound constraints -- will be converted to log-scale internally
   // sigma bounds - lower and upper
   VectorXd sigma_bounds(2);
   sigma_bounds(0) = 1.0e-2;
   sigma_bounds(1) = 1.0e2;
+  gp_opts.set("sigma bounds", sigma_bounds);
+
   // length scale bounds - num_vars x 2
   MatrixXd length_scale_bounds(num_v, 2);
   for(size_t i=0; i<num_v; ++i) {
     length_scale_bounds(i,0) = 1.0e-2;
     length_scale_bounds(i,1) = 1.0e2;
   }
+  gp_opts.set("length-scale bounds", length_scale_bounds);
 
   const Pecos::SurrogateData& approx_data = surrogate_data();
   const Pecos::SDVArray& sdv_array = approx_data.variables_data();
@@ -100,10 +103,7 @@ GPApproximation::build()
   }
 
   // construct the surrogate
-  model.reset(new dakota::surrogates::GaussianProcess(
-                                    xs_u, response,
-                                    sigma_bounds, length_scale_bounds,
-                                    scaler_type, num_restarts, nugget, gp_seed));
+  model.reset(new dakota::surrogates::GaussianProcess(xs_u, response, gp_opts));
 }
 
 

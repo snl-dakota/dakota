@@ -9,35 +9,42 @@
 #ifndef DAKOTA_UTIL_DATA_TYPES_HPP
 #define DAKOTA_UTIL_DATA_TYPES_HPP
 
-#include <complex>
-#include <memory>
-#include "Teuchos_SerialDenseVector.hpp"
+// TODO: Consider organizing typedefs by purpose / category, including what's needed
+
+#include "Teuchos_ParameterList.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
+#include "Teuchos_SerialDenseVector.hpp"
+
+#include "Eigen/Dense"
+
 
 namespace dakota {
-namespace util {
 
-typedef double Real;
-typedef std::complex<double> Complex;
+// TODO: determine proper variadic template syntax for const &
+/// silence unused parameter warning; use to indicate those parameters
+/// are intentionally unused
+template <typename ... Ts> void silence_unused_args(const Ts ...)
+{  /* empty body */  }
 
-typedef Teuchos::SerialDenseMatrix<int,int> IntMatrix;
-typedef Teuchos::SerialDenseMatrix<int,Real> RealMatrix;
-typedef Teuchos::SerialDenseMatrix<int,Complex> ComplexMatrix;
+// TODO: May want to have distinct Dakota names such as EigMatrixXd
 
-typedef Teuchos::SerialDenseVector<int,int> IntVector;
-typedef Teuchos::SerialDenseVector<int,Real> RealVector;
-typedef std::vector<RealVector>  RealVectorArray;
-typedef Teuchos::SerialDenseVector<int,Complex> ComplexVector;
+/// Eigen generic vector of doubles in Dakota namespace
+using VectorXd = Eigen::VectorXd;
+/// Eigen generic matrix of doubles in Dakota namespace
+using MatrixXd = Eigen::MatrixXd;
+/// Eigen generic matrix of integers in Dakota namespace
+using MatrixXi = Eigen::MatrixXi;
 
-typedef std::vector<IntMatrix> IntMatrixList;
-typedef std::vector<RealMatrix> RealMatrixList;
-typedef std::vector<ComplexMatrix> ComplexMatrixList;
+/// Dakota real floating point type
+using Real = double;
+/// Dakota matrix of reals
+using RealMatrix = Teuchos::SerialDenseMatrix<int, Real>;
+/// Dakota vector of reals
+using RealVector = Teuchos::SerialDenseVector<int, Real>;
 
-typedef Teuchos::SerialSymDenseMatrix<int, int> IntSymMatrix;
-typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
-typedef Teuchos::SerialSymDenseMatrix<int, Complex> ComplexSymMatrix;
+/// Teuchos ParameterList for options management in Dakota namespace
+using ParameterList = Teuchos::ParameterList;
 
-}  // namespace util
 }  // namespace dakota
 
 #endif  // include guard

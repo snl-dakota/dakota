@@ -9,10 +9,12 @@
 #ifndef DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 #define DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 
-#include <memory>
 #include "DataScaler.hpp"
-#include "Eigen/StdVector"
-#include "Teuchos_ParameterList.hpp"
+#include "PolynomialRegression.hpp"
+#include "Surrogate.hpp"
+
+#include <memory>
+
 
 namespace dakota {
 namespace surrogates {
@@ -39,7 +41,7 @@ namespace surrogates {
  *  and covariance matrix can be computed for a set of prediction
  *  points.
  */
-class GaussianProcess {
+class GaussianProcess: public Surrogate {
 
 public:
 
@@ -48,10 +50,10 @@ public:
 
   GaussianProcess();
 
-  ~GaussianProcess();
+  GaussianProcess(const Teuchos::ParameterList& param_list);
 
   GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
-		  const Teuchos::ParameterList& param_list);
+                  const Teuchos::ParameterList& param_list);
 
   // BMA: Leaving both ctors during refactoring; consider making
   // following constructor protected or removing
@@ -68,15 +70,51 @@ public:
    * \param[in] nugget_val Value of the Gaussian process's nugget - a small positive constant
    * \param[in] seed Seed for the random number generator. This affects the initial guesses.
    */
-  GaussianProcess(const MatrixXd &samples,
-                  const MatrixXd &response,
-                  const VectorXd &sigma_bounds,
-                  const MatrixXd &length_scale_bounds,
-                  const std::string scaler_name = "mean_normalization",
-                  const int num_restarts = 5,
-                  const double nugget_val = 1.0e-10,
-                  const int seed = 129);
 
+//  GaussianProcess(const MatrixXd &samples,
+//                  const MatrixXd &response,
+//                  const VectorXd &sigma_bounds,
+//                  const MatrixXd &length_scale_bounds,
+//                  const std::string scaler_name = "mean_normalization",
+//                  const int num_restarts = 5,
+//                  const double nugget_val = 1.0e-10,
+//                  const int seed = 129);
+
+  ~GaussianProcess();
+  // ------------------------------------------------------------
+  // Public utility functions
+
+  /**
+   *  \brief Evaluate the negative marginal loglikelihood and its 
+   *  gradient.
+   *  \param[out] obj_value Value of the objection function.
+   *  \param[out] obj_gradient Gradient of the objective function.
+   */
+  void negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient);
+
+  /**
+   *  \brief Evaluate the Gaussian Process at a set of prediction points.
+   *  \param[in] samples Matrix of prediction points - (num_samples by num_features).
+   *  \param[out] approx_values Mean of the Gaussian process at the prediction
+   *  points - (num_samples by num_qoi = 1) 
+   */
+  void value(const MatrixXd &samples, MatrixXd &approx_values) override;
+
+  /**
+   *  \brief Evaluate the gradient of the Gaussian process at a single point.
+   *  \param[in] samples Coordinates of the prediction points - (num_samples by num_features).
+   *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
+   *  (num_samples by num_features).
+   */
+  void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi = 0) override;
+
+  /**
+   *  \brief Evaluate the Hessian of the Gaussian process at a single point.
+   *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
+   *  \param[out] hessian Hessian matrix at the prediction point - 
+   *  (num_features by num_features).
+   */
+  void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
 
   // ------------------------------------------------------------
   // Getters
@@ -101,6 +139,8 @@ public:
    */
   const VectorXd & get_theta_values() const;
 
+  int get_num_opt_variables();
+
   /**
    *  \brief Get the dimension of the feature space.
    *  \param[out] numVariables The dimension of the feature space.
@@ -117,50 +157,16 @@ public:
    */
   void set_theta(const std::vector<double> theta_new);
 
+  /// runtime build
+  void build(const MatrixXd &samples, const MatrixXd &response) override;
 
-  // ------------------------------------------------------------
-  // Public utility functions
-
-  /**
-   *  \brief Evaluate the negative marginal loglikelihood and its 
-   *  gradient.
-   *  \param[out] obj_value Value of the objection function.
-   *  \param[out] obj_gradient Gradient of the objective function.
-   */
-  void negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient);
-
-  /**
-   *  \brief Evaluate the Gaussian Process at a set of prediction points.
-   *  \param[in] samples Matrix of prediction points - (num_samples by num_features).
-   *  \param[out] approx_values Mean of the Gaussian process at the prediction
-   *  points - (num_samples by num_qoi = 1) 
-   */
-  void value(const MatrixXd &samples, MatrixXd &approx_values);
-
-  /**
-   *  \brief Evaluate the gradient of the Gaussian process at a single point.
-   *  \param[in] samples Coordinates of the prediction points - (num_samples by num_features).
-   *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
-   *  (num_samples by num_features).
-   */
-  void gradient(const MatrixXd &samples, MatrixXd &gradient);
-
-  /**
-   *  \brief Evaluate the Hessian of the Gaussian process at a single point.
-   *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
-   *  \param[out] hessian Hessian matrix at the prediction point - 
-   *  (num_features by num_features).
-   */
-  void hessian(const MatrixXd &sample, MatrixXd &hessian);
-
+  /* needs to be public */
+  /// DataScaler for the surrogate data.
+  //std::shared_ptr<util::DataScaler> dataScaler;
 
 private:
 
-  /// Key/value options to configure the surrogate (encapsulates
-  /// defaults, but can be overridden by user)
-  Teuchos::ParameterList configOptions;
-
-  /// runtime build once data are finalized
+  /*
   void build(const MatrixXd &samples,
 	     const MatrixXd &response,
 	     const VectorXd &sigma_bounds,
@@ -169,30 +175,46 @@ private:
 	     const int num_restarts,
 	     const double nugget_val,
 	     const int seed);
+  */
 
   /// Dimension of the feature space.
-  int numVariables = 0;
+  //int numVariables = 0;
   /// Number of samples in the surrogate dataset.
-  int numSamples = 0;
+  //int numSamples = 0;
 
   /// Small constant added to the diagonal of the Gram matrix to avoid
   /// ill-conditioning.
-  double nuggetValue = 0.0;
+  double fixedNuggetValue;
+
+  /// Basis matrix for the sample points in polynomial regression
+  MatrixXd basisMatrix;
 
   /// Corresponding target values for the surrogate dataset.
-  std::shared_ptr<MatrixXd> targetValues;
+  MatrixXd targetValues;
 
   /// Vector of log-space hyperparameters (theta).
-  std::shared_ptr<VectorXd> thetaValues;
+  VectorXd thetaValues;
+
+  /// Vector of polynomial coefficients
+  VectorXd betaValues;
+
+  /// Estimated nugget term
+  double estimatedNuggetValue;
 
   /// Vector of best hyperparameters from MLE with restarts.
-  std::shared_ptr<VectorXd> bestThetaValues;
+  VectorXd bestThetaValues;
+
+  /// Vector of best polynomial coefficients from MLE with restarts.
+  VectorXd bestBetaValues;
+
+  /// Best estimated nugget value from MLE with restarts.
+  double bestEstimatedNuggetValue;
 
   /// Final objective function values for each optimization run.
-  std::shared_ptr<VectorXd> objectiveFunctionHistory;
+  VectorXd objectiveFunctionHistory;
 
   /// Gram matrix for the GaussianProcess kernel.
-  std::shared_ptr<MatrixXd> GramMatrix;
+  MatrixXd GramMatrix;
 
   /// Derivatives of the Gram matrix w.r.t. the hyperparameters.
   std::vector<MatrixXd> GramMatrixDerivs;
@@ -204,16 +226,32 @@ private:
   Eigen::LDLT<MatrixXd> CholFact;
 
   /// Posterior covariance matrix for prediction points.
-  std::shared_ptr<MatrixXd> posteriorCov;
+  MatrixXd posteriorCov;
 
   /// Vector of posterior standard deviation at prediction points.
-  std::shared_ptr<VectorXd> posteriorStdDev;
+  VectorXd posteriorStdDev;
 
-  /// DataScaler for the surrogate data.
-  std::shared_ptr<util::DataScaler> dataScaler;
+
+  /// PolynomialRegression for trend
+  std::shared_ptr<PolynomialRegression> polyRegression;
 
   /// Numerical constant -- needed for negative marginal log-likelihood.
   const double PI = 3.14159265358979323846;
+
+  /// Large constant for polynomial coefficients upper/lower bounds
+  const double betaBound = 1.0e20;
+
+  /// Bool for polynomial trend (i.e. semi-parametric GP) estimation
+  bool estimateTrend;
+
+  /// Number of terms in polynomial trend
+  int numPolyTerms = 0;
+
+  /// Number of terms for the (estimated) nugget parameter
+  int numNuggetTerms = 0;
+
+  /// Bool for nugget estimation
+  bool estimateNugget;
 
   /// Final objective function value.
   double bestObjFunValue = std::numeric_limits<double>::max();
@@ -223,7 +261,7 @@ private:
 
   /// setup default options: one possible way to encode the defaults
   /// when using a ParameterList
-  void default_options();
+  void default_options() override;
 
 
   /**
@@ -301,7 +339,8 @@ private:
   */
   void generate_initial_guesses(MatrixXd &initial_guesses, int num_restarts,
                                 const VectorXd &sigma_bounds,
-                                const MatrixXd &length_scale_bounds);
+                                const MatrixXd &length_scale_bounds,
+                                const VectorXd &nugget_bounds);
 
   /**
    *  \brief Set the default optimization parameters for ROL for GP hyperparameter
@@ -309,6 +348,7 @@ private:
    *  \param[in] rol_params RCP to a Teuchos::ParameterList of ROL's options.
    */
   void set_default_optimization_params(Teuchos::RCP<Teuchos::ParameterList> rol_params);
+
 
 }; // class GaussianProcess
 

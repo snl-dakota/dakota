@@ -11,10 +11,12 @@
 namespace dakota {
 namespace surrogates {
 
-GP_Objective::GP_Objective(GaussianProcess* gp_model) {
-  gp = gp_model;
-  VectorXd theta = gp->get_theta_values();
-  nopt = theta.size();
+GP_Objective::GP_Objective(GaussianProcess& gp_model) :
+  gp(gp_model)
+{
+  //VectorXd theta = gp->get_theta_values();
+  //nopt = theta.size();
+  nopt = gp.get_num_opt_variables();
   grad_old.resize(nopt);
   pold.resize(nopt);
   grad_old.setConstant(-5.0e99);
@@ -29,8 +31,8 @@ double GP_Objective::value(const ROL::Vector<double>& p, double&) {
   double obj_val;
   VectorXd grad(nopt);
   if (pdiff(*xp)) {
-    gp->set_theta(*xp);
-    gp->negative_marginal_log_likelihood(obj_val, grad);
+    gp.set_theta(*xp);
+    gp.negative_marginal_log_likelihood(obj_val, grad);
     Jold = obj_val;
     grad_old = grad;
   }
@@ -43,8 +45,8 @@ void GP_Objective::gradient(ROL::Vector<double>& g, const ROL::Vector<double>& p
   double obj_val;
   VectorXd grad(nopt);
   if (pdiff(*xp)) {
-    gp->set_theta(*xp);
-    gp->negative_marginal_log_likelihood(obj_val, grad);
+    gp.set_theta(*xp);
+    gp.negative_marginal_log_likelihood(obj_val, grad);
     Jold = obj_val;
     for (int i = 0; i < grad.size(); ++i) {
       (*gpointer)[i] = grad(i);

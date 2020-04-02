@@ -15,17 +15,17 @@
 // Imports //
 /////////////
 
-#include <math.h>
-#include <Teuchos_UnitTestHarness.hpp>
-#include "../CommonUtils.hpp"
+#include "CommonUtils.hpp"
 #include "LinearSolvers.hpp"
+
+#include <Teuchos_UnitTestHarness.hpp>
 
 ///////////////
 // Namespace //
 ///////////////
 
+using namespace dakota;
 using namespace dakota::util;
-using namespace Eigen;
 
 namespace {
   
