@@ -563,6 +563,30 @@ void SharedApproxData::combined_to_active(bool clear_combined)
 }
 
 
+void SharedApproxData::increment_order()
+{
+  if (dataRep)
+    dataRep->increment_order();
+  else { // virtual fn: no default, error if not supplied by derived
+    Cerr << "Error: increment_order() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+void SharedApproxData::decrement_order()
+{
+  if (dataRep)
+    dataRep->decrement_order();
+  else { // virtual fn: no default, error if not supplied by derived
+    Cerr << "Error: decrement_order() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
 void SharedApproxData::
 construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 {
@@ -581,6 +605,17 @@ update_basis_distribution_parameters(const Pecos::MultivariateDistribution& mvd)
   if (dataRep)
     dataRep->update_basis_distribution_parameters(mvd);
   //else no-op (derived implementation not required)
+}
+
+
+bool SharedApproxData::formulation_updated() const
+{
+  if (dataRep) return dataRep->formulation_updated();
+  else { // not virtual
+    std::map<UShortArray, bool>::const_iterator cit
+      = formUpdated.find(activeKey);
+    return (cit == formUpdated.end()) ? false : cit->second;
+  }
 }
 
 

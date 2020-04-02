@@ -119,9 +119,9 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 			       short rule_growth, bool piecewise_basis,
 			       bool use_derivs):
   NonDStochCollocation(MULTIFIDELITY_STOCH_COLLOCATION, model,
-		       exp_coeffs_approach, refine_type, refine_control,
-		       covar_control, ml_alloc_cntl, ml_discrep, rule_nest,
-		       rule_growth, piecewise_basis, use_derivs),
+		       exp_coeffs_approach, dim_pref, refine_type,
+		       refine_control, covar_control, ml_alloc_cntl, ml_discrep,
+		       rule_nest, rule_growth, piecewise_basis, use_derivs),
   sequenceIndex(0)
 {
   assign_discrepancy_mode();

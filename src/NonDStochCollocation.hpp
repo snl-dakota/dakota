@@ -68,10 +68,10 @@ protected:
 		       Model& model);
   /// short-cut ctor allowing derived class to replace logic in base class ctor
   NonDStochCollocation(unsigned short method_name, Model& model,
-		       short exp_coeffs_approach, short refine_type,
-		       short refine_control, short covar_control,
-		       short ml_alloc_control, short ml_discrep,
-		       short rule_nest, short rule_growth,
+		       short exp_coeffs_approach, const RealVector& dim_pref,
+		       short refine_type, short refine_control,
+		       short covar_control, short ml_alloc_control,
+		       short ml_discrep, short rule_nest, short rule_growth,
 		       bool piecewise_basis, bool use_derivs);
 
   //

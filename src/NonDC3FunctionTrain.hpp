@@ -53,13 +53,17 @@ protected:
   //
 
   void resolve_inputs(short& u_space_type, short& data_order);
-
   void initialize_u_space_model();
 
   // TODO
   //void compute_expansion();
   // perform a forward uncertainty propagation using PCE/SC methods
   //void core_run();
+
+  void push_increment();
+  void update_samples_from_order_increment();
+  //void update_samples_from_order_decrement();
+  void sample_allocation_metric(Real& regress_metric, Real power);
 
   /// override certain print functions
   void print_moments(std::ostream& s);
@@ -71,26 +75,30 @@ protected:
 
   /// configure u_space_sampler and approx_type based on regression
   /// specification
-  bool config_regression(size_t colloc_pts, Iterator& u_space_sampler,
-			 Model& g_u_model);
+  bool config_regression(size_t colloc_pts, size_t regress_size,
+			 Iterator& u_space_sampler, Model& g_u_model);
 
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_core_rank(size_t start_rank);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_core_orders(const UShortArray& start_orders);
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)
-  void push_c3_options();
+  void push_c3_db_options();
 
   //
   //- Heading: Data
   //
 
-  /// option for regression FT using a filtered set of tensor-product
-  /// quadrature points
-  bool tensorRegression;
-
-  size_t numSamplesOnModel;
-  //int numSamplesOnEmulator;
-
   /// user-specified file for importing build points
   String importBuildPointsFile;
+
+  /// scalar specification for initial rank (prior to adapt_rank)
+  size_t startRankSpec;
+  /// scalar specification for initial basis order (prior to uniform refinement)
+  unsigned short startOrderSpec;
 
 private:
 
@@ -106,6 +114,9 @@ private:
   //
   //- Heading: Data
   //
+
+  // for decremented order without recomputation from previous ranks
+  //int prevSamplesOnModel;
 
   // pointer to the active object instance used within the static evaluator
   // functions in order to avoid the need for static data

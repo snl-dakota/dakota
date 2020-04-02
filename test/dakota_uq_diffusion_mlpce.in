@@ -12,10 +12,11 @@ method,
         multilevel_polynomial_chaos
 	  allocation_control estimator_variance		#s0,#s1,#s2,#s3,#s4,#s5
 #	    estimator_rate = 2.5
-#	  allocation_control rip_sampling		#s6,#s7
-#	    max_iterations = 5				#s6,#s7
+#	  allocation_control rip_sampling		#s6,#s7,#s8
+#	    max_iterations = 5				#s6,#s7,#s8
 # exp order is initial for pilot and is adapted based on collocation ratio
 	  expansion_order_sequence = 2	   #s0,#s1,#s2,#s3,#s4,#s6,#s7,#p0,#p1
+#	  expansion_order_sequence = 4 3 3 2 2		#s8
 	  pilot_samples = 10  		   #s0,#s1,#s2,#s3,#s4,#p0,#p1
 #	  expansion_order_sequence = 1	     		#s5
 #	  pilot_samples = 300 150 75 25 7   		#s5
