@@ -7356,6 +7356,7 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,global_exp_poly),
 	MP2(surrogateType,global_function_train),
 	MP2(surrogateType,global_gauss_proc),
 	MP2(surrogateType,global_gaussian),
@@ -7462,6 +7463,7 @@ static IntVector
 
 static String
 	MP_(actualModelPointer),
+        MP_(advancedOptionsFilename),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
 	MP_(idModel),

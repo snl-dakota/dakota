@@ -278,6 +278,9 @@ public:
   /// whether to import active variables only
   bool importChallengeActive;
 
+  /// file containing advanced surrogate option overrides
+  String advancedOptionsFilename;
+
   // nested models
 
   /// string pointer to the responses specification used by the optional

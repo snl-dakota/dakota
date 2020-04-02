@@ -3691,6 +3691,14 @@
                   </oneOf>
                   &model_full_surfpack_export_format;
                 </keyword>
+                <keyword  id="experimental_polynomial" name="experimental_polynomial" code="{N_mom(lit,surrogateType_global_exp_poly)}" label="Experimental Polynomial"  minOccurs="1" >
+                  <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="Basis Order" minOccurs="1" >
+                    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		    <param type="INPUT_FILE" />
+		  </keyword>
+		</keyword>
               </oneOf>
               <keyword  id="domain_decomposition" name="domain_decomposition" code="{N_mom(true,domainDecomp)}" label="Domain Decomposition"  minOccurs="0" complexity="1">
 		<keyword  id="cell_type" name="cell_type" code="{N_mom(str,decompCellType)}" label="Local Cell Type"  minOccurs="0">

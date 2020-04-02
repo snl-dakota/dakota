@@ -83,7 +83,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
     << importChallengeFormat << importChalUseVariableLabels
-    << importChallengeActive
+    << importChallengeActive << advancedOptionsFilename
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
     << subMethodServers << subMethodProcs << subMethodScheduling 
@@ -127,7 +127,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> trendOrder >> pointSelection >> diagMetrics >> crossValidateFlag
     >> numFolds >> percentFold >> pressFlag >> importChallengePtsFile
     >> importChallengeFormat >> importChalUseVariableLabels 
-    >> importChallengeActive
+    >> importChallengeActive >> advancedOptionsFilename
     >> optionalInterfRespPointer >> primaryVarMaps >> secondaryVarMaps
     >> primaryRespCoeffs >> secondaryRespCoeffs >> identityRespMap
     >> subMethodServers >> subMethodProcs >> subMethodScheduling 
@@ -171,7 +171,7 @@ void DataModelRep::write(std::ostream& s) const
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
     << importChallengeFormat << importChalUseVariableLabels
-    << importChallengeActive
+    << importChallengeActive << advancedOptionsFilename
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
     << subMethodServers << subMethodProcs << subMethodScheduling 

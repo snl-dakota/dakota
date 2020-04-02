@@ -2411,6 +2411,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     #define P &DataModelRep::
     static KW<String, DataModelRep> Sdmo[] = {	
       // must be sorted by string (key)
+	{"advanced_options_file", P advancedOptionsFilename},
 	{"dace_method_pointer", P subMethodPointer},
 	{"id", P idModel},
 	{"interface_pointer", P interfacePointer},
