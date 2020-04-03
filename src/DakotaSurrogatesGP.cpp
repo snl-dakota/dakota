@@ -11,7 +11,7 @@
 //-               
 //- Owner:        .....
 
-#include "DakotaSurrogates.hpp"
+#include "DakotaSurrogatesGP.hpp"
 #include "DakotaVariables.hpp"
 
 // Headers from Surrogates module

@@ -33,8 +33,7 @@ class SharedApproxData;
 /// Derived approximation class for Surrogates approximation classes.
 
 /** The GPApproximation class is the interface between Dakota
-    and the Surrogates Module.  */
-
+    and the Surrogates Gaussian Process Module.  */
 class GPApproximation: public Approximation
 {
 public:
@@ -56,10 +55,7 @@ public:
 
 protected:
 
-//  //
-//  //- Heading: Virtual function redefinitions
-//  //
-//
+  // Minimum number of data points required to build
   int min_coefficients() const override;
 
   ///  Do the build

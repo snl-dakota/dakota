@@ -28,7 +28,7 @@
 #include "SurfpackApproximation.hpp"
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-#include "DakotaSurrogates.hpp"
+#include "DakotaSurrogatesGP.hpp"
 #endif // HAVE_DAKOTA_SURROGATES
 #include "DakotaGraphics.hpp"
 
