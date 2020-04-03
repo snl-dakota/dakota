@@ -43,7 +43,8 @@ model,
 	  dace_method_pointer = 'SAMPLING'	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15,#s16,#s17
 	  polynomial quadratic			#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11
 #	  gaussian_process surfpack		#s14,#s15
-#	  gauss_proc				#s16
+#	  experimental_gaussian_process		#s16
+#	    nugget 1.0e-12			#s16
 # Emulate s2 with new surrogate poly:
 #         experimental_polynomial		#s17
 #           basis_order 2			#s17

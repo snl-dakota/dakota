@@ -33,7 +33,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
     "  surrogate \n"
     "    global \n"
     "      actual_model_pointer 'SimulationModel' \n"
-    "      gauss_proc \n"
+    "      experimental_gaussian_process \n"
     "      import_points_file 'gauss_proc_test_files/gauss_proc_build_points.dat' \n"
     "        annotated \n"
     "variables \n"

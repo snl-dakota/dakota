@@ -402,7 +402,7 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module0)
   
 
   // configure the surrogate
-  String approx_type("global_gauss_proc");  // Tom's new GP from surrogate module
+  String approx_type("global_exp_gauss_proc");  // Tom's new GP from surrogate module
   UShortArray approx_order;
   short data_order = 1;  // assume only function values
   short output_level = Dakota::QUIET_OUTPUT;
@@ -508,7 +508,7 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module1)
   vars(0,63) =   1.67871;   vars(1,63) =   -1.69746;     resp(63) = 0.430116;
 
   // configure the surrogate
-  String approx_type("global_gauss_proc");  // Tom's new GP from surrogate module
+  String approx_type("global_exp_gauss_proc");  // Tom's new GP from surrogate module
   UShortArray approx_order;
   short data_order = 1;  // assume only function values
   short output_level = Dakota::QUIET_OUTPUT;

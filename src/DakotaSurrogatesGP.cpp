@@ -12,11 +12,12 @@
 //- Owner:        .....
 
 #include "DakotaSurrogatesGP.hpp"
+
 #include "DakotaVariables.hpp"
+#include "ProblemDescDB.hpp"
 
 // Headers from Surrogates module
 #include "GaussianProcess.hpp"
-#include "util_data_types.hpp"
  
 
 using dakota::VectorXd;
@@ -31,6 +32,37 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
 		const String& approx_label):
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
 {
+  // The ProblemDB defaults trendOrder to reduced_quadratic, so always
+  // uses a trend; for now mapping to full quadratic
+  surrogateOpts.sublist("Trend").set("estimate trend", true);
+  const String& trend_string =
+    problem_db.get_string("model.surrogate.trend_order");
+  if (trend_string == "constant")
+    surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 0);
+  else if (trend_string == "linear")
+    surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 1);
+  else  // empty, reduced_quadratic, quadratic
+    surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
+
+  // TODO: Surfpack find_nugget is an integer; likely want bool or
+  // different semantics
+  Real nugget = problem_db.get_real("model.surrogate.nugget");
+  short find_nugget = problem_db.get_short("model.surrogate.find_nugget");
+  if (find_nugget > 0) {
+    surrogateOpts.sublist("Nugget").set("estimate nugget", true);
+    surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
+  }
+  else {
+    surrogateOpts.sublist("Nugget").set("estimate nugget", false);
+    // defaults to 0.0 if not specified
+    surrogateOpts.sublist("Nugget").set("fixed nugget", nugget);
+  }
+
+  // hard coding for now; deterministic optimizer starts
+  surrogateOpts.set("gp seed", 42);
+
+  //  surrogateOpts.set("advanced_options_file",
+  //		    problem_db.get_string("model.advanced_options_file"));
 }
 
 
@@ -39,6 +71,8 @@ SurrogatesGPApprox::
 SurrogatesGPApprox(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data)
 {
+  // hard-coded to reproduce historical unit tests for now
+  surrogateOpts.sublist("Nugget").set("fixed nugget", 1.0e-12);
 }
 
 
@@ -60,18 +94,18 @@ SurrogatesGPApprox::build()
   // Hard-coded values to quickly get things working ...
   // See src/surrogates/unit/gp_approximation_ts.cpp for correspondence
 
-  dakota::ParameterList gp_opts;
-  gp_opts.set("scaler name", "standardization");
-  gp_opts.set("num restarts", 10);
-  gp_opts.set("gp seed", 42);
-  gp_opts.sublist("Nugget").set("fixed nugget", 1.0e-12);
+  // TODO: probably manage these through XML
+
+  surrogateOpts.set("scaler name", "standardization");
+  surrogateOpts.set("num restarts", 10);
+  //  surrogateOpts.sublist("Nugget").set("fixed nugget", 1.0e-12);
 
   // bound constraints -- will be converted to log-scale internally
   // sigma bounds - lower and upper
   VectorXd sigma_bounds(2);
   sigma_bounds(0) = 1.0e-2;
   sigma_bounds(1) = 1.0e2;
-  gp_opts.set("sigma bounds", sigma_bounds);
+  surrogateOpts.set("sigma bounds", sigma_bounds);
 
   // length scale bounds - num_vars x 2
   MatrixXd length_scale_bounds(num_v, 2);
@@ -79,7 +113,7 @@ SurrogatesGPApprox::build()
     length_scale_bounds(i,0) = 1.0e-2;
     length_scale_bounds(i,1) = 1.0e2;
   }
-  gp_opts.set("length-scale bounds", length_scale_bounds);
+  surrogateOpts.set("length-scale bounds", length_scale_bounds);
 
   const Pecos::SurrogateData& approx_data = surrogate_data();
   const Pecos::SDVArray& sdv_array = approx_data.variables_data();
@@ -103,7 +137,7 @@ SurrogatesGPApprox::build()
   }
 
   // construct the surrogate
-  model.reset(new dakota::surrogates::GaussianProcess(xs_u, response, gp_opts));
+  model.reset(new dakota::surrogates::GaussianProcess(xs_u, response, surrogateOpts));
 }
 
 

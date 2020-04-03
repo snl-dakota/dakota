@@ -3522,7 +3522,36 @@
           <oneOf label="Surrogate Category">
             <keyword  id="global" name="global" code="{0}" label="Global Approximation"  minOccurs="1" >
               <oneOf label="Global Surrogate Type">
-		<keyword  id="gauss_proc" name="gauss_proc" code="{N_mom(lit,surrogateType_global_gauss_proc)}" label="Gaussian Process (new module)" minOccurs="1" />
+		<keyword  id="experimental_gaussian_process" name="experimental_gaussian_process" code="{N_mom(lit,surrogateType_global_exp_gauss_proc)}" label="Experimental Gaussian Process" minOccurs="1" >
+                  <keyword  id="trend1" name="trend" code="{0}" label="Specify Trend Function"  minOccurs="0" default="reduced_quadratic" >
+                    <oneOf label="Trend Order">
+                      <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant"   />
+                      <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear"   />
+		      <!--
+                          <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic"   />
+		      -->
+                      <keyword  id="quadratic" name="quadratic" code="{N_mom(lit,trendOrder_quadratic)}" label="Quadratic"   />
+                    </oneOf>
+                  </keyword>
+		  <!-- max_trials (max function evals) does not map to num restarts
+                       <keyword  id="max_trials" name="max_trials" code="{N_mom(shint,krigingMaxTrials)}" label="Max Number of Likelihood Function Evaluations"  minOccurs="0" default="" complexity="1">
+                       <param type="INTEGER" constraint="> 0" />
+                       </keyword>
+		  -->
+                  <optional>
+                    <oneOf label="Nugget">
+                      <keyword  id="nugget" name="nugget" code="{N_mom(Real,krigingNugget)}" label="User-Specified Nugget "   default="None" >
+                        <param type="REAL" constraint="> 0" />
+                      </keyword>
+                      <keyword  id="find_nugget" name="find_nugget" code="{N_mom(shint,krigingFindNugget)}" label="Surfpack-Computed Nugget "   default="None" >
+                        <param type="INTEGER" />
+                      </keyword>
+                    </oneOf>
+                  </optional>
+		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		    <param type="INPUT_FILE" />
+		  </keyword>
+		</keyword>
                 <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process"  minOccurs="1" >
                   <alias name="kriging"/>
                   <oneOf label="GP Implementation">

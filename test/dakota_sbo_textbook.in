@@ -56,7 +56,8 @@ model,
 	  polynomial quadratic			 #s0,#s1,#s2,#s3,#s4,#p0	
 #	  gaussian_process surfpack		 #s5,#s6,#s7
 #	  gaussian_process surfpack correlation_lengths =  0.707106781186547 0.707106781186547
-#         gauss_proc	   	    	 	 #s8
+#         experimental_gaussian_process		 #s8
+#	    nugget 1.0e-12			 #s8
 # Emulate s1 with new polynomial model
 #         experimental_polynomial    	 	 #s9
 #           basis_order 2			 #s9

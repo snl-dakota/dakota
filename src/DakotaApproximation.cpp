@@ -155,7 +155,7 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
       return new SurfpackApproximation(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-    else if (approx_type == "global_gauss_proc")
+    else if (approx_type == "global_exp_gauss_proc")
       return new SurrogatesGPApprox(problem_db, shared_data, approx_label);
     else if (approx_type == "global_exp_poly")
       return new SurrogatesPolyApprox(problem_db, shared_data, approx_label);
@@ -224,7 +224,7 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
     approx = new SurfpackApproximation(shared_data);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-    else if (approx_type == "global_gauss_proc")
+    else if (approx_type == "global_exp_gauss_proc")
       return new SurrogatesGPApprox(shared_data);
     else if (approx_type == "global_exp_poly")
       return new SurrogatesPolyApprox(shared_data);

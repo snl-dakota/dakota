@@ -5907,7 +5907,21 @@ KEYWORD model {N_mom3(start,0,stop)}
   ( surrogate {N_mom(lit,modelType_surrogate)}
     [ id_surrogates INTEGERLIST {N_mom(intsetm1,surrogateFnIndices)} ]
     ( global {0}
-      gauss_proc {N_mom(lit,surrogateType_global_gauss_proc)}
+      ( experimental_gaussian_process {N_mom(lit,surrogateType_global_exp_gauss_proc)}
+        [ trend {0}
+          constant {N_mom(lit,trendOrder_constant)}
+          |
+          linear {N_mom(lit,trendOrder_linear)}
+          |
+          quadratic {N_mom(lit,trendOrder_quadratic)}
+         ]
+        [ 
+          nugget REAL > 0 {N_mom(Real,krigingNugget)}
+          |
+          find_nugget INTEGER {N_mom(shint,krigingFindNugget)}
+         ]
+        [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
+       )
       |
       ( gaussian_process ALIAS kriging {0}
         ( dakota {N_mom(lit,surrogateType_global_gaussian)}

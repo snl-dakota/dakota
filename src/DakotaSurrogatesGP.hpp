@@ -17,6 +17,9 @@
 
 #include "DakotaApproximation.hpp"
 
+// From surrogates modules
+#include "util_data_types.hpp"
+
 #include <memory>
 
 namespace dakota {
@@ -73,9 +76,8 @@ protected:
 
 private:
 
-  //
-  //- Heading: Convenience functions
-  //
+  /// Key/value config options for underlying surrogate
+  dakota::ParameterList surrogateOpts;
 
   /// The native surrogate model
   std::shared_ptr<dakota::surrogates::GaussianProcess> model;
