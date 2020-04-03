@@ -635,6 +635,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
                                                                 RealMatrix &grad_g, int &result_mode) {
 
     bool compute_gradient = false;
+    #ifdef HAVE_OPTPP
     if(mode & OPTPP::NLPFunction) {
       result_mode = OPTPP::NLPFunction;
     }
@@ -642,6 +643,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       compute_gradient = true;
       result_mode = OPTPP::NLPGradient;
     }
+    #endif
 
     Real Hl1_deriv, Hl2_deriv;
 
