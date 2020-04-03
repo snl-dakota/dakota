@@ -44,7 +44,7 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
   BatchSizeAcquisition(probDescDB.get_int("method.batch_size")),
-  BatchSizeExploration(probDescDB.get_int("method.batch_size_exploration")),
+  BatchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
   setUpType("model"), dataOrder(1)
 {
   // historical default convergence tolerances

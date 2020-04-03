@@ -583,13 +583,9 @@ iface_ilit(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-iface_pint(const char *keyname, Values *val, void **g, void *v)
+iface_int(const char *keyname, Values *val, void **g, void *v)
 {
   int n = *val->i;
-#ifdef REDUNDANT_INT_CHECKS
-  if (n <= 0) /* now handled by INTEGER > 0 in the .nspec file */
-    botch("%s must be positive", keyname);
-#endif
   (*(Iface_Info**)g)->di->**(int DataInterfaceRep::**)v = n;
 }
 
@@ -1138,28 +1134,6 @@ method_order(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-method_nnint(const char *keyname, Values *val, void **g, void *v)
-{
-  int n = *val->i;
-#ifdef REDUNDANT_INT_CHECKS
-  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
-    botch("%s must be non-negative", keyname);
-#endif
-  (*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = n;
-}
-
-void NIDRProblemDescDB::
-method_sizet(const char *keyname, Values *val, void **g, void *v)
-{
-  int n = *val->i; // test value as int, prior to storage as size_t
-#ifdef REDUNDANT_INT_CHECKS
-  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
-    botch("%s must be non-negative", keyname);
-#endif
-  (*(Meth_Info**)g)->dme->**(size_t DataMethodRep::**)v = n;
-}
-
-void NIDRProblemDescDB::
 method_num_resplevs(const char *keyname, Values *val, void **g, void *v)
 {
   DataMethodRep *dm = (*(Meth_Info**)g)->dme;
@@ -1191,23 +1165,12 @@ method_num_resplevs(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-method_pint(const char *keyname, Values *val, void **g, void *v)
-{
-  int n = *val->i;
-#ifdef REDUNDANT_INT_CHECKS
-  if (n <= 0) /* now handled by INTEGER > 0 in the .nspec file */
-    botch("%s must be positive", keyname);
-#endif
-  (*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = n;
-}
-
-void NIDRProblemDescDB::
-method_pintz(const char *keyname, Values *val, void **g, void *v)
+method_sizet(const char *keyname, Values *val, void **g, void *v)
 {
   int n = *val->i; // test value as int, prior to storage as size_t
 #ifdef REDUNDANT_INT_CHECKS
-  if (n <= 0) /* now handled by INTEGER > 0 in the .nspec file */
-    botch("%s must be positive", keyname);
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
+    botch("%s must be non-negative", keyname);
 #endif
   (*(Meth_Info**)g)->dme->**(size_t DataMethodRep::**)v = n;
 }
@@ -1473,17 +1436,6 @@ void NIDRProblemDescDB::
 model_order(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_ord*)v)->sp = ((Model_mp_ord*)v)->ord;
-}
-
-void NIDRProblemDescDB::
-model_pint(const char *keyname, Values *val, void **g, void *v)
-{
-  int n = *val->i;
-#ifdef REDUNDANT_INT_CHECKS
-  if (n <= 0) /* now handled by INTEGER > 0 in the .nspec file */
-    botch("%s must be positive", keyname);
-#endif
-  (*(Mod_Info**)g)->dmo->**(int DataModelRep::**)v = n;
 }
 
 void NIDRProblemDescDB::
@@ -2302,7 +2254,7 @@ var_ivec(const char *keyname, Values *val, void **g, void *v)
 // }
 
 void NIDRProblemDescDB::
-var_pintz(const char *keyname, Values *val, void **g, void *v)
+var_sizet(const char *keyname, Values *val, void **g, void *v)
 {
   int n = *val->i; // test value as int, prior to storage as size_t
 #ifdef REDUNDANT_INT_CHECKS

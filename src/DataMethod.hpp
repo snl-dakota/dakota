@@ -1113,9 +1113,9 @@ public:
   /// adaptive Bayesian experimental design
   int maxHifiEvals;
   /// number of optimal designs selected per iteration of experimental design
-  /// algorithm
+  /// algorithm; also number of concurrent GP refinement points for EGO
   int batchSize;
-  /// number of sampling points per batch of EGO (batch-sequential)
+  /// portion of batchSize earmarked for exploration rather than acquisition
   int batchSizeExplore;
   /// indicate that the KSG2 algorithm is to be employed in the calculation
   /// of the mutual information

@@ -2629,8 +2629,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<int, DataMethodRep> Idme[] = {
       // must be sorted by string (key)
-  {"batch_size", P batchSize},
-  {"batch_size_exploration", P batchSizeExplore},
+	{"batch_size", P batchSize},
+	{"batch_size.exploration", P batchSizeExplore},
 	{"build_samples", P buildSamples},
 	{"burn_in_samples", P burnInSamples},
 	{"coliny.contract_after_failure", P contractAfterFail},
@@ -2644,7 +2644,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"dream.jump_step", P jumpStep},
 	{"dream.num_chains", P numChains},
 	{"dream.num_cr", P numCR},
-  {"evidence_samples", P evidenceSamples},
+	{"evidence_samples", P evidenceSamples},
 	{"fsu_cvt.num_trials", P numTrials},
 	{"iterator_servers", P iteratorServers},
 	{"max_function_evaluations", P maxFunctionEvaluations},
