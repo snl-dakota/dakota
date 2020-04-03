@@ -497,8 +497,8 @@ namespace Dakota
         #else
         
         // Retrieve function values
-	const SDVArray& sdv_array = approxData.variables_data();
-	const SDRArray& sdr_array = approxData.response_data();
+	const Pecos::SDVArray& sdv_array = approxData.variables_data();
+	const Pecos::SDRArray& sdr_array = approxData.response_data();
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
             const RealVector& c_vars = sdv_array[ipoint].continuous_variables();
@@ -852,8 +852,8 @@ namespace Dakota
         }
         else if (_vps_subsurrogate == GP)
         {
-            const SDVArray& training_vars = approxData.variables_data();
-            const SDRArray& training_resp = approxData.response_data();
+	    const Pecos::SDVArray& training_vars = approxData.variables_data();
+	    const Pecos::SDRArray& training_resp = approxData.response_data();
             
             for (size_t j = 0; j <= _vps_ext_neighbors[cell_index][0]; j++) // loop over neighbors
             {

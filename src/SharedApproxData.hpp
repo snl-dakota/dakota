@@ -58,7 +58,8 @@ class SharedApproxData
   friend class SurfpackApproximation;
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-  friend class GPApproximation;
+  friend class SurrogatesGPApprox;
+  friend class SurrogatesPolyApprox;
 #endif // HAVE_DAKOTA_SURROGATES
 
 public:

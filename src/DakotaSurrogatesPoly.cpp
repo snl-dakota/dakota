@@ -6,16 +6,16 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        SurrogatesGPApprox
+//- Class:        GPApproximation
 //- Description:  .....
 //-               
 //- Owner:        .....
 
-#include "DakotaSurrogatesGP.hpp"
+#include "DakotaSurrogatesPoly.hpp"
 #include "DakotaVariables.hpp"
 
 // Headers from Surrogates module
-#include "GaussianProcess.hpp"
+#include "PolynomialRegression.hpp"
 #include "util_data_types.hpp"
  
 
@@ -25,8 +25,8 @@ using dakota::MatrixXd;
 namespace Dakota {
 
 
-SurrogatesGPApprox::
-SurrogatesGPApprox(const ProblemDescDB& problem_db,
+SurrogatesPolyApprox::
+SurrogatesPolyApprox(const ProblemDescDB& problem_db,
 		const SharedApproxData& shared_data,
 		const String& approx_label):
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
@@ -35,15 +35,15 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
 
 
 /// On-the-fly constructor
-SurrogatesGPApprox::
-SurrogatesGPApprox(const SharedApproxData& shared_data):
+SurrogatesPolyApprox::
+SurrogatesPolyApprox(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data)
 {
 }
 
 
 int
-SurrogatesGPApprox::min_coefficients() const
+SurrogatesPolyApprox::min_coefficients() const
 {
   // TODO (with @dtseidl): This should be based on minimum points
   // needed to build the trend, when present, or some other reasonable
@@ -52,7 +52,7 @@ SurrogatesGPApprox::min_coefficients() const
 }
 
 void
-SurrogatesGPApprox::build()
+SurrogatesPolyApprox::build()
 {
   size_t num_v = sharedDataRep->numVars;
   int num_qoi             = 1; // only using 1 for now
@@ -60,26 +60,8 @@ SurrogatesGPApprox::build()
   // Hard-coded values to quickly get things working ...
   // See src/surrogates/unit/gp_approximation_ts.cpp for correspondence
 
-  dakota::ParameterList gp_opts;
-  gp_opts.set("scaler name", "standardization");
-  gp_opts.set("num restarts", 10);
-  gp_opts.set("gp seed", 42);
-  gp_opts.sublist("Nugget").set("fixed nugget", 1.0e-12);
-
-  // bound constraints -- will be converted to log-scale internally
-  // sigma bounds - lower and upper
-  VectorXd sigma_bounds(2);
-  sigma_bounds(0) = 1.0e-2;
-  sigma_bounds(1) = 1.0e2;
-  gp_opts.set("sigma bounds", sigma_bounds);
-
-  // length scale bounds - num_vars x 2
-  MatrixXd length_scale_bounds(num_v, 2);
-  for(size_t i=0; i<num_v; ++i) {
-    length_scale_bounds(i,0) = 1.0e-2;
-    length_scale_bounds(i,1) = 1.0e2;
-  }
-  gp_opts.set("length-scale bounds", length_scale_bounds);
+  dakota::ParameterList poly_opts;
+  poly_opts.set("max order", 2);
 
   const Pecos::SurrogateData& approx_data = surrogate_data();
   const Pecos::SDVArray& sdv_array = approx_data.variables_data();
@@ -103,24 +85,24 @@ SurrogatesGPApprox::build()
   }
 
   // construct the surrogate
-  model.reset(new dakota::surrogates::GaussianProcess(xs_u, response, gp_opts));
+  model.reset(new dakota::surrogates::PolynomialRegression(xs_u, response, poly_opts));
 }
 
 
-Real SurrogatesGPApprox::value(const Variables& vars)
+Real SurrogatesPolyApprox::value(const Variables& vars)
 {
   return value(vars.continuous_variables());
 }
 
 
-const RealVector& SurrogatesGPApprox::gradient(const Variables& vars)
+const RealVector& SurrogatesPolyApprox::gradient(const Variables& vars)
 {
   return gradient(vars.continuous_variables());
 }
 
 
 Real
-SurrogatesGPApprox::value(const RealVector& c_vars)
+SurrogatesPolyApprox::value(const RealVector& c_vars)
 {
   if (!model)
   {
@@ -135,7 +117,7 @@ SurrogatesGPApprox::value(const RealVector& c_vars)
 
   //if (num_vars != 1 )
   //{
-  //  Cerr << "Error: SurrogatesGPApprox currently supports a sigle parameter for now."
+  //  Cerr << "Error: SurrogatesPolyApprox currently supports a sigle parameter for now."
   //    << std::endl;
   //  abort_handler(-1);
   //}
@@ -151,7 +133,7 @@ SurrogatesGPApprox::value(const RealVector& c_vars)
   return pred(0,0); // should only be one prediuction using this particular call? - RWH 
 }
     
-const RealVector& SurrogatesGPApprox::gradient(const RealVector& c_vars)
+const RealVector& SurrogatesPolyApprox::gradient(const RealVector& c_vars)
 {
   const size_t num_evals = 1;
   const size_t num_vars = c_vars.length();

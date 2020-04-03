@@ -155,7 +155,7 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
     else if (approx_type == "global_gauss_proc")
-      return new GPApproximation(problem_db, shared_data, approx_label);
+      return new SurrogatesGPApprox(problem_db, shared_data, approx_label);
 #endif // HAVE_DAKOTA_SURROGATES
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."
@@ -222,7 +222,7 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
     else if (approx_type == "global_gauss_proc")
-      return new GPApproximation(shared_data);
+      return new SurrogatesGPApprox(shared_data);
 #endif // HAVE_DAKOTA_SURROGATES
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."
@@ -979,7 +979,7 @@ int Approximation::num_constraints() const
     return approxRep->num_constraints();
   // default implementation:
   else if (approxData.anchor()) { // anchor data may differ from buildDataOrder
-    const SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+    const Pecos::SurrogateDataResp& anchor_sdr = approxData.anchor_response();
     int ng = anchor_sdr.response_gradient().length(),
         nh = anchor_sdr.response_hessian().numRows();
     return 1 + ng + nh*(nh + 1)/2;

@@ -12,8 +12,8 @@
 //- Owner:        .....
  
 
-#ifndef DAKOTA_SURROGATES_GP_H
-#define DAKOTA_SURROGATES_GP_H
+#ifndef DAKOTA_SURROGATES_POLY_H
+#define DAKOTA_SURROGATES_POLY_H
 
 #include "DakotaApproximation.hpp"
 
@@ -21,7 +21,7 @@
 
 namespace dakota {
    namespace surrogates {
-     class GaussianProcess;
+     class PolynomialRegression;
    }
 }
 
@@ -30,11 +30,11 @@ namespace Dakota {
 class SharedApproxData;
 
 
-/// Derived approximation class for Surrogates approximation classes.
+/// Derived approximation class for Surrogates Polynomial approximation classes.
 
 /** The GPApproximation class is the interface between Dakota
     and the Surrogates Gaussian Process Module.  */
-class SurrogatesGPApprox: public Approximation
+class SurrogatesPolyApprox: public Approximation
 {
 public:
 
@@ -43,15 +43,15 @@ public:
   //
 
   /// default constructor
-  SurrogatesGPApprox() { }
+  SurrogatesPolyApprox() { }
   /// standard constructor: 
-  SurrogatesGPApprox(const ProblemDescDB& problem_db,
+  SurrogatesPolyApprox(const ProblemDescDB& problem_db,
 		  const SharedApproxData& shared_data,
 		  const String& approx_label);
   /// alternate constructor
-  SurrogatesGPApprox(const SharedApproxData& shared_data);
+  SurrogatesPolyApprox(const SharedApproxData& shared_data);
   /// destructor
-  ~SurrogatesGPApprox() { }
+  ~SurrogatesPolyApprox() { }
 
 protected:
 
@@ -78,7 +78,7 @@ private:
   //
 
   /// The native surrogate model
-  std::shared_ptr<dakota::surrogates::GaussianProcess> model;
+  std::shared_ptr<dakota::surrogates::PolynomialRegression> model;
 };
 
 } // namespace Dakota
