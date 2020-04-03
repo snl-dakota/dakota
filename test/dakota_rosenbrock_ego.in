@@ -9,7 +9,6 @@ environment
 method
   efficient_global
     seed = 123456
-    batch_size = -3
 
 variables
   continuous_design = 2
@@ -19,7 +18,7 @@ variables
 
 interface
   analysis_drivers = 'rosenbrock'
-    fork
+    direct
 
 responses
   objective_functions = 1
