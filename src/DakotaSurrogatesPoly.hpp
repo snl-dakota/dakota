@@ -17,6 +17,9 @@
 
 #include "DakotaApproximation.hpp"
 
+// Headers from Surrogates module
+#include "util_data_types.hpp"
+
 #include <memory>
 
 namespace dakota {
@@ -76,6 +79,9 @@ private:
   //
   //- Heading: Convenience functions
   //
+  
+  /// Key/value config options for underlying surrogate
+  dakota::ParameterList surrogateOpts;
 
   /// The native surrogate model
   std::shared_ptr<dakota::surrogates::PolynomialRegression> model;

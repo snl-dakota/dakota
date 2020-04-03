@@ -12,11 +12,12 @@
 //- Owner:        .....
 
 #include "DakotaSurrogatesPoly.hpp"
+
 #include "DakotaVariables.hpp"
+#include "ProblemDescDB.hpp"
 
 // Headers from Surrogates module
 #include "PolynomialRegression.hpp"
-#include "util_data_types.hpp"
  
 
 using dakota::VectorXd;
@@ -31,6 +32,11 @@ SurrogatesPolyApprox(const ProblemDescDB& problem_db,
 		const String& approx_label):
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
 {
+  surrogateOpts.set("max degree",
+		    static_cast<int>(problem_db.get_short("model.surrogate.polynomial_order"))
+		    );
+//  surrogateOpts.set("advanced_options_file",
+//		    problem_db.get_string("model.advanced_options_file"));
 }
 
 
@@ -57,12 +63,6 @@ SurrogatesPolyApprox::build()
   size_t num_v = sharedDataRep->numVars;
   int num_qoi             = 1; // only using 1 for now
 
-  // Hard-coded values to quickly get things working ...
-  // See src/surrogates/unit/gp_approximation_ts.cpp for correspondence
-
-  dakota::ParameterList poly_opts;
-  poly_opts.set("max order", 2);
-
   const Pecos::SurrogateData& approx_data = surrogate_data();
   const Pecos::SDVArray& sdv_array = approx_data.variables_data();
   const Pecos::SDRArray& sdr_array = approx_data.response_data();
@@ -85,7 +85,7 @@ SurrogatesPolyApprox::build()
   }
 
   // construct the surrogate
-  model.reset(new dakota::surrogates::PolynomialRegression(xs_u, response, poly_opts));
+  model.reset(new dakota::surrogates::PolynomialRegression(xs_u, response, surrogateOpts));
 }
 
 
