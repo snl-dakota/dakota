@@ -932,8 +932,10 @@ void NonDExpansion::refine_expansion()
 
   while (!converged) {
 
+    Cout << "\n>>>>> Begin refinement iteration " << iter << ":\n";
     core_refinement(metric, false, true); // don't revert, print metrics
-    Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
+    Cout << "\n<<<<< Refinement iteration " << iter << " completed: "
+	 << "convergence metric = " << metric << '\n';
 
     converged = (metric <= convergenceTol || ++iter > max_refine_iter);
   }
@@ -982,6 +984,11 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   case Pecos::UNIFORM_CONTROL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
+    // if refinement opportunities have saturated (e.g., increments have reached
+    // max{Order,Rank} or previous cross validation indicated better fit with
+    // lower order), no candidates will be generated for this model key.
+    if (saturated()) return std::numeric_limits<size_t>::max();
+
     RealVector stats_ref;
     if (revert) pull_reference(stats_ref);
 
@@ -1432,7 +1439,8 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // refine_expansion() in using the max_refinement_iterations specification.
   // This differs from multilevel_regression(), which uses max_iterations and
   // potentially max_solver_iterations.
-  size_t iter = 0, best_step, step_candidate, best_step_candidate,
+  size_t iter = 0, SZ_MAX = std::numeric_limits<size_t>::max(),
+    step_candidate, best_step = SZ_MAX, best_step_candidate = SZ_MAX,
     max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   Real step_metric, best_step_metric = DBL_MAX;
   RealVector best_stats_star;
@@ -1454,31 +1462,41 @@ void NonDExpansion::greedy_multifidelity_expansion()
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> step_metric
       step_candidate = core_refinement(step_metric, true, true);
-      // core_refinement() normalizes level candidates based on the number of
-      // required evaluations, which is sufficient for selection of the best
-      // level candidate.  For selection among multiple level candidates, a
-      // secondary normalization for relative level cost is required.
-      step_metric /= sequence_cost(step, cost);
-      Cout << "\n<<<<< Sequence step " << step+1 << " refinement metric = "
-	   << step_metric << '\n';
-
-      // Assess candidate for best across all levels
-      if (step_metric > best_step_metric) {
-	best_step        = step;         best_step_candidate = step_candidate;
-	best_step_metric = step_metric;  best_stats_star     = statsStar;
+      if (step_candidate == SZ_MAX)
+	Cout << "\n<<<<< Sequence step " << step+1
+	     << " has satured with no refinement candidates available.\n";
+      else {
+	// core_refinement() normalizes level candidates based on the number of
+	// required evaluations, which is sufficient for selection of the best
+	// level candidate.  For selection among multiple level candidates, a
+	// secondary normalization for relative level cost is required.
+	step_metric /= sequence_cost(step, cost);
+	Cout << "\n<<<<< Sequence step " << step+1 << " refinement metric = "
+	     << step_metric << '\n';
+	// Assess candidate for best across all levels
+	if (step_metric > best_step_metric) {
+	  best_step        = step;        best_step_candidate = step_candidate;
+	  best_step_metric = step_metric; best_stats_star     = statsStar;
+	}
       }
     }
 
     // permanently apply best increment and update references for next increment
-    step = best_step; // also updates form | lev
-    configure_indices(step, form, lev, seq_index);
-    select_candidate(best_step_candidate);
-    push_candidate(best_stats_star); // update stats from best (no recompute)
+    Cout << "\n<<<<< Iteration " << iter << " completed: ";
+    if (best_step == SZ_MAX) {
+      Cout << "no refinement selected.  Terminating iteration.\n";
+      best_step_metric = 0.; // kick out of loop
+    }
+    else {
+      step = best_step; // also updates form | lev
+      configure_indices(step, form, lev, seq_index);
+      select_candidate(best_step_candidate);
+      push_candidate(best_stats_star); // update stats from best (no recompute)
 
-    Cout << "\n<<<<< Iteration " << iter
-	 << " completed: selected refinement indices = sequence step "
-	 << best_step+1 << " candidate " << best_step_candidate+1 << '\n';
-    print_results(Cout, INTERMEDIATE_RESULTS);
+      Cout << "selected refinement indices = sequence step " << best_step+1
+	   << " candidate " << best_step_candidate+1 << '\n';
+      print_results(Cout, INTERMEDIATE_RESULTS);
+    }
   }
 
   // Perform final roll-up for each level and then combine levels

@@ -95,6 +95,9 @@ public:
 
   virtual void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
 
+  /// returns true if current model key has no additional refinements available
+  virtual bool saturated() const;
+
   //
   //- Heading: Member functions
   //
@@ -622,6 +625,10 @@ nested_variable_mappings(const SizetArray& c_index1,
 				       dr_index1, c_target2, di_target2,
 				       ds_target2, dr_target2);
 }
+
+
+inline bool NonDExpansion::saturated() const
+{ return false; } // default overridden for fn train
 
 
 inline int NonDExpansion::maximum_refinement_iterations() const
