@@ -2661,6 +2661,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
        ]
      ]
     [ target_moment INTEGER > 0 {N_mdm(sizet,targetMoment)} ]
+    [ sample_allocation {0}
+      aggregated_variance {N_mdm(type,sampleAllocationType_AGGREGATED_VARIANCE)}
+      |
+      worst_case {N_mdm(type,sampleAllocationType_WORST_CASE)}
+     ]
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ final_moments {0}

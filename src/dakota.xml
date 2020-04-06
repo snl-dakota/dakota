@@ -2759,6 +2759,12 @@
 	  <keyword id="target_moment" name="target_moment" code="{N_mdm(sizet,targetMoment)}" label="target_moment" minOccurs="0" default="1" >
 		<param type="INTEGER" constraint="> 0"/>
 	   </keyword>
+      <keyword  id="sample_allocation" name="sample_allocation" code="{0}" label="Type of sample allocation over qoi"  minOccurs="0" default="aggregated_variance" >
+		<oneOf label="Sample allocation Types">
+		<keyword  id="aggregated_variance" name="aggregated_variance" code="{N_mdm(type,sampleAllocationType_AGGREGATED_VARIANCE)}" label="aggregated_variance"   />
+		<keyword  id="worst_case" name="worst_case" code="{N_mdm(type,sampleAllocationType_WORST_CASE)}" label="worst_case"   />
+		</oneOf>
+	   </keyword>
 	  &default_max_iterations;
 	  &default_convergence_tolerance;
 	  &default_final_moments;
