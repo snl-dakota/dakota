@@ -772,7 +772,7 @@ subtract_const(struct FunctionTrain * ft, Real val)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   struct FunctionTrain * ftconst
-    = function_train_constant(val, data_rep->multiApproxOpts);
+    = function_train_constant(-val, data_rep->multiApproxOpts);
   struct FunctionTrain * updated = function_train_sum(ft, ftconst);
 
   function_train_free(ftconst); //ftconst = NULL;
@@ -783,6 +783,9 @@ subtract_const(struct FunctionTrain * ft, Real val)
 Real C3Approximation::covariance(C3FnTrainPtrs& ftp1, C3FnTrainPtrs& ftp2)
 {
   Real mean1 = mean(ftp1), mean2 = mean(ftp2);
+
+  // Sanity check only:
+  //Real retval = function_train_inner_weighted(ftp1.function_train(), ftp2.function_train()) - mean1 * mean2;
 
   struct FunctionTrain * fttemp1 = subtract_const(ftp1.function_train(), mean1);
   struct FunctionTrain * fttemp2 = subtract_const(ftp2.function_train(), mean2);

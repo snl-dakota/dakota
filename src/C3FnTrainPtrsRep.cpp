@@ -93,6 +93,8 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, size_t num_mom,
     //ft_derived_fns.second_moment
     //  = function_train_integrate_weighted(ft_derived_fns.ft_squared);
 
+    // *** Could MOVE and DEPLOY subtract_const() here ***
+
     //ft_derived_fns.ft_constant_at_mean =
     ft_tmp = function_train_constant(-ft_derived_fns.first_moment, opts);
     ft_derived_fns.ft_diff_from_mean
