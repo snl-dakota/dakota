@@ -19,6 +19,8 @@
 #include <Teuchos_UnitTestHarness.hpp> 
 #include <Teuchos_SerialDenseHelpers.hpp>
 
+#include "DakotaSurrogatesGP.hpp"
+
 using namespace Dakota;
 
 namespace {
@@ -518,29 +520,29 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module1)
   // construct the GP
   Approximation gp_approx(shared_approx_data);
   gp_approx.add_array(vars, resp);
+  SurrogatesGPApprox* gp_derived = static_cast<SurrogatesGPApprox*>(gp_approx.approx_rep());
+  auto& plist = gp_derived->getSurrogateOpts();
+  plist.sublist("Nugget").set("fixed nugget", 1.0e-10);
+  plist.sublist("Trend").set("estimate trend", false);
+  plist.set("gp seed", 42);
   gp_approx.build();
 
   // check the value of the surrogate
   RealVector eval_vars(2);
 
-  // Note the tolerance here had to be relaxed from 5.e-7 used in the original
-  // 2-variable unit test in src/surrogates/unit/gp_approximation_ts.cpp.
-  //
-  // TODO: Look into why the computed values are noticeably outside tolerance - RWH
-
-  const double tol = 3.e-3;
+  const double tol = 1.e-5;
 
   eval_vars(0) = 0.20;  eval_vars(1) = 0.45;
-  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), 0.779863, tol);
+  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), 0.782031, tol);
 
   eval_vars(0) = -0.30;  eval_vars(1) = -0.70;
-  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), 0.84671 , tol);
+  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), 0.847901, tol);
 
   eval_vars(0) = 0.40;  eval_vars(1) = -0.10;
-  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), 0.744502, tol);
+  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), 0.744622, tol);
 
   eval_vars(0) = -0.25;  eval_vars(1) = 0.33;
-  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), 0.746539, tol);
+  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), 0.745461, tol);
 }
 
 #endif

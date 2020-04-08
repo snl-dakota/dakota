@@ -5915,6 +5915,7 @@ KEYWORD model {N_mom3(start,0,stop)}
           |
           quadratic {N_mom(lit,trendOrder_quadratic)}
          ]
+        [ num_restarts INTEGER > 1 {N_mom(int,numRestarts)} ]
         [ 
           nugget REAL > 0 {N_mom(Real,krigingNugget)}
           |

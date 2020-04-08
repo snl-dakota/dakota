@@ -34,6 +34,8 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
 {
   // The ProblemDB defaults trendOrder to reduced_quadratic, so always
   // uses a trend; for now mapping to full quadratic
+  // DTS: Updating default behavior to have no trend (i.e. if trend
+  // keyword is absent there is no trend
   surrogateOpts.sublist("Trend").set("estimate trend", true);
   const String& trend_string =
     problem_db.get_string("model.surrogate.trend_order");
@@ -41,8 +43,10 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 0);
   else if (trend_string == "linear")
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 1);
-  else  // empty, reduced_quadratic, quadratic
+  else if (trend_string == "quadratic")
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
+  else
+    surrogateOpts.sublist("Trend").set("estimate trend", false);
 
   // TODO: Surfpack find_nugget is an integer; likely want bool or
   // different semantics
@@ -57,6 +61,10 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
     // defaults to 0.0 if not specified
     surrogateOpts.sublist("Nugget").set("fixed nugget", nugget);
   }
+
+  // Number of optimization restarts
+  int num_restarts = problem_db.get_int("model.surrogate.num_restarts");
+  surrogateOpts.set("num restarts", num_restarts);
 
   // hard coding for now; deterministic optimizer starts
   surrogateOpts.set("gp seed", 42);
@@ -73,6 +81,10 @@ SurrogatesGPApprox(const SharedApproxData& shared_data):
 {
   // hard-coded to reproduce historical unit tests for now
   surrogateOpts.sublist("Nugget").set("fixed nugget", 1.0e-12);
+}
+
+dakota::ParameterList& SurrogatesGPApprox::getSurrogateOpts() {
+  return surrogateOpts;
 }
 
 
@@ -98,7 +110,6 @@ SurrogatesGPApprox::build()
 
   surrogateOpts.set("scaler name", "standardization");
   surrogateOpts.set("num restarts", 10);
-  //  surrogateOpts.sublist("Nugget").set("fixed nugget", 1.0e-12);
 
   // bound constraints -- will be converted to log-scale internally
   // sigma bounds - lower and upper

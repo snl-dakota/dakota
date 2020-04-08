@@ -56,6 +56,9 @@ public:
   /// destructor
   ~SurrogatesGPApprox() { }
 
+  // Modify configuration options through the parameterList
+  dakota::ParameterList& getSurrogateOpts();
+
 protected:
 
   // Minimum number of data points required to build

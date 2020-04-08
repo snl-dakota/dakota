@@ -7538,6 +7538,7 @@ static int
 	MP_(maxSolverIterations),
         MP_(numFolds),
         MP_(numReplicates),
+        MP_(numRestarts),
         MP_(pointsTotal),
         MP_(refineCVFolds),
         MP_(softConvergenceLimit),

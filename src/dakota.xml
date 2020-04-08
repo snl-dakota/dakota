@@ -3533,6 +3533,9 @@
                       <keyword  id="quadratic" name="quadratic" code="{N_mom(lit,trendOrder_quadratic)}" label="Quadratic"   />
                     </oneOf>
                   </keyword>
+                  <keyword  id="num_restarts" name="num_restarts" code="{N_mom(int,numRestarts)}" label="Number of Optimization Runs"  minOccurs="0">
+                    <param type="INTEGER" constraint="> 1" />
+                  </keyword>
 		  <!-- max_trials (max function evals) does not map to num restarts
                        <keyword  id="max_trials" name="max_trials" code="{N_mom(shint,krigingMaxTrials)}" label="Max Number of Likelihood Function Evaluations"  minOccurs="0" default="" complexity="1">
                        <param type="INTEGER" constraint="> 0" />

@@ -34,6 +34,8 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
     "    global \n"
     "      actual_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
+    "        find_nugget 1 \n"
+    "        num_restarts 10 \n"
     "      import_points_file 'gauss_proc_test_files/gauss_proc_build_points.dat' \n"
     "        annotated \n"
     "variables \n"
@@ -73,11 +75,11 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
   double gold_values[NUM_COLS][NUM_ROWS] =
     {{ 0.2, -0.3, 0.4, -0.25 },  //x1
      { 0.45, -0.7, -0.1, 0.33 }, //x2
-     { 0.7798594591, 0.8467118256, 0.7445028879, 0.7465409943 }}; //herbie
+     { 0.77985942, 0.84671183, 0.7445029, 0.74654101 }}; //herbie
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-14 );
+      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
     }
   }
 }

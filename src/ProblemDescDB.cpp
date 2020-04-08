@@ -2691,6 +2691,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"soft_convergence_limit", P softConvergenceLimit},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
+        {"surrogate.num_restarts", P numRestarts},
         {"surrogate.points_total", P pointsTotal},
         {"surrogate.refine_cv_folds", P refineCVFolds}};
     #undef P

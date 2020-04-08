@@ -235,6 +235,8 @@ public:
   short annNodes;
   /// range for artificial neural network approximation
   Real annRange;
+  /// number of restarts for gradient-based optimization in GP
+  int numRestarts;
 
   /// whether domain decomposition is enabled
   bool domainDecomp;
