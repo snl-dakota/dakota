@@ -23,9 +23,7 @@
 #include "DakotaIterator.hpp"
 
 #ifdef HAVE_NPSOL
-
 #include "NPSOLOptimizer.hpp"
-
 #elif HAVE_OPTPP
 #include "SNLLOptimizer.hpp"
 #endif
@@ -635,7 +633,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
                                                                 RealMatrix &grad_g, int &result_mode) {
 
     bool compute_gradient = false;
-    #ifdef HAVE_OPTPP
+
+    #ifdef HAVE_NPSOL
+    #elif HAVE_OPTPP
     if(mode & OPTPP::NLPFunction) {
       result_mode = OPTPP::NLPFunction;
     }
