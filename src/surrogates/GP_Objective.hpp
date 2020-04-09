@@ -20,12 +20,6 @@
 namespace dakota {
 namespace surrogates {
 
-/// Bring ROL Vector into surrogates namespace instead of "using" in header
-using RolVec = ROL::Vector<double>;
-/// Bring ROL StdVector into surrogates namespace instead of "using" in header
-using RolStdVec = ROL::StdVector<double>;
-
-
 /**
  *  \brief ROL objective function for the Gaussian Process (GP)
  *  surrogate.
@@ -33,73 +27,87 @@ using RolStdVec = ROL::StdVector<double>;
  */
 class GP_Objective : public ROL::Objective<double> {
 
+public:
 
-  public:
+  // ------------------------------------------------------------
+  // Constructors and destructors
 
-/**
- *  \brief Constructor for GP_Objective.
- *  \param[in] gp_model Pointer to the GaussianProcess surrogate.
- *
- */
-    GP_Objective(GaussianProcess& gp_model);
-    ~GP_Objective();
+  /**
+   *  \brief Constructor for GP_Objective.
+   *  \param[in] gp_model Reference to the GaussianProcess surrogate.
+   *
+   */
+  GP_Objective(GaussianProcess& gp_model);
+  ~GP_Objective();
 
-/**
- *  \brief Get the value of the objective function at a point.
- *  \param[in] p ROL vector of parameters.
- *  \param[in] tol Tolerance for inexact evaluation? (not used).
- *
- */
-    double value(const RolVec& p, double& tol);
-/**
- *  \brief Get the gradient of the objective function at a point.
- *  \param[out] g Gradient of the objective function.
- *  \param[in] p ROL vector of parameters.
- *  \param[in] tol Tolerance for inexact evaluation? (not used).
- *
- */
-    void gradient(RolVec& g, const RolVec& p, double&);
 
-  private:
+  // ------------------------------------------------------------
+  // Public utility functions
 
-    /// Pointer to the GaussianProcess surrogate.
-    GaussianProcess& gp;
+  /**
+   *  \brief Get the value of the objective function at a point.
+   *  \param[in] p ROL vector of parameters.
+   *  \param[in] tol Tolerance for inexact evaluation (not used here).
+   *
+   */
+  double value(const ROL::Vector<double> &p, double &tol);
 
-    /// Number of optimization variables.
-    int nopt;
-    /// Previously computed value of the objective function.
-    double Jold;
-    /// Previously computed gradient of the objective function.
-    VectorXd grad_old;
-    /// Previous value of the parameter vector.
-    VectorXd pold;
-    /// Tolerance for l2 difference between parameter vectors. Should
-    /// smaller than ROL's stepnorm but bigger than machine epsilon.
-    double difftol = 1.0e-15;
-/**
- *  \brief Convert a const ROL Vector to a ROL::Ptr<const std::vector>
- *  \param[in] vec const ROL vector
- *
- */
-    ROL::Ptr<const std::vector<double> > getVector(const RolVec& vec) {
-      return dynamic_cast<const RolStdVec&>(vec).getVector();
-    }
-/**
- *  \brief Convert a ROL Vector to a ROL::Ptr<std::vector>
- *  \param[in] vec ROL vector
- *
- */
-    ROL::Ptr<std::vector<double> > getVector(RolVec& vec) {
-      return dynamic_cast<RolStdVec&>(vec).getVector();
-    }
+  /**
+   *  \brief Get the gradient of the objective function at a point.
+   *  \param[out] g Gradient of the objective function.
+   *  \param[in] p ROL vector of parameters.
+   *  \param[in] tol Tolerance for inexact evaluation? (not used here).
+   *
+   */
+  void gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double&);
 
-/**
- *  \brief Compute the l2 norm of the difference between new
- *  and old parameter vectors.
- *  \param[in] pnew New value of the parameter vector.
- *
- */
-    bool pdiff(const std::vector<double>& pnew);
+private:
+
+  // ------------------------------------------------------------
+  // Private utility functions
+
+  /**
+   *  \brief Compute the l2 norm of the difference between new
+   *  and old parameter vectors.
+   *  \param[in] pnew New value of the parameter vector.
+   *
+   */
+  bool pdiff(const std::vector<double>& pnew);
+
+  /**
+   *  \brief Convert a const ROL Vector to a ROL::Ptr<const std::vector>
+   *  \param[in] vec const ROL vector
+   *
+   */
+  ROL::Ptr<const std::vector<double> > getVector(const ROL::Vector<double>& vec) {
+    return dynamic_cast<const ROL::StdVector<double>&>(vec).getVector();
+  }
+
+  /**
+   *  \brief Convert a ROL Vector to a ROL::Ptr<std::vector>
+   *  \param[in] vec ROL vector
+   *
+   */
+  ROL::Ptr<std::vector<double> > getVector(ROL::Vector<double>& vec) {
+    return dynamic_cast<ROL::StdVector<double>&>(vec).getVector();
+  }
+
+  // ------------------------------------------------------------
+  // Private member variables
+
+  /// Pointer to the GaussianProcess surrogate.
+  GaussianProcess &gp;
+  /// Number of optimization variables.
+  int nopt;
+  /// Previously computed value of the objective function.
+  double Jold;
+  /// Previously computed gradient of the objective function.
+  VectorXd grad_old;
+  /// Previous value of the parameter vector.
+  VectorXd pold;
+  /// Tolerance for l2 difference between parameter vectors. Should
+  /// smaller than ROL's stepnorm but bigger than machine epsilon.
+  double difftol = 1.0e-15;
 };
 
 }  // namespace surrogates

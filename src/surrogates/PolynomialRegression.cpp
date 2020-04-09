@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 #include "PolynomialRegression.hpp"
-#include "SurrogatesTools.hpp"
+#include "surrogates_tools.hpp"
 
 namespace dakota {
 namespace surrogates {

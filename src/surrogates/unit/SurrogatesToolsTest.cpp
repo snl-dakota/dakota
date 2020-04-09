@@ -16,8 +16,7 @@
 /////////////
 
 #include "CommonUtils.hpp"
-
-#include "SurrogatesTools.hpp"
+#include "surrogates_tools.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
 

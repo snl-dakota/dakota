@@ -11,11 +11,12 @@
 namespace dakota {
 namespace surrogates {
 
-GP_Objective::GP_Objective(GaussianProcess& gp_model) :
+using RolVec = ROL::Vector<double>;
+using RolStdVec = ROL::StdVector<double>;
+
+GP_Objective::GP_Objective(GaussianProcess &gp_model) :
   gp(gp_model)
 {
-  //VectorXd theta = gp->get_theta_values();
-  //nopt = theta.size();
   nopt = gp.get_num_opt_variables();
   grad_old.resize(nopt);
   pold.resize(nopt);
@@ -26,12 +27,12 @@ GP_Objective::GP_Objective(GaussianProcess& gp_model) :
 
 GP_Objective::~GP_Objective() {}
 
-double GP_Objective::value(const ROL::Vector<double>& p, double&) {
+double GP_Objective::value(const ROL::Vector<double> &p, double&) {
   ROL::Ptr<const std::vector<double> > xp = getVector(p);
   double obj_val;
   VectorXd grad(nopt);
   if (pdiff(*xp)) {
-    gp.set_theta(*xp);
+    gp.set_opt_params(*xp);
     gp.negative_marginal_log_likelihood(obj_val, grad);
     Jold = obj_val;
     grad_old = grad;
@@ -39,13 +40,13 @@ double GP_Objective::value(const ROL::Vector<double>& p, double&) {
   return Jold;
 }
 
-void GP_Objective::gradient(ROL::Vector<double>& g, const ROL::Vector<double>& p, double&) {
+void GP_Objective::gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double&) {
   ROL::Ptr<const std::vector<double> > xp = getVector(p);
   ROL::Ptr<std::vector<double> > gpointer = getVector(g);
   double obj_val;
   VectorXd grad(nopt);
   if (pdiff(*xp)) {
-    gp.set_theta(*xp);
+    gp.set_opt_params(*xp);
     gp.negative_marginal_log_likelihood(obj_val, grad);
     Jold = obj_val;
     for (int i = 0; i < grad.size(); ++i) {
@@ -60,7 +61,7 @@ void GP_Objective::gradient(ROL::Vector<double>& g, const ROL::Vector<double>& p
 }
 
 // parameter diffs
-bool GP_Objective::pdiff(const std::vector<double>& pnew) {
+bool GP_Objective::pdiff(const std::vector<double> &pnew) {
   double diffnorm = 0.0;
   for (int i = 0; i < nopt; ++i) {
     diffnorm += pow(pnew[i] - pold(i),2.0);

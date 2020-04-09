@@ -18,7 +18,7 @@ set(surrogates_unit_test_copied_files)
 
 dakota_add_unit_test(NAME GaussianProcessTest SOURCES
   teuchos_unit_test_driver.cpp
-  gp_approximation_ts.cpp
+  GaussianProcessTest.cpp
 )
 
 dakota_add_unit_test(NAME PolynomialRegressionTest SOURCES

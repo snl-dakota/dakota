@@ -17,12 +17,8 @@
 
 
 namespace dakota {
-
-using util::NormalizationScaler;
-using util::NoScaler;
-using util::StandardizationScaler;
-
 namespace surrogates {
+
 
 // Constuctor with default parameters.
 GaussianProcess::GaussianProcess(){
@@ -30,7 +26,7 @@ GaussianProcess::GaussianProcess(){
 }
 
 // Constructor that sets user-defined params but does not build.
-GaussianProcess::GaussianProcess(const ParameterList& param_list) {
+GaussianProcess::GaussianProcess(const ParameterList &param_list) {
   default_options();
   configOptions = param_list;
 }
@@ -46,92 +42,10 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
   default_options();
   configOptions = param_list;
   build(samples, response);
-  //configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
-
-  // check that the passed parameters are valid for this surrogate
-  // (doesn't allow unused parameters, which we might want)
-  // (also overwrites the defaults, which we might want to preserve)
-  /*
-  try {
-    configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
-  }
-  catch (const Teuchos::Exceptions::InvalidParameter& e) {
-    std::cerr << "Invalid parameter passed to GaussianProcess; details:\n"
-	      << e.what() << std::endl;
-    throw;
-  }
-  configOptions.setParameters(param_list);
-  */
-  //std::cout << "Building GaussianProcess with final parameters\n"
-	//    << configOptions << std::endl;
-
-  /*
-  build(samples,
-	response,
-	configOptions.get<VectorXd>("sigma_bounds"),
-	configOptions.get<MatrixXd>("length_scale_bounds"),
-	configOptions.get<std::string>("scaler_name"),
-	configOptions.get<int>("num_restarts"),
-	configOptions.get<double>("nugget"),
-	configOptions.get<int>("gp_seed")
-	);
-  */
 }
-
-
-/*
-GaussianProcess::GaussianProcess(const MatrixXd &samples,
-                                 const MatrixXd &response,
-                                 const VectorXd &sigma_bounds,
-                                 const MatrixXd &length_scale_bounds,
-                                 const std::string scaler_name,
-                                 const int num_restarts,
-                                 const double nugget_val,
-                                 const int seed)
-{
-  build(samples,
-	response,
-	sigma_bounds,
-	length_scale_bounds,
-	scaler_name,
-	num_restarts,
-	nugget_val,
-	seed);
-}
-*/
 
 GaussianProcess::~GaussianProcess(){}
 
-const VectorXd & GaussianProcess::get_posterior_std_dev() const { return posteriorStdDev; }
-
-const MatrixXd & GaussianProcess::get_posterior_covariance() const { return posteriorCov; }
-
-const VectorXd & GaussianProcess::get_theta_values() const { return thetaValues; }
-
-int GaussianProcess::get_num_opt_variables() {
-  return numVariables + 1 + numPolyTerms + numNuggetTerms;
-}
-
-int GaussianProcess::get_num_variables() const { return numVariables; }
-
-// TODO: Update the name, more parameters than theta now
-void GaussianProcess::set_theta(const std::vector<double> theta_new) {
-  /*
-  for (int i = 0; i < thetaValues->size(); i++)
-    (thetaValues)(i) = theta_new[i];
-   */
-  for (int i = 0; i < numVariables + 1; i++) 
-    thetaValues(i) = theta_new[i];
-
-  if (estimateTrend) {
-    for (int i = 0; i < numPolyTerms; i++)
-      betaValues(i) = theta_new[numVariables+1+i];
-  }
-
-  if (estimateNugget) {
-    estimatedNuggetValue = theta_new[numVariables+1+numPolyTerms];
-  }
-}
 
 
 void GaussianProcess::generate_initial_guesses(MatrixXd &initial_guesses, int num_restarts,
@@ -295,13 +209,13 @@ void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, Vector
     resid = targetValues;
     z = CholFact.solve(resid);
   }
+
   logSum = 0.5*log(D.array()).matrix().sum();
   Q = -0.5*(z*z.transpose() - CholFact.solve(eye_matrix));
 
   obj_value = logSum + 0.5*(resid.transpose()*z)(0,0) + 
               static_cast<double>(numSamples)/2.0*log(2.0*PI);
 
-  MatrixXd product(numSamples,numSamples);
   for (int k = 0; k < numVariables+1; k++)
     obj_gradient(k) = (GramMatrixDerivs[k].cwiseProduct(Q)).sum();
 
@@ -459,18 +373,17 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   generate_initial_guesses(initial_guesses, num_restarts,
                            sigma_bounds, length_scale_bounds,
                            nugget_bounds);
+
   ROL::Ptr<std::ostream> outStream;
   Teuchos::oblackholestream bhs;
   outStream = ROL::makePtrFromRef(bhs);
+
   /* Uncomment if you'd like to print ROL's output to screen.
    * Useful for debugging */
   //outStream = ROL::makePtrFromRef(std::cout);
 
   /* No more reading in rol_params from an xml file
-   * Set defaults in here instead.
-   * TODO: Make some of ROL's parameters controllable by
-   * a surrogates/Dakota user */
-
+   * Set defaults in here instead */
   /*
   std::string paramfile = "rol_params.xml";
   auto rol_params = Teuchos::rcp(new ParameterList);
@@ -478,7 +391,7 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   */
 
   auto gp_mle_rol_params = Teuchos::rcp(new ParameterList("GP_MLE_Optimization"));
-  set_default_optimization_params(gp_mle_rol_params);
+  setup_default_optimization_params(gp_mle_rol_params);
 
   auto gp_objective = std::make_shared<GP_Objective>(*this);
   int dim = numVariables + 1 + numPolyTerms + numNuggetTerms;
@@ -516,7 +429,6 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   std::vector<std::string> output;
 
   objectiveFunctionHistory.resize(num_restarts);
-  bestObjFunValue = 1.0e300;
 
   double final_obj_value;
   VectorXd final_obj_gradient(dim);
@@ -560,6 +472,7 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   if (estimateNugget)
     estimatedNuggetValue = bestEstimatedNuggetValue;
 
+  /* Useful info for debugging */
   /*
   std::cout << "\n";
   std::cout << objectiveFunctionHistory << std::endl;
@@ -575,13 +488,6 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
     throw(std::runtime_error("Gaussian Process value inputs are not consistent."
           " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
   }
-
-  /*
-  if (numPredictionPts != approx_values.rows()) {
-    throw(std::runtime_error("Gaussian Process value inputs are not consistent."
-          " Number of samples and approximation sizes do not match"));
-  }
-  */
 
   const int numPredictionPts = samples.rows();
   approx_values.resize(numPredictionPts,numVariables);
@@ -722,7 +628,8 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
 
 }
 
-void GaussianProcess::set_default_optimization_params(Teuchos::RCP<ParameterList> rol_params) {
+void GaussianProcess::setup_default_optimization_params(
+     Teuchos::RCP<ParameterList> rol_params) {
   /* Secant */
   rol_params->sublist("General").sublist("Secant").
              set("Type","Limited-Memory BFGS");
@@ -779,6 +686,30 @@ void GaussianProcess::set_default_optimization_params(Teuchos::RCP<ParameterList
 
   rol_params->sublist("Status Test").
              set("Iteration Limit",200);
+}
+
+const VectorXd& GaussianProcess::get_posterior_std_dev() const { return posteriorStdDev; }
+
+const MatrixXd& GaussianProcess::get_posterior_covariance() const { return posteriorCov; }
+
+int GaussianProcess::get_num_opt_variables() {
+  return numVariables + 1 + numPolyTerms + numNuggetTerms;
+}
+
+int GaussianProcess::get_num_variables() const { return numVariables; }
+
+// TODO: Update the name, more parameters than theta now
+void GaussianProcess::set_opt_params(const std::vector<double> &opt_params) {
+  for (int i = 0; i < numVariables + 1; i++) 
+    thetaValues(i) = opt_params[i];
+
+  if (estimateTrend) {
+    for (int i = 0; i < numPolyTerms; i++)
+      betaValues(i) = opt_params[numVariables+1+i];
+  }
+
+  if (estimateNugget)
+    estimatedNuggetValue = opt_params[numVariables+1+numPolyTerms];
 }
 
 

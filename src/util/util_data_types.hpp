@@ -32,6 +32,8 @@ template <typename ... Ts> void silence_unused_args(const Ts ...)
 using VectorXd = Eigen::VectorXd;
 /// Eigen generic matrix of doubles in Dakota namespace
 using MatrixXd = Eigen::MatrixXd;
+/// Eigen generic vector of integers in Dakota namespace
+using VectorXi = Eigen::VectorXi;
 /// Eigen generic matrix of integers in Dakota namespace
 using MatrixXi = Eigen::MatrixXi;
 
