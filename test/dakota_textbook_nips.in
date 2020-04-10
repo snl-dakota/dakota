@@ -1,4 +1,6 @@
 #@ s6: DakotaConfig=HAVE_NPSOL
+#@ s12: DakotaConfig=HAVE_NPSOL
+#@ s13: DakotaConfig=HAVE_NPSOL
 #@ s7: UserMan=textbook_nls_datafile
 #@ s10: DakotaConfig=HAVE_ACRO
 # DAKOTA INPUT FILE - dakota_textbook_nips.in
@@ -10,7 +12,7 @@ method
 #  optpp_fd_newton					  #s2,#s3
 #  optpp_newton						    #s4
 #  optpp_g_newton					    #s5
-#  nlssol_sqp						      #s6,#s12
+#  nlssol_sqp						      #s6,#s12,#s13
 #  nl2sol                     #s7,#s8,#s9
 #  coliny_ea                  #s10       
 #    seed = 3247              #s10
@@ -20,11 +22,11 @@ method
 #  output debug
 
 variables
-  continuous_design = 2           #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10
-    initial_point    0.9    1.1   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10
-    upper_bounds     5.8    2.9   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10
-    lower_bounds     0.5   -2.9   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10
-    descriptors      'x1'   'x2'  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10
+  continuous_design = 2           #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s13
+    initial_point    0.9    1.1   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s13
+    upper_bounds     5.8    2.9   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s13
+    lower_bounds     0.5   -2.9   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s13
+    descriptors      'x1'   'x2'  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s13
 #    continuous_design = 3                       #s11,#s12
 #      initial_point    0.9    1.1     0.9       #s11,#s12
 #      upper_bounds     5.8    2.9     5.8       #s11,#s12
@@ -55,11 +57,19 @@ responses
 #    calibration_data_file = 'dakota_textbook_nips.rep.dat' #s9,#s10
 #    num_experiments = 4     				    #s9,#s10
 #  nonlinear_inequality_constraints = 1	#s5,#s6,#s11
-  analytic_gradients	 	                #s0,#s2,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12
+#
+# Try to reproduce two constraint textbook solution x = (0.5, 0.5)
+#  calibration_terms = 1						#s13
+#    calibration_data_file = 'dakota_textbook_nips.lsq_con.dat'  	#s13
+#      annotated							#s13
+#    num_experiments = 7   						#s13
+#  nonlinear_inequality_constraints = 2					#s13
+#
+  analytic_gradients	 	                #s0,#s2,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13
 #  no_gradients                         #s10
 #  numerical_gradients	                #s1,#s3
 #    method_source vendor	              #s1,#s3
 #    interval_type forward	            #s1,#s3
 #    fd_gradient_step_size = 1.e-5      #s1,#s3
-  no_hessians			                      #s0,#s1,#s2,#s3,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12
+  no_hessians			                      #s0,#s1,#s2,#s3,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
 #  analytic_hessians		                #s4
