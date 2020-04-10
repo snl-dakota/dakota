@@ -264,6 +264,7 @@ void PolynomialRegression::default_options() {
 
 void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
                                     const int qoi) {
+  silence_unused_args(qoi);
 
   // Surrogate models don't yet support multiple responses
   assert(qoi == 0);
@@ -302,7 +303,7 @@ void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
 void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
                                    const int qoi) {
-
+  silence_unused_args(qoi);
 
   // Surrogate models don't yet support multiple responses
   assert(qoi == 0);

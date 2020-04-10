@@ -538,6 +538,7 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
 
 void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
                                const int qoi) {
+  silence_unused_args(qoi);
 
   // Surrogate models don't yet support multiple responses
   assert(qoi == 0);
@@ -584,6 +585,7 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
 void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
                               const int qoi) {
+  silence_unused_args(qoi);
 
   // Surrogate models don't yet support multiple responses
   assert(qoi == 0);
