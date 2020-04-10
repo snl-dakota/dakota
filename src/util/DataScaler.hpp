@@ -16,13 +16,6 @@
 namespace dakota {
 namespace util {
 
-enum class SCALER_TYPE {
-                         NONE,
-                         STANDARDIZATION,
-                         MEAN_NORMALIZATION,   // formerly just NORMALIZATION
-                         MINMAX_NORMALIZATION
-                       };
-
 /**
  *  \brief The DataScaler class computes the scaling coefficients and scales
  *         a 2D data matrix with dimensions num_samples by num_features.
@@ -45,70 +38,76 @@ enum class SCALER_TYPE {
 class DataScaler {
 
   public: 
+    
+    /// How best to Doxygenate class enums? RWH
+    enum class SCALER_TYPE { NONE,
+                             STANDARDIZATION,
+                             MEAN_NORMALIZATION,
+                             MINMAX_NORMALIZATION };
+
     DataScaler();
 
     virtual ~DataScaler();
-/**
- *  \brief Apply scaling to a set of unscaled samples.
- *  \param[in] unscaled_samples Unscaled matrix of samples.
- *  \returns A shared_ptr to the scaled matrix of samples.
-*/
+
+    /**
+     *  \brief Apply scaling to a set of unscaled samples
+     *  \param[in] unscaled_samples Unscaled matrix of samples
+     *  \returns A shared_ptr to the scaled matrix of samples
+     */
     std::shared_ptr<MatrixXd> scale_samples(const MatrixXd &unscaled_samples);
 
-/**
- *  \brief Apply scaling to a set of unscaled samples.
- *  \param[in] unscaled_samples Unscaled matrix of samples.
- *  \param[out] scaled_samples Scaled matrix of samples.
-*/
-    void scale_samples(const MatrixXd &unscaled_samples,
-                       MatrixXd &scaled_samples);
+    /**
+     *  \brief Apply scaling to a set of unscaled samples
+     *  \param[in] unscaled_samples Unscaled matrix of samples
+     *  \param[out] scaled_samples Scaled matrix of samples
+     */
+    void scale_samples(const MatrixXd &unscaled_samples, MatrixXd &scaled_samples);
 
-/**
- *  \brief Get the vector of offsets.
- *  \returns Vector of scaler offsets - (num_features).
-*/
-    const VectorXd& get_scaler_features_offsets() const { return scalerFeaturesOffsets; }
+    /**
+     *  \brief Get the vector of offsets
+     *  \returns Vector of scaler offsets - (num_features)
+     */
+    inline const VectorXd& get_scaler_features_offsets() const { return scalerFeaturesOffsets; }
 
-/**
- *  \brief Get the vector of scaling factors
- *  \returns Vector of scaling factors - (num_features).
-*/
-    const VectorXd& get_scaler_features_scale_factors() const { return scalerFeaturesScaleFactors; }
+    /**
+     *  \brief Get the vector of scaling factors
+     *  \returns Vector of scaling factors - (num_features)
+     */
+    inline const VectorXd& get_scaler_features_scale_factors() const { return scalerFeaturesScaleFactors; }
 
-/**
- *  \brief Get the the scaled data matrix.
- *  \returns Scaled features - (num_samples by num_features).
-*/
-    const MatrixXd& get_scaled_features() const { return scaledFeatures; }
+    /**
+     *  \brief Get the the scaled data matrix
+     *  \returns Scaled features - (num_samples by num_features)
+     */
+    inline const MatrixXd& get_scaled_features() const { return scaledFeatures; }
 
-/**
- *  \brief Checks an individual scaler feature scale factor for being close to zero.  If it is
- *  near zero, we can potentially run into a divide-by-zero error if not handled appropriately.
- *  \param[in] index The scaler feature index to check.
- *  \returns True if the value is near zero.
-*/
+    /**
+     *  \brief Checks an individual scaler feature scale factor for being close to zero;  If it is
+     *  near zero, we can potentially run into a divide-by-zero error if not handled appropriately.
+     *  \param[in] index The scaler feature index to check
+     *  \returns True if the value is near zero
+     */
     bool check_for_zero_scaler_factor(int index);
 
-/**
- *  \brief Bool for whether or not the the scaling coefficients
- *   have been computed.
- *
-*/
-    bool has_scaling = false;
 
-
-  static SCALER_TYPE scaler_type(const std::string& scaler_name);
+    static SCALER_TYPE scaler_type(const std::string& scaler_name);
 
   protected: 
 
-    /// Vector of offsets - (num_features).
+    /**
+     *  \brief Bool for whether or not the the scaling coefficients
+     *   have been computed
+     */
+    bool hasScaling;
+
+    /// Vector of offsets - (num_features)
     VectorXd scalerFeaturesOffsets;
-    /// Vector of scaling factors - (num_features).
+
+    /// Vector of scaling factors - (num_features)
     VectorXd scalerFeaturesScaleFactors;
-    /// Scaled surrogate data matrix - (num_samples by num_features).
+
+    /// Scaled surrogate data matrix - (num_samples by num_features)
     MatrixXd scaledFeatures;
-
-
 };
 
 /**
@@ -122,54 +121,55 @@ class DataScaler {
  * 
  * scale_factors = (max - min)/norm_factor
  *
- * Setting mean_normalization = false scales each feature to [0,1].
+ * Setting mean_normalization = false scales each feature to [0,1]
  */
 class NormalizationScaler: public DataScaler {
+
   public:
+
     NormalizationScaler();
 
     ~NormalizationScaler();
 
-/**
- * \brief Main constructor for NormalizationScaler
- *
- * \param[in] features           Unscaled data matrix - (num_samples by num_features).
- * \param[in] mean_normalization Flag for whether to use mean or min value
- *                               as the offset.
- * \param[in] norm_factor        Optional scaling factor applied to each feature.
- *                               Has a default value of 1.0 .
- */
-    NormalizationScaler(const MatrixXd &features, const bool mean_normalization, 
-                        const double norm_factor = 1.0);
+    /**
+     * \brief Main constructor for NormalizationScaler
+     *
+     * \param[in] features           Unscaled data matrix - (num_samples by num_features)
+     * \param[in] mean_normalization Flag for whether to use mean or min value
+     *                               as the offset
+     * \param[in] norm_factor        Optional scaling factor applied to each feature
+     *                               Has a default value of 1.0
+     */
+    NormalizationScaler(const MatrixXd &features, bool mean_normalization, double norm_factor = 1.0);
 };
 
 /**
- * \brief Standardizes the data so the each feature has zero mean and
- * unit variance.
- * 
+ * \brief Standardizes the data so the each feature has zero mean and unit variance.
  * 
  * scaler_offsets = mean
  * 
  * scale_factors = standard_deviation/norm_factor
  */
 class StandardizationScaler: public DataScaler {
+
   public:
+
     StandardizationScaler();
 
     ~StandardizationScaler();
 
-/**
- * \brief Main constructor for StandardizationScaler
- *
- * \param[in] features           Unscaled data matrix - (num_samples by num_features).
- * \param[in] norm_factor        Optional scaling factor applied to each feature.
- *                               Has a default value of 1.0 .
- */
-    StandardizationScaler(const MatrixXd &features, const double norm_factor = 1.0);
+    /**
+     * \brief Main constructor for StandardizationScaler
+     *
+     * \param[in] features           Unscaled data matrix - (num_samples by num_features)
+     * \param[in] norm_factor        Optional scaling factor applied to each feature
+     *                               Has a default value of 1.0
+     */
+    StandardizationScaler(const MatrixXd &features, double norm_factor = 1.0);
 };
 
 /**
- * \brief Leaves the data unscaled.
+ * \brief Leaves the data unscaled
  *
  * This DataScaler has fixed coefficients that amount to an identity operation.
  * It is useful when the data has already been scaled or scaling is desired.
@@ -179,20 +179,23 @@ class StandardizationScaler: public DataScaler {
  * scale_factors = 1.0
  */
 class NoScaler: public DataScaler {
+
   public:
+
     NoScaler();
+
+    NoScaler(const MatrixXd &features);
 
     ~NoScaler();
 
-    NoScaler(const MatrixXd &features);
-/**
- * \brief Main constructor for NoScaler.
- *
- * \param[in] features           Unscaled data matrix - (num_samples by num_features).
- */
+    /**
+     * \brief Main constructor for NoScaler
+     *
+     * \param[in] features Unscaled data matrix - (num_samples by num_features)
+     */
 };
 
-std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd & unscaled_matrix);
+std::shared_ptr<DataScaler> scaler_factory(DataScaler::SCALER_TYPE scaler_type, const MatrixXd & unscaled_matrix);
 
 }  // namespace util
 }  // namespace dakota

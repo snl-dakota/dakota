@@ -20,6 +20,8 @@ using namespace dakota;
 using namespace dakota::util;
 using namespace dakota::surrogates;
 
+using SCALER_TYPE = DataScaler::SCALER_TYPE;
+
 namespace {
 
 MatrixXd create_single_feature_matrix()
@@ -63,7 +65,7 @@ void PolynomialRegressionSurrogate_getters_and_setters()
 
 // --------------------------------------------------------------------------------
 
-void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE scaler_type)
+void PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE scaler_type)
 {
   VectorXd line_vector = VectorXd::LinSpaced(20,0,1); // size, low, high
   VectorXd response    = VectorXd::LinSpaced(20,0,1);
@@ -82,13 +84,13 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   double expected_constant_term = 2.0;        // unscaled intercept via coeffs array
   double expected_first_term =    1.0;        // unscaled slope via coeffs array
   double expected_polynomial_intercept = 0.0;
-  if( scaler_type == dakota::util::SCALER_TYPE::MEAN_NORMALIZATION ||
-      scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
+  if( scaler_type == SCALER_TYPE::MEAN_NORMALIZATION ||
+      scaler_type == SCALER_TYPE::STANDARDIZATION )
   {
     expected_constant_term = 0.0;
     expected_polynomial_intercept = 2.5;
   }
-  if( scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
+  if( scaler_type == SCALER_TYPE::STANDARDIZATION )
     expected_first_term = 0.303488; // scaled
 
   double actual_constant_term = polynomial_coeffs(0, 0);
@@ -204,7 +206,7 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   PolynomialRegression pr(degree, num_vars);
   pr.set_samples(samples);
   pr.set_response(responses);
-  pr.set_scaler_type(dakota::util::SCALER_TYPE::NONE);
+  pr.set_scaler_type(SCALER_TYPE::NONE);
   pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
@@ -237,7 +239,7 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   PolynomialRegression pr2(options);
   pr2.set_samples(samples);
   pr2.set_response(responses);
-  pr2.set_scaler_type(dakota::util::SCALER_TYPE::NONE);
+  pr2.set_scaler_type(SCALER_TYPE::NONE);
   pr2.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr2.build_surrogate();
 
@@ -329,7 +331,7 @@ PolynomialRegressionSurrogate_gradient_and_hessian()
   pr.set_samples(samples);
   pr.set_polynomial_order(degree);
   pr.set_response(responses);
-  pr.set_scaler_type(dakota::util::SCALER_TYPE::NONE);
+  pr.set_scaler_type(SCALER_TYPE::NONE);
   pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
@@ -356,9 +358,9 @@ int test_main( int argc, char* argv[] ) // note the name!
 {
   // Univariate tests
   PolynomialRegressionSurrogate_getters_and_setters();
-  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NONE);
-  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::MEAN_NORMALIZATION);
-  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::STANDARDIZATION);
+  PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE::NONE);
+  PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE::MEAN_NORMALIZATION);
+  PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE::STANDARDIZATION);
 
   // Multivariate tests
   PolynomialRegressionSurrogate_multivariate_regression_builder();

@@ -85,7 +85,7 @@ PolynomialRegression::PolynomialRegression(int total_order, int nvars) :
   compute_hyperbolic_indices(numVars, total_order, 1.0, basisIndices);
   numTerms       = basisIndices.cols();
 
-  scalerType = util::SCALER_TYPE::NONE;
+  scalerType = util::DataScaler::SCALER_TYPE::NONE;
 }
 
 // ------------------------------------------------------------
@@ -102,7 +102,7 @@ const MatrixXd & PolynomialRegression::get_response() const { return response_; 
 
 int PolynomialRegression::get_polynomial_order() const { return polynomialOrder; }
 
-util::SCALER_TYPE PolynomialRegression::get_scaler_type() const { return scalerType; }
+util::DataScaler::SCALER_TYPE PolynomialRegression::get_scaler_type() const { return scalerType; }
 
 const MatrixXd & PolynomialRegression::get_polynomial_coeffs() const { return polynomial_coeffs; }
 
@@ -120,7 +120,7 @@ void PolynomialRegression::set_response(const MatrixXd & response) { response_ =
 
 void PolynomialRegression::set_polynomial_order(int polynomial_order) { polynomialOrder = polynomial_order; }
 
-void PolynomialRegression::set_scaler_type(const util::SCALER_TYPE scaler_type) { scalerType = scaler_type; }
+void PolynomialRegression::set_scaler_type(const util::DataScaler::SCALER_TYPE scaler_type) { scalerType = scaler_type; }
 
 void PolynomialRegression::set_solver(util::SOLVER_TYPE solver_type_) { solver = solver_factory(solver_type_); }
 

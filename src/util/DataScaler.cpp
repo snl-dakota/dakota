@@ -14,6 +14,7 @@
 namespace dakota {
 namespace util {
 
+using SCALER_TYPE = DataScaler::SCALER_TYPE;
 using BimapScalertypeStr = boost::bimap<SCALER_TYPE, std::string>;
 
 static BimapScalertypeStr type_name_bimap =
@@ -36,9 +37,12 @@ SCALER_TYPE DataScaler::scaler_type(const std::string& scaler_name)
 }
 
 
-DataScaler::DataScaler(){}
+DataScaler::DataScaler() :
+  hasScaling(false)
+{ }
 
-DataScaler::~DataScaler(){}
+DataScaler::~DataScaler()
+{ }
 
 void DataScaler::scale_samples(const MatrixXd &unscaled_samples,
                                MatrixXd &scaled_samples) {
@@ -120,7 +124,7 @@ NormalizationScaler::NormalizationScaler(const MatrixXd &features,
     }
   }
 
-  has_scaling = true;
+  hasScaling = true;
 }
 
 
@@ -153,7 +157,7 @@ StandardizationScaler::StandardizationScaler(const MatrixXd &features,
         scaledFeatures(i,j) = (features(i,j) - scalerFeaturesOffsets(j))/scalerFeaturesScaleFactors(j);      
   }
 
-  has_scaling = true;
+  hasScaling = true;
 }
 
 NoScaler::NoScaler(){}
@@ -167,7 +171,7 @@ NoScaler::NoScaler(const MatrixXd &features) {
   scalerFeaturesOffsets = VectorXd::Zero(num_features);
   scalerFeaturesScaleFactors = VectorXd::Ones(num_features);
 
-  has_scaling = true;
+  hasScaling = true;
 }
 
 bool DataScaler::check_for_zero_scaler_factor(int index) {
