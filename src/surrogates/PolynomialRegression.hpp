@@ -70,7 +70,7 @@ public:
   void set_response(const MatrixXd & );
   void set_polynomial_order(int);
   void set_scaler_type(const util::DataScaler::SCALER_TYPE);
-  void set_solver(const util::SOLVER_TYPE);
+  void set_solver(const util::LinearSolverBase::SOLVER_TYPE);
   void set_polynomial_coeffs(const MatrixXd &coeffs);
 
   // Surrogate
@@ -95,7 +95,7 @@ private:
   MatrixXi basisIndices;
   int polynomialOrder;
   util::DataScaler::SCALER_TYPE scalerType;
-  util::SOLVER_TYPE solverType;
+  util::LinearSolverBase::SOLVER_TYPE solverType;
   std::shared_ptr<util::LinearSolverBase> solver;
 
   // Polynomial surrogate fields

@@ -21,6 +21,7 @@ using namespace dakota::util;
 using namespace dakota::surrogates;
 
 using SCALER_TYPE = DataScaler::SCALER_TYPE;
+using SOLVER_TYPE = LinearSolverBase::SOLVER_TYPE;
 
 namespace {
 
@@ -75,7 +76,7 @@ void PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE scaler_type)
   pr.set_samples(line_vector);
   pr.set_response(response);
   pr.set_scaler_type(scaler_type);
-  pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
+  pr.set_solver(SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
   const MatrixXd& polynomial_coeffs = pr.get_polynomial_coeffs();
@@ -207,7 +208,7 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   pr.set_samples(samples);
   pr.set_response(responses);
   pr.set_scaler_type(SCALER_TYPE::NONE);
-  pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
+  pr.set_solver(SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
   const MatrixXd& polynomial_coeffs = pr.get_polynomial_coeffs();
@@ -240,7 +241,7 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   pr2.set_samples(samples);
   pr2.set_response(responses);
   pr2.set_scaler_type(SCALER_TYPE::NONE);
-  pr2.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
+  pr2.set_solver(SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr2.build_surrogate();
 
   const MatrixXd& polynomial_coeffs2 = pr2.get_polynomial_coeffs();
@@ -332,7 +333,7 @@ PolynomialRegressionSurrogate_gradient_and_hessian()
   pr.set_polynomial_order(degree);
   pr.set_response(responses);
   pr.set_scaler_type(SCALER_TYPE::NONE);
-  pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
+  pr.set_solver(SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
   MatrixXd gradient, hessian;

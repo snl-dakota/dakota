@@ -17,10 +17,6 @@
 
 namespace dakota {
 
-using util::NormalizationScaler;
-using util::NoScaler;
-using util::StandardizationScaler;
-
 namespace surrogates {
 
 /**

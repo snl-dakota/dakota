@@ -14,6 +14,8 @@
 using namespace dakota;
 using namespace dakota::util;
 
+using SOLVER_TYPE = LinearSolverBase::SOLVER_TYPE;
+
 namespace {
   
   // -------------------------------------

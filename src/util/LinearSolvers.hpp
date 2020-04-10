@@ -16,62 +16,65 @@
 namespace dakota {
 namespace util {
 
-enum class SOLVER_TYPE {
-                         CHOLESKY,
-                         EQ_CONS_LEAST_SQ_REGRESSION,
-                         LASSO_REGRESSION,
-                         LEAST_ANGLE_REGRESSION,
-                         LU,
-                         ORTHOG_MATCH_PURSUIT,
-                         QR_LEAST_SQ_REGRESSION,
-                         SVD_LEAST_SQ_REGRESSION
-                       };
-
-
 // --------------------------------------------------------------------------------
 
+/**
+ *  \brief The LinearSolverBase class serves as an API for derived solvers.
+ */
 class LinearSolverBase
 {
-
   public:
 
-    LinearSolverBase() { }
+    /// How best to Doxygenate class enums? RWH
+    enum class SOLVER_TYPE { CHOLESKY,
+                             EQ_CONS_LEAST_SQ_REGRESSION,
+                             LASSO_REGRESSION,
+                             LEAST_ANGLE_REGRESSION,
+                             LU,
+                             ORTHOG_MATCH_PURSUIT,
+                             QR_LEAST_SQ_REGRESSION,
+                             SVD_LEAST_SQ_REGRESSION
+                           };
 
-    ~LinearSolverBase() { }
+    /// Constructor
+    LinearSolverBase();
+
+    /// Destructor
+    ~LinearSolverBase();
 
     static SOLVER_TYPE solver_type(const std::string& solver_name);
 
-    virtual bool is_factorized()
-    {
-      return false;
-    };
+    /**
+     * \brief Query to determine if the matrix of the solver has been factored
+     */
+    virtual bool is_factorized() const;
 
-    virtual void factorize( const MatrixXd & )
-    {
-      std::string msg = "factorize() Has not been implemented for this class.";
-      throw( std::runtime_error( msg ) );
-    };
+    /**
+     * \brief Perform the matrix factorization for the linear solver matrix
+     *
+     * \param[in] mat The incoming matrix to factorize
+     */
+    virtual void factorize( const MatrixXd & mat);
 
     /**
      * \brief Find a solution to Ax = b
+     *
+     * \param[in] lhs The linear system left-hand-side matrix
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
      */
-    virtual void solve( const MatrixXd &, const MatrixXd &, MatrixXd & )
-    {
-      std::string msg = "solve() Has not been implemented for this class.";
-      throw( std::runtime_error( msg ) );
-    };
+    virtual void solve( const MatrixXd & lhs, const MatrixXd & rhs, MatrixXd & x);
 
     /**
-     * \brief Find a solution to Ax = b, is A is already computed.
+     * \brief Find a solution to Ax = b when A is already factorized
+     *
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
      */
-    virtual void solve( const MatrixXd &, MatrixXd & )
-    {
-      std::string msg = "solve() Has not been implemented for this class.";
-      throw( std::runtime_error( msg ) );
-    };
+    virtual void solve( const MatrixXd & rhs, MatrixXd & x);
 };
 
-std::shared_ptr<LinearSolverBase> solver_factory(SOLVER_TYPE);
+std::shared_ptr<LinearSolverBase> solver_factory(LinearSolverBase::SOLVER_TYPE);
 
 // --------------------------------------------------------------------------------
 
@@ -79,41 +82,44 @@ class LUSolver : public LinearSolverBase
 {
   public:
 
-    LUSolver() : LinearSolverBase() { };
+    /// Constructor
+    LUSolver();
 
-    ~LUSolver() { };
+    /// Destructor
+    ~LUSolver();
 
-    bool is_factorized() override
-    {
-      if(lu_ptr) return true;
-      return false;
-    };
+    /**
+     * \brief Query to determine if the matrix of the solver has been factored
+     */
+    bool is_factorized() const override;
 
-    void factorize ( const MatrixXd & A ) override
-    {
-      Eigen::FullPivLU<MatrixXd> lu;
-      lu_ptr = std::make_shared<Eigen::FullPivLU<MatrixXd>>(lu.compute(A));
-    };
+    /**
+     * \brief Perform the matrix factorization for the linear solver matrix
+     *
+     * \param[in] mat The incoming matrix to factorize
+     */
+    void factorize ( const MatrixXd & A ) override;
 
-    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override
-    {
-      factorize(A);
-      solve(b, x);
-    };
+    /**
+     * \brief Find a solution to Ax = b
+     *
+     * \param[in] lhs The linear system left-hand-side matrix
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
+     */
+    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override;
 
-    void solve( const MatrixXd & b, MatrixXd & x ) override
-    {
-      if(lu_ptr) {
-        x = lu_ptr->solve(b);
-      } else {
-        std::string msg = "LU has not been previously computed.";
-        throw( std::runtime_error( msg ) );
-      }
-    };
+    /**
+     * \brief Find a solution to Ax = b when A is already factorized
+     *
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
+     */
+    void solve( const MatrixXd & b, MatrixXd & x ) override;
 
   private:
 
-    std::shared_ptr<Eigen::FullPivLU<MatrixXd>> lu_ptr;
+    std::shared_ptr<Eigen::FullPivLU<MatrixXd>> LU_Ptr;
 };
 
 // --------------------------------------------------------------------------------
@@ -122,42 +128,44 @@ class SVDSolver : public LinearSolverBase
 {
   public:
 
-    SVDSolver() : LinearSolverBase() { };
+    /// Constructor
+    SVDSolver();
 
-    ~SVDSolver() { };
+    /// Destructor
+    ~SVDSolver();
 
-    bool is_factorized() override
-    {
-      if(svd_ptr) return true;
-      return false;
-    };
+    /**
+     * \brief Query to determine if the matrix of the solver has been factored
+     */
+    bool is_factorized() const override;
 
-    void factorize ( const MatrixXd & A ) override
-    {
-      Eigen::BDCSVD<MatrixXd> bdcsvd;
-      svd_ptr = std::make_shared<Eigen::BDCSVD<MatrixXd>>(bdcsvd.compute(A, Eigen::ComputeThinU | Eigen::ComputeThinV));
-    };
+    /**
+     * \brief Perform the matrix factorization for the linear solver matrix
+     *
+     * \param[in] mat The incoming matrix to factorize
+     */
+    void factorize ( const MatrixXd & A ) override;
 
-    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override
-    {
-      factorize(A);
-      solve(b, x);
-    };
+    /**
+     * \brief Find a solution to Ax = b
+     *
+     * \param[in] lhs The linear system left-hand-side matrix
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
+     */
+    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override;
 
-    void solve( const MatrixXd & b, MatrixXd & x ) override
-    {
-      if(svd_ptr) {
-        x = svd_ptr->solve(b);
-      } else {
-        std::string msg = "SVD has not been previously computed.";
-        throw( std::runtime_error( msg ) );
-      }
-    };
+    /**
+     * \brief Find a solution to Ax = b when A is already factorized
+     *
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
+     */
+    void solve( const MatrixXd & b, MatrixXd & x ) override;
 
   private:
 
-    std::shared_ptr<Eigen::BDCSVD<MatrixXd>> svd_ptr;
-
+    std::shared_ptr<Eigen::BDCSVD<MatrixXd>> SVD_Ptr;
 };
 
 // --------------------------------------------------------------------------------
@@ -166,41 +174,44 @@ class QRSolver : public LinearSolverBase
 {
   public:
 
-    QRSolver() : LinearSolverBase() { };
+    /// Constructor
+    QRSolver();
 
-    ~QRSolver() { };
+    /// Destructor
+    ~QRSolver();
 
-    bool is_factorized() override
-    {
-      if(qr_ptr) return true;
-      return false;
-    };
+    /**
+     * \brief Query to determine if the matrix of the solver has been factored
+     */
+    bool is_factorized() const override;
 
-    void factorize ( const MatrixXd & A ) override
-    {
-      Eigen::ColPivHouseholderQR<MatrixXd> qr;
-      qr_ptr = std::make_shared<Eigen::ColPivHouseholderQR<MatrixXd>>(qr.compute(A));
-    };
+    /**
+     * \brief Perform the matrix factorization for the linear solver matrix
+     *
+     * \param[in] mat The incoming matrix to factorize
+     */
+    void factorize ( const MatrixXd & A ) override;
 
-    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override
-    {
-      factorize(A);
-      solve(b, x);
-    };
+    /**
+     * \brief Find a solution to Ax = b
+     *
+     * \param[in] lhs The linear system left-hand-side matrix
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
+     */
+    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override;
 
-    void solve( const MatrixXd & b, MatrixXd & x ) override
-    {
-      if(qr_ptr) {
-        x = qr_ptr->solve(b);
-      } else {
-        std::string msg = "QR has not been previously computed.";
-        throw( std::runtime_error( msg ) );
-      }
-    };
+    /**
+     * \brief Find a solution to Ax = b when A is already factorized
+     *
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
+     */
+    void solve( const MatrixXd & b, MatrixXd & x ) override;
 
   private:
 
-    std::shared_ptr<Eigen::ColPivHouseholderQR<MatrixXd>> qr_ptr;
+    std::shared_ptr<Eigen::ColPivHouseholderQR<MatrixXd>> QR_Ptr;
 
 };
 
@@ -214,43 +225,44 @@ class CholeskySolver : public LinearSolverBase
 {
   public:
 
-    CholeskySolver() : LinearSolverBase() { };
+    /// Constructor
+    CholeskySolver();
 
-    ~CholeskySolver() { };
+    /// Destructor
+    ~CholeskySolver();
 
-    bool is_factorized() override
-    {
-      if(ldlt_ptr) return true;
-      return false;
-    };
+    /**
+     * \brief Query to determine if the matrix of the solver has been factored
+     */
+    bool is_factorized() const override;
 
-    void factorize ( const MatrixXd & A ) override
-    {
-      Eigen::LDLT<MatrixXd> ldlt;
-      ldlt_ptr = std::make_shared<Eigen::LDLT<MatrixXd>>(ldlt.compute(A));
-    };
+    /**
+     * \brief Perform the matrix factorization for the linear solver matrix
+     *
+     * \param[in] mat The incoming matrix to factorize
+     */
+    void factorize ( const MatrixXd & A ) override;
 
-    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override
-    {
-      factorize(A);
-      solve(b, x);
-    };
+    /**
+     * \brief Find a solution to Ax = b
+     *
+     * \param[in] lhs The linear system left-hand-side matrix
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
+     */
+    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override;
 
-    void solve( const MatrixXd & b, MatrixXd & x ) override
-    {
-      if(ldlt_ptr) {
-        x = ldlt_ptr->solve(b);
-      } else {
-        std::string msg = "Cholesky has not been previously computed.";
-        throw( std::runtime_error( msg ) );
-      }
-    };
-
+    /**
+     * \brief Find a solution to Ax = b when A is already factorized
+     *
+     * \param[in] rhs The linear system right-hand-side (multi-)vector
+     * \param[in] x   The linear system solution (multi-)vector
+     */
+    void solve( const MatrixXd & b, MatrixXd & x ) override;
 
   private:
 
-    std::shared_ptr<Eigen::LDLT<MatrixXd>> ldlt_ptr;
-
+    std::shared_ptr<Eigen::LDLT<MatrixXd>> LDLT_Ptr;
 };
 
 } // namespace util
