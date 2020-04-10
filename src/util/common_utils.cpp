@@ -6,42 +6,32 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-/*
- * CommonUtils.cpp
- * author Elliott Ridgway
- */
-
-/////////////
-// Imports //
-/////////////
-
-#include "CommonUtils.hpp"
+#include "common_utils.hpp"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 
 #include <fstream>
 
-///////////////////////
-// Using / Namespace //
-///////////////////////
 
 namespace dakota {
 namespace util {
 
-///////////////
-// Utilities //
-///////////////
+// ------------------------------------------------------------
 
-void error(const std::string msg)
+void error(const std::string & msg)
 {
   throw(std::runtime_error(msg));
 }
+
+// ------------------------------------------------------------
 
 bool matrix_equals(const MatrixXi &A, const MatrixXi &B)
 {
   return A == B;
 }
+
+// ------------------------------------------------------------
 
 bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol)
 {
@@ -53,11 +43,13 @@ bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol)
   for (int j=0; j<A.cols(); j++){
     for (int i=0; i<A.rows(); i++){
       if (std::abs(A(i,j)-B(i,j))>tol)
-	    return false;
+        return false;
     }
   }
   return true;
 }
+
+// ------------------------------------------------------------
 
 bool matrix_equals(const RealMatrix &A, const RealMatrix &B, double tol)
 {
@@ -69,13 +61,15 @@ bool matrix_equals(const RealMatrix &A, const RealMatrix &B, double tol)
   for (int j=0; j<A.numCols(); j++){
     for (int i=0; i<A.numRows(); i++){
       if (std::abs(A(i,j)-B(i,j))>tol)
-      return false;
+        return false;
     }
   }
   return true;
 }
 
-double variance(VectorXd vec)
+// ------------------------------------------------------------
+
+double variance(const VectorXd & vec)
 {
   boost::accumulators::accumulator_set<double, boost::accumulators::features<boost::accumulators::tag::variance>> acc;
   for(int i = 0; i < vec.size(); i++)
@@ -85,10 +79,12 @@ double variance(VectorXd vec)
   return boost::accumulators::variance(acc);
 }
 
-void populateVectorsFromFile(std::string fileName, std::vector<VectorXd> &R, int num_datasets, int num_samples) {
+// ------------------------------------------------------------
 
+void populateVectorsFromFile(const std::string & filename, std::vector<VectorXd> &R, int num_datasets, int num_samples)
+{
   R.resize(num_datasets);
-  std::ifstream in(fileName,std::ios::in);
+  std::ifstream in(filename,std::ios::in);
 
   if (!in.is_open()) {
     throw(std::runtime_error("File does not exist!"));
@@ -103,10 +99,13 @@ void populateVectorsFromFile(std::string fileName, std::vector<VectorXd> &R, int
   in.close();
 
 }
-void populateMatricesFromFile(std::string fileName, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples) {
 
+// ------------------------------------------------------------
+
+void populateMatricesFromFile(const std::string & filename, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples)
+{
   S.resize(num_datasets);
-  std::ifstream in(fileName,std::ios::in);
+  std::ifstream in(filename,std::ios::in);
 
   if (!in.is_open()) {
     throw(std::runtime_error("File does not exist!"));
@@ -124,6 +123,7 @@ void populateMatricesFromFile(std::string fileName, std::vector<MatrixXd> &S, in
   in.close();
 }
 
+// ------------------------------------------------------------
 
 } // namespace util
 } // namespace dakota

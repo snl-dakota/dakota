@@ -6,16 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-/*
- * SurrogatesToolsTest.cpp
- * author Russell Hooper
- */
 
-/////////////
-// Imports //
-/////////////
-
-#include "CommonUtils.hpp"
+#include "common_utils.hpp"
 #include "surrogates_tools.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>

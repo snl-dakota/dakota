@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "MathTools.hpp"
+#include "math_tools.hpp"
 #include "surrogates_tools.hpp"
 
 namespace dakota {

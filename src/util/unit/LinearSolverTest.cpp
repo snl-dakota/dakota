@@ -6,32 +6,15 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-/*
- * LinearSolverTest.cpp
- * author Russell Hooper
- */
-
-/////////////
-// Imports //
-/////////////
-
-#include "CommonUtils.hpp"
+#include "common_utils.hpp"
 #include "LinearSolvers.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
-
-///////////////
-// Namespace //
-///////////////
 
 using namespace dakota;
 using namespace dakota::util;
 
 namespace {
-  
-  ///////////////
-  // Utilities //
-  ///////////////
   
   // -------------------------------------
 

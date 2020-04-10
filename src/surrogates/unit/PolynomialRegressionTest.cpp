@@ -7,27 +7,20 @@
     _______________________________________________________________________ */
 
 
-// Includes
-
-#include "CommonUtils.hpp"
-#include "surrogates_tools.hpp"
-
-#include "PolynomialRegression.hpp"
+#include "common_utils.hpp"
 #include "LinearSolvers.hpp"
+#include "PolynomialRegression.hpp"
+#include "surrogates_tools.hpp"
 
 #include <boost/random.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/test/minimal.hpp>
-
-// Namespace
 
 using namespace dakota;
 using namespace dakota::util;
 using namespace dakota::surrogates;
 
 namespace {
-
-// Utilities
 
 MatrixXd create_single_feature_matrix()
 {

@@ -6,52 +6,37 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-/*
- * MathTools.hpp
- * author
- */
-
-/////////////
-// Defines //
-/////////////
-
 #ifndef DAKOTA_UTIL_MATH_TOOLS_HPP
 #define DAKOTA_UTIL_MATH_TOOLS_HPP
 
-/////////////
-// Imports //
-/////////////
-
 #include "util_data_types.hpp"
-
-///////////////////////
-// Using / Namespace //
-///////////////////////
 
 namespace dakota {
 namespace util {
 
-/////////////
-// Headers //
-/////////////
-
 /**
- *  \brief Caclulate cominatorial N choose K
+ *  \brief Calculate Binomial coefficient n choose k
+ *  \param[in] n Number of elements in set
+ *  \param[in] k Number of elements in subset k where n >= k >= 0
+ *  \returns Number of ways to choose an (unordered) subset of k elements from a fixed set of n elements
 */
 int n_choose_k(int n, int k);
 
 /**
- *  \brief Caclulate and return number of nonzero entries 
+ *  \brief Caclulate and return number of nonzero entries in vector or matrix 
+ *  \param[in] mat Incoming vector or matrix
+ *  \returns Number of nonzeros
 */
 template< typename T>
-int num_nonzeros(const T mat)
+int num_nonzeros(const T & mat)
 {
   return (mat.array() != 0).count();
 }
 
-
 /**
- *  \brief Create a vector of indices for nonzero entries in input vector
+ *  \brief Create a vector of indices based on nonzero entries in input vector
+ *  \param[in] v Incoming vector
+ *  \param[out] result Vector having values at nonzero locations of incoming vector and value equal to ordinal of occurrence
 */
 template< typename T1, typename T2>
 void nonzero( const T1 & v, T2 & result )
@@ -74,12 +59,13 @@ void nonzero( const T1 & v, T2 & result )
 
 
 /**
- *  \brief Create a vector of indices for nonzero entries in input vector
+ *  \brief Append columns of input matrix to existing matrix
+ *  \param[in] new_cols Incoming matrix of column vectors to append
+ *  \param[out] target Matrix to augment with appended columns
 */
 template< typename T1, typename T2>
 void append_columns( const T1 & new_cols, T2 & target )
 {
-  // How do we want to handle errors? 
   if( (target.rows() != new_cols.rows()) && (new_cols.cols() > 0) )
     throw std::runtime_error("Incompatible row dimensions for append_columns.");
 
@@ -92,6 +78,9 @@ void append_columns( const T1 & new_cols, T2 & target )
 
 /**
  *  \brief Caclulate and return p-norm of a vector
+ *  \param[in] v Incoming vector
+ *  \param[in] p Order or norm to compute
+ *  \returns p-norm of incoming vector
 */
 template< typename T >
 double p_norm( const T & v, double p )

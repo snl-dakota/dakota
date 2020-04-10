@@ -6,23 +6,10 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-/*
- * MathToolsTest.cpp
- * author Russell Hooper
- */
-
-/////////////
-// Imports //
-/////////////
-
-#include "CommonUtils.hpp"
-#include "MathTools.hpp"
+#include "common_utils.hpp"
+#include "math_tools.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
-
-///////////////
-// Namespace //
-///////////////
 
 using namespace dakota::util;
 

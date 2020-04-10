@@ -6,32 +6,16 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-/*
- * DataScalerTest.cpp
- * author Elliott Ridgway
- */
-
-/////////////
-// Imports //
-/////////////
-
-#include "CommonUtils.hpp"
+#include "common_utils.hpp"
 #include "DataScaler.hpp"
 #include "util_data_types.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
 
-///////////////
-// Namespace //
-///////////////
 using namespace dakota;
 using namespace dakota::util;
 
 namespace {
-
-///////////////
-// Utilities //
-///////////////
 
 MatrixXd create_single_feature_matrix()
 {

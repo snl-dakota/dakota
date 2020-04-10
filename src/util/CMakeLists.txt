@@ -11,17 +11,17 @@
 #project(DakotaUtil LANGUAGES CXX)
 
 set(util_sources
-  CommonUtils.cpp
+  common_utils.cpp
   DataScaler.cpp
   LinearSolvers.cpp
-  MathTools.cpp
+  math_tools.cpp
   )
 
 set(util_headers
-  CommonUtils.hpp
+  common_utils.hpp
   DataScaler.hpp
   LinearSolvers.hpp
-  MathTools.hpp
+  math_tools.hpp
   )
 
 add_library(dakota_util ${util_sources} ${util_headers})
