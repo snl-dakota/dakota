@@ -18,8 +18,8 @@ option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
 option(DAKOTA_F90 "Build Dakota's Fortran90 bvls_wrapper." ON)
 
 # BMA NOTE: May not want an option as this is required
-option(DAKOTA_MODULE_UTIL "Enable Dakota module util" OFF)
-option(DAKOTA_MODULE_SURROGATES "Enable Dakota module surrogates" OFF)
+option(DAKOTA_MODULE_UTIL "Enable Dakota module util" ON)
+option(DAKOTA_MODULE_SURROGATES "Enable Dakota module surrogates" ON)
 # BMA NOTE: This isn't a great module name, but seems more intentional
 # that "rest of Dakota"
 option(DAKOTA_MODULE_DAKOTA "Enable Dakota module for traditional all Dakota"
