@@ -165,7 +165,7 @@ public:
   virtual void export_approximation();
 
   /// rebuilds the approximation after a data update
-  virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
+  virtual void rebuild_approximation(const BitArray& rebuild_fns);
 
   /// removes data from last append from the approximation
   virtual void pop_approximation(bool save_data);
@@ -185,6 +185,9 @@ public:
 
   /// clear inactive approximation data
   virtual void clear_inactive();
+
+  /// query for change in approximation formulation
+  virtual bool formulation_updated() const;
 
   /// approximation cross-validation quality metrics per response function
   virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 
@@ -231,7 +234,6 @@ public:
 
   /// clean up any interface parameter/response files when aborting
   virtual void file_cleanup() const;
-
 
   //
   //- Heading: Set and Inquire functions

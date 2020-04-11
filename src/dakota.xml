@@ -79,7 +79,7 @@
                <keyword  id="filename_prefix" name="filename_prefix" minOccurs="0" code="{N_mom(str,modelExportPrefix)}" label="Exported Surrogate Filename Prefix"  default="exported_surrogate" complexity="1">
 		 <param type="STRING" />
                </keyword>
-               <keyword id="formats" name="formats" code="{0}" label="Formats" minOccurs="1" maxOccurs="1" group="Surrogate Export Formats" complexity="1">
+               <keyword id="formats" name="formats" code="{0}" label="Formats" maxOccurs="1" group="Surrogate Export Formats" complexity="1">
 		 <keyword id="text_archive" name="text_archive" code="{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}" label="Text Archive" maxOccurs="1" minOccurs="0" />
 		 <keyword id="binary_archive" name="binary_archive" code="{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}" label="Binary Archive" maxOccurs="1" minOccurs="0"  />
 		 <keyword id="algebraic_file" name="algebraic_file" code="{N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)}" label="Algebraic File" maxOccurs="1" minOccurs="0"  />
@@ -93,7 +93,7 @@
                <keyword  id="filename_prefix" name="filename_prefix" minOccurs="0" code="{N_mom(str,modelExportPrefix)}" label="Exported Surrogate Filename Prefix"  default="exported_surrogate" complexity="1">
 		 <param type="STRING" />
                </keyword>
-               <keyword id="formats" name="formats" code="{0}" label="Formats" minOccurs="1" maxOccurs="1" group="Surrogate Export Formats" complexity="1">
+               <keyword id="formats" name="formats" code="{0}" label="Formats" maxOccurs="1" group="Surrogate Export Formats" complexity="1">
 		 <keyword id="text_archive" name="text_archive" code="{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}" label="Text SPS" maxOccurs="1" minOccurs="0" />
 		 <keyword id="binary_archive" name="binary_archive" code="{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}" label="Binary SPS" maxOccurs="1" minOccurs="0"  />
                </keyword>
@@ -221,7 +221,7 @@
 	     <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
                <oneOf label="p-refinement Type">
 		 <keyword  id="uniform1" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform"   />
-		 <keyword  id="dimension_adaptive" name="dimension_adaptive" code="{0}" label="dimension_adaptive"  minOccurs="1" >
+		 <keyword  id="dimension_adaptive" name="dimension_adaptive" code="{0}" label="dimension_adaptive"  >
 		   <oneOf label="Dimension Adaptivity Estimation Approach">
 		     <keyword  id="sobol" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol"   default="generalized" />
 		     <keyword  id="decay" name="decay" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}" label="decay"   />
@@ -236,10 +236,10 @@
     <!ENTITY sc_refinement '
              <optional>
 	       <oneOf label="Automated Refinement Type">
-		 <keyword  id="p_refinement1" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="p_refinement"  minOccurs="1" default="no refinement" >
+		 <keyword  id="p_refinement1" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="p_refinement"  default="no refinement" >
 		   <oneOf label="p-refinement Type">
 		     <keyword  id="uniform2" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform"   />
-		     <keyword  id="dimension_adaptive1" name="dimension_adaptive" code="{0}" label="dimension_adaptive"  minOccurs="1" >
+		     <keyword  id="dimension_adaptive1" name="dimension_adaptive" code="{0}" label="dimension_adaptive"  >
 		       <oneOf label="Dimension Adaptivity Estimation Approach">
 			 <keyword  id="sobol1" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol"   default="generalized" />
 			 <keyword  id="generalized2" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized"   />
@@ -247,10 +247,10 @@
 		     </keyword>
 		   </oneOf>
 		 </keyword>
-		 <keyword  id="h_refinement" name="h_refinement" code="{N_mdm(type,refinementType_H_REFINEMENT)}" label="h_refinement"  minOccurs="1"  default="no refinement" >
+		 <keyword  id="h_refinement" name="h_refinement" code="{N_mdm(type,refinementType_H_REFINEMENT)}" label="h_refinement"   default="no refinement" >
 		   <oneOf label="h-refinement Type">
 		     <keyword  id="uniform3" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform"   />
-		     <keyword  id="dimension_adaptive2" name="dimension_adaptive" code="{0}" label="dimension_adaptive"  minOccurs="1" >
+		     <keyword  id="dimension_adaptive2" name="dimension_adaptive" code="{0}" label="dimension_adaptive"  >
 		       <oneOf label="Dimension Adaptivity Estimation Approach">
 			 <keyword  id="sobol2" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol"   default="generalized" />
 			 <keyword  id="generalized3" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized"   />
@@ -264,17 +264,16 @@
 	     &default_max_refinement_iterations;
 	     ' >
 
-    <!ENTITY ft_refinement '
-             <!-- No context-specific/goal-oriented (UQ) refinement at this time, only generic refinement within Model (adapt_rank) -->
+    <!ENTITY ft_method_refinement '
              <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
-               <oneOf label="p-refinement Type">
-		 <keyword  id="uniform1" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform"   />
-		 <keyword  id="dimension_adaptive" name="dimension_adaptive" code="{0}" label="dimension_adaptive"  minOccurs="1" >
-		   <oneOf label="Dimension Adaptivity Estimation Approach">
-		     <keyword  id="generalized" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized"   />
-		   </oneOf>
-		 </keyword>
-	       </oneOf>
+	       <keyword  id="uniform4" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
+		 <!--
+		 <oneOf label="Uniform Refinement Approach">
+		   <keyword  id="order" name="order" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL_ORDER)}" label="order" />
+		   <keyword  id="rank" name="rank" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL_RANK)}" label="rank" />
+		 </oneOf>
+		 -->
+	       </keyword>
 	     </keyword>
 	     &default_max_refinement_iterations;
 	     ' >
@@ -283,7 +282,7 @@
 	     <optional>
 	       <oneOf label="Quadrature Rule Nesting">
 		 <keyword  id="nested" name="nested" code="{N_mdm(type,nestingOverride_NESTED)}" label="nested"   default="quadrature: non_nested unless automated refinement; sparse grids: nested" />
-		 <keyword  id="non_nested" name="non_nested" code="{N_mdm(type,nestingOverride_NON_NESTED)}" label="non_nested"   />
+		 <keyword  id="non_nested" name="non_nested" code="{N_mdm(type,nestingOverride_NON_NESTED)}" label="non_nested" />
 	       </oneOf>
 	     </optional>
 	     ' >
@@ -329,7 +328,7 @@
 	     ' >
 
     <!ENTITY pce_sparse_grid_sequence '
-	     <keyword  id="sparse_grid_level_sequence" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevelSeq)}" label="Sparse grid level for PCE coefficient estimation"  minOccurs="1" >
+	     <keyword  id="sparse_grid_level_sequence" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevelSeq)}" label="Sparse grid level for PCE coefficient estimation"  >
 	       <param type="INTEGERLIST" />
 	       &expansion_dim_pref;
                &expansion_rule_growth;
@@ -338,7 +337,7 @@
 	     ' >
 
     <!ENTITY pce_sparse_grid '
-	     <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mdm(ushint,sparseGridLevel)}" label="Sparse grid level for PCE coefficient estimation"  minOccurs="1" >
+	     <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mdm(ushint,sparseGridLevel)}" label="Sparse grid level for PCE coefficient estimation"  >
 	       <param type="INTEGER" />
 	       &expansion_dim_pref;
                &expansion_rule_growth;
@@ -347,7 +346,7 @@
 	     ' >
 
     <!ENTITY sc_sparse_grid_sequence '
-	     <keyword  id="sparse_grid_level_sequence" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevelSeq)}" label="Sparse grid level for SC interpolation"  minOccurs="1" >
+	     <keyword  id="sparse_grid_level_sequence" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevelSeq)}" label="Sparse grid level for SC interpolation"  >
 	       <param type="INTEGERLIST" />
 	       &expansion_dim_pref;
 	       &sc_sparse_interpolant;
@@ -357,7 +356,7 @@
 	     ' >
 
     <!ENTITY sc_sparse_grid '
-	     <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mdm(ushint,sparseGridLevel)}" label="Sparse grid level for for SC interpolation"  minOccurs="1" >
+	     <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mdm(ushint,sparseGridLevel)}" label="Sparse grid level for for SC interpolation"  >
 	       <param type="INTEGER" />
 	       &expansion_dim_pref;
 	       &sc_sparse_interpolant;
@@ -372,65 +371,20 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY pce_regression_alg_select '
-             <optional>
-	       <oneOf label="Regression Algorithm">
-		 <keyword  id="least_squares" name="least_squares" code="{N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}" label="least_squares"  minOccurs="1" default="svd" >
-		   <optional>
-		     <oneOf label="LSQ Regression Approach">
-		       <keyword  id="svd" name="svd" code="{N_mdm(type,lsRegressionType_SVD_LS)}" label="svd"   />
-		       <keyword  id="equality_constrained" name="equality_constrained" code="{N_mdm(type,lsRegressionType_EQ_CON_LS)}" label="equality_constrained"   />
-		     </oneOf>
-		   </optional>
-		 </keyword>
-		 <keyword  id="orthogonal_matching_pursuit" name="orthogonal_matching_pursuit" code="{N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}" label="orthogonal_matching_pursuit"  minOccurs="1" >
-		   <alias name="omp"/>
-		   <keyword  id="noise_tolerance" name="noise_tolerance" code="{N_mdm(RealDL,regressionNoiseTol)}" label="noise_tolerance"  minOccurs="0" default="1e-3 for BPDN, 0. otherwise (algorithms run until termination)" >
-		     <param type="REALLIST" />
-		   </keyword>
-		 </keyword>
-		 <keyword  id="basis_pursuit" name="basis_pursuit" code="{N_mdm(type,regressionType_BASIS_PURSUIT)}" label="basis_pursuit"   >
-		   <alias name="bp"/>
-		 </keyword>
-		 <keyword  id="basis_pursuit_denoising" name="basis_pursuit_denoising" code="{N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}" label="basis_pursuit_denoising"  minOccurs="1" >
-		   <alias name="bpdn"/>
-		   <keyword  id="noise_tolerance1" name="noise_tolerance" code="{N_mdm(RealDL,regressionNoiseTol)}" label="noise_tolerance"  minOccurs="0" default="1e-3 for BPDN, 0. otherwise (algorithms run until termination)" >
-		     <param type="REALLIST" />
-		   </keyword>
-		 </keyword>
-		 <keyword  id="least_angle_regression" name="least_angle_regression" code="{N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}" label="least_angle_regression"  minOccurs="1" >
-		   <alias name="lars"/>
-		   <keyword  id="noise_tolerance2" name="noise_tolerance" code="{N_mdm(RealDL,regressionNoiseTol)}" label="noise_tolerance"  minOccurs="0" default="1e-3 for BPDN, 0. otherwise (algorithms run until termination)" >
-		     <param type="REALLIST" />
-		   </keyword>
-		 </keyword>
-		 <keyword  id="least_absolute_shrinkage" name="least_absolute_shrinkage" code="{N_mdm(type,regressionType_LASSO_REGRESSION)}" label="least_absolute_shrinkage"  minOccurs="1" >
-		   <alias name="lasso"/>
-		   <keyword  id="noise_tolerance3" name="noise_tolerance" code="{N_mdm(RealDL,regressionNoiseTol)}" label="noise_tolerance"  minOccurs="0" default="1e-3 for BPDN, 0. otherwise (algorithms run until termination)" >
-		     <param type="REALLIST" />
-		   </keyword>
-		   <keyword  id="l2_penalty" name="l2_penalty" code="{N_mdm(Real,regressionL2Penalty)}" label="l2_penalty"  minOccurs="0" default="0. (reverts to standard LASSO formulation)" >
-		     <param type="REAL" />
-		   </keyword>
-		 </keyword>
-	       </oneOf>
-	     </optional>
-	     ' >
-
     <!ENTITY pce_basis_type '
              <keyword  id="basis_type" name="basis_type" code="{0}" label="basis_type"  minOccurs="0" >
 	       <oneOf label="PCE Basis Type">
 		 <keyword  id="tensor_product" name="tensor_product" code="{N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}" label="tensor_product"   />
 		 <keyword  id="total_order" name="total_order" code="{N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}" label="total_order"   />
-		 <keyword  id="adapted" name="adapted" code="{N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}" label="adapted"  minOccurs="1" >
-		   <!-- <keyword  id="adapted" name="adapted" code="{0}" label="adapted"  minOccurs="1" >
+		 <keyword  id="adapted" name="adapted" code="{N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}" label="adapted"  >
+		   <!-- <keyword  id="adapted" name="adapted" code="{0}" label="adapted"  >
 			<oneOf label="Adaptation Method">
-			  <keyword  id="generalized1" name="generalized" code="{N_mdm(type,expansionBasisType_ADAPTED_BASIS_GENERALIZED)}" label="generalized"  minOccurs="1" >
+			  <keyword  id="generalized1" name="generalized" code="{N_mdm(type,expansionBasisType_ADAPTED_BASIS_GENERALIZED)}" label="generalized"  >
 			    <keyword  id="initial_level" name="initial_level" code="{N_mdm(ushint,adaptedBasisInitLevel)}" label="initial_level"  minOccurs="0" >
 			      <param type="INTEGER" />
 			    </keyword>
 			  </keyword>
-			  <keyword  id="expanding_front" name="expanding_front" code="{N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}" label="expanding_front"  minOccurs="1" >
+			  <keyword  id="expanding_front" name="expanding_front" code="{N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}" label="expanding_front"  >
 			    <keyword  id="advancements" name="advancements" code="{N_mdm(ushint,adaptedBasisAdvancements)}" label="advancements"  minOccurs="0" >
 			      <param type="INTEGER" />
 			    </keyword>
@@ -448,8 +402,52 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY pce_regression_alg_select '
+             <optional>
+	       <oneOf label="Regression Algorithm">
+		 <keyword  id="least_squares" name="least_squares" code="{N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}" label="least_squares"  default="svd" >
+		   <optional>
+		     <oneOf label="LSQ Regression Approach">
+		       <keyword  id="svd" name="svd" code="{N_mdm(type,lsRegressionType_SVD_LS)}" label="svd"   />
+		       <keyword  id="equality_constrained" name="equality_constrained" code="{N_mdm(type,lsRegressionType_EQ_CON_LS)}" label="equality_constrained"   />
+		     </oneOf>
+		   </optional>
+		 </keyword>
+		 <keyword  id="orthogonal_matching_pursuit" name="orthogonal_matching_pursuit" code="{N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}" label="orthogonal_matching_pursuit"  >
+		   <alias name="omp"/>
+		   <keyword  id="noise_tolerance" name="noise_tolerance" code="{N_mdm(RealDL,regressionNoiseTol)}" label="noise_tolerance"  minOccurs="0" default="1e-3 for BPDN, 0. otherwise (algorithms run until termination)" >
+		     <param type="REALLIST" />
+		   </keyword>
+		 </keyword>
+		 <keyword  id="basis_pursuit" name="basis_pursuit" code="{N_mdm(type,regressionType_BASIS_PURSUIT)}" label="basis_pursuit"   >
+		   <alias name="bp"/>
+		 </keyword>
+		 <keyword  id="basis_pursuit_denoising" name="basis_pursuit_denoising" code="{N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}" label="basis_pursuit_denoising"  >
+		   <alias name="bpdn"/>
+		   <keyword  id="noise_tolerance1" name="noise_tolerance" code="{N_mdm(RealDL,regressionNoiseTol)}" label="noise_tolerance"  minOccurs="0" default="1e-3 for BPDN, 0. otherwise (algorithms run until termination)" >
+		     <param type="REALLIST" />
+		   </keyword>
+		 </keyword>
+		 <keyword  id="least_angle_regression" name="least_angle_regression" code="{N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}" label="least_angle_regression"  >
+		   <alias name="lars"/>
+		   <keyword  id="noise_tolerance2" name="noise_tolerance" code="{N_mdm(RealDL,regressionNoiseTol)}" label="noise_tolerance"  minOccurs="0" default="1e-3 for BPDN, 0. otherwise (algorithms run until termination)" >
+		     <param type="REALLIST" />
+		   </keyword>
+		 </keyword>
+		 <keyword  id="least_absolute_shrinkage" name="least_absolute_shrinkage" code="{N_mdm(type,regressionType_LASSO_REGRESSION)}" label="least_absolute_shrinkage"  >
+		   <alias name="lasso"/>
+		   <keyword  id="noise_tolerance3" name="noise_tolerance" code="{N_mdm(RealDL,regressionNoiseTol)}" label="noise_tolerance"  minOccurs="0" default="1e-3 for BPDN, 0. otherwise (algorithms run until termination)" >
+		     <param type="REALLIST" />
+		   </keyword>
+		   <keyword  id="l2_penalty" name="l2_penalty" code="{N_mdm(Real,regressionL2Penalty)}" label="l2_penalty"  minOccurs="0" default="0. (reverts to standard LASSO formulation)" >
+		     <param type="REAL" />
+		   </keyword>
+		 </keyword>
+	       </oneOf>
+	     </optional>
+	     ' >
+
     <!ENTITY pce_regression_opts '
-	     &pce_regression_alg_select;
 	     <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation"  minOccurs="0" >
 	       <keyword  id="noise_only" name="noise_only" code="{N_mdm(true,crossValidNoiseOnly)}" label="noise_only"  minOccurs="0" default="false" />
 	     </keyword>
@@ -464,34 +462,44 @@
 	     &default_max_solver_iterations;
 	     '>
 
-    <!ENTITY pce_regression_sequence '
-	     <oneOf label="Collocation Control">
-	       <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs"   >
-		 <param type="INTEGERLIST" />
-		 &pce_regression_opts;
-	       </keyword>
-	       <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs"   >
-		 <param type="REAL" />
-		 &pce_regression_opts;
-	       </keyword>
-	     </oneOf>
+    <!ENTITY mc_pilot_samples '
+      	     <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="Number of initial samples per model instance" minOccurs="0" >
+	       <alias name="initial_samples"/> 
+	       <param type="INTEGERLIST" />
+	     </keyword>
 	     ' >
 
-    <!ENTITY pce_regression '
-	     <oneOf label="Collocation Control">
-	       <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs"   >
-		 <param type="INTEGER" />
-		 &pce_regression_opts;
+    <!ENTITY colloc_ratio_pts_sequence_with_pce_regress '
+	     <!-- Note: options within this entity are limited by NIDR requirements for an unambiguous anchor: cannot support ratio or pts or both, so anchoring with the more useful of the two.  With a new regression anchor, could mirror ft_method_regression_sequence and allow both to be optional. -->
+	     <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" >
+	       <param type="REAL" />
+	       <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" minOccurs="0" >
+	         <alias name="pilot_samples"/> 
+	         <param type="INTEGERLIST" />
 	       </keyword>
-	       <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs"   >
-		 <param type="REAL" />
-		 &pce_regression_opts;
-	       </keyword>
-	     </oneOf>
+	       &pce_regression_alg_select;
+	       &pce_regression_opts;
+	     </keyword>
+	     ' >
+
+    <!ENTITY colloc_pts_with_pce_regress '
+	     <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" >
+	       <param type="INTEGER" />
+	       &pce_regression_alg_select;
+	       &pce_regression_opts;
+	     </keyword>
+	     ' >
+
+    <!ENTITY colloc_ratio_with_pce_regress '
+	     <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" >
+	       <param type="REAL" />
+	       &pce_regression_alg_select;
+	       &pce_regression_opts;
+	     </keyword>
 	     ' >
 
     <!ENTITY pce_expansion_samples_sequence '
-      	     <keyword  id="expansion_samples_sequence" name="expansion_samples_sequence" code="{N_mdm(szarray,expansionSamplesSeq)}" label="Number simulation samples to estimate coeffs"  minOccurs="1" >
+      	     <keyword  id="expansion_samples_sequence" name="expansion_samples_sequence" code="{N_mdm(szarray,expansionSamplesSeq)}" label="Number simulation samples to estimate coeffs"  >
 	       <param type="INTEGERLIST" />
 	       <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points"  minOccurs="0" default="no sample reuse in coefficient estimation" >
 		 <alias name="reuse_samples"/>
@@ -501,7 +509,7 @@
 	     ' >
 
     <!ENTITY pce_expansion_samples '
-      	     <keyword  id="expansion_samples" name="expansion_samples" code="{N_mdm(sizet,expansionSamples)}" label="Number simulation samples to estimate coeffs"  minOccurs="1" >
+      	     <keyword  id="expansion_samples" name="expansion_samples" code="{N_mdm(sizet,expansionSamples)}" label="Number simulation samples to estimate coeffs"  >
 	       <param type="INTEGER" />
 	       <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points"  minOccurs="0" default="no sample reuse in coefficient estimation" >
 		 <alias name="reuse_samples"/>
@@ -514,19 +522,20 @@
       	     &expansion_dim_pref;
 	     &pce_basis_type;
 	     <oneOf>
-	       &pce_regression;
+	       &colloc_pts_with_pce_regress;
+	       &colloc_ratio_with_pce_regress;
 	       &pce_expansion_samples;
 	     </oneOf>
 	     &import_build;
 	     ' >
 
     <!ENTITY pce_expansion_order_sequence '
-      	     <keyword  id="expansion_order_sequence" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrderSeq)}" label="Expansion order"  minOccurs="1" >
+      	     <keyword  id="expansion_order_sequence" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrderSeq)}" label="Expansion order"  >
 	       <param type="INTEGERLIST" />
 	       &expansion_dim_pref;
 	       &pce_basis_type;
 	       <oneOf>
-		 &pce_regression_sequence;
+		 &colloc_ratio_pts_sequence_with_pce_regress;
 		 &pce_expansion_samples_sequence;
 	       </oneOf>
 	       &import_build;
@@ -534,7 +543,7 @@
 	     ' >
 
     <!ENTITY pce_expansion_order '
-      	     <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(ushint,expansionOrder)}" label="Expansion order"  minOccurs="1" >
+      	     <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(ushint,expansionOrder)}" label="Expansion order"  >
 	       <param type="INTEGER" />
 	       &core_pce_expansion_order;
 	     </keyword>
@@ -555,11 +564,11 @@
 	     ' >
 
     <!ENTITY pce_orthog_least_interp_sequence '
-      	     <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)"  minOccurs="1" >
+      	     <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)"  >
 	       <alias name="least_interpolation"/>
 	       <alias name="oli"/>
-	       <keyword  id="collocation_points_sequence1" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs"   >
-		 <param type="INTEGERLIST" />
+	       <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number of collocation points per model instance" >
+	         <param type="INTEGERLIST" />
 	       </keyword>
 	       <!-- [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
 	       <keyword  id="tensor_grid1" name="tensor_grid" code="{N_mdm(usharray,tensorGridOrder)}" label="tensor_grid"  minOccurs="0" default="regression with LHS sample set (point collocation)" >
@@ -573,17 +582,10 @@
 	     ' >
 
     <!ENTITY pce_orthog_least_interp '
-      	     <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)"  minOccurs="1" >
+      	     <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)"  >
 	       <alias name="least_interpolation"/>
 	       <alias name="oli"/>
 	       &core_pce_orthog_least_interp;
-	     </keyword>
-	     ' >
-
-    <!ENTITY ml_pilot_samples '
-      	     <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples"  minOccurs="0" >
-	       <alias name="initial_samples"/> 
-	       <param type="INTEGERLIST" />
 	     </keyword>
 	     ' >
 
@@ -725,52 +727,76 @@
 	     <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag"  minOccurs="0" default="use function values only" />
 	     ' >
 
-    <!ENTITY ft_method_controls '
-		  <keyword id="regression_type" name="regression_type" code="{0}" label="Objective formulation for FT regression" minOccurs="0" default="">
-		    <oneOf label="Regression Type">
-                      <keyword id="ls" name="ls" code="{N_mdm(type,regressionType_FT_LS)}" label="ls" />
-                      <keyword id="rls2" name="rls2" code="{N_mdm(type,regressionType_FT_RLS2)}" label="rls2" >
-                        <keyword  id="l2_penalty" name="l2_penalty" code="{N_mdm(Real,regressionL2Penalty)}" label="l2_penalty"  minOccurs="1" >
-		          <param type="REAL" />
-		        </keyword>
-                      </keyword>
-                      <!-- <keyword id="rlsd2" name="rlsd2" code="{N_mdm(type,regressionType_FT_RLSD2)}" label="rlsd2" />         EXPERIMENTAL -->
-                      <!-- <keyword id="rlsrkhs" name="rlsrkhs" code="{N_mdm(type,regressionType_FT_RLSRKHS)}" label="rlsrkhs" /> EXPERIMENTAL -->
-                      <!-- <keyword id="rls1" name="rls1" code="{N_mdm(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
-		    </oneOf>
-		  </keyword>
-		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mdm(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mdm(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
-		    <param type="REAL" />
-		  </keyword>
-		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mdm(Real,roundingTolerance)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-10" >
-		    <param type="REAL" />
-		  </keyword>
+    <!ENTITY ft_method_regression_opts '
+	     <keyword id="regression_type" name="regression_type" code="{0}" label="Objective formulation for FT regression" minOccurs="0" default="">
+	       <oneOf label="Regression Type">
+	         <keyword id="ls" name="ls" code="{N_mdm(type,regressionType_FT_LS)}" label="ls" />
+	         <keyword id="rls2" name="rls2" code="{N_mdm(type,regressionType_FT_RLS2)}" label="rls2" >
+	           <keyword  id="l2_penalty" name="l2_penalty" code="{N_mdm(Real,regressionL2Penalty)}" label="l2_penalty"  >
+	             <param type="REAL" />
+	           </keyword>
+	         </keyword>
+	         <!-- <keyword id="rlsd2" name="rlsd2" code="{N_mdm(type,regressionType_FT_RLSD2)}" label="rlsd2" />         EXPERIMENTAL -->
+                 <!-- <keyword id="rlsrkhs" name="rlsrkhs" code="{N_mdm(type,regressionType_FT_RLSRKHS)}" label="rlsrkhs" /> EXPERIMENTAL -->
+                 <!-- <keyword id="rls1" name="rls1" code="{N_mdm(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
+	       </oneOf>
+	     </keyword>
+	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+	       <param type="INTEGER" constraint=">= 0" />
+	     </keyword>
+	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mdm(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+	       <param type="INTEGER" constraint=">= 0" />
+	     </keyword>
+	     <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mdm(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
+	       <param type="REAL" />
+	     </keyword>
+	     <!-- <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only"/> -->
+	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" minOccurs="0" default="regression with random sample set" />
+	     ' >
+
+    <!ENTITY ft_method_regression_sequence '
+	     &ft_method_regression_opts;
+	     <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" minOccurs="0" >
+	       <alias name="pilot_samples"/> 
+	       <param type="INTEGERLIST" />
+	     </keyword>
+	     <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" minOccurs="0" default="0." >
+	       <param type="REAL" />
+	     </keyword>
+	     ' >
+
+    <!ENTITY ft_method_regression '
+	     &ft_method_regression_opts;
+	     <oneOf label="Collocation Control">
+	       <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" >
+		 <param type="INTEGER" />
+	       </keyword>
+	       <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" >
+		 <param type="REAL" />
+	       </keyword>
+	     </oneOf>
 	     ' >
 
     <!ENTITY ft_method_max_order '
-		  <keyword  id="max_order" name="max_order" code="{N_mdm(sizet,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
+		  <keyword  id="max_order" name="max_order" code="{N_mdm(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 	     ' >
 
     <!ENTITY ft_method_order '
-		  <keyword  id="start_order" name="start_order" code="{N_mdm(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
+		  <keyword  id="start_order" name="start_order" code="{N_mdm(ushint,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
 		    <alias name="order"/>
 		    <param type="INTEGER" constraint=">= 0" />
+		    &expansion_dim_pref;
 		  </keyword>
 		  &ft_method_max_order;
 	     ' >
 
     <!ENTITY mlft_method_order_sequence '
-		  <keyword  id="start_order_sequence" name="start_order_sequence" code="{N_mdm(szarray,startOrderSeq)}" label="Starting univariate polynomial order for approximation sequence" help="" minOccurs="0" default="2">
+		  <keyword  id="start_order_sequence" name="start_order_sequence" code="{N_mdm(usharray,startOrderSeq)}" label="Starting univariate polynomial order for approximation sequence" help="" minOccurs="0" default="2">
 		    <alias name="order_sequence"/>
 		    <param type="INTEGERLIST" />
+		    &expansion_dim_pref;
 		  </keyword>
 		  &ft_method_max_order;
 	     ' >
@@ -801,40 +827,84 @@
 		  &ft_method_adapt_rank;
 	     ' >
 
-    <!ENTITY ft_model_controls '
-		  <keyword id="regression_type" name="regression_type" code="{0}" label="Objective formulation for FT regression" minOccurs="0" default="">
-		    <oneOf label="Regression Type">
-                      <keyword id="ls" name="ls" code="{N_mom(type,regressionType_FT_LS)}" label="ls" />
-                      <keyword id="rls2" name="rls2" code="{N_mom(type,regressionType_FT_RLS2)}" label="rls2" >
-                        <keyword  id="l2_penalty" name="l2_penalty" code="{N_mom(Real,regressionL2Penalty)}" label="l2_penalty"  minOccurs="1" >
-		          <param type="REAL" />
-		        </keyword>
-                      </keyword>
-                      <!-- <keyword id="rlsd2" name="rlsd2" code="{N_mom(type,regressionType_FT_RLSD2)}" label="rlsd2" />         EXPERIMENTAL -->
-                      <!-- <keyword id="rlsrkhs" name="rlsrkhs" code="{N_mom(type,regressionType_FT_RLSRKHS)}" label="rlsrkhs" /> EXPERIMENTAL -->
-                      <!-- <keyword id="rls1" name="rls1" code="{N_mom(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
-		    </oneOf>
-		  </keyword>
-		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
+    <!ENTITY ft_method_tols '
+		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mdm(Real,roundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-8" >
 		    <param type="REAL" />
 		  </keyword>
-		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,roundingTolerance)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		  <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mdm(Real,arithmeticTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.0e-2" >
 		    <param type="REAL" />
 		  </keyword>
 	     ' >
 
+    <!ENTITY ft_model_refinement '
+             <keyword  id="p_refinement" name="p_refinement" code="{N_mom(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
+	       <keyword  id="uniform4" name="uniform" code="{N_mom(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
+		 <!--
+		 <oneOf label="Uniform Refinement Approach">
+		   <keyword  id="order" name="order" code="{N_mom(type,refinementControl_UNIFORM_CONTROL_ORDER)}" label="order" />
+		   <keyword  id="rank" name="rank" code="{N_mom(type,refinementControl_UNIFORM_CONTROL_RANK)}" label="rank" />
+		 </oneOf>
+		 -->
+	       </keyword>
+	     </keyword>
+	     &default_max_refinement_iterations;
+	     ' >
+
+    <!ENTITY ft_model_regression_opts '
+	     <keyword id="regression_type" name="regression_type" code="{0}" label="Objective formulation for FT regression" minOccurs="0" default="">
+	       <oneOf label="Regression Type">
+	         <keyword id="ls" name="ls" code="{N_mom(type,regressionType_FT_LS)}" label="ls" />
+	         <keyword id="rls2" name="rls2" code="{N_mom(type,regressionType_FT_RLS2)}" label="rls2" >
+	           <keyword  id="l2_penalty" name="l2_penalty" code="{N_mom(Real,regressionL2Penalty)}" label="l2_penalty"  >
+	             <param type="REAL" />
+	           </keyword>
+	         </keyword>
+	         <!-- <keyword id="rlsd2" name="rlsd2" code="{N_mom(type,regressionType_FT_RLSD2)}" label="rlsd2" />         EXPERIMENTAL -->
+                 <!-- <keyword id="rlsrkhs" name="rlsrkhs" code="{N_mom(type,regressionType_FT_RLSRKHS)}" label="rlsrkhs" /> EXPERIMENTAL -->
+                 <!-- <keyword id="rls1" name="rls1" code="{N_mom(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
+	       </oneOf>
+	     </keyword>
+	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+	       <param type="INTEGER" constraint=">= 0" />
+	     </keyword>
+	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+	       <param type="INTEGER" constraint=">= 0" />
+	     </keyword>
+	     <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
+	       <param type="REAL" />
+	     </keyword>
+	     <!-- <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mom(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only"/> -->
+	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mom(true,tensorGridFlag)}" label="tensor_grid"  minOccurs="0" default="regression with random sample set" />
+	     ' >
+
+    <!ENTITY ft_model_regression '
+	     &ft_model_regression_opts;
+	     <oneOf label="Collocation Control">
+	       <keyword  id="collocation_points" name="collocation_points" code="{N_mom(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" >
+		 <param type="INTEGER" />
+	       </keyword>
+	       <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mom(Real,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" >
+		 <param type="REAL" />
+	       </keyword>
+	     </oneOf>
+	     ' >
+
+    <!ENTITY ft_model_tols '
+	     <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,roundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-8" >
+	       <param type="REAL" />
+	     </keyword>
+	     <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mom(Real,arithmeticTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.0e-2" >
+	       <param type="REAL" />
+	     </keyword>
+	     ' >
+
     <!ENTITY ft_model_order '
-		  <keyword  id="start_order" name="start_order" code="{N_mom(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
+		  <keyword  id="start_order" name="start_order" code="{N_mom(ushint,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
 		    <alias name="order"/>
 		    <param type="INTEGER" constraint=">= 0" />
+		    &expansion_dim_pref;
 		  </keyword>
-		  <keyword  id="max_order" name="max_order" code="{N_mom(sizet,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
+		  <keyword  id="max_order" name="max_order" code="{N_mom(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 	     ' >
@@ -870,7 +940,7 @@
 	     ' >
 
     <!ENTITY bayes_pce_expansion_order '
-	     <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(ushint,expansionOrder)}" label="Expansion order"  minOccurs="1" >
+	     <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(ushint,expansionOrder)}" label="Expansion order"  >
 	       <param type="INTEGER" />
 	       &core_pce_expansion_order;
 	       <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive"  minOccurs="0"/>
@@ -878,7 +948,7 @@
 	     ' >
 
     <!ENTITY bayes_pce_orthog_least_interp '
-      	     <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)"  minOccurs="1" >
+      	     <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)"  >
 	       <alias name="least_interpolation"/>
 	       <alias name="oli"/>
 	       &core_pce_orthog_least_interp;
@@ -887,7 +957,7 @@
 	     ' >
 
     <!ENTITY bayes_pce '
-	     <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce"  minOccurs="1" >
+	     <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce"  >
 	       &pce_refinement;
 	       <oneOf>
 		 &expansion_quadrature;
@@ -902,8 +972,7 @@
 	     ' >
 
     <!ENTITY bayes_ml_pce '
-      	     <keyword  id="ml_pce" name="ml_pce" code="{N_mdm(type,emulatorType_ML_PCE_EMULATOR)}" label="ml_pce"  minOccurs="1" >
-	       &ml_pilot_samples;
+      	     <keyword  id="ml_pce" name="ml_pce" code="{N_mdm(type,emulatorType_ML_PCE_EMULATOR)}" label="ml_pce"  >
 	       &mlpce_alloc_control;
 	       &discrep_emulation;
 	       <oneOf>
@@ -917,7 +986,7 @@
 	     ' >
 
     <!ENTITY bayes_mf_pce '
-      	     <keyword  id="mf_pce" name="mf_pce" code="{N_mdm(type,emulatorType_MF_PCE_EMULATOR)}" label="mf_pce"  minOccurs="1" >
+      	     <keyword  id="mf_pce" name="mf_pce" code="{N_mdm(type,emulatorType_MF_PCE_EMULATOR)}" label="mf_pce"  >
 	       &pce_refinement;
 	       &mf_alloc_control;
 	       &discrep_emulation;
@@ -939,7 +1008,7 @@
 	     ' >
 
     <!ENTITY bayes_sc '
-     	     <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc"  minOccurs="1" >
+     	     <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc"  >
 	       &sc_refinement;
 	       <oneOf label="Interpolation Grid Type">
 		 &expansion_quadrature;
@@ -951,7 +1020,7 @@
 	     ' >
 
     <!ENTITY bayes_mf_sc '
-      	     <keyword  id="mf_sc" name="mf_sc" code="{N_mdm(type,emulatorType_MF_SC_EMULATOR)}" label="mf_sc"  minOccurs="1" >
+      	     <keyword  id="mf_sc" name="mf_sc" code="{N_mdm(type,emulatorType_MF_SC_EMULATOR)}" label="mf_sc"  >
 	       &sc_refinement;
 	       &mf_alloc_control;
 	       &discrep_emulation;
@@ -967,7 +1036,7 @@
     <!ENTITY bayes_emulator '
       	     <keyword  id="emulator" name="emulator" code="{0}" label="emulator"  minOccurs="0" >
 	       <oneOf label="Emulator Type" >
-		 <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process"  minOccurs="1" default="Surfpack Gaussian process" >
+		 <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process"  default="Surfpack Gaussian process" >
 		   <alias name="kriging"/>
 		   <oneOf label="GP Implementation">
 		     <keyword  id="surfpack3" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   />
@@ -1001,14 +1070,14 @@
 		     <param type="INTEGER" />
 		   </keyword>
 		 </keyword>
-		 <keyword id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values"  minOccurs="1" >
+		 <keyword id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values"  >
 		   <param type="REALLIST"/>
 		   <oneOf label="Values For">
 		     <keyword id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input"   />
 		     <keyword id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input"   />
 		   </oneOf>
 		 </keyword>
-		 <keyword id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename"  minOccurs="1" >
+		 <keyword id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename"  >
 		   <param type="INPUT_FILE"/>
 		   <oneOf label="Values For">
 		     <keyword id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput "   />
@@ -1136,7 +1205,7 @@
 		 <keyword  id="multi_point_real" name="multi_point_real" code="{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_real)}" label="multi_point_real"   >
                    <param type="INTEGER" />
 		 </keyword>
-		 <keyword  id="shuffle_random" name="shuffle_random" code="{N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}" label="shuffle_random"  minOccurs="1" >
+		 <keyword  id="shuffle_random" name="shuffle_random" code="{N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}" label="shuffle_random"  >
                    <keyword  id="num_parents" name="num_parents" code="{N_mdm(pintz,numParents)}" label="num_parents"  minOccurs="0" default="2" >
                      <!-- should the min be 2? -->
                      <param type="INTEGER" constraint="> 0" />
@@ -1353,7 +1422,7 @@
 	     <keyword  id="method_source" name="method_source" code="{0}" label="method_source"  minOccurs="0" default="dakota" />
 	     <optional>
                <oneOf label="Gradient Source">
-		 <keyword  id="dakota7" name="dakota" code="{N_rem(lit,methodSource_dakota)}" label="dakota"  minOccurs="1" default="relative" >
+		 <keyword  id="dakota7" name="dakota" code="{N_rem(lit,methodSource_dakota)}" label="dakota"  default="relative" >
 		   <keyword  id="ignore_bounds" name="ignore_bounds" code="{N_rem(true,ignoreBounds)}" label="ignore_bounds"  minOccurs="0" default="bounds respected" />
 		   <optional>
 		     <oneOf label="Step Scaling" >
@@ -1383,7 +1452,7 @@
 	     <oneOf label="Gradient Type">
                <keyword  id="no_gradients" name="no_gradients" code="{N_rem(lit,gradientType_none)}" label="no_gradients"   />
                <keyword  id="analytic_gradients" name="analytic_gradients" code="{N_rem(lit,gradientType_analytic)}" label="analytic_gradients"   />
-               <keyword  id="mixed_gradients" name="mixed_gradients" code="{N_rem(lit,gradientType_mixed)}" label="Mixed gradients"  minOccurs="1" >
+               <keyword  id="mixed_gradients" name="mixed_gradients" code="{N_rem(lit,gradientType_mixed)}" label="Mixed gradients"  >
 		 <keyword  id="id_numerical_gradients" name="id_numerical_gradients" code="{N_rem(intset,idNumericalGrads)}" label="Numerical derivatives function list"   >
 		   <param type="INTEGERLIST" />
 		 </keyword>
@@ -1400,7 +1469,7 @@
     <!ENTITY response_hessians '
 	     <oneOf label="Hessian Type">
                <keyword  id="no_hessians" name="no_hessians" code="{N_rem(lit,hessianType_none)}" label="no_hessians"   />
-               <keyword  id="numerical_hessians" name="numerical_hessians" code="{N_rem(lit,hessianType_numerical)}" label="Numerical Hessians"  minOccurs="1" >
+               <keyword  id="numerical_hessians" name="numerical_hessians" code="{N_rem(lit,hessianType_numerical)}" label="Numerical Hessians"  >
 		 <keyword  id="fd_step_size1" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size"  minOccurs="0" default="0.001 (forward), 0.002 (central)" >
 		   <alias name="fd_hessian_step_size"/>
 		   <param type="REALLIST" />
@@ -1419,16 +1488,16 @@
 		   </oneOf>
 		 </optional>
                </keyword>
-               <keyword  id="quasi_hessians" name="quasi_hessians" code="{N_rem(lit,hessianType_quasi)}" label="Quasi Hessians"  minOccurs="1" >
+               <keyword  id="quasi_hessians" name="quasi_hessians" code="{N_rem(lit,hessianType_quasi)}" label="Quasi Hessians"  >
 		 <oneOf label="Quasi-Hessian Approximation">
-		   <keyword  id="bfgs1" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs"  minOccurs="1" >
+		   <keyword  id="bfgs1" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs"  >
 		     <keyword  id="damped" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update"  minOccurs="0" default="undamped BFGS" />
 		   </keyword>
 		   <keyword  id="sr1" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1"   />
 		 </oneOf>
                </keyword>
                <keyword  id="analytic_hessians" name="analytic_hessians" code="{N_rem(lit,hessianType_analytic)}" label="analytic_hessians"   />
-               <keyword  id="mixed_hessians" name="mixed_hessians" code="{N_rem(lit,hessianType_mixed)}" label="Mixed Hessians"  minOccurs="1" >
+               <keyword  id="mixed_hessians" name="mixed_hessians" code="{N_rem(lit,hessianType_mixed)}" label="Mixed Hessians"  >
 		 <keyword  id="id_numerical_hessians" name="id_numerical_hessians" code="{N_rem(intset,idNumericalHessians)}" label="Numerical Hessians function list"  minOccurs="0" >
 		   <param type="INTEGERLIST" />
 		   <keyword  id="fd_step_size2" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size"  minOccurs="0" default="0.001 (forward), 0.002 (central)" >
@@ -1452,7 +1521,7 @@
 		 <keyword  id="id_quasi_hessians" name="id_quasi_hessians" code="{N_rem(intset,idQuasiHessians)}" label="Quasi Hessians function list"  minOccurs="0" >
 		   <param type="INTEGERLIST" />
 		   <oneOf label="Quasi-Hessian Approximation">
-		     <keyword  id="bfgs2" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs"  minOccurs="1" >
+		     <keyword  id="bfgs2" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs"  >
                        <keyword  id="damped1" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update"  minOccurs="0" default="undamped BFGS" />
 		     </keyword>
 		     <keyword  id="sr11" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1"   />
@@ -1593,7 +1662,7 @@
     </keyword>    
     
     <!-- **** TOPLEVEL *** -->
-    <keyword id="method" name="method" minOccurs="1" maxOccurs="unbounded" code="{N_mdm3(start,0,stop)}" label="Method" >
+    <keyword id="method" name="method" maxOccurs="unbounded" code="{N_mdm3(start,0,stop)}" label="Method" >
       <keyword  id="id_method" name="id_method" code="{N_mdm(str,idMethod)}" label="Method set identifier"  minOccurs="0" default="strategy use of last method parsed" >
         <param type="STRING" taglist="method" />
       </keyword>
@@ -1614,16 +1683,16 @@
       <oneOf label="Method (Iterative Algorithm)">
 
         <!-- Begin group for concurrent iterator spec: -->
-        <keyword  id="hybrid" name="hybrid" code="{N_mdm(utype,methodName_HYBRID)}" label="Hybrid meta-iterator"  minOccurs="1" group="Optimization: Other" >
+        <keyword  id="hybrid" name="hybrid" code="{N_mdm(utype,methodName_HYBRID)}" label="Hybrid meta-iterator"  group="Optimization: Other" >
           <oneOf label="Hybrid Method Type">
 
-            <keyword  id="sequential" name="sequential" code="{N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}" label="Sequential hybrid"  minOccurs="1" >
+            <keyword  id="sequential" name="sequential" code="{N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}" label="Sequential hybrid"  >
               <alias name="uncoupled"/>
               <!-- #	      [ adaptive {N_mdm(lit,seqHybridType_adaptive)}
                    #	      	progress_threshold REAL {N_mdm(Real,hybridProgThresh)} ]
                 -->	
               <oneOf label="Sub-method Selection">
-                <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  minOccurs="1" >
+                <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
                   <keyword  id="model_pointer_list" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers"  minOccurs="0" >
                     <param type="STRING" />
@@ -1636,10 +1705,10 @@
 	      &method_iterator_server_scheduling;
             </keyword>
 
-            <keyword  id="embedded" name="embedded" code="{N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}" label="Embedded hybrid"  minOccurs="1" >
+            <keyword  id="embedded" name="embedded" code="{N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}" label="Embedded hybrid"  >
               <alias name="coupled"/>
               <oneOf label="Global Sub-method Selection">
-                <keyword  id="global_method_name" name="global_method_name" code="{N_mdm(str,hybridGlobalMethodName)}" label="Name of the global method"  minOccurs="1" >
+                <keyword  id="global_method_name" name="global_method_name" code="{N_mdm(str,hybridGlobalMethodName)}" label="Name of the global method"  >
                   <param type="STRING" />
                   <keyword  id="global_model_pointer" name="global_model_pointer" code="{N_mdm(str,hybridGlobalModelPointer)}" label="Pointer to the global model specification"  minOccurs="0" >
                     <param type="STRING" in_taglist="model" />
@@ -1650,7 +1719,7 @@
                 </keyword>
               </oneOf>
               <oneOf label="Local Sub-method Selection">
-                <keyword  id="local_method_name" name="local_method_name" code="{N_mdm(str,hybridLocalMethodName)}" label="Name of the local method"  minOccurs="1" >
+                <keyword  id="local_method_name" name="local_method_name" code="{N_mdm(str,hybridLocalMethodName)}" label="Name of the local method"  >
                   <param type="STRING" />
                   <keyword  id="local_model_pointer" name="local_model_pointer" code="{N_mdm(str,hybridLocalModelPointer)}" label="Pointer to the local model specification"  minOccurs="0" >
                     <param type="STRING" in_taglist="model" />
@@ -1666,12 +1735,12 @@
 	      &method_iterator_server_scheduling;
             </keyword>
 
-            <keyword  id="collaborative" name="collaborative" code="{N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}" label="Collaborative hybrid"  minOccurs="1" >
+            <keyword  id="collaborative" name="collaborative" code="{N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}" label="Collaborative hybrid"  >
               <!-- #	      abo {N_mdm(lit,hybridCollabType_abo)}
                    #	      | hops {N_mdm(lit,hybridCollabType_hops)}
                 -->
               <oneOf label="Sub-method Selection">
-                <keyword  id="method_name_list1" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  minOccurs="1" >
+                <keyword  id="method_name_list1" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
                   <keyword  id="model_pointer_list1" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers"  minOccurs="0" >
                     <param type="STRING" />
@@ -1687,9 +1756,9 @@
           </oneOf>
         </keyword>
 
-        <keyword  id="multi_start" name="multi_start" code="{N_mdm(utype,methodName_MULTI_START)}" label="Multi-start meta-iterator"  minOccurs="1" group="Optimization: Other" >
+        <keyword  id="multi_start" name="multi_start" code="{N_mdm(utype,methodName_MULTI_START)}" label="Multi-start meta-iterator"  group="Optimization: Other" >
           <oneOf label="Sub-method Selection">
-            <keyword  id="method_name" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of a sub-method by name (no separate specification block)"  minOccurs="1" >
+            <keyword  id="method_name" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of a sub-method by name (no separate specification block)"  >
               <param type="STRING" />
               <keyword  id="model_pointer" name="model_pointer" code="{N_mdm(str,subModelPointer)}" label="Model pointer"  minOccurs="0" default="method use of last model parsed (or use of default model if none parsed)" >
                 <param type="STRING" in_taglist="model" />
@@ -1711,9 +1780,9 @@
 	  &method_iterator_server_scheduling;
         </keyword>
 
-        <keyword  id="pareto_set" name="pareto_set" code="{N_mdm(utype,methodName_PARETO_SET)}" label="Pareto set minimization"  minOccurs="1" group="Optimization: Other" >
+        <keyword  id="pareto_set" name="pareto_set" code="{N_mdm(utype,methodName_PARETO_SET)}" label="Pareto set minimization"  group="Optimization: Other" >
           <oneOf label="Sub-method Selection">
-            <keyword  id="method_name1" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of sub-iterator by name"  minOccurs="1" >
+            <keyword  id="method_name1" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of sub-iterator by name"  >
               <alias name="opt_method_name"/>
               <param type="STRING" />
               <keyword  id="model_pointer1" name="model_pointer" code="{N_mdm(str,subModelPointer)}" label="Identification of model by pointer"  minOccurs="0" default="method use of last model parsed (or use of default model if none parsed)" >
@@ -1744,7 +1813,7 @@
 	    # ctor chain. Therefore, they differ in their model_pointer spec from hybrid & concurrent meta-iterators
 	    # (they require their own Model, not just a sub-model for the sub-method).
 	-->
-	<keyword  id="branch_and_bound" name="branch_and_bound" code="{N_mdm(utype,methodName_BRANCH_AND_BOUND)}" label="branch_and_bound"  minOccurs="1" group="Optimization: Other" >
+	<keyword  id="branch_and_bound" name="branch_and_bound" code="{N_mdm(utype,methodName_BRANCH_AND_BOUND)}" label="branch_and_bound"  group="Optimization: Other" >
           <oneOf label="Local Optimizer Selection">
             <keyword  id="method_pointer2" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of minimizer by pointer"  >
 	      <param type="STRING" in_taglist="method" />
@@ -1763,7 +1832,7 @@
 	-->
 
 	<!--
-        <keyword  id="multilevel_multifidelity_opt" name="multilevel_multifidelity_opt" code="{N_mdm(utype,methodName_HIERARCH_SURROGATE_BASED_LOCAL)}" label="multilevel_multifidelity_opt"  minOccurs="1">
+        <keyword  id="multilevel_multifidelity_opt" name="multilevel_multifidelity_opt" code="{N_mdm(utype,methodName_HIERARCH_SURROGATE_BASED_LOCAL)}" label="multilevel_multifidelity_opt" >
           <oneOf>
             <keyword  id="method_pointer2" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of minimizer by pointer"   >
               <alias name="approx_method_pointer"/>
@@ -1785,11 +1854,11 @@
 	-->
 
 	<!--
-        <keyword  id="surrogate_based_local" name="surrogate_based_local" code="{N_mdm(utype,methodName_DATA_FIT_SURROGATE_BASED_LOCAL)}" label="surrogate_based_local"  minOccurs="1" group="Surrogate-based Methods" >
+        <keyword  id="surrogate_based_local" name="surrogate_based_local" code="{N_mdm(utype,methodName_DATA_FIT_SURROGATE_BASED_LOCAL)}" label="surrogate_based_local"  group="Surrogate-based Methods" >
         </keyword>
 	-->
 
-        <keyword  id="surrogate_based_local" name="surrogate_based_local" code="{N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)}" label="surrogate_based_local"  minOccurs="1" group="Surrogate-based Methods" >
+        <keyword  id="surrogate_based_local" name="surrogate_based_local" code="{N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)}" label="surrogate_based_local"  group="Surrogate-based Methods" >
           <oneOf label="Subproblem Optimizer Selection">
             <keyword  id="method_pointer3" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of minimizer by pointer"   >
               <alias name="approx_method_pointer"/>
@@ -1845,7 +1914,7 @@
           <!-- &default_linear_constraints; -->
         </keyword>
 
-        <keyword  id="surrogate_based_global" name="surrogate_based_global" code="{N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)}" label="surrogate_based_global"  minOccurs="1" group="Surrogate-based Methods" >
+        <keyword  id="surrogate_based_global" name="surrogate_based_global" code="{N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)}" label="surrogate_based_global"  group="Surrogate-based Methods" >
           <oneOf label="Sub-method Selection">
             <keyword  id="method_pointer4" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="method_pointer"   >
               <alias name="approx_method_pointer"/>
@@ -1934,7 +2003,7 @@
 	  &method_optpp_newton_opts;
 	  &method_optpp_grad_based_opts;
 	</keyword>
-        <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds"  minOccurs="1" group="Optimization: Local, Derivative-free" >
+        <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds"  group="Optimization: Local, Derivative-free" >
           <keyword  id="search_scheme_size" name="search_scheme_size" code="{N_mdm(int,searchSchemeSize)}" label="search_scheme_size"  minOccurs="0" default="32" >
             <param type="INTEGER" />
           </keyword>
@@ -1946,7 +2015,7 @@
         </keyword>
 
 
-        <keyword  id="demo_tpl" name="demo_tpl" code="{N_mdm(utype,methodName_DEMO_TPL)}" label="demo_tpl" help="" minOccurs="1" group="Optimization: Local" >
+        <keyword  id="demo_tpl" name="demo_tpl" code="{N_mdm(utype,methodName_DEMO_TPL)}" label="demo_tpl" help="" group="Optimization: Local" >
           &default_max_function_evaluations;
 	  &default_max_iterations;
           &default_convergence_tolerance;
@@ -1963,7 +2032,7 @@
         </keyword>
 
 
-        <keyword  id="rol" name="rol" code="{N_mdm(utype,methodName_ROL)}" label="rol" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
+        <keyword  id="rol" name="rol" code="{N_mdm(utype,methodName_ROL)}" label="rol" help="" group="Optimization: Local, Derivative-based" >
 	  &default_max_iterations;
           <keyword  id="variable_tolerance" name="variable_tolerance" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >
             <param type="REAL" />
@@ -1980,7 +2049,7 @@
         </keyword>
 
 
-        <keyword  id="asynch_pattern_search" name="asynch_pattern_search" code="{N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}" label="asynch_pattern_search"  minOccurs="1" group="Optimization: Local, Derivative-free" >
+        <keyword  id="asynch_pattern_search" name="asynch_pattern_search" code="{N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}" label="asynch_pattern_search"  group="Optimization: Local, Derivative-free" >
           <alias name="coliny_apps"/>
           <keyword  id="initial_delta" name="initial_delta" code="{N_mdm(Real,initStepLength)}" label="Initial offset value"  minOccurs="0" default="1.0" >
             <param type="REAL" />
@@ -2025,7 +2094,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="mesh_adaptive_search" name="mesh_adaptive_search" code="{N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}" label="mesh_adaptive_search"  minOccurs="1" >
+        <keyword  id="mesh_adaptive_search" name="mesh_adaptive_search" code="{N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}" label="mesh_adaptive_search"  >
           <keyword  id="initial_delta2" name="initial_delta" code="{N_mdm(Real,initMeshSize)}" label="Initial mesh size"  minOccurs="0" default="1.0" >
             <param type="REAL" />
           </keyword>
@@ -2065,7 +2134,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="nowpac" name="nowpac" code="{N_mdm(utype,methodName_MIT_NOWPAC)}" label="nowpac"  minOccurs="1" >
+        <keyword  id="nowpac" name="nowpac" code="{N_mdm(utype,methodName_MIT_NOWPAC)}" label="nowpac"  >
           &default_trust_region;
           &default_max_iterations;
           &default_max_function_evaluations;
@@ -2073,7 +2142,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="snowpac" name="snowpac" code="{N_mdm(utype,methodName_MIT_SNOWPAC)}" label="snowpac"  minOccurs="1" >
+        <keyword  id="snowpac" name="snowpac" code="{N_mdm(utype,methodName_MIT_SNOWPAC)}" label="snowpac"  >
 	  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
@@ -2085,7 +2154,7 @@
         </keyword>
 
 	<!-- BEGIN JEGA -->
-        <keyword  id="moga" name="moga" code="{N_mdm(utype,methodName_MOGA)}" label="moga"  minOccurs="1" group="Optimization: Global" >
+        <keyword  id="moga" name="moga" code="{N_mdm(utype,methodName_MOGA)}" label="moga"  group="Optimization: Global" >
           <keyword  id="fitness_type" name="fitness_type" code="{0}" label="Fitness type"  minOccurs="0" default="domination_count" >
             <oneOf label="Fitness Type">
               <keyword  id="layer_rank" name="layer_rank" code="{N_mdm(lit,fitnessType_layer_rank)}" label="layer_rank"   />
@@ -2097,7 +2166,7 @@
               <keyword  id="elitist" name="elitist" code="{N_mdm(lit,replacementType_elitist)}" label="elitist"   />
               <keyword  id="roulette_wheel" name="roulette_wheel" code="{N_mdm(lit,replacementType_roulette_wheel)}" label="roulette_wheel"   />
               <keyword  id="unique_roulette_wheel" name="unique_roulette_wheel" code="{N_mdm(lit,replacementType_unique_roulette_wheel)}" label="unique_roulette_wheel"   />
-              <keyword  id="below_limit" name="below_limit" code="{N_mdm(litp,TYPE_DATA_replacementType_below_limit)}" label="Below limit selection"  minOccurs="1" default="6" >
+              <keyword  id="below_limit" name="below_limit" code="{N_mdm(litp,TYPE_DATA_replacementType_below_limit)}" label="Below limit selection"  default="6" >
                 <param type="REAL" />
                 <keyword  id="shrinkage_fraction" name="shrinkage_fraction" code="{N_mdm(Real01,shrinkagePercent)}" label="shrinkage_fraction"  minOccurs="0" default="0.9" >
                   <alias name="shrinkage_percentage"/>
@@ -2114,7 +2183,7 @@
               <keyword  id="distance" name="distance" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_distance)}" label="distance"   >
                 <param type="REALLIST" />
               </keyword>
-              <keyword  id="max_designs" name="max_designs" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}" label="max_designs"  minOccurs="1" >
+              <keyword  id="max_designs" name="max_designs" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}" label="max_designs"  >
                 <param type="REALLIST" />
                 <keyword  id="num_designs" name="num_designs" code="{N_mdm(pintz,numDesigns)}" label="Number designs to keep for max_designs nicher"  minOccurs="0" default="100" >
                   <param type="INTEGER" constraint=">= 2" />
@@ -2142,7 +2211,7 @@
           &default_scaling;
 	  &method_jega_common_opts;
         </keyword>
-        <keyword  id="soga" name="soga" code="{N_mdm(utype,methodName_SOGA)}" label="soga"  minOccurs="1" group="Optimization: Global" >
+        <keyword  id="soga" name="soga" code="{N_mdm(utype,methodName_SOGA)}" label="soga"  group="Optimization: Global" >
           <keyword  id="fitness_type1" name="fitness_type" code="{0}" label="Fitness type"  minOccurs="0" default="merit_function">
             <keyword  id="merit_function3" name="merit_function" code="{N_mdm(lit,fitnessType_merit_function)}" label="merit_function"   />
             <keyword  id="constraint_penalty1" name="constraint_penalty" code="{N_mdm(Realp,constraintTolerance)}" label="Constraint penalty in merit function"  minOccurs="0" default="1.0" >
@@ -2159,7 +2228,7 @@
           </keyword>
           <keyword  id="convergence_type1" name="convergence_type" code="{0}" label="Convergence type"  minOccurs="0" default="average_fitness_tracker" >
             <oneOf label="Convergence Type">
-              <keyword  id="best_fitness_tracker" name="best_fitness_tracker" code="{N_mdm(lit,convergenceType_best_fitness_tracker)}" label="best_fitness_tracker"  minOccurs="1" >
+              <keyword  id="best_fitness_tracker" name="best_fitness_tracker" code="{N_mdm(lit,convergenceType_best_fitness_tracker)}" label="best_fitness_tracker"  >
                 <keyword  id="percent_change1" name="percent_change" code="{N_mdm(Realz,convergenceTolerance)}" label="Percent change in fitness"  minOccurs="0" default="0.1" >
                   <param type="REAL" />
                 </keyword>
@@ -2167,7 +2236,7 @@
                   <param type="INTEGER" constraint=">= 0" />
                 </keyword>
               </keyword>
-              <keyword  id="average_fitness_tracker" name="average_fitness_tracker" code="{N_mdm(lit,convergenceType_average_fitness_tracker)}" label="average_fitness_tracker"  minOccurs="1" >
+              <keyword  id="average_fitness_tracker" name="average_fitness_tracker" code="{N_mdm(lit,convergenceType_average_fitness_tracker)}" label="average_fitness_tracker"  >
                 <keyword  id="percent_change2" name="percent_change" code="{N_mdm(Realz,convergenceTolerance)}" label="percent_change"  minOccurs="0" default="0.1" >
                   <param type="REAL" />
                 </keyword>
@@ -2186,7 +2255,7 @@
 	<!-- END JEGA -->
 
 	<!-- BEGIN coliny methods -->
-        <keyword  id="coliny_pattern_search" name="coliny_pattern_search" code="{N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}" label="coliny_pattern_search"  minOccurs="1" group="Optimization: Local, Derivative-free" >
+        <keyword  id="coliny_pattern_search" name="coliny_pattern_search" code="{N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}" label="coliny_pattern_search"  group="Optimization: Local, Derivative-free" >
           <keyword  id="constant_penalty" name="constant_penalty" code="{N_mdm(true,constantPenalty)}" label="Control of dynamic penalty"  minOccurs="0" default="algorithm dynamically adapts the constraint penalty" />
           <keyword  id="no_expansion" name="no_expansion" code="{N_mdm(false,expansionFlag)}" label="No expansion flag"  minOccurs="0" default="algorithm may expand pattern size" />
           <keyword  id="expand_after_success" name="expand_after_success" code="{N_mdm(int,expandAfterSuccess)}" label="Number of consecutive improvements before expansion"  minOccurs="0" default="5" >
@@ -2232,7 +2301,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="coliny_solis_wets" name="coliny_solis_wets" code="{N_mdm(utype,methodName_COLINY_SOLIS_WETS)}" label="coliny_solis_wets"  minOccurs="1" group="Optimization: Local, Derivative-free" >
+        <keyword  id="coliny_solis_wets" name="coliny_solis_wets" code="{N_mdm(utype,methodName_COLINY_SOLIS_WETS)}" label="coliny_solis_wets"  group="Optimization: Local, Derivative-free" >
           <keyword  id="contract_after_failure" name="contract_after_failure" code="{N_mdm(int,contractAfterFail)}" label="Number of consecutive failures before contraction"  minOccurs="0" default="4*number of variables" >
             <param type="INTEGER" />
           </keyword>
@@ -2269,7 +2338,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="coliny_direct" name="coliny_direct" code="{N_mdm(utype,methodName_COLINY_DIRECT)}" label="coliny_direct"  minOccurs="1" group="Optimization: Global" >
+        <keyword  id="coliny_direct" name="coliny_direct" code="{N_mdm(utype,methodName_COLINY_DIRECT)}" label="coliny_direct"  group="Optimization: Global" >
           <keyword  id="division" name="division" code="{0}" label="Box subdivision approach"  minOccurs="0" default="major_dimension" >
             <oneOf label="Divide Along">
               <keyword  id="major_dimension" name="major_dimension" code="{N_mdm(lit,boxDivision_major_dimension)}" label="major_dimension"   />
@@ -2294,7 +2363,7 @@
 	  &coliny_common_opts;
 	  &method_optional_model_pointer;
         </keyword>
-        <keyword  id="coliny_ea" name="coliny_ea" code="{N_mdm(utype,methodName_COLINY_EA)}" label="coliny_ea"  minOccurs="1" group="Optimization: Global" >
+        <keyword  id="coliny_ea" name="coliny_ea" code="{N_mdm(utype,methodName_COLINY_EA)}" label="coliny_ea"  group="Optimization: Global" >
           <keyword  id="population_size1" name="population_size" code="{N_mdm(pint,populationSize)}" label="Number of population members"  minOccurs="0" default="50" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
@@ -2364,7 +2433,7 @@
 	  &coliny_common_opts;
 	  &method_optional_model_pointer;
         </keyword>
-        <keyword  id="coliny_beta" name="coliny_beta" code="{N_mdm(utype,methodName_COLINY_BETA)}" label="coliny_beta"  minOccurs="1" group="Optimization: Other" >
+        <keyword  id="coliny_beta" name="coliny_beta" code="{N_mdm(utype,methodName_COLINY_BETA)}" label="coliny_beta"  group="Optimization: Other" >
           <keyword  id="beta_solver_name" name="beta_solver_name" code="{N_mdm(str,betaSolverName)}" label="beta_solver_name"   >
             <param type="STRING" />
           </keyword>
@@ -2373,7 +2442,7 @@
         </keyword>
 	<!-- END coliny methods -->
 
-        <keyword  id="nl2sol" name="nl2sol" code="{N_mdm(utype,methodName_NL2SOL)}" label="nl2sol"  minOccurs="1" group="Calibration" >
+        <keyword  id="nl2sol" name="nl2sol" code="{N_mdm(utype,methodName_NL2SOL)}" label="nl2sol"  group="Calibration" >
           <keyword  id="function_precision2" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Relative precision in least squares terms"  minOccurs="0" default="1.0e-10" >
             <param type="REAL" />
           </keyword>
@@ -2407,7 +2476,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="nonlinear_cg" name="nonlinear_cg" code="{N_mdm(utype,methodName_NONLINEAR_CG)}" label="nonlinear_cg"  minOccurs="1" group="Optimization: Local, Derivative-based" >
+        <keyword  id="nonlinear_cg" name="nonlinear_cg" code="{N_mdm(utype,methodName_NONLINEAR_CG)}" label="nonlinear_cg"  group="Optimization: Local, Derivative-based" >
           <keyword  id="misc_options1" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options"  minOccurs="0" default="no misc options" >
             <param type="STRINGLIST" />
           </keyword>
@@ -2417,7 +2486,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="ncsu_direct" name="ncsu_direct" code="{N_mdm(utype,methodName_NCSU_DIRECT)}" label="ncsu_direct"  minOccurs="1" group="Optimization: Global" >
+        <keyword  id="ncsu_direct" name="ncsu_direct" code="{N_mdm(utype,methodName_NCSU_DIRECT)}" label="ncsu_direct"  group="Optimization: Global" >
           <keyword  id="solution_target2" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="Solution Target "  minOccurs="0" default="0" >
             <alias name="solution_accuracy"/>
             <param type="REAL" />
@@ -2453,7 +2522,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-        <keyword  id="efficient_global" name="efficient_global" code="{N_mdm(utype,methodName_EFFICIENT_GLOBAL)}" label="efficient_global"  minOccurs="1" group="Surrogate-based Methods" >
+        <keyword  id="efficient_global" name="efficient_global" code="{N_mdm(utype,methodName_EFFICIENT_GLOBAL)}" label="efficient_global"  group="Surrogate-based Methods" >
 	  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples"  minOccurs="0" default="(d+1)(d+2)/2">
 	    <param type="INTEGER" />
 	  </keyword>
@@ -2489,58 +2558,49 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_SURROGATE_BASED_UQ)}" label="surrogate_based_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
+        <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_SURROGATE_BASED_UQ)}" label="surrogate_based_uq" help="" group="Uncertainty Quantification" >
           <!-- Current target is Model-based PCE,SC,FT expansions: support expansion_options. -->
 	  &expansion_options;
           <!-- DFSModel spec defines approximation, DACE, data import, etc. -->
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="function_train" name="function_train" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
-	  <!-- &ft_refinement; -->
+        <keyword  id="function_train" name="function_train" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train" help="" group="Uncertainty Quantification" >
+	  &ft_method_refinement;
 	  <!-- &import_build; Rely on DFSModel data import -->
-	  <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" minOccurs="0" default="20"  >
-	    <param type="INTEGER" constraint=">= 0" />
-	    <!-- &pce_regression_opts; cross val, derivs, tensor, etc. -->
-	  </keyword>
-	  &ft_method_controls;
+	  &ft_method_regression;
+	  &ft_method_tols;
 	  &ft_method_order;
 	  &ft_method_rank;
 	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
-	  <!-- &ft_refinement; INDIVIDUAL ADAPTIVE REFINEMENT PER LEVEL (currently use adapt_rank) -->
+        <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" group="Uncertainty Quantification" >
+	  &ft_method_refinement;
 	  &mf_alloc_control;
 	  &discrep_emulation;
-	  &ft_method_controls;
-	  <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs"   >
-	    <param type="INTEGERLIST" />
-	    <!-- &pce_regression_opts; cross val, derivs, tensor, etc. -->
-	  </keyword>
+	  &ft_method_tols;
+	  &ft_method_regression_sequence;
 	  &mlft_method_order_sequence;
 	  &mlft_method_rank_sequence;
 	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="multilevel_function_train" name="multilevel_function_train" code="{N_mdm(utype,methodName_MULTILEVEL_FUNCTION_TRAIN)}" label="multilevel_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
+        <keyword  id="multilevel_function_train" name="multilevel_function_train" code="{N_mdm(utype,methodName_MULTILEVEL_FUNCTION_TRAIN)}" label="multilevel_function_train" help="" group="Uncertainty Quantification" >
 	  &default_max_iterations;
-	  &ml_pilot_samples;   <!-- optional (MLMC uses default pilot = 100) -->
-	  &mlft_alloc_control; <!-- default is DEFAULT_MLMF_CONTROL -->
+	  &mlft_alloc_control;
 	  &discrep_emulation;
-	  &ft_method_controls;
-	  <!-- No sequence spec (for now), only pilot
-	  <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" >
-	    <param type="INTEGERLIST" />
-	  </keyword>
-	  -->
+	  &ft_method_tols;
+	  &ft_method_regression_sequence;
+	  &mlft_method_order_sequence;
+	  &mlft_method_rank_sequence;
 	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>
 
-	<keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos" group="Uncertainty Quantification" >
 	  <alias name="nond_polynomial_chaos"/>
 	  &pce_refinement;
 	  <oneOf label="Chaos coefficient estimation approach">
@@ -2558,7 +2618,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="multifidelity_polynomial_chaos" name="multifidelity_polynomial_chaos" code="{N_mdm(utype,methodName_MULTIFIDELITY_POLYNOMIAL_CHAOS)}" label="multifidelity_polynomial_chaos"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="multifidelity_polynomial_chaos" name="multifidelity_polynomial_chaos" code="{N_mdm(utype,methodName_MULTIFIDELITY_POLYNOMIAL_CHAOS)}" label="multifidelity_polynomial_chaos" group="Uncertainty Quantification" >
 	  &pce_refinement;
 	  &mf_alloc_control;
 	  &discrep_emulation;
@@ -2577,11 +2637,11 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="multilevel_polynomial_chaos" name="multilevel_polynomial_chaos" code="{N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}" label="multilevel_polynomial_chaos"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="multilevel_polynomial_chaos" name="multilevel_polynomial_chaos" code="{N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}" label="multilevel_polynomial_chaos" group="Uncertainty Quantification" >
 	  &default_max_iterations;
-	  &ml_pilot_samples;
-	  &mlpce_alloc_control; <!-- default is DEFAULT_MLMF_CONTROL (ESTIMATOR_VARIANCE) -->
+	  &mlpce_alloc_control;
 	  &discrep_emulation;
+	  <!-- Note: there are some complex dependences here (e.g. RIP_SAMPLING requires compressed sensing) and unsupported cases when reusing general entities: enforce these in the C++ rather than overly specializing the XML -->
 	  <oneOf label="Coefficient Computation Approach">
 	    &pce_expansion_order_sequence;
 	    &pce_orthog_least_interp_sequence;
@@ -2594,7 +2654,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="stoch_collocation" name="stoch_collocation" code="{N_mdm(utype,methodName_STOCH_COLLOCATION)}" label="stoch_collocation"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="stoch_collocation" name="stoch_collocation" code="{N_mdm(utype,methodName_STOCH_COLLOCATION)}" label="stoch_collocation"  group="Uncertainty Quantification" >
 	  <alias name="nond_stoch_collocation"/>
 	  &sc_refinement;
 	  <oneOf label="Interpolation Grid Type">
@@ -2606,7 +2666,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="multifidelity_stoch_collocation" name="multifidelity_stoch_collocation" code="{N_mdm(utype,methodName_MULTIFIDELITY_STOCH_COLLOCATION)}" label="multifidelity_stoch_collocation"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="multifidelity_stoch_collocation" name="multifidelity_stoch_collocation" code="{N_mdm(utype,methodName_MULTIFIDELITY_STOCH_COLLOCATION)}" label="multifidelity_stoch_collocation"  group="Uncertainty Quantification" >
 	  &sc_refinement;
 	  &mf_alloc_control;
 	  &discrep_emulation;
@@ -2620,7 +2680,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="sampling" name="sampling" code="{N_mdm(utype,methodName_RANDOM_SAMPLING)}" label="Nondeterministic sampling method"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="sampling" name="sampling" code="{N_mdm(utype,methodName_RANDOM_SAMPLING)}" label="Nondeterministic sampling method"  group="Uncertainty Quantification" >
 	  <alias name="nond_sampling"/>
 	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="(initial) samples"  minOccurs="0" default="0">
 	    <alias name="initial_samples" />
@@ -2645,10 +2705,10 @@
 	  <keyword  id="d_optimal" name="d_optimal" code="{N_mdm(true,dOptimal)}" label="D-Optimal Sample Design"  minOccurs="0" default="off"> 
 	    <optional>
 	      <oneOf label="Design Strategy">
-		<keyword  id="candidate_designs" name="candidate_designs" code="{N_mdm(sizet,numCandidateDesigns)}" label="Number of Candidate Designs"  minOccurs="1" default="100" >
+		<keyword  id="candidate_designs" name="candidate_designs" code="{N_mdm(sizet,numCandidateDesigns)}" label="Number of Candidate Designs"  default="100" >
 		  <param type="INTEGER" constraint="> 0" />
 		</keyword>
-		<keyword  id="leja_oversample_ratio" name="leja_oversample_ratio" code="{N_mdm(Real,collocationRatio)}" label="Leja oversampling ratio"  minOccurs="1" default="10.0" >
+		<keyword  id="leja_oversample_ratio" name="leja_oversample_ratio" code="{N_mdm(Real,collocationRatio)}" label="Leja oversampling ratio"  default="10.0" >
 		  <param type="REAL" />
 		</keyword>
 	      </oneOf>
@@ -2683,10 +2743,10 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
 	  &method_seed;
-	  &ml_pilot_samples;
+	  &mc_pilot_samples;
 	  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
 	    <oneOf label="Sample Type">
 	      <keyword  id="lhs3" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs"   />
@@ -2706,7 +2766,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="importance_sampling" name="importance_sampling" code="{N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}" label="importance_sampling"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="importance_sampling" name="importance_sampling" code="{N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}" label="importance_sampling"  group="Uncertainty Quantification" >
 	  <alias name="nond_importance_sampling"/>
 	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="(initial) samples"  minOccurs="0" default="0">
 	    <alias name="initial_samples" />
@@ -2730,7 +2790,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="gpais" name="gpais" code="{N_mdm(utype,methodName_GPAIS)}" label="gpais"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="gpais" name="gpais" code="{N_mdm(utype,methodName_GPAIS)}" label="gpais"  group="Uncertainty Quantification" >
 	  <alias name="gaussian_process_adaptive_importance_sampling"/>
 	  <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"  minOccurs="0" >
 	    <alias name="samples" />
@@ -2754,7 +2814,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="adaptive_sampling" name="adaptive_sampling" code="{N_mdm(utype,methodName_ADAPTIVE_SAMPLING)}" label="adaptive_sampling"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="adaptive_sampling" name="adaptive_sampling" code="{N_mdm(utype,methodName_ADAPTIVE_SAMPLING)}" label="adaptive_sampling"  group="Uncertainty Quantification" >
 	  <alias name="nond_adaptive_sampling"/>
 	  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples"  minOccurs="0" default="0">
 	    <alias name="samples" />
@@ -2799,7 +2859,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="pof_darts" name="pof_darts" code="{N_mdm(utype,methodName_POF_DARTS)}" label="pof_darts"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="pof_darts" name="pof_darts" code="{N_mdm(utype,methodName_POF_DARTS)}" label="pof_darts"  group="Uncertainty Quantification" >
 	  <alias name="nond_pof_darts"/>
 	  <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"   >
 	    <alias name="samples" />
@@ -2822,7 +2882,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="rkd_darts" name="rkd_darts" code="{N_mdm(utype,methodName_RKD_DARTS)}" label="rkd_darts"  minOccurs="1"  group="Uncertainty Quantification">
+	<keyword  id="rkd_darts" name="rkd_darts" code="{N_mdm(utype,methodName_RKD_DARTS)}" label="rkd_darts"   group="Uncertainty Quantification">
 	  <alias name="nond_rkd_darts"/>
 	  <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"   >
 	    <alias name="samples" />
@@ -2846,7 +2906,7 @@
 	</keyword>
 
 	<!-- BMA TODO: not clear what the right samples spec is for evidence -->
-	<keyword  id="global_evidence" name="global_evidence" code="{N_mdm(utype,methodName_GLOBAL_EVIDENCE)}" label="global_evidence"  minOccurs="1" group="Uncertainty Quantification" >
+	<keyword  id="global_evidence" name="global_evidence" code="{N_mdm(utype,methodName_GLOBAL_EVIDENCE)}" label="global_evidence"  group="Uncertainty Quantification" >
 	  <alias name="nond_global_evidence"/>
 	  <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples" minOccurs="0"   >
 	    <param type="INTEGER" />
@@ -2877,7 +2937,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-        <keyword  id="global_interval_est" name="global_interval_est" code="{N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)}" label="global_interval_est"  minOccurs="1" group="Uncertainty Quantification" >
+        <keyword  id="global_interval_est" name="global_interval_est" code="{N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)}" label="global_interval_est"  group="Uncertainty Quantification" >
 	  <alias name="nond_global_interval_est"/>
 	  <!-- BMA TODO: not clear what the right spec is for interval -->
 	  <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" >
@@ -2906,10 +2966,10 @@
 	</keyword>
 
 	<!-- BEGIN Bayesian Calibration -->
-	<keyword  id="bayes_calibration" name="bayes_calibration" code="{N_mdm(utype,methodName_BAYES_CALIBRATION)}" label="Bayesian calibration "  minOccurs="1" group="Calibration" >
+	<keyword  id="bayes_calibration" name="bayes_calibration" code="{N_mdm(utype,methodName_BAYES_CALIBRATION)}" label="Bayesian calibration "  group="Calibration" >
 	  <alias name="nond_bayes_calibration"/>
 	  <oneOf label="Bayesian Calibration Method">
-	    <keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso"  minOccurs="1" >
+	    <keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso"  >
 	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples"  default="method-dependent">
 		<alias name="samples" />
 		<param type="INTEGER" />
@@ -2924,7 +2984,7 @@
 	      </keyword>
 	      <optional>
 		<oneOf label="MCMC Algorithm" >
-		  <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  minOccurs="1" default="dram" />
+		  <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
 		  <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
 		  <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
 		  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
@@ -2943,7 +3003,7 @@
 		<param type="INPUT_FILE" />
 	      </keyword>
 	    </keyword>
-	    <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa"  minOccurs="1" >
+	    <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa"  >
 	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples"  default="method-dependent">
 		<alias name="samples" />
 		<param type="INTEGER" />
@@ -2970,7 +3030,7 @@
 	      </keyword>
 	      <optional>
 		<oneOf label="MCMC Algorithm" >
-		  <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  minOccurs="1" default="dram" />
+		  <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
 		  <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
 		  <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
 		  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
@@ -2984,7 +3044,7 @@
 		<param type="INPUT_FILE" />
 	      </keyword>
 	    </keyword>
-	    <keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi"  minOccurs="1" >
+	    <keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi"  >
 	      <keyword  id="pushforward_samples" name="pushforward_samples" code="{N_mdm(int,numPushforwardSamples)}" label="Number of Samples from the Prior that are pushed forward through the model"  default="method-dependent">
 		<param type="INTEGER" />
 	      </keyword>
@@ -2993,7 +3053,7 @@
 	      </keyword>
 	      &bayes_emulator;
 	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space"  minOccurs="0" />		  
-	      <keyword  id="data_distribution" name="data_distribution" label="Data distribution type"  minOccurs="1" code="{0}">
+	      <keyword  id="data_distribution" name="data_distribution" label="Data distribution type"  code="{0}">
 		<oneOf label="Data Distribution">
 		  <keyword  id="gaussian" name="gaussian" code="{0}" label="gaussian"  >
 		    <keyword  id="means" name="means" code="{N_mdm(RealDL,dataDistMeans)}" label="User-provided proposal means of gaussian dist on data"  >
@@ -3007,7 +3067,7 @@
 		      </oneOf>
 		    </keyword>
 		  </keyword>
-		  <keyword  id="obs_data_filename" name="obs_data_filename" code="{N_mdm(str,dataDistFile)}" label="User-provided data to build distribution on data"  minOccurs="1" >
+		  <keyword  id="obs_data_filename" name="obs_data_filename" code="{N_mdm(str,dataDistFile)}" label="User-provided data to build distribution on data"  >
 		    <param type="INPUT_FILE"/>
 		  </keyword>
 		</oneOf>
@@ -3020,7 +3080,7 @@
 	      <keyword id="posterior_density_export_filename" name="posterior_density_export_filename" code="{N_mdm(str,posteriorDensityExportFilename)}" label="Filename to which posterior density evaluations will be written"  minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
 	      </keyword>
 	    </keyword>
-	    <keyword  id="dream" name="dream" code="{N_mdm(utype,subMethod_SUBMETHOD_DREAM)}" label="dream"  minOccurs="1" >
+	    <keyword  id="dream" name="dream" code="{N_mdm(utype,subMethod_SUBMETHOD_DREAM)}" label="dream"  >
 	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples"  default="method-dependent">
 		<alias name="samples" />
 		<param type="INTEGER" />
@@ -3057,7 +3117,7 @@
 	      <param type="INTEGER" />
 	    </keyword>
 	    <!--&default_max_function_evaluations;-->
-            <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates"  minOccurs="1" default="1" >
+            <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates"  default="1" >
               <param type="INTEGER" constraint="> 0" />
             </keyword>
             <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(int,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations"  minOccurs="0">
@@ -3090,10 +3150,10 @@
 	      <keyword  id="both" name="both" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}" label="multiplier for each experiment, response"   />
 	    </oneOf>
 	    <optional>
-	      <keyword  id="hyperprior_alphas" name="hyperprior_alphas" code="{N_mdm(RealDL,hyperPriorAlphas)}" label="Inverse-gamma hyper-prior alphas"  minOccurs="1" >
+	      <keyword  id="hyperprior_alphas" name="hyperprior_alphas" code="{N_mdm(RealDL,hyperPriorAlphas)}" label="Inverse-gamma hyper-prior alphas"  >
 		<param type="REALLIST"/>
 	      </keyword>
-	      <keyword  id="hyperprior_betas" name="hyperprior_betas" code="{N_mdm(RealDL,hyperPriorBetas)}" label="Inverse-gamma hyper-prior betas"  minOccurs="1" >
+	      <keyword  id="hyperprior_betas" name="hyperprior_betas" code="{N_mdm(RealDL,hyperPriorBetas)}" label="Inverse-gamma hyper-prior betas"  >
 		<param type="REALLIST"/>
 	      </keyword>
 	    </optional>
@@ -3210,7 +3270,7 @@
 	<!-- END Bayesian Calibration-->
 
         <!-- DACE Methods -->
-	<keyword  id="dace" name="dace" code="{N_mdm(utype,methodName_DACE)}" label="dace"  minOccurs="1" group="[CHOOSE method category]DACE" >
+	<keyword  id="dace" name="dace" code="{N_mdm(utype,methodName_DACE)}" label="dace"  group="[CHOOSE method category]DACE" >
 	  <oneOf label="DACE type">
 	    <keyword  id="grid" name="grid" code="{N_mdm(utype,subMethod_SUBMETHOD_GRID)}" label="grid"   />
 	    <keyword  id="random4" name="random" code="{N_mdm(utype,subMethod_SUBMETHOD_RANDOM)}" label="random"   />
@@ -3237,7 +3297,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="fsu_cvt" name="fsu_cvt" code="{N_mdm(utype,methodName_FSU_CVT)}" label="fsu_cvt"  minOccurs="1" group="DACE" >
+	<keyword  id="fsu_cvt" name="fsu_cvt" code="{N_mdm(utype,methodName_FSU_CVT)}" label="fsu_cvt"  group="DACE" >
 	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" default="0">
 	    <param type="INTEGER" />
 	  </keyword>
@@ -3263,7 +3323,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="psuade_moat" name="psuade_moat" code="{N_mdm(utype,methodName_PSUADE_MOAT)}" label="PSUADE MOAT method"  minOccurs="1" group="DACE" >
+	<keyword  id="psuade_moat" name="psuade_moat" code="{N_mdm(utype,methodName_PSUADE_MOAT)}" label="PSUADE MOAT method"  group="DACE" >
 	  <keyword  id="partitions" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Number of partitions"  minOccurs="0" default="3" >
 	    <param type="INTEGERLIST" />
 	  </keyword>
@@ -3276,7 +3336,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-        <keyword  id="local_evidence" name="local_evidence" code="{N_mdm(utype,methodName_LOCAL_EVIDENCE)}" label="local_evidence"  minOccurs="1" group="Uncertainty Quantification" >
+        <keyword  id="local_evidence" name="local_evidence" code="{N_mdm(utype,methodName_LOCAL_EVIDENCE)}" label="local_evidence"  group="Uncertainty Quantification" >
           <alias name="nond_local_evidence"/>
           <optional>
             <oneOf label="Optimization Solver">
@@ -3288,7 +3348,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="local_interval_est" name="local_interval_est" code="{N_mdm(utype,methodName_LOCAL_INTERVAL_EST)}" label="local_interval_est"  minOccurs="1" group="Uncertainty Quantification" >
+        <keyword  id="local_interval_est" name="local_interval_est" code="{N_mdm(utype,methodName_LOCAL_INTERVAL_EST)}" label="local_interval_est"  group="Uncertainty Quantification" >
           <alias name="nond_local_interval_est"/>
           <optional>
             <oneOf label="Optimization Solver">
@@ -3300,7 +3360,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="local_reliability" name="local_reliability" code="{N_mdm(utype,methodName_LOCAL_RELIABILITY)}" label="Reliability method"  minOccurs="1" group="Uncertainty Quantification" >
+        <keyword  id="local_reliability" name="local_reliability" code="{N_mdm(utype,methodName_LOCAL_RELIABILITY)}" label="Reliability method"  group="Uncertainty Quantification" >
           <alias name="nond_local_reliability"/>
           <keyword  id="mpp_search" name="mpp_search" code="{0}" label="MPP search type"  minOccurs="0" default="No MPP search (MV method)" >
             <oneOf label="MPP Approximation">
@@ -3356,7 +3416,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="global_reliability" name="global_reliability" code="{N_mdm(utype,methodName_GLOBAL_RELIABILITY)}" label="global_reliability"  minOccurs="1" group="Uncertainty Quantification" >
+        <keyword  id="global_reliability" name="global_reliability" code="{N_mdm(utype,methodName_GLOBAL_RELIABILITY)}" label="global_reliability"  group="Uncertainty Quantification" >
           <alias name="nond_global_reliability"/>
 	  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples"  minOccurs="0" default="(d+1)(d+2)/2">
 	    <param type="INTEGER" />
@@ -3392,7 +3452,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="fsu_quasi_mc" name="fsu_quasi_mc" code="{0}" label="fsu_quasi_mc"  minOccurs="1" group="DACE" >
+        <keyword  id="fsu_quasi_mc" name="fsu_quasi_mc" code="{0}" label="fsu_quasi_mc"  group="DACE" >
           <oneOf label="Sequence Type">
             <keyword  id="halton1" name="halton" code="{N_mdm(utype,methodName_FSU_HALTON)}" label="halton"   />
             <keyword  id="hammersley" name="hammersley" code="{N_mdm(utype,methodName_FSU_HAMMERSLEY)}" label="hammersley"   />
@@ -3422,7 +3482,7 @@
         </keyword>
 
 	<!-- Parameter Studies -->
-        <keyword  id="vector_parameter_study" name="vector_parameter_study" code="{N_mdm(utype,methodName_VECTOR_PARAMETER_STUDY)}" label="Vector parameter study"  minOccurs="1" group="Parameter Studies" >
+        <keyword  id="vector_parameter_study" name="vector_parameter_study" code="{N_mdm(utype,methodName_VECTOR_PARAMETER_STUDY)}" label="Vector parameter study"  group="Parameter Studies" >
           <oneOf label="Step Control">
             <keyword  id="final_point" name="final_point" code="{N_mdm(RealDL,finalPoint)}" label="Termination point of vector"   >
               <param type="REALLIST" />
@@ -3437,12 +3497,12 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="list_parameter_study" name="list_parameter_study" code="{N_mdm(utype,methodName_LIST_PARAMETER_STUDY)}" label="List parameter study"  minOccurs="1" group="Parameter Studies" >
+        <keyword  id="list_parameter_study" name="list_parameter_study" code="{N_mdm(utype,methodName_LIST_PARAMETER_STUDY)}" label="List parameter study"  group="Parameter Studies" >
           <oneOf label="Points Source">
             <keyword  id="list_of_points" name="list_of_points" code="{N_mdm(RealDL,listOfPoints)}" label="List of points to evaluate"   >
               <param type="REALLIST" />
             </keyword>
-            <keyword  id="import_points_file10" name="import_points_file" code="{N_mdm(str,pstudyFilename)}" label="import_points_file"  minOccurs="1" default="no point import from a file" >
+            <keyword  id="import_points_file10" name="import_points_file" code="{N_mdm(str,pstudyFilename)}" label="import_points_file"  default="no point import from a file" >
               <param type="INPUT_FILE" />
 	      <optional>
 		<oneOf label="Tabular Format" >
@@ -3461,7 +3521,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="centered_parameter_study" name="centered_parameter_study" code="{N_mdm(utype,methodName_CENTERED_PARAMETER_STUDY)}" label="Centered parameter study"  minOccurs="1" group="Parameter Studies" >
+        <keyword  id="centered_parameter_study" name="centered_parameter_study" code="{N_mdm(utype,methodName_CENTERED_PARAMETER_STUDY)}" label="Centered parameter study"  group="Parameter Studies" >
           <keyword  id="step_vector1" name="step_vector" code="{N_mdm(RealDL,stepVector)}" label="Step vector"   >
             <param type="REALLIST" />
           </keyword>
@@ -3472,7 +3532,7 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="multidim_parameter_study" name="multidim_parameter_study" code="{N_mdm(utype,methodName_MULTIDIM_PARAMETER_STUDY)}" label="Multidimensional parameter study"  minOccurs="1" group="Parameter Studies" >
+        <keyword  id="multidim_parameter_study" name="multidim_parameter_study" code="{N_mdm(utype,methodName_MULTIDIM_PARAMETER_STUDY)}" label="Multidimensional parameter study"  group="Parameter Studies" >
           <keyword  id="partitions1" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Partitions per variable"   >
             <param type="INTEGERLIST" />
           </keyword>
@@ -3480,7 +3540,7 @@
         </keyword>
 
 	<!-- Verification -->
-        <keyword  id="richardson_extrap" name="richardson_extrap" code="{N_mdm(utype,methodName_RICHARDSON_EXTRAP)}" label="Richardson extrapolation"  minOccurs="1" group="Verification Studies" >
+        <keyword  id="richardson_extrap" name="richardson_extrap" code="{N_mdm(utype,methodName_RICHARDSON_EXTRAP)}" label="Richardson extrapolation"  group="Verification Studies" >
           <oneOf label="Verification Mode">
             <keyword  id="estimate_order" name="estimate_order" code="{N_mdm(utype,subMethod_SUBMETHOD_ESTIMATE_ORDER)}" label="estimate_order"   />
             <keyword  id="converge_order" name="converge_order" code="{N_mdm(utype,subMethod_SUBMETHOD_CONVERGE_ORDER)}" label="converge_order"   />
@@ -3503,7 +3563,7 @@
         <param type="STRING" taglist="model" />
       </keyword>
       <oneOf label="Model Type">
-        <keyword  id="single" name="single" code="{N_mom(lit,modelType_simulation)}" label="Single"  minOccurs="1" default="N/A ( single if no model specification)" complexity="0">
+        <keyword  id="single" name="single" code="{N_mom(lit,modelType_simulation)}" label="Single"  default="N/A ( single if no model specification)" complexity="0">
           <alias name="simulation"/>
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface Set Pointer"  minOccurs="0" default="model use of last interface parsed" >
             <param type="STRING" in_taglist="interface" />
@@ -3515,12 +3575,12 @@
             </keyword>
           </keyword>
         </keyword>
-        <keyword  id="surrogate" name="surrogate" code="{N_mom(lit,modelType_surrogate)}" label="Surrogate"  minOccurs="1" complexity="0" >
+        <keyword  id="surrogate" name="surrogate" code="{N_mom(lit,modelType_surrogate)}" label="Surrogate"  complexity="0" >
           <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(intsetm1,surrogateFnIndices)}" label="Surrogate Response IDs"  minOccurs="0" default="All response functions are approximated" >
             <param type="INTEGERLIST" />
           </keyword>
           <oneOf label="Surrogate Category">
-            <keyword  id="global" name="global" code="{0}" label="Global Approximation"  minOccurs="1" >
+            <keyword  id="global" name="global" code="{0}" label="Global Approximation"  >
               <oneOf label="Global Surrogate Type">
 		<keyword  id="experimental_gaussian_process" name="experimental_gaussian_process" code="{N_mom(lit,surrogateType_global_exp_gauss_proc)}" label="Experimental Gaussian Process" minOccurs="1" >
                   <keyword  id="trend1" name="trend" code="{0}" label="Specify Trend Function"  minOccurs="0" default="reduced_quadratic" >
@@ -3555,10 +3615,10 @@
 		    <param type="INPUT_FILE" />
 		  </keyword>
 		</keyword>
-                <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process"  minOccurs="1" >
+                <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process"  >
                   <alias name="kriging"/>
                   <oneOf label="GP Implementation">
-                    <keyword  id="dakota6" name="dakota" code="{N_mom(lit,surrogateType_global_gaussian)}" label="Dakota"  minOccurs="1" >
+                    <keyword  id="dakota6" name="dakota" code="{N_mom(lit,surrogateType_global_gaussian)}" label="Dakota"  >
                       <keyword  id="point_selection" name="point_selection" code="{N_mom(true,pointSelection)}" label="Point Selection"  minOccurs="0" default="no point selection" />
                       <keyword  id="trend" name="trend" code="{0}" label="Specify Trend Function"  minOccurs="0" default="reduced_quadratic" >
                         <oneOf label="Trend Order">
@@ -3568,7 +3628,7 @@
                         </oneOf>
                       </keyword>
                     </keyword>
-                    <keyword  id="surfpack6" name="surfpack" code="{N_mom(lit,surrogateType_global_kriging)}" label="Surfpack"  minOccurs="1" >
+                    <keyword  id="surfpack6" name="surfpack" code="{N_mom(lit,surrogateType_global_kriging)}" label="Surfpack"  >
                       <keyword  id="trend1" name="trend" code="{0}" label="Specify Trend Function"  minOccurs="0" default="reduced_quadratic" >
                         <oneOf label="Trend Order">
                           <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant"   />
@@ -3605,7 +3665,7 @@
                   </oneOf>
                 </keyword>
 
-                <keyword  id="mars" name="mars" code="{N_mom(lit,surrogateType_global_mars)}" label="Multivariate Adaptive Regression Spline (MARS)"  minOccurs="1" >
+                <keyword  id="mars" name="mars" code="{N_mom(lit,surrogateType_global_mars)}" label="Multivariate Adaptive Regression Spline (MARS)"  >
                   <keyword  id="max_bases" name="max_bases" code="{N_mom(shint,marsMaxBases)}" label="Maximum Number of Bases"  minOccurs="0" default="" >
                     <param type="INTEGER" />
                   </keyword>
@@ -3618,7 +3678,7 @@
 		  &model_partial_surfpack_export_format;
 	        </keyword>
 
-                <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving Least Squares"  minOccurs="1" >
+                <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving Least Squares"  >
                   <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="Polynomial Order for Bases"  minOccurs="0" default="" >
 		    <alias name="poly_order"/>
                     <param type="INTEGER" constraint=">= 0" />
@@ -3629,8 +3689,10 @@
                   &model_partial_surfpack_export_format;
                 </keyword>
 
-		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" minOccurs="1" group="Surrogate-based Methods">
-		  &ft_model_controls;
+		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" group="Surrogate-based Methods">
+		  &ft_model_refinement;
+		  &ft_model_regression_opts; <!-- opts only: collocation points defined through dace_method_pointer -->
+		  &ft_model_tols;
 		  &ft_model_order;
 		  &ft_model_rank;
 		  <!-- num_param is identical to start_order in polynomial case, but could be useful generalization for future non-polynomial cases
@@ -3679,7 +3741,7 @@
 		  -->
 		</keyword>
 
-        <keyword  id="neural_network" name="neural_network" code="{N_mom(lit,surrogateType_global_neural_network)}" label="Artificial Neural Network"  minOccurs="1" >
+        <keyword  id="neural_network" name="neural_network" code="{N_mom(lit,surrogateType_global_neural_network)}" label="Artificial Neural Network"  >
           <keyword  id="max_nodes" name="max_nodes" code="{N_mom(shint,annNodes)}" label="Maximum Number of Nodes"  minOccurs="0" default="numTrainingData - 1">
 		    <alias name="nodes"/>
             <param type="INTEGER" />
@@ -3696,7 +3758,7 @@
         <!-- #	    | orthogonal_polynomial {N_mom(lit,surrogateType_global_orthogonal_polynomial)}
                      #	    | interpolation_polynomial {N_mom(lit,surrogateType_global_interpolation_polynomial)}
                  -->
-                <keyword  id="radial_basis" name="radial_basis" code="{N_mom(lit,surrogateType_global_radial_basis)}" label="Radial Basis Function (RBF)"  minOccurs="1" >
+                <keyword  id="radial_basis" name="radial_basis" code="{N_mom(lit,surrogateType_global_radial_basis)}" label="Radial Basis Function (RBF)"  >
                   <keyword  id="bases" name="bases" code="{N_mom(shint,rbfBases)}" label="Initial Number of Bases"  minOccurs="0" default="" >
                     <param type="INTEGER" />
                   </keyword>
@@ -3712,7 +3774,7 @@
                   &model_full_surfpack_export_format;
                 </keyword>
 
-                <keyword  id="polynomial" name="polynomial" code="{N_mom(lit,surrogateType_global_polynomial)}" label="Polynomial"  minOccurs="1" >
+                <keyword  id="polynomial" name="polynomial" code="{N_mom(lit,surrogateType_global_polynomial)}" label="Polynomial"  >
                   <oneOf label="Polynomial Order">
                     <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="Basis Order"  >
                       <param type="INTEGER" constraint=">= 0" />
@@ -3741,10 +3803,10 @@
 		</keyword>
 		<keyword  id="discontinuity_detection" name="discontinuity_detection" code="{N_mom(true,decompDiscontDetect)}" label="Enable Discontinuity Detection"  minOccurs="0">
 		  <oneOf label="Threshold Mode">
-		    <keyword  id="jump_threshold" name="jump_threshold" code="{N_mom(Real,discontJumpThresh)}" label="Absolute Function Jump Threshold"  minOccurs="1">
+		    <keyword  id="jump_threshold" name="jump_threshold" code="{N_mom(Real,discontJumpThresh)}" label="Absolute Function Jump Threshold" >
 		      <param type="REAL" />
 		    </keyword>
-		    <keyword  id="gradient_threshold" name="gradient_threshold" code="{N_mom(Real,discontGradThresh)}" label="Absolute Gradient Threshold"  minOccurs="1">
+		    <keyword  id="gradient_threshold" name="gradient_threshold" code="{N_mom(Real,discontGradThresh)}" label="Absolute Gradient Threshold" >
 		      <param type="REAL" />
 		    </keyword>
 		  </oneOf>
@@ -3761,7 +3823,7 @@
               </optional>
 	      <optional>
 			<oneOf label="Build Data Source">
-			  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer"  minOccurs="1" default="no design of experiments data" >
+			  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer"  default="no design of experiments data" >
                     <param type="STRING" in_taglist="method" />
 			    <keyword  id="auto_refinement" name="auto_refinement" code="{N_mom(true,autoRefine)}" label="Automatically Refine Surrogate"  minOccurs="0" default="no refinement" complexity="1">
 			      <keyword  id="max_iterations" name="max_iterations" code="{N_mom(int,maxIterations)}" label="Max Build Iterations"  minOccurs="0" default="100">
@@ -3785,7 +3847,7 @@
 		      <!-- TODO: soft convergence limit / tolerance, challenge points -->
 		    </keyword>
 		  </keyword>
-			  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  minOccurs="1" >
+			  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
                     <param type="STRING" in_taglist="model" />
 		  </keyword>
 		</oneOf>
@@ -3903,7 +3965,7 @@
 		          <keyword  id="active_only22" name="active_only" code="{N_mom(true,importChallengeActive)}" label="Active Variables Only"  minOccurs="0" />
               </keyword>
             </keyword>
-            <keyword  id="multipoint" name="multipoint" code="{0}" label="Multipoint Approximation"  minOccurs="1" complexity="1">
+            <keyword  id="multipoint" name="multipoint" code="{0}" label="Multipoint Approximation"  complexity="1">
             <oneOf label="Multipoint Surrogate" >
               <keyword  id="tana" name="tana" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Two-point adaptive nonlinear approximation "   />
               <keyword  id="qmea" name="qmea" code="{N_mom(lit,surrogateType_multipoint_qmea)}" label="Quadratic multipoint exponential approximation "   />
@@ -3912,13 +3974,13 @@
               <param type="STRING" in_taglist="model" />
             </keyword>
             </keyword>
-            <keyword  id="local" name="local" code="{N_mom(lit,surrogateType_local_taylor)}" label="Local Approximation"  minOccurs="1" complexity="1">
+            <keyword  id="local" name="local" code="{N_mom(lit,surrogateType_local_taylor)}" label="Local Approximation"  complexity="1">
               <keyword  id="taylor_series" name="taylor_series" code="{0}" label="Taylor Series Local Approximation "   />
         	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
             	<param type="STRING" in_taglist="model" />
           	  </keyword>
             </keyword>
-            <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical Approximation "  minOccurs="1" >
+            <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical Approximation "  >
               <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,orderedModelPointers)}" label="Model Pointers (Ordered by Fidelity)"   >
                 <alias name="model_fidelity_sequence"/>
                 <param type="STRINGLIST" in_taglist="model" />
@@ -3946,14 +4008,14 @@
             </keyword>
           </oneOf>
         </keyword>
-        <keyword  id="nested2" name="nested" code="{N_mom(lit,modelType_nested)}" label="Nested"  minOccurs="1" complexity="1">
+        <keyword  id="nested2" name="nested" code="{N_mom(lit,modelType_nested)}" label="Nested"  complexity="1">
           <keyword  id="optional_interface_pointer" name="optional_interface_pointer" code="{N_mom(str,interfacePointer)}" label="Optional Interface Set Pointer"  minOccurs="0" default="no optional interface" >
             <param type="STRING" in_taglist="interface" />
             <keyword  id="optional_interface_responses_pointer" name="optional_interface_responses_pointer" code="{N_mom(str,optionalInterfRespPointer)}" label="Responses Pointer for Optional Interfaces"  minOccurs="0" default="reuse of top-level responses specification" >
               <param type="STRING" in_taglist="responses" />
             </keyword>
           </keyword>
-          <keyword  id="sub_method_pointer" name="sub_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Sub-Method Pointer"  minOccurs="1" >
+          <keyword  id="sub_method_pointer" name="sub_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Sub-Method Pointer"  >
             <param type="STRING" in_taglist="method" />
             <keyword  id="iterator_servers1" name="iterator_servers" code="{N_mom(pint,subMethodServers)}" label="Iterator Servers"  minOccurs="0" >
               <param type="INTEGER" constraint="> 0" />
@@ -3987,10 +4049,10 @@
 	    <keyword  id="identity_response_mapping" name="identity_response_mapping" code="{N_mom(true,identityRespMap)}" label="Identity Response Mapping"  minOccurs="0" default="no sub-iterator contribution to nested model functions" />
           </keyword>
         </keyword>
-        <keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="Active Subspace"  minOccurs="1" complexity="1">
+        <keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="Active Subspace"  complexity="1">
           <alias name="subspace"/>
 
-	      <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  minOccurs="1" >
+	      <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
 	  <keyword  id="initial_samples" name="initial_samples" code="{N_mom(int,initialSamples)}" label="Initial Samples"  minOccurs="0" default="model-dependent">
@@ -4049,15 +4111,15 @@
       </oneOf> 
 	  </keyword>
 	</keyword>
-	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="Adapted Basis"  minOccurs="1" >
-	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  minOccurs="1" >
+	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="Adapted Basis"  >
+	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
 	  <oneOf label="Expansion Basis Control">
-	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(int,adaptedBasisSparseGridLev)}" label="Adapted Basis Sparse Grid Level" >
+	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(ushint,adaptedBasisSparseGridLev)}" label="Adapted Basis Sparse Grid Level" >
 	      <param type="INTEGER" />
 	    </keyword>
-	    <keyword  id="expansion_order" name="expansion_order" code="{N_mom(int,adaptedBasisExpOrder)}" label="Adapted Basis Expansion Order" >
+	    <keyword  id="expansion_order" name="expansion_order" code="{N_mom(ushint,adaptedBasisExpOrder)}" label="Adapted Basis Expansion Order" >
 	      <param type="INTEGER" />
 	      <keyword  id="collocation_ratio4" name="collocation_ratio" code="{N_mom(Real,adaptedBasisCollocRatio)}" label="Adapted Basis Collocation Ratio" >
 		<param type="REAL" />
@@ -4066,13 +4128,13 @@
 	  </oneOf>
 	  <!-- TO DO: adaptation specification for testing higher-order and interaction terms for adapted basis. -->
 	</keyword>
-	    <keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random Field"  minOccurs="1" complexity="1">
+	    <keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random Field"  complexity="1">
 	      <keyword id="build_source" name="build_source" code="{0}" label="Build Source" minOccurs="0">
 	    <oneOf label="Build Data Source">
 	          <keyword  id="rf_data_file" name="rf_data_file" code="{N_mom(str,rfDataFileName)}" label="Random Field Data File Name" default="none">
 		<param type="STRING" />
               </keyword>
-	      <keyword  id="dace_method_pointer1" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer"  minOccurs="1" default="no design of experiments data" >
+	      <keyword  id="dace_method_pointer1" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer"  default="no design of experiments data" >
                 <param type="STRING" in_taglist="method" />
               </keyword>
 	          <keyword id="analytic_covariance" name="analytic_covariance" label="Analytic Covariance" code="{0}" >
@@ -4095,7 +4157,7 @@
 	      <keyword  id="truncation_tolerance" name="truncation_tolerance" code="{N_mom(Real,truncationTolerance)}" label="Truncation Tolerance"  minOccurs="0" >
 	    <param type="REAL" />
 	  </keyword>
-	      <keyword  id="propagation_model_pointer" name="propagation_model_pointer" code="{N_mom(str,propagationModelPointer)}" label="Pointer to Model Accepting RF"  minOccurs="1" >
+	      <keyword  id="propagation_model_pointer" name="propagation_model_pointer" code="{N_mom(str,propagationModelPointer)}" label="Pointer to Model Accepting RF"  >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
         </keyword>	
@@ -4110,7 +4172,7 @@
     </keyword>
     
     <!-- **** TOPLEVEL *** -->
-    <keyword id="variables" name="variables" minOccurs="1" maxOccurs="unbounded" code="{N_vam3(start,0,stop)}" label="Variables" >
+    <keyword id="variables" name="variables" maxOccurs="unbounded" code="{N_vam3(start,0,stop)}" label="Variables" >
       <keyword  id="id_variables" name="id_variables" code="{N_vam(str,idVariables)}" label="Variables set identifier"  minOccurs="0" default="use of last variables parsed" >
         <param type="STRING" taglist="variables" />
       </keyword>
@@ -4273,7 +4335,7 @@
       <keyword  id="lognormal_uncertain" name="lognormal_uncertain" code="{N_vam(pintz,numLognormalUncVars)}" label="lognormal uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no lognormal uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <oneOf label="Lognormal Characterization">
-          <keyword  id="lambdas" name="lambdas" code="{N_vam(rvec,lognormalUncLambdas)}" label="lognormal uncertain lambdas"  minOccurs="1" >
+          <keyword  id="lambdas" name="lambdas" code="{N_vam(rvec,lognormalUncLambdas)}" label="lognormal uncertain lambdas"  >
             <alias name="lnuv_lambdas"/>
             <param type="REALLIST" constraint="LEN lognormal_uncertain" />
             <keyword  id="zetas" name="zetas" code="{N_vam(RealLb,lognormalUncZetas)}" label="lognormal uncertain zetas"   >
@@ -4281,7 +4343,7 @@
               <param type="REALLIST" constraint="LEN lognormal_uncertain" />
             </keyword>
           </keyword>
-          <keyword  id="means1" name="means" code="{N_vam(RealLb,lognormalUncMeans)}" label="lognormal uncertain means"  minOccurs="1" >
+          <keyword  id="means1" name="means" code="{N_vam(RealLb,lognormalUncMeans)}" label="lognormal uncertain means"  >
             <alias name="lnuv_means"/>
             <param type="REALLIST" constraint="LEN lognormal_uncertain" />
             <oneOf label="Spread">
@@ -4900,7 +4962,7 @@
 
     
     <!-- **** TOPLEVEL *** -->
-    <keyword id="interface" name="interface" minOccurs="1" maxOccurs="unbounded" code="{N_ifm3(start,0,stop)}" label="Interface" >
+    <keyword id="interface" name="interface" maxOccurs="unbounded" code="{N_ifm3(start,0,stop)}" label="Interface" >
       <keyword  id="id_interface" name="id_interface" code="{N_ifm(str,idInterface)}" label="Interface Set Identifier"  minOccurs="0" default="use of last interface parsed" complexity="0">
         <param type="STRING" taglist="interface" />
       </keyword>
@@ -4993,7 +5055,7 @@
 	        </keyword>
 	        -->
           </keyword>
-          <keyword id="direct" name="direct" code="{N_ifm(type,interfaceType_TEST_INTERFACE)}" label="Direct Function Interface "  minOccurs="1" complexity="0">
+          <keyword id="direct" name="direct" code="{N_ifm(type,interfaceType_TEST_INTERFACE)}" label="Direct Function Interface "  complexity="0">
             <keyword id="processors_per_analysis" name="processors_per_analysis" code="{N_ifm(pint,procsPerAnalysis)}" label="Number of Processors per Analysis Server"  minOccurs="0" default="automatic (see discussion)" complexity="1">
               <param type="INTEGER" constraint="&gt; 0" />
             </keyword>
@@ -5003,7 +5065,7 @@
 	      <!-- #	  | modelcenter {N_ifm(type,interfaceType_MC_INTERFACE)}
                #	  | plugin {N_ifm(type,interfaceType_PLUGIN_INTERFACE)}
 	      -->
-	      <keyword id="python" name="python" code="{N_ifm(type,interfaceType_PYTHON_INTERFACE)}" label="Python Interface "  minOccurs="1" complexity="1">
+	      <keyword id="python" name="python" code="{N_ifm(type,interfaceType_PYTHON_INTERFACE)}" label="Python Interface "  complexity="1">
             <keyword id="numpy" name="numpy" code="{N_ifm(true,numpyFlag)}" label="Python NumPy Dataflow"  minOccurs="0" default="Python list dataflow" complexity="1"/>
           </keyword>
 	      <keyword id="scilab" name="scilab" code="{N_ifm(type,interfaceType_SCILAB_INTERFACE)}" label="Scilab Interface "  complexity="1"/>
@@ -5068,7 +5130,7 @@
 		<keyword id="evaluation_scheduling" name="evaluation_scheduling" code="{0}" label="Message Passing Configuration for Scheduling of Evaluations"  minOccurs="0" default="automatic (see discussion)" complexity="1">
 	      <oneOf label="Server Mode">
 	        <keyword id="master2" name="master" code="{N_ifm(type,evalScheduling_MASTER_SCHEDULING)}" label="Master"  complexity="1" />
-	        <keyword id="peer2" name="peer" code="{0}" label="Peer Scheduling of Evaluations"  minOccurs="1" complexity="1">
+	        <keyword id="peer2" name="peer" code="{0}" label="Peer Scheduling of Evaluations"  complexity="1">
 	          <oneOf label="Scheduling Mode">
 		        <keyword id="dynamic1" name="dynamic" code="{N_ifm(type,evalScheduling_PEER_DYNAMIC_SCHEDULING)}" label="Dynamic"  default="dynamic (see discussion)" complexity="1" />
 		        <keyword id="static1" name="static" code="{N_ifm(type,evalScheduling_PEER_STATIC_SCHEDULING)}" label="Static"  complexity="1" />
@@ -5096,7 +5158,7 @@
     </keyword>
     
     <!-- **** TOPLEVEL *** -->
-    <keyword id="responses" name="responses" minOccurs="1" maxOccurs="unbounded" code="{N_rem3(start,0,stop)}" label="Responses" >
+    <keyword id="responses" name="responses" maxOccurs="unbounded" code="{N_rem3(start,0,stop)}" label="Responses" >
       <keyword  id="id_responses" name="id_responses" code="{N_rem(str,idResponses)}" label="Responses set identifier"  minOccurs="0" default="use of last responses parsed" >
         <param type="STRING" taglist="responses" />
       </keyword>
@@ -5109,7 +5171,7 @@
            #       (2) STRINGLISTs used for alternation without conditional sub-specifications (e.g., scale_types)
         -->
       <oneOf label="Response Type">
-        <keyword  id="objective_functions" name="objective_functions" code="{N_rem(sizet,numObjectiveFunctions)}" label="Optimization"  minOccurs="1" >
+        <keyword  id="objective_functions" name="objective_functions" code="{N_rem(sizet,numObjectiveFunctions)}" label="Optimization"  >
           <alias name="num_objective_functions"/>
           <param type="INTEGER" constraint=">= 0" />
           <keyword  id="sense" name="sense" code="{N_rem(strL,primaryRespFnSense)}" label="Optimization sense"  minOccurs="0" default="vector values = 'minimize'" >
@@ -5179,7 +5241,7 @@
 	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files"  minOccurs="0" />
           </keyword>
         </keyword>
-        <keyword  id="calibration_terms" name="calibration_terms" code="{N_rem(sizet,numLeastSqTerms)}" label="Calibration (Least squares)"  minOccurs="1" >
+        <keyword  id="calibration_terms" name="calibration_terms" code="{N_rem(sizet,numLeastSqTerms)}" label="Calibration (Least squares)"  >
           <alias name="least_squares_terms"/>
           <alias name="num_least_squares_terms"/>
           <param type="INTEGER" constraint=">= 0" />
@@ -5304,7 +5366,7 @@
             </keyword>
           </keyword>
         </keyword>
-        <keyword  id="response_functions" name="response_functions" code="{N_rem(sizet,numResponseFunctions)}" label="Generic responses"  minOccurs="1" >
+        <keyword  id="response_functions" name="response_functions" code="{N_rem(sizet,numResponseFunctions)}" label="Generic responses"  >
           <alias name="num_response_functions"/>
           <param type="INTEGER" constraint=">= 0" />
           <keyword  id="scalar_responses" name="scalar_responses" code="{N_rem(sizet,numScalarResponseFunctions)}" label="scalar_responses"  minOccurs="0" >

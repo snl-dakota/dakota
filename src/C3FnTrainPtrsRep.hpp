@@ -10,8 +10,10 @@
 #define C3_FNTRAIN_PTRSREP_H
 
 #include "dakota_c3_include.hpp"
+#include <vector>
 
 namespace Dakota {
+
 
 // C3FnTrainPtrs already resembles a handle managing pointers.  However, the
 // ref count has to be shared/managed along with the shared representation(s).
@@ -38,10 +40,13 @@ public:
   void free_ft();
   void free_all();
 
-  // Manage stats (FTDerivedFunctions) computed from approx (FunctionTrain):
+  // Manage stats (FTDerivedFunctions) computed from FT approximation
   void ft_derived_functions_init_null();
-  // pass in sharedC3DataRep->approxOpts
-  void ft_derived_functions_create(struct MultiApproxOpts * opts);
+  void ft_derived_functions_create(struct MultiApproxOpts * opts,
+				   size_t num_mom, double eps);
+  void ft_derived_functions_create_av(struct MultiApproxOpts * opts,
+				      const std::vector<size_t>& rand_indices,
+				      double eps);
   void ft_derived_functions_free();
 
   //

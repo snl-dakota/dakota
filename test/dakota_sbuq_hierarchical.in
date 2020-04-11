@@ -34,7 +34,7 @@ method,
 #	  uniform p_refinement				#s19,#s20
 #	  orthogonal_least_interpolation		#s15
 #	  collocation_ratio =  2			#s12,#s17,#s19
-#	  collocation_ratio = .9			#s13,#s18,#s20
+#	  collocation_ratio = .9			#s13,#s14,#s18,#s20
 #	  collocation_points_sequence =   40  10	#s14,#s15
 #	  expansion_samples_sequence  = 2000 200	#s16
 #	  seed = 12347	      	  			#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20
