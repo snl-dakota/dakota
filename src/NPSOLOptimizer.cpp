@@ -166,25 +166,88 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   plevel_s.resize(72, ' ');
   NPOPTN2_F77( plevel_s.data() );
 
+  // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
+  // vendor-numerical, ...
+  std::string dlevel_s("Derivative Level            = ");
+  dlevel_s += boost::lexical_cast<std::string>(derivative_level);
+  dlevel_s.resize(72, ' ');
+  NPOPTN2_F77( dlevel_s.data() );
+
+  // assign the conv_tol passed in.
+  if (conv_tol > 0.) { // conv_tol < 0 can be passed to use the NPSOL default
+    std::ostringstream ctol_stream;
+    ctol_stream << "Optimality Tolerance        = "
+                << std::setiosflags(std::ios::left) << std::setw(26)<< conv_tol;
+    std::string ctol_s( ctol_stream.str() );
+    ctol_s.resize(72, ' ');
+    NPOPTN2_F77( ctol_s.data() );
+  }
+}
+
+/** This is an alternate constructor for performing an optimization using
+    the passed in objective function and constraint function pointers. Also
+    more detail in output. */
+NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point, 
+  const RealVector& var_lower_bnds, const RealVector& var_upper_bnds,
+  const RealMatrix& lin_ineq_coeffs,
+  const RealVector& lin_ineq_lower_bnds,
+  const RealVector& lin_ineq_upper_bnds,
+  const RealMatrix& lin_eq_coeffs,
+  const RealVector& lin_eq_targets,
+  const RealVector& nonlin_ineq_lower_bnds,
+  const RealVector& nonlin_ineq_upper_bnds,
+  const RealVector& nonlin_eq_targets,
+  void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
+  void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
+       double*, int&),
+  const int& derivative_level, const Real& conv_tol,
+  const Real function_precision, const Real feas_tol, 
+  const Real lin_feas_tol, const Real nonlin_feas_tol): // SOLBase default ctor
+  Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
+      lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
+      nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length(),
+            std::shared_ptr<TraitsBase>(new NPSOLTraits())),
+  setUpType("user_functions"), initialPoint(initial_point), 
+  lowerBounds(var_lower_bnds), upperBounds(var_upper_bnds), 
+  userObjectiveEval(user_obj_eval), userConstraintEval(user_con_eval)
+{
+  // invoke SOLBase allocate/set functions (shared with NLSSOLLeastSq)
+  allocate_arrays(numContinuousVars, numNonlinearConstraints, lin_ineq_coeffs,
+      lin_eq_coeffs);
+  allocate_workspace(numContinuousVars, numNonlinearConstraints,
+         numLinearConstraints, 0);
+  augment_bounds(lowerBounds, upperBounds, lin_ineq_lower_bnds,
+                 lin_ineq_upper_bnds, lin_eq_targets, nonlin_ineq_lower_bnds,
+                 nonlin_ineq_upper_bnds, nonlin_eq_targets);
+
+  // Set NPSOL options (mostly use defaults)
+  std::string vlevel_s("Verify Level                = 3");
+  vlevel_s.resize(72, ' ');
+  NPOPTN2_F77( vlevel_s.data() );
+
+  std::string plevel_s("Major Print Level           = 30");
+  plevel_s.resize(72, ' ');
+  NPOPTN2_F77( plevel_s.data() );
+
   std::string mplevel_s("Minor Print Level           = 30");
   mplevel_s.resize(72, ' ');
   NPOPTN2_F77( mplevel_s.data() );
 
-  std::string fplevel_s("Function Precision           = 1e-15");
+  std::string fplevel_s("Function Precision           = " + std::to_string(function_precision));
   fplevel_s.resize(72, ' ');
   NPOPTN2_F77( fplevel_s.data() );
 
-  std::string ftlevel_s("Feasibility Tolerance           = 1e-15");
+  std::string ftlevel_s("Feasibility Tolerance           = " + std::to_string(feas_tol));
   ftlevel_s.resize(72, ' ');
   NPOPTN2_F77( ftlevel_s.data() );
 
-  std::string lftlevel_s("Linear Feasibility Tolerance           = 1e-15");
+  std::string lftlevel_s("Linear Feasibility Tolerance           = " + std::to_string(lin_feas_tol));
   lftlevel_s.resize(72, ' ');
   NPOPTN2_F77( lftlevel_s.data() );
 
-  std::string nlftlevel_s("Nonlinear Feasibility Tolerance           = 1e-15");
+  std::string nlftlevel_s("Nonlinear Feasibility Tolerance           = " + std::to_string(nonlin_feas_tol));
   nlftlevel_s.resize(72, ' ');
-  NPOPTN2_F77( nlftlevel_s.data() );
+  NPOPTN2_F77( nlftlevel_s.data() );*/
 
   // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
   // vendor-numerical, ...
