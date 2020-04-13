@@ -767,35 +767,27 @@ variance_gradient(const RealVector &x,const SizetArray & dvv)
 }
 
 
-struct FunctionTrain * C3Approximation::
-subtract_const(struct FunctionTrain * ft, Real val)
-{
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  struct FunctionTrain * ftconst
-    = function_train_constant(-val, data_rep->multiApproxOpts);
-  struct FunctionTrain * updated = function_train_sum(ft, ftconst);
-
-  function_train_free(ftconst); //ftconst = NULL;
-  return updated;
-}
-
-
 Real C3Approximation::covariance(C3FnTrainPtrs& ftp1, C3FnTrainPtrs& ftp2)
 {
   Real mean1 = mean(ftp1), mean2 = mean(ftp2);
 
   // Sanity check only:
-  //Real retval = function_train_inner_weighted(ftp1.function_train(), ftp2.function_train()) - mean1 * mean2;
+  //Real ret_val = function_train_inner_weighted(ftp1.function_train(),
+  //  ftp2.function_train()) - mean1 * mean2;
 
-  struct FunctionTrain * fttemp1 = subtract_const(ftp1.function_train(), mean1);
-  struct FunctionTrain * fttemp2 = subtract_const(ftp2.function_train(), mean2);
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  struct MultiApproxOpts * opts = data_rep->multiApproxOpts;
+  struct FunctionTrain * ft_tmp1
+    = C3FnTrainPtrsRep::subtract_const(ftp1.function_train(), mean1, opts);
+  struct FunctionTrain * ft_tmp2
+    = C3FnTrainPtrsRep::subtract_const(ftp2.function_train(), mean2, opts);
 
-  Real retval = function_train_inner_weighted(fttemp1, fttemp2);
+  Real cov = function_train_inner_weighted(ft_tmp1, ft_tmp2);
 
-  function_train_free(fttemp1); //fttemp1 = NULL;
-  function_train_free(fttemp2); //fttemp2 = NULL;
+  function_train_free(ft_tmp1); //ft_tmp1 = NULL;
+  function_train_free(ft_tmp2); //ft_tmp2 = NULL;
 
-  return retval;
+  return cov;
 }
 
 

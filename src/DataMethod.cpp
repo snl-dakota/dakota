@@ -266,7 +266,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << primeBase << numTrials << trialType;
 
   // COLINY, NonD, DACE, & JEGA
-  s << randomSeed;
+  s << randomSeed << randomSeedSeq;
 
   // MADS
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns
@@ -427,7 +427,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> primeBase >> numTrials >> trialType;
 
   // COLINY, NonD, DACE, & JEGA
-  s >> randomSeed;
+  s >> randomSeed >> randomSeedSeq;
 
   // MADS
   s >> initMeshSize >> minMeshSize >> historyFile >> displayFormat >> vns
@@ -588,7 +588,7 @@ void DataMethodRep::write(std::ostream& s) const
     << primeBase << numTrials << trialType;
 
   // COLINY, NonD, DACE, & JEGA
-  s << randomSeed;
+  s << randomSeed << randomSeedSeq;
 
   // MADS
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns

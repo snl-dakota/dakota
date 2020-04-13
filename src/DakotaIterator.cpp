@@ -1654,6 +1654,13 @@ sampling_increment()
   }
 }
 
+void Iterator::random_seed(int seed)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->random_seed(seed);
+  // else no-op (don't require support from all Iterators that could be called)
+}
+
 unsigned short Iterator::sampling_scheme() const
 {
   if (!iteratorRep) { // letter lacking redefinition of virtual fn.!

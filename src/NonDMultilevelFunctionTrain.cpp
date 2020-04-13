@@ -33,6 +33,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),
   startOrderSeqSpec(
     problem_db.get_usa("method.nond.c3function_train.start_order_sequence")),
+  randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
+  fixedSeed(problem_db.get_bool("method.fixed_seed")), mlIter(0),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   assign_discrepancy_mode();
@@ -63,7 +65,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
   size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
     regression_size(numContinuousVars, start_rank(), approx_orders);
-  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
+  if (!config_regression(colloc_pts, regress_size, random_seed(),
+			 u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -158,7 +161,8 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
   size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
     regression_size(numContinuousVars, start_rank(), approx_orders);
-  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
+  if (!config_regression(colloc_pts, regress_size, random_seed(),
+                         u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -329,8 +333,8 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
   // regression
   // advance expansionOrder and/or collocationPoints, as admissible
   size_t next_i = sequenceIndex + 1;
-  if (next_i < collocPtsSeqSpec.size() || next_i < startRankSeqSpec.size() ||
-      next_i < startOrderSeqSpec.size())
+  if (next_i < collocPtsSeqSpec.size()  || next_i < startRankSeqSpec.size() ||
+      next_i < startOrderSeqSpec.size() || next_i < randomSeedSeqSpec.size())
     ++sequenceIndex;
 
   assign_specification_sequence();
@@ -352,9 +356,14 @@ infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
 
 
 void NonDMultilevelFunctionTrain::
-increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t iter,
+			  size_t step)
 {
   numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
+
+  mlIter = iter; // needed by multilevel_regression() for seed sequence, but not for multifidelity_expansion()
+  // *** TO DO: check greedy_multifidelity_expansion() sequencing ...
+
   update_sampler();
 }
 
@@ -363,6 +372,10 @@ void NonDMultilevelFunctionTrain::update_sampler()
 {
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
+
+  int seed = random_seed();
+  if (seed) sub_iter_rep->random_seed(seed);
+
   if (tensorRegression) {
     NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
     nond_quad->samples(numSamplesOnModel);

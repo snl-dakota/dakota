@@ -161,7 +161,7 @@ protected:
   virtual void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   /// increment sequence in numSamplesOnModel for multilevel_regression()
   virtual void increment_sample_sequence(size_t new_samp, size_t total_samp,
-					 size_t step);
+					 size_t iter, size_t step);
   /// accumulate one of the level metrics for {RIP,RANK}_SAMPLING cases
   virtual void sample_allocation_metric(Real& metric, Real power);
   /// compute delta_N_l for {RIP,RANK}_SAMPLING cases

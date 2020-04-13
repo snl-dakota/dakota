@@ -744,7 +744,8 @@ infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
 
 
 void NonDMultilevelPolynomialChaos::
-increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
+increment_sample_sequence(size_t new_samp, size_t total_samp,
+			  size_t iter, size_t step)
 {
   numSamplesOnModel = new_samp;
 

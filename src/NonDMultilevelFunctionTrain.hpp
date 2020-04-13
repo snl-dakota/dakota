@@ -75,7 +75,7 @@ protected:
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
-				 size_t step);
+				 size_t iter, size_t step);
   void compute_sample_increment(const RealVector& regress_metrics,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
@@ -95,7 +95,10 @@ private:
   //- Heading: Utility functions
   //
 
+  // sequence handlers:
+
   size_t collocation_points() const;
+  int random_seed() const;
   size_t start_rank(size_t index) const;
   size_t start_rank() const;
   unsigned short start_order(size_t index) const;
@@ -117,6 +120,14 @@ private:
   /// user specification for start_order_sequence
   UShortArray startOrderSeqSpec;
 
+  /// user specification for start_rank_sequence
+  SizetArray randomSeedSeqSpec;
+  /// don't continue an existing random number sequence
+  bool fixedSeed;
+
+  /// iteration passed from NonDExpansion ML/MF algorithms, allowing special
+  /// updating logic for sequence handlers
+  size_t mlIter;
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
 };
@@ -128,6 +139,21 @@ inline size_t NonDMultilevelFunctionTrain::collocation_points() const
   else
     return (sequenceIndex < collocPtsSeqSpec.size()) ?
       collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+}
+
+
+inline int NonDMultilevelFunctionTrain::random_seed() const
+{
+  // return 0 for cases where seed is undefined or will not be updated
+
+  if (randomSeedSeqSpec.empty()) return 0; // no spec -> non-repeatable samples
+  else if (fixedSeed) // continually reset seed to specified value
+    return (sequenceIndex < randomSeedSeqSpec.size()) ?
+      randomSeedSeqSpec[sequenceIndex] : randomSeedSeqSpec.back();
+  // only set sequence of seeds for first pass, then let RNG state continue
+  else if (mlIter <= 1 && sequenceIndex < randomSeedSeqSpec.size())
+    return randomSeedSeqSpec[sequenceIndex];
+  else return 0; // seed sequence exhausted, do not update
 }
 
 

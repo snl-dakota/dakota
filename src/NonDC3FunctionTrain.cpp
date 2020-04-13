@@ -79,11 +79,12 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   configure_expansion_orders(startOrderSpec, dimPrefSpec, approx_orders);
   // compute initial regression size using a static helper
   // (uSpaceModel.shared_approximation() is not yet available)
-  size_t colloc_pts = probDescDB.get_sizet("method.nond.collocation_points"),
-    regress_size = SharedC3ApproxData::
-      regression_size(numContinuousVars, startRankSpec, approx_orders);
+  size_t regress_size = SharedC3ApproxData::
+    regression_size(numContinuousVars, startRankSpec, approx_orders);
   // configure u-space sampler and model
-  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
+  if (!config_regression(probDescDB.get_sizet("method.nond.collocation_points"),
+			 regress_size, probDescDB.get_int("method.random_seed"),
+			 u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -162,7 +163,7 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 
 bool NonDC3FunctionTrain::
-config_regression(size_t colloc_pts, size_t regress_size,
+config_regression(size_t colloc_pts, size_t regress_size, int seed,
 		  Iterator& u_space_sampler, Model& g_u_model)
 {
   // Adapted from NonDPolynomialChaos::config_regression()
@@ -201,8 +202,7 @@ config_regression(size_t colloc_pts, size_t regress_size,
     // NonDQuadrature as needed to satisfy min order constraints (but
     // not nested constraints: nestedRules is false to retain m >= p+1).
     construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref,
-			 numSamplesOnModel,
-			 probDescDB.get_int("method.random_seed"));
+			 numSamplesOnModel, seed);
   }
   else { // unstructured grid: LHS samples
     // if reusing samples within a refinement strategy, ensure different
@@ -216,7 +216,7 @@ config_regression(size_t colloc_pts, size_t regress_size,
     // forming the PCE over all active variables.
     construct_lhs(u_space_sampler, g_u_model,
 		  probDescDB.get_ushort("method.sample_type"),
-		  numSamplesOnModel, probDescDB.get_int("method.random_seed"),
+		  numSamplesOnModel, seed,
 		  probDescDB.get_string("method.random_number_generator"),
 		  vary_pattern, ACTIVE);
   }

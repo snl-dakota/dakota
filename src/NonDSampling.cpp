@@ -805,6 +805,20 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   // iterator (e.g., SBO), support a deterministic sequence of seed values.
   // This renders the study repeatable but the sampling pattern varies from
   // one run to the next.
+  /*
+  if (numLHSRuns == 1) { // set initial seed
+    lhsDriver.rng(rngName);
+    if (!seedSpec) { // no user specification --> nonrepeatable behavior
+      randomSeed = generate_system_seed();
+    }
+    lhsDriver.seed(randomSeed);
+  }
+  else if (varyPattern) // define sequence of seed values for numLHSRuns > 1
+    lhsDriver.advance_seed_sequence();
+  else // fixed_seed
+    lhsDriver.seed(randomSeed); // reset original/machine-generated seed
+  */
+  bool seed_assigned = false, seed_advanced = false;
   if (numLHSRuns == 1) { // set initial seed
     lhsDriver.rng(rngName);
     if (!seedSpec) { // no user specification --> nonrepeatable behavior
@@ -818,24 +832,28 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
       // recreated by specifying the clock-generated seed in the input file.
       randomSeed = generate_system_seed();
     }
-    lhsDriver.seed(randomSeed);
+    lhsDriver.seed(randomSeed);  seed_assigned = true;
   }
-  else if (varyPattern) // define sequence of seed values for numLHSRuns > 1
-    lhsDriver.advance_seed_sequence();
-  else // fixed_seed
-    lhsDriver.seed(randomSeed); // reset original/machine-generated seed
+  // We must distinguish two advancement use cases and allow them to coexist:
+  // > an update to NonDSampling::randomSeed due to random_seed_sequence spec
+  // > an update to Pecos::LHSDriver::randomSeed using LHSDriver::
+  //   advance_seed_sequence() in support of varyPattern for rnum2
+  else if (seedSpec != randomSeed) // random_seed_sequence advancement
+    { seed_assigned = true; seedSpec = randomSeed; lhsDriver.seed(randomSeed); }
+  else if (varyPattern && rngName == "rnum2") // vary pattern by advancing seed
+    { seed_advanced = true; lhsDriver.advance_seed_sequence(); }
 
   // Needed a way to turn this off when LHS sampling is being used in
   // NonDAdaptImpSampling because it gets written a _LOT_
   String sample_string = submethod_enum_to_string(sampleType);
   if (write_message) {
     Cout << "\nNonD " << sample_string << " Samples = " << num_samples;
-    if (numLHSRuns == 1 || !varyPattern) {
+    if (seed_assigned) {
       if (seedSpec) Cout << " Seed (user-specified) = ";
       else          Cout << " Seed (system-generated) = ";
       Cout << randomSeed << '\n';
     }
-    else if (rngName == "rnum2") {
+    else if (seed_advanced) {
       if (seedSpec) Cout << " Seed (sequence from user-specified) = ";
       else          Cout << " Seed (sequence from system-generated) = ";
       Cout << lhsDriver.seed() << '\n';

@@ -120,6 +120,8 @@ protected:
 
   int num_samples() const;
 
+  void random_seed(int seed);
+
 private:
 
   //
@@ -238,6 +240,10 @@ inline void NonDQuadrature::samples(size_t samples)
     numSamples = samples; break;
   }
 }
+
+
+inline void NonDQuadrature::random_seed(int seed)
+{ randomSeed = seed; }
 
 
 inline void NonDQuadrature::update()

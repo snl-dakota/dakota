@@ -75,7 +75,7 @@ protected:
 
   /// configure u_space_sampler and approx_type based on regression
   /// specification
-  bool config_regression(size_t colloc_pts, size_t regress_size,
+  bool config_regression(size_t colloc_pts, size_t regress_size, int seed,
 			 Iterator& u_space_sampler, Model& g_u_model);
 
   /// Publish configuration data for initial function train cores, prior to

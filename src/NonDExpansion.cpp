@@ -1559,7 +1559,7 @@ void NonDExpansion::multilevel_regression()
 	  uSpaceModel.update_from_subordinate_model(); // max depth
 
 	NLev[step] += delta_N_l[step]; // update total samples for this step
-	increment_sample_sequence(delta_N_l[step], NLev[step], step);
+	increment_sample_sequence(delta_N_l[step], NLev[step], iter, step);
 	if (step == 0 || import_pilot)
 	  compute_expansion(); // init + import + build; not recursive
 	else
@@ -1579,7 +1579,7 @@ void NonDExpansion::multilevel_regression()
       }
       else if (delta_N_l[step]) {
 	NLev[step] += delta_N_l[step]; // update total samples for this step
-	increment_sample_sequence(delta_N_l[step], NLev[step], step);
+	increment_sample_sequence(delta_N_l[step], NLev[step], iter, step);
 	// Note: import build data is not re-processed by append_expansion()
 	append_expansion();
       }
@@ -2288,7 +2288,8 @@ void NonDExpansion::increment_specification_sequence()
 
 
 void NonDExpansion::
-increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
+increment_sample_sequence(size_t new_samp, size_t total_samp,
+			  size_t iter, size_t step)
 {
   Cerr << "Error: no default implementation for increment_sample_sequence() "
        << "defined for multilevel_regression()." << std::endl;

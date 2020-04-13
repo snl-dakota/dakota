@@ -650,6 +650,13 @@
 	     <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
 	     ' >
 
+    <!ENTITY method_seed_sequence '
+	     <keyword id="seed_sequence" name="seed_sequence" code="{N_mdm(szarray,randomSeedSeq)}" label="seed" minOccurs="0" default="system-generated (non-repeatable)" >
+	       <param type="INTEGERLIST" />
+	     </keyword>
+	     <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
+	     ' >
+
     <!ENTITY samples_on_emulator_with_alias '
 	     <keyword  id="samples_on_emulator" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator"  minOccurs="0" >
 	       <alias name="samples" />
@@ -666,7 +673,6 @@
 		 <keyword  id="random1" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
 	       </oneOf>
              </keyword>
-             &method_seed;
              &rng_options;
 	     <keyword  id="probability_refinement" name="probability_refinement" code="{0}" label="Importance sampling refinement"  minOccurs="0" default="no refinement">
 	       <!-- TODO: consider removing this alias: -->
@@ -1029,7 +1035,7 @@
 		 &sc_sparse_grid_sequence;
 	       </oneOf>
 	       &sc_options;
-	       <!-- &expansion_options; -->
+	       <!-- &bayes_expansion_options; -->
 	     </keyword>
 	     ' >
 
@@ -2561,6 +2567,7 @@
         <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_SURROGATE_BASED_UQ)}" label="surrogate_based_uq" help="" group="Uncertainty Quantification" >
           <!-- Current target is Model-based PCE,SC,FT expansions: support expansion_options. -->
 	  &expansion_options;
+          &method_seed;
           <!-- DFSModel spec defines approximation, DACE, data import, etc. -->
 	  &method_optional_model_pointer;
         </keyword>
@@ -2573,6 +2580,7 @@
 	  &ft_method_order;
 	  &ft_method_rank;
 	  &expansion_options;
+          &method_seed;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -2585,6 +2593,7 @@
 	  &mlft_method_order_sequence;
 	  &mlft_method_rank_sequence;
 	  &expansion_options;
+          &method_seed_sequence;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -2597,6 +2606,7 @@
 	  &mlft_method_order_sequence;
 	  &mlft_method_rank_sequence;
 	  &expansion_options;
+          &method_seed_sequence;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -2615,6 +2625,7 @@
 	  </oneOf>
 	  &pce_options;
 	  &expansion_options;
+          &method_seed;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2634,6 +2645,7 @@
 	  </oneOf>
 	  &pce_options;
 	  &expansion_options;
+          &method_seed_sequence;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2651,6 +2663,7 @@
 	  </oneOf>
 	  &pce_options;
 	  &expansion_options;
+          &method_seed_sequence;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2663,6 +2676,7 @@
 	  </oneOf>
 	  &sc_options;
 	  &expansion_options;
+          &method_seed;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2676,6 +2690,7 @@
 	  </oneOf>
 	  &sc_options;
 	  &expansion_options;
+          &method_seed_sequence;
 	  <!-- &default_max_iterations; for future multilevel SC -->
 	  &method_optional_model_pointer;
 	</keyword>
@@ -2745,7 +2760,7 @@
 
 	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
-	  &method_seed;
+	  &method_seed_sequence;
 	  &mc_pilot_samples;
 	  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
 	    <oneOf label="Sample Type">

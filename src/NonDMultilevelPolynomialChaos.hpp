@@ -88,7 +88,7 @@ protected:
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
-				 size_t step);
+				 size_t iter, size_t step);
   void compute_sample_increment(const RealVector& sparsity,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 

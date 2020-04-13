@@ -1797,7 +1797,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
       {"nond.c3function_train.start_rank_sequence", P startRankSeq},
       {"nond.collocation_points", P collocationPointsSeq},
       {"nond.expansion_samples", P expansionSamplesSeq},
-      {"nond.pilot_samples", P pilotSamples}};
+      {"nond.pilot_samples", P pilotSamples},
+      {"random_seed_sequence", P randomSeedSeq}};
     #undef P
 
     KW<SizetArray, DataMethodRep> *kw;

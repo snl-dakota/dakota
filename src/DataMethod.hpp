@@ -745,6 +745,8 @@ public:
 
   /// the \c seed specification for COLINY, NonD, & DACE methods
   int randomSeed;
+  /// the \c seed_sequence specification for multilevel UQ methods
+  SizetArray randomSeedSeq;
 
   // MADS
   /// the \c initMeshSize choice for NOMAD in \ref MethodNOMADDC
