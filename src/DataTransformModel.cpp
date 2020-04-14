@@ -322,7 +322,7 @@ gen_primary_resp_map(const SharedResponseData& srd,
 		     Sizet2DArray& primary_resp_map_indices,
 		     BoolDequeArray& nonlinear_resp_map) const
 {
-  size_t num_scalar = srd.num_scalar_responses(),
+  size_t num_scalar = srd.num_scalar_primary(),
     num_field_groups = srd.num_field_response_groups();
   const IntVector& sim_field_lens = srd.field_lengths();
   size_t num_experiments = expData.num_experiments(), calib_term_ind = 0; 
@@ -871,7 +871,7 @@ expand_array(const SharedResponseData& srd, const T& submodel_array,
 
   recast_array.resize(recast_size);
 
-  size_t num_scalar = srd.num_scalar_responses();
+  size_t num_scalar = srd.num_scalar_primary();
   size_t num_field_groups = srd.num_field_response_groups();
   size_t calib_term_ind = 0;
   for (size_t exp_ind=0; exp_ind<expData.num_experiments(); ++exp_ind) {

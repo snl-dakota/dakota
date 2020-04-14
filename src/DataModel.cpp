@@ -27,7 +27,7 @@ DataModelRep::DataModelRep():
   importBuildFormat(TABULAR_ANNOTATED),  importUseVariableLabels(false),
   importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
-  exportApproxFormat(TABULAR_ANNOTATED),
+  exportApproxFormat(TABULAR_ANNOTATED), numRestarts(20),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
   krigingNugget(0.0), krigingFindNugget(0), mlsWeightFunction(0),
@@ -76,7 +76,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << modelExportPrefix << modelExportFormat << importUseVariableLabels
     << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
-    << exportApproxPtsFile << exportApproxFormat 
+    << exportApproxPtsFile << exportApproxFormat << numRestarts
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
@@ -88,7 +88,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
     << importChallengeFormat << importChalUseVariableLabels
-    << importChallengeActive
+    << importChallengeActive << advancedOptionsFilename
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
     << subMethodServers << subMethodProcs << subMethodScheduling 
@@ -122,7 +122,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> modelExportPrefix >> modelExportFormat >> importUseVariableLabels
     >> importBuildActive
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
-    >> exportApproxPtsFile >> exportApproxFormat 
+    >> exportApproxPtsFile >> exportApproxFormat >> numRestarts
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
     >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
     >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
@@ -134,7 +134,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> trendOrder >> pointSelection >> diagMetrics >> crossValidateFlag
     >> numFolds >> percentFold >> pressFlag >> importChallengePtsFile
     >> importChallengeFormat >> importChalUseVariableLabels 
-    >> importChallengeActive
+    >> importChallengeActive >> advancedOptionsFilename
     >> optionalInterfRespPointer >> primaryVarMaps >> secondaryVarMaps
     >> primaryRespCoeffs >> secondaryRespCoeffs >> identityRespMap
     >> subMethodServers >> subMethodProcs >> subMethodScheduling 
@@ -180,7 +180,7 @@ void DataModelRep::write(std::ostream& s) const
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
     << importChallengeFormat << importChalUseVariableLabels
-    << importChallengeActive
+    << importChallengeActive << advancedOptionsFilename
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
     << subMethodServers << subMethodProcs << subMethodScheduling 

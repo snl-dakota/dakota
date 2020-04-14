@@ -5635,6 +5635,23 @@ KEYWORD model {N_mom3(start,0,stop)}
   ( surrogate {N_mom(lit,modelType_surrogate)}
     [ id_surrogates INTEGERLIST {N_mom(intsetm1,surrogateFnIndices)} ]
     ( global {0}
+      ( experimental_gaussian_process {N_mom(lit,surrogateType_global_exp_gauss_proc)}
+        [ trend {0}
+          constant {N_mom(lit,trendOrder_constant)}
+          |
+          linear {N_mom(lit,trendOrder_linear)}
+          |
+          quadratic {N_mom(lit,trendOrder_quadratic)}
+         ]
+        [ num_restarts INTEGER > 1 {N_mom(int,numRestarts)} ]
+        [ 
+          nugget REAL > 0 {N_mom(Real,krigingNugget)}
+          |
+          find_nugget INTEGER {N_mom(shint,krigingFindNugget)}
+         ]
+        [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
+       )
+      |
       ( gaussian_process ALIAS kriging {0}
         ( dakota {N_mom(lit,surrogateType_global_gaussian)}
           [ point_selection {N_mom(true,pointSelection)} ]
@@ -5781,6 +5798,11 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
            )
          ]
+       )
+      |
+      ( experimental_polynomial {N_mom(lit,surrogateType_global_exp_poly)}
+        basis_order INTEGER >= 0 {N_mom(shint,polynomialOrder)}
+        [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
        )
       [ domain_decomposition {N_mom(true,domainDecomp)}
         [ cell_type STRING {N_mom(str,decompCellType)} ]

@@ -155,7 +155,7 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 
   // expand sigma if 0 or 1 given, without validation
   size_t num_resp_groups = simulationSRD.num_response_groups();
-  size_t num_scalar = simulationSRD.num_scalar_responses();
+  size_t num_scalar = simulationSRD.num_scalar_primary();
   varianceTypes.resize(num_resp_groups, NO_SIGMA);
   if (sigma_types.size() == 1) {
     // assign all sigmas to the specified one
@@ -256,7 +256,7 @@ void ExperimentData::load_data(const std::string& context_message)
   if (numConfigVars > 0)
     allConfigVars.resize(numExperiments);
 
-  size_t num_scalars = simulationSRD.num_scalar_responses();
+  size_t num_scalars = simulationSRD.num_scalar_primary();
 
   // Count how many fields have each sigma type (for sizing). For
   // field data, if "scalar" or "none" is specified, need to convert
@@ -423,7 +423,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 		size_t num_field_sigma_none, Response& exp_resp)
 {
   bool scalar_data_file = !scalarDataFilename.empty();
-  size_t num_scalars = simulationSRD.num_scalar_responses();
+  size_t num_scalars = simulationSRD.num_scalar_primary();
   size_t num_fields = simulationSRD.num_field_response_groups();
   size_t num_resp = num_scalars + num_fields;
 
@@ -668,12 +668,12 @@ void ExperimentData::read_scalar_sigma(std::ifstream& scalar_data_stream,
 }
 
 size_t ExperimentData::
-num_scalars() const
+num_scalar_primary() const
 {
   if( simulationSRD.is_null() )
     throw std::runtime_error("ExperimentData is incorrectly (or not) initialized.");
 
-  return simulationSRD.num_scalar_responses();
+  return simulationSRD.num_scalar_primary();
 }
 
 size_t ExperimentData::
@@ -1033,7 +1033,7 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
 
   } else {   
 
-    for (size_t i=0; i<num_scalars(); i++) {
+    for (size_t i=0; i<num_scalar_primary(); i++) {
       exp_residuals[i] = sim_fns[i] - allExperiments[exp_ind].function_value(i);
       // BMA: Looked like gradients and Hessians of the scalars weren't
       // populated, so added:
@@ -1074,7 +1074,7 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
     if (asv & 1) {
       // compute the residuals, i.e. subtract the experiment data values
       // from the (interpolated) simulation values.
-      size_t cntr = num_scalars();
+      size_t cntr = num_scalar_primary();
       for (size_t i=0; i<num_fields(); i++){
 	size_t num_field_fns = field_data_view(i,exp_ind).length();
 	for (size_t j=0; j<num_field_fns; j++, cntr++)
@@ -1091,7 +1091,7 @@ interpolate_simulation_data(const Response &sim_resp, size_t exp_ind,
 			    const ShortArray &total_asv, size_t exp_offset,
 			    Response &interp_resp ) const
 {
-  size_t offset = exp_offset + num_scalars();
+  size_t offset = exp_offset + num_scalar_primary();
   IntVector field_lens = field_lengths(exp_ind);
   for (size_t field_num=0; field_num<num_fields(); field_num++){ 
     RealMatrix exp_coords = field_coords_view(field_num,exp_ind);
@@ -1132,7 +1132,7 @@ determine_active_request(const Response& resid_resp) const
     total_asv[exp_ind] = 0;
     if (interogate_field_data) {
 
-      size_t num_scalar = num_scalars();
+      size_t num_scalar = num_scalar_primary();
       for (size_t sc_ind = 0; sc_ind < num_scalar; ++sc_ind)
 	total_asv[exp_ind] |= asv[calib_term_ind + sc_ind];
 
@@ -1697,7 +1697,7 @@ residuals_per_multiplier(unsigned short multiplier_mode) const
   }
 
   case CALIBRATE_PER_RESP: {
-    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_scalar = simulationSRD.num_scalar_primary();
     size_t num_fields = simulationSRD.num_field_response_groups();
     resid_per_mult.resize(num_scalar + num_fields, 0);
     // iterate scalar responses, then fields
@@ -1714,7 +1714,7 @@ residuals_per_multiplier(unsigned short multiplier_mode) const
   }
 
   case CALIBRATE_BOTH: {
-    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_scalar = simulationSRD.num_scalar_primary();
     size_t num_fields = simulationSRD.num_field_response_groups();
     size_t multiplier_offset = 0;
     resid_per_mult.resize(numExperiments*simulationSRD.num_response_groups(), 0);
@@ -1771,7 +1771,7 @@ void ExperimentData::generate_multipliers(const RealVector& multipliers,
 
   case CALIBRATE_PER_RESP: {
     assert(multipliers.length() == simulationSRD.num_response_groups());
-    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_scalar = simulationSRD.num_scalar_primary();
     size_t num_fields = simulationSRD.num_field_response_groups();
     size_t resid_offset = 0;
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
@@ -1799,7 +1799,7 @@ void ExperimentData::generate_multipliers(const RealVector& multipliers,
   case CALIBRATE_BOTH: {
     assert(multipliers.length() == 
            numExperiments*simulationSRD.num_response_groups());
-    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_scalar = simulationSRD.num_scalar_primary();
     size_t num_fields = simulationSRD.num_field_response_groups();
     size_t resid_offset = 0, multiplier_offset = 0;
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
@@ -1862,7 +1862,7 @@ void ExperimentData::resid2mult_map(unsigned short multiplier_mode,
   }
 
   case CALIBRATE_PER_RESP: {
-    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_scalar = simulationSRD.num_scalar_primary();
     size_t num_fields = simulationSRD.num_field_response_groups();
     size_t resid_offset = 0;
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
@@ -1888,7 +1888,7 @@ void ExperimentData::resid2mult_map(unsigned short multiplier_mode,
   }
 
   case CALIBRATE_BOTH: {
-    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_scalar = simulationSRD.num_scalar_primary();
     size_t num_fields = simulationSRD.num_field_response_groups();
     size_t resid_offset = 0, multiplier_offset = 0;
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
@@ -1945,7 +1945,7 @@ hyperparam_labels(unsigned short multiplier_mode) const
 	
     // BMA TODO: Could use response labels here...
   case CALIBRATE_PER_RESP: {
-    size_t num_resp = simulationSRD.num_scalar_responses() + 
+    size_t num_resp = simulationSRD.num_scalar_primary() + 
       simulationSRD.num_field_response_groups();
     for (size_t resp_ind=0; resp_ind < num_resp; ++resp_ind)
       hp_labels.
@@ -1954,7 +1954,7 @@ hyperparam_labels(unsigned short multiplier_mode) const
   }
 
   case CALIBRATE_BOTH: {
-    size_t num_resp = simulationSRD.num_scalar_responses() + 
+    size_t num_resp = simulationSRD.num_scalar_primary() + 
       simulationSRD.num_field_response_groups();
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind)
       for (size_t resp_ind=0; resp_ind < num_resp; ++resp_ind)

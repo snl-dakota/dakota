@@ -9,6 +9,10 @@
 # feasible and infeasible starting points with and without constraint
 # relaxation.
 
+# Test s16 is s14, but with new gauss_proc surrogate; worse
+# performance, but tests analytic gradient; hopefully will improve
+# once trend is added.
+
 environment,
 	method_pointer = 'SBLO'
 
@@ -35,10 +39,15 @@ method,
 model,
 	id_model = 'SURROGATE'
 	responses_pointer = 'SURROGATE_RESP'
-	surrogate global                  	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15
-	  dace_method_pointer = 'SAMPLING'	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15
+	surrogate global                  	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15,#s16,#s17
+	  dace_method_pointer = 'SAMPLING'	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15,#s16,#s17
 	  polynomial quadratic			#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11
 #	  gaussian_process surfpack		#s14,#s15
+#	  experimental_gaussian_process		#s16
+#	    find_nugget	1		#s16
+# Emulate s2 with new surrogate poly:
+#         experimental_polynomial		#s17
+#           basis_order 2			#s17
 #	  use_derivatives			#s15
 	  correction additive first_order	#s0,#s3,#s6,#s9
 # 	surrogate local taylor_series		#s1,#s4,#s7,#s10
@@ -49,7 +58,7 @@ model,
 variables,
 	continuous_design = 2
 #   Feasible starting point
-	  initial_point    30.   40.	#s0,#s1,#s2,#s3,#s4,#s5,#s12,#s14,#s15
+	  initial_point    30.   40.	#s0,#s1,#s2,#s3,#s4,#s5,#s12,#s14,#s15,#s16,#s17
 # Infeasible starting point
 #	  initial_point    65.    1.
 # Infeasible starting point
@@ -94,7 +103,7 @@ responses,
 	nonlinear_inequality_constraints = 3
 	nonlinear_inequality_lower_bounds = 0.     0.     0.
 	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 1.e+50
-#	no_gradients		 	#s2,#s8,#s14
+#	no_gradients		 	#s2,#s8,#s14,#s16,#s17
 #	numerical_gradients		#s7
 #	  method_source dakota		#s7
 	analytic_gradients		#s0,#s1,#s3,#s4,#s5,#s6,#s9,#s10,#s11,#s12,#s13,#s15

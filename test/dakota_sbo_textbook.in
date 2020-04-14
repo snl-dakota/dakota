@@ -13,6 +13,8 @@
 # and "multiplicative first_order."  The "none" case is the default
 # setting which is invoked if the "correction" keyword is omitted.
 
+# Test 8 mirrors 5, but with the new GP module
+
 environment,
 	method_pointer = 'SBLO'
 
@@ -45,7 +47,7 @@ model,
 	surrogate global
 	  dace_method_pointer = 'SAMPLING'
 #	  reuse_samples region
-#	  correction additive       zeroth_order #s1,#s5
+#	  correction additive       zeroth_order #s1,#s5,#s8,#s9
 #	  correction multiplicative zeroth_order #s2
 #	  correction additive       first_order	 #s3,#s6,#s7,#p0
 #	  correction multiplicative first_order	 #s4
@@ -54,6 +56,12 @@ model,
 	  polynomial quadratic			 #s0,#s1,#s2,#s3,#s4,#p0	
 #	  gaussian_process surfpack		 #s5,#s6,#s7
 #	  gaussian_process surfpack correlation_lengths =  0.707106781186547 0.707106781186547
+#   experimental_gaussian_process		 #s8
+#     find_nugget 1 #s8
+#     trend quadratic #s8
+# Emulate s1 with new polynomial model
+#         experimental_polynomial    	 	 #s9
+#           basis_order 2			 #s9
 #	  mars
 # 	surrogate local taylor_series
 #	  actual_model_pointer = 'TRUTH'
@@ -109,7 +117,7 @@ responses,
 	objective_functions = 1
 	nonlinear_inequality_constraints = 2
 #	analytic_gradients		#s3,#s4,#s7
-	no_gradients		 	#s0,#s1,#s2,#s5
+	no_gradients		 	#s0,#s1,#s2,#s5,#s8,#s9
 #  	numerical_gradients		#s6,#p0
 #  	  method_source dakota		#s6,#p0
 #  	  interval_type central		#s6,#p0

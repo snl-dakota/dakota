@@ -7384,6 +7384,8 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,global_exp_gauss_proc),
+	MP2(surrogateType,global_exp_poly),
 	MP2(surrogateType,global_function_train),
 	MP2(surrogateType,global_gaussian),
 	MP2(surrogateType,global_kriging),
@@ -7493,6 +7495,7 @@ static IntVector
 
 static String
 	MP_(actualModelPointer),
+        MP_(advancedOptionsFilename),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
 	MP_(idModel),
@@ -7570,6 +7573,7 @@ static int
 	MP_(maxSolverIterations),
         MP_(numFolds),
         MP_(numReplicates),
+        MP_(numRestarts),
         MP_(pointsTotal),
         MP_(refineCVFolds),
         MP_(softConvergenceLimit),

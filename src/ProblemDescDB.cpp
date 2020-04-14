@@ -2411,6 +2411,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     #define P &DataModelRep::
     static KW<String, DataModelRep> Sdmo[] = {	
       // must be sorted by string (key)
+	{"advanced_options_file", P advancedOptionsFilename},
 	{"dace_method_pointer", P subMethodPointer},
 	{"id", P idModel},
 	{"interface_pointer", P interfacePointer},
@@ -2694,6 +2695,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"soft_convergence_limit", P softConvergenceLimit},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
+        {"surrogate.num_restarts", P numRestarts},
         {"surrogate.points_total", P pointsTotal},
         {"surrogate.refine_cv_folds", P refineCVFolds}};
     #undef P
