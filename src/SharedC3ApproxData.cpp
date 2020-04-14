@@ -73,7 +73,7 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   startRankSpec(2), kickRank(2), maxRank(10), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
-  crossMaxIter(5), maxSolverIterations(1000), c3Verbosity(0),
+  crossMaxIter(5), maxSolverIterations(-1), c3Verbosity(0),
   adaptConstruct(false), crossVal(false)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor

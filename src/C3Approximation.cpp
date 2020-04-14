@@ -179,27 +179,29 @@ void C3Approximation::build()
 					      start_ranks.values());
 
     if (data_rep->regressType == FT_RLS2) {
-      ft_regress_set_alg_and_obj(ftr,AIO,FTLS_SPARSEL2);
+      ft_regress_set_alg_and_obj(ftr, AIO, FTLS_SPARSEL2);
       // reg param is required (no reasonable default due to scaling)
       ft_regress_set_regularization_weight(ftr, data_rep->regressRegParam);
     }
     else // default
-      ft_regress_set_alg_and_obj(ftr,AIO,FTLS);
+      ft_regress_set_alg_and_obj(ftr, AIO, FTLS);
 
     size_t r_adapt = data_rep->adaptRank ? 1 : 0;
-    ft_regress_set_adapt(   ftr,r_adapt);
-    ft_regress_set_maxrank( ftr,data_rep->maxRank);
-    ft_regress_set_kickrank(ftr,data_rep->kickRank);
-    ft_regress_set_roundtol(ftr,data_rep->roundingTol);
-    ft_regress_set_verbose( ftr,data_rep->c3Verbosity);
+    ft_regress_set_adapt(   ftr, r_adapt);
+    ft_regress_set_maxrank( ftr, data_rep->maxRank);
+    ft_regress_set_kickrank(ftr, data_rep->kickRank);
+    ft_regress_set_roundtol(ftr, data_rep->roundingTol);
+    ft_regress_set_verbose( ftr, data_rep->c3Verbosity);
 
-    double absxtol = 1e-10;
     struct c3Opt* optimizer = c3opt_create(BFGS);
-    c3opt_set_maxiter(optimizer,data_rep->maxSolverIterations);
-    c3opt_set_gtol   (optimizer,data_rep->solverTol);
-    c3opt_set_relftol(optimizer,data_rep->solverTol);
-    c3opt_set_absxtol(optimizer,absxtol);
-    c3opt_set_verbose(optimizer,data_rep->c3Verbosity);
+    int max_solver_iter = data_rep->maxSolverIterations;
+    if (max_solver_iter >= 0) // Dakota default is -1 -> leave at C3 default
+      c3opt_set_maxiter(optimizer, max_solver_iter);
+    c3opt_set_gtol   (optimizer, data_rep->solverTol);
+    c3opt_set_relftol(optimizer, data_rep->solverTol);
+    double absxtol = 1e-10;
+    c3opt_set_absxtol(optimizer, absxtol);
+    c3opt_set_verbose(optimizer, data_rep->c3Verbosity);
 
     // free if previously built
     C3FnTrainPtrs& ftp = levApproxIter->second;
