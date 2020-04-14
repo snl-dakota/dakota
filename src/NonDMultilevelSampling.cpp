@@ -342,7 +342,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       // Equation 3.9 in CTR Annual Research Briefs:
       // "A multifidelity control variate approach for the multilevel Monte 
       // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-      N_target = std::sqrt(agg_var[step] / lev_cost) * fact;
+      N_target = std::sqrt(agg_var[step] / level_cost(cost, step)) * fact;
       delta_N_l[step] = one_sided_delta(average(N_l[step]), N_target);
     }
     ++iter;
