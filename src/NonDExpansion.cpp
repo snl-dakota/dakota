@@ -47,6 +47,8 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   termsOrder(1.),
   tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
+  fixedSeed(problem_db.get_bool("method.fixed_seed")),
+  mlIter(0), sequenceIndex(0),
   multilevAllocControl(
     problem_db.get_short("method.nond.multilevel_allocation_control")),
   multilevDiscrepEmulation(
@@ -100,6 +102,7 @@ NonDExpansion(unsigned short method_name, Model& model,
   expansionBasisType(Pecos::DEFAULT_BASIS),
   statsType(Pecos::ACTIVE_EXPANSION_STATS), dimPrefSpec(dim_pref),
   collocRatio(colloc_ratio), termsOrder(1.), tensorRegression(false),
+  fixedSeed(false), mlIter(0), sequenceIndex(0),
   multilevAllocControl(DEFAULT_MLMF_CONTROL),
   multilevDiscrepEmulation(DEFAULT_EMULATION), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), numSamplesOnModel(0), numSamplesOnExpansion(0),

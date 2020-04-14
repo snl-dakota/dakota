@@ -54,10 +54,10 @@ public:
 				const UShortArray& exp_order_seq,
 				const RealVector& dim_pref,
 				const SizetArray& colloc_pts_seq,
-				Real colloc_ratio, int seed, short u_space_type,
-				short refine_type, short refine_control,
-				short covar_control, short ml_alloc_cntl,
-				short ml_discrep,
+				Real colloc_ratio, const SizetArray& seed_seq,
+				short u_space_type, short refine_type,
+				short refine_control, short covar_control,
+				short ml_alloc_cntl, short ml_discrep,
 				//short rule_nest, short rule_growth,
 				bool piecewise_basis, bool use_derivs,
 				bool cv_flag,
@@ -108,13 +108,11 @@ private:
   //- Heading: Utility functions
   //
 
-  size_t collocation_points(size_t index) const;
   size_t expansion_samples(size_t index) const;
   unsigned short expansion_order(size_t index) const;
   unsigned short quadrature_order(size_t index) const;
   unsigned short sparse_grid_level(size_t index) const;
 
-  size_t collocation_points() const;
   size_t expansion_samples() const;
   unsigned short expansion_order() const;
   unsigned short quadrature_order() const;
@@ -137,19 +135,7 @@ private:
   UShortArray quadOrderSeqSpec;
   /// user request of sparse grid level
   UShortArray ssgLevelSeqSpec;
-  /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
-  size_t sequenceIndex;
 };
-
-
-inline size_t NonDMultilevelPolynomialChaos::
-collocation_points(size_t index) const
-{
-  if (collocPtsSeqSpec.empty()) return std::numeric_limits<size_t>::max();
-  else
-    return (index < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[index] : collocPtsSeqSpec.back();
-}
 
 
 inline size_t NonDMultilevelPolynomialChaos::
@@ -190,10 +176,6 @@ sparse_grid_level(size_t index) const
     return (index < ssgLevelSeqSpec.size()) ?
       ssgLevelSeqSpec[index] : ssgLevelSeqSpec.back();
 }
-
-
-inline size_t NonDMultilevelPolynomialChaos::collocation_points() const
-{ return collocation_points(sequenceIndex); }
 
 
 inline size_t NonDMultilevelPolynomialChaos::expansion_samples() const

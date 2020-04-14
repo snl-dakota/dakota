@@ -81,8 +81,6 @@ private:
   UShortArray quadOrderSeqSpec;
   /// user request of sparse grid level
   UShortArray ssgLevelSeqSpec;
-  /// sequence index for quadOrderSeqSpec and ssgLevelSeqSpec
-  size_t sequenceIndex;
 };
 
 } // namespace Dakota

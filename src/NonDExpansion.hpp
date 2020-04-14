@@ -18,8 +18,8 @@
 
 namespace Dakota {
 
-/// Base class for polynomial chaos expansions (PCE) and stochastic
-/// collocation (SC)
+/// Base class for polynomial chaos expansions (PCE), stochastic
+/// collocation (SC) and functional tensor train (FT)
 
 /** The NonDExpansion class provides a base class for methods that use
     polynomial expansions to approximate the effect of parameter
@@ -275,6 +275,15 @@ protected:
 				Real eps_sq_div_2, const SizetArray& N_l,
 				SizetArray& delta_N_l);
 
+  /// return number of collocation points for index within model sequence
+  size_t collocation_points(size_t index) const;
+  /// return number of collocation points corresponding to sequenceIndex
+  size_t collocation_points() const;
+  /// return random seed for index within model sequence
+  int random_seed(size_t index) const;
+  /// return random seed corresponding to sequenceIndex
+  int random_seed() const;
+
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
   void refine_expansion();
@@ -410,6 +419,18 @@ protected:
   /// exponent applied to number of expansion terms for computing
   /// number of regression points (usually 1)
   Real termsOrder;
+
+  /// user specification for seed_sequence
+  SizetArray randomSeedSeqSpec;
+  /// don't continue an existing random number sequence, rather reset
+  /// seed each time within some sampling-based iteration
+  bool fixedSeed;
+  /// iteration passed from NonDExpansion ML/MF algorithms, allowing special
+  /// updating logic for sequence handlers
+  size_t mlIter;
+
+  /// sequence index for {collocPts,randomSeed}SeqSpec and derived ML classes
+  size_t sequenceIndex;
 
   /// flag for combined variable expansions which include a
   /// non-probabilistic subset (design, epistemic, state)
@@ -625,6 +646,38 @@ nested_variable_mappings(const SizetArray& c_index1,
 				       dr_index1, c_target2, di_target2,
 				       ds_target2, dr_target2);
 }
+
+
+inline size_t NonDExpansion::collocation_points(size_t index) const
+{
+  if (collocPtsSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  else
+    return (index < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[index] : collocPtsSeqSpec.back();
+}
+
+
+inline size_t NonDExpansion::collocation_points() const
+{ return collocation_points(sequenceIndex); }
+
+
+inline int NonDExpansion::random_seed(size_t index) const
+{
+  // return 0 for cases where seed is undefined or will not be updated
+
+  if (randomSeedSeqSpec.empty()) return 0; // no spec -> non-repeatable samples
+  else if (fixedSeed) // continually reset seed to specified value
+    return (index < randomSeedSeqSpec.size()) ?
+      randomSeedSeqSpec[index] : randomSeedSeqSpec.back();
+  // only set sequence of seeds for first pass, then let RNG state continue
+  else if (mlIter <= 1 && index < randomSeedSeqSpec.size())
+    return randomSeedSeqSpec[index];
+  else return 0; // seed sequence exhausted, do not update
+}
+
+
+inline int NonDExpansion::random_seed() const
+{ return random_seed(sequenceIndex); }
 
 
 inline bool NonDExpansion::saturated() const

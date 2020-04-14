@@ -32,11 +32,11 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   startRankSeqSpec(
     problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),
   startOrderSeqSpec(
-    problem_db.get_usa("method.nond.c3function_train.start_order_sequence")),
-  randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
-  fixedSeed(problem_db.get_bool("method.fixed_seed")), mlIter(0),
-  sequenceIndex(0) //resizedFlag(false), callResize(false)
+    problem_db.get_usa("method.nond.c3function_train.start_order_sequence"))
+  //resizedFlag(false), callResize(false)
 {
+  randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
+
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
@@ -120,10 +120,10 @@ NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 			    const SizetArray& colloc_pts_seq,
 			    const RealVector& dim_pref,
-			    Real colloc_ratio, int seed, short u_space_type,
-			    short refine_type, short refine_control,
-			    short covar_control, short ml_alloc_control,
-			    short ml_discrep,
+			    Real colloc_ratio, const SizetArray& seed_seq,
+			    short u_space_type, short refine_type,
+			    short refine_control, short covar_control,
+			    short ml_alloc_control, short ml_discrep,
 			    //short rule_nest, short rule_growth,
 			    bool piecewise_basis, bool use_derivs,
 			    bool cv_flag, const String& import_build_pts_file,
@@ -133,9 +133,11 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 		      u_space_type, refine_type, refine_control, covar_control,
 		      colloc_pts_seq, colloc_ratio, ml_alloc_control,
 		      ml_discrep, //rule_nest, rule_growth,
-		      piecewise_basis, use_derivs, seed, cv_flag),
-  expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
+		      piecewise_basis, use_derivs, 0, cv_flag),
+  expOrderSeqSpec(exp_order_seq)
 {
+  randomSeedSeqSpec = seed_seq;
+
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 

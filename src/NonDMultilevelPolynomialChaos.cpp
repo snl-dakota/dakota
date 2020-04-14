@@ -33,9 +33,11 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order")),
   expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples")),
   quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
-  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
-  sequenceIndex(0) //resizedFlag(false), callResize(false)
+  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level"))
+  //resizedFlag(false), callResize(false)
 {
+  randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
+
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
@@ -139,8 +141,7 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
 		      exp_coeffs_approach, dim_pref, u_space_type, refine_type,
 		      refine_control, covar_control, ml_alloc_control,
 		      ml_discrep, rule_nest, rule_growth, piecewise_basis,
-		      use_derivs), 
-  sequenceIndex(0)
+		      use_derivs)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -212,10 +213,10 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 			      const UShortArray& exp_order_seq,
 			      const RealVector& dim_pref,
 			      const SizetArray& colloc_pts_seq,
-			      Real colloc_ratio, int seed, short u_space_type,
-			      short refine_type, short refine_control,
-			      short covar_control, short ml_alloc_control,
-			      short ml_discrep,
+			      Real colloc_ratio, const SizetArray& seed_seq,
+			      short u_space_type, short refine_type,
+			      short refine_control, short covar_control,
+			      short ml_alloc_control, short ml_discrep,
 			      //short rule_nest, short rule_growth,
 			      bool piecewise_basis, bool use_derivs,
 			      bool cv_flag, const String& import_build_pts_file,
@@ -225,9 +226,11 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 		      u_space_type, refine_type, refine_control, covar_control,
 		      colloc_pts_seq, colloc_ratio, ml_alloc_control,
 		      ml_discrep, //rule_nest, rule_growth,
-		      piecewise_basis, use_derivs, seed, cv_flag),
-  expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
+		      piecewise_basis, use_derivs, 0, cv_flag),
+  expOrderSeqSpec(exp_order_seq)
 {
+  randomSeedSeqSpec = seed_seq;
+
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
@@ -352,7 +355,7 @@ bool NonDMultilevelPolynomialChaos::resize()
       // Construct u_space_sampler
       String rng("mt19937");
       construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
-		    numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+		    numSamplesOnModel, random_seed(), rng, false, ACTIVE);
     }
     else { // expansion_order-based
       // resolve expansionBasisType, exp_terms, numSamplesOnModel
@@ -389,7 +392,7 @@ bool NonDMultilevelPolynomialChaos::resize()
       else {
 	String rng("mt19937");
 	construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
-		      numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+		      numSamplesOnModel, random_seed(), rng, false, ACTIVE);
       }
     }
     break;
@@ -748,6 +751,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp,
 			  size_t iter, size_t step)
 {
   numSamplesOnModel = new_samp;
+  mlIter = iter; // needed by multilevel_regression() for seed sequence
 
   bool update_exp = false, update_sampler = false, update_from_ratio = false,
     err_flag = false;

@@ -33,8 +33,7 @@ NonDMultilevelStochCollocation::
 NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   NonDStochCollocation(DEFAULT_METHOD, problem_db, model), // bypass SC ctor
   quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
-  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
-  sequenceIndex(0)
+  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level"))
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -121,8 +120,7 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   NonDStochCollocation(MULTIFIDELITY_STOCH_COLLOCATION, model,
 		       exp_coeffs_approach, dim_pref, refine_type,
 		       refine_control, covar_control, ml_alloc_cntl, ml_discrep,
-		       rule_nest, rule_growth, piecewise_basis, use_derivs),
-  sequenceIndex(0)
+		       rule_nest, rule_growth, piecewise_basis, use_derivs)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
