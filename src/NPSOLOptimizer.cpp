@@ -247,7 +247,7 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
 
   std::string nlftlevel_s("Nonlinear Feasibility Tolerance           = " + std::to_string(nonlin_feas_tol));
   nlftlevel_s.resize(72, ' ');
-  NPOPTN2_F77( nlftlevel_s.data() );*/
+  NPOPTN2_F77( nlftlevel_s.data() );
 
   // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
   // vendor-numerical, ...

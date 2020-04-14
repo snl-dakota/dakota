@@ -325,8 +325,8 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
   default_instantiate_q_newton(user_obj_eval, user_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., 100000, 100000, 1.e-14,
-			1.e-14, 100000., boundConstraintFlag, numConstraints,
+  snll_post_instantiate(numContinuousVars, false, "", 0., 100, 1000, 1.e-4,
+			1.e-4, 1000., boundConstraintFlag, numConstraints,
 			outputLevel, theOptimizer, nlfObjective, NULL, NULL);
 
   // this can be called from the ctor (avoids caching of constraint arrays
