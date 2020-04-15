@@ -158,11 +158,11 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
                  nonlin_ineq_upper_bnds, nonlin_eq_targets);
 
   // Set NPSOL options (mostly use defaults)
-  std::string vlevel_s("Verify Level                = 3");
+  std::string vlevel_s("Verify Level                = -1");
   vlevel_s.resize(72, ' ');
   NPOPTN2_F77( vlevel_s.data() );
 
-  std::string plevel_s("Major Print Level           = 30");
+  std::string plevel_s("Major Print Level           = 0");
   plevel_s.resize(72, ' ');
   NPOPTN2_F77( plevel_s.data() );
 
@@ -221,15 +221,15 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
                  nonlin_ineq_upper_bnds, nonlin_eq_targets);
 
   // Set NPSOL options (mostly use defaults)
-  std::string vlevel_s("Verify Level                = 3");
+  std::string vlevel_s("Verify Level                = -1");
   vlevel_s.resize(72, ' ');
   NPOPTN2_F77( vlevel_s.data() );
 
-  std::string plevel_s("Major Print Level           = 30");
+  std::string plevel_s("Major Print Level           = 0");
   plevel_s.resize(72, ' ');
   NPOPTN2_F77( plevel_s.data() );
 
-  std::string mplevel_s("Minor Print Level           = 30");
+  std::string mplevel_s("Minor Print Level           = 0");
   mplevel_s.resize(72, ' ');
   NPOPTN2_F77( mplevel_s.data() );
 
