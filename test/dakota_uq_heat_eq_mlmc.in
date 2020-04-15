@@ -11,11 +11,12 @@ method,
         multilevel_sampling				
 	  pilot_samples = 20 seed = 1237
 	  max_iterations = 5
-	  target_moment = 1
+	  target_moment = 1 #s0,#s1,#s2
+#	  target_moment = 2 #s3,#s4,#s5
           sample_allocation = aggregated_variance
-	  convergence_tolerance = .1			#s0
-#	  convergence_tolerance = .01			#s1
-#	  convergence_tolerance = .001			#s2
+	  convergence_tolerance = .1			#s0,#s3
+#	  convergence_tolerance = .01			#s1,#s4
+#	  convergence_tolerance = .001			#s2,#s5
 #	  convergence_tolerance = .0001
 	output silent
 
