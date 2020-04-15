@@ -10,22 +10,23 @@ environment,
 method,
 	model_pointer = 'HIERARCH'
         multilevel_polynomial_chaos
-	  allocation_control estimator_variance		#s0,#s1,#s2,#s3,#s4,#s5
+	  allocation_control estimator_variance	     #s0,#s1,#s2,#s3,#s4,#s5,#s9
 #	    estimator_rate = 2.5
 #	  allocation_control rip_sampling		#s6,#s7,#s8
 #	    max_iterations = 5				#s6,#s7,#s8
 # exp order is initial for pilot and is adapted based on collocation ratio
-	  expansion_order_sequence = 2	   #s0,#s1,#s2,#s3,#s4,#s6,#s7,#p0,#p1
+	  expansion_order_sequence = 2	 #s0,#s1,#s2,#s3,#s4,#s6,#s7,#s9,#p0,#p1
 #	  expansion_order_sequence = 4 3 3 2 2		#s8
-	  pilot_samples = 10  		   #s0,#s1,#s2,#s3,#s4,#p0,#p1
+	  pilot_samples = 10  		 #s0,#s1,#s2,#s3,#s4,#p0,#p1
 #	  expansion_order_sequence = 1	     		#s5
-#	  pilot_samples = 300 150 75 25 7   		#s5
+#	  pilot_samples = 300 150 75 25 7   		#s5,#s9
 #	  pilot_samples = 50 25 15 10 10   		#s6,#s7
 	  collocation_ratio = .9
-	  seed = 1237
+	  seed = 1237			 #s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#p0,#p1
+#	  seed_sequence = 1234 2345 3456 4567 5678	#s9
 	  orthogonal_matching_pursuit
 	  convergence_tolerance = .1			#s0,#p0,#p1
-#	  convergence_tolerance = .01			#s1,#s3,#s5
+#	  convergence_tolerance = .01			#s1,#s3,#s5,#s9
 #	  convergence_tolerance = .001			#s2,#s4
 #	  convergence_tolerance = .0001
 #	  discrepancy_emulation recursive		#s3,#s4,#s7

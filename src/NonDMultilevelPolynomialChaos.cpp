@@ -33,8 +33,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order")),
   expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples")),
   quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
-  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level"))
-  //resizedFlag(false), callResize(false)
+  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
+  sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
 
@@ -74,14 +74,14 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 
   if (!config_integration(quadrature_order(), sparse_grid_level(), cubIntSpec,
 	u_space_sampler, g_u_model, approx_type) &&
-      !config_expectation(expansion_samples(), sample_type, rng,
+      !config_expectation(expansion_samples(), sample_type, random_seed(), rng,
 	u_space_sampler, g_u_model, approx_type) &&
       !config_regression(exp_orders, collocation_points(),
 	probDescDB.get_real("method.nond.collocation_ratio_terms_order"),
 	probDescDB.get_short("method.nond.regression_type"),
 	probDescDB.get_short("method.nond.least_squares_regression_type"),
-	probDescDB.get_usa("method.nond.tensor_grid_order"), sample_type, rng,
-	pt_reuse, u_space_sampler, g_u_model, approx_type)) {
+	probDescDB.get_usa("method.nond.tensor_grid_order"), sample_type,
+	random_seed(), rng, pt_reuse, u_space_sampler, g_u_model, approx_type)){
     Cerr << "Error: incomplete configuration in NonDMultilevelPolynomialChaos "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -141,7 +141,8 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
 		      exp_coeffs_approach, dim_pref, u_space_type, refine_type,
 		      refine_control, covar_control, ml_alloc_control,
 		      ml_discrep, rule_nest, rule_growth, piecewise_basis,
-		      use_derivs)
+		      use_derivs),
+  sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -177,8 +178,8 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
     abort_handler(METHOD_ERROR); break;
   }
   Iterator u_space_sampler; String approx_type;
-  config_integration(quad_order, ssg_level, cubIntSpec,
-		     u_space_sampler, g_u_model, approx_type);
+  config_integration(quad_order, ssg_level, cubIntSpec, u_space_sampler,
+		     g_u_model, approx_type);
 
   // Configure settings for ML allocation (follows solver type config)
   assign_allocation_control();
@@ -226,8 +227,8 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 		      u_space_type, refine_type, refine_control, covar_control,
 		      colloc_pts_seq, colloc_ratio, ml_alloc_control,
 		      ml_discrep, //rule_nest, rule_growth,
-		      piecewise_basis, use_derivs, 0, cv_flag),
-  expOrderSeqSpec(exp_order_seq)
+		      piecewise_basis, use_derivs, cv_flag),
+  expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
 {
   randomSeedSeqSpec = seed_seq;
 
@@ -259,8 +260,8 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   String approx_type, rng("mt19937"), pt_reuse;
   config_regression(exp_orders, colloc_pts, 1, exp_coeffs_approach,
 		    Pecos::DEFAULT_LEAST_SQ_REGRESSION, tensor_grid_order,
-		    SUBMETHOD_LHS, rng, pt_reuse, u_space_sampler,
-		    g_u_model, approx_type);
+		    SUBMETHOD_LHS, random_seed(), rng, pt_reuse,
+		    u_space_sampler, g_u_model, approx_type);
 
   // Configure settings for ML allocation (follows solver type config)
   assign_allocation_control();
@@ -591,6 +592,8 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
       numSamplesOnModel = expSamplesSeqSpec[sequenceIndex];
       update_sampler = true;
     }
+    if (sequenceIndex < randomSeedSeqSpec.size())
+      update_sampler = true;
     break;
   }
   case Pecos::ORTHOG_LEAST_INTERPOLATION:
@@ -599,6 +602,8 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
       numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
       update_sampler = true;
     }
+    if (sequenceIndex < randomSeedSeqSpec.size())
+      update_sampler = true;
     break;
   default: { // regression
     // assign expansionOrder and/or collocationPoints, as admissible
@@ -607,6 +612,8 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
       numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
       update_sampler = true;
     }
+    if (sequenceIndex < randomSeedSeqSpec.size())
+      update_sampler = true;
     if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
       update_from_ratio = update_sampler = true;
     break;
@@ -655,22 +662,31 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
     if (next_i <   expOrderSeqSpec.size()) update_exp = true;
     if (next_i < expSamplesSeqSpec.size())
       { numSamplesOnModel = expSamplesSeqSpec[next_i]; update_sampler = true; }
+    if (next_i < randomSeedSeqSpec.size())
+      update_sampler = true;
     if (update_exp || update_sampler) ++sequenceIndex;
     break;
   }
-  case Pecos::ORTHOG_LEAST_INTERPOLATION:
+  case Pecos::ORTHOG_LEAST_INTERPOLATION: {
     // advance collocationPoints
-    if (sequenceIndex+1 < collocPtsSeqSpec.size()) {
-      update_sampler = true;  ++sequenceIndex;
+    size_t next_i = sequenceIndex + 1;
+    if (next_i < collocPtsSeqSpec.size()) {
       numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+      update_sampler = true; 
     }
+    if (next_i < randomSeedSeqSpec.size())
+      update_sampler = true;
+    if (update_sampler) ++sequenceIndex;
     break;
+  }
   default: { // regression
     // advance expansionOrder and/or collocationPoints, as admissible
     size_t next_i = sequenceIndex + 1;
     if (next_i <  expOrderSeqSpec.size()) update_exp = true;
     if (next_i < collocPtsSeqSpec.size())
       { numSamplesOnModel = collocPtsSeqSpec[next_i]; update_sampler = true; }
+    if (next_i < randomSeedSeqSpec.size())
+      update_sampler = true;
     if (update_exp || update_sampler) ++sequenceIndex;
     if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
       update_from_ratio = update_sampler = true;
@@ -709,9 +725,12 @@ update_from_specification(bool update_exp, bool update_sampler,
 
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   if (update_sampler) {
+    Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
+    int seed = random_seed();
+    if (seed) sub_iter_rep->random_seed(seed);
+
     if (tensorRegression) {
-      NonDQuadrature* nond_quad
-	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
       nond_quad->samples(numSamplesOnModel);
       if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
 	UShortArray dim_quad_order(numContinuousVars);
@@ -747,11 +766,9 @@ infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
 
 
 void NonDMultilevelPolynomialChaos::
-increment_sample_sequence(size_t new_samp, size_t total_samp,
-			  size_t iter, size_t step)
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   numSamplesOnModel = new_samp;
-  mlIter = iter; // needed by multilevel_regression() for seed sequence
 
   bool update_exp = false, update_sampler = false, update_from_ratio = false,
     err_flag = false;
@@ -800,6 +817,9 @@ increment_sample_sequence(size_t new_samp, size_t total_samp,
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   if (update_sampler) {
     Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
+    int seed = NonDExpansion::random_seed(step);
+    if (seed) sub_iter_rep->random_seed(seed);
+
     if (tensorRegression) {
       NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
       nond_quad->samples(numSamplesOnModel);

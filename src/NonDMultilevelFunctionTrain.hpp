@@ -72,10 +72,14 @@ protected:
   void assign_specification_sequence();
   void increment_specification_sequence();
 
+  size_t collocation_points() const;
+  int random_seed() const;
+  int first_seed() const;
+
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
-				 size_t iter, size_t step);
+				 size_t step);
   void compute_sample_increment(const RealVector& regress_metrics,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
@@ -117,7 +121,22 @@ private:
   SizetArray startRankSeqSpec;
   /// user specification for start_order_sequence
   UShortArray startOrderSeqSpec;
+
+  /// sequence index for start{Rank,Order}SeqSpec
+  size_t sequenceIndex;
 };
+
+
+inline size_t NonDMultilevelFunctionTrain::collocation_points() const
+{ return NonDExpansion::collocation_points(sequenceIndex); }
+
+
+inline int NonDMultilevelFunctionTrain::random_seed() const
+{ return NonDExpansion::random_seed(sequenceIndex); }
+
+
+inline int NonDMultilevelFunctionTrain::first_seed() const
+{ return NonDExpansion::random_seed(0); }
 
 
 inline size_t NonDMultilevelFunctionTrain::start_rank(size_t index) const

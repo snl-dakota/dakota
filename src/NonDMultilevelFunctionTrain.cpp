@@ -32,8 +32,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   startRankSeqSpec(
     problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),
   startOrderSeqSpec(
-    problem_db.get_usa("method.nond.c3function_train.start_order_sequence"))
-  //resizedFlag(false), callResize(false)
+    problem_db.get_usa("method.nond.c3function_train.start_order_sequence")),
+  sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
 
@@ -134,7 +134,7 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 		      colloc_pts_seq, colloc_ratio, ml_alloc_control,
 		      ml_discrep, //rule_nest, rule_growth,
 		      piecewise_basis, use_derivs, 0, cv_flag),
-  expOrderSeqSpec(exp_order_seq)
+  expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
 {
   randomSeedSeqSpec = seed_seq;
 
@@ -335,7 +335,7 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
   // regression
   // advance expansionOrder and/or collocationPoints, as admissible
   size_t next_i = sequenceIndex + 1;
-  if (next_i < collocPtsSeqSpec.size()  || next_i < startRankSeqSpec.size() ||
+  if (next_i <  collocPtsSeqSpec.size() || next_i <  startRankSeqSpec.size() ||
       next_i < startOrderSeqSpec.size() || next_i < randomSeedSeqSpec.size())
     ++sequenceIndex;
 
@@ -358,13 +358,9 @@ infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
 
 
 void NonDMultilevelFunctionTrain::
-increment_sample_sequence(size_t new_samp, size_t total_samp, size_t iter,
-			  size_t step)
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
-
-  mlIter = iter; // needed by multilevel_regression() for seed sequence, but not for multifidelity_expansion()
-  // *** TO DO: check greedy_multifidelity_expansion() sequencing ...
 
   update_sampler();
 }

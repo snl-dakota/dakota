@@ -838,10 +838,10 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   // > an update to NonDSampling::randomSeed due to random_seed_sequence spec
   // > an update to Pecos::LHSDriver::randomSeed using LHSDriver::
   //   advance_seed_sequence() in support of varyPattern for rnum2
-  else if (seedSpec != randomSeed) // random_seed_sequence advancement
-    { seed_assigned = true; seedSpec = randomSeed; lhsDriver.seed(randomSeed); }
+  else if (seedSpec && seedSpec != randomSeed) // random_seed_sequence advance
+    { seedSpec = randomSeed; lhsDriver.seed(randomSeed); seed_assigned = true; }
   else if (varyPattern && rngName == "rnum2") // vary pattern by advancing seed
-    { seed_advanced = true; lhsDriver.advance_seed_sequence(); }
+    { lhsDriver.advance_seed_sequence();                 seed_advanced = true; }
 
   // Needed a way to turn this off when LHS sampling is being used in
   // NonDAdaptImpSampling because it gets written a _LOT_

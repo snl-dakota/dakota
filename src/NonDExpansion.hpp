@@ -73,6 +73,15 @@ public:
   //- Heading: Virtual functions
   //
 
+  /// return specification for number of collocation points (may be
+  /// part of a sequence specification)
+  virtual size_t collocation_points() const;
+  /// return specification for random seed (may be part of a sequence
+  /// specification)
+  virtual int random_seed() const;
+  /// return first seed in sequence specification (defaults to random_seed())
+  virtual int first_seed() const;
+
   /// evaluate allSamples for inclusion in the (PCE regression) approximation
   /// and retain the best set (well spaced) of size batch_size
   virtual void select_refinement_points(
@@ -161,7 +170,7 @@ protected:
   virtual void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   /// increment sequence in numSamplesOnModel for multilevel_regression()
   virtual void increment_sample_sequence(size_t new_samp, size_t total_samp,
-					 size_t iter, size_t step);
+					 size_t step);
   /// accumulate one of the level metrics for {RIP,RANK}_SAMPLING cases
   virtual void sample_allocation_metric(Real& metric, Real power);
   /// compute delta_N_l for {RIP,RANK}_SAMPLING cases
@@ -277,12 +286,8 @@ protected:
 
   /// return number of collocation points for index within model sequence
   size_t collocation_points(size_t index) const;
-  /// return number of collocation points corresponding to sequenceIndex
-  size_t collocation_points() const;
   /// return random seed for index within model sequence
   int random_seed(size_t index) const;
-  /// return random seed corresponding to sequenceIndex
-  int random_seed() const;
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
@@ -425,12 +430,9 @@ protected:
   /// don't continue an existing random number sequence, rather reset
   /// seed each time within some sampling-based iteration
   bool fixedSeed;
-  /// iteration passed from NonDExpansion ML/MF algorithms, allowing special
-  /// updating logic for sequence handlers
-  size_t mlIter;
-
-  /// sequence index for {collocPts,randomSeed}SeqSpec and derived ML classes
-  size_t sequenceIndex;
+  /// top level iteration counter in adaptive NonDExpansion ML/MF algorithms,
+  /// allowing special updating logic for some sequence handlers
+  size_t mlmfIter;
 
   /// flag for combined variable expansions which include a
   /// non-probabilistic subset (design, epistemic, state)
@@ -623,8 +625,6 @@ private:
   unsigned short integrationRefine;
   /// random number generator for expansion sampler
   String expansionRng;
-  /// seed for expansion sampler random number generator
-  int origSeed;
   /// sample type for expansion sampler
   unsigned short expansionSampleType;
   /// refinement samples for expansion sampler
@@ -657,10 +657,6 @@ inline size_t NonDExpansion::collocation_points(size_t index) const
 }
 
 
-inline size_t NonDExpansion::collocation_points() const
-{ return collocation_points(sequenceIndex); }
-
-
 inline int NonDExpansion::random_seed(size_t index) const
 {
   // return 0 for cases where seed is undefined or will not be updated
@@ -670,14 +666,10 @@ inline int NonDExpansion::random_seed(size_t index) const
     return (index < randomSeedSeqSpec.size()) ?
       randomSeedSeqSpec[index] : randomSeedSeqSpec.back();
   // only set sequence of seeds for first pass, then let RNG state continue
-  else if (mlIter <= 1 && index < randomSeedSeqSpec.size())
+  else if (mlmfIter == 0 && index < randomSeedSeqSpec.size()) // pilot iter only
     return randomSeedSeqSpec[index];
   else return 0; // seed sequence exhausted, do not update
 }
-
-
-inline int NonDExpansion::random_seed() const
-{ return random_seed(sequenceIndex); }
 
 
 inline bool NonDExpansion::saturated() const
@@ -694,6 +686,18 @@ inline void NonDExpansion::maximum_refinement_iterations(int max_refine_iter)
 
 inline const Model& NonDExpansion::algorithm_space_model() const
 { return uSpaceModel; }
+
+
+inline size_t NonDExpansion::collocation_points() const
+{ return 0; }
+
+
+inline int NonDExpansion::random_seed() const
+{ return 0; } // default is no spec
+
+
+inline int NonDExpansion::first_seed() const
+{ return random_seed(); } // default for single-level, overridden for multilevel
 
 
 inline void NonDExpansion::aggregated_models_mode()

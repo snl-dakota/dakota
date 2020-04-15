@@ -31,7 +31,8 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDStochCollocation::
 NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
-  NonDExpansion(problem_db, model)
+  NonDExpansion(problem_db, model),
+  randomSeed(problem_db.get_int("method.random_seed"))
 {
   // ----------------
   // Resolve settings
@@ -106,7 +107,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     bool piecewise_basis, bool use_derivs):
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, dim_pref,
 		refine_type, refine_control, covar_control, 0., rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+		rule_growth, piecewise_basis, use_derivs),
+  randomSeed(0) // Note: would be needed for expansionSampler, if defined
 {
   // ----------------
   // Resolve settings
@@ -155,18 +157,19 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 }
 
 
-/** This constructor is called derived class constructors that
+/** This constructor is called from derived class constructors that
     customize the object construction. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
 		     Model& model):
-  NonDExpansion(problem_db, model)
+  NonDExpansion(problem_db, model), randomSeed(0)
 {
   // Logic delegated to derived class constructor...
 }
 
 
-/** This constructor is used for helper iterator instantiation on the fly. */
+/** This constructor is called from derived class constructors that
+    customize the object construction. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, Model& model,
 		     short exp_coeffs_approach, const RealVector& dim_pref,
@@ -176,7 +179,8 @@ NonDStochCollocation(unsigned short method_name, Model& model,
 		     bool piecewise_basis, bool use_derivs):
   NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, refine_type,
 		refine_control, covar_control, 0., rule_nest, rule_growth,
-		piecewise_basis, use_derivs)
+		piecewise_basis, use_derivs),
+  randomSeed(0)
 {
   multilevAllocControl     = ml_alloc_control;
   multilevDiscrepEmulation = ml_discrep;

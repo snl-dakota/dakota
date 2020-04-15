@@ -41,12 +41,14 @@ struct SPrintArgs
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
+  importBuildPointsFile(
+    problem_db.get_string("method.import_build_points_file")),
   startRankSpec(
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
-  importBuildPointsFile(
-    problem_db.get_string("method.import_build_points_file"))
+  randomSeed(problem_db.get_int("method.random_seed")),
+  collocPtsSpec(problem_db.get_sizet("method.nond.collocation_points"))
 {
   if (iteratedModel.model_type()     == "surrogate" &&
       iteratedModel.surrogate_type() == "global_function_train") {
@@ -82,9 +84,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   size_t regress_size = SharedC3ApproxData::
     regression_size(numContinuousVars, startRankSpec, approx_orders);
   // configure u-space sampler and model
-  if (!config_regression(probDescDB.get_sizet("method.nond.collocation_points"),
-			 regress_size, probDescDB.get_int("method.random_seed"),
-			 u_space_sampler, g_u_model)){
+  if (!config_regression(collocPtsSpec, regress_size, randomSeed,
+			 u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -128,12 +129,13 @@ NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
 		    Model& model):
   NonDExpansion(problem_db, model),
+  importBuildPointsFile(
+    problem_db.get_string("method.import_build_points_file")),
   startRankSpec(
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
-  importBuildPointsFile(
-    problem_db.get_string("method.import_build_points_file"))
+  randomSeed(0), collocPtsSpec(0) // in lieu of sequence specifications
 {
   if (iteratedModel.model_type()     == "surrogate" &&
       iteratedModel.surrogate_type() == "global_function_train") {
@@ -357,7 +359,7 @@ sample_allocation_metric(Real& regress_metric, Real power)
   //   which is one implementation of C3Approximation::regression_size(),
   //   returns the number of unknowns from the most recent FT regression
   //   (per QoI, per model level) which provides the sample requirements
-  //   prior to over-sampling/collocRaio.  Given this, only need to compute
+  //   prior to over-sampling/collocRatio.  Given this, only need to compute
   //   power mean over numFunctions (below) and then add any over-sampling
   //   factor (applied in compute_sample_increment())
 

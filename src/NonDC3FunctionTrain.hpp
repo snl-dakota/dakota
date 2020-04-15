@@ -55,6 +55,9 @@ protected:
   void resolve_inputs(short& u_space_type, short& data_order);
   void initialize_u_space_model();
 
+  size_t collocation_points() const;
+  int random_seed() const;
+
   // TODO
   //void compute_expansion();
   // perform a forward uncertainty propagation using PCE/SC methods
@@ -115,6 +118,13 @@ private:
   //- Heading: Data
   //
 
+  /// seed for random number generator used for regression with LHS
+  /// and sub-sampled tensor grids
+  int randomSeed;
+
+  /// user specification for collocation_points
+  size_t collocPtsSpec;
+
   // for decremented order without recomputation from previous ranks
   //int prevSamplesOnModel;
 
@@ -122,7 +132,15 @@ private:
   // functions in order to avoid the need for static data
   //static NonDC3FunctionTrain* c3Instance;
 };
-    
+
+
+inline size_t NonDC3FunctionTrain::collocation_points() const
+{ return collocPtsSpec; }
+
+
+inline int NonDC3FunctionTrain::random_seed() const
+{ return randomSeed; }
+
 } // namespace Dakota
 
 #endif

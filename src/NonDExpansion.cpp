@@ -47,8 +47,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   termsOrder(1.),
   tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
-  fixedSeed(problem_db.get_bool("method.fixed_seed")),
-  mlIter(0), sequenceIndex(0),
+  fixedSeed(problem_db.get_bool("method.fixed_seed")), mlmfIter(0),
   multilevAllocControl(
     problem_db.get_short("method.nond.multilevel_allocation_control")),
   multilevDiscrepEmulation(
@@ -79,7 +78,6 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   covarianceControl(problem_db.get_short("method.nond.covariance_control")),
   // data for construct_expansion_sampler():
   expansionSampleType(problem_db.get_ushort("method.sample_type")),
-  origSeed(problem_db.get_int("method.random_seed")),
   expansionRng(problem_db.get_string("method.random_number_generator")),
   integrationRefine(
     problem_db.get_ushort("method.nond.integration_refinement")),
@@ -102,8 +100,7 @@ NonDExpansion(unsigned short method_name, Model& model,
   expansionBasisType(Pecos::DEFAULT_BASIS),
   statsType(Pecos::ACTIVE_EXPANSION_STATS), dimPrefSpec(dim_pref),
   collocRatio(colloc_ratio), termsOrder(1.), tensorRegression(false),
-  fixedSeed(false), mlIter(0), sequenceIndex(0),
-  multilevAllocControl(DEFAULT_MLMF_CONTROL),
+  fixedSeed(false), mlmfIter(0), multilevAllocControl(DEFAULT_MLMF_CONTROL),
   multilevDiscrepEmulation(DEFAULT_EMULATION), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), numSamplesOnModel(0), numSamplesOnExpansion(0),
   relativeMetric(true), nestedRules(false), piecewiseBasis(piecewise_basis),
@@ -593,7 +590,7 @@ construct_expansion_sampler(const String& import_approx_file,
     // (goal-oriented) adaptivity.
     exp_sampler_rep
       = new NonDLHSSampling(uSpaceModel, expansionSampleType,
-			    numSamplesOnExpansion, origSeed, expansionRng,
+			    numSamplesOnExpansion, first_seed(), expansionRng,
 			    false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
@@ -628,7 +625,7 @@ construct_expansion_sampler(const String& import_approx_file,
       bool vary_pattern = true, track_extreme = pdfOutput;
       NonDAdaptImpSampling* imp_sampler_rep
 	= new NonDAdaptImpSampling(uSpaceModel, expansionSampleType,
-				   refine_samples, origSeed, expansionRng,
+				   refine_samples, first_seed(), expansionRng,
 				   vary_pattern, integrationRefine, cdfFlag,
 				   false, false, track_extreme);
       importanceSampler.assign_rep(imp_sampler_rep, false);
@@ -1351,6 +1348,8 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   uSpaceModel.clear_model_keys();
   // refinements track impact only with respect to the current level expansion
   statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
+  // zero out iteration counter
+  mlmfIter = 0;
 
   // Allow either model forms or discretization levels, but not both
   unsigned short num_steps, fixed_index, form, lev, seq_index;  bool multilev;
@@ -1442,15 +1441,15 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // refine_expansion() in using the max_refinement_iterations specification.
   // This differs from multilevel_regression(), which uses max_iterations and
   // potentially max_solver_iterations.
-  size_t iter = 0, SZ_MAX = std::numeric_limits<size_t>::max(),
+  size_t SZ_MAX = std::numeric_limits<size_t>::max(),
     step_candidate, best_step = SZ_MAX, best_step_candidate = SZ_MAX,
     max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   Real step_metric, best_step_metric = DBL_MAX;
   RealVector best_stats_star;
-  while ( best_step_metric > convergenceTol && iter < max_refine_iter ) {
+  while ( best_step_metric > convergenceTol && mlmfIter < max_refine_iter ) {
 
-    ++iter;
-    Cout << "\n>>>>> Begin iteration " << iter << ": competing candidates "
+    ++mlmfIter;
+    Cout << "\n>>>>> Begin iteration " << mlmfIter << ": competing candidates "
 	 << "across " << num_steps << " sequence steps\n";
 
     // Generate candidates at each level
@@ -1485,7 +1484,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     }
 
     // permanently apply best increment and update references for next increment
-    Cout << "\n<<<<< Iteration " << iter << " completed: ";
+    Cout << "\n<<<<< Iteration " << mlmfIter << " completed: ";
     if (best_step == SZ_MAX) {
       Cout << "no refinement selected.  Terminating iteration.\n";
       best_step_metric = 0.; // kick out of loop
@@ -1521,7 +1520,7 @@ void NonDExpansion::multilevel_regression()
 {
   unsigned short num_steps, fixed_index, form, lev, seq_index;
   bool multilev, import_pilot;
-  size_t iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
+  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations;
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
 
   // Allow either model forms or discretization levels, but not both
@@ -1547,22 +1546,22 @@ void NonDExpansion::multilevel_regression()
     load_pilot_sample(collocPtsSeqSpec, delta_N_l);
 
   // now converge on sample counts per level (NLev)
-  while ( iter <= max_iter &&
-	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
+  while ( mlmfIter <= max_iter &&
+	  ( Pecos::l1_norm(delta_N_l) || (mlmfIter == 0 && import_pilot) ) ) {
 
     sum_root_var_cost = 0.;
     for (step=0; step<num_steps; ++step) {
 
       configure_indices(step, form, lev, seq_index);
 
-      if (iter == 0) { // initial expansion build
+      if (mlmfIter == 0) { // initial expansion build
 	// Update solution control variable in uSpaceModel to support
 	// DataFitSurrModel::consistent() logic
 	if (import_pilot)
 	  uSpaceModel.update_from_subordinate_model(); // max depth
 
 	NLev[step] += delta_N_l[step]; // update total samples for this step
-	increment_sample_sequence(delta_N_l[step], NLev[step], iter, step);
+	increment_sample_sequence(delta_N_l[step], NLev[step], step);
 	if (step == 0 || import_pilot)
 	  compute_expansion(); // init + import + build; not recursive
 	else
@@ -1582,7 +1581,7 @@ void NonDExpansion::multilevel_regression()
       }
       else if (delta_N_l[step]) {
 	NLev[step] += delta_N_l[step]; // update total samples for this step
-	increment_sample_sequence(delta_N_l[step], NLev[step], iter, step);
+	increment_sample_sequence(delta_N_l[step], NLev[step], step);
 	// Note: import build data is not re-processed by append_expansion()
 	append_expansion();
       }
@@ -1595,7 +1594,7 @@ void NonDExpansion::multilevel_regression()
 	  std::pow(sequence_cost(step, cost), kappaEstimatorRate),
 	  1./(kappaEstimatorRate+1.));
         // MSE reference is ML MC aggregation for pilot(+import) sample:
-	if (iter == 0) estimator_var0 += agg_var_l / NLev[step];
+	if (mlmfIter == 0) estimator_var0 += agg_var_l / NLev[step];
 	break;
       }
       default:
@@ -1608,7 +1607,7 @@ void NonDExpansion::multilevel_regression()
 
     switch (multilevAllocControl) {
     case ESTIMATOR_VARIANCE:
-      if (iter == 0) { // eps^2 / 2 = var * relative factor
+      if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
 	eps_sq_div_2 = estimator_var0 * convergenceTol;
 	if (outputLevel == DEBUG_OUTPUT)
 	  Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
@@ -1620,8 +1619,8 @@ void NonDExpansion::multilevel_regression()
       compute_sample_increment(level_metrics, NLev, delta_N_l);
       break;
     }
-    ++iter;
-    Cout << "\nML regression iteration " << iter << " sample increments:\n"
+    ++mlmfIter;
+    Cout << "\nML regression iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_l << std::endl;
   }
   compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
@@ -1634,6 +1633,8 @@ void NonDExpansion::multilevel_regression()
 void NonDExpansion::
 initialize_ml_regression(size_t num_steps, bool& import_pilot)
 {
+  mlmfIter = 0;
+
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
@@ -2291,8 +2292,7 @@ void NonDExpansion::increment_specification_sequence()
 
 
 void NonDExpansion::
-increment_sample_sequence(size_t new_samp, size_t total_samp,
-			  size_t iter, size_t step)
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   Cerr << "Error: no default implementation for increment_sample_sequence() "
        << "defined for multilevel_regression()." << std::endl;
