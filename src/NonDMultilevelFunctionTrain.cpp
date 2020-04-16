@@ -330,7 +330,7 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   else
     numSamplesOnModel = colloc_pts;
 
-  update_u_space_sampler(sequenceIndex);
+  update_u_space_sampler(sequenceIndex, approx_orders);
 }
 
 
@@ -366,38 +366,9 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
 
-  update_u_space_sampler(step);
-}
-
-
-void NonDMultilevelFunctionTrain::update_u_space_sampler(size_t sequence_index)
-{
-  // udpate sampler settings (NonDQuadrature or NonDSampling)
-  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
-
-  int seed = NonDExpansion::random_seed(sequence_index);
-  if (seed) sub_iter_rep->random_seed(seed);
-
-  if (tensorRegression) {
-    NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
-    nond_quad->samples(numSamplesOnModel);
-    if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
-      SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-	uSpaceModel.shared_approximation().data_rep();
-      const UShortArray& approx_orders = shared_data_rep->start_orders();
-      UShortArray dim_quad_order(numContinuousVars);
-      for (size_t i=0; i<numContinuousVars; ++i)
-	dim_quad_order[i] = approx_orders[i] + 1;
-      nond_quad->quadrature_order(dim_quad_order);
-    }
-    nond_quad->update(); // sanity check on sizes, likely a no-op
-  }
-  // test for valid sampler for case of build data import (unstructured grid)
-  else if (sub_iter_rep != NULL) { // enforce increment using sampling_reset()
-    sub_iter_rep->sampling_reference(0);// no lower bnd on samples in sub-iter
-    DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-    dfs_model->total_points(numSamplesOnModel); // total including previous 
-  }
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  update_u_space_sampler(step, shared_data_rep->start_orders());
 }
 
 

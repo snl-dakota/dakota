@@ -1858,6 +1858,30 @@ void NonDExpansion::update_expansion()
 }
 
 
+void NonDExpansion::
+update_u_space_sampler(size_t sequence_index, const UShortArray& approx_orders)
+{
+  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
+  int seed = NonDExpansion::random_seed(sequence_index);
+  if (seed) sub_iter_rep->random_seed(seed);
+
+  if (tensorRegression) {
+    NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
+    nond_quad->samples(numSamplesOnModel);
+    if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
+      UShortArray dim_quad_order(numContinuousVars);
+      for (size_t i=0; i<numContinuousVars; ++i)
+	dim_quad_order[i] = approx_orders[i] + 1;
+      nond_quad->quadrature_order(dim_quad_order);
+    }
+    nond_quad->update(); // sanity check on sizes, likely a no-op
+  }
+  // test for valid sampler for case of build data import (unstructured grid)
+  else if (sub_iter_rep != NULL) // enforce increment through sampling_reset()
+    update_model_from_samples();
+}
+
+
 void NonDExpansion::statistics_type(short stats_type, bool clear_bits)
 {
   if (statsType != stats_type) {

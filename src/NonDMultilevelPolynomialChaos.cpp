@@ -723,12 +723,12 @@ void NonDMultilevelPolynomialChaos::
 update_from_specification(bool update_exp, bool update_sampler,
 			  bool update_from_ratio)
 {
-  UShortArray exp_orders;
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
   if (update_exp) {
     // update expansion order within Pecos::SharedOrthogPolyApproxData
+    UShortArray exp_orders;
     configure_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->expansion_order(exp_orders);
     if (update_from_ratio) { // update numSamplesOnModel from collocRatio
       size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
@@ -737,16 +737,10 @@ update_from_specification(bool update_exp, bool update_sampler,
       numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
     }
   }
-  else if (update_sampler && tensorRegression) {
-    // extract unchanged expansion order from Pecos::SharedOrthogPolyApproxData
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
-    exp_orders = shared_data_rep->expansion_order();
-  }
 
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   if (update_sampler)
-    update_u_space_sampler(sequenceIndex);
+    update_u_space_sampler(sequenceIndex, shared_data_rep->expansion_order());
 }
 
 
@@ -799,6 +793,8 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
     abort_handler(METHOD_ERROR);
   }
 
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
   if (update_exp) {
     //increment_order_from_grid(total_samp); // not sufficient in this context
 
@@ -809,45 +805,12 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
     if (update_from_ratio) // update the exp_orders based on total_samp
       ratio_samples_to_order(collocRatio, total_samp, exp_orders, false);
 
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->expansion_order(exp_orders);
   }
 
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   if (update_sampler)
-    update_u_space_sampler(step);
-}
-
-
-void NonDMultilevelPolynomialChaos::
-update_u_space_sampler(size_t sequence_index)
-{
-  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
-  int seed = NonDExpansion::random_seed(sequence_index);
-  if (seed) sub_iter_rep->random_seed(seed);
-
-  if (tensorRegression) {
-    NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
-    nond_quad->samples(numSamplesOnModel);
-    if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
-      SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-	uSpaceModel.shared_approximation().data_rep();
-      const UShortArray& exp_orders = shared_data_rep->expansion_order();
-      UShortArray dim_quad_order(numContinuousVars);
-      for (size_t i=0; i<numContinuousVars; ++i)
-	dim_quad_order[i] = exp_orders[i] + 1;
-      nond_quad->quadrature_order(dim_quad_order);
-    }
-    nond_quad->update(); // sanity check on sizes, likely a no-op
-  }
-  // test for valid sampler for case of build data import (unstructured grid)
-  else if (sub_iter_rep != NULL) { // enforce increment through sampling_reset()
-    sub_iter_rep->sampling_reference(0);// no lower bnd on samples in sub-iter
-    DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-    // total including reuse from DB/file (does not include previous ML iter)
-    dfs_model->total_points(numSamplesOnModel);
-  }
+    update_u_space_sampler(step, shared_data_rep->expansion_order());
 }
 
 

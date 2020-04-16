@@ -126,9 +126,6 @@ private:
   // {assign,increment}_specification_sequence())
   void update_from_specification(bool update_exp, bool update_sampler,
 				 bool update_from_ratio);
-  /// perform sampler updates after a change to numSamplesOnModel
-  /// (shared code from ML/MF updaters)
-  void update_u_space_sampler(size_t sequence_index);
 
   //
   //- Heading: Data

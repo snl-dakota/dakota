@@ -106,10 +106,6 @@ private:
   unsigned short start_order(size_t index) const;
   unsigned short start_order() const;
 
-  /// perform sampler updates after a change to numSamplesOnModel
-  /// (shared code from ML/MF updaters)
-  void update_u_space_sampler(size_t sequence_index);
-
   // scale sample profile to retain shape while enforcing an upper bound
   //void scale_profile(..., RealVector& new_N_l);
 
