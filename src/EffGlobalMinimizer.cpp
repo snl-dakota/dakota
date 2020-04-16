@@ -335,6 +335,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
             iteratedModel.active_variables(input_array_batch_acquisition[i_batch_acquisition]);
             ActiveSet set = iteratedModel.current_response().active_set();
             set.request_values(dataOrder);
+            iteratedModel.evaluate_nowait(set);
         }
 
         // Get true responses resp_star_truth
