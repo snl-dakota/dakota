@@ -769,8 +769,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     iteratedModel.active_model_key(truth_key);
     Model& truth_model = iteratedModel.truth_model();
 
-    assert(targetMoment == 1 || targetMoment == 2);
-
     size_t qoi, iter = 0, num_steps = truth_model.solution_levels();//1 model form
     unsigned short& step = (true) ? lev : model_form; // option not active
 
@@ -985,7 +983,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
     // now converge on sample counts per level (N_l)
     while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
-      Real underrelaxation_factor = static_cast<Real>(iter + 1)/static_cast<Real>(max_iter);
+      Real underrelaxation_factor = static_cast<Real>(iter + 1)/static_cast<Real>(max_iter + 1);
 
       sum_sqrt_var_cost = 0.;
       for (qoi = 0; qoi < numFunctions; ++qoi) {
@@ -1105,7 +1103,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
         //if(target_mean)
         eps_sq_div_2 = estimator_var0 * convergenceTol;
         for (qoi = 0; qoi < numFunctions; ++qoi) {
-          eps_sq_div_2_qoi[qoi] = convergenceTol; //1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
+          eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol; //1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
         }
         if (outputLevel == DEBUG_OUTPUT) {
           Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
@@ -1122,6 +1120,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
         // "A multifidelity control variate approach for the multilevel Monte
         // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
         N_target = std::sqrt(agg_var[step] / level_cost_vec[step]) * fact;
+        for (qoi = 0; qoi < numFunctions; ++qoi) N_target_qoi(qoi, step) = N_target;
         Cout << N_target << " ";
         delta_N_l[step] = one_sided_delta(average(N_l[step]), N_target);
       }
@@ -1159,7 +1158,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
         /// 5. Explore under-relaxation
 
         Cout << "Before SNL Run. num point: " << numFunctions << "\n";
-        for (qoi = 0; qoi < numFunctions && targetMoment==2 && sampleAllocationType==WORST_CASE; ++qoi) {
+        for (qoi = 0; qoi < numFunctions && targetMoment==2; ++qoi) { //&& sampleAllocationType==WORST_CASE
           RealVector initial_point, pilot_samples;
           initial_point.size(N_l.size());
           pilot_samples.size(N_l.size());
@@ -1167,7 +1166,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
           Cout << "Qoi: " << qoi << ", Pilot samples: " << std::endl;
           for (step = 0; step < N_l.size(); ++step) {
             pilot_samples[step] = N_l[step][qoi];
-            initial_point[step] = 8.; // > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); //pilot_samples[step]; //N_target_mean_qoi[step][qoi]; //pilot_samples[step];//N_target_qoi[qoi][step]; //> pilot_samples[step] ? N_target_qoi[qoi][step] : pilot_samples[step];
+            initial_point[step] = 8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); //pilot_samples[step]; //N_target_mean_qoi[step][qoi]; //pilot_samples[step];//N_target_qoi[qoi][step]; //> pilot_samples[step] ? N_target_qoi[qoi][step] : pilot_samples[step];
             Cout << pilot_samples[step] << " ";
           }
           Cout << "\n";
@@ -1199,7 +1198,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
           nonlin_ineq_upper_bnds.size(0);
           //Number of nonlinear equality constraints = 1, s.t. c_eq: c_1(Nlq) = convergenceTol;
           nonlin_eq_targets.size(1); //init to 0
-          nonlin_eq_targets[0] = convergenceTol;
+          nonlin_eq_targets[0] = eps_sq_div_2_qoi[qoi]; //convergenceTol;
 
           assign_static_member(nonlin_eq_targets[0], qoi, level_cost_vec, sum_Ql, sum_Qlm1, sum_QlQlm1, pilot_samples);
 
@@ -1286,7 +1285,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
                                         lin_eq_targets,nonlin_ineq_lower_bnds,
                                         nonlin_ineq_upper_bnds, nonlin_eq_targets,
                                         &target_var_objective_eval_optpp,
-                                        &target_var_constraint_eval_optpp)
+                                        &target_var_constraint_eval_optpp,
+                                        100000, 100000, 1.e-14,
+                                        1.e-14, 100000)
                                         );
   #endif
           optimizer->output_level(DEBUG_OUTPUT);
@@ -1304,12 +1305,12 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
           Cout << "Relative Constraint violation: " << std::abs(1 - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) << std::endl;
           Cout << "\n";
 
-          if(std::abs(1. - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) > 1.0e-5){
+          if(std::abs(1. - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) > 1.0e-5 && false){
             Cout << "Relative Constraint violation violated: Switching to log scale " << std::endl;
             for (step = 0; step < N_l.size(); ++step) {
-              initial_point[step] = 8; // > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); //optimizer->variables_results().continuous_variable(step) > pilot_samples[step] ? optimizer->variables_results().continuous_variable(step) : pilot_samples[step];
+              initial_point[step] = 8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); //optimizer->variables_results().continuous_variable(step) > pilot_samples[step] ? optimizer->variables_results().continuous_variable(step) : pilot_samples[step];
             }
-            nonlin_eq_targets[0] = std::log(convergenceTol);
+            nonlin_eq_targets[0] = std::log(eps_sq_div_2_qoi[qoi]); //std::log(convergenceTol);
 #ifdef HAVE_NPSOL
             optimizer.reset(new NPSOLOptimizer(initial_point,
                                            var_lower_bnds, var_upper_bnds,
@@ -1329,8 +1330,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
                         lin_eq_targets,     nonlin_ineq_lower_bnds,
                         nonlin_ineq_upper_bnds, nonlin_eq_targets,
                         &target_var_objective_eval_optpp,
-                        &target_var_constraint_eval_logscale_optpp)
-                        );
+                        &target_var_constraint_eval_logscale_optpp,
+                        100000, 100000, 1.e-14,
+                        1.e-14, 100000));
 #endif
             optimizer->run();
 
@@ -1347,7 +1349,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
             Cout << "\n";
           }
           for (step=0; step<num_steps; ++step) {
-              N_target_qoi(qoi, step) =  optimizer->variables_results().continuous_variable(step);
+              N_target_qoi(qoi, step) = optimizer->variables_results().continuous_variable(step);
           }
           //delete optimizer;
         }
@@ -1355,39 +1357,59 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
       Cout << "Optimization results: \n";
       Cout << N_target_qoi << std::endl<< std::endl;
-      if(sampleAllocationType == WORST_CASE) {
-        Cout << "\tdelta_N_l_qoi: " << "\n";
-        for (qoi = 0; qoi < numFunctions; ++qoi) {
-          Cout << "\t\tQoi: " << qoi << "\n\t\t\t";
-          for (step=0; step<num_steps; ++step) {
-            assert(N_target_qoi(qoi, step) >= 0);
-            delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*2, one_sided_delta(N_l[step][qoi], std::ceil(N_target_qoi(qoi, step))));
-            Cout << delta_N_l_qoi(qoi, step) << ", \t";
-          }
-          Cout << "\n";
-        }
-        Real max_qoi_idx = -1, max_cost = -1, cur_cost = 0;
+      if(targetMoment == 2){
+        if(sampleAllocationType == AGGREGATED_VARIANCE){
+          for (step = 0; step < num_steps; ++step) {
+            
+            Real N_l_step_avg = 0;
+            Real N_l_target_step_avg = 0;
+            for (qoi = 0; qoi < numFunctions; ++qoi) {
+              N_l_step_avg += N_l[step][qoi];
+              N_l_target_step_avg += N_target_qoi(qoi, step);
+            }
+            N_l_step_avg /= numFunctions;
+            N_l_target_step_avg /= numFunctions;
 
-        Cout << "\nMLMC iteration prev " << iter << std::endl;
-        for (step=0; step<num_steps; ++step) {
-          max_qoi_idx = 0;
-          for (qoi = 1; qoi < numFunctions; ++qoi) {
-            max_qoi_idx = delta_N_l_qoi(qoi, step) > delta_N_l_qoi(max_qoi_idx, step) ? qoi : max_qoi_idx;
+            delta_N_l[step] = static_cast<size_t>(std::min<Real>(N_l_step_avg*2, one_sided_delta( N_l_step_avg, std::ceil(N_l_target_step_avg))));
+            //delta_N_l[step] = static_cast<size_t>(std::min<Real>(average(N_l[step])*2, delta_N_l[step]));
+            //delta_N_l[step] = (static_cast<size_t>(delta_N_l[step] * underrelaxation_factor) == 0 && delta_N_l[step] != 0) ?
+            //                  delta_N_l[step] : 
+            //                  static_cast<size_t>(delta_N_l[step] * underrelaxation_factor);
           }
-          Cout << delta_N_l_qoi(max_qoi_idx, step) << std::endl;
-          delta_N_l[step] = delta_N_l_qoi(max_qoi_idx, step);
-          if(static_cast<size_t>(delta_N_l_qoi(max_qoi_idx, step) * underrelaxation_factor) == 0 && delta_N_l_qoi(max_qoi_idx, step) != 0){
+        }else if(sampleAllocationType == WORST_CASE) {
+          Cout << "\tdelta_N_l_qoi: " << "\n";
+          for (qoi = 0; qoi < numFunctions; ++qoi) {
+            Cout << "\t\tQoi: " << qoi << "\n\t\t\t";
+            for (step=0; step<num_steps; ++step) {
+              assert(N_target_qoi(qoi, step) >= 0);
+              delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*2, one_sided_delta(N_l[step][qoi], std::ceil(N_target_qoi(qoi, step))));
+              Cout << delta_N_l_qoi(qoi, step) << ", \t";
+            }
+            Cout << "\n";
+          }
+          Real max_qoi_idx = -1, max_cost = -1, cur_cost = 0;
+
+          Cout << "\nMLMC iteration prev " << iter << std::endl;
+          for (step=0; step<num_steps; ++step) {
+            max_qoi_idx = 0;
+            for (qoi = 1; qoi < numFunctions; ++qoi) {
+              max_qoi_idx = delta_N_l_qoi(qoi, step) > delta_N_l_qoi(max_qoi_idx, step) ? qoi : max_qoi_idx;
+            }
+            Cout << delta_N_l_qoi(max_qoi_idx, step) << std::endl;
             delta_N_l[step] = delta_N_l_qoi(max_qoi_idx, step);
-          }else{
-            delta_N_l[step] = static_cast<size_t>(delta_N_l_qoi(max_qoi_idx, step) * underrelaxation_factor);
+            //if(static_cast<size_t>(delta_N_l_qoi(max_qoi_idx, step) * underrelaxation_factor) == 0 && delta_N_l_qoi(max_qoi_idx, step) != 0){
+            //  delta_N_l[step] = delta_N_l_qoi(max_qoi_idx, step);
+            //}else{
+            //  delta_N_l[step] = static_cast<size_t>(delta_N_l_qoi(max_qoi_idx, step) * underrelaxation_factor);
+            //}
           }
+          //Cout << "\nUnderrelaxation: " << underrelaxation_factor << std::endl;
         }
       }
 
       ++iter;
       Cout << "\nMLMC iteration " << iter << " sample increments:\n" << delta_N_l
            << std::endl;
-      Cout << "\nUnderrelaxation: " << underrelaxation_factor << std::endl;
 
     }
     Cout << "\nMLMC final sample size\n" << N_l
