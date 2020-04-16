@@ -258,22 +258,119 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
                              primary_resp_map, secondary_resp_map, nonlinear_resp_map,
                              EIF_objective_eval, NULL);
 
-    // Define batch settings // Edited by AT
 
-    // int BatchSizeAcquisition = 3; // size of the first batch (acquisition batch)
-    // int BatchSizeExploration = 0; // size of the second batch (exploration batch)
+    // Add safeguard: If model cannot run asynchronously then reset batch_size = 1
+    //                  and throw warnings then proceed with batchSize = 1
 
-    // Initialize the input array for the batch // Edit by AT
-    // RealMatrix input_array_batch_acquisition(numContinuousVars, BatchSizeAcquisition);
-    VariablesArray input_array_batch_acquisition(BatchSizeAcquisition);
+    bool parallel_flag = false;
+    if (BatchSizeAcquisition > 1 || BatchSizeExploration > 1) {
+      if (iteratedModel.asynch_flag()) // change model.asynch_flag() to iteratedModel.asynch_flag()
+        parallel_flag = true;
+      else {
+        Cerr << "Warning: concurrent operations not supported by model. Batch size request ignored." << std::endl;
+        BatchSizeAcquisition = 1;
+        BatchSizeExploration = 0;
+      }
+    }
 
-    // vars_star: input
-    // resp_star: output (liar)
-    // resp_star_truth: output (true)
+    if (parallel_flag) { // begin if parallel_flag = true -- then run in parallel
+        // Define batch settings // Edited by AT
 
-    // Prepare the batch // Edited by AT
-    for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
-        // determine fnStar from among sample data
+        // int BatchSizeAcquisition = 3; // size of the first batch (acquisition batch)
+        // int BatchSizeExploration = 0; // size of the second batch (exploration batch)
+
+        // Initialize the input array for the batch // Edit by AT
+        // RealMatrix input_array_batch_acquisition(numContinuousVars, BatchSizeAcquisition);
+        VariablesArray input_array_batch_acquisition(BatchSizeAcquisition);
+
+        // vars_star: input
+        // resp_star: output (liar)
+        // resp_star_truth: output (true)
+
+        // Prepare the batch // Edited by AT
+        for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
+            // Determine fnStar from among sample data
+            get_best_sample();
+
+            // Execute GLOBAL search and retrieve results
+            Cout << "\n>>>>> Initiating global optimization\n";
+            ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+            approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
+            const Variables&  vars_star = approxSubProbMinimizer.variables_results();
+            const RealVector& c_vars    = vars_star.continuous_variables();
+            const Response&   resp_star = approxSubProbMinimizer.response_results();
+            const Real&       eif_star  = resp_star.function_value(0);
+
+            // Get expected value for output
+            fHatModel.continuous_variables(c_vars);
+            fHatModel.evaluate();
+            const Response& approx_response = fHatModel.current_response(); // .function_values();
+
+            Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star); // Edited by AT
+
+            debug_print_values(); // Edited by AT
+            check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr); // Edited by AT
+            debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr); // Edited by AT
+
+            // Constant liar
+            // need fixing: resp_star_truth -> resp_star
+            // IntResponsePair resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response()); // sequential evaluation
+            IntResponsePair resp_star_liar(iteratedModel.evaluation_id(), approx_response); // temporarily cast constant liar as observations
+            fHatModel.append_approximation(vars_star, resp_star_liar, true); // append constant liar (aka heuristic liar)
+
+            // const RealVector& recast_vars_star = vars_star.continuous_variables();
+
+            // Append vars_star (input) to the batch before querying
+            input_array_batch_acquisition[i_batch_acquisition] = vars_star.copy();
+        }
+
+        // Delete liar responses
+        for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
+            fHatModel.pop_approximation(false);
+        }
+
+        // Query the batch
+        for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
+            fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
+            iteratedModel.active_variables(input_array_batch_acquisition[i_batch_acquisition]);
+            ActiveSet set = iteratedModel.current_response().active_set();
+            set.request_values(dataOrder);
+        }
+
+        // Get true responses resp_star_truth
+        const IntResponseMap resp_star_truth = iteratedModel.synchronize(); // const IntResponseMap& resp_star_truth = iteratedModel.synchronize();
+
+        // Update the GP approximation with batch results
+        fHatModel.append_approximation(input_array_batch_acquisition, resp_star_truth, true);
+
+        // Check convergence
+        if ( dist_convergence_cntr >= dist_convergence_limit ||
+             eif_convergence_cntr  >= eif_convergence_limit ||
+             globalIterCount       >= maxIterations )
+            approx_converged = true;
+        else {
+            // Update constraints
+            if (numNonlinearConstraints) {
+                // adopted from NonDMultilevelSampling.cpp
+                IntRespMCIter batch_response_it; // IntRMMIter (iterator)? IntRMMCIter (const_iterator)?
+                for (batch_response_it = resp_star_truth.begin(); batch_response_it != resp_star_truth.end(); batch_response_it++) {
+                  // Update the merit function parameters
+                  // Logic follows Conn, Gould, and Toint, section 14.4:
+                  // const RealVector& fns_star_truth = resp_star_truth.second.function_values(); // old implementation
+                  const RealVector& fns_star_truth = batch_response_it->second.function_values(); // current implementation
+                  Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
+                  if (norm_cv_star < etaSequence)
+                    update_augmented_lagrange_multipliers(fns_star_truth);
+                  else
+                    update_penalty();
+                }
+            }
+        }
+
+    } // end if parallel_flag = true -- then run in parallel
+    else { // else begin parallel_flag = false -- then run sequentially (reinstate old implementation from Mike Eldred)
+
+        // Determine fnStar from among sample data
         get_best_sample();
 
         // Execute GLOBAL search and retrieve results
@@ -293,67 +390,41 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star); // Edited by AT
 
         debug_print_values(); // Edited by AT
-
         check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr); // Edited by AT
-
         debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr); // Edited by AT
 
-
-        // Constant liar
-        // need fixing: resp_star_truth -> resp_star
-        // IntResponsePair resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response()); // sequential evaluation
-        IntResponsePair resp_star_liar(iteratedModel.evaluation_id(), approx_response); // temporarily cast constant liar as observations
-        fHatModel.append_approximation(vars_star, resp_star_liar, true); // append constant liar (aka heuristic liar)
-
-        // const RealVector& recast_vars_star = vars_star.continuous_variables();
-
-        // Append vars_star (input) to the batch before querying
-        input_array_batch_acquisition[i_batch_acquisition] = vars_star.copy();
-    }
-
-    // Delete liar responses
-    for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
-        fHatModel.pop_approximation(false);
-    }
-
-    // Query the batch
-    for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
+        // Evaluate response_star_truth
         fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
-        iteratedModel.active_variables(input_array_batch_acquisition[i_batch_acquisition]);
+        iteratedModel.continuous_variables(c_vars);
         ActiveSet set = iteratedModel.current_response().active_set();
         set.request_values(dataOrder);
-        iteratedModel.evaluate_nowait(set);
-    }
+        iteratedModel.evaluate(set);
+        IntResponsePair resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response());
 
-    // Get true responses resp_star_truth
-    const IntResponseMap resp_star_truth = iteratedModel.synchronize(); // const IntResponseMap& resp_star_truth = iteratedModel.synchronize();
+        // Update the GP approximation
+        fHatModel.append_approximation(vars_star, resp_star_truth, true);
 
-    // Update the GP approximation with batch results
-    fHatModel.append_approximation(input_array_batch_acquisition, resp_star_truth, true);
-
-    // Check convergence
-    if ( dist_convergence_cntr >= dist_convergence_limit ||
-         eif_convergence_cntr  >= eif_convergence_limit ||
-         globalIterCount       >= maxIterations )
-        approx_converged = true;
-    else {
-        // Update constraints
-        if (numNonlinearConstraints) {
-            // adopted from NonDMultilevelSampling.cpp
-            IntRespMCIter batch_response_it; // IntRMMIter (iterator)? IntRMMCIter (const_iterator)?
-            for (batch_response_it = resp_star_truth.begin(); batch_response_it != resp_star_truth.end(); batch_response_it++) {
+        // Check convergence
+        if ( dist_convergence_cntr >= dist_convergence_limit ||
+             eif_convergence_cntr  >= eif_convergence_limit ||
+             globalIterCount       >= maxIterations )
+            approx_converged = true;
+        else {
+            // Update constraints
+            if (numNonlinearConstraints) {
               // Update the merit function parameters
-              // Logic follows Conn, Gould, and Toint, section 14.4:
-              // const RealVector& fns_star_truth = resp_star_truth.second.function_values(); // old implementation
-              const RealVector& fns_star_truth = batch_response_it->second.function_values(); // current implementation
-              Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
-              if (norm_cv_star < etaSequence)
-                update_augmented_lagrange_multipliers(fns_star_truth);
-              else
-                update_penalty();
+              	// Logic follows Conn, Gould, and Toint, section 14.4:
+              	const RealVector& fns_star_truth = resp_star_truth.second.function_values();
+              	Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
+              	if (norm_cv_star < etaSequence)
+              	  update_augmented_lagrange_multipliers(fns_star_truth);
+              	else
+              	  update_penalty();
             }
         }
-    }
+    } // end if parallel_flag = false -- then run sequentially
+
+
 
   } // end approx convergence while loop
 
@@ -529,8 +600,7 @@ void EffGlobalMinimizer::get_best_sample()
   // update truthFnStar with all additional primary/secondary fns corresponding
   // to lowest merit function value
   for (i=1; i<numFunctions; ++i) {
-    const Pecos::SDRArray& sdr_array
-      = fHatModel.approximation_data(i).response_data();
+    const Pecos::SDRArray& sdr_array = fHatModel.approximation_data(i).response_data();
     truthFnStar[i] = sdr_array[sam_star_idx].response_function();
   }
 }
