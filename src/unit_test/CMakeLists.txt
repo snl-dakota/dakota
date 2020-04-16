@@ -173,10 +173,12 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     SOURCES teuchos_unit_test_driver.cpp ${dakota_opt_unit_tests}
     LINK_DAKOTA_LIBS
     )
-  dakota_add_unit_test(NAME muq_mcmc
-    SOURCES teuchos_unit_test_driver.cpp muq_mcmc.cpp
-    LINK_DAKOTA_LIBS
-    )
+  if (DAKOTA_HAVE_MUQ)
+    dakota_add_unit_test(NAME muq_mcmc
+      SOURCES teuchos_unit_test_driver.cpp muq_mcmc.cpp
+      LINK_DAKOTA_LIBS
+      )
+  endif()
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
     "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
     dakota_unit_test_copied_files

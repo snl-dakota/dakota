@@ -5175,6 +5175,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
     ( muq {N_mdm(utype,subMethod_SUBMETHOD_MUQ)}
       chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ rng {0}
+        mt19937 {N_mdm(lit,rngName_mt19937)}
+        |
+        rnum2 {N_mdm(lit,rngName_rnum2)}
+       ]
       [ 
         adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
         |
