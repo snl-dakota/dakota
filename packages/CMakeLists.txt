@@ -180,7 +180,6 @@ endif()
   message(STATUS "EIGEN3_INCLUDE_DIR = ${EIGEN3_INCLUDE_DIR}")
 #endif()
 
-
 if(HAVE_SURFPACK)
   add_subdirectory(surfpack)
 endif(HAVE_SURFPACK)

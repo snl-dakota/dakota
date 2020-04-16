@@ -1,5 +1,5 @@
 # Dakota itself requires this CMake version; some TPLs may require even newer
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
@@ -207,10 +207,26 @@ if(DAKOTA_F90)
   install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
 endif(DAKOTA_F90)
 
+# Initialize GCov before adding targets to cover
+include(DakotaGcov)
+dakota_gcov_init()
 
 # -----
 # Configuration of Dakota components
 # -----
+
+# --- New surrogates module
+# BMA TODO: Finer granularity in packages to build Trilinos, Eigen
+# first, then optionally Pecos, Surfpack, surrogates.
+if(DAKOTA_MODULE_UTIL)
+  add_subdirectory(src/util)
+endif()
+if(DAKOTA_MODULE_SURROGATES)
+  add_subdirectory(src/surrogates)
+  add_definitions("-DHAVE_DAKOTA_SURROGATES")
+endif()
+
+if(DAKOTA_MODULE_DAKOTA)
 
 add_subdirectory(packages)
 
@@ -232,6 +248,8 @@ add_subdirectory(interfaces)
 # NOTE: This directory manages dynamic library manipulation at install time,
 # as the install script must be called after src/ and test/ are installed.
 add_subdirectory("scripts")
+
+endif()  # DAKOTA_MODULE_DAKOTA
 
 
 # -----

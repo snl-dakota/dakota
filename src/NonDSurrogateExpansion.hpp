@@ -64,8 +64,6 @@ private:
   //
 
   //unsigned int randomSeed;
-  //size_t numSamplesOnModel;
-  //int numSamplesOnEmulator;
 };
     
 } // namespace Dakota

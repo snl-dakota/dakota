@@ -57,6 +57,10 @@ class SharedApproxData
 #ifdef HAVE_SURFPACK
   friend class SurfpackApproximation;
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+  friend class SurrogatesGPApprox;
+  friend class SurrogatesPolyApprox;
+#endif // HAVE_DAKOTA_SURROGATES
 
 public:
 
@@ -131,6 +135,11 @@ public:
   /// promote aggregated data sets to active state
   virtual void combined_to_active(bool clear_combined = true);
 
+  /// increments polynomial expansion order (PCE, FT)
+  virtual void increment_order();
+  /// decrements polynomial expansion order (PCE, FT)
+  virtual void decrement_order();
+
   /// construct the shared basis for an expansion-based approximation
   virtual void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
   /// propagate updates to random variable distribution parameters to a
@@ -168,6 +177,9 @@ public:
 
   /// return active multi-index key
   const UShortArray& active_model_key() const;
+
+  /// query whether the form of an approximation has been updated
+  bool formulation_updated() const;
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
@@ -245,6 +257,10 @@ protected:
   RealVector approxDRLowerBnds;
   /// approximation continuous upper bounds
   RealVector approxDRUpperBnds;
+
+  /// tracker for changes in order,rank configuration since last build
+  /// (used by DataFitSurrModel::rebuild_approximation())
+  std::map<UShortArray, bool> formUpdated;
 
 private:
 

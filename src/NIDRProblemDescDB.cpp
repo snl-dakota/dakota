@@ -1504,6 +1504,28 @@ model_type(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+model_ushint(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Mod_Info**)g)->dmo->**(unsigned short DataModelRep::**)v = *val->i;
+}
+
+void NIDRProblemDescDB::
+model_usharray(const char *keyname, Values *val, void **g, void *v)
+{
+  UShortArray *usa
+    = &((*(Mod_Info**)g)->dmo->**(UShortArray DataModelRep::**)v);
+  int *z = val->i;
+  size_t i, n = val->n;
+
+  usa->resize(n);
+  for (i=0; i<n; ++i)
+    if (z[i] >= 0)
+      (*usa)[i] = z[i];
+    else
+      botch("%s must have non-negative values", keyname);
+}
+
+void NIDRProblemDescDB::
 model_utype(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_utype*)v)->sp = 
@@ -6807,6 +6829,7 @@ static Method_mp_ord
 
 static Real
 	MP_(absConvTol),
+	MP_(arithmeticTol),
 	MP_(centeringParam),
 	MP_(collocationRatio),
 	MP_(collocRatioTermsOrder),
@@ -6841,13 +6864,13 @@ static Real
         MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
-	MP_(roundingTolerance),
+	MP_(roundingTol),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
         MP_(smoothFactor),
  	MP_(solnTarget),
-	MP_(solverTolerance),
+	MP_(solverTol),
 	MP_(stepLenToBoundary),
 	MP_(threshDelta),
 	MP_(threshStepLength),
@@ -6888,9 +6911,11 @@ static unsigned short
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
         MP_(expansionOrder),
+        MP_(maxOrder),
         MP_(quadratureOrder),
 	MP_(softConvLimit),
 	MP_(sparseGridLevel),
+        MP_(startOrder),
 	MP_(vbdOrder),
 	MP_(wilksOrder);
 
@@ -6898,13 +6923,13 @@ static SizetArray
 	MP_(collocationPointsSeq),
         MP_(expansionSamplesSeq),
   	MP_(pilotSamples),
-  	MP_(startOrderSeq),
   	MP_(startRankSeq);
 
 static UShortArray
         MP_(expansionOrderSeq),
         MP_(quadratureOrderSeq),
 	MP_(sparseGridLevelSeq),
+  	MP_(startOrderSeq),
         MP_(tensorGridOrder),
 	MP_(varPartitions);
 
@@ -7051,7 +7076,6 @@ static size_t
 	MP_(collocationPoints),
         MP_(expansionSamples),
         MP_(kickRank),
-        MP_(maxOrder),        
         MP_(maxRank),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
@@ -7061,7 +7085,6 @@ static size_t
 	MP_(numOffspring),
 	MP_(numParents),
   	MP_(numPredConfigs),
-        MP_(startOrder),
         MP_(startRank);
 
 static Method_mp_type
@@ -7340,6 +7363,7 @@ static Method_mp_utype
 #define MP_(x) DataModelRep::* model_mp_##x = &DataModelRep::x
 #define MP2(x,y) model_mp_##x##_##y = {&DataModelRep::x,#y}
 #define MP2s(x,y) model_mp_##x##_##y = {&DataModelRep::x,y}
+#define MP2p(x,y) model_mp_##x##_##y = {&DataModelRep::x,Pecos::y}
 
 static IntSet
 	MP_(surrogateFnIndices);
@@ -7357,6 +7381,8 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,global_exp_gauss_proc),
+	MP2(surrogateType,global_exp_poly),
 	MP2(surrogateType,global_function_train),
 	MP2(surrogateType,global_gaussian),
 	MP2(surrogateType,global_kriging),
@@ -7388,6 +7414,8 @@ static Model_mp_type
 	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
+	MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
+	MP2p(refinementType,P_REFINEMENT),        // Pecos
 	MP2s(regressionType,FT_LS),
 	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),
@@ -7437,6 +7465,8 @@ static Model_mp_utype
 static Real
         MP_(adaptedBasisCollocRatio),
         MP_(annRange),
+	MP_(arithmeticTol),
+	MP_(collocationRatio),
 	MP_(convergenceTolerance),
 	MP_(decreaseTolerance),
         MP_(discontGradThresh),
@@ -7445,8 +7475,8 @@ static Real
 	MP_(percentFold),
 	MP_(regressionL2Penalty),
 	MP_(relTolerance),
-	MP_(roundingTolerance),
-	MP_(solverTolerance),
+	MP_(roundingTol),
+	MP_(solverTol),
 	MP_(truncationTolerance);
 
 static RealVector
@@ -7462,6 +7492,7 @@ static IntVector
 
 static String
 	MP_(actualModelPointer),
+        MP_(advancedOptionsFilename),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
 	MP_(idModel),
@@ -7508,11 +7539,14 @@ static bool
         MP_(subspaceIdEnergy),
         MP_(subspaceBuildSurrogate),
         MP_(subspaceIdCV),
-        MP_(subspaceCVIncremental);
+        MP_(subspaceCVIncremental),
+	MP_(tensorGridFlag);
 
 static unsigned short
 	MP_(adaptedBasisSparseGridLev),
-	MP_(adaptedBasisExpOrder);
+	MP_(adaptedBasisExpOrder),
+	MP_(maxOrder),
+	MP_(startOrder);
 
 static short
 	MP_(annNodes),
@@ -7536,6 +7570,7 @@ static int
 	MP_(maxSolverIterations),
         MP_(numFolds),
         MP_(numReplicates),
+        MP_(numRestarts),
         MP_(pointsTotal),
         MP_(refineCVFolds),
         MP_(softConvergenceLimit),
@@ -7545,13 +7580,13 @@ static int
         MP_(subspaceCVMaxRank);
 
 static size_t
-    MP_(kickRank),
-    MP_(maxOrder),        
-    MP_(maxRank),
-    MP_(startOrder),
-    MP_(startRank);
-//  MP_(verbosity);
+	MP_(collocationPoints),
+	MP_(kickRank),
+	MP_(maxRank),
+	MP_(startRank);
+//	MP_(verbosity);
     
+#undef MP2p
 #undef MP2s
 #undef MP2
 #undef MP_

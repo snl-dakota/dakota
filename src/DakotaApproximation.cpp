@@ -27,6 +27,10 @@
 #ifdef HAVE_SURFPACK
 #include "SurfpackApproximation.hpp"
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+#include "DakotaSurrogatesGP.hpp"
+#include "DakotaSurrogatesPoly.hpp"
+#endif // HAVE_DAKOTA_SURROGATES
 #include "DakotaGraphics.hpp"
 
 //#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
@@ -150,6 +154,12 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 	     approx_type == "global_moving_least_squares")
       return new SurfpackApproximation(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+    else if (approx_type == "global_exp_gauss_proc")
+      return new SurrogatesGPApprox(problem_db, shared_data, approx_label);
+    else if (approx_type == "global_exp_poly")
+      return new SurrogatesPolyApprox(problem_db, shared_data, approx_label);
+#endif // HAVE_DAKOTA_SURROGATES
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."
 	   << std::endl;
@@ -213,6 +223,12 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 	   approx_type == "global_moving_least_squares")
     approx = new SurfpackApproximation(shared_data);
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+    else if (approx_type == "global_exp_gauss_proc")
+      return new SurrogatesGPApprox(shared_data);
+    else if (approx_type == "global_exp_poly")
+      return new SurrogatesPolyApprox(shared_data);
+#endif // HAVE_DAKOTA_SURROGATES
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."
 	 << std::endl;
@@ -489,8 +505,8 @@ Real Approximation::prediction_variance(const Variables& vars)
 Real Approximation::mean()
 {
   if (!approxRep) {
-    Cerr << "Error:mean() not available for this approximation "
-	 << "type." << std::endl;
+    Cerr << "Error: mean() not available for this approximation type."
+	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
@@ -500,12 +516,34 @@ Real Approximation::mean()
 Real Approximation::mean(const RealVector& x)
 {
   if (!approxRep) {
-    Cerr << "Error:mean(x) not available for this approximation "
-	 << "type." << std::endl;
+    Cerr << "Error: mean(x) not available for this approximation type."
+	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
   return approxRep->mean(x);
+}
+
+Real Approximation::combined_mean()
+{
+  if (!approxRep) {
+    Cerr << "Error: combined_mean() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_mean();
+}
+
+Real Approximation::combined_mean(const RealVector& x)
+{
+  if (!approxRep) {
+    Cerr << "Error: combined_mean(x) not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_mean(x);
 }
 
 const RealVector& Approximation::mean_gradient()
@@ -655,6 +693,39 @@ const RealVector& Approximation::moments() const
   return approxRep->moments();
 }
 
+const RealVector& Approximation::expansion_moments() const
+{
+  if (!approxRep) {
+    Cerr << "Error: expansion_moments() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->expansion_moments();
+}
+
+const RealVector& Approximation::numerical_integration_moments() const
+{
+  if (!approxRep) {
+    Cerr << "Error: numerical_integration_moments() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->numerical_integration_moments();
+}
+
+const RealVector& Approximation::combined_moments() const
+{
+  if (!approxRep) {
+    Cerr << "Error: combined_moments() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_moments();
+}
+
 Real Approximation::moment(size_t i) const
 {
   if (!approxRep) {
@@ -673,6 +744,28 @@ void Approximation::moment(Real mom, size_t i)
   else {
     Cerr << "Error: moment(Real, size_t) not available for this approximation "
 	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+Real Approximation::combined_moment(size_t i) const
+{
+  if (!approxRep) {
+    Cerr << "Error: combined_moment(size_t) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_moment(i);
+}
+
+void Approximation::combined_moment(Real mom, size_t i)
+{
+  if (approxRep)
+    approxRep->combined_moment(mom, i);
+  else {
+    Cerr << "Error: combined_moment(Real, size_t) not available for this "
+	 << "approximation type." << std::endl;
     abort_handler(APPROX_ERROR);
   }
 }
@@ -741,28 +834,6 @@ ULongULongMap Approximation::sparse_sobol_index_map() const
   }
 
   return approxRep->sparse_sobol_index_map();
-}
-
-const RealVector& Approximation::expansion_moments() const
-{
-  if (!approxRep) {
-    Cerr << "Error: expansion_moments() not available for this approximation "
-	 << "type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-
-  return approxRep->expansion_moments();
-}
-
-const RealVector& Approximation::numerical_integration_moments() const
-{
-  if (!approxRep) {
-    Cerr << "Error: numerical_integration_moments() not available for this "
-	 << "approximation type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-
-  return approxRep->numerical_integration_moments();
 }
 
 Real Approximation::value(const RealVector& c_vars)
@@ -968,7 +1039,7 @@ int Approximation::num_constraints() const
     return approxRep->num_constraints();
   // default implementation:
   else if (approxData.anchor()) { // anchor data may differ from buildDataOrder
-    const SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+    const Pecos::SurrogateDataResp& anchor_sdr = approxData.anchor_response();
     int ng = anchor_sdr.response_gradient().length(),
         nh = anchor_sdr.response_hessian().numRows();
     return 1 + ng + nh*(nh + 1)/2;

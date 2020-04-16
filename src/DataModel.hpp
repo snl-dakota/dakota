@@ -235,6 +235,8 @@ public:
   short annNodes;
   /// range for artificial neural network approximation
   Real annRange;
+  /// number of restarts for gradient-based optimization in GP
+  int numRestarts;
 
   /// whether domain decomposition is enabled
   bool domainDecomp;
@@ -277,6 +279,9 @@ public:
   bool importChalUseVariableLabels;
   /// whether to import active variables only
   bool importChallengeActive;
+
+  /// file containing advanced surrogate option overrides
+  String advancedOptionsFilename;
 
   // nested models
 
@@ -381,13 +386,17 @@ public:
   /// maximum number of cross iterations
   int maxCrossIterations;
   /// optimization tolerance for FT regression
-  double solverTolerance;
-  /// Rounding tolerance for adaptive algorithms
-  double roundingTolerance;
+  Real solverTol;
+  /// Rounding tolerance for FT regression
+  Real roundingTol;
+  /// arithmetic (rounding) tolerance for FT sums and products
+  Real arithmeticTol;
+  /// sub-sample a tensor grid for generating regression data
+  bool tensorGridFlag;
   /// starting polynomial order
-  size_t startOrder;
+  unsigned short startOrder;
   /// maximum order of basis polynomials
-  size_t maxOrder;
+  unsigned short maxOrder;
   /// starting rank
   size_t startRank;
   /// rank increase increment
@@ -398,7 +407,14 @@ public:
   bool adaptRank;
   // Verbosity level
   //size_t verbosity;
-    
+  /// number of data points used in FT construction by regression
+  size_t collocationPoints;
+  /// ratio of number of points to nuber of unknowns
+  Real collocationRatio;
+  /// type of adaptive refinement (p-, h-, hp-)
+  short refinementType;
+  /// type of control for adaptive refinement (uniform, anisotropic, ...)
+  short refinementControl;
 
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;

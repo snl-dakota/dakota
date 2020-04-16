@@ -55,3 +55,12 @@ macro(dakota_check_cxx11)
   endif()
 
 endmacro()
+
+# When compiling with GCC or Clang, enable stricter warnings on a per-target basis
+# Intel supports GCC -W options, but doesn't document which, so not enabling for now
+macro(dakota_strict_warnings target_name)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
+     CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(${target_name} PRIVATE "-Wall" "-Wextra" "-Wpedantic")
+  endif()
+endmacro()

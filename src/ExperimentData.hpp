@@ -114,7 +114,7 @@ public:
   size_t num_total_exppoints() const;
 
   /// retrieve the number of scalars (applies to all experiments)
-  size_t num_scalars() const;
+  size_t num_scalar_primary() const;
 
   /// retrieve the number of fields (applies to all experiments)
   size_t num_fields() const;

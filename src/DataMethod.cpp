@@ -103,7 +103,7 @@ DataMethodRep::DataMethodRep():
   // NCSU 
   volBoxSize(-1.),
   // DDACE
-  numSymbols(0),mainEffectsFlag(false),
+  numSymbols(0), mainEffectsFlag(false),
   // FSUDace
   latinizeFlag(false), volQualityFlag(false), numTrials(10000),
   //initializationType("grid"), trialType("random"),
@@ -114,9 +114,9 @@ DataMethodRep::DataMethodRep():
   displayFormat("bbe obj"), vns(0.0), neighborOrder(1), showAllEval(false),
   useSurrogate("none"),
   // C3 FT
-  maxCrossIterations(1), solverTolerance(1.e-10), roundingTolerance(1.e-8),
-  startOrder(2), maxOrder(4), startRank(2), kickRank(2), maxRank(3),
-  adaptRank(false),
+  maxCrossIterations(1), solverTol(1.e-10), roundingTol(1.e-8),
+  arithmeticTol(1.e-2), startOrder(2), maxOrder(5),
+  startRank(2), kickRank(2), maxRank(10), adaptRank(false),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -273,8 +273,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << neighborOrder << showAllEval << useSurrogate;
 
   // C3 FT
-  s << maxCrossIterations << solverTolerance << roundingTolerance << startOrder
-    << maxOrder << startRank << kickRank << maxRank << adaptRank
+  s << maxCrossIterations << solverTol << roundingTol << arithmeticTol
+    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
     << startOrderSeq << startRankSeq;
 
   // NonD & DACE
@@ -434,8 +434,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> neighborOrder >> showAllEval >> useSurrogate;
 
   // C3 FT
-  s >> maxCrossIterations >> solverTolerance >> roundingTolerance >> startOrder
-    >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
+  s >> maxCrossIterations >> solverTol >> roundingTol >> arithmeticTol
+    >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
     >> startOrderSeq >> startRankSeq;
 
   // NonD & DACE
@@ -595,8 +595,8 @@ void DataMethodRep::write(std::ostream& s) const
     << neighborOrder << showAllEval << useSurrogate;
 
   // C3 FT
-  s << maxCrossIterations << solverTolerance << roundingTolerance << startOrder
-    << maxOrder << startRank << kickRank << maxRank << adaptRank
+  s << maxCrossIterations << solverTol << roundingTol << arithmeticTol
+    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
     << startOrderSeq << startRankSeq;
 
   // NonD & DACE

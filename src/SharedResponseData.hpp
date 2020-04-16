@@ -106,7 +106,11 @@ private:
   RealVector simulationVariance;
   
   /// number of scalar responses
-  size_t numScalarResponses;
+  size_t numScalarResponses = 0;
+
+  /// number of scalar primary reponses (secondary computed from difference)
+  size_t numScalarPrimary = 0;
+
   /// index of field lengths for field data 
   IntVector fieldRespGroupLengths;
 
@@ -181,8 +185,13 @@ public:
   //- Heading: member functions
   //
 
+  // BMA: consider removing this due to potential for misuse
   /// number of scalar responses 
   size_t num_scalar_responses() const;
+
+  /// number of scalar primary responses (objectives, calibration terms, generic)
+  size_t num_scalar_primary() const;
+
   /// number of field response groups
   size_t num_field_response_groups() const;
   /// total number of response groups (scalars + field groups)
@@ -333,6 +342,10 @@ inline SharedResponseData::~SharedResponseData()
 
 inline size_t SharedResponseData::num_scalar_responses() const
 { return srdRep->numScalarResponses; }
+
+
+inline size_t SharedResponseData::num_scalar_primary() const
+{ return srdRep->numScalarPrimary; }
 
 
 inline size_t SharedResponseData::num_field_response_groups() const

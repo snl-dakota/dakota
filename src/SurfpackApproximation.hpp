@@ -65,17 +65,17 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  int min_coefficients() const;
-  int recommended_coefficients() const;
+  int min_coefficients() const override;
+  int recommended_coefficients() const override;
   //int num_constraints() const; // use default implementation
 
   /// SurfData object will be created from Dakota's SurrogateData,
   /// and the appropriate Surfpack build method will be invoked
-  void build();
+  void build() override;
 
   /// export the Surpack model to disk or console
   void export_model(const String& fn_label, const String& export_prefix = "", 
-                    const unsigned short export_format = NO_MODEL_FORMAT);
+                    const unsigned short export_format = NO_MODEL_FORMAT) override;
 
   // return #coefficients
   //RealVector approximation_coefficients(bool normalized) const;
@@ -84,50 +84,50 @@ protected:
   //                                bool normalized);
 
   /// Return the value of the Surfpack surface for a given parameter vector x
-  Real value(const Variables& vars);
+  Real value(const Variables& vars) override;
   /// retrieve the approximate function gradient for a given parameter vector x
-  const RealVector& gradient(const Variables& vars);
+  const RealVector& gradient(const Variables& vars) override;
   /// retrieve the approximate function Hessian for a given parameter vector x
-  const RealSymMatrix& hessian(const Variables& vars);
+  const RealSymMatrix& hessian(const Variables& vars) override;
   /// retrieve the variance of the predicted value for a given parameter set x
   /// (KrigingModel only)
-  Real prediction_variance(const Variables& vars);
+  Real prediction_variance(const Variables& vars) override;
     
   /// Return the value of the Surfpack surface for a given parameter vector x
-  Real value(const RealVector& c_vars);
+  Real value(const RealVector& c_vars) override;
   /// retrieve the approximate function gradient for a given parameter vector x
-  const RealVector& gradient(const RealVector& c_vars);
+  const RealVector& gradient(const RealVector& c_vars) override;
   /// retrieve the approximate function Hessian for a given parameter vector x
-  const RealSymMatrix& hessian(const RealVector& c_vars);
+  const RealSymMatrix& hessian(const RealVector& c_vars) override;
   /// retrieve the variance of the predicted value for a given parameter set x
   /// (KrigingModel only)
-  Real prediction_variance(const RealVector& c_vars);
+  Real prediction_variance(const RealVector& c_vars) override;
 
   /// check if the diagnostics are available (true for the Surfpack types)
-  bool diagnostics_available();
+  bool diagnostics_available() override;
   /// retrieve a single diagnostic metric for the diagnostic type specified
   /// on the primary model and data
-  Real diagnostic(const String& metric_type);
+  Real diagnostic(const String& metric_type) override;
   /// retrieve a single diagnostic metric for the diagnostic type specified
-  /// on the given model and data
+  /// on the given model and data - not inherited
   Real diagnostic(const String& metric_type, const SurfpackModel& model,
 		  const SurfData& data);
 
   /// compute and print all requested diagnostics and cross-validation 
-  void primary_diagnostics(int fn_index);
+  void primary_diagnostics(int fn_index) override;
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
   void challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
-                             const RealVector& challenge_responses);
+                             const RealVector& challenge_responses) override;
 
   /// compute and return cross-validation for metric_type with num_folds
-  RealArray cv_diagnostic(const StringArray& metric_types, unsigned num_folds);
+  RealArray cv_diagnostic(const StringArray& metric_types, unsigned num_folds) override;
   
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
   RealArray challenge_diagnostic(const StringArray& metric_types,
 			    const RealMatrix& challenge_points,
-                            const RealVector& challenge_responses);
+                            const RealVector& challenge_responses) override;
  
 private:
 
