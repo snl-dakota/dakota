@@ -114,7 +114,10 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(
+  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
+    problem_db.get_string("method.random_number_generator"),
+    problem_db.get_ushort("method.nond.integration_refinement"),
+    problem_db.get_iv("method.nond.refinement_samples"),
     probDescDB.get_string("method.import_approx_points_file"),
     probDescDB.get_ushort("method.import_approx_format"),
     probDescDB.get_bool("method.import_approx_active_only"));
@@ -442,7 +445,25 @@ bool NonDMultilevelPolynomialChaos::resize()
   // -----------------------------------------
   // (Re)Construct expansionSampler, if needed
   // -----------------------------------------
-  construct_expansion_sampler(); // no import after resize
+  // Rather than caching these settings in the class, just preserve them
+  // from the previously constructed expansionSampler:
+  NonDSampling* exp_sampler_rep
+    = (NonDSampling*)expansionSampler.iterator_rep();
+  unsigned short sample_type(SUBMETHOD_DEFAULT); String rng;
+  if (exp_sampler_rep) {
+    sample_type = exp_sampler_rep->sampling_scheme();
+    rng         = exp_sampler_rep->random_number_generator();
+  }
+  NonDAdaptImpSampling* imp_sampler_rep
+    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+  unsigned short int_refine(NO_INT_REFINE); IntVector refine_samples;
+  if (imp_sampler_rep) {
+    int_refine = imp_sampler_rep->sampling_scheme();
+    refine_samples.sizeUninitialized(1);
+    refine_samples[0] = imp_sampler_rep->refinement_samples();
+  }
+  construct_expansion_sampler(sample_type, rng, int_refine, refine_samples);
+  // no import after resize (data would be in original space)
 
   return true; // Always need to re-initialize communicators
 }

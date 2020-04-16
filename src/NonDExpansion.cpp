@@ -75,13 +75,9 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   //       in NonDExpansion::construct_{quadrature,sparse_grid}
   vbdOrderLimit(problem_db.get_ushort("method.nond.vbd_interaction_order")),
   vbdDropTol(problem_db.get_real("method.vbd_drop_tolerance")),
-  covarianceControl(problem_db.get_short("method.nond.covariance_control")),
-  // data for construct_expansion_sampler():
-  expansionSampleType(problem_db.get_ushort("method.sample_type")),
-  expansionRng(problem_db.get_string("method.random_number_generator")),
-  integrationRefine(
-    problem_db.get_ushort("method.nond.integration_refinement")),
-  refinementSamples(problem_db.get_iv("method.nond.refinement_samples"))
+  covarianceControl(problem_db.get_short("method.nond.covariance_control"))
+  // For supporting construct_incremental_lhs():
+  //expansionSampleType(problem_db.get_string("method.expansion_sample_type"))
 {
   check_dimension_preference(dimPrefSpec);
   initialize_counts();
@@ -543,7 +539,10 @@ void NonDExpansion::initialize_u_space_grid()
 
 
 void NonDExpansion::
-construct_expansion_sampler(const String& import_approx_file,
+construct_expansion_sampler(unsigned short sample_type, const String& rng,
+			    unsigned short integration_refine,
+			    const IntVector& refine_samples,
+			    const String&  import_approx_file,
 			    unsigned short import_approx_format,
 			    bool import_approx_active_only)
 {
@@ -589,9 +588,8 @@ construct_expansion_sampler(const String& import_approx_file,
     // same sampling stencil for different design/epistemic vars or for
     // (goal-oriented) adaptivity.
     exp_sampler_rep
-      = new NonDLHSSampling(uSpaceModel, expansionSampleType,
-			    numSamplesOnExpansion, first_seed(), expansionRng,
-			    false, ALEATORY_UNCERTAIN);
+      = new NonDLHSSampling(uSpaceModel, sample_type, numSamplesOnExpansion,
+			    first_seed(), rng, false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // needs to precede exp_sampler_rep->requested_levels()
@@ -607,16 +605,16 @@ construct_expansion_sampler(const String& import_approx_file,
       respLevelTargetReduce, cdfFlag, false); // suppress PDFs (managed locally)
 
     bool imp_sampling = false;
-    if (integrationRefine && respLevelTarget != RELIABILITIES)
+    if (integration_refine && respLevelTarget != RELIABILITIES)
       for (i=0; i<numFunctions; ++i)
 	if (requestedRespLevels[i].length())
 	  { imp_sampling = true; break; }
 
     if (imp_sampling) {
-      int refine_samples = 1000; // context-specific default
-      if (refinementSamples.length() == 1)
-        refine_samples = refinementSamples[0];
-      else if (refinementSamples.length() > 1) {
+      int ais_samples = 1000; // context-specific default
+      if (refine_samples.length() == 1)
+        ais_samples = refine_samples[0];
+      else if (refine_samples.length() > 1) {
         Cerr << "\nError (NonDExpansion): refinement_samples must be length "
              << "1 if specified." << std::endl;
         abort_handler(PARSE_ERROR);
@@ -624,12 +622,12 @@ construct_expansion_sampler(const String& import_approx_file,
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
       NonDAdaptImpSampling* imp_sampler_rep
-	= new NonDAdaptImpSampling(uSpaceModel, expansionSampleType,
-				   refine_samples, first_seed(), expansionRng,
-				   vary_pattern, integrationRefine, cdfFlag,
-				   false, false, track_extreme);
+	= new NonDAdaptImpSampling(uSpaceModel, sample_type, ais_samples,
+				   first_seed(), rng, vary_pattern,
+				   integration_refine, cdfFlag, false, false,
+				   track_extreme);
       importanceSampler.assign_rep(imp_sampler_rep, false);
- 
+
       imp_sampler_rep->output_level(outputLevel);
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
 	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,

@@ -117,7 +117,10 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------------
   // Construct expSampler, if needed
   // -------------------------------
-  construct_expansion_sampler(
+  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
+    problem_db.get_string("method.random_number_generator"),
+    problem_db.get_ushort("method.nond.integration_refinement"),
+    problem_db.get_iv("method.nond.refinement_samples"),
     probDescDB.get_string("method.import_approx_points_file"),
     probDescDB.get_ushort("method.import_approx_format"), 
     probDescDB.get_bool("method.import_approx_active_only"));

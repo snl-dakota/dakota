@@ -18,6 +18,7 @@
 #include "ProbabilityTransformModel.hpp"
 #include "NonDQuadrature.hpp"
 #include "NonDSampling.hpp"
+#include "NonDAdaptImpSampling.hpp"
 #include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
 #include "SparseGridDriver.hpp"
@@ -68,7 +69,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // --------------------
   // Data import settings
   // --------------------
-  String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
+  String pt_reuse = problem_db.get_string("method.nond.point_reuse");
   if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
 
@@ -84,8 +85,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------
   Iterator u_space_sampler;
   String approx_type;
-  unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
-  const String& rng = probDescDB.get_string("method.random_number_generator");
+  unsigned short sample_type = problem_db.get_ushort("method.sample_type");
+  const String& rng = problem_db.get_string("method.random_number_generator");
 
   UShortArray exp_orders; // defined for expansion_samples/regression
   configure_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
@@ -98,10 +99,10 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	   !config_expectation(expSamplesSpec, sample_type, randomSeed, rng,
 	     u_space_sampler, g_u_model, approx_type) &&
 	   !config_regression(exp_orders, collocPtsSpec,
-	     probDescDB.get_real("method.nond.collocation_ratio_terms_order"),
-	     probDescDB.get_short("method.nond.regression_type"),
-	     probDescDB.get_short("method.nond.least_squares_regression_type"),
-	     probDescDB.get_usa("method.nond.tensor_grid_order"), sample_type,
+	     problem_db.get_real("method.nond.collocation_ratio_terms_order"),
+	     problem_db.get_short("method.nond.regression_type"),
+	     problem_db.get_short("method.nond.least_squares_regression_type"),
+	     problem_db.get_usa("method.nond.tensor_grid_order"), sample_type,
 	     randomSeed, rng, pt_reuse, u_space_sampler, g_u_model,
 	     approx_type)) {
     Cerr << "Error: incomplete configuration in NonDPolynomialChaos "
@@ -124,19 +125,22 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, importBuildPointsFile,
-    probDescDB.get_ushort("method.import_build_format"),
-    probDescDB.get_bool("method.import_build_active_only"),
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")), false);
+    problem_db.get_ushort("method.import_build_format"),
+    problem_db.get_bool("method.import_build_active_only"),
+    problem_db.get_string("method.export_approx_points_file"),
+    problem_db.get_ushort("method.export_approx_format")), false);
   initialize_u_space_model();
 
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(
-    probDescDB.get_string("method.import_approx_points_file"),
-    probDescDB.get_ushort("method.import_approx_format"), 
-    probDescDB.get_bool("method.import_approx_active_only"));
+  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
+    problem_db.get_string("method.random_number_generator"),
+    problem_db.get_ushort("method.nond.integration_refinement"),
+    problem_db.get_iv("method.nond.refinement_samples"),
+    problem_db.get_string("method.import_approx_points_file"),
+    problem_db.get_ushort("method.import_approx_format"), 
+    problem_db.get_bool("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
@@ -407,7 +411,7 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 bool NonDPolynomialChaos::
 config_expectation(size_t exp_samples, unsigned short sample_type,
 		   int seed, const String& rng, Iterator& u_space_sampler,
-		   Model& g_u_model,  String& approx_type)
+		   Model& g_u_model, String& approx_type)
 {
   if (exp_samples == std::numeric_limits<size_t>::max())
     return false;
@@ -610,7 +614,7 @@ bool NonDPolynomialChaos::resize()
   //resizedFlag = true;
 
   bool parent_reinit_comms = NonDExpansion::resize();
-  
+
   // ----------------
   // Resolve settings
   // ----------------
@@ -729,10 +733,28 @@ bool NonDPolynomialChaos::resize()
 
   initialize_u_space_model();
 
-  // -------------------------------------
+  // -----------------------------------------
   // (Re)Construct expansionSampler, if needed
-  // -------------------------------------
-  construct_expansion_sampler(); // no import after resize
+  // -----------------------------------------
+  // Rather than caching these settings in the class, just preserve them
+  // from the previously constructed expansionSampler:
+  NonDSampling* exp_sampler_rep
+    = (NonDSampling*)expansionSampler.iterator_rep();
+  unsigned short sample_type(SUBMETHOD_DEFAULT); String rng;
+  if (exp_sampler_rep) {
+    sample_type = exp_sampler_rep->sampling_scheme();
+    rng         = exp_sampler_rep->random_number_generator();
+  }
+  NonDAdaptImpSampling* imp_sampler_rep
+    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+  unsigned short int_refine(NO_INT_REFINE); IntVector refine_samples;
+  if (imp_sampler_rep) {
+    int_refine = imp_sampler_rep->sampling_scheme();
+    refine_samples.sizeUninitialized(1);
+    refine_samples[0] = imp_sampler_rep->refinement_samples();
+  }
+  construct_expansion_sampler(sample_type, rng, int_refine, refine_samples);
+  // no import after resize (data would be in original space)
 
   return true; // Always need to re-initialize communicators
 }

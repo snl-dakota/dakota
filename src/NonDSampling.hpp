@@ -171,6 +171,11 @@ public:
 			 RealMatrix& sample_matrix, int num_samples = 0,
 			 bool x_to_u = true);
 
+  /// return sampleType
+  unsigned short sampling_scheme() const;
+  /// return rngName
+  const String& random_number_generator() const;
+
 protected:
 
   //
@@ -214,9 +219,6 @@ protected:
 
   /// assign randomSeed
   void random_seed(int seed);
-
-  /// return sampleType
-  unsigned short sampling_scheme() const;
 
   /// set varyPattern
   void vary_pattern(bool pattern_flag);
@@ -403,6 +405,10 @@ private:
   /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
   RealMatrix momentCIs;
 };
+
+
+inline const String& NonDSampling::random_number_generator() const
+{ return rngName; }
 
 
 inline void NonDSampling::pre_run()

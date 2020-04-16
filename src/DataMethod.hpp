@@ -885,9 +885,9 @@ public:
   /// the \c expansion_samples specification in \ref MethodNonDPCE
   size_t expansionSamples;
 
-  /// allows for incremental PCE construction using the \c
-  /// incremental_lhs specification in \ref MethodNonDPCE
-  String expansionSampleType;
+  // allows for incremental PCE construction using the \c incremental_lhs
+  // specification in \ref MethodNonDPCE
+  //String expansionSampleType;
   /// the \c dimension_preference specification for tensor and sparse grids
   /// and expansion orders in \ref MethodNonDPCE and \ref MethodNonDSC
   RealVector anisoDimPref;

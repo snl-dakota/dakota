@@ -6737,7 +6737,7 @@ static Method_mp_lit
       //MP2(dataDistType,user),
 	MP2(evalSynchronize,blocking),
 	MP2(evalSynchronize,nonblocking),
-	MP2(expansionSampleType,incremental_lhs),
+      //MP2(expansionSampleType,incremental_lhs),
 	MP2(exploratoryMoves,adaptive),
 	MP2(exploratoryMoves,multi_step),
 	MP2(exploratoryMoves,simple),

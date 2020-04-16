@@ -504,7 +504,7 @@
 	       <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points"  minOccurs="0" default="no sample reuse in coefficient estimation" >
 		 <alias name="reuse_samples"/>
 	       </keyword>
-	       <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples"  minOccurs="0" default="no sample reuse in coefficient estimation" />
+	       <!-- <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples"  minOccurs="0" default="no sample reuse in coefficient estimation" /> -->
 	     </keyword>
 	     ' >
 
@@ -514,7 +514,7 @@
 	       <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points"  minOccurs="0" default="no sample reuse in coefficient estimation" >
 		 <alias name="reuse_samples"/>
 	       </keyword>
-	       <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples"  minOccurs="0" default="no sample reuse in coefficient estimation" />
+	       <!-- <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples"  minOccurs="0" default="no sample reuse in coefficient estimation" /> -->
 	     </keyword>
 	     ' >
 

@@ -2375,7 +2375,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
         {"nond.data_dist_filename", P dataDistFile},
 	{"nond.data_dist_type", P dataDistType},
 	{"nond.discrepancy_type", P modelDiscrepancyType},
-	{"nond.expansion_sample_type", P expansionSampleType},
+      //{"nond.expansion_sample_type", P expansionSampleType},
 	{"nond.export_corrected_model_file", P exportCorrModelFile},
 	{"nond.export_corrected_variance_file", P exportCorrVarFile},
 	{"nond.export_discrepancy_file", P exportDiscrepFile},
