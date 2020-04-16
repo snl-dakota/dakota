@@ -142,6 +142,13 @@ expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
 }
 
 
+void default_scale_types(StringArray& scale_types, const RealVector& scales) 
+{
+  if (scale_types.empty() && scales.length() > 0)
+    scale_types.push_back("value");
+}
+
+
 ScalingOptions::ScalingOptions(const ProblemDescDB& pdb,
 			       const SharedResponseData& srd):
   cvScaleTypes(pdb.get_sa("variables.continuous_design.scale_types")),
@@ -155,13 +162,23 @@ ScalingOptions::ScalingOptions(const ProblemDescDB& pdb,
   linEqScaleTypes(pdb.get_sa("variables.linear_equality_scale_types")),
   linEqScales(pdb.get_rv("variables.linear_equality_scales"))
 {
+  // For downstream code, populate a single "value" if needed
+  default_scale_types(cvScaleTypes, cvScales);
+  default_scale_types(nlnIneqScaleTypes, nlnIneqScales);
+  default_scale_types(nlnEqScaleTypes, nlnEqScales);
+  default_scale_types(linIneqScaleTypes, linIneqScales);
+  default_scale_types(linEqScaleTypes, linEqScales);
+
   // TODO: relax overly conservative expansion of primary weights, scales, sense
 
+  StringArray pri_st = pdb.get_sa("responses.primary_response_fn_scale_types");
+  const RealVector& pri_s = pdb.get_rv("responses.primary_response_fn_scales");
+
+  default_scale_types(pri_st, pri_s);
+
   // TODO: should only allow 1 or num_groups
-  const StringArray& pri_st = pdb.get_sa("responses.primary_response_fn_scale_types");
   expand_for_fields_stl(srd, pri_st, priScaleTypes);
   // allow 1, num_groups, num_elements
-  const RealVector& pri_s = pdb.get_rv("responses.primary_response_fn_scales");
   expand_for_fields_sdv(srd, pri_s, priScales);
 }
 

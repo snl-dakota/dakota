@@ -5187,17 +5187,22 @@
         <keyword  id="objective_functions" name="objective_functions" code="{N_rem(sizet,numObjectiveFunctions)}" label="Optimization"  >
           <alias name="num_objective_functions"/>
           <param type="INTEGER" constraint=">= 0" />
+	  <!-- sense must be length 1 or num objective functions (groups), not per field element -->
           <keyword  id="sense" name="sense" code="{N_rem(strL,primaryRespFnSense)}" label="Optimization sense"  minOccurs="0" default="vector values = 'minimize'" >
             <param type="STRINGLIST" constraint="LEN1 objective_functions" />
           </keyword>
+	  <!-- scale types must be length 1 or num objective functions (groups), not per field element
+    	       "none" is no longer allowed to to ambiguity in scale values -->
           <keyword  id="primary_scale_types" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Objective function scaling types"  minOccurs="0" default="no scaling" >
             <alias name="objective_function_scale_types"/>
             <param type="STRINGLIST" constraint="LEN1 objective_functions" />
           </keyword>
+	  <!-- scales must be length 1, num objective functions (groups), or per-element (scalar + field lengths) -->
           <keyword  id="primary_scales" name="primary_scales" code="{N_rem(RealDL,primaryRespFnScales)}" label="Objective function scales"  minOccurs="0" default="1.0 (no scaling)" >
             <alias name="objective_function_scales"/>
-            <param type="REALLIST" constraint="LEN1 objective_functions" />
+            <param type="REALLIST" />  <!-- constraint="LEN1 objective_functions" --> 
           </keyword>
+	  <!-- weights combine objectives and when specified are only per objective function (group), not field element -->
           <keyword  id="weights" name="weights" code="{N_rem(RealDL,primaryRespFnWeights)}" label="Multi-objective weightings"  minOccurs="0" default="equal weights" >
             <alias name="multi_objective_weights"/>
             <param type="REALLIST" constraint="LEN objective_functions" />
@@ -5271,16 +5276,21 @@
             </keyword>
 	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files"  minOccurs="0" />
 	  </keyword>
+	  <!-- scale types are no longer supported since removal of "none"; only value scaling supported
+               leaving for possible return to log scaling if sensible:
           <keyword  id="primary_scale_types1" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Calibration scaling types"  minOccurs="0" default="no scaling" >
             <alias name="calibration_term_scale_types"/>
             <alias name="least_squares_term_scale_types"/>
             <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
           </keyword>
+	  -->
+	  <!-- scales must be length 1, num calibration terms (groups), or per-element (scalar + field lengths) -->
           <keyword  id="primary_scales1" name="primary_scales" code="{N_rem(RealDL,primaryRespFnScales)}" label="Calibration scales"  minOccurs="0" default="1.0 (no scaling)" >
             <alias name="calibration_term_scales"/>
             <alias name="least_squares_term_scales"/>
-            <param type="REALLIST" constraint="LEN1 calibration_terms" />
+            <param type="REALLIST" /> <!-- constraint="LEN1 calibration_terms" --> 
           </keyword>
+	  <!-- weights combine terms and when specified are only per calibration term (group), not field element -->
           <keyword  id="weights1" name="weights" code="{N_rem(RealDL,primaryRespFnWeights)}" label="Calibration term weights"  minOccurs="0" default="equal weights" >
             <alias name="calibration_weights"/>
             <alias name="least_squares_weights"/>

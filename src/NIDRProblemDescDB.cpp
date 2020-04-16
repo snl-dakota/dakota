@@ -1880,10 +1880,11 @@ make_response_defaults(std::list<DataResponses>* drl)
     Schk(nonlinear_inequality_upper_bounds,numNonlinearIneqConstraints,nonlinearIneqUpperBnds)
   };
   static RespDVec_chk RespVec_chk_Scale[] = {// Scales:  length must be right
-    Schk(least_squares_term_scales,numLeastSqTerms,primaryRespFnScales),
+    // no longer checking LSQ or Obj scales due to fields
+    //Schk(least_squares_term_scales,numLeastSqTerms,primaryRespFnScales),
     Schk(nonlinear_equality_scales,numNonlinearEqConstraints,nonlinearEqScales),
-    Schk(nonlinear_inequality_scales,numNonlinearIneqConstraints,nonlinearIneqScales),
-    Schk(objective_function_scales,numObjectiveFunctions,primaryRespFnScales)
+    Schk(nonlinear_inequality_scales,numNonlinearIneqConstraints,nonlinearIneqScales) //,
+    //Schk(objective_function_scales,numObjectiveFunctions,primaryRespFnScales)
   };
 #undef Schk
 #define Numberof(x) sizeof(x)/sizeof(x[0])

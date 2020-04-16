@@ -6452,7 +6452,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
   ( objective_functions ALIAS num_objective_functions INTEGER >= 0 {N_rem(sizet,numObjectiveFunctions)}
     [ sense STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnSense)} ]
     [ primary_scale_types ALIAS objective_function_scale_types STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnScaleTypes)} ]
-    [ primary_scales ALIAS objective_function_scales REALLIST LEN1 objective_functions {N_rem(RealDL,primaryRespFnScales)} ]
+    [ primary_scales ALIAS objective_function_scales REALLIST {N_rem(RealDL,primaryRespFnScales)} ]
     [ weights ALIAS multi_objective_weights REALLIST LEN objective_functions {N_rem(RealDL,primaryRespFnWeights)} ]
     [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearIneqConstraints)}
       [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
@@ -6480,8 +6480,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
-    [ primary_scale_types ALIAS calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
-    [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
+    [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST {N_rem(RealDL,primaryRespFnScales)} ]
     [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
     [ 
       ( calibration_data {N_rem(true,calibrationDataFlag)}
