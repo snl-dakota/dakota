@@ -207,10 +207,16 @@ config_regression(size_t colloc_pts, size_t regress_size, int seed,
 			 numSamplesOnModel, seed);
   }
   else { // unstructured grid: LHS samples
-    // if reusing samples within a refinement strategy, ensure different
-    // random numbers are generated for points within the grid (even if
-    // the number of samples differs)
-    bool vary_pattern = (refineType);
+    // if reusing samples within a refinement strategy, we prefer generating
+    // different random numbers for new points within the grid (even if the
+    // number of samples differs)
+    // Note: uniform refinement uses DFSModel::rebuild_approximation()
+    // which directly computes sample increment
+    // *** TO DO: would be good to disntinguish top-level seed fixing for OUU
+    //            from lower-level seed fixing across levels or refine iters.
+    if (refineType && fixedSeed)
+      Cerr << "Warning: combining sample refinement with fixed_seed is more "
+	   << "likely to cause sample redundancy." << std::endl;
     // reuse type/seed/rng settings intended for the expansion_sampler.
     // Unlike expansion_sampler, allow sampling pattern to vary under
     // unstructured grid refinement/replacement/augmentation.  Also
@@ -220,7 +226,7 @@ config_regression(size_t colloc_pts, size_t regress_size, int seed,
 		  probDescDB.get_ushort("method.sample_type"),
 		  numSamplesOnModel, seed,
 		  probDescDB.get_string("method.random_number_generator"),
-		  vary_pattern, ACTIVE);
+		  !fixedSeed, ACTIVE);
   }
 
   // maxEvalConcurrency updated here for expansion samples and regression

@@ -431,11 +431,12 @@ config_expectation(size_t exp_samples, unsigned short sample_type,
   // expansion_sampler, we use an ACTIVE sampler mode for estimating the
   // coefficients over all active variables.
   if (numSamplesOnModel) {
-    // default pattern is fixed for consistency in any outer loop,
-    // but gets overridden in cases of unstructured grid refinement.
-    bool vary_pattern = false;
+    if (refineType && fixedSeed)
+      Cerr << "Warning: combining sample refinement with fixed_seed is more "
+	   << "likely to cause sample redundancy." << std::endl;
+
     construct_lhs(u_space_sampler, g_u_model, sample_type, numSamplesOnModel,
-		  seed, rng, vary_pattern, ACTIVE);
+		  seed, rng, !fixedSeed, ACTIVE);
 
     // maxEvalConcurrency updated here for expansion samples and regression
     // and in initialize_u_space_model() for sparse/quad/cub
@@ -567,20 +568,23 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
 			   numSamplesOnModel, seed);
     }
     else { // unstructured grid: LHS samples
-      // if reusing samples within a refinement strategy, ensure different
-      // random numbers are generated for points within the grid (even if
-      // the number of samples differs)
-      // Update: (uniform) regression refinement now uses DataFitSurrModel::
-      // rebuild_approximation() which no longer requires a pt_reuse spec to
-      // employ incremental appending
-      bool vary_pattern = (refineType);// && !pt_reuse.empty());
+      // if reusing samples within a refinement strategy, we prefer generating
+      // different random numbers for new points within the grid (even if the
+      // number of samples differs)
+      // Note: uniform refinement uses DFSModel::rebuild_approximation()
+      // which directly computes sample increment
+      // *** TO DO: would be good to disntinguish top-level seed fixing for OUU
+      //            from lower-level seed fixing across levels or refine iters.
+      if (refineType && fixedSeed)
+	Cerr << "Warning: combining sample refinement with fixed_seed is more "
+	     << "likely to cause sample redundancy." << std::endl;
       // reuse type/seed/rng settings intended for the expansion_sampler.
       // Unlike expansion_sampler, allow sampling pattern to vary under
       // unstructured grid refinement/replacement/augmentation.  Also
       // unlike expansion_sampler, we use an ACTIVE sampler mode for
       // forming the PCE over all active variables.
       construct_lhs(u_space_sampler, g_u_model, sample_type, numSamplesOnModel,
-		    seed, rng, vary_pattern, ACTIVE);
+		    seed, rng, !fixedSeed, ACTIVE);
     }
     // TO DO:
     // BMA NOTE: If this code is activated, need to instead use LHS, with

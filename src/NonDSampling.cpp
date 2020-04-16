@@ -818,6 +818,7 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   else // fixed_seed
     lhsDriver.seed(randomSeed); // reset original/machine-generated seed
   */
+
   bool seed_assigned = false, seed_advanced = false;
   if (numLHSRuns == 1) { // set initial seed
     lhsDriver.rng(rngName);
@@ -834,7 +835,7 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
     }
     lhsDriver.seed(randomSeed);  seed_assigned = true;
   }
-  // We must distinguish two advancement use cases and allow them to coexist:
+  // We must distinguish two advancement use cases and allow them to co-exist:
   // > an update to NonDSampling::randomSeed due to random_seed_sequence spec
   // > an update to Pecos::LHSDriver::randomSeed using LHSDriver::
   //   advance_seed_sequence() in support of varyPattern for rnum2

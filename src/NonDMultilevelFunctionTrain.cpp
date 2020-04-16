@@ -326,7 +326,8 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   }
   else
     numSamplesOnModel = colloc_pts;
-  update_sampler();
+
+  update_u_space_sampler(sequenceIndex);
 }
 
 
@@ -362,16 +363,16 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
 
-  update_sampler();
+  update_u_space_sampler(step);
 }
 
 
-void NonDMultilevelFunctionTrain::update_sampler()
+void NonDMultilevelFunctionTrain::update_u_space_sampler(size_t sequence_index)
 {
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
 
-  int seed = random_seed();
+  int seed = NonDExpansion::random_seed(sequence_index);
   if (seed) sub_iter_rep->random_seed(seed);
 
   if (tensorRegression) {
