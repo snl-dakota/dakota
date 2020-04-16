@@ -174,19 +174,17 @@ protected:
   /// Initialize continuous variable values/labels
   void init_continuous_vars();
 
+  // TODO: Update comments
+
   /// (if non-empty) expand submodel_array by replicates to populate a
   /// recast_array
-  template<typename T>
-  void expand_array(const SharedResponseData& srd, const T& submodel_array, 
-                    size_t recast_size, T& recast_array) const;
 
   /// If size greater than 1, expand submodel_array by replicates to
   /// populate a pre-sized recast_array, otherwise copy
+
   template<typename T>
-  void expand_scales_array(const SharedResponseData& srd, 
-                           const T& submodel_array, 
-                           size_t submodel_size, size_t recast_size, 
-                           T& recast_array) const;
+  void expand_primary_array(size_t submodel_size, const T& submodel_array,
+			    size_t recast_size, T& recast_array) const; 
 
   void print_residual_response(const Response& resid_resp);
 

@@ -151,50 +151,37 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // Expand any submodel Response data to the expanded residual size
   // ---
 
-  // The following expansions are conservative.  Could be skipped when
+  // NOTE: RecastModel pulls ScalingOpts from subModel
+  //
+  //  * CV scales don't change in this recasting; base RecastModel captures them
+  //    BMA TODO: What if there are hyper-parameters active?
+  //  * Overrides are not needed for nonlinear or linear constraints;
+  //    they aren't affected by data transforms
+
+  // NOTE: The following expansions are conservative.  Could be skipped when
   // only scalar data present and no replicates.
+  //
+  // For all primary should be able to just leave as 1 or num_elts
 
   // Preserve weights through data transformations
-  expand_array(srd, sub_model.primary_response_fn_weights(), num_recast_primary,
-               primaryRespFnWts);
-  // Preserve sense through data transformations
-  expand_array(srd, sub_model.primary_response_fn_sense(), num_recast_primary,
-               primaryRespFnSense);
+  // Weights are always by group, expanded in DakotaModel; just need to replicate
+  expand_primary_array(sub_model.primary_response_fn_weights().length(),
+			sub_model.primary_response_fn_weights(),
+			num_recast_primary, primaryRespFnWts);
 
-  // CV scales don't change in this recasting; base RecastModel captures them
-  // BMA TODO: What if there are hyper-parameters active?
+  // TODO: Sense is 1 or group, and NOT currently properly expanded for fields in DakotaModel
+  // Preserve sense through data transformations
+  expand_primary_array(sub_model.primary_response_fn_sense().size(),
+		       sub_model.primary_response_fn_sense(),
+		       num_recast_primary, primaryRespFnSense);
 
   // Adjust each scaling type to right size, leaving as length 1 if needed
-  expand_scales_array(srd, sub_model.scaling_options().priScaleTypes, 
-                      sub_model.scaling_options().priScaleTypes.size(),
-                      num_recast_primary, scalingOpts.priScaleTypes);
-  expand_scales_array(srd, sub_model.scaling_options().priScales, 
-                      sub_model.scaling_options().priScales.length(),
-                      num_recast_primary, scalingOpts.priScales);
-  expand_scales_array(srd, sub_model.scaling_options().nlnIneqScaleTypes, 
-                      sub_model.scaling_options().nlnIneqScaleTypes.size(),
-                      num_recast_primary, scalingOpts.nlnIneqScaleTypes);
-  expand_scales_array(srd, sub_model.scaling_options().nlnIneqScales, 
-                      sub_model.scaling_options().nlnIneqScales.length(),
-                      num_recast_primary, scalingOpts.nlnIneqScales);
-  expand_scales_array(srd, sub_model.scaling_options().nlnEqScaleTypes, 
-                      sub_model.scaling_options().nlnEqScaleTypes.size(),
-                      num_recast_primary, scalingOpts.nlnEqScaleTypes);
-  expand_scales_array(srd, sub_model.scaling_options().nlnEqScales, 
-                      sub_model.scaling_options().nlnEqScales.length(),
-                      num_recast_primary, scalingOpts.nlnEqScales);
-  expand_scales_array(srd, sub_model.scaling_options().linIneqScaleTypes, 
-                      sub_model.scaling_options().linIneqScaleTypes.size(),
-                      num_recast_primary, scalingOpts.linIneqScaleTypes);
-  expand_scales_array(srd, sub_model.scaling_options().linIneqScales, 
-                      sub_model.scaling_options().linIneqScales.length(),
-                      num_recast_primary, scalingOpts.linIneqScales);
-  expand_scales_array(srd, sub_model.scaling_options().linEqScaleTypes, 
-                      sub_model.scaling_options().linEqScaleTypes.size(),
-                      num_recast_primary, scalingOpts.linEqScaleTypes);
-  expand_scales_array(srd, sub_model.scaling_options().linEqScales, 
-                      sub_model.scaling_options().linEqScales.length(),
-                      num_recast_primary, scalingOpts.linEqScales);
+  expand_primary_array(sub_model.scaling_options().priScaleTypes.size(), 
+		       sub_model.scaling_options().priScaleTypes, 
+		       num_recast_primary, scalingOpts.priScaleTypes);
+  expand_primary_array(sub_model.scaling_options().priScales.length(),
+		       sub_model.scaling_options().priScales, 
+		       num_recast_primary, scalingOpts.priScales);
 
   // For this derivation of RecastModel, all resizing can occur at construct
   // time --> Variables/Response are up to date for estimate_message_lengths()
@@ -847,40 +834,29 @@ void DataTransformModel::init_continuous_vars()
     Teuchos and std containers (size vs. length) */
 template<typename T>
 void DataTransformModel::
-expand_scales_array(const SharedResponseData& srd, const T& submodel_array,
-                    size_t submodel_size, size_t recast_size, 
-                    T& recast_array) const 
+expand_primary_array(size_t submodel_size, const T& submodel_array,
+		     size_t recast_size, T& recast_array) const 
 {
+  // Assume that coefficients have been expanded for fields (weights, scales, sense)
+  // So each is either len1 or num_elements
   if (submodel_size == 1)
     // this copy may not be needed, depends on ctor behavior
     recast_array = submodel_array;
   else if (submodel_size > 1) {
-    expand_array(srd, submodel_array, recast_size, recast_array);
+
+    // TODO: convenience function to do this
+    // For num_elements case, just fill the recast_array with copies
+    size_t num_exp = expData.num_experiments();
+
+    assert(submodel_size * num_exp == recast_size);
+
+    recast_array.resize(recast_size);
+    size_t calib_term_ind = 0;
+    for (size_t exp_ind = 0; exp_ind < num_exp; ++exp_ind)
+      for (size_t sma_ind = 0; sma_ind < submodel_size; ++sma_ind)
+	recast_array[calib_term_ind++] = submodel_array[sma_ind];
   }
   // else leave recast_array empty
-}
-
-
-template<typename T>
-void DataTransformModel::
-expand_array(const SharedResponseData& srd, const T& submodel_array, 
-             size_t recast_size, T& recast_array) const 
-{
-  if (submodel_array.empty())
-    return;  // leave recast_array empty
-
-  recast_array.resize(recast_size);
-
-  size_t num_scalar = srd.num_scalar_primary();
-  size_t num_field_groups = srd.num_field_response_groups();
-  size_t calib_term_ind = 0;
-  for (size_t exp_ind=0; exp_ind<expData.num_experiments(); ++exp_ind) {
-    const IntVector& exp_field_lens = expData.field_lengths(exp_ind);
-    for (size_t sc_ind = 0; sc_ind < num_scalar; ++sc_ind)
-      recast_array[calib_term_ind++] = submodel_array[sc_ind];
-    for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind)
-      recast_array[calib_term_ind++] = submodel_array[num_scalar + fg_ind];
-  }
 }
 
 
