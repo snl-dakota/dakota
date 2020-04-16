@@ -477,9 +477,6 @@ private:
   static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
 
-  static void target_var_constraint_eval_optpp_problem18(int mode, int n, const RealVector &x, RealVector &g, RealMatrix &grad_g, int &result_mode);
-  static double exact_var_of_var_problem18(const RealVector &Nl);
-
   //
   //- Heading: Data
   //
@@ -506,7 +503,7 @@ private:
   /// Options right now:
   ///     - sum 		 = aggregate the variance over all QoIs, compute samples from that
   ///     - max          = take maximum sample allocation over QoIs for each level
-  short qoiAggregationNorm;
+  short qoiAggregation;
 
   /// mean squared error of mean estimator from pilot sample MC on HF model
   RealVector mcMSEIter0;
@@ -988,12 +985,6 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(IntRealMatrixMap sum_Ql, In
              ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
              - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
-    Real grad_fd, fd_upper, fd_lower;
-    Real h = 0.00001;
-    fd_upper = std::log(( (Nlq + h) - 1.) / ( (Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq) );
-    fd_lower = std::log((Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq) );
-    grad_fd = (fd_upper - fd_lower)/h;
-    //grad_g = grad_fd;
   }
   //[fm] bias correction for var_P2l
   return var_of_var;
@@ -1024,12 +1015,6 @@ inline Real NonDMultilevelSampling::var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, 
              ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
              - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
-    Real grad_fd, fd_upper, fd_lower;
-    Real h = 0.00001;
-    fd_upper = std::log(( (Nlq + h) - 1.) / ( (Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq) );
-    fd_lower = std::log((Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq) );
-    grad_fd = (fd_upper - fd_lower)/h;
-    //grad_g = grad_fd;
   }
   //[fm] bias correction for var_P2l
   return var_of_var;
@@ -1125,75 +1110,8 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, Int
                        ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2lm1_sq
                      - 2. * (-1. / (Nlq * Nlq) * mu_P2lP2lm1 +
                              (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
-
-    Real grad_fd, term1_fd, term2_fd, term3_fd, term1_grad, term2_grad, term3_grad;
-    Real h = 0.00001;
-
-    term1_fd = (((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
-                     (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
-                     - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq)) / h;
-    term2_fd = (((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
-                     (cm4lm1 - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2lm1_sq)
-                     - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq)) / h;
-    term3_fd = (2. * (mu_P2lP2lm1 / (Nlq + h) + term / ((Nlq + h) * ((Nlq + h) - 1.))) -
-                     2. * (mu_P2lP2lm1 / Nlq + term / (Nlq * (Nlq - 1.)))) / h;
-
-    term1_grad = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
-                      ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
-                      - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
-                        ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
-    term2_grad = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
-                      ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4lm1
-                      - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
-                        ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2lm1_sq;
-    term3_grad =
-        2. * (-1. / (Nlq * Nlq) * mu_P2lP2lm1 + (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
-
-    Real fd_upper = ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
-                    (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
-                    + ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
-                      (cm4lm1 - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2lm1_sq)
-                    - 2. * (mu_P2lP2lm1 / (Nlq + h) + term / ((Nlq + h) * ((Nlq + h) - 1.)));
-    Real fd_lower = ((Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq)
-                     + (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq)
-                     - 2. * (mu_P2lP2lm1 / Nlq + term / (Nlq * (Nlq - 1.))));
-    grad_fd = (std::log(fd_upper) - std::log(fd_lower)) / h;
-    //grad_g = grad_fd;
-
-
-//#ifdef HAVE_NPSOL
-//#elif HAVE_OPTPP
-//    if(mode & OPTPP::NLPGradient){
-			/*
-      Cout << "Gradients: ";
-      Cout << grad_g << " ";
-      Cout << "\n";
-      Cout << "Gradients FD: ";
-        Cout << grad_fd << " ";
-      Cout << "\n";
-      Cout << "term1 Grad: ";
-        Cout << term1_grad << " ";
-      Cout << "\n";
-      Cout << "term1 FD: ";
-        Cout << term1_fd << " ";
-      Cout << "\n";
-      Cout << "term2 Grad: ";
-        Cout << term2_grad << " ";
-      Cout << "\n";
-      Cout << "term2 FD: ";
-        Cout << term2_fd << " ";
-      Cout << "\n";
-      Cout << "term3 Grad: ";
-        Cout << term3_grad << " ";
-      Cout << "\n";
-      Cout << "term3 FD: ";
-        Cout << term3_fd << " ";
-      Cout << "\n";
-      */
     }
-//#endif
 
-//  }
   return var_of_var;
 }
 
