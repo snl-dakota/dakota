@@ -16,10 +16,11 @@ method,
 	  target_moment = 1 #s0,#s1,#s2,#s3,#s4,#s5,#p0,#p1
 #	  target_moment = 2 #s6,#s7,#s8
  	  sample_allocation = aggregated_variance
-	  convergence_tolerance =    .1			#s0,#s3,#s6,#p0,#p1
-#	  convergence_tolerance =   .01			#s1,#s4,#s7
-#	  convergence_tolerance =  .001			#s2,#s5,#s8
-#	  convergence_tolerance = .0001			# too expensive
+	  convergence_tolerance = .1			#s0,#s3,#p0,#p1
+#	  convergence_tolerance = .01			#s1,#s4
+#	  convergence_tolerance = .001			#s2,#s5,#s6
+#	  convergence_tolerance = .0001			#s7
+#	  convergence_tolerance = .00001		#s8
 	output silent
 
 model,
