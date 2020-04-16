@@ -192,9 +192,11 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 // Wilks type of confidence interval
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
-// define special values for target variance and sample allocation over levels and QoIs
-enum {AGGREGATED_VARIANCE=0, WORST_CASE};
+// define special values for qoi aggregation norm for sample allocation over levels and QoIs
+enum {QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM};
 
+// target variance for fitting sample allocation
+enum {TARGET_MEAN, TARGET_VARIANCE};
 // ---------------
 // NonDReliability
 // ---------------
@@ -966,10 +968,12 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
-  /// the \c target_moment selection in \ref MethodMultilevelMC
-  size_t targetMoment;
-  /// the |c sample_allocation selection in \ref MethodMultilevelMC
-  short sampleAllocationType;
+  /// the \c allocationTarget selection in \ref MethodMultilevelMC
+  short allocationTarget;
+  /// the \c useTargetVarianceOptimizationFlag selection in \ref MethodMultilevelMC
+  bool useTargetVarianceOptimizationFlag;
+  /// the |c qoi_aggregation_norm selection in \ref MethodMultilevelMC
+  short qoiAggregation;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
   short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE

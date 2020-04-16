@@ -2756,13 +2756,18 @@
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
 	  </keyword>
-	  <keyword id="target_moment" name="target_moment" code="{N_mdm(sizet,targetMoment)}" label="target_moment" minOccurs="0" default="1" >
-		<param type="INTEGER" constraint="> 0"/>
+	  <keyword  id="allocation_target" name="allocation_target" code="{0}" label="Target for controlling sample allocation"  minOccurs="0" default="mean" >
+		<oneOf label="Allocation target">
+		<keyword  id="mean" name="mean" code="{N_mdm(type,allocationTarget_TARGET_MEAN)}" label="mean"  />
+		<keyword  id="variance" name="variance" code="{N_mdm(type,allocationTarget_TARGET_VARIANCE)}" label="variance">
+		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
+		</keyword>
+		</oneOf>
 	   </keyword>
-      <keyword  id="sample_allocation" name="sample_allocation" code="{0}" label="Type of sample allocation over qoi"  minOccurs="0" default="aggregated_variance" >
-		<oneOf label="Sample allocation Types">
-		<keyword  id="aggregated_variance" name="aggregated_variance" code="{N_mdm(type,sampleAllocationType_AGGREGATED_VARIANCE)}" label="aggregated_variance"   />
-		<keyword  id="worst_case" name="worst_case" code="{N_mdm(type,sampleAllocationType_WORST_CASE)}" label="worst_case"   />
+      <keyword  id="qoi_aggregation" name="qoi_aggregation" code="{0}" label="Rule of aggregating the variance and computing the sample allocation over qoi"  minOccurs="0" default="sum" >
+		<oneOf label="Qoi Aggregation ">
+		<keyword  id="sum" name="sum" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}" label="sum"   />
+		<keyword  id="max" name="max" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}" label="max"   />
 		</oneOf>
 	   </keyword>
 	  &default_max_iterations;

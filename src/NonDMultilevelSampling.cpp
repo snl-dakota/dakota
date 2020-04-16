@@ -40,8 +40,9 @@ NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
-  targetMoment(probDescDB.get_sizet("method.nond.target_moment")),
-  sampleAllocationType(probDescDB.get_short("method.nond.sample_allocation")),
+  allocationTarget(probDescDB.get_short("method.nond.allocation_target")),
+  qoiAggregationNorm(probDescDB.get_short("method.nond.qoi_aggregation")),
+  useTargetVarianceOptimizationFlag(probDescDB.get_bool("method.nond.allocation_target.variance.optimization")),
   finalCVRefinement(true),
   exportSampleSets(probDescDB.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
@@ -799,7 +800,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 #ifdef HAVE_OPTPP
     have_optpp = true;
 #endif
-    Cout << "SampleAllocation: " << sampleAllocationType << ", " << (sampleAllocationType==AGGREGATED_VARIANCE) << " or " << (sampleAllocationType==WORST_CASE) << std::endl;
+    Cout << "SampleAllocation: " << qoiAggregationNorm << ", " << (qoiAggregationNorm==QOI_AGGREGATION_SUM) << " or " << (qoiAggregationNorm==QOI_AGGREGATION_MAX) << std::endl;
 
     // Initialize for pilot sample
     SizetArray delta_N_l;
@@ -877,30 +878,30 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       accumulate_ml_Qsums(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, num_steps-1,
                           mu_hat_ref[num_steps-1], num_samples_array);
       Real agg_var_l_ref = 0;
-      if (sampleAllocationType==AGGREGATED_VARIANCE) {
-        if (targetMoment == 1) {
+      if (qoiAggregationNorm==QOI_AGGREGATION_SUM) {
+        if (allocationTarget == TARGET_MEAN) {
           agg_var_l_ref = aggregate_variance_Qsum(sum_Ql_ref[1][num_steps-1], sum_Qlm1_ref[1][lev],
                                               sum_Ql_ref[2][num_steps-1], sum_QlQlm1_ref[pr11][lev], sum_Qlm1_ref[2][lev],
                                                   num_samples_array, num_steps-1);
-        } else if (targetMoment == 2) {
+        } else if (allocationTarget == TARGET_VARIANCE) {
           for (qoi = 0; qoi < numFunctions; ++qoi) {
             agg_var_l_ref += var_of_var_ml_lmax(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, numSamples,
                                                         100, qoi, false, place_holder)
                                                            * 100; //As described in the paper by Krumscheid, Pisaroni, Nobile
           }
         } else{
-          Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: TargetMoment is not implemented.\n";
+          Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: allocationTarget is not implemented.\n";
           abort_handler(INTERFACE_ERROR);
         }
         check_negative(agg_var_l_ref);
-      }else if (sampleAllocationType==WORST_CASE) {
+      }else if (qoiAggregationNorm==QOI_AGGREGATION_MAX) {
         for (qoi = 0; qoi < numFunctions; ++qoi) {
           agg_var_mean_qoi_ref[qoi] = variance_Ysum(sum_Ql_ref[1][num_steps-1][qoi], sum_Ql_ref[2][num_steps-1][qoi], numSamples);
 
           agg_var_var_qoi_ref[qoi] = var_of_var_ml_lmax(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, numSamples,
                                                                           100, qoi, false, place_holder) *
                                       100; //As described in the paper by Krumscheid, Pisaroni, Nobile
-          agg_var_qoi_ref[qoi] = (targetMoment == 1) ? agg_var_mean_qoi_ref[qoi] : agg_var_var_qoi_ref[qoi];
+          agg_var_qoi_ref[qoi] = (allocationTarget == TARGET_MEAN) ? agg_var_mean_qoi_ref[qoi] : agg_var_var_qoi_ref[qoi];
           check_negative(agg_var_qoi_ref[qoi]);
         }
       }else{
@@ -914,13 +915,13 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       */
 
       //// Problem 18
-      /*if(targetMoment == 1) {
+      /*if(allocationTarget == TARGET_MEAN) {
         convergenceTol = var_H / N_MC;
         Real lagrange_mult = 1. / convergenceTol * (std::sqrt(var_L * C_L) + std::sqrt(var_deltaHL * C_H));
 
         N_L_exact = lagrange_mult * std::sqrt(var_L / C_L);
         N_H_exact = lagrange_mult * std::sqrt(var_deltaHL / C_H);
-      }else if(targetMoment == 2) {
+      }else if(allocationTarget == TARGET_VARIANCE) {
         convergenceTol = 1. / N_MC * (mu_H_four_exact - (N_MC - 3.) / (N_MC - 1.) * var_H * var_H);
         RealVector initial_point;
         initial_point.size(2);
@@ -1036,12 +1037,12 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
             Cout << "variance of Y[" << step << "]: ";
           //if (target_mean)
           agg_var_l = 0;
-          if (sampleAllocationType==AGGREGATED_VARIANCE) {
-            if (targetMoment == 1) {
+          if (qoiAggregationNorm==QOI_AGGREGATION_SUM) {
+            if (allocationTarget == TARGET_MEAN) {
               agg_var_l = aggregate_variance_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
                                                   sum_Ql[2][step], sum_QlQlm1[pr11][step], sum_Qlm1[2][step],
                                                   N_l[step], step);
-            } else if (targetMoment == 2) {
+            } else if (allocationTarget == TARGET_VARIANCE) {
               for (qoi = 0; qoi < numFunctions; ++qoi) {
                 agg_var_l += ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
                                                             N_l[step][qoi], qoi, false, place_holder)
@@ -1050,11 +1051,11 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
                              N_l[step][qoi]; //As described in the paper by Krumscheid, Pisaroni, Nobile
               }
             } else{
-              Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: TargetMoment is not implemented.\n";
+              Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: allocationTarget is not implemented.\n";
               abort_handler(INTERFACE_ERROR);
             }
             check_negative(agg_var_l);
-          }else if (sampleAllocationType==WORST_CASE) {
+          }else if (qoiAggregationNorm==QOI_AGGREGATION_MAX) {
             for (qoi = 0; qoi < numFunctions; ++qoi) {
               agg_var_mean_qoi(qoi, step) = aggregate_variance_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
                                                                    sum_Ql[2][step], sum_QlQlm1[pr11][step],
@@ -1065,7 +1066,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
                                                       : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
                                                                         N_l[step][qoi], qoi, step, false, place_holder)) *
                                           N_l[step][qoi]; //As described in the paper by Krumscheid, Pisaroni, Nobile
-              agg_var_qoi(qoi, step) = (targetMoment == 1) ? agg_var_mean_qoi(qoi, step) : agg_var_var_qoi(qoi, step);
+              agg_var_qoi(qoi, step) = (allocationTarget == TARGET_MEAN) ? agg_var_mean_qoi(qoi, step) : agg_var_var_qoi(qoi, step);
               check_negative(agg_var_qoi(qoi, step));
             }
           }else{
@@ -1076,7 +1077,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
         //if (target_mean) {
         sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
-        for (qoi = 0; qoi < numFunctions && sampleAllocationType==WORST_CASE; ++qoi) {
+        for (qoi = 0; qoi < numFunctions && qoiAggregationNorm==QOI_AGGREGATION_MAX; ++qoi) {
           //sum_sqrt_var_cost_mean_qoi[qoi] += std::sqrt(agg_var_mean_qoi[qoi][step] * lev_cost);
           //sum_sqrt_var_cost_var_qoi[qoi] += std::sqrt(agg_var_var_qoi[qoi][step] * lev_cost);
           sum_sqrt_var_cost_qoi[qoi] += std::sqrt(agg_var_qoi(qoi, step) * lev_cost);
@@ -1115,7 +1116,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       //if(target_mean){
       Real fact = sum_sqrt_var_cost / eps_sq_div_2, fact_qoi, N_target;
       Cout << "N_target: " << std::endl;
-      for (step = 0; step < num_steps && (sampleAllocationType == AGGREGATED_VARIANCE); ++step) {
+      for (step = 0; step < num_steps && (qoiAggregationNorm==QOI_AGGREGATION_SUM); ++step) {
         // Equation 3.9 in CTR Annual Research Briefs:
         // "A multifidelity control variate approach for the multilevel Monte
         // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
@@ -1125,7 +1126,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
         delta_N_l[step] = one_sided_delta(average(N_l[step]), N_target);
       }
 
-      for (qoi = 0; qoi < numFunctions && (sampleAllocationType == WORST_CASE); ++qoi) {
+      for (qoi = 0; qoi < numFunctions && (qoiAggregationNorm==QOI_AGGREGATION_MAX); ++qoi) {
         fact_qoi = sum_sqrt_var_cost_qoi[qoi]/eps_sq_div_2_qoi[qoi];
         if (outputLevel == DEBUG_OUTPUT)
           Cout << "\n\tN_target for Qoi: " << qoi << ", with lagrange: " << fact_qoi << std::endl;
@@ -1140,7 +1141,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
         }
       }
 
-      if( targetMoment==2 && (have_npsol || have_optpp)){
+      if( allocationTarget == TARGET_VARIANCE && (have_npsol || have_optpp) && useTargetVarianceOptimizationFlag){
         ///TODO
         /// 1. Input spec:
         ///         - Target variance DONE
@@ -1158,7 +1159,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
         /// 5. Explore under-relaxation
 
         Cout << "Before SNL Run. num point: " << numFunctions << "\n";
-        for (qoi = 0; qoi < numFunctions && targetMoment==2; ++qoi) { //&& sampleAllocationType==WORST_CASE
+        for (qoi = 0; qoi < numFunctions; ++qoi) { //&& qoiAggregationNorm==QOI_AGGREGATION_MAX
           RealVector initial_point, pilot_samples;
           initial_point.size(N_l.size());
           pilot_samples.size(N_l.size());
@@ -1353,14 +1354,14 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
           }
           //delete optimizer;
         }
+        Cout << "Optimization results: \n";
+        Cout << N_target_qoi << std::endl<< std::endl;
       }
 
-      Cout << "Optimization results: \n";
-      Cout << N_target_qoi << std::endl<< std::endl;
-      if(targetMoment == 2){
-        if(sampleAllocationType == AGGREGATED_VARIANCE){
+      if(allocationTarget == TARGET_VARIANCE){
+        if(qoiAggregationNorm==QOI_AGGREGATION_SUM){
           for (step = 0; step < num_steps; ++step) {
-            
+
             Real N_l_step_avg = 0;
             Real N_l_target_step_avg = 0;
             for (qoi = 0; qoi < numFunctions; ++qoi) {
@@ -1376,7 +1377,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
             //                  delta_N_l[step] : 
             //                  static_cast<size_t>(delta_N_l[step] * underrelaxation_factor);
           }
-        }else if(sampleAllocationType == WORST_CASE) {
+        }else if(qoiAggregationNorm==QOI_AGGREGATION_MAX) {
           Cout << "\tdelta_N_l_qoi: " << "\n";
           for (qoi = 0; qoi < numFunctions; ++qoi) {
             Cout << "\t\tQoi: " << qoi << "\n\t\t\t";
@@ -1425,7 +1426,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     Real thought_opt_var_of_moment;
     Real exact_FN_var_of_moment;
     Real thought_FN_var_of_moment;
-    if(targetMoment == 1){
+    if(allocationTarget == TARGET_MEAN){
       Real half_pow_six = std::pow(0.5, 6);
       Real var_H = 1./7. * half_pow_six;
       Real var_L = Ac*Ac * 1./7. * half_pow_six;
@@ -1438,7 +1439,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       Cout << "MLMC exact sample size (for mean)\n" << std::ceil(N_L_exact) << "\n" << std::ceil(N_H_exact) << std::endl << std::endl;
       Cout << "MLMC numerical var_of_mean size (for mean)\n" << exact_var_of_moment << "\t vs. \t" << convergenceTol << std::endl << std::endl;
       myfile.open("problem18_sampleallocation_mean.txt", std::ofstream::out | std::ofstream::app);
-    }else if(targetMoment == 2) {
+    }else if(allocationTarget == TARGET_VARIANCE) {
       RealVector Nl_tmp;
       RealVector var_of_moment_tmp;
       RealMatrix grad_g_dummy;

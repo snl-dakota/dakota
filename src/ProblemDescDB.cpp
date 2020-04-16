@@ -2741,6 +2741,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
     static KW<short, DataMethodRep> Shdme[] = {	
       // must be sorted by string (key)
 	{"iterator_scheduling", P iteratorScheduling},
+  {"nond.allocation_target", P allocationTarget},
 	{"nond.correction_order", P approxCorrectionOrder},
 	{"nond.covariance_control", P covarianceControl},
 	{"nond.distribution", P distributionType},
@@ -2755,10 +2756,10 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.multilevel_allocation_control", P multilevAllocControl},
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
+  {"nond.qoi_aggregation", P qoiAggregation},
 	{"nond.regression_type", P regressionType},
 	{"nond.response_level_target", P responseLevelTarget},
 	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
-  {"nond.sample_allocation", P sampleAllocationType},
 	{"optpp.merit_function", P meritFn},
 	{"output", P methodOutput},
 	{"sbl.acceptance_logic", P surrBasedLocalAcceptLogic},
@@ -2980,7 +2981,6 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
         {"nond.c3function_train.start_rank", P startRank},
 	{"nond.collocation_points", P collocationPoints},
 	{"nond.expansion_samples", P expansionSamples},
-  {"nond.target_moment", P targetMoment},
 	{"num_candidate_designs", P numCandidateDesigns},
 	{"num_candidates", P numCandidates},
 	{"num_prediction_configs", P numPredConfigs}
@@ -3174,7 +3174,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.adapt_exp_design", P adaptExpDesign},
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
-        {"nond.c3function_train.adapt_rank", P adaptRank},
+  {"nond.allocation_target.variance.optimization", P useTargetVarianceOptimizationFlag},
+  {"nond.c3function_train.adapt_rank", P adaptRank},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.cross_validation.noise_only", P crossValidNoiseOnly},
 	{"nond.d_optimal", P dOptimal},

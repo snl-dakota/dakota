@@ -492,17 +492,21 @@ private:
   /// invocation of load_pilot_sample()
   SizetArray pilotSamples;
 
-  /// store the target_moment input specification, prior to run-time
+  /// store the allocation_target input specification, prior to run-time
   /// Options right now:
-  ///     - 1 = First moment (Mean)
-  ///     - 2 = Second moment (Variance or standard deviation depending on moments central or standard)
-  size_t targetMoment;
+  ///     - Mean = First moment (Mean)
+  ///     - Variance = Second moment (Variance or standard deviation depending on moments central or standard)
+  size_t allocationTarget;
 
-  /// store the sample_allocation input specification, prior to run-time
+  /// option to switch on numerical optimization for solution of sample alloation
+  /// of allocationTarget Variance
+  bool useTargetVarianceOptimizationFlag;
+
+  /// store the qoi_aggregation_norm input specification, prior to run-time
   /// Options right now:
-  ///     - aggregated_variance = aggregate the variance over all QoIs, compute samples from that
-  ///     - worst_case          = take maximum sample allocation over QoIs for each level
-  short sampleAllocationType;
+  ///     - sum 		 = aggregate the variance over all QoIs, compute samples from that
+  ///     - max          = take maximum sample allocation over QoIs for each level
+  short qoiAggregationNorm;
 
   /// mean squared error of mean estimator from pilot sample MC on HF model
   RealVector mcMSEIter0;
