@@ -1,37 +1,4 @@
-# CMakeLists.txt for DAKOTA packages
-option(HAVE_ACRO "Build the ACRO package." ON)
-option(HAVE_AMPL "Build the AMPL package." ON)
-option(HAVE_C3 "Build the Compressed Continuous Computation package." OFF)
-option(HAVE_CONMIN "Build the CONMIN package." ON)
-option(HAVE_DDACE "Build the DDACE package." ON)
-option(HAVE_DEMO_TPL "Build the Demo_TPL package." OFF)
-option(HAVE_DOT "Build the DOT package." ON)
-option(HAVE_DREAM "Build the DREAM package." ON)
-option(HAVE_EIGEN "Build the Eigen package." ON)
-option(HAVE_FSUDACE "Build the FSUDACE package." ON)
-option(HAVE_HOPSPACK "Build the hopspack package." ON)
-option(HAVE_JEGA "Build the JEGA package." ON)
-option(HAVE_NCSUOPT "Build the NCSUOPT package." ON)
-option(HAVE_NL2SOL "Build the NL2SOL package." ON)
-option(HAVE_NLPQL "Build the NLPQL package." ON)
-option(HAVE_NOMAD "Build the NOMAD package." ON)
-option(HAVE_NOWPAC "Build the NOWPAC package (experimental)." OFF)
-option(HAVE_NPSOL "Build the NPSOL package." ON)
-option(HAVE_OPTPP "Build the OPTPP package." ON)
-option(HAVE_PECOS "Build the Pecos package." ON)
-option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
-option(HAVE_PSUADE "Build the PSUADE package." ON)
-option(HAVE_ROL "Build the ROL package." ON)
-option(HAVE_SURFPACK "Build the Surfpack package." ON)
-# Packages formerly underneath Pecos
-option(HAVE_FFT "Use either the fftw or dfftpack packages" ON)
-option(HAVE_DFFTPACK "Build the dfftpack package.  This OPTION has no effect if
-  HAVE_FFT is OFF" ON)
-option(HAVE_FFTW "Find and use an installed fftw package. This OPTION has no
-  effect if HAVE_FFT is OFF" OFF)
-
-option(HAVE_LHS "Build the LHS package." ON)
-option(HAVE_SPARSE_GRID "Build the VPISparseGrid package." ON)
+# All Dakota options for packages have been moved to top-level
 
 # For managing additional packages that packages like pecos and surfpack depend on
 include(ManageRelocatablePackage)
@@ -72,81 +39,13 @@ add_subdirectory(pecos)
 include(ExternalProject)
 
 if(HAVE_QUESO)
-
   # Queso depends on GSL, so ensure GSL detection and proper lib settings
   # Require user to turn on this GPL package explicitly
   if(NOT DAKOTA_HAVE_GSL)
     message(FATAL_ERROR 
       "HAVE_QUESO requires enabling GPL package GSL via DAKOTA_HAVE_GSL.")
   endif()
-
-  if(DAKOTA_QUESO_CMAKE)
-    add_subdirectory(external/queso)
-  else()
-
-  # Prerequisites for building QUESO
-  find_program(SH sh)
-  if(${SH} MATCHES "sh-NOTFOUND")
-    message(FATAL_ERROR "Cannot build QUESO as an external project without sh")
-  endif()
-
-  # Use gsl-config to get GSL settings
-  if(DEFINED GSL_CONFIG_EXECUTABLE)
-    set(GSL_CONFIG "${GSL_CONFIG_EXECUTABLE}")
-  else()
-    find_program(GSL_CONFIG gsl-config)
-    if(${GSL_CONFIG} MATCHES "gsl-config-NOTFOUND")
-      if(DEFINED ENV{GSL_CONFIG})
-	set(GSL_CONFIG "$ENV{GSL_CONFIG}")
-      else()
-	message(FATAL_ERROR "QUESO requires gsl-config on PATH or pointed to by"
-	  " environment variable GSL_CONFIG.")
-      endif()
-    endif()
-  endif()
-
-  exec_program("${GSL_CONFIG}" ARGS --prefix OUTPUT_VARIABLE Q_GSL_PREFIX)
-  message(STATUS "QUESO support -- GSL prefix: ${Q_GSL_PREFIX}")
-  # Set GSL_PREFIX for QUESO m4
-  set($ENV{GSL_PREFIX} ${Q_GSL_PREFIX})
-  # GSL_LIBRARY_DIRS is set by find_package(GSL) at top-level
-  message(STATUS "QUESO support -- GSL libdir: ${GSL_LIBRARY_DIRS}")
-
-  # This may not be necessary for system-installed Boost, so warn only
-  if(NOT DEFINED ENV{BOOST_ROOT})
-    message(WARNING "QUESO typically requires environment variable BOOST_ROOT,"
-      " but not set.")
-  endif()
-
-  # Configure, build, and install QUESO in packages/queso_ext.  Build
-  # is in queso_ext/src; Install is to queso_ext/{bin,examples,include,lib}
-  set(queso_config_cmd
-    ${SH} ${CMAKE_CURRENT_SOURCE_DIR}/external/queso/configure
-    "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
-    "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
-    "--without-hdf5" "--without-glpk"
-    "--with-boost=${Boost_INCLUDE_DIR}/.."
-#    "--disable-shared"
-    "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Boost_LIBRARY_DIRS}:${GSL_LIBRARY_DIRS}"
-    "CXXFLAGS=${CMAKE_CXX_FLAGS}"
-    "--prefix=${CMAKE_CURRENT_BINARY_DIR}/queso_ext"
-    )
-
-  externalproject_add(queso_ext
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/queso_ext"
-    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/queso"
-    CONFIGURE_COMMAND "${queso_config_cmd}"
-    )
-
-  #add_library(queso UNKNOWN IMPORTED GLOBAL)
-  #set_target_properties(queso PROPERTIES 
-  #  IMPORTED_LOCATION ${Dakota_BINARY_DIR}/packages/queso_ext/lib)
-
-  # Install QUESO (and possibly GRVY) libs
-  install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallQuesoLibs.cmake")
-
-  endif()  # DAKOTA_QUESO_CMAKE
-
+  add_subdirectory(external/queso)
 endif(HAVE_QUESO)
 
 
@@ -223,7 +122,6 @@ if(HAVE_DREAM)
   add_subdirectory(external/dream)
 endif(HAVE_DREAM)
 
-
 if(HAVE_FSUDACE)
   add_subdirectory(external/FSUDace)
 endif(HAVE_FSUDACE)
@@ -295,14 +193,9 @@ if(HAVE_PSUADE)
   add_subdirectory(external/PSUADE)
 endif(HAVE_PSUADE)
 
-#if(DAKOTA_RESULTS_DB)
-#  add_subdirectory(yaml-cpp)
-#endif()
-
 if(HAVE_X_GRAPHICS)
   add_subdirectory(external/sciplot)
 endif(HAVE_X_GRAPHICS)
-
 
 # BMA TODO: Merge option to top-level once cmake_transparency branch merged
 option(HAVE_MUQ "Enable MIT MUQ library for Bayesian calibration" OFF)
