@@ -692,7 +692,7 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
     // advance collocationPoints
     size_t next_i = sequenceIndex + 1;
     if (next_i < collocPtsSeqSpec.size()) {
-      numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+      numSamplesOnModel = collocPtsSeqSpec[next_i];
       update_sampler = true; 
     }
     if (next_i < randomSeedSeqSpec.size())
