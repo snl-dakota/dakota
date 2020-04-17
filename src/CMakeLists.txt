@@ -729,11 +729,21 @@ endif(HAVE_NOMAD)
 
 if(HAVE_NOWPAC)
   add_definitions("-DHAVE_NOWPAC")
-  set(DAKOTA_NOWPAC_ROOT_DIR   "${Dakota_SOURCE_DIR}/packages/external/nowpac")
-  set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/nlopt")
-  set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/eigen")
+  if(NOT DAKOTA_NOWPAC_ROOT_DIR)
+    set(DAKOTA_NOWPAC_ROOT_DIR   "${Dakota_SOURCE_DIR}/packages/external/nowpac")
+  endif(NOT DAKOTA_NOWPAC_ROOT_DIR)
+  if( NOT DAKOTA_NOWPAC_NLOPT_ROOT)
+    set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/nlopt")
+  endif(NOT DAKOTA_NOWPAC_NLOPT_ROOT)
+  if( NOT DAKOTA_NOWPAC_EIGEN_ROOT )
+    set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/eigen")
+  endif(NOT DAKOTA_NOWPAC_EIGEN_ROOT)
+  message(STATUS "NOWPAC ROOT DIR ${DAKOTA_NOWPAC_ROOT_DIR}")
+  message(STATUS "NOWPAC NLOPT DIR ${DAKOTA_NOWPAC_NLOPT_ROOT}")
+  message(STATUS "NOWPAC EIGEN DIR ${DAKOTA_NOWPAC_EIGEN_ROOT}")
   list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT}/include/eigen3)
   link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib) # ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include
+ 
   set(iterator_src ${iterator_src} NOWPACOptimizer.cpp)
   list(APPEND DAKOTA_PKG_LIBS nowpac nlopt)
   #list(APPEND EXPORT_TARGETS nowpac nlopt)
@@ -933,7 +943,10 @@ endif()
 if(HAVE_NOWPAC)
   # Require Eigen and NLOPT ExternalProjects to be downloaded, built,
   # and installed before building Dakota sources
+  if(NOT HAVE_EXTERNAL_NOWPAC)
   add_dependencies(dakota_src EIGEN NLOPT)
+  endif()
+  target_link_libraries(dakota_src ${DAKOTA_NOWPAC_ROOT_DIR}/lib/libnowpac.a)
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary

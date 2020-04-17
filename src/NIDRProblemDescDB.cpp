@@ -7022,6 +7022,7 @@ static bool
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
 	MP_(standardizedSpace),
+  MP_(useTargetVarianceOptimizationFlag),
 	MP_(tensorGridFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
@@ -7087,10 +7088,13 @@ static size_t
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents),
-  	MP_(numPredConfigs),
-        MP_(startRank);
+	MP_(numPredConfigs),
+  //MP_(startOrder),
+  MP_(startRank);
 
 static Method_mp_type
+  MP2s(allocationTarget,TARGET_MEAN),
+  MP2s(allocationTarget,TARGET_VARIANCE),
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
@@ -7138,6 +7142,8 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
+  MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
+  MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_SOBOL),      // Pecos

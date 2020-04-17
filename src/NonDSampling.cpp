@@ -1326,7 +1326,7 @@ accumulate_moments(const RealVectorArray& fn_samples, size_t q,
       ++num_samp;
     }
   }
-  Real ns = (Real)num_samp, nm1 = ns - 1., nm2 = ns - 2.;
+  Real ns = (Real)num_samp, nm1 = ns - 1., nm2 = ns - 2., ns_sq = ns * ns;
   // biased central moment estimators (bypass and use raw sums below):
   //biased_cm2 = sum2 / ns; biased_cm3 = sum3 / ns; biased_cm4 = sum4 / ns;
 
@@ -1350,7 +1350,9 @@ accumulate_moments(const RealVectorArray& fn_samples, size_t q,
       // unbiased central (non-excess) from "Modeling with Data," Klemens 2009
       // (Appendix M):  unbiased_cm4 =
       // ( N^3 biased_cm4 / (N-1) - (6N - 9) unbiased_cm2^2 ) / (N^2 - 3N + 3)
-      (ns * ns * sum4 / nm1 - (6.*ns - 9.) * cm2 * cm2) / (ns*(ns - 3.) + 3.) :
+      //(ns * ns * sum4 / nm1 - (6.*ns - 9.) * cm2 * cm2) / (ns*(ns - 3.) + 3.) :
+      //[fm] above estimator is not unbiased since cm2 * cm2 is biased, unbiased correction:
+      (ns_sq * sum4 / nm1 - (6.*ns - 9.)*(ns_sq - ns)/(ns_sq - 2. * ns + 3) * cm2 * cm2) / ( (ns*(ns - 3.) + 3.) - ( (6.*ns - 9.)*(ns_sq - ns) )/( ns * (ns_sq - 2.*ns + 3) ) ) :
       // unbiased standard (excess kurtosis) from Wikipedia ("Estimators of
       // population kurtosis")
       nm1 * ((ns + 1.) * ns * sum4 / (sum2*sum2) - 3.*nm1) / (nm2*(ns - 3.));

@@ -278,7 +278,9 @@ if(HAVE_NOMAD)
 endif(HAVE_NOMAD)
 
 if(HAVE_NOWPAC)
-  add_subdirectory(external/nowpac)
+  if(NOT HAVE_EXTERNAL_NOWPAC)
+    add_subdirectory(external/nowpac)
+  endif()
 endif()
 
 if(HAVE_NPSOL)

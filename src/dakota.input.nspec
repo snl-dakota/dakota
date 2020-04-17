@@ -2660,6 +2660,18 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
        ]
      ]
+    [ allocation_target {0}
+      mean {N_mdm(type,allocationTarget_TARGET_MEAN)}
+      |
+      ( variance {N_mdm(type,allocationTarget_TARGET_VARIANCE)}
+        [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
+       )
+     ]
+    [ qoi_aggregation {0}
+      sum {N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}
+      |
+      max {N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}
+     ]
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ final_moments {0}

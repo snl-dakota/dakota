@@ -49,6 +49,7 @@ private:
 
   int cantilever();   ///< scaled cantilever test function for optimization
   int mod_cantilever(); ///< unscaled cantilever test function for UQ
+  int cantilever_ml(); ///< unscaled cantilever test function for UQ with levels
   int cyl_head();     ///< the cylinder head constrained optimization test fn
   int multimodal();   ///< multimodal UQ test function
   int log_ratio();    ///< the log_ratio UQ test function
@@ -137,6 +138,12 @@ private:
   /// Scalable test function for Bayesian methods, to estimate parameters 
   //  and error terms
   int bayes_linear();
+
+  // Problem 18 from http://infinity77.net/global_optimization/test_functions_1d.html
+  int problem18();
+  double problem18_f(const double &x);
+  double problem18_g(const double &x);
+  double problem18_Ax(const double &A, const double &x);
 
   /// utility to combine components of separable fns
   void separable_combine(Real mult_scale_factor, std::vector<Real> & w,
