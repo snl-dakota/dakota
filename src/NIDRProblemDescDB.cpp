@@ -6740,7 +6740,7 @@ static Method_mp_lit
       //MP2(dataDistType,user),
 	MP2(evalSynchronize,blocking),
 	MP2(evalSynchronize,nonblocking),
-	MP2(expansionSampleType,incremental_lhs),
+      //MP2(expansionSampleType,incremental_lhs),
 	MP2(exploratoryMoves,adaptive),
 	MP2(exploratoryMoves,multi_step),
 	MP2(exploratoryMoves,simple),
@@ -6925,14 +6925,15 @@ static unsigned short
 static SizetArray
 	MP_(collocationPointsSeq),
         MP_(expansionSamplesSeq),
-  	MP_(pilotSamples),
-  	MP_(startRankSeq);
+	MP_(pilotSamples),
+	MP_(randomSeedSeq),
+	MP_(startRankSeq);
 
 static UShortArray
         MP_(expansionOrderSeq),
         MP_(quadratureOrderSeq),
 	MP_(sparseGridLevelSeq),
-  	MP_(startOrderSeq),
+	MP_(startOrderSeq),
         MP_(tensorGridOrder),
 	MP_(varPartitions);
 

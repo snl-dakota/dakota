@@ -247,8 +247,6 @@ private:
   void compute_derived_statistics_av(C3FnTrainPtrs& ftp, size_t num_mom,
 				     bool overwrite = false);
 
-  struct FunctionTrain * subtract_const(struct FunctionTrain * ft, Real val);
-
   /// differentiate the ft to form its gradient, if not previously performed
   void check_function_gradient();
   /// differentiate the ftg to form the ft Hessian, if not previously performed

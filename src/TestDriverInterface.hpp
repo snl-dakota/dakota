@@ -19,6 +19,9 @@
 
 namespace Dakota {
 
+class SpectralDiffusionModel; // fwd declare
+
+
 /** Specialization of DirectApplicInterface to embed algebraic test function
     drivers directly in Dakota */
 class TestDriverInterface: public DirectApplicInterface
@@ -91,6 +94,8 @@ private:
   int damped_oscillator(); ///< 1d-6d that returns field values (ode solution)
   int steady_state_diffusion_1d(); ///< solve the 1d steady-state diffusion eqn
                                    ///< with uncertain field diffusivity
+  int ss_diffusion_discrepancy(); ///< difference steady_state_diffusion_1d()
+                                  ///< across two consecutive resolutions
   int transient_diffusion_1d(); ///< solve the 1d transient diffusion equation
                                 ///< with uncertain scalar diffusivity
   int predator_prey(); /// solve a predator prey population dynamics model
@@ -163,9 +168,16 @@ private:
 
   // test functions for high dimensional models with active subspace structure
 
-  int aniso_quad_form();     ///< 1-D function using a anisotropic quadratic
-                             ///< form
+  int aniso_quad_form(); ///< 1-D function using a anisotropic quadratic form
 
+  //
+  //- Heading: Helper functions
+  //
+
+  /// shared helper function between steady_state_diffusion_1d() and
+  /// ss_diffusion_discrepancy()
+  int steady_state_diffusion_core(SpectralDiffusionModel& model,
+				  RealVector& domain_limits);
 };
 
 } // namespace Dakota

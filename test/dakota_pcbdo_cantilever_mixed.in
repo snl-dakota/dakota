@@ -63,10 +63,10 @@ method,
 	model_pointer = 'UQ_M'
 	polynomial_chaos
  	  expansion_order = 2
-# 	  expansion_samples = 1000 seed = 1234567
+# 	  expansion_samples = 1000 seed = 1234567  fixed_seed
 #	  quadrature_order   = 3
-	  collocation_points = 30  seed = 1234567	#s0,#s2
-#	  collocation_points = 56  seed = 1234567	#s1,#s3
+	  collocation_points = 30  seed = 1234567  fixed_seed	#s0,#s2
+#	  collocation_points = 56  seed = 1234567  fixed_seed	#s1,#s3
 	  num_response_levels = 0 1 1
 	  response_levels = 0.0 0.0
 	  compute reliabilities

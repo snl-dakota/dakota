@@ -49,7 +49,7 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
     numLSqTerms = model.num_primary_fns();
   else if (model.primary_fn_type() != GENERIC_FNS) {
     Cerr << "\nError: Unknown primary function type in Analyzer." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
   
   if (probDescDB.get_bool("method.variance_based_decomp")) 
@@ -136,7 +136,7 @@ void Analyzer::update_from_model(const Model& model)
   }
 
   if (err_flag)
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 }
 
 
@@ -363,7 +363,7 @@ void Analyzer::get_vbd_parameter_sets(Model& model, int num_samples)
 {
   if (!compactMode) {
     Cerr << "\nError: get_vbd_parameter_sets requires compactMode.\n";
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   // BMA TODO: This may not be right for all LHS active/inactive
@@ -384,7 +384,7 @@ void Analyzer::get_vbd_parameter_sets(Model& model, int num_samples)
     Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
 	 << num_samples << " variable samples; received "
 	 << sample_1.numCols() << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
   
   // populate the second num_samples cols of allSamples
@@ -395,7 +395,7 @@ void Analyzer::get_vbd_parameter_sets(Model& model, int num_samples)
     Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
 	 << num_samples << " variable samples; received "
 	 << sample_2.numCols() << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   // one additional replicate per variable
@@ -432,7 +432,7 @@ void Analyzer::compute_vbd_stats(const int num_samples,
     Cerr << "\nError in Analyzer::compute_vbd_stats: expected "
 	 << num_samples << " responses; received " << resp_samples.size()
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
   
   // BMA: for now copy the data to previous data structure 
@@ -1052,7 +1052,7 @@ void Analyzer::vary_pattern(bool pattern_flag)
   Cerr << "Error: Analyzer lacking redefinition of virtual vary_pattern() "
        << "function.\n       This analyzer does not support pattern variance."
        << std::endl;
-  abort_handler(-1);
+  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1061,7 +1061,7 @@ void Analyzer::get_parameter_sets(Model& model)
   Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets"
        << "(1) function.\n       This analyzer does not support parameter sets."
        << std::endl;
-  abort_handler(-1);
+  abort_handler(METHOD_ERROR);
 }
 
 void Analyzer::get_parameter_sets(Model& model, const int num_samples, 
@@ -1070,7 +1070,7 @@ void Analyzer::get_parameter_sets(Model& model, const int num_samples,
   Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets"
        << "(3) function.\n       This analyzer does not support parameter sets."
        << std::endl;
-  abort_handler(-1);
+  abort_handler(METHOD_ERROR);
 }
 
 } // namespace Dakota

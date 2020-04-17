@@ -98,6 +98,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["genz"]                   = GENZ;
   driverTypeMap["damped_oscillator"]      = DAMPED_OSCILLATOR;
   driverTypeMap["steady_state_diffusion_1d"] = STEADY_STATE_DIFFUSION_1D;
+  driverTypeMap["ss_diffusion_discrepancy"]  = SS_DIFFUSION_DISCREPANCY;
   driverTypeMap["transient_diffusion_1d"] = TRANSIENT_DIFFUSION_1D;
   driverTypeMap["predator_prey"]          = PREDATOR_PREY;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
@@ -167,8 +168,9 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
     case GENZ: case DAMPED_OSCILLATOR:
-    case STEADY_STATE_DIFFUSION_1D: case TRANSIENT_DIFFUSION_1D:
-    case PREDATOR_PREY: case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
+    case STEADY_STATE_DIFFUSION_1D:  case SS_DIFFUSION_DISCREPANCY:
+    case TRANSIENT_DIFFUSION_1D:     case PREDATOR_PREY:
+    case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -329,6 +331,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = damped_oscillator(); break;
   case STEADY_STATE_DIFFUSION_1D:
     fail_code = steady_state_diffusion_1d(); break;
+  case SS_DIFFUSION_DISCREPANCY:
+    fail_code = ss_diffusion_discrepancy(); break;
   case TRANSIENT_DIFFUSION_1D:
     fail_code = transient_diffusion_1d(); break;
   case PREDATOR_PREY:
@@ -1830,65 +1834,41 @@ get_genz_coefficients( int num_dims, Real factor, int c_type,
 }
 
 
-/** \brief Solve the 1D diffusion equation with an uncertain variable 
- * coefficient using the spectral Chebyshev collocation method.
- *
- * del(k del(u) ) = f on [0,1] subject to u(0) = 0 u(1) = 0
- * 
- * Here we set f = -1 and 
- * k = 1+4.*sum_d [cos(2*pi*x)/(pi*d)^2*z[d]] d=1,...,num_dims
- * where z_d are random variables, typically i.i.d uniform[-1,1]
- */
-int TestDriverInterface::steady_state_diffusion_1d()
+int TestDriverInterface::
+steady_state_diffusion_core(SpectralDiffusionModel& model,
+			    RealVector& domain_limits)
 {
   // ------------------------------------------------------------- //
   // Pre-processing 
   // ------------------------------------------------------------- //
 
+  bool err_flag = false;
   if (multiProcAnalysisFlag) {
     Cerr << "Error: steady_state_diffusion_1d direct fn does not support "
 	 << "multiprocessor analyses." << std::endl;
-    abort_handler(-1);
+    err_flag = true;
   }
   if ( ( numVars < 1 )  || ( numADIV > 1 ) ) {
     Cerr << "Error: Bad variable types in steady_state_diffusion_1d direct fn."
 	 << std::endl;
-    abort_handler(INTERFACE_ERROR);
+    err_flag = true;
   }
   if (numFns < 1) {
     Cerr << "Error: Bad number of functions in steady_state_diffusion_1d "
 	 << "direct fn." << std::endl;
-    abort_handler(INTERFACE_ERROR);
+    err_flag = true;
   }
   if (hessFlag||gradFlag) {
     Cerr << "Error: Gradients and Hessians are not supported in " 
 	 << "steady_state_diffusion_1d direct fn." << std::endl;
-    abort_handler(INTERFACE_ERROR);
+    err_flag = true;
   }
+  if (err_flag)
+    abort_handler(INTERFACE_ERROR);
 
   // ------------------------------------------------------------- //
   // Read parameters from discrete state variables 
   // ------------------------------------------------------------- //
-
-  // Get the mesh resolution from the first discrete integer variable
-  size_t mesh_size_index = find_index(xDILabels, "mesh_size");
-  int order = ( mesh_size_index == _NPOS ) ? 20 : xDI[mesh_size_index];
-
-  if (order % 2 != 0) {
-    Cerr << "Error: Mesh size must be even." << std::endl;
-    abort_handler(INTERFACE_ERROR);
-  }
-
-  // Get the kernel specification from the discrete string variables
-  size_t kernel_index = find_index(xDSLabels, "kernel_type");
-  String kernel = ( kernel_index == _NPOS ) ? "default" : xDS[kernel_index];
-
-  if (order + 1 < xC.length() && kernel == "exponential") {
-    Cerr << "Error: Mesh size must be greater than or equal "
-         << "to the number of random variables + 1 when using "
-         << "the exponential kernel." << std::endl;
-    abort_handler(INTERFACE_ERROR);
-  }
 
   // Get the positivity flag from the discrete string variables
   size_t pos_index = find_index(xDSLabels, "positivity");
@@ -1911,10 +1891,6 @@ int TestDriverInterface::steady_state_diffusion_1d()
   size_t kern_len_index = find_index(xDRLabels, "kernel_length");
   Real kernel_length = ( kern_len_index == _NPOS ) ? 1.0 : xDR[kern_len_index];
 
-  // Initialize domain and boundary conditions:
-  RealVector bndry_conds(2), domain_limits(2); // initialize to zero
-  domain_limits[1] = 1.;
-
   // Compute default QoI coordinates:
   RealVector qoi_coords( numFns, false );
   if (numFns > 1) {
@@ -1929,16 +1905,16 @@ int TestDriverInterface::steady_state_diffusion_1d()
   // If QoI coordinates provided through discrete real variables, overwrite
   // defaults:
   for (int i=0; i<numFns; i++) {
-    size_t coord_index = find_index(xDRLabels, "coord_" + boost::lexical_cast<String>(i));
+    size_t coord_index
+      = find_index(xDRLabels, "coord_" + boost::lexical_cast<String>(i));
     if ( coord_index != _NPOS )
       qoi_coords[i] = xDR[coord_index];
   }
 
   // ------------------------------------------------------------- //
-  // Initialize and evaluate model 
+  // Initialize model 
   // ------------------------------------------------------------- //
 
-  SpectralDiffusionModel model;
   model.set_num_qoi( numFns );
   model.set_qoi_coords( qoi_coords );
   model.set_field_mean( field_mean );
@@ -1948,12 +1924,113 @@ int TestDriverInterface::steady_state_diffusion_1d()
   model.set_positivity( positivity );
   model.set_kernel_order( kernel_order );
   model.set_kernel_length( kernel_length );
+}
+
+
+/** \brief Solve the 1D diffusion equation with an uncertain variable 
+ * coefficient using the spectral Chebyshev collocation method.
+ *
+ * del(k del(u) ) = f on [0,1] subject to u(0) = 0 u(1) = 0
+ * 
+ * Here we set f = -1 and 
+ * k = 1+4.*sum_d [cos(2*pi*x)/(pi*d)^2*z[d]] d=1,...,num_dims
+ * where z_d are random variables, typically i.i.d uniform[-1,1]
+ */
+int TestDriverInterface::steady_state_diffusion_1d()
+{
+  // Initialize domain and boundary conditions:
+  RealVector bndry_conds(2), domain_limits(2); // initialize to zero
+  domain_limits[1] = 1.;
+
+  SpectralDiffusionModel model;
+  steady_state_diffusion_core(model, domain_limits);
+
+  // ------------------------------------------------------------- //
+  // Read parameters from discrete state variables 
+  // ------------------------------------------------------------- //
+
+  // Get the mesh resolution from the first discrete integer variable
+  size_t mesh_size_index = find_index(xDILabels, "mesh_size");
+  int order = ( mesh_size_index == _NPOS ) ? 20 : xDI[mesh_size_index];
+
+  // Get the kernel specification from the discrete string variables
+  size_t kernel_index = find_index(xDSLabels, "kernel_type");
+  String kernel = ( kernel_index == _NPOS ) ? "default" : xDS[kernel_index];
+
+  if (order % 2) {
+    Cerr << "Error: Mesh size must be even." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (order + 1 < xC.length() && kernel == "exponential") {
+    Cerr << "Error: Mesh size must be greater than or equal "
+         << "to the number of random variables + 1 when using "
+         << "the exponential kernel." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // ------------------------------------------------------------- //
+  // Initialize and evaluate model 
+  // ------------------------------------------------------------- //
 
   model.initialize( order, kernel, bndry_conds, domain_limits );
-  
+  model.evaluate( xC, fnVals ); 
+  return 0;
+}
+
+
+int TestDriverInterface::ss_diffusion_discrepancy()
+{
+  // Initialize domain and boundary conditions:
+  RealVector bndry_conds(2), domain_limits(2); // initialize to zero
+  domain_limits[1] = 1.;
+
+  SpectralDiffusionModel model;
+  steady_state_diffusion_core(model, domain_limits);
+
+  // ------------------------------------------------------------- //
+  // Read parameters from discrete state variables 
+  // ------------------------------------------------------------- //
+
+  // Get the mesh resolution from the first discrete integer variable
+  size_t mesh_size_index = find_index(xDILabels, "mesh_size");
+  int order_l = ( mesh_size_index == _NPOS ) ? 20 : xDI[mesh_size_index];
+  int order_lm1 = order_l / 2;
+  bool err_flag = false;
+  if (order_l % 2)
+    { Cerr << "Error: mesh size must be even." << std::endl; err_flag = true; }
+  else if (order_l < 4) {
+    Cerr << "Error: mesh size must be at least 4 at level l for even mesh "
+	 << "size and level l-1." << std::endl;
+    err_flag = true;
+  }
+
+  // Get the kernel specification from the discrete string variables
+  size_t kernel_index = find_index(xDSLabels, "kernel_type");
+  String kernel = ( kernel_index == _NPOS ) ? "default" : xDS[kernel_index];
+
+  if (order_lm1 + 1 < xC.length() && kernel == "exponential") {
+    Cerr << "Error: mesh size must be >= the number of random variables + 1 "
+	 << "when using the exponential kernel." << std::endl;
+    err_flag = true;
+  }
+
+  if (err_flag)
+    abort_handler(INTERFACE_ERROR);
+
+  // ------------------------------------------------------------- //
+  // Evaluate model twice to compute discrepancy across consecutive
+  // mesh resolutions
+  // ------------------------------------------------------------- //
+
+  model.initialize( order_l, kernel, bndry_conds, domain_limits );
   model.evaluate( xC, fnVals ); 
 
-  return  0;
+  RealVector q_lm1(numFns, false);
+  model.initialize( order_lm1, kernel, bndry_conds, domain_limits );
+  model.evaluate( xC, q_lm1 );
+  fnVals -= q_lm1;
+
+  return 0;
 }
 
 

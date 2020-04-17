@@ -35,6 +35,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     problem_db.get_usa("method.nond.c3function_train.start_order_sequence")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
+  randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
+
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
@@ -63,7 +65,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
   size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
     regression_size(numContinuousVars, start_rank(), approx_orders);
-  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
+  if (!config_regression(colloc_pts, regress_size, random_seed(),
+			 u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -100,7 +103,10 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(
+  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
+    problem_db.get_string("method.random_number_generator"),
+    problem_db.get_ushort("method.nond.integration_refinement"),
+    problem_db.get_iv("method.nond.refinement_samples"),
     probDescDB.get_string("method.import_approx_points_file"),
     probDescDB.get_ushort("method.import_approx_format"),
     probDescDB.get_bool("method.import_approx_active_only"));
@@ -117,10 +123,10 @@ NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 			    const SizetArray& colloc_pts_seq,
 			    const RealVector& dim_pref,
-			    Real colloc_ratio, int seed, short u_space_type,
-			    short refine_type, short refine_control,
-			    short covar_control, short ml_alloc_control,
-			    short ml_discrep,
+			    Real colloc_ratio, const SizetArray& seed_seq,
+			    short u_space_type, short refine_type,
+			    short refine_control, short covar_control,
+			    short ml_alloc_control, short ml_discrep,
 			    //short rule_nest, short rule_growth,
 			    bool piecewise_basis, bool use_derivs,
 			    bool cv_flag, const String& import_build_pts_file,
@@ -130,9 +136,11 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 		      u_space_type, refine_type, refine_control, covar_control,
 		      colloc_pts_seq, colloc_ratio, ml_alloc_control,
 		      ml_discrep, //rule_nest, rule_growth,
-		      piecewise_basis, use_derivs, seed, cv_flag),
+		      piecewise_basis, use_derivs, 0, cv_flag),
   expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
 {
+  randomSeedSeqSpec = seed_seq;
+
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
@@ -158,7 +166,8 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
   size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
     regression_size(numContinuousVars, start_rank(), approx_orders);
-  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
+  if (!config_regression(colloc_pts, regress_size, random_seed(),
+                         u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -320,7 +329,8 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   }
   else
     numSamplesOnModel = colloc_pts;
-  update_sampler();
+
+  update_u_space_sampler(sequenceIndex, approx_orders);
 }
 
 
@@ -329,8 +339,8 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
   // regression
   // advance expansionOrder and/or collocationPoints, as admissible
   size_t next_i = sequenceIndex + 1;
-  if (next_i < collocPtsSeqSpec.size() || next_i < startRankSeqSpec.size() ||
-      next_i < startOrderSeqSpec.size())
+  if (next_i <  collocPtsSeqSpec.size() || next_i <  startRankSeqSpec.size() ||
+      next_i < startOrderSeqSpec.size() || next_i < randomSeedSeqSpec.size())
     ++sequenceIndex;
 
   assign_specification_sequence();
@@ -352,37 +362,13 @@ infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
 
 
 void NonDMultilevelFunctionTrain::
-increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
-  update_sampler();
-}
 
-
-void NonDMultilevelFunctionTrain::update_sampler()
-{
-  // udpate sampler settings (NonDQuadrature or NonDSampling)
-  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
-  if (tensorRegression) {
-    NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
-    nond_quad->samples(numSamplesOnModel);
-    if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
-      SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-	uSpaceModel.shared_approximation().data_rep();
-      const UShortArray& approx_orders = shared_data_rep->start_orders();
-      UShortArray dim_quad_order(numContinuousVars);
-      for (size_t i=0; i<numContinuousVars; ++i)
-	dim_quad_order[i] = approx_orders[i] + 1;
-      nond_quad->quadrature_order(dim_quad_order);
-    }
-    nond_quad->update(); // sanity check on sizes, likely a no-op
-  }
-  // test for valid sampler for case of build data import (unstructured grid)
-  else if (sub_iter_rep != NULL) { // enforce increment using sampling_reset()
-    sub_iter_rep->sampling_reference(0);// no lower bnd on samples in sub-iter
-    DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-    dfs_model->total_points(numSamplesOnModel); // total including previous 
-  }
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  update_u_space_sampler(step, shared_data_rep->start_orders());
 }
 
 

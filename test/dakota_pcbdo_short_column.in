@@ -64,7 +64,7 @@ method,
  	  expansion_order = 2			#s0,#s2
 # 	  expansion_order = 3			#s1,#s3
 	  collocation_ratio = 2.		#s0,#s1,#s2,#s3
-	  seed = 1234567 		#s0,#s1,#s2,#s3
+	  seed = 1234567 fixed_seed 		#s0,#s1,#s2,#s3
 #	  quadrature_order = 3
 #	  quadrature_order = 4
 #	  sparse_grid_level = 2 non_nested	#s4,#s6

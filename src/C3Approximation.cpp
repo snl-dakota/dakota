@@ -179,27 +179,29 @@ void C3Approximation::build()
 					      start_ranks.values());
 
     if (data_rep->regressType == FT_RLS2) {
-      ft_regress_set_alg_and_obj(ftr,AIO,FTLS_SPARSEL2);
+      ft_regress_set_alg_and_obj(ftr, AIO, FTLS_SPARSEL2);
       // reg param is required (no reasonable default due to scaling)
       ft_regress_set_regularization_weight(ftr, data_rep->regressRegParam);
     }
     else // default
-      ft_regress_set_alg_and_obj(ftr,AIO,FTLS);
+      ft_regress_set_alg_and_obj(ftr, AIO, FTLS);
 
     size_t r_adapt = data_rep->adaptRank ? 1 : 0;
-    ft_regress_set_adapt(   ftr,r_adapt);
-    ft_regress_set_maxrank( ftr,data_rep->maxRank);
-    ft_regress_set_kickrank(ftr,data_rep->kickRank);
-    ft_regress_set_roundtol(ftr,data_rep->roundingTol);
-    ft_regress_set_verbose( ftr,data_rep->c3Verbosity);
+    ft_regress_set_adapt(   ftr, r_adapt);
+    ft_regress_set_maxrank( ftr, data_rep->maxRank);
+    ft_regress_set_kickrank(ftr, data_rep->kickRank);
+    ft_regress_set_roundtol(ftr, data_rep->roundingTol);
+    ft_regress_set_verbose( ftr, data_rep->c3Verbosity);
 
-    double absxtol = 1e-10;
     struct c3Opt* optimizer = c3opt_create(BFGS);
-    c3opt_set_maxiter(optimizer,data_rep->maxSolverIterations);
-    c3opt_set_gtol   (optimizer,data_rep->solverTol);
-    c3opt_set_relftol(optimizer,data_rep->solverTol);
-    c3opt_set_absxtol(optimizer,absxtol);
-    c3opt_set_verbose(optimizer,data_rep->c3Verbosity);
+    int max_solver_iter = data_rep->maxSolverIterations;
+    if (max_solver_iter >= 0) // Dakota default is -1 -> leave at C3 default
+      c3opt_set_maxiter(optimizer, max_solver_iter);
+    c3opt_set_gtol   (optimizer, data_rep->solverTol);
+    c3opt_set_relftol(optimizer, data_rep->solverTol);
+    double absxtol = 1e-10;
+    c3opt_set_absxtol(optimizer, absxtol);
+    c3opt_set_verbose(optimizer, data_rep->c3Verbosity);
 
     // free if previously built
     C3FnTrainPtrs& ftp = levApproxIter->second;
@@ -767,32 +769,27 @@ variance_gradient(const RealVector &x,const SizetArray & dvv)
 }
 
 
-struct FunctionTrain * C3Approximation::
-subtract_const(struct FunctionTrain * ft, Real val)
-{
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  struct FunctionTrain * ftconst
-    = function_train_constant(val, data_rep->multiApproxOpts);
-  struct FunctionTrain * updated = function_train_sum(ft, ftconst);
-
-  function_train_free(ftconst); //ftconst = NULL;
-  return updated;
-}
-
-
 Real C3Approximation::covariance(C3FnTrainPtrs& ftp1, C3FnTrainPtrs& ftp2)
 {
   Real mean1 = mean(ftp1), mean2 = mean(ftp2);
 
-  struct FunctionTrain * fttemp1 = subtract_const(ftp1.function_train(), mean1);
-  struct FunctionTrain * fttemp2 = subtract_const(ftp2.function_train(), mean2);
+  // Sanity check only:
+  //Real ret_val = function_train_inner_weighted(ftp1.function_train(),
+  //  ftp2.function_train()) - mean1 * mean2;
 
-  Real retval = function_train_inner_weighted(fttemp1, fttemp2);
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  struct MultiApproxOpts * opts = data_rep->multiApproxOpts;
+  struct FunctionTrain * ft_tmp1
+    = C3FnTrainPtrsRep::subtract_const(ftp1.function_train(), mean1, opts);
+  struct FunctionTrain * ft_tmp2
+    = C3FnTrainPtrsRep::subtract_const(ftp2.function_train(), mean2, opts);
 
-  function_train_free(fttemp1); //fttemp1 = NULL;
-  function_train_free(fttemp2); //fttemp2 = NULL;
+  Real cov = function_train_inner_weighted(ft_tmp1, ft_tmp2);
 
-  return retval;
+  function_train_free(ft_tmp1); //ft_tmp1 = NULL;
+  function_train_free(ft_tmp2); //ft_tmp2 = NULL;
+
+  return cov;
 }
 
 

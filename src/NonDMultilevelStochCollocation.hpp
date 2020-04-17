@@ -60,10 +60,17 @@ protected:
   //
 
   //void initialize_u_space_model();
+
   void core_run();
+
+  int random_seed() const;
+  int first_seed() const;
+
   void assign_specification_sequence();
   void increment_specification_sequence();
+
   //void combined_to_active();
+
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
 private:
@@ -81,9 +88,18 @@ private:
   UShortArray quadOrderSeqSpec;
   /// user request of sparse grid level
   UShortArray ssgLevelSeqSpec;
-  /// sequence index for quadOrderSeqSpec and ssgLevelSeqSpec
+
+  /// sequence index for {quadOrder,ssgLevel}SeqSpec
   size_t sequenceIndex;
 };
+
+
+inline int NonDMultilevelStochCollocation::random_seed() const
+{ return NonDExpansion::random_seed(sequenceIndex); }
+
+
+inline int NonDMultilevelStochCollocation::first_seed() const
+{ return NonDExpansion::random_seed(0); }
 
 } // namespace Dakota
 

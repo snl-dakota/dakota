@@ -1032,8 +1032,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -1120,6 +1118,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -1158,8 +1158,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -1246,6 +1244,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -1291,8 +1291,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -1379,6 +1377,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -1425,8 +1425,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -1513,6 +1511,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -1646,7 +1646,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
        )
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
@@ -1698,8 +1697,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -1786,6 +1783,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -1887,7 +1886,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
        )
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
@@ -1937,8 +1935,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -2025,6 +2021,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -2096,7 +2094,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
        )
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
@@ -2146,8 +2143,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -2234,6 +2229,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -2303,8 +2300,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -2391,6 +2386,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -2468,8 +2465,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -2556,6 +2551,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -3330,7 +3327,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -3450,7 +3446,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -3599,7 +3594,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -4071,7 +4065,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -4191,7 +4184,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -4340,7 +4332,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -4711,7 +4702,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -4831,7 +4821,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -4980,7 +4969,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 

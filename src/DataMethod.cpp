@@ -268,7 +268,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << primeBase << numTrials << trialType;
 
   // COLINY, NonD, DACE, & JEGA
-  s << randomSeed;
+  s << randomSeed << randomSeedSeq;
 
   // MADS
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns
@@ -292,7 +292,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
     << expansionSamplesSeq << quadratureOrder << sparseGridLevel
     << expansionOrder << collocationPoints << expansionSamples
-    << expansionSampleType << anisoDimPref << cubIntOrder << collocationRatio
+  //<< expansionSampleType
+    << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType
     << regressionNoiseTol << regressionL2Penalty << crossValidation
     << crossValidNoiseOnly //<< adaptedBasisInitLevel
@@ -430,7 +431,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> primeBase >> numTrials >> trialType;
 
   // COLINY, NonD, DACE, & JEGA
-  s >> randomSeed;
+  s >> randomSeed >> randomSeedSeq;
 
   // MADS
   s >> initMeshSize >> minMeshSize >> historyFile >> displayFormat >> vns
@@ -454,7 +455,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> sparseGridLevelSeq >> expansionOrderSeq >> collocationPointsSeq
     >> expansionSamplesSeq >> quadratureOrder >> sparseGridLevel
     >> expansionOrder >> collocationPoints >> expansionSamples
-    >> expansionSampleType >> anisoDimPref >> cubIntOrder >> collocationRatio
+  //>> expansionSampleType
+    >> anisoDimPref >> cubIntOrder >> collocationRatio
     >> collocRatioTermsOrder >> regressionType >> lsRegressionType
     >> regressionNoiseTol >> regressionL2Penalty >> crossValidation
     >> crossValidNoiseOnly //>> adaptedBasisInitLevel
@@ -592,7 +594,7 @@ void DataMethodRep::write(std::ostream& s) const
     << primeBase << numTrials << trialType;
 
   // COLINY, NonD, DACE, & JEGA
-  s << randomSeed;
+  s << randomSeed << randomSeedSeq;
 
   // MADS
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns
@@ -616,7 +618,8 @@ void DataMethodRep::write(std::ostream& s) const
     << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
     << expansionSamplesSeq << quadratureOrder << sparseGridLevel
     << expansionOrder << collocationPoints << expansionSamples
-    << expansionSampleType << anisoDimPref << cubIntOrder << collocationRatio
+  //<< expansionSampleType
+    << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType
     << regressionNoiseTol << regressionL2Penalty << crossValidation
     << crossValidNoiseOnly //<< adaptedBasisInitLevel

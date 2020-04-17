@@ -171,6 +171,11 @@ public:
 			 RealMatrix& sample_matrix, int num_samples = 0,
 			 bool x_to_u = true);
 
+  /// return sampleType
+  unsigned short sampling_scheme() const;
+  /// return rngName
+  const String& random_number_generator() const;
+
 protected:
 
   //
@@ -212,8 +217,8 @@ protected:
   /// set reference number of samples, which is a lower bound during reset 
   void sampling_reference(int samples_ref);
 
-  /// return sampleType
-  unsigned short sampling_scheme() const;
+  /// assign randomSeed
+  void random_seed(int seed);
 
   /// set varyPattern
   void vary_pattern(bool pattern_flag);
@@ -291,7 +296,7 @@ protected:
   //- Heading: Data members
   //
 
-  const int seedSpec;    ///< the user seed specification (default is 0)
+  int       seedSpec;    ///< the user seed specification (default is 0)
   int       randomSeed;  ///< the current seed
   const int samplesSpec; ///< initial specification of number of samples
   int       samplesRef;  ///< reference number of samples updated for refinement
@@ -402,6 +407,10 @@ private:
 };
 
 
+inline const String& NonDSampling::random_number_generator() const
+{ return rngName; }
+
+
 inline void NonDSampling::pre_run()
 { 
   Analyzer::pre_run();
@@ -488,6 +497,10 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   allDataFlag = all_data_flag;
   statsFlag   = stats_flag;
 }
+
+
+inline void NonDSampling::random_seed(int seed)
+{ /*seedSpec = */randomSeed = seed; } // lhsDriver assigned in initialize_lhs()
 
 
 inline unsigned short NonDSampling::sampling_scheme() const
