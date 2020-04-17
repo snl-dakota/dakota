@@ -69,7 +69,7 @@ method,
 #	expansion_order = 4   		#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
 #	collocation_ratio = 2.		#s8,#s10,#s12,#s14
 #	collocation_ratio = 0.5		#s9,#s11,#s13,#s15
-#	  seed = 12479	    		#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+#	  seed = 12479 fixed_seed	#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
 # 	collocation_points = 70		#s16,#s17
 #	orthogonal_least_interpolation  #s16,#s17
           num_response_levels = 0 1

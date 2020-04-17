@@ -87,7 +87,7 @@ method,
 	model_pointer = 'UQ_M'
 	polynomial_chaos
  	  expansion_order = 2					#s0,#s1
-	  collocation_ratio = 2 seed = 12347 		#s0,#s1
+	  collocation_ratio = 2 seed = 12347 fixed_seed		#s0,#s1
 #	  sparse_grid_level = 2 non_nested			#s2,#s3
 	  num_response_levels = 0 1 1
 	  response_levels = 0.0 0.0
