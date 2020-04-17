@@ -369,31 +369,32 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep, rule_nest,
 	  rule_growth, pw_basis, use_derivs);
-      else // regression PCE: LeastSq/CS, OLI
+      else { // regression PCE: LeastSq/CS, OLI
+	SizetArray seed_seq(1, randomSeed); // reuse bayes_calib scalar spec
 	se_rep = new NonDMultilevelPolynomialChaos(
 	  MULTIFIDELITY_POLYNOMIAL_CHAOS, inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
 	  probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
-	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
-	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  probDescDB.get_sza("method.random_seed_sequence"), u_space_type,
-	  refine_type, refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep,
-	  /* rule_nest, rule_growth, */ pw_basis, use_derivs,
-	  probDescDB.get_bool("method.nond.cross_validation"),
+	  probDescDB.get_sza("method.nond.collocation_points"), // sequence
+	  probDescDB.get_real("method.nond.collocation_ratio"), // scalar
+	  seed_seq, u_space_type, refine_type, refine_cntl, cov_cntl,
+	  ml_alloc_cntl, ml_discrep, /* rule_nest, rule_growth, */ pw_basis,
+	  use_derivs, probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
 	  probDescDB.get_bool("method.import_build_active_only"));
+      }
       mcmcDerivOrder = 7; // Hessian computations implemented for PCE
     }
 
     else if (emulatorType == ML_PCE_EMULATOR) {
+      SizetArray seed_seq(1, randomSeed); // reuse bayes_calib scalar spec
       se_rep = new NonDMultilevelPolynomialChaos(MULTILEVEL_POLYNOMIAL_CHAOS,
 	inbound_model, probDescDB.get_short("method.nond.regression_type"),
 	probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
-	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
-	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	probDescDB.get_sza("method.random_seed_sequence"),
-	u_space_type, refine_type, refine_cntl, cov_cntl,
+	probDescDB.get_sza("method.nond.collocation_points"), // sequence
+	probDescDB.get_real("method.nond.collocation_ratio"), // scalar
+	seed_seq, u_space_type, refine_type, refine_cntl, cov_cntl,
 	probDescDB.get_short("method.nond.multilevel_allocation_control"),
 	probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
 	/* rule_nest, rule_growth, */ pw_basis, use_derivs,
