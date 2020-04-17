@@ -4,6 +4,7 @@
 #@ s2: TimeoutDelay=120
 #@ s3: TimeoutDelay=900
 #@ p0: MPIProcs=4
+#@ p1: MPIProcs=6
 
 # DAKOTA INPUT FILE : dakota_cantilever_ego.in
 # Note: currently this test file performs three different tests:
@@ -25,6 +26,7 @@ method,
 #     response_levels = 0.2 0.6 0.2 0.6     #s3
       seed = 123457
 #     batch_size = 4                        #s0,#p0
+#     batch_size = 6                        #p1
 
 variables,
     continuous_design = 2
