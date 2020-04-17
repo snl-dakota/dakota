@@ -164,9 +164,6 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
     Cout << "\nAdapted Basis Model: Initialization of adapted basis model "
 	 << "is complete." << std::endl;
 
-  // terminate here (without an error code) for now
-  exit(0);
-
   // return whether size of variables has changed
   return (reducedRank != numFullspaceVars || // Active SS is reduced rank
 	  sub_model_resize); // Active SS is full rank but subModel resized
