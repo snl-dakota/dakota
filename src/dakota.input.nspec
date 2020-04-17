@@ -2636,7 +2636,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( multilevel_sampling ALIAS multilevel_mc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
-    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ sample_type {0}
