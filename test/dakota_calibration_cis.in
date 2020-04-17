@@ -39,7 +39,6 @@ interface
 responses
   calibration_terms 3
 #   weights              1.0  1.0e-3  1.0e1			#s1
-#   primary_scale_types  'value'				#s2
 #   primary_scales 	 1.0  1.0e3   1.0e-1			#s2
     calibration_data_file = 'dakota_calibration_cis.error.dat'
     freeform
