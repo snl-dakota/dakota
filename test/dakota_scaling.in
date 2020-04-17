@@ -86,7 +86,7 @@ variables,
 	  lower_bounds     1.5          0.0	        #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s25
 #	  lower_bounds     1.5          0.0	        #s7,#s8,#s9,#s20,#s21,#s26
 #	  lower_bounds     1.5          0.0	        #s22,#s23,#s24
-	  scale_types      'value'      'value'		#s0,#s20
+	  scale_types      'value'      'value'		#s0
 #	  scale_types      'value'	'auto'		#s1,#s7,#s8,#s22,#s26
 #	  scale_types      'value'	'auto'		#s2
 #	  scale_types      'log'        'value'		#s3,#s9,#s23
@@ -125,7 +125,7 @@ variables,
 #	  lower_bounds     0.5     -2.9		#s14,#s15,#s16,#s17,#s18,#s19
 #         scale_types      'log'   'value'	#s14
 #         scale_types      'auto'  		#s16,#s19
-#	  scale_types      'value' 'value'	#s15,#s17,#s18
+#	  scale_types      'value' 'value'	#s15,#s18
 #	  scales           1.0     1.0		#s14
 #	  scales           2.0     1.0		#s15,#s17,#s18
 #	  descriptors      'x1'    'x2'		#s14,#s15,#s16,#s17,#s18,#s19
@@ -144,7 +144,7 @@ variables,
 #	linear_inequality_constraint_matrix = 1. 1.	#s16,#s17,#s18,#s19
 #	linear_inequality_upper_bounds = 1.05	      	#s16,#s17,#s18,#s19
 # 	linear_inequality_scale_types = 'auto'		#s18
-# 	linear_inequality_scale_types = 'value'		#s16,#s19
+# 	linear_inequality_scale_types = 'value'		#s16
 # 	linear_inequality_scales = 2.0			#s16,#s19
 
 #=======================================================================
@@ -165,13 +165,13 @@ responses,
 # OPT
 	objective_functions = 1	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s22,#s23,#s25,#s26
 #	objective_functions = 1	#s10,#s11,#s27
-	  objective_function_scale_types = 'value'	#s0,#s3,#s4,#s7,#s8,#s22,#s26
+	  objective_function_scale_types = 'value'	#s0,#s3,#s7,#s8,#s26
 	  objective_function_scales = 10.0 		#s0,#s3,#s4,#s7,#s8,#s22,#s26
 #	  objective_function_scale_types = 'log'	#s11
 	nonlinear_inequality_constraints = 3     	#s0,#s2,#s4,#s5,#s6,#s7,#s25,#s26
 	  nonlinear_inequality_scale_types = 'value'	#s0,#s4
 	  nonlinear_inequality_scales = 0.5  2.0  5.0	#s0,#s4
-#	  nonlinear_inequality_scale_types = 'value' 'value' 'value' #s5,#s6,#s25
+#	  nonlinear_inequality_scale_types = 'value' 'value' 'value' #s5,#s25
 #	  nonlinear_inequality_scales = 0.5  1.0  1.0	#s5,#s6,#s25
 #	nonlinear_inequality_constraints = 2     	#s1,#s3,#s8,#s9,#s22,#s23
 #	  nonlinear_inequality_lower_bounds = -.2 -.2  	#s1,#s3,#s8,#s9,#s22,#s23
@@ -201,7 +201,6 @@ responses,
 #	  objective_function_scales = 2.5  1.5 			#s13
 #	nonlinear_inequality_constraints = 2 		#s12,#s13
 #	  nonlinear_inequality_upper_bounds = 0.0 0.0		#s12,#s13
-#	  nonlinear_inequality_scale_types = 'value' 		#s12
 #	  nonlinear_inequality_scales =       2.0 2.5 		#s12
 #	  nonlinear_inequality_scale_types = 'value'   		#s13
 #	  nonlinear_inequality_scales =       2.0 1.0   	#s13
@@ -223,11 +222,11 @@ responses,
 #-----------------------------------------------------------------------
 # MULTIOBJ
 #	objective_functions = 3				#s20,#s21,#s24
-#	objective_function_scale_types = 'value' 'value' 'value'	#s20,#s21,#s24
+#	objective_function_scale_types = 'value' 'value' 'value' #s21,#s24
 #	objective_function_scales = 2.5 1.5 1.0			#s20,#s21,#s24
 #	multi_objective_weights = .7 .1 .1			#s20,#s21,#s24
 #	nonlinear_inequality_constraints = 1		#s20,#s21,#s24
-#	nonlinear_inequality_scale_types = 'value'		#s21,#s24
+#	nonlinear_inequality_scale_types = 'value'		#s21
 #	nonlinear_inequality_scales = 5.0			#s21,#s24
 #	numerical_gradients					#s20
 #	  method_source dakota					#s20
