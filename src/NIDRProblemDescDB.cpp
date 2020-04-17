@@ -1351,7 +1351,8 @@ scale_chk(StringArray &ST, RealVector &S, const char *what, const char **univ)
       what, what);
 }
 
-static const char *aln_scaletypes[] = { "auto", "log", "none", 0 };
+// scale_types beyond value to allow in some contexts
+static const char *auto_log_scaletypes[] = { "auto", "log", "none", 0 };
 
 void NIDRProblemDescDB::
 method_stop(const char *keyname, Values *val, void **g, void *v)
@@ -1745,15 +1746,15 @@ void NIDRProblemDescDB::
 resp_stop(const char *keyname, Values *val, void **g, void *v)
 {
   size_t k, n;
-  static const char *osc[] = { "log", "none", 0 };
+  static const char *log_scaletypes[] = { "log", 0 };
   Resp_Info *ri = *(Resp_Info**)g;
   DataResponsesRep *dr = ri->dr;
   scale_chk(dr->primaryRespFnScaleTypes, dr->primaryRespFnScales,
-	    dr->numLeastSqTerms ? "least_squares_term" : "objective_function", osc);
+	    dr->numLeastSqTerms ? "least_squares_term" : "objective_function", log_scaletypes);
   scale_chk(dr->nonlinearIneqScaleTypes, dr->nonlinearIneqScales,
-	    "nonlinear_inequality", aln_scaletypes);
+	    "nonlinear_inequality", auto_log_scaletypes);
   scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
-	    "nonlinear_equality", aln_scaletypes);
+	    "nonlinear_equality", auto_log_scaletypes);
   // The following check was relevant prior to refactoring the way transformations
   // are applied (now in a layered manner)
   // if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
@@ -5161,17 +5162,18 @@ static Var_uinfo DiscSetLbl[DiscSetVar_Nkinds] = {
 void NIDRProblemDescDB::
 var_stop(const char *keyname, Values *val, void **g, void *v)
 {
-  static const char *mr_scaletypes[] = { "auto", "none", 0 };
+  // scale_types beyond value to allow for linear constraints
+  static const char *lincon_scaletypes[] = { "auto", 0 };
 
   Var_Info *vi = *(Var_Info**)g;
   DataVariablesRep *dv = vi->dv;
 
   scale_chk(dv->continuousDesignScaleTypes, dv->continuousDesignScales,
-	    "cdv", aln_scaletypes);
+	    "cdv", auto_log_scaletypes);
   scale_chk(dv->linearIneqScaleTypes, dv->linearIneqScales,
-	    "linear_inequality", mr_scaletypes);
+	    "linear_inequality", lincon_scaletypes);
   scale_chk(dv->linearEqScaleTypes, dv->linearEqScales,
-	    "linear_equality", mr_scaletypes);
+	    "linear_equality", lincon_scaletypes);
 
   pDDBInstance->VIL.push_back(vi);
   pDDBInstance->dataVariablesList.push_back(*vi->dv_handle);
