@@ -819,6 +819,10 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
     lhsDriver.seed(randomSeed); // reset original/machine-generated seed
   */
 
+  //Cout << "numLHSRuns = " << numLHSRuns << " seedSpec = " << seedSpec
+  //     << " randomSeed = " << randomSeed << " varyPattern = " << varyPattern
+  //     << std::endl;
+
   bool seed_assigned = false, seed_advanced = false;
   if (numLHSRuns == 1) { // set initial seed
     lhsDriver.rng(rngName);
@@ -843,6 +847,8 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
     { seedSpec = randomSeed; lhsDriver.seed(randomSeed); seed_assigned = true; }
   else if (varyPattern && rngName == "rnum2") // vary pattern by advancing seed
     { lhsDriver.advance_seed_sequence();                 seed_advanced = true; }
+  else if (!varyPattern) // reset orig / machine-generated (don't continue RNG)
+    { lhsDriver.seed(randomSeed);                        seed_assigned = true; }
 
   // Needed a way to turn this off when LHS sampling is being used in
   // NonDAdaptImpSampling because it gets written a _LOT_
