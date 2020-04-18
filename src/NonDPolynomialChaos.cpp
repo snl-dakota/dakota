@@ -36,7 +36,6 @@ namespace Dakota {
 NonDPolynomialChaos::
 NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  randomSeed(problem_db.get_int("method.random_seed")),
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
@@ -156,10 +155,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    short u_space_type, short refine_type, short refine_control,
 		    short covar_control, short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref,
+  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref, 0,
 		refine_type, refine_control, covar_control, 0., rule_nest,
 		rule_growth, piecewise_basis, use_derivs), 
-  randomSeed(0), // Note: would be needed for expansionSampler, if defined
+  // Note: non-zero seed would be needed for expansionSampler, if defined
   crossValidation(false), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), normalizedCoeffOutput(false),
   uSpaceType(u_space_type)
@@ -234,15 +233,14 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    const String& import_build_pts_file,
 		    unsigned short import_build_format,
 		    bool import_build_active_only):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref,
+  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, dim_pref, seed,
 		refine_type, refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs), 
-  randomSeed(seed), crossValidation(cv_flag),
-  crossValidNoiseOnly(false), importBuildPointsFile(import_build_pts_file),
-  l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order),
-  collocPtsSpec(colloc_pts), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type)
+  crossValidation(cv_flag), crossValidNoiseOnly(false),
+  importBuildPointsFile(import_build_pts_file), l2Penalty(0.),
+  numAdvance(3), expOrderSpec(exp_order), collocPtsSpec(colloc_pts),
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false)
 {
   // ----------------
@@ -301,7 +299,6 @@ NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
 		    Model& model):
   NonDExpansion(problem_db, model),
-  randomSeed(0),//(problem_db.get_int("method.random_seed")), use seed sequence
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
@@ -334,12 +331,11 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short covar_control, short ml_alloc_control,
 		    short ml_discrep, short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, refine_type,
-		refine_control, covar_control, 0., rule_nest, rule_growth,
-		piecewise_basis, use_derivs), 
-  randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
-  l2Penalty(0.), numAdvance(3), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type)
+  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
+		refine_type, refine_control, covar_control, 0., rule_nest,
+		rule_growth, piecewise_basis, use_derivs), 
+  crossValidation(false), crossValidNoiseOnly(false), l2Penalty(0.),
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   multilevAllocControl     = ml_alloc_control;
@@ -359,13 +355,13 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    Real colloc_ratio, short ml_alloc_control, short ml_discrep,
 		    //short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs, bool cv_flag):
-  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, refine_type,
-		refine_control, covar_control, colloc_ratio,
+  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
+		refine_type, refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs),
-  randomSeed(0), crossValidation(cv_flag), crossValidNoiseOnly(false),
-  l2Penalty(0.), numAdvance(3), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type) //resizedFlag(false), callResize(false)
+  crossValidation(cv_flag), crossValidNoiseOnly(false), l2Penalty(0.),
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  //resizedFlag(false), callResize(false)
 {
   multilevAllocControl     = ml_alloc_control;
   multilevDiscrepEmulation = ml_discrep;

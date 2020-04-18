@@ -110,7 +110,6 @@ protected:
   void initialize_u_space_model();
 
   size_t collocation_points() const;
-  int random_seed() const;
 
   //void initialize_expansion();
   void compute_expansion();
@@ -209,10 +208,6 @@ private:
   //- Heading: Data
   //
 
-  /// seed for random number generator used for regression with LHS
-  /// and sub-sampled tensor grids
-  int randomSeed;
-
   /// noise tolerance for compressive sensing algorithms; vector form used
   /// in cross-validation
   RealVector noiseTols;
@@ -270,10 +265,6 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 
 inline size_t NonDPolynomialChaos::collocation_points() const
 { return collocPtsSpec; }
-
-
-inline int NonDPolynomialChaos::random_seed() const
-{ return randomSeed; }
 
 } // namespace Dakota
 

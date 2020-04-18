@@ -37,7 +37,7 @@ public:
   NonDExpansion(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
-		short exp_coeffs_approach, const RealVector& dim_pref,
+		short exp_coeffs_approach, const RealVector& dim_pref, int seed,
 		short refine_type, short refine_control, short covar_control,
 		Real colloc_ratio, short rule_nest, short rule_growth,
 		bool piecewise_basis, bool use_derivs);
@@ -441,6 +441,9 @@ protected:
   /// number of regression points (usually 1)
   Real termsOrder;
 
+  /// seed for random number generator (used for regression with LHS
+  /// and sub-sampled tensor grids, as well as for expansionSampler)
+  int randomSeed;
   /// user specification for seed_sequence
   SizetArray randomSeedSeqSpec;
   /// don't continue an existing random number sequence, rather reset
@@ -660,6 +663,15 @@ inline size_t NonDExpansion::collocation_points(size_t index) const
 }
 
 
+inline int NonDExpansion::random_seed() const
+{ return randomSeed; } // default (overridden in case of seed_sequence)
+
+
+inline int NonDExpansion::first_seed() const
+{ return random_seed(); } // default (overridden for multilevel)
+
+
+/** extract an active seed from a seed sequence */
 inline int NonDExpansion::random_seed(size_t index) const
 {
   // return 0 for cases where seed is undefined or will not be updated
@@ -693,14 +705,6 @@ inline const Model& NonDExpansion::algorithm_space_model() const
 
 inline size_t NonDExpansion::collocation_points() const
 { return 0; }
-
-
-inline int NonDExpansion::random_seed() const
-{ return 0; } // default is no spec
-
-
-inline int NonDExpansion::first_seed() const
-{ return random_seed(); } // default for single-level, overridden for multilevel
 
 
 inline void NonDExpansion::aggregated_models_mode()
