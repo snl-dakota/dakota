@@ -12,7 +12,7 @@
 //- Checked by:
 //- Version:
 
-//- Edited by:   Anh Tran on 2/2020
+//- Edited by:   Anh Tran on 2020
 
 
 #include "EffGlobalMinimizer.hpp"
@@ -232,7 +232,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   //------------------------------------------------------------------
   EffGlobalMinimizer* prev_instance = effGlobalInstance;
   // build initial GP once for all response functions: fHatModel.build_approximation()
-  initialize(); // Edited by AT
+  initialize();
 
   // Iterate until EGO converges
   unsigned short eif_convergence_cntr = 0, dist_convergence_cntr = 0,
@@ -274,7 +274,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     }
 
     if (parallel_flag) { // begin if parallel_flag = true -- then run in parallel
-        // Define batch settings // Edited by AT
+        // Define batch settings
 
         // int BatchSizeAcquisition = 3; // size of the first batch (acquisition batch)
         // int BatchSizeExploration = 0; // size of the second batch (exploration batch)
@@ -287,7 +287,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         // resp_star: output (liar)
         // resp_star_truth: output (true)
 
-        // Prepare the batch // Edited by AT
+        // Prepare the batch
         for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
             // Determine fnStar from among sample data
             get_best_sample();
@@ -306,11 +306,11 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
             fHatModel.evaluate();
             const Response& approx_response = fHatModel.current_response(); // .function_values();
 
-            Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star); // Edited by AT
+            Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star);
 
-            debug_print_values(); // Edited by AT
-            check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr); // Edited by AT
-            debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr); // Edited by AT
+            debug_print_values();
+            check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr);
+            debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr);
 
             // Constant liar
             // need fixing: resp_star_truth -> resp_star
@@ -388,11 +388,11 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         fHatModel.evaluate();
         const Response& approx_response = fHatModel.current_response(); // .function_values();
 
-        Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star); // Edited by AT
+        Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star);
 
-        debug_print_values(); // Edited by AT
-        check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr); // Edited by AT
-        debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr); // Edited by AT
+        debug_print_values();
+        check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr);
+        debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr);
 
         // Evaluate response_star_truth
         fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
@@ -438,7 +438,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   // restore in case of recursion
   effGlobalInstance = prev_instance;
 
-  debug_plots(); // Edited by AT
+  debug_plots();
 
 }
 
@@ -546,8 +546,7 @@ RealVector EffGlobalMinimizer::expected_violation(const RealVector& means, const
   // equality constraints
   for (i=0; i<numNonlinearEqConstraints; i++) {
     const Real& mean = means[numUserPrimaryFns+numNonlinearIneqConstraints+i];
-    const Real& stdv
-      = std::sqrt(variances[numUserPrimaryFns+numNonlinearIneqConstraints+i]);
+    const Real& stdv = std::sqrt(variances[numUserPrimaryFns+numNonlinearIneqConstraints+i]);
     const Real& zbar = origNonlinEqTargets[i];
     Real cdf, pdf;
     Real snv = (zbar-mean);
@@ -639,7 +638,7 @@ void EffGlobalMinimizer::declare_sources() {
 
 Real EffGlobalMinimizer::get_augmented_lagrangian(const RealVector& mean,
                                     const RealVector& c_vars,
-                                    const Real& eif_star) { // Edited by AT
+                                    const Real& eif_star) {
   Real aug_lag = augmented_lagrangian_merit(mean,
       iteratedModel.primary_response_fn_sense(),
       iteratedModel.primary_response_fn_weights(), origNonlinIneqLowerBnds,
@@ -659,7 +658,7 @@ void EffGlobalMinimizer::check_convergence(const Real& eif_star,
                                           const RealVector& c_vars,
                                           RealVector prev_cv_star,
                                           unsigned short eif_convergence_cntr,
-                                          unsigned short dist_convergence_cntr) { // Edited by AT
+                                          unsigned short dist_convergence_cntr) {
   // Check for convergence based on max EIF
   if ( -eif_star < convergenceTol )
     ++eif_convergence_cntr;
@@ -691,7 +690,7 @@ void EffGlobalMinimizer::check_convergence(const Real& eif_star,
 
 }
 
-void EffGlobalMinimizer::initialize() { // Edited by AT
+void EffGlobalMinimizer::initialize() {
   // set the object instance pointers for use within the static member fns
   effGlobalInstance = this;
 
@@ -717,7 +716,7 @@ void EffGlobalMinimizer::initialize() { // Edited by AT
   return;
 }
 
-void EffGlobalMinimizer::debug_print_values() { // Edited by AT
+void EffGlobalMinimizer::debug_print_values() {
   #ifdef DEBUG
       RealVector variance = fHatModel.approximation_variances(vars_star);
       RealVector ev = expected_violation(mean,variance);
@@ -733,7 +732,7 @@ void EffGlobalMinimizer::debug_print_values() { // Edited by AT
 void EffGlobalMinimizer::debug_print_counter(unsigned short globalIterCount,
                                              const Real& eif_star,
                                              Real distCStar,
-                                             unsigned short dist_convergence_cntr) { // Edited by AT
+                                             unsigned short dist_convergence_cntr) {
   #ifdef DEBUG
       Cout << "EGO Iteration " << globalIterCount << "\neif_star " << eif_star
      << "\ndistCStar "  << distCStar      << "\ndist_convergence_cntr "
@@ -741,7 +740,7 @@ void EffGlobalMinimizer::debug_print_counter(unsigned short globalIterCount,
   #endif //DEBUG
 }
 
-void EffGlobalMinimizer::debug_plots() { // Edited by AT
+void EffGlobalMinimizer::debug_plots() {
 
   #ifdef DEBUG_PLOTS
     // DEBUG - output set of samples used to build the GP

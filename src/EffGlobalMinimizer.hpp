@@ -86,6 +86,7 @@ public:
   const Model& algorithm_space_model() const;
 
   void declare_sources();
+
 private:
 
   //
@@ -101,25 +102,27 @@ private:
   ///   imporovement function
   void get_best_sample();
 
-  /// initialize // Edited by AT
+  /// initialize
   void initialize();
 
-  /// augmented Lagrangian // Edited by AT
+  /// augmented Lagrangian
+  /// augmented Lagrangian
   Real get_augmented_lagrangian(const RealVector& mean,
                                 const RealVector& c_vars,
                                 const Real& eif_star);
 
-  /// check convergence // Edited by AT
+  /// check convergence
+  /// if EGO has converged
   void check_convergence(const Real& eif_star,
                         const RealVector& c_vars,
                         RealVector prev_cv_star,
                         unsigned short eif_convergence_cntr,
                         unsigned short dist_convergence_cntr);
 
-  /// print mean and variance if debug flag is ON // Edited by AT
+  /// print mean and variance if debug flag is ON
   void debug_print_values();
 
-  /// print counter if debug flag is ON // Edited by AT
+  /// print counter if debug flag is ON
   void debug_print_counter(unsigned short globalIterCount,
                            const Real& eif_star,
                            Real distCStar,
@@ -128,7 +131,7 @@ private:
   // DEBUG - output set of samples used to build the GP
   // If problem is 2d, output a grid of points on the GP
   //   and truth (if requested)
-  void debug_plots(); // Edited by AT
+  void debug_plots();
 
   /// expected improvement function for the GP
   Real expected_improvement(const RealVector& means,
@@ -159,16 +162,18 @@ private:
   /// pointer to the active object instance used within the static evaluator
   /// functions in order to avoid the need for static data
   static EffGlobalMinimizer* effGlobalInstance;
-  // static EffGlobalMinimizer* prev_instance; // Edited by AT
+  // static EffGlobalMinimizer* prev_instance;
 
   /// controls iteration mode: "model" (normal usage) or "user_functions"
   /// (user-supplied functions mode for "on the fly" instantiations).
   String setUpType;
 
-  /// convergence tolerance on distance between predicted best points
+  /// convergence tolerance on distance
+  /// between predicted best points
   Real distanceTol;
 
   /// convergence tolerances
+  /// in objectives
   Real convergenceTol;
 
   /// GP model of response, one approximation per response function
@@ -188,9 +193,15 @@ private:
   /// request vector 3-bit format; user may override responses spec
   short dataOrder;
 
+  /// declare check convergence variables
   /// counter for convergence
-  /// unsigned short eif_convergence_cntr, dist_convergence_cntr; // Edited by AT
-  Real distCStar; // Edited by AT
+  Real distCStar;
+  // const Real& eif_star;
+  // const RealVector& c_vars;
+  RealVector prev_cv_star;
+  unsigned short eif_convergence_cntr;
+  unsigned short dist_convergence_cntr;
+  bool approx_converged;
 
   /// declare batch size for BatchSizeAcquisition
   /// sampling point located at maximum acquisition function
