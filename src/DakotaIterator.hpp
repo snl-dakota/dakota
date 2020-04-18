@@ -484,7 +484,6 @@ protected:
   /// Whether this is the top level iterator
   bool topLevel;
 
-  
 private:
 
   //
@@ -533,6 +532,7 @@ private:
   Iterator* iteratorRep;
   /// number of objects sharing iteratorRep
   int referenceCount;
+
 };
 
 inline std::shared_ptr<TraitsBase> Iterator::traits() const

@@ -2657,6 +2657,18 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
        ]
      ]
+    [ allocation_target {0}
+      mean {N_mdm(type,allocationTarget_TARGET_MEAN)}
+      |
+      ( variance {N_mdm(type,allocationTarget_TARGET_VARIANCE)}
+        [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
+       )
+     ]
+    [ qoi_aggregation {0}
+      sum {N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}
+      |
+      max {N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}
+     ]
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ final_moments {0}
@@ -5159,6 +5171,21 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
        ]
      )
+    |
+    ( muq {N_mdm(utype,subMethod_SUBMETHOD_MUQ)}
+      chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ rng {0}
+        mt19937 {N_mdm(lit,rngName_mt19937)}
+        |
+        rnum2 {N_mdm(lit,rngName_rnum2)}
+       ]
+      [ 
+        adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
+        |
+        metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
+       ]
+     )
     [ experimental_design {N_mdm(true,adaptExpDesign)}
       initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
       num_candidates INTEGER > 0 {N_mdm(sizet,numCandidates)}
@@ -5617,6 +5644,23 @@ KEYWORD model {N_mom3(start,0,stop)}
   ( surrogate {N_mom(lit,modelType_surrogate)}
     [ id_surrogates INTEGERLIST {N_mom(intsetm1,surrogateFnIndices)} ]
     ( global {0}
+      ( experimental_gaussian_process {N_mom(lit,surrogateType_global_exp_gauss_proc)}
+        [ trend {0}
+          constant {N_mom(lit,trendOrder_constant)}
+          |
+          linear {N_mom(lit,trendOrder_linear)}
+          |
+          quadratic {N_mom(lit,trendOrder_quadratic)}
+         ]
+        [ num_restarts INTEGER > 1 {N_mom(int,numRestarts)} ]
+        [ 
+          nugget REAL > 0 {N_mom(Real,krigingNugget)}
+          |
+          find_nugget INTEGER {N_mom(shint,krigingFindNugget)}
+         ]
+        [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
+       )
+      |
       ( gaussian_process ALIAS kriging {0}
         ( dakota {N_mom(lit,surrogateType_global_gaussian)}
           [ point_selection {N_mom(true,pointSelection)} ]
@@ -5763,6 +5807,11 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
            )
          ]
+       )
+      |
+      ( experimental_polynomial {N_mom(lit,surrogateType_global_exp_poly)}
+        basis_order INTEGER >= 0 {N_mom(shint,polynomialOrder)}
+        [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
        )
       [ domain_decomposition {N_mom(true,domainDecomp)}
         [ cell_type STRING {N_mom(str,decompCellType)} ]
@@ -6403,7 +6452,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
   ( objective_functions ALIAS num_objective_functions INTEGER >= 0 {N_rem(sizet,numObjectiveFunctions)}
     [ sense STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnSense)} ]
     [ primary_scale_types ALIAS objective_function_scale_types STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnScaleTypes)} ]
-    [ primary_scales ALIAS objective_function_scales REALLIST LEN1 objective_functions {N_rem(RealDL,primaryRespFnScales)} ]
+    [ primary_scales ALIAS objective_function_scales REALLIST {N_rem(RealDL,primaryRespFnScales)} ]
     [ weights ALIAS multi_objective_weights REALLIST LEN objective_functions {N_rem(RealDL,primaryRespFnWeights)} ]
     [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearIneqConstraints)}
       [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
@@ -6431,8 +6480,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
-    [ primary_scale_types ALIAS calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
-    [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
+    [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST {N_rem(RealDL,primaryRespFnScales)} ]
     [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
     [ 
       ( calibration_data {N_rem(true,calibrationDataFlag)}

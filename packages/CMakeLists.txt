@@ -70,6 +70,14 @@ if(HAVE_APPROXNN)
   add_subdirectory(external/approxnn/src)
 endif()
 
+#if(HAVE_EIGEN)
+  SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
+  SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
+  find_package(Eigen3 3.3 REQUIRED CONFIG)
+  message(STATUS "EIGEN3_FOUND = ${EIGEN3_FOUND}")
+  message(STATUS "EIGEN3_INCLUDE_DIRS = ${EIGEN3_INCLUDE_DIRS}")
+  message(STATUS "EIGEN3_INCLUDE_DIR = ${EIGEN3_INCLUDE_DIR}")
+#endif()
 
 if(HAVE_SURFPACK)
   add_subdirectory(surfpack)
@@ -168,7 +176,9 @@ if(HAVE_NOMAD)
 endif(HAVE_NOMAD)
 
 if(HAVE_NOWPAC)
-  add_subdirectory(external/nowpac)
+  if(NOT HAVE_EXTERNAL_NOWPAC)
+    add_subdirectory(external/nowpac)
+  endif()
 endif()
 
 if(HAVE_NPSOL)
@@ -186,3 +196,40 @@ endif(HAVE_PSUADE)
 if(HAVE_X_GRAPHICS)
   add_subdirectory(external/sciplot)
 endif(HAVE_X_GRAPHICS)
+
+# BMA TODO: Merge option to top-level once cmake_transparency branch merged
+option(HAVE_MUQ "Enable MIT MUQ library for Bayesian calibration" OFF)
+if(HAVE_MUQ)
+  message(STATUS "Dakota configuring MUQ as external project")
+  # Managing MUQ as an external project until we can work with upstream
+  # to resolve in-tree build issues.
+  include(ExternalProject)
+  ExternalProject_Add(MUQ
+    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/muq2"
+    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/external/muq2"
+    CMAKE_CACHE_ARGS
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/external/muq2
+    # MUQ TPLs
+    ##-DMUQ_BOOST_DIR:STRING=${Boost_INCLUDE_DIR}/..
+    # NOTE: By not setting MUQ_BOOST_DIR, MUQ should use the standard
+    # CMake probe to find Boost. That probe should respect
+    # Boost_INCLUDEDIR and Boost_LIBRARYDIR, so we forward it the
+    # settings found by Dakota's Boost probe.
+    # BMA TODO: Generalize this (not currently robust)
+    -DBOOST_INCLUDEDIR:PATH=${Boost_INCLUDE_DIRS}
+    -DBOOST_LIBRARYDIR:PATH=${Boost_LIBRARY_DIRS}
+    # BMA TODO: Flex this to allow external Eigen
+    -DMUQ_EIGEN3_DIR:STRING=${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/include/eigen3
+    # BMA TODO: Generalize this (not currently robust)
+    -DMUQ_HDF5_DIR:STRING=${HDF5_INCLUDE_DIRS}/..
+    # MUQ minimal opts
+    -DMUQ_ENABLEGROUP_DEFAULT:BOOL=OFF
+    -DMUQ_ENABLEGROUP_SAMPLING_ALGORITHM:BOOL=ON
+    # Avoid NANOFLANN internal build
+    -DMUQ_ENABLEGROUP_MODELING_FLANN:BOOL=OFF
+    # Avoid SUNDIALS internal build
+    -DMUQ_ENABLEGROUP_MODELING_SUNDIALS_MODELS:BOOL=OFF
+    # Avoid NLOPT internal build
+    -DMUQ_USE_NLOPT:BOOL=OFF
+    )
+endif()

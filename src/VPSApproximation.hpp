@@ -21,8 +21,6 @@
 #include "SharedSurfpackApproxData.hpp"
 #include "pecos_data_types.hpp" // to identify SDVArrays and SDRArrays
 
-using namespace Pecos;
-
 namespace Dakota
 {
     class ProblemDescDB;

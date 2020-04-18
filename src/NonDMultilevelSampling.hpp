@@ -402,7 +402,11 @@ private:
   Real aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 			       const Real* sum_QlQl,     const Real* sum_QlQlm1,
 			       const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
-			       size_t lev);
+			       const size_t& lev);
+  Real aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+                               const Real* sum_QlQl,     const Real* sum_QlQlm1,
+                               const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
+                               const size_t& lev, const size_t& qoi);
 
   /// sum up Monte Carlo estimates for mean squared error (MSE) across
   /// QoI using discrepancy variances
@@ -416,20 +420,25 @@ private:
   Real aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 			  const Real* sum_QlQl,     const Real* sum_QlQlm1,
 			  const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
-			  size_t lev);
+			  const size_t& lev);
+
+  Real aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+                          const Real* sum_QlQl,     const Real* sum_QlQlm1,
+                          const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
+                          const size_t& lev, const size_t& qoi);
 
   /// convert uncentered (raw) moments to centered moments; biased estimators
-  void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+  static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 			      Real& cm1, Real& cm2, Real& cm3, Real& cm4,
-			      size_t Nlq) const;
+			      size_t Nlq);
   /// convert uncentered (raw) moments to centered moments; unbiased estimators
-  void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
-			      Real& cm1, Real& cm2, Real& cm3, Real& cm4) const;
+  static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+			      Real& cm1, Real& cm2, Real& cm3, Real& cm4);
   /// convert centered moments to standardized moments
-  void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-			    Real& sm1, Real& sm2, Real& sm3, Real& sm4) const;
+  static void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+			    Real& sm1, Real& sm2, Real& sm3, Real& sm4);
   /// detect, warn, and repair a negative central moment (for even orders)
-  void check_negative(Real& cm) const;
+  static void check_negative(Real& cm);
 
   /// compute sum of a set of observations
   Real sum(const Real* vec, size_t vec_len) const;
@@ -439,6 +448,34 @@ private:
   Real average(const RealVector& vec) const;
   /// compute average of a set of observations
   Real average(const SizetArray& sa) const;
+
+  /// compute the unbiased product of two sampling means
+  static Real unbiased_mean_product_pair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2, const size_t& Nlq);
+  /// compute the unbiased product of three sampling means
+  static Real unbiased_mean_product_triplet(const Real& sumQ1, const Real& sumQ2, const Real& sumQ3,
+                                                                    const Real& sumQ1Q2, const Real& sumQ1Q3, const Real& sumQ2Q3, const Real& sumQ1Q2Q3, const size_t& Nlq);
+  /// compute the unbiased product of two pairs of products of sampling means
+  static Real unbiased_mean_product_pairpair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2,
+                                                                     const Real& sumQ1sq, const Real& sumQ2sq,
+                                                                     const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq);
+
+  static Real var_of_var_ml_l0(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g);
+
+  static Real var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g);
+
+  static Real var_of_var_ml_l(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g);
+
+  ///OPTPP definition
+  static void target_var_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
+  static void target_var_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
+                                         RealMatrix& grad_g, int& result_mode);
+  static void target_var_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
+                                               RealMatrix& grad_g, int& result_mode);
+  /// NPSOL definition (Wrapper using OPTPP implementation above under the hood)
+  static void target_var_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+  static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
 
   //
   //- Heading: Data
@@ -451,6 +488,22 @@ private:
   /// store the pilot_samples input specification, prior to run-time
   /// invocation of load_pilot_sample()
   SizetArray pilotSamples;
+
+  /// store the allocation_target input specification, prior to run-time
+  /// Options right now:
+  ///     - Mean = First moment (Mean)
+  ///     - Variance = Second moment (Variance or standard deviation depending on moments central or standard)
+  size_t allocationTarget;
+
+  /// option to switch on numerical optimization for solution of sample alloation
+  /// of allocationTarget Variance
+  bool useTargetVarianceOptimizationFlag;
+
+  /// store the qoi_aggregation_norm input specification, prior to run-time
+  /// Options right now:
+  ///     - sum 		 = aggregate the variance over all QoIs, compute samples from that
+  ///     - max          = take maximum sample allocation over QoIs for each level
+  short qoiAggregation;
 
   /// mean squared error of mean estimator from pilot sample MC on HF model
   RealVector mcMSEIter0;
@@ -469,8 +522,13 @@ private:
   bool exportSampleSets;
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
-};
 
+  void assign_static_member(Real &conv_tol, size_t &qoi, RealVector &level_cost_vec, IntRealMatrixMap &sum_Ql,
+                            IntRealMatrixMap &sum_Qlm1, IntIntPairRealMatrixMap &sum_QlQlm1,
+                            RealVector &pilot_samples) const;
+
+	void assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, Real &mu_four_L_exact, Real &mu_four_H_exact, Real &Ax, RealVector &level_cost_vec) const;
+};
 
 inline void NonDMultilevelSampling::aggregated_models_mode()
 {
@@ -676,7 +734,7 @@ inline Real NonDMultilevelSampling::
 aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 			const Real* sum_QlQl,     const Real* sum_QlQlm1,
 			const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
-			size_t lev)
+			const size_t& lev)
 {
   Real agg_var_l = 0., var_Y;
   //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
@@ -690,6 +748,25 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
   return agg_var_l;
 }
+
+  inline Real NonDMultilevelSampling::
+  aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+                          const Real* sum_QlQl,     const Real* sum_QlQlm1,
+                          const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
+                          const size_t& lev, const size_t& qoi)
+  {
+    Real agg_var_l = 0., var_Y;
+    //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
+    //for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
+      agg_var_l = (lev) ?
+                   variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+                                 sum_Qlm1Qlm1[qoi], N_l[qoi]) :
+                   variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], N_l[qoi]);
+    //if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
+    //}
+    //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
+    return agg_var_l;
+  }
 
 
 inline Real NonDMultilevelSampling::
@@ -717,7 +794,7 @@ aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
 inline Real NonDMultilevelSampling::
 aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 		   const Real* sum_QlQl,     const Real* sum_QlQlm1,
-		   const Real* sum_Qlm1Qlm1, const SizetArray& N_l, size_t lev)
+		   const Real* sum_Qlm1Qlm1, const SizetArray& N_l, const size_t& lev)
 {
   Real agg_mse = 0., mu_Ql, mu_Qlm1, var_Y; size_t Nlq;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
@@ -730,6 +807,22 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   }
   return agg_mse;
 }
+
+  inline Real NonDMultilevelSampling::
+  aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+                     const Real* sum_QlQl,     const Real* sum_QlQlm1,
+                     const Real* sum_Qlm1Qlm1, const SizetArray& N_l, const size_t& lev, const size_t& qoi)
+  {
+    Real agg_mse = 0., mu_Ql, mu_Qlm1, var_Y; size_t Nlq;
+    Nlq = N_l[qoi];
+    var_Y = (lev) ?
+            variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+                          sum_Qlm1Qlm1[qoi], Nlq) :
+            variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], Nlq);
+    agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
+
+    return agg_mse;
+  }
 
 
 inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
@@ -754,7 +847,7 @@ inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
 /** For single-level moment calculations with a scalar Nlq. */
 inline void NonDMultilevelSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
-		       Real& cm1, Real& cm2, Real& cm3, Real& cm4) const
+		       Real& cm1, Real& cm2, Real& cm3, Real& cm4)
 {
   // convert from uncentered ("raw") to centered moments for a single level
 
@@ -781,7 +874,7 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 /** For single-level moment calculations with a scalar Nlq. */
 inline void NonDMultilevelSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
-		       Real& cm2, Real& cm3, Real& cm4, size_t Nlq) const
+		       Real& cm2, Real& cm3, Real& cm4, size_t Nlq)
 {
   // convert from uncentered ("raw") to centered moments for a single level
 
@@ -799,8 +892,12 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
     // (1) this is 4th central moment (non-excess, unnormalized),
     //     which differs from the fourth cumulant (excess, unnormalized)
     // (2) cm2 is now unbiased within following conversion:
-    cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * cm2 * cm2 )
-        / (n_sq - 3. * Nlq + 3.);
+    
+    //cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * cm2 * cm2 )
+    //    / (n_sq - 3. * Nlq + 3.);
+    //[fm] account for bias correction due to cm2^2 term
+    cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * (n_sq - Nlq) / (n_sq - 2. * Nlq + 3) * cm2 * cm2 )
+        / ( (n_sq - 3. * Nlq + 3.) - (6. * Nlq - 9.) * (n_sq - Nlq) / (Nlq * (n_sq - 2. * Nlq + 3.)) );
   }
   else
     Cerr << "Warning: due to small sample size, resorting to biased estimator "
@@ -810,7 +907,7 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
 
 inline void NonDMultilevelSampling::
 centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-		     Real& sm1, Real& sm2, Real& sm3, Real& sm4) const
+		     Real& sm1, Real& sm2, Real& sm3, Real& sm4)
 {
   // convert from centered to standardized moments
   sm1 = cm1;                    // mean
@@ -827,7 +924,7 @@ centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 }
 
 
-inline void NonDMultilevelSampling::check_negative(Real& cm) const
+inline void NonDMultilevelSampling::check_negative(Real& cm)
 {
   if (cm < 0.) {
     Cerr << "\nWarning: central moment less than zero (" << cm << ").  "
@@ -862,6 +959,216 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
   for (i=0; i<len; ++i)
     sum += sa[i];
   return (Real)sum / (Real)len;
+}
+
+inline Real NonDMultilevelSampling::var_of_var_ml_l0(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
+                                                      const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g){
+  Real cm1l, cm2l, cm3l, cm4l, cm2l_sq, var_of_var;
+
+  IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
+  RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
+      &sum_Q2l = sum_Ql[2], &sum_Q2lm1 = sum_Qlm1[2],
+      &sum_Q3l = sum_Ql[3], &sum_Q3lm1 = sum_Qlm1[3],
+      &sum_Q4l = sum_Ql[4], &sum_Q4lm1 = sum_Qlm1[4],
+      &sum_Q1lQ1lm1 = sum_QlQlm1[pr11], &sum_Q1lQ2lm1 = sum_QlQlm1[pr12],
+      &sum_Q2lQ1lm1 = sum_QlQlm1[pr21], &sum_Q2lQ2lm1 = sum_QlQlm1[pr22];
+
+  uncentered_to_centered(sum_Q1l(qoi, 0) / Nlq_pilot, sum_Q2l(qoi, 0) / Nlq_pilot,
+                         sum_Q3l(qoi, 0) / Nlq_pilot, sum_Q4l(qoi, 0) / Nlq_pilot,
+                         cm1l, cm2l, cm3l, cm4l, Nlq_pilot);
+
+  cm2l_sq = cm2l * cm2l;
+  var_of_var = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+
+  if(compute_gradient) {
+    grad_g = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
+             ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
+             - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
+               ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
+  }
+  //[fm] bias correction for var_P2l
+  return var_of_var;
+}
+
+
+inline Real NonDMultilevelSampling::var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
+                                                     const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g){
+  Real cm1l, cm2l, cm3l, cm4l, cm2l_sq, var_of_var;
+
+  IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
+  RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
+      &sum_Q2l = sum_Ql[2], &sum_Q2lm1 = sum_Qlm1[2],
+      &sum_Q3l = sum_Ql[3], &sum_Q3lm1 = sum_Qlm1[3],
+      &sum_Q4l = sum_Ql[4], &sum_Q4lm1 = sum_Qlm1[4],
+      &sum_Q1lQ1lm1 = sum_QlQlm1[pr11], &sum_Q1lQ2lm1 = sum_QlQlm1[pr12],
+      &sum_Q2lQ1lm1 = sum_QlQlm1[pr21], &sum_Q2lQ2lm1 = sum_QlQlm1[pr22];
+
+  uncentered_to_centered(sum_Q1l(qoi, 1) / Nlq_pilot, sum_Q2l(qoi, 1) / Nlq_pilot,
+                         sum_Q3l(qoi, 1) / Nlq_pilot, sum_Q4l(qoi, 1) / Nlq_pilot,
+                         cm1l, cm2l, cm3l, cm4l, Nlq_pilot);
+
+  cm2l_sq = cm2l * cm2l;
+  var_of_var = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+
+  if(compute_gradient) {
+    grad_g = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
+             ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
+             - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
+               ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
+  }
+  //[fm] bias correction for var_P2l
+  return var_of_var;
+}
+
+inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
+                                                    const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g){
+  Real cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
+      cm3lm1, cm4lm1, cm1l_sq, cm2l_sq, cm2lm1_sq,
+      mu_Q2l, mu_Q2lm1, mu_Q2lQ2lm1,
+      mu_Q1lm1_mu_Q2lQ1lm1, mu_Q1lm1_mu_Q1lm1_muQ2l, mu_Q1l_mu_Q1lQ2lm1, mu_Q1l_mu_Q1l_mu_Q2lm1,
+      mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1, mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1, mu_Q2l_muQ2lm1, mu_Q1lQ1lm1_mu_Q1lQ1lm1,
+      mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1, term, var_of_var;
+
+  IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
+  const RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
+      &sum_Q2l = sum_Ql[2], &sum_Q2lm1 = sum_Qlm1[2],
+      &sum_Q3l = sum_Ql[3], &sum_Q3lm1 = sum_Qlm1[3],
+      &sum_Q4l = sum_Ql[4], &sum_Q4lm1 = sum_Qlm1[4],
+      &sum_Q1lQ1lm1 = sum_QlQlm1[pr11], &sum_Q1lQ2lm1 = sum_QlQlm1[pr12],
+      &sum_Q2lQ1lm1 = sum_QlQlm1[pr21], &sum_Q2lQ2lm1 = sum_QlQlm1[pr22];
+
+  mu_Q2l = sum_Q2l(qoi, lev) / Nlq_pilot;
+  uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq_pilot, mu_Q2l,
+                         sum_Q3l(qoi, lev) / Nlq_pilot, sum_Q4l(qoi, lev) / Nlq_pilot,
+                         cm1l, cm2l, cm3l, cm4l, Nlq_pilot);
+  mu_Q2lm1 = sum_Q2lm1(qoi, lev) / Nlq_pilot;
+  uncentered_to_centered(sum_Q1lm1(qoi, lev) / Nlq_pilot, mu_Q2lm1,
+                         sum_Q3lm1(qoi, lev) / Nlq_pilot, sum_Q4lm1(qoi, lev) / Nlq_pilot,
+                         cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq_pilot);
+  cm2l_sq = cm2l * cm2l;
+  cm2lm1_sq = cm2lm1 * cm2lm1;
+
+  // [fm] bias correction for var_P2l and var_P2lm1
+  var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+  var_P2lm1 =
+      Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
+
+  //[fm] unbiased products of mean
+  mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi, lev) / Nlq_pilot;
+  mu_Q1lm1_mu_Q2lQ1lm1 = unbiased_mean_product_pair(sum_Q1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
+                                                    sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
+  mu_Q1lm1_mu_Q1lm1_muQ2l = unbiased_mean_product_triplet(sum_Q1lm1(qoi, lev), sum_Q1lm1(qoi, lev),
+                                                          sum_Q2l(qoi, lev),
+                                                          sum_Q2lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
+                                                          sum_Q2lQ1lm1(qoi, lev),
+                                                          sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
+  mu_Q1l_mu_Q1lQ2lm1 = unbiased_mean_product_pair(sum_Q1l(qoi, lev), sum_Q1lQ2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev),
+                                                  Nlq_pilot);
+  mu_Q1l_mu_Q1l_mu_Q2lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1l(qoi, lev), sum_Q2lm1(qoi, lev),
+                                                         sum_Q2l(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
+                                                         sum_Q1lQ2lm1(qoi, lev),
+                                                         sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
+  mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev),
+                                                             sum_Q1lQ1lm1(qoi, lev),
+                                                             sum_Q1lQ1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
+                                                             sum_Q1lQ2lm1(qoi, lev),
+                                                             sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
+  mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 = unbiased_mean_product_pairpair(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev),
+                                                                  sum_Q1lQ1lm1(qoi, lev),
+                                                                  sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev),
+                                                                  sum_Q2lQ1lm1(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
+                                                                  sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
+  mu_Q2l_muQ2lm1 = unbiased_mean_product_pair(sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
+  mu_P2lP2lm1 = mu_Q2lQ2lm1 //E[QL2 Ql2]
+                - 2. * mu_Q1lm1_mu_Q2lQ1lm1 //E[Ql] E[QL2Ql]
+                + 2. * mu_Q1lm1_mu_Q1lm1_muQ2l //E[Ql]2 E[QL2]
+                - 2. * mu_Q1l_mu_Q1lQ2lm1 //E[QL] E[QLQl2]
+                + 2. * mu_Q1l_mu_Q1l_mu_Q2lm1 //E[QL]2 E[Ql2]
+                + 4. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 //E[QL] E[Ql] E[QLQl]
+                - 4. * mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 //E[QL]2 E[Ql]2
+                - mu_Q2l_muQ2lm1; //E[QL2] E[Ql2]
+
+  // [fm] unbiased by opening up the square and compute three different term
+  mu_Q1lQ1lm1_mu_Q1lQ1lm1 = unbiased_mean_product_pair(sum_Q1lQ1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
+                                                       sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
+  term = mu_Q1lQ1lm1_mu_Q1lQ1lm1 - 2. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 + mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1;
+
+  //[fm] Using only unbiased estimators the sum is also unbiased
+  covar_P2lP2lm1
+      = mu_P2lP2lm1 + term / (Nlq - 1.);
+
+  var_of_var = (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
+
+  if(compute_gradient) {
+    grad_g = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
+                     ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
+                     - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
+                       ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq
+                     + ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
+                       ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4lm1
+                     - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
+                       ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2lm1_sq
+                     - 2. * (-1. / (Nlq * Nlq) * mu_P2lP2lm1 +
+                             (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
+    }
+
+  return var_of_var;
+}
+
+inline Real NonDMultilevelSampling::unbiased_mean_product_pair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2, const size_t& Nlq)
+{
+  Real mean1, mean2, bessel_corr1, bessel_corr2 = 0.;
+
+  mean1 = 1./Nlq * 1./Nlq * sumQ1 * sumQ2;
+  mean2 = 1./Nlq * sumQ1Q2;
+  bessel_corr1 = (Real)Nlq / ((Real)Nlq - 1.);
+  bessel_corr2 = 1. / ((Real)Nlq - 1.);
+
+  return bessel_corr1*mean1 - bessel_corr2*mean2;
+}
+
+inline Real NonDMultilevelSampling::unbiased_mean_product_triplet(const Real& sumQ1, const Real& sumQ2, const Real& sumQ3,
+                                                                  const Real& sumQ1Q2, const Real& sumQ1Q3, const Real& sumQ2Q3, const Real& sumQ1Q2Q3, const size_t& Nlq)
+{
+  Real mean1, mean2, mean3, bessel_corr1, bessel_corr2, bessel_corr3 = 0.;
+
+  mean1 = 1./Nlq * 1./Nlq * 1./Nlq * sumQ1 * sumQ2 * sumQ3;
+  mean2 = unbiased_mean_product_pair(sumQ1Q2, sumQ3, sumQ1Q2Q3, Nlq);
+  mean2 += unbiased_mean_product_pair(sumQ2Q3, sumQ1, sumQ1Q2Q3, Nlq);
+  mean2 += unbiased_mean_product_pair(sumQ1Q3, sumQ2, sumQ1Q2Q3, Nlq);
+  mean3 = 1./((Real)Nlq) * sumQ1Q2Q3;
+  bessel_corr1 = (Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.));
+  bessel_corr2 = 1./(Nlq - 2.);
+  bessel_corr3 = 1./((Nlq - 1.)*(Nlq - 2.));
+
+  return bessel_corr1 * mean1 - bessel_corr2 * mean2 - bessel_corr3 * mean3;
+}
+
+inline Real NonDMultilevelSampling::unbiased_mean_product_pairpair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2,
+                                                                   const Real& sumQ1sq, const Real& sumQ2sq,
+                                                                   const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq)
+{
+  Real mean1, mean2, mean3, mean4, bessel_corr1, bessel_corr2, bessel_corr3, bessel_corr4 = 0.;
+
+  mean1 = 1./Nlq * 1./Nlq * 1./Nlq * 1./Nlq * sumQ1 * sumQ1 * sumQ2 * sumQ2;
+
+  mean2 = unbiased_mean_product_triplet(sumQ1sq, sumQ2, sumQ2, sumQ1sqQ2, sumQ1sqQ2, sumQ2sq, sumQ1sqQ2sq, Nlq);
+  mean2 += 4. * unbiased_mean_product_triplet(sumQ1Q2, sumQ1, sumQ2, sumQ1sqQ2, sumQ1Q2sq, sumQ1Q2, sumQ1sqQ2sq, Nlq);
+  mean2 += unbiased_mean_product_triplet(sumQ1, sumQ1, sumQ2sq, sumQ1sq, sumQ1Q2sq, sumQ1Q2sq, sumQ1sqQ2sq, Nlq);
+
+  mean3 = unbiased_mean_product_pair(sumQ1sq, sumQ2sq, sumQ1sqQ2sq, Nlq);
+  mean3 += 2. * unbiased_mean_product_pair(sumQ1Q2, sumQ1Q2, sumQ1sqQ2sq, Nlq);
+  mean3 += 2. * unbiased_mean_product_pair(sumQ1sqQ2, sumQ2, sumQ1sqQ2sq, Nlq);
+  mean3 += 2. * unbiased_mean_product_pair(sumQ1, sumQ1Q2sq, sumQ1sqQ2sq, Nlq);
+
+  mean4 = 1./Nlq * sumQ1sqQ2sq;
+
+  bessel_corr1 = (Nlq * Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
+  bessel_corr2 = 1./(Nlq - 3.);
+  bessel_corr3 = 1./((Nlq - 2.)*(Nlq - 3.));
+  bessel_corr4 = 1./((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
+
+  return bessel_corr1 * mean1 - bessel_corr2 * mean2 - bessel_corr3 * mean3 - bessel_corr4 * mean4;
 }
 
 } // namespace Dakota

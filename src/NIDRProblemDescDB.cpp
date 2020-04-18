@@ -1351,7 +1351,8 @@ scale_chk(StringArray &ST, RealVector &S, const char *what, const char **univ)
       what, what);
 }
 
-static const char *aln_scaletypes[] = { "auto", "log", "none", 0 };
+// scale_types beyond value to allow in some contexts
+static const char *auto_log_scaletypes[] = { "auto", "log", "none", 0 };
 
 void NIDRProblemDescDB::
 method_stop(const char *keyname, Values *val, void **g, void *v)
@@ -1745,15 +1746,15 @@ void NIDRProblemDescDB::
 resp_stop(const char *keyname, Values *val, void **g, void *v)
 {
   size_t k, n;
-  static const char *osc[] = { "log", "none", 0 };
+  static const char *log_scaletypes[] = { "log", 0 };
   Resp_Info *ri = *(Resp_Info**)g;
   DataResponsesRep *dr = ri->dr;
   scale_chk(dr->primaryRespFnScaleTypes, dr->primaryRespFnScales,
-	    dr->numLeastSqTerms ? "least_squares_term" : "objective_function", osc);
+	    dr->numLeastSqTerms ? "least_squares_term" : "objective_function", log_scaletypes);
   scale_chk(dr->nonlinearIneqScaleTypes, dr->nonlinearIneqScales,
-	    "nonlinear_inequality", aln_scaletypes);
+	    "nonlinear_inequality", auto_log_scaletypes);
   scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
-	    "nonlinear_equality", aln_scaletypes);
+	    "nonlinear_equality", auto_log_scaletypes);
   // The following check was relevant prior to refactoring the way transformations
   // are applied (now in a layered manner)
   // if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
@@ -1880,10 +1881,11 @@ make_response_defaults(std::list<DataResponses>* drl)
     Schk(nonlinear_inequality_upper_bounds,numNonlinearIneqConstraints,nonlinearIneqUpperBnds)
   };
   static RespDVec_chk RespVec_chk_Scale[] = {// Scales:  length must be right
-    Schk(least_squares_term_scales,numLeastSqTerms,primaryRespFnScales),
+    // no longer checking LSQ or Obj scales due to fields
+    //Schk(least_squares_term_scales,numLeastSqTerms,primaryRespFnScales),
     Schk(nonlinear_equality_scales,numNonlinearEqConstraints,nonlinearEqScales),
-    Schk(nonlinear_inequality_scales,numNonlinearIneqConstraints,nonlinearIneqScales),
-    Schk(objective_function_scales,numObjectiveFunctions,primaryRespFnScales)
+    Schk(nonlinear_inequality_scales,numNonlinearIneqConstraints,nonlinearIneqScales) //,
+    //Schk(objective_function_scales,numObjectiveFunctions,primaryRespFnScales)
   };
 #undef Schk
 #define Numberof(x) sizeof(x)/sizeof(x[0])
@@ -5160,17 +5162,18 @@ static Var_uinfo DiscSetLbl[DiscSetVar_Nkinds] = {
 void NIDRProblemDescDB::
 var_stop(const char *keyname, Values *val, void **g, void *v)
 {
-  static const char *mr_scaletypes[] = { "auto", "none", 0 };
+  // scale_types beyond value to allow for linear constraints
+  static const char *lincon_scaletypes[] = { "auto", 0 };
 
   Var_Info *vi = *(Var_Info**)g;
   DataVariablesRep *dv = vi->dv;
 
   scale_chk(dv->continuousDesignScaleTypes, dv->continuousDesignScales,
-	    "cdv", aln_scaletypes);
+	    "cdv", auto_log_scaletypes);
   scale_chk(dv->linearIneqScaleTypes, dv->linearIneqScales,
-	    "linear_inequality", mr_scaletypes);
+	    "linear_inequality", lincon_scaletypes);
   scale_chk(dv->linearEqScaleTypes, dv->linearEqScales,
-	    "linear_equality", mr_scaletypes);
+	    "linear_equality", lincon_scaletypes);
 
   pDDBInstance->VIL.push_back(vi);
   pDDBInstance->dataVariablesList.push_back(*vi->dv_handle);
@@ -7020,6 +7023,7 @@ static bool
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
 	MP_(standardizedSpace),
+  MP_(useTargetVarianceOptimizationFlag),
 	MP_(tensorGridFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
@@ -7085,10 +7089,13 @@ static size_t
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents),
-  	MP_(numPredConfigs),
-        MP_(startRank);
+	MP_(numPredConfigs),
+  //MP_(startOrder),
+  MP_(startRank);
 
 static Method_mp_type
+  MP2s(allocationTarget,TARGET_MEAN),
+  MP2s(allocationTarget,TARGET_VARIANCE),
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
@@ -7136,6 +7143,8 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
+  MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
+  MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_SOBOL),      // Pecos
@@ -7329,6 +7338,7 @@ static Method_mp_utype
 	MP2s(subMethod,SUBMETHOD_COLLABORATIVE),
 	MP2s(subMethod,SUBMETHOD_EMBEDDED),
 	MP2s(subMethod,SUBMETHOD_SEQUENTIAL),
+	MP2s(subMethod,SUBMETHOD_MUQ),
 	MP2s(subMethod,SUBMETHOD_DREAM),
 	MP2s(subMethod,SUBMETHOD_WASABI),
 	MP2s(subMethod,SUBMETHOD_GPMSA),
@@ -7381,6 +7391,8 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,global_exp_gauss_proc),
+	MP2(surrogateType,global_exp_poly),
 	MP2(surrogateType,global_function_train),
 	MP2(surrogateType,global_gaussian),
 	MP2(surrogateType,global_kriging),
@@ -7490,6 +7502,7 @@ static IntVector
 
 static String
 	MP_(actualModelPointer),
+        MP_(advancedOptionsFilename),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
 	MP_(idModel),
@@ -7567,6 +7580,7 @@ static int
 	MP_(maxSolverIterations),
         MP_(numFolds),
         MP_(numReplicates),
+        MP_(numRestarts),
         MP_(pointsTotal),
         MP_(refineCVFolds),
         MP_(softConvergenceLimit),

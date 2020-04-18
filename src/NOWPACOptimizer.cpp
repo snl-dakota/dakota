@@ -58,7 +58,6 @@ void NOWPACOptimizer::initialize_options()
 
   // Optional: note that we are overridding NOWPAC defaults with Dakota defaults
   // May want to leave NOWPAC defaults in place if there is no user spec.
-  //nowpacSolver.set_option("eta_0", 1.e-6); // accept/reject threshold
   nowpacSolver.set_option("eta_1",
     probDescDB.get_real("method.trust_region.contract_threshold") );
   nowpacSolver.set_option("eta_2",
@@ -98,10 +97,9 @@ void NOWPACOptimizer::initialize_options()
     if (random_seed) // default for no user spec is zero
       nowpacSolver.set_option("seed",                random_seed);
     //else SNOWPAC uses a machine generated seed and is non-repeatable
-
-    // frequency of optimizing the GP hyper-parameters
-    int gp_adaption_factor = 5 * numContinuousVars;
-    nowpacSolver.set_option("GP_adaption_factor", gp_adaption_factor);
+    const int adaptionSteps = 5*numContinuousVars;
+    nowpacSolver.set_option("GP_adaption_factor", adaptionSteps );
+    nowpacSolver.set_option("use_analytic_smoothing", false);
   }
 
   // Maximum number of total accepted steps
@@ -149,7 +147,7 @@ void NOWPACOptimizer::initialize_options()
   // Scale the design variables since the TR size controls are absolute, not
   // relative.  Based on the default max TR size of 1., scale to [0,1].
   RealArray l_bnds, u_bnds; size_t num_v = iteratedModel.cv();
-  l_bnds.assign(num_v, 0.); u_bnds.assign(num_v, 1.);
+  l_bnds.assign(num_v, -1.); u_bnds.assign(num_v, 1.);
   nowpacSolver.set_lower_bounds(l_bnds);
   nowpacSolver.set_upper_bounds(u_bnds);
 
@@ -181,7 +179,7 @@ void NOWPACOptimizer::core_run()
 				      iteratedModel.continuous_upper_bounds());
 
   // allocate arrays passed to optimization solver
-  RealArray x_star, fn_star;
+  RealArray x_star; RealArray obj_star;
   nowpacEvaluator.scale(iteratedModel.continuous_variables(), x_star);
   // create data object for nowpac output ( required for warm start )
   BlackBoxData bb_data(numFunctions, numContinuousVars);
@@ -189,14 +187,14 @@ void NOWPACOptimizer::core_run()
   //////////////////////////////////////////////////////////////////////////
   // start optimization (on output: bbdata contains data that allows warmstart
   // and enables post-processing to get model values, gradients and hessians)
-  nowpacSolver.optimize(x_star, fn_star, bb_data);
+  nowpacSolver.optimize(x_star, obj_star, bb_data);
   if (outputLevel >= DEBUG_OUTPUT) {
     // create post-processing object to compute surrogate models
     PostProcessModels<> PPD( bb_data );
     Cout << "\n----------------------------------------"
-	 << "\nSolution returned from nowpacSolver:\n"
-	 << "  optimal objective and inequality constraints =\n" << fn_star
-	 << "  optimal point =\n" << x_star << "Data from PostProcessModels:\n"
+	 << "\nSolution returned from nowpacSolver:\n  optimal value = "
+	 << obj_star[0] << "\n  optimal point =\n" << x_star
+	 << "\nData from PostProcessModels:\n"
 	 << "  tr size = " << PPD.get_trustregion() << '\n';
     // model value    = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
     // model gradient = g + H (x-x_c)
@@ -216,11 +214,10 @@ void NOWPACOptimizer::core_run()
   // Publish optimal response
   if (!localObjectiveRecast) {
     RealVector best_fns(numFunctions);
+    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -obj_star[0] : obj_star[0];
 
     // objective and mapped nonlinear inequalities returned from optimize()
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
-      -fn_star[0] : fn_star[0];
     const SizetList& nln_ineq_map_indices
       = nowpacEvaluator.nonlinear_inequality_mapping_indices();
     const RealList&  nln_ineq_map_mult
@@ -233,7 +230,7 @@ void NOWPACOptimizer::core_run()
 	 m_iter  = nln_ineq_map_mult.begin(),
 	 o_iter  = nln_ineq_map_offsets.begin();
 	 i_iter != nln_ineq_map_indices.end(); ++i_iter, ++m_iter, ++o_iter)
-      best_fns[(*i_iter)+1] = (fn_star[++cntr] - (*o_iter))/(*m_iter);
+      best_fns[(*i_iter)+1] = (obj_star[++cntr] - (*o_iter))/(*m_iter);
     /*
     size_t i, offset = iteratedModel.num_nonlinear_ineq_constraints() + 1,
       num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
@@ -398,7 +395,7 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
   Real obj_fn = dakota_fns[0], mult;
   size_t index, cntr = 0;
   vals[cntr]  = (!max_sense.empty() && max_sense[0]) ? -obj_fn : obj_fn;
-  noise[cntr] = errors[0]; // for now; TO DO: mapping of noise for MOO/NLS...
+  noise[cntr] = 2. * errors[0]; // for now; TO DO: mapping of noise for MOO/NLS...
   ++cntr;
 
   // apply nonlinear inequality constraint mappings
@@ -411,8 +408,9 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
     index       = (*i_iter)+1; // offset single objective
     mult        = (*m_iter);
     vals[cntr]  = (*o_iter) + mult * dakota_fns[index];
-    noise[cntr] = std::abs(mult) * errors[index];
+    noise[cntr] = 2. * std::abs(mult) * errors[index];
   }
+
   // apply linear inequality constraint mappings
   const RealMatrix& lin_ineq_coeffs
     = iteratedModel.linear_ineq_constraint_coeffs();
@@ -429,6 +427,11 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
     vals[cntr]  = (*o_iter) + (*m_iter) * Ax;
     noise[cntr] = 0.; // no error in linear case
   }
+}
+
+double NOWPACBlackBoxEvaluator::evaluate_samples ( std::vector<double> const &samples, const unsigned int index, std::vector<double> const &x){
+	//TO DO implement if smoothing works at some point.
+	return -1;
 }
 // TO DO: asynchronous evaluate_nowait()/synchronize()
 

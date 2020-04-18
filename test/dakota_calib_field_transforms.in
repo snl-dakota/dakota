@@ -1,0 +1,51 @@
+#@ s0: ReqFiles=oscillatorC.1.dat,oscB_scalar.summary
+
+# DP-171: Test calibration with fields, data, and transforms
+# Adapted from dakota_experiment_read:s8
+
+environment
+  tabular_data
+
+method
+  nl2sol
+  output debug
+  scaling
+
+variables
+  continuous_design = 2
+    upper_bounds   0.5   0.5
+    lower_bounds   0.1   0.1
+    descriptors    'x1'  'x2'
+
+interface
+  direct
+    analysis_driver = 'damped_oscillator'
+
+responses
+  response_descriptors 'oscB_scalar1' 'oscB_scalar2' 'oscillatorC'
+  calibration_terms = 3
+    scalar_calibration_terms = 2
+    field_calibration_terms = 1
+      lengths = 5
+      num_coordinates_per_field = 1
+
+  calibration_data
+    num_experiments = 1
+    variance_type = 'scalar' 'scalar' 'none'
+    scalar_data_file = 'oscB_scalar.summary' freeform
+
+  # Single vs. per-group
+  primary_scales 2.0					#s0
+  weights        0.25 0.25   0.25			#s0
+
+  # Scales and weights per-group
+#  primary_scales 2.0  4.0      0.2			#s1
+#  weights        0.25 0.0625   25.0			#s1
+
+  # Per-field element vs. per-group
+#  primary_scales 2.0  4.0      0.2 0.2 0.2 0.2 0.2	#s2
+#  weights        0.25 0.0625   25.0	    	     	#s2
+
+  numerical_gradients
+  no_hessians
+

@@ -52,7 +52,6 @@ responses
     num_experiments = 10
     variance_type = 'scalar' # read 2 scalar sigmas in each row
   descriptors = 'stress' 'displacement'
-#          primary_scale_types  'value'    	#s1,#s3,#s4,#s5,#s6
 #          primary_scales   10.0 10.0  		#s1,#s3,#s4,#s5,#s6
 #          weights          100.0  100.0    #s2,#s3
 #          weights          0.01  0.01    	#s4,#s5,#s6
