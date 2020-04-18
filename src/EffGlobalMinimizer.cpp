@@ -309,7 +309,33 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
             Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star);
 
             debug_print_values();
-            check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr);
+            // check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr);
+            // Check for convergence based on max EIF
+            if ( -eif_star < convergenceTol )
+              ++eif_convergence_cntr;
+
+            // Check for convergence based in distance between successive points.
+            // If the dist between successive points is very small, then there is
+            // little value in updating the GP since the new training point will
+            // essentially be the previous optimal point.
+
+            Real distCStar = (prev_cv_star.empty()) ? DBL_MAX :
+              rel_change_L2(c_vars, prev_cv_star);
+            // update prev_cv_star
+            copy_data(c_vars, prev_cv_star);
+            if (distCStar < distanceTol)
+              ++dist_convergence_cntr;
+
+            // If DIRECT failed to find a point with EIF>0, it returns the
+            //   center point as the optimal solution. EGO may have converged,
+            //   but DIRECT may have just failed to find a point with a good
+            //   EIF value. Adding this midpoint can alter the GPs enough to
+            //   to allow DIRECT to find something useful, so we force
+            //   max(EIF)<tol twice to make sure. Note that we cannot make
+            //   this check more than 2 because it would cause EGO to add
+            //   the center point more than once, which will damage the GPs.
+            //   Unfortunately, when it happens the second time, it may still
+            //   be that DIRECT failed and not that EGO converged.
             debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr);
 
             // Constant liar
@@ -367,7 +393,6 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
                 }
             }
         }
-
     } // end if parallel_flag = true -- then run in parallel
     else { // else begin parallel_flag = false -- then run sequentially (reinstate old implementation from Mike Eldred)
 
@@ -391,7 +416,33 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star);
 
         debug_print_values();
-        check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr);
+        // check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr);
+        // Check for convergence based on max EIF
+        if ( -eif_star < convergenceTol )
+          ++eif_convergence_cntr;
+
+        // Check for convergence based in distance between successive points.
+        // If the dist between successive points is very small, then there is
+        // little value in updating the GP since the new training point will
+        // essentially be the previous optimal point.
+
+        Real distCStar = (prev_cv_star.empty()) ? DBL_MAX :
+          rel_change_L2(c_vars, prev_cv_star);
+        // update prev_cv_star
+        copy_data(c_vars, prev_cv_star);
+        if (distCStar < distanceTol)
+          ++dist_convergence_cntr;
+
+        // If DIRECT failed to find a point with EIF>0, it returns the
+        //   center point as the optimal solution. EGO may have converged,
+        //   but DIRECT may have just failed to find a point with a good
+        //   EIF value. Adding this midpoint can alter the GPs enough to
+        //   to allow DIRECT to find something useful, so we force
+        //   max(EIF)<tol twice to make sure. Note that we cannot make
+        //   this check more than 2 because it would cause EGO to add
+        //   the center point more than once, which will damage the GPs.
+        //   Unfortunately, when it happens the second time, it may still
+        //   be that DIRECT failed and not that EGO converged.
         debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr);
 
         // Evaluate response_star_truth
@@ -424,9 +475,6 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
             }
         }
     } // end if parallel_flag = false -- then run sequentially
-
-
-
   } // end approx convergence while loop
 
   // Set best variables and response for use by strategy level.
