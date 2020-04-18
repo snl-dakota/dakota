@@ -47,6 +47,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   termsOrder(1.),
   tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
+  randomSeed(problem_db.get_int("method.random_seed")),
   fixedSeed(problem_db.get_bool("method.fixed_seed")), mlmfIter(0),
   multilevAllocControl(
     problem_db.get_short("method.nond.multilevel_allocation_control")),
@@ -88,7 +89,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
 NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
-	      short exp_coeffs_approach, const RealVector& dim_pref,
+	      short exp_coeffs_approach, const RealVector& dim_pref, int seed,
 	      short refine_type, short refine_control, short covar_control,
 	      Real colloc_ratio, short rule_nest, short rule_growth,
 	      bool piecewise_basis, bool use_derivs):
@@ -96,7 +97,8 @@ NonDExpansion(unsigned short method_name, Model& model,
   expansionBasisType(Pecos::DEFAULT_BASIS),
   statsType(Pecos::ACTIVE_EXPANSION_STATS), dimPrefSpec(dim_pref),
   collocRatio(colloc_ratio), termsOrder(1.), tensorRegression(false),
-  fixedSeed(false), mlmfIter(0), multilevAllocControl(DEFAULT_MLMF_CONTROL),
+  randomSeed(seed), fixedSeed(false), mlmfIter(0),
+  multilevAllocControl(DEFAULT_MLMF_CONTROL),
   multilevDiscrepEmulation(DEFAULT_EMULATION), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), numSamplesOnModel(0), numSamplesOnExpansion(0),
   relativeMetric(true), nestedRules(false), piecewiseBasis(piecewise_basis),

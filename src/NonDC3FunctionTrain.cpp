@@ -47,7 +47,6 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
-  randomSeed(problem_db.get_int("method.random_seed")),
   collocPtsSpec(problem_db.get_sizet("method.nond.collocation_points"))
 {
   if (iteratedModel.model_type()     == "surrogate" &&
@@ -138,7 +137,7 @@ NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
-  randomSeed(0), collocPtsSpec(0) // in lieu of sequence specifications
+  collocPtsSpec(0) // in lieu of sequence specification
 {
   if (iteratedModel.model_type()     == "surrogate" &&
       iteratedModel.surrogate_type() == "global_function_train") {

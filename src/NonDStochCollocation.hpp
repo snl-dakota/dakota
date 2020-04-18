@@ -52,8 +52,6 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  int random_seed() const;
-
   bool resize();
   void metric_roll_up();
 
@@ -142,14 +140,7 @@ private:
   RealSymMatrix deltaRespCovariance;
   /// change in response means induced by a refinement candidate
   RealVector deltaLevelMaps;
-
-  /// seed for random number generator used for expansion sampling
-  int randomSeed;
 };
-
-
-inline int NonDStochCollocation::random_seed() const
-{ return randomSeed; }
 
 
 inline void NonDStochCollocation::metric_roll_up()

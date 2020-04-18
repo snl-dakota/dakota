@@ -31,8 +31,7 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDStochCollocation::
 NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
-  NonDExpansion(problem_db, model),
-  randomSeed(problem_db.get_int("method.random_seed"))
+  NonDExpansion(problem_db, model)
 {
   // ----------------
   // Resolve settings
@@ -108,10 +107,10 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     short refine_control, short covar_control,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, dim_pref,
+  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, dim_pref, 0,
 		refine_type, refine_control, covar_control, 0., rule_nest,
-		rule_growth, piecewise_basis, use_derivs),
-  randomSeed(0) // Note: would be needed for expansionSampler, if defined
+		rule_growth, piecewise_basis, use_derivs)
+  // Note: non-zero seed would be needed for expansionSampler, if defined
 {
   // ----------------
   // Resolve settings
@@ -165,7 +164,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
 		     Model& model):
-  NonDExpansion(problem_db, model), randomSeed(0)
+  NonDExpansion(problem_db, model)
 {
   // Logic delegated to derived class constructor...
 }
@@ -180,10 +179,9 @@ NonDStochCollocation(unsigned short method_name, Model& model,
 		     short covar_control, short ml_alloc_control,
 		     short ml_discrep, short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, refine_type,
-		refine_control, covar_control, 0., rule_nest, rule_growth,
-		piecewise_basis, use_derivs),
-  randomSeed(0)
+  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
+		refine_type, refine_control, covar_control, 0., rule_nest,
+		rule_growth, piecewise_basis, use_derivs)
 {
   multilevAllocControl     = ml_alloc_control;
   multilevDiscrepEmulation = ml_discrep;

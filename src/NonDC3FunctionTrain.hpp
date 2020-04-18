@@ -56,7 +56,6 @@ protected:
   void initialize_u_space_model();
 
   size_t collocation_points() const;
-  int random_seed() const;
 
   // TODO
   //void compute_expansion();
@@ -118,10 +117,6 @@ private:
   //- Heading: Data
   //
 
-  /// seed for random number generator used for regression with LHS
-  /// and sub-sampled tensor grids
-  int randomSeed;
-
   /// user specification for collocation_points
   size_t collocPtsSpec;
 
@@ -136,10 +131,6 @@ private:
 
 inline size_t NonDC3FunctionTrain::collocation_points() const
 { return collocPtsSpec; }
-
-
-inline int NonDC3FunctionTrain::random_seed() const
-{ return randomSeed; }
 
 } // namespace Dakota
 
