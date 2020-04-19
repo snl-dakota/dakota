@@ -194,14 +194,8 @@ private:
   short dataOrder;
 
   /// declare check convergence variables
-  /// counter for convergence
+  /// relative distance change in input measured in L2
   Real distCStar;
-  // const Real& eif_star;
-  // const RealVector& c_vars;
-  RealVector prev_cv_star;
-  unsigned short eif_convergence_cntr;
-  unsigned short dist_convergence_cntr;
-  bool approx_converged;
 
   /// declare batch size for BatchSizeAcquisition
   /// sampling point located at maximum acquisition function
@@ -210,7 +204,6 @@ private:
   /// declare batch size for BatchSizeExploration
   /// sampling point located at maximum posterior variance
   int BatchSizeExploration;
-
 
 };
 
