@@ -235,6 +235,8 @@ public:
   short annNodes;
   /// range for artificial neural network approximation
   Real annRange;
+  /// number of restarts for gradient-based optimization in GP
+  int numRestarts;
 
   /// whether domain decomposition is enabled
   bool domainDecomp;
@@ -277,6 +279,9 @@ public:
   bool importChalUseVariableLabels;
   /// whether to import active variables only
   bool importChallengeActive;
+
+  /// file containing advanced surrogate option overrides
+  String advancedOptionsFilename;
 
   // nested models
 

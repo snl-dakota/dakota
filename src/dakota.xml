@@ -504,7 +504,7 @@
 	       <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points"  minOccurs="0" default="no sample reuse in coefficient estimation" >
 		 <alias name="reuse_samples"/>
 	       </keyword>
-	       <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples"  minOccurs="0" default="no sample reuse in coefficient estimation" />
+	       <!-- <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples"  minOccurs="0" default="no sample reuse in coefficient estimation" /> -->
 	     </keyword>
 	     ' >
 
@@ -514,7 +514,7 @@
 	       <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points"  minOccurs="0" default="no sample reuse in coefficient estimation" >
 		 <alias name="reuse_samples"/>
 	       </keyword>
-	       <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples"  minOccurs="0" default="no sample reuse in coefficient estimation" />
+	       <!-- <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples"  minOccurs="0" default="no sample reuse in coefficient estimation" /> -->
 	     </keyword>
 	     ' >
 
@@ -650,6 +650,13 @@
 	     <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
 	     ' >
 
+    <!ENTITY method_seed_sequence '
+	     <keyword id="seed_sequence" name="seed_sequence" code="{N_mdm(szarray,randomSeedSeq)}" label="seed" minOccurs="0" default="system-generated (non-repeatable)" >
+	       <param type="INTEGERLIST" />
+	     </keyword>
+	     <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
+	     ' >
+
     <!ENTITY samples_on_emulator_with_alias '
 	     <keyword  id="samples_on_emulator" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator"  minOccurs="0" >
 	       <alias name="samples" />
@@ -666,7 +673,6 @@
 		 <keyword  id="random1" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
 	       </oneOf>
              </keyword>
-             &method_seed;
              &rng_options;
 	     <keyword  id="probability_refinement" name="probability_refinement" code="{0}" label="Importance sampling refinement"  minOccurs="0" default="no refinement">
 	       <!-- TODO: consider removing this alias: -->
@@ -1027,7 +1033,7 @@
 		 &sc_sparse_grid_sequence;
 	       </oneOf>
 	       &sc_options;
-	       <!-- &expansion_options; -->
+	       <!-- &bayes_expansion_options; -->
 	     </keyword>
 	     ' >
 
@@ -2565,6 +2571,7 @@
         <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_SURROGATE_BASED_UQ)}" label="surrogate_based_uq" help="" group="Uncertainty Quantification" >
           <!-- Current target is Model-based PCE,SC,FT expansions: support expansion_options. -->
 	  &expansion_options;
+          &method_seed;
           <!-- DFSModel spec defines approximation, DACE, data import, etc. -->
 	  &method_optional_model_pointer;
         </keyword>
@@ -2577,6 +2584,7 @@
 	  &ft_method_order;
 	  &ft_method_rank;
 	  &expansion_options;
+          &method_seed;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -2589,6 +2597,7 @@
 	  &mlft_method_order_sequence;
 	  &mlft_method_rank_sequence;
 	  &expansion_options;
+          &method_seed_sequence;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -2601,6 +2610,7 @@
 	  &mlft_method_order_sequence;
 	  &mlft_method_rank_sequence;
 	  &expansion_options;
+          &method_seed_sequence;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -2619,6 +2629,7 @@
 	  </oneOf>
 	  &pce_options;
 	  &expansion_options;
+          &method_seed;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2638,6 +2649,7 @@
 	  </oneOf>
 	  &pce_options;
 	  &expansion_options;
+          &method_seed_sequence;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2655,6 +2667,7 @@
 	  </oneOf>
 	  &pce_options;
 	  &expansion_options;
+          &method_seed_sequence;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2667,6 +2680,7 @@
 	  </oneOf>
 	  &sc_options;
 	  &expansion_options;
+          &method_seed;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2680,6 +2694,7 @@
 	  </oneOf>
 	  &sc_options;
 	  &expansion_options;
+          &method_seed_sequence;
 	  <!-- &default_max_iterations; for future multilevel SC -->
 	  &method_optional_model_pointer;
 	</keyword>
@@ -2749,7 +2764,7 @@
 
 	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
-	  &method_seed;
+	  &method_seed; <!-- &method_seed_sequence; -->
 	  &mc_pilot_samples;
 	  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
 	    <oneOf label="Sample Type">
@@ -2760,6 +2775,20 @@
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
 	  </keyword>
+	  <keyword  id="allocation_target" name="allocation_target" code="{0}" label="Target for controlling sample allocation"  minOccurs="0" default="mean" >
+		<oneOf label="Allocation target">
+		<keyword  id="mean" name="mean" code="{N_mdm(type,allocationTarget_TARGET_MEAN)}" label="mean"  />
+		<keyword  id="variance" name="variance" code="{N_mdm(type,allocationTarget_TARGET_VARIANCE)}" label="variance">
+		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
+		</keyword>
+		</oneOf>
+	   </keyword>
+      <keyword  id="qoi_aggregation" name="qoi_aggregation" code="{0}" label="Rule of aggregating the variance and computing the sample allocation over qoi"  minOccurs="0" default="sum" >
+		<oneOf label="Qoi Aggregation ">
+		<keyword  id="sum" name="sum" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}" label="sum"   />
+		<keyword  id="max" name="max" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}" label="max"   />
+		</oneOf>
+	   </keyword>
 	  &default_max_iterations;
 	  &default_convergence_tolerance;
 	  &default_final_moments;
@@ -3113,6 +3142,19 @@
 		<param type="OUTPUT_FILE" />
 		&method_export_samples_format;
 	      </keyword>
+	    </keyword>
+	    <keyword  id="muq" name="muq" code="{N_mdm(utype,subMethod_SUBMETHOD_MUQ)}" label="muq"  minOccurs="1" >
+	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples"  default="method-dependent">
+		<alias name="samples" />
+		<param type="INTEGER" />
+	      </keyword>
+	      &bayes_seed_rng;
+	      <optional>
+		<oneOf label="MCMC Algorithm" >
+		  <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="metropolis_hastings" />
+		  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="metropolis_hastings" />
+		</oneOf>
+	      </optional>
 	    </keyword>
 	  </oneOf>
 	  <keyword  id="experimental_design" name="experimental_design" code="{N_mdm(true,adaptExpDesign)}" label="Bayesian Experiment Design"  minOccurs="0" >
@@ -3586,6 +3628,39 @@
           <oneOf label="Surrogate Category">
             <keyword  id="global" name="global" code="{0}" label="Global Approximation"  >
               <oneOf label="Global Surrogate Type">
+		<keyword  id="experimental_gaussian_process" name="experimental_gaussian_process" code="{N_mom(lit,surrogateType_global_exp_gauss_proc)}" label="Experimental Gaussian Process" minOccurs="1" >
+                  <keyword  id="trend1" name="trend" code="{0}" label="Specify Trend Function"  minOccurs="0" default="reduced_quadratic" >
+                    <oneOf label="Trend Order">
+                      <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant"   />
+                      <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear"   />
+		      <!--
+                          <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic"   />
+		      -->
+                      <keyword  id="quadratic" name="quadratic" code="{N_mom(lit,trendOrder_quadratic)}" label="Quadratic"   />
+                    </oneOf>
+                  </keyword>
+                  <keyword  id="num_restarts" name="num_restarts" code="{N_mom(int,numRestarts)}" label="Number of Optimization Runs"  minOccurs="0">
+                    <param type="INTEGER" constraint="> 1" />
+                  </keyword>
+		  <!-- max_trials (max function evals) does not map to num restarts
+                       <keyword  id="max_trials" name="max_trials" code="{N_mom(shint,krigingMaxTrials)}" label="Max Number of Likelihood Function Evaluations"  minOccurs="0" default="" complexity="1">
+                       <param type="INTEGER" constraint="> 0" />
+                       </keyword>
+		  -->
+                  <optional>
+                    <oneOf label="Nugget">
+                      <keyword  id="nugget" name="nugget" code="{N_mom(Real,krigingNugget)}" label="User-Specified Nugget "   default="None" >
+                        <param type="REAL" constraint="> 0" />
+                      </keyword>
+                      <keyword  id="find_nugget" name="find_nugget" code="{N_mom(shint,krigingFindNugget)}" label="Surfpack-Computed Nugget "   default="None" >
+                        <param type="INTEGER" />
+                      </keyword>
+                    </oneOf>
+                  </optional>
+		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		    <param type="INPUT_FILE" />
+		  </keyword>
+		</keyword>
                 <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process"  >
                   <alias name="kriging"/>
                   <oneOf label="GP Implementation">
@@ -3755,6 +3830,14 @@
                   </oneOf>
                   &model_full_surfpack_export_format;
                 </keyword>
+                <keyword  id="experimental_polynomial" name="experimental_polynomial" code="{N_mom(lit,surrogateType_global_exp_poly)}" label="Experimental Polynomial"  minOccurs="1" >
+                  <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="Basis Order" minOccurs="1" >
+                    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		    <param type="INPUT_FILE" />
+		  </keyword>
+		</keyword>
               </oneOf>
               <keyword  id="domain_decomposition" name="domain_decomposition" code="{N_mom(true,domainDecomp)}" label="Domain Decomposition"  minOccurs="0" complexity="1">
 		<keyword  id="cell_type" name="cell_type" code="{N_mom(str,decompCellType)}" label="Local Cell Type"  minOccurs="0">
@@ -5136,17 +5219,22 @@
         <keyword  id="objective_functions" name="objective_functions" code="{N_rem(sizet,numObjectiveFunctions)}" label="Optimization"  >
           <alias name="num_objective_functions"/>
           <param type="INTEGER" constraint=">= 0" />
+	  <!-- sense must be length 1 or num objective functions (groups), not per field element -->
           <keyword  id="sense" name="sense" code="{N_rem(strL,primaryRespFnSense)}" label="Optimization sense"  minOccurs="0" default="vector values = 'minimize'" >
             <param type="STRINGLIST" constraint="LEN1 objective_functions" />
           </keyword>
+	  <!-- scale types must be length 1 or num objective functions (groups), not per field element
+    	       "none" is no longer allowed to to ambiguity in scale values -->
           <keyword  id="primary_scale_types" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Objective function scaling types"  minOccurs="0" default="no scaling" >
             <alias name="objective_function_scale_types"/>
             <param type="STRINGLIST" constraint="LEN1 objective_functions" />
           </keyword>
+	  <!-- scales must be length 1, num objective functions (groups), or per-element (scalar + field lengths) -->
           <keyword  id="primary_scales" name="primary_scales" code="{N_rem(RealDL,primaryRespFnScales)}" label="Objective function scales"  minOccurs="0" default="1.0 (no scaling)" >
             <alias name="objective_function_scales"/>
-            <param type="REALLIST" constraint="LEN1 objective_functions" />
+            <param type="REALLIST" />  <!-- constraint="LEN1 objective_functions" --> 
           </keyword>
+	  <!-- weights combine objectives and when specified are only per objective function (group), not field element -->
           <keyword  id="weights" name="weights" code="{N_rem(RealDL,primaryRespFnWeights)}" label="Multi-objective weightings"  minOccurs="0" default="equal weights" >
             <alias name="multi_objective_weights"/>
             <param type="REALLIST" constraint="LEN objective_functions" />
@@ -5220,16 +5308,21 @@
             </keyword>
 	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files"  minOccurs="0" />
 	  </keyword>
+	  <!-- scale types are no longer supported since removal of "none"; only value scaling supported
+               leaving for possible return to log scaling if sensible:
           <keyword  id="primary_scale_types1" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Calibration scaling types"  minOccurs="0" default="no scaling" >
             <alias name="calibration_term_scale_types"/>
             <alias name="least_squares_term_scale_types"/>
             <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
           </keyword>
+	  -->
+	  <!-- scales must be length 1, num calibration terms (groups), or per-element (scalar + field lengths) -->
           <keyword  id="primary_scales1" name="primary_scales" code="{N_rem(RealDL,primaryRespFnScales)}" label="Calibration scales"  minOccurs="0" default="1.0 (no scaling)" >
             <alias name="calibration_term_scales"/>
             <alias name="least_squares_term_scales"/>
-            <param type="REALLIST" constraint="LEN1 calibration_terms" />
+            <param type="REALLIST" /> <!-- constraint="LEN1 calibration_terms" --> 
           </keyword>
+	  <!-- weights combine terms and when specified are only per calibration term (group), not field element -->
           <keyword  id="weights1" name="weights" code="{N_rem(RealDL,primaryRespFnWeights)}" label="Calibration term weights"  minOccurs="0" default="equal weights" >
             <alias name="calibration_weights"/>
             <alias name="least_squares_weights"/>

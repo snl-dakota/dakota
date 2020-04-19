@@ -495,6 +495,16 @@ if(HAVE_SURFPACK)
   list(APPEND DAKOTA_PKG_LIBS surfpack surfpack_fortran)
 endif(HAVE_SURFPACK)
 
+if(DAKOTA_MODULE_SURROGATES)
+  add_definitions("-DHAVE_DAKOTA_SURROGATES")
+  list(APPEND interface_src DakotaSurrogatesGP.cpp DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
+  list(APPEND DAKOTA_INCDIRS 
+    ${Dakota_SOURCE_DIR}/src/util
+    ${Dakota_SOURCE_DIR}/src/surrogates
+    ${EIGEN3_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS}
+    ${Dakota_SOURCE_DIR}/packages/external/eigen3/include/eigen3)
+endif(DAKOTA_MODULE_SURROGATES)
+
 if(DAKOTA_MATLAB)
   list(APPEND interface_src MatlabInterface.cpp)
 endif()
@@ -719,11 +729,21 @@ endif(HAVE_NOMAD)
 
 if(HAVE_NOWPAC)
   add_definitions("-DHAVE_NOWPAC")
-  set(DAKOTA_NOWPAC_ROOT_DIR   "${Dakota_SOURCE_DIR}/packages/external/nowpac")
-  set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/nlopt")
-  set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/eigen")
+  if(NOT DAKOTA_NOWPAC_ROOT_DIR)
+    set(DAKOTA_NOWPAC_ROOT_DIR   "${Dakota_SOURCE_DIR}/packages/external/nowpac")
+  endif(NOT DAKOTA_NOWPAC_ROOT_DIR)
+  if( NOT DAKOTA_NOWPAC_NLOPT_ROOT)
+    set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/nlopt")
+  endif(NOT DAKOTA_NOWPAC_NLOPT_ROOT)
+  if( NOT DAKOTA_NOWPAC_EIGEN_ROOT )
+    set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/eigen")
+  endif(NOT DAKOTA_NOWPAC_EIGEN_ROOT)
+  message(STATUS "NOWPAC ROOT DIR ${DAKOTA_NOWPAC_ROOT_DIR}")
+  message(STATUS "NOWPAC NLOPT DIR ${DAKOTA_NOWPAC_NLOPT_ROOT}")
+  message(STATUS "NOWPAC EIGEN DIR ${DAKOTA_NOWPAC_EIGEN_ROOT}")
   list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT}/include/eigen3)
   link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib) # ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include
+ 
   set(iterator_src ${iterator_src} NOWPACOptimizer.cpp)
   list(APPEND DAKOTA_PKG_LIBS nowpac nlopt)
   #list(APPEND EXPORT_TARGETS nowpac nlopt)
@@ -758,6 +778,36 @@ if(HAVE_OPTPP)
   list(APPEND DAKOTA_PKG_LIBS optpp)
   list(APPEND EXPORT_TARGETS optpp)
 endif(HAVE_OPTPP)
+
+# Need to conditionally enable this based on HAVE_EIGEN and surrogate module enabled - RWH
+SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
+find_package(Eigen3 3.3 REQUIRED CONFIG)
+#message(STATUS "Here: EIGEN3_FOUND = ${EIGEN3_FOUND}")
+#message(STATUS "Here: EIGEN3_INCLUDE_DIRS = ${EIGEN3_INCLUDE_DIRS}")
+#message(STATUS "Here: EIGEN3_INCLUDE_DIR = ${EIGEN3_INCLUDE_DIR}")
+list(APPEND DAKOTA_INCDIRS ${EIGEN3_INCLUDE_DIRS})
+add_definitions("-DHAVE_EIGEN -DEIGEN_MPL2_ONLY")
+
+if(HAVE_MUQ)
+  ##  #SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Dakota_SOURCE_DIR}/packages/external/muq2/CMake)
+  ##  include(${Dakota_SOURCE_DIR}/packages/external/muq2/CMake/MUQ_PRIVATE/MUQ_PRIVATEConfig.cmake)
+  ##  list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/muq2/include)
+  ##  list(APPEND DAKOTA_INCDIRS ${MUQ_INCLUDE_DIRS})
+  ##  #link_directories($(MUQ_LIBRARY_DIR))
+  ##  list(APPEND DAKOTA_PKG_LIBS ${MUQ_LIBRARIES})
+  ##  list(APPEND DAKOTA_LIBDIRS ${MUQ_LIBRARY_DIR})
+  ##  #add_subdirectory(surrogates/models/src)
+  ##  #add_subdirectory(surrogates/models/unit)
+
+  # BMA TODO: Would prefer find_package / config mode as RWH demoed above
+  # lib/ dir isn't sufficiently general, though MUQ hard-codes it
+  # BMA TODO: Make sure the exports and install rules work properly
+  add_definitions("-DHAVE_MUQ")
+  set(iterator_src ${iterator_src} NonDMUQBayesCalibration.cpp)
+  list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/include)
+  list(APPEND DAKOTA_LIBDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/lib)
+  list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqSamplingAlgorithms)
+endif()
 
 if(HAVE_ROL)
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
@@ -861,6 +911,13 @@ list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
 add_library(dakota_src ${Dakota_src})
 target_link_libraries(dakota_src dakota_src_fortran)
+if(DAKOTA_MODULE_SURROGATES)
+  target_link_libraries(dakota_src dakota_surrogates)
+  #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)
+  list(APPEND EXPORT_TARGETS dakota_util)
+  list(APPEND EXPORT_TARGETS dakota_surrogates)
+endif(DAKOTA_MODULE_SURROGATES)
+
 DakotaApplyMPISettings(dakota_src)
 if(HAVE_AMPL)
   # Enforce AMPL config header creation prior to compiling dakota sources
@@ -886,7 +943,10 @@ endif()
 if(HAVE_NOWPAC)
   # Require Eigen and NLOPT ExternalProjects to be downloaded, built,
   # and installed before building Dakota sources
+  if(NOT HAVE_EXTERNAL_NOWPAC)
   add_dependencies(dakota_src EIGEN NLOPT)
+  endif()
+  target_link_libraries(dakota_src ${DAKOTA_NOWPAC_ROOT_DIR}/lib/libnowpac.a)
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
@@ -953,6 +1013,9 @@ install(TARGETS dakota_src_fortran EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
+#if(DAKOTA_MODULE_SURROGATES)
+#  install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
+#endif(DAKOTA_MODULE_SURROGATES)
 file(GLOB Dakota_hdr *.hpp *.h)
 # We don't install NIDR_keywds0.hpp as is not needed by clients
 install(FILES ${Dakota_hdr} ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp
@@ -1073,7 +1136,7 @@ export(TARGETS ${EXPORT_TARGETS} FILE
 if(ExportTarget STREQUAL DakotaTargets)
   message(STATUS 
     "Installing Dakota exported targets to ${Dakota_INSTALL_CMAKE_DIR}")
-  install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
+  #install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
 endif()
 
 

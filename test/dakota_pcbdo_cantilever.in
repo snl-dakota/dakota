@@ -67,6 +67,7 @@ method,
 #	    collocation_ratio = 0.5 seed = 12347 	#s4,#s5,#s6,#s7
 #	    collocation_points = 70 seed = 12347 	#s12
 #	    collocation_points = 30 seed = 12347 	#s13
+	    fixed_seed	       	      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s12,#s13
 #	  orthogonal_least_interpolation       	  	#s12,#s13
 #	  sparse_grid_level = 2 non_nested		#s8,#s10
 #	  sparse_grid_level = 4 non_nested		#s9,#s11
@@ -85,7 +86,7 @@ model,
 
 variables,
 	id_variables = 'UQ_V'
-#	active all					#s1,#s3,#s5,#s7,#s9,#s11,#s12
+#	active all		#s1,#s3,#s5,#s7,#s9,#s11,#s12
 	continuous_design = 2
 	normal_uncertain = 4
 	  means             =  40000. 29.E+6 500. 1000.
@@ -101,6 +102,6 @@ interface,
 responses,
 	id_responses = 'UQ_R'
 	response_functions = 3
-	analytic_gradients			#s0,#s4,#s8
-#	no_gradients				#s1,#s2,#s3,#s5,#s6,#s7,#s9,#s10,#s11,#s12,#s13
+	analytic_gradients	#s0,#s4,#s8
+#	no_gradients		#s1,#s2,#s3,#s5,#s6,#s7,#s9,#s10,#s11,#s12,#s13
 	no_hessians

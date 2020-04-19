@@ -338,6 +338,57 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
 		      nln_ineq_u_bnds, nln_eq_tgts);
 }
 
+/** This is an alternate constructor for performing an optimization using
+    the passed in objective function and constraint function pointers additionally
+    specifing optimizaton settings. */
+SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt, 
+  const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+  const RealMatrix& lin_ineq_coeffs,
+  const RealVector& lin_ineq_l_bnds,
+  const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
+  const RealVector& lin_eq_tgts, const RealVector& nln_ineq_l_bnds,
+  const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
+  void (*user_obj_eval) (int mode, int n, const RealVector& x,
+       double& f, RealVector& grad_f,
+       int& result_mode),
+  void (*user_con_eval) (int mode, int n, const RealVector& x, 
+       RealVector& g, RealMatrix& grad_g,
+       int& result_mode), 
+    const int max_iter, const int max_fn_evals,
+    const Real conv_tol, const Real grad_tol,
+    Real max_step): // use default SNLLBase ctor
+  Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0, 0,
+      lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
+      nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
+            std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
+  theOptimizer(NULL), setUpType("user_functions"), initialPoint(initial_pt),
+  lowerBounds(var_l_bnds), upperBounds(var_u_bnds)
+{
+  for (size_t i=0; i<numContinuousVars; i++)
+    if (lowerBounds[i] > -bigRealBoundSize || upperBounds[i] < bigRealBoundSize)
+      { boundConstraintFlag = true; break; }
+
+  // convenience function from SNLLBase: use defaults since no specification
+  snll_pre_instantiate(boundConstraintFlag, numConstraints);
+
+  // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
+  default_instantiate_q_newton(user_obj_eval, user_con_eval);
+
+  // convenience function from SNLLBase: use defaults since no specification
+  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_fn_evals, conv_tol,
+      grad_tol, max_step, boundConstraintFlag, numConstraints,
+      outputLevel, theOptimizer, nlfObjective, NULL, NULL);
+
+  // this can be called from the ctor (avoids caching of constraint arrays
+  // within the class) since no Model updates need to be captured
+  snll_initialize_run(nlfObjective, nlpConstraint, initialPoint,
+          boundConstraintFlag, lowerBounds, upperBounds,
+          lin_ineq_coeffs, lin_ineq_l_bnds, lin_ineq_u_bnds,
+          lin_eq_coeffs, lin_eq_tgts, nln_ineq_l_bnds,
+          nln_ineq_u_bnds, nln_eq_tgts);
+}
+
 
 SNLLOptimizer::~SNLLOptimizer()
 {
@@ -819,14 +870,16 @@ void SNLLOptimizer::initialize_run()
 }
 
 
-void SNLLOptimizer::core_run()
-{ theOptimizer->optimize(); }
+void SNLLOptimizer::core_run(){
+  theOptimizer->optimize();
+}
 
 
 void SNLLOptimizer::post_run(std::ostream& s)
 {
   Cout << "********************************************************" <<  '\n';
   Cout << "             OPT++ TERMINATION CRITERION                " <<  '\n';
+  Cout << "             Return Code                " << theOptimizer->getReturnCode() <<  '\n';
   if(theOptimizer->getReturnCode() > 0)
      Cout << "\t  SUCCESS - " << method_enum_to_string(methodName)
 	  << " converged to a solution\n";

@@ -134,6 +134,8 @@ DataMethodRep::DataMethodRep():
   expansionOrder(USHRT_MAX),
   collocationPoints(std::numeric_limits<size_t>::max()),
   expansionSamples(std::numeric_limits<size_t>::max()),
+  allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
+  qoiAggregation(QOI_AGGREGATION_SUM),
   //expansionSampleType("lhs"),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
@@ -267,7 +269,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << primeBase << numTrials << trialType;
 
   // COLINY, NonD, DACE, & JEGA
-  s << randomSeed;
+  s << randomSeed << randomSeedSeq;
 
   // MADS
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns
@@ -291,7 +293,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
     << expansionSamplesSeq << quadratureOrder << sparseGridLevel
     << expansionOrder << collocationPoints << expansionSamples
-    << expansionSampleType << anisoDimPref << cubIntOrder << collocationRatio
+  //<< expansionSampleType
+    << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType
     << regressionNoiseTol << regressionL2Penalty << crossValidation
     << crossValidNoiseOnly //<< adaptedBasisInitLevel
@@ -328,7 +331,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity;
+    << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
+    << allocationTarget << useTargetVarianceOptimizationFlag;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -428,7 +432,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> primeBase >> numTrials >> trialType;
 
   // COLINY, NonD, DACE, & JEGA
-  s >> randomSeed;
+  s >> randomSeed >> randomSeedSeq;
 
   // MADS
   s >> initMeshSize >> minMeshSize >> historyFile >> displayFormat >> vns
@@ -452,7 +456,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> sparseGridLevelSeq >> expansionOrderSeq >> collocationPointsSeq
     >> expansionSamplesSeq >> quadratureOrder >> sparseGridLevel
     >> expansionOrder >> collocationPoints >> expansionSamples
-    >> expansionSampleType >> anisoDimPref >> cubIntOrder >> collocationRatio
+  //>> expansionSampleType
+    >> anisoDimPref >> cubIntOrder >> collocationRatio
     >> collocRatioTermsOrder >> regressionType >> lsRegressionType
     >> regressionNoiseTol >> regressionL2Penalty >> crossValidation
     >> crossValidNoiseOnly //>> adaptedBasisInitLevel
@@ -489,7 +494,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
-    >> generatePosteriorSamples >> evaluatePosteriorDensity;
+    >> generatePosteriorSamples >> evaluatePosteriorDensity >> qoiAggregation 
+    >> allocationTarget >> useTargetVarianceOptimizationFlag;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -589,7 +595,7 @@ void DataMethodRep::write(std::ostream& s) const
     << primeBase << numTrials << trialType;
 
   // COLINY, NonD, DACE, & JEGA
-  s << randomSeed;
+  s << randomSeed << randomSeedSeq;
 
   // MADS
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns
@@ -613,7 +619,8 @@ void DataMethodRep::write(std::ostream& s) const
     << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
     << expansionSamplesSeq << quadratureOrder << sparseGridLevel
     << expansionOrder << collocationPoints << expansionSamples
-    << expansionSampleType << anisoDimPref << cubIntOrder << collocationRatio
+  //<< expansionSampleType
+    << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType
     << regressionNoiseTol << regressionL2Penalty << crossValidation
     << crossValidNoiseOnly //<< adaptedBasisInitLevel
@@ -650,7 +657,8 @@ void DataMethodRep::write(std::ostream& s) const
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity;
+    << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
+    << allocationTarget << useTargetVarianceOptimizationFlag;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

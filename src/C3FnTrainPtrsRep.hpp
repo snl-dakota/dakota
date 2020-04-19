@@ -37,6 +37,10 @@ public:
 
   //void copy(const C3FnTrainPtrsRep& ptrs);
 
+  static struct FunctionTrain *
+    subtract_const(struct FunctionTrain * ft, double val,
+		   struct MultiApproxOpts * opts);
+
   void free_ft();
   void free_all();
 
@@ -67,6 +71,20 @@ public:
 inline C3FnTrainPtrsRep::C3FnTrainPtrsRep():
   ft(NULL), ft_gradient(NULL), ft_hessian(NULL), ft_sobol(NULL)
 { ft_derived_functions_init_null(); }
+
+
+inline struct FunctionTrain * C3FnTrainPtrsRep::
+subtract_const(struct FunctionTrain * ft, double val,
+	       struct MultiApproxOpts * opts)
+{
+  // two new FT are allocated, one is immediately deallocated, one is returned
+  // (which must be eventually deallocated by client)
+
+  struct FunctionTrain * ft_const   = function_train_constant(-val, opts);
+  struct FunctionTrain * ft_updated = function_train_sum(ft, ft_const);
+  function_train_free(ft_const); //ft_const = NULL;
+  return ft_updated;
+}
 
 
 inline void C3FnTrainPtrsRep::free_ft()

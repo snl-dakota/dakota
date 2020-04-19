@@ -204,6 +204,8 @@ public:
 
   /// increment to next in sequence of refinement samples
   virtual void sampling_increment();
+  /// set randomSeed, if present
+  virtual void random_seed(int seed);
 
   /// return sampling name
   virtual unsigned short sampling_scheme() const;
@@ -482,7 +484,6 @@ protected:
   /// Whether this is the top level iterator
   bool topLevel;
 
-  
 private:
 
   //
@@ -531,6 +532,7 @@ private:
   Iterator* iteratorRep;
   /// number of objects sharing iteratorRep
   int referenceCount;
+
 };
 
 inline std::shared_ptr<TraitsBase> Iterator::traits() const

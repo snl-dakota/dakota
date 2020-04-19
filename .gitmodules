@@ -1,5 +1,14 @@
 [submodule "packages/external"]
 	path = packages/external
+#<<<<<<< HEAD
+#	url = https://software.sandia.gov/git/dakota-packages
+#[submodule "packages/pecos"]
+#	path = packages/pecos
+#	url = https://software.sandia.gov/git/pecos
+#[submodule "packages/surfpack"]
+#	path = packages/surfpack
+#	url = https://software.sandia.gov/git/surfpack
+#=======
 	url = ../dakota-packages
 [submodule "packages/pecos"]
 	path = packages/pecos
@@ -7,3 +16,4 @@
 [submodule "packages/surfpack"]
 	path = packages/surfpack
 	url = ../surfpack
+#>>>>>>> origin/devel

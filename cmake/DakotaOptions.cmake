@@ -17,6 +17,14 @@ option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
 option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
 option(DAKOTA_F90 "Build Dakota's Fortran90 bvls_wrapper." ON)
 
+# BMA NOTE: May not want an option as this is required
+option(DAKOTA_MODULE_UTIL "Enable Dakota module util" ON)
+option(DAKOTA_MODULE_SURROGATES "Enable Dakota module surrogates" ON)
+# BMA NOTE: This isn't a great module name, but seems more intentional
+# that "rest of Dakota"
+option(DAKOTA_MODULE_DAKOTA "Enable Dakota module for traditional all Dakota"
+  ON)
+
 # Testing options
 option(DAKOTA_ENABLE_TESTS "Enable Dakota-specific tests?" ON)
 # Option to turn off key DAKOTA TPL tests, default OFF
@@ -61,6 +69,7 @@ endif()
 option(DAKOTA_API_JAVA "Unsupported: Enable Dakota library Java API" OFF)
 mark_as_advanced(DAKOTA_API_JAVA)
 
+option(DAKOTA_GCOV "GNU gcov for Dakota core" OFF)
 
 # -----
 # System TPLs
@@ -100,6 +109,7 @@ option(HAVE_DDACE "Build the DDACE package." ON)
 option(HAVE_DEMO_TPL "Build the Demo_TPL package." OFF)
 option(HAVE_DOT "Build the DOT package." ON)
 option(HAVE_DREAM "Build the DREAM package." ON)
+option(HAVE_EIGEN "Build the Eigen package." ON)
 
 # Formerly sub-packages of Pecos
 option(HAVE_FFT "Use either the fftw or dfftpack packages" ON)

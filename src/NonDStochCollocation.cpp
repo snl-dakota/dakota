@@ -84,7 +84,10 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // -------------------------------
   // Construct expSampler, if needed
   // -------------------------------
-  construct_expansion_sampler(
+  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
+    problem_db.get_string("method.random_number_generator"),
+    problem_db.get_ushort("method.nond.integration_refinement"),
+    problem_db.get_iv("method.nond.refinement_samples"),
     probDescDB.get_string("method.import_approx_points_file"),
     probDescDB.get_ushort("method.import_approx_format"),
     probDescDB.get_bool("method.import_approx_active_only"));
@@ -104,9 +107,10 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     short refine_control, short covar_control,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, dim_pref,
+  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, dim_pref, 0,
 		refine_type, refine_control, covar_control, 0., rule_nest,
 		rule_growth, piecewise_basis, use_derivs)
+  // Note: non-zero seed would be needed for expansionSampler, if defined
 {
   // ----------------
   // Resolve settings
@@ -155,7 +159,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 }
 
 
-/** This constructor is called derived class constructors that
+/** This constructor is called from derived class constructors that
     customize the object construction. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
@@ -166,7 +170,8 @@ NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
 }
 
 
-/** This constructor is used for helper iterator instantiation on the fly. */
+/** This constructor is called from derived class constructors that
+    customize the object construction. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, Model& model,
 		     short exp_coeffs_approach, const RealVector& dim_pref,
@@ -174,9 +179,9 @@ NonDStochCollocation(unsigned short method_name, Model& model,
 		     short covar_control, short ml_alloc_control,
 		     short ml_discrep, short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, refine_type,
-		refine_control, covar_control, 0., rule_nest, rule_growth,
-		piecewise_basis, use_derivs)
+  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
+		refine_type, refine_control, covar_control, 0., rule_nest,
+		rule_growth, piecewise_basis, use_derivs)
 {
   multilevAllocControl     = ml_alloc_control;
   multilevDiscrepEmulation = ml_discrep;

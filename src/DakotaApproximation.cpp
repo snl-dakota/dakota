@@ -27,6 +27,10 @@
 #ifdef HAVE_SURFPACK
 #include "SurfpackApproximation.hpp"
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+#include "DakotaSurrogatesGP.hpp"
+#include "DakotaSurrogatesPoly.hpp"
+#endif // HAVE_DAKOTA_SURROGATES
 #include "DakotaGraphics.hpp"
 
 //#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
@@ -150,6 +154,12 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 	     approx_type == "global_moving_least_squares")
       return new SurfpackApproximation(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+    else if (approx_type == "global_exp_gauss_proc")
+      return new SurrogatesGPApprox(problem_db, shared_data, approx_label);
+    else if (approx_type == "global_exp_poly")
+      return new SurrogatesPolyApprox(problem_db, shared_data, approx_label);
+#endif // HAVE_DAKOTA_SURROGATES
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."
 	   << std::endl;
@@ -213,6 +223,12 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 	   approx_type == "global_moving_least_squares")
     approx = new SurfpackApproximation(shared_data);
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+    else if (approx_type == "global_exp_gauss_proc")
+      return new SurrogatesGPApprox(shared_data);
+    else if (approx_type == "global_exp_poly")
+      return new SurrogatesPolyApprox(shared_data);
+#endif // HAVE_DAKOTA_SURROGATES
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."
 	 << std::endl;
@@ -1023,7 +1039,7 @@ int Approximation::num_constraints() const
     return approxRep->num_constraints();
   // default implementation:
   else if (approxData.anchor()) { // anchor data may differ from buildDataOrder
-    const SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+    const Pecos::SurrogateDataResp& anchor_sdr = approxData.anchor_response();
     int ng = anchor_sdr.response_gradient().length(),
         nh = anchor_sdr.response_hessian().numRows();
     return 1 + ng + nh*(nh + 1)/2;

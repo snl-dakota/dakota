@@ -51,6 +51,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   // at the base class
   driverTypeMap["cantilever"]             = CANTILEVER_BEAM;
   driverTypeMap["mod_cantilever"]         = MOD_CANTILEVER_BEAM;
+  driverTypeMap["cantilever_ml"]          = CANTILEVER_BEAM_ML;
   driverTypeMap["cyl_head"]               = CYLINDER_HEAD;
   driverTypeMap["extended_rosenbrock"]    = EXTENDED_ROSENBROCK;
   driverTypeMap["generalized_rosenbrock"] = GENERALIZED_ROSENBROCK;
@@ -97,10 +98,12 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["genz"]                   = GENZ;
   driverTypeMap["damped_oscillator"]      = DAMPED_OSCILLATOR;
   driverTypeMap["steady_state_diffusion_1d"] = STEADY_STATE_DIFFUSION_1D;
+  driverTypeMap["ss_diffusion_discrepancy"]  = SS_DIFFUSION_DISCREPANCY;
   driverTypeMap["transient_diffusion_1d"] = TRANSIENT_DIFFUSION_1D;
   driverTypeMap["predator_prey"]          = PREDATOR_PREY;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
   driverTypeMap["bayes_linear"]           = BAYES_LINEAR;
+  driverTypeMap["problem18"]              = PROBLEM18;
 
   // convert strings to enums for analysisDriverTypes, iFilterType, oFilterType
   analysisDriverTypes.resize(numAnalysisDrivers);
@@ -145,11 +148,11 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   localDataView = 0;
   for (size_t i=0; i<numAnalysisDrivers; ++i)
     switch (analysisDriverTypes[i]) {
-    case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
+    case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM: case CANTILEVER_BEAM_ML:
     case ROSENBROCK:   case LF_ROSENBROCK:    case EXTRA_LF_ROSENBROCK:
-    case MF_ROSENBROCK:    case MODIFIED_ROSENBROCK:
+    case MF_ROSENBROCK:    case MODIFIED_ROSENBROCK: case PROBLEM18:
     case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
-    case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE:
+    case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE: 
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
     case CYLINDER_HEAD:       case LOGNORMAL_RATIO:     case MULTIMODAL:
@@ -165,8 +168,9 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
     case GENZ: case DAMPED_OSCILLATOR:
-    case STEADY_STATE_DIFFUSION_1D: case TRANSIENT_DIFFUSION_1D:
-    case PREDATOR_PREY: case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
+    case STEADY_STATE_DIFFUSION_1D:  case SS_DIFFUSION_DISCREPANCY:
+    case TRANSIENT_DIFFUSION_1D:     case PREDATOR_PREY:
+    case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -189,7 +193,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
       varTypeMap["ModelForm"] = VAR_MForm;
     //case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
       varTypeMap["w"] = VAR_w; varTypeMap["t"] = VAR_t; varTypeMap["R"] = VAR_R;
-      varTypeMap["E"] = VAR_E; varTypeMap["X"] = VAR_X;
+      varTypeMap["E"] = VAR_E; varTypeMap["X"] = VAR_X; varTypeMap["area_type"] = VAR_area_type;
       //varTypeMap["Y"] = VAR_Y; break;
     //case STEEL_COLUMN:
       varTypeMap["Fs"] = VAR_Fs; varTypeMap["P1"] = VAR_P1;
@@ -198,6 +202,9 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
       varTypeMap["H"]  = VAR_H;  //varTypeMap["b"] = VAR_b;
       varTypeMap["d"]  = VAR_d;  //varTypeMap["h"] = VAR_h;
       varTypeMap["F0"] = VAR_F0; //varTypeMap["E"] = VAR_E; break;
+    //case PROBLEM18:
+      varTypeMap["x"] = VAR_x; varTypeMap["xi"] = VAR_xi; 
+      varTypeMap["Af"] = VAR_Af; varTypeMap["Ac"] = VAR_Ac;
     //}
   }
 }
@@ -228,6 +235,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = cantilever(); break;
   case MOD_CANTILEVER_BEAM:
     fail_code = mod_cantilever(); break;
+  case CANTILEVER_BEAM_ML:
+    fail_code = cantilever_ml(); break;
   case CYLINDER_HEAD:
     fail_code = cyl_head(); break;
   case ROSENBROCK:
@@ -322,6 +331,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = damped_oscillator(); break;
   case STEADY_STATE_DIFFUSION_1D:
     fail_code = steady_state_diffusion_1d(); break;
+  case SS_DIFFUSION_DISCREPANCY:
+    fail_code = ss_diffusion_discrepancy(); break;
   case TRANSIENT_DIFFUSION_1D:
     fail_code = transient_diffusion_1d(); break;
   case PREDATOR_PREY:
@@ -330,6 +341,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = aniso_quad_form(); break;
   case BAYES_LINEAR: 
     fail_code = bayes_linear(); break;
+  case PROBLEM18:
+    fail_code = problem18(); break;
   default: {
     Cerr << "Error: analysis_driver '" << ac_name << "' is not available in "
 	 << "the direct interface." << std::endl;
@@ -695,6 +708,168 @@ int TestDriverInterface::mod_cantilever()
 
   return 0; // no failure
 }
+
+int TestDriverInterface::cantilever_ml()
+  {
+    using std::pow;
+
+    if (multiProcAnalysisFlag) {
+      Cerr << "Error: cantilever direct fn does not support multiprocessor "
+           << "analyses." << std::endl;
+      abort_handler(-1);
+    }
+    // cantilever normally has 6 variables: 2 design + 4 uncertain
+    // If, however, design variables are _inserted_ into the uncertain variable
+    // distribution parameters (e.g., dakota_rbdo_cantilever_mapvars.in) instead
+    // of augmenting the uncertain variables, then the number of variables is 4.
+    // Design gradients are not supported for the case of design var insertion.
+    if ( (numVars != 5 && numVars != 7) || (numADIV != 1) || numADRV ||//var count, no dv
+         (gradFlag && numVars == 5 && numDerivVars != 4) ) { // design insertion
+      Cerr << "Error: Bad number of variables in cantilever direct fn."
+           << std::endl;
+      Cerr << "Num vars:" << numVars << ", " << numDerivVars
+           << std::endl;
+      abort_handler(INTERFACE_ERROR);
+    }
+    if (numFns < 2 || numFns > 3) {
+      Cerr << "Error: Bad number of functions in mod_cantilever direct fn."
+           << std::endl;
+      abort_handler(INTERFACE_ERROR);
+    }
+
+    // Compute the cross-sectional area, stress, and displacement of the
+    // cantilever beam.  This simulator is unusual in that it must support both
+    // the case of design variable insertion and the case of design variable
+    // augmentation.  It does not support mixed insertion/augmentation.  In
+    // the 6 variable case, w,t,R,E,X,Y are all passed in; in the 4 variable
+    // case, w,t assume local values.
+    std::map<var_t, Real>::iterator m_iter = xCM.find(VAR_w);
+    Real w = (m_iter == xCM.end()) ? 2.5 : m_iter->second; // beam width
+    m_iter = xCM.find(VAR_t);
+    Real t = (m_iter == xCM.end()) ? 2.5 : m_iter->second; // beam thickness
+    Real R = xCM[VAR_R], // yield strength
+        E = xCM[VAR_E], // Young's modulus
+        X = xCM[VAR_X], // horizontal load
+        Y = xCM[VAR_Y]; // vertical load
+
+    // allow f,c1,c2 (optimization) or just c1,c2 (calibration)
+    bool objective; size_t c1i, c2i;
+    if (numFns == 2) { objective = false; c1i = 0; c2i = 1; }
+    else             { objective = true;  c1i = 1; c2i = 2; }
+
+    // UQ limit state <= 0: don't scale stress by random variable r
+    //double g_stress = stress - r;
+    //double g_disp   = displ  - D0;
+
+    std::map<var_t, int>::iterator area_type_iter = xDIM.find(VAR_area_type);
+    int area_type = (area_type_iter == xDIM.end()) ? 1. : area_type_iter->second; // Correlation Af for objective
+
+    Real D0 = 2.2535, L = 100., area, w_sq, t_sq, R_sq, X_sq, Y_sq;
+    Real stress;
+    Real D1, D2, D3, displ;
+    area = w*t;
+    if(area_type == 1){// Rectangle
+      w_sq = w*w; t_sq = t*t;
+      R_sq = R*R; X_sq = X*X; Y_sq = Y*Y;
+
+      stress = 6.*L*Y/w/t_sq + 6.*L*X/w_sq/t;
+
+      D1 = 4.*pow(L, 3)/E/area;
+      D2 = pow(Y/t_sq, 2)+pow(X/w_sq, 2);
+      D3 = D1/std::sqrt(D2);
+      displ = D1*std::sqrt(D2);
+    }else if(area_type == 2){// Ellipse
+      const Real m_pi = 3.14159265358979323846;
+      Real a = t/2. * 4./m_pi;
+      Real b = w/2.;
+
+      stress = (4.*L)/(m_pi*a*b) * std::sqrt(pow(Y/a, 2) + pow(X/b, 2));
+
+      Real I_x = (m_pi * b * pow(a, 3))/4.;
+      Real I_y = (m_pi * pow(b, 3) * a)/4.;
+      displ = std::sqrt(
+          pow((pow(L, 3) * X)/(3.*E*I_y), 2) +
+          pow((pow(L, 3) * Y)/(3.*E*I_x), 2)
+      );
+    }else{
+      Cout << "TestDriverInterface::mod_cantilever_ml(): wrong area type.\n";
+      abort_handler(INTERFACE_ERROR);
+    }
+    // **** f:
+    if (objective && (directFnASV[0] & 1))
+      fnVals[0] = area;
+
+    // **** c1:
+    if (directFnASV[c1i] & 1)
+      fnVals[c1i] = stress/R - 1.;
+
+    // **** c2:
+    if (directFnASV[c2i] & 1)
+      fnVals[c2i] = displ/D0 - 1.;
+
+    // **** df/dx:
+    if (objective && (directFnASV[0] & 2))
+      for (size_t i=0; i<numDerivVars && area_type == 1; ++i)
+        switch (varTypeDVV[i]) {
+          case VAR_w:  fnGrads[0][i] = t;  break; // design var derivative
+          case VAR_t:  fnGrads[0][i] = w;  break; // design var derivative
+          default: fnGrads[0][i] = 0.; break; // uncertain var derivative
+        }
+
+    // **** dc1/dx:
+    if (directFnASV[c1i] & 2)
+      for (size_t i=0; i<numDerivVars && area_type == 1; ++i)
+        switch (varTypeDVV[i]) {
+          case VAR_w: fnGrads[c1i][i] = -600.*(Y/t + 2.*X/w)/w_sq/t; break;//des var
+          case VAR_t: fnGrads[c1i][i] = -600.*(2.*Y/t + X/w)/w/t_sq; break;//des var
+          case VAR_R: fnGrads[c1i][i] = -1.;          break; // uncertain var deriv
+          case VAR_E: fnGrads[c1i][i] =  0.;          break; // uncertain var deriv
+          case VAR_X: fnGrads[c1i][i] =  600./w_sq/t; break; // uncertain var deriv
+          case VAR_Y: fnGrads[c1i][i] =  600./w/t_sq; break; // uncertain var deriv
+        }
+
+    // **** dc2/dx:
+    if (directFnASV[c2i] & 2)
+      for (size_t i=0; i<numDerivVars && area_type == 1; ++i)
+        switch (varTypeDVV[i]) {
+          case VAR_w: fnGrads[c2i][i] = -D3*2.*X_sq/w_sq/w_sq/w - displ/w; break;
+          case VAR_t: fnGrads[c2i][i] = -D3*2.*Y_sq/t_sq/t_sq/t - displ/t; break;
+          case VAR_R: fnGrads[c2i][i] =  0.;             break; // unc var deriv
+          case VAR_E: fnGrads[c2i][i] = -displ/E;        break; // unc var deriv
+          case VAR_X: fnGrads[c2i][i] =  D3*X/w_sq/w_sq; break; // unc var deriv
+          case VAR_Y: fnGrads[c2i][i] =  D3*Y/t_sq/t_sq; break; // unc var deriv
+        }
+
+    /* Alternative modification: take E out of displ denominator to remove
+       singularity in tail (at 20 std deviations).  In PCE/SC testing, this
+       had minimal impact and did not justify the nonstandard form.
+
+    Real D0 = 2.2535, L = 100., area = w*t, w_sq = w*w, t_sq = t*t,
+         R_sq = R*R, X_sq = X*X, Y_sq = Y*Y;
+    Real stress = 600.*Y/w/t_sq + 600.*X/w_sq/t;
+    Real D1 = 4.*pow(L,3)/area, D2 = pow(Y/t_sq, 2)+pow(X/w_sq, 2),
+         D3 = D1/std::sqrt(D2), D4 = D1*std::sqrt(D2);
+
+    // **** c2:
+    if (directFnASV[c2i] & 1)
+      fnVals[c2i] = D4 - D0*E;
+
+    // **** dc2/dx:
+    if (directFnASV[c2i] & 2)
+      for (size_t i=0; i<numDerivVars; ++i)
+        switch (varTypeDVV[i]) {
+        case VAR_w: fnGrads[c2i][i] = -D3*2.*X_sq/w_sq/w_sq/w - D4/w; break;// des
+        case VAR_t: fnGrads[c2i][i] = -D3*2.*Y_sq/t_sq/t_sq/t - D4/t; break;// des
+        case VAR_R: fnGrads[c2i][i] =  0.;             break; // unc var deriv
+        case VAR_E: fnGrads[c2i][i] = -D0;             break; // unc var deriv
+        case VAR_X: fnGrads[c2i][i] =  D3*X/w_sq/w_sq; break; // unc var deriv
+        case VAR_Y: fnGrads[c2i][i] =  D3*Y/t_sq/t_sq; break; // unc var deriv
+        }
+    */
+
+    return 0; // no failure
+  }
+
 
 
 int TestDriverInterface::cyl_head()
@@ -1659,65 +1834,41 @@ get_genz_coefficients( int num_dims, Real factor, int c_type,
 }
 
 
-/** \brief Solve the 1D diffusion equation with an uncertain variable 
- * coefficient using the spectral Chebyshev collocation method.
- *
- * del(k del(u) ) = f on [0,1] subject to u(0) = 0 u(1) = 0
- * 
- * Here we set f = -1 and 
- * k = 1+4.*sum_d [cos(2*pi*x)/(pi*d)^2*z[d]] d=1,...,num_dims
- * where z_d are random variables, typically i.i.d uniform[-1,1]
- */
-int TestDriverInterface::steady_state_diffusion_1d()
+int TestDriverInterface::
+steady_state_diffusion_core(SpectralDiffusionModel& model,
+			    RealVector& domain_limits)
 {
   // ------------------------------------------------------------- //
   // Pre-processing 
   // ------------------------------------------------------------- //
 
+  bool err_flag = false;
   if (multiProcAnalysisFlag) {
     Cerr << "Error: steady_state_diffusion_1d direct fn does not support "
 	 << "multiprocessor analyses." << std::endl;
-    abort_handler(-1);
+    err_flag = true;
   }
   if ( ( numVars < 1 )  || ( numADIV > 1 ) ) {
     Cerr << "Error: Bad variable types in steady_state_diffusion_1d direct fn."
 	 << std::endl;
-    abort_handler(INTERFACE_ERROR);
+    err_flag = true;
   }
   if (numFns < 1) {
     Cerr << "Error: Bad number of functions in steady_state_diffusion_1d "
 	 << "direct fn." << std::endl;
-    abort_handler(INTERFACE_ERROR);
+    err_flag = true;
   }
   if (hessFlag||gradFlag) {
     Cerr << "Error: Gradients and Hessians are not supported in " 
 	 << "steady_state_diffusion_1d direct fn." << std::endl;
-    abort_handler(INTERFACE_ERROR);
+    err_flag = true;
   }
+  if (err_flag)
+    abort_handler(INTERFACE_ERROR);
 
   // ------------------------------------------------------------- //
   // Read parameters from discrete state variables 
   // ------------------------------------------------------------- //
-
-  // Get the mesh resolution from the first discrete integer variable
-  size_t mesh_size_index = find_index(xDILabels, "mesh_size");
-  int order = ( mesh_size_index == _NPOS ) ? 20 : xDI[mesh_size_index];
-
-  if (order % 2 != 0) {
-    Cerr << "Error: Mesh size must be even." << std::endl;
-    abort_handler(INTERFACE_ERROR);
-  }
-
-  // Get the kernel specification from the discrete string variables
-  size_t kernel_index = find_index(xDSLabels, "kernel_type");
-  String kernel = ( kernel_index == _NPOS ) ? "default" : xDS[kernel_index];
-
-  if (order + 1 < xC.length() && kernel == "exponential") {
-    Cerr << "Error: Mesh size must be greater than or equal "
-         << "to the number of random variables + 1 when using "
-         << "the exponential kernel." << std::endl;
-    abort_handler(INTERFACE_ERROR);
-  }
 
   // Get the positivity flag from the discrete string variables
   size_t pos_index = find_index(xDSLabels, "positivity");
@@ -1740,10 +1891,6 @@ int TestDriverInterface::steady_state_diffusion_1d()
   size_t kern_len_index = find_index(xDRLabels, "kernel_length");
   Real kernel_length = ( kern_len_index == _NPOS ) ? 1.0 : xDR[kern_len_index];
 
-  // Initialize domain and boundary conditions:
-  RealVector bndry_conds(2), domain_limits(2); // initialize to zero
-  domain_limits[1] = 1.;
-
   // Compute default QoI coordinates:
   RealVector qoi_coords( numFns, false );
   if (numFns > 1) {
@@ -1758,16 +1905,16 @@ int TestDriverInterface::steady_state_diffusion_1d()
   // If QoI coordinates provided through discrete real variables, overwrite
   // defaults:
   for (int i=0; i<numFns; i++) {
-    size_t coord_index = find_index(xDRLabels, "coord_" + boost::lexical_cast<String>(i));
+    size_t coord_index
+      = find_index(xDRLabels, "coord_" + boost::lexical_cast<String>(i));
     if ( coord_index != _NPOS )
       qoi_coords[i] = xDR[coord_index];
   }
 
   // ------------------------------------------------------------- //
-  // Initialize and evaluate model 
+  // Initialize model 
   // ------------------------------------------------------------- //
 
-  SpectralDiffusionModel model;
   model.set_num_qoi( numFns );
   model.set_qoi_coords( qoi_coords );
   model.set_field_mean( field_mean );
@@ -1777,12 +1924,113 @@ int TestDriverInterface::steady_state_diffusion_1d()
   model.set_positivity( positivity );
   model.set_kernel_order( kernel_order );
   model.set_kernel_length( kernel_length );
+}
+
+
+/** \brief Solve the 1D diffusion equation with an uncertain variable 
+ * coefficient using the spectral Chebyshev collocation method.
+ *
+ * del(k del(u) ) = f on [0,1] subject to u(0) = 0 u(1) = 0
+ * 
+ * Here we set f = -1 and 
+ * k = 1+4.*sum_d [cos(2*pi*x)/(pi*d)^2*z[d]] d=1,...,num_dims
+ * where z_d are random variables, typically i.i.d uniform[-1,1]
+ */
+int TestDriverInterface::steady_state_diffusion_1d()
+{
+  // Initialize domain and boundary conditions:
+  RealVector bndry_conds(2), domain_limits(2); // initialize to zero
+  domain_limits[1] = 1.;
+
+  SpectralDiffusionModel model;
+  steady_state_diffusion_core(model, domain_limits);
+
+  // ------------------------------------------------------------- //
+  // Read parameters from discrete state variables 
+  // ------------------------------------------------------------- //
+
+  // Get the mesh resolution from the first discrete integer variable
+  size_t mesh_size_index = find_index(xDILabels, "mesh_size");
+  int order = ( mesh_size_index == _NPOS ) ? 20 : xDI[mesh_size_index];
+
+  // Get the kernel specification from the discrete string variables
+  size_t kernel_index = find_index(xDSLabels, "kernel_type");
+  String kernel = ( kernel_index == _NPOS ) ? "default" : xDS[kernel_index];
+
+  if (order % 2) {
+    Cerr << "Error: Mesh size must be even." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (order + 1 < xC.length() && kernel == "exponential") {
+    Cerr << "Error: Mesh size must be greater than or equal "
+         << "to the number of random variables + 1 when using "
+         << "the exponential kernel." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // ------------------------------------------------------------- //
+  // Initialize and evaluate model 
+  // ------------------------------------------------------------- //
 
   model.initialize( order, kernel, bndry_conds, domain_limits );
-  
+  model.evaluate( xC, fnVals ); 
+  return 0;
+}
+
+
+int TestDriverInterface::ss_diffusion_discrepancy()
+{
+  // Initialize domain and boundary conditions:
+  RealVector bndry_conds(2), domain_limits(2); // initialize to zero
+  domain_limits[1] = 1.;
+
+  SpectralDiffusionModel model;
+  steady_state_diffusion_core(model, domain_limits);
+
+  // ------------------------------------------------------------- //
+  // Read parameters from discrete state variables 
+  // ------------------------------------------------------------- //
+
+  // Get the mesh resolution from the first discrete integer variable
+  size_t mesh_size_index = find_index(xDILabels, "mesh_size");
+  int order_l = ( mesh_size_index == _NPOS ) ? 20 : xDI[mesh_size_index];
+  int order_lm1 = order_l / 2;
+  bool err_flag = false;
+  if (order_l % 2)
+    { Cerr << "Error: mesh size must be even." << std::endl; err_flag = true; }
+  else if (order_l < 4) {
+    Cerr << "Error: mesh size must be at least 4 at level l for even mesh "
+	 << "size and level l-1." << std::endl;
+    err_flag = true;
+  }
+
+  // Get the kernel specification from the discrete string variables
+  size_t kernel_index = find_index(xDSLabels, "kernel_type");
+  String kernel = ( kernel_index == _NPOS ) ? "default" : xDS[kernel_index];
+
+  if (order_lm1 + 1 < xC.length() && kernel == "exponential") {
+    Cerr << "Error: mesh size must be >= the number of random variables + 1 "
+	 << "when using the exponential kernel." << std::endl;
+    err_flag = true;
+  }
+
+  if (err_flag)
+    abort_handler(INTERFACE_ERROR);
+
+  // ------------------------------------------------------------- //
+  // Evaluate model twice to compute discrepancy across consecutive
+  // mesh resolutions
+  // ------------------------------------------------------------- //
+
+  model.initialize( order_l, kernel, bndry_conds, domain_limits );
   model.evaluate( xC, fnVals ); 
 
-  return  0;
+  RealVector q_lm1(numFns, false);
+  model.initialize( order_lm1, kernel, bndry_conds, domain_limits );
+  model.evaluate( xC, q_lm1 );
+  fnVals -= q_lm1;
+
+  return 0;
 }
 
 
@@ -4276,6 +4524,90 @@ int TestDriverInterface::bayes_linear()
    
   return 0;
 }  
+
+int TestDriverInterface::problem18(){
+  // This test driver implements the 1D optimization benchmark problem 18 from 
+  // http://infinity77.net/global_optimization/test_functions_1d.html
+  // as a benchmark function to test the MLMC approach with SNOWPAC
+
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: problem18 direct fn does not support "
+   << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  //if (numVars < 1 || numVars > 500 || numADIV || numADRV) {
+  //  Cerr << "Error: Bad variable types in problem18 fn."
+  // << std::endl;
+  //  abort_handler(INTERFACE_ERROR);
+  //} Unsure about this yet
+  if (numFns < 1) {
+    Cerr << "Error: Bad number of functions in problem18 direct fn."
+   << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag || gradFlag) {
+    Cerr << "Error: Gradients and Hessians not supported in problem18 "
+   << "direct fn." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  std::map<var_t, Real>::iterator x_iter = xCM.find(VAR_x);
+  Real x = (x_iter == xCM.end()) ? 0.5 : x_iter->second; // x
+
+  std::map<var_t, Real>::iterator xi_iter = xCM.find(VAR_xi);
+  Real xi = (xi_iter == xCM.end()) ? 0. : xi_iter->second; // RV xi
+
+  std::map<var_t, Real>::iterator Af_iter = xDRM.find(VAR_Af);
+  Real Af = (Af_iter == xDRM.end()) ? 1. : Af_iter->second; // Correlation Af for objective
+
+  std::map<var_t, Real>::iterator Ac_iter = xDRM.find(VAR_Ac);
+  Real Ac = (Ac_iter == xDRM.end()) ? 1. : Ac_iter->second; // Correlation Ac for constraint
+
+  if(Af < 0){
+    Af = problem18_Ax(Af, x);
+  }
+  if(Ac < 0){
+    Ac = problem18_Ax(Ac, x);
+  }
+
+  fnVals[0] = problem18_f(x) + Af * xi * xi * xi;
+  fnVals[1] = problem18_g(x) - problem18_f(x) + Ac * xi * xi * xi;
+
+  //std::cout << "Input parameters:" << std::endl;
+  //std::cout << "x: " << x << std::endl;
+  //std::cout << "xi: " << xi << std::endl;
+  //std::cout << "Af: " << Af << std::endl;
+  //std::cout << "Ac: " << Ac << std::endl;
+  //std::cout << "x reached end: " << (x_iter == xCM.end()) << std::endl;
+  //std::cout << "xi reached end: " << (xi_iter == xCM.end()) << std::endl;
+  //std::cout << "Af reached end: " << (Af_iter == xDRM.end()) << std::endl;
+  //std::cout << "Ac reached end: " << (Ac_iter == xDRM.end()) << std::endl;
+
+  return 0;
+}
+
+double TestDriverInterface::problem18_f(const double &x){
+  return x <= 3. ?
+         (x - 2.) * (x - 2.) :
+         2. * std::log(x - 2.) + 1;
+}
+
+double TestDriverInterface::problem18_g(const double &x){
+  return (2. * std::log(3.5 - 2))/(3.5 - 1) * x + 1 - (2. *std::log(3.5 - 2))/(3.5 - 1);
+}
+
+double TestDriverInterface::problem18_Ax(const double &A, const double &x){
+  if(A == -1)
+    return 0.5/6. * x + 0.4;
+  else if(A == -2)
+    return 0.5/6. * sin(x) + 0.4;
+  else if(A == -3)
+    return 0.5/6. * log(x) + 0.4;
+  else if(A == -4)
+    return 0.69*1./exp(2.*x)+0.3;
+  else
+    throw INTERFACE_ERROR;
+}
 
 
 /// this function combines N 1D functions and their derivatives to compute a N-D separable function and its derivatives, logic is general enough to support different 1D functions in different dimensions (can mix and match)

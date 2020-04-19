@@ -72,6 +72,10 @@ protected:
   void assign_specification_sequence();
   void increment_specification_sequence();
 
+  size_t collocation_points() const;
+  int random_seed() const;
+  int first_seed() const;
+
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
@@ -95,15 +99,12 @@ private:
   //- Heading: Utility functions
   //
 
-  size_t collocation_points() const;
+  // sequence handlers:
+
   size_t start_rank(size_t index) const;
   size_t start_rank() const;
   unsigned short start_order(size_t index) const;
   unsigned short start_order() const;
-
-  /// perform sampler updates after a change to numSamplesOnModel
-  /// (shared code from {assign,increment}_specification_sequence())
-  void update_sampler();
 
   // scale sample profile to retain shape while enforcing an upper bound
   //void scale_profile(..., RealVector& new_N_l);
@@ -117,18 +118,21 @@ private:
   /// user specification for start_order_sequence
   UShortArray startOrderSeqSpec;
 
-  /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
+  /// sequence index for start{Rank,Order}SeqSpec
   size_t sequenceIndex;
 };
 
 
 inline size_t NonDMultilevelFunctionTrain::collocation_points() const
-{
-  if (collocPtsSeqSpec.empty()) return std::numeric_limits<size_t>::max();
-  else
-    return (sequenceIndex < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-}
+{ return NonDExpansion::collocation_points(sequenceIndex); }
+
+
+inline int NonDMultilevelFunctionTrain::random_seed() const
+{ return NonDExpansion::random_seed(sequenceIndex); }
+
+
+inline int NonDMultilevelFunctionTrain::first_seed() const
+{ return NonDExpansion::random_seed(0); }
 
 
 inline size_t NonDMultilevelFunctionTrain::start_rank(size_t index) const

@@ -19,6 +19,9 @@
 
 namespace Dakota {
 
+class SpectralDiffusionModel; // fwd declare
+
+
 /** Specialization of DirectApplicInterface to embed algebraic test function
     drivers directly in Dakota */
 class TestDriverInterface: public DirectApplicInterface
@@ -49,6 +52,7 @@ private:
 
   int cantilever();   ///< scaled cantilever test function for optimization
   int mod_cantilever(); ///< unscaled cantilever test function for UQ
+  int cantilever_ml(); ///< unscaled cantilever test function for UQ with levels
   int cyl_head();     ///< the cylinder head constrained optimization test fn
   int multimodal();   ///< multimodal UQ test function
   int log_ratio();    ///< the log_ratio UQ test function
@@ -90,6 +94,8 @@ private:
   int damped_oscillator(); ///< 1d-6d that returns field values (ode solution)
   int steady_state_diffusion_1d(); ///< solve the 1d steady-state diffusion eqn
                                    ///< with uncertain field diffusivity
+  int ss_diffusion_discrepancy(); ///< difference steady_state_diffusion_1d()
+                                  ///< across two consecutive resolutions
   int transient_diffusion_1d(); ///< solve the 1d transient diffusion equation
                                 ///< with uncertain scalar diffusivity
   int predator_prey(); /// solve a predator prey population dynamics model
@@ -138,6 +144,12 @@ private:
   //  and error terms
   int bayes_linear();
 
+  // Problem 18 from http://infinity77.net/global_optimization/test_functions_1d.html
+  int problem18();
+  double problem18_f(const double &x);
+  double problem18_g(const double &x);
+  double problem18_Ax(const double &A, const double &x);
+
   /// utility to combine components of separable fns
   void separable_combine(Real mult_scale_factor, std::vector<Real> & w,
 			 std::vector<Real> & d1w, std::vector<Real> & d2w);
@@ -156,9 +168,16 @@ private:
 
   // test functions for high dimensional models with active subspace structure
 
-  int aniso_quad_form();     ///< 1-D function using a anisotropic quadratic
-                             ///< form
+  int aniso_quad_form(); ///< 1-D function using a anisotropic quadratic form
 
+  //
+  //- Heading: Helper functions
+  //
+
+  /// shared helper function between steady_state_diffusion_1d() and
+  /// ss_diffusion_discrepancy()
+  int steady_state_diffusion_core(SpectralDiffusionModel& model,
+				  RealVector& domain_limits);
 };
 
 } // namespace Dakota

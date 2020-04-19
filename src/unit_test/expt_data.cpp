@@ -58,7 +58,7 @@ TEUCHOS_UNIT_TEST(expt_data, basic)
 
   // Test general correctness
   TEST_EQUALITY( expt_data.num_experiments(), NUM_EXPTS );
-  TEST_EQUALITY( expt_data.num_scalars(), 0 );
+  TEST_EQUALITY( expt_data.num_scalar_primary(), 0 );
   TEST_EQUALITY( expt_data.num_fields(), NUM_FIELDS );
 
   // Test data correctness
@@ -124,7 +124,7 @@ TEUCHOS_UNIT_TEST(expt_data, twofield)
 
   // Test general correctness
   TEST_EQUALITY( expt_data.num_experiments(), NUM_EXPTS );
-  TEST_EQUALITY( expt_data.num_scalars(), 0 );
+  TEST_EQUALITY( expt_data.num_scalar_primary(), 0 );
   TEST_EQUALITY( expt_data.num_fields(), NUM_FIELDS+1 );
 
   // Test data correctness

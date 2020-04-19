@@ -8,7 +8,12 @@ macro(dakota_find_boost)
   endif()
   # Dakota requires the specified compiled Boost library components
   # Dakota requires Boost 1.49 or newer; enforce for all libs in the build
-  find_package(Boost 1.49 REQUIRED
+   set(dakota_boost_min_version 1.49)
+   # MUQ requires Boost 1.58 or newer
+   if (HAVE_MUQ)
+     set(dakota_boost_min_version 1.58)
+   endif()
+   find_package(Boost ${dakota_boost_min_version} REQUIRED
     COMPONENTS "filesystem;program_options;regex;serialization;system")
   # BMA TODO: relax this and verify Modern CMake behavior
   # This cache variable is used to package the Boost liraries on Darwin (see

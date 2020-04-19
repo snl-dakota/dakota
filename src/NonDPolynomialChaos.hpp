@@ -95,8 +95,7 @@ protected:
 		      const SizetArray& colloc_pts_seq, Real colloc_ratio,
 		      short ml_alloc_control, short ml_discrep,
 		      //short rule_nest, short rule_growth,
-		      bool piecewise_basis, bool use_derivs, int seed,
-		      bool cv_flag);
+		      bool piecewise_basis, bool use_derivs, bool cv_flag);
 
   //
   //- Heading: Virtual function redefinitions
@@ -109,6 +108,8 @@ protected:
   void resolve_inputs(short& u_space_type, short& data_order);
 
   void initialize_u_space_model();
+
+  size_t collocation_points() const;
 
   //void initialize_expansion();
   void compute_expansion();
@@ -149,17 +150,19 @@ protected:
   /// configure u_space_sampler and approx_type based on expansion_samples
   /// specification
   bool config_expectation(size_t exp_samples, unsigned short sample_type,
-			  const String& rng, Iterator& u_space_sampler,
-			  Model& g_u_model,  String& approx_type);
+			  int seed, const String& rng,
+			  Iterator& u_space_sampler, Model& g_u_model,
+			  String& approx_type);
   /// configure u_space_sampler and approx_type based on regression
   /// specification
   bool config_regression(const UShortArray& exp_orders, size_t colloc_pts,
 			 Real colloc_ratio_order, short regress_type,
 			 short ls_regress_type,
 			 const UShortArray& tensor_grid_order,
-			 unsigned short sample_type, const String& rng,
-			 const String& pt_reuse, Iterator& u_space_sampler,
-			 Model& g_u_model, String& approx_type);
+			 unsigned short sample_type, int seed,
+			 const String& rng, const String& pt_reuse,
+			 Iterator& u_space_sampler, Model& g_u_model,
+			 String& approx_type);
 
   /// define an expansion order that is consistent with an advancement in
   /// structured/unstructured grid level/density
@@ -204,10 +207,6 @@ private:
   //
   //- Heading: Data
   //
-
-  /// seed for random number generator used for regression with LHS
-  /// and sub-sampled tensor grids
-  int randomSeed;
 
   /// noise tolerance for compressive sensing algorithms; vector form used
   /// in cross-validation
@@ -262,6 +261,10 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
     break;
   }
 }
+
+
+inline size_t NonDPolynomialChaos::collocation_points() const
+{ return collocPtsSpec; }
 
 } // namespace Dakota
 

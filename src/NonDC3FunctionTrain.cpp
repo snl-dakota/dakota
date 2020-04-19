@@ -41,12 +41,13 @@ struct SPrintArgs
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
+  importBuildPointsFile(
+    problem_db.get_string("method.import_build_points_file")),
   startRankSpec(
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
-  importBuildPointsFile(
-    problem_db.get_string("method.import_build_points_file"))
+  collocPtsSpec(problem_db.get_sizet("method.nond.collocation_points"))
 {
   if (iteratedModel.model_type()     == "surrogate" &&
       iteratedModel.surrogate_type() == "global_function_train") {
@@ -79,11 +80,11 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   configure_expansion_orders(startOrderSpec, dimPrefSpec, approx_orders);
   // compute initial regression size using a static helper
   // (uSpaceModel.shared_approximation() is not yet available)
-  size_t colloc_pts = probDescDB.get_sizet("method.nond.collocation_points"),
-    regress_size = SharedC3ApproxData::
-      regression_size(numContinuousVars, startRankSpec, approx_orders);
+  size_t regress_size = SharedC3ApproxData::
+    regression_size(numContinuousVars, startRankSpec, approx_orders);
   // configure u-space sampler and model
-  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
+  if (!config_regression(collocPtsSpec, regress_size, randomSeed,
+			 u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -115,7 +116,10 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------------
   // Construct expSampler, if needed
   // -------------------------------
-  construct_expansion_sampler(
+  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
+    problem_db.get_string("method.random_number_generator"),
+    problem_db.get_ushort("method.nond.integration_refinement"),
+    problem_db.get_iv("method.nond.refinement_samples"),
     probDescDB.get_string("method.import_approx_points_file"),
     probDescDB.get_ushort("method.import_approx_format"), 
     probDescDB.get_bool("method.import_approx_active_only"));
@@ -127,12 +131,13 @@ NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
 		    Model& model):
   NonDExpansion(problem_db, model),
+  importBuildPointsFile(
+    problem_db.get_string("method.import_build_points_file")),
   startRankSpec(
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
-  importBuildPointsFile(
-    problem_db.get_string("method.import_build_points_file"))
+  collocPtsSpec(0) // in lieu of sequence specification
 {
   if (iteratedModel.model_type()     == "surrogate" &&
       iteratedModel.surrogate_type() == "global_function_train") {
@@ -162,7 +167,7 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 
 bool NonDC3FunctionTrain::
-config_regression(size_t colloc_pts, size_t regress_size,
+config_regression(size_t colloc_pts, size_t regress_size, int seed,
 		  Iterator& u_space_sampler, Model& g_u_model)
 {
   // Adapted from NonDPolynomialChaos::config_regression()
@@ -201,14 +206,19 @@ config_regression(size_t colloc_pts, size_t regress_size,
     // NonDQuadrature as needed to satisfy min order constraints (but
     // not nested constraints: nestedRules is false to retain m >= p+1).
     construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref,
-			 numSamplesOnModel,
-			 probDescDB.get_int("method.random_seed"));
+			 numSamplesOnModel, seed);
   }
   else { // unstructured grid: LHS samples
-    // if reusing samples within a refinement strategy, ensure different
-    // random numbers are generated for points within the grid (even if
-    // the number of samples differs)
-    bool vary_pattern = (refineType);
+    // if reusing samples within a refinement strategy, we prefer generating
+    // different random numbers for new points within the grid (even if the
+    // number of samples differs)
+    // Note: uniform refinement uses DFSModel::rebuild_approximation()
+    // which directly computes sample increment
+    // *** TO DO: would be good to disntinguish top-level seed fixing for OUU
+    //            from lower-level seed fixing across levels or refine iters.
+    if (refineType && fixedSeed)
+      Cerr << "Warning: combining sample refinement with fixed_seed is more "
+	   << "likely to cause sample redundancy." << std::endl;
     // reuse type/seed/rng settings intended for the expansion_sampler.
     // Unlike expansion_sampler, allow sampling pattern to vary under
     // unstructured grid refinement/replacement/augmentation.  Also
@@ -216,9 +226,9 @@ config_regression(size_t colloc_pts, size_t regress_size,
     // forming the PCE over all active variables.
     construct_lhs(u_space_sampler, g_u_model,
 		  probDescDB.get_ushort("method.sample_type"),
-		  numSamplesOnModel, probDescDB.get_int("method.random_seed"),
+		  numSamplesOnModel, seed,
 		  probDescDB.get_string("method.random_number_generator"),
-		  vary_pattern, ACTIVE);
+		  !fixedSeed, ACTIVE);
   }
 
   // maxEvalConcurrency updated here for expansion samples and regression
@@ -357,7 +367,7 @@ sample_allocation_metric(Real& regress_metric, Real power)
   //   which is one implementation of C3Approximation::regression_size(),
   //   returns the number of unknowns from the most recent FT regression
   //   (per QoI, per model level) which provides the sample requirements
-  //   prior to over-sampling/collocRaio.  Given this, only need to compute
+  //   prior to over-sampling/collocRatio.  Given this, only need to compute
   //   power mean over numFunctions (below) and then add any over-sampling
   //   factor (applied in compute_sample_increment())
 

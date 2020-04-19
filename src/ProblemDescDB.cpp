@@ -1797,7 +1797,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
       {"nond.c3function_train.start_rank_sequence", P startRankSeq},
       {"nond.collocation_points", P collocationPointsSeq},
       {"nond.expansion_samples", P expansionSamplesSeq},
-      {"nond.pilot_samples", P pilotSamples}};
+      {"nond.pilot_samples", P pilotSamples},
+      {"random_seed_sequence", P randomSeedSeq}};
     #undef P
 
     KW<SizetArray, DataMethodRep> *kw;
@@ -2374,7 +2375,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
         {"nond.data_dist_filename", P dataDistFile},
 	{"nond.data_dist_type", P dataDistType},
 	{"nond.discrepancy_type", P modelDiscrepancyType},
-	{"nond.expansion_sample_type", P expansionSampleType},
+      //{"nond.expansion_sample_type", P expansionSampleType},
 	{"nond.export_corrected_model_file", P exportCorrModelFile},
 	{"nond.export_corrected_variance_file", P exportCorrVarFile},
 	{"nond.export_discrepancy_file", P exportDiscrepFile},
@@ -2411,6 +2412,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     #define P &DataModelRep::
     static KW<String, DataModelRep> Sdmo[] = {
       // must be sorted by string (key)
+	{"advanced_options_file", P advancedOptionsFilename},
 	{"dace_method_pointer", P subMethodPointer},
 	{"id", P idModel},
 	{"interface_pointer", P interfacePointer},
@@ -2659,7 +2661,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.prop_cov_update_period", P proposalCovUpdatePeriod},
 	{"nond.pushforward_samples", P numPushforwardSamples},
 	{"nond.samples_on_emulator", P samplesOnEmulator},
-	{"nond.surrogate_order", P emulatorOrder},
+  {"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},
 	{"optpp.search_scheme_size", P searchSchemeSize},
 	{"parameter_study.num_steps", P numSteps},
@@ -2695,6 +2697,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"soft_convergence_limit", P softConvergenceLimit},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
+        {"surrogate.num_restarts", P numRestarts},
         {"surrogate.points_total", P pointsTotal},
         {"surrogate.refine_cv_folds", P refineCVFolds}};
     #undef P
@@ -2740,6 +2743,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
     static KW<short, DataMethodRep> Shdme[] = {
       // must be sorted by string (key)
 	{"iterator_scheduling", P iteratorScheduling},
+  {"nond.allocation_target", P allocationTarget},
 	{"nond.correction_order", P approxCorrectionOrder},
 	{"nond.covariance_control", P covarianceControl},
 	{"nond.distribution", P distributionType},
@@ -2754,6 +2758,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.multilevel_allocation_control", P multilevAllocControl},
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
+  {"nond.qoi_aggregation", P qoiAggregation},
 	{"nond.regression_type", P regressionType},
 	{"nond.response_level_target", P responseLevelTarget},
 	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
@@ -3171,7 +3176,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.adapt_exp_design", P adaptExpDesign},
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
-        {"nond.c3function_train.adapt_rank", P adaptRank},
+  {"nond.allocation_target.variance.optimization", P useTargetVarianceOptimizationFlag},
+  {"nond.c3function_train.adapt_rank", P adaptRank},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.cross_validation.noise_only", P crossValidNoiseOnly},
 	{"nond.d_optimal", P dOptimal},

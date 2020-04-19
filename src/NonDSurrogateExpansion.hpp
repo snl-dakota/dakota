@@ -56,14 +56,12 @@ protected:
   //- Heading: Member function definitions
   //
 
-
 private:
 
   //
   //- Heading: Data
   //
 
-  //unsigned int randomSeed;
 };
     
 } // namespace Dakota

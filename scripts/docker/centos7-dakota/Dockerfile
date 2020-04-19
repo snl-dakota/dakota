@@ -63,6 +63,9 @@ RUN yum -y update
 
 
 ## Could sync sems TPLs into RHEL7 docker, for now trying this HDF5 binary
+## For this, download hdf5-1.10.4-linux-centos7 binary from https://www.hdfgroup.org/downloads/hdf5/#
+## at the bottom of the page "HDF 5 1.10.4" -> "HDF 5 1.10.4 Binaries" (must register to be able to download)
+## and add it to this folder. (Might have to unpack and rezip it to tar.gz)
 RUN mkdir /opt/hdf5/
 ADD ./hdf5-1.10.4-linux-centos7-x86_64-gcc485-shared.tar.gz /opt/hdf5/
 RUN mv /opt/hdf5/hdf5-1.10.4-linux-centos7-x86_64-gcc485-shared /opt/hdf5/1.10.4

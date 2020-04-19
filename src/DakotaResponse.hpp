@@ -508,7 +508,7 @@ inline RealVector Response::field_values_view(size_t i) const
   if (responseRep)
     return responseRep->field_values_view(i);
   else {
-    size_t j, cntr = sharedRespData.num_scalar_responses();
+    size_t j, cntr = sharedRespData.num_scalar_primary();
     const IntVector& field_len = sharedRespData.field_lengths();
     for (j=0; j<i; j++)
       cntr += field_len[j];
@@ -522,7 +522,7 @@ inline RealVector Response::field_values_view(size_t i)
   if (responseRep)
     return responseRep->field_values_view(i);
   else {
-    size_t j, cntr = sharedRespData.num_scalar_responses();
+    size_t j, cntr = sharedRespData.num_scalar_primary();
     const IntVector& field_len = sharedRespData.field_lengths();
     for (j=0; j<i; j++)
       cntr += field_len[j];
@@ -586,7 +586,7 @@ inline void Response::field_values(const RealVector& field_vals, size_t i)
     responseRep->field_values(field_vals, i);
   else {
     const IntVector& field_len = sharedRespData.field_lengths();
-    size_t j, cntr = sharedRespData.num_scalar_responses();
+    size_t j, cntr = sharedRespData.num_scalar_primary();
     for (j=0; j<i; j++)
       cntr += field_len[j];
     size_t len_i = field_len[i];
@@ -879,7 +879,7 @@ inline RealMatrix Response::field_gradients_view(size_t i) const
   if (responseRep)
     return responseRep->field_gradients_view(i);
   else {
-    size_t j, cntr = sharedRespData.num_scalar_responses();
+    size_t j, cntr = sharedRespData.num_scalar_primary();
     const IntVector& field_len = sharedRespData.field_lengths();
     for (j=0; j<i; j++)
       cntr += field_len[j];
@@ -897,7 +897,7 @@ inline RealSymMatrixArray Response::field_hessians_view(size_t i) const
   else {
     const IntVector& field_len = sharedRespData.field_lengths();
     size_t j, num_field_hess = field_len[i], 
-      cntr = sharedRespData.num_scalar_responses();;
+      cntr = sharedRespData.num_scalar_primary();;
     for (j=0; j<i; j++)
       cntr += field_len[j];
     RealSymMatrixArray fn_hessians_view(num_field_hess);

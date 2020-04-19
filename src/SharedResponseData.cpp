@@ -41,36 +41,37 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
   functionLabels(problem_db.get_sa("responses.labels")),
   simulationVariance(problem_db.get_rv("responses.simulation_variance"))
 {
-  // scalar response data types:
-  size_t num_scalar_resp_fns
-    = problem_db.get_sizet("responses.num_scalar_responses");
-  numScalarResponses = (num_scalar_resp_fns) ? num_scalar_resp_fns :
-    problem_db.get_sizet(
-      "responses.num_scalar_nonlinear_inequality_constraints") +
-    problem_db.get_sizet(
-      "responses.num_scalar_nonlinear_equality_constraints")   +
-    std::max(problem_db.get_sizet("responses.num_scalar_objectives"),
-	     problem_db.get_sizet("responses.num_scalar_calibration_terms"));
+  // scalar-specific response data types
+  // BMA TODO: review
+  // don't assign member variable until sure below? NOTE: Could assign here since would be zero otherwise
+  size_t num_scalar_primary = std::max
+    ( problem_db.get_sizet("responses.num_scalar_objectives"),
+      std::max ( problem_db.get_sizet("responses.num_scalar_calibration_terms"),
+		 problem_db.get_sizet("responses.num_scalar_responses") )
+      );
+  size_t num_scalar_responses = num_scalar_primary +
+    problem_db.get_sizet("responses.num_scalar_nonlinear_inequality_constraints") +
+    problem_db.get_sizet("responses.num_scalar_nonlinear_equality_constraints");
 
-  // field response data types:
-  size_t num_field_resp_fns
-    = problem_db.get_sizet("responses.num_field_responses"),
-  num_field_responses = (num_field_resp_fns) ? num_field_resp_fns :
-    problem_db.get_sizet(
-      "responses.num_field_nonlinear_inequality_constraints") +
-    problem_db.get_sizet(
-      "responses.num_field_nonlinear_equality_constraints")   +
-    std::max(problem_db.get_sizet("responses.num_field_objectives"),
-	     problem_db.get_sizet("responses.num_field_calibration_terms"));
+  // field-specific response data types
+  size_t num_field_primary = std::max
+    ( problem_db.get_sizet("responses.num_field_objectives"),
+      std::max ( problem_db.get_sizet("responses.num_field_calibration_terms"),
+		 problem_db.get_sizet("responses.num_field_responses") )
+      );
+  size_t num_field_responses = num_field_primary +
+    problem_db.get_sizet("responses.num_field_nonlinear_inequality_constraints") +
+    problem_db.get_sizet("responses.num_field_nonlinear_equality_constraints");
 
-  // aggregate response data types:
-  size_t num_total_resp_fns
-    = problem_db.get_sizet("responses.num_response_functions"),
-  num_total_responses = (num_total_resp_fns) ? num_total_resp_fns :
+  // aggregate response data types
+  size_t num_total_primary = std::max
+    ( problem_db.get_sizet("responses.num_objective_functions"),
+      std::max( problem_db.get_sizet("responses.num_calibration_terms"),
+		problem_db.get_sizet("responses.num_response_functions") )
+      );
+  size_t num_total_responses = num_total_primary +
     problem_db.get_sizet("responses.num_nonlinear_inequality_constraints") +
-    problem_db.get_sizet("responses.num_nonlinear_equality_constraints")   +
-    std::max(problem_db.get_sizet("responses.num_objective_functions"),
-	     problem_db.get_sizet("responses.num_calibration_terms"));
+    problem_db.get_sizet("responses.num_nonlinear_equality_constraints");
 
   // update primary response type based on specification
   if (problem_db.get_sizet("responses.num_objective_functions") > 0) 
@@ -79,14 +80,18 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     primaryFnType = CALIB_TERMS;
 
   if (num_field_responses) {
-    // require scalar spec and enforce total = scalar + field
-    if (num_field_responses + numScalarResponses != num_total_responses) {
+    // BMA: Don't think the scalar spec is required; they could be all fields
+    // BMA: This error message could differentiate pri/sec responses
+    // require scalar spec and enforce total = scalars + fields
+    if (num_field_responses + num_scalar_responses != num_total_responses) {
       Cerr << "Error: number of scalar (" << numScalarResponses
 	   << ") and field (" << num_field_responses
 	   << ") response functions must sum to total number ("
 	   << num_total_responses << ") of response functions." << std::endl;
       abort_handler(-1);
     }
+    numScalarPrimary = num_scalar_primary;
+    numScalarResponses = num_scalar_responses;
 
     // extract the fieldLabels from the functionLabels (one per field group)
     copy_data_partial(functionLabels, numScalarResponses, num_field_responses,
@@ -103,6 +108,7 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     build_field_labels();
   } 
   else if (numScalarResponses) {
+    // no fields present...
     // validate scalar spec versus total spec
     if (numScalarResponses != num_total_responses) {
       Cerr << "Error: number of scalar (" << numScalarResponses
@@ -110,9 +116,13 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
 	   << num_total_responses << ") of response functions." << std::endl;
       abort_handler(-1);
     }
+    numScalarPrimary = num_scalar_primary;
+    numScalarResponses = num_scalar_responses;
   }
   else if (num_total_responses) {
+    // only top-level keywords were specified
     // interpret total spec as scalar spec (backwards compatibility)
+    numScalarPrimary = num_total_primary;
     numScalarResponses = num_total_responses;
   }
   else
@@ -137,7 +147,9 @@ SharedResponseDataRep::SharedResponseDataRep(const ActiveSet& set):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
   primaryFnType(GENERIC_FNS),
   responsesId("NO_SPECIFICATION"),
-  numScalarResponses(set.request_vector().size())
+  numScalarResponses(set.request_vector().size()),
+  // should we assume they are all primary? seems we have to
+  numScalarPrimary(numScalarResponses)
 {
   // Build a default functionLabels array (currently only used for
   // bestResponse by NPSOLOptimizer's user-defined functions option).
@@ -163,6 +175,7 @@ void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
   fieldLabels           = srd_rep->fieldLabels;
 
   numScalarResponses    = srd_rep->numScalarResponses;
+  numScalarPrimary      = srd_rep->numScalarPrimary;
   fieldRespGroupLengths = srd_rep->fieldRespGroupLengths;
 
   numCoordsPerField     = srd_rep->numCoordsPerField;
@@ -181,6 +194,7 @@ void SharedResponseDataRep::serialize(Archive& ar, const unsigned int version)
   ar & functionLabels;
   ar & fieldLabels;
   ar & numScalarResponses;
+  ar & numScalarPrimary;
   ar & fieldRespGroupLengths;
   ar & numCoordsPerField;
 #ifdef SERIALIZE_DEBUG  
@@ -203,6 +217,7 @@ bool SharedResponseDataRep::operator==(const SharedResponseDataRep& other)
 	  functionLabels == other.functionLabels &&
 	  fieldLabels == other.fieldLabels &&
 	  numScalarResponses == other.numScalarResponses &&
+	  numScalarPrimary == other.numScalarPrimary &&
 	  fieldRespGroupLengths == other.fieldRespGroupLengths &&
 	  numCoordsPerField == other.numCoordsPerField);
 }
@@ -213,6 +228,8 @@ void SharedResponseDataRep::build_field_labels()
   size_t unroll_fns = numScalarResponses + fieldRespGroupLengths.normOne();
   if (functionLabels.size() != unroll_fns)
     functionLabels.resize(unroll_fns);  // unique label for each QoI
+
+  // BMA TODO: Fix as nonlinear constraints need to follow primary fields
 
   // append _<field_entry_num> to the base label
   size_t unrolled_index = numScalarResponses;
@@ -269,6 +286,7 @@ void SharedResponseData::reshape(size_t num_fns)
 
     // reshape function labels
     reshape_labels(srdRep->functionLabels, num_fns);
+    // BMA TODO: may need to cache more info to do this, or may not be possible
     // update scalar counts (update of field counts requires addtnl data)
     srdRep->numScalarResponses = num_fns - num_field_functions();
   }

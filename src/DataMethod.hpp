@@ -58,7 +58,7 @@ enum { DEFAULT_METHOD=0,
        CUBATURE_INTEGRATION, SPARSE_GRID_INTEGRATION, QUADRATURE_INTEGRATION, 
        BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
        IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
-       LIST_SAMPLING, RANDOM_SAMPLING,
+       LIST_SAMPLING, RANDOM_SAMPLING, MUQ_SAMPLING,
        // Variables::method_view(): epistemic if method_name > RANDOM_SAMPLING
        LOCAL_INTERVAL_EST, LOCAL_EVIDENCE, GLOBAL_INTERVAL_EST, GLOBAL_EVIDENCE,
        //BAYES_CALIBRATION=(ANALYZER_BIT | NOND_BIT | PARALLEL_BIT),
@@ -97,7 +97,7 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_BOX_BEHNKEN,     SUBMETHOD_CENTRAL_COMPOSITE,
        SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
        // Bayesian inference algorithms:
-       SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_QUESO, SUBMETHOD_WASABI,
+       SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_MUQ, SUBMETHOD_QUESO, SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBO,
        // verification approaches:
@@ -192,6 +192,11 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 // Wilks type of confidence interval
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
+// define special values for qoi aggregation norm for sample allocation over levels and QoIs
+enum {QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM};
+
+// target variance for fitting sample allocation
+enum {TARGET_MEAN, TARGET_VARIANCE};
 // ---------------
 // NonDReliability
 // ---------------
@@ -745,6 +750,8 @@ public:
 
   /// the \c seed specification for COLINY, NonD, & DACE methods
   int randomSeed;
+  /// the \c seed_sequence specification for multilevel UQ methods
+  SizetArray randomSeedSeq;
 
   // MADS
   /// the \c initMeshSize choice for NOMAD in \ref MethodNOMADDC
@@ -883,9 +890,9 @@ public:
   /// the \c expansion_samples specification in \ref MethodNonDPCE
   size_t expansionSamples;
 
-  /// allows for incremental PCE construction using the \c
-  /// incremental_lhs specification in \ref MethodNonDPCE
-  String expansionSampleType;
+  // allows for incremental PCE construction using the \c incremental_lhs
+  // specification in \ref MethodNonDPCE
+  //String expansionSampleType;
   /// the \c dimension_preference specification for tensor and sparse grids
   /// and expansion orders in \ref MethodNonDPCE and \ref MethodNonDSC
   RealVector anisoDimPref;
@@ -963,6 +970,12 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c allocationTarget selection in \ref MethodMultilevelMC
+  short allocationTarget;
+  /// the \c useTargetVarianceOptimizationFlag selection in \ref MethodMultilevelMC
+  bool useTargetVarianceOptimizationFlag;
+  /// the |c qoi_aggregation_norm selection in \ref MethodMultilevelMC
+  short qoiAggregation;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
   short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE

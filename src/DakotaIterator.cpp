@@ -122,6 +122,9 @@
 #ifdef HAVE_ADAPTIVE_SAMPLING 
 #include "NonDAdaptiveSampling.hpp"
 #endif
+#ifdef HAVE_MUQ 
+#include "NonDMUQBayesCalibration.hpp"
+#endif
 #include "OptDartsOptimizer.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -494,6 +497,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     case SUBMETHOD_DREAM:
       return new NonDDREAMBayesCalibration(problem_db, model);  break;
 #endif
+#ifdef HAVE_MUQ
+    case SUBMETHOD_MUQ:
+      return new NonDMUQBayesCalibration(problem_db, model);  break;
+#endif
     case SUBMETHOD_WASABI:
       return new NonDWASABIBayesCalibration(problem_db, model); break;
     default:
@@ -511,6 +518,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #ifdef HAVE_ADAPTIVE_SAMPLING
   case ADAPTIVE_SAMPLING:
     return new NonDAdaptiveSampling(problem_db, model);  break;
+#endif
+#ifdef HAVE_MUQ
+  case MUQ_SAMPLING:
+    return new NonDMUQBayesCalibration(problem_db, model);  break;
 #endif
   case RANDOM_SAMPLING:
     return new NonDLHSSampling(problem_db, model); break;
@@ -1000,6 +1011,7 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_DREAM,             "dream")
   (SUBMETHOD_WASABI,            "wasabi")
   (SUBMETHOD_GPMSA,             "gpmsa")
+  (SUBMETHOD_MUQ,               "muq")
   (SUBMETHOD_QUESO,             "queso")
   (SUBMETHOD_NIP,               "nip")
   (SUBMETHOD_SQP,               "sqp")
@@ -1652,6 +1664,13 @@ sampling_increment()
 	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
+}
+
+void Iterator::random_seed(int seed)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->random_seed(seed);
+  // else no-op (don't require support from all Iterators that could be called)
 }
 
 unsigned short Iterator::sampling_scheme() const

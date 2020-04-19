@@ -140,6 +140,7 @@ variables,
 #		lower_bounds   -10.0  -10.0 -10.0	#p18,#p19,#p20,#p21
 #		lower_bounds   -10.0  -10.0 -10.0	#p22,#p23,#p24,#p25
 #		lower_bounds   -10.0  -10.0 -10.0	#p26,#p27,#p28,#p29
+# BMA: These have no effect as scaling isn't turned on in method
 #		scale_types	'value'			#s1,#s3,#s5,#s8,#s10,#s11,#s12
 #		scale_types	'value'			#s15,#s17,#s19,#s20,#s21,#s22
 #		scale_types	'value'			#p1,#p3,#p5,#p8
