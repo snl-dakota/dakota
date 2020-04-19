@@ -196,6 +196,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   // as the default from minimizer, so it will be initialized as 100
   //  maxIterations  = 25*numContinuousVars;
   RealVector prev_cv_star;
+
   while (!approx_converged) {
 
     // Add safeguard: If model cannot run asynchronously
@@ -203,8 +204,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     //                  and throw warnings on screens
     //                  and proceed with batchSize = 1
 
-    // bool parallel_flag = false; // default: run sequential by default
-    bool parallel_flag = true; // debug -- always run parallel
+    bool parallel_flag = false; // default: run sequential by default
+    // bool parallel_flag = true; // debug -- always run parallel
 
     if (BatchSizeAcquisition > 1 || BatchSizeExploration > 1) {
       if (iteratedModel.asynch_flag()) // change model.asynch_flag() to iteratedModel.asynch_flag()
@@ -216,16 +217,16 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       }
     }
 
+    // Reset the convergence counters
+    dist_convergence_cntr = 0; // reset distance convergence counters
+    dist_convergence_limit = BatchSizeAcquisition; // set convergence limit for parallel EGO
 
     if (parallel_flag) { // begin if parallel_flag = true -- then run in parallel
+
         ++globalIterCount;
 
         // Initialize the input array for the batch
         VariablesArray input_array_batch_acquisition(BatchSizeAcquisition);
-
-        // Reset the convergence counters
-        dist_convergence_cntr = 0; // reset distance convergence counters
-        dist_convergence_limit = BatchSizeAcquisition; // set convergence limit for parallel EGO
 
         // Note: vars_star: input; resp_star: output (liar); resp_star_truth: output (true)
         size_t numDataPts; // debug
@@ -234,6 +235,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         Cout << "\n>>>>> Initiating global optimization\n";
 
         for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
+
             // Initialize EIF recast model
             Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
             BoolDequeArray nonlinear_resp_map(1, BoolDeque(numFunctions, true));
@@ -266,34 +268,54 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
             fHatModel.evaluate();
             const Response& approx_response = fHatModel.current_response();
 
-            // Impose constant liar
-            IntResponsePair resp_star_liar(iteratedModel.evaluation_id(), approx_response); // temporarily cast constant liar as observations
-            const RealVector& fns_star_liar = resp_star_liar.second.function_values();
+            Real aug_lag = augmented_lagrangian_merit(approx_response.function_values(),
+                                              iteratedModel.primary_response_fn_sense(),
+                                              iteratedModel.primary_response_fn_weights(),
+                                              origNonlinIneqLowerBnds,
+                                              origNonlinIneqUpperBnds,
+                                              origNonlinEqTargets);
 
-            // Append constant liar to fHatModel (aka heuristic liar)
-            fHatModel.append_approximation(vars_star, resp_star_liar, true); // debug // DOES NOT ALWAYS UPDATE
-            // const IntResponseMap& all_resp = fHatModel.all_responses(); // debug: get all responses
-            // const VariablesArray& all_vars = fHatModel.all_variables(); // debug: get all variables
-            // fHatModel.update_approximation(all_vars, all_resp, true); // debug -- adopt from DataFitSurrModel.cpp
+            Cout << "\nResults of EGO iteration:\nFinal point =\n"
+                    << c_vars << "Expected Improvement    =\n                     "
+                    << std::setw(write_precision+7) << -eif_star
+                    << "\n                     " << std::setw(write_precision+7)
+                    << aug_lag << " [merit]\n";
 
-            const RealVector& variances = fHatModel.approximation_variances(vars_star); // debug
-            Cout << "debug: vars_star = " << vars_star;
-            Cout << "debug: variances(vars_star) = " << variances;
+            // Impose constant liar -- temporarily cast constant liar as observations
+            IntResponsePair resp_star_liar(iteratedModel.evaluation_id(), approx_response);
+            // const RealVector& fns_star_liar = resp_star_liar.second.function_values(); // denig
 
-            // Append vars_star (input) to the batch before querying
-            input_array_batch_acquisition[i_batch_acquisition] = vars_star.copy();
-
+            // Update GP
             // debug
             numDataPts = fHatModel.approximation_data(0).points(); // debug
             Cout << "\n------------------------------------ Adding liar response.\n"; // debug
             Cout << "globalIterCount = " << globalIterCount << ".\n"; // debug
             Cout << "i_batch_acquisition = " << i_batch_acquisition << ".\n"; // debug
+            // Append constant liar to fHatModel (aka heuristic liar)
+            fHatModel.append_approximation(vars_star, resp_star_liar, true); // debug // DOES NOT ALWAYS UPDATE
             Cout << "fHatModel # of points  = " << numDataPts << ".\n"; // debug
+            // Update constraints based on the constant liar
+            if (numNonlinearConstraints) {
+                const RealVector& fns_star_liar = resp_star_liar.second.function_values();
+                Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
+                if (norm_cv_star < etaSequence)
+                    update_augmented_lagrange_multipliers(fns_star_liar);
+                else
+                    update_penalty();
+            }
+            Cout << "------------------------------------ Finished adding liar response.\n"; // debug
+
+            const RealVector& variances = fHatModel.approximation_variances(vars_star); // debug
+            // Cout << "debug: vars_star = " << vars_star; // debug
+            // Cout << "debug: variances(vars_star) = " << variances; // debug
+
+            // Append vars_star (input) to the batch before querying
+            input_array_batch_acquisition[i_batch_acquisition] = vars_star.copy();
         }
 
         // Delete liar responses
         for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
-            fHatModel.pop_approximation(false); // don't update hyper-parameters
+            fHatModel.pop_approximation(false);
 
             // debug
             numDataPts = fHatModel.approximation_data(0).points(); // debug
@@ -317,6 +339,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
         // Update the GP approximation with batch results
         fHatModel.append_approximation(input_array_batch_acquisition, resp_star_truth, true);
+        fHatModel.finalize_approximation();
 
         // debug
         numDataPts = fHatModel.approximation_data(0).points(); // debug
@@ -345,7 +368,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
             Real distCStar = (prev_cv_star.empty()) ? DBL_MAX : rel_change_L2(c_vars, prev_cv_star);
             // update prev_cv_star
             copy_data(c_vars, prev_cv_star);
-            // disable dist_convergence_cntr in parallel mode
+
             if (distCStar < distanceTol)
               ++dist_convergence_cntr;
 
@@ -373,14 +396,14 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
               << dist_convergence_cntr
               << ") >= dist_convergence_limit (="
               << dist_convergence_limit
-              << ").";
+              << ").\n";
             }
             if (eif_convergence_cntr >= eif_convergence_limit) {
               Cout << "\nStopping criteria met: eif_convergence_cntr (="
               << eif_convergence_cntr
               << ") >= eif_convergence_limit (="
               << eif_convergence_limit
-              << ").";
+              << ").\n";
             }
             if (globalIterCount >= maxIterations) {
               Cout << "\nStopping criteria met: globalIterCount (="
@@ -397,14 +420,14 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
               << dist_convergence_cntr
               << ") < dist_convergence_limit (="
               << dist_convergence_limit
-              << ").";
+              << ").\n";
             // }
             // if (eif_convergence_cntr < eif_convergence_limit) {
             Cout << "\nStopping criteria not met: eif_convergence_cntr (="
               << eif_convergence_cntr
               << ") < eif_convergence_limit (="
               << eif_convergence_limit
-              << ").";
+              << ").\n";
             // }
             // if (globalIterCount < maxIterations) {
             Cout << "\nStopping criteria not met: globalIterCount (="
@@ -464,7 +487,18 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         fHatModel.evaluate();
         const Response& approx_response = fHatModel.current_response(); // .function_values();
 
-        Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star);
+        Real aug_lag = augmented_lagrangian_merit(approx_response.function_values(),
+                                          iteratedModel.primary_response_fn_sense(),
+                                          iteratedModel.primary_response_fn_weights(),
+                                          origNonlinIneqLowerBnds,
+                                          origNonlinIneqUpperBnds,
+                                          origNonlinEqTargets);
+
+        Cout << "\nResults of EGO iteration:\nFinal point =\n"
+                << c_vars << "Expected Improvement    =\n                     "
+                << std::setw(write_precision+7) << -eif_star
+                << "\n                     " << std::setw(write_precision+7)
+                << aug_lag << " [merit]\n";
 
         debug_print_values();
         // check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr);
