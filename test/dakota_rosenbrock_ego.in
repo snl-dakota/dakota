@@ -1,8 +1,8 @@
 #@ s0: UserMan=rosen_opt_ego
-#@ s1: TimeoutDelay=120
+#@ s2: TimeoutDelay=120
 #@ p0: MPIProcs=4
 # DAKOTA INPUT FILE - dakota_rosenbrock_ego.in
-# Dakota Input File: rosen_opt_ego.in           #s0,#s1,#p0
+# Dakota Input File: rosen_opt_ego.in           #s0
 
 environment
   tabular_data
@@ -11,7 +11,7 @@ environment
 method
   efficient_global
     seed = 123456
-#    batch_size = 4       #s1,#p0
+#   batch_size = 4				#s2,#p0
 
 variables
   continuous_design = 2
@@ -21,13 +21,14 @@ variables
 
 interface
   analysis_drivers = 'rosenbrock'
-    direct          #s0,#s1,#p0
+    direct					#s0,#s1,#p0
+#   fork asynchronous				#s2
 
 responses
   objective_functions = 1
 # Verify same solution maximizing the negative objective
-#   weights  -1.0       #s1
-#   sense    'max'        #s1
+#   weights  -1.0      		      	        #s1
+#   sense    'max'    				#s1
   no_gradients
   no_hessians
   
