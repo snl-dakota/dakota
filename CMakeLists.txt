@@ -128,7 +128,6 @@ endif()
 # Now check languages after compiler flags and options are set
 enable_language(C)
 enable_language(CXX)
-dakota_check_cxx11()
 enable_language(Fortran)
 if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE 
