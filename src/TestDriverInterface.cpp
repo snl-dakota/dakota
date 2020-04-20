@@ -1924,6 +1924,8 @@ steady_state_diffusion_core(SpectralDiffusionModel& model,
   model.set_positivity( positivity );
   model.set_kernel_order( kernel_order );
   model.set_kernel_length( kernel_length );
+
+  return 0;
 }
 
 
