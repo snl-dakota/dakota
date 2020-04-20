@@ -3057,6 +3057,37 @@ Test Number 29 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 27
+dakota_cantilever_ego.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 34 total (24 new, 10 duplicate)
+<<<<< Best parameters          =
+                      2.3888098585e+00 w
+                      3.2770947292e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      7.8283561964e+00
+<<<<< Best constraint values   =
+                     -1.4242124268e-02
+                     -3.1151219249e-04
+<<<<< Best data captured at function evaluation 24
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 66 total (41 new, 25 duplicate)
+<<<<< Best parameters          =
+                      2.3883808363e+00 w
+                      3.2773261754e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      7.8275030316e+00
+<<<<< Best constraint values   =
+                     -1.4103927176e-02
+                     -1.0871413207e-04
+<<<<< Best data captured at function evaluation 50
 dakota_cantilever_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
@@ -4957,6 +4988,15 @@ Test Number 0 succeeded
                       0.0000000000e+00
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 31
+dakota_rosenbrock_ego.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 82 total (50 new, 32 duplicate)
+<<<<< Best parameters          =
+                      1.0053119725e+00 x1
+                      1.0109795819e+00 x2
+<<<<< Best objective function  =
+                      3.8937424292e-05
+<<<<< Best data captured at function evaluation 44
 dakota_rosenbrock_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
