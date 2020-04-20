@@ -6470,7 +6470,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
      ]
     [ scalar_objectives ALIAS num_scalar_objectives INTEGER >= 0 {N_rem(sizet,numScalarObjectiveFunctions)} ]
     [ field_objectives ALIAS num_field_objectives INTEGER >= 0 {N_rem(sizet,numFieldObjectiveFunctions)}
-      lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
+      lengths INTEGERLIST LEN field_objectives {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
@@ -6479,7 +6479,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
   ( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(sizet,numLeastSqTerms)}
     [ scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)} ]
     [ field_calibration_terms INTEGER >= 0 {N_rem(sizet,numFieldLeastSqTerms)}
-      lengths INTEGERLIST LEN calibration_terms {N_rem(ivec,fieldLengths)}
+      lengths INTEGERLIST LEN field_calibration_terms {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
@@ -6538,7 +6538,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
   ( response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(sizet,numResponseFunctions)}
     [ scalar_responses ALIAS num_scalar_responses INTEGER >= 0 {N_rem(sizet,numScalarResponseFunctions)} ]
     [ field_responses ALIAS num_field_responses INTEGER >= 0 {N_rem(sizet,numFieldResponseFunctions)}
-      lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
+      lengths INTEGERLIST LEN field_responses {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
