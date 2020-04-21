@@ -3307,6 +3307,8 @@ void NonDMultilevelSampling::print_results(std::ostream& s, short results_state)
   //print_statistics(s);
     print_moments(s, "response function",
 		  iteratedModel.truth_model().response_labels());
+    archive_moments();
+    archive_equiv_hf_evals(equivHFEvals); 
   }
 }
 

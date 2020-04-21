@@ -1465,7 +1465,7 @@ archive_moments(size_t inc_id)
   if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
   location.push_back("moments");
   location.push_back("");
-  for(int i = 0; i < labels.size(); ++i) {
+  for(int i = 0; i < numFunctions; ++i) {
     location.back() = labels[i]; 
     DimScaleMap scales;
     if(finalMomentsType == CENTRAL_MOMENTS)
@@ -1515,7 +1515,7 @@ archive_moment_confidence_intervals(size_t inc_id)
   if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
   location.push_back("moment_confidence_intervals");
   location.push_back("");
-  for(int i = 0; i < labels.size(); ++i) { // loop over responses
+  for(int i = 0; i < numFunctions; ++i) { // loop over responses
     location.back() = labels[i];
     RealMatrix ci(2,2,false);
     ci(0,0) = momentCIs(0,i);
@@ -1535,7 +1535,7 @@ archive_extreme_responses(size_t inc_id) {
   location.push_back("");
   DimScaleMap scales;
   scales.emplace(0, StringScale("extremes", {"minimum", "maximum"})); 
-  for(int i = 0; i < labels.size(); ++i) { // loop over responses
+  for(int i = 0; i < numFunctions; ++i) { // loop over responses
     location.back() = labels[i];
     RealVector extreme_values(2);
     extreme_values[0] = extremeValues[i].first;

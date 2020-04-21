@@ -34,7 +34,7 @@ namespace Dakota {
 // 0. Similarly, when incrementing the minor version, reset the patch level to 
 // 0.
 
-const std::string ResultsDBHDF5::outputVersion = "2.0.0";
+const std::string ResultsDBHDF5::outputVersion = "2.1.0";
 
 
 // Helper functions for naming datasets and scales

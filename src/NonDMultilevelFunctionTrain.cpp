@@ -443,6 +443,7 @@ print_results(std::ostream& s, short results_state)
       print_multilevel_evaluation_summary(s, NLev);
       s << "<<<<< Equivalent number of high fidelity evaluations: "
 	<< equivHFEvals << std::endl;
+      archive_equiv_hf_evals(equivHFEvals);
     }
     break;
   }
