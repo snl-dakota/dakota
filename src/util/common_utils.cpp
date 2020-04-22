@@ -40,9 +40,9 @@ bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol)
     std::cout << B.rows() << "," << B.cols() << std::endl;
     error("matrix_equals() matrices sizes are inconsistent");
   }
-  for (int j=0; j<A.cols(); j++){
-    for (int i=0; i<A.rows(); i++){
-      if (std::abs(A(i,j)-B(i,j))>tol)
+  for (int j = 0; j < A.cols(); j++) {
+    for (int i = 0; i < A.rows(); i++) {
+      if (std::abs(A(i,j) - B(i,j)) > tol)
         return false;
     }
   }
@@ -58,9 +58,9 @@ bool matrix_equals(const RealMatrix &A, const RealMatrix &B, double tol)
     std::cout << B.numRows() << "," << B.numCols() << std::endl;
     error("matrix_equals() matrices sizes are inconsistent");
   }
-  for (int j=0; j<A.numCols(); j++){
-    for (int i=0; i<A.numRows(); i++){
-      if (std::abs(A(i,j)-B(i,j))>tol)
+  for (int j = 0; j < A.numCols(); j++) {
+    for (int i = 0; i < A.numRows(); i++) {
+      if (std::abs(A(i,j) - B(i,j)) > tol)
         return false;
     }
   }
@@ -69,7 +69,7 @@ bool matrix_equals(const RealMatrix &A, const RealMatrix &B, double tol)
 
 // ------------------------------------------------------------
 
-double variance(const VectorXd & vec)
+double variance(const VectorXd &vec)
 {
   boost::accumulators::accumulator_set<double, boost::accumulators::features<boost::accumulators::tag::variance>> acc;
   for(int i = 0; i < vec.size(); i++)
@@ -81,7 +81,7 @@ double variance(const VectorXd & vec)
 
 // ------------------------------------------------------------
 
-void populateVectorsFromFile(const std::string & filename, std::vector<VectorXd> &R, int num_datasets, int num_samples)
+void populateVectorsFromFile(const std::string &filename, std::vector<VectorXd> &R, int num_datasets, int num_samples)
 {
   R.resize(num_datasets);
   std::ifstream in(filename,std::ios::in);
@@ -93,7 +93,7 @@ void populateVectorsFromFile(const std::string & filename, std::vector<VectorXd>
   for (int k = 0; k < num_datasets; k++) {
     R[k].resize(num_samples);
     for (int i = 0; i < num_samples; i++) {
-        in >> R[k](i);
+      in >> R[k](i);
     }
   }
   in.close();
@@ -102,7 +102,7 @@ void populateVectorsFromFile(const std::string & filename, std::vector<VectorXd>
 
 // ------------------------------------------------------------
 
-void populateMatricesFromFile(const std::string & filename, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples)
+void populateMatricesFromFile(const std::string &filename, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples)
 {
   S.resize(num_datasets);
   std::ifstream in(filename,std::ios::in);

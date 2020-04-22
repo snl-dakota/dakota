@@ -28,7 +28,7 @@ int n_choose_k(int n, int k);
  *  \returns Number of nonzeros
 */
 template< typename T>
-int num_nonzeros(const T & mat)
+int num_nonzeros(const T &mat)
 {
   return (mat.array() != 0).count();
 }
@@ -38,22 +38,22 @@ int num_nonzeros(const T & mat)
  *  \param[in] v Incoming vector
  *  \param[out] result Vector having values at nonzero locations of incoming vector and value equal to ordinal of occurrence
 */
-template< typename T1, typename T2>
-void nonzero( const T1 & v, T2 & result )
+template<typename T1, typename T2>
+void nonzero(const T1 &v, T2 &result)
 {
   int num_nonzeros = 0;
   T2 working_vec = v;
-  for( int i = 0; i < v.size(); ++i )
+  for (int i = 0; i < v.size(); ++i)
   {
-    if ( v[i] != 0 )
+    if (v[i] != 0)
     {
       working_vec[num_nonzeros] = i;
       num_nonzeros++;
     }
   }
 
-  result.resize( num_nonzeros );
-  for( int i = 0; i < num_nonzeros; ++i )
+  result.resize(num_nonzeros);
+  for (int i = 0; i < num_nonzeros; ++i)
     result(i) = working_vec(i);
 }
 
@@ -63,15 +63,15 @@ void nonzero( const T1 & v, T2 & result )
  *  \param[in] new_cols Incoming matrix of column vectors to append
  *  \param[out] target Matrix to augment with appended columns
 */
-template< typename T1, typename T2>
-void append_columns( const T1 & new_cols, T2 & target )
+template<typename T1, typename T2>
+void append_columns(const T1 &new_cols, T2 &target)
 {
-  if( (target.rows() != new_cols.rows()) && (new_cols.cols() > 0) )
+  if ((target.rows() != new_cols.rows()) && (new_cols.cols() > 0))
     throw std::runtime_error("Incompatible row dimensions for append_columns.");
 
   int num_orig_cols = target.cols();
   target.conservativeResize(Eigen::NoChange, num_orig_cols + new_cols.cols() );
-  for( int i=0; i<new_cols.cols(); ++i )
+  for (int i = 0; i < new_cols.cols(); ++i)
     target.col(num_orig_cols+i) = new_cols.col(i);
 }
 
@@ -82,14 +82,14 @@ void append_columns( const T1 & new_cols, T2 & target )
  *  \param[in] p Order or norm to compute
  *  \returns p-norm of incoming vector
 */
-template< typename T >
-double p_norm( const T & v, double p )
+template<typename T>
+double p_norm(const T &v, double p)
 {
   double sum = 0.;
-  for( int i=0; i<v.size(); ++i )
-    sum += std::pow( std::abs( (double)v(i) ), p );
+  for (int i = 0; i < v.size(); ++i)
+    sum += std::pow(std::abs((double)v(i)), p);
 
-  return std::pow( sum, 1./p );
+  return std::pow(sum, 1./p);
 }
 
 } // namespace util

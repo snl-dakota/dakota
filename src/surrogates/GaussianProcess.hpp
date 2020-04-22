@@ -34,7 +34,7 @@ namespace surrogates {
  *  The GP's parameters are determined through maximum
  *  likelihood estimation (MLE) via minimization of the negative
  *  marginal log-likelihood function. ROL's implementation of
- *  BFGS is used to solve the optimization problem, and the
+ *  L-BFGS-B is used to solve the optimization problem, and the
  *  algorithm may be run from multiple random initial guesses
  *  to improve the chance of finding the global minimum.
  *
@@ -49,11 +49,11 @@ public:
   // ------------------------------------------------------------
   // Constructors and destructors
 
+  /// Constructor that uses defaultConfigOptions and does not build.
   GaussianProcess();
 
   /**
-   * \brief Constructor for the GaussianProcess that sets configOptions
-   *        but does not build the GP.
+   * \brief Constructor that sets configOptions but does not build.
    *
    * \param[in] param_list List that overrides entries in defaultConfigOptions.
    */
@@ -70,6 +70,7 @@ public:
   GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
                   const Teuchos::ParameterList &param_list);
 
+  /// Default destructor
   ~GaussianProcess();
 
   // ------------------------------------------------------------
@@ -93,17 +94,17 @@ public:
 
   /**
    *  \brief Evaluate the Gaussian Process at a set of prediction points.
-   *  \param[in] samples Matrix of prediction points - (num_samples by num_features).
+   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
    *  \param[out] approx_values Mean of the Gaussian process at the prediction
-   *  points - (num_samples by num_qoi = 1) 
+   *  points - (num_pts by num_qoi = 1) 
    */
   void value(const MatrixXd &samples, MatrixXd &approx_values) override;
 
   /**
-   *  \brief Evaluate the gradient of the Gaussian process at a single point.
-   *  \param[in] samples Coordinates of the prediction points - (num_samples by num_features).
+   *  \brief Evaluate the gradient of the Gaussian process at a set of prediction points.
+   *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
-   *  (num_samples by num_features).
+   *  (num_pts by num_features).
    */
   void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi = 0) override;
 
@@ -123,14 +124,14 @@ public:
    *  passed to value.
    *  \returns Vector of standard deviations for the prediction points.
    */
-  const VectorXd & get_posterior_std_dev() const;
+  const VectorXd& get_posterior_std_dev() const;
 
   /**
    *  \brief Get the covariance matrix for a set of prediction points
    *  passed to value.
    *  \returns Covariance matrix for the prediction points.
    */
-  const MatrixXd & get_posterior_covariance() const;
+  const MatrixXd& get_posterior_covariance() const;
 
   /**
    *  \brief Get the number of optimization variables.

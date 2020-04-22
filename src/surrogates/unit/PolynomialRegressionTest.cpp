@@ -20,20 +20,15 @@ using namespace dakota;
 using namespace dakota::util;
 using namespace dakota::surrogates;
 
-using SCALER_TYPE = DataScaler::SCALER_TYPE;
-using SOLVER_TYPE = LinearSolverBase::SOLVER_TYPE;
-
 namespace {
 
-MatrixXd create_single_feature_matrix()
-{
+MatrixXd create_single_feature_matrix() {
   MatrixXd single_feature_matrix(7, 1);
   single_feature_matrix << 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7;
   return single_feature_matrix;
 }
 
-MatrixXd create_multiple_features_matrix()
-{
+MatrixXd create_multiple_features_matrix() {
   MatrixXd multiple_features_matrix(7, 3);
   multiple_features_matrix << 0.1, 0.2, 0.5,
                               1, 3, 6,
@@ -45,39 +40,72 @@ MatrixXd create_multiple_features_matrix()
   return multiple_features_matrix;
 }
 
-// Unit tests
-
-// --------------------------------------------------------------------------------
-
-void PolynomialRegressionSurrogate_getters_and_setters()
+void get_samples(int num_vars, int num_samples, MatrixXd & samples)
 {
-  PolynomialRegression pr(1, 0);
-  MatrixXd samples  = create_multiple_features_matrix();
-  MatrixXd response = create_single_feature_matrix();
+  samples.resize(num_samples, num_vars);
 
-  pr.set_samples(samples);
-  pr.set_response(response);
-  pr.set_polynomial_order(2);
+  int seed = 1337;
 
-  BOOST_CHECK(matrix_equals(pr.get_samples(),  samples,  1.0e-4));
-  BOOST_CHECK(matrix_equals(pr.get_response(), response, 1.0e-4));
-  BOOST_CHECK(pr.get_polynomial_order() == 2);
+  // This choice allows consistent comparison with pecos/surrogates/models/src/RegressionBuilder
+  typedef boost::uniform_real<> NumberDistribution; 
+  typedef boost::mt19937 RNG; 
+  typedef boost::variate_generator<RNG&,NumberDistribution> Generator; 
+
+  boost::uniform_real<double> distribution( -1.0, 1.0 ); 
+  boost::mt19937 generator; 
+  generator.seed( seed );
+  boost::variate_generator<boost::mt19937, NumberDistribution> numberGenerator( generator, distribution ); 
+
+  for (int j=0; j<num_vars; ++j) {
+    for (int i=0; i<num_samples; ++i) {
+      samples(i,j) = numberGenerator();
+    }
+  }
 }
 
-// --------------------------------------------------------------------------------
-
-void PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE scaler_type)
+void another_additive_quadratic_function(const MatrixXd & samples, MatrixXd & func_vals)
 {
+  func_vals.resize(samples.rows(),1); // hard-coded to one response for now - RWH
+  const int num_vars = samples.cols();
+
+  for (int i = 0; i < samples.rows(); ++i) {
+    func_vals(i,0) = 1.0;
+    for (int j = 0; j < num_vars; ++j) {
+      double x = (2*samples(i,j) - 1);
+      func_vals(i,0) += x*x + 2.0*x;
+    }
+  }
+}
+
+void cubic_bivariate_function(const MatrixXd & samples, MatrixXd & func_vals)
+{
+  func_vals.resize(samples.rows(),1);
+  const int num_vars = samples.cols();
+
+  for (int i = 0; i < samples.rows(); ++i) {
+    double x = samples(i,0);
+    double y = samples(i,1);
+    func_vals(i,0) =
+      1 + x + y + (x*y)
+      + (std::pow(x,2) * std::pow(y,2))
+      + (std::pow(x,2) * y)
+      + (std::pow(y,2) * x)
+      + std::pow(x,3) + std::pow(y,3);
+  }
+}
+
+/* Unit tests */
+
+void PolynomialRegressionSurrogate_straight_line_fit(std::string scaler_type) {
+
   VectorXd line_vector = VectorXd::LinSpaced(20,0,1); // size, low, high
   VectorXd response    = VectorXd::LinSpaced(20,0,1);
   response = (response.array() + 2.0).matrix(); // +2.0 because the line's y-intercept is 2.0
 
-  PolynomialRegression pr(/* degree */ 1, /* num_vars */ 1);
-  pr.set_samples(line_vector);
-  pr.set_response(response);
-  pr.set_scaler_type(scaler_type);
-  pr.set_solver(SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
-  pr.build_surrogate();
+  Teuchos::ParameterList config_options("Polynomial Test Parameters");
+  config_options.set("max degree", 1);
+  config_options.set("scaler type", scaler_type);
+  PolynomialRegression pr(line_vector, response, config_options);
 
   const MatrixXd& polynomial_coeffs = pr.get_polynomial_coeffs();
   double polynomial_intercept = pr.get_polynomial_intercept();
@@ -85,13 +113,13 @@ void PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE scaler_type)
   double expected_constant_term = 2.0;        // unscaled intercept via coeffs array
   double expected_first_term =    1.0;        // unscaled slope via coeffs array
   double expected_polynomial_intercept = 0.0;
-  if( scaler_type == SCALER_TYPE::MEAN_NORMALIZATION ||
-      scaler_type == SCALER_TYPE::STANDARDIZATION )
-  {
+
+  if (scaler_type == "mean normalization" ||
+      scaler_type == "standardization") {
     expected_constant_term = 0.0;
     expected_polynomial_intercept = 2.5;
   }
-  if( scaler_type == SCALER_TYPE::STANDARDIZATION )
+  if (scaler_type == "standardization")
     expected_first_term = 0.303488; // scaled
 
   double actual_constant_term = polynomial_coeffs(0, 0);
@@ -116,141 +144,36 @@ void PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE scaler_type)
     2.90909, 2.91919, 2.92929, 2.93939, 2.94949, 2.9596,  2.9697,  2.9798,  2.9899,  3.0;
 
   MatrixXd actual_approx_values;
-  pr.surrogate_value(unscaled_eval_pts, actual_approx_values); 
+  pr.value(unscaled_eval_pts, actual_approx_values); 
 
   BOOST_CHECK(matrix_equals(actual_approx_values, expected_approx_values, 1.0e-5));
 }
 
-// --------------------------------------------------------------------------------
 
-// More utilities to aid unit testing and which migh tlater get parceled into
-// othe util classes - RWH
-void get_samples(int num_vars, int num_samples, MatrixXd & samples)
-{
-  samples.resize(num_samples, num_vars);
+void PolynomialRegressionSurrogate_multivariate_regression_builder() {
 
-  //std::random_device rd;
-  //std::mt19937 gen(rd());
-
-  int seed = 1337;
-  //std::mt19937 gen(seed);
-  //std::uniform_real_distribution<double> dis(-1.0, 1.0);
-
-  // This choice allows consistent comparison with pecos/surrogates/models/src/RegressionBuilder
-  typedef boost::uniform_real<> NumberDistribution; 
-  typedef boost::mt19937 RNG; 
-  typedef boost::variate_generator<RNG&,NumberDistribution> Generator; 
-
-  boost::uniform_real<double> distribution( -1.0, 1.0 ); 
-  boost::mt19937 generator; 
-  generator.seed( seed );
-  boost::variate_generator<boost::mt19937, NumberDistribution> numberGenerator( generator, distribution ); 
-
-  for( int j=0; j<num_vars; ++j )
-    for( int i=0; i<num_samples; ++i )
-      //samples(i,j) = dis(gen);
-      samples(i,j) = numberGenerator();
-}
-
-  // ------------------------------------------------------------
-
-void
-another_additive_quadratic_function(const MatrixXd & samples, MatrixXd & func_vals)
-{
-  func_vals.resize(samples.rows(),1); // hard-coded to one response for now - RWH
-  const int num_vars = samples.cols();
-
-  for( int i=0; i<samples.rows(); ++i )
-  {
-    func_vals(i,0) = 1.0;
-    for (int j=0; j<num_vars; ++j)
-    {
-      double x = (2*samples(i,j)-1);
-      func_vals(i,0) += x*x+2.0*x;
-    }
-  }
-}
-
-void
-cubic_bivariate_function(const MatrixXd & samples, MatrixXd & func_vals)
-{
-  func_vals.resize(samples.rows(),1);
-  const int num_vars = samples.cols();
-
-  for( int i=0; i<samples.rows(); ++i )
-  {
-    double x = samples(i,0);
-    double y = samples(i,1);
-    func_vals(i,0) =
-      1 + x + y + (x*y) +
-      (std::pow(x,2) * std::pow(y,2)) +
-      (std::pow(x,2) * y) +
-      (std::pow(y,2) * x) +
-      std::pow(x,3) + std::pow(y,3);
-  }
-}
-
-  // ------------------------------------------------------------
-
-void
-PolynomialRegressionSurrogate_multivariate_regression_builder()
-{
   int num_vars    = 2,
       num_samples = 20,
       degree      = 3;
 
-  // Generate realizations of function variables
+  /* Generate build data */
   MatrixXd samples, responses;
   get_samples(num_vars, num_samples, samples);
   another_additive_quadratic_function(samples, responses);
 
-  PolynomialRegression pr(degree, num_vars);
-  pr.set_samples(samples);
-  pr.set_response(responses);
-  pr.set_scaler_type(SCALER_TYPE::NONE);
-  pr.set_solver(SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
-  pr.build_surrogate();
+  /* Now try out some interpolants that should be exact */
 
-  const MatrixXd& polynomial_coeffs = pr.get_polynomial_coeffs();
-  // Will need to see how this interacts with the constant term and scaling/transforms - RWH
-  double polynomial_intercept = pr.get_polynomial_intercept();
-  BOOST_CHECK( std::abs(polynomial_intercept) < 1.0e-10 );
-
-  // Check correctness of computed polynomial coefficients against the one used to construct the model
+  /* Check correctness of computed polynomial coefficients against the one used to construct the model */
   MatrixXd gold_coeffs(10,1);
-  // Term exponents for f(x,y) = -1 + 4*x*x + 4*y*y
-  // x:            0    1    0    2    0    1    3    0    2    1
-  // y:            0    0    1    0    2    1    0    3    1    2
+  /* Term exponents for f(x,y) = -1 + 4*x*x + 4*y*y
+     x:            0    1    0    2    0    1    3    0    2    1
+     y:            0    0    1    0    2    1    0    3    1    2 */
   gold_coeffs << -1.0, 0.0, 0.0, 4.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-  BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs, 1.0e-10));
-
-  // Now try out some interpolants that should be exact
   MatrixXd eval_points, gold_responses, test_responses;
   get_samples(num_vars, 7, eval_points);
   another_additive_quadratic_function(eval_points, gold_responses);
 
-  pr.surrogate_value(eval_points, test_responses);
-  BOOST_CHECK(matrix_equals(gold_responses, test_responses, 1.0e-10));
-
-  // Now use the options-based API
-  /*
-  auto options = std::make_shared<Teuchos::ParameterList>();
-  options->set("Num Vars", num_vars);
-  options->set("Max Degree", degree);
-  PolynomialRegression pr2(options);
-  pr2.set_samples(samples);
-  pr2.set_response(responses);
-  pr2.set_scaler_type(SCALER_TYPE::NONE);
-  pr2.set_solver(SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
-  pr2.build_surrogate();
-
-  const MatrixXd& polynomial_coeffs2 = pr2.get_polynomial_coeffs();
-  double polynomial_intercept2 = pr2.get_polynomial_intercept();
-  BOOST_CHECK( std::abs(polynomial_intercept2) < 1.0e-10 );
-  BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs2, 1.0e-10));
-  */
-
-  // Use the Surrogates API with partially user-defined input parameters
+  /* Use the Surrogates API with partially user-defined input parameters */
   MatrixXd test_responses3;
   Teuchos::ParameterList param_list_partial("Polynomial Test Parameters");
   param_list_partial.set("max degree", degree);
@@ -265,22 +188,22 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   double polynomial_intercept3 = pr3.get_polynomial_intercept();
   pr3.value(eval_points, test_responses3);
 
-  BOOST_CHECK( std::abs(polynomial_intercept3) < 1.0e-10 );
+  BOOST_CHECK(std::abs(polynomial_intercept3) < 1.0e-10 );
   BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs3, 1.0e-10));
   BOOST_CHECK(matrix_equals(gold_responses, test_responses3, 1.0e-10));
 
-  // Test 4 -- Use the Surrogates API with user-defined and updated and 
-  // separate constructor and build steps
+  /* Use the Surrogates API with user-defined and updated configOptions
+     and separate constructor and build steps */
   MatrixXd test_responses4;
   Teuchos::ParameterList param_list_full("Polynomial Test Parameters");
-  /* wrong degree for this test */
+  /* wrong degree for this test -- increment by 1 */
   param_list_full.set("max degree", degree+1);
   param_list_full.set<double>("p-norm", 1.0);
   param_list_full.set("regression solver type", "SVD");
   param_list_full.set("scaler type", "none");
 
   PolynomialRegression pr4(param_list_full);
-  // update the parameterList, set it, and build the surrogate.
+  /* update the parameterList, set it, and build the surrogate */
   param_list_full.set("max degree", degree);
   pr4.set_options(param_list_full);
   pr4.build(samples, responses);
@@ -294,8 +217,8 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   BOOST_CHECK(matrix_equals(gold_responses, test_responses4, 1.0e-10));
 
 
-  // Test 5 -- Use the Surrogates API with default parameters, get and
-  // update those params. Separate constructor and build steps.
+  /* Use the Surrogates API with default parameters, get and
+     update those params. Separate constructor and build steps */
   MatrixXd test_responses5;
   PolynomialRegression pr5;
 
@@ -314,12 +237,10 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs5, 1.0e-10));
   BOOST_CHECK(matrix_equals(gold_responses, test_responses5, 1.0e-10));
 
-  
 }
 
-void
-PolynomialRegressionSurrogate_gradient_and_hessian()
-{
+void  PolynomialRegressionSurrogate_gradient_and_hessian() {
+
   int num_vars    = 2,
       num_samples = 20,
       degree      = 3;
@@ -328,13 +249,10 @@ PolynomialRegressionSurrogate_gradient_and_hessian()
   get_samples(num_vars, num_samples, samples);
   cubic_bivariate_function(samples, responses);
 
-  PolynomialRegression pr(degree, num_vars);
-  pr.set_samples(samples);
-  pr.set_polynomial_order(degree);
-  pr.set_response(responses);
-  pr.set_scaler_type(SCALER_TYPE::NONE);
-  pr.set_solver(SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
-  pr.build_surrogate();
+  Teuchos::ParameterList config_options("Polynomial Test Parameters");
+  config_options.set("max degree", degree);
+
+  PolynomialRegression pr(samples, responses, config_options);
 
   MatrixXd gradient, hessian;
   pr.gradient(samples.topRows(2), gradient);
@@ -348,27 +266,25 @@ PolynomialRegressionSurrogate_gradient_and_hessian()
   gold_hessian << -2.75852, 0.04462,
                    0.04462, -1.83287;
 
-  BOOST_CHECK( matrix_equals(gold_hessian, hessian, 1.0e-4) );
+  BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
 }
 
 } // namespace
 
 // --------------------------------------------------------------------------------
 
-int test_main( int argc, char* argv[] ) // note the name!
+int test_main(int argc, char* argv[]) // note the name!
 {
   // Univariate tests
-  PolynomialRegressionSurrogate_getters_and_setters();
-  PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE::NONE);
-  PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE::MEAN_NORMALIZATION);
-  PolynomialRegressionSurrogate_straight_line_fit(SCALER_TYPE::STANDARDIZATION);
+  PolynomialRegressionSurrogate_straight_line_fit("none");
+  PolynomialRegressionSurrogate_straight_line_fit("mean normalization");
+  PolynomialRegressionSurrogate_straight_line_fit("standardization");
 
   // Multivariate tests
   PolynomialRegressionSurrogate_multivariate_regression_builder();
   PolynomialRegressionSurrogate_gradient_and_hessian();
 
-  int run_result = 0;
-  BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
+  BOOST_CHECK(boost::exit_success == 0);
 
   return boost::exit_success;
 }
