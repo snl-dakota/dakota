@@ -180,7 +180,7 @@ bool DataScaler::check_for_zero_scaler_factor(int index) {
   return value < near_zero;
 }
 
-std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd & unscaled_matrix) {
+std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd &unscaled_matrix) {
   if (scaler_type == util::SCALER_TYPE::STANDARDIZATION) {
     return std::make_shared<util::StandardizationScaler>(unscaled_matrix);
   }

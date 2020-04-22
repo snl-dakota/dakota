@@ -19,13 +19,10 @@
 namespace dakota {
 namespace surrogates {
 
-
-// Constuctor with default parameters.
 GaussianProcess::GaussianProcess(){
   default_options();
 }
 
-// Constructor that sets user-defined params but does not build.
 GaussianProcess::GaussianProcess(const ParameterList &param_list) {
   default_options();
   configOptions = param_list;
@@ -33,8 +30,6 @@ GaussianProcess::GaussianProcess(const ParameterList &param_list) {
 
 // BMA NOTE: ParameterList::get() can throw, so direct delegation
 // probably not good; might want to give a helpful message
-// Constructor that will set user-defined parameters and build with
-// given data.
 GaussianProcess::GaussianProcess(const MatrixXd &samples,
 				 const MatrixXd &response,
 				 const ParameterList& param_list)
@@ -45,8 +40,6 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 }
 
 GaussianProcess::~GaussianProcess(){}
-
-
 
 void GaussianProcess::generate_initial_guesses(MatrixXd &initial_guesses, int num_restarts,
                                                const VectorXd &sigma_bounds,
@@ -295,7 +288,7 @@ void GaussianProcess::default_options()
 void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
 {
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
-  std::cout << "Building GaussianProcess with configuration options\n"
+  std::cout << "\nBuilding GaussianProcess with configuration options\n"
 	  << configOptions << std::endl;
 
   numQOI = response.cols();
@@ -700,7 +693,6 @@ int GaussianProcess::get_num_opt_variables() {
 
 int GaussianProcess::get_num_variables() const { return numVariables; }
 
-// TODO: Update the name, more parameters than theta now
 void GaussianProcess::set_opt_params(const std::vector<double> &opt_params) {
   for (int i = 0; i < numVariables + 1; i++) 
     thetaValues(i) = opt_params[i];
