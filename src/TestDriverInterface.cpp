@@ -1834,7 +1834,7 @@ get_genz_coefficients( int num_dims, Real factor, int c_type,
 }
 
 
-int TestDriverInterface::
+void TestDriverInterface::
 steady_state_diffusion_core(SpectralDiffusionModel& model,
 			    RealVector& domain_limits)
 {
@@ -1924,8 +1924,6 @@ steady_state_diffusion_core(SpectralDiffusionModel& model,
   model.set_positivity( positivity );
   model.set_kernel_order( kernel_order );
   model.set_kernel_length( kernel_length );
-
-  return 0;
 }
 
 
