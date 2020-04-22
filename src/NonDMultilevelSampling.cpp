@@ -956,7 +956,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
         cm2 += cm2l;
         cm3 += cm3l;
         cm4 += cm4l;
-        //if (outputLevel == DEBUG_OUTPUT)
+        if (outputLevel == DEBUG_OUTPUT)
         Cout << "CM_l   for level " << step << ": "
              << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
         if (step) {
@@ -967,7 +967,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
           cm2 -= cm2l;
           cm3 -= cm3l;
           cm4 -= cm4l;
-          //if (outputLevel == DEBUG_OUTPUT)
+          if (outputLevel == DEBUG_OUTPUT)
           Cout << "CM_lm1 for level " << step << ": "
                << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
         }
