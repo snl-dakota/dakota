@@ -622,8 +622,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
         // set the number of current samples from the defined increment
         numSamples = delta_N_l[step];
-        Cout << "\nMLMC iteration " << iter << " lev, num samples increments\n" << step << ": " << numSamples
-             << std::endl;
 
         // aggregate variances across QoI for estimating N_l (justification:
         // for independent QoI, sum of QoI variances = variance of QoI sum)
@@ -934,8 +932,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
            << std::endl;
 
     }
-    Cout << "\nMLMC final sample size\n" << N_l
-         << std::endl;
 
     // Roll up expected value estimators for central moments.  Final expected
     // value is sum of expected values from telescopic sum.  Note: raw moments
@@ -3211,7 +3207,6 @@ void NonDMultilevelSampling::
             = mu_P2lP2lm1 + term / (Nlq - 1.);
         agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
 
-        Cout << "2 agg var: " << agg_estim_var << "\n";
         if (outputLevel >= DEBUG_OUTPUT) {
           Cout << "Estimator for covariance for variance = " << covar_P2lP2lm1 << "\n";
           Cout << "Estimator for covariance for variance first term = " << mu_P2lP2lm1 << "\n";
