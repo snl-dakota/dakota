@@ -1866,6 +1866,7 @@ update_u_space_sampler(size_t sequence_index, const UShortArray& approx_orders)
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
   int seed = NonDExpansion::random_seed(sequence_index);
   if (seed) sub_iter_rep->random_seed(seed);
+  // replace w/ uSpaceModel.random_seed(seed)? -> u_space_sampler, shared approx
 
   if (tensorRegression) {
     NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
