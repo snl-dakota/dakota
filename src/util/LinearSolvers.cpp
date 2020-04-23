@@ -94,25 +94,25 @@ bool LinearSolverBase::is_factorized() const
   return false;
 }
 
-void LinearSolverBase::factorize( const MatrixXd & mat)
+void LinearSolverBase::factorize(const MatrixXd &mat)
 {
   silence_unused_args(mat);
   std::string msg = "factorize() Has not been implemented for this class.";
-  throw( std::runtime_error( msg ) );
+  throw(std::runtime_error(msg));
 }
 
-void LinearSolverBase::solve( const MatrixXd & lhs, const MatrixXd & rhs, MatrixXd & x)
+void LinearSolverBase::solve(const MatrixXd &lhs, const MatrixXd &rhs, MatrixXd &x)
 {
   silence_unused_args(lhs, rhs, x);
   std::string msg = "solve() Has not been implemented for this class.";
-  throw( std::runtime_error( msg ) );
+  throw(std::runtime_error(msg));
 }
 
-void LinearSolverBase::solve( const MatrixXd & rhs, MatrixXd & x)
+void LinearSolverBase::solve(const MatrixXd &rhs, MatrixXd &x)
 {
   silence_unused_args(rhs, x);
   std::string msg = "solve() Has not been implemented for this class.";
-  throw( std::runtime_error( msg ) );
+  throw(std::runtime_error(msg));
 }
 
 // ------------------------------------------------------------
@@ -126,29 +126,30 @@ LUSolver::~LUSolver()
 
 bool LUSolver::is_factorized() const
 {
-  if(LU_Ptr) return true;
+  if (LU_Ptr) return true;
   return false;
 }
 
-void LUSolver::factorize ( const MatrixXd & A )
+void LUSolver::factorize(const MatrixXd &A)
 {
   Eigen::FullPivLU<MatrixXd> lu;
   LU_Ptr = std::make_shared<Eigen::FullPivLU<MatrixXd>>(lu.compute(A));
 }
 
-void LUSolver::solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x )
+void LUSolver::solve(const MatrixXd &A, const MatrixXd &b, MatrixXd &x)
 {
   factorize(A);
   solve(b, x);
 }
 
-void LUSolver::solve( const MatrixXd & b, MatrixXd & x )
+void LUSolver::solve(const MatrixXd & b, MatrixXd & x )
 {
-  if(LU_Ptr) {
+  if (LU_Ptr) {
     x = LU_Ptr->solve(b);
-  } else {
-    std::string msg = "LU has not been previously computed.";
-    throw( std::runtime_error( msg ) );
+  }
+  else {
+    std::string msg = "LU decomposition has not been previously computed.";
+    throw(std::runtime_error(msg));
   }
 }
 
@@ -163,29 +164,30 @@ SVDSolver::~SVDSolver()
 
 bool SVDSolver::is_factorized() const
 {
-  if(SVD_Ptr) return true;
+  if (SVD_Ptr) return true;
   return false;
 }
 
-void SVDSolver::factorize ( const MatrixXd & A )
+void SVDSolver::factorize(const MatrixXd &A)
 {
   Eigen::BDCSVD<MatrixXd> bdcsvd;
   SVD_Ptr = std::make_shared<Eigen::BDCSVD<MatrixXd>>(bdcsvd.compute(A, Eigen::ComputeThinU | Eigen::ComputeThinV));
 }
 
-void SVDSolver::solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x )
+void SVDSolver::solve(const MatrixXd &A, const MatrixXd &b, MatrixXd &x)
 {
   factorize(A);
   solve(b, x);
 }
 
-void SVDSolver::solve( const MatrixXd & b, MatrixXd & x )
+void SVDSolver::solve(const MatrixXd &b, MatrixXd &x)
 {
-  if(SVD_Ptr) {
+  if (SVD_Ptr) {
     x = SVD_Ptr->solve(b);
-  } else {
+  }
+  else {
     std::string msg = "SVD has not been previously computed.";
-    throw( std::runtime_error( msg ) );
+    throw(std::runtime_error(msg));
   }
 }
 
@@ -200,29 +202,30 @@ QRSolver::~QRSolver()
 
 bool QRSolver::is_factorized() const
 {
-  if(QR_Ptr) return true;
+  if (QR_Ptr) return true;
   return false;
 }
 
-void QRSolver::factorize ( const MatrixXd & A )
+void QRSolver::factorize(const MatrixXd &A)
 {
   Eigen::ColPivHouseholderQR<MatrixXd> qr;
   QR_Ptr = std::make_shared<Eigen::ColPivHouseholderQR<MatrixXd>>(qr.compute(A));
 }
 
-void QRSolver::solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x )
+void QRSolver::solve(const MatrixXd &A, const MatrixXd &b, MatrixXd &x)
 {
   factorize(A);
   solve(b, x);
 }
 
-void QRSolver::solve( const MatrixXd & b, MatrixXd & x )
+void QRSolver::solve(const MatrixXd &b, MatrixXd &x)
 {
-  if(QR_Ptr) {
+  if (QR_Ptr) {
     x = QR_Ptr->solve(b);
-  } else {
-    std::string msg = "QR has not been previously computed.";
-    throw( std::runtime_error( msg ) );
+  }
+  else {
+    std::string msg = "QR decomposition has not been previously computed.";
+    throw(std::runtime_error(msg));
   }
 }
 
@@ -237,29 +240,30 @@ CholeskySolver::~CholeskySolver()
 
 bool CholeskySolver::is_factorized() const
 {
-  if(LDLT_Ptr) return true;
+  if (LDLT_Ptr) return true;
   return false;
 }
 
-void CholeskySolver::factorize ( const MatrixXd & A )
+void CholeskySolver::factorize(const MatrixXd &A)
 {
   Eigen::LDLT<MatrixXd> ldlt;
   LDLT_Ptr = std::make_shared<Eigen::LDLT<MatrixXd>>(ldlt.compute(A));
 }
 
-void CholeskySolver::solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x )
+void CholeskySolver::solve(const MatrixXd &A, const MatrixXd &b, MatrixXd &x)
 {
   factorize(A);
   solve(b, x);
 }
 
-void CholeskySolver::solve( const MatrixXd & b, MatrixXd & x )
+void CholeskySolver::solve(const MatrixXd &b, MatrixXd &x)
 {
-  if(LDLT_Ptr) {
+  if (LDLT_Ptr) {
     x = LDLT_Ptr->solve(b);
-  } else {
-    std::string msg = "Cholesky has not been previously computed.";
-    throw( std::runtime_error( msg ) );
+  }
+  else {
+    std::string msg = "Cholesky decomposition has not been previously computed.";
+    throw(std::runtime_error(msg));
   }
 }
 

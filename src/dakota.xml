@@ -2764,7 +2764,7 @@
 
 	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
-	  &method_seed; <!-- &method_seed_sequence; -->
+	  &method_seed_sequence;
 	  &mc_pilot_samples;
 	  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
 	    <oneOf label="Sample Type">
@@ -5283,7 +5283,7 @@
             <alias name="num_field_objectives"/>
             <param type="INTEGER" constraint=">= 0" />
             <keyword  id="lengths" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths"   >
-              <param type="INTEGERLIST" />
+              <param type="INTEGERLIST" constraint="LEN field_objectives"/>
             </keyword>
             <keyword  id="num_coordinates_per_field" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field"  minOccurs="0" >
               <param type="INTEGERLIST" />
@@ -5301,7 +5301,7 @@
           <keyword  id="field_calibration_terms" name="field_calibration_terms" code="{N_rem(sizet,numFieldLeastSqTerms)}" label="field_calibration_terms"  minOccurs="0" >
             <param type="INTEGER" constraint=">= 0" />
             <keyword  id="lengths1" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths"   >
-              <param type="INTEGERLIST" constraint="LEN calibration_terms"/>
+              <param type="INTEGERLIST" constraint="LEN field_calibration_terms"/>
             </keyword>
             <keyword  id="num_coordinates_per_field1" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field"  minOccurs="0" >
               <param type="INTEGERLIST" />
@@ -5432,7 +5432,7 @@
             <alias name="num_field_responses"/>
             <param type="INTEGER" constraint=">= 0" />
             <keyword  id="lengths2" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths"   >
-              <param type="INTEGERLIST" />
+              <param type="INTEGERLIST" constraint="LEN field_responses" />
             </keyword>
             <keyword  id="num_coordinates_per_field2" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field"  minOccurs="0" >
               <param type="INTEGERLIST" />

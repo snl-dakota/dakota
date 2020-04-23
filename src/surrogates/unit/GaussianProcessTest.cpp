@@ -17,26 +17,25 @@
 
 // BMA TODO: Review with team for best practice
 using namespace dakota;
-using namespace dakota::surrogates;
 using namespace dakota::util;
+using namespace dakota::surrogates;
 
 namespace {
 
 int test_gp(double atol){
 
-  // print output
   bool print_output = true;
 
-  // gp parameters
+  /* gp parameters */
   int num_qoi = 1; // only using 1 for now
 
-  // num_samples x num_features
-  MatrixXd xs_u(7,1);
-  // num_samples x num_qoi
+  /* num_samples x num_features */
+  MatrixXd xs_u(7,1); 
+  /* num_samples x num_qoi */
   MatrixXd response(7,1);
-  // num_eval_pts x num_features
+  /* num_eval_pts x num_features */
   MatrixXd eval_pts(6,1);
-  // num_eval_pts x num_qoi
+  /* num_eval_pts x num_qoi */
   MatrixXd pred(6,1);
 
   /* samples */
@@ -48,12 +47,14 @@ int test_gp(double atol){
 
   eval_pts << 0.0, 0.2, 0.4, 0.6, 0.8, 1.0;
                              
-  // bound constraints -- will be converted to log-scale internally
-  // sigma bounds - lower and upper
+  /* bound constraints -- will be converted to log-scale internally */
+
+  /* sigma bounds - lower and upper */
   VectorXd sigma_bounds(2);
   sigma_bounds(0) = 1.0e-2;
   sigma_bounds(1) = 1.0e2;
-  // length scale bounds - num_vars x 2
+
+  /* length scale bounds - num_vars x 2 */
   MatrixXd length_scale_bounds(1,2);
   length_scale_bounds(0,0) = 1.0e-2;
   length_scale_bounds(0,1) = 1.0e2;
@@ -74,7 +75,7 @@ int test_gp(double atol){
   VectorXd std_dev = gp.get_posterior_std_dev();
   MatrixXd cov = gp.get_posterior_covariance();
 
-  // gold values
+  /* gold values */
   MatrixXd gold_value(6,1);
   VectorXd gold_std(6);
   MatrixXd gold_cov(6,6);
@@ -89,12 +90,12 @@ int test_gp(double atol){
              -0.000337062, 6.60782e-05, 8.16402e-07, -0.000225718, 0.00039519, 0.0147636;
 
   if (print_output) {
-    std::cout << "\n\n1D GP mean:" << std::endl;
-    std::cout << pred << std::endl;
-    std::cout << "\n1D GP standard deviation:" << std::endl;
-    std::cout << std_dev << std::endl;
-    std::cout << "\n1D GP covariance:" << std::endl;
-    std::cout << cov << std::endl;
+    std::cout << "\n\n1D GP mean:\n";
+    std::cout << pred << "\n";
+    std::cout << "\n1D GP standard deviation:\n";
+    std::cout << std_dev << "\n";
+    std::cout << "\n1D GP covariance:\n";
+    std::cout << cov << "\n";
   }
 
   if (!matrix_equals(pred,gold_value,atol)){
@@ -167,14 +168,11 @@ int test_gp(double atol){
     return 12;
   }
 
-  std::cout << "old gp value:" << std::endl;
-  std::cout << pred << std::endl;
-  std::cout << "\n";
-
   /* 1D GP test #4:
    * use defaultConfigOptions and introduce a polynomial trend
    * and nugget estimation */
-  // gold values
+
+  /* gold values */
   MatrixXd gold_value4(6,1);
   VectorXd gold_std4(6);
   MatrixXd gold_cov4(6,6);
@@ -198,7 +196,6 @@ int test_gp(double atol){
   current_opts4.sublist("Nugget").set("estimate nugget", true);
   current_opts4.sublist("Trend").set("estimate trend", true);
   current_opts4.sublist("Trend").sublist("Options").set("max degree", 1);
-  /* debugging */
   current_opts4.set("num restarts", 20);
   gp4.set_options(current_opts4);
   gp4.build(xs_u, response);
@@ -208,17 +205,14 @@ int test_gp(double atol){
   cov = gp4.get_posterior_covariance();
 
   if (print_output) {
-    std::cout << "gp4 value:" << std::endl;
-    std::cout << pred << std::endl;
-    std::cout << "\n";
+    std::cout << "\ngp4 value:\n";
+    std::cout << pred << "\n";
 
-    std::cout << "gp4 std_dev:" << std::endl;
-    std::cout << std_dev << std::endl;
-    std::cout << "\n";
+    std::cout << "\ngp4 std_dev:\n";
+    std::cout << std_dev << "\n";
 
-    std::cout << "gp4 cov:" << std::endl;
-    std::cout << cov << std::endl;
-    std::cout << "\n";
+    std::cout << "\ngp4 cov:";
+    std::cout << cov << "\n";
   }
 
   if (!matrix_equals(pred,gold_value4,atol)){
@@ -242,25 +236,26 @@ int test_gp(double atol){
   gp4.gradient(eval_pts.row(0), gp4_gradient);
   gp4.hessian(eval_pts.row(0), gp4_hessian);
 
-  std::cout << "GP with trend gradient:" << std::endl;
-  std::cout << gp4_gradient;
-  std::cout << "\n";
-
-  std::cout << "GP with trend hessian:" << std::endl;
-  std::cout << gp4_hessian;
-  std::cout << "\n";
 
   MatrixXd grad_fd_error_trend;
   fd_check_gradient(gp4, eval_pts.row(0), grad_fd_error_trend); 
-  std::cout << "\nGP with trend gradient fd error:" << std::endl;
-  std::cout << grad_fd_error_trend << std::endl;
-  std::cout << "\n";
 
   MatrixXd hessian_fd_error_trend;
   fd_check_hessian(gp4, eval_pts.row(0), hessian_fd_error_trend); 
-  std::cout << "\nGP with trend hessian fd error:" << std::endl;
-  std::cout << hessian_fd_error_trend << std::endl;
-  std::cout << "\n";
+
+  if (print_output) {
+    std::cout << "\nGP with trend gradient:\n";
+    std::cout << gp4_gradient;
+
+    std::cout << "\nGP with trend hessian:\n";
+    std::cout << gp4_hessian;
+
+    std::cout << "\nGP with trend gradient fd error:\n";
+    std::cout << grad_fd_error_trend << "\n";
+
+    std::cout << "\nGP with trend hessian fd error:\n";
+    std::cout << hessian_fd_error_trend << "\n";
+  }
 
   /* 2D GP test */
   int num_datasets = 1;
@@ -316,13 +311,13 @@ int test_gp(double atol){
   populateMatricesFromFile(samples_fname,samples_list,num_datasets,num_vars,num_samples);
   populateMatricesFromFile(responses_fname,responses_list,num_datasets,num_qoi,num_samples);
 
-  if( 0 ) // used to dump data for use in the corresponding unit test in src/unit_test/reduced_basis.cpp
+  if (0)  /* used to dump data for use in the corresponding unit test in src/unit_test/reduced_basis.cpp */
   {
-    std::cout << "Samples :\n" << samples_list[0] << std::endl;
-    std::cout << "\n\nResponses :\n" << responses_list[0] << std::endl;
+    std::cout << "Samples :\n" << samples_list[0] << "\n";
+    std::cout << "\n\nResponses :\n" << responses_list[0] << "\n";
   }
 
-  /*four evaluation points for the test */
+  /* four evaluation points for the test */
   MatrixXd eval_pts_2D(4,2);
   MatrixXd pred_2D(4,1);
 
@@ -344,7 +339,7 @@ int test_gp(double atol){
 
   // not used for testing ...
   //for (int k = 0; k < num_datasets; k++) {
-    //std::cout  << "On dataset " << k << std::endl;
+    //std::cout  << "On dataset " << k << "\n";
   //}
 
   std::cout << "\n";
@@ -369,12 +364,12 @@ int test_gp(double atol){
   }
 
   if (print_output) {
-    std::cout << "\n\n2D GP mean:" << std::endl;
-    std::cout << pred_2D << std::endl;
-    std::cout << "\n2D GP standard deviation:" << std::endl;
-    std::cout << std_dev_2D << std::endl;
-    std::cout << "\n2D GP covariance:" << std::endl;
-    std::cout << cov_2D << std::endl;
+    std::cout << "\n\n2D GP mean:" << "\n";
+    std::cout << pred_2D << "\n";
+    std::cout << "\n2D GP standard deviation:" << "\n";
+    std::cout << std_dev_2D << "\n";
+    std::cout << "\n2D GP covariance:" << "\n";
+    std::cout << cov_2D << "\n";
   }
 
   /* try to compute the derivative at a point */
@@ -388,12 +383,12 @@ int test_gp(double atol){
 
   
   if (print_output) {
-    std::cout << "\nGP grad value at evaluation point:\n" << gp_grad << std::endl;
+    std::cout << "\nGP grad value at evaluation point:\n" << gp_grad << "\n";
   }
 
   if (!matrix_equals(gp_grad,gold_gp_grad,atol)){
-    std::cout << "7\n";
-    return 7;
+    std::cout << "19\n";
+    return 19;
   }
 
   MatrixXd gp_hessian;
@@ -402,30 +397,27 @@ int test_gp(double atol){
   gp_2D.hessian(eval_point, gp_hessian);
 
   if (print_output) {
-    std::cout << "\nGP Hessian value at evaluation point:\n" << gp_hessian << std::endl;
+    std::cout << "\nGP Hessian value at evaluation point:\n" << gp_hessian << "\n";
   }
 
   if (!matrix_equals(gp_hessian,gold_gp_hessian,atol)){
-    std::cout << "8\n";
-    return 8;
+    std::cout << "20\n";
+    return 20;
   }
 
   /* Now build 2D function with trend and check gradient/hessian */
 
   MatrixXd grad_fd_error;
   fd_check_gradient(gp_2D, eval_point, grad_fd_error);
-  if (print_output) {
-    std::cout << "\ngradient fd error:" << std::endl;
-    std::cout << grad_fd_error << std::endl;
-    std::cout << "\n";
-  }
 
   MatrixXd hessian_fd_error;
   fd_check_hessian(gp_2D, eval_point, hessian_fd_error);
+
   if (print_output) {
-    std::cout << "\nhessian fd error:" << std::endl;
-    std::cout << hessian_fd_error << std::endl;
-    std::cout << "\n";
+    std::cout << "\ngradient fd error:\n";
+    std::cout << grad_fd_error << "\n";
+    std::cout << "\nhessian fd error:\n";
+    std::cout << hessian_fd_error << "\n";
   }
   
   /* test a 2D gp with a quadratic trend and nugget estimation */
@@ -446,7 +438,7 @@ int test_gp(double atol){
   gp_2D.hessian(eval_point, gp_hessian);
 
   if (print_output) {
-    std::cout << "2D trend gp gradient:\n";
+    std::cout << "\n2D trend gp gradient:\n";
     std::cout << gp_grad;
     std::cout << "\n\n";
     std::cout << "2D trend gp hessian:\n";
@@ -454,16 +446,13 @@ int test_gp(double atol){
   }
 
   fd_check_gradient(gp_2D_quad, eval_point, grad_fd_error);
-  if (print_output) {
-    std::cout << "\n2D trend gradient fd error:" << std::endl;
-    std::cout << grad_fd_error << std::endl;
-    std::cout << "\n";
-  }
-
   fd_check_hessian(gp_2D_quad, eval_point, hessian_fd_error);
+
   if (print_output) {
-    std::cout << "\n2D trend hessian fd error:" << std::endl;
-    std::cout << hessian_fd_error << std::endl;
+    std::cout << "\n2D trend gradient fd error:\n";
+    std::cout << grad_fd_error << "\n";
+    std::cout << "\n2D trend hessian fd error:\n";
+    std::cout << hessian_fd_error << "\n";
     std::cout << "\n";
   }
 
@@ -477,12 +466,12 @@ int test_gp(double atol){
   }
 
   if (!matrix_equals(gp_grad,gold_gp_grad,atol)){
-    std::cout << "8\n";
+    std::cout << "17\n";
     return 17;
   }
 
   if (!matrix_equals(gp_hessian,gold_gp_hessian,atol)){
-    std::cout << "8\n";
+    std::cout << "18\n";
     return 18;
   }
 
@@ -495,8 +484,8 @@ int test_gp(double atol){
 // Unit tests
 
 /**
-\brief Create a 1D GP and 2D from sample data and compare their means, 
-       standard deviations, and covariance matrices
+\brief Create 1D and 2D GPs from sample data and compare their means, 
+       standard deviations, covariance matrices, and derivatives.
 */
 TEUCHOS_UNIT_TEST(surrogates, gaussian_process)
 {

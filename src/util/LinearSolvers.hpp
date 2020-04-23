@@ -45,33 +45,33 @@ class LinearSolverBase
     static SOLVER_TYPE solver_type(const std::string& solver_name);
 
     /**
-     * \brief Query to determine if the matrix of the solver has been factored
+     * \brief Query to determine if the matrix of the solver has been factored.
      */
     virtual bool is_factorized() const;
 
     /**
-     * \brief Perform the matrix factorization for the linear solver matrix
+     * \brief Perform the matrix factorization for the linear solver matrix.
      *
-     * \param[in] mat The incoming matrix to factorize
+     * \param[in] mat The incoming matrix to factorize.
      */
-    virtual void factorize( const MatrixXd & mat);
+    virtual void factorize(const MatrixXd &mat);
 
     /**
-     * \brief Find a solution to Ax = b
+     * \brief Find a solution to linear problem.
      *
-     * \param[in] lhs The linear system left-hand-side matrix
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] lhs The linear system left-hand-side matrix.
+     * \param[in] rhs The linear system right-hand-side (multi-)vector.
+     * \param[in] x   The linear system solution (multi-)vector.
      */
-    virtual void solve( const MatrixXd & lhs, const MatrixXd & rhs, MatrixXd & x);
+    virtual void solve(const MatrixXd &lhs, const MatrixXd &rhs, MatrixXd &x);
 
     /**
-     * \brief Find a solution to Ax = b when A is already factorized
+     * \brief Find a solution to linear problem where the LHS is already factorized.
      *
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] rhs The linear system right-hand-side (multi-)vector.
+     * \param[in] x   The linear system solution (multi-)vector.
      */
-    virtual void solve( const MatrixXd & rhs, MatrixXd & x);
+    virtual void solve(const MatrixXd &rhs, MatrixXd &x);
 };
 
 std::shared_ptr<LinearSolverBase> solver_factory(LinearSolverBase::SOLVER_TYPE);
@@ -89,33 +89,33 @@ class LUSolver : public LinearSolverBase
     ~LUSolver();
 
     /**
-     * \brief Query to determine if the matrix of the solver has been factored
+     * \brief Query to determine if the matrix of the solver has been factored.
      */
     bool is_factorized() const override;
 
     /**
-     * \brief Perform the matrix factorization for the linear solver matrix
+     * \brief Perform the matrix factorization for the linear solver matrix.
      *
-     * \param[in] mat The incoming matrix to factorize
+     * \param[in] A The incoming matrix to factorize.
      */
-    void factorize ( const MatrixXd & A ) override;
+    void factorize(const MatrixXd &A) override;
 
     /**
-     * \brief Find a solution to Ax = b
+     * \brief Find the solution to Ax = b.
      *
-     * \param[in] lhs The linear system left-hand-side matrix
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] A The linear system left-hand-side matrix.
+     * \param[in] b The linear system right-hand-side (multi-)vector.
+     * \param[in] x   The linear system solution (multi-)vector.
      */
-    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override;
+    void solve(const MatrixXd &A, const MatrixXd &b, MatrixXd &x) override;
 
     /**
-     * \brief Find a solution to Ax = b when A is already factorized
+     * \brief Find the solution to Ax = b when A is already factorized.
      *
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] b The linear system right-hand-side (multi-)vector.
+     * \param[in] x   The linear system solution (multi-)vector.
      */
-    void solve( const MatrixXd & b, MatrixXd & x ) override;
+    void solve(const MatrixXd &b, MatrixXd &x) override;
 
   private:
 
@@ -135,33 +135,33 @@ class SVDSolver : public LinearSolverBase
     ~SVDSolver();
 
     /**
-     * \brief Query to determine if the matrix of the solver has been factored
+     * \brief Query to determine if the matrix of the solver has been factored.
      */
     bool is_factorized() const override;
 
     /**
-     * \brief Perform the matrix factorization for the linear solver matrix
+     * \brief Perform the matrix factorization for the linear solver matrix.
      *
-     * \param[in] mat The incoming matrix to factorize
+     * \param[in] A The incoming matrix to factorize.
      */
-    void factorize ( const MatrixXd & A ) override;
+    void factorize(const MatrixXd &A) override;
 
     /**
-     * \brief Find a solution to Ax = b
+     * \brief Find a solution to Ax = b.
      *
-     * \param[in] lhs The linear system left-hand-side matrix
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] A The linear system left-hand-side matrix.
+     * \param[in] b The linear system right-hand-side (multi-)vector.
+     * \param[in] x   The linear system solution (multi-)vector.
      */
-    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override;
+    void solve(const MatrixXd &A, const MatrixXd &b, MatrixXd &x) override;
 
     /**
-     * \brief Find a solution to Ax = b when A is already factorized
+     * \brief Find a solution to Ax = b when A is already factorized.
      *
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] b The linear system right-hand-side (multi-)vector.
+     * \param[in] x   The linear system solution (multi-)vector.
      */
-    void solve( const MatrixXd & b, MatrixXd & x ) override;
+    void solve(const MatrixXd &b, MatrixXd & x) override;
 
   private:
 
@@ -181,33 +181,33 @@ class QRSolver : public LinearSolverBase
     ~QRSolver();
 
     /**
-     * \brief Query to determine if the matrix of the solver has been factored
+     * \brief Query to determine if the matrix of the solver has been factored.
      */
     bool is_factorized() const override;
 
     /**
-     * \brief Perform the matrix factorization for the linear solver matrix
+     * \brief Perform the matrix factorization for the linear solver matrix.
      *
-     * \param[in] mat The incoming matrix to factorize
+     * \param[in] mat The incoming matrix to factorize.
      */
-    void factorize ( const MatrixXd & A ) override;
+    void factorize(const MatrixXd &A) override;
 
     /**
-     * \brief Find a solution to Ax = b
+     * \brief Find the solution to (A^T*A)x = A^T*b .
      *
-     * \param[in] lhs The linear system left-hand-side matrix
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] A The matrix for the QR decomposition.
+     * \param[in] b The linear system right-hand-side (multi-)vector.
+     * \param[in] x The linear system solution (multi-)vector.
      */
-    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override;
+    void solve(const MatrixXd &A, const MatrixXd &b, MatrixXd &x) override;
 
     /**
-     * \brief Find a solution to Ax = b when A is already factorized
+     * \brief Find a solution to (A^T*A)x = A^T*b when A is already factorized.
      *
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] rhs The linear system right-hand-side (multi-)vector.
+     * \param[in] x   The linear system solution (multi-)vector.
      */
-    void solve( const MatrixXd & b, MatrixXd & x ) override;
+    void solve(const MatrixXd &b, MatrixXd &x) override;
 
   private:
 
@@ -232,33 +232,33 @@ class CholeskySolver : public LinearSolverBase
     ~CholeskySolver();
 
     /**
-     * \brief Query to determine if the matrix of the solver has been factored
+     * \brief Query to determine if the matrix of the solver has been factored.
      */
     bool is_factorized() const override;
 
     /**
-     * \brief Perform the matrix factorization for the linear solver matrix
+     * \brief Perform the matrix factorization for the linear solver matrix.
      *
-     * \param[in] mat The incoming matrix to factorize
+     * \param[in] mat The incoming matrix to factorize.
      */
-    void factorize ( const MatrixXd & A ) override;
+    void factorize(const MatrixXd &A) override;
 
     /**
-     * \brief Find a solution to Ax = b
+     * \brief Find a solution to Ax = b.
      *
-     * \param[in] lhs The linear system left-hand-side matrix
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] A The linear system left-hand-side matrix.
+     * \param[in] b The linear system right-hand-side (multi-)vector.
+     * \param[in] x The linear system solution (multi-)vector.
      */
-    void solve( const MatrixXd & A, const MatrixXd & b, MatrixXd & x ) override;
+    void solve(const MatrixXd &A, const MatrixXd &b, MatrixXd &x) override;
 
     /**
-     * \brief Find a solution to Ax = b when A is already factorized
+     * \brief Find a solution to Ax = b when A is already factorized.
      *
-     * \param[in] rhs The linear system right-hand-side (multi-)vector
-     * \param[in] x   The linear system solution (multi-)vector
+     * \param[in] b The linear system right-hand-side (multi-)vector.
+     * \param[in] x The linear system solution (multi-)vector.
      */
-    void solve( const MatrixXd & b, MatrixXd & x ) override;
+    void solve(const MatrixXd &b, MatrixXd &x) override;
 
   private:
 

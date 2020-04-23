@@ -21,10 +21,10 @@ TEUCHOS_UNIT_TEST(util, N_choose_K)
   std::vector<int> gold  = { 10, 45, 120, 210, 252, 210, 120, 45, 10, 1 };
   std::vector<int> fvals;
 
-  for( auto const & k : kvals )
+  for (auto const & k : kvals)
     fvals.push_back(n_choose_k(10,k));
 
-  TEST_ASSERT( fvals == gold );
+  TEST_ASSERT(fvals == gold);
 }
 
 // ------------------------------------------------------------
@@ -39,10 +39,10 @@ TEUCHOS_UNIT_TEST(util, num_nonzeros)
                   0, 1, 1,
                   0, 0, 2 ;
 
-  Eigen::Map<Eigen::VectorXi> column( test_indices.col(1).data(), test_indices.rows() );
+  Eigen::Map<Eigen::VectorXi> column(test_indices.col(1).data(), test_indices.rows());
 
-  TEST_ASSERT( 9 == num_nonzeros(test_indices) );
-  TEST_ASSERT( 3 == num_nonzeros(column) );
+  TEST_ASSERT(9 == num_nonzeros(test_indices));
+  TEST_ASSERT(3 == num_nonzeros(column));
 }
 
 // ------------------------------------------------------------
@@ -58,7 +58,7 @@ TEUCHOS_UNIT_TEST(util, nonzeros)
   Eigen::VectorXi test_vec;
   nonzero(working_vec, test_vec);
 
-  TEST_ASSERT( matrix_equals(test_vec, gold_vec) );
+  TEST_ASSERT(matrix_equals(test_vec, gold_vec));
 }
 
 // ------------------------------------------------------------
@@ -82,7 +82,7 @@ TEUCHOS_UNIT_TEST(util, append_cols)
 
   append_columns(new_mat, working_mat);
 
-  TEST_ASSERT( matrix_equals(working_mat, gold_mat) );
+  TEST_ASSERT(matrix_equals(working_mat, gold_mat));
 }
 
 // ------------------------------------------------------------
@@ -92,7 +92,7 @@ TEUCHOS_UNIT_TEST(util, p_norm)
   Eigen::VectorXd vals(10);
   vals << 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0;
 
-  TEST_FLOATING_EQUALITY( 140.50736087767584, p_norm(vals, 0.7), 1.e-10);
+  TEST_FLOATING_EQUALITY(140.50736087767584, p_norm(vals, 0.7), 1.e-10);
 }
 
 // ------------------------------------------------------------

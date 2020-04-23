@@ -197,6 +197,8 @@ protected:
   void archive_allocate_pdf();
   /// archive a single pdf histogram for specified function
   void archive_pdf(size_t fn_index, size_t inc_id = 0);
+  /// archive the equivalent number of HF evals (used by ML/MF methods)
+  void archive_equiv_hf_evals(const Real equiv_hf_evals);
 
   //
   //- Heading: Data members

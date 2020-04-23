@@ -99,6 +99,11 @@ private:
   /// return (aggregate) level cost
   Real level_cost(const RealVector& cost, unsigned short step);
 
+  /// advance any sequence specifications
+  void assign_specification_sequence(size_t index);
+  /// extract current random seed from randomSeedSeqSpec
+  int random_seed(size_t index) const;
+
   /// manage response mode and active model key from {group,form,lev} triplet.
   /// s_index is the sequence index that defines the active dimension for a
   /// model sequence.
@@ -477,6 +482,12 @@ private:
   static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
 
+  void assign_static_member(Real &conv_tol, size_t &qoi, RealVector &level_cost_vec, IntRealMatrixMap &sum_Ql,
+                            IntRealMatrixMap &sum_Qlm1, IntIntPairRealMatrixMap &sum_QlQlm1,
+                            RealVector &pilot_samples) const;
+
+  void assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, Real &mu_four_L_exact, Real &mu_four_H_exact, Real &Ax, RealVector &level_cost_vec) const;
+
   //
   //- Heading: Data
   //
@@ -489,11 +500,17 @@ private:
   /// invocation of load_pilot_sample()
   SizetArray pilotSamples;
 
+  /// user specification for seed_sequence
+  SizetArray randomSeedSeqSpec;
+
+  /// major iteration counter
+  size_t mlmfIter;
+
   /// store the allocation_target input specification, prior to run-time
   /// Options right now:
-  ///     - Mean = First moment (Mean)
-  ///     - Variance = Second moment (Variance or standard deviation depending on moments central or standard)
-  size_t allocationTarget;
+  ///   - Mean = First moment (Mean)
+  ///   - Variance = Second moment (Variance or standard deviation depending on moments central or standard)
+  short allocationTarget;
 
   /// option to switch on numerical optimization for solution of sample alloation
   /// of allocationTarget Variance
@@ -501,8 +518,8 @@ private:
 
   /// store the qoi_aggregation_norm input specification, prior to run-time
   /// Options right now:
-  ///     - sum 		 = aggregate the variance over all QoIs, compute samples from that
-  ///     - max          = take maximum sample allocation over QoIs for each level
+  ///   - sum = aggregate the variance over all QoIs, compute samples from that
+  ///   - max = take maximum sample allocation over QoIs for each level
   short qoiAggregation;
 
   /// mean squared error of mean estimator from pilot sample MC on HF model
@@ -522,13 +539,8 @@ private:
   bool exportSampleSets;
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
-
-  void assign_static_member(Real &conv_tol, size_t &qoi, RealVector &level_cost_vec, IntRealMatrixMap &sum_Ql,
-                            IntRealMatrixMap &sum_Qlm1, IntIntPairRealMatrixMap &sum_QlQlm1,
-                            RealVector &pilot_samples) const;
-
-	void assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, Real &mu_four_L_exact, Real &mu_four_H_exact, Real &Ax, RealVector &level_cost_vec) const;
 };
+
 
 inline void NonDMultilevelSampling::aggregated_models_mode()
 {
@@ -566,6 +578,22 @@ level_cost(const RealVector& cost, unsigned short step)
   return (step) ?
     cost[step] + cost[step-1] : // aggregated {HF,LF} mode
     cost[step];                 //     uncorrected LF mode
+}
+
+
+/** extract an active seed from a seed sequence */
+inline int NonDMultilevelSampling::random_seed(size_t index) const
+{
+  // return 0 for cases where seed is undefined or will not be updated
+
+  if (randomSeedSeqSpec.empty()) return 0; // no spec -> non-repeatable samples
+  else if (!varyPattern) // continually reset seed to specified value
+    return (index < randomSeedSeqSpec.size()) ?
+      randomSeedSeqSpec[index] : randomSeedSeqSpec.back();
+  // only set sequence of seeds for first pass, then let RNG state continue
+  else if (mlmfIter == 0 && index < randomSeedSeqSpec.size()) // pilot iter only
+    return randomSeedSeqSpec[index];
+  else return 0; // seed sequence exhausted, do not update
 }
 
 
