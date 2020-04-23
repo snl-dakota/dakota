@@ -56,7 +56,7 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
 
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
   std::cout << "\nBuilding Polynomial with configuration options\n"
-	  << configOptions << std::endl;
+	  << configOptions << "\n";
 
 
   numQOI = response.cols();
@@ -76,7 +76,7 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
   SCALER_TYPE scalerType = util::DataScaler::scaler_type(
       configOptions.get<std::string>("scaler type"));
   dataScaler = util::scaler_factory(scalerType, unscaled_basis_matrix);
-  MatrixXd scaled_basis_matrix = dataScaler->get_scaled_features();
+  const MatrixXd& scaled_basis_matrix = dataScaler->get_scaled_features();
 
   /* Solve the for the polynomial coefficients */
   SOLVER_TYPE solverType = util::LinearSolverBase::solver_type(
