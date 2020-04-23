@@ -1658,8 +1658,8 @@ void NonDMultilevelSampling::assign_specification_sequence(size_t index)
 
   // advance any sequence specifications, as admissible
   // Note: no colloc pts sequence as load_pilot_sample() handles this separately
-  int seed_i = random_seed(index);// propagate to NonDSampling::initialize_lhs()
-  if (seed_i)  randomSeed = seed_i;
+  int seed_i = random_seed(index);
+  if (seed_i) randomSeed = seed_i;// propagate to NonDSampling::initialize_lhs()
   // else previous value will allow existing RNG to continue for varyPattern
 }
 
