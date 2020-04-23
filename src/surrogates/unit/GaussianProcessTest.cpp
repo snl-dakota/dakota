@@ -91,11 +91,11 @@ int test_gp(double atol){
 
   if (print_output) {
     std::cout << "\n\n1D GP mean:\n";
-    std::cout << pred << std::endl;
+    std::cout << pred << "\n";
     std::cout << "\n1D GP standard deviation:\n";
-    std::cout << std_dev << std::endl;
+    std::cout << std_dev << "\n";
     std::cout << "\n1D GP covariance:\n";
-    std::cout << cov << std::endl;
+    std::cout << cov << "\n";
   }
 
   if (!matrix_equals(pred,gold_value,atol)){
@@ -206,13 +206,13 @@ int test_gp(double atol){
 
   if (print_output) {
     std::cout << "\ngp4 value:\n";
-    std::cout << pred << std::endl;
+    std::cout << pred << "\n";
 
     std::cout << "\ngp4 std_dev:\n";
-    std::cout << std_dev << std::endl;
+    std::cout << std_dev << "\n";
 
     std::cout << "\ngp4 cov:";
-    std::cout << cov << std::endl;
+    std::cout << cov << "\n";
   }
 
   if (!matrix_equals(pred,gold_value4,atol)){
@@ -251,10 +251,10 @@ int test_gp(double atol){
     std::cout << gp4_hessian;
 
     std::cout << "\nGP with trend gradient fd error:\n";
-    std::cout << grad_fd_error_trend << std::endl;
+    std::cout << grad_fd_error_trend << "\n";
 
     std::cout << "\nGP with trend hessian fd error:\n";
-    std::cout << hessian_fd_error_trend << std::endl;
+    std::cout << hessian_fd_error_trend << "\n";
   }
 
   /* 2D GP test */
@@ -313,8 +313,8 @@ int test_gp(double atol){
 
   if (0)  /* used to dump data for use in the corresponding unit test in src/unit_test/reduced_basis.cpp */
   {
-    std::cout << "Samples :\n" << samples_list[0] << std::endl;
-    std::cout << "\n\nResponses :\n" << responses_list[0] << std::endl;
+    std::cout << "Samples :\n" << samples_list[0] << "\n";
+    std::cout << "\n\nResponses :\n" << responses_list[0] << "\n";
   }
 
   /* four evaluation points for the test */
@@ -339,7 +339,7 @@ int test_gp(double atol){
 
   // not used for testing ...
   //for (int k = 0; k < num_datasets; k++) {
-    //std::cout  << "On dataset " << k << std::endl;
+    //std::cout  << "On dataset " << k << "\n";
   //}
 
   std::cout << "\n";
@@ -364,12 +364,12 @@ int test_gp(double atol){
   }
 
   if (print_output) {
-    std::cout << "\n\n2D GP mean:" << std::endl;
-    std::cout << pred_2D << std::endl;
-    std::cout << "\n2D GP standard deviation:" << std::endl;
-    std::cout << std_dev_2D << std::endl;
-    std::cout << "\n2D GP covariance:" << std::endl;
-    std::cout << cov_2D << std::endl;
+    std::cout << "\n\n2D GP mean:" << "\n";
+    std::cout << pred_2D << "\n";
+    std::cout << "\n2D GP standard deviation:" << "\n";
+    std::cout << std_dev_2D << "\n";
+    std::cout << "\n2D GP covariance:" << "\n";
+    std::cout << cov_2D << "\n";
   }
 
   /* try to compute the derivative at a point */
@@ -383,7 +383,7 @@ int test_gp(double atol){
 
   
   if (print_output) {
-    std::cout << "\nGP grad value at evaluation point:\n" << gp_grad << std::endl;
+    std::cout << "\nGP grad value at evaluation point:\n" << gp_grad << "\n";
   }
 
   if (!matrix_equals(gp_grad,gold_gp_grad,atol)){
@@ -397,7 +397,7 @@ int test_gp(double atol){
   gp_2D.hessian(eval_point, gp_hessian);
 
   if (print_output) {
-    std::cout << "\nGP Hessian value at evaluation point:\n" << gp_hessian << std::endl;
+    std::cout << "\nGP Hessian value at evaluation point:\n" << gp_hessian << "\n";
   }
 
   if (!matrix_equals(gp_hessian,gold_gp_hessian,atol)){
@@ -415,9 +415,9 @@ int test_gp(double atol){
 
   if (print_output) {
     std::cout << "\ngradient fd error:\n";
-    std::cout << grad_fd_error << std::endl;
+    std::cout << grad_fd_error << "\n";
     std::cout << "\nhessian fd error:\n";
-    std::cout << hessian_fd_error << std::endl;
+    std::cout << hessian_fd_error << "\n";
   }
   
   /* test a 2D gp with a quadratic trend and nugget estimation */
@@ -449,11 +449,10 @@ int test_gp(double atol){
   fd_check_hessian(gp_2D_quad, eval_point, hessian_fd_error);
 
   if (print_output) {
-    std::cout << "\n2D trend gradient fd error:" << std::endl;
-    std::cout << grad_fd_error << std::endl;
-    std::cout << "\n";
-    std::cout << "\n2D trend hessian fd error:" << std::endl;
-    std::cout << hessian_fd_error << std::endl;
+    std::cout << "\n2D trend gradient fd error:\n";
+    std::cout << grad_fd_error << "\n";
+    std::cout << "\n2D trend hessian fd error:\n";
+    std::cout << hessian_fd_error << "\n";
     std::cout << "\n";
   }
 
