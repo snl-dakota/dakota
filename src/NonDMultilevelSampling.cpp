@@ -39,15 +39,20 @@ namespace Dakota {
 NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
-  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
-  allocationTarget(probDescDB.get_short("method.nond.allocation_target")),
-  qoiAggregation(probDescDB.get_short("method.nond.qoi_aggregation")),
-  useTargetVarianceOptimizationFlag(probDescDB.get_bool("method.nond.allocation_target.variance.optimization")),
+  pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
+  randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
+  mlmfIter(0),
+  allocationTarget(problem_db.get_short("method.nond.allocation_target")),
+  qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
+  useTargetVarianceOptimizationFlag(problem_db.get_bool("method.nond.allocation_target.variance.optimization")),
   finalCVRefinement(true),
-  exportSampleSets(probDescDB.get_bool("method.nond.export_sample_sequence")),
+  exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
-    probDescDB.get_ushort("method.nond.export_samples_format"))
+    problem_db.get_ushort("method.nond.export_samples_format"))
 {
+  // initialize scalars from sequence
+  seedSpec = randomSeed = random_seed(0);
+
   // Support multilevel LHS as a specification override.  The estimator variance
   // is known/correct for MC and an assumption/approximation for LHS.  To get an
   // accurate LHS estimator variance, one would need:
@@ -122,7 +127,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   // For testing multilevel_mc_Qsum():
-  // subIteratorFlag = true;
+  //subIteratorFlag = true;
 }
 
 
@@ -253,7 +258,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
   iteratedModel.active_model_key(truth_key);
   Model& truth_model = iteratedModel.truth_model();
 
-  size_t qoi, iter = 0, num_steps = truth_model.solution_levels();//1 model form
+  size_t qoi, num_steps = truth_model.solution_levels();// 1 model form
   unsigned short& step = (true) ? lev : model_form; // option not active
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
@@ -276,7 +281,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
   Sizet2DArray& N_l = NLev[model_form];
 
   // now converge on sample counts per level (N_l)
-  while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
+  mlmfIter = 0;
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= max_iter) {
 
     sum_sqrt_var_cost = 0.;
     for (step=0; step<num_steps; ++step) { // step is reference to lev
@@ -292,20 +298,22 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       Real& agg_var_l = agg_var[step]; // carried over from prev iter if no samp
       if (numSamples) {
 
+	// advance any sequence specifications (seed_sequence)
+	assign_specification_sequence(step);
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
 	// export separate output files for each data set.  truth_model()
 	// has the correct data when in bypass-surrogate mode.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.truth_model(), iter, step);
+	  export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, step);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
-	//if (iter == 0) accumulate_offsets(mu_hat[lev]);
+	//if (mlmfIter == 0) accumulate_offsets(mu_hat[lev]);
 	accumulate_ml_Ysums(sum_Y, sum_YY, lev, mu_hat[step], N_l[step]);
 	if (outputLevel == DEBUG_OUTPUT)
 	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n" << sum_Y[1]
@@ -322,7 +330,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
       // MSE reference is MLMC with pilot sample, prior to any N_l adaptation:
-      if (iter == 0)
+      if (mlmfIter == 0)
 	estimator_var0
 	  += aggregate_mse_Ysum(sum_Y[1][step], sum_YY[step], N_l[step]);
     }
@@ -331,7 +339,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
     // discretization error, we compute an initial estimator variance from MLMC
     // on the pilot sample and then seek to reduce it by a relative_factor <= 1.
-    if (iter == 0) { // eps^2 / 2 = var * relative factor
+    if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
       eps_sq_div_2 = estimator_var0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
@@ -346,9 +354,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       N_target = std::sqrt(agg_var[step] / level_cost(cost, step)) * fact;
       delta_N_l[step] = one_sided_delta(average(N_l[step]), N_target);
     }
-    ++iter;
-    Cout << "\nMLMC iteration " << iter << " sample increments:\n" << delta_N_l
-	 << std::endl;
+    ++mlmfIter;
+    Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
+	 << delta_N_l << std::endl;
   }
 
   // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
@@ -375,6 +383,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     equivHFEvals += raw_N_l[step] * (cost[step] + cost[step-1]);
   equivHFEvals /= cost[num_steps-1]; // normalize into equivalent HF evals
 }
+
 
   static RealVector *static_lev_cost_vec(NULL);
   static size_t *static_qoi(NULL);
@@ -547,8 +556,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
-  void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form) {
-
+void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
+{
     // assign truth model form (solution level assignment is deferred until loop)
     UShortArray truth_key;
     unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
@@ -556,7 +565,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     iteratedModel.active_model_key(truth_key);
     Model& truth_model = iteratedModel.truth_model();
 
-    size_t qoi, iter = 0, num_steps = truth_model.solution_levels();//1 model form
+    size_t qoi, num_steps = truth_model.solution_levels();//1 model form
     unsigned short& step = (true) ? lev : model_form; // option not active
 
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
@@ -605,8 +614,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     }
 
     // now converge on sample counts per level (N_l)
-    while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
-      Real underrelaxation_factor = static_cast<Real>(iter + 1)/static_cast<Real>(max_iter + 1);
+    mlmfIter = 0;
+    while (Pecos::l1_norm(delta_N_l) && mlmfIter <= max_iter) {
+      Real underrelaxation_factor = static_cast<Real>(mlmfIter + 1)/static_cast<Real>(max_iter + 1);
 
       sum_sqrt_var_cost = 0.;
       for (qoi = 0; qoi < numFunctions; ++qoi) {
@@ -629,20 +639,23 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
         if (numSamples) {
 
+	  // advance any sequence specifications (seed_sequence)
+	  assign_specification_sequence(step);
           // generate new MC parameter sets
           get_parameter_sets(iteratedModel);// pull dist params from any model
 
           // export separate output files for each data set.  truth_model()
           // has the correct data when in bypass-surrogate mode.
           if (exportSampleSets)
-            export_all_samples("ml_", iteratedModel.truth_model(), iter, step);
+            export_all_samples("ml_", iteratedModel.truth_model(),
+			       mlmfIter, step);
 
           // compute allResponses from allVariables using hierarchical model
           evaluate_parameter_sets(iteratedModel, true, false);
 
           // process allResponses: accumulate new samples for each qoi and
           // update number of successful samples for each QoI
-          //if (iter == 0) accumulate_offsets(mu_hat[step]);
+          //if (mlmfIter == 0) accumulate_offsets(mu_hat[step]);
 
           accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
                               mu_hat[step], N_l[step]);
@@ -700,7 +713,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
           sum_sqrt_var_cost_qoi[qoi] += std::sqrt(agg_var_qoi(qoi, step) * lev_cost);
         }
         // MSE reference is MC applied to HF:
-        if (iter == 0) {
+        if (mlmfIter == 0) {
           estimator_var0 += aggregate_mse_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
                                                sum_Ql[2][step], sum_QlQlm1[pr11][step], sum_Qlm1[2][step],
                                                N_l[step], step);
@@ -716,7 +729,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
       // discretization error, we compute an initial estimator variance and
       // then seek to reduce it by a relative_factor <= 1.
-      if (iter == 0) { // eps^2 / 2 = var * relative factor
+      if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
         //if(target_mean)
         eps_sq_div_2 = estimator_var0 * convergenceTol;
         for (qoi = 0; qoi < numFunctions; ++qoi) {
@@ -927,9 +940,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
         }
       }    
 
-      ++iter;
-      Cout << "\nMLMC iteration " << iter << " sample increments:\n" << delta_N_l
-           << std::endl;
+      ++mlmfIter;
+      Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
+	   << delta_N_l << std::endl;
 
     }
 
@@ -993,14 +1006,14 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     for (step=1; step<num_steps; ++step)// subsequent levels incur 2 model costs
       equivHFEvals += raw_N_l[step] * (cost[step] + cost[step - 1]);
     equivHFEvals /= cost[num_steps - 1]; // normalize into equivalent HF evals
+}
 
-  }
 
-  
-  void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, RealVector &level_cost_vec,
-                                                    IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
-                                                    IntIntPairRealMatrixMap &sum_QlQlm1,
-                                                    RealVector &pilot_samples) const {
+void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, RealVector &level_cost_vec,
+						  IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
+						  IntIntPairRealMatrixMap &sum_QlQlm1,
+						  RealVector &pilot_samples) const
+{
     static_lev_cost_vec= &level_cost_vec;
     static_qoi = &qoi;
     static_sum_Ql = &sum_Ql;
@@ -1008,7 +1021,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     static_sum_QlQlm1 = &sum_QlQlm1;
     static_eps_sq_div_2 = &conv_tol;
     static_Nlq_pilot = &pilot_samples;
-  }
+}
 
 
 /** This function performs control variate MC across two combinations of 
@@ -1035,7 +1048,6 @@ control_variate_mc(const UShortArray& active_key)
   Real lf_cost =  surr_model.solution_level_cost(),
        hf_cost = truth_model.solution_level_cost(),
     cost_ratio = hf_cost / lf_cost, avg_eval_ratio, avg_mse_ratio;
-  size_t iter = 0;
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
   initialize_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
@@ -1059,9 +1071,11 @@ control_variate_mc(const UShortArray& active_key)
   // Compute Pilot Samples
   // ---------------------
 
+  mlmfIter = 0;
+
   // Initialize for pilot sample (shared sample count discarding any excess)
   numSamples = std::min(delta_N_l[lf_model_form], delta_N_l[hf_model_form]);
-  shared_increment(iter, 0);
+  shared_increment(mlmfIter, 0);
   accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 		     sum_HH, mu_hat, N_lf, N_hf);
   raw_N_lf += numSamples; raw_N_hf += numSamples;
@@ -1071,7 +1085,7 @@ control_variate_mc(const UShortArray& active_key)
   avg_eval_ratio = eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
 			      sum_HH, cost_ratio, N_hf, var_H, rho2_LH);
   // compute the ratio of MC and CVMC mean squared errors (controls convergence)
-  avg_mse_ratio  = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter, N_hf);
+  avg_mse_ratio  = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, mlmfIter, N_hf);
 
   // ----------------------------------------------------------
   // Compute shared increment targeting specified MSE reduction
@@ -1089,7 +1103,7 @@ control_variate_mc(const UShortArray& active_key)
     numSamples = (size_t)std::floor(incr + .5); // round
 
     if (numSamples) {
-      shared_increment(++iter, 0);
+      shared_increment(++mlmfIter, 0);
       accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 			 sum_HH, mu_hat, N_lf, N_hf);
       raw_N_lf += numSamples; raw_N_hf += numSamples;
@@ -1097,7 +1111,7 @@ control_variate_mc(const UShortArray& active_key)
       avg_eval_ratio = eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1],
 				  sum_LH[1], sum_HH, cost_ratio, N_hf,
 				  var_H, rho2_LH);
-      avg_mse_ratio  = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter, N_hf);
+      avg_mse_ratio  = MSE_ratio(avg_eval_ratio, var_H, rho2_LH,mlmfIter,N_hf);
     }
   }
 
@@ -1109,7 +1123,7 @@ control_variate_mc(const UShortArray& active_key)
   // (correlations are computed based on the paired LF/HF data group, prior
   // to the augmentation, which could imply a future group segregation)
   iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
-  if (lf_increment(avg_eval_ratio, N_lf, N_hf, ++iter, 0)) { // level 0
+  if (lf_increment(avg_eval_ratio, N_lf, N_hf, ++mlmfIter, 0)) { // level 0
     accumulate_cv_sums(sum_L_refined, mu_hat, N_lf);
     raw_N_lf += numSamples;
   }
@@ -1143,7 +1157,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
 
-  size_t qoi, iter = 0, num_hf_lev = truth_model.solution_levels(),
+  size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
   unsigned short& group = lev; // no alias switch for this algorithm
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
@@ -1176,7 +1190,8 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
   RealVector mu_L_hat, mu_H_hat;
 
   // now converge on sample counts per level (N_hf)
-  while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
+  mlmfIter = 0;
+  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= max_iter) {
 
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
@@ -1192,6 +1207,8 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
       Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
       if (numSamples) {
 
+	// advance any sequence specifications (seed_sequence)
+	assign_specification_sequence(lev);
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
@@ -1201,7 +1218,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 	// value) can't capture a level discrepancy for lev>0 and will reflect
 	// the most recent evaluation state.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -1270,7 +1287,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
       // MSE reference is MLMF MC applied to {HF,LF} pilot sample aggregated
       // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
       // will result in no additional variance reduction beyond MLMC.
-      if (iter == 0)
+      if (mlmfIter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
 	  aggregate_mse_Yvar(var_H[lev], N_hf[lev]) :
 	  aggregate_mse_Ysum(sum_H[1][lev], sum_HH[1][lev], N_hf[lev]);
@@ -1280,7 +1297,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
     // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
     // discretization error, we compute an initial estimator variance and
     // then seek to reduce it by a relative_factor <= 1.
-    if (iter == 0) { // eps^2 / 2 = var * relative factor
+    if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
       eps_sq_div_2 = estimator_var0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
@@ -1292,7 +1309,8 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 	configure_indices(group, lf_model_form, lev, seq_index);//augment LF grp
 
 	// execute additional LF sample increment, if needed
-	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
+	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],
+			 mlmfIter, lev)) {
 	  accumulate_mlcv_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
 	  if (outputLevel == DEBUG_OUTPUT)
@@ -1311,8 +1329,8 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
       delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), N_target);
     }
-    ++iter;
-    Cout << "\nMLCVMC iteration " << iter << " sample increments:\n"
+    ++mlmfIter;
+    Cout << "\nMLCVMC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_hf << std::endl;
   }
 
@@ -1367,7 +1385,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
 
-  size_t qoi, iter = 0, num_hf_lev = truth_model.solution_levels(),
+  size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
   unsigned short& group = lev; // no alias switch for this algorithm
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
@@ -1411,7 +1429,8 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
   RealVector mu_L_hat, mu_H_hat;
 
   // now converge on sample counts per level (N_hf)
-  while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
+  mlmfIter = 0;
+  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= max_iter) {
 
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
@@ -1427,6 +1446,8 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
       Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
       if (numSamples) {
 
+	// advance any sequence specifications (seed_sequence)
+	assign_specification_sequence(lev);
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
@@ -1436,7 +1457,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 	// value) can't capture a level discrepancy for lev>0 and will reflect
 	// the most recent evaluation state.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -1511,7 +1532,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
       // MSE reference is MLMF MC applied to {HF,LF} pilot sample aggregated
       // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
       // will result in no additional variance reduction beyond MLMC.
-      if (iter == 0)
+      if (mlmfIter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
 	  aggregate_mse_Yvar(var_Yl[lev], N_hf[lev]) :
 	  aggregate_mse_Ysum(sum_Hl[1][lev], sum_Hl_Hl[1][lev], N_hf[lev]);
@@ -1521,7 +1542,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
     // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
     // discretization error, we compute an initial estimator variance and
     // then seek to reduce it by a relative_factor <= 1.
-    if (iter == 0) { // eps^2 / 2 = var * relative factor
+    if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
       eps_sq_div_2 = estimator_var0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
@@ -1540,7 +1561,8 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 	configure_indices(group, lf_model_form, lev, seq_index);//augment LF grp
 
 	// now execute additional LF sample increment, if needed
-	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
+	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],
+			 mlmfIter, lev)) {
 	  accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
 				N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
@@ -1560,8 +1582,8 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
       delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), N_target);
     }
-    ++iter;
-    Cout << "\nMLCVMC iteration " << iter << " sample increments:\n"
+    ++mlmfIter;
+    Cout << "\nMLCVMC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_hf << std::endl;
   }
 
@@ -1627,6 +1649,18 @@ configure_indices(unsigned short group, unsigned short form,
     Pecos::DiscrepancyCalculator::aggregate_keys(hf_key, lf_key, aggregate_key);
     iteratedModel.active_model_key(aggregate_key); // two active fidelities
   }
+}
+
+
+void NonDMultilevelSampling::assign_specification_sequence(size_t index)
+{
+  // Note: seedSpec/randomSeed initialized from randomSeedSeqSpec in ctor
+
+  // advance any sequence specifications, as admissible
+  // Note: no colloc pts sequence as load_pilot_sample() handles this separately
+  int seed_i = random_seed(index);// propagate to NonDSampling::initialize_lhs()
+  if (seed_i)  randomSeed = seed_i;
+  // else previous value will allow existing RNG to continue for varyPattern
 }
 
 

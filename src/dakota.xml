@@ -2764,7 +2764,7 @@
 
 	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
-	  &method_seed; <!-- &method_seed_sequence; -->
+	  &method_seed_sequence;
 	  &mc_pilot_samples;
 	  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
 	    <oneOf label="Sample Type">
