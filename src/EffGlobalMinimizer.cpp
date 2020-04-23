@@ -179,9 +179,9 @@ void EffGlobalMinimizer::core_run()
 
 void EffGlobalMinimizer::minimize_surrogates_on_model()
 {
-  //--------------------------------------------------------------
+  //Parallel EGO: --------------------------
   //     Solve the problem.
-  //--------------------------------------------------------------
+  //Parallel EGO: --------------------------
   EffGlobalMinimizer* prev_instance = effGlobalInstance;
   // build initial GP once for all response functions: fHatModel.build_approximation()
   initialize();
@@ -209,21 +209,21 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
     if (BatchSizeAcquisition > 1 || BatchSizeExploration > 1) {
       if (iteratedModel.asynch_flag()) // change model.asynch_flag() to iteratedModel.asynch_flag()
-        parallel_flag = true;
+        parallel_flag = true; // turn on parallel_flag if the requirements are satisfied
       else {
         Cerr << "Warning: concurrent operations not supported by model. Batch size request ignored." << std::endl;
-        BatchSizeAcquisition = 1;
-        BatchSizeExploration = 0;
+        BatchSizeAcquisition = 1; // reverse to the default sequential
+        BatchSizeExploration = 0; // reverse to the default sequential
       }
     }
-
-    // Reset the convergence counters
-    dist_convergence_cntr = 0; // reset distance convergence counters
-    dist_convergence_limit = BatchSizeAcquisition; // set convergence limit for parallel EGO
 
     if (parallel_flag) { // begin if parallel_flag = true -- then run in parallel
 
         ++globalIterCount;
+
+        // Reset the convergence counters
+        dist_convergence_cntr = 0; // reset distance convergence counters
+        dist_convergence_limit = BatchSizeAcquisition; // set convergence limit for parallel EGO
 
         // Initialize the input array for the batch
         VariablesArray input_array_batch_acquisition(BatchSizeAcquisition);
@@ -231,7 +231,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         // Note: vars_star: input; resp_star: output (liar); resp_star_truth: output (true)
         size_t numDataPts; // debug
 
-        // Prepare the batch
+        // Construct the batch
         Cout << "\n>>>>> Initiating global optimization\n";
 
         for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
@@ -282,18 +282,21 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
                     << aug_lag << " [merit]\n";
 
             // Impose constant liar -- temporarily cast constant liar as observations
-            IntResponsePair resp_star_liar(iteratedModel.evaluation_id(), approx_response);
-            // const RealVector& fns_star_liar = resp_star_liar.second.function_values(); // denig
+            // const IntResponsePair resp_star_liar(iteratedModel.evaluation_id(), approx_response);
+            const IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + i_batch_acquisition + 1, approx_response); // implement a liar counter
 
             // Update GP
             // debug
             numDataPts = fHatModel.approximation_data(0).points(); // debug
-            Cout << "\n------------------------------------ Adding liar response.\n"; // debug
-            Cout << "globalIterCount = " << globalIterCount << ".\n"; // debug
-            Cout << "i_batch_acquisition = " << i_batch_acquisition << ".\n"; // debug
+            Cout << "\nParallel EGO: Adding liar response...\n"; // debug
+            // Cout << "globalIterCount = " << globalIterCount << ".\n"; // debug
+            // Cout << "i_batch_acquisition = " << i_batch_acquisition << ".\n"; // debug
+
             // Append constant liar to fHatModel (aka heuristic liar)
-            fHatModel.append_approximation(vars_star, resp_star_liar, true); // debug // DOES NOT ALWAYS UPDATE
-            Cout << "fHatModel # of points  = " << numDataPts << ".\n"; // debug
+            if (i_batch_acquisition < BatchSizeAcquisition - 1)
+                fHatModel.append_approximation(vars_star, resp_star_liar, true); // debug
+
+            // Cout << "fHatModel # of points  = " << numDataPts << ".\n"; // debug
             // Update constraints based on the constant liar
             if (numNonlinearConstraints) {
                 const RealVector& fns_star_liar = resp_star_liar.second.function_values();
@@ -303,27 +306,27 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
                 else
                     update_penalty();
             }
-            Cout << "------------------------------------ Finished adding liar response.\n"; // debug
-
-            const RealVector& variances = fHatModel.approximation_variances(vars_star); // debug
+            Cout << "Parallel EGO: Finished adding liar responses!\n"; // debug
+            // const RealVector& variances = fHatModel.approximation_variances(vars_star); // debug
             // Cout << "debug: vars_star = " << vars_star; // debug
             // Cout << "debug: variances(vars_star) = " << variances; // debug
-
-            // Append vars_star (input) to the batch before querying
+            // Copy vars_star (input) to the batch before querying
             input_array_batch_acquisition[i_batch_acquisition] = vars_star.copy();
         }
 
         // Delete liar responses
         for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
-            fHatModel.pop_approximation(false);
+            if (i_batch_acquisition < BatchSizeAcquisition - 1)
+                fHatModel.pop_approximation(false);
 
             // debug
             numDataPts = fHatModel.approximation_data(0).points(); // debug
-            Cout << "\n------------------------------------ Deleting liar response.\n"; // debug
-            Cout << "globalIterCount = " << globalIterCount << ".\n"; // debug
-            Cout << "i_batch_acquisition = " << i_batch_acquisition << ".\n"; // debug
-            Cout << "fHatModel # of points  = " << numDataPts << ".\n"; // debug
+            Cout << "\nParallel EGO:  Deleting liar response...\n"; // debug
+            // Cout << "globalIterCount = " << globalIterCount << ".\n"; // debug
+            // Cout << "i_batch_acquisition = " << i_batch_acquisition << ".\n"; // debug
+            // Cout << "fHatModel # of points  = " << numDataPts << ".\n"; // debug
         }
+        Cout << "\nParallel EGO:  Finished deleting liar responses!\n"; // debug
 
         // Query the batch
         for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
@@ -335,17 +338,17 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         }
 
         // Get true responses resp_star_truth
-        const IntResponseMap resp_star_truth = iteratedModel.synchronize(); // const IntResponseMap& resp_star_truth = iteratedModel.synchronize();
+        const IntResponseMap resp_star_truth = iteratedModel.synchronize();
 
         // Update the GP approximation with batch results
+        Cout << "\nParallel EGO: Adding true response...\n"; // debug
         fHatModel.append_approximation(input_array_batch_acquisition, resp_star_truth, true);
-        fHatModel.finalize_approximation();
+        Cout << "\nParallel EGO: Finished adding true responses!\n"; // debug
 
         // debug
         numDataPts = fHatModel.approximation_data(0).points(); // debug
-        Cout << "\n------------------------------------ Adding true response.\n"; // debug
-        Cout << "globalIterCount = " << globalIterCount << ".\n"; // debug
-        Cout << "fHatModel # of points  = " << numDataPts << ".\n"; // debug
+        // Cout << "globalIterCount = " << globalIterCount << ".\n"; // debug
+        // Cout << "fHatModel # of points  = " << numDataPts << ".\n"; // debug
 
         // Update constraints
         for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
@@ -389,73 +392,83 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         if ( dist_convergence_cntr >= dist_convergence_limit ||
              eif_convergence_cntr  >= eif_convergence_limit ||
              globalIterCount       >= maxIterations ) {
-            approx_converged = true;
-             // debug
-            if (dist_convergence_cntr >= dist_convergence_limit) {
-              Cout << "\nStopping criteria met: dist_convergence_cntr (="
-              << dist_convergence_cntr
-              << ") >= dist_convergence_limit (="
-              << dist_convergence_limit
-              << ").\n";
-            }
-            if (eif_convergence_cntr >= eif_convergence_limit) {
-              Cout << "\nStopping criteria met: eif_convergence_cntr (="
-              << eif_convergence_cntr
-              << ") >= eif_convergence_limit (="
-              << eif_convergence_limit
-              << ").\n";
-            }
-            if (globalIterCount >= maxIterations) {
-              Cout << "\nStopping criteria met: globalIterCount (="
-              << globalIterCount
-              << ") >= maxIterations (="
-              << maxIterations
-              << ").\n";
-            }
-        }
-        else {
-            // debug
-            // if (dist_convergence_cntr < dist_convergence_limit) {
-            Cout << "\nStopping criteria not met: dist_convergence_cntr (="
-              << dist_convergence_cntr
-              << ") < dist_convergence_limit (="
-              << dist_convergence_limit
-              << ").\n";
-            // }
-            // if (eif_convergence_cntr < eif_convergence_limit) {
-            Cout << "\nStopping criteria not met: eif_convergence_cntr (="
-              << eif_convergence_cntr
-              << ") < eif_convergence_limit (="
-              << eif_convergence_limit
-              << ").\n";
-            // }
-            // if (globalIterCount < maxIterations) {
-            Cout << "\nStopping criteria not met: globalIterCount (="
-              << globalIterCount
-              << ") < maxIterations (="
-              << maxIterations
-              << ").\n";
-            // }
-            approx_converged = false;
 
-            // Update constraints
-            if (numNonlinearConstraints) {
-                IntRespMCIter batch_response_it; // IntRMMIter (iterator)? IntRMMCIter (const_iterator)?
-                for (batch_response_it = resp_star_truth.begin(); batch_response_it != resp_star_truth.end(); batch_response_it++) {
-                  // Update the merit function parameters
-                  // Logic follows Conn, Gould, and Toint, section 14.4:
-                  // const RealVector& fns_star_truth = resp_star_truth.second.function_values(); // old implementation
-                  const RealVector& fns_star_truth = batch_response_it->second.function_values(); // current implementation
-                  Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
-                  if (norm_cv_star < etaSequence)
-                    update_augmented_lagrange_multipliers(fns_star_truth);
-                  else
-                    update_penalty();
+            approx_converged = true;
+
+            // only verbose if debug
+            if (outputLevel > NORMAL_OUTPUT) {
+                 // debug
+                if (dist_convergence_cntr >= dist_convergence_limit) {
+                      Cout << "\nStopping criteria met: dist_convergence_cntr (="
+                      << dist_convergence_cntr
+                      << ") >= dist_convergence_limit (="
+                      << dist_convergence_limit
+                      << ").\n";
+                }
+                if (eif_convergence_cntr >= eif_convergence_limit) {
+                  Cout << "\nStopping criteria met: eif_convergence_cntr (="
+                  << eif_convergence_cntr
+                  << ") >= eif_convergence_limit (="
+                  << eif_convergence_limit
+                  << ").\n";
+                }
+                if (globalIterCount >= maxIterations) {
+                  Cout << "\nStopping criteria met: globalIterCount (="
+                  << globalIterCount
+                  << ") >= maxIterations (="
+                  << maxIterations
+                  << ").\n";
                 }
             }
         }
+        else {
+            approx_converged = false;
+
+            // only verbose if debug
+            if (outputLevel > NORMAL_OUTPUT) {
+                // debug
+                if (dist_convergence_cntr < dist_convergence_limit) {
+                    Cout << "\nStopping criteria not met: dist_convergence_cntr (="
+                      << dist_convergence_cntr
+                      << ") < dist_convergence_limit (="
+                      << dist_convergence_limit
+                      << ").\n";
+                }
+                if (eif_convergence_cntr < eif_convergence_limit) {
+                    Cout << "\nStopping criteria not met: eif_convergence_cntr (="
+                      << eif_convergence_cntr
+                      << ") < eif_convergence_limit (="
+                      << eif_convergence_limit
+                      << ").\n";
+                }
+                if (globalIterCount < maxIterations) {
+                Cout << "\nStopping criteria not met: globalIterCount (="
+                  << globalIterCount
+                  << ") < maxIterations (="
+                  << maxIterations
+                  << ").\n";
+                }
+            }
+        }
+
+
+        // Update constraints
+        if (numNonlinearConstraints) {
+            IntRespMCIter batch_response_it; // IntRMMIter (iterator)? IntRMMCIter (const_iterator)?
+            for (batch_response_it = resp_star_truth.begin(); batch_response_it != resp_star_truth.end(); batch_response_it++) {
+              // Update the merit function parameters
+              // Logic follows Conn, Gould, and Toint, section 14.4:
+              // const RealVector& fns_star_truth = resp_star_truth.second.function_values(); // old implementation
+              const RealVector& fns_star_truth = batch_response_it->second.function_values(); // current implementation
+              Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
+              if (norm_cv_star < etaSequence)
+                update_augmented_lagrange_multipliers(fns_star_truth);
+              else
+                update_penalty();
+            }
+        }
     } // end if parallel_flag = true -- then run in parallel
-    else { // else begin parallel_flag = false -- then run sequentially (reinstate old implementation from Mike Eldred)
+    else { // else begin parallel_flag = false -- then run sequentially (reinstate old sequential implementation)
 
         ++globalIterCount;
 
