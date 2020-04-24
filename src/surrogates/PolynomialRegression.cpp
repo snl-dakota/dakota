@@ -63,9 +63,13 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
   numSamples = samples.rows();
   numVariables = samples.cols();
 
-  int max_degree = configOptions.get<int>("max degree");
-  double p_norm  = configOptions.get<double>("p-norm");
-  compute_hyperbolic_indices(numVariables, max_degree, p_norm, basisIndices);
+  int max_degree          = configOptions.get<int>   ("max degree");
+  double p_norm           = configOptions.get<double>("p-norm");
+  bool use_reduced_basis  = configOptions.get<bool>  ("reduced basis");
+  if( use_reduced_basis )
+    compute_reduced_indices(numVariables, max_degree, basisIndices);
+  else
+    compute_hyperbolic_indices(numVariables, max_degree, p_norm, basisIndices);
   numTerms = basisIndices.cols();
 
   /* Construct the basis matrix */
@@ -105,6 +109,7 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
 }
 
 void PolynomialRegression::default_options() {
+  defaultConfigOptions.set("reduced basis", false, "Use reduced basis");
   defaultConfigOptions.set("max degree", 1, "Maximum polynomial order");
   defaultConfigOptions.set("p-norm", 1.0, "P-Norm in hyperbolic cross");
   defaultConfigOptions.set("scaler type", "none", "Type of data scaling");

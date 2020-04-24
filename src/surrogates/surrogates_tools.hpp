@@ -72,6 +72,14 @@ void compute_hyperbolic_indices(int num_dims, int level,
                                 MatrixXi &indices);
 
 /**
+ *  \brief Compute the reduced indices for all levels up to level.
+ *  \param[in] num_dims Dimension of the feature space.
+ *  \param[in] level Highest level to compute basis indices for.
+ *  \param[out] indices Matrix of indices - (num_dims by num_terms).
+ */
+void compute_reduced_indices(int num_dims, int level,
+                             MatrixXi &indices);
+/**
  *  \brief Perform a centered finite difference check of a Surrogate's
  *  gradient method.
  *  \param[in] surr Reference to a Surrogate.

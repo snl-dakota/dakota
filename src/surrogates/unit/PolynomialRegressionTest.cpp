@@ -77,8 +77,10 @@ void another_additive_quadratic_function(const MatrixXd & samples, MatrixXd & fu
   }
 }
 
-void cubic_bivariate_function(const MatrixXd & samples, MatrixXd & func_vals)
+void cubic_bivariate_function(const MatrixXd & samples, MatrixXd & func_vals, bool include_cross_terms = true)
 {
+  double scale_cross = include_cross_terms ? 1.0 : 0.0;
+
   func_vals.resize(samples.rows(),1);
   const int num_vars = samples.cols();
 
@@ -86,10 +88,10 @@ void cubic_bivariate_function(const MatrixXd & samples, MatrixXd & func_vals)
     double x = samples(i,0);
     double y = samples(i,1);
     func_vals(i,0) =
-      1 + x + y + (x*y)
-      + (std::pow(x,2) * std::pow(y,2))
-      + (std::pow(x,2) * y)
-      + (std::pow(y,2) * x)
+      1 + x + y + scale_cross*(x*y)
+      + scale_cross*(std::pow(x,2) * std::pow(y,2))
+      + scale_cross*(std::pow(x,2) * y)
+      + scale_cross*(std::pow(y,2) * x)
       + std::pow(x,3) + std::pow(y,3);
   }
 }
@@ -237,6 +239,36 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
   BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs5, 1.0e-10));
   BOOST_CHECK(matrix_equals(gold_responses, test_responses5, 1.0e-10));
 
+  
+  /* Test 6 -- Use the Surrogates API with reduced basis, get and
+     update those params. Separate constructor and build steps */
+  MatrixXd test_responses6;
+  PolynomialRegression pr6;
+
+  // Generate realizations of function variables
+  MatrixXd responses6, gold_responses6;
+  cubic_bivariate_function(samples, responses6, /* cross terms */ false);
+  // Check correctness of computed polynomial coefficients against the one used to construct the model
+  MatrixXd gold_coeffs6(1+num_vars*degree,1);
+  // Term exponents for f(x,y) = 1 + x + y           + x^3 + y^3
+  //// x:                        0   1   0    0    0    1     0
+  //// y:                        0   0   1    0    0    0     1
+  gold_coeffs6 << 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0;
+  cubic_bivariate_function(eval_points, gold_responses6, false);
+
+  pr6.get_options(current_opts);
+  current_opts.set("max degree", degree);
+  current_opts.set("reduced basis", true);
+  pr6.set_options(current_opts);
+  pr6.build(samples, responses6);
+
+  const MatrixXd& polynomial_coeffs6 = pr6.get_polynomial_coeffs();
+  double polynomial_intercept6 = pr6.get_polynomial_intercept();
+  pr6.value(eval_points, test_responses6);
+
+  BOOST_CHECK( std::abs(polynomial_intercept6) < 1.0e-10 );
+  BOOST_CHECK(matrix_equals(gold_coeffs6, polynomial_coeffs6, 1.0e-10));
+  BOOST_CHECK(matrix_equals(gold_responses6, test_responses6, 1.0e-10));
 }
 
 void  PolynomialRegressionSurrogate_gradient_and_hessian() {
