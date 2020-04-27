@@ -139,3 +139,28 @@ TEUCHOS_UNIT_TEST(util, hyperbolic_indices)
 }
 
 // ------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(util, reduced_indices)
+{
+  int ndims = 2, level = 3;
+
+  Eigen::MatrixXi level_indices;
+  Eigen::MatrixXi gold_indices;
+
+  gold_indices.resize(ndims,1+ndims*level);
+  gold_indices << 0, 1, 0, 2, 0, 3, 0,
+                  0, 0, 1, 0, 2, 0, 3 ;
+  compute_reduced_indices(ndims, level, level_indices);
+  TEST_ASSERT( matrix_equals(level_indices, gold_indices) );
+
+
+  ndims = 3, level = 3;
+  gold_indices.resize(ndims,1+ndims*level);
+  gold_indices << 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 
+                  0, 0, 1, 0, 0, 2, 0, 0, 3, 0,
+                  0, 0, 0, 1, 0, 0, 2, 0, 0, 3 ;
+  compute_reduced_indices(ndims, level, level_indices);
+  TEST_ASSERT( matrix_equals(level_indices, gold_indices) );
+}
+
+// ------------------------------------------------------------
