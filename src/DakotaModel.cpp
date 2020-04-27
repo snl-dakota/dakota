@@ -113,7 +113,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   // weights have length group if given; expand if fields present
   expand_for_fields_sdv(currentResponse.shared_data(),
 			probDescDB.get_rv("responses.primary_response_fn_weights"),
-			primaryRespFnWts);
+			"primary response weights", primaryRespFnWts);
 
   initialize_distribution(mvDist);
   initialize_distribution_parameters(mvDist);

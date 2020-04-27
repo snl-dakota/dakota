@@ -428,9 +428,8 @@ inline bool SharedResponseData::is_null() const
 /// for fields no change on empty, expands 1 and num_groups, copies
 /// num_elements
 template<typename T>
-void expand_for_fields_sdv(const SharedResponseData& srd,
-			   const T& src_array,
-			   T& expanded_array)
+void expand_for_fields_sdv(const SharedResponseData& srd, const T& src_array,
+			   const String& src_desc, T& expanded_array)
 {
   size_t src_size = src_array.length();
   if (src_size == 0)
@@ -459,8 +458,8 @@ void expand_for_fields_sdv(const SharedResponseData& srd,
     expanded_array.assign(src_array);
   }
   else {
-    // TODO: improve error message
-    Cerr << "Scales must haves length 1, num_groups, or num_elements" << std::endl;
+    Cerr << src_desc << " must have length 1, number of responses, or\n"
+	 << "number of response elements (scalar + sum of field lengths)" << std::endl;
     abort_handler(PARSE_ERROR);
   }
 }
@@ -470,7 +469,7 @@ void expand_for_fields_sdv(const SharedResponseData& srd,
 /// num_elements
 template<typename T>
 void expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
-			   T& expanded_array)
+			   const String& src_desc, T& expanded_array)
 {
   size_t src_size = src_array.size();
   if (src_size == 0)
@@ -499,8 +498,8 @@ void expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
     expanded_array = src_array;
   }
   else {
-    // TODO: improve error message
-    Cerr << "Scales must haves length 1, num_groups, or num_elements" << std::endl;
+    Cerr << src_desc << " must have length 1, number of responses, or\n"
+	 << "number of response elements (scalar + sum of field lengths)" << std::endl;
     abort_handler(PARSE_ERROR);
   }
 }

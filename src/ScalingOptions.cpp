@@ -41,9 +41,9 @@ ScalingOptions::ScalingOptions(const ProblemDescDB& pdb,
   default_scale_types(pri_s, pri_st);
 
   // TODO: should only allow 1 or num_groups
-  expand_for_fields_stl(srd, pri_st, priScaleTypes);
+  expand_for_fields_stl(srd, pri_st, "primary_scale_types", priScaleTypes);
   // allow 1, num_groups, num_elements
-  expand_for_fields_sdv(srd, pri_s, priScales);
+  expand_for_fields_sdv(srd, pri_s, "primary_scales", priScales);
 }
 
 
