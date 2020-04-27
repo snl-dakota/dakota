@@ -488,6 +488,8 @@ private:
 
   void assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, Real &mu_four_L_exact, Real &mu_four_H_exact, Real &Ax, RealVector &level_cost_vec) const;
 
+  static void target_var_constraint_eval_optpp_problem18(int mode, int n, const RealVector &x, RealVector &g, RealMatrix &grad_g, int &result_mode);
+  static double exact_var_of_var_problem18(const RealVector &Nl);
   //
   //- Heading: Data
   //
