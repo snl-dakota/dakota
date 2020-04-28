@@ -223,26 +223,6 @@ enum { PENALTY_MERIT,    ADAPTIVE_PENALTY_MERIT,
 // define special values for SBL iterate acceptance logic
 enum { FILTER, TR_RATIO };
 
-// ---------
-// Minimizer
-// ---------
-
-// minimum value allowed for a characteristic value when scaling; ten
-// orders of magnitude greater than DBL_MIN
-#define SCALING_MIN_SCALE 1.0e10*DBL_MIN
-// lower bound on domain of logarithm function when scaling
-#define SCALING_MIN_LOG SCALING_MIN_SCALE
-// logarithm base to be used when scaling
-#define SCALING_LOGBASE 10.0
-// ln(SCALING_LOGBASE); needed in transforming variables in several places
-#define SCALING_LN_LOGBASE log(SCALING_LOGBASE)
-// indicate type of scaling active for a component (bitwise)
-enum { SCALE_NONE, SCALE_VALUE, SCALE_LOG };
-// to indicate type of object being scaled
-enum { CDV, LINEAR, NONLIN, FN_LSQ };
-// to restrict type of auto scaling allowed
-enum { DISALLOW, TARGET, BOUNDS };
-
 
 /// Body class for method specification data.
 
