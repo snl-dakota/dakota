@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 
-#include "math_tools.hpp"
+#include "util_math_tools.hpp"
 
 namespace dakota {
 namespace util {
@@ -17,10 +17,10 @@ namespace util {
 int n_choose_k(int n, int k)
 {
   double value = 1.0;
-  for ( int i = 0; i < n-k; i++ )
-    value *= (double)(n-i) / (double)(n-k-i);
+  for (int i = 0; i < n-k; i++)
+    value *= (double)(n - i) / (double)(n - k - i);
 
-  return (int)round( value );
+  return (int) round(value);
 }
 
 // ------------------------------------------------------------
