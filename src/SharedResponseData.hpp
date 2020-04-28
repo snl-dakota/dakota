@@ -429,7 +429,8 @@ inline bool SharedResponseData::is_null() const
 /// num_elements
 template<typename T>
 void expand_for_fields_sdv(const SharedResponseData& srd, const T& src_array,
-			   const String& src_desc, T& expanded_array)
+			   const String& src_desc, bool allow_by_element,
+			   T& expanded_array)
 {
   size_t src_size = src_array.length();
   if (src_size == 0)
@@ -454,12 +455,17 @@ void expand_for_fields_sdv(const SharedResponseData& srd, const T& src_array,
 	expanded_array[elt_ind] = src_array[src_ind];
     }
   }
-  else if (src_size == resp_elements) {
+  else if (allow_by_element && src_size == resp_elements) {
     expanded_array.assign(src_array);
   }
   else {
-    Cerr << src_desc << " must have length 1, number of responses, or\n"
-	 << "number of response elements (scalar + sum of field lengths)" << std::endl;
+    if (allow_by_element)
+      Cerr << "Error: " << src_desc << " must have length 1, number of responses, or\n"
+	   << "number of response elements (scalar + sum of field lengths);\n"
+	   << "found length " << src_size << std::endl;
+    else
+      Cerr << "Error: " << src_desc << " must have length 1 or number of responses;\n"
+	   << "found length " << src_size << std::endl;
     abort_handler(PARSE_ERROR);
   }
 }
@@ -469,7 +475,8 @@ void expand_for_fields_sdv(const SharedResponseData& srd, const T& src_array,
 /// num_elements
 template<typename T>
 void expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
-			   const String& src_desc, T& expanded_array)
+			   const String& src_desc, bool allow_by_element,
+			   T& expanded_array)
 {
   size_t src_size = src_array.size();
   if (src_size == 0)
@@ -494,12 +501,17 @@ void expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
 	expanded_array[elt_ind] = src_array[src_ind];
     }
   }
-  else if (src_size == resp_elements) {
+  else if (allow_by_element && src_size == resp_elements) {
     expanded_array = src_array;
   }
   else {
-    Cerr << src_desc << " must have length 1, number of responses, or\n"
-	 << "number of response elements (scalar + sum of field lengths)" << std::endl;
+    if (allow_by_element)
+      Cerr << "Error: " << src_desc << " must have length 1, number of responses, or\n"
+	   << "number of response elements (scalar + sum of field lengths);\n"
+	   << "found length " << src_size << std::endl;
+    else
+      Cerr << "Error: " << src_desc << " must have length 1 or number of responses;\n"
+	   << "found length " << src_size << std::endl;
     abort_handler(PARSE_ERROR);
   }
 }

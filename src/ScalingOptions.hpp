@@ -26,25 +26,34 @@ public:
   /// standard ctor: scaling from problem DB
   ScalingOptions(const ProblemDescDB& problem_db, const SharedResponseData& srd);
   
-  // continuous variables scales
+  /// continuous variables scale types
   StringArray cvScaleTypes;
+  /// continuous variables scale values
   RealVector  cvScales;
-  // primary response scales
+  /// primary response scale types
   StringArray priScaleTypes;
+  /// primary response scale values
   RealVector  priScales;
-  // nonlinear constraint scales
+  /// nonlinear inequality constraint scale  types
   StringArray nlnIneqScaleTypes;
+  /// nonlinear inequality constraint scale values
   RealVector  nlnIneqScales;
+  /// nonlinear equality constraint scale types
   StringArray nlnEqScaleTypes;
+  /// nonlinear equality constraint scale values
   RealVector  nlnEqScales;
-  // linear constraint scales
+  /// linear inequality constraint scale types
   StringArray linIneqScaleTypes;
+  /// linear inequality constraint scale values
   RealVector  linIneqScales;
+  /// linear equality constraint scale types
   StringArray linEqScaleTypes;
+  /// linear equality constraint scale values
   RealVector  linEqScales;               
 
 private:
 
+  /// when values are given, but not types, initialize type to "value"
   static void default_scale_types(const RealVector& scale_values,
 				  StringArray& scale_types);
 
