@@ -63,12 +63,19 @@ public:
   /// return number of FT unknowns using numVars, start_rank(), start_orders()
   size_t regression_size();
 
+  /// set UShortArray attribute value based on identifier string
   void set_parameter(String var, const UShortArray& val);
+  /// set unsigned short attribute value based on identifier string
   void set_parameter(String var, unsigned short     val);
+  /// set size_t attribute value based on identifier string
   void set_parameter(String var, size_t val);
+  /// set bool attribute value based on identifier string
   void set_parameter(String var, bool   val);
+  /// set short attribute value based on identifier string
   void set_parameter(String var, short  val);
+  /// set double attribute value based on identifier string
   void set_parameter(String var, double val);
+  /// set int attribute value based on identifier string
   void set_parameter(String var, int    val);
 
   // set SharedOrthogPolyApproxData::basisTypes
@@ -170,13 +177,21 @@ protected:
   /// for a set of sample data based on cross validation
   bool adaptRank;
 
+  /// type of regression solver for forming FT approximation
   short  regressType;
-  double regressRegParam; // penalty parameter if regularized regression
+  /// penalty parameter if regularized regression
+  double regressRegParam;
+  /// tolerance on regression solver
   double solverTol;
+  /// tolerance when performing a truncation operation on FT expansion
   double roundingTol;
+  /// a separate rounding tolerance for c3axpy() in combine_coefficients()
   double arithmeticTol;
+  /// maximum number of iterations for regression solver
   int maxSolverIterations;
+  /// maximum number of iterations for (future) cross iteration solver
   int crossMaxIter;
+  /// verbosity setting for C3 TPL, mapped from Dakota verbosity
   int c3Verbosity;
 
   /// a more general adaptive construction option, distinct from adapt_rank
