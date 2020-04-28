@@ -461,9 +461,9 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 ## Model sources.
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ProbabilityTransformModel.cpp
-  ScalingModel.cpp WeightingModel.cpp SurrogateModel.cpp DataFitSurrModel.cpp
-  HierarchSurrModel.cpp ActiveSubspaceModel.cpp RandomFieldModel.cpp DiscrepancyCorrection.cpp
-  AdaptedBasisModel.cpp)
+  ScalingModel.cpp ScalingOptions.cpp WeightingModel.cpp SurrogateModel.cpp
+  DataFitSurrModel.cpp HierarchSurrModel.cpp ActiveSubspaceModel.cpp
+  RandomFieldModel.cpp DiscrepancyCorrection.cpp AdaptedBasisModel.cpp)
 
 ## Constraint sources.
 set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp

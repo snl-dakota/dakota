@@ -421,6 +421,102 @@ inline const StringArray& SharedResponseData::field_group_labels()
 inline bool SharedResponseData::is_null() const
 { return (srdRep == NULL); }
 
+
+// SharedResponseData-related free fucntions
+
+/// expand primary response specs in SerialDenseVectors, e.g. scales,
+/// for fields no change on empty, expands 1 and num_groups, copies
+/// num_elements
+template<typename T>
+void expand_for_fields_sdv(const SharedResponseData& srd, const T& src_array,
+			   const String& src_desc, bool allow_by_element,
+			   T& expanded_array)
+{
+  size_t src_size = src_array.length();
+  if (src_size == 0)
+    return;  // leave expanded_array empty
+
+  size_t resp_groups = srd.num_scalar_primary() + srd.num_field_response_groups();
+  size_t resp_elements = srd.num_scalar_primary() + srd.num_field_functions();
+
+  expanded_array.sizeUninitialized(resp_elements);
+  if (src_size == 1) {
+    // TODO: consider leaving as length 1
+    expanded_array = src_array[0];
+  }
+  else if (src_size == resp_groups) {
+    // expand on per-group basis
+    size_t src_ind = 0, elt_ind = 0;
+    for (size_t i=0; i<srd.num_scalar_primary(); ++i, ++src_ind, ++elt_ind)
+      expanded_array[i] = src_array[src_ind];
+    for (size_t fi=0; fi<srd.num_field_response_groups(); ++fi, ++src_ind) {
+      int fi_len = srd.field_lengths()[fi];
+      for (size_t j=0; j<fi_len; ++j, ++elt_ind)
+	expanded_array[elt_ind] = src_array[src_ind];
+    }
+  }
+  else if (allow_by_element && src_size == resp_elements) {
+    expanded_array.assign(src_array);
+  }
+  else {
+    if (allow_by_element)
+      Cerr << "Error: " << src_desc << " must have length 1, number of responses, or\n"
+	   << "number of response elements (scalar + sum of field lengths);\n"
+	   << "found length " << src_size << std::endl;
+    else
+      Cerr << "Error: " << src_desc << " must have length 1 or number of responses;\n"
+	   << "found length " << src_size << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
+}
+
+/// expand primary response specs in STL containers, e.g. scale types,
+/// for fields no change on empty, expands 1 and num_groups, copies
+/// num_elements
+template<typename T>
+void expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
+			   const String& src_desc, bool allow_by_element,
+			   T& expanded_array)
+{
+  size_t src_size = src_array.size();
+  if (src_size == 0)
+    return;  // leave expanded_array empty
+
+  size_t resp_groups = srd.num_scalar_primary() + srd.num_field_response_groups();
+  size_t resp_elements = srd.num_scalar_primary() + srd.num_field_functions();
+
+  if (src_size == 1) {
+    // TODO: consider leaving as length 1
+    expanded_array.assign(resp_elements, src_array[0]);
+  }
+  else if (src_size == resp_groups) {
+    // expand on per-group basis
+    expanded_array.resize(resp_elements);
+    size_t src_ind = 0, elt_ind = 0;
+    for (size_t i=0; i<srd.num_scalar_primary(); ++i, ++src_ind, ++elt_ind)
+      expanded_array[i] = src_array[src_ind];
+    for (size_t fi=0; fi<srd.num_field_response_groups(); ++fi, ++src_ind) {
+      int fi_len = srd.field_lengths()[fi];
+      for (size_t j=0; j<fi_len; ++j, ++elt_ind)
+	expanded_array[elt_ind] = src_array[src_ind];
+    }
+  }
+  else if (allow_by_element && src_size == resp_elements) {
+    expanded_array = src_array;
+  }
+  else {
+    if (allow_by_element)
+      Cerr << "Error: " << src_desc << " must have length 1, number of responses, or\n"
+	   << "number of response elements (scalar + sum of field lengths);\n"
+	   << "found length " << src_size << std::endl;
+    else
+      Cerr << "Error: " << src_desc << " must have length 1 or number of responses;\n"
+	   << "found length " << src_size << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
+}
+
+
 } // namespace Dakota
 
 
