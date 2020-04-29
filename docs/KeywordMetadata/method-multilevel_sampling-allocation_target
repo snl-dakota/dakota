@@ -1,18 +1,29 @@
-Blurb::
+method-multilevel_sampling-allocation_target
 
-Description::
+Blurb:: 
+Allocation statistics/target for the MLMC sample allocation.
+
+Description:: 
+Computes the variance of the estimator for a given statistics/target and fits sample allocation by solving the corresponding optimization problem. The \c allocation_target specification supports options of \c mean (default), \c variance an analytic approximation is available. Additionally, a numerical optimization can be used in that case, see \c method-multilevel_sampling-allocation_target-variance-optimization.
 
 <b> Default Behavior </b>
-
-<b> Expected Output </b>
-
-<b> Usage Tips </b>
-
-<b> Additional Discussion </b>
+"mean"
 
 Topics::
 
 Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  convergence_tolerance = .01
+	  allocation_target = variance
+\endverbatim
+
+uses the variance as sample allocation target by computing its variance.
+
 Theory::
 Faq::
-See_Also::
+See_Also::	
