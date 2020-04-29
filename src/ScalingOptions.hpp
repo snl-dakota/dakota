@@ -13,6 +13,9 @@
 
 namespace Dakota {
 
+/// indicate type of scaling active for a component (bitwise)
+enum {SCALE_NONE = 0, SCALE_VALUE = 1, SCALE_LOG = 2, SCALE_AUTO = 4};
+
 class ProblemDescDB;
 class SharedResponseData;
 
@@ -21,41 +24,47 @@ class SharedResponseData;
 class ScalingOptions {
 
 public:
+
   /// default ctor: no scaling specified
   ScalingOptions() { /* empty ctor */ };
+
   /// standard ctor: scaling from problem DB
   ScalingOptions(const ProblemDescDB& problem_db, const SharedResponseData& srd);
-  
+
   /// continuous variables scale types
-  StringArray cvScaleTypes;
+  UShortArray cvScaleTypes;
   /// continuous variables scale values
   RealVector  cvScales;
   /// primary response scale types
-  StringArray priScaleTypes;
+  UShortArray priScaleTypes;
   /// primary response scale values
   RealVector  priScales;
   /// nonlinear inequality constraint scale  types
-  StringArray nlnIneqScaleTypes;
+  UShortArray nlnIneqScaleTypes;
   /// nonlinear inequality constraint scale values
   RealVector  nlnIneqScales;
   /// nonlinear equality constraint scale types
-  StringArray nlnEqScaleTypes;
+  UShortArray nlnEqScaleTypes;
   /// nonlinear equality constraint scale values
   RealVector  nlnEqScales;
   /// linear inequality constraint scale types
-  StringArray linIneqScaleTypes;
+  UShortArray linIneqScaleTypes;
   /// linear inequality constraint scale values
   RealVector  linIneqScales;
   /// linear equality constraint scale types
-  StringArray linEqScaleTypes;
+  UShortArray linEqScaleTypes;
   /// linear equality constraint scale values
   RealVector  linEqScales;               
 
 private:
 
-  /// when values are given, but not types, initialize type to "value"
+  /// when values are given, but not types, initialize type to value
   static void default_scale_types(const RealVector& scale_values,
-				  StringArray& scale_types);
+				  UShortArray& scale_types);
+
+  /// convert problem DB strings to unsigned shorts
+  static UShortArray scale_str2enum(const StringArray& scale_strs);
+
 
 };
 

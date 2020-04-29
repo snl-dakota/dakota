@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 #include "common_utils.hpp"
-#include "math_tools.hpp"
+#include "util_math_tools.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
 
