@@ -1,17 +1,21 @@
-Blurb:: Number of collocation points to estimate PCE coefficients
+Blurb:: Sequence of collocation point counts used in a multi-stage expansion
 
 Description::
-Specify the number of collocation points used to estimate PCE
-coefficients using regression or orthogonal-least-interpolation.
 
-<b> Usage Tips </b>
+Each level entry of the \c collocation_points_sequence applies to one
+expansion within a multi-stage expansion.  Current multi-stage
+expansions that support collocation point sequences include multilevel
+and multifidelity polynomial chaos and multilevel and multifidelity
+function train expansions.
 
-For most use cases, this keyword will specify a single integer number
-of points.  In more advanced UQ studies with hierarchical models, the
-list of integers can apply to different models and/or model levels
+If adaptive refinement is active, then this sequence specifies the
+starting point for each level within either an individual or
+integrated refinement approach.
 
 Topics::
 Examples::
 Theory::
 Faq::
 See_Also::	
+A corresponding scalar specification is documented at, e.g.,
+method-polynomial_chaos-expansion_order-collocation_points
