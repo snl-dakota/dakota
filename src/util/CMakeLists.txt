@@ -14,14 +14,15 @@ set(util_sources
   common_utils.cpp
   DataScaler.cpp
   LinearSolvers.cpp
-  math_tools.cpp
+  util_math_tools.cpp
   )
 
 set(util_headers
   common_utils.hpp
   DataScaler.hpp
   LinearSolvers.hpp
-  math_tools.hpp
+  util_math_tools.hpp
+  util_data_types.hpp
   )
 
 add_library(dakota_util ${util_sources} ${util_headers})

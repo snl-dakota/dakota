@@ -1,0 +1,12 @@
+Blurb::
+Specify the type of basis truncation to be used for a Polynomial Chaos Expansion.
+
+Description::
+Specify the type of basis truncation that determines the terms that are included within a
+Polynomial Chaos Expansion.  Options include tensor-product, total-order, and adapted.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

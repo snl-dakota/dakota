@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "math_tools.hpp"
+#include "util_math_tools.hpp"
 #include "surrogates_tools.hpp"
 
 namespace dakota {
@@ -91,7 +91,7 @@ void compute_hyperbolic_subdim_level_indices(
       Eigen::Map<VectorXi> index(level_data.col(i).data(), num_active_dims);
       if (util::num_nonzeros(index) == num_active_dims)
       {
-        double pnorm = util::p_norm( index, p );
+        double pnorm = util::p_norm(index, p);
         if ((pnorm > level-1 + eps) && (pnorm < level + eps))
         {
           if (num_indices >= working_indices.cols())

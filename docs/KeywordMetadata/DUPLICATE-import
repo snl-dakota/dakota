@@ -1,5 +1,5 @@
 Blurb::
-Sampling option
+Importance sampling option for probability refinement
 Description::
 \c import centers a sampling 
 density at one of the initial LHS samples identified in the failure region. 

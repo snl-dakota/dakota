@@ -66,7 +66,7 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
   int max_degree          = configOptions.get<int>   ("max degree");
   double p_norm           = configOptions.get<double>("p-norm");
   bool use_reduced_basis  = configOptions.get<bool>  ("reduced basis");
-  if( use_reduced_basis )
+  if (use_reduced_basis)
     compute_reduced_indices(numVariables, max_degree, basisIndices);
   else
     compute_hyperbolic_indices(numVariables, max_degree, p_norm, basisIndices);

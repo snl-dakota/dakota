@@ -1,0 +1,15 @@
+Blurb::
+Number of simulation samples used to estimate the expected value of a set of PCE coefficients
+
+Description::
+In this case, the expansion order $p$ cannot be inferred from the
+numerical integration specification and it is necessary to provide an
+\c expansion_order to specify $p$ for a total-order expansion.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	
+A corresponding sequence specification is documented at, e.g.,
+method-polynomial_chaos-expansion_samples_sequence
