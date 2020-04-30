@@ -13,6 +13,8 @@
 #include "util_data_types.hpp"
 
 namespace dakota {
+
+/// namespace for new %Dakota surrogates module
 namespace surrogates {
 
 /**
