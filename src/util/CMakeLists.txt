@@ -44,16 +44,17 @@ target_include_directories(dakota_util PRIVATE
   ${Teuchos_INCLUDE_DIRS})
 
 target_include_directories(dakota_util INTERFACE
-  ${CMAKE_CURRENT_SOURCE_DIR})
-
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include>
+)
 target_compile_definitions(dakota_util PUBLIC
-  "EIGEN_MPL2_ONLY")
+  "EIGEN_MPL2_ONLY"
+)
 
 dakota_strict_warnings(dakota_util)
 dakota_gcov_target(dakota_util)
 
-target_link_libraries(dakota_util PUBLIC
-  Eigen3::Eigen)
+target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)
 
 install(FILES ${util_headers} DESTINATION "include")
 install(TARGETS dakota_util EXPORT ${ExportTarget} DESTINATION lib)

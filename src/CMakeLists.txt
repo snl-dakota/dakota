@@ -1136,7 +1136,7 @@ export(TARGETS ${EXPORT_TARGETS} FILE
 if(ExportTarget STREQUAL DakotaTargets)
   message(STATUS 
     "Installing Dakota exported targets to ${Dakota_INSTALL_CMAKE_DIR}")
-  #install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
+  install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
 endif()
 
 
