@@ -1,7 +1,7 @@
-Blurb:: Sample allocation based on greedy refinement within multilevel/multifidelity polynomial chaos
+Blurb:: Sample allocation based on greedy refinement within multifidelity polynomial chaos
 
 Description::
-Multilevel and multifidelity polynomial chaos both support greedy
+Multifidelity polynomial chaos supports greedy
 refinement strategies, spanning regression and projection approaches
 for computing expansion coefficients.  The key idea is that each level
 of the model hierarchy being approximated can generate one or more
@@ -17,18 +17,18 @@ Topics::
 
 Examples::
 
-The following example of greedy multilevel regression starts from a
+The following example of greedy multifidelity regression starts from a
 zeroth-order reference expansion (a constant) for each level, and
-generates candidate refinements for each level that are competed in a
-greedy competition.  The number of new samples for the incremented
-candidate expansion order is determined from the collocation ratio.
-In this case, the number of candidates for each level is limited to
-one uniform refinement of the current expansion order.
+generates candidate refinements for each level that are competed in an
+integrated greedy competition.  The number of new samples for the
+incremented candidate expansion order is determined from the collocation
+ratio.  In this case, the number of candidates for each level is limited
+to one uniform refinement of the current expansion order.
 
 \verbatim
 method,
 	model_pointer = 'HIERARCH'
-	multilevel_polynomial_chaos # or multifidelity
+	multifidelity_polynomial_chaos
 	  allocation_control greedy
 	  p_refinement uniform
 	    expansion_order_sequence = 0
@@ -38,10 +38,10 @@ method,
 \endverbatim
 
 The next example employs generalized sparse grids within a greedy
-multilevel competition.  Each modeling level starts from a level 0
+multifidelity competition.  Each modeling level starts from a level 0
 reference grid (a single point) and generates multiple admissible
 index set candidates.  The full set of candidates across all model
-levels is competed within a unified greedy competition, where the
+levels is competed within an integrated greedy competition, where the
 greedy selection metric is the induced change in the statistical QoI,
 normalized by the aggregate simulation cost of the index set
 candidate.  In this case, there are multiple candidates for each model
@@ -51,7 +51,7 @@ and grid level.
 \verbatim
 method,
 	model_pointer = 'HIERARCH'
-	multilevel_polynomial_chaos # or multifidelity
+	multifidelity_polynomial_chaos
 	  allocation_control greedy
 	  p_refinement dimension_adaptive generalized
 	    sparse_grid_level_sequence = 0 unrestricted

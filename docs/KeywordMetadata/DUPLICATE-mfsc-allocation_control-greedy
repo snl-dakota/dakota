@@ -7,7 +7,7 @@ strategies using tensor and sparse grids for both nodal and
 hierarchical collocation approaches.  The key idea is that each level
 of the model hierarchy being approximated can generate one or more
 candidates for refinement.  These candidates are competed against each
-other within a unified competition, and the candidate that induces the
+other within an integrated competition, and the candidate that induces the
 largest change in the statistical QoI (response covariance by default,
 or results of any level mappings when specified), normalized by
 relative cost of evaluating the candidate, is selected and then used
