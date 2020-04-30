@@ -71,13 +71,17 @@ if(HAVE_APPROXNN)
 endif()
 
 #if(HAVE_EIGEN)
-  SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
-  SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
-  find_package(Eigen3 3.3 REQUIRED CONFIG)
-  message(STATUS "EIGEN3_FOUND = ${EIGEN3_FOUND}")
-  message(STATUS "EIGEN3_INCLUDE_DIRS = ${EIGEN3_INCLUDE_DIRS}")
-  message(STATUS "EIGEN3_INCLUDE_DIR = ${EIGEN3_INCLUDE_DIR}")
+# BMA TODO: Review why setting both here?
+SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
+SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
+find_package(Eigen3 3.3 REQUIRED CONFIG)
+message(STATUS "EIGEN3_FOUND = ${EIGEN3_FOUND}")
+message(STATUS "EIGEN3_INCLUDE_DIRS = ${EIGEN3_INCLUDE_DIRS}")
+message(STATUS "EIGEN3_INCLUDE_DIR = ${EIGEN3_INCLUDE_DIR}")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/include/eigen3" DESTINATION include)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3" DESTINATION share)
 #endif()
+
 
 if(HAVE_SURFPACK)
   add_subdirectory(surfpack)
