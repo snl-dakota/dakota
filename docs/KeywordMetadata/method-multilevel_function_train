@@ -1,18 +1,28 @@
-Blurb::
+Blurb:: Multilevel uncertainty quantification using function train expansions
 
 Description::
 
-<b> Default Behavior </b>
+As described in \ref method-function_train and \ref model-surrogate-global-function_train,
+the function train (FT) approximation is a polynomial expansion that exploits low rank
+structure within the mapping from input random variables to output quantities of interest
+(QoI).  For multilevel and multifidelity function train approximations, we decompose this
+expansion into several constituent expansions, one per model form or solution control
+level, where independent function train approximations are constructed for the
+low-fidelity/coarse resolution model and one or more levels of model discrepancy.
 
-<b> Expected Output </b>
+In a three-model case with low-fidelity (LF), medium-fidelity (MF), and
+high-fidelity (HF) models and an additive discrepancy approach, we can denote this as:
 
-<b> Usage Tips </b>
+\f[ Q \approx f_{r_{LF}}^{LF} + f_{r_{\Delta_{ML}}}^{ML} + f_{r_{\Delta_{HM}}}^{HM} \f]
 
-<b> Additional Discussion </b>
+where \f$\Delta_{ij}\f$ represents a discrepancy expansion computed from \f$Q_i - Q_j\f$.
+
+In multilevel approaches, sample allocation for the constituent expansions is
+performed as described in \ref method-multilevel_function_train-allocation_control.
 
 Topics::
 
 Examples::
 Theory::
 Faq::
-See_Also::
+See_Also:: model-surrogate-global-function_train, method-function_train

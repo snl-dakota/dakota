@@ -1,5 +1,5 @@
 Blurb::
-An accuracy parameter that is used to guide rounding during rank adaptation.
+An accuracy tolerance that is used to guide rounding during rank adaptation.
 
 Description::
 The rounding tolerance is used to measure how closely one can approximate
@@ -9,4 +9,8 @@ compression is achieved but greater accuracy is obtained. If this
 tolerance is big, greater compression is achieved at the expense of
 accuracy.
 
-See_Also::	model-surrogate-global-function_train-adapt_rank
+<b> Default Behavior </b>
+
+If this tolerance is not specified, then we adopt the internal C3 default.
+
+See_Also:: model-surrogate-global-function_train-adapt_rank, model-surrogate-global-function_train-arithmetic_tolerance

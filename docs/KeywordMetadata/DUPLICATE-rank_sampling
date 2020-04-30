@@ -1,24 +1,18 @@
 Blurb:: Sample allocation based on rank sampling within multilevel function train
 
-Description:: 
-Multilevel function train based on regression may allocate the
-number of samples per level based on the collocation ratio times
-the regression size, as determined by the rank per core and the
-basis order per dimension, where these ranks and orders may be either
-specified values (for initial sample allocation), incremented values
-(for external refinement cases), or recovered values (in the case of internal
-adaptation such as \c adapt_rank).
-
-For each QoI, the regression size can be determined as follows:
-
-- For v variables, orders o is a v-vector and ranks r is a v+1-vector 
-- the first core is a 1 x r_1 row vector and contributes \f$ (o_0 + 1) r_1 \f$ terms
-- the  last core is a r_v x 1 col vector and contributes \f$ (o_{v-1}+1) r_{v-1} \f$ terms
-- the middle v-2 cores are matrices that contribute \f$ r_i r_{i+1} (o_i + 1) \f$ terms, i = 1, ..., v-2
-- neighboring vec/mat dimensions must match, so there are v-1 unique ranks
+Description::
+Multilevel function train based on regression may allocate the number
+of samples per level based on the collocation ratio times the
+regression size.  The regression size is determined by the rank per
+core and the basis order per dimension as described at \ref
+model-surrogate-global-function_train, where these ranks and orders
+may be either user-specified values (for initial sample allocation),
+incremented values (for external adaptation by Dakota), or recovered
+values (in the case of internal C3 adaptation using \c adapt_rank).
 
 The adaptive algorithm starts from a pilot sample, shapes the profile
-based on recovered rank, and iterates until convergence.
+based on the regression size computed from the current orders and recovered
+ranks, and iterates until convergence.
 
 This capability is \b experimental and under active development.
 

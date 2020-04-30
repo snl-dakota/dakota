@@ -1,18 +1,19 @@
-Blurb::
+Blurb:: Generic UQ method for constructing and interrogating a surrogate model.
 
 Description::
+As surrogate models by stochastic expansion migrate into the model specification,
+this method provides a general-purpose UQ method to interrogate the surrogate for
+generating statistics.
 
-<b> Default Behavior </b>
-
-<b> Expected Output </b>
-
-<b> Usage Tips </b>
-
-<b> Additional Discussion </b>
+This method must identify the surrogate of interest through its \c model_pointer,
+distinguishing it from fully-integrated method specifications, such as
+\ref method-polynomial_chaos, \ref method-stoch_collocation, and
+\ref method-function_train, that couple directly with a simulation model
+(and form the PCE, SC, FT surrogate approximations implicitly).
 
 Topics::
 
 Examples::
 Theory::
 Faq::
-See_Also::
+See_Also:: method-polynomial_chaos, method-stoch_collocation, method-function_train
