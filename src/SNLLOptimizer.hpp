@@ -39,41 +39,10 @@ class OptFDNIPS;
 
 namespace Dakota {
 
-/// Wrapper class for the OPT++ optimization library.
-
-/** The SNLLOptimizer class provides a wrapper for OPT++, a C++
-    optimization library of nonlinear programming and pattern search
-    techniques from the Computational Sciences and Mathematics
-    Research (CSMR) department at Sandia's Livermore CA site.  It uses
-    a function pointer approach for which passed functions must be
-    either global functions or static member functions.  Any attribute
-    used within static member functions must be either local to that
-    function, a static member, or accessed by static pointer.
-
-    The user input mappings are as follows: \c max_iterations, \c
-    max_function_evaluations, \c convergence_tolerance, \c max_step,
-    \c gradient_tolerance, \c search_method, and \c search_scheme_size
-    are set using OPT++'s setMaxIter(), setMaxFeval(), setFcnTol(),
-    setMaxStep(), setGradTol(), setSearchStrategy(), and setSSS()
-    member functions, respectively; \c output verbosity is used to
-    toggle OPT++'s debug mode using the setDebug() member function.
-    Internal to OPT++, there are 3 search strategies, while the DAKOTA
-    \c search_method specification supports 4 (\c
-    value_based_line_search, \c gradient_based_line_search, \c
-    trust_region, or \c tr_pds).  The difference stems from the
-    "is_expensive" flag in OPT++.  If the search strategy is
-    LineSearch and "is_expensive" is turned on, then the \c
-    value_based_line_search is used.  Otherwise (the "is_expensive"
-    default is off), the algorithm will use the \c
-    gradient_based_line_search.  Refer to [Meza, J.C., 1994] and to
-    the OPT++ source in the Dakota/packages/OPTPP directory for
-    information on OPT++ class member functions. */
-
 /**
  * \brief A version of TraitsBase specialized for SNLL optimizers
  *
  */
-
 class SNLLTraits: public TraitsBase
 {
   public:
@@ -111,6 +80,35 @@ class SNLLTraits: public TraitsBase
 };
 
 
+/// Wrapper class for the OPT++ optimization library.
+
+/** The SNLLOptimizer class provides a wrapper for OPT++, a C++
+    optimization library of nonlinear programming and pattern search
+    techniques from the Computational Sciences and Mathematics
+    Research (CSMR) department at Sandia's Livermore CA site.  It uses
+    a function pointer approach for which passed functions must be
+    either global functions or static member functions.  Any attribute
+    used within static member functions must be either local to that
+    function, a static member, or accessed by static pointer.
+
+    The user input mappings are as follows: \c max_iterations, \c
+    max_function_evaluations, \c convergence_tolerance, \c max_step,
+    \c gradient_tolerance, \c search_method, and \c search_scheme_size
+    are set using OPT++'s setMaxIter(), setMaxFeval(), setFcnTol(),
+    setMaxStep(), setGradTol(), setSearchStrategy(), and setSSS()
+    member functions, respectively; \c output verbosity is used to
+    toggle OPT++'s debug mode using the setDebug() member function.
+    Internal to OPT++, there are 3 search strategies, while the DAKOTA
+    \c search_method specification supports 4 (\c
+    value_based_line_search, \c gradient_based_line_search, \c
+    trust_region, or \c tr_pds).  The difference stems from the
+    "is_expensive" flag in OPT++.  If the search strategy is
+    LineSearch and "is_expensive" is turned on, then the \c
+    value_based_line_search is used.  Otherwise (the "is_expensive"
+    default is off), the algorithm will use the \c
+    gradient_based_line_search.  Refer to [Meza, J.C., 1994] and to
+    the OPT++ source in the Dakota/packages/OPTPP directory for
+    information on OPT++ class member functions. */
 class SNLLOptimizer: public Optimizer, public SNLLBase
 {
 public:

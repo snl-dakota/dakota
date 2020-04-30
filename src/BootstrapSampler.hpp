@@ -155,7 +155,6 @@ public:
   //- Heading: Public members functions that perform for boostrap sampling
   //
 
-  /// \copydoc
   virtual void operator()(size_t num_samp, Data& bootstrapped_sample)
   {
     if(num_samp > bootstrapped_sample.size()/blockSize)
@@ -224,7 +223,6 @@ public:
   //- Heading: Public members functions that perform boostrap sampling
   //
 
-  /// \copydoc
   virtual void operator()(size_t num_samp, MatType& bootstrapped_sample)
   {
     OrdinalType stride = this->origData.stride();
