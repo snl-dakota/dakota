@@ -1,9 +1,1 @@
-Blurb::
-Maximum polynomial order of each univariate function within the functional tensor train.
-
-Description::
-This specification is inactive for curren adaptation options.
-
-In future adaptation options (i.e., cross-approximation adaptation), this will specify the maximum order that can be obtained during adaptation, where polynomial order will start from \c start_order and be limited by \c max_order.
-
-See_Also::	model-surrogate-global-function_train-start_order
+DUPLICATE-max_order

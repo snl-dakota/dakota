@@ -1,0 +1,8 @@
+Blurb::
+The initial rank used for the starting point during a rank adaptation.
+
+Description::
+The \c adapt_rank procedure increments the rank on each iteration, starting
+from the rank defined by \c start_rank
+
+See_Also::	model-surrogate-global-function_train-adapt_rank

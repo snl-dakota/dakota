@@ -5,8 +5,9 @@ Description::
 The maximum number of iterations is used as a stopping criterion for
 optimizers and some adaptive UQ methods.  If it has not reached any
 other stopping criteria first, the method will stop after it has
-performed \c max_iterations iterations.  See also \c
-max_function_evaluations.
+performed \c max_iterations iterations.  In cases where there are
+multiple nested iterations to be controlled, \x max_iterations
+generally controls the outer-most context.
 
 <b> Default Behavior </b>
 
@@ -16,4 +17,5 @@ Topics::	method_independent_controls
 Examples::
 Theory::
 Faq::
-See_Also::	
+See_Also::	See also \c max_function_evaluations.
+

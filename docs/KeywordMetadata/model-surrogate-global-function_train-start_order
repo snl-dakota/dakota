@@ -1,7 +1,1 @@
-Blurb::
-(Initial) polynomial order of each univariate function within the functional tensor train.
-
-Description::
-This specifies the initial polynomial order of each univariate function that makes up the functional tensor train decomposition.  In future adaptation options (cross-approximation adaptation), polynomial order starts from this value and is then advanced; its maximum value is limited by \c max_order.
-
-See_Also::	model-surrogate-global-function_train-max_order
+DUPLICATE-start_order

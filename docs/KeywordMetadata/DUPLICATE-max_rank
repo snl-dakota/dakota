@@ -1,0 +1,8 @@
+Blurb::
+Limits the maximum rank that is explored during a rank adaptation.
+
+Description::
+The \c adapt_rank procedure increments the rank on each iteration, and
+the maximum value is limited by \c max_rank
+
+See_Also::	model-surrogate-global-function_train-adapt_rank
