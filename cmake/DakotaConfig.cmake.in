@@ -7,6 +7,19 @@
 # Compute paths
 get_filename_component(DAKOTA_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
+# Check existence since may be building/installing under
+# Trilinos/TriKota, or using an external Trilinos
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/../Teuchos/TeuchosConfig.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/../Teuchos/TeuchosConfig.cmake")
+endif()
+
+# Conservative approach for now
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../share/eigen3/cmake")
+  set(Eigen3_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../share/eigen3/cmake")
+endif()
+include(CMakeFindDependencyMacro)
+find_dependency(Eigen3)
+
 # Our library dependencies (contains definitions for IMPORTED targets)
 include("${DAKOTA_CMAKE_DIR}/DakotaTargets.cmake")
 

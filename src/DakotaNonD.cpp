@@ -1061,9 +1061,11 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
   for (j=0; j<num_lev; ++j) {
     const SizetArray& N_j = N_samp[j];
     s << "                     " << std::setw(width) << N_j[0];
-    if (!homogeneous(N_j)) // print all qoi counts
-      for (size_t q=1; q<numFunctions; ++q)
+    if (!homogeneous(N_j)) { // print all counts in this 1D array
+      size_t q, num_q = N_j.size();
+      for (size_t q=1; q<num_q; ++q)
 	s << ' ' << N_j[q];
+    }
     s << '\n';
   }
 }

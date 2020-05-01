@@ -914,16 +914,16 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
             N_l_step_avg /= numFunctions;
             N_l_target_step_avg /= numFunctions;
 
-            delta_N_l[step] = static_cast<size_t>(std::min<Real>(N_l_step_avg*2, one_sided_delta( N_l_step_avg, std::ceil(N_l_target_step_avg))));
+            delta_N_l[step] = std::ceil(std::min<Real>(N_l_step_avg*2, one_sided_delta( N_l_step_avg, N_l_target_step_avg)));
           }
       }
       if(qoiAggregation==QOI_AGGREGATION_MAX) {
         for (qoi = 0; qoi < numFunctions; ++qoi) {
           for (step=0; step<num_steps; ++step) {
             if(allocationTarget == TARGET_MEAN){
-              delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], std::ceil(N_target_qoi(qoi, step)));
+              delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step));
             }else if (allocationTarget == TARGET_VARIANCE){
-              delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*2, one_sided_delta(N_l[step][qoi], std::ceil(N_target_qoi(qoi, step))));
+              delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*2, one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step)));
             }else{
               Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: allocationTarget is not implemented.\n";
               abort_handler(INTERFACE_ERROR);
@@ -1658,8 +1658,8 @@ void NonDMultilevelSampling::assign_specification_sequence(size_t index)
 
   // advance any sequence specifications, as admissible
   // Note: no colloc pts sequence as load_pilot_sample() handles this separately
-  int seed_i = random_seed(index);// propagate to NonDSampling::initialize_lhs()
-  if (seed_i)  randomSeed = seed_i;
+  int seed_i = random_seed(index);
+  if (seed_i) randomSeed = seed_i;// propagate to NonDSampling::initialize_lhs()
   // else previous value will allow existing RNG to continue for varyPattern
 }
 

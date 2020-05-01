@@ -1,19 +1,19 @@
 Blurb::
-Number of simulation samples to estimate the PCE coefficients
+Sequence of expansion samples used in a multi-stage polynomial chaos expansion
 
-Description::
-In this case, the expansion order p cannot be inferred from the
-numerical integration specification and it is necessary to provide an
-expansion_order to specify p for a total-order expansion.
+Each level entry of the \c expansion_samples_sequence applies to one
+expansion within a multi-stage expansion.  Current multi-stage
+expansions that support expansion samples sequences include multilevel
+and multifidelity polynomial chaos.
 
-<b> Usage Tips </b>
-
-For most use cases, this keyword will specify a single integer number
-of samples.  In more advanced UQ studies with hierarchical models, the
-list of integers can apply to different models and/or model levels
+If adaptive refinement is active, then this sequence specifies the
+starting point for each level within either an individual or
+integrated refinement approach.
 
 Topics::
 Examples::
 Theory::
 Faq::
 See_Also::	
+A corresponding scalar specification is documented at, e.g.,
+method-polynomial_chaos-expansion_samples

@@ -1,0 +1,30 @@
+method-multilevel_sampling-qoi_aggregation
+
+Blurb:: 
+Aggregation strategy for the QoIs statistics for problems with multiple responses in the MLMC algorithm
+
+Description:: 
+In the multilevel method a variance of the \c allocation_target is computed for each of the responses and their levels \f$Y^i_\ell, i = 1,..., R, \ell = 0,..., L \f$. Setting \c qoi_aggregation describes the rule on how to aggregate those variances over multiple response functions. Supported options are \c sum (default) and \c max. For \c sum, the variances are aggregated and a single sample allocation is computed. For \c max, an individual sample allocation for each response using the respective variances over levels is computed and the maximum over all responses for each level is taken (worst case scenario allocation).
+
+<b> Default Behavior </b>
+"sum"
+
+Topics::
+
+Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  convergence_tolerance = .01
+	  allocation_target = mean
+      qoi_aggregation = sum
+\endverbatim
+
+uses the sum rule to aggregate the variance over the qois.
+
+Theory::
+Faq::
+See_Also::	

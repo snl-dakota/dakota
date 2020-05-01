@@ -461,9 +461,9 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 ## Model sources.
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ProbabilityTransformModel.cpp
-  ScalingModel.cpp WeightingModel.cpp SurrogateModel.cpp DataFitSurrModel.cpp
-  HierarchSurrModel.cpp ActiveSubspaceModel.cpp RandomFieldModel.cpp DiscrepancyCorrection.cpp
-  AdaptedBasisModel.cpp)
+  ScalingModel.cpp ScalingOptions.cpp WeightingModel.cpp SurrogateModel.cpp
+  DataFitSurrModel.cpp HierarchSurrModel.cpp ActiveSubspaceModel.cpp
+  RandomFieldModel.cpp DiscrepancyCorrection.cpp AdaptedBasisModel.cpp)
 
 ## Constraint sources.
 set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
@@ -914,9 +914,9 @@ target_link_libraries(dakota_src dakota_src_fortran)
 if(DAKOTA_MODULE_SURROGATES)
   target_link_libraries(dakota_src dakota_surrogates)
   #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)
-  list(APPEND EXPORT_TARGETS dakota_util)
-  list(APPEND EXPORT_TARGETS dakota_surrogates)
-endif(DAKOTA_MODULE_SURROGATES)
+  list(APPEND EXPORT_TARGETS dakota_surrogates dakota_util)
+  list(APPEND DAKOTA_LIBS dakota_surrogates dakota_util)
+endif()
 
 DakotaApplyMPISettings(dakota_src)
 if(HAVE_AMPL)
@@ -1136,7 +1136,7 @@ export(TARGETS ${EXPORT_TARGETS} FILE
 if(ExportTarget STREQUAL DakotaTargets)
   message(STATUS 
     "Installing Dakota exported targets to ${Dakota_INSTALL_CMAKE_DIR}")
-  #install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
+  install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
 endif()
 
 

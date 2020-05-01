@@ -56,16 +56,20 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
 
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
   std::cout << "\nBuilding Polynomial with configuration options\n"
-	  << configOptions << std::endl;
+	  << configOptions << "\n";
 
 
   numQOI = response.cols();
   numSamples = samples.rows();
   numVariables = samples.cols();
 
-  int max_degree = configOptions.get<int>("max degree");
-  double p_norm  = configOptions.get<double>("p-norm");
-  compute_hyperbolic_indices(numVariables, max_degree, p_norm, basisIndices);
+  int max_degree          = configOptions.get<int>   ("max degree");
+  double p_norm           = configOptions.get<double>("p-norm");
+  bool use_reduced_basis  = configOptions.get<bool>  ("reduced basis");
+  if (use_reduced_basis)
+    compute_reduced_indices(numVariables, max_degree, basisIndices);
+  else
+    compute_hyperbolic_indices(numVariables, max_degree, p_norm, basisIndices);
   numTerms = basisIndices.cols();
 
   /* Construct the basis matrix */
@@ -76,7 +80,7 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
   SCALER_TYPE scalerType = util::DataScaler::scaler_type(
       configOptions.get<std::string>("scaler type"));
   dataScaler = util::scaler_factory(scalerType, unscaled_basis_matrix);
-  MatrixXd scaled_basis_matrix = dataScaler->get_scaled_features();
+  const MatrixXd& scaled_basis_matrix = dataScaler->get_scaled_features();
 
   /* Solve the for the polynomial coefficients */
   SOLVER_TYPE solverType = util::LinearSolverBase::solver_type(
@@ -105,6 +109,7 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
 }
 
 void PolynomialRegression::default_options() {
+  defaultConfigOptions.set("reduced basis", false, "Use reduced basis");
   defaultConfigOptions.set("max degree", 1, "Maximum polynomial order");
   defaultConfigOptions.set("p-norm", 1.0, "P-Norm in hyperbolic cross");
   defaultConfigOptions.set("scaler type", "none", "Type of data scaling");

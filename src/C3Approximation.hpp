@@ -62,37 +62,54 @@ public:
   /// swap ftpReps between two envelopes
   void swap(C3FnTrainPtrs& ftp);
 
+  /// free FT storage for value, gradient, and Hessian expansions
   void free_ft();
+  /// augment free_ft() with derived functions and global sensitivities
   void free_all();
 
   // Manage stats (FTDerivedFunctions) computed from FT approximation
+
+  /// initialize derived funtions pointers to NULL
   void ft_derived_functions_init_null();
+  /// allocate derived funtions pointers (standard mode)
   void ft_derived_functions_create(struct MultiApproxOpts* opts,
 				   size_t num_mom, Real round_tol);
+  /// allocate derived funtions pointers (all variables mode)
   void ft_derived_functions_create_av(struct MultiApproxOpts* opts,
 				      const SizetArray& rand_indices,
 				      Real round_tol);
+  /// deallocate derived funtions pointers
   void ft_derived_functions_free();
 
+  /// get pointer to the FunctionTrain approximation
   struct FunctionTrain * function_train();
+  /// set pointer to the FunctionTrain approximation
   void function_train(struct FunctionTrain * ft);
 
+  /// get pointer to the FunctionTrain gradient
   struct FT1DArray * ft_gradient();
+  /// set pointer to the FunctionTrain gradient
   void ft_gradient(struct FT1DArray * ftg);
 
+  /// get pointer to the FunctionTrain Hessian
   struct FT1DArray * ft_hessian();
+  /// set pointer to the FunctionTrain Hessian
   void ft_hessian(struct FT1DArray * fth);
 
+  /// return reference to the FTDerivedFunctions instance
   const struct FTDerivedFunctions& derived_functions();
 
+  /// get pointer to the Sobol' indices object
   struct C3SobolSensitivity * sobol();
+  /// set pointer to the Sobol' indices object
   void sobol(struct C3SobolSensitivity * ss);
 
   //
   //- Heading: Data
   //
 
-  std::shared_ptr<C3FnTrainPtrsRep> ftpRep; ///< pointer to body
+  /// (shared) pointer to body instance
+  std::shared_ptr<C3FnTrainPtrsRep> ftpRep;
 };
 
 
@@ -131,7 +148,7 @@ public:
 
   /// return the active C3FnTrainPtrs instance in levelApprox
   C3FnTrainPtrs& active_ftp();
-  /// return 
+  /// return combinedC3FTPtrs
   C3FnTrainPtrs& combined_ftp();
 
   size_t regression_size();                   // uses active ftp
@@ -290,8 +307,10 @@ private:
   /// the combined approximation, summed across model keys
   C3FnTrainPtrs combinedC3FTPtrs;
 
-  bool expansionCoeffFlag;     // build a fn train for the QoI
-  bool expansionCoeffGradFlag; // build a fn train for the gradient of the QoI
+  /// flag indicating need to build a fn train approximation for this QoI
+  bool expansionCoeffFlag;
+  /// flag indicating need to build a fn train gradient approx for this QoI
+  bool expansionCoeffGradFlag;
     
   /// mean and central moments 2/3/4 computed from either the expansion form
   std::map<UShortArray, RealVector> primaryMoments;

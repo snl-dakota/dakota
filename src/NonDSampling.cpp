@@ -797,32 +797,17 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   // keep track of number of LHS executions for this object
   ++numLHSRuns;
 
-  // Set seed value for input to LHS's random number generator.  Emulate DDACE
-  // behavior in which a user-specified seed gives you repeatable behavior but
-  // no specification gives you random behavior.  A system clock is used to
-  // randomize in the no user specification case.  For cases where
-  // get_parameter_sets() may be called multiple times for the same sampling
-  // iterator (e.g., SBO), support a deterministic sequence of seed values.
-  // This renders the study repeatable but the sampling pattern varies from
-  // one run to the next.
-  /*
-  if (numLHSRuns == 1) { // set initial seed
-    lhsDriver.rng(rngName);
-    if (!seedSpec) { // no user specification --> nonrepeatable behavior
-      randomSeed = generate_system_seed();
-    }
-    lhsDriver.seed(randomSeed);
-  }
-  else if (varyPattern) // define sequence of seed values for numLHSRuns > 1
-    lhsDriver.advance_seed_sequence();
-  else // fixed_seed
-    lhsDriver.seed(randomSeed); // reset original/machine-generated seed
-  */
-
   //Cout << "numLHSRuns = " << numLHSRuns << " seedSpec = " << seedSpec
   //     << " randomSeed = " << randomSeed << " varyPattern = " << varyPattern
   //     << std::endl;
 
+  // Set seed value for input to LHS's RNG: a user-specified seed gives
+  // repeatable behavior but no specification gives random behavior based on
+  // querying a system clock.  For cases where get_parameter_sets() may be
+  // called multiple times for the same sampling iterator (e.g., SBO), support
+  // a deterministic sequence of seed values to allow the sampling pattern to
+  // vary from one run to the next in a repeatable manner (required for RNG
+  // without a persistent state, such as rnum2).
   bool seed_assigned = false, seed_advanced = false;
   if (numLHSRuns == 1) { // set initial seed
     lhsDriver.rng(rngName);

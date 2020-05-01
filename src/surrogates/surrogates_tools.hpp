@@ -13,18 +13,23 @@
 #include "util_data_types.hpp"
 
 namespace dakota {
+
+/// namespace for new %Dakota surrogates module
 namespace surrogates {
 
 /**
- *  \brief Having a tough time with this one...
  *  \param[in] num_dims Dimension of the feature space.
- *  \param[in] level ???
- *  \param[out] extend ???
- *  \param[out] h ???
- *  \param[out] t ???
+ *  \param[in] level Total order in each row of indices. Should be >= 1.
+ *  \param[inout] level Vector of ints that specifies the powers for each
+ *  term in the basis.
+ *  \param[inout] extend Bool for whether to continue with the computation 
+ *  of basis indices.
+ *  \param[inout] h Working variable for basis enumeration.
+ *  \param[inout] t Working variable for basis enumeration.
  */
 void compute_next_combination(int num_dims, int level, VectorXi &index,
                               bool &extend, int &h, int &t);
+
 /**
  *  \brief Compute a matrix of basis indices for given dimension and level. Each row
  *  of the matrix sums to level.
@@ -70,6 +75,15 @@ void compute_hyperbolic_level_indices(int num_dims, int level,
 void compute_hyperbolic_indices(int num_dims, int level,
                                 double p,
                                 MatrixXi &indices);
+
+/**
+ *  \brief Compute the reduced indices for all levels up to level.
+ *  \param[in] num_dims Dimension of the feature space.
+ *  \param[in] level Highest level to compute basis indices for.
+ *  \param[out] indices Matrix of indices - (num_dims by num_terms).
+ */
+void compute_reduced_indices(int num_dims, int level,
+                             MatrixXi &indices);
 
 /**
  *  \brief Perform a centered finite difference check of a Surrogate's

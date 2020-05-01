@@ -233,4 +233,4 @@ method,
 Theory::
 
 Faq::
-See_Also::	method-adaptive_sampling, method-gpais, method-local_reliability, method-global_reliability, method-sampling, method-importance_sampling, method-stoch_collocation
+See_Also::	method-stoch_collocation, method-function_train

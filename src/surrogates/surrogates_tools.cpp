@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "math_tools.hpp"
+#include "util_math_tools.hpp"
 #include "surrogates_tools.hpp"
 
 namespace dakota {
@@ -91,7 +91,7 @@ void compute_hyperbolic_subdim_level_indices(
       Eigen::Map<VectorXi> index(level_data.col(i).data(), num_active_dims);
       if (util::num_nonzeros(index) == num_active_dims)
       {
-        double pnorm = util::p_norm( index, p );
+        double pnorm = util::p_norm(index, p);
         if ((pnorm > level-1 + eps) && (pnorm < level + eps))
         {
           if (num_indices >= working_indices.cols())
@@ -196,6 +196,20 @@ void compute_hyperbolic_indices(int num_dims, int level, double p, MatrixXi &ind
   }
 }
 
+// ------------------------------------------------------------
+
+void compute_reduced_indices(int num_dims, int level, MatrixXi &indices)
+{
+  indices = MatrixXi::Zero(num_dims, 1);
+  for (int lev = 1; lev < level+1; ++lev)
+  {
+    MatrixXi level_indices = lev*MatrixXi::Identity(num_dims, num_dims);
+    util::append_columns(level_indices, indices);
+  }
+}
+
+// ------------------------------------------------------------
+
 void fd_check_gradient(Surrogate &surr, 
                        const MatrixXd &sample,
                        MatrixXd &fd_error, const int num_steps) {
@@ -234,6 +248,8 @@ void fd_check_gradient(Surrogate &surr,
                        - ref_grad_repeated).cwiseAbs();
   }
 }
+
+// ------------------------------------------------------------
 
 void fd_check_hessian(Surrogate &surr, 
                       const MatrixXd &sample,
@@ -331,6 +347,8 @@ void fd_check_hessian(Surrogate &surr,
     }
   }
 }
+
+// ------------------------------------------------------------
 
 }  // namespace surrogates
 }  // namespace dakota

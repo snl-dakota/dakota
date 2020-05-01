@@ -1,0 +1,53 @@
+Blurb:: Sequence of seed values for a multi-stage random sampling
+
+Description::
+This specification allows the stipulation of seed values (passed to a
+random number generator) for each of a set of stages within a multi-stage
+random sampling algorithm.
+
+This is particularly useful for reusing sample sets (via restart) that
+were generated in some other context (e.g., from a single-stage study)
+within a multi-stage algorithm execution.  Normally the random number
+sequence would continue from a seed specified for the initial sample
+set, making subsequent sample sets more difficult to recreate.  With
+finer granularity in the seed specification for multi-stage samplers,
+any part of the sequence can now be more readily recreated.
+
+<b> Default Behavior </b>
+
+As for the scalar case, the default is no seed control, such that a
+query to a system clock will be used to randomize results.
+
+<b> Usage Tips </b>
+
+For $L$ levels in a multilevel method, the \c seed_sequence can be of
+any length and seeds will be assigned up to the number of values that
+are provided or up to the number of levels in the sequence.  Thus, a
+seed_sequence of length 1 recovers the behavior of a scalar seed.
+
+When \c fixed_seed is unspecified, the \c seed_sequence specification
+does not extend to the refinement of the sample set.  For example, the
+value from the \c seed_sequence defines the initial sample set for a
+level, but then subsequent sample sets generated as data increments
+will allow the random number sequence to continue without resetting
+the seed value.  This reflects the need to avoid reusing previous
+sample values when generating sample augmentations.
+
+Topics::
+Examples::
+Defining a multilevel Monte Carlo in the following way
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+	  pilot_samples = 100  50   40   30   20
+	  seed_sequence = 1234 2345 3456 4567 5678
+\endverbatim
+allows the reuse (via restart) of intermediate sample sets from other
+sources by matching the seed specifications for the targeted model
+resolutions.
+ 
+Theory::
+Faq::
+See_Also:: method-sampling-seed, method-sampling-fixed_seed
+

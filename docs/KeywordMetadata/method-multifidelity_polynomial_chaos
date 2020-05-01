@@ -123,4 +123,4 @@ model,
 Theory::
 
 Faq::
-See_Also::	method-adaptive_sampling, method-gpais, method-local_reliability, method-global_reliability, method-sampling, method-importance_sampling, method-stoch_collocation
+See_Also::	method-polynomial_chaos, method-multifidelity_stoch_collocation, method-multifidelity_function_train
