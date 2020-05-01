@@ -11,7 +11,9 @@
 namespace dakota {
 namespace surrogates {
 
+/// Dakota alias for ROL Vector
 using RolVec = ROL::Vector<double>;
+/// Dakota alias for ROL StdVector
 using RolStdVec = ROL::StdVector<double>;
 
 GP_Objective::GP_Objective(GaussianProcess &gp_model) :
@@ -40,7 +42,7 @@ double GP_Objective::value(const ROL::Vector<double> &p, double&) {
   return Jold;
 }
 
-void GP_Objective::gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double&) {
+void GP_Objective::gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double& tol) {
   ROL::Ptr<const std::vector<double> > xp = getVector(p);
   ROL::Ptr<std::vector<double> > gpointer = getVector(g);
   double obj_val;

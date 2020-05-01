@@ -39,7 +39,7 @@ public:
   /**
    * \brief Constructor that sets configOptions and does not build.
    *
-   * \param[in] param_list List that overrides entries in defaultConfigOptions.
+   * \param[in] options List that overrides entries in defaultConfigOptions.
    */
   PolynomialRegression(const ParameterList &options);
 
@@ -49,7 +49,7 @@ public:
    *
    * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
    * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
-   * \param[in] param_list List that overrides entries in defaultConfigOptions
+   * \param[in] options List that overrides entries in defaultConfigOptions
    */
   PolynomialRegression(const MatrixXd &samples, const MatrixXd &response,
 		                   const ParameterList &options);
@@ -79,7 +79,7 @@ public:
 
   /**
    *  \brief Evaluate the polynomial surrogate at a set of prediction points.
-   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
+   *  \param[in] eval_points Matrix of prediction points - (num_pts by num_features).
    *  \param[out] approx_values Values of the polynomial surrogate at the prediction
    *  points - (num_pts by num_qoi = 1) 
    */
@@ -90,6 +90,7 @@ public:
    *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
    *  (num_pts by num_features).
+   *  \param[out] qoi Index of response/QOI for which to compute derivatives
    */
   void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi = 0) override;
 
@@ -98,6 +99,7 @@ public:
    *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
    *  \param[out] hessian Hessian matrix at the prediction point - 
    *  (num_features by num_features).
+   *  \param[out] qoi Index of response/QOI for which to compute derivatives
    */
   void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
 
