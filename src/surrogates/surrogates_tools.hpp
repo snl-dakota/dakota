@@ -20,7 +20,7 @@ namespace surrogates {
 /**
  *  \param[in] num_dims Dimension of the feature space.
  *  \param[in] level Total order in each row of indices. Should be >= 1.
- *  \param[inout] level Vector of ints that specifies the powers for each
+ *  \param[inout] index Vector of ints that specifies the powers for each
  *  term in the basis.
  *  \param[inout] extend Bool for whether to continue with the computation 
  *  of basis indices.
@@ -92,7 +92,7 @@ void compute_reduced_indices(int num_dims, int level,
  *  \param[in] sample Point to evaluate the gradient at - (1 by numVariables).
  *  \param[out] fd_error Matrix of finite difference error for each component
  *  of the gradient - (num_steps by numVariables).
- *  \param[in] indices Number of increments (N) for the finite difference. The increment
+ *  \param[in] num_steps Number of increments (N) for the finite difference. The increment
  *  vector h = 10**(-i), i = 1, ..., N.
  */
 void fd_check_gradient(Surrogate &surr, 
@@ -108,7 +108,7 @@ void fd_check_gradient(Surrogate &surr,
  *  independent component of the Hessian. There are numVariables*(numVariables+1)/2 =
  *  numInd components - (num_steps by numInd).
  *  of the Hessian - (num_steps by numVariables).
- *  \param[in] indices Number of increments (N) for the finite difference. The increment
+ *  \param[in] num_steps Number of increments (N) for the finite difference. The increment
  *  vector h = 10**(-i), i = 1, ..., N.
  */
 void fd_check_hessian(Surrogate &surr, 

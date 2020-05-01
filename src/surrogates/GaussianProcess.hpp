@@ -90,6 +90,7 @@ public:
    *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
    *  (num_pts by num_features).
+   *  \param[out] qoi Index of response/QOI for which to compute derivatives
    */
   void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi = 0) override;
 
@@ -98,6 +99,7 @@ public:
    *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
    *  \param[out] hessian Hessian matrix at the prediction point - 
    *  (num_features by num_features).
+   *  \param[out] qoi Index of response/QOI for which to compute derivatives
    */
   void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
 
@@ -155,7 +157,7 @@ private:
   /**
    *  \brief Compute distances between build and prediction points. This includes
    *  build-prediction and prediction-prediction distance matrices.
-   *  \param[in] scaled_samples Matrix of scaled prediction points.
+   *  \param[in] scaled_pred_pts Matrix of scaled prediction points.
    */
   void compute_pred_dists(const MatrixXd &scaled_pred_pts);
 
@@ -184,9 +186,8 @@ private:
 
   /**
    *  \brief Compute the second derivatve of the prediction matrix for a pair of components.
-   *  \param[in] pred_mat Prediction Gram matrix - Rectangular matrix of kernel evaluations 
+   *  \param[in] pred_gram Prediction Gram matrix - Rectangular matrix of kernel evaluations 
    *  between the surrogate and prediction points.
-   *  \param[in] scaled_pred_pts Matrix of prediction points.
    *  \param[in] index_i Specifies the first component of the second derivative.
    *  \param[in] index_j Specifies the second component of the second derivative.
    *  \param[out] second_deriv_pred_gram Second derivative of the prediction 
