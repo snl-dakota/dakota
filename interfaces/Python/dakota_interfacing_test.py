@@ -44,6 +44,20 @@ dakotaParams = """                                          3 variables
                                           1 eval_id
 """
 
+dakotaSingleEvalBatchParams = """                                          3 variables
+                      7.488318331306800e-01 x1
+                      2.188638686202466e-01 x2
+                                    foo bar dussv_1
+                                          1 functions
+                                          1 ASV_1:response_fn_1
+                                          2 derivative_variables
+                                          1 DVV_1:x1
+                                          2 DVV_2:x2
+                                          0 analysis_components
+                                        2:1 eval_id
+"""
+
+
 dakotaBatchParams = """                                          2 variables
                       2.109465794009156e-01 x1
                      -9.675715913879684e-01 x2
@@ -199,7 +213,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         batch_id = 1
         eval_ids = ["1:1", "1:2"]
         sio = StringIO.StringIO(dakotaBatchParams)
-        p, r = di.interfacing._read_parameters_stream(sio, False, None)
+        p, r = di.interfacing._read_parameters_stream(sio, False, True, None)
         # correct number of parameter sets and response sets
         self.assertEqual(len(p),2)
         self.assertEqual(len(r),2)
@@ -233,7 +247,24 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(results_strings[2], "#")
         val, label = results_strings[3].split()
         self.assertAlmostEqual(float(val),2.0)
-        
+    
+    def test_single_eval_batch(self):
+        """Verify that batch objects are returned for batch = True"""
+        pio = StringIO.StringIO(dakotaSingleEvalBatchParams)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, 
+                           batch=True, results_file="results.out")
+        self.assertIsInstance(p, di.interfacing.BatchParameters)
+        self.assertEqual(len(p), 1)
+        self.assertIsInstance(r, di.interfacing.BatchResults)
+        self.assertEqual(len(r), 1)
+
+    def test_batch_setting_exception(self):
+        """Ensure BatchSettingError is raised when batch=True"""
+        pio = StringIO.StringIO(dakotaParams % 1)
+        with self.assertRaises(di.interfacing.BatchSettingError):
+            p, r = di.interfacing._read_parameters_stream(stream=pio, 
+                           batch=True, results_file="results.out")
+
     def test_dprepro(self):
         """Verify that templates are substituted correctly"""
  

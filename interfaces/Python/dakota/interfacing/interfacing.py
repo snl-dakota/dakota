@@ -26,6 +26,9 @@ class MissingSourceError(Exception):
 class ParamsFormatError(Exception):
     pass
 
+class BatchSettingError(Exception):
+    pass
+
 class BatchWriteError(Exception):
     pass
 
@@ -406,7 +409,7 @@ class Results(object):
     def batch(self):
         return self._batch
 
-class BatchParamters(object):
+class BatchParameters(object):
     """Access variables and analysis components from a Dakota batch parameters file
 
     BatchParameters objects are simple collections of Parameters objects. Individual Parameters objects
@@ -423,7 +426,11 @@ class BatchParamters(object):
         self._eval_params = param_sets
         eval_id = self._eval_params[0].eval_id
         tokens = eval_id.split(":")
-        self._batch_id = tokens[-2]
+        try:
+            self._batch_id = tokens[-2]
+        except IndexError:
+            raise BatchSettingError("batch set to True, but parameters " +
+                              "file does not appear to be a batch file.")
         for p in self._eval_params:
             p._set_batch(True)
 
@@ -451,7 +458,7 @@ class BatchResults(object):
     evaluation. The individual Results objects can be accessed by index or by iterating the BatchResults object.
 
     Attributes:
-        batch_id: batch id (a string).
+        batch_id: batch id (string).
         ignore_asv: True if the underlying Results objects will perform ASV checking when .write() is called
         results_file: Name of results file that will be written
     """
@@ -460,7 +467,11 @@ class BatchResults(object):
         self._eval_results = results_sets
         eval_id = self._eval_results[0].eval_id
         tokens = eval_id.split(":")
-        self._batch_id = tokens[-2]
+        try:
+            self._batch_id = tokens[-2]
+        except IndexError:
+            raise BatchSettingError("batch set to True, but parameters " +
+                              "file does not appear to be a batch file.")
         self._ignore_asv = self._eval_results[0].ignore_asv
         self._results_file = self._eval_results[0].results_file
         for r in self._eval_results:
@@ -636,7 +647,8 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None):
             Results(aprepro_format, responses, deriv_vars, eval_id, ignore_asv,
                 results_file))
 
-def _read_parameters_stream(stream=None, ignore_asv=False, results_file=None):
+def _read_parameters_stream(stream=None, ignore_asv=False, batch=False, 
+    results_file=None):
     """Extract all evaluations from stream"""
     param_sets = [] # list of Parameters objects
     results_sets = [] # list of Results objects
@@ -647,13 +659,16 @@ def _read_parameters_stream(stream=None, ignore_asv=False, results_file=None):
             results_sets.append(r)
         else:
             break
-    if len(param_sets) > 1:
-        return BatchParamters(param_sets), BatchResults(results_sets)
+    if batch:
+        return BatchParameters(param_sets), BatchResults(results_sets)
+    elif len(param_sets) > 1 and not batch:
+        raise BatchSettingError("batch is False, but parameters for " +
+                     "multiple evaluations found in parameters file.") 
     else:
         return param_sets[0], results_sets[0]
 
 def read_parameters_file(parameters_file=None, results_file=None, 
-        ignore_asv=False):
+        ignore_asv=False, batch=False):
     """Read and parse the Dakota parameters file.
     
     Keyword Args:
@@ -665,6 +680,7 @@ def read_parameters_file(parameters_file=None, results_file=None,
             and a stream must be specified in the call to Results.write().
         ignore_asv: If True, ignore the active set vector when setting
             responses on the returned Results object.
+        batch: Set to True when performing batch evaluations.  
 
     Returns:
         Two cases:
@@ -700,7 +716,7 @@ def read_parameters_file(parameters_file=None, results_file=None,
 
     ### Open and parse the parameters file
     with open(parameters_file, "r", encoding='utf8') as ifp:
-        return _read_parameters_stream(ifp, ignore_asv, results_file)
+        return _read_parameters_stream(ifp, ignore_asv, batch, results_file)
 
 
 def dprepro(template, parameters=None, results=None, include=None,
