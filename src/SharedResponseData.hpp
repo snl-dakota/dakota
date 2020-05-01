@@ -202,10 +202,10 @@ public:
   /// fieldRespGroupLengths)
   size_t num_functions() const;
 
-  /// index of field lengths for field data 
+  /// length of each field for field data
   const IntVector& field_lengths() const;
   /// set field lengths (if experiment different from simulation)
-  void field_lengths(const IntVector& field_lengths);
+  void field_lengths(const IntVector& field_lens);
   /// dimensions of each function
   const IntVector& num_coords_per_field() const;
 

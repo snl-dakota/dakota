@@ -34,6 +34,9 @@ class ParallelConfiguration;
 class DiscrepancyCorrection;
 
 
+// Suppress Doxygen warnings for these known undocumented typedefs
+/// \cond
+
 // -----------------------------------
 // Aliases for fundamental data types:
 // -----------------------------------
@@ -219,6 +222,9 @@ typedef IntVariablesMap::iterator              IntVarsMIter;
 typedef IntVariablesMap::const_iterator        IntVarsMCIter;
 typedef IntResponseMap::iterator               IntRespMIter;
 typedef IntResponseMap::const_iterator         IntRespMCIter;
+
+// Suppress Doxygen warnings for these known undocumented typedefs
+/// \endcond
 
 } // namespace Dakota
 
