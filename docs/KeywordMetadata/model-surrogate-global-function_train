@@ -7,7 +7,7 @@ in an input-output mapping.  The form of the approximation can be written as a
 set of matrix valued products:
 \f[ f_r(x) = F_1(x_1) F_2(x_2) \dots F_d(x_d) \f]
 Where the "cores" expand to
-\f[ F_k =
+\f[ F_k(x_k) =
 \begin{bmatrix}
 f_k^{11}(x_k)       & \cdots & f_k^{1r_k}(x_k)\\
 \vdots              & \ddots & \vdots\\
@@ -15,15 +15,15 @@ f_k^{r_{k-1}1}(x_k) & \cdots & f_k^{r_{k-1}r_k}(x_k)
 \end{bmatrix}
 \f]
 
-An example 4-D expansion with rank vector $(1,7,5,3,1)$ is
-\f[ F_k =
+An example 4-D expansion with rank vector \a (1,7,5,3,1) is
+\f[ f_r(x) =
 \begin{bmatrix}
 f_1^{11}(x_1)       & \cdots & f_1^{12}(x_1)
 \end{bmatrix}
 \begin{bmatrix}
 f_2^{11}(x_2)       & \cdots & f_2^{15}(x_2)\\
 \vdots              & \ddots & \vdots\\
-f_2^{r_71}(x_2) & \cdots & f_2^{75}(x_2)
+f_2^{71}(x_2) & \cdots & f_2^{75}(x_2)
 \end{bmatrix}
 \begin{bmatrix}
 f_3^{11}(x_3)       & \cdots & f_3^{13}(x_3)\\
@@ -38,7 +38,7 @@ f_4^{31}(x_4)
 \f]
 
 In the current implementation, orthogonal polynomial basis functions
-(Hermite and Legendre) are employed as the basis functions \f$f_k\f$,
+(Hermite and Legendre) are employed as the basis functions \f$f_i^{jk}(x_i)\f$,
 although the C3 library will enable additional options in the future.
 
 The number of coefficients that must be computed by the regression solver
@@ -46,10 +46,10 @@ can be inferred from the construction above.  For each QoI, the regression
 size can be determined as follows:
 
 - For \a v variables, orders \a o is a v-vector and ranks \a r is a v+1-vector 
-- the first core is a 1 x r_1 row vector and contributes \f$ (o_0 + 1) r_1 \f$ terms
-- the  last core is a r_v x 1 col vector and contributes \f$ (o_{v-1}+1) r_{v-1} \f$ terms
-- the middle v-2 cores are matrices that contribute \f$ r_i r_{i+1} (o_i + 1) \f$ terms, i = 1, ..., v-2
-- neighboring vec/mat dimensions must match, so there are v-1 unique ranks
+- the first core is a \f$ 1 x r_1 \f$ row vector and contributes \f$ (o_0 + 1) r_1 \f$ terms
+- the  last core is a \f$ r_v x 1 \f$ col vector and contributes \f$ (o_{v-1}+1) r_{v-1} \f$ terms
+- the middle \a v-2 cores are matrices that contribute \f$ r_i r_{i+1} (o_i + 1) \f$ terms, \f$ i = 1, ..., v-2 \f$
+- neighboring vec/mat dimensions must match, so there are \a v-1 unique ranks
 
 
 
@@ -82,4 +82,4 @@ model,
 	dace_method_pointer = 'SAMPLING'
 \endverbatim
 
-See_Also::	method-function_train_uq
+See_Also::	method-function_train
