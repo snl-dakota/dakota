@@ -29,7 +29,8 @@ GP_Objective::GP_Objective(GaussianProcess &gp_model) :
 
 GP_Objective::~GP_Objective() {}
 
-double GP_Objective::value(const ROL::Vector<double> &p, double&) {
+double GP_Objective::value(const ROL::Vector<double> &p, double &tol) {
+  silence_unused_args(tol);
   ROL::Ptr<const std::vector<double> > xp = getVector(p);
   double obj_val;
   VectorXd grad(nopt);
@@ -42,7 +43,8 @@ double GP_Objective::value(const ROL::Vector<double> &p, double&) {
   return Jold;
 }
 
-void GP_Objective::gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double& tol) {
+void GP_Objective::gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double &tol) {
+  silence_unused_args(tol);
   ROL::Ptr<const std::vector<double> > xp = getVector(p);
   ROL::Ptr<std::vector<double> > gpointer = getVector(g);
   double obj_val;
