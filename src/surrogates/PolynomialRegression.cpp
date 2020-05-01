@@ -12,7 +12,9 @@
 namespace dakota {
 namespace surrogates {
 
+/// alias for util SCALER_TYPE enum
 using SCALER_TYPE = util::DataScaler::SCALER_TYPE;
+/// alias for util SOLVER_TYPE enum
 using SOLVER_TYPE = util::LinearSolverBase::SOLVER_TYPE;
 
 PolynomialRegression::PolynomialRegression() {

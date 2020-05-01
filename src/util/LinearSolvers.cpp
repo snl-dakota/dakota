@@ -15,11 +15,14 @@
 namespace dakota {
 namespace util {
 
+/// alias for LinearSolverBase's SOLVER_TYPE
 using SOLVER_TYPE = LinearSolverBase::SOLVER_TYPE;
+/// alias for Boost Bimap solver type <--> string
 using BimapSolvertypeStr = boost::bimap<SOLVER_TYPE, std::string>;
 
 // ------------------------------------------------------------
 
+/// Bimap between solver types and names
 static BimapSolvertypeStr type_name_bimap =
   boost::assign::list_of< BimapSolvertypeStr::relation >
   (SOLVER_TYPE::CHOLESKY, "cholesky")

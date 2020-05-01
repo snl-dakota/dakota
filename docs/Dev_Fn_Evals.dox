@@ -74,8 +74,8 @@ or \ref
 Model::derived_synchronize_nowait "Model::derived_synchronize_nowait()"
 for portions of the scheduling process specific to derived model classes.
 <li> These derived model class functions directly or indirectly invoke 
-\ref Interface::synch "Interface::synch()" or 
-\ref Interface::synch_nowait "Interface::synch_nowait()".
+\ref Interface::synchronize "Interface::synchronize()" or
+\ref Interface::synchronize_nowait "Interface::synchronize_nowait()".
 <li> For application interfaces, these interface synchronization
 functions are responsible for performing evaluation scheduling in 
 one of the following modes: master dynamic, peer dynamic or peer static.

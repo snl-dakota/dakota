@@ -59,7 +59,7 @@ public:
    *  \param[in] tol Tolerance for inexact evaluation? (not used here).
    *
    */
-  void gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double&);
+  void gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double& tol);
 
 private:
 

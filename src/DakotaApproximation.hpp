@@ -151,7 +151,7 @@ public:
   virtual Real combined_covariance(Approximation& approx_2);
   /// return the covariance between two combined response expansions,
   /// where a subset of the active variables are random
-  virtual Real combined_covariance(const Pecos::RealVector& x,
+  virtual Real combined_covariance(const RealVector& x,
 				   Approximation& approx_2);
 
   virtual void compute_moments(bool full_stats = true,

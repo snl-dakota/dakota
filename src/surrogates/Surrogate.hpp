@@ -48,7 +48,7 @@ public:
   /**
    *  \brief Evaluate the Surrogate at a set of prediction points.
    *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
-   *  \param[out] approx_values Values of the Surrogate at the prediction
+   *  \param[out] value Values of the Surrogate at the prediction
    *  points - (num_pts by num_qoi) 
    */
   virtual void value(const MatrixXd &samples, MatrixXd &value) = 0;
@@ -66,7 +66,7 @@ public:
 
   /**
    *  \brief Evaluate the Hessian of the Surrogate at a single point.
-   *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
+   *  \param[in] samples Coordinates of the prediction point - (num_samples by num_features).
    *  \param[out] hessian Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
