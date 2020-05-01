@@ -15,10 +15,10 @@ f_k^{r_{k-1}1}(x_k) & \cdots & f_k^{r_{k-1}r_k}(x_k)
 \end{bmatrix}
 \f]
 
-An example 4-D expansion with rank vector \a (1,7,5,3,1) is
+An example 4-D expansion with rank vector (1,7,5,3,1) is
 \f[ f_r(x) =
 \begin{bmatrix}
-f_1^{11}(x_1)       & \cdots & f_1^{12}(x_1)
+f_1^{11}(x_1)       & \cdots & f_1^{17}(x_1)
 \end{bmatrix}
 \begin{bmatrix}
 f_2^{11}(x_2)       & \cdots & f_2^{15}(x_2)\\
@@ -46,10 +46,10 @@ can be inferred from the construction above.  For each QoI, the regression
 size can be determined as follows:
 
 - For \a v variables, orders \a o is a v-vector and ranks \a r is a v+1-vector 
-- the first core is a \f$ 1 x r_1 \f$ row vector and contributes \f$ (o_0 + 1) r_1 \f$ terms
-- the  last core is a \f$ r_v x 1 \f$ col vector and contributes \f$ (o_{v-1}+1) r_{v-1} \f$ terms
-- the middle \a v-2 cores are matrices that contribute \f$ r_i r_{i+1} (o_i + 1) \f$ terms, \f$ i = 1, ..., v-2 \f$
-- neighboring vec/mat dimensions must match, so there are \a v-1 unique ranks
+- the first core is a \f$ 1 \times r_1 \f$ row vector and contributes \f$ (o_0 + 1) r_1 \f$ terms
+- the  last core is a \f$ r_{v-1} \times 1 \f$ col vector and contributes \f$ (o_{v-1}+1) r_{v-1} \f$ terms
+- the middle v-2 cores are \f$ r_i \times r_{i+1} \f$ matrices that contribute \f$ r_i r_{i+1} (o_i + 1) \f$ terms, \f$ i = 1, ..., v-2 \f$
+- neighboring vec/mat dimensions must match, so there are v-1 unique ranks
 
 
 

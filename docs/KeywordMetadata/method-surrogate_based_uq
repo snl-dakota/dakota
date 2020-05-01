@@ -6,10 +6,11 @@ this method provides a general-purpose UQ method to interrogate the surrogate fo
 generating statistics.
 
 This method must identify the surrogate of interest through its \c model_pointer,
-distinguishing it from fully-integrated method specifications, such as
+distinguishing it from fully-integrated method specifications such as
 \ref method-polynomial_chaos, \ref method-stoch_collocation, and
-\ref method-function_train, that couple directly with a simulation model
-(and form the PCE, SC, FT surrogate approximations implicitly).
+\ref method-function_train that couple directly with a simulation model
+(and form the PCE, SC, FT surrogate approximations implicitly prior to using
+them for generating statistics).
 
 Topics::
 

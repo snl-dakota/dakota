@@ -2,7 +2,8 @@ Blurb:: Multifidelity uncertainty quantification using function train expansions
 
 Description::
 
-As described in \ref method-function_train and \ref model-surrogate-global-function_train,
+As described in the \ref method-function_train method and the
+\ref model-surrogate-global-function_train model,
 the function train (FT) approximation is a polynomial expansion that exploits low rank
 structure within the mapping from input random variables to output quantities of interest
 (QoI).  For multilevel and multifidelity function train approximations, we decompose this
