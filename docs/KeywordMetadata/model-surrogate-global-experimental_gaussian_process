@@ -1,0 +1,14 @@
+Blurb::
+Use the Gaussian process regression surrogate from the surrogates module
+
+Description::
+This Gaussian process implementation is contained in Dakota's surrogates module
+and is considered experimental. It uses gradient-based optimization with 
+restarts to determine hyperparmeters and trend coefficients. Nugget and trend
+estimation are optional.
+
+Topics::
+
+Theory::
+Faq::
+See_Also::
