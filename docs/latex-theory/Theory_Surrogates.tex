@@ -594,6 +594,159 @@ is large.  It will also likely be negligible compared to the cost of
 performing LAPACK's non-pivoted Cholesky on 
 $\underline{\underline{\tilde{R}_{\nabla}}}$.
 
+\subsection{Experimental Gaussian Process}
+\label{SubSec:ExpGP}
+
+The experimental semi-parametric Gaussian process (GP) regression model in 
+Dakota's surrogates module contains two types of variables: hyperparameters 
+$\boldsymbol{\theta}$ that influence the kernel function 
+$k(\boldsymbol{x},\boldsymbol{x}')$ and polynomial trend coefficients 
+$\boldsymbol{\beta}$. Building or fitting a GP involves determining these 
+variables given a data matrix $\boldsymbol{X}$ and vector of response values 
+$\boldsymbol{y}$ by minimizing the negative log marginal likelihood function
+$J(\boldsymbol{\theta},\boldsymbol{\beta})$.
+
+We consider an anisotropic squared-exponential kernel augmented with a white
+noise term, sometimes referred to as a ``nugget'' or ``jitter'' in the 
+literature:
+
+\begin{gather}
+k(\boldsymbol{x},\boldsymbol{x}') = \sigma^2 \exp \left\lbrace - \frac{1}{2} \sum_{m=1}^{d} \frac{ \left(x_m - x'_m \right)^2}{\ell_m^2} \right\rbrace + \eta^2 \delta_{\boldsymbol{x}\boldsymbol{x}'}.
+\end{gather}
+
+The parameter $\sigma^2$ is a scaling term that affects the range of the 
+output space. The vector $\boldsymbol{\ell} \in \mathbb{R}^d$ contains the 
+correlation lengths for each dimension of the input space. The smaller a 
+given $\ell_m$ the larger the variation of the function along that dimension.
+Lastly, the $\eta^2$ parameter determines the size of the white noise term.
+
+All of these quantities are strictly positive except for the nugget which is non-negative and will sometimes be omitted or set to a fixed value. These parameters may vary over several orders of magnitude such that variable scaling can have a significant effect on the performance of the optimizer used to find $\boldsymbol{\beta}$ and $\boldsymbol{\theta}$. We perform log-scaling for each of the hyperparameters $\boldsymbol{\theta}$ according to the transformation 
+
+\begin{gather}
+\theta_i = \log \left( \frac{p_i}{p_{\text{ref}}} \right),
+\end{gather}
+
+\noindent with $p_{\text{ref}} = 1$ for all parameters for simplicity. Note
+that we take the original variables to be 
+$\left\lbrace \sigma, \boldsymbol{\ell}, \eta \right\rbrace$, not their 
+squares as is done by some authors. The log-transformed version of the kernel
+is
+
+\begin{gather}
+k(\boldsymbol{x},\boldsymbol{x}') = \exp( 2 \theta_0 ) \exp \left\lbrace - \frac{1}{2} \sum_{m=1}^{d} \left(x_m - x'_m \right)^2 \exp(-2 \theta_m) \right\rbrace + \exp(2 \theta_{-1})  \delta_{\boldsymbol{x}\boldsymbol{x}'} ,
+\end{gather}
+
+\noindent where the hyperparameters are ordered so that the log-transformed
+variables $\sigma = \theta_0$ and $\eta = \theta_{-1}$ are at the beginning and end of
+the vector of hyperparameters $\boldsymbol{\theta}$, respectively. The 
+polynomial regression coefficients $\boldsymbol{\beta}$ are left unscaled.
+
+
+An important quantity in Gaussian process regression is the 
+\textit{Gram matrix} $\boldsymbol{G}$:
+
+\begin{gather}
+G_{ij} := k(\boldsymbol{x}^i,\boldsymbol{x}^j),
+\end{gather}
+
+\noindent where if the layout of the surrogate build samples matrix 
+$\boldsymbol{X}$ is number of samples $N$ by dimension of the feature space
+$d$ the quantities $\boldsymbol{x}^i$ and $\boldsymbol{x}^j$ represent the 
+$i^{\text{th}}$ and $j^{\text{th}}$ rows of this matrix, respectively. The 
+Gram matrix is positive definite provided there are no repeated samples, but
+it can be ill-conditioned if sample points are close together. Factorization
+of the (dense) Gram matrix is the computational bottleneck in Gaussian 
+process regression.
+
+The derivatives of the Gram matrix with respect to the hyperparameters are 
+used in the regression procedure. To compute them it is helpful to partition
+the Gram matrix into two components, one that depends on the 
+squared-exponential piece of the kernel $\boldsymbol{K}$ and another 
+associated with the nugget term
+
+\begin{gather}
+\boldsymbol{G} =  \boldsymbol{K} + \exp(2 \theta_{-1})  \boldsymbol{I}.
+\end{gather}
+
+\noindent Let $\boldsymbol{D}_m$ denote the matrix of component-wise squared
+distances between points in the space of build points for dimension $m$:
+
+\begin{gather}
+D_{ijm}  = \left( x^i_m - x^j_m \right)^2.
+\end{gather}
+
+\noindent The derivatives of $\boldsymbol{G}$ are
+
+\begin{gather}
+\begin{aligned}
+\frac{d\boldsymbol{G}}{d\theta_0} &= 2 \boldsymbol{K}, \\
+\frac{d\boldsymbol{G}}{d\theta_m} &= \exp \left( -2 \theta_m \right) \boldsymbol{D}_m \odot \boldsymbol{K},  \quad  m = 1 \ldots d, \\
+\frac{d\boldsymbol{G}}{d\theta_{-1}} &= 2 \exp(2 \theta_{-1}) \boldsymbol{I},
+\end{aligned}
+\end{gather}
+
+\noindent where $\odot$ denotes the Hadamard (i.e. element-wise) product.
+
+
+A polynomial trend function is obtained by multiplying a basis matrix for the
+samples $\boldsymbol{\Phi}$ by the trend coefficients $\boldsymbol{\beta}$. 
+The objective function for maximum likelihood estimation $J$ depends 
+on the residual $\boldsymbol{z} := \boldsymbol{y} - \Phi \boldsymbol{\beta}$. 
+
+\begin{gather}
+J(\boldsymbol{\theta},\boldsymbol{\beta}) = \frac{1}{2} \log \left( \text{det} \left( \boldsymbol{G} \right) \right) + \frac{1}{2} \boldsymbol{z}^T \boldsymbol{G}^{-1} \boldsymbol{z} + \frac{N}{2} \log \left( 2 \pi \right).
+\end{gather}
+
+The gradient of the objective function can be computed analytically using the 
+derivatives of the Gram matrix. First we introduce
+
+\begin{gather}
+\begin{aligned}
+\boldsymbol{\alpha} &:= \boldsymbol{G}^{-1} \boldsymbol{z}, \\
+\boldsymbol{Q} &:= -\frac{1}{2} \left( \boldsymbol{\alpha} \boldsymbol{\alpha}^T - \boldsymbol{G}^{-1} \right).
+\end{aligned}
+\end{gather}
+
+\noindent The gradient is
+
+
+\begin{gather}
+\begin{aligned}
+\frac{dJ}{d\theta_0} &= \sum_{i,j}  2 Q_{ij} K_{ij}, \\
+\frac{dJ}{d\theta_m} &= \sum_{i,j} \left[   \boldsymbol{Q} \odot \boldsymbol{K}  \right]_{ij}   D_{ijm} \exp(-2 \theta_m), \quad m = 1, \ldots, d, \\
+\frac{dJ}{d\theta_{-1}} &= \text{trace}(2 \boldsymbol{Q}) \exp(2\theta_{-1}), \\
+\frac{dJ}{d \boldsymbol{\beta}} &= - \boldsymbol{\Phi}^T \boldsymbol{\alpha}.
+\end{aligned}
+\end{gather}
+
+We use the Rapid Optimization Library's \cite{Kou2014}  gradient-based, bound-constrained 
+implementation of the optimization algorithm L-BFGS-B \cite{Byrd95} to minimize $J$. This 
+is a local optimization method so it is typically run multiple times from 
+different initial guesses to increase the chances of finding the global 
+minimum.
+
+Once the regression problem has been solved, we may wish to evaluate the GP
+at a set of predictions points $\boldsymbol{X}^*$ with an associated basis
+matrix $\boldsymbol{\Phi}^*$.  Some useful quantities are 
+
+\begin{gather}
+\begin{aligned}
+P^*_{ij} &=  k\left(\left(\boldsymbol{x}^*\right)^i,\boldsymbol{x}^j\right), \\
+G^{**}_{ij} &=  k\left(\left(\boldsymbol{x}^*\right)^i,\left(\boldsymbol{x}^*\right)^j\right), \\
+\boldsymbol{H} &= \boldsymbol{\Phi}^T  \boldsymbol{G}^{-1}  \boldsymbol{\Phi}, \\
+\boldsymbol{R}^{*} &= \boldsymbol{\Phi}^* - \boldsymbol{P}^{*} \boldsymbol{G}^{-1}  \boldsymbol{\Phi}.
+\end{aligned}
+\end{gather}
+
+\noindent The mean and covariance of the GP at the prediction points are
+
+\begin{gather}
+\begin{aligned}
+\boldsymbol{\mu}^{*} &= \boldsymbol{\Phi}^* \boldsymbol{\beta} + \boldsymbol{P}^{*} \boldsymbol{\alpha}, \\
+\boldsymbol{\Sigma}^{**} &= \boldsymbol{G}^{**} - \boldsymbol{P}^{*}  \boldsymbol{G}^{-1}  \left(\boldsymbol{P}^{*}\right)^T + \boldsymbol{R}^{*} \boldsymbol{H}^{-1} \left(\boldsymbol{R}^{*}\right)^T.
+\end{aligned}
+\end{gather}
+
 \section{Polynomial Models}\label{sec:poly_surr}
 
 A preliminary discussion of the surrogate polynomial models available in
