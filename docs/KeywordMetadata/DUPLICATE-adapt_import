@@ -1,5 +1,5 @@
 Blurb::
-Importance sampling option
+Importance sampling option for probability refinement
 Description::
 \c adapt_import centers a sampling 
 density at one of the initial LHS samples identified in the failure region. 
@@ -13,5 +13,3 @@ Examples::
 Theory::
 Faq::
 See_Also::	
-
-

@@ -16,30 +16,36 @@ Sandia National Laboratories
       Albuquerque, NM
        Livermore, CA
 
-Brian M. Adams                                       
-William J. Bohnhoff                                  
+Brian M. Adams
+William J. Bohnhoff
 Robert A. Canfield
 Keith R. Dalbey
-John P. Eddy	                               	 
 Mohamed S. Ebeida
-Michael S. Eldred                             	 
+John P. Eddy
+Michael S. Eldred
 Gianluca Geraci
 Alex A. Gorodetsky
 Russell W. Hooper
-Patricia D. Hough		       
+Patricia D. Hough
 Kenneth T. Hu
 John D. Jakeman
+Carson Kent
 Mohammad Khalil
 Kathryn A. Maupin
 Jason A. Monschke
 Elliott M. Ridgway
-Ahmad Rushdi
+Ahmad A. Rushdi
 D. Thomas Seidl
-J. Adam Stephens                             	 
+J. Adam Stephens
 Laura P. Swiler
-Dena M. Vigil			       
-Timothy M. Wildey		       
-Justin G. Winokur		       
+Anh Tran
+Dena M. Vigil
+Timothy M. Wildey
+Justin G. Winokur
+
+Friedrich Menhorn, Technische Universitat Munchen
+Xiaoshu Zeng, University of Southern California
+
 
 ------------------------------------------------------------------------------
 License
@@ -93,6 +99,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]
   LHS		    GNU Lesser General Public License (LGPL) [SNL]
+  MUQ2              BSD 3-clause
   NCSUOpt	    MIT License
   nidr		    BSD License [SNL]
   NL2SOL	    Publicly Available

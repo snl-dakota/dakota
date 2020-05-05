@@ -176,8 +176,8 @@ private:
 
   /// shared helper function between steady_state_diffusion_1d() and
   /// ss_diffusion_discrepancy()
-  int steady_state_diffusion_core(SpectralDiffusionModel& model,
-				  RealVector& domain_limits);
+  void steady_state_diffusion_core(SpectralDiffusionModel& model,
+				   RealVector& domain_limits);
 };
 
 } // namespace Dakota

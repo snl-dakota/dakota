@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <boost/filesystem/fstream.hpp>
 
-/** 
+/* 
     Work directory TODO
     
     * Doc: we will search for drivers in PATH, workdir (.), RUNDIR

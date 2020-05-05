@@ -9,6 +9,10 @@
 //- Class:       EffGlobalMinimizer
 //- Description: Implementation of Efficient Global Optimization
 //- Owner:       Barron J Bichon, Vanderbilt University
+//- Checked by:
+//- Version:
+
+//- Edited by:   Anh Tran on 12/21/2019
 
 #ifndef EGO_MINIMIZER_H
 #define EGO_MINIMIZER_H
@@ -67,7 +71,7 @@ public:
   EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for instantiations "on the fly"
   //EffGlobalMinimizer(Model& model, int max_iterations, int max_fn_evals);
-  ~EffGlobalMinimizer(); ///< destructor
+  ~EffGlobalMinimizer(); /// destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -82,6 +86,7 @@ public:
   const Model& algorithm_space_model() const;
 
   void declare_sources();
+
 private:
 
   //
@@ -91,19 +96,50 @@ private:
   /// called by minimize_surrogates for setUpType == "model"
   void minimize_surrogates_on_model();
   /// called by minimize_surrogates for setUpType == "user_functions"
-  //void minimize_surrogates_on_user_functions();
+  // void minimize_surrogates_on_user_functions();
 
   /// determine best solution from among sample data for expected
-  ///   imporovement function 
+  ///   imporovement function
   void get_best_sample();
+
+  /// initialize
+  void initialize();
+
+  /// augmented Lagrangian
+  /// augmented Lagrangian
+  Real get_augmented_lagrangian(const RealVector& mean,
+                                const RealVector& c_vars,
+                                const Real& eif_star);
+
+  /// check convergence
+  /// if EGO has converged
+  void check_convergence(const Real& eif_star,
+                        const RealVector& c_vars,
+                        RealVector prev_cv_star,
+                        unsigned short eif_convergence_cntr,
+                        unsigned short dist_convergence_cntr);
+
+  /// print mean and variance if debug flag is ON
+  void debug_print_values();
+
+  /// print counter if debug flag is ON
+  void debug_print_counter(unsigned short globalIterCount,
+                           const Real& eif_star,
+                           Real distCStar,
+                           unsigned short dist_convergence_cntr);
+
+  // DEBUG - output set of samples used to build the GP
+  // If problem is 2d, output a grid of points on the GP
+  //   and truth (if requested)
+  void debug_plots();
 
   /// expected improvement function for the GP
   Real expected_improvement(const RealVector& means,
-			    const RealVector& variances);
+			                     const RealVector& variances);
 
   /// expected violation function for the constraint functions
   RealVector expected_violation(const RealVector& means,
-				     const RealVector& variances);
+    				                    const RealVector& variances);
 
   /// initialize and update the penaltyParameter
   void update_penalty();
@@ -115,9 +151,9 @@ private:
   /// static function used as the objective function in the
   /// Expected Improvement (EIF) problem formulation for PMA
   static void EIF_objective_eval(const Variables& sub_model_vars,
-				 const Variables& recast_vars,
-				 const Response& sub_model_response,
-				 Response& recast_response);
+				                        const Variables& recast_vars,
+                                const Response& sub_model_response,
+                                Response& recast_response);
 
   //
   //- Heading: Data
@@ -126,13 +162,19 @@ private:
   /// pointer to the active object instance used within the static evaluator
   /// functions in order to avoid the need for static data
   static EffGlobalMinimizer* effGlobalInstance;
+  // static EffGlobalMinimizer* prev_instance;
 
   /// controls iteration mode: "model" (normal usage) or "user_functions"
   /// (user-supplied functions mode for "on the fly" instantiations).
   String setUpType;
 
-  /// convergence tolerance on distance between predicted best points
+  /// convergence tolerance on distance
+  /// between predicted best points
   Real distanceTol;
+
+  /// convergence tolerances
+  /// in objectives
+  Real convergenceTol;
 
   /// GP model of response, one approximation per response function
   Model fHatModel;
@@ -150,12 +192,25 @@ private:
   /// order of the data used for surrogate construction, in ActiveSet
   /// request vector 3-bit format; user may override responses spec
   short dataOrder;
+
+  /// declare check convergence variables
+  /// relative distance change in input measured in L2
+  Real distCStar;
+
+  /// declare batch size for BatchSizeAcquisition
+  /// sampling point located at maximum acquisition function
+  int BatchSizeAcquisition;
+
+  /// declare batch size for BatchSizeExploration
+  /// sampling point located at maximum posterior variance
+  int BatchSizeExploration;
+
 };
 
 
 inline const Model& EffGlobalMinimizer::algorithm_space_model() const
 { return fHatModel; }
-		      
+
 } // namespace Dakota
 
 #endif

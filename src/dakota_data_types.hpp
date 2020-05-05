@@ -34,6 +34,9 @@ class ParallelConfiguration;
 class DiscrepancyCorrection;
 
 
+// Suppress Doxygen warnings for these known undocumented typedefs
+/// \cond
+
 // -----------------------------------
 // Aliases for fundamental data types:
 // -----------------------------------
@@ -106,7 +109,7 @@ typedef std::vector<Iterator>          IteratorArray;
 typedef std::vector<RealMultiArray>    BoostMAArray;
 typedef std::vector<RealMulti2DArray>  BoostMA2DArray;
 typedef std::vector<RealMulti3DArray>  BoostMA3DArray;
- 
+
 typedef std::list<bool>                BoolList;
 typedef std::list<int>                 IntList;
 typedef std::list<size_t>              SizetList;
@@ -219,6 +222,9 @@ typedef IntVariablesMap::iterator              IntVarsMIter;
 typedef IntVariablesMap::const_iterator        IntVarsMCIter;
 typedef IntResponseMap::iterator               IntRespMIter;
 typedef IntResponseMap::const_iterator         IntRespMCIter;
+
+// Suppress Doxygen warnings for these known undocumented typedefs
+/// \endcond
 
 } // namespace Dakota
 

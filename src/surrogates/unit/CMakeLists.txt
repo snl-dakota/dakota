@@ -19,6 +19,9 @@ set(surrogates_unit_test_copied_files)
 dakota_add_unit_test(NAME GaussianProcessTest SOURCES
   teuchos_unit_test_driver.cpp
   GaussianProcessTest.cpp
+  # To force linking against fortran runtime needed to teuchosnumerics
+  # dependence on BLAS/LAPACK (TODO: root cause the link chain)
+  empty.f90
 )
 
 dakota_add_unit_test(NAME PolynomialRegressionTest SOURCES

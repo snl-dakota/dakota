@@ -128,19 +128,19 @@
              </keyword>
 	     ' >
 
-    <!ENTITY default_max_iterations '<keyword  id="max_iterations" name="max_iterations" code="{N_mdm(nnint,maxIterations)}" label="Maximum iterations"  minOccurs="0" default="100 (exceptions: fsu_cvt , local_reliability: 25; global_{reliability , interval_est , evidence} / efficient_global: 25*n)" >
+    <!ENTITY default_max_iterations '<keyword  id="max_iterations" name="max_iterations" code="{N_mdm(int,maxIterations)}" label="Maximum iterations"  minOccurs="0" default="100 (exceptions: fsu_cvt , local_reliability: 25; global_{reliability , interval_est , evidence} / efficient_global: 25*n)" >
              <param type="INTEGER" constraint=">= 0" />
     </keyword>
     ' >
 
     <!ENTITY default_max_solver_iterations '
-	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(int,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
 
     <!ENTITY default_max_refinement_iterations '
-	     <keyword  id="max_refinement_iterations" name="max_refinement_iterations" code="{N_mdm(nnint,maxRefineIterations)}" label="Maximum refinement iterations"  minOccurs="0" default="100" >
+	     <keyword  id="max_refinement_iterations" name="max_refinement_iterations" code="{N_mdm(int,maxRefineIterations)}" label="Maximum refinement iterations"  minOccurs="0" default="100" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
@@ -152,7 +152,7 @@
 	     ' >
 
     <!ENTITY default_max_function_evaluations '
-	     <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mdm(nnint,maxFunctionEvaluations)}" label="Maximum function evaluations"  minOccurs="0" default="1000" >
+	     <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mdm(int,maxFunctionEvaluations)}" label="Maximum function evaluations"  minOccurs="0" default="1000" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
@@ -198,7 +198,7 @@
 	     <keyword  id="scaling" name="scaling" code="{N_mdm(true,methodScaling)}" label="Scaling flag"  minOccurs="0" default="no scaling" />
 	     ' >
     <!-- # TO DO: flatten this group and review contexts for inclusion: -->
-    <!-- Defaults from old reference manual to be inserted: 
+    <!-- Defaults from old reference manual to be inserted:
 	 local_reliability: 0
 	 PCE: 0 (samples on approximation)
 	 MCMC: 10000
@@ -644,7 +644,7 @@
 	     ' >
 
     <!ENTITY method_seed '
-	     <keyword  id="seed1" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	     <keyword  id="seed1" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	       <param type="INTEGER" constraint="> 0" />
 	     </keyword>
 	     <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
@@ -747,10 +747,8 @@
                  <!-- <keyword id="rls1" name="rls1" code="{N_mdm(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
 	       </oneOf>
 	     </keyword>
-	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
-	       <param type="INTEGER" constraint=">= 0" />
-	     </keyword>
-	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mdm(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+	     &default_max_solver_iterations;
+	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mdm(int,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 	       <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mdm(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
@@ -870,10 +868,10 @@
                  <!-- <keyword id="rls1" name="rls1" code="{N_mom(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
 	       </oneOf>
 	     </keyword>
-	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(int,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
 	       <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
-	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(int,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 	       <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
@@ -930,7 +928,7 @@
 	     ' >
 
     <!ENTITY bayes_seed_rng '
-	     <keyword  id="seed1" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	     <keyword  id="seed1" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	       <param type="INTEGER" constraint="> 0" />
 	     </keyword>
              &rng_options;
@@ -1183,7 +1181,7 @@
 	     ' >
 
     <!ENTITY method_jega_common_opts '
-             <keyword  id="population_size" name="population_size" code="{N_mdm(nnint,populationSize)}" label="population_size"  minOccurs="0" default="50" >
+             <keyword  id="population_size" name="population_size" code="{N_mdm(int,populationSize)}" label="population_size"  minOccurs="0" default="50" >
                <param type="INTEGER" constraint=">= 0" />
              </keyword>
              <keyword  id="log_file" name="log_file" code="{N_mdm(str,logFile)}" label="log_file"  minOccurs="0" default="JEGAGlobal.log" >
@@ -1212,11 +1210,11 @@
                    <param type="INTEGER" />
 		 </keyword>
 		 <keyword  id="shuffle_random" name="shuffle_random" code="{N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}" label="shuffle_random"  >
-                   <keyword  id="num_parents" name="num_parents" code="{N_mdm(pintz,numParents)}" label="num_parents"  minOccurs="0" default="2" >
+                   <keyword  id="num_parents" name="num_parents" code="{N_mdm(sizet,numParents)}" label="num_parents"  minOccurs="0" default="2" >
                      <!-- should the min be 2? -->
                      <param type="INTEGER" constraint="> 0" />
                    </keyword>
-                   <keyword  id="num_offspring" name="num_offspring" code="{N_mdm(pintz,numOffspring)}" label="num_offspring"  minOccurs="0" default="2" >
+                   <keyword  id="num_offspring" name="num_offspring" code="{N_mdm(sizet,numOffspring)}" label="num_offspring"  minOccurs="0" default="2" >
                      <param type="INTEGER" constraint="> 0" />
                    </keyword>
 		 </keyword>
@@ -1243,7 +1241,7 @@
 		 <param type="REAL" />
                </keyword>
              </keyword>
-             <keyword  id="seed3" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+             <keyword  id="seed3" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
                <param type="INTEGER" constraint="> 0" />
              </keyword>
              &default_convergence_tolerance;
@@ -1265,7 +1263,7 @@
                <alias name="solution_accuracy"/>
                <param type="REAL" />
 	     </keyword>
-	     <keyword  id="seed4" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	     <keyword  id="seed4" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
                <param type="INTEGER" constraint="> 0" />
 	     </keyword>
 	     <keyword  id="show_misc_options" name="show_misc_options" code="{N_mdm(true,showMiscOptions)}" label="show_misc_options"  minOccurs="0" default="no dump of specification options" />
@@ -1398,7 +1396,7 @@
 	     ' >
 
     <!ENTITY method_iterator_server_scheduling '
-	     <keyword  id="iterator_servers" name="iterator_servers" code="{N_mdm(pint,iteratorServers)}" label="iterator_servers"  minOccurs="0" >
+	     <keyword  id="iterator_servers" name="iterator_servers" code="{N_mdm(int,iteratorServers)}" label="iterator_servers"  minOccurs="0" >
                <param type="INTEGER" constraint="> 0" />
 	     </keyword>
 	     <keyword  id="iterator_scheduling" name="iterator_scheduling" code="{0}" label="iterator_scheduling"  minOccurs="0" >
@@ -1411,7 +1409,7 @@
 		   -->
                </oneOf>
 	     </keyword>
-	     <keyword  id="processors_per_iterator" name="processors_per_iterator" code="{N_mdm(pint,procsPerIterator)}" label="processors_per_iterator"  minOccurs="0" >
+	     <keyword  id="processors_per_iterator" name="processors_per_iterator" code="{N_mdm(int,procsPerIterator)}" label="processors_per_iterator"  minOccurs="0" >
                <param type="INTEGER" constraint="> 0" />
 	     </keyword>
 	     ' >
@@ -1565,7 +1563,7 @@
               <keyword id="freeform" name="freeform" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="Freeform"   default="annotated format" />
             </oneOf>
           </optional>
-        </keyword>      
+        </keyword>
       <keyword  id="output_file" name="output_file" code="{N_stm(str,outputFile)}" label="Output File"  minOccurs="0" default="output to console, not file" complexity="0">
         <param type="OUTPUT_FILE" />
       </keyword>
@@ -1608,8 +1606,8 @@
 	       </oneOf>
 	       </keyword>
 
-          </keyword>        
-        </keyword>        
+          </keyword>
+        </keyword>
         <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Enable Graphics Window"  minOccurs="0" default="graphics off" complexity="1"/>
       </group>
       <group label="Run Modes">
@@ -1665,8 +1663,8 @@
         <alias name="method_pointer"/>
         <param type="STRING" in_taglist="method" />
       </keyword>
-    </keyword>    
-    
+    </keyword>
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="method" name="method" maxOccurs="unbounded" code="{N_mdm3(start,0,stop)}" label="Method" >
       <keyword  id="id_method" name="id_method" code="{N_mdm(str,idMethod)}" label="Method set identifier"  minOccurs="0" default="strategy use of last method parsed" >
@@ -1696,7 +1694,7 @@
               <alias name="uncoupled"/>
               <!-- #	      [ adaptive {N_mdm(lit,seqHybridType_adaptive)}
                    #	      	progress_threshold REAL {N_mdm(Real,hybridProgThresh)} ]
-                -->	
+                -->
               <oneOf label="Sub-method Selection">
                 <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
@@ -2110,7 +2108,7 @@
           <keyword  id="function_precision1" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Function Evaluation Precision"  minOccurs="0" default="1.0e-10" >
             <param type="REAL" />
           </keyword>
-          <keyword  id="seed2" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random Seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+          <keyword  id="seed2" name="seed" code="{N_mdm(int,randomSeed)}" label="Random Seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
           <keyword  id="history_file" name="history_file" code="{N_mdm(str,historyFile)}" label="NOMAD History File"  minOccurs="0" default="mads_history" >
@@ -2122,7 +2120,7 @@
           <keyword  id="variable_neighborhood_search" name="variable_neighborhood_search" code="{N_mdm(Real,vns)}" label="variable_neighborhood_search"  minOccurs="0" default="0.0" >
             <param type="REAL" />
           </keyword>
-          <keyword  id="neighbor_order" name="neighbor_order" code="{N_mdm(pint,neighborOrder)}" label="Neighbor Order"  minOccurs="0" >
+          <keyword  id="neighbor_order" name="neighbor_order" code="{N_mdm(int,neighborOrder)}" label="Neighbor Order"  minOccurs="0" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
           <keyword  id="display_all_evaluations" name="display_all_evaluations" code="{N_mdm(true,showAllEval)}" label="Display NOMAD evaluations"  minOccurs="0" default="false" />
@@ -2149,7 +2147,7 @@
         </keyword>
 
         <keyword  id="snowpac" name="snowpac" code="{N_mdm(utype,methodName_MIT_SNOWPAC)}" label="snowpac"  >
-	  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed6" name="seed" code="{N_mdm(int,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
           &default_trust_region;
@@ -2191,7 +2189,7 @@
               </keyword>
               <keyword  id="max_designs" name="max_designs" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}" label="max_designs"  >
                 <param type="REALLIST" />
-                <keyword  id="num_designs" name="num_designs" code="{N_mdm(pintz,numDesigns)}" label="Number designs to keep for max_designs nicher"  minOccurs="0" default="100" >
+                <keyword  id="num_designs" name="num_designs" code="{N_mdm(sizet,numDesigns)}" label="Number designs to keep for max_designs nicher"  minOccurs="0" default="100" >
                   <param type="INTEGER" constraint=">= 2" />
                 </keyword>
               </keyword>
@@ -2370,7 +2368,7 @@
 	  &method_optional_model_pointer;
         </keyword>
         <keyword  id="coliny_ea" name="coliny_ea" code="{N_mdm(utype,methodName_COLINY_EA)}" label="coliny_ea"  group="Optimization: Global" >
-          <keyword  id="population_size1" name="population_size" code="{N_mdm(pint,populationSize)}" label="Number of population members"  minOccurs="0" default="50" >
+          <keyword  id="population_size1" name="population_size" code="{N_mdm(int,populationSize)}" label="Number of population members"  minOccurs="0" default="50" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
           <keyword  id="initialization_type1" name="initialization_type" code="{0}" label="Initialization type"  minOccurs="0" default="unique_random" >
@@ -2511,7 +2509,7 @@
         </keyword>
 
         <keyword  id="genie_opt_darts" name="genie_opt_darts" code="{N_mdm(utype,methodName_GENIE_OPT_DARTS)}" label="genie_opt_darts"   group="Optimization: Global">
-          <keyword  id="seed5" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+          <keyword  id="seed5" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
           &default_max_function_evaluations;
@@ -2520,7 +2518,7 @@
 	</keyword>
 
         <keyword  id="genie_direct" name="genie_direct" code="{N_mdm(utype,methodName_GENIE_DIRECT)}" label="genie_direct"   group="Optimization: Global">
-	  <keyword  id="seed5" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed5" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
           &default_max_function_evaluations;
@@ -2532,9 +2530,15 @@
 	  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples"  minOccurs="0" default="(d+1)(d+2)/2">
 	    <param type="INTEGER" />
 	  </keyword>
-          <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+          <keyword  id="seed6" name="seed" code="{N_mdm(int,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
+          <keyword  id="batch_size" name="batch_size" code="{N_mdm(int,batchSize)}" label="Number of concurrent refinement candidates to compute for parallel execution"  minOccurs="0" >
+            <param type="INTEGER" constraint=">= 1" />
+            <keyword  id="exploration" name="exploration" code="{N_mdm(int,batchSizeExplore)}" label="Portion of specified batch size that performs exploration rather than selected acquisition"  minOccurs="0" >
+  	      <param type="INTEGER" constraint=">= 0" />
+    	    </keyword>
+    	  </keyword>
           &default_max_iterations;
 	  <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance"  minOccurs="0" default="1.e-12" >
             <param type="REAL" />
@@ -2702,7 +2706,7 @@
 	    <param type="INTEGER" />
 	  </keyword>
 	  &method_seed;
-	  <!-- BMA: May want to restore these if it's a helper iterator, e.g., for subspace methods 
+	  <!-- BMA: May want to restore these if it's a helper iterator, e.g., for subspace methods
 	       &default_max_iterations;
 	       &default_convergence_tolerance;
 	    -->
@@ -2717,7 +2721,7 @@
 	  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples"  minOccurs="0" >
 	    <param type="INTEGERLIST" />
 	  </keyword>
-	  <keyword  id="d_optimal" name="d_optimal" code="{N_mdm(true,dOptimal)}" label="D-Optimal Sample Design"  minOccurs="0" default="off"> 
+	  <keyword  id="d_optimal" name="d_optimal" code="{N_mdm(true,dOptimal)}" label="D-Optimal Sample Design"  minOccurs="0" default="off">
 	    <optional>
 	      <oneOf label="Design Strategy">
 		<keyword  id="candidate_designs" name="candidate_designs" code="{N_mdm(sizet,numCandidateDesigns)}" label="Number of Candidate Designs"  default="100" >
@@ -2760,7 +2764,7 @@
 
 	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
-	  &method_seed; <!-- &method_seed_sequence; -->
+	  &method_seed_sequence;
 	  &mc_pilot_samples;
 	  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
 	    <oneOf label="Sample Type">
@@ -2801,7 +2805,7 @@
 	    <alias name="initial_samples" />
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed6" name="seed" code="{N_mdm(int,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
 	  <oneOf label="Importance Sampling Approach">
@@ -2825,7 +2829,7 @@
 	    <alias name="samples" />
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
 	  <keyword  id="samples_on_emulator3" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator"  minOccurs="0" default="10000">
@@ -2849,7 +2853,7 @@
 	    <alias name="samples" />
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed6" name="seed" code="{N_mdm(int,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
 	  <keyword  id="samples_on_emulator4" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Number of samples on the emulator to generate a new true sample each iteration"  minOccurs="0" default="400" >
@@ -2894,7 +2898,7 @@
 	    <alias name="samples" />
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
 	  <keyword  id="lipschitz" name="lipschitz" code="{0}" label="Lipschitz"  minOccurs="0" >
@@ -2917,7 +2921,7 @@
 	    <alias name="samples" />
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
 	  <keyword  id="lipschitz" name="lipschitz" code="{0}" label="Lipschitz"  minOccurs="0" >
@@ -2940,7 +2944,7 @@
 	  <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples" minOccurs="0"   >
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
 	  <optional>
@@ -2972,7 +2976,7 @@
 	  <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" >
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
 	  &default_max_iterations;
@@ -3077,7 +3081,7 @@
 	      <keyword  id="pushforward_samples" name="pushforward_samples" code="{N_mdm(int,numPushforwardSamples)}" label="Number of Samples from the Prior that are pushed forward through the model"  default="method-dependent">
 		<param type="INTEGER" />
 	      </keyword>
-	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	      <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 		<param type="INTEGER" constraint="> 0" />
 	      </keyword>
 	      &bayes_emulator;
@@ -3105,7 +3109,7 @@
 	      <keyword id="generate_posterior_samples" name="generate_posterior_samples" code="{N_mdm(true,generatePosteriorSamples)}" label="Flag specifying whether to generate samples from the posterior"  minOccurs="0">
 	      <keyword id="posterior_samples_export_filename" name="posterior_samples_export_filename" code="{N_mdm(str,posteriorSamplesExportFilename)}" label="Filename to which samples from posterior will be written"  minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
 	      </keyword>
-	      <keyword id="evaluate_posterior_density" name="evaluate_posterior_density" code="{N_mdm(true,evaluatePosteriorDensity)}" label="Flag specifying whether to evaluate the posterior density at a set of samples"  minOccurs="0"> 
+	      <keyword id="evaluate_posterior_density" name="evaluate_posterior_density" code="{N_mdm(true,evaluatePosteriorDensity)}" label="Flag specifying whether to evaluate the posterior density at a set of samples"  minOccurs="0">
 	      <keyword id="posterior_density_export_filename" name="posterior_density_export_filename" code="{N_mdm(str,posteriorDensityExportFilename)}" label="Filename to which posterior density evaluations will be written"  minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
 	      </keyword>
 	    </keyword>
@@ -3114,7 +3118,7 @@
 		<alias name="samples" />
 		<param type="INTEGER" />
 	      </keyword>
-	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	      <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 		<param type="INTEGER" constraint="> 0" />
 	      </keyword>
 	      <keyword  id="chains" name="chains" code="{N_mdm(int,numChains)}" label="Number of chains"  minOccurs="0" default="3" >
@@ -3183,7 +3187,7 @@
 	      </optional>
             </keyword>
 	    <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
-	  </keyword> 
+	  </keyword>
 	  <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers"  minOccurs="0" default="none" >
 	    <oneOf label="Calibrate Error Multipliers">
 	      <keyword  id="one" name="one" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}" label="one multiplier"   />
@@ -3271,7 +3275,7 @@
 		</oneOf>
 	      </optional>
 	    </keyword>
-	    <keyword  id="export_corrected_model_file" name="export_corrected_model_file" code="{N_mdm(str,exportCorrModelFile)}" label="File export of corrected model values"  minOccurs="0" default="corrected model export to default filename" > 
+	    <keyword  id="export_corrected_model_file" name="export_corrected_model_file" code="{N_mdm(str,exportCorrModelFile)}" label="File export of corrected model values"  minOccurs="0" default="corrected model export to default filename" >
 	      <param type="OUTPUT_FILE" />
 	      <optional>
 		<oneOf label="Tabular Format" >
@@ -3285,7 +3289,7 @@
 		</oneOf>
 	      </optional>
 	    </keyword>
-	    <keyword  id="export_corrected_variance_file" name="export_corrected_variance_file" code="{N_mdm(str,exportCorrVarFile)}" label="File export of variance values of corrected model"  minOccurs="0" default="corrected model variance export to default filename" > 
+	    <keyword  id="export_corrected_variance_file" name="export_corrected_variance_file" code="{N_mdm(str,exportCorrVarFile)}" label="File export of variance values of corrected model"  minOccurs="0" default="corrected model variance export to default filename" >
 	      <param type="OUTPUT_FILE" />
 	      <optional>
 		<oneOf label="Tabular Format" >
@@ -3372,7 +3376,7 @@
 	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" default="0">
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	  <keyword  id="seed6" name="seed" code="{N_mdm(int,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
 	  &method_optional_model_pointer;
@@ -3445,7 +3449,7 @@
                 <keyword  id="refinement_samples3" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="refinement_samples"  minOccurs="0" >
                   <param type="INTEGERLIST" />
                 </keyword>
-                <keyword  id="seed8" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+                <keyword  id="seed8" name="seed" code="{N_mdm(int,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
                   <param type="INTEGER" constraint="> 0" />
                 </keyword>
               </keyword>
@@ -3484,7 +3488,7 @@
 	    &method_export_approx_format;
           </keyword>
           <keyword  id="use_derivatives7" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage"  minOccurs="0" default="use function values only" />
-          <keyword  id="seed9" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed for initial GP construction"  minOccurs="0" default="system-generated (non-repeatable)" >
+          <keyword  id="seed9" name="seed" code="{N_mdm(int,randomSeed)}" label="Random seed for initial GP construction"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
 	  &rng_options;
@@ -3598,7 +3602,7 @@
 
       </oneOf>
     </keyword>
-    
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="model" name="model" minOccurs="0" maxOccurs="unbounded" code="{N_mom3(start,0,stop)}" label="Model" >
       <keyword  id="id_model" name="id_model" code="{N_mom(str,idModel)}" label="Model Identifier"  minOccurs="0" default="method use of last model parsed" complexity="0">
@@ -3730,7 +3734,6 @@
                   </keyword>
                   &model_partial_surfpack_export_format;
                 </keyword>
-
 		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" group="Surrogate-based Methods">
 		  &ft_model_refinement;
 		  &ft_model_regression_opts; <!-- opts only: collocation points defined through dace_method_pointer -->
@@ -3747,7 +3750,7 @@
 		  <keyword id="adapt_coeff_tolerance" name="adapt_coeff_tolerance" code="{N_mom(Real,adaptCoeffTolerance)}" label="Polynomial coefficient adaptation tolerance" help="" minOccurs="0" default="1.0e-10">
 		    <param type="REAL" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="verbosity" name="verbosity" code="{N_mom(nnint,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
+		  <keyword  id="verbosity" name="verbosity" code="{N_mom(int,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 		  -->
@@ -4059,7 +4062,7 @@
           </keyword>
           <keyword  id="sub_method_pointer" name="sub_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Sub-Method Pointer"  >
             <param type="STRING" in_taglist="method" />
-            <keyword  id="iterator_servers1" name="iterator_servers" code="{N_mom(pint,subMethodServers)}" label="Iterator Servers"  minOccurs="0" >
+            <keyword  id="iterator_servers1" name="iterator_servers" code="{N_mom(int,subMethodServers)}" label="Iterator Servers"  minOccurs="0" >
               <param type="INTEGER" constraint="> 0" />
             </keyword>
             <keyword  id="iterator_scheduling1" name="iterator_scheduling" code="{0}" label="Iterator Scheduling"  minOccurs="0" >
@@ -4068,11 +4071,11 @@
                 <keyword  id="peer1" name="peer" code="{N_mom(type,subMethodScheduling_PEER_SCHEDULING)}" label="Peer"   />
 				<!-- #	      | ( peer {0}
                      #	          dynamic  {N_mom(type,subMethodScheduling_PEER_DYNAMIC_SCHEDULING)}
-                     #	      	  | static {N_mom(type,subMethodScheduling_PEER_STATIC_SCHEDULING)} ) 
+                     #	      	  | static {N_mom(type,subMethodScheduling_PEER_STATIC_SCHEDULING)} )
 				  -->
               </oneOf>
             </keyword>
-            <keyword  id="processors_per_iterator1" name="processors_per_iterator" code="{N_mom(pint,subMethodProcs)}" label="Processors per Iterator"  minOccurs="0" >
+            <keyword  id="processors_per_iterator1" name="processors_per_iterator" code="{N_mom(int,subMethodProcs)}" label="Processors per Iterator"  minOccurs="0" >
               <param type="INTEGER" constraint="> 0" />
             </keyword>
             <keyword  id="primary_variable_mapping" name="primary_variable_mapping" code="{N_mom(strL,primaryVarMaps)}" label="Primary Variable Mappings"  minOccurs="0" default="default variable insertions based on variable type" >
@@ -4141,16 +4144,16 @@
             <param type="INTEGER" />
 	  </keyword>
 	  <keyword id="build_surrogate" name="build_surrogate" label="Build Surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
-            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement Samples"  minOccurs="0" default="0"> 
+            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement Samples"  minOccurs="0" default="0">
               <param type="INTEGERLIST" />
             </keyword>
 	  </keyword>
-	  <keyword id="normalization" name="normalization" label="Normalization" code="{0}" minOccurs="0"> 
-      <oneOf label="Normalize By..."> 
-        <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" /> 
-        <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" /> 
-        <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" /> 
-      </oneOf> 
+	  <keyword id="normalization" name="normalization" label="Normalization" code="{0}" minOccurs="0">
+      <oneOf label="Normalize By...">
+        <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" />
+        <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" />
+        <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" />
+      </oneOf>
 	  </keyword>
 	</keyword>
 	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="Adapted Basis"  >
@@ -4202,7 +4205,7 @@
 	      <keyword  id="propagation_model_pointer" name="propagation_model_pointer" code="{N_mom(str,propagationModelPointer)}" label="Pointer to Model Accepting RF"  >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
-        </keyword>	
+        </keyword>
     </oneOf>
      <keyword  id="variables_pointer" name="variables_pointer" code="{N_mom(str,variablesPointer)}" label="Variables Pointer"  minOccurs="0" default="model use of last variables parsed" complexity="0">
        <param type="STRING" in_taglist="variables" />
@@ -4212,7 +4215,7 @@
      </keyword>
      <keyword  id="hierarchical_tagging" name="hierarchical_tagging" code="{N_mom(true,hierarchicalTags)}" label="Hierarchical Evaluation Tags"  minOccurs="0" default="no hierarchical tagging" complexity="1" />
     </keyword>
-    
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="variables" name="variables" maxOccurs="unbounded" code="{N_vam3(start,0,stop)}" label="Variables" >
       <keyword  id="id_variables" name="id_variables" code="{N_vam(str,idVariables)}" label="Variables set identifier"  minOccurs="0" default="use of last variables parsed" >
@@ -4234,7 +4237,7 @@
           <keyword  id="relaxed" name="relaxed" code="{N_vam(type,varsDomain_RELAXED_DOMAIN)}" label="relaxed"   />
         </oneOf>
       </optional>
-      <keyword  id="continuous_design" name="continuous_design" code="{N_vam(pintz,numContinuousDesVars)}" label="Continuous design variables"  minOccurs="0" group="Design Variables" default="no continuous design variables" >
+      <keyword  id="continuous_design" name="continuous_design" code="{N_vam(sizet,numContinuousDesVars)}" label="Continuous design variables"  minOccurs="0" group="Design Variables" default="no continuous design variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="initial_point" name="initial_point" code="{N_vam(rvec,continuousDesignVars)}" label="Initial point"  minOccurs="0" default="0.0" >
           <alias name="cdv_initial_point"/>
@@ -4261,7 +4264,7 @@
           <param type="STRINGLIST" constraint="LEN continuous_design" />
         </keyword>
       </keyword>
-      <keyword  id="discrete_design_range" name="discrete_design_range" code="{N_vam(pintz,numDiscreteDesRangeVars)}" label="Discrete design range variables"  minOccurs="0" group="Design Variables" default="no discrete design variables" >
+      <keyword  id="discrete_design_range" name="discrete_design_range" code="{N_vam(sizet,numDiscreteDesRangeVars)}" label="Discrete design range variables"  minOccurs="0" group="Design Variables" default="no discrete design variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="initial_point1" name="initial_point" code="{N_vam(ivec,discreteDesignRangeVars)}" label="Initial point"  minOccurs="0" default="0" >
           <alias name="ddv_initial_point"/>
@@ -4281,7 +4284,7 @@
         </keyword>
       </keyword>
       <keyword  id="discrete_design_set" name="discrete_design_set" code="{0}" label="discrete_design_set"  minOccurs="0" group="Design Variables" >
-        <keyword  id="integer" name="integer" code="{N_vam(pintz,numDiscreteDesSetIntVars)}" label="integer"  minOccurs="0" default="no discrete design set integer variables" >
+        <keyword  id="integer" name="integer" code="{N_vam(sizet,numDiscreteDesSetIntVars)}" label="integer"  minOccurs="0" default="no discrete design set integer variables" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="elements_per_variable" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nddsi)}" label="elements_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
@@ -4304,7 +4307,7 @@
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
-        <keyword  id="string" name="string" code="{N_vam(pintz,numDiscreteDesSetStrVars)}" label="string"  minOccurs="0" default="no discrete design set string variables" >
+        <keyword  id="string" name="string" code="{N_vam(sizet,numDiscreteDesSetStrVars)}" label="string"  minOccurs="0" default="no discrete design set string variables" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="elements_per_variable1" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nddss)}" label="elements_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
@@ -4324,7 +4327,7 @@
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
-        <keyword  id="real" name="real" code="{N_vam(pintz,numDiscreteDesSetRealVars)}" label="real"  minOccurs="0" default="no discrete design set real variables" >
+        <keyword  id="real" name="real" code="{N_vam(sizet,numDiscreteDesSetRealVars)}" label="real"  minOccurs="0" default="no discrete design set real variables" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="elements_per_variable2" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nddsr)}" label="elements_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
@@ -4348,7 +4351,7 @@
           </keyword>
         </keyword>
       </keyword>
-      <keyword  id="normal_uncertain" name="normal_uncertain" code="{N_vam(pintz,numNormalUncVars)}" label="normal uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no normal uncertain variables" >
+      <keyword  id="normal_uncertain" name="normal_uncertain" code="{N_vam(sizet,numNormalUncVars)}" label="normal uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no normal uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="means" name="means" code="{N_vam(rvec,normalUncMeans)}" label="normal uncertain means"   >
           <alias name="nuv_means"/>
@@ -4374,7 +4377,7 @@
           <param type="STRINGLIST" constraint="LEN normal_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="lognormal_uncertain" name="lognormal_uncertain" code="{N_vam(pintz,numLognormalUncVars)}" label="lognormal uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no lognormal uncertain variables" >
+      <keyword  id="lognormal_uncertain" name="lognormal_uncertain" code="{N_vam(sizet,numLognormalUncVars)}" label="lognormal uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no lognormal uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <oneOf label="Lognormal Characterization">
           <keyword  id="lambdas" name="lambdas" code="{N_vam(rvec,lognormalUncLambdas)}" label="lognormal uncertain lambdas"  >
@@ -4416,7 +4419,7 @@
           <param type="STRINGLIST" constraint="LEN lognormal_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="uniform_uncertain" name="uniform_uncertain" code="{N_vam(pintz,numUniformUncVars)}" label="uniform uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no uniform uncertain variables" >
+      <keyword  id="uniform_uncertain" name="uniform_uncertain" code="{N_vam(sizet,numUniformUncVars)}" label="uniform uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no uniform uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="lower_bounds4" name="lower_bounds" code="{N_vam(RealLb,uniformUncLowerBnds)}" label="Distribution lower bounds"   >
           <alias name="uuv_lower_bounds"/>
@@ -4434,7 +4437,7 @@
           <param type="STRINGLIST" constraint="LEN uniform_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="loguniform_uncertain" name="loguniform_uncertain" code="{N_vam(pintz,numLoguniformUncVars)}" label="loguniform uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no loguniform uncertain variables" >
+      <keyword  id="loguniform_uncertain" name="loguniform_uncertain" code="{N_vam(sizet,numLoguniformUncVars)}" label="loguniform uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no loguniform uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="lower_bounds5" name="lower_bounds" code="{N_vam(RealLb,loguniformUncLowerBnds)}" label="Distribution lower bounds"   >
           <alias name="luuv_lower_bounds"/>
@@ -4452,7 +4455,7 @@
           <param type="STRINGLIST" constraint="LEN loguniform_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="triangular_uncertain" name="triangular_uncertain" code="{N_vam(pintz,numTriangularUncVars)}" label="triangular uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no triangular uncertain variables" >
+      <keyword  id="triangular_uncertain" name="triangular_uncertain" code="{N_vam(sizet,numTriangularUncVars)}" label="triangular uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no triangular uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="modes" name="modes" code="{N_vam(rvec,triangularUncModes)}" label="triangular uncertain modes"   >
           <alias name="tuv_modes"/>
@@ -4474,7 +4477,7 @@
           <param type="STRINGLIST" constraint="LEN triangular_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="exponential_uncertain" name="exponential_uncertain" code="{N_vam(pintz,numExponentialUncVars)}" label="exponential uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no exponential uncertain variables" >
+      <keyword  id="exponential_uncertain" name="exponential_uncertain" code="{N_vam(sizet,numExponentialUncVars)}" label="exponential uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no exponential uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="betas" name="betas" code="{N_vam(RealLb,exponentialUncBetas)}" label="exponential uncertain betas"   >
           <alias name="euv_betas"/>
@@ -4488,7 +4491,7 @@
           <param type="STRINGLIST" constraint="LEN exponential_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="beta_uncertain" name="beta_uncertain" code="{N_vam(pintz,numBetaUncVars)}" label="beta uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no beta uncertain variables" >
+      <keyword  id="beta_uncertain" name="beta_uncertain" code="{N_vam(sizet,numBetaUncVars)}" label="beta uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no beta uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="alphas" name="alphas" code="{N_vam(RealLb,betaUncAlphas)}" label="beta uncertain alphas"   >
           <alias name="buv_alphas"/>
@@ -4514,7 +4517,7 @@
           <param type="STRINGLIST" constraint="LEN beta_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="gamma_uncertain" name="gamma_uncertain" code="{N_vam(pintz,numGammaUncVars)}" label="gamma uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no gamma uncertain variables" >
+      <keyword  id="gamma_uncertain" name="gamma_uncertain" code="{N_vam(sizet,numGammaUncVars)}" label="gamma uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no gamma uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="alphas1" name="alphas" code="{N_vam(RealLb,gammaUncAlphas)}" label="gamma uncertain alphas"   >
           <alias name="gauv_alphas"/>
@@ -4532,7 +4535,7 @@
           <param type="STRINGLIST" constraint="LEN gamma_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="gumbel_uncertain" name="gumbel_uncertain" code="{N_vam(pintz,numGumbelUncVars)}" label="gumbel uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no gumbel uncertain variables" >
+      <keyword  id="gumbel_uncertain" name="gumbel_uncertain" code="{N_vam(sizet,numGumbelUncVars)}" label="gumbel uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no gumbel uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="alphas2" name="alphas" code="{N_vam(RealLb,gumbelUncAlphas)}" label="gumbel uncertain alphas"   >
           <alias name="guuv_alphas"/>
@@ -4550,7 +4553,7 @@
           <param type="STRINGLIST" constraint="LEN gumbel_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="frechet_uncertain" name="frechet_uncertain" code="{N_vam(pintz,numFrechetUncVars)}" label="frechet uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no frechet uncertain variables" >
+      <keyword  id="frechet_uncertain" name="frechet_uncertain" code="{N_vam(sizet,numFrechetUncVars)}" label="frechet uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no frechet uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="alphas3" name="alphas" code="{N_vam(RealLb,frechetUncAlphas)}" label="frechet uncertain alphas"   >
           <alias name="fuv_alphas"/>
@@ -4568,7 +4571,7 @@
           <param type="STRINGLIST" constraint="LEN frechet_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="weibull_uncertain" name="weibull_uncertain" code="{N_vam(pintz,numWeibullUncVars)}" label="weibull uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no weibull uncertain variables" >
+      <keyword  id="weibull_uncertain" name="weibull_uncertain" code="{N_vam(sizet,numWeibullUncVars)}" label="weibull uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no weibull uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="alphas4" name="alphas" code="{N_vam(RealLb,weibullUncAlphas)}" label="weibull uncertain alphas"   >
           <alias name="wuv_alphas"/>
@@ -4586,7 +4589,7 @@
           <param type="STRINGLIST" constraint="LEN weibull_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="histogram_bin_uncertain" name="histogram_bin_uncertain" code="{N_vam(pintz,numHistogramBinUncVars)}" label="histogram bin uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no histogram bin uncertain variables" >
+      <keyword  id="histogram_bin_uncertain" name="histogram_bin_uncertain" code="{N_vam(sizet,numHistogramBinUncVars)}" label="histogram bin uncertain variables"  minOccurs="0" group="Continuous Aleatory Uncertain" default="no histogram bin uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="pairs_per_variable3" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhbp)}" label="key to apportionment among bin-based histogram variables"  minOccurs="0" default="equal distribution" >
           <alias name="num_pairs"/>
@@ -4614,7 +4617,7 @@
           <param type="STRINGLIST" constraint="LEN histogram_bin_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="poisson_uncertain" name="poisson_uncertain" code="{N_vam(pintz,numPoissonUncVars)}" label="poisson uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no poisson uncertain variables" >
+      <keyword  id="poisson_uncertain" name="poisson_uncertain" code="{N_vam(sizet,numPoissonUncVars)}" label="poisson uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no poisson uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="lambdas1" name="lambdas" code="{N_vam(RealLb,poissonUncLambdas)}" label="poisson uncertain lambdas"   >
           <param type="REALLIST" constraint="LEN poisson_uncertain" />
@@ -4626,7 +4629,7 @@
           <param type="STRINGLIST" constraint="LEN poisson_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="binomial_uncertain" name="binomial_uncertain" code="{N_vam(pintz,numBinomialUncVars)}" label="binomial uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no binomial uncertain variables" >
+      <keyword  id="binomial_uncertain" name="binomial_uncertain" code="{N_vam(sizet,numBinomialUncVars)}" label="binomial uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no binomial uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="probability_per_trial" name="probability_per_trial" code="{N_vam(rvec,binomialUncProbPerTrial)}" label="probability_per_trial"   >
           <alias name="prob_per_trial"/>
@@ -4642,7 +4645,7 @@
           <param type="STRINGLIST" constraint="LEN binomial_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="negative_binomial_uncertain" name="negative_binomial_uncertain" code="{N_vam(pintz,numNegBinomialUncVars)}" label="negative binomial uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no negative binomial uncertain variables" >
+      <keyword  id="negative_binomial_uncertain" name="negative_binomial_uncertain" code="{N_vam(sizet,numNegBinomialUncVars)}" label="negative binomial uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no negative binomial uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="probability_per_trial1" name="probability_per_trial" code="{N_vam(rvec,negBinomialUncProbPerTrial)}" label="probability_per_trial"   >
           <alias name="prob_per_trial"/>
@@ -4658,7 +4661,7 @@
           <param type="STRINGLIST" constraint="LEN negative_binomial_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="geometric_uncertain" name="geometric_uncertain" code="{N_vam(pintz,numGeometricUncVars)}" label="geometric uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no geometric uncertain variables" >
+      <keyword  id="geometric_uncertain" name="geometric_uncertain" code="{N_vam(sizet,numGeometricUncVars)}" label="geometric uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no geometric uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="probability_per_trial2" name="probability_per_trial" code="{N_vam(rvec,geometricUncProbPerTrial)}" label="probability_per_trial"   >
           <alias name="prob_per_trial"/>
@@ -4671,7 +4674,7 @@
           <param type="STRINGLIST" constraint="LEN geometric_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="hypergeometric_uncertain" name="hypergeometric_uncertain" code="{N_vam(pintz,numHyperGeomUncVars)}" label="hypergeometric uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no hypergeometric uncertain variables" >
+      <keyword  id="hypergeometric_uncertain" name="hypergeometric_uncertain" code="{N_vam(sizet,numHyperGeomUncVars)}" label="hypergeometric uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no hypergeometric uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="total_population" name="total_population" code="{N_vam(IntLb,hyperGeomUncTotalPop)}" label="hypergeometric uncertain total_population"   >
           <param type="INTEGERLIST" constraint="LEN hypergeometric_uncertain" />
@@ -4690,7 +4693,7 @@
         </keyword>
       </keyword>
       <keyword  id="histogram_point_uncertain" name="histogram_point_uncertain" code="{0}" label="histogram point uncertain variables"  minOccurs="0" group="Discrete Aleatory Uncertain" default="no histogram point uncertain variables" >
-        <keyword  id="integer1" name="integer" code="{N_vam(pintz,numHistogramPtIntUncVars)}" label="integer"  minOccurs="0" >
+        <keyword  id="integer1" name="integer" code="{N_vam(sizet,numHistogramPtIntUncVars)}" label="integer"  minOccurs="0" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="pairs_per_variable" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhpip)}" label="pairs_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_pairs"/>
@@ -4709,7 +4712,7 @@
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
-        <keyword  id="string1" name="string" code="{N_vam(pintz,numHistogramPtStrUncVars)}" label="string"  minOccurs="0" >
+        <keyword  id="string1" name="string" code="{N_vam(sizet,numHistogramPtStrUncVars)}" label="string"  minOccurs="0" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="pairs_per_variable1" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhpsp)}" label="pairs_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_pairs"/>
@@ -4728,7 +4731,7 @@
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
-        <keyword  id="real1" name="real" code="{N_vam(pintz,numHistogramPtRealUncVars)}" label="real"  minOccurs="0" >
+        <keyword  id="real1" name="real" code="{N_vam(sizet,numHistogramPtRealUncVars)}" label="real"  minOccurs="0" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="pairs_per_variable2" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhprp)}" label="pairs_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_pairs"/>
@@ -4751,7 +4754,7 @@
       <keyword  id="uncertain_correlation_matrix" name="uncertain_correlation_matrix" code="{N_vam(newrvec,Var_Info_ucm)}" label="correlations in aleatory uncertain variables"  minOccurs="0" group="Aleatory Uncertain Correlations" default="identity matrix (uncorrelated)" >
         <param type="REALLIST" />
       </keyword>
-      <keyword  id="continuous_interval_uncertain" name="continuous_interval_uncertain" code="{N_vam(pintz,numContinuousIntervalUncVars)}" label="continuous interval uncertain variables"  minOccurs="0" group="Epistemic Uncertain" default="no continuous interval uncertain variables" >
+      <keyword  id="continuous_interval_uncertain" name="continuous_interval_uncertain" code="{N_vam(sizet,numContinuousIntervalUncVars)}" label="continuous interval uncertain variables"  minOccurs="0" group="Epistemic Uncertain" default="no continuous interval uncertain variables" >
         <alias name="interval_uncertain"/>
         <!-- <alias name="continuous_uncertain_range"/> Interval consists of multiple BPA ranges -->
         <param type="INTEGER" constraint="> 0" />
@@ -4778,7 +4781,7 @@
           <param type="STRINGLIST" constraint="LEN continuous_interval_uncertain" />
         </keyword>
       </keyword>
-      <keyword  id="discrete_interval_uncertain" name="discrete_interval_uncertain" code="{N_vam(pintz,numDiscreteIntervalUncVars)}" label="Discrete interval uncertain variables"  minOccurs="0" group="Epistemic Uncertain" default="No discrete interval uncertain variables" >
+      <keyword  id="discrete_interval_uncertain" name="discrete_interval_uncertain" code="{N_vam(sizet,numDiscreteIntervalUncVars)}" label="Discrete interval uncertain variables"  minOccurs="0" group="Epistemic Uncertain" default="No discrete interval uncertain variables" >
         <!-- <alias name="discrete_uncertain_range"/> Interval consists of multiple BPA ranges -->
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="num_intervals1" name="num_intervals" code="{N_vam(newiarray,Var_Info_nDI)}" label="Number of intervals defined for each interval variable"  minOccurs="0" default="Equal apportionment of intervals among variables" >
@@ -4804,7 +4807,7 @@
         </keyword>
       </keyword>
       <keyword  id="discrete_uncertain_set" name="discrete_uncertain_set" code="{0}" label="discrete_uncertain_set"  minOccurs="0" group="Epistemic Uncertain" >
-        <keyword  id="integer2" name="integer" code="{N_vam(pintz,numDiscreteUncSetIntVars)}" label="integer"  minOccurs="0" default="no discrete uncertain set integer variables" >
+        <keyword  id="integer2" name="integer" code="{N_vam(sizet,numDiscreteUncSetIntVars)}" label="integer"  minOccurs="0" default="no discrete uncertain set integer variables" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="elements_per_variable3" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndusi)}" label="elements_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
@@ -4829,7 +4832,7 @@
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
-        <keyword  id="string2" name="string" code="{N_vam(pintz,numDiscreteUncSetStrVars)}" label="string"  minOccurs="0" default="no discrete uncertain set string variables" >
+        <keyword  id="string2" name="string" code="{N_vam(sizet,numDiscreteUncSetStrVars)}" label="string"  minOccurs="0" default="no discrete uncertain set string variables" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="elements_per_variable4" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nduss)}" label="elements_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
@@ -4851,7 +4854,7 @@
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
-        <keyword  id="real2" name="real" code="{N_vam(pintz,numDiscreteUncSetRealVars)}" label="real"  minOccurs="0" default="no discrete uncertain set real variables" >
+        <keyword  id="real2" name="real" code="{N_vam(sizet,numDiscreteUncSetRealVars)}" label="real"  minOccurs="0" default="no discrete uncertain set real variables" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="elements_per_variable5" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndusr)}" label="elements_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
@@ -4876,7 +4879,7 @@
           </keyword>
         </keyword>
       </keyword>
-      <keyword  id="continuous_state" name="continuous_state" code="{N_vam(pintz,numContinuousStateVars)}" label="Continuous state variables"  minOccurs="0" group="State Variables" default="No continuous state variables" >
+      <keyword  id="continuous_state" name="continuous_state" code="{N_vam(sizet,numContinuousStateVars)}" label="Continuous state variables"  minOccurs="0" group="State Variables" default="No continuous state variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="initial_state" name="initial_state" code="{N_vam(rvec,continuousStateVars)}" label="Initial states"  minOccurs="0" default="0.0" >
           <alias name="csv_initial_state"/>
@@ -4895,7 +4898,7 @@
           <param type="STRINGLIST" constraint="LEN continuous_state" />
         </keyword>
       </keyword>
-      <keyword  id="discrete_state_range" name="discrete_state_range" code="{N_vam(pintz,numDiscreteStateRangeVars)}" label="Discrete state range variables"  minOccurs="0" group="State Variables" default="No discrete state variables" >
+      <keyword  id="discrete_state_range" name="discrete_state_range" code="{N_vam(sizet,numDiscreteStateRangeVars)}" label="Discrete state range variables"  minOccurs="0" group="State Variables" default="No discrete state variables" >
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="initial_state1" name="initial_state" code="{N_vam(ivec,discreteStateRangeVars)}" label="Initial states"  minOccurs="0" default="0" >
           <alias name="dsv_initial_state"/>
@@ -4915,7 +4918,7 @@
         </keyword>
       </keyword>
       <keyword  id="discrete_state_set" name="discrete_state_set" code="{0}" label="discrete_state_set"  minOccurs="0" group="State Variables" >
-        <keyword  id="integer3" name="integer" code="{N_vam(pintz,numDiscreteStateSetIntVars)}" label="integer"  minOccurs="0" default="no discrete state set integer variables" >
+        <keyword  id="integer3" name="integer" code="{N_vam(sizet,numDiscreteStateSetIntVars)}" label="integer"  minOccurs="0" default="no discrete state set integer variables" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="elements_per_variable6" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndssi)}" label="elements_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
@@ -4935,7 +4938,7 @@
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
-        <keyword  id="string3" name="string" code="{N_vam(pintz,numDiscreteStateSetStrVars)}" label="string"  minOccurs="0" default="no discrete state set string variables" >
+        <keyword  id="string3" name="string" code="{N_vam(sizet,numDiscreteStateSetStrVars)}" label="string"  minOccurs="0" default="no discrete state set string variables" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="elements_per_variable7" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndsss)}" label="elements_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
@@ -4952,7 +4955,7 @@
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
-        <keyword  id="real3" name="real" code="{N_vam(pintz,numDiscreteStateSetRealVars)}" label="real"  minOccurs="0" default="no discrete state set real variables" >
+        <keyword  id="real3" name="real" code="{N_vam(sizet,numDiscreteStateSetRealVars)}" label="real"  minOccurs="0" default="no discrete state set real variables" >
           <param type="INTEGER" constraint="> 0" />
           <keyword  id="elements_per_variable8" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndssr)}" label="elements_per_variable"  minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
@@ -5002,7 +5005,7 @@
       </keyword>
     </keyword>
 
-    
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="interface" name="interface" maxOccurs="unbounded" code="{N_ifm3(start,0,stop)}" label="Interface" >
       <keyword  id="id_interface" name="id_interface" code="{N_ifm(str,idInterface)}" label="Interface Set Identifier"  minOccurs="0" default="use of last interface parsed" complexity="0">
@@ -5098,8 +5101,8 @@
 	        -->
           </keyword>
           <keyword id="direct" name="direct" code="{N_ifm(type,interfaceType_TEST_INTERFACE)}" label="Direct Function Interface "  complexity="0">
-            <keyword id="processors_per_analysis" name="processors_per_analysis" code="{N_ifm(pint,procsPerAnalysis)}" label="Number of Processors per Analysis Server"  minOccurs="0" default="automatic (see discussion)" complexity="1">
-              <param type="INTEGER" constraint="&gt; 0" />
+            <keyword id="processors_per_analysis" name="processors_per_analysis" code="{N_ifm(int,procsPerAnalysis)}" label="Number of Processors per Analysis Server"  minOccurs="0" default="automatic (see discussion)" complexity="1">
+              <param type="INTEGER" constraint="> 0" />
             </keyword>
           </keyword>
 	      <!-- TODO: processors per analysis? -->
@@ -5145,13 +5148,13 @@
       <optional>
         <oneOf>
   	<keyword id="batch" name="batch" code="{N_ifm(true,batchEvalFlag)}" label="Batch Interface Usage"  default="sequential interface usage" complexity="0">
-    	    <keyword id="size" name="size" code="{N_ifm(pint,asynchLocalEvalConcurrency)}" label="Batch size"  minOccurs="0" default="local: unlimited batch size, hybrid: zero batch size" complexity="0">
-              <param type="INTEGER" constraint="&gt; 0" />
+    	    <keyword id="size" name="size" code="{N_ifm(int,asynchLocalEvalConcurrency)}" label="Batch size"  minOccurs="0" default="local: unlimited batch size, hybrid: zero batch size" complexity="0">
+              <param type="INTEGER" constraint="> 0" />
     	    </keyword>
           </keyword>
           <keyword id="asynchronous" name="asynchronous" code="{N_ifm(true, asynchFlag)}" label="Asynchronous Interface Usage"  default="synchronous interface usage" complexity="0">
-    	    <keyword id="evaluation_concurrency" name="evaluation_concurrency" code="{N_ifm(pint,asynchLocalEvalConcurrency)}" label="Asynchronous Evaluation Concurrency"  minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="0">
-              <param type="INTEGER" constraint="&gt; 0" />
+    	    <keyword id="evaluation_concurrency" name="evaluation_concurrency" code="{N_ifm(int,asynchLocalEvalConcurrency)}" label="Asynchronous Evaluation Concurrency"  minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="0">
+              <param type="INTEGER" constraint="> 0" />
     	    </keyword>
     	    <keyword id="local_evaluation_scheduling" name="local_evaluation_scheduling" code="{0}" label="Local Evaluation Scheduling"  minOccurs="0" default="dynamic" complexity="1">
               <oneOf label="Scheduling Mode">
@@ -5159,15 +5162,15 @@
                 <keyword id="static" name="static" code="{N_ifm(type,asynchLocalEvalScheduling_STATIC_SCHEDULING)}" label="Static"  complexity="1" />
               </oneOf>
     	    </keyword>
-    	    <keyword id="analysis_concurrency" name="analysis_concurrency" code="{N_ifm(pint,asynchLocalAnalysisConcurrency)}" label="Asynchronous Analysis Concurrency"  minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="1">
-              <param type="INTEGER" constraint="&gt; 0" />
+    	    <keyword id="analysis_concurrency" name="analysis_concurrency" code="{N_ifm(int,asynchLocalAnalysisConcurrency)}" label="Asynchronous Analysis Concurrency"  minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="1">
+              <param type="INTEGER" constraint="> 0" />
     	    </keyword>
           </keyword>
         </oneOf>
       </optional>
       <group label="Parallel Configuration">
-	    <keyword id="evaluation_servers" name="evaluation_servers" code="{N_ifm(pint,evalServers)}" label="Number of Evaluation Servers"  minOccurs="0" default="automatic (see discussion)" complexity="1">
-          <param type="INTEGER" constraint="&gt; 0" />
+	    <keyword id="evaluation_servers" name="evaluation_servers" code="{N_ifm(int,evalServers)}" label="Number of Evaluation Servers"  minOccurs="0" default="automatic (see discussion)" complexity="1">
+          <param type="INTEGER" constraint="> 0" />
 	    </keyword>
 		<keyword id="evaluation_scheduling" name="evaluation_scheduling" code="{0}" label="Message Passing Configuration for Scheduling of Evaluations"  minOccurs="0" default="automatic (see discussion)" complexity="1">
 	      <oneOf label="Server Mode">
@@ -5180,11 +5183,11 @@
 	        </keyword>
 	       </oneOf>
 		</keyword>
-	    <keyword id="processors_per_evaluation" name="processors_per_evaluation" code="{N_ifm(pint,procsPerEval)}" label="Number of Processors per Evaluation Server"  minOccurs="0" default="automatic (see discussion)" complexity="1">
-          <param type="INTEGER" constraint="&gt; 0" />
+	    <keyword id="processors_per_evaluation" name="processors_per_evaluation" code="{N_ifm(int,procsPerEval)}" label="Number of Processors per Evaluation Server"  minOccurs="0" default="automatic (see discussion)" complexity="1">
+          <param type="INTEGER" constraint="> 0" />
 	    </keyword>
-	    <keyword id="analysis_servers" name="analysis_servers" code="{N_ifm(pint,analysisServers)}" label="Number of Analysis Servers"  minOccurs="0" default="automatic (see discussion)" complexity="1">
-          <param type="INTEGER" constraint="&gt; 0" />
+	    <keyword id="analysis_servers" name="analysis_servers" code="{N_ifm(int,analysisServers)}" label="Number of Analysis Servers"  minOccurs="0" default="automatic (see discussion)" complexity="1">
+          <param type="INTEGER" constraint="> 0" />
 	    </keyword>
 	    <keyword id="analysis_scheduling" name="analysis_scheduling" code="{0}" label="Message Passing Configuration for Scheduling of Analyses"  minOccurs="0" default="automatic (see discussion)" complexity="1">
 	      <oneOf label="Scheduling Mode">
@@ -5198,7 +5201,7 @@
 	    </keyword>
       </group>
     </keyword>
-    
+
     <!-- **** TOPLEVEL *** -->
     <keyword id="responses" name="responses" maxOccurs="unbounded" code="{N_rem3(start,0,stop)}" label="Responses" >
       <keyword  id="id_responses" name="id_responses" code="{N_rem(str,idResponses)}" label="Responses set identifier"  minOccurs="0" default="use of last responses parsed" >
@@ -5280,7 +5283,7 @@
             <alias name="num_field_objectives"/>
             <param type="INTEGER" constraint=">= 0" />
             <keyword  id="lengths" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths"   >
-              <param type="INTEGERLIST" />
+              <param type="INTEGERLIST" constraint="LEN field_objectives"/>
             </keyword>
             <keyword  id="num_coordinates_per_field" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field"  minOccurs="0" >
               <param type="INTEGERLIST" />
@@ -5298,7 +5301,7 @@
           <keyword  id="field_calibration_terms" name="field_calibration_terms" code="{N_rem(sizet,numFieldLeastSqTerms)}" label="field_calibration_terms"  minOccurs="0" >
             <param type="INTEGER" constraint=">= 0" />
             <keyword  id="lengths1" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths"   >
-              <param type="INTEGERLIST" constraint="LEN calibration_terms"/>
+              <param type="INTEGERLIST" constraint="LEN field_calibration_terms"/>
             </keyword>
             <keyword  id="num_coordinates_per_field1" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field"  minOccurs="0" >
               <param type="INTEGERLIST" />
@@ -5333,7 +5336,7 @@
                #             )
                #  	    |
                # The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
-               #  	    ( 
+               #  	    (
            -->
 	  <optional>
 	    <oneOf label="Calibration Data">
@@ -5429,7 +5432,7 @@
             <alias name="num_field_responses"/>
             <param type="INTEGER" constraint=">= 0" />
             <keyword  id="lengths2" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths"   >
-              <param type="INTEGERLIST" />
+              <param type="INTEGERLIST" constraint="LEN field_responses" />
             </keyword>
             <keyword  id="num_coordinates_per_field2" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field"  minOccurs="0" >
               <param type="INTEGERLIST" />
@@ -5441,6 +5444,6 @@
       &response_gradients;
       &response_hessians;
      </keyword>
-    
+
   </input>
 </document>

@@ -14,9 +14,11 @@
 namespace dakota {
 namespace util {
 
+/// alias for DataScaler's SCALER_TYPE
 using SCALER_TYPE = DataScaler::SCALER_TYPE;
+/// alias for Boost Bimap scaler type <--> string
 using BimapScalertypeStr = boost::bimap<SCALER_TYPE, std::string>;
-
+/// Bimap between scaler types and names
 static BimapScalertypeStr type_name_bimap =
   boost::assign::list_of< BimapScalertypeStr::relation >
   (SCALER_TYPE::NONE, "none")
@@ -180,7 +182,7 @@ bool DataScaler::check_for_zero_scaler_factor(int index) {
   return value < near_zero;
 }
 
-std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd & unscaled_matrix) {
+std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd &unscaled_matrix) {
   if (scaler_type == util::SCALER_TYPE::STANDARDIZATION) {
     return std::make_shared<util::StandardizationScaler>(unscaled_matrix);
   }

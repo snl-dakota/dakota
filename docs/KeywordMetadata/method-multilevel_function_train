@@ -1,0 +1,44 @@
+Blurb:: Multilevel uncertainty quantification using function train expansions
+
+Description::
+
+As described in the \ref method-function_train method and the
+\ref model-surrogate-global-function_train model,
+the function train (FT) approximation is a polynomial expansion that exploits low rank
+structure within the mapping from input random variables to output quantities of interest
+(QoI).  For multilevel and multifidelity function train approximations, we decompose this
+expansion into several constituent expansions, one per model form or solution control
+level, where independent function train approximations are constructed for the
+low-fidelity/coarse resolution model and one or more levels of model discrepancy.
+
+In a three-model case with low-fidelity (L), medium-fidelity (M), and
+high-fidelity (H) models and an additive discrepancy approach, we can denote this as:
+
+\f[ Q^H \approx \hat{Q}_{r_L}^L + \hat{\Delta}_{r_{ML}}^{ML} + \hat{\Delta}_{r_{HM}}^{HM} \f]
+
+where \f$\Delta^{ij}\f$ represents a discrepancy expansion computed from
+\f$Q^i - Q^j\f$ and reduced rank representations of these discrepancies may
+be targeted (\f$ r_{HM} < r_{ML} < r_L \f$).
+
+In multilevel approaches, sample allocation for the constituent expansions is
+performed as described in \ref method-multilevel_function_train-allocation_control.
+
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-se_moments (expansion moments only)
+- \ref hdf5_results-pdf
+- \ref hdf5_results-level_mappings
+
+In addition, the execution group has the attribute \c equiv_hf_evals, which
+records the equivalent number of high-fidelity evaluations.
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also:: model-surrogate-global-function_train, method-function_train

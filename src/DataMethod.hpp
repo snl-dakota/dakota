@@ -37,7 +37,7 @@ namespace Dakota {
 #define     LEASTSQ_BIT   8192
 #define   OPTIMIZER_BIT  16384
 #define   MINIMIZER_BIT  32768
-// define special values for method name.  Special bit selections enable 
+// define special values for method name.  Special bit selections enable
 // identification of method groupings based on the value.
 enum { DEFAULT_METHOD=0,
        // Meta-Iterators:
@@ -115,7 +115,7 @@ enum { NO_RESULTS=0,        // suppress all results
        FINAL_RESULTS };     // final UQ results (throttled if subIterator)
 
 // define special values for Iterator and Interface scheduling
-enum { DEFAULT_SCHEDULING, MASTER_SCHEDULING, PEER_SCHEDULING, 
+enum { DEFAULT_SCHEDULING, MASTER_SCHEDULING, PEER_SCHEDULING,
        PEER_DYNAMIC_SCHEDULING, PEER_STATIC_SCHEDULING, DYNAMIC_SCHEDULING,
        STATIC_SCHEDULING };
 // define special values for ParallelLibrary configuration logic
@@ -159,7 +159,7 @@ enum { DEFAULT_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 enum { NO_EMULATOR, PCE_EMULATOR, ML_PCE_EMULATOR, MF_PCE_EMULATOR, SC_EMULATOR,
        MF_SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR, VPS_EMULATOR };
 // modes for calibrating multipliers on observational error
-enum { CALIBRATE_NONE = 0, CALIBRATE_ONE, CALIBRATE_PER_EXPER, 
+enum { CALIBRATE_NONE = 0, CALIBRATE_ONE, CALIBRATE_PER_EXPER,
        CALIBRATE_PER_RESP, CALIBRATE_BOTH};
 
 // ------------
@@ -210,7 +210,7 @@ enum { BREITUNG, HOHENRACK, HONG };
 // SurrBasedLocalMinimizer
 // -----------------------
 // define special values for SBL approximate subproblem objective
-enum { ORIGINAL_PRIMARY, SINGLE_OBJECTIVE, 
+enum { ORIGINAL_PRIMARY, SINGLE_OBJECTIVE,
        LAGRANGIAN_OBJECTIVE, AUGMENTED_LAGRANGIAN_OBJECTIVE };
 // define special values for SBL approximate subproblem constraints
 enum { NO_CONSTRAINTS, LINEARIZED_CONSTRAINTS, ORIGINAL_CONSTRAINTS };
@@ -222,26 +222,6 @@ enum { PENALTY_MERIT,    ADAPTIVE_PENALTY_MERIT,
        LAGRANGIAN_MERIT, AUGMENTED_LAGRANGIAN_MERIT }; // FILTER_AREA
 // define special values for SBL iterate acceptance logic
 enum { FILTER, TR_RATIO };
-
-// ---------
-// Minimizer
-// ---------
-
-// minimum value allowed for a characteristic value when scaling; ten
-// orders of magnitude greater than DBL_MIN
-#define SCALING_MIN_SCALE 1.0e10*DBL_MIN
-// lower bound on domain of logarithm function when scaling
-#define SCALING_MIN_LOG SCALING_MIN_SCALE
-// logarithm base to be used when scaling
-#define SCALING_LOGBASE 10.0
-// ln(SCALING_LOGBASE); needed in transforming variables in several places
-#define SCALING_LN_LOGBASE log(SCALING_LOGBASE)
-// indicate type of scaling active for a component (bitwise)
-enum { SCALE_NONE, SCALE_VALUE, SCALE_LOG };
-// to indicate type of object being scaled
-enum { CDV, LINEAR, NONLIN, FN_LSQ };
-// to restrict type of auto scaling allowed
-enum { DISALLOW, TARGET, BOUNDS };
 
 
 /// Body class for method specification data.
@@ -294,7 +274,7 @@ public:
   /// maximum number of function evaluations allowed for the method (from
   /// the \c max_function_evaluations specification in \ref MethodIndControl)
   int maxFunctionEvaluations;
-  
+
   /// flag for use of speculative gradient approaches for maintaining parallel
   /// load balance during the line search portion of optimization algorithms
   /// (from the \c speculative specification in \ref MethodIndControl)
@@ -310,7 +290,7 @@ public:
   /// before an active constraint is considered to be violated (from the \c
   /// constraint_tolerance specification in \ref MethodIndControl)
   Real constraintTolerance;
-  /// flag indicating scaling status (from the \c scaling specification in 
+  /// flag indicating scaling status (from the \c scaling specification in
   /// \ref MethodIndControl)
   bool methodScaling;
   /// number of final solutions returned from the iterator
@@ -426,7 +406,7 @@ public:
   /// SBL approximate subproblem constraints: NO_CONSTRAINTS,
   /// LINEARIZED_CONSTRAINTS, or ORIGINAL_CONSTRAINTS
   short surrBasedLocalSubProbCon;
-  /// SBL merit function type: BASIC_PENALTY, ADAPTIVE_PENALTY, 
+  /// SBL merit function type: BASIC_PENALTY, ADAPTIVE_PENALTY,
   /// BASIC_LAGRANGIAN, or AUGMENTED_LAGRANGIAN
   short surrBasedLocalMeritFn;
   /// SBL iterate acceptance logic: TR_RATIO or FILTER
@@ -434,7 +414,7 @@ public:
   /// SBL constraint relaxation method: NO_RELAX or HOMOTOPY
   short surrBasedLocalConstrRelax;
   /// user-specified method for adding points to the set upon which the
-  /// next surrogate is based in the \c surrogate_based_global method. 
+  /// next surrogate is based in the \c surrogate_based_global method.
   bool surrBasedGlobalReplacePts;
 
   // number of samples at the root for the branch and bound method
@@ -558,7 +538,7 @@ public:
   /// the \c min_scale specification for mutation in EA methods in
   /// \ref MethodSCOLIBEA
   Real mutationMinScale;
-  /// the \c initial_delta specification for APPS/COBYLA/PS/SW methods in 
+  /// the \c initial_delta specification for APPS/COBYLA/PS/SW methods in
   /// \ref MethodAPPS, \ref MethodSCOLIBCOB, \ref MethodSCOLIBPS, and
   /// \ref MethodSCOLIBSW
   Real initDelta;
@@ -640,15 +620,15 @@ public:
   size_t numParents;
   /// The number of children to produce in a crossover operation.
   size_t numOffspring;
-  
+
   // variables for the fitness assessment operator
   /// the fitness assessment operator to use.
   String fitnessType;
-  
+
   // variables for the selection operator
   /// The means by which this JEGA should converge.
   String convergenceType;
-  
+
   /// The minimum percent change before convergence
   /// for a fitness tracker converger.
   Real percentChange;
@@ -657,15 +637,15 @@ public:
   size_t numGenerations;
 
   // JEMOGA
-  /// The cutoff value for survival in fitness limiting selectors (e.g., 
+  /// The cutoff value for survival in fitness limiting selectors (e.g.,
   /// below_limit selector).
   Real fitnessLimit;
   /// The minimum percentage of the requested number of selections that
   /// must take place on each call to the selector (0, 1).
   Real shrinkagePercent;
-   
+
   // variables for the niching operator
-  /// The niching type 
+  /// The niching type
   String nichingType;
 
   // variables for the niching type
@@ -675,15 +655,15 @@ public:
   /// The maximum number of designs to keep when using the max_designs
   /// nicher
   size_t numDesigns;
-  
+
   // variables for the postprocessor operator
-  /// The post processor type 
+  /// The post processor type
   String postProcessorType;
 
   // variables for the postprocessor type
   /// The discretization percentage along each objective
   RealVector distanceVector;
-  
+
   // JESOGA
 
 
@@ -699,7 +679,7 @@ public:
   /// the \c population_size specification for GA methods in \ref
   /// MethodSCOLIBEA
   int populationSize;
-  /// The \c print_each_pop flag to set the printing of the population 
+  /// The \c print_each_pop flag to set the printing of the population
   /// at each generation
   bool printPopFlag;
 
@@ -715,7 +695,7 @@ public:
 
   /// the \c symbols specification for DACE methods
   int numSymbols;
-  /// the \c main_effects specification for sampling methods 
+  /// the \c main_effects specification for sampling methods
   /// in \ref MethodDDACE)
   bool mainEffectsFlag;
 
@@ -726,7 +706,7 @@ public:
   /// the \c latinize specification for FSU QMC and CVT methods in
   /// \ref MethodFSUDACE
   bool latinizeFlag;
-  /// the \c quality_metrics specification for sampling methods (FSU QMC 
+  /// the \c quality_metrics specification for sampling methods (FSU QMC
   /// and CVT methods in \ref MethodFSUDACE)
   bool volQualityFlag;
 
@@ -739,13 +719,13 @@ public:
   IntVector primeBase;
 
   // FSUDace CVT
-  // using randomSeed, fixedSeedFlag, numSamples from other methods 
+  // using randomSeed, fixedSeedFlag, numSamples from other methods
   // using initializationType, sampleType from other methods
   /// the \c numTrials specification in \ref MethodFSUDACE
   int numTrials;
-  /// the \c trial_type specification in \ref MethodFSUDACE 
+  /// the \c trial_type specification in \ref MethodFSUDACE
   String trialType;
- 
+
   // COLINY, NonD, & DACE
 
   /// the \c seed specification for COLINY, NonD, & DACE methods
@@ -815,13 +795,13 @@ public:
   bool vbdFlag;
   /// the \c var_based_decomp tolerance for omitting index output
   Real vbdDropTolerance;
-  /// the \c backfill option allows one to augment in LHS sample 
+  /// the \c backfill option allows one to augment in LHS sample
   /// by enforcing the addition of unique discrete variables to the sample
   bool backfillFlag;
-  /// Flag to specify the calculation of principal components when 
-  /// using LHS  
+  /// Flag to specify the calculation of principal components when
+  /// using LHS
   bool pcaFlag;
-  /// The percentage of variance explained by using a truncated 
+  /// The percentage of variance explained by using a truncated
   /// number of principal components in PCA
   Real percentVarianceExplained;
   /// Flag to specify use of Wilks formula to calculate num samples
@@ -1007,7 +987,7 @@ public:
   int buildSamples;
   /// number of samples to perform on emulator
   int samplesOnEmulator;
-  /// The total order to be used in construction of a VPS surrogate 
+  /// The total order to be used in construction of a VPS surrogate
   int emulatorOrder;
   /// the \c emulator specification in \ref MethodNonDBayesCalib
   short emulatorType;
@@ -1023,12 +1003,12 @@ public:
   /// whether to apply GPMSA-internal normalization
   bool gpmsaNormalize;
   /// flag indicating the calculation of KL divergence between prior
-  /// and posterior in Bayesian methods 
+  /// and posterior in Bayesian methods
   bool posteriorStatsKL;
   /// flag indicating the calculation of mutual information between prior
-  /// and posterior in Bayesian methods 
+  /// and posterior in Bayesian methods
   bool posteriorStatsMutual;
-  /// flag indicating calculation of kernel density estimate of posterior 
+  /// flag indicating calculation of kernel density estimate of posterior
   /// distributions
   bool posteriorStatsKDE;
   /// flag indicating calculation of chain diagnostics
@@ -1084,7 +1064,7 @@ public:
   int subSamplingPeriod;
   /// flag to calculate model discrepancy
   bool calModelDiscrepancy;
-  /// number of prediction configurations at which to calculate model 
+  /// number of prediction configurations at which to calculate model
   /// discrepancy
   size_t numPredConfigs;
   /// list of prediction configurations at which to calculate model discrepancy
@@ -1126,8 +1106,10 @@ public:
   /// adaptive Bayesian experimental design
   int maxHifiEvals;
   /// number of optimal designs selected per iteration of experimental design
-  /// algorithm
+  /// algorithm; also number of concurrent GP refinement points for EGO
   int batchSize;
+  /// portion of batchSize earmarked for exploration rather than acquisition
+  int batchSizeExplore;
   /// indicate that the KSG2 algorithm is to be employed in the calculation
   /// of the mutual information
   bool mutualInfoKSG2;
@@ -1143,7 +1125,7 @@ public:
   /// threshold for the Gelmin-Rubin statistic
   Real grThreshold;
   /// how often to perform a long jump in generations
-  int jumpStep; 
+  int jumpStep;
 
   // WASABI sub-specification
   /// Number of samples from the prior that is pushed forward
@@ -1151,7 +1133,7 @@ public:
   int numPushforwardSamples;
   /// the type of data distribution: kde, or gaussian
   String dataDistType;
-  /// the format of data distribution gaussian covariance input: 
+  /// the format of data distribution gaussian covariance input:
   /// diagonal or matrix
   String dataDistCovInputType;
   /// raw list of real data for the data distribution gaussian means
@@ -1163,15 +1145,15 @@ public:
   /// The filename of the export file containing an arbitrary set of
   /// samples and their corresponding density values
   String posteriorDensityExportFilename;
-  /// The filename of the export file containing samples from the posterior and 
+  /// The filename of the export file containing samples from the posterior and
   /// their corresponding density values
   String posteriorSamplesExportFilename;
-  /// The filename of the import file containing samples at which the 
+  /// The filename of the import file containing samples at which the
   /// posterior will be evaluated
   String posteriorSamplesImportFilename;
   /// Flag specifying whether to generate random samples from the posterior
   bool generatePosteriorSamples;
-  /// Flag specifying whether to evaluate the posterior density at a 
+  /// Flag specifying whether to evaluate the posterior density at a
   /// set of samples
   bool evaluatePosteriorDensity;
 
@@ -1200,7 +1182,7 @@ public:
 
   /// rate of mesh refinement in Richardson extrapolation
   Real refinementRate;
- 
+
   // File read for surrogates
 
   /// the file name from the \c import_build_points_file specification

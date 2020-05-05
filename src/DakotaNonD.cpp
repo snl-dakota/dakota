@@ -1061,9 +1061,11 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
   for (j=0; j<num_lev; ++j) {
     const SizetArray& N_j = N_samp[j];
     s << "                     " << std::setw(width) << N_j[0];
-    if (!homogeneous(N_j)) // print all qoi counts
-      for (size_t q=1; q<numFunctions; ++q)
+    if (!homogeneous(N_j)) { // print all counts in this 1D array
+      size_t q, num_q = N_j.size();
+      for (size_t q=1; q<num_q; ++q)
 	s << ' ' << N_j[q];
+    }
     s << '\n';
   }
 }
@@ -1290,7 +1292,7 @@ void NonD::archive_allocate_pdf() // const
 
 void NonD::archive_pdf(size_t i, size_t inc_id) // const
 {
-  if (!resultsDB.active()) return;
+  if (!resultsDB.active() || !pdfOutput ) return;
 
   size_t pdf_len = computedPDFOrdinates[i].length();
   RealMatrix pdf(3, pdf_len);
@@ -1312,6 +1314,12 @@ void NonD::archive_pdf(size_t i, size_t inc_id) // const
   scales.emplace(0, RealScale("lower_bounds", &computedPDFAbscissas[i][0], pdf_len, ScaleScope::UNSHARED));
   scales.emplace(0, RealScale("upper_bounds", &computedPDFAbscissas[i][1], pdf_len, ScaleScope::UNSHARED));
   resultsDB.insert(run_identifier(),location, computedPDFOrdinates[i], scales);
+}
+
+void NonD::archive_equiv_hf_evals(const Real equiv_hf_evals) {
+  if (!resultsDB.active()) return;
+  resultsDB.add_metadata_to_execution(run_identifier(), 
+      {ResultAttribute<Real>("equiv_hf_evals",equiv_hf_evals)});
 }
 
 } // namespace Dakota

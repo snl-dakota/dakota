@@ -1,0 +1,16 @@
+Blurb::
+Value for the fixed nugget parameter
+
+Description::
+This keyword is used to specify a value for the nugget parameter. Its presence
+will turn off nugget estimation.
+
+<b> Default Behavior </b>
+No nugget when this keyword is absent. Alternatively a nugget may be estimated as
+part of the regression procedure.
+
+Topics::
+
+Theory::
+Faq::
+See_Also::

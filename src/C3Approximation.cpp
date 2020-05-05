@@ -973,13 +973,10 @@ regression_size(const SizetVector& ranks, const UShortArray& orders)
   // Each dimension has its own rank within the product of function cores.
   // This fn estimates for the case where rank varies per dimension/core
   // and basis order is constant.  Using 1-based indexing:
-  // > the first core is a 1 x r_1 row vector and contributes p * r_1 terms
-  // > the  last core is a r_v x 1 col vector and contributes p * r_v terms
-  // > the middle v-2 cores are matrices that contribute r_i * r_{i+1} * p terms
+  // > first core is a 1 x r_1 row vector and contributes p_0   * r_1   terms
+  // >  last core is a r_v x 1 col vector and contributes p_vm1 * r_vm1 terms
+  // > middle v-2 cores are matrices that contribute r_i * r_{i+1} * p_i terms
   // > neighboring vec/mat dimensions must match, so there are v-1 unique ranks
-  //   (could also allow ranks.size() == v and check constraints)
-  // > could also allow p to vary per dimension in an orders array, should this
-  //   granularity become warranted in the future
   size_t num_v = sharedDataRep->numVars;
   if (ranks.length() != num_v + 1 || // both ends padded with 1's
       orders.size()  != num_v) {     // no padding

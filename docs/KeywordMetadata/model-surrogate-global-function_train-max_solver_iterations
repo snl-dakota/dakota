@@ -1,5 +1,1 @@
-Blurb::
-Placeholder keyword for limiting maximum number of iterations used by internal optimizer
-
-Description::
-This general control is not currently implemented in function_train.
+DUPLICATE-max_solver_iterations

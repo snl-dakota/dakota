@@ -103,13 +103,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
       |
       method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
-      [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+      [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
       [ iterator_scheduling {0}
         master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
         |
         peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
        ]
-      [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
+      [ processors_per_iterator INTEGER > 0 {N_mdm(int,procsPerIterator)} ]
      )
     |
     ( embedded ALIAS coupled {N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}
@@ -124,13 +124,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       local_method_pointer STRING {N_mdm(str,hybridLocalMethodPointer)}
       [ local_search_probability REAL {N_mdm(Real,hybridLSProb)} ]
-      [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+      [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
       [ iterator_scheduling {0}
         master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
         |
         peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
        ]
-      [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
+      [ processors_per_iterator INTEGER > 0 {N_mdm(int,procsPerIterator)} ]
      )
     |
     ( collaborative {N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}
@@ -139,13 +139,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
       |
       method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
-      [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+      [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
       [ iterator_scheduling {0}
         master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
         |
         peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
        ]
-      [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
+      [ processors_per_iterator INTEGER > 0 {N_mdm(int,procsPerIterator)} ]
      )
    )
   |
@@ -159,13 +159,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ seed INTEGER {N_mdm(int,randomSeed)} ]
      ]
     [ starting_points REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
-    [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+    [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
     [ iterator_scheduling {0}
       master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
       |
       peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
      ]
-    [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
+    [ processors_per_iterator INTEGER > 0 {N_mdm(int,procsPerIterator)} ]
    )
   |
   ( pareto_set {N_mdm(utype,methodName_PARETO_SET)}
@@ -178,13 +178,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ seed INTEGER {N_mdm(int,randomSeed)} ]
      ]
     [ weight_sets ALIAS multi_objective_weight_sets REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
-    [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+    [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
     [ iterator_scheduling {0}
       master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
       |
       peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
      ]
-    [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
+    [ processors_per_iterator INTEGER > 0 {N_mdm(int,procsPerIterator)} ]
    )
   |
   ( branch_and_bound {N_mdm(utype,methodName_BRANCH_AND_BOUND)}
@@ -242,7 +242,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
       [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
    )
@@ -253,81 +253,81 @@ KEYWORD method {N_mdm3(start,0,stop)}
     method_name ALIAS approx_method_name STRING {N_mdm(str,subMethodName)}
     model_pointer ALIAS approx_model_pointer STRING {N_mdm(str,modelPointer)}
     [ replace_points {N_mdm(true,surrBasedGlobalReplacePts)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
    )
   |
   ( dot_frcg {N_mdm(utype,methodName_DOT_FRCG)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( dot_mmfd {N_mdm(utype,methodName_DOT_MMFD)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( dot_bfgs {N_mdm(utype,methodName_DOT_BFGS)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( dot_slp {N_mdm(utype,methodName_DOT_SLP)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( dot_sqp {N_mdm(utype,methodName_DOT_SQP)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( conmin_frcg {N_mdm(utype,methodName_CONMIN_FRCG)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( conmin_mfd {N_mdm(utype,methodName_CONMIN_MFD)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( dl_solver STRING {N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -337,10 +337,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
     [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -350,18 +350,18 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
     [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( nlpql_sqp {N_mdm(utype,methodName_NLPQL_SQP)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -369,10 +369,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
   ( optpp_cg {N_mdm(utype,methodName_OPTPP_CG)}
     [ max_step REAL {N_mdm(Real,maxStep)} ]
     [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -398,10 +398,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ centering_parameter REAL {N_mdm(Real,centeringParam)} ]
     [ max_step REAL {N_mdm(Real,maxStep)} ]
     [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -427,10 +427,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ centering_parameter REAL {N_mdm(Real,centeringParam)} ]
     [ max_step REAL {N_mdm(Real,maxStep)} ]
     [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -456,10 +456,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ centering_parameter REAL {N_mdm(Real,centeringParam)} ]
     [ max_step REAL {N_mdm(Real,maxStep)} ]
     [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -485,26 +485,26 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ centering_parameter REAL {N_mdm(Real,centeringParam)} ]
     [ max_step REAL {N_mdm(Real,maxStep)} ]
     [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( optpp_pds {N_mdm(utype,methodName_OPTPP_PDS)}
     [ search_scheme_size INTEGER {N_mdm(int,searchSchemeSize)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( demo_tpl {N_mdm(utype,methodName_DEMO_TPL)}
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ variable_tolerance REAL {N_mdm(Real,threshStepLength)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
@@ -512,7 +512,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( rol {N_mdm(utype,methodName_ROL)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ variable_tolerance REAL {N_mdm(Real,threshStepLength)} ]
     [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
@@ -549,7 +549,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ constraint_penalty REAL {N_mdm(Real,constrPenalty)} ]
     [ smoothing_factor REAL {N_mdm(Real,smoothFactor)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -558,19 +558,19 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ initial_delta REAL {N_mdm(Real,initMeshSize)} ]
     [ variable_tolerance REAL {N_mdm(Real,minMeshSize)} ]
     [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ history_file STRING {N_mdm(str,historyFile)} ]
     [ display_format STRING {N_mdm(str,displayFormat)} ]
     [ variable_neighborhood_search REAL {N_mdm(Real,vns)} ]
-    [ neighbor_order INTEGER > 0 {N_mdm(pint,neighborOrder)} ]
+    [ neighbor_order INTEGER > 0 {N_mdm(int,neighborOrder)} ]
     [ display_all_evaluations {N_mdm(true,showAllEval)} ]
     [ use_surrogate {0}
       inform_search {N_mdm(lit,useSurrogate_inform_search)}
       |
       optimize {N_mdm(lit,useSurrogate_optimize)}
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -584,14 +584,14 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
       [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( snowpac {N_mdm(utype,methodName_MIT_SNOWPAC)}
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
       [ initial_size REALLIST {N_mdm(RealDL,trustRegionInitSize)} ]
       [ minimum_size REAL {N_mdm(Real,trustRegionMinSize)} ]
@@ -600,8 +600,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
       [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -629,7 +629,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       distance REALLIST {N_mdm(RealLlit,TYPE_DATA_nichingType_distance)}
       |
       ( max_designs REALLIST {N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}
-        [ num_designs INTEGER >= 2 {N_mdm(pintz,numDesigns)} ]
+        [ num_designs INTEGER >= 2 {N_mdm(sizet,numDesigns)} ]
        )
      ]
     [ convergence_type {0}
@@ -640,10 +640,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ postprocessor_type {0}
       orthogonal_distance REALLIST {N_mdm(RealLlit,TYPE_DATA_postProcessorType_distance_postprocessor)}
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
-    [ population_size INTEGER >= 0 {N_mdm(nnint,populationSize)} ]
+    [ population_size INTEGER >= 0 {N_mdm(int,populationSize)} ]
     [ log_file STRING {N_mdm(str,logFile)} ]
     [ print_each_pop {N_mdm(true,printPopFlag)} ]
     [ initialization_type {0}
@@ -661,8 +661,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       multi_point_real INTEGER {N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_real)}
       |
       ( shuffle_random {N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}
-        [ num_parents INTEGER > 0 {N_mdm(pintz,numParents)} ]
-        [ num_offspring INTEGER > 0 {N_mdm(pintz,numOffspring)} ]
+        [ num_parents INTEGER > 0 {N_mdm(sizet,numParents)} ]
+        [ num_offspring INTEGER > 0 {N_mdm(sizet,numOffspring)} ]
        )
       [ crossover_rate REAL {N_mdm(litz,TYPE_DATA_crossoverType_null_crossover)} ]
      ]
@@ -684,7 +684,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
       [ mutation_rate REAL {N_mdm(litz,TYPE_DATA_mutationType_null_mutation)} ]
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -714,10 +714,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
         [ num_generations INTEGER >= 0 {N_mdm(sizet,numGenerations)} ]
        )
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
-    [ population_size INTEGER >= 0 {N_mdm(nnint,populationSize)} ]
+    [ population_size INTEGER >= 0 {N_mdm(int,populationSize)} ]
     [ log_file STRING {N_mdm(str,logFile)} ]
     [ print_each_pop {N_mdm(true,printPopFlag)} ]
     [ initialization_type {0}
@@ -735,8 +735,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       multi_point_real INTEGER {N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_real)}
       |
       ( shuffle_random {N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}
-        [ num_parents INTEGER > 0 {N_mdm(pintz,numParents)} ]
-        [ num_offspring INTEGER > 0 {N_mdm(pintz,numOffspring)} ]
+        [ num_parents INTEGER > 0 {N_mdm(sizet,numParents)} ]
+        [ num_offspring INTEGER > 0 {N_mdm(sizet,numOffspring)} ]
        )
       [ crossover_rate REAL {N_mdm(litz,TYPE_DATA_crossoverType_null_crossover)} ]
      ]
@@ -758,7 +758,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
       [ mutation_rate REAL {N_mdm(litz,TYPE_DATA_mutationType_null_mutation)} ]
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -791,12 +791,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ initial_delta REAL {N_mdm(Real,initDelta)} ]
     [ variable_tolerance REAL {N_mdm(Real,threshDelta)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ show_misc_options {N_mdm(true,showMiscOptions)} ]
     [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -811,12 +811,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ initial_delta REAL {N_mdm(Real,initDelta)} ]
     [ variable_tolerance REAL {N_mdm(Real,threshDelta)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ show_misc_options {N_mdm(true,showMiscOptions)} ]
     [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -825,12 +825,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ initial_delta REAL {N_mdm(Real,initDelta)} ]
     [ variable_tolerance REAL {N_mdm(Real,threshDelta)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ show_misc_options {N_mdm(true,showMiscOptions)} ]
     [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -847,18 +847,18 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
     [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ show_misc_options {N_mdm(true,showMiscOptions)} ]
     [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( coliny_ea {N_mdm(utype,methodName_COLINY_EA)}
-    [ population_size INTEGER > 0 {N_mdm(pint,populationSize)} ]
+    [ population_size INTEGER > 0 {N_mdm(int,populationSize)} ]
     [ initialization_type {0}
       simple_random {N_mdm(lit,initializationType_random)}
       |
@@ -909,12 +909,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ show_misc_options {N_mdm(true,showMiscOptions)} ]
     [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -922,12 +922,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
   ( coliny_beta {N_mdm(utype,methodName_COLINY_BETA)}
     beta_solver_name STRING {N_mdm(str,betaSolverName)}
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ show_misc_options {N_mdm(true,showMiscOptions)} ]
     [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -943,9 +943,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ covariance INTEGER {N_mdm(int,covarianceType)} ]
     [ regression_diagnostics {N_mdm(true,regressDiag)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -953,7 +953,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   ( nonlinear_cg {N_mdm(utype,methodName_NONLINEAR_CG)}
     [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -963,30 +963,33 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
     [ volume_boxsize_limit REAL {N_mdm(Real,volBoxSize)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( genie_opt_darts {N_mdm(utype,methodName_GENIE_OPT_DARTS)}
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( genie_direct {N_mdm(utype,methodName_GENIE_DIRECT)}
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( efficient_global {N_mdm(utype,methodName_EFFICIENT_GLOBAL)}
     [ initial_samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
+    [ batch_size INTEGER >= 1 {N_mdm(int,batchSize)}
+      [ exploration INTEGER >= 0 {N_mdm(int,batchSizeExplore)} ]
+     ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ x_conv_tol REAL {N_mdm(Real,xConvTol)} ]
     [ gaussian_process ALIAS kriging {0}
@@ -1118,7 +1121,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -1127,7 +1130,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
       uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
      ]
-    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ regression_type {0}
       ls {N_mdm(type,regressionType_FT_LS)}
       |
@@ -1135,8 +1138,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         l2_penalty REAL {N_mdm(Real,regressionL2Penalty)}
        )
      ]
-    [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-    [ max_cross_iterations INTEGER >= 0 {N_mdm(nnint,maxCrossIterations)} ]
+    [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
+    [ max_cross_iterations INTEGER >= 0 {N_mdm(int,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTol)} ]
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
@@ -1244,7 +1247,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -1253,7 +1256,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
       uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
      ]
-    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
@@ -1271,8 +1274,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         l2_penalty REAL {N_mdm(Real,regressionL2Penalty)}
        )
      ]
-    [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-    [ max_cross_iterations INTEGER >= 0 {N_mdm(nnint,maxCrossIterations)} ]
+    [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
+    [ max_cross_iterations INTEGER >= 0 {N_mdm(int,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTol)} ]
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     [ collocation_points_sequence ALIAS pilot_samples INTEGERLIST {N_mdm(szarray,collocationPointsSeq)} ]
@@ -1383,7 +1386,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( multilevel_function_train {N_mdm(utype,methodName_MULTILEVEL_FUNCTION_TRAIN)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ allocation_control {0}
       ( estimator_variance {N_mdm(type,multilevAllocControl_ESTIMATOR_VARIANCE)}
         [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
@@ -1405,8 +1408,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         l2_penalty REAL {N_mdm(Real,regressionL2Penalty)}
        )
      ]
-    [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-    [ max_cross_iterations INTEGER >= 0 {N_mdm(nnint,maxCrossIterations)} ]
+    [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
+    [ max_cross_iterations INTEGER >= 0 {N_mdm(int,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTol)} ]
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     [ collocation_points_sequence ALIAS pilot_samples INTEGERLIST {N_mdm(szarray,collocationPointsSeq)} ]
@@ -1528,7 +1531,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
        )
      ]
-    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
       [ 
@@ -1602,7 +1605,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
        )
       |
       ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
@@ -1641,7 +1644,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
        )
       |
       ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
@@ -1783,7 +1786,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -1800,7 +1803,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
        )
      ]
-    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
@@ -1881,7 +1884,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
        )
       |
       ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
@@ -2027,7 +2030,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( multilevel_polynomial_chaos {N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ allocation_control {0}
       ( estimator_variance {N_mdm(type,multilevAllocControl_ESTIMATOR_VARIANCE)}
         [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
@@ -2089,7 +2092,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
        )
       |
       ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
@@ -2258,7 +2261,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
        )
      ]
-    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
       [ 
@@ -2386,7 +2389,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -2415,7 +2418,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
        )
      ]
-    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
@@ -2558,7 +2561,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( sampling ALIAS nond_sampling {N_mdm(utype,methodName_RANDOM_SAMPLING)}
     [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -2636,7 +2639,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( multilevel_sampling ALIAS multilevel_mc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ sample_type {0}
@@ -2669,7 +2672,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       max {N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
@@ -2693,14 +2696,14 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( importance_sampling ALIAS nond_importance_sampling {N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}
     [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     import {N_mdm(utype,integrationRefine_IS)}
     |
     adapt_import {N_mdm(utype,integrationRefine_AIS)}
     |
     mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
     [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
       [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
@@ -2736,7 +2739,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( gpais ALIAS gaussian_process_adaptive_importance_sampling {N_mdm(utype,methodName_GPAIS)}
     [ build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
       [ 
@@ -2765,7 +2768,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
       [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
       [ compute {0}
@@ -2800,7 +2803,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( adaptive_sampling ALIAS nond_adaptive_sampling {N_mdm(utype,methodName_ADAPTIVE_SAMPLING)}
     [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ fitness_metric {0}
       predicted_variance {N_mdm(lit,fitnessMetricType_predicted_variance)}
@@ -2847,7 +2850,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
        ]
      ]
     [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
       [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
       [ compute {0}
@@ -2882,7 +2885,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( pof_darts ALIAS nond_pof_darts {N_mdm(utype,methodName_POF_DARTS)}
     build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)}
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ lipschitz {0}
       local {N_mdm(lit,lipschitzType_local)}
       |
@@ -2923,7 +2926,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( rkd_darts ALIAS nond_rkd_darts {N_mdm(utype,methodName_RKD_DARTS)}
     build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)}
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ lipschitz {0}
       local {N_mdm(lit,lipschitzType_local)}
       |
@@ -2964,7 +2967,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( global_evidence ALIAS nond_global_evidence {N_mdm(utype,methodName_GLOBAL_EVIDENCE)}
     [ samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ 
       ( sbo {N_mdm(utype,subMethod_SUBMETHOD_SBO)}
         [ gaussian_process ALIAS kriging {0}
@@ -3076,10 +3079,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( global_interval_est ALIAS nond_global_interval_est {N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)}
     [ samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(int,maxFunctionEvaluations)} ]
     [ 
       ( sbo {N_mdm(utype,subMethod_SUBMETHOD_SBO)}
         [ gaussian_process ALIAS kriging {0}
@@ -3168,7 +3171,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   ( bayes_calibration ALIAS nond_bayes_calibration {N_mdm(utype,methodName_BAYES_CALIBRATION)}
     ( queso {N_mdm(utype,subMethod_SUBMETHOD_QUESO)}
       chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
       [ rng {0}
         mt19937 {N_mdm(lit,rngName_mt19937)}
         |
@@ -3209,7 +3212,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -3283,7 +3286,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
@@ -3322,7 +3325,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
@@ -3441,7 +3444,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
@@ -3508,7 +3511,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           [ allocation_control {0}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
@@ -3589,7 +3592,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
@@ -3668,7 +3671,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -3735,7 +3738,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           [ allocation_control {0}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
@@ -3840,7 +3843,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
       chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
       [ rng {0}
         mt19937 {N_mdm(lit,rngName_mt19937)}
         |
@@ -3911,7 +3914,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     ( wasabi {N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
       pushforward_samples INTEGER {N_mdm(int,numPushforwardSamples)}
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
       [ emulator {0}
         ( gaussian_process ALIAS kriging {0}
           surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
@@ -3947,7 +3950,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -4021,7 +4024,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
@@ -4060,7 +4063,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
@@ -4179,7 +4182,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
@@ -4246,7 +4249,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           [ allocation_control {0}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
@@ -4327,7 +4330,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
@@ -4406,7 +4409,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -4473,7 +4476,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           [ allocation_control {0}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
@@ -4543,7 +4546,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     ( dream {N_mdm(utype,subMethod_SUBMETHOD_DREAM)}
       chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
       [ chains INTEGER >= 3 {N_mdm(int,numChains)} ]
       [ num_cr INTEGER >= 1 {N_mdm(int,numCR)} ]
       [ crossover_chain_pairs INTEGER >= 0 {N_mdm(int,crossoverChainPairs)} ]
@@ -4584,7 +4587,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -4658,7 +4661,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
@@ -4697,7 +4700,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
@@ -4816,7 +4819,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
@@ -4883,7 +4886,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           [ allocation_control {0}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
@@ -4964,7 +4967,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
              )
             |
             ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
@@ -5043,7 +5046,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -5110,7 +5113,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
               local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
              )
            ]
-          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
           [ allocation_control {0}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
@@ -5174,7 +5177,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     ( muq {N_mdm(utype,subMethod_SUBMETHOD_MUQ)}
       chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
       [ rng {0}
         mt19937 {N_mdm(lit,rngName_mt19937)}
         |
@@ -5308,7 +5311,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
     [ scaling {N_mdm(true,methodScaling)} ]
    )
@@ -5328,7 +5331,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     central_composite {N_mdm(utype,subMethod_SUBMETHOD_CENTRAL_COMPOSITE)}
     [ samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ main_effects {N_mdm(true,mainEffectsFlag)} ]
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
@@ -5341,7 +5344,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( fsu_cvt {N_mdm(utype,methodName_FSU_CVT)}
     [ samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ latinize {N_mdm(true,latinizeFlag)} ]
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
@@ -5356,14 +5359,14 @@ KEYWORD method {N_mdm3(start,0,stop)}
       random {N_mdm(lit,trialType_random)}
      ]
     [ num_trials INTEGER {N_mdm(int,numTrials)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
   ( psuade_moat {N_mdm(utype,methodName_PSUADE_MOAT)}
     [ partitions INTEGERLIST {N_mdm(usharray,varPartitions)} ]
     [ samples INTEGER {N_mdm(int,numSamples)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -5445,7 +5448,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
           |
           mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
           [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+          [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
          ]
        ]
      ]
@@ -5478,7 +5481,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
@@ -5528,7 +5531,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
        ]
      ]
     [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -5558,7 +5561,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -5577,7 +5580,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ sequence_start INTEGERLIST {N_mdm(ivec,sequenceStart)} ]
     [ sequence_leap INTEGERLIST {N_mdm(ivec,sequenceLeap)} ]
     [ prime_base INTEGERLIST {N_mdm(ivec,primeBase)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
@@ -5628,7 +5631,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     converge_qoi {N_mdm(utype,subMethod_SUBMETHOD_CONVERGE_QOI)}
     [ refinement_rate REAL {N_mdm(Real,refinementRate)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
 
@@ -5735,7 +5738,7 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ p_refinement {N_mom(type,refinementType_P_REFINEMENT)}
           uniform {N_mom(type,refinementControl_UNIFORM_CONTROL)}
          ]
-        [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+        [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
         [ regression_type {0}
           ls {N_mom(type,regressionType_FT_LS)}
           |
@@ -5743,8 +5746,8 @@ KEYWORD model {N_mom3(start,0,stop)}
             l2_penalty REAL {N_mom(Real,regressionL2Penalty)}
            )
          ]
-        [ max_solver_iterations INTEGER >= 0 {N_mom(nnint,maxSolverIterations)} ]
-        [ max_cross_iterations INTEGER >= 0 {N_mom(nnint,maxCrossIterations)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mom(int,maxSolverIterations)} ]
+        [ max_cross_iterations INTEGER >= 0 {N_mom(int,maxCrossIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTol)} ]
         [ tensor_grid {N_mom(true,tensorGridFlag)} ]
         [ rounding_tolerance REAL {N_mom(Real,roundingTol)} ]
@@ -5959,13 +5962,13 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ optional_interface_responses_pointer STRING {N_mom(str,optionalInterfRespPointer)} ]
      ]
     ( sub_method_pointer STRING {N_mom(str,subMethodPointer)}
-      [ iterator_servers INTEGER > 0 {N_mom(pint,subMethodServers)} ]
+      [ iterator_servers INTEGER > 0 {N_mom(int,subMethodServers)} ]
       [ iterator_scheduling {0}
         master {N_mom(type,subMethodScheduling_MASTER_SCHEDULING)}
         |
         peer {N_mom(type,subMethodScheduling_PEER_SCHEDULING)}
        ]
-      [ processors_per_iterator INTEGER > 0 {N_mom(pint,subMethodProcs)} ]
+      [ processors_per_iterator INTEGER > 0 {N_mom(int,subMethodProcs)} ]
       [ primary_variable_mapping STRINGLIST {N_mom(strL,primaryVarMaps)} ]
       [ secondary_variable_mapping STRINGLIST {N_mom(strL,secondaryVarMaps)} ]
       [ primary_response_mapping REALLIST {N_mom(RealDL,primaryRespCoeffs)} ]
@@ -6070,7 +6073,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
     |
     relaxed {N_vam(type,varsDomain_RELAXED_DOMAIN)}
    ]
-  [ continuous_design INTEGER > 0 {N_vam(pintz,numContinuousDesVars)}
+  [ continuous_design INTEGER > 0 {N_vam(sizet,numContinuousDesVars)}
     [ initial_point ALIAS cdv_initial_point REALLIST LEN continuous_design {N_vam(rvec,continuousDesignVars)} ]
     [ lower_bounds ALIAS cdv_lower_bounds REALLIST LEN continuous_design {N_vam(rvec,continuousDesignLowerBnds)} ]
     [ upper_bounds ALIAS cdv_upper_bounds REALLIST LEN continuous_design {N_vam(rvec,continuousDesignUpperBnds)} ]
@@ -6078,14 +6081,14 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ scales ALIAS cdv_scales REALLIST LEN1 continuous_design {N_vam(rvec,continuousDesignScales)} ]
     [ descriptors ALIAS cdv_descriptors STRINGLIST LEN continuous_design {N_vam(strL,continuousDesignLabels)} ]
    ]
-  [ discrete_design_range INTEGER > 0 {N_vam(pintz,numDiscreteDesRangeVars)}
+  [ discrete_design_range INTEGER > 0 {N_vam(sizet,numDiscreteDesRangeVars)}
     [ initial_point ALIAS ddv_initial_point INTEGERLIST LEN discrete_design_range {N_vam(ivec,discreteDesignRangeVars)} ]
     [ lower_bounds ALIAS ddv_lower_bounds INTEGERLIST LEN discrete_design_range {N_vam(ivec,discreteDesignRangeLowerBnds)} ]
     [ upper_bounds ALIAS ddv_upper_bounds INTEGERLIST LEN discrete_design_range {N_vam(ivec,discreteDesignRangeUpperBnds)} ]
     [ descriptors ALIAS ddv_descriptors STRINGLIST LEN discrete_design_range {N_vam(strL,discreteDesignRangeLabels)} ]
    ]
   [ discrete_design_set {0}
-    [ integer INTEGER > 0 {N_vam(pintz,numDiscreteDesSetIntVars)}
+    [ integer INTEGER > 0 {N_vam(sizet,numDiscreteDesSetIntVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 integer {N_vam(newiarray,Var_Info_nddsi)} ]
       elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_ddsi)}
       [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetIntCat)}
@@ -6094,14 +6097,14 @@ KEYWORD variables {N_vam3(start,0,stop)}
       [ initial_point INTEGERLIST LEN integer {N_vam(ivec,discreteDesignSetIntVars)} ]
       [ descriptors STRINGLIST LEN integer {N_vam(strL,discreteDesignSetIntLabels)} ]
      ]
-    [ string INTEGER > 0 {N_vam(pintz,numDiscreteDesSetStrVars)}
+    [ string INTEGER > 0 {N_vam(sizet,numDiscreteDesSetStrVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 string {N_vam(newiarray,Var_Info_nddss)} ]
       elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_ddss)}
       [ adjacency_matrix INTEGERLIST {N_vam(newivec,Var_Info_ddssa)} ]
       [ initial_point STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrVars)} ]
       [ descriptors STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrLabels)} ]
      ]
-    [ real INTEGER > 0 {N_vam(pintz,numDiscreteDesSetRealVars)}
+    [ real INTEGER > 0 {N_vam(sizet,numDiscreteDesSetRealVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_nddsr)} ]
       elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
       [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetRealCat)}
@@ -6111,7 +6114,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
       [ descriptors STRINGLIST LEN real {N_vam(strL,discreteDesignSetRealLabels)} ]
      ]
    ]
-  [ normal_uncertain INTEGER > 0 {N_vam(pintz,numNormalUncVars)}
+  [ normal_uncertain INTEGER > 0 {N_vam(sizet,numNormalUncVars)}
     means ALIAS nuv_means REALLIST LEN normal_uncertain {N_vam(rvec,normalUncMeans)}
     std_deviations ALIAS nuv_std_deviations REALLIST LEN normal_uncertain {N_vam(RealLb,normalUncStdDevs)}
     [ lower_bounds ALIAS nuv_lower_bounds REALLIST LEN normal_uncertain {N_vam(rvec,normalUncLowerBnds)} ]
@@ -6119,7 +6122,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ initial_point REALLIST LEN normal_uncertain {N_vam(rvec,normalUncVars)} ]
     [ descriptors ALIAS nuv_descriptors STRINGLIST LEN normal_uncertain {N_vae(caulbl,CAUVar_normal)} ]
    ]
-  [ lognormal_uncertain INTEGER > 0 {N_vam(pintz,numLognormalUncVars)}
+  [ lognormal_uncertain INTEGER > 0 {N_vam(sizet,numLognormalUncVars)}
     ( lambdas ALIAS lnuv_lambdas REALLIST LEN lognormal_uncertain {N_vam(rvec,lognormalUncLambdas)}
       zetas ALIAS lnuv_zetas REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncZetas)}
      )
@@ -6134,31 +6137,31 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ initial_point REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncVars)} ]
     [ descriptors ALIAS lnuv_descriptors STRINGLIST LEN lognormal_uncertain {N_vae(caulbl,CAUVar_lognormal)} ]
    ]
-  [ uniform_uncertain INTEGER > 0 {N_vam(pintz,numUniformUncVars)}
+  [ uniform_uncertain INTEGER > 0 {N_vam(sizet,numUniformUncVars)}
     lower_bounds ALIAS uuv_lower_bounds REALLIST LEN uniform_uncertain {N_vam(RealLb,uniformUncLowerBnds)}
     upper_bounds ALIAS uuv_upper_bounds REALLIST LEN uniform_uncertain {N_vam(RealUb,uniformUncUpperBnds)}
     [ initial_point REALLIST LEN uniform_uncertain {N_vam(rvec,uniformUncVars)} ]
     [ descriptors ALIAS uuv_descriptors STRINGLIST LEN uniform_uncertain {N_vae(caulbl,CAUVar_uniform)} ]
    ]
-  [ loguniform_uncertain INTEGER > 0 {N_vam(pintz,numLoguniformUncVars)}
+  [ loguniform_uncertain INTEGER > 0 {N_vam(sizet,numLoguniformUncVars)}
     lower_bounds ALIAS luuv_lower_bounds REALLIST LEN loguniform_uncertain {N_vam(RealLb,loguniformUncLowerBnds)}
     upper_bounds ALIAS luuv_upper_bounds REALLIST LEN loguniform_uncertain {N_vam(RealUb,loguniformUncUpperBnds)}
     [ initial_point REALLIST LEN loguniform_uncertain {N_vam(RealLb,loguniformUncVars)} ]
     [ descriptors ALIAS luuv_descriptors STRINGLIST LEN loguniform_uncertain {N_vae(caulbl,CAUVar_loguniform)} ]
    ]
-  [ triangular_uncertain INTEGER > 0 {N_vam(pintz,numTriangularUncVars)}
+  [ triangular_uncertain INTEGER > 0 {N_vam(sizet,numTriangularUncVars)}
     modes ALIAS tuv_modes REALLIST LEN triangular_uncertain {N_vam(rvec,triangularUncModes)}
     lower_bounds ALIAS tuv_lower_bounds REALLIST LEN triangular_uncertain {N_vam(RealLb,triangularUncLowerBnds)}
     upper_bounds ALIAS tuv_upper_bounds REALLIST LEN triangular_uncertain {N_vam(RealUb,triangularUncUpperBnds)}
     [ initial_point REALLIST LEN triangular_uncertain {N_vam(rvec,triangularUncVars)} ]
     [ descriptors ALIAS tuv_descriptors STRINGLIST LEN triangular_uncertain {N_vae(caulbl,CAUVar_triangular)} ]
    ]
-  [ exponential_uncertain INTEGER > 0 {N_vam(pintz,numExponentialUncVars)}
+  [ exponential_uncertain INTEGER > 0 {N_vam(sizet,numExponentialUncVars)}
     betas ALIAS euv_betas REALLIST LEN exponential_uncertain {N_vam(RealLb,exponentialUncBetas)}
     [ initial_point REALLIST LEN exponential_uncertain {N_vam(RealLb,exponentialUncVars)} ]
     [ descriptors ALIAS euv_descriptors STRINGLIST LEN exponential_uncertain {N_vae(caulbl,CAUVar_exponential)} ]
    ]
-  [ beta_uncertain INTEGER > 0 {N_vam(pintz,numBetaUncVars)}
+  [ beta_uncertain INTEGER > 0 {N_vam(sizet,numBetaUncVars)}
     alphas ALIAS buv_alphas REALLIST LEN beta_uncertain {N_vam(RealLb,betaUncAlphas)}
     betas ALIAS buv_betas REALLIST LEN beta_uncertain {N_vam(RealLb,betaUncBetas)}
     lower_bounds ALIAS buv_lower_bounds REALLIST LEN beta_uncertain {N_vam(rvec,betaUncLowerBnds)}
@@ -6166,31 +6169,31 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ initial_point REALLIST LEN beta_uncertain {N_vam(rvec,betaUncVars)} ]
     [ descriptors ALIAS buv_descriptors STRINGLIST LEN beta_uncertain {N_vae(caulbl,CAUVar_beta)} ]
    ]
-  [ gamma_uncertain INTEGER > 0 {N_vam(pintz,numGammaUncVars)}
+  [ gamma_uncertain INTEGER > 0 {N_vam(sizet,numGammaUncVars)}
     alphas ALIAS gauv_alphas REALLIST LEN gamma_uncertain {N_vam(RealLb,gammaUncAlphas)}
     betas ALIAS gauv_betas REALLIST LEN gamma_uncertain {N_vam(RealLb,gammaUncBetas)}
     [ initial_point REALLIST LEN gamma_uncertain {N_vam(RealLb,gammaUncVars)} ]
     [ descriptors ALIAS gauv_descriptors STRINGLIST LEN gamma_uncertain {N_vae(caulbl,CAUVar_gamma)} ]
    ]
-  [ gumbel_uncertain INTEGER > 0 {N_vam(pintz,numGumbelUncVars)}
+  [ gumbel_uncertain INTEGER > 0 {N_vam(sizet,numGumbelUncVars)}
     alphas ALIAS guuv_alphas REALLIST LEN gumbel_uncertain {N_vam(RealLb,gumbelUncAlphas)}
     betas ALIAS guuv_betas REALLIST LEN gumbel_uncertain {N_vam(rvec,gumbelUncBetas)}
     [ initial_point REALLIST LEN gumbel_uncertain {N_vam(rvec,gumbelUncVars)} ]
     [ descriptors ALIAS guuv_descriptors STRINGLIST LEN gumbel_uncertain {N_vae(caulbl,CAUVar_gumbel)} ]
    ]
-  [ frechet_uncertain INTEGER > 0 {N_vam(pintz,numFrechetUncVars)}
+  [ frechet_uncertain INTEGER > 0 {N_vam(sizet,numFrechetUncVars)}
     alphas ALIAS fuv_alphas REALLIST LEN frechet_uncertain {N_vam(RealLb,frechetUncAlphas)}
     betas ALIAS fuv_betas REALLIST LEN frechet_uncertain {N_vam(rvec,frechetUncBetas)}
     [ initial_point REALLIST LEN frechet_uncertain {N_vam(rvec,frechetUncVars)} ]
     [ descriptors ALIAS fuv_descriptors STRINGLIST LEN frechet_uncertain {N_vae(caulbl,CAUVar_frechet)} ]
    ]
-  [ weibull_uncertain INTEGER > 0 {N_vam(pintz,numWeibullUncVars)}
+  [ weibull_uncertain INTEGER > 0 {N_vam(sizet,numWeibullUncVars)}
     alphas ALIAS wuv_alphas REALLIST LEN weibull_uncertain {N_vam(RealLb,weibullUncAlphas)}
     betas ALIAS wuv_betas REALLIST LEN weibull_uncertain {N_vam(RealLb,weibullUncBetas)}
     [ initial_point REALLIST LEN weibull_uncertain {N_vam(RealLb,weibullUncVars)} ]
     [ descriptors ALIAS wuv_descriptors STRINGLIST LEN weibull_uncertain {N_vae(caulbl,CAUVar_weibull)} ]
    ]
-  [ histogram_bin_uncertain INTEGER > 0 {N_vam(pintz,numHistogramBinUncVars)}
+  [ histogram_bin_uncertain INTEGER > 0 {N_vam(sizet,numHistogramBinUncVars)}
     [ pairs_per_variable ALIAS num_pairs INTEGERLIST LEN histogram_bin_uncertain {N_vam(newiarray,Var_Info_nhbp)} ]
     abscissas ALIAS huv_bin_abscissas REALLIST {N_vam(newrvec,Var_Info_hba)}
     ordinates ALIAS huv_bin_ordinates REALLIST {N_vam(newrvec,Var_Info_hbo)}
@@ -6199,29 +6202,29 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ initial_point REALLIST LEN histogram_bin_uncertain {N_vam(rvec,histogramBinUncVars)} ]
     [ descriptors ALIAS huv_bin_descriptors STRINGLIST LEN histogram_bin_uncertain {N_vae(caulbl,CAUVar_histogram_bin)} ]
    ]
-  [ poisson_uncertain INTEGER > 0 {N_vam(pintz,numPoissonUncVars)}
+  [ poisson_uncertain INTEGER > 0 {N_vam(sizet,numPoissonUncVars)}
     lambdas REALLIST LEN poisson_uncertain {N_vam(RealLb,poissonUncLambdas)}
     [ initial_point INTEGERLIST LEN poisson_uncertain {N_vam(IntLb,poissonUncVars)} ]
     [ descriptors STRINGLIST LEN poisson_uncertain {N_vae(dauilbl,DAUIVar_poisson)} ]
    ]
-  [ binomial_uncertain INTEGER > 0 {N_vam(pintz,numBinomialUncVars)}
+  [ binomial_uncertain INTEGER > 0 {N_vam(sizet,numBinomialUncVars)}
     probability_per_trial ALIAS prob_per_trial REALLIST LEN binomial_uncertain {N_vam(rvec,binomialUncProbPerTrial)}
     num_trials INTEGERLIST LEN binomial_uncertain {N_vam(IntLb,binomialUncNumTrials)}
     [ initial_point INTEGERLIST LEN binomial_uncertain {N_vam(IntLb,binomialUncVars)} ]
     [ descriptors STRINGLIST LEN binomial_uncertain {N_vae(dauilbl,DAUIVar_binomial)} ]
    ]
-  [ negative_binomial_uncertain INTEGER > 0 {N_vam(pintz,numNegBinomialUncVars)}
+  [ negative_binomial_uncertain INTEGER > 0 {N_vam(sizet,numNegBinomialUncVars)}
     probability_per_trial ALIAS prob_per_trial REALLIST LEN negative_binomial_uncertain {N_vam(rvec,negBinomialUncProbPerTrial)}
     num_trials INTEGERLIST LEN negative_binomial_uncertain {N_vam(IntLb,negBinomialUncNumTrials)}
     [ initial_point INTEGERLIST LEN negative_binomial_uncertain {N_vam(IntLb,negBinomialUncVars)} ]
     [ descriptors STRINGLIST LEN negative_binomial_uncertain {N_vae(dauilbl,DAUIVar_negative_binomial)} ]
    ]
-  [ geometric_uncertain INTEGER > 0 {N_vam(pintz,numGeometricUncVars)}
+  [ geometric_uncertain INTEGER > 0 {N_vam(sizet,numGeometricUncVars)}
     probability_per_trial ALIAS prob_per_trial REALLIST LEN geometric_uncertain {N_vam(rvec,geometricUncProbPerTrial)}
     [ initial_point INTEGERLIST LEN geometric_uncertain {N_vam(IntLb,geometricUncVars)} ]
     [ descriptors STRINGLIST LEN geometric_uncertain {N_vae(dauilbl,DAUIVar_geometric)} ]
    ]
-  [ hypergeometric_uncertain INTEGER > 0 {N_vam(pintz,numHyperGeomUncVars)}
+  [ hypergeometric_uncertain INTEGER > 0 {N_vam(sizet,numHyperGeomUncVars)}
     total_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(IntLb,hyperGeomUncTotalPop)}
     selected_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(IntLb,hyperGeomUncSelectedPop)}
     num_drawn INTEGERLIST LEN hypergeometric_uncertain {N_vam(IntLb,hyperGeomUncNumDrawn)}
@@ -6229,21 +6232,21 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ descriptors STRINGLIST LEN hypergeometric_uncertain {N_vae(dauilbl,DAUIVar_hypergeometric)} ]
    ]
   [ histogram_point_uncertain {0}
-    [ integer INTEGER > 0 {N_vam(pintz,numHistogramPtIntUncVars)}
+    [ integer INTEGER > 0 {N_vam(sizet,numHistogramPtIntUncVars)}
       [ pairs_per_variable ALIAS num_pairs INTEGERLIST LEN integer {N_vam(newiarray,Var_Info_nhpip)} ]
       abscissas INTEGERLIST {N_vam(newivec,Var_Info_hpia)}
       counts REALLIST {N_vam(newrvec,Var_Info_hpic)}
       [ initial_point INTEGERLIST LEN integer {N_vam(ivec,histogramPointIntUncVars)} ]
       [ descriptors STRINGLIST LEN integer {N_vae(dauilbl,DAUIVar_histogram_point_int)} ]
      ]
-    [ string INTEGER > 0 {N_vam(pintz,numHistogramPtStrUncVars)}
+    [ string INTEGER > 0 {N_vam(sizet,numHistogramPtStrUncVars)}
       [ pairs_per_variable ALIAS num_pairs INTEGERLIST LEN string {N_vam(newiarray,Var_Info_nhpsp)} ]
       abscissas STRINGLIST {N_vam(newsarray,Var_Info_hpsa)}
       counts REALLIST {N_vam(newrvec,Var_Info_hpsc)}
       [ initial_point STRINGLIST LEN string {N_vam(strL,histogramPointStrUncVars)} ]
       [ descriptors STRINGLIST LEN string {N_vae(dauslbl,DAUSVar_histogram_point_str)} ]
      ]
-    [ real INTEGER > 0 {N_vam(pintz,numHistogramPtRealUncVars)}
+    [ real INTEGER > 0 {N_vam(sizet,numHistogramPtRealUncVars)}
       [ pairs_per_variable ALIAS num_pairs INTEGERLIST LEN real {N_vam(newiarray,Var_Info_nhprp)} ]
       abscissas REALLIST {N_vam(newrvec,Var_Info_hpra)}
       counts REALLIST {N_vam(newrvec,Var_Info_hprc)}
@@ -6252,7 +6255,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
      ]
    ]
   [ uncertain_correlation_matrix REALLIST {N_vam(newrvec,Var_Info_ucm)} ]
-  [ continuous_interval_uncertain ALIAS interval_uncertain INTEGER > 0 {N_vam(pintz,numContinuousIntervalUncVars)}
+  [ continuous_interval_uncertain ALIAS interval_uncertain INTEGER > 0 {N_vam(sizet,numContinuousIntervalUncVars)}
     [ num_intervals ALIAS iuv_num_intervals INTEGERLIST LEN continuous_interval_uncertain {N_vam(newiarray,Var_Info_nCI)} ]
     [ interval_probabilities ALIAS interval_probs ALIAS iuv_interval_probs REALLIST {N_vam(newrvec,Var_Info_CIp)} ]
     lower_bounds REALLIST {N_vam(newrvec,Var_Info_CIlb)}
@@ -6260,7 +6263,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ initial_point REALLIST LEN continuous_interval_uncertain {N_vam(rvec,continuousIntervalUncVars)} ]
     [ descriptors ALIAS iuv_descriptors STRINGLIST LEN continuous_interval_uncertain {N_vae(ceulbl,CEUVar_interval)} ]
    ]
-  [ discrete_interval_uncertain INTEGER > 0 {N_vam(pintz,numDiscreteIntervalUncVars)}
+  [ discrete_interval_uncertain INTEGER > 0 {N_vam(sizet,numDiscreteIntervalUncVars)}
     [ num_intervals INTEGERLIST LEN discrete_interval_uncertain {N_vam(newiarray,Var_Info_nDI)} ]
     [ interval_probabilities ALIAS interval_probs ALIAS range_probabilities ALIAS range_probs REALLIST {N_vam(newrvec,Var_Info_DIp)} ]
     lower_bounds INTEGERLIST {N_vam(newivec,Var_Info_DIlb)}
@@ -6269,7 +6272,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ descriptors STRINGLIST LEN discrete_interval_uncertain {N_vae(deuilbl,DEUIVar_interval)} ]
    ]
   [ discrete_uncertain_set {0}
-    [ integer INTEGER > 0 {N_vam(pintz,numDiscreteUncSetIntVars)}
+    [ integer INTEGER > 0 {N_vam(sizet,numDiscreteUncSetIntVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN integer {N_vam(newiarray,Var_Info_ndusi)} ]
       elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_dusi)}
       [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSIp)} ]
@@ -6277,14 +6280,14 @@ KEYWORD variables {N_vam3(start,0,stop)}
       [ initial_point INTEGERLIST LEN integer {N_vam(ivec,discreteUncSetIntVars)} ]
       [ descriptors STRINGLIST LEN integer {N_vae(deuilbl,DEUIVar_set_int)} ]
      ]
-    [ string INTEGER > 0 {N_vam(pintz,numDiscreteUncSetStrVars)}
+    [ string INTEGER > 0 {N_vam(sizet,numDiscreteUncSetStrVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN string {N_vam(newiarray,Var_Info_nduss)} ]
       elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_duss)}
       [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSSp)} ]
       [ initial_point STRINGLIST LEN string {N_vam(strL,discreteUncSetStrVars)} ]
       [ descriptors STRINGLIST LEN string {N_vae(deuslbl,DEUSVar_set_str)} ]
      ]
-    [ real INTEGER > 0 {N_vam(pintz,numDiscreteUncSetRealVars)}
+    [ real INTEGER > 0 {N_vam(sizet,numDiscreteUncSetRealVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN real {N_vam(newiarray,Var_Info_ndusr)} ]
       elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_dusr)}
       [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSRp)} ]
@@ -6293,33 +6296,33 @@ KEYWORD variables {N_vam3(start,0,stop)}
       [ descriptors STRINGLIST LEN real {N_vae(deurlbl,DEURVar_set_real)} ]
      ]
    ]
-  [ continuous_state INTEGER > 0 {N_vam(pintz,numContinuousStateVars)}
+  [ continuous_state INTEGER > 0 {N_vam(sizet,numContinuousStateVars)}
     [ initial_state ALIAS csv_initial_state REALLIST LEN continuous_state {N_vam(rvec,continuousStateVars)} ]
     [ lower_bounds ALIAS csv_lower_bounds REALLIST LEN continuous_state {N_vam(rvec,continuousStateLowerBnds)} ]
     [ upper_bounds ALIAS csv_upper_bounds REALLIST LEN continuous_state {N_vam(rvec,continuousStateUpperBnds)} ]
     [ descriptors ALIAS csv_descriptors STRINGLIST LEN continuous_state {N_vam(strL,continuousStateLabels)} ]
    ]
-  [ discrete_state_range INTEGER > 0 {N_vam(pintz,numDiscreteStateRangeVars)}
+  [ discrete_state_range INTEGER > 0 {N_vam(sizet,numDiscreteStateRangeVars)}
     [ initial_state ALIAS dsv_initial_state INTEGERLIST LEN discrete_state_range {N_vam(ivec,discreteStateRangeVars)} ]
     [ lower_bounds ALIAS dsv_lower_bounds INTEGERLIST LEN discrete_state_range {N_vam(ivec,discreteStateRangeLowerBnds)} ]
     [ upper_bounds ALIAS dsv_upper_bounds INTEGERLIST LEN discrete_state_range {N_vam(ivec,discreteStateRangeUpperBnds)} ]
     [ descriptors ALIAS dsv_descriptors STRINGLIST LEN discrete_state_range {N_vam(strL,discreteStateRangeLabels)} ]
    ]
   [ discrete_state_set {0}
-    [ integer INTEGER > 0 {N_vam(pintz,numDiscreteStateSetIntVars)}
+    [ integer INTEGER > 0 {N_vam(sizet,numDiscreteStateSetIntVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 integer {N_vam(newiarray,Var_Info_ndssi)} ]
       elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_dssi)}
       [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteStateSetIntCat)} ]
       [ initial_state INTEGERLIST LEN integer {N_vam(ivec,discreteStateSetIntVars)} ]
       [ descriptors STRINGLIST LEN integer {N_vam(strL,discreteStateSetIntLabels)} ]
      ]
-    [ string INTEGER > 0 {N_vam(pintz,numDiscreteStateSetStrVars)}
+    [ string INTEGER > 0 {N_vam(sizet,numDiscreteStateSetStrVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 string {N_vam(newiarray,Var_Info_ndsss)} ]
       elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_dsss)}
       [ initial_state STRINGLIST LEN string {N_vam(strL,discreteStateSetStrVars)} ]
       [ descriptors STRINGLIST LEN string {N_vam(strL,discreteStateSetStrLabels)} ]
      ]
-    [ real INTEGER > 0 {N_vam(pintz,numDiscreteStateSetRealVars)}
+    [ real INTEGER > 0 {N_vam(sizet,numDiscreteStateSetRealVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_ndssr)} ]
       elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_dssr)}
       [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteStateSetRealCat)} ]
@@ -6381,7 +6384,7 @@ KEYWORD interface {N_ifm3(start,0,stop)}
      )
     |
     ( direct {N_ifm(type,interfaceType_TEST_INTERFACE)}
-      [ processors_per_analysis INTEGER > 0 {N_ifm(pint,procsPerAnalysis)} ]
+      [ processors_per_analysis INTEGER > 0 {N_ifm(int,procsPerAnalysis)} ]
      )
     |
     matlab {N_ifm(type,interfaceType_MATLAB_INTERFACE)}
@@ -6415,20 +6418,20 @@ KEYWORD interface {N_ifm3(start,0,stop)}
    ]
   [ 
     ( batch {N_ifm(true,batchEvalFlag)}
-      [ size INTEGER > 0 {N_ifm(pint,asynchLocalEvalConcurrency)} ]
+      [ size INTEGER > 0 {N_ifm(int,asynchLocalEvalConcurrency)} ]
      )
     |
     ( asynchronous {N_ifm(true, asynchFlag)}
-      [ evaluation_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalEvalConcurrency)} ]
+      [ evaluation_concurrency INTEGER > 0 {N_ifm(int,asynchLocalEvalConcurrency)} ]
       [ local_evaluation_scheduling {0}
         dynamic {N_ifm(type,asynchLocalEvalScheduling_DYNAMIC_SCHEDULING)}
         |
         static {N_ifm(type,asynchLocalEvalScheduling_STATIC_SCHEDULING)}
        ]
-      [ analysis_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalAnalysisConcurrency)} ]
+      [ analysis_concurrency INTEGER > 0 {N_ifm(int,asynchLocalAnalysisConcurrency)} ]
      )
    ]
-  [ evaluation_servers INTEGER > 0 {N_ifm(pint,evalServers)} ]
+  [ evaluation_servers INTEGER > 0 {N_ifm(int,evalServers)} ]
   [ evaluation_scheduling {0}
     master {N_ifm(type,evalScheduling_MASTER_SCHEDULING)}
     |
@@ -6438,8 +6441,8 @@ KEYWORD interface {N_ifm3(start,0,stop)}
       static {N_ifm(type,evalScheduling_PEER_STATIC_SCHEDULING)}
      )
    ]
-  [ processors_per_evaluation INTEGER > 0 {N_ifm(pint,procsPerEval)} ]
-  [ analysis_servers INTEGER > 0 {N_ifm(pint,analysisServers)} ]
+  [ processors_per_evaluation INTEGER > 0 {N_ifm(int,procsPerEval)} ]
+  [ analysis_servers INTEGER > 0 {N_ifm(int,analysisServers)} ]
   [ analysis_scheduling {0}
     master {N_ifm(type,analysisScheduling_MASTER_SCHEDULING)}
     |
@@ -6467,7 +6470,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
      ]
     [ scalar_objectives ALIAS num_scalar_objectives INTEGER >= 0 {N_rem(sizet,numScalarObjectiveFunctions)} ]
     [ field_objectives ALIAS num_field_objectives INTEGER >= 0 {N_rem(sizet,numFieldObjectiveFunctions)}
-      lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
+      lengths INTEGERLIST LEN field_objectives {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
@@ -6476,7 +6479,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
   ( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(sizet,numLeastSqTerms)}
     [ scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)} ]
     [ field_calibration_terms INTEGER >= 0 {N_rem(sizet,numFieldLeastSqTerms)}
-      lengths INTEGERLIST LEN calibration_terms {N_rem(ivec,fieldLengths)}
+      lengths INTEGERLIST LEN field_calibration_terms {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
@@ -6535,7 +6538,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
   ( response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(sizet,numResponseFunctions)}
     [ scalar_responses ALIAS num_scalar_responses INTEGER >= 0 {N_rem(sizet,numScalarResponseFunctions)} ]
     [ field_responses ALIAS num_field_responses INTEGER >= 0 {N_rem(sizet,numFieldResponseFunctions)}
-      lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
+      lengths INTEGERLIST LEN field_responses {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]

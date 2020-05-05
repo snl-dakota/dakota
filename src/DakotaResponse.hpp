@@ -33,11 +33,16 @@ class ProblemDescDB;
     second (functionHessians) derivatives.  The functions may involve
     objective and constraint functions (optimization data set), least
     squares terms (parameter estimation data set), or generic response
-    functions (uncertainty quantification data set).  For memory
-    efficiency, it employs the "letter-envelope idiom" approach to
-    reference counting and representation sharing (see Coplien
-    "Advanced C++"), for which the base Response class serves as the
-    envelope and one of its derived classes serves as the letter. */
+    functions (uncertainty quantification data set). When field
+    responses are present, the stored response elements are ordered:
+    [primary_scalar, primary_field, nonlinear_inequality,
+    nonlinear_equality].
+
+    For memory efficiency, it employs the "letter-envelope idiom"
+    approach to reference counting and representation sharing (see
+    Coplien "Advanced C++"), for which the base Response class serves
+    as the envelope and one of its derived classes serves as the
+    letter. */
 
 class Response
 {
@@ -106,6 +111,9 @@ public:
   /// functionGradients/functionHessians if needed
   void active_set_derivative_vector(const SizetArray& asdv);
 
+  // NOTE: Responses are stored:
+  // [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]
+
   /// return a function value
   const Real& function_value(size_t i) const;
   /// return a "view" of a function value for updating in place
@@ -121,7 +129,6 @@ public:
   void function_value(const Real& fn_val, size_t i);
   /// set all function values
   void function_values(const RealVector& fn_vals);
-
 
   /// return the i-th function gradient as a const Real*
   const Real* function_gradient(int i) const;
@@ -166,34 +173,33 @@ public:
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& fn_hessians);
 
-  /// return const field values
-  RealVector field_values_view(size_t i) const;
-  /// return a "view" of a field value for updating in place
-  RealVector field_values_view(size_t i);
-  /// set a field value
-  void field_values(const RealVector& field_val, size_t i);
-  /// return a "view" of a field value's coordinates
-  RealMatrix field_coords_view(size_t i);
-  /// return a const "view" of a field value's coordinates
-  const RealMatrix field_coords_view(size_t i) const;
-  /// set a field value's coordinates
-  void field_coords(const RealMatrix& field_coords, size_t i);
+  // NOTE: Responses are stored:
+  // [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]
 
-  /// return a view of the gradients of each field element
+  /// return the field lengths (from SharedResponseData)
+  const IntVector& field_lengths() const;
+  /// set the field lengths (within SharedResponseData)
+  void field_lengths(const IntVector& field_lens);
+
+  /// return const field values for the i-th field
+  RealVector field_values_view(size_t i) const;
+  /// return a "view" of the i-th field values for updating in place
+  RealVector field_values_view(size_t i);
+  /// set the values for the i-th field
+  void field_values(const RealVector& field_val, size_t i);
+  /// return a view of the gradients of each element of the i-th field
   RealMatrix field_gradients_view(size_t i) const;
-  /// return a view of the hessians of each field element
+  /// return a view of the hessians of each element of the i-th field
   RealSymMatrixArray field_hessians_view(size_t i) const;
 
-  /// return the field lengths from sharedRespData
-  const IntVector& field_lengths() const;
-  /// set the field lengths within sharedRespData
-  void field_lengths(const IntVector& field_lens);
-  /// return the num_coords_per_field from sharedRespData
+  /// return a "view" of the i-th field's coordinates
+  RealMatrix field_coords_view(size_t i);
+  /// return a const "view" of the i-th field's coordinates
+  const RealMatrix field_coords_view(size_t i) const;
+  /// set the i-th field's coordinates
+  void field_coords(const RealMatrix& field_coords, size_t i);
+  /// return the number of coordinates each field has (from SharedResponseData)
   const IntVector& num_coords_per_field() const;
-  /// set the coordinate values per field 
-  void set_coord_values(const RealMatrix& coord_values, const size_t i);
-  /// return the coordinate values per field 
-  const RealMatrix& get_coord_values(const size_t i) const;
 
   /// return the fine-grained (unrolled) response function identifier
   /// strings from sharedRespData
@@ -351,7 +357,8 @@ protected:
 
   // An abstract set of functions and their first and second derivatives.
 
-  /// abstract set of response functions
+  /// Abstract set of response functions. Ordered:
+  /// [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]
   RealVector functionValues;
   /// first derivatives of the response functions
   /** the gradient vectors (plural) are column vectors in the matrix
@@ -359,7 +366,7 @@ protected:
   RealMatrix functionGradients;
   /// second derivatives of the response functions
   RealSymMatrixArray functionHessians;
-  /// coordinates for the field values
+  /// coordinates (independent vars like x,t) on which field values depend
   IntRealMatrixMap fieldCoords; // not all field have associated coords - RWH
 
   /// copy of the ActiveSet used by the Model to generate a Response instance

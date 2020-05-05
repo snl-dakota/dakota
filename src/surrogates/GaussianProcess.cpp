@@ -15,17 +15,13 @@
 #include "Teuchos_oblackholestream.hpp"
 #include "Teuchos_XMLParameterListHelpers.hpp"
 
-
 namespace dakota {
 namespace surrogates {
 
-
-// Constuctor with default parameters.
 GaussianProcess::GaussianProcess(){
   default_options();
 }
 
-// Constructor that sets user-defined params but does not build.
 GaussianProcess::GaussianProcess(const ParameterList &param_list) {
   default_options();
   configOptions = param_list;
@@ -33,12 +29,9 @@ GaussianProcess::GaussianProcess(const ParameterList &param_list) {
 
 // BMA NOTE: ParameterList::get() can throw, so direct delegation
 // probably not good; might want to give a helpful message
-// Constructor that will set user-defined parameters and build with
-// given data.
 GaussianProcess::GaussianProcess(const MatrixXd &samples,
 				 const MatrixXd &response,
-				 const ParameterList& param_list)
-{
+				 const ParameterList& param_list) {
   default_options();
   configOptions = param_list;
   build(samples, response);
@@ -46,262 +39,17 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 
 GaussianProcess::~GaussianProcess(){}
 
-
-
-void GaussianProcess::generate_initial_guesses(MatrixXd &initial_guesses, int num_restarts,
-                                               const VectorXd &sigma_bounds,
-                                               const MatrixXd &length_scale_bounds,
-                                               const VectorXd &nugget_bounds) {
-  initial_guesses = MatrixXd::Random(num_restarts,numVariables + 1
-                    + numPolyTerms + numNuggetTerms);
-  double mean, span;
-  for (int j = 0; j < numVariables+1; j++) {
-    if (j == 0) {
-      span = 0.5*(log(sigma_bounds(1)) - log(sigma_bounds(0)));
-      mean = 0.5*(log(sigma_bounds(1)) + log(sigma_bounds(0)));
-    }
-    else {
-      span = 0.5*(log(length_scale_bounds(j-1,1)) - log(length_scale_bounds(j-1,0)));
-      mean = 0.5*(log(length_scale_bounds(j-1,1)) + log(length_scale_bounds(j-1,0)));
-    }
-    for (int i = 0; i < num_restarts; i++) {
-      initial_guesses(i,j) = span*initial_guesses(i,j) + mean;
-    }
-  }
-  /* Initial guess for trend terms set to zero */
-  if (estimateTrend) {
-    int index_offset = numVariables + 1;
-    for (int i = 0; i < num_restarts; ++i) {
-      for (int j = 0; j < numPolyTerms; j++) {
-        initial_guesses(i, index_offset + j) = 0.0;
-      }
-    }
-  }
-  if (estimateNugget) {
-    int index_offset = numVariables + 1 + numPolyTerms;
-    span = 0.5*(log(nugget_bounds(1)) - log(nugget_bounds(0)));
-    mean = 0.5*(log(nugget_bounds(1)) + log(nugget_bounds(0)));
-    for (int i = 0; i < num_restarts; ++i) {
-      initial_guesses(i,index_offset) = span*initial_guesses(i,index_offset)
-                                        + mean;
-    }
-  }
-}
-
-
-void GaussianProcess::compute_prediction_matrix(const MatrixXd &scaled_pred_pts, MatrixXd &pred_mat) {
-  const int numPredictionPts = scaled_pred_pts.rows();
-  pred_mat.resize(numPredictionPts,numSamples);
-  MatrixXd scaled_samples = dataScaler->get_scaled_features();
-  for (int i = 0; i < numPredictionPts; i++) {
-    for (int j = 0; j < numSamples; j++) {
-      pred_mat(i,j) = sq_exp_cov_pred(scaled_pred_pts.row(i),scaled_samples.row(j));
-    }
-  }
-}
-
-void GaussianProcess::compute_first_deriv_pred_mat(const MatrixXd &pred_mat, const MatrixXd & scaled_pred_pts,
-                                                   const int index, MatrixXd &first_deriv_pred_mat) {
-  const int numPredictionPts = scaled_pred_pts.rows();
-  first_deriv_pred_mat.resize(numPredictionPts,numSamples);
-  first_deriv_pred_mat.setZero();
-
-  MatrixXd scaled_samples = dataScaler->get_scaled_features();
-
-  for (int i = 0; i < numPredictionPts; i++) {
-    for (int j = 0; j < numSamples; j++) {
-      first_deriv_pred_mat(i,j) = -pred_mat(i,j)
-                                   *(scaled_pred_pts(i,index) - scaled_samples(j,index))
-                                   *exp(-2.0*((thetaValues)(index+1)));
-    }
-  }
-}
-
-void GaussianProcess::compute_second_deriv_pred_mat(const MatrixXd &pred_mat, const MatrixXd & scaled_pred_pts,
-                                                    const int index_i, const int index_j,
-                                                    MatrixXd &second_deriv_pred_mat) {
-  const int numPredictionPts = 1; /* Hessian evaluations are at a single point */
-  second_deriv_pred_mat.resize(numPredictionPts,numSamples);
-  second_deriv_pred_mat.setZero();
-
-  MatrixXd scaled_samples = dataScaler->get_scaled_features();
-
-  double diagonal_factor = 0.0;
-
-  if (index_i == index_j)
-    diagonal_factor = 1.0;
-
-  for (int i = 0; i < numPredictionPts; i++) {
-    for (int j = 0; j < numSamples; j++) {
-      second_deriv_pred_mat(i,j) = pred_mat(i,j)
-                                   *((scaled_pred_pts(i,index_i) - scaled_samples(j,index_i))
-                                   *(scaled_pred_pts(i,index_j) - scaled_samples(j,index_j))
-                                   *exp(-2.0*((thetaValues)(index_i+1) + (thetaValues)(index_j+1)))
-                                   - diagonal_factor*exp(-2.0*((thetaValues)(index_i+1))));
-    }
-  }
-}
-
-double GaussianProcess::sq_exp_cov(const int i, const int j) {
-  double inside = 0.0;
-  for (int k = 0; k < numVariables; k++)
-    inside += componentwiseDistances[k](i,j)*std::exp(-2.0*(thetaValues)(k+1));
-
-  return std::exp(2.0*(thetaValues)(0))*exp(-0.5*inside);
-}
-
-double GaussianProcess::sq_exp_cov_pred(const VectorXd &x, const VectorXd &y) {
-  VectorXd diff = x - y;
-  double inside = 0.0;
-  for (int k = 0; k < numVariables; k++)
-    inside += std::pow(diff(k),2.0)*std::exp(-2.0*(thetaValues)(k+1));
-
-  return std::exp(2.0*(thetaValues)(0))*std::exp(-0.5*inside);
-}
-                
-
-void GaussianProcess::compute_gram(bool compute_derivs){
-  for (int i = 0; i < numSamples; i++) {
-    for (int j = i; j < numSamples; j++) {
-      GramMatrix(i,j) = sq_exp_cov(i,j);
-      if (i != j)
-        GramMatrix(j,i) = GramMatrix(i,j);
-    }
-  }
-
-  if (compute_derivs) {
-    GramMatrixDerivs[0] = 2.0*GramMatrix;
-    for (int k = 1 ; k < numVariables + 1; k++) {
-      GramMatrixDerivs[k] = GramMatrix.cwiseProduct(componentwiseDistances[k-1])
-                            *std::exp(-2.0*(thetaValues)(k));
-    }
-  }
-
-  /* add in the fixed nugget */
-  for (int i = 0; i < numSamples; i++)
-    GramMatrix(i,i) += fixedNuggetValue;
-
-  /* add in the estimated nugget */
-  if (estimateNugget) {
-    for (int i = 0; i < numSamples; i++) {
-      GramMatrix(i,i) += exp(2.0*estimatedNuggetValue);
-    }
-  }
-}
-
-void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient) {
-  double logSum;
-  VectorXd z;
-  MatrixXd Q, eye_matrix, resid;
-  eye_matrix = MatrixXd::Identity(numSamples,numSamples);
-
-  compute_gram(true);
-  CholFact.compute(GramMatrix);
-  VectorXd D(CholFact.vectorD());
-
-  if (estimateTrend) {
-    resid = targetValues - basisMatrix*betaValues;
-    z = CholFact.solve(resid);
-    obj_gradient.segment(numVariables+1, numPolyTerms) = 
-                         -basisMatrix.transpose()*z;
-  }
-  else {
-    resid = targetValues;
-    z = CholFact.solve(resid);
-  }
-
-  logSum = 0.5*log(D.array()).matrix().sum();
-  Q = -0.5*(z*z.transpose() - CholFact.solve(eye_matrix));
-
-  obj_value = logSum + 0.5*(resid.transpose()*z)(0,0) + 
-              static_cast<double>(numSamples)/2.0*log(2.0*PI);
-
-  for (int k = 0; k < numVariables+1; k++)
-    obj_gradient(k) = (GramMatrixDerivs[k].cwiseProduct(Q)).sum();
-
-  if (estimateNugget) {
-    obj_gradient(numVariables+1+numPolyTerms) = 2.0*exp(2.0*estimatedNuggetValue)*
-                                                Q.trace();
-  }
-}
-
-void GaussianProcess::compute_gram_pred(const MatrixXd &samples, MatrixXd &Gram_pred) {
-  const int numPredictionPts = samples.rows();
-  Gram_pred.resize(numPredictionPts,numPredictionPts);
-  for (int i = 0; i < numPredictionPts; i++) {
-    for (int j = i; j < numPredictionPts; j++) {
-      Gram_pred(i,j) = sq_exp_cov_pred(samples.row(i),samples.row(j));
-      if (i != j)
-        Gram_pred(j,i) = Gram_pred(i,j);
-    }
-  }
-  /* add in the fixed nugget */
-  for (int i = 0; i < numPredictionPts; i++)
-    Gram_pred(i,i) += fixedNuggetValue;
-
-  /* add in the estimated nugget */
-  if (estimateNugget) {
-    for (int i = 0; i < numPredictionPts; i++) {
-      Gram_pred(i,i) += exp(2.0*estimatedNuggetValue);
-    }
-  }
-}
-
-
-void GaussianProcess::default_options()
-{
-  // BMA TODO: with both approaches, how to publish a list of all valid options?
-
-  // bound constraints -- will be converted to log-scale
-  // sigma bounds - lower and upper
-  VectorXd sigma_bounds(2);
-  sigma_bounds(0) = 1.0e-2;
-  sigma_bounds(1) = 1.0e2;
-  // length scale bounds - num_vars x 2
-  MatrixXd length_scale_bounds(1,2);
-  length_scale_bounds(0,0) = 1.0e-2;
-  length_scale_bounds(0,1) = 1.0e2;
-
-  /* results in a nugget**2 betwen 1.0e-15 and 1.0e-8 */
-  VectorXd nugget_bounds(2);
-  nugget_bounds(0) = 3.17e-8;
-  nugget_bounds(1) = 1.0e-2;
-
-  defaultConfigOptions.set("sigma bounds", sigma_bounds, "sigma [lb, ub]");
-  // BMA: Do we want to allow 1 x 2 always as a fallback?
-  defaultConfigOptions.set("length-scale bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
-  defaultConfigOptions.set("scaler name", "mean normalization", "scaler for variables");
-  defaultConfigOptions.set("num restarts", 5, "local optimizer number of initial iterates");
-  defaultConfigOptions.set("gp seed", 129, "random seed for initial iterate generation");
-  /* Nugget */
-  defaultConfigOptions.sublist("Nugget")
-                      .set("fixed nugget", 0.0, "fixed nugget term");
-  defaultConfigOptions.sublist("Nugget")
-                      .set("estimate nugget", false, "estimate a nugget term");
-  defaultConfigOptions.sublist("Nugget")
-                      .set("nugget bounds", nugget_bounds, "nugget term [lb, ub]");
-  /* Polynomial Trend */
-  defaultConfigOptions.sublist("Trend").set("estimate trend", false, "estimate a trend term");
-  defaultConfigOptions.sublist("Trend").sublist("Options")
-                      .set("max degree", 2, "Maximum polynomial order");
-  defaultConfigOptions.sublist("Trend").sublist("Options")
-                      .set("p-norm", 1.0, "P-Norm in hyperbolic cross");
-  defaultConfigOptions.sublist("Trend").sublist("Options")
-                      .set("scaler type", "none", "Type of data scaling");
-  defaultConfigOptions.sublist("Trend").sublist("Options")
-                      .set("regression solver type", "SVD", "Type of regression solver");
-}
-
 void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
 {
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
-  std::cout << "Building GaussianProcess with configuration options\n"
-	  << configOptions << std::endl;
+  std::cout << "\nBuilding GaussianProcess with configuration options\n"
+	  << configOptions << "\n";
 
   numQOI = response.cols();
   numSamples = samples.rows();
   numVariables = samples.cols();
   targetValues = response;
+  eyeMatrix = MatrixXd::Identity(numSamples,numSamples);
 
   /* Optimization-related data*/
   VectorXd sigma_bounds = configOptions.get<VectorXd>("sigma bounds");
@@ -313,14 +61,14 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   MatrixXd beta_bounds;
   VectorXd nugget_bounds;
 
-
   const int num_restarts = configOptions.get<int>("num restarts");
   
-  /* Scale the data */
+  /* Scale the data and compute build squared distances */
   dataScaler = util::scaler_factory(
     util::DataScaler::scaler_type(configOptions.get<std::string>("scaler name")),
     samples);
-  MatrixXd scaled_samples = dataScaler->get_scaled_features();
+  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
+  compute_build_dists();
 
   if (estimateTrend) {
     polyRegression = std::make_shared<PolynomialRegression>
@@ -352,27 +100,12 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
     numNuggetTerms = 1;
   }
 
-  /* compute Euclidean distances squared */
-  componentwiseDistances.resize(numVariables);
-  for (int k = 0; k < numVariables; k++) {
-    componentwiseDistances[k].resize(numSamples,numSamples);
-    for (int i = 0; i < numSamples; i++) {
-      for (int j = i; j < numSamples; j++) {
-        componentwiseDistances[k](i,j) = std::pow(scaled_samples(i,k) - scaled_samples(j,k), 2.0);
-        if (i != j)
-          componentwiseDistances[k](j,i) = componentwiseDistances[k](i,j);
-      }
-    }
-  }
-
-
-
   /* set up the initial guesses */
   srand(configOptions.get<int>("gp seed"));
   MatrixXd initial_guesses;
-  generate_initial_guesses(initial_guesses, num_restarts,
-                           sigma_bounds, length_scale_bounds,
-                           nugget_bounds);
+  generate_initial_guesses(sigma_bounds, length_scale_bounds,
+                           nugget_bounds, num_restarts,
+                           initial_guesses);
 
   ROL::Ptr<std::ostream> outStream;
   Teuchos::oblackholestream bhs;
@@ -475,11 +208,11 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   /* Useful info for debugging */
   /*
   std::cout << "\n";
-  std::cout << objectiveFunctionHistory << std::endl;
-  std::cout << "optimal theta values in log-space:" << std::endl;
-  std::cout << bestThetaValues << std::endl;
-  std::cout << "best objective function value is " <<  bestObjFunValue << std::endl;
-  std::cout << "best objective function gradient norm is " <<  final_obj_gradient.norm() << std::endl;
+  std::cout << objectiveFunctionHistory << "\n";
+  std::cout << "optimal theta values in log-space:" << "\n";
+  std::cout << bestThetaValues << "\n";
+  std::cout << "best objective function value is " <<  bestObjFunValue << "\n";
+  std::cout << "best objective function gradient norm is " <<  final_obj_gradient.norm() << "\n";
   */
 }
 
@@ -493,14 +226,16 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   approx_values.resize(numPredictionPts,numVariables);
 
   /* scale the samples (prediction points) */
-  MatrixXd scaled_pred_pts = *(dataScaler->scale_samples(samples));
+  MatrixXd scaled_pred_pts;
+  dataScaler->scale_samples(samples, scaled_pred_pts);
+  compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_gram(false);
+  compute_gram(cwiseDists2, true, false, GramMatrix);
   CholFact.compute(GramMatrix);
 
-  MatrixXd pred_mat, resid, pred_basis_matrix;
-  compute_prediction_matrix(scaled_pred_pts,pred_mat);
+  MatrixXd resid, pred_basis_matrix, mixed_pred_gram;
+  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
 
   if (estimateTrend) {
     resid = targetValues - basisMatrix*betaValues;
@@ -511,29 +246,26 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
 
   MatrixXd chol_solve_resid, chol_solve_pred_mat;
   chol_solve_resid = CholFact.solve(resid);
-  chol_solve_pred_mat = CholFact.solve(pred_mat.transpose());
+  chol_solve_pred_mat = CholFact.solve(mixed_pred_gram.transpose());
 
   /* value */
-  approx_values = pred_mat*chol_solve_resid;
+  approx_values = mixed_pred_gram*chol_solve_resid;
 
   /* compute the covariance matrix and standard deviation */
-  MatrixXd Gram_pred;
-  compute_gram_pred(scaled_pred_pts,Gram_pred);
-  posteriorCov = Gram_pred - pred_mat*chol_solve_pred_mat;
+  MatrixXd pred_gram;
+  compute_gram(cwisePredDists2, true, false, pred_gram);
+  posteriorCov = pred_gram - mixed_pred_gram*chol_solve_pred_mat;
 
   if (estimateTrend) {
     polyRegression->compute_basis_matrix(scaled_pred_pts, pred_basis_matrix);
     MatrixXd z = CholFact.solve(basisMatrix);
-    MatrixXd R_mat = pred_basis_matrix - pred_mat*(z);
+    MatrixXd R_mat = pred_basis_matrix - mixed_pred_gram*(z);
     MatrixXd h_mat = basisMatrix.transpose()*z;
     approx_values += pred_basis_matrix*betaValues;
     posteriorCov += R_mat*(h_mat.ldlt().solve(R_mat.transpose()));
   }
 
-  posteriorStdDev.resize(numPredictionPts);
-  for (int i = 0; i < numPredictionPts; i++) {
-    posteriorStdDev(i) = sqrt(posteriorCov(i,i));
-  }
+  posteriorStdDev = posteriorCov.diagonal().array().sqrt();
 }
 
 void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
@@ -551,26 +283,28 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
   const int numPredictionPts = samples.rows();
 
   /* resize the gradient */
-  gradient.resize(numPredictionPts,numVariables);
+  gradient.resize(numPredictionPts, numVariables);
 
   /* scale the samples (prediction points) */
-  MatrixXd scaled_pred_pts = *(dataScaler->scale_samples(samples));
+  MatrixXd scaled_pred_pts;
+  dataScaler->scale_samples(samples, scaled_pred_pts);
+  compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_gram(false);
+  compute_gram(cwiseDists2, true, false, GramMatrix);
   CholFact.compute(GramMatrix);
 
-  MatrixXd pred_mat, chol_solve_resid, first_deriv_pred_mat,
+  MatrixXd mixed_pred_gram, chol_solve_resid, first_deriv_pred_gram,
            grad_components, resid;
-  compute_prediction_matrix(scaled_pred_pts,pred_mat);
+  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
   resid = targetValues;
   if (estimateTrend)
     resid -= basisMatrix*betaValues;
   chol_solve_resid = CholFact.solve(resid);
 
   for (int i = 0; i < numVariables; i++) {
-    compute_first_deriv_pred_mat(pred_mat,scaled_pred_pts,i,first_deriv_pred_mat);
-    grad_components = first_deriv_pred_mat*chol_solve_resid;
+    compute_first_deriv_pred_gram(mixed_pred_gram, i, first_deriv_pred_gram);
+    grad_components = first_deriv_pred_gram*chol_solve_resid;
     gradient.col(i) = grad_components.col(0);
   }
 
@@ -580,7 +314,6 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
     polyRegression->gradient(scaled_pred_pts, poly_grad_pred_pts);
     gradient += poly_grad_pred_pts;
   }
-
 }
 
 void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
@@ -596,17 +329,19 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
   }
 
   /* resize the Hessian */
-  hessian.resize(numVariables,numVariables);
+  hessian.resize(numVariables, numVariables);
 
   /* scale the samples (prediction points) */
-  MatrixXd scaled_pred_point = *(dataScaler->scale_samples(sample));
+  MatrixXd scaled_pred_point;
+  dataScaler->scale_samples(sample, scaled_pred_point);
+  compute_pred_dists(scaled_pred_point);
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_gram(false);
+  compute_gram(cwiseDists2, true, false, GramMatrix);
   CholFact.compute(GramMatrix);
 
-  MatrixXd pred_mat, chol_solve_resid, second_deriv_pred_mat, resid;
-  compute_prediction_matrix(scaled_pred_point,pred_mat);
+  MatrixXd mixed_pred_gram, chol_solve_resid, second_deriv_pred_gram, resid;
+  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
   resid = targetValues;
   if (estimateTrend)
     resid -= basisMatrix*betaValues;
@@ -615,8 +350,8 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
   /* Hessian */
   for (int i = 0; i < numVariables; i++) {
     for (int j = i; j < numVariables; j++) {
-      compute_second_deriv_pred_mat(pred_mat,scaled_pred_point,i,j,second_deriv_pred_mat);
-      hessian(i,j) = (second_deriv_pred_mat*chol_solve_resid)(0,0);
+      compute_second_deriv_pred_gram(mixed_pred_gram, i, j, second_deriv_pred_gram);
+      hessian(i,j) = (second_deriv_pred_gram*chol_solve_resid)(0,0);
       if (i != j)
         hessian(j,i) = hessian(i,j);
     }
@@ -627,7 +362,238 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
     polyRegression->hessian(scaled_pred_point, poly_hessian_pred_pt);
     hessian += poly_hessian_pred_pt;
   }
+}
 
+void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient) {
+  double logSum;
+  VectorXd z;
+  MatrixXd Q, resid;
+
+  compute_gram(cwiseDists2, true, true, GramMatrix);
+  CholFact.compute(GramMatrix);
+  VectorXd D(CholFact.vectorD());
+
+  if (estimateTrend) {
+    resid = targetValues - basisMatrix*betaValues;
+    z = CholFact.solve(resid);
+    obj_gradient.segment(numVariables+1, numPolyTerms) = 
+                         -basisMatrix.transpose()*z;
+  }
+  else {
+    resid = targetValues;
+    z = CholFact.solve(resid);
+  }
+
+  logSum = 0.5*log(D.array()).matrix().sum();
+  Q = -0.5*(z*z.transpose() - CholFact.solve(eyeMatrix));
+
+  obj_value = logSum + 0.5*(resid.transpose()*z)(0,0) + 
+              static_cast<double>(numSamples)/2.0*log(2.0*PI);
+
+  for (int k = 0; k < numVariables+1; k++)
+    obj_gradient(k) = (GramMatrixDerivs[k].cwiseProduct(Q)).sum();
+
+  if (estimateNugget) {
+    obj_gradient(numVariables+1+numPolyTerms) = 2.0*exp(2.0*estimatedNuggetValue)
+                                              * Q.trace();
+  }
+}
+
+const VectorXd& GaussianProcess::get_posterior_std_dev() const { return posteriorStdDev; }
+
+const MatrixXd& GaussianProcess::get_posterior_covariance() const { return posteriorCov; }
+
+int GaussianProcess::get_num_opt_variables() {
+  return numVariables + 1 + numPolyTerms + numNuggetTerms;
+}
+
+int GaussianProcess::get_num_variables() const { return numVariables; }
+
+void GaussianProcess::set_opt_params(const std::vector<double> &opt_params) {
+  for (int i = 0; i < numVariables + 1; i++) 
+    thetaValues(i) = opt_params[i];
+
+  if (estimateTrend) {
+    for (int i = 0; i < numPolyTerms; i++)
+      betaValues(i) = opt_params[numVariables+1+i];
+  }
+
+  if (estimateNugget)
+    estimatedNuggetValue = opt_params[numVariables+1+numPolyTerms];
+}
+
+void GaussianProcess::default_options()
+{
+  // BMA TODO: with both approaches, how to publish a list of all valid options?
+
+  // bound constraints -- will be converted to log-scale
+  // sigma bounds - lower and upper
+  VectorXd sigma_bounds(2);
+  sigma_bounds(0) = 1.0e-2;
+  sigma_bounds(1) = 1.0e2;
+  // length scale bounds - num_vars x 2
+  MatrixXd length_scale_bounds(1,2);
+  length_scale_bounds(0,0) = 1.0e-2;
+  length_scale_bounds(0,1) = 1.0e2;
+
+  /* results in a nugget**2 betwen 1.0e-15 and 1.0e-8 */
+  VectorXd nugget_bounds(2);
+  nugget_bounds(0) = 3.17e-8;
+  nugget_bounds(1) = 1.0e-2;
+
+  defaultConfigOptions.set("sigma bounds", sigma_bounds, "sigma [lb, ub]");
+  // BMA: Do we want to allow 1 x 2 always as a fallback?
+  defaultConfigOptions.set("length-scale bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
+  defaultConfigOptions.set("scaler name", "mean normalization", "scaler for variables");
+  defaultConfigOptions.set("num restarts", 5, "local optimizer number of initial iterates");
+  defaultConfigOptions.set("gp seed", 129, "random seed for initial iterate generation");
+  /* Nugget */
+  defaultConfigOptions.sublist("Nugget")
+                      .set("fixed nugget", 0.0, "fixed nugget term");
+  defaultConfigOptions.sublist("Nugget")
+                      .set("estimate nugget", false, "estimate a nugget term");
+  defaultConfigOptions.sublist("Nugget")
+                      .set("nugget bounds", nugget_bounds, "nugget term [lb, ub]");
+  /* Polynomial Trend */
+  defaultConfigOptions.sublist("Trend").set("estimate trend", false, "estimate a trend term");
+  defaultConfigOptions.sublist("Trend").sublist("Options")
+                      .set("max degree", 2, "Maximum polynomial order");
+  defaultConfigOptions.sublist("Trend").sublist("Options")
+                      .set("p-norm", 1.0, "P-Norm in hyperbolic cross");
+  defaultConfigOptions.sublist("Trend").sublist("Options")
+                      .set("scaler type", "none", "Type of data scaling");
+  defaultConfigOptions.sublist("Trend").sublist("Options")
+                      .set("regression solver type", "SVD", "Type of regression solver");
+}
+
+void GaussianProcess::compute_build_dists() {
+
+  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
+  cwiseDists2.resize(numVariables);
+
+  for (int k = 0; k < numVariables; k++) {
+    cwiseDists2[k].resize(numSamples,numSamples);
+    for (int i = 0; i < numSamples; i++) {
+      for (int j = i; j < numSamples; j++) {
+        cwiseDists2[k](i,j) = pow(scaled_samples(i,k) - scaled_samples(j,k), 2);
+        if (i != j)
+          cwiseDists2[k](j,i) = cwiseDists2[k](i,j);
+      }
+    }
+  }
+}
+
+void GaussianProcess::compute_pred_dists(const MatrixXd &scaled_pred_pts) {
+
+  const int num_pred_pts = scaled_pred_pts.rows();
+  cwiseMixedDists.resize(numVariables);
+  cwiseMixedDists2.resize(numVariables);
+  cwisePredDists2.resize(numVariables);
+  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
+
+  for (int k = 0; k < numVariables; k++) {
+    cwiseMixedDists[k].resize(num_pred_pts, numSamples);
+    cwisePredDists2[k].resize(num_pred_pts, num_pred_pts);
+    for (int i = 0; i < num_pred_pts; i++) {
+      for (int j = 0; j < numSamples; j++) {
+        cwiseMixedDists[k](i,j) = scaled_pred_pts(i,k) - scaled_samples(j,k);
+      }
+      for (int j = i; j < num_pred_pts; j++) {
+        cwisePredDists2[k](i,j) = pow(scaled_pred_pts(i,k) - scaled_pred_pts(j,k), 2);
+        if (i != j)
+          cwisePredDists2[k](j,i) = cwisePredDists2[k](i,j);
+      }
+    }
+    cwiseMixedDists2[k] = cwiseMixedDists[k].array().square();
+  }
+}
+
+void GaussianProcess::compute_gram(const std::vector<MatrixXd> &dists2, bool add_nugget, 
+                                   bool compute_derivs, MatrixXd &gram) {
+  for (int k = 0; k < numVariables; k++) {
+    if (k == 0)
+      gram = dists2[k]*exp(-2.0*thetaValues[k+1]);
+    else
+      gram += dists2[k]*exp(-2.0*thetaValues[k+1]);
+  }
+  gram = exp(2.0*thetaValues[0])*(-0.5*gram.array()).exp();
+
+  if (compute_derivs) {
+    GramMatrixDerivs[0] = 2.0*gram;
+    for (int k = 1 ; k < numVariables + 1; k++) {
+      GramMatrixDerivs[k] = gram.cwiseProduct(dists2[k-1])
+                            *exp(-2.0*(thetaValues)(k));
+    }
+  }
+
+  if (add_nugget) {
+    /* add in the fixed nugget */
+    gram.diagonal().array() += fixedNuggetValue;
+    /* add in the estimated nugget */
+    if (estimateNugget)
+      gram.diagonal().array() += exp(2.0*estimatedNuggetValue);
+  }
+}
+
+
+void GaussianProcess::compute_first_deriv_pred_gram(const MatrixXd &pred_gram, const int index, MatrixXd &first_deriv_pred_gram) {
+  first_deriv_pred_gram = -pred_gram.cwiseProduct(cwiseMixedDists[index])
+                        * exp(-2.0*thetaValues[index+1]);
+}
+
+void GaussianProcess::compute_second_deriv_pred_gram(const MatrixXd &pred_gram,
+                                                     const int index_i, const int index_j,
+                                                     MatrixXd &second_deriv_pred_gram) {
+  double delta_ij = 1.0;
+  if (index_i != index_j)
+    delta_ij = 0.0;
+
+  second_deriv_pred_gram = pred_gram.array()*exp(-2.0*thetaValues[index_i+1])
+    * ((cwiseMixedDists[index_i].cwiseProduct(cwiseMixedDists[index_j])).array()
+    * exp(-2.0*thetaValues[index_j+1]) - delta_ij);
+
+}
+
+void GaussianProcess::generate_initial_guesses(const VectorXd &sigma_bounds,
+                                               const MatrixXd &length_scale_bounds,
+                                               const VectorXd &nugget_bounds,
+                                               const int num_restarts,
+                                               MatrixXd &initial_guesses) {
+
+  initial_guesses = MatrixXd::Random(num_restarts,numVariables + 1
+                    + numPolyTerms + numNuggetTerms);
+  double mean, span;
+  for (int j = 0; j < numVariables+1; j++) {
+    if (j == 0) {
+      span = 0.5*(log(sigma_bounds(1)) - log(sigma_bounds(0)));
+      mean = 0.5*(log(sigma_bounds(1)) + log(sigma_bounds(0)));
+    }
+    else {
+      span = 0.5*(log(length_scale_bounds(j-1,1)) - log(length_scale_bounds(j-1,0)));
+      mean = 0.5*(log(length_scale_bounds(j-1,1)) + log(length_scale_bounds(j-1,0)));
+    }
+    for (int i = 0; i < num_restarts; i++) {
+      initial_guesses(i,j) = span*initial_guesses(i,j) + mean;
+    }
+  }
+  /* Initial guess for trend terms set to zero */
+  if (estimateTrend) {
+    int index_offset = numVariables + 1;
+    for (int i = 0; i < num_restarts; ++i) {
+      for (int j = 0; j < numPolyTerms; j++) {
+        initial_guesses(i, index_offset + j) = 0.0;
+      }
+    }
+  }
+  if (estimateNugget) {
+    int index_offset = numVariables + 1 + numPolyTerms;
+    span = 0.5*(log(nugget_bounds(1)) - log(nugget_bounds(0)));
+    mean = 0.5*(log(nugget_bounds(1)) + log(nugget_bounds(0)));
+    for (int i = 0; i < num_restarts; ++i) {
+      initial_guesses(i,index_offset) = span*initial_guesses(i,index_offset)
+                                        + mean;
+    }
+  }
 }
 
 void GaussianProcess::setup_default_optimization_params(
@@ -689,32 +655,6 @@ void GaussianProcess::setup_default_optimization_params(
   rol_params->sublist("Status Test").
              set("Iteration Limit",200);
 }
-
-const VectorXd& GaussianProcess::get_posterior_std_dev() const { return posteriorStdDev; }
-
-const MatrixXd& GaussianProcess::get_posterior_covariance() const { return posteriorCov; }
-
-int GaussianProcess::get_num_opt_variables() {
-  return numVariables + 1 + numPolyTerms + numNuggetTerms;
-}
-
-int GaussianProcess::get_num_variables() const { return numVariables; }
-
-// TODO: Update the name, more parameters than theta now
-void GaussianProcess::set_opt_params(const std::vector<double> &opt_params) {
-  for (int i = 0; i < numVariables + 1; i++) 
-    thetaValues(i) = opt_params[i];
-
-  if (estimateTrend) {
-    for (int i = 0; i < numPolyTerms; i++)
-      betaValues(i) = opt_params[numVariables+1+i];
-  }
-
-  if (estimateNugget)
-    estimatedNuggetValue = opt_params[numVariables+1+numPolyTerms];
-}
-
-
 
 }  // namespace surrogates
 }  // namespace dakota

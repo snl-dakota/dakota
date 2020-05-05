@@ -1,0 +1,12 @@
+Blurb::
+Filename for an xml file that specifies polynomial surrogate options
+
+Description::
+This feature is not yet supported. The xml file contains configuration options
+that are used to populate a Teuchos ParameterList used by the polynomial.
+
+Topics::
+
+Theory::
+Faq::
+See_Also::

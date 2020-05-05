@@ -131,13 +131,17 @@ public:
   //- Heading: Keyword handlers called by nidr
   //
 
+  // Suppress Doxygen warnings for these known undocumented macros
+  // (would probably have to enable preprocessor in Doxygen)
+  /// /cond
+
 #define KWH(x) static void x(const char *keyname, Values *val, void **g, void *v)
 
   KWH(iface_Real);
   KWH(iface_Rlit);
   KWH(iface_false);
   KWH(iface_ilit);
-  KWH(iface_pint);
+  KWH(iface_int);
   KWH(iface_lit);
   KWH(iface_start);
   KWH(iface_stop);
@@ -168,11 +172,8 @@ public:
   KWH(method_litr);
   KWH(method_litz);
   KWH(method_order);
-  KWH(method_nnint);
   KWH(method_num_resplevs);
   KWH(method_piecewise);
-  KWH(method_pint);
-  KWH(method_pintz);
   KWH(method_resplevs);
   KWH(method_resplevs01);
   KWH(method_shint);
@@ -199,8 +200,6 @@ public:
   KWH(model_intsetm1);
   KWH(model_lit);
   KWH(model_order);
-  KWH(model_pint);
-  KWH(model_nnint);
   KWH(model_shint);
   KWH(model_sizet);
   KWH(model_start);
@@ -252,7 +251,7 @@ public:
   KWH(var_deuilbl);
   KWH(var_deuslbl);
   KWH(var_deurlbl);
-  KWH(var_pintz);
+  KWH(var_sizet);
   KWH(var_start);
   KWH(var_stop);
   KWH(var_str);
@@ -268,6 +267,10 @@ public:
   KWH(var_type);
 
 #undef KWH
+
+  // Suppress Doxygen warnings for these known undocumented macros
+  // (would probably have to enable preprocessor in Doxygen)
+  /// /endcond
 };
 
 

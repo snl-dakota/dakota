@@ -65,6 +65,18 @@ def extract_moment_confidence_intervals():
                 nline = next(lines_iter).strip()
     return cis
 
+def extract_equiv_num_hf_evals():
+    """Extract the equivalent number of high fideltiy evals
+    
+    Returns a floating point value. 
+    """
+    global __OUTPUT
+    lines_iter = iter(__OUTPUT)
+    for line in lines_iter:
+        if line.startswith("<<<<< Equivalent number of high fidelity evaluations:"):
+            msg, val = line.split(':')
+            return float(val)
+    return None
 
 def extract_pdfs():
     """Extract the PDFs from the global __OUTPUT

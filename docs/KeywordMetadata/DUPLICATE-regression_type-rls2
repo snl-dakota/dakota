@@ -1,0 +1,12 @@
+Blurb:: Use regularized regression solver for forming function train approximations
+
+Description::
+RLS2 is a regularized least squares solver that applies an \a L2 penalty
+to mitigate overfitting.  It includes the option to specify a penalty parameter.
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also::  model-surrogate-global-function_train-regression_type-rls2-l2_penalty

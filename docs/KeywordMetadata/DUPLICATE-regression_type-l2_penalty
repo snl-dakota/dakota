@@ -1,0 +1,18 @@
+Blurb:: Penalty value applied in regularized regression solver for function train approximations
+
+Description::
+Regularized regression applies a penalty to aspects of the recovered solution
+(e.g., cardinality, higher-order oscillatory terms, et al.) to mitigate overfitting.
+This specification provides the scalar penalty parameter (its value is not currently
+adapted or cross-validated).
+
+<b> Default Behavior </b>
+
+If this penalty parameter is not specified, then we adopt the internal C3 default.
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also::  model-surrogate-global-function_train-regression_type-rls2

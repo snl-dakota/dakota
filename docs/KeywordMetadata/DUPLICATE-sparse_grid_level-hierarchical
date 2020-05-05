@@ -1,0 +1,19 @@
+Blurb:: Employ a hierarchical sparse grid construction
+
+Description::
+
+Stochastic collocation with sparse grids can employ either a nodal or hierarchical
+formulation.  The hierarchical formulation requires nested interpolation rules
+as it utilizes increments in collocation points along with hierarchical weights
+defined from a hierarchical basis formulation.
+
+This keyword requests the hierarchical formulation, which has benefits
+for adaptive refinement by supporting direct computation of increments
+in targeted statistics (e.g. mean, covariance, reliability indices),
+avoiding loss of precision from subtractive cancellation.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	
