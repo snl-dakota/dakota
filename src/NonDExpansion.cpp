@@ -987,7 +987,8 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // if refinement opportunities have saturated (e.g., increments have reached
     // max{Order,Rank} or previous cross validation indicated better fit with
     // lower order), no candidates will be generated for this model key.
-    if (saturated()) return std::numeric_limits<size_t>::max();
+    if (!refinement_available())
+      return std::numeric_limits<size_t>::max();
 
     RealVector stats_ref;
     if (revert) pull_reference(stats_ref);
@@ -1015,7 +1016,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     pull_candidate(statsStar); // pull compute_*_metric() + augmented stats
 
     if (revert)
-      { pop_increment();  push_reference(stats_ref); }
+      { pop_increment(); push_reference(stats_ref); }
     else
       merge_grid();
     break;
