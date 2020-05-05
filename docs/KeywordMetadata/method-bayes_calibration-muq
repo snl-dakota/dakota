@@ -1,0 +1,21 @@
+Blurb::
+Markov Chain Monte Carlo algorithms from the MUQ package
+
+Description::
+
+The \c muq method supports the following MCMC algorithms: 
+adaptive metropolis (AM) or  pure Metropolis Hasting (MH). 
+
+The \c muq method is currently an experimental method that relies 
+on algorithms from MIT's MUQ code documented at: 
+https://bitbucket.org/mituq/muq2/src/master/
+
+We anticipate using more advanced features of MUQ such as Hamiltonian Monte Carlo 
+and Langevin methods in future releases of Dakota.
+
+This
+Topics::	bayesian_calibration, package_muq
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -7,10 +7,13 @@ and no adaptive proposal covariance updating as in DRAM.
 
 <b> Default Behavior </b>
 
-Five MCMC algorithm variants are supported: \c dram, \c
+Five MCMC algorithm variants are supported currently in QUESO: \c dram, \c
 delayed_rejection, \c adaptive_metropolis, \c metropolis_hastings, and
 \c multilevel.  The default is \c dram.
 
+Two MCMC algorithm variants are currently supported in MUQ: \c metropolis_hastings 
+and \c adaptive_metropolis.
+ 
 <b> Usage Tips </b>
 
 If the user wants to use Metropolis-Hastings, possibly as a comparison
