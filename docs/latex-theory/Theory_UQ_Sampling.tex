@@ -157,22 +157,22 @@ defining an optimal sample allocation per discretization level.
 Despite the original introduction of the MLMC approach for the computation of the mean estimator in \cite{Giles2008,Giles2015}, it is 
 possible to estimate higher-order moments with a MLMC sampling strategy, as for instance the variance.
 
-A single level unbiased estimator for a generic QoI at the highest level $L$ of the hierarchy can be written as
+A single level unbiased estimator for the variance of a generic QoI at the highest level $L$ of the hierarchy can be written as
 \begin{equation}
 \label{eq: variance_est_single_level}
- \mathbb{V}ar\left[Q_L\right] \approx \frac{1}{N_L - 1} \sum_{i=1}^{N_L} \left( Q_L^{(i)} - \mathbb{E}\left[Q_L\right] \right)^2.
+ \mathbb{V}ar\left[Q_M\right] \approx \frac{1}{N_L - 1} \sum_{i=1}^{N_L} \left( Q_M^{(i)} - \mathbb{E}\left[Q_M\right] \right)^2.
 \end{equation}
 
 There are two necessary steps to obtain a multilevel version of Eq.~\eqref{eq: variance_est_single_level}, namely the telescopic expansion in term of difference of estimators
-over subsequent levels and the telescopic expansion for the expected value $\mathbb{E}\left[Q_L\right]$.
+over subsequent levels and the telescopic expansion for the expected value $\mathbb{E}\left[Q_M\right]$.
 
 The first expansion is obtained by re-writing Eq.~\eqref{eq: variance_est_single_level} as 
 \begin{equation}
 \begin{split}
 \label{eq: variance_est_ML}
- \mathbb{V}ar\left[Q_L\right] &=       \frac{1}{N_L - 1} \sum_{i=1}^{N_L} \left( Q_L^{(i)} - \mathbb{E}\left[Q_L\right] \right)^2 \\
-                              &\approx \sum_{\ell=0}^L  \frac{1}{N_\ell - 1} \left( \left( Q_\ell^{(i)} - \mathbb{E}\left[Q_\ell\right] \right)^2 
-                                                                                  - \left( Q_{\ell-1}^{(i)} - \mathbb{E}\left[Q_{\ell-1}\right] \right)^2 \right).
+ \mathbb{V}ar\left[Q_M\right] &\approx       \frac{1}{N_L - 1} \sum_{i=1}^{N_L} \left( Q_M^{(i)} - \mathbb{E}\left[Q_M\right] \right)^2 \\
+                              &\approx \sum_{\ell=0}^L  \frac{1}{N_\ell - 1} \left( \left( Q_{M_\ell}^{(i)} - \mathbb{E}\left[Q_{M_\ell}\right] \right)^2 
+                                                                                  - \left( Q_{M_{\ell-1}}^{(i)} - \mathbb{E}\left[Q_{\ell-1}\right] \right)^2 \right).
 \end{split}
 \end{equation}
 It is important here to note that since the estimators at the levels $\ell$ and $\ell-1$ are computed with the same number of samples both estimators use the factor 
@@ -181,22 +181,27 @@ either $\ell$ or $\ell-1$. This last requirement leads to the computation of a l
 \begin{equation}
 \begin{split}
 \label{eq: variance_est_ML_approximation}
- \mathbb{V}ar\left[Q_L\right] \approx \hat{Q}_{L,2}^{ML} = \sum_{\ell=0}^L \hat{Q}_{\ell,2} - \hat{Q}_{\ell-1,2},
+ \mathbb{V}ar\left[Q_L\right] \approx \hat{Q}_{L,2}^{\mathrm{ML}} = \sum_{\ell=0}^L \hat{Q}_{\ell,2} - \hat{Q}_{\ell-1,2},
 \end{split}
 \end{equation}
 
 where 
 \begin{equation}
- \hat{Q}_{\ell,2} = \frac{1}{N_\ell - 1} \left( Q_\ell^{(i)} - \hat{Q}_\ell \right)^2.
+\label{eq: variance_est_ML_level_terms}
+ \hat{Q}_{\ell,2} = \frac{1}{N_\ell - 1} \sum_{i=1}^{N_\ell} \left( Q_\ell^{(i)} - \hat{Q}_\ell \right)^2
+\text{\quad  and \quad}
+ \hat{Q}_{\ell - 1,2} = \frac{1}{N_\ell - 1} \sum_{i=1}^{N_\ell} \left( Q_{\ell - 1}^{(i)} - \hat{Q}_{\ell - 1} \right)^2.
 \end{equation}
+Note that $\hat{Q}_{\ell,2}$ and $\hat{Q}_{\ell - 1,2}$ are explicitly sharing the same samples $N_\ell$.
 
 For this estimator we are interested in minimizing its cost while also prescribing its variance as done for the expected value. This is accomplished by evaluating the 
 variance of the multilevel variance estimator $\hat{Q}_{L,2}^{ML}$
 \begin{equation}
- \mathbb{V}ar\left[ \hat{Q}_{L,2}^{ML} \right] = \sum_{\ell=0}^L \mathbb{V}ar\left[ \hat{Q}_{\ell,2} - \hat{Q}_{\ell-1,2} \right]
+ \mathbb{V}ar\left[ \hat{Q}_{L,2}^{\mathrm{ML}} \right] = \sum_{\ell=0}^L \mathbb{V}ar\left[ \hat{Q}_{\ell,2} - \hat{Q}_{\ell-1,2} \right]
                                                = \sum_{\ell=0}^L \mathbb{V}ar\left[ \hat{Q}_{\ell,2} \right] + \mathbb{V}ar\left[\hat{Q}_{\ell-1,2} \right]
-                                               + 2 \mathbb{C}ov\left( \hat{Q}_{\ell,2},\hat{Q}_{\ell-1,2} \right).
+                                               - 2 \mathbb{C}ov\left( \hat{Q}_{\ell,2},\hat{Q}_{\ell-1,2} \right).
 \end{equation}
+where the covariance term is a result of the dependence described in~\eqref{eq: variance_est_ML_level_terms}.
 
 The previous expression can be evaluated once the variance for the sample estimator of the second order order moment $\mathbb{V}ar\left[ \hat{Q}_{\ell,2} \right]$ and the covariance term $\mathbb{C}ov\left( \hat{Q}_{\ell,2},\hat{Q}_{\ell-1,2} \right)$ are known. These terms can be evaluated as:
 \begin{equation}
@@ -232,7 +237,7 @@ quantities on each level.
 An optimization problem, similar to the one formulated for the mean in the previous section, can be written in the case of variance 
 \begin{equation}\label{EQ:mlmc_optimization_var}
 \begin{split}
-\min\limits_{N_\ell} \sum_{\ell=0}^L \mathcal{C}_{\ell} N_\ell \quad \mathrm{s.t.} \quad \mathbb{V}ar\left[ \hat{Q}_{L,2}^{ML} \right] = \varepsilon^2.
+\min\limits_{N_\ell} \sum_{\ell=0}^L \mathcal{C}_{\ell} N_\ell \quad \mathrm{s.t.} \quad \mathbb{V}ar\left[ \hat{Q}_{L,2}^{\mathrm{ML}} \right] = \varepsilon^2.
 % 
 % 
 %  f(N_\ell,\lambda) = \sum_{\ell=0}^{L} N_\ell \, \mathcal{C}_{\ell} 
@@ -241,7 +246,7 @@ An optimization problem, similar to the one formulated for the mean in the previ
 \end{equation}
 
 This optimization problem can be solved in two different ways, namely an analytical approximation and by solving a non-linear optimization problem. Both approaches are 
-currently implemented in Dakota. We refer to the reference manual for a discussion of he keywords that enable to select these different options.
+currently implemented in Dakota. We refer to the reference manual for a discussion of the keywords that enable to select these different options.
 
 
 \section{A multilevel-multifidelity approach} \label{uq:sampling:mlmf}
