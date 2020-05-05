@@ -15,7 +15,7 @@ f_k^{r_{k-1}1}(x_k) & \cdots & f_k^{r_{k-1}r_k}(x_k)
 \end{bmatrix}
 \f]
 
-An example 4-D expansion with rank vector (1,7,5,3,1) is
+An example expansion over four random variables with rank vector (1,7,5,3,1) is
 \f[ f_r(x) =
 \begin{bmatrix}
 f_1^{11}(x_1)       & \cdots & f_1^{17}(x_1)
@@ -55,9 +55,10 @@ size can be determined as follows:
 
 <b> Usage Tips </b>
 
-This new capability is under active development.  It is not included
-in the Dakota build by default, as some C3 library dependencies can
-induce small differences in our regression suite.
+This new capability is stabilizing and beginning to be embedded in
+higher-level strategies such as multilevel-multifidelity algorithms.
+It is not included in the Dakota build by default, as some C3 library
+dependencies (CBLAS) can induce small differences in our regression suite.
 
 This capability is also being used as a prototype to explore
 model-based versus method-based specification of stochastic
@@ -82,4 +83,4 @@ model,
 	dace_method_pointer = 'SAMPLING'
 \endverbatim
 
-See_Also::	method-function_train
+See_Also::	method-function_train, method-multilevel-function_train, method-multifidelity-function_train 
