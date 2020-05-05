@@ -1677,7 +1677,7 @@ The following sections describe the components of {\tt dakota.interfacing}. Thes
   \item The {\tt Parameters} class. Makes availabile the variable information for a single evaluation
   \item The {\tt Results} class. Collects results for a single evaluation and writes them to file 
   \item The {\tt BatchParameters} and {\tt BatchResults} classes. Containers for multiple {\tt Parameters} and 
-        {\\tt Results} objects; used when evaluations are performed by Dakota in batch mode
+	  {\tt Results} objects; used when evaluations are performed by Dakota in batch mode (Section~\ref{interfaces:batch})
   \item The {\tt read\_parameters\_file} function. Constructs {\tt Parameters}, 
         {\tt Results}, {\tt BatchParameters}, and {\tt BatchResults} objects from a Dakota 
         parameters file.
@@ -1692,7 +1692,7 @@ it instead returns a tuple containing {\tt (BatchParameters, BatchResults)}.
 
 Its signature is:
 
-\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None}, \emph{ignore\_asv=False}}){}
+\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None}, \emph{ignore\_asv=False}, \emph{batch=False}}){}
 
 \emph{parameters\_file} and \emph{results\_file} are the names of the parameters file that is to be read
 and the results file that  ultimately is to be written. The names can be  absolute or relative filepaths or
@@ -1711,6 +1711,8 @@ By default, the returned {\tt Results} or {\tt BatchResults} object enforces the
 a response to be set, by setting \emph{ignore\_asv} to {\tt True}. The \emph{ignore\_asv} option can be useful
 when setting up or debugging a driver.
 
+The {\tt batch} argument must be set to {\tt True} when batch evaluation has been requested in the Dakota input
+file, and {\tt False} when not.
 
 \subsection{Parameters objects}
 
