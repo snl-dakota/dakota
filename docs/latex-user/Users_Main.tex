@@ -63,6 +63,12 @@
 %\setcounter{tocdepth}{1}
 \renewcommand\footrulewidth{0.4pt}
 
+% break long keywords across underscores
+\newcommand*\dakotakw[1]{\texttt{\expandafter\dodakotakw\detokenize{#1}\relax}}
+\newcommand*\dodakotakw[1]{\ifx\relax#1\else
+  \expandafter\ifx\string_#1\string_\allowbreak\else#1\fi
+  \expandafter\dodakotakw\fi}
+
 \begin{document}
 
 \begin{titlepage}

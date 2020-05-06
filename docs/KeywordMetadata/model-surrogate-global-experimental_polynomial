@@ -6,10 +6,6 @@ Compute a polynomial surrogate for a specified total order by
 least-squares regression. This model is implemented in Dakota's
 surrogates module and is considered experimental.
 
-<b> Usage Tips </b>
-For univariate polynomials it is recommended that the total order is greater
-than twice the number of sample points in the build dataset.
-
 Topics::
 
 Theory::
