@@ -1,18 +1,68 @@
-Blurb:: Unused (reserved for future Adapted Basis Model)
+Blurb:: Basis adaptation model
 
 Description::
+A model that transforms the original model (given by \ref
+model-adapted_basis-actual_model_pointer) to one with a rotated set of variables.  
+The current implementation does not support the reduction of the dimension for the new model and only transform 
+the variable set in a rotated one in which the variable are arranged in a decreasing importance order.
 
-<b> Default Behavior </b>
+An initial PCE representation is built with a sparse grid method and the PCE coefficients are then used to 
+build a rotation matrix. This matrix is also reported as a result of the code execution. The new model 
+can subsequently be use for an UQ workflow.
 
 <b> Expected Output </b>
-
-<b> Usage Tips </b>
-
-<b> Additional Discussion </b>
-
-Topics::
+A basis adaptation model will perform an initial sparse grid design to
+identify the rotation matrix.
 
 Examples::
+Perform an initial sparse grid design (level 1) to evaluate the PCE expansion and evaluate the rotation matrix.
+Afterwards, 100 samples are generated for the model in the rotated space to obtain its statistics.
+
+\verbatim
+method,
+  sampling
+    model_pointer = 'SUBSPACE'
+    samples = 100 seed = 1234567
+
+model
+  id_model = 'SUBSPACE'
+  adapted_basis
+    actual_model_pointer = 'FULLSPACE'
+    sparse_grid_level = 1
+\endverbatim    
+
 Theory::
+The idea behind the Basis Adaptation method is to generate a PCE representation and rotate it such that the new set of 
+rotated variables are organized in a decreasing importance ordering. Subsequently this rotation matrix can be truncated according to some
+criterion to only include the significant directions.
+
+The first step of the Basis Adaptation is to compute a PCE expansion (we assume here \f$ \xi \f$ to have a standard multivariate Gaussian distribution)
+\f[ Q(\xi) = \sum_{\alpha\in\mathcal{J}_{d,p}}Q_{\alpha}\psi_{\alpha}(\xi) \f],
+where \f$\alpha = (\alpha_1,...,\alpha_d) \in \mathcal{J}_{d,p}:=(\mathbb{N}_0)^d\f$ with \f$|\alpha| = \sum_{i=1}^{d} \alpha_i<= d\f$ is multi-index of dimension \f$d\f$ and order up to \f$p\f$.
+
+Afterwards, a multivariate Gaussian distribution \f$ \eta \f$ is sought such that 
+\f[ \eta = A \xi \f],
+where \f$ A \f$ is an isometry such that \f$ A A^\mathrm{T} = I \f$.
+
+The basis adaptation model is obtained by expressing the original model with respect to the rotated set of variables \f$ \eta \f$ as
+\f[ {Q}^{A}(\eta) = \sum_{\beta\in\mathcal{J}_{d,p}}Q_{\beta}^{A}\psi_{\beta}(\eta)\f].
+
+Since the basis for both the original and the adapted basis model span the same space, we know that \f$ {Q}^{A}(\eta(\xi)) = Q(\xi) \f$ and
+therefore a relationships between the PCE coefficients exists
+\f[ Q_{\alpha} = \sum_{\beta\in\mathcal{J}_{d,p}}Q_{\beta}^{A}\langle\psi_{\beta}^{A},\psi_{\alpha}\rangle, \ \alpha\in \mathcal{J}_{d,p} \f].
+
+The linear adaptation strategy is used at this time in Dakota to obtain the rotation matrix \f$ A \f$.
+The step to obtain the matrix \f$ A \f$  are the following:
+
+1. The first variable \f$ \eta_1 \f$ is obtained by directly combining the first order terms, that is
+\f[ \eta_1 = \sum_{ \alpha \in\mathcal{J}_{d,1}} Q_{ \alpha}\psi_{\alpha}(\xi) = \sum_{i=1}^{d}Q_{e_i} \xi_i, \f]
+where \f$ e_i \f$ is the \f$d-\f$dimensional multi-index with 1 at the \f$i\f$th location and zero elsewhere.
+
+2. The remaining rows of the \f$ A \f$ matrix (\f$ A \in \mathbb{R}^{d \times d} \f$) are obtained by using the largest coefficient, row after row, placed in the column that it occupies in the first row. All other terms are set to zero.
+
+3. As last step, in order to obtain an isometry, the Gram-Schmidt procedure is followed on \f$ A \f$.
+
+See the theory manual for more details.
+
 Faq::
-See_Also::
+See_Also:: \ref model-active_subspace
