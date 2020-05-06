@@ -104,6 +104,8 @@ a sufficiently fine resolution $M$. Since the numerical cost of a PDE is related
 the total cost of a MC simulation for a PDE can easily become intractable for complex multi-physics applications that are computationally 
 intensive.
 
+\subsection{Multilevel Monte Carlo for the estimator mean}
+
 The multilevel Monte Carlo (MLMC) algorithm has been introduced, starting from the control variate idea, for situation in which additional 
 %(with respect to the stochastic space) 
 discretization levels can be defined. The basic idea, borrowed from the multigrid approach,
@@ -245,8 +247,26 @@ An optimization problem, similar to the one formulated for the mean in the previ
 \end{split}
 \end{equation}
 
-This optimization problem can be solved in two different ways, namely an analytical approximation and by solving a non-linear optimization problem. Both approaches are 
-currently implemented in Dakota. We refer to the reference manual for a discussion of the keywords that enable to select these different options.
+This optimization problem can be solved in two different ways, namely an analytical approximation and by solving a non-linear optimization problem. The analytical approximation follows the approach described in \cite{Pisaroni2017} and introduces a helper variable
+\begin{equation}
+\hat{V}_{2, \ell} := \mathbb{V}ar\left[ \hat{Q}_{\ell,2} \right] \cdot N_{\ell}.
+\end{equation}
+Next, the following constrained minimization problem is formulated
+\begin{equation}\label{EQ:mlmc_var_optimization_nobile}
+ f(N_\ell,\lambda) = \sum_{\ell=0}^{L} N_\ell \, \mathcal{C}_{\ell} 
+                   + \lambda \left( \sum_{\ell=0}^{L} N_\ell^{-1} \hat{V}_{2, \ell} - \varepsilon^2/2 \right),
+\end{equation}
+and a closed form solution is obtained
+\begin{equation}\label{EQ: MLMC_nl_var_nobile}
+N_{\ell} = \frac{2}{\varepsilon^2} \left[ \, \sum_{k=0}^L \left( \hat{V}_{2, k} \mathcal{C}_k \right)^{1/2} \right] 
+               \sqrt{\frac{ \hat{V}_{2, \ell} }{\mathcal{C}_{\ell}}},
+\end{equation}
+similarly as for the expected value in~\eqref{EQ:mlmc_optimization}.
+%Note here, that higher order terms of $N_\ell$ in $\mathbb{V}ar\left[ \hat{Q}_{\ell,2} \right]$ are not considered in the optimization. 
+
+The second approach uses numerical optimization directly on the non-linear optimization problem~\eqref{EQ:mlmc_optimization_var} to find an optimal sample allocation. Dakota uses OPTPP as the default optimizer and switches to NPSOL if it is available. 
+
+Both approaches for finding the optimal sample allocation when allocating for the variance are currently implemented in Dakota. The analytical solution is employed by default while the optimization is enabled using a keyword. We refer to the reference manual for a discussion of the keywords to select these different options.
 
 
 \section{A multilevel-multifidelity approach} \label{uq:sampling:mlmf}
