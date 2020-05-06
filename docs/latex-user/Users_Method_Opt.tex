@@ -1128,40 +1128,43 @@ continuous design variables are log scaled, linear constraints are not
 permitted in the problem formulation. Discrete variable scaling is not
 supported.
 
-Scaling is enabled on a per-method basis for optimizers and least
-squares minimizers by including the {\tt scaling} keyword in the
-relevant {\tt method} specification in the Dakota input deck. When
-scaling is enabled, variables, functions, gradients, Hessians, etc.,
-are transformed such that the optimizer iterates in scaled variable
-space, whereas evaluations of the computational model as specified in
-the interface are performed on the original problem scale. Therefore
-using scaling does not require rewriting the interface to the
-simulation code. When the {\tt scaling} keyword is omitted, all {\tt
-  *\_scale\_types} and {\tt *\_scales} specifications described below
-are ignored in the corresponding method, variables, and responses
-sections. When the method {\tt output\_level} is set above normal,
-scaling initialization and diagnostic information will be printed.
+Scaling is enabled on a per-method basis for optimizers and
+calibration (least squares and Bayesian) methods by including the
+\dakotakw{scaling} keyword in the relevant \dakotakw{method}
+specification in the Dakota input file. When scaling is enabled,
+variables, functions, gradients, Hessians, etc., are transformed such
+that the optimizer iterates in the scaled variable/response space,
+whereas evaluations of the computational model as specified in the
+interface are performed on the original problem scale. Therefore using
+scaling does not require rewriting the interface to the simulation
+code. When the \dakotakw{scaling} keyword is absent, all other scale
+type and value specifications described below are ignored in the
+corresponding method, variables, and responses sections. When the
+method's \dakotakw{output} level is set above normal, scaling
+initialization and diagnostic information will be printed.
 
 Scaling for a particular variable or response type is enabled through
-the {\tt *\_scale\_types} specification (see the Reference Manual
-method section and references contained therein for a complete keyword
-list). Valid options for this string specification include {\tt
-  'none'} (default), {\tt 'value'}, {\tt 'auto'}, or {\tt 'log'}, for
-no, characteristic value, automatic, or logarithmic scaling,
-respectively (although not all types are valid for scaling all
-entities). If a single string is specified with any of these keywords
-it will apply to each component of the relevant vector, e.g., {\tt
-  cdv\_scale\_types = 'value'} will enable characteristic value
-scaling for each continuous design variable.
+the \dakotakw{*scale_types} and/or \dakotakw{*scales} specifications
+(see the Reference Manual method section and references contained
+therein for a complete keyword list). Valid options for the
+string-valued \dakotakw{*scale_types} specifications include {\tt
+  'value'}, {\tt 'auto'}, or {\tt 'log'}, for characteristic value,
+automatic, or logarithmic scaling, respectively (although not all
+types are valid for scaling all entities). If a single string is
+specified with any of these keywords it will apply to each component
+of the relevant vector, e.g., with \dakotakw{continuous_design = 3},
+\dakotakw{scale_types = 'value'} will enable characteristic value
+scaling for each of the 3 continuous design variables.
 
-The user may additionally specify no, one, or a vector of
-characteristic scale values through the {\tt *\_scales} specification.
-These characteristic values are ignored for scaling type {\tt 'none'},
-required for {\tt 'value'}, and optional for {\tt 'auto'} and {\tt
-  'log'}. If a single value is specified with any of these keywords it
-will apply to each component of the relevant vector, e.g., {\tt
-  cdv\_scales = 3.0} will apply a characteristic scaling value of 3.0
-to each continuous design variable.
+One may specify no, one, or a vector of characteristic scale values
+through the \dakotakw{*scales} specifications.  These characteristic
+values are required for {\tt 'value'}, and optional for {\tt 'auto'}
+and {\tt 'log'}. If scales are specified, but not scale types, value
+scaling is assumed. As with types, if a single value is specified with
+any of these keywords it will apply to each component of the relevant
+vector, e.g., if \dakotakw{scales = 3.4} is specified for continuous
+design variables, Dakota will apply a characteristic scaling value of
+3.4 to each continuous design variable.
 
 When scaling is enabled, the following procedures determine the
 transformations used to scale each component of a variables or
@@ -1173,19 +1176,20 @@ bound is enforced.
 
 \begin{itemize}
 
-\item None ({\tt 'none'}): no scaling performed ({\tt *\_scales}
-ignored) on this component.
+\item No \dakotakw{*scales} and no \dakotakw{*scale_types} specified
+  for this component (variable or response type: no scaling performed
+  on this component.
 
 \item Characteristic value ({\tt 'value'}): the corresponding quantity
   is scaled (divided) by the required characteristic value provided in
-  the {\tt *\_scales} specification, and bounds are adjusted as
-  necessary. If the value is negative, the sense of inequalities are
-  changed accordingly.
+  the corresponding \dakotakw{*scales} specification, and bounds are
+  adjusted as necessary. If the value is negative, the sense of
+  inequalities are changed accordingly.
 
 \item Automatic ({\tt 'auto'}): First, any characteristic values from
-  the optional {\tt *\_scales} specification are applied. Then,
-  automatic scaling will be attempted according to the following
-  scheme:
+  the optional corresponding \dakotakw{*scales} specification are
+  applied. Then, automatic scaling will be attempted according to the
+  following scheme:
 
   \begin{itemize}
   
@@ -1205,18 +1209,19 @@ ignored) on this component.
   characteristic values only, not affinely scaled into [0,1].
 
 \item Logarithmic ({\tt 'log'}): First, any characteristic values from
-  the optional {\tt *\_scales} specification are applied. Then,
+  the optional \dakotakw{*scales} specification are applied. Then,
   $\log_{10}$ scaling is applied. Logarithmic scaling is not available
   for linear constraints. Further, when continuous design variables
   are log scaled, linear constraints are not allowed.
 
 \end{itemize}
 
-Scaling for linear constraints specified through {\tt
-  linear\_inequality\_scales} or {\tt linear\_equality\_scales} is
-applied {\em after} any (user-specified or automatic) continuous
-variable scaling. For example, for scaling mapping unscaled continuous
-design variables $x$ to scaled variables $\tilde{x}$:
+Scaling for linear constraints specified through
+\dakotakw{linear_inequality_scales} or
+\dakotakw{linear_equality_scales} is applied {\em after} any
+(user-specified or automatic) continuous variable scaling. For
+example, for scaling mapping unscaled continuous design variables $x$
+to scaled variables $\tilde{x}$:
 \[ \tilde{x}^j = \frac{x^j - x^j_O}{x^j_M}, \]
 where $x^j_M$ is the final component multiplier and $x^j_O$ the
 offset, we have the following matrix system for linear inequality
@@ -1546,3 +1551,6 @@ here along with the license status and web page where available.
 
 \end{itemize}
 
+
+%%  LocalWords:  equalities optimizers Hessians affinely unscaled
+%%  LocalWords:  logarithmically
