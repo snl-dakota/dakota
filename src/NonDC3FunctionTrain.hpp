@@ -62,6 +62,8 @@ protected:
   // perform a forward uncertainty propagation using PCE/SC methods
   //void core_run();
 
+  bool refinement_available();
+
   void push_increment();
   void update_samples_from_order_increment();
   //void update_samples_from_order_decrement();

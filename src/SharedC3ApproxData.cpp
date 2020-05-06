@@ -42,7 +42,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
   c3Verbosity(0),//problem_db.get_int("model.c3function_train.verbosity")),
-  adaptConstruct(false), crossVal(false)
+  adaptConstruct(false), crossVal(false), c3RefineType(UNIFORM_START_ORDER)
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
@@ -74,7 +74,7 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
   crossMaxIter(5), maxSolverIterations(-1), c3Verbosity(0),
-  adaptConstruct(false), crossVal(false)
+  adaptConstruct(false), crossVal(false), c3RefineType(UNIFORM_START_ORDER)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)
@@ -164,6 +164,93 @@ update_basis(const UShortArray& start_orders, unsigned short max_order)
   }
 
   formUpdated[activeKey] = true;
+}
+
+
+void SharedC3ApproxData::increment_order()
+{
+  switch (c3RefineType) {
+  case UNIFORM_START_ORDER: {
+    std::map<UShortArray, UShortArray>::iterator it
+      = startOrders.find(activeKey);
+    UShortArray& active_ord = it->second;  bool incremented = false;
+    UShortArray  update_ord = active_ord; // copy
+    for (size_t i=0; i<numVars; ++i) {
+      unsigned short &a_ord = active_ord[i], &u_ord = update_ord[i];
+      // default maxOrder is 10 (FT can be more conservative than PCE).
+      // could consider a kickOrder (like kickRank), but other advancements
+      // (regression PCE) use exp order increment of 1
+      if (a_ord < maxOrder)
+	{ ++u_ord; incremented = true; } // only communicate if in bounds
+      else
+	u_ord = maxOrder;
+      // unconditional increment (preserve symmetry/reproducibility w/decrement)
+      ++a_ord;
+    }
+    if (incremented)
+      update_basis(update_ord, maxOrder);
+    else
+      Cerr << "Warning: SharedC3ApproxData::increment_order() cannot advance "
+	   << "order beyond maxOrder for key:\n" << activeKey << std::endl;
+    break;
+  }
+  case UNIFORM_START_RANK: {
+    // To ensure symmetry with decrement, don't saturate at maxRank.
+    // *** --> Must bound in C3Approximation::build() ***
+    std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
+    ++it->second; break;
+  }
+  case UNIFORM_MAX_RANK:
+    ++maxRank;    break; // *** TO DO: vary per level -> activeKey mgmt ***
+  }
+}
+
+
+void SharedC3ApproxData::decrement_order()
+{
+  // TO DO: this does not recover previous startOrder that has been limited
+  // above by maxOrder (only matters if anisotropic dimPref).
+  // > could increment/decrement shared data & only update_basis() if w/i bounds
+
+  bool underflow = false;
+  switch (c3RefineType) {
+  case UNIFORM_START_ORDER: {
+    std::map<UShortArray, UShortArray>::iterator it
+      = startOrders.find(activeKey);
+    UShortArray& active_ord = it->second;  bool decremented = false;
+    UShortArray  update_ord = active_ord; // copy
+    for (size_t i=0; i<numVars; ++i) {
+      unsigned short &a_ord = active_ord[i], &u_ord = update_ord[i];
+      if (a_ord <= maxOrder)
+	{ --u_ord; decremented = true; } // only communicate if in bounds
+      else
+	u_ord = maxOrder;
+      // unconditional decrement (preserve symmetry/reproducibility w/increment)
+      if (a_ord)    --a_ord;
+      else underflow = true;
+    }
+    if (decremented && !underflow)
+      update_basis(update_ord, maxOrder);
+    break;
+  }
+  case UNIFORM_START_RANK: {
+    std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
+    size_t& active_rank = it->second;  
+    if (active_rank) --active_rank;
+    else          underflow = true;
+    break;
+  }
+  case UNIFORM_MAX_RANK:
+    if (maxRank) --maxRank; // *** TO DO: vary per level -> activeKey mgmt ***
+    else  underflow = true;
+    break;
+  }
+
+  if (underflow) {
+    Cerr << "Error: underflow in SharedC3ApproxData::decrement_order()."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
 }
 
 

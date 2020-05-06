@@ -318,6 +318,47 @@ void NonDC3FunctionTrain::push_c3_db_options()
 }
 
 
+bool NonDC3FunctionTrain::refinement_available()
+{
+  bool refine = false;
+
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  switch (shared_data_rep->refinement_type()) {
+  // these two options only require the shared data config:
+  case UNIFORM_START_ORDER: {
+    const UShortArray& s_ord = shared_data_rep->start_orders(); // active orders
+    unsigned short   max_ord = shared_data_rep->max_order();
+    size_t i, num_ord = s_ord.size();
+    for (size_t i=0; i<num_ord; ++i)
+      if (s_ord[i] < max_ord)
+	{ refine = true; break; }
+    break;
+  }
+  case UNIFORM_START_RANK:
+    if (shared_data_rep->start_rank() < shared_data_rep->max_rank())
+      refine = true;
+    break;
+  // this option must query recovered ranks for each of the C3Approximations:
+  case UNIFORM_MAX_RANK:
+    if (!shared_data_rep->adapt_rank()) {
+      Cerr << "Error: adapt_rank required for UNIFORM_MAX_RANK refinement."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+      C3Approximation* poly_approx_q
+	= (C3Approximation*)poly_approxs[qoi].approx_rep();
+      // check adapted FT ranks against maxRank
+    }
+    break;
+  }
+
+  return refine;
+}
+
+
 void NonDC3FunctionTrain::push_increment()
 {
   // Reverse order relative to NonDExpansion base implementation since

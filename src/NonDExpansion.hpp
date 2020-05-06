@@ -106,7 +106,7 @@ public:
 
   /// returns false if refinement opportunities have been exhaused for the
   /// current model (e.g., maximum order/level/rank has been reached)
-  virtual bool refinement_available() const;
+  virtual bool refinement_available();
 
   //
   //- Heading: Member functions
@@ -688,7 +688,7 @@ inline int NonDExpansion::random_seed(size_t index) const
 }
 
 
-inline bool NonDExpansion::refinement_available() const
+inline bool NonDExpansion::refinement_available()
 { return true; } // default overridden for fn train
 
 

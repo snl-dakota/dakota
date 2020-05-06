@@ -85,8 +85,18 @@ public:
 
   /// return current basis polynomial order (active key in startOrders)
   const UShortArray& start_orders() const;
+  /// return maximum basis order
+  unsigned short max_order() const;
+
   /// return current expansion rank (active key in startRank)
   size_t start_rank() const;
+  /// return maximum expansion rank
+  size_t max_rank() const;
+  /// return adaptRank
+  bool adapt_rank() const;
+
+  /// return c3RefineType
+  short refinement_type() const;
 
   /// update oneApproxOpts with active basis orders after an order change
   void update_basis();
@@ -208,6 +218,8 @@ protected:
   short allocControl;
   // indicates refinement based on active or combined statistics
   //short refineStatsType;
+  /// type of uniform refinement
+  short c3RefineType;
 
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
@@ -268,11 +280,27 @@ inline const UShortArray& SharedC3ApproxData::start_orders() const
 }
 
 
+inline unsigned short SharedC3ApproxData::max_order() const
+{ return maxOrder; }
+
+
 inline size_t SharedC3ApproxData::start_rank() const
 {
   std::map<UShortArray, size_t>::const_iterator cit = startRank.find(activeKey);
   return (cit == startRank.end()) ? startRankSpec : cit->second;
 }
+
+
+inline size_t SharedC3ApproxData::max_rank() const
+{ return maxRank; }
+
+
+inline bool SharedC3ApproxData::adapt_rank() const
+{ return adaptRank; }
+
+
+inline short SharedC3ApproxData::refinement_type() const
+{ return c3RefineType; }
 
 
 /** simplified estimation for scalar-valued rank and order (e.g., from 
@@ -423,49 +451,6 @@ inline void SharedC3ApproxData::build()
   // formulation updates (rank,order increments/decrements) have been
   // synchronized once build is complete (no longer need to force a rebuild):
   formUpdated[activeKey] = false;
-}
-
-
-inline void SharedC3ApproxData::increment_order()
-{
-  std::map<UShortArray, UShortArray>::iterator it = startOrders.find(activeKey);
-  UShortArray& active_so = it->second;  bool incremented = false;
-  for (size_t i=0; i<numVars; ++i) {
-    unsigned short& oi = active_so[i];
-    // default maxOrder is 10 (tensor train can be more conservative than PCE).
-    // could consider a kickOrder (parallel to kickRank), but other
-    // advancements (regression PCE) use exp order increment of 1
-    if (oi < maxOrder)
-      { ++oi; incremented = true; }
-  }
-  if (incremented)
-    update_basis(active_so, maxOrder);
-  else {
-    Cerr << "Error: SharedC3ApproxData::increment_order() cannot advance "
-	 << "beyond maxOrder." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-}
-
-
-inline void SharedC3ApproxData::decrement_order()
-{
-  std::map<UShortArray, UShortArray>::iterator it = startOrders.find(activeKey);
-  UShortArray& active_so = it->second;  bool decremented = false;
-  for (size_t i=0; i<numVars; ++i) {
-    unsigned short& oi = active_so[i];
-    // could consider a kickOrder (parallel to kickRank), but other
-    // advancements (regression PCE) use exp order decrement of 1
-    if (oi)
-      { --oi; decremented = true; }
-  }
-  if (decremented)
-    update_basis(active_so, maxOrder);
-  else {
-    Cerr << "Error: SharedC3ApproxData::decrement_order() has reached 0."
-	 << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
 }
 
 
