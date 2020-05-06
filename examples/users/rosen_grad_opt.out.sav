@@ -1,22 +1,25 @@
+Dakota version 6.12 released May  6 2020.
+Repository revision c321b87 (2020-05-06) built May  6 2020 12:03:04.
 Running MPI Dakota executable in serial mode.
-Start time: Thu May  1 21:49:43 2014
+Start time: Wed May  6 13:41:01 2020
 
 -----------------------
 Begin DAKOTA input file
 rosen_grad_opt.in
 -----------------------
+
 # Dakota Input File: rosen_grad_opt.in
 # Usage:
 #   dakota -i rosen_grad_opt.in -o rosen_grad_opt.out > rosen_grad_opt.stdout
+
 environment
-  graphics
-  tabular_graphics_data
-    tabular_graphics_file = 'rosen_grad_opt.dat'
+  tabular_data
+    tabular_data_file = 'rosen_grad_opt.dat'
 
 method
-  max_iterations = 100
-  convergence_tolerance = 1e-4
   conmin_frcg
+    convergence_tolerance = 1e-4
+    max_iterations = 100
 
 model
   single
@@ -29,7 +32,7 @@ variables
     descriptors       'x1'     "x2"
 
 interface
-  analysis_driver = 'rosenbrock'
+  analysis_drivers = 'rosenbrock'
     direct
 
 responses
@@ -38,14 +41,14 @@ responses
   numerical_gradients
     method_source dakota
     interval_type forward
-    fd_gradient_step_size = 1.e-5
+    fd_step_size = 1.e-5
   no_hessians
 ---------------------
 End DAKOTA input file
 ---------------------
 
 Using Dakota input file 'rosen_grad_opt.in'
-Writing new restart file dakota.rst
+Writing new restart file 'dakota.rst'.
 
 >>>>> Executing environment.
 
@@ -2522,5 +2525,5 @@ Active set vector = { 1 }
 <<<<< Iterator conmin_frcg completed.
 <<<<< Environment execution completed.
 DAKOTA execution time in seconds:
-  Total CPU        =       0.14 [parent =    0.13898, child =    0.00102]
-  Total wall clock =   0.234187
+  Total CPU        =          0 [parent =   0.005435, child =  -0.005435]
+  Total wall clock =   0.005445

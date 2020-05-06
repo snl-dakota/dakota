@@ -1,18 +1,20 @@
+Dakota version 6.12 released May  6 2020.
+Repository revision c321b87 (2020-05-06) built May  6 2020 12:03:04.
 Running MPI Dakota executable in serial mode.
-Start time: Thu May  1 21:51:09 2014
+Start time: Wed May  6 13:41:01 2020
 
 -----------------------
 Begin DAKOTA input file
 rosen_sampling.in
 -----------------------
+
 # Dakota Input File: rosen_sampling.in
 # Usage:
 #   dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout
 
 environment
-  graphics
-  tabular_graphics_data
-    tabular_graphics_file = 'rosen_sampling.dat'
+  tabular_data
+    tabular_data_file = 'rosen_sampling.dat'
 
 method
   sampling
@@ -31,7 +33,7 @@ variables
     descriptors         'x1'  'x2'
 
 interface
-  analysis_driver = 'rosenbrock'
+  analysis_drivers = 'rosenbrock'
     direct
 
 responses
@@ -43,7 +45,7 @@ End DAKOTA input file
 ---------------------
 
 Using Dakota input file 'rosen_sampling.in'
-Writing new restart file dakota.rst
+Writing new restart file 'dakota.rst'.
 
 >>>>> Executing environment.
 
@@ -3051,10 +3053,10 @@ Active set vector = { 1 }
 
 
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
-
+-----------------------------------------------------------------------------
 Statistics based on 200 samples:
 
-Moment-based statistics for each response function:
+Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.5540183516e+02  5.3682678089e+02  1.6661798252e+00  2.7925726822e+00
 
@@ -3062,18 +3064,18 @@ Moment-based statistics for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
  response_fn_1  3.8054757609e+02  5.3025609422e+02  4.8886795789e+02  5.9530059589e+02
 
-Level mappings for each response function:
-Cumulative Distribution Function (CDF) for response_fn_1:
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   1.0000000000e+02   3.4000000000e-01
-
 Probability Density Function (PDF) histograms for each response function:
 PDF for response_fn_1:
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
    1.1623549854e-01   1.0000000000e+02   3.4039566059e-03
    1.0000000000e+02   2.7101710856e+03   2.5285698843e-04
+
+Level mappings for each response function:
+Cumulative Distribution Function (CDF) for response_fn_1:
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e+02   3.4000000000e-01
 
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
@@ -3097,9 +3099,10 @@ Partial Rank Correlation Matrix between input and output:
           x1 -1.37154e-01 
           x2 -5.08762e-01 
 
+-----------------------------------------------------------------------------
 
 <<<<< Iterator random_sampling completed.
 <<<<< Environment execution completed.
 DAKOTA execution time in seconds:
-  Total CPU        =       0.16 [parent =   0.154977, child =   0.005023]
-  Total wall clock =   0.264512
+  Total CPU        =          0 [parent =   0.008911, child =  -0.008911]
+  Total wall clock = 0.00893092
