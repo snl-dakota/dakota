@@ -162,19 +162,19 @@ possible to estimate higher-order moments with a MLMC sampling strategy, as for 
 A single level unbiased estimator for the variance of a generic QoI at the highest level $L$ of the hierarchy can be written as
 \begin{equation}
 \label{eq: variance_est_single_level}
- \mathbb{V}ar\left[Q_M\right] \approx \frac{1}{N_L - 1} \sum_{i=1}^{N_L} \left( Q_M^{(i)} - \mathbb{E}\left[Q_M\right] \right)^2.
+ \mathbb{V}ar\left[Q_L\right] \approx \frac{1}{N_L - 1} \sum_{i=1}^{N_L} \left( Q_L^{(i)} - \mathbb{E}\left[Q_L\right] \right)^2.
 \end{equation}
 
 There are two necessary steps to obtain a multilevel version of Eq.~\eqref{eq: variance_est_single_level}, namely the telescopic expansion in term of difference of estimators
-over subsequent levels and the telescopic expansion for the expected value $\mathbb{E}\left[Q_M\right]$.
+over subsequent levels and the telescopic expansion for the expected value $\mathbb{E}\left[Q_L\right]$.
 
 The first expansion is obtained by re-writing Eq.~\eqref{eq: variance_est_single_level} as 
 \begin{equation}
 \begin{split}
 \label{eq: variance_est_ML}
- \mathbb{V}ar\left[Q_M\right] &\approx       \frac{1}{N_L - 1} \sum_{i=1}^{N_L} \left( Q_M^{(i)} - \mathbb{E}\left[Q_M\right] \right)^2 \\
-                              &\approx \sum_{\ell=0}^L  \frac{1}{N_\ell - 1} \left( \left( Q_{M_\ell}^{(i)} - \mathbb{E}\left[Q_{M_\ell}\right] \right)^2 
-                                                                                  - \left( Q_{M_{\ell-1}}^{(i)} - \mathbb{E}\left[Q_{\ell-1}\right] \right)^2 \right).
+ \mathbb{V}ar\left[Q_L\right] &\approx       \frac{1}{N_L - 1} \sum_{i=1}^{N_L} \left( Q_L^{(i)} - \mathbb{E}\left[Q_L\right] \right)^2 \\
+                              &\approx \sum_{\ell=0}^L  \frac{1}{N_\ell - 1} \left( \left( Q_{\ell}^{(i)} - \mathbb{E}\left[Q_{\ell}\right] \right)^2 
+                                                                                  - \left( Q_{{\ell-1}}^{(i)} - \mathbb{E}\left[Q_{\ell-1}\right] \right)^2 \right).
 \end{split}
 \end{equation}
 It is important here to note that since the estimators at the levels $\ell$ and $\ell-1$ are computed with the same number of samples both estimators use the factor 
