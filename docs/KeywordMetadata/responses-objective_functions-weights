@@ -28,7 +28,8 @@ Weights are applied as multipliers, scales as charateristic values /
 divisors.
 
 When scaling is active, it is applied to objective functions prior to
-any \c weights and multi-objective sum formation.
+any \c weights and multi-objective sum formation. See the equations in
+\ref responses-objective_functions.
 
 Topics::	
 Examples::

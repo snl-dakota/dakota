@@ -22,7 +22,8 @@ divisors.
 
 When scaling is active, it is applied to calibration terms after any
 residual formation (accounting for experimental data and optionally
-measurement error covariance), and before any weights.
+measurement error covariance), and before any weights. See the
+equations in \ref responses-calibration_terms.
 
 
 Topics::	

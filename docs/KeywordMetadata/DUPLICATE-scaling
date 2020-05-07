@@ -3,10 +3,10 @@ Turn on scaling for variables, responses, and constraints
 
 Description::
 
-Some of the optimization and calibration methods support scaling of
+Some optimization and calibration methods support scaling of
 continuous design variables, objective functions, calibration terms,
-and constraints.  This is activated by by providing the \c scaling
-keyword.  Discrete variable scaling is not supported.
+and constraints.  This is activated with the \c scaling keyword.
+Discrete variable scaling is not supported.
 
 When scaling is enabled, variables, functions, gradients, Hessians,
 etc., are transformed such that the method iterates in scaled variable
@@ -15,31 +15,32 @@ the interface are performed on the original problem scale.  Therefore
 using scaling does not require rewriting the interface to the
 simulation code.
 
-Scaling also requires the specification of additional keywords which
-are found in the \ref variables, and \ref responses blocks.  When the
-\c scaling keyword is omitted from \ref method, all \c *scale_types
-and \c *scales specifications are ignored in the variables and
-responses sections.
+Scaling also requires the specification of additional keywords \c
+*scale_types and/or \c *scales in the \ref variables and \ref
+responses blocks.  When the \c scaling keyword is omitted from \ref
+method, these scaling type and value specifications are ignored in the
+variables and responses sections.
 
 This page describes the usage of all scaling related keywords.  The
 additional keywords come in pairs, one pair for each set of quantities
-to be scaled.  These quantities can be constraint equations,
-variables, or responses.
+(variables, primary responses, or constraints) to be scaled.
 \li a \c *scales keyword, which gives characteristic values (divisors)
-\li a \c *scale_type keyword, which determines how to use the 
+\li a \c *scale_types keyword, which determines how to use the 
   characteristic values
 
 The pair of keywords both take argument(s), and the length of the
 arguments can be either be one or equal to the number of quantities to
-be scaled (see details in \ref responses for lengths when dealign with
-scalar and field responses).  If one argument is given, it will apply
-to all quantities in the set. See the examples below.
+be scaled (see details in \ref responses for lengths when field
+responses are active).  If one argument is given, it will apply to all
+quantities in the set. See the examples below.
 
 <b> Scale Types </b>
 
-There are four scale types:
+There are three scale types:
 <ol>
-  <li> \c value - characteristic value scaling by which quantity will be divided
+  <li> \c value - characteristic value scaling
+
+    The target quantity will be scaled (divided) by the specified characteristic value.
   </li>
   <li> \c auto - automatic scaling
 
@@ -77,8 +78,10 @@ There are four scale types:
 <b> Scales </b>
 
 The \c *scales keywords are used to specify the characteristic values.
-These must be non-zero real numbers. The numbers are used according
-to the corresponding \c *scale_types, as described above.
+These must be non-zero real numbers. The numbers are used according to
+the corresponding \c *scale_types, as described above. A value of 1.0
+can be used to selectively omit some quantities in a vector from being
+scaled.
 
 Depending on the scale type, the characteristic values may be required or
 optional.

@@ -3,7 +3,7 @@ How to scale each nonlinear constraint
 
 Description::
 Each string in \c scale_types indicates the scaling type for each
-nonlinear inequality (equality )constraint. They only have effect
+nonlinear inequality (equality) constraint. They only have effect
 when the associated method specifies \c scaling.
 
 The options are:

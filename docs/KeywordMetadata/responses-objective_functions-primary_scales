@@ -14,7 +14,7 @@ of strictly negative response functions.
 
 Length: When specified, \c primary_scales must have length one of:
 
-\li One (it will be applied to each objective function); or
+\li One (the single value will be applied to each objective function); or
 
 \li Number of response groups (\ref responses-objective_functions), so
 the number of scalars plus the number of fields when fields are
@@ -34,7 +34,7 @@ response functions.
 
 When scaling is active, it is applied to objective functions prior to
 any \ref responses-objective_functions-weights and multi-objective sum
-formation.
+formation. See the equations in \ref responses-objective_functions.
 
 See the scaling information under specific methods, e.g.,
 \c method-*-scaling for details on how to use this keyword.
