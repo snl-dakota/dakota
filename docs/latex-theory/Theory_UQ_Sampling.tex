@@ -159,14 +159,15 @@ defining an optimal sample allocation per discretization level.
 Despite the original introduction of the MLMC approach for the computation of the mean estimator in \cite{Giles2008,Giles2015}, it is 
 possible to estimate higher-order moments with a MLMC sampling strategy, as for instance the variance.
 
-A single level unbiased estimator for the variance of a generic QoI at the highest level $L$ of the hierarchy can be written as
+A single level unbiased estimator for the variance of a generic QoI at the highest level $M_L$ of the hierarchy can be written as
 \begin{equation}
 \label{eq: variance_est_single_level}
- \mathbb{V}ar\left[Q_L\right] \approx \frac{1}{N_L - 1} \sum_{i=1}^{N_L} \left( Q_L^{(i)} - \mathbb{E}\left[Q_L\right] \right)^2.
+ \mathbb{V}ar\left[Q_{M_L}\right] \approx \frac{1}{N_{M_L} - 1} \sum_{i=1}^{N_{M_L}} \left( Q_{M_L}^{(i)} - \mathbb{E}\left[Q_L\right] \right)^2.
 \end{equation}
 
 There are two necessary steps to obtain a multilevel version of Eq.~\eqref{eq: variance_est_single_level}, namely the telescopic expansion in term of difference of estimators
-over subsequent levels and the telescopic expansion for the expected value $\mathbb{E}\left[Q_L\right]$.
+over subsequent levels and the telescopic expansion for the expected value $\mathbb{E}\left[Q_{M_L}\right]$. To simplify the notation and for simplicity of exposure from now on 
+we only indicate the level, \textit{i.e.} $M_\ell = \ell$. 
 
 The first expansion is obtained by re-writing Eq.~\eqref{eq: variance_est_single_level} as 
 \begin{equation}
