@@ -165,11 +165,10 @@ A single level unbiased estimator for the variance of a generic QoI at the highe
  \mathbb{V}ar\left[Q_{M_L}\right] \approx \frac{1}{N_{M_L} - 1} \sum_{i=1}^{N_{M_L}} \left( Q_{M_L}^{(i)} - \mathbb{E}\left[Q_L\right] \right)^2.
 \end{equation}
 
-There are two necessary steps to obtain a multilevel version of Eq.~\eqref{eq: variance_est_single_level}, namely the telescopic expansion in term of difference of estimators
-over subsequent levels and the telescopic expansion for the expected value $\mathbb{E}\left[Q_{M_L}\right]$. To simplify the notation and for simplicity of exposure from now on 
+The multilevel version of Eq.~\eqref{eq: variance_est_single_level} can be obtained via a telescopic expansion in term of difference of estimators over subsequent levels. To simplify the notation and for simplicity of exposure from now on 
 we only indicate the level, \textit{i.e.} $M_\ell = \ell$. 
 
-The first expansion is obtained by re-writing Eq.~\eqref{eq: variance_est_single_level} as 
+The expansion is obtained by re-writing Eq.~\eqref{eq: variance_est_single_level} as 
 \begin{equation}
 \begin{split}
 \label{eq: variance_est_ML}
@@ -202,7 +201,7 @@ variance of the multilevel variance estimator $\hat{Q}_{L,2}^{ML}$
 \begin{equation}
  \mathbb{V}ar\left[ \hat{Q}_{L,2}^{\mathrm{ML}} \right] = \sum_{\ell=0}^L \mathbb{V}ar\left[ \hat{Q}_{\ell,2} - \hat{Q}_{\ell-1,2} \right]
                                                = \sum_{\ell=0}^L \mathbb{V}ar\left[ \hat{Q}_{\ell,2} \right] + \mathbb{V}ar\left[\hat{Q}_{\ell-1,2} \right]
-                                               - 2 \mathbb{C}ov\left( \hat{Q}_{\ell,2},\hat{Q}_{\ell-1,2} \right).
+                                               - 2 \mathbb{C}ov\left( \hat{Q}_{\ell,2},\hat{Q}_{\ell-1,2} \right),
 \end{equation}
 where the covariance term is a result of the dependence described in~\eqref{eq: variance_est_ML_level_terms}.
 
@@ -233,7 +232,7 @@ The first term of the previous expression is evaluated by estimating and combini
                                       - 4 \mathbb{E}\left[ Q_{\ell} \right]^2 \mathbb{E}\left[ Q_{\ell-1} \right]^2.
 \end{split}
 \end{equation}
-It is important to note here that the previous expression can be computed only if several sampling estimator for product of the QoIs at levels $\ell$ and $\ell-1$ are available.
+It is important to note here that the previous expression can be computed only if several sampling estimators for product of the QoIs at levels $\ell$ and $\ell-1$ are available.
 These quantities are not required in the standard MLMC implementation for the mean and therefore for the estimation of the variance more data need to be stored to assemble the
 quantities on each level.
 

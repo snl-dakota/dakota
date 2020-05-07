@@ -178,12 +178,11 @@ Q(\bm \xi) = \sum_{\bm{\alpha}\in\mathcal{J}_{d,p}}Q_{\bm{\alpha}}\psi_{\bm \alp
 \end{equation}
 where $\bm{\alpha} = (\alpha_1,...,\alpha_d) \in \mathcal{J}_{d,p}:=(\mathbb{N}_0)^d$ with $|\bm{\alpha}| = \sum_{i=1}^{d} \alpha_i<= d$ is multi-index of dimension $d$ and order up to $p$.
 In this chapter, for simplicity of exposure, we assume the expansion with respect to a basis of (normalized) Hermite polynomials and $\bm\xi$ is assumed to have standard multivariate Gaussian distribution.
-The general case of arbitrary distribution for $\bm\xi$ can always be handled, at least from a theoretical standpoint, by resorting to input parameter transformations as the inverse of cumulative distribution function or other more sophisticated transformations like the Rosenblatt transformation.
+The general case of arbitrary distribution can be handled, at least from a theoretical standpoint, by resorting to input parameter transformations as the inverse of cumulative distribution function or other more sophisticated transformations like the Rosenblatt transformation.
 The $P={n+p\choose p}$ PCE coefficients can be computed by projecting $Q$ to the space spanned by  $\{\psi_{\bm \alpha}, \bm{\alpha} \in \mathcal{J}_{d,p} \}$ (or other methods like Monte Carlo and regression) as
 \begin{equation}
 Q_{\bm{\alpha}} = \frac{\langle Q, \psi_{\bm \alpha} \rangle}{\langle \psi_{\bm \alpha}^2 \rangle} =\langle Q, \psi_{\bm \alpha} \rangle,  \quad \bm{\alpha} \in \mathcal{J}_{d,p}\,.
 \end{equation}
-Other approaches as a direct Monte Carlo sampling or a regression are always possible, but here we restrict our presentation to quadrature methods.
 
 The basis adaptation method tries to rotate the input Gaussian variables by an isometry such that the QoI can be well approximated by PCE of the first several dimensions of the new orthogonal basis. Let $\bm A$ be an isometry on $\mathbb{R}^{d\times d}$ such that $\bm{AA^T}=\bm I$, and $\bm \eta$ be defined as
 \begin{equation}
@@ -240,5 +239,5 @@ If we define the vectors of the PCE coefficients $\tilde{\bm{Q}}_{coeff} := \{\t
 \label{eq19}
 \bm{\epsilon}_D = \frac{\left\| \bm{Q}_{coeff} - \tilde{\bm{Q}}_{coeff} \right\|_2} {\left\| \bm{Q}_{coeff} \right\|_2} \,.
 \end{equation}
-Note that although (\ref{eq19}) provides a way to compare the $r$-d adaptation with the full dimensional PCE, in practical, it is more convenient to compare two adaptations with successive dimensions, say, $r$-d and $(r+1)$-d, to check the convergence. The accuracy of basis adaptation increases with increase of $r$ and will recover full dimensional expansion with $r=d$. There are some novel methods developed by the author to accelerate the basis adaptation approach. At this stage the implementation in Dakota of this strategy will use the full dimension of the original model, \textit{i.e.} the rotation matrix is not truncated and the model is expressed in a different variable set. Although the rotation matrix is explicitly reported and it can be used to obtain information about the significant directions of the model. 
+Note that although (\ref{eq19}) provides a way to compare the $r$-d adaptation with the full dimensional PCE, in practical, it is more convenient to compare two adaptations with successive dimensions, say, $r$-d and $(r+1)$-d, to check the convergence. The accuracy of basis adaptation increases with increase of $r$ and will recover full dimensional expansion with $r=d$. At this stage the implementation in Dakota of this strategy will use the full dimension of the original model, \textit{i.e.} the rotation matrix is not truncated and the model is expressed in a different variable set. Although the rotation matrix is explicitly reported and it can be used to obtain information about the significant directions of the model. 
 
