@@ -11,7 +11,8 @@ variables-linear_equality_scale_types of <tt>'value'</tt> and optional
 for <tt>'auto'</tt>.
 
 If a single real value is specified it will apply to all linear
-equality constraints.
+equality constraints. Otherwise the number of values should be equal
+to the number of linear equalities.
 
 Scaling for linear constraints is applied \e after any continuous
 variable scaling.
@@ -28,6 +29,9 @@ appplied to this final transformed system, which accounts for
 continuous design variable scaling. When automatic scaling is in use
 for linear constraints they are linearly scaled by a computed
 characteristic value, but not affinely to [0,1].
+
+See the scaling information under specific methods, e.g.,
+\c method-*-scaling for details on how to use this keyword.
 
 Topics::	linear_constraints
 Examples::
