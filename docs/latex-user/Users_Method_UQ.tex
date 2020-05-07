@@ -2492,7 +2492,7 @@ global exploration, and automatically tunes the proposal covariance
 during the process by a self-adaptive randomized subspace
 sampling~\cite{Vrugt}.  MUQ uses components from the MIT 
 Uncertainty Quantification library and also implements Metropolis Hastings 
-and Adaptive Metropolis.  The prototype WASABI method is an MCMC-free
+and Adaptive Metropolis. The prototype WASABI method is an MCMC-free
 Bayesian calibration approach.  QUESO/DRAM
 and variants are the most well-developed within Dakota.
 
@@ -2631,15 +2631,14 @@ Manual~\cite{RefMan} for more information.
 
 \subsection{MUQ}
 MUQ is the MIT Uncertainty Quantification library.  See 
-https://bitbucket.org/mituq/muq2/src/master/ for additional documentation. 
-The MUQ implementation in Dakota currently has two types of MCMC 
-approaches:  Metropolis-Hastings and Adaptive Metropolis. 
-The MUQ implementation in Dakota is a preliminary implementation which we hope to grow 
-in future releases of Dakota, to leverage components in MUQ to 
-support Hamiltonian Monte Carlo and Langevin-based methods. 
-Note that the MUQ method is an experimental method currently 
-and MUQ must be enabled when compiling Dakota:  it is not available as a
-default method.
+https://bitbucket.org/mituq/muq2/src/master/ and https://mituq.bitbucket.io/index.html for additional documentation. 
+Dakota currently exposes two types of MCMC 
+approaches as supplied by MUQ: Metropolis-Hastings and Adaptive Metropolis. 
+The MUQ implementation in Dakota is a preliminary one, anticipated to grow 
+in future releases of Dakotato to leverage components in MUQ that
+support Hamiltonian Monte Carlo and Langevin-based sampling strategies. 
+Note that the MUQ is an experimental capability within Dakota. Thus, the library is not exposed by
+default and must be enabled explicitely when compiling Dakota.
 
 \subsection{WASABI}
 WASABI differs from the other Bayesian approaches in that it is 
@@ -2679,43 +2678,43 @@ Manual~\cite{RefMan} for more information.
 
 \subsection{Feature Comparison}
 Table~\ref{tab:bayes_comparison} compares the options available 
-with the QUESO and DREAM implementations in Dakota. 
+with the QUESO, DREAM, GPMSA, MUQ, and WASABI implementations in Dakota. 
 
 \begin{table}
 \centering
 \caption{Capabilities of Bayesian methods in Dakota}
 \label{tab:bayes_comparison}
-\begin{tabular}{|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|c|}
 \hline
-Capability           &  QUESO  & GPMSA & DREAM & WASABI \\
+Capability           &  QUESO  & MUQ  & GPMSA & DREAM & WASABI \\
 \hline
-Prior Distributions  &  Any continuous &  Any continuous & Uniform only & Uniform only \\
-                     &  variable type  &  variable type  &              &              \\
+Prior Distributions  &  Any continuous &  Any continuous &  Any continuous & Uniform only & Uniform only \\
+                     &  variable type  &  variable type  &  variable type  &              &              \\
 \hline
-Inference Type                 & MCMC with DR,   & MCMC with DR,   & MCMC with              & MCMC-free         \\
-                               & AM, DRAM, or MH & AM, DRAM, or MH & Differential Evolution & interval analysis \\
-                               &                 &                 & Adaptive Metropolis    &                   \\
+Inference Type                 & MCMC with DR,   & MCMC with MH,   & MCMC with DR,   & MCMC with              & MCMC-free         \\
+                               & AM, DRAM, or MH & AM & AM, DRAM, or MH & Differential Evolution & interval analysis \\
+                               &                 &                 &                 & Adaptive Metropolis    &                   \\
 \hline
-Can use PCE/SC Emulator        &  Yes            & No              & Yes                    & Yes \\
+Can use PCE/SC Emulator        &  Yes            & Yes              & Yes                    & Yes \\
 \hline
-Can use GP Emulator            &  Yes            & Yes (required)  & Yes                    & Yes \\
+Can use GP Emulator            &  Yes            &  Yes            & Yes (required)  & Yes                    & Yes \\
 \hline
-Likelihood-based adaptive      &  Yes            &  No             & No                     & No \\     
-emulator update                &                 &                 &                        &    \\
+Likelihood-based adaptive      &  Yes            &  No             &  No             & No                     & No \\     
+emulator update                &                 &                 &                 &                        &    \\
 \hline
-Initialize with MAP pre-solve  &  Yes            &  No             & No                     & No \\
+Initialize with MAP pre-solve  &  Yes            &  Yes            &  No             & No                     & No \\
 \hline
-Proposal covariance            &  prior, user,     &  prior, user  & n/a                    & n/a \\            
-options                        &  derivative-based &               &                        & \\
+Proposal covariance            &  prior, user,     & n/a                    &  prior, user  & n/a                    & n/a \\            
+options                        &  derivative-based &               &               &                        & \\
 \hline
-Can calibrate error            &  Yes            &  Yes (internal) & Yes                    & No          \\                
-covariance multipliers         &                 &                 &                        &              \\
+Can calibrate error            &  Yes            &  Yes            &  Yes (internal) & Yes                    & No          \\                
+covariance multipliers         &                 &                 &                 &                        &              \\
 \hline
-Supports standardized space    &  Yes            & Yes             & Yes                    & Yes           \\             
+Supports standardized space    &  Yes            &  Yes            & Yes             & Yes                    & Yes           \\             
 \hline
-Logit transform                &  Yes            & Yes             &  No                    & No            \\             
+Logit transform                &  Yes            &  Yes            & Yes             &  No                    & No            \\             
 \hline
-Posterior export               &  samples        & samples         &  samples               & samples, density \\             
+Posterior export               &  samples        &  samples        & samples         &  samples               & samples, density \\             
 \hline
 \end{tabular}
 \end{table}
