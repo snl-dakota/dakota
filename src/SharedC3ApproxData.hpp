@@ -58,9 +58,11 @@ public:
   //
 
   /// return number of FT unknowns given scalars: num vars, rank, order
-  static size_t regression_size(size_t num_v, size_t rank,
-				const UShortArray& orders);
-  /// return number of FT unknowns using numVars, start_rank(), start_orders()
+  static size_t regression_size(size_t num_v, size_t rank, size_t max_rank,
+				const UShortArray& orders,
+				unsigned short max_order);
+  /// return number of FT unknowns using numVars, start_rank(), max_rank(),
+  /// start_orders(), max_order()
   size_t regression_size();
 
   /// set UShortArray attribute value based on identifier string
@@ -102,6 +104,9 @@ public:
   void update_basis();
   /// update oneApproxOpts with passed basis orders after an order change
   void update_basis(const UShortArray& start_orders, unsigned short max_order);
+  /// update oneApproxOpts for variable v with passed basis orders
+  void update_basis(size_t v, unsigned short start_order,
+		    unsigned short max_order);
 
 protected:
 
@@ -260,11 +265,11 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
   // these aren't used enough to warrant active iterators
   bool form = false;
   if (startOrders.find(key) == startOrders.end())
-    { startOrders[key] = startOrderSpec;  form = true; }
-  if (startRank.find(key) == startRank.end()) 
-    { startRank[key]   = startRankSpec;   form = true; }
-  if (maxRank.find(key) == maxRank.end())
-    { maxRank[key]     = maxRankSpec;     if (adaptRank) form = true; }
+    { startOrders[key]      =  startOrderSpec;  form = true; }
+  if (startRank.find(key)   == startRank.end()) 
+    { startRank[key]        =  startRankSpec;   form = true; }
+  if (maxRank.find(key)     == maxRank.end())
+    { maxRank[key]          =  maxRankSpec;     if (adaptRank) form = true; }
 
   // ensure approximation rebuild, when needed, in absence of sample increment
   if (form) formUpdated[key] = true;
@@ -336,30 +341,39 @@ regression_size(size_t num_v, size_t rank, size_t order)
 /** simplified estimation for scalar-valued rank and vector-valued order
     (e.g., from start rank/start order/dimension pref user specification) */
 inline size_t SharedC3ApproxData::
-regression_size(size_t num_v, size_t rank, const UShortArray& orders)
+regression_size(size_t num_v, size_t rank, size_t max_rank,
+		const UShortArray& orders, unsigned short max_order)
 {
   // Each dimension has its own rank within the product of function cores.
   // This fn estimates for the case where rank and order are either constant
   // across dimensions or averaged into a scalar.
   // > the first and last core contribute p*r terms
   // > the middle cores contribute r*r*p terms
+  unsigned short p;
   switch (num_v) {
-  case 1:  return  orders[0]+1;                 break; // collapses to 1D PCE
-  case 2:  return (orders[0]+orders[1]+2)*rank; break; // first,last core
+  case 1:
+    p = std::min(orders[0], max_order) + 1;
+    return p; break; // collapses to 1D PCE
   default: { // first, last, and num_v-2 middle cores
-    size_t core, num_vm1 = num_v - 1,
-      sum = orders[0] + orders[num_vm1] + 2; // first, last
-    for (core=1; core<num_vm1; ++core)
-      sum += rank * (orders[core] + 1);  // num_v-2 middle cores
-    return sum * rank;  break;
+    size_t core, num_vm1 = num_v - 1, sum, r = std::min(rank, max_rank);
+    p = std::min(orders[0],       max_order) + 1;  sum  = p; // first
+    p = std::min(orders[num_vm1], max_order) + 1;  sum += p; // last
+    for (core=1; core<num_vm1; ++core) {
+      p = std::min(orders[core], max_order) + 1;
+      sum += r * p;  // num_v-2 middle cores
+    }
+    return sum * r;  break;
   }
   }
 }
 
 
 inline size_t SharedC3ApproxData::regression_size()
-{ return regression_size(numVars, start_rank(), start_orders()); }
-// TO DO: incorporate dimension preference -> ranks array
+{
+  return regression_size(numVars, start_rank(), max_rank(),
+			 start_orders(), max_order());
+  // TO DO: incorporate dimension preference -> ranks array
+}
 
 
 inline void SharedC3ApproxData::

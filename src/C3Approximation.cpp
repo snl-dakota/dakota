@@ -170,7 +170,8 @@ void C3Approximation::build()
     abort_handler(APPROX_ERROR);
   }
   else {
-    size_t i, j, num_v = sharedDataRep->numVars, sr = data_rep->start_rank();
+    size_t i, j, num_v = sharedDataRep->numVars,
+      sr = std::min(data_rep->start_rank(), data_rep->max_rank());
     SizetVector start_ranks(num_v+1);
     start_ranks(0) = 1;     start_ranks(num_v) = 1;
     for (i=1; i<num_v; ++i) start_ranks(i) = sr;
@@ -926,49 +927,16 @@ size_t C3Approximation::regression_size()
   struct FunctionTrain * ft = levApproxIter->second.function_train();
   SizetVector ft_ranks(Teuchos::View, function_train_get_ranks(ft),
 		       data_rep->numVars+1);
-  return regression_size(ft_ranks, data_rep->start_orders());
+  return regression_size(ft_ranks,                 data_rep->max_rank(),
+			 data_rep->start_orders(), data_rep->max_order());
 }
-
-
-/* compute the regression size (number of unknowns) for a set of ranks per
-   dimension and a single expansion (polynomial) order
-size_t C3Approximation::
-regression_size(const SizetVector& ranks, size_t order)
-{
-  // Each dimension has its own rank within the product of function cores.
-  // This fn estimates for the case where rank varies per dimension/core
-  // and basis order is constant.  Using 1-based indexing:
-  // > the first core is a 1 x r_1 row vector and contributes p * r_1 terms
-  // > the  last core is a r_v x 1 col vector and contributes p * r_v terms
-  // > the middle v-2 cores are matrices that contribute r_i * r_{i+1} * p terms
-  // > neighboring vec/mat dimensions must match, so there are v-1 unique ranks
-  //   (could also allow ranks.size() == v and check constraints)
-  // > could also allow p to vary per dimension in an orders array, should this
-  //   granularity become warranted in the future
-  size_t p = order + 1, num_v = sharedDataRep->numVars;
-  if (ranks.length() != num_v + 1) { // both ends padded with 1's
-    Cerr << "Error: wrong size (" << ranks.length() << ") for ranks array in "
-	 << "C3Approximation::regression_size()." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-  switch (num_v) {
-  case 1:  return p;             break; // collapses to a 1D PCE
-  case 2:  return 2.*p*ranks[1]; break; // first,last core (no middle)
-  default: { // first, last, and num_v-2 middle cores
-    size_t core, num_vm1 = num_v - 1, sum = ranks[1] + ranks[num_vm1];
-    for (core=1; core<num_vm1; ++core)
-      sum += ranks[core] * ranks[core+1];
-    return sum * p;  break;
-  }
-  }
-}
-*/
 
 
 /** compute the regression size (number of unknowns) for ranks per
     dimension and (polynomial) orders per dimension */
 size_t C3Approximation::
-regression_size(const SizetVector& ranks, const UShortArray& orders)
+regression_size(const SizetVector& ranks,  size_t max_rank,
+		const UShortArray& orders, unsigned short max_order)
 {
   // Each dimension has its own rank within the product of function cores.
   // This fn estimates for the case where rank varies per dimension/core
@@ -984,14 +952,22 @@ regression_size(const SizetVector& ranks, const UShortArray& orders)
 	 << "regression_size()." << std::endl;
     abort_handler(APPROX_ERROR);
   }
+  unsigned short p;
   switch (num_v) {
-  case 1:  return  orders[0]+1;                     break;// collapses to 1D PCE
-  case 2:  return (orders[0]+orders[1]+2)*ranks[1]; break;// first,last core
+  case 1:
+    p = std::min(orders[0], max_order) + 1;
+    return p;  break; // collapses to 1D PCE
   default: { // first, last, and num_v-2 middle cores
-    size_t core, num_vm1 = num_v - 1,
-      sum = (orders[0]+1)*ranks[1] + (orders[num_vm1]+1)*ranks[num_vm1];
-    for (core=1; core<num_vm1; ++core)
-      sum += ranks[core] * ranks[core+1] * (orders[core]+1);
+    size_t core, vm1 = num_v - 1, sum;
+    p = std::min(orders[0],   max_order) + 1;
+    sum  = p * std::min(ranks[1],   max_rank); // first
+    p = std::min(orders[vm1], max_order) + 1;
+    sum += p * std::min(ranks[vm1], max_rank); // last
+    for (core=1; core<vm1; ++core) {
+      p = std::min(orders[core], max_order) + 1;
+      sum += std::min(ranks[core],   max_rank)
+	  *  std::min(ranks[core+1], max_rank) * p; // num_v-2 middle cores
+    }
     return sum;  break;
   }
   }

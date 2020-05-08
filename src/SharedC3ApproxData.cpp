@@ -69,9 +69,9 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars, data_order,
 		   output_level),
   // default values overridden by set_parameter
-  startOrderSpec(approx_order), maxOrder(5),
-  startRankSpec(2), kickRank(2), maxRankSpec(10), adaptRank(false),
-  regressType(FT_LS), // non-regularized least sq
+  startOrderSpec(approx_order), maxOrder(USHRT_MAX), startRankSpec(2),
+  kickRank(2), maxRankSpec(std::numeric_limits<size_t>::max()),
+  adaptRank(false), regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
   crossMaxIter(5), maxSolverIterations(-1), c3Verbosity(0),
   adaptConstruct(false), crossVal(false), c3RefineType(UNIFORM_START_ORDER)
@@ -116,7 +116,7 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
   // uses startOrderSpec at construct time (initialize_u_space_model()) since
   // startOrder[activeKey] not meaningful until run time active key assignment
   const UShortArray& so = start_orders();
-  size_t np, max_np = maxOrder + 1;
+  size_t np, max_np = maxOrder; ++max_np; // no overflow (default is USHRT_MAX)
   for (i=0; i<num_rv; ++i)
     if (no_mask || active_vars[i]) {
       switch (rv_types[i]) {
@@ -131,7 +131,7 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 	abort_handler(-1);                 break;
       }
 
-      np = so[i] + 1;
+      np = std::min((size_t)so[i] + 1, max_np);
       ope_opts_set_nparams(o_opts, np);     // startnum = startord + 1
       // Note: maxOrder not used for regression (only limits increment_order());
       //       to be used for adaptation by cross-approximation
@@ -154,16 +154,30 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 void SharedC3ApproxData::
 update_basis(const UShortArray& start_orders, unsigned short max_order)
 {
-  // use startOrder[activeKey] for run time updates
-  size_t np, max_np = max_order + 1;
-  for (size_t i=0; i<numVars; ++i) {
-    struct OneApproxOpts*& a_opts = oneApproxOpts[i];
-    np = start_orders[i] + 1;
+  size_t np, max_np = max_order; ++max_np; // no overflow (default is USHRT_MAX)
+  for (size_t v=0; v<numVars; ++v) {
+    struct OneApproxOpts*& a_opts = oneApproxOpts[v];
+    np = std::min((size_t)start_orders[v] + 1, max_np);
     one_approx_opts_set_nparams(a_opts, np);     // updated
     one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
   }
 
   formUpdated[activeKey] = true;
+}
+
+
+void SharedC3ApproxData::
+update_basis(size_t v, unsigned short start_order, unsigned short max_order)
+{
+  // use startOrder[activeKey] for run time updates
+  size_t max_np = max_order; ++max_np; // no overflow (default is USHRT_MAX)
+  size_t np = std::min((size_t)start_order + 1, max_np);
+
+  struct OneApproxOpts*& a_opts = oneApproxOpts[v];
+  one_approx_opts_set_nparams(a_opts, np);     // updated
+  one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
+
+  //formUpdated[activeKey] = true; // elevate to clients
 }
 
 
@@ -173,30 +187,26 @@ void SharedC3ApproxData::increment_order()
   case UNIFORM_START_ORDER: {
     std::map<UShortArray, UShortArray>::iterator it
       = startOrders.find(activeKey);
-    UShortArray& active_ord = it->second;  bool incremented = false;
-    UShortArray  update_ord = active_ord; // copy
-    for (size_t i=0; i<numVars; ++i) {
-      unsigned short &a_ord = active_ord[i], &u_ord = update_ord[i];
-      // default maxOrder is 10 (FT can be more conservative than PCE).
-      // could consider a kickOrder (like kickRank), but other advancements
-      // (regression PCE) use exp order increment of 1
-      if (a_ord < maxOrder)
-	{ ++u_ord; incremented = true; } // only communicate if in bounds
-      else
-	u_ord = maxOrder;
+    UShortArray& start_ord = it->second;  bool incremented = false;
+    for (size_t v=0; v<numVars; ++v) {
+      unsigned short &s_ord = start_ord[v];
       // unconditional increment (preserve symmetry/reproducibility w/decrement)
-      ++a_ord;
+      ++s_ord;
+      // default maxOrder is USHRT_MAX.  Could consider a kickOrder (like
+      // kickRank), but other exp order increments (regression PCE) advance 1
+      if (s_ord <= maxOrder) // only communicate if in bounds
+	{ incremented = true; update_basis(v, s_ord, maxOrder); }
     }
     if (incremented)
-      update_basis(update_ord, maxOrder);
+      formUpdated[activeKey] = true;
     else
       Cerr << "Warning: SharedC3ApproxData::increment_order() cannot advance "
 	   << "order beyond maxOrder for key:\n" << activeKey << std::endl;
     break;
   }
   case UNIFORM_START_RANK: {
-    // To ensure symmetry with decrement, don't saturate at maxRank.
-    // *** --> Must bound in C3Approximation::build() ***
+    // To ensure symmetry with decrement, don't saturate at maxRank
+    // > Must bound start_ranks vector in C3Approximation::build()
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
     ++it->second; break;
   }
@@ -214,47 +224,42 @@ void SharedC3ApproxData::decrement_order()
   // above by maxOrder (only matters if anisotropic dimPref).
   // > could increment/decrement shared data & only update_basis() if w/i bounds
 
-  bool underflow = false;
+  bool bad_range = false;
   switch (c3RefineType) {
   case UNIFORM_START_ORDER: {
     std::map<UShortArray, UShortArray>::iterator it
       = startOrders.find(activeKey);
-    UShortArray& active_ord = it->second;  bool decremented = false;
-    UShortArray  update_ord = active_ord; // copy
-    for (size_t i=0; i<numVars; ++i) {
-      unsigned short &a_ord = active_ord[i], &u_ord = update_ord[i];
-      if (a_ord <= maxOrder)
-	{ --u_ord; decremented = true; } // only communicate if in bounds
-      else
-	u_ord = maxOrder;
-      // unconditional decrement (preserve symmetry/reproducibility w/increment)
-      if (a_ord)    --a_ord;
-      else underflow = true;
+    UShortArray& start_ord = it->second;  bool decremented = false;
+    for (size_t v=0; v<numVars; ++v) {
+      unsigned short &s_ord = start_ord[v];
+      if (s_ord) { // prevent underflow
+	--s_ord; // preserve symmetry/reproducibility w/increment
+	if (s_ord < maxOrder) // only communicate if in bounds
+	  { decremented = true;  update_basis(v, s_ord, maxOrder); }
+      }
     }
-    if (decremented && !underflow)
-      update_basis(update_ord, maxOrder);
+    if (decremented) formUpdated[activeKey] = true;
+    else             bad_range = true;
     break;
   }
   case UNIFORM_START_RANK: {
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
     size_t& s_rank = it->second;  
     if (s_rank)  --s_rank;
-    else underflow = true;
+    else bad_range = true;
     break;
   }
   case UNIFORM_MAX_RANK:
     std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
     size_t& m_rank = it->second;  
     if (m_rank)  --m_rank;
-    else underflow = true;
+    else bad_range = true;
     break;
   }
 
-  if (underflow) {
-    Cerr << "Error: underflow in SharedC3ApproxData::decrement_order()."
-	 << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
+  if (bad_range)
+    Cerr << "Warning: SharedC3ApproxData::decrement_order() outside of valid "
+	   << "range for key:\n" << activeKey << std::endl;
 }
 
 

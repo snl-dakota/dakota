@@ -64,7 +64,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // extract (initial) values from sequences
   configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
   size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
-    regression_size(numContinuousVars, start_rank(), approx_orders);
+    regression_size(numContinuousVars, start_rank(), maxRankSpec, approx_orders,
+		    maxOrderSpec);
   if (!config_regression(colloc_pts, regress_size, random_seed(),
 			 u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
@@ -165,7 +166,8 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // extract (initial) values from sequences
   configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
   size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
-    regression_size(numContinuousVars, start_rank(), approx_orders);
+    regression_size(numContinuousVars, start_rank(), maxRankSpec,
+                    approx_orders, maxOrderSpec);
   if (!config_regression(colloc_pts, regress_size, random_seed(),
                          u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
@@ -318,7 +320,8 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined
     if (collocRatio > 0.) {
       size_t regress_size = SharedC3ApproxData::
-	regression_size(numContinuousVars, start_rank(), approx_orders);
+	regression_size(numContinuousVars, start_rank(), maxRankSpec,
+			approx_orders, maxOrderSpec);
       numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
     }
     else {
@@ -355,7 +358,8 @@ infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
   for (i=0; i<num_steps; ++i) {
     configure_expansion_orders(start_order(i), dimPrefSpec, so_i);
     regress_i = SharedC3ApproxData::
-      regression_size(numContinuousVars, start_rank(i), so_i);
+      regression_size(numContinuousVars, start_rank(i), maxRankSpec,
+		      so_i, maxOrderSpec);
     pilot[i] = (size_t)std::floor(collocRatio * (Real)regress_i + .5);
   }
 }

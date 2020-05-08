@@ -45,8 +45,10 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     problem_db.get_string("method.import_build_points_file")),
   startRankSpec(
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
+  maxRankSpec(probDescDB.get_sizet("method.nond.c3function_train.max_rank")),
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
+  maxOrderSpec(probDescDB.get_ushort("method.nond.c3function_train.max_order")),
   collocPtsSpec(problem_db.get_sizet("method.nond.collocation_points"))
 {
   if (iteratedModel.model_type()     == "surrogate" &&
@@ -81,7 +83,10 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // compute initial regression size using a static helper
   // (uSpaceModel.shared_approximation() is not yet available)
   size_t regress_size = SharedC3ApproxData::
-    regression_size(numContinuousVars, startRankSpec, approx_orders);
+    regression_size(numContinuousVars, startRankSpec,
+      probDescDB.get_sizet("method.nond.c3function_train.max_rank"),
+      approx_orders,
+      probDescDB.get_ushort("method.nond.c3function_train.max_order"));
   // configure u-space sampler and model
   if (!config_regression(collocPtsSpec, regress_size, randomSeed,
 			 u_space_sampler, g_u_model)) {
@@ -135,8 +140,10 @@ NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
     problem_db.get_string("method.import_build_points_file")),
   startRankSpec(
     problem_db.get_sizet("method.nond.c3function_train.start_rank")),
+  maxRankSpec(probDescDB.get_sizet("method.nond.c3function_train.max_rank")),
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
+  maxOrderSpec(probDescDB.get_ushort("method.nond.c3function_train.max_order")),
   collocPtsSpec(0) // in lieu of sequence specification
 {
   if (iteratedModel.model_type()     == "surrogate" &&

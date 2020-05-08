@@ -101,8 +101,12 @@ protected:
 
   /// scalar specification for initial rank (prior to adapt_rank)
   size_t startRankSpec;
+  /// scalar specification for maximum rank (bounds adapt_rank)
+  size_t maxRankSpec;
   /// scalar specification for initial basis order (prior to uniform refinement)
   unsigned short startOrderSpec;
+  /// scalar specification for maximum basis order (bounds uniform refinement)
+  unsigned short maxOrderSpec;
 
 private:
 
