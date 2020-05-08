@@ -1,5 +1,5 @@
 Blurb::
-Sampling option
+Importance sampling option for probability refinement
 Description::
 \c mm_adapt_import starts with all of the samples located in the failure region 
 to build a multimodal sampling density. First, it uses a small number of samples around 

@@ -10,7 +10,7 @@ file(STRINGS "${Dakota_BINARY_DIR}/test/dakota_usersexamples.props"
 
 # Supplementary data files needed and copied files below
 set(test_data_files dakota_bayes_expdesign.cand.dat dakota_bayes_expdesign.dat 
-  dakota_textbook_nips.lsq.dat)
+  dakota_textbook_nips.lsq.dat dakota_bayes_linear.1.dat dakota_cantilever_queso.withsigma.dat)
 
 foreach(data_file ${test_data_files})
 

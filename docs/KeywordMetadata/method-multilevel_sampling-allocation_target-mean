@@ -1,0 +1,26 @@
+method-multilevel_sampling-allocation_target-mean
+
+Blurb:: 
+Fit MLMC sample allocation to control the variance of the estimator for the mean.
+
+Description:: 
+Computes the variance of the mean estimator and fits sample allocation by solving the corresponding optimization problem. This optimization problem is solved in analitically closed form.
+
+Topics::
+
+Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  convergence_tolerance = .01
+	  allocation_target = mean
+\endverbatim
+
+uses the mean as sample allocation target by computing its variance.
+
+Theory::
+Faq::
+See_Also::	

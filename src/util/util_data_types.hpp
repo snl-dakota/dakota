@@ -18,7 +18,16 @@
 #include "Eigen/Dense"
 
 
+/// dakota (lowercase) namespace for new %Dakota modules
 namespace dakota {
+
+/// namespace for new %Dakota utilities module
+namespace util {
+  // empty
+}
+
+// The following are in dakota namespace since shared across util and
+// surrogates and the extra qualification doesn't help
 
 // TODO: determine proper variadic template syntax for const &
 /// silence unused parameter warning; use to indicate those parameters

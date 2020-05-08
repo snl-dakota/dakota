@@ -9,14 +9,27 @@ specification provides a simple weighted-sum approach to combining
 multiple objectives into a single objective: \f[f = \sum_{i=1}^{n}
 w_{i}f_{i}\f]
 
-<b>Default Behavior</b>
-If weights are not specified, then each response is given equal weighting: 
-\f[f = \sum_{i=1}^{n} \frac{f_i}{n}\f] where, in both of these cases, a
-"minimization" sense will retain a positive weighting for a minimizer
-and a "maximization" sense will apply a negative weighting.
+Length: The \c weights must have length equal to \ref
+responses-objective_functions. Thus, when scalar and/or field
+responses are specified, the number of \c weights must equal the
+number of scalars plus the number of fields, \e not the total elements
+in the fields.
 
-If scaling is specified, it is applied before multi-objective weighted
-sums are formed.
+<b>Default Behavior</b> If weights are not specified, then each
+response is given equal weighting: \f[f = \sum_{i=1}^{n}
+\frac{f_i}{n}\f] where, in both of these cases, a "minimization" \ref
+responses-objectve-functions_sense will retain a positive weighting
+for a minimizer and a "maximization" sense will apply a negative
+weighting.
+
+<b>Usage Tips:</b>
+
+Weights are applied as multipliers, scales as charateristic values /
+divisors.
+
+When scaling is active, it is applied to objective functions prior to
+any \c weights and multi-objective sum formation. See the equations in
+\ref responses-objective_functions.
 
 Topics::	
 Examples::

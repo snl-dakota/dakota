@@ -11,14 +11,16 @@
 
 % Most recent SAND report numbers and report date based on
 % Data should be SAND report date and not reflect updates
-\newcommand{\DakotaSANDDate}{July 2014}
-\newcommand{\DakotaSANDDev}{SAND2014-5014}
-\newcommand{\DakotaSANDRef}{SAND2014-5015}
-\newcommand{\DakotaSANDUsers}{SAND2014-4633}
-\newcommand{\DakotaSANDTheory}{SAND2014-4253}
+\newcommand{\DakotaSANDDate}{May 2020}
+%%\newcommand{\DakotaSANDUpdated}{@Dakota_RELEASE_DATE@} % TODO if/else \today
+\newcommand{\DakotaSANDDev}{SAND2020-xxxx}
+\newcommand{\DakotaSANDRef}{SAND2020-xxxx}
+\newcommand{\DakotaSANDUsers}{SAND2020-xxxx}
+\newcommand{\DakotaSANDTheory}{SAND2020-xxxx}
 
 
 % Need to manually break line or Eldred gets incorrectly split
+% This is not yet updated for Dakota 6.12
 \newcommand{\DakotaAuthorSAND}{
 Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey, Mohamed~S.~Ebeida,\\
 John~P.~Eddy, Michael~S.~Eldred, Gianluca~Geraci, Russell~W.~Hooper,\\
@@ -28,8 +30,48 @@ J.~Adam~Stephens, Laura~P.~Swiler, Dena~M.~Vigil,Timothy~M.~Wildey,\\
 Justin~G.~Winokur
 }
 
+
+\newcommand{\DakotaAuthorCode}{ 
+  Brian M. Adams, William J. Bohnhoff, Robert A. Canfield, Keith
+  R. Dalbey, Mohamed S. Ebeida, John P. Eddy, Michael S. Eldred,
+  Gianluca Geraci, Russell W. Hooper, Patricia D. Hough, Kenneth
+  T. Hu, John D. Jakeman, Carson Kent, Mohammad Khalil, Kathryn
+  A. Maupin, Jason A. Monschke, Elliott M. Ridgway, Ahmad A. Rushdi,
+  D. Thomas Seidl, J. Adam Stephens, Laura P. Swiler, Anh Tran, Dena
+  M. Vigil, Timothy M. Wildey, and Justin G. Winokur; with
+  Friedrich~Menhorn (Technische Universitat Munchen) and Xiaoshu~Zeng
+  (University of Southern California)
+}
+
+
+% Updated for Dakota 6.12; manual line breaks as needed to keep names together
+\newcommand{\DakotaAuthorUsersSAND}{
+Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey,\\
+Mohamed~S.~Ebeida, John~P.~Eddy, Michael~S.~Eldred, Russell~W.~Hooper,
+Patricia~D.~Hough, Kenneth~T.~Hu, John~D.~Jakeman, Mohammad~Khalil,
+Kathryn~A.~Maupin, Jason~A.~Monschke, Elliott~M.~Ridgway,\\
+Ahmad~A.~Rushdi, D.~Thomas~Seidl, J.~Adam~Stephens, Laura~P.~Swiler,
+and Justin~G.~Winokur
+}
+
+% Updated for Dakota 6.12
+\newcommand{\DakotaAuthorTheorySAND}{
+Keith~R.~Dalbey, Michael~S.~Eldred, Gianluca~Geraci, John~D.~Jakeman,
+Kathryn~A.~Maupin, Jason~A.~Monschke, D.~Thomas~Seidl,
+Laura~P.~Swiler, and Anh~Tran; with Friedrich~Menhorn (Technische
+Universitat Munchen) and Xiaoshu~Zeng (University of Southern
+California)
+}
+
+\newcommand{\DakotaSNLAddress}{
+Sandia National Laboratories\\
+P.O. Box 5800\\
+Albuquerque, NM 87185
+}
+
 \newcommand{\authvskip}{0.3cm}
 
+% This is not yet updated for Dakota 6.12
 \newcommand{\DakotaAuthorLong}{
 {Brian~M.~Adams, Michael~S.~Eldred, Gianluca~Geraci, Russell~W.~Hooper,}\\
 {John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Ahmad~A.~Rushdi,}\\
@@ -49,6 +91,7 @@ P.O. Box 5800\\
 Albuquerque, NM 87185
 }
 
+% This is not yet updated for Dakota 6.12
 \newcommand{\DakotaAuthorFormatted}{
 {\large \bf Brian~M.~Adams, Michael~S.~Eldred, Gianluca~Geraci, Russell~W.~Hooper,
 John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Ahmad~A.~Rushdi,

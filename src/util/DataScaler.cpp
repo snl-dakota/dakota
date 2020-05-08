@@ -14,9 +14,11 @@
 namespace dakota {
 namespace util {
 
+/// alias for DataScaler's SCALER_TYPE
 using SCALER_TYPE = DataScaler::SCALER_TYPE;
+/// alias for Boost Bimap scaler type <--> string
 using BimapScalertypeStr = boost::bimap<SCALER_TYPE, std::string>;
-
+/// Bimap between scaler types and names
 static BimapScalertypeStr type_name_bimap =
   boost::assign::list_of< BimapScalertypeStr::relation >
   (SCALER_TYPE::NONE, "none")

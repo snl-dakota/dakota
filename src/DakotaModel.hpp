@@ -23,6 +23,7 @@
 //#include "DakotaInterface.hpp"
 #include "DakotaResponse.hpp"
 #include "MultivariateDistribution.hpp"
+#include "ScalingOptions.hpp"
 
 namespace Pecos { /* forward declarations */
 class SurrogateData;
@@ -43,32 +44,6 @@ class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
 class EvaluationStore;
-
-/// Simple container for user-provided scaling data, possibly expanded by replicates through the models
-class ScalingOptions {
-public:
-  /// default ctor: no scaling specified
-  ScalingOptions() { /* empty ctor */ };
-  /// standard ctor: scaling from problem DB
-  ScalingOptions(const ProblemDescDB& problem_db, const SharedResponseData& srd);
-  
-  // continuous variables scales
-  StringArray cvScaleTypes;
-  RealVector  cvScales;
-  // primary response scales
-  StringArray priScaleTypes;
-  RealVector  priScales;
-  // nonlinear constraint scales
-  StringArray nlnIneqScaleTypes;
-  RealVector  nlnIneqScales;
-  StringArray nlnEqScaleTypes;
-  RealVector  nlnEqScales;
-  // linear constraint scales
-  StringArray linIneqScaleTypes;
-  RealVector  linIneqScales;
-  StringArray linEqScaleTypes;
-  RealVector  linEqScales;               
-};
 
 
 /// Base class for the model class hierarchy.

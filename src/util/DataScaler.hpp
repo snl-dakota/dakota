@@ -39,7 +39,7 @@ class DataScaler {
 
   public: 
     
-    /// How best to Doxygenate class enums? RWH
+    /// Enumeration for supported types of DataScalers
     enum class SCALER_TYPE { NONE,
                              STANDARDIZATION,
                              MEAN_NORMALIZATION,
@@ -89,7 +89,12 @@ class DataScaler {
      */
     bool check_for_zero_scaler_factor(int index);
 
-
+  
+    /**
+     *  \brief Convert scaler name to enum type
+     *  \param[in] scaler_name DataScaler name to map
+     *  \returns Corresponding DataScaler enum
+     */
     static SCALER_TYPE scaler_type(const std::string& scaler_name);
 
   protected: 
@@ -184,17 +189,24 @@ class NoScaler: public DataScaler {
 
     NoScaler();
 
-    NoScaler(const MatrixXd &features);
-
-    ~NoScaler();
-
     /**
      * \brief Main constructor for NoScaler
      *
      * \param[in] features Unscaled data matrix - (num_samples by num_features)
      */
+    NoScaler(const MatrixXd &features);
+
+    ~NoScaler();
+
 };
 
+/**
+ * \brief Free function to construct DataScaler
+ *
+ * \param[in] scaler_type      Which scaler to construct
+ * \param[in] unscaled_matrix  Unscaled data matrix - (num_samples by num_features)
+ * \returns  Shared pointer to a DataScaler
+ */
 std::shared_ptr<DataScaler> scaler_factory(DataScaler::SCALER_TYPE scaler_type, const MatrixXd & unscaled_matrix);
 
 }  // namespace util

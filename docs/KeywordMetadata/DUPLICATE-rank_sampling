@@ -1,0 +1,48 @@
+Blurb:: Sample allocation based on rank sampling within multilevel function train
+
+Description::
+Multilevel function train based on regression may allocate the number
+of samples per level based on the collocation ratio times the
+regression size.  The regression size is determined by the rank per
+core and the basis order per dimension as described at \ref
+model-surrogate-global-function_train, where these ranks and orders
+may be either user-specified values (for initial sample allocation),
+incremented values (for external adaptation by Dakota), or recovered
+values (in the case of internal C3 adaptation using \c adapt_rank).
+
+The adaptive algorithm starts from a pilot sample, shapes the profile
+based on the regression size computed from the current orders and recovered
+ranks, and iterates until convergence.
+
+This capability is \b experimental and under active development.
+
+Topics::
+
+Examples::
+
+This example starts with rank-two order-two initial expansion for each
+level, with twice as many samples as regression coefficients.  As the
+recovered rank is updated for each level, as dictated by the internal
+\c adapt_rank approach, the number of samples is incremented as needed
+in order to synchronize with the specified collocation ratio.  In this
+case, the basis order is fixed and only the ranks and associated samples
+are updated for each level.
+
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multifidelity_function_train
+	  allocation_control rank_sampling
+	  p_refinement uniform
+	    start_rank_sequence  = 2 2 2 2 2
+	    adapt_rank  kick_rank = 2  max_rank  = 10
+	    start_order_sequence = 2 2 2 2 2
+	    collocation_ratio = 2.  seed = 160415
+	    convergence_tolerance = 1.e-2
+	    max_refinement_iterations = 5
+\endverbatim
+
+Theory::
+
+Faq::
+See_Also::

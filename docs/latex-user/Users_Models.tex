@@ -125,8 +125,12 @@ computed using linear least squares regression methods. Note: there is
 currently no use of forward- or backward-stepping regression methods
 to eliminate unnecessary terms from the polynomial model.
 
+An experimental least squares regression polynomial model was added
+in Dakota 6.12. The user may specify the basis functions in the 
+polynomial through a total degree scheme.
+
 \textbf{Gaussian Process (GP) or Kriging Interpolation}
-Dakota contains two implementations of Gaussian process, also known as 
+Dakota contains two supported implementations of Gaussian process, also known as 
 Kriging ~\cite{Giu98}, spatial interpolation.  One of these resides in 
 the Surfpack sub-package of Dakota, the other resides in Dakota itself.
 Both versions use the Gaussian correlation function with parameters that
@@ -137,7 +141,8 @@ model and the Dakota version was labeled as the ``Gaussian Process.''
 These terms are now used interchangeably.  As of Dakota 5.2,the 
 Surfpack GP is used by default.  For now the user still has the option 
 to select the Dakota GP, but the Dakota GP is deprecated and will be 
-removed in a future release.
+removed in a future release. A third experimental Gaussian process model
+was added in Dakota 6.12.
 \begin{itemize}
 \item \textbf{Surfpack GP}: Ill-conditioning due to a poorly spaced sample 
       design is handled by discarding points that contribute the least 
@@ -150,6 +155,10 @@ removed in a future release.
       term or ``nugget'' to diagonal elements of the correlation matrix. 
       When this happens, the Dakota GP may not exactly interpolate the 
       data values.
+\item \textbf{Experimental GP}: This GP also contains a nugget parameter
+      that may be fixed by the user or determined through MLE. When the nugget
+      is greater than zero the mean of the GP is not forced to interpolate
+      the response values.
 \end{itemize}
 
 \textbf{Artificial Neural Networks}: An implementation of the
@@ -541,11 +550,22 @@ information on polynomial models.
 
 This surrogate model supports the domain decomposition option, further explained in~\ref{models:surf:piecewise_decomp}.
 
+An experimental polynomial model was added in Dakota 6.12 that 
+uses the keyword \dakotakw{experimental_}\\
+\dakotakw{polynomial}. The user specifies the order of the
+polynomial through the required keyword \texttt{basis\_order}
+according to a total degree rule.
+
 \subsubsection{Kriging/Gaussian-Process Spatial Interpolation Models}
 \label{models:surf:kriging}
-In the current release of Dakota, we have two versions of spatial interpolation 
-models. One is located in Dakota itself and the other in the Surfpack subpackage 
-of Dakota which can be compiled in a stand alone mode.  These models
+In the current release of Dakota, we have two versions of supported 
+spatial interpolation models. There is an additional experimental
+version in Dakota's standalone surrogates module that uses the keyword
+\dakotakw{experimental_gaussian_process} that is described at the end
+of this section.
+Of the supported versions, one is located in Dakota itself and 
+the other in the Surfpack subpackage 
+of Dakota which can be compiled in a standalone mode.  These models
 are denoted as \texttt{kriging dakota} and \texttt{kriging surfpack} or 
 as \texttt{gaussian\_process dakota} and 
 \texttt{gaussian\_process surfpack}.  In Dakota releases prior to 5.2, the 
@@ -775,6 +795,27 @@ models are as follows:
 \end{itemize}
 
 This surrogate model supports the domain decomposition option, further explained in~\ref{models:surf:piecewise_decomp}.
+
+The experimental Gaussian process model differs from the supported implementations in
+a few ways. First, at this time only local, gradient-based optimization methods 
+for MLE are supported. The user may provide the \texttt{num\_restarts} keyword to
+specify how many optimization runs from random initial guesses are performed. The 
+appropriate number of runs to ensure that the global minimum is found will be 
+problem dependent, and when this keyword is omitted the optimizer is run twenty times.
+
+Second, build data for the surrogate is scaled to have zero mean and unit variance,
+and fixed bounds are imposed on the kernel hyperparameters. The type of scaling
+and bound specification will be made user-configrable in a future release.
+
+Third, like the other GP implementations in Dakota the user may employ a polynomial
+trend function by supplying the \texttt{trend} keyword. Supported trend functions
+include \texttt{constant}, \texttt{linear}, and \texttt{quadratic} polynomials, the last of
+these being a full rather than reduced quadratic. Polynomial coefficients 
+are determined alongside the kernel hyperparmeters through MLE.
+
+Lastly, the use may specify a fixed non-negative value for the nugget parameter or may
+estimate it as part of the MLE procedure through the \texttt{find\_nugget} keyword.
+
 
 \subsubsection{Artificial Neural Network (ANN) Models}\label{models:surf:ann}
 

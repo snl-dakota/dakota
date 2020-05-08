@@ -1,0 +1,27 @@
+method-multilevel_sampling-qoi_aggregation-sum
+
+Blurb:: 
+Aggregate the variances over all QoIs to generate a target for each level in a MLMC algorithm. 
+
+Description:: 
+The variances of the \c allocation_target of \f$Y^i_\ell, i = 1,...,R\f$ are aggregated and a single sample allocation is computed. 
+
+Topics::
+
+Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  convergence_tolerance = .01
+	  allocation_target = mean
+      qoi_aggregation = sum
+\endverbatim
+
+uses the sum rule to aggregate the variance over the qois.
+
+Theory::
+Faq::
+See_Also::	

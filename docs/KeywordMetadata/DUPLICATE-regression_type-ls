@@ -1,0 +1,13 @@
+Blurb:: Use least squares solver for forming function train approximations by regression
+
+Description::
+
+Least squares is the standard solver for forming function train approximations
+based on regression.  This option does not include regularization.
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also::

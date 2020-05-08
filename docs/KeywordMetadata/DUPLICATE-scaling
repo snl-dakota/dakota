@@ -1,56 +1,50 @@
 Blurb::
 Turn on scaling for variables, responses, and constraints
+
 Description::
-Some of the optimization and calibration methods support
-scaling of 
+
+Some optimization and calibration methods support scaling of
 continuous design variables, objective functions, calibration terms,
-and constraints.
-This is activated by by providing the
-\c scaling keyword.
+and constraints.  This is activated with the \c scaling keyword.
 Discrete variable scaling is not supported.
 
-When
-scaling is enabled, variables, functions, gradients, Hessians, etc.,
-are transformed such that the method iterates in scaled variable
+When scaling is enabled, variables, functions, gradients, Hessians,
+etc., are transformed such that the method iterates in scaled variable
 space, whereas evaluations of the computational model as specified in
-the interface are performed on the original problem scale.
-Therefore
+the interface are performed on the original problem scale.  Therefore
 using scaling does not require rewriting the interface to the
 simulation code.
 
-Scaling also requires the specification of additional keywords
-which are found in the \ref method, \ref variables, and \ref responses
-blocks.
-When the \c scaling keyword is omitted, all \c
-*_scale_types and \c *_scales specifications are ignored in the
-method, variables, and responses sections.
+Scaling also requires the specification of additional keywords \c
+*scale_types and/or \c *scales in the \ref variables and \ref
+responses blocks.  When the \c scaling keyword is omitted from \ref
+method, these scaling type and value specifications are ignored in the
+variables and responses sections.
 
-This page describes the usage of all scaling related keywords.
-The additional keywords come in pairs, one pair for each set
-of quantities to be scaled.
-These quantities can be
-constraint equations, variables, or responses.
-\li a \c *scales keyword, which gives characteristic values
-\li a \c *scale_type keyword, which determines how to use the 
+This page describes the usage of all scaling related keywords.  The
+additional keywords come in pairs, one pair for each set of quantities
+(variables, primary responses, or constraints) to be scaled.
+\li a \c *scales keyword, which gives characteristic values (divisors)
+\li a \c *scale_types keyword, which determines how to use the 
   characteristic values
 
-The pair of keywords both take argument(s), and
-the length of the arguments can either be zero, one, or equal
-to the number of quantities to be scaled.
-If one argument is given, it will apply to all quantities in
-the set. See the examples below.
+The pair of keywords both take argument(s), and the length of the
+arguments can be either be one or equal to the number of quantities to
+be scaled (see details in \ref responses for lengths when field
+responses are active).  If one argument is given, it will apply to all
+quantities in the set. See the examples below.
 
 <b> Scale Types </b>
 
-There are four scale types:
+There are three scale types:
 <ol>
-  <li> \c none (default) - no scaling, value of \c *scales keyword is ignored
-  </li>
-  <li> \c value - multiplicative scaling
+  <li> \c value - characteristic value scaling
+
+    The target quantity will be scaled (divided) by the specified characteristic value.
   </li>
   <li> \c auto - automatic scaling
 
-     First the quantity is scaled by the characteristic value, then
+     First the quantity is scaled by any characteristic value, then
      automatic scaling will be attempted according to the following scheme:
 
     <ul> 
@@ -84,21 +78,20 @@ There are four scale types:
 <b> Scales </b>
 
 The \c *scales keywords are used to specify the characteristic values.
-These must be non-zero real numbers. The numbers are used according
-to the corresponding \c *_scale_type, as described above.
+These must be non-zero real numbers. The numbers are used according to
+the corresponding \c *scale_types, as described above. A value of 1.0
+can be used to selectively omit some quantities in a vector from being
+scaled.
 
 Depending on the scale type, the characteristic values may be required or
 optional.
-\li \c none, \c auto, \c log - optional
+\li \c auto, \c log - optional
 \li \c value - required.
 
-
-
-A warning is issued if scaling would result in
-division by a value smaller in magnitude than <tt>1.0e10*DBL_MIN</tt>.
-User-provided values violating this lower bound are accepted
-unaltered, whereas for automatically calculated scaling, the lower
-bound is enforced.
+A warning is issued if scaling would result in division by a value
+smaller in magnitude than <tt>1.0e10*DBL_MIN</tt>.  User-provided
+values violating this lower bound are accepted unaltered, whereas for
+automatically calculated scaling, the lower bound is enforced.
 
 Topics::	method_independent_controls
 Examples::

@@ -1,0 +1,13 @@
+Blurb:: Number of collocation points used to estimate expansion coefficients
+
+Description::
+Specify the number of collocation points used to estimate expansion coefficients
+using regression approaches.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	
+A corresponding sequence specification is documented at, e.g.,
+method-multifidelity_polynomial_chaos-expansion_order_sequence-collocation_points_sequence

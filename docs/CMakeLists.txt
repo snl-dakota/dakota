@@ -194,8 +194,9 @@ function(pdf2sand manual sourcePDFname)
 
 endfunction(pdf2sand)
 
-pdf2sand(dev refman)
-pdf2sand(ref refman)
+# Developer, Reference manuals now part of code docs; not building SAND
+#pdf2sand(dev refman)
+#pdf2sand(ref refman)
 add_subdirectory(latex-theory)
 pdf2sand(theory Theory_Main)
 if(DAKOTA_ENABLE_TESTS)
@@ -222,7 +223,8 @@ endif()
 
 # Generate SAND versions of all
 add_custom_target(docs-sand)
-add_dependencies(docs-sand docs-sand-dev docs-sand-ref docs-sand-theory)
+#add_dependencies(docs-sand docs-sand-dev docs-sand-ref docs-sand-theory)
+add_dependencies(docs-sand docs-sand-theory)
 if(DAKOTA_ENABLE_TESTS)
   add_dependencies(docs-sand docs-sand-user)
 endif()

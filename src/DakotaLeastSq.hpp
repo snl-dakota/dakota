@@ -105,7 +105,7 @@ private:
 };
 
 
-inline LeastSq::LeastSq(std::shared_ptr<Dakota::TraitsBase> traits) :
+inline LeastSq::LeastSq(std::shared_ptr<TraitsBase> traits) :
   Minimizer(traits),
   weightFlag(false)
 { }

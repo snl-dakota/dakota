@@ -1088,6 +1088,7 @@ MRREVIEWER = {Marc Prevost},
   pages = {137-144}
 }
 
+
 @Book{Gilks,
         Author = {Gilks, W.R. and Richardson, S. and Spiegelhalter, D.J.},
         Publisher = {Chapman \& Hall},
@@ -1128,6 +1129,34 @@ MRREVIEWER = {Marc Prevost},
   publisher = {O'Reilly and Associates, Inc.},
   address = {Sebastopol, CA},
   year = 1992
+}
+
+@article{Giles2008,
+abstract = {We show that multigrid ideas can be used to reduce the computational complexity of estimating an expected value arising from a stochastic differential equation using Monte Carlo path simulations. In the simplest case of a Lipschitz payoff and a Euler discretisation, the computational cost to achieve an accuracy of O(ϵ) is reduced from O(ϵ−3) to O(ϵ−2 (log ϵ)2). The analysis is supported by numerical results showing significant computational savings.},
+author = {Giles, Michael B.},
+doi = {10.1287/opre.1070.0496},
+issn = {0030-364X},
+journal = {Operations Research},
+keywords = {analysis of algorithms,computational complexity,efficiency,finance,simulation},
+month = {June},
+number = {3},
+pages = {607--617},
+publisher = { INFORMS },
+title = {{Multilevel Monte Carlo Path Simulation}},
+url = {http://pubsonline.informs.org/doi/abs/10.1287/opre.1070.0496},
+volume = {56},
+year = {2008}
+}
+
+@article{Giles2015, 
+title={Multilevel Monte Carlo methods}, 
+volume={24}, 
+DOI={10.1017/S096249291500001X}, 
+journal={Acta Numerica}, 
+publisher={Cambridge University Press}, 
+author={Giles, Michael B.}, 
+year={2015}, 
+pages={259–328}
 }
 
 @incollection {Ginsbourger,
@@ -2036,6 +2065,18 @@ Sttural Dynamics, and Materials Conference},
   year = 2014
 }
 
+@article{Pisaroni2017,
+      title = {MATHICSE Technical Report : Quantifying uncertain system  outputs via the multilevel Monte Carlo method - Part 1:  Central moment estimation},
+      author = {Pisaroni, Michele and Krumscheid, Sebastian and Nobile,  Fabio},
+      publisher = {MATHICSE},
+      address = {Ecublens},
+      year = {2017},
+      note = {MATHICSE Technical Report Nr. 23.2017 October 2017},
+      abstract = {In this work we introduce and analyze a novel multilevel  Monte Carlo (MLMC) estimator for the accurate approximation  of central moments of system outputs affected by  uncertainties. Central moments play a central role in many  disciplines to characterize a random system output's  distribution and are of primary importance in many  prediction, optimization, and decision making processes  under uncertainties. We detail how to effectively tune the  MLMC algorithm for central moments of any order and present  a complete practical algorithm that is implemented in our  accompanying Python library cmlmc-py1. In fact, we validate  the methodology on selected reference problems and apply it  to an aerodynamic relevant test case, namely the transonic  RAE 2822 airfoil affected by operating and geometric  uncertain- ties.},
+      url = {http://infoscience.epfl.ch/record/263564},
+      doi = {10.5075/epfl-MATHICSE-263564},
+}
+
 @TechReport{Plantenga2009,
   author = 	 {Plantenga, T.~D.},
   title = 	 {{HOPSPACK} 2.0 User Manual},
@@ -2403,6 +2444,19 @@ Sttural Dynamics, and Materials Conference},
     year = {1996},
     volume = {58},
     pages = {267--288}
+}
+
+@article{Tip14,
+title = "Basis adaptation in homogeneous chaos spaces",
+journal = "Journal of Computational Physics",
+volume = "259",
+pages = "304 - 317",
+year = "2014",
+issn = "0021-9991",
+doi = "https://doi.org/10.1016/j.jcp.2013.12.009",
+url = "http://www.sciencedirect.com/science/article/pii/S0021999113008085",
+author = "Ramakrishna Tipireddy and Roger Ghanem",
+keywords = "Uncertainty quantification, Curse of dimensionality, Model reduction, Polynomial chaos, Stochastic analysis"
 }
 
 % BMA: update site
@@ -2858,5 +2912,82 @@ ensitivity analysis of computationally demanding models},
   year={2000},
   publisher={Elsevier}
 }
+
+@article{Byrd95,
+  title={A limited memory algorithm for bound constrained optimization},
+  author={Byrd, Richard H and Lu, Peihuang and Nocedal, Jorge and Zhu, Ciyou},
+  journal={SIAM Journal on scientific computing},
+  volume={16},
+  number={5},
+  pages={1190--1208},
+  year={1995},
+  publisher={SIAM}
+}
+
+@article{kushner1964new,
+  title={A new method of locating the maximum point of an arbitrary multipeak curve in the presence of noise},
+  author={Kushner, Harold J},
+  journal={Journal of Basic Engineering},
+  volume={86},
+  number={1},
+  pages={97--106},
+  year={1964},
+  publisher={American Society of Mechanical Engineers}
+}
+
+@inproceedings{daniel2014active,
+  title={Active Reward Learning.},
+  author={Daniel, Christian and Viering, Malte and Metz, Jan and Kroemer, Oliver and Peters, Jan},
+  booktitle={Robotics: Science and Systems},
+  year={2014}
+}
+
+@article{srinivas2009gaussian,
+  title={Gaussian process optimization in the bandit setting: {N}o regret and experimental design},
+  author={Srinivas, Niranjan and Krause, Andreas and Kakade, Sham M and Seeger, Matthias},
+  journal={arXiv preprint arXiv:0912.3995},
+  year={2009}
+}
+
+@article{srinivas2012information,
+  title={Information-theoretic regret bounds for {G}aussian process optimization in the bandit setting},
+  author={Srinivas, Niranjan and Krause, Andreas and Kakade, Sham M and Seeger, Matthias W},
+  journal={IEEE Transactions on Information Theory},
+  volume={58},
+  number={5},
+  pages={3250--3265},
+  year={2012},
+  publisher={IEEE}
+}
+
+@article{tran2019pbo,
+  title={{pBO-2GP-3B: A batch parallel known/unknown constrained Bayesian optimization with feasibility classification and its applications in computational fluid dynamics}},
+  author={Tran, Anh and Sun, Jing and Furlan, John M and Pagalthivarthi, Krishnan V and Visintainer, Robert J and Wang, Yan},
+  journal={Computer Methods in Applied Mechanics and Engineering},
+  pages={827--852},
+  volume={347},
+  year={2019},
+  publisher={Elsevier}
+}
+
+@article{desautels2014parallelizing,
+  title={Parallelizing exploration-exploitation tradeoffs in {G}aussian process bandit optimization},
+  author={Desautels, Thomas and Krause, Andreas and Burdick, Joel W},
+  journal={The Journal of Machine Learning Research},
+  volume={15},
+  number={1},
+  pages={3873--3923},
+  year={2014},
+}
+
+@inproceedings{contal2013parallel,
+  title={Parallel {G}aussian process optimization with upper confidence bound and pure exploration},
+  author={Contal, Emile and Buffoni, David and Robicquet, Alexandre and Vayatis, Nicolas},
+  booktitle={Joint European Conference on Machine Learning and Knowledge Discovery in Databases},
+  pages={225--240},
+  year={2013},
+  organization={Springer}
+}
+
 
 

@@ -1,0 +1,12 @@
+Blurb::
+Total degree of the polynomial basis
+
+Description::
+This keyword's argument specifies the terms in the polynomial according to
+a total order scheme.
+
+Topics::
+
+Theory::
+Faq::
+See_Also::

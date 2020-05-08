@@ -42,6 +42,11 @@ class LinearSolverBase
     /// Destructor
     ~LinearSolverBase();
 
+    /**
+     *  \brief Convert solver name to enum type
+     *  \param[in] solver_name LinearSolverBase name to map
+     *  \returns Corresponding LinearSolverBase enum
+     */
     static SOLVER_TYPE solver_type(const std::string& solver_name);
 
     /**
@@ -74,7 +79,13 @@ class LinearSolverBase
     virtual void solve(const MatrixXd &rhs, MatrixXd &x);
 };
 
-std::shared_ptr<LinearSolverBase> solver_factory(LinearSolverBase::SOLVER_TYPE);
+/**
+ * \brief Free function to construct LinearSolverBase
+ *
+ * \param[in] type  Which solver to construct
+ * \returns   Shared pointer to a LinearSolverBase
+ */
+std::shared_ptr<LinearSolverBase> solver_factory(LinearSolverBase::SOLVER_TYPE type);
 
 // --------------------------------------------------------------------------------
 
@@ -239,7 +250,7 @@ class CholeskySolver : public LinearSolverBase
     /**
      * \brief Perform the matrix factorization for the linear solver matrix.
      *
-     * \param[in] mat The incoming matrix to factorize.
+     * \param[in] A The incoming matrix to factorize.
      */
     void factorize(const MatrixXd &A) override;
 
@@ -262,6 +273,7 @@ class CholeskySolver : public LinearSolverBase
 
   private:
 
+    /// Cached LDL^T factorization
     std::shared_ptr<Eigen::LDLT<MatrixXd>> LDLT_Ptr;
 };
 

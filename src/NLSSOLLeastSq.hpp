@@ -21,37 +21,10 @@
 
 namespace Dakota {
 
-/// Wrapper class for the NLSSOL nonlinear least squares library.
-
-/** The NLSSOLLeastSq class provides a wrapper for NLSSOL, a Fortran
-    77 sequential quadratic programming library from Stanford
-    University marketed by Stanford Business Associates. It uses a
-    function pointer approach for which passed functions must be
-    either global functions or static member functions.  Any nonstatic
-    attribute used within static member functions must be either local
-    to that function or accessed through a static pointer.
-
-    The user input mappings are as follows: \c
-    max_function_evaluations is implemented directly in
-    NLSSOLLeastSq's evaluator functions since there is no NLSSOL
-    parameter equivalent, and \c max_iterations, \c
-    convergence_tolerance, \c output verbosity, \c verify_level, \c
-    function_precision, and \c linesearch_tolerance are mapped into
-    NLSSOL's "Major Iteration Limit", "Optimality Tolerance", "Major
-    Print Level" (\c verbose: Major Print Level = 20; \c quiet: Major
-    Print Level = 10), "Verify Level", "Function Precision", and
-    "Linesearch Tolerance" parameters, respectively, using NLSSOL's
-    npoptn() subroutine (as wrapped by npoptn2() from the
-    npoptn_wrapper.f file). Refer to [Gill, P.E., Murray, W.,
-    Saunders, M.A., and Wright, M.H., 1986] for information on NLSSOL's
-    optional input parameters and the npoptn() subroutine. */
-
-
 /**
  * \brief A version of TraitsBase specialized for NLSSOL nonlinear least squares library
  *
  */
-
 class NLSSOLLeastSqTraits: public TraitsBase
 {
   public:
@@ -81,6 +54,31 @@ class NLSSOLLeastSqTraits: public TraitsBase
   bool supports_nonlinear_inequality() { return true; }
 };
 
+
+/// Wrapper class for the NLSSOL nonlinear least squares library.
+
+/** The NLSSOLLeastSq class provides a wrapper for NLSSOL, a Fortran
+    77 sequential quadratic programming library from Stanford
+    University marketed by Stanford Business Associates. It uses a
+    function pointer approach for which passed functions must be
+    either global functions or static member functions.  Any nonstatic
+    attribute used within static member functions must be either local
+    to that function or accessed through a static pointer.
+
+    The user input mappings are as follows: \c
+    max_function_evaluations is implemented directly in
+    NLSSOLLeastSq's evaluator functions since there is no NLSSOL
+    parameter equivalent, and \c max_iterations, \c
+    convergence_tolerance, \c output verbosity, \c verify_level, \c
+    function_precision, and \c linesearch_tolerance are mapped into
+    NLSSOL's "Major Iteration Limit", "Optimality Tolerance", "Major
+    Print Level" (\c verbose: Major Print Level = 20; \c quiet: Major
+    Print Level = 10), "Verify Level", "Function Precision", and
+    "Linesearch Tolerance" parameters, respectively, using NLSSOL's
+    npoptn() subroutine (as wrapped by npoptn2() from the
+    npoptn_wrapper.f file). Refer to [Gill, P.E., Murray, W.,
+    Saunders, M.A., and Wright, M.H., 1986] for information on NLSSOL's
+    optional input parameters and the npoptn() subroutine. */
 class NLSSOLLeastSq: public LeastSq, public SOLBase
 {
 public:

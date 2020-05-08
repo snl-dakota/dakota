@@ -19,6 +19,7 @@
 \usepackage{float}
 \usepackage{alltt}
 \usepackage{times}
+\usepackage{bm}
 \ifx\pdfoutput\undefined
 \usepackage[ps2pdf,
             pagebackref=true,
@@ -79,7 +80,7 @@
 {\large \DakotaSANDTheory}\\
 {\large Unlimited Release}\\
 {\large \DakotaSANDDate}\\
-{\large Updated \today}\\
+%{\large Updated \DakotaSANDUpdated}\\
 
 \vspace*{1.5cm}
 {\LARGE Dakota, A Multilevel Parallel Object-Oriented Framework for 
@@ -87,7 +88,9 @@ Design Optimization, Parameter Estimation, Uncertainty Quantification,
 and Sensitivity Analysis:\\Version \DakotaVersion\space Theory Manual}\\
 \vspace*{1cm}
 
-\DakotaAuthorFormatted
+\DakotaAuthorTheorySAND
+\\ \vspace*{0.5cm}
+\DakotaSNLAddress
 
 \newpage
 
@@ -114,7 +117,8 @@ and Sensitivity Analysis:\\Version \DakotaVersion\space Theory Manual}\\
 \input{Theory_UQ_Bayesian}
 \input{Theory_Surrogates}
 \input{Theory_Opt_SurrBased}
-\input{Theory_ActiveSubspace}
+\input{Theory_Opt_GlobalSurrBased}
+\input{Theory_UQ_DimReduction}
 \input{Theory_Opt_UnderUnc}
 % TO DO: add analysis from MAO paper (do not extract anything from User's)
 %\input{Theory_Parallel}

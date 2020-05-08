@@ -1,0 +1,7 @@
+Blurb::
+Convergence tolerance for the optimizer used during the regression solve.
+
+Description::
+Defines the function value and function gradient tolerance for optimizer
+used solving the regression problem for the functional tensor train
+coefficients.

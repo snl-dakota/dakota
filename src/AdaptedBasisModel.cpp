@@ -629,113 +629,30 @@ SizetArray AdaptedBasisModel::variables_resize()
 
 
 
-/** Convert the user-specified normal random variables to the
-    appropriate reduced space variables, based on the orthogonal
-    transformation.
-
-    TODO: Generalize to convert other random variable types (non-normal)
-
-    TODO: The translation of the correlations from full to reduced
-    space is likely wrong for rank correlations; should be correct for
-    covariance.
-*/
-/// transform and set the distribution parameters in the reduced model
+/** Define the distribution of recast reduced dimension
+    variables \eta. They are standard Gaussian in adapted 
+    basis model. */
 void AdaptedBasisModel::uncertain_vars_to_subspace()
 {
-  // Unlike activeSubspaceModel (from which this fn is adapted), this subModel
-  // is in the transformed space.  Need to dive one level deeper to access
-  // distribution parameters in the native space.
-  const Model& native_model = subModel.subordinate_model();
-  const Pecos::MultivariateDistribution& native_dist =
-    native_model.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* native_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)native_dist.multivar_dist_rep();
-
-  // initialize distribution params for reduced model
-  // This is necessary if subModel has been transformed
-  // to standard normals from a different distribution
-  //mvDist.pull_distribution_parameters(native_dist); // deep copy
-
-  // native space characterization
-  RealVector mu_x, sd_x;
-  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_x);
-  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_x);
-  const RealSymMatrix& correl_x = native_dist.correlation_matrix();
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nAdapted Basis Model: correl_x = \n" << correl_x;
-
-  bool native_correl = correl_x.empty() ? false : true;
-  if (native_correl && correl_x.numRows() != numFullspaceVars) {
-    Cerr << "\nError (adapted basis model): Wrong correlation size."<<std::endl;
-    abort_handler(-1);
-  }
-
   // reduced space characterization: mean mu, std dev sd
   RealVector mu_y(reducedRank), sd_y(reducedRank);
 
-  // mu_y = A^T * mu_x
-  int m = rotationMatrix.numRows(), n = rotationMatrix.numCols(),
-    incx = 1, incy = 1;
-  Real alpha = 1.0, beta = 0.0;
-  // y <-- alpha*A*x + beta*y
-  // mu_y <-- 1.0 * A^T * mu_x + 0.0 * mu_y
-  Teuchos::BLAS<int, Real> teuchos_blas;
-  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, rotationMatrix.values(), m,
-                    mu_x.values(), incx, beta, mu_y.values(), incy);
-
-  // convert the correlations C_x to variance V_x
-  // V_x <-- diag(sd_x) * C_x * diag(sd_x)
-  // not using symmetric so we can multiply() below
-  RealMatrix V_x(m, m, false);
-  if (native_correl) {
-    for (int row=0; row<m; ++row)
-      for (int col=0; col<m; ++col)
-        V_x(row, col) = sd_x(row)*correl_x(row,col)*sd_x(col);
-  }
-  else {
-    V_x = 0.0;
-    for (int row=0; row<m; ++row)
-      V_x(row, row) = sd_x(row)*sd_x(row);
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nAdapted Basis Model: A = \n" << rotationMatrix
-	 << "\nAdapted Basis Model: V_x =\n" << V_x;
-
-  // compute V_y = U^T * V_x * U
-  alpha = 1.0;  beta = 0.0;
-  RealMatrix UTVx(n, m, false);
-  UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS,
-                alpha, rotationMatrix, V_x, beta);
-  RealMatrix V_y(reducedRank, reducedRank, false);
-  V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
-               alpha, UTVx, rotationMatrix, beta);
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nAdapted Basis Model: V_y = \n" << V_y;
-
-  // compute the standard deviations in reduced space
   for (int i=0; i<reducedRank; ++i)
-    sd_y(i) = std::sqrt(V_y(i,i));
+  {
+    mu_y(i) = 0.0;
+    sd_y(i) = 1.0;
+  }
+  
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: mu_y =\n" << mu_y;
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: sd_y =\n" << sd_y;
 
   Pecos::MarginalsCorrDistribution* reduced_dist_rep
     = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_y);
   reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_y);
-
-  // compute the correlations in reduced space
-  // TODO: fix symmetric access to not loop over whole matrix
-  //  if (native_correl) {
-
-  // Unless the native correl was alpha*I, the reduced variables will
-  // be correlated in general, so always set the correltions
-  RealSymMatrix correl_y(reducedRank, false);
-  for (int row=0; row<reducedRank; ++row)
-    for (int col=0; col<reducedRank; ++col)
-      correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nAdapted Basis Model: correl_y = \n" << correl_y;
-  mvDist.correlation_matrix(correl_y);
 
   // Set continuous variable types:
   UShortMultiArray cv_types(boost::extents[reducedRank]);
@@ -755,7 +672,6 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   continuous_variable_labels(
     adapted_basis_var_labels[boost::indices[idx_range(0, reducedRank)]]);
 }
-
 
 
 /** Perform the variables mapping from recast reduced dimension
@@ -828,8 +744,8 @@ void AdaptedBasisModel::set_mapping(const Variables& recast_vars,
   Perform the response mapping from submodel to recast response
 */
 void AdaptedBasisModel::
-response_mapping(const Variables& recast_y_vars,
-                 const Variables& sub_model_x_vars,
+response_mapping(const Variables& recast_eta_vars,
+                 const Variables& sub_model_xi_vars,
                  const Response& sub_model_resp, Response& recast_resp)
 {
   Teuchos::BLAS<int, Real> teuchos_blas;

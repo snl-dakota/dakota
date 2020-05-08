@@ -1,15 +1,37 @@
 Blurb::
-Specify scaling for the variables
-Description::
-For continuous variables, the \c scale_types specification includes strings
-specifying the scaling type for each component of the continuous design
-variables vector in methods that support scaling, when scaling is enabled.
+How to scale each continuous design variable
 
-Each entry in \c scale_types may be selected from <tt>'none'</tt>, <tt>'value'</tt>, <tt>'auto'</tt>, or <tt>'log'</tt>, to select no, characteristic value, automatic, or logarithmic scaling, respectively. If a single string is specified it will apply to all components of the continuous design variables vector. 
-Each entry in \c scales may be a user-specified nonzero real characteristic value to be used in scaling each variable component. These values are ignored for scaling type <tt>'none'</tt>, required for <tt>'value'</tt>, and optional for <tt>'auto'</tt> and <tt>'log'</tt>. If a single real value is specified it will apply to all components of the continuous design variables vector.
+Description::
+Each string in \c scale_types indicates the scaling type for each
+continuous design variable. They only have effect when the associated
+method specifies \c scaling.
+
+The options are:
+
+\li <tt>'value'</tt> - characteristic value by which variables will be
+    divided. If this is chosen, then \ref
+    variables-continuous_design-scales must also be specified; 'value'
+    is assumed if scales are given without \c scale_types
+
+\li <tt>'auto'</tt> - automatic scaling based on bounds.
+
+\li <tt>'log'</tt> - logarithmic scaling (can be used together with
+    \ref variables-continuous_design-scales).
+
+If a single string is specified it will apply to all continuous design
+variables. Otherwise, a scale type must be specified for each
+continuous design variable.
+
+<b>Usage Tips:</b>
+
+See the scaling information under specific methods, e.g.,
+\c method-*-scaling for details on how to use this keyword.
+
 
 Topics::	
-Examples:: Two continuous design variables, one scaled by a value, the other log scaled,
+Examples:: 
+Two continuous design variables, one scaled by 4.0, the other by 0.1,
+then further log scaled:
 \verbatim
   continuous_design = 2
     initial_point    -1.2      1.0

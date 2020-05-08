@@ -28,33 +28,10 @@
 
 namespace Dakota {
 
-/// Wrapper class for HOPSPACK 
-
-/** The APPSOptimizer class provides a wrapper for HOPSPACK, a
-    Sandia-developed C++ library for generalized pattern search.
-    HOPSPACK defaults to a coordinate pattern search but also allows
-    for augmented search patterns.  It can solve problems with bounds,
-    linear constraints, and general nonlinear constraints.
-    APPSOptimizer uses an APPSEvalMgr object to manage the function
-    evaluations.
-
-    The user input mappings are as follows: \c output \c
-    max_function_evaluations, \c constraint_tol \c initial_delta, \c
-    contraction_factor, \c variable_tolerance, \c solution_target, \c
-    synchronization, \c merit_function, \c constraint_penalty, and \c
-    smoothing_factor are mapped into HOPS's \c "Display", "Maximum
-    Evaluations", "Active Tolerance"/"Nonlinear Active Tolerance",
-    "Initial Step", "Contraction Factor", "Step Tolerance", "Objective
-    Target", "Synchronous Evaluations", "Penalty Function", "Penalty
-    Parameter", and "Penalty Smoothing Value" data attributes.  Refer
-    to the HOPS web site (https://software.sandia.gov/trac/hopspack)
-    for additional information on HOPS objects and controls. */
-
 /// HOPSPACK-specific traits class.
 
 /** AppsTraits specializes some traits accessors by over-riding the default 
 accessors in TraitsBase. */
-
 class AppsTraits: public TraitsBase
 {
   public:
@@ -130,6 +107,28 @@ inline double AppsTraits::getBestObj(const OptT & optimizer)
   return optimizer.getBestF();
 }
 
+
+/// Wrapper class for HOPSPACK 
+
+/** The APPSOptimizer class provides a wrapper for HOPSPACK, a
+    Sandia-developed C++ library for generalized pattern search.
+    HOPSPACK defaults to a coordinate pattern search but also allows
+    for augmented search patterns.  It can solve problems with bounds,
+    linear constraints, and general nonlinear constraints.
+    APPSOptimizer uses an APPSEvalMgr object to manage the function
+    evaluations.
+
+    The user input mappings are as follows: \c output \c
+    max_function_evaluations, \c constraint_tol \c initial_delta, \c
+    contraction_factor, \c variable_tolerance, \c solution_target, \c
+    synchronization, \c merit_function, \c constraint_penalty, and \c
+    smoothing_factor are mapped into HOPS's \c "Display", "Maximum
+    Evaluations", "Active Tolerance"/"Nonlinear Active Tolerance",
+    "Initial Step", "Contraction Factor", "Step Tolerance", "Objective
+    Target", "Synchronous Evaluations", "Penalty Function", "Penalty
+    Parameter", and "Penalty Smoothing Value" data attributes.  Refer
+    to the HOPS web site (https://software.sandia.gov/trac/hopspack)
+    for additional information on HOPS objects and controls. */
 class APPSOptimizer : public Optimizer
 {
 public:

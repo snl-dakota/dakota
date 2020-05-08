@@ -163,10 +163,10 @@ public:
   /// concatenate a string onto the end of a path
   static bfs::path concat_path(const bfs::path& p_in, const String& tag);
 
-  /// generate a valid temporary file name <prefix>_%%%%%%%% 
+  /// generate a valid temporary file name prefix_%%%%%%%%
   static bfs::path system_tmp_file(const std::string& prefix);
 
-  /// get the system tmp path, e.g., /tmp or C:\temp
+  /// get the system tmp path, e.g., /tmp or C:\\temp
   static bfs::path system_tmp_path();
 
   /// Create a directory, with options for remove or error
