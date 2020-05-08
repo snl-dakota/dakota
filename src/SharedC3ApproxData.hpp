@@ -181,8 +181,12 @@ protected:
   std::map<UShortArray, size_t> startRank;
   /// user specification for increment in rank used within adapt_rank
   size_t kickRank;
-  /// user specification for maximum rank used within adapt_rank 
-  size_t maxRank;
+  /// scalar user specification for max rank
+  size_t maxRankSpec;
+  /// user specification for maximum rank used within adapt_rank;
+  /// usually a scalar specification but can be adapted per model key
+  /// for UNIFORM_MAX_RANK refine type
+  std::map<UShortArray, size_t> maxRank;
   /// internal C3 adaptation that identifies the best rank representation
   /// for a set of sample data based on cross validation
   bool adaptRank;
@@ -237,7 +241,6 @@ private:
   //- Heading: Convenience functions
   //
 
-
   //
   //- Heading: Data
   //
@@ -260,6 +263,10 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
     { startOrders[key] = startOrderSpec;  form = true; }
   if (startRank.find(key) == startRank.end()) 
     { startRank[key]   = startRankSpec;   form = true; }
+  if (maxRank.find(key) == maxRank.end())
+    { maxRank[key]     = maxRankSpec;     if (adaptRank) form = true; }
+
+  // ensure approximation rebuild, when needed, in absence of sample increment
   if (form) formUpdated[key] = true;
 }
 
@@ -292,7 +299,10 @@ inline size_t SharedC3ApproxData::start_rank() const
 
 
 inline size_t SharedC3ApproxData::max_rank() const
-{ return maxRank; }
+{
+  std::map<UShortArray, size_t>::const_iterator cit = maxRank.find(activeKey);
+  return (cit == maxRank.end()) ? maxRankSpec : cit->second;
+}
 
 
 inline bool SharedC3ApproxData::adapt_rank() const
@@ -374,7 +384,8 @@ inline void SharedC3ApproxData::set_parameter(String var, size_t val)
   if (var.compare("start_rank") == 0)
     startRank[activeKey] = /*startRankSpec =*/ val;
   else if (var.compare("kick_rank")  == 0)  kickRank = val;
-  else if (var.compare("max_rank")   == 0)   maxRank = val;
+  else if (var.compare("max_rank")   == 0)
+    maxRank[activeKey]   = /*maxRankSpec =*/   val;
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 

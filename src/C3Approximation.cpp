@@ -188,7 +188,7 @@ void C3Approximation::build()
 
     size_t r_adapt = data_rep->adaptRank ? 1 : 0;
     ft_regress_set_adapt(   ftr, r_adapt);
-    ft_regress_set_maxrank( ftr, data_rep->maxRank);
+    ft_regress_set_maxrank( ftr, data_rep->max_rank());
     ft_regress_set_kickrank(ftr, data_rep->kickRank);
     ft_regress_set_roundtol(ftr, data_rep->roundingTol);
     ft_regress_set_verbose( ftr, data_rep->c3Verbosity);

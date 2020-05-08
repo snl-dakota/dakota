@@ -30,7 +30,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   maxOrder(problem_db.get_ushort("model.c3function_train.max_order")),
   startRankSpec(problem_db.get_sizet("model.c3function_train.start_rank")),
   kickRank(problem_db.get_sizet("model.c3function_train.kick_rank")),
-  maxRank(problem_db.get_sizet("model.c3function_train.max_rank")),
+  maxRankSpec(problem_db.get_sizet("model.c3function_train.max_rank")),
   adaptRank(problem_db.get_bool("model.c3function_train.adapt_rank")),
   regressType(problem_db.get_short("model.surrogate.regression_type")),
   regressRegParam(problem_db.get_real("model.surrogate.regression_penalty")),
@@ -70,7 +70,7 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
 		   output_level),
   // default values overridden by set_parameter
   startOrderSpec(approx_order), maxOrder(5),
-  startRankSpec(2), kickRank(2), maxRank(10), adaptRank(false),
+  startRankSpec(2), kickRank(2), maxRankSpec(10), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
   crossMaxIter(5), maxSolverIterations(-1), c3Verbosity(0),
@@ -200,8 +200,10 @@ void SharedC3ApproxData::increment_order()
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
     ++it->second; break;
   }
-  case UNIFORM_MAX_RANK:
-    ++maxRank;    break; // *** TO DO: vary per level -> activeKey mgmt ***
+  case UNIFORM_MAX_RANK: {
+    std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
+    ++it->second; break;
+  }
   }
 }
 
@@ -235,14 +237,16 @@ void SharedC3ApproxData::decrement_order()
   }
   case UNIFORM_START_RANK: {
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
-    size_t& active_rank = it->second;  
-    if (active_rank) --active_rank;
-    else          underflow = true;
+    size_t& s_rank = it->second;  
+    if (s_rank)  --s_rank;
+    else underflow = true;
     break;
   }
   case UNIFORM_MAX_RANK:
-    if (maxRank) --maxRank; // *** TO DO: vary per level -> activeKey mgmt ***
-    else  underflow = true;
+    std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
+    size_t& m_rank = it->second;  
+    if (m_rank)  --m_rank;
+    else underflow = true;
     break;
   }
 
