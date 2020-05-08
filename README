@@ -5,6 +5,7 @@ A Multilevel Parallel Object-Oriented Framework for Design Optimization,
 Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis 
 
 ------------------------------------------------------------------------------
+
             _/_/_/   
              _/_/    
         _/_/_/_/_/_/ 
@@ -43,7 +44,7 @@ Dena M. Vigil
 Timothy M. Wildey
 Justin G. Winokur
 
-Friedrich Menhorn, Technische Universitat Munchen
+Friedrich Menhorn, Technical University of Munich
 Xiaoshu Zeng, University of Southern California
 
 
@@ -197,6 +198,7 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
+6.12               05/15/20 (refer to git submodules for TPL SHA1s)
 6.11               11/15/19 (refer to git submodules for TPL SHA1s)
 6.10               05/15/19 (refer to git submodules for TPL SHA1s)
 6.9                11/15/18 (refer to git submodules for TPL SHA1s)
