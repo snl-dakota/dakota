@@ -45,8 +45,8 @@ set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
 
 # If empty, the build date will be used as the release date (could consider 
 # using the Git rev date); use format Mmm dd yyyy, as in asctime()
-#set(Dakota_RELEASE_DATE "Nov 15 2019")    # Versioned release date Mmm dd yyyy
-set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
+set(Dakota_RELEASE_DATE "May 15 2020")    # Versioned release date Mmm dd yyyy
+#set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
 
 # Define convenience variables used here and in subdirs, such as
 #   Dakota_VERSION_{PAIR, TRIPLE, STRING, SRC}
