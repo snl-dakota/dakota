@@ -152,6 +152,14 @@ C3Approximation::~C3Approximation()
 { } // FT memory deallocations managed by C3FnTrainPtrs
 
 
+SizetVector C3Approximation::function_train_ranks()
+{
+  return SizetVector(Teuchos::View,
+    function_train_get_ranks(levApproxIter->second.function_train()),
+    sharedDataRep->numVars + 1);
+}
+
+
 void C3Approximation::build()
 {
   if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)

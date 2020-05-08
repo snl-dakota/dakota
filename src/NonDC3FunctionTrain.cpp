@@ -353,11 +353,17 @@ bool NonDC3FunctionTrain::refinement_available()
 	   << std::endl;
       abort_handler(METHOD_ERROR);
     }
+    size_t v, max_rank = shared_data_rep->max_rank(); // adapted value
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     for (size_t qoi=0; qoi<numFunctions; ++qoi) {
       C3Approximation* poly_approx_q
 	= (C3Approximation*)poly_approxs[qoi].approx_rep();
       // check adapted FT ranks against maxRank
+      SizetVector ft_ranks = poly_approx_q->function_train_ranks();
+      for (v=1; v<numContinuousVars; ++v) // ranks len = num_v+1 with 1's @ ends
+	if (ft_ranks[v] == max_rank) // recovery potentially limited by bound
+	  { refine = true; break; }
+      if (refine) break;
     }
     break;
   }
