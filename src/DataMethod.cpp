@@ -116,7 +116,7 @@ DataMethodRep::DataMethodRep():
   // C3 FT
   maxCrossIterations(1), solverTol(1.e-10), roundingTol(1.e-8),
   arithmeticTol(1.e-2), startOrder(2), maxOrder(USHRT_MAX),
-  startRank(2), kickRank(2), maxRank(std::numeric_limits<size_t>::max()),
+  startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
   adaptRank(false),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),

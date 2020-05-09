@@ -196,11 +196,15 @@ void C3Approximation::build()
       ft_regress_set_alg_and_obj(ftr, AIO, FTLS);
 
     size_t r_adapt = data_rep->adaptRank ? 1 : 0;
-    ft_regress_set_adapt(   ftr, r_adapt);
-    ft_regress_set_maxrank( ftr, data_rep->max_rank());
-    ft_regress_set_kickrank(ftr, data_rep->kickRank);
-    ft_regress_set_roundtol(ftr, data_rep->roundingTol);
-    ft_regress_set_verbose( ftr, data_rep->c3Verbosity);
+    ft_regress_set_adapt(ftr,     r_adapt);
+    size_t max_r = data_rep->max_rank(); // bounds CV candidates for adapt_rank
+    if (max_r != std::numeric_limits<size_t>::max())
+      ft_regress_set_maxrank(ftr, max_r);
+    // else use internal default (in src/lib_superlearn/regress.c, maxrank = 10
+    // assigned in ft_regress_alloc())
+    ft_regress_set_kickrank(ftr,  data_rep->kickRank);
+    ft_regress_set_roundtol(ftr,  data_rep->roundingTol);
+    ft_regress_set_verbose(ftr,   data_rep->c3Verbosity);
 
     struct c3Opt* optimizer = c3opt_create(BFGS);
     int max_solver_iter = data_rep->maxSolverIterations;

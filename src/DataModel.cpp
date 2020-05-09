@@ -53,7 +53,7 @@ DataModelRep::DataModelRep():
   regressionL2Penalty(0.), maxSolverIterations(-1), maxCrossIterations(1),
   solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-8),
   tensorGridFlag(false), startOrder(2), maxOrder(USHRT_MAX),
-  startRank(2), kickRank(2), maxRank(std::numeric_limits<size_t>::max()),
+  startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
   adaptRank(false), collocationPoints(std::numeric_limits<size_t>::max()),
   collocationRatio(0.), refinementType(Pecos::NO_REFINEMENT),
   refinementControl(Pecos::NO_CONTROL),
