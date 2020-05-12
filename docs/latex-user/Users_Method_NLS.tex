@@ -325,10 +325,10 @@ Dakota. Note there will be one line per residual term, specified with
 \texttt{calibration\_terms} in the Dakota input file. It is the last
 two steps which are different from most other Dakota applications.
 
-To simplify specifying a least squares problem, a user may specify a
+To simplify specifying a least squares problem, one may provide Dakota a
 data file containing experimental results or other calibration data.
 In the case of scalar calibration terms, 
-this file may be specified with \texttt{calibration\_data\_file}.  In
+this file may be specified with \dakotakw{calibration_data_file}.  In
 this case, Dakota will calculate the residuals (that is, the
 simulation model results minus the experimental results), and the
 user-provided script can omit this step: the script can just return
@@ -342,7 +342,7 @@ subtracted from the least-squares terms to produce residuals for the
 nonlinear least-squares problem.  Note that the file may be annotated
 (specified by \texttt{annotated}) or freeform (specified by
 \texttt{freeform}). The number of experiments in the calibration data
-file may be specified with \texttt{num\_experiments}, with one row of
+file may be specified with \dakotakw{num_experiments}, with one row of
 data per experiment. 
 When multiple experiments are present, the total number of least 
 squares terms will be the number of calibration terms times the number of 

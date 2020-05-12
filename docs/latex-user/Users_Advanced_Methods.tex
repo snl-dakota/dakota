@@ -91,9 +91,9 @@ a sequential hybrid optimization method to solve the
 ``textbook'' optimization test problem.
 The \path{textbook_hybrid_strat.in} file
 provided in \path{dakota/share/dakota/examples/users} starts with a
-\texttt{coliny\_ea} solution which feeds its best point into a
-\texttt{coliny\_pattern\_search} optimization which feeds its best
-point into \texttt{optpp\_newton}. While this approach is overkill for
+\dakotakw{coliny_ea} solution which feeds its best point into a
+\dakotakw{coliny_pattern_search} optimization which feeds its best
+point into \dakotakw{optpp_newton}. While this approach is overkill for
 such a simple problem, it is useful for demonstrating the coordination
 between multiple sub-methods in the hybrid minimization algorithm.
 
@@ -210,13 +210,13 @@ optimizations finds the global minimum.
 
 \section{Pareto Optimization}\label{adv_meth:pareto}
 
-The Pareto optimization method (keyword: \texttt{pareto\_set}) is
+The Pareto optimization method (keyword: \dakotakw{pareto_set}) is
 one of three multiobjective optimization capabilities discussed in
 Section~\ref{opt:additional:multiobjective}. In the Pareto
 optimization method, multiple sets of multiobjective weightings are
 evaluated. The user can specify these weighting sets in the method
-keyword block using a \texttt{multi\_objective\_weight\_sets} list, a
-number of \texttt{random\_weight\_sets}, or both (see the Dakota
+keyword block using a \dakotakw{multi_objective_weight_sets} list, a
+number of \dakotakw{random_weight_sets}, or both (see the Dakota
 Reference Manual~\cite{RefMan} for additional specification details).
 
 Dakota performs one multiobjective optimization problem for each set
@@ -491,12 +491,12 @@ the original model into smooth, differentiable, easily navigated
 surrogates.  This allows SBO with global data fits to extract the
 relevant global design trends from noisy simulation data.
 
-\begin{wrapfigure}{r}{.3\textwidth}
+\begin{figure}
   \centering
-  \includegraphics[width=.3\textwidth]{images/sbo_df}
+  \includegraphics[width=.4\textwidth]{images/sbo_df}
   \caption{SBO iteration progression for global data fits.}
   \label{fig:sbo_df}
-\end{wrapfigure}
+\end{figure}
 When enforcing local consistency between a global data fit surrogate
 and a high-fidelity model at a point, care must be taken to balance
 this local consistency requirement with the global accuracy of the
