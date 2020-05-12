@@ -15,8 +15,8 @@
 %%\newcommand{\DakotaSANDUpdated}{@Dakota_RELEASE_DATE@} % TODO if/else \today
 \newcommand{\DakotaSANDDev}{SAND2020-xxxx}
 \newcommand{\DakotaSANDRef}{SAND2020-xxxx}
-\newcommand{\DakotaSANDUsers}{SAND2020-xxxx}
-\newcommand{\DakotaSANDTheory}{SAND2020-xxxx}
+\newcommand{\DakotaSANDUsers}{SAND2020-5001}
+\newcommand{\DakotaSANDTheory}{SAND2020-4987}
 
 
 % Need to manually break line or Eldred gets incorrectly split
