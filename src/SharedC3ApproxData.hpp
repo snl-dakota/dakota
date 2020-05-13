@@ -64,6 +64,14 @@ public:
   /// return number of FT unknowns using numVars, start_rank(), max_rank(),
   /// start_orders(), max_order()
   size_t regression_size();
+  /// return number of FT unknowns using numVars, maximum rank,
+  /// start_orders(), max_order()
+  size_t max_rank_regression_size();
+  /// return number of FT unknowns using numVars, start_rank(), max_rank(),
+  /// and maximum orders
+  size_t max_order_regression_size();
+  /// return number of FT unknowns using numVars and maximum rank and orders
+  size_t max_regression_size();
 
   /// set UShortArray attribute value based on identifier string
   void set_parameter(String var, const UShortArray& val);
@@ -97,8 +105,8 @@ public:
   /// return adaptRank
   bool adapt_rank() const;
 
-  /// return c3RefineType
-  short refinement_type() const;
+  // return c3RefineType
+  //short refinement_type() const;
 
   /// update oneApproxOpts with active basis orders after an order change
   void update_basis();
@@ -212,6 +220,8 @@ protected:
   int crossMaxIter;
   /// verbosity setting for C3 TPL, mapped from Dakota verbosity
   int c3Verbosity;
+  /// C3 regression solver employs a random seed
+  int randomSeed;
 
   /// a more general adaptive construction option, distinct from adapt_rank
   bool adaptConstruct; // inactive placeholder for now
@@ -227,7 +237,7 @@ protected:
   short allocControl;
   // indicates refinement based on active or combined statistics
   //short refineStatsType;
-  /// type of uniform refinement
+  /// type of (uniform) refinement: UNIFORM_{START_ORDER,START_RANK,MAX_RANK}
   short c3RefineType;
 
   // key identifying the subset of build variables that can be treated
@@ -314,8 +324,8 @@ inline bool SharedC3ApproxData::adapt_rank() const
 { return adaptRank; }
 
 
-inline short SharedC3ApproxData::refinement_type() const
-{ return c3RefineType; }
+//inline short SharedC3ApproxData::refinement_type() const
+//{ return c3RefineType; }
 
 
 /** simplified estimation for scalar-valued rank and order (e.g., from 
@@ -376,6 +386,13 @@ inline size_t SharedC3ApproxData::regression_size()
 }
 
 
+inline size_t SharedC3ApproxData::max_rank_regression_size()
+{
+  size_t max_r = max_rank();
+  return regression_size(numVars, max_r, max_r, start_orders(), max_order());
+}
+
+
 inline void SharedC3ApproxData::
 set_parameter(String var, const UShortArray& val)
 {
@@ -417,6 +434,7 @@ inline void SharedC3ApproxData::set_parameter(String var, short val)
   else if (var.compare("discrepancy_type") == 0) discrepancyType = val;
   else if (var.compare("alloc_control")    == 0)    allocControl = val;
   else if (var.compare("combine_type")     == 0)     combineType = val;
+  else if (var.compare("refinement_type")  == 0)    c3RefineType = val;
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
@@ -435,6 +453,7 @@ inline void SharedC3ApproxData::set_parameter(String var, int val)
 {
   if      (var.compare("max_cross_iterations")  == 0)        crossMaxIter = val;
   else if (var.compare("max_solver_iterations") == 0) maxSolverIterations = val;
+  else if (var.compare("random_seed")           == 0)          randomSeed = val;
   else if (var.compare("verbosity")             == 0)         c3Verbosity = val;
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }

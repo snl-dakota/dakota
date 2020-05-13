@@ -62,7 +62,7 @@ protected:
   // perform a forward uncertainty propagation using PCE/SC methods
   //void core_run();
 
-  bool refinement_available();
+  bool advancement_available();
 
   void push_increment();
   void update_samples_from_order_increment();
@@ -88,6 +88,8 @@ protected:
   /// Publish configuration data for initial function train cores, prior to
   /// any adaptation
   void push_c3_core_orders(const UShortArray& start_orders);
+  /// Publish random seed for internal C3 use
+  void push_c3_seed(int seed);
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)
   void push_c3_db_options();
@@ -107,6 +109,9 @@ protected:
   unsigned short startOrderSpec;
   /// scalar specification for maximum basis order (bounds uniform refinement)
   unsigned short maxOrderSpec;
+
+  /// type of (uniform) refinement: UNIFORM_{START_ORDER,START_RANK,MAX_RANK}
+  short c3RefineType;
 
 private:
 

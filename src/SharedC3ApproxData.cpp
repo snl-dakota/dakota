@@ -42,7 +42,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
   c3Verbosity(0),//problem_db.get_int("model.c3function_train.verbosity")),
-  adaptConstruct(false), crossVal(false), c3RefineType(UNIFORM_START_ORDER)
+  adaptConstruct(false), crossVal(false), c3RefineType(NO_C3_REFINEMENT)
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
@@ -70,11 +70,11 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
 		   output_level),
   // default values overridden by set_parameter
   startOrderSpec(approx_order), maxOrder(USHRT_MAX), startRankSpec(2),
-  kickRank(2), maxRankSpec(std::numeric_limits<size_t>::max()),
+  kickRank(1), maxRankSpec(std::numeric_limits<size_t>::max()),
   adaptRank(false), regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
   crossMaxIter(5), maxSolverIterations(-1), c3Verbosity(0),
-  adaptConstruct(false), crossVal(false), c3RefineType(UNIFORM_START_ORDER)
+  adaptConstruct(false), crossVal(false), c3RefineType(NO_C3_REFINEMENT)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)
@@ -191,9 +191,9 @@ void SharedC3ApproxData::increment_order()
     for (size_t v=0; v<numVars; ++v) {
       unsigned short &s_ord = start_ord[v];
       // unconditional increment (preserve symmetry/reproducibility w/decrement)
-      ++s_ord;
-      // default maxOrder is USHRT_MAX.  Could consider a kickOrder (like
-      // kickRank), but other exp order increments (regression PCE) advance 1
+      ++s_ord; //s_ord += kickOrder;
+      // default maxOrder is USHRT_MAX.  kickOrder not used since other exp
+      // order increments (i.e., regression PCE) advance by 1
       if (s_ord <= maxOrder) // only communicate if in bounds
 	{ incremented = true; update_basis(v, s_ord, maxOrder); }
     }
@@ -208,11 +208,11 @@ void SharedC3ApproxData::increment_order()
     // To ensure symmetry with decrement, don't saturate at maxRank
     // > Must bound start_ranks vector in C3Approximation::build()
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
-    ++it->second; break;
+    it->second += kickRank; break;
   }
   case UNIFORM_MAX_RANK: {
     std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
-    ++it->second; break;
+    it->second += kickRank; break;
   }
   }
 }
@@ -245,15 +245,15 @@ void SharedC3ApproxData::decrement_order()
   case UNIFORM_START_RANK: {
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
     size_t& s_rank = it->second;  
-    if (s_rank)  --s_rank;
-    else bad_range = true;
+    if (s_rank) s_rank -= kickRank;
+    else        bad_range = true;
     break;
   }
   case UNIFORM_MAX_RANK:
     std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
     size_t& m_rank = it->second;  
-    if (m_rank)  --m_rank;
-    else bad_range = true;
+    if (m_rank) m_rank -= kickRank;
+    else        bad_range = true;
     break;
   }
 
@@ -280,5 +280,25 @@ void SharedC3ApproxData::pre_combine()
 
 //void SharedC3ApproxData::post_combine()
 //{ update_basis(); } // restore to active
+
+
+size_t SharedC3ApproxData::max_order_regression_size()
+{
+  unsigned short max_o = max_order();
+  UShortArray max_orders; RealVector dim_pref;// isotropic for now (no XML spec)
+  NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
+    dim_pref, numVars, max_orders);
+  return regression_size(numVars, start_rank(), max_rank(), max_orders, max_o);
+}
+
+
+size_t SharedC3ApproxData::max_regression_size()
+{
+  size_t max_r = max_rank();  unsigned short max_o = max_order();
+  UShortArray max_orders; RealVector dim_pref;// isotropic for now (no XML spec)
+  NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
+    dim_pref, numVars, max_orders);
+  return regression_size(numVars, max_r, max_r, max_orders, max_o);
+}
 
 } // namespace Dakota

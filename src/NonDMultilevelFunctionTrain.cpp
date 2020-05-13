@@ -63,9 +63,11 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   UShortArray approx_orders;
   // extract (initial) values from sequences
   configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
+  size_t rank = (refineType && c3RefineType == UNIFORM_MAX_RANK)
+              ? maxRankSpec : start_rank();
   size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
-    regression_size(numContinuousVars, start_rank(), maxRankSpec, approx_orders,
-		    maxOrderSpec);
+    regression_size(numContinuousVars, rank, maxRankSpec,
+		    approx_orders, maxOrderSpec);
   if (!config_regression(colloc_pts, regress_size, random_seed(),
 			 u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
@@ -216,6 +218,7 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
 
   push_c3_core_rank(start_rank());
+  push_c3_seed(random_seed());
   push_c3_db_options();
   // Pushing initial approx_orders is redundant with DataFitSurrModel ctor:
   //UShortArray approx_orders;
@@ -315,6 +318,7 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   configure_expansion_orders(start_order(), dimPrefSpec, approx_orders);
   push_c3_core_orders(approx_orders);
   shared_data_rep->update_basis(); // propagate updates to oneApproxOpts
+  push_c3_seed(random_seed());
 
   size_t colloc_pts = collocation_points();
   if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined

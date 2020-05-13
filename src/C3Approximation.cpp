@@ -250,7 +250,7 @@ void C3Approximation::build()
 #endif // DEBUG
 
     // Build FT model
-    ft_regress_set_seed(ftr, 1234567);//data_rep->randomSeed);
+    ft_regress_set_seed(ftr, data_rep->randomSeed);
     struct FunctionTrain * ft
       = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
     ftp.function_train(ft);

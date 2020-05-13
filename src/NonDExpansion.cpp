@@ -987,7 +987,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // if refinement opportunities have saturated (e.g., increments have reached
     // max{Order,Rank} or previous cross validation indicated better fit with
     // lower order), no candidates will be generated for this model key.
-    if (!refinement_available())
+    if (!advancement_available())
       return std::numeric_limits<size_t>::max();
 
     RealVector stats_ref;
@@ -1467,7 +1467,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
       step_candidate = core_refinement(step_metric, true, true);
       if (step_candidate == SZ_MAX)
 	Cout << "\n<<<<< Sequence step " << step+1
-	     << " has satured with no refinement candidates available.\n";
+	     << " has saturated with no refinement candidates available.\n";
       else {
 	// core_refinement() normalizes level candidates based on the number of
 	// required evaluations, which is sufficient for selection of the best
