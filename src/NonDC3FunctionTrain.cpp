@@ -79,14 +79,14 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Construct u_space_sampler
   // -------------------------
   Iterator u_space_sampler; // evaluates truth model
-  UShortArray approx_orders;
-  configure_expansion_orders(startOrderSpec, dimPrefSpec, approx_orders);
+  UShortArray orders;
+  configure_expansion_orders(startOrderSpec, dimPrefSpec, orders);
   // compute initial regression size using a static helper
   // (uSpaceModel.shared_approximation() is not yet available)
-  size_t rank = (refineType && c3RefineType == UNIFORM_MAX_RANK)
-              ? maxRankSpec : startRankSpec;
+  size_t regress_rank = (refineType && c3RefineType == UNIFORM_MAX_RANK) ?
+    maxRankSpec : startRankSpec;
   size_t regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-    rank, maxRankSpec, approx_orders, maxOrderSpec);
+    regress_rank, maxRankSpec, orders, maxOrderSpec);
   // configure u-space sampler and model
   if (!config_regression(collocPtsSpec, regress_size, randomSeed,
 			 u_space_sampler, g_u_model)) {
@@ -110,7 +110,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   ActiveSet ft_set = g_u_model.current_response().active_set(); // copy
   ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    ft_set, approx_type, approx_orders, corr_type, corr_order, data_order,
+    ft_set, approx_type, orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, importBuildPointsFile,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
@@ -252,12 +252,11 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   //configure_pecos_options(); // C3 does not use Pecos options
 
   // needs to precede construct_basis()
-  push_c3_core_rank(startRankSpec);
-  UShortArray approx_orders;
-  configure_expansion_orders(startOrderSpec, dimPrefSpec, approx_orders);
-  push_c3_core_orders(approx_orders);
-  push_c3_seed(randomSeed);
-  push_c3_db_options();
+  initialize_c3_start_rank(startRankSpec);
+  UShortArray orders;
+  configure_expansion_orders(startOrderSpec, dimPrefSpec, orders);
+  initialize_c3_start_orders(orders);
+  initialize_c3_db_options();
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   const Pecos::MultivariateDistribution& u_dist
@@ -266,7 +265,7 @@ void NonDC3FunctionTrain::initialize_u_space_model()
 }
 
 
-void NonDC3FunctionTrain::push_c3_core_rank(size_t start_rank)
+void NonDC3FunctionTrain::initialize_c3_start_rank(size_t start_rank)
 {
   // rank is passed in since they may be a scalar or part of a sequence:
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
@@ -275,7 +274,8 @@ void NonDC3FunctionTrain::push_c3_core_rank(size_t start_rank)
 }
 
 
-void NonDC3FunctionTrain::push_c3_core_orders(const UShortArray& start_orders)
+void NonDC3FunctionTrain::
+initialize_c3_start_orders(const UShortArray& start_orders)
 {
   // These are passed in since they may be a scalar or part of a sequence:
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
@@ -284,16 +284,7 @@ void NonDC3FunctionTrain::push_c3_core_orders(const UShortArray& start_orders)
 }
 
 
-void NonDC3FunctionTrain::push_c3_seed(int seed)
-{
-  // These are passed in since they may be a scalar or part of a sequence:
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->set_parameter("random_seed", seed);
-}
-
-
-void NonDC3FunctionTrain::push_c3_db_options()
+void NonDC3FunctionTrain::initialize_c3_db_options()
 {
   // Commonly used approx settings (e.g., basis orders, outputLevel, useDerivs)
   // are passed through the DataFitSurrModel ctor chain.  Additional options
@@ -303,10 +294,8 @@ void NonDC3FunctionTrain::push_c3_db_options()
     uSpaceModel.shared_approximation().data_rep();
 
   // These are pulled from the DB as they are always scalars:
-  shared_data_rep->set_parameter("max_poly_order", maxOrderSpec);
   shared_data_rep->set_parameter("kick_rank",
     probDescDB.get_sizet("method.nond.c3function_train.kick_rank"));
-  shared_data_rep->set_parameter("max_rank", maxRankSpec);
   shared_data_rep->set_parameter("adapt_rank",
     probDescDB.get_bool("method.nond.c3function_train.adapt_rank"));
   shared_data_rep->set_parameter("regress_type",
@@ -329,10 +318,48 @@ void NonDC3FunctionTrain::push_c3_db_options()
   shared_data_rep->set_parameter("combine_type",     comb_type);
   shared_data_rep->set_parameter("verbosity",        verbosity);
 
+  shared_data_rep->set_parameter("max_poly_order",   maxOrderSpec);
+  shared_data_rep->set_parameter("max_rank",         maxRankSpec);
+  shared_data_rep->set_parameter("random_seed",      randomSeed);
   shared_data_rep->set_parameter("discrepancy_type", multilevDiscrepEmulation);
   shared_data_rep->set_parameter("alloc_control",    multilevAllocControl);
-
   shared_data_rep->set_parameter("refinement_type",  c3RefineType); 
+}
+
+
+void NonDC3FunctionTrain::push_c3_start_rank(size_t start_rank)
+{
+  // rank is passed in since they may be a scalar or part of a sequence:
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->set_active_parameter("start_rank", start_rank);
+}
+
+
+void NonDC3FunctionTrain::push_c3_max_rank(size_t max_rank)
+{
+  // rank is passed in since they may be a scalar or part of a sequence:
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->set_active_parameter("max_rank", max_rank);
+}
+
+
+void NonDC3FunctionTrain::push_c3_start_orders(const UShortArray& start_orders)
+{
+  // These are passed in since they may be a scalar or part of a sequence:
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->set_active_parameter("start_poly_order", start_orders);
+}
+
+
+void NonDC3FunctionTrain::push_c3_seed(int seed)
+{
+  // These are passed in since they may be a scalar or part of a sequence:
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->set_active_parameter("random_seed", seed);
 }
 
 

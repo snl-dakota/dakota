@@ -212,7 +212,8 @@ void SharedC3ApproxData::increment_order()
   }
   case UNIFORM_MAX_RANK: {
     std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
-    it->second += kickRank; break;
+    it->second += kickRank;
+    break;
   }
   }
 }

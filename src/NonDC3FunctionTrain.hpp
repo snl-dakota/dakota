@@ -82,17 +82,27 @@ protected:
   bool config_regression(size_t colloc_pts, size_t regress_size, int seed,
 			 Iterator& u_space_sampler, Model& g_u_model);
 
-  /// Publish configuration data for initial function train cores, prior to
-  /// any adaptation
-  void push_c3_core_rank(size_t start_rank);
-  /// Publish configuration data for initial function train cores, prior to
-  /// any adaptation
-  void push_c3_core_orders(const UShortArray& start_orders);
-  /// Publish random seed for internal C3 use
-  void push_c3_seed(int seed);
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)
-  void push_c3_db_options();
+  void initialize_c3_db_options();
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void initialize_c3_start_rank(size_t start_rank);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void initialize_c3_start_orders(const UShortArray& start_orders);
+
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_start_rank(size_t start_rank);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_max_rank(size_t max_rank);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_start_orders(const UShortArray& start_orders);
+  /// Publish random seed for internal C3 use
+  void push_c3_seed(int seed);
 
   //
   //- Heading: Data

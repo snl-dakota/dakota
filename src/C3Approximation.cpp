@@ -178,8 +178,9 @@ void C3Approximation::build()
     abort_handler(APPROX_ERROR);
   }
   else {
-    size_t i, j, num_v = sharedDataRep->numVars,
-      sr = std::min(data_rep->start_rank(), data_rep->max_rank());
+    size_t i, j, num_v = sharedDataRep->numVars, kick_r = data_rep->kickRank,
+      max_r = data_rep->max_rank(), // bounds CV candidates for adapt_rank
+      sr = std::min(data_rep->start_rank(), max_r);
     SizetVector start_ranks(num_v+1);
     start_ranks(0) = 1;     start_ranks(num_v) = 1;
     for (i=1; i<num_v; ++i) start_ranks(i) = sr;
@@ -197,12 +198,11 @@ void C3Approximation::build()
 
     size_t r_adapt = data_rep->adaptRank ? 1 : 0;
     ft_regress_set_adapt(ftr,     r_adapt);
-    size_t max_r = data_rep->max_rank(); // bounds CV candidates for adapt_rank
     if (max_r != std::numeric_limits<size_t>::max())
-      ft_regress_set_maxrank(ftr, max_r);
+      ft_regress_set_maxrank(ftr, max_r+1); // convert < max in C3 to <= max
     // else use internal default (in src/lib_superlearn/regress.c, maxrank = 10
     // assigned in ft_regress_alloc())
-    ft_regress_set_kickrank(ftr,  data_rep->kickRank);
+    ft_regress_set_kickrank(ftr,  kick_r);
     ft_regress_set_roundtol(ftr,  data_rep->roundingTol);
     ft_regress_set_verbose(ftr,   data_rep->c3Verbosity);
 
@@ -272,15 +272,17 @@ void C3Approximation::build()
     //}
     if (data_rep->outputLevel >= NORMAL_OUTPUT) {
       Cout << "\nFunction train build() results:\n  Ranks ";
-      if (data_rep->adaptRank) Cout << "(adapted):\n";
-      else                     Cout << "(non-adapted):\n";
+      if (data_rep->adaptRank)
+	Cout << "(adapted with max = " << max_r << " kick = " << kick_r
+	     << "):\n";
+      else Cout << "(non-adapted):\n";
       write_data(Cout, function_train_get_ranks(ft), num_v+1);
       Cout << "  Polynomial order (non-adapted):\n";
       std::vector<OneApproxOpts*> opts = data_rep->oneApproxOpts;
       for (i=0; i<num_v; ++i)
 	Cout << "                     " << std::setw(write_precision+7)
 	     << one_approx_opts_get_nparams(opts[i]) - 1 << '\n';
-      Cout << "  Regression size:  " << function_train_get_nparams(ft)
+      Cout << "  C3 regression size:  " << function_train_get_nparams(ft)
 	   << std::endl;
     }
 

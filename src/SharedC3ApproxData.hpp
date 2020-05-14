@@ -88,6 +88,13 @@ public:
   /// set int attribute value based on identifier string
   void set_parameter(String var, int    val);
 
+  /// set active UShortArray attribute value based on identifier string
+  void set_active_parameter(String var, const UShortArray& val);
+  /// set active size_t attribute value based on identifier string
+  void set_active_parameter(String var, size_t val);
+  /// set active int attribute value based on identifier string
+  void set_active_parameter(String var, int val);
+
   // set SharedOrthogPolyApproxData::basisTypes
   //void basis_types(const ShortArray& basis_types);
   // get SharedOrthogPolyApproxData::basisTypes
@@ -396,35 +403,31 @@ inline size_t SharedC3ApproxData::max_rank_regression_size()
 inline void SharedC3ApproxData::
 set_parameter(String var, const UShortArray& val)
 {
-  if (var.compare("start_poly_order") == 0)
-    { startOrders[activeKey] = /*startOrderSpec =*/ val; /*update_basis();*/ }
-  else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
+  if (var.compare("start_poly_order") == 0) startOrderSpec = val;
+  else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
 inline void SharedC3ApproxData::set_parameter(String var, unsigned short val)
 {
-  if (var.compare("max_poly_order")  == 0)
-    { maxOrder = val; /*update_basis();*/ }
-  else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
+  if (var.compare("max_poly_order")  == 0)        maxOrder = val;
+  else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
 inline void SharedC3ApproxData::set_parameter(String var, size_t val)
 {
-  if (var.compare("start_rank") == 0)
-    startRank[activeKey] = /*startRankSpec =*/ val;
-  else if (var.compare("kick_rank")  == 0)  kickRank = val;
-  else if (var.compare("max_rank")   == 0)
-    maxRank[activeKey]   = /*maxRankSpec =*/   val;
-  else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
+  if (var.compare("start_rank")     == 0)    startRankSpec = val;
+  else if (var.compare("kick_rank") == 0)         kickRank = val;
+  else if (var.compare("max_rank")  == 0)      maxRankSpec = val;
+  else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
 inline void SharedC3ApproxData::set_parameter(String var, bool val)
 {
-  if (var.compare("adapt_rank") == 0)  adaptRank = val;
-  else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
+  if (var.compare("adapt_rank") == 0)            adaptRank = val;
+  else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
@@ -435,7 +438,7 @@ inline void SharedC3ApproxData::set_parameter(String var, short val)
   else if (var.compare("alloc_control")    == 0)    allocControl = val;
   else if (var.compare("combine_type")     == 0)     combineType = val;
   else if (var.compare("refinement_type")  == 0)    c3RefineType = val;
-  else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
+  else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
@@ -445,7 +448,7 @@ inline void SharedC3ApproxData::set_parameter(String var, double val)
   else if (var.compare("rounding_tol")             == 0)     roundingTol = val;
   else if (var.compare("arithmetic_tol")           == 0)   arithmeticTol = val;
   else if (var.compare("regularization_parameter") == 0) regressRegParam = val;
-  else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
+  else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
@@ -455,7 +458,31 @@ inline void SharedC3ApproxData::set_parameter(String var, int val)
   else if (var.compare("max_solver_iterations") == 0) maxSolverIterations = val;
   else if (var.compare("random_seed")           == 0)          randomSeed = val;
   else if (var.compare("verbosity")             == 0)         c3Verbosity = val;
-  else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
+  else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
+}
+
+
+inline void SharedC3ApproxData::
+set_active_parameter(String var, const UShortArray& val)
+{
+  if (var.compare("start_poly_order") == 0)
+    { startOrders[activeKey] = val; /*update_basis();*/ }
+  else Cerr << "Unrecognized C3 active parameter: " << var << std::endl;
+}
+
+
+inline void SharedC3ApproxData::set_active_parameter(String var, size_t val)
+{
+  if      (var.compare("start_rank") == 0) startRank[activeKey] = val;
+  else if (var.compare("max_rank")   == 0)   maxRank[activeKey] = val;
+  else Cerr << "Unrecognized C3 active parameter: " << var << std::endl;
+}
+
+
+inline void SharedC3ApproxData::set_active_parameter(String var, int val)
+{
+  if (var.compare("random_seed") == 0) randomSeed = val;
+  else Cerr << "Unrecognized C3 active parameter: " << var << std::endl;
 }
 
 
