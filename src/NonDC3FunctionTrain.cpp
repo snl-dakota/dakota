@@ -49,19 +49,13 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
   maxOrderSpec(probDescDB.get_ushort("method.nond.c3function_train.max_order")),
-  collocPtsSpec(problem_db.get_sizet("method.nond.collocation_points")),
-  c3RefineType(UNIFORM_MAX_RANK) // hardwired prior to XML spec option
+  collocPtsSpec(problem_db.get_sizet("method.nond.collocation_points"))
 {
-  if (iteratedModel.model_type()     == "surrogate" &&
-      iteratedModel.surrogate_type() == "global_function_train") {
-    Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
-	 << "function train specification." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
   // ----------------
   // Resolve settings
   // ----------------
+  check_surrogate();    // check for global surrogate function_train model
+  resolve_refinement(); // set c3RefineType
   short data_order;
   // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
   // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
@@ -83,7 +77,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   configure_expansion_orders(startOrderSpec, dimPrefSpec, orders);
   // compute initial regression size using a static helper
   // (uSpaceModel.shared_approximation() is not yet available)
-  size_t regress_rank = (refineType && c3RefineType == UNIFORM_MAX_RANK) ?
+  size_t regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
     maxRankSpec : startRankSpec;
   size_t regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
     regress_rank, maxRankSpec, orders, maxOrderSpec);
@@ -144,15 +138,10 @@ NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
   startOrderSpec(
     problem_db.get_ushort("method.nond.c3function_train.start_order")),
   maxOrderSpec(probDescDB.get_ushort("method.nond.c3function_train.max_order")),
-  collocPtsSpec(0), // in lieu of sequence specification
-  c3RefineType(UNIFORM_MAX_RANK) // hardwired prior to XML spec option
+  collocPtsSpec(0) // in lieu of sequence specification
 {
-  if (iteratedModel.model_type()     == "surrogate" &&
-      iteratedModel.surrogate_type() == "global_function_train") {
-    Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
-	 << "function train specification." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  check_surrogate();    // check for global surrogate function_train model
+  resolve_refinement(); // set c3RefineType
 
   // Rest is in derived class...
 }
@@ -160,6 +149,53 @@ NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
 
 NonDC3FunctionTrain::~NonDC3FunctionTrain()
 { }
+
+
+void NonDC3FunctionTrain::check_surrogate()
+{
+  if (iteratedModel.model_type()     == "surrogate" &&
+      iteratedModel.surrogate_type() == "global_function_train") {
+    Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
+	 << "function train specification." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void NonDC3FunctionTrain::resolve_refinement()
+{
+  // hardwired for now (prior to XML spec option), but logic avoids need to
+  // check dependencies (refine{Type,Control}, adaptRank) downstream
+  // > Ideally, we could rely on C3's internal cross validation to select both
+  //   the best rank and the best basis order, and migrate Dakota control to
+  //   defining the CV ranges.
+  // > This could entail multi-index candidate generation for max{Rank,Order}
+  bool refine_err = false;
+  switch (refineType) {
+  case Pecos::P_REFINEMENT:
+    switch (refineControl) {
+    case Pecos::UNIFORM_CONTROL: // only uniform p-refine supported at this time
+      // logic is weak in that UNIFORM_START_ORDER also benefits from
+      // adapt_rank, but at least it makes some sense in its absence
+      c3RefineType
+	= (probDescDB.get_bool("method.nond.c3function_train.adapt_rank")) ?
+	UNIFORM_MAX_RANK : UNIFORM_START_ORDER;
+      break;
+    default:
+      refine_err = true;  break;
+    }
+    break;
+  case Pecos::NO_REFINEMENT:       c3RefineType = NO_C3_REFINEMENT;  break;
+  default: /*Pecos::H_REFINEMENT*/ refine_err   = true;              break;
+  }
+
+  if (refine_err) {
+    Cerr << "Error: refineType " << refineType << " with refineControl "
+	 << refineControl << " is not supported by function_train methods "
+	 << "at this time." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
 
 
 void NonDC3FunctionTrain::
@@ -375,6 +411,7 @@ bool NonDC3FunctionTrain::advancement_available()
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   switch (c3RefineType) {
+
   // these two options only require the shared data config:
   case UNIFORM_START_ORDER: {
     const UShortArray& s_ord = shared_data_rep->start_orders();// adapted orders
@@ -388,13 +425,9 @@ bool NonDC3FunctionTrain::advancement_available()
     if (shared_data_rep->start_rank() < maxRankSpec)
       refine = true;
     break;
+
   // this option must query recovered ranks for each of the C3Approximations:
   case UNIFORM_MAX_RANK:
-    if (!shared_data_rep->adapt_rank()) {
-      Cerr << "Error: adapt_rank required for UNIFORM_MAX_RANK refinement."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
     size_t v, max_rank = shared_data_rep->max_rank(); // adapted value
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     for (size_t qoi=0; qoi<numFunctions; ++qoi) {
@@ -474,13 +507,12 @@ sample_allocation_metric(Real& regress_metric, Real power)
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   switch (c3RefineType) {
-  case UNIFORM_MAX_RANK:
+  case UNIFORM_MAX_RANK: // includes refine{Type,Control},adaptRank dependencies
     // scale samples based on max rank to avoid challenges from sample and
     // rank advancements not being synchronized.  This simplification is
     // consistent with the corresponding advancement_available() logic:
     // refinement candidates are generated when max rank is an active bound.
-    regress_metric = shared_data_rep->max_rank_regression_size();
-    break;
+    regress_metric = shared_data_rep->max_rank_regression_size();  break;
   default: {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     Real sum = 0., max = 0.;
@@ -509,6 +541,8 @@ sample_allocation_metric(Real& regress_metric, Real power)
     break;
   }
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "System size = " << regress_metric << '\n';
 }
 
 

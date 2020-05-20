@@ -77,6 +77,11 @@ protected:
   //- Heading: Member function definitions
   //
 
+  /// check model definition (redirect function_train model to surr-based UQ)
+  void check_surrogate();
+  /// assign c3RefineType based on refine{type,Control} and adapt_rank
+  void resolve_refinement();
+
   /// configure u_space_sampler and approx_type based on regression
   /// specification
   bool config_regression(size_t colloc_pts, size_t regress_size, int seed,

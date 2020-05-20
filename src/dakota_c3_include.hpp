@@ -153,6 +153,7 @@ extern "C"
   void c3opt_set_gtol(struct c3Opt *, double);
   void c3opt_set_verbose(struct c3Opt *, int);
   void c3opt_set_maxiter(struct c3Opt *, size_t);
+  void c3opt_ls_set_maxiter(struct c3Opt *, size_t);
   void c3opt_set_absxtol(struct c3Opt *, double);
   void c3opt_free(struct c3Opt *);
 

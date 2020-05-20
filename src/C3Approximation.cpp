@@ -202,17 +202,22 @@ void C3Approximation::build()
       ft_regress_set_maxrank(ftr, max_r+1); // convert < max in C3 to <= max
     // else use internal default (in src/lib_superlearn/regress.c, maxrank = 10
     // assigned in ft_regress_alloc())
-    ft_regress_set_kickrank(ftr,  kick_r);
+    if (r_adapt) {
+      ft_regress_set_kickrank(ftr,  kick_r);
+      ft_regress_set_kfold(ftr, 5);//kfold); // match Alex's Python code (C3 default is 3)
+    }
     ft_regress_set_roundtol(ftr,  data_rep->roundingTol);
     ft_regress_set_verbose(ftr,   data_rep->c3Verbosity);
 
     struct c3Opt* optimizer = c3opt_create(BFGS);
     int max_solver_iter = data_rep->maxSolverIterations;
-    if (max_solver_iter >= 0) // Dakota default is -1 -> leave at C3 default
-      c3opt_set_maxiter(optimizer, max_solver_iter);
+    if (max_solver_iter >= 0) { // Dakota default is -1 -> leave at C3 default
+      c3opt_set_maxiter(   optimizer, max_solver_iter);
+      c3opt_ls_set_maxiter(optimizer, max_solver_iter); // line search
+    }
     c3opt_set_gtol   (optimizer, data_rep->solverTol);
     c3opt_set_relftol(optimizer, data_rep->solverTol);
-    double absxtol = 1e-10;
+    double absxtol = 1e-30;//1e-10;
     c3opt_set_absxtol(optimizer, absxtol);
     c3opt_set_verbose(optimizer, data_rep->c3Verbosity);
 
@@ -270,7 +275,7 @@ void C3Approximation::build()
     //  ftp.ft_gradient(ftg);
     //  ftp.ft_hessian(ft1d_array_jacobian(ftg));
     //}
-    if (data_rep->outputLevel >= NORMAL_OUTPUT) {
+    //if (data_rep->outputLevel >= NORMAL_OUTPUT) {
       Cout << "\nFunction train build() results:\n  Ranks ";
       if (data_rep->adaptRank)
 	Cout << "(adapted with max = " << max_r << " kick = " << kick_r
@@ -284,7 +289,7 @@ void C3Approximation::build()
 	     << one_approx_opts_get_nparams(opts[i]) - 1 << '\n';
       Cout << "  C3 regression size:  " << function_train_get_nparams(ft)
 	   << std::endl;
-    }
+    //}
 
     // free approximation stuff
     free(xtrain);          xtrain    = NULL;

@@ -208,12 +208,11 @@ void SharedC3ApproxData::increment_order()
     // To ensure symmetry with decrement, don't saturate at maxRank
     // > Must bound start_ranks vector in C3Approximation::build()
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
-    it->second += kickRank; break;
+    it->second += kickRank;  formUpdated[activeKey] = true;  break;
   }
   case UNIFORM_MAX_RANK: {
     std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
-    it->second += kickRank;
-    break;
+    it->second += kickRank;  formUpdated[activeKey] = true;  break;
   }
   }
 }
@@ -236,7 +235,7 @@ void SharedC3ApproxData::decrement_order()
       if (s_ord) { // prevent underflow
 	--s_ord; // preserve symmetry/reproducibility w/increment
 	if (s_ord < maxOrder) // only communicate if in bounds
-	  { decremented = true;  update_basis(v, s_ord, maxOrder); }
+	  { update_basis(v, s_ord, maxOrder); decremented = true; }
       }
     }
     if (decremented) formUpdated[activeKey] = true;
@@ -246,15 +245,15 @@ void SharedC3ApproxData::decrement_order()
   case UNIFORM_START_RANK: {
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
     size_t& s_rank = it->second;  
-    if (s_rank) s_rank -= kickRank;
-    else        bad_range = true;
+    if (s_rank) { s_rank -= kickRank; formUpdated[activeKey] = true; }
+    else          bad_range = true;
     break;
   }
   case UNIFORM_MAX_RANK:
     std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
     size_t& m_rank = it->second;  
-    if (m_rank) m_rank -= kickRank;
-    else        bad_range = true;
+    if (m_rank) { m_rank -= kickRank; formUpdated[activeKey] = true; }
+    else          bad_range = true;
     break;
   }
 

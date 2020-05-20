@@ -63,7 +63,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   UShortArray orders;
   // extract (initial) values from sequences
   configure_expansion_orders(start_order(), dimPrefSpec, orders);
-  size_t regress_rank = (refineType && c3RefineType == UNIFORM_MAX_RANK) ?
+  size_t regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
     maxRankSpec : start_rank();
   size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
     regression_size(numContinuousVars, regress_rank, maxRankSpec, orders,
@@ -167,7 +167,7 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   UShortArray orders;
   // extract (initial) values from sequences
   configure_expansion_orders(start_order(), dimPrefSpec, orders);
-  size_t regress_rank = (refineType && c3RefineType == UNIFORM_MAX_RANK) ?
+  size_t regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
     maxRankSpec : start_rank();
   size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
     regression_size(numContinuousVars, regress_rank, maxRankSpec, orders,
@@ -330,7 +330,7 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   size_t colloc_pts = collocation_points();
   if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined
     if (collocRatio > 0.) {
-      size_t regress_rank = (refineType && c3RefineType == UNIFORM_MAX_RANK) ?
+      size_t regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
 	maxRankSpec : start_rank();
       size_t regress_size = SharedC3ApproxData::regression_size(
 	numContinuousVars, regress_rank, maxRankSpec, orders, maxOrderSpec);
@@ -369,7 +369,7 @@ infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
   UShortArray so_i;
   for (i=0; i<num_steps; ++i) {
     configure_expansion_orders(start_order(i), dimPrefSpec, so_i);
-    regress_rank = (refineType && c3RefineType == UNIFORM_MAX_RANK) ?
+    regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
       maxRankSpec : start_rank(i);
     regress_i = SharedC3ApproxData::regression_size(numContinuousVars,
       regress_rank, maxRankSpec, so_i, maxOrderSpec);
