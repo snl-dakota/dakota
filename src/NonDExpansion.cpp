@@ -987,7 +987,8 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // if refinement opportunities have saturated (e.g., increments have reached
     // max{Order,Rank} or previous cross validation indicated better fit with
     // lower order), no candidates will be generated for this model key.
-    if (saturated()) return std::numeric_limits<size_t>::max();
+    if (!advancement_available())
+      return std::numeric_limits<size_t>::max();
 
     RealVector stats_ref;
     if (revert) pull_reference(stats_ref);
@@ -1015,7 +1016,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     pull_candidate(statsStar); // pull compute_*_metric() + augmented stats
 
     if (revert)
-      { pop_increment();  push_reference(stats_ref); }
+      { pop_increment(); push_reference(stats_ref); }
     else
       merge_grid();
     break;
@@ -1466,7 +1467,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
       step_candidate = core_refinement(step_metric, true, true);
       if (step_candidate == SZ_MAX)
 	Cout << "\n<<<<< Sequence step " << step+1
-	     << " has satured with no refinement candidates available.\n";
+	     << " has saturated with no refinement candidates available.\n";
       else {
 	// core_refinement() normalizes level candidates based on the number of
 	// required evaluations, which is sufficient for selection of the best
@@ -1866,6 +1867,7 @@ update_u_space_sampler(size_t sequence_index, const UShortArray& approx_orders)
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
   int seed = NonDExpansion::random_seed(sequence_index);
   if (seed) sub_iter_rep->random_seed(seed);
+  // replace w/ uSpaceModel.random_seed(seed)? -> u_space_sampler, shared approx
 
   if (tensorRegression) {
     NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
