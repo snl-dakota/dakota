@@ -16,6 +16,13 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/test/minimal.hpp>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/filesystem.hpp>
+#include <fstream>
+
 using namespace dakota;
 using namespace dakota::util;
 using namespace dakota::surrogates;
@@ -301,6 +308,98 @@ void  PolynomialRegressionSurrogate_gradient_and_hessian() {
   BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
 }
 
+
+/// Create, evaluate, and save a basic polynomial; load and verify
+/// same evals (based on multivariate_regression_builder test)
+void PolynomialRegression_SaveLoad()
+{
+  int num_vars    = 2,
+      num_samples = 20,
+      degree      = 3;
+
+  /* Generate build data */
+  MatrixXd samples, responses;
+  get_samples(num_vars, num_samples, samples);
+  another_additive_quadratic_function(samples, responses);
+
+  /* Now try out some interpolants that should be exact */
+
+  /* Check correctness of computed polynomial coefficients against the one used to construct the model */
+  MatrixXd gold_coeffs(10,1);
+  /* Term exponents for f(x,y) = -1 + 4*x*x + 4*y*y
+     x:            0    1    0    2    0    1    3    0    2    1
+     y:            0    0    1    0    2    1    0    3    1    2 */
+  gold_coeffs << -1.0, 0.0, 0.0, 4.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+  MatrixXd eval_points, gold_responses, test_responses;
+  get_samples(num_vars, 7, eval_points);
+  another_additive_quadratic_function(eval_points, gold_responses);
+
+  /* Use the Surrogates API with partially user-defined input parameters */
+  MatrixXd test_responses3;
+  Teuchos::ParameterList param_list_partial("Polynomial Test Parameters");
+  param_list_partial.set("max degree", degree);
+  param_list_partial.set("scaler type", "none");
+
+  PolynomialRegression pr3(samples, responses, param_list_partial);
+
+  // Initially modelling what save/load functions would do
+  std::string filename("poly_test.txt");
+  boost::filesystem::remove(filename);
+  // bool binary = isBinaryModelFilename(filename);
+  for (bool binary : {true, false} ) {
+
+    auto outmode = binary ? (std::ios::out|std::ios::binary) : std::ios::out;
+    std::ofstream model_ofstream(filename.c_str(), outmode);
+    if (!model_ofstream.good())
+      throw std::string("Failure opening model file for save.");
+
+    if (binary) {
+      boost::archive::binary_oarchive output_archive(model_ofstream);
+      output_archive << pr3;
+      std::cout << "Model saved to binary file '" << filename << "'."
+		<< std::endl;
+    }
+    else {
+      boost::archive::text_oarchive output_archive(model_ofstream);
+      output_archive << pr3;
+      std::cout << "Model saved to text file '" << filename << "'." << std::endl;
+    }
+
+    PolynomialRegression pr4;
+    auto inmode = binary ? (std::ios::in|std::ios::binary) : std::ios::in;
+    std::ifstream model_ifstream(filename.c_str(), inmode);
+    if (!model_ifstream.good())
+      throw std::string("Failure opening model file for load.");
+
+    if (binary) {
+      boost::archive::binary_iarchive input_archive(model_ifstream);
+      input_archive >> pr4;
+      std::cout << "Model loaded from binary file '" << filename << "'."
+		<< std::endl;
+    }
+    else {
+      boost::archive::text_iarchive input_archive(model_ifstream);
+      input_archive >> pr4;
+      std::cout << "Model loaded from text file '" << filename << "'."
+		<< std::endl;
+    }
+
+    BOOST_CHECK(pr3.get_num_terms() == pr4.get_num_terms());
+    BOOST_CHECK(pr3.get_polynomial_intercept() ==
+		pr4.get_polynomial_intercept());
+
+    // tests on the loaded surrogate based on original unit test
+//    const MatrixXd& polynomial_coeffs3 = pr4.get_polynomial_coeffs();
+//    double polynomial_intercept3 = pr4.get_polynomial_intercept();
+//    pr4.value(eval_points, test_responses3);
+//
+//    BOOST_CHECK(std::abs(polynomial_intercept3) < 1.0e-10 );
+//    BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs3, 1.0e-10));
+//    BOOST_CHECK(matrix_equals(gold_responses, test_responses3, 1.0e-10));
+
+  }
+}
+
 } // namespace
 
 // --------------------------------------------------------------------------------
@@ -315,6 +414,9 @@ int test_main(int argc, char* argv[]) // note the name!
   // Multivariate tests
   PolynomialRegressionSurrogate_multivariate_regression_builder();
   PolynomialRegressionSurrogate_gradient_and_hessian();
+
+  // Serialization tests
+  PolynomialRegression_SaveLoad();
 
   BOOST_CHECK(boost::exit_success == 0);
 

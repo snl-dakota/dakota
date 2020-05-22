@@ -12,6 +12,9 @@
 #include "DataScaler.hpp"
 #include "util_data_types.hpp"
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+
 namespace dakota {
 namespace surrogates {
 
@@ -107,9 +110,32 @@ protected:
   /// Key/value options to configure the surrogate - will override defaultConfigOptions.
   ParameterList configOptions;
 
+
+private:
+
+  /// Allow serializers access to private class data
+  friend class boost::serialization::access;
+  /// Serializer for base class data (call from dervied with base_object)
+  template<class Archive>
+  void serialize(Archive& archive, const unsigned int version);
+
 };
+
+template<class Archive>
+void Surrogate::serialize(Archive& archive, const unsigned int version)
+{
+  // For future extension such as archiving final config options (will
+  // require writing a serializer that maps to ParameterList
+  // serialization)
+  //  archive & dataScaler;
+  archive & numSamples;
+  //archive & configOptions;
+}
 
 } // namespace surrogates
 } // namespace dakota
+
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(dakota::surrogates::Surrogate)
 
 #endif // include guard
