@@ -342,46 +342,44 @@ void PolynomialRegression_SaveLoad()
 
   PolynomialRegression pr3(samples, responses, param_list_partial);
 
-  // Initially modelling what save/load functions would do
-  std::string filename("poly_test.txt");
-  boost::filesystem::remove(filename);
-  // bool binary = isBinaryModelFilename(filename);
+  // Initially modelling what save/load functions would do for binary/text
   for (bool binary : {true, false} ) {
 
-    auto outmode = binary ? (std::ios::out|std::ios::binary) : std::ios::out;
-    std::ofstream model_ofstream(filename.c_str(), outmode);
-    if (!model_ofstream.good())
-      throw std::string("Failure opening model file for save.");
-
+    std::string filename("poly_test.bin");
+    std::ostringstream model_osstream;
     if (binary) {
-      boost::archive::binary_oarchive output_archive(model_ofstream);
+      boost::filesystem::remove(filename);
+      std::ofstream model_ostream(filename, std::ios::out|std::ios::binary);
+      if (!model_ostream.good())
+	throw std::string("Failure opening model file for save.");
+
+      boost::archive::binary_oarchive output_archive(model_ostream);
       output_archive << pr3;
       std::cout << "Model saved to binary file '" << filename << "'."
 		<< std::endl;
     }
     else {
-      boost::archive::text_oarchive output_archive(model_ofstream);
+      boost::archive::text_oarchive output_archive(model_osstream);
       output_archive << pr3;
-      std::cout << "Model saved to text file '" << filename << "'." << std::endl;
+      std::cout << "Model saved to text string." << std::endl;
     }
 
     PolynomialRegression pr4;
-    auto inmode = binary ? (std::ios::in|std::ios::binary) : std::ios::in;
-    std::ifstream model_ifstream(filename.c_str(), inmode);
-    if (!model_ifstream.good())
-      throw std::string("Failure opening model file for load.");
-
     if (binary) {
-      boost::archive::binary_iarchive input_archive(model_ifstream);
+      std::ifstream model_istream(filename, std::ios::in|std::ios::binary);
+      if (!model_istream.good())
+	throw std::string("Failure opening model file for load.");
+
+      boost::archive::binary_iarchive input_archive(model_istream);
       input_archive >> pr4;
       std::cout << "Model loaded from binary file '" << filename << "'."
 		<< std::endl;
     }
     else {
-      boost::archive::text_iarchive input_archive(model_ifstream);
+      std::istringstream model_istream(model_osstream.str());
+      boost::archive::text_iarchive input_archive(model_istream);
       input_archive >> pr4;
-      std::cout << "Model loaded from text file '" << filename << "'."
-		<< std::endl;
+      std::cout << "Model loaded from text string." << std::endl;
     }
 
     BOOST_CHECK(pr3.get_num_terms() == pr4.get_num_terms());
