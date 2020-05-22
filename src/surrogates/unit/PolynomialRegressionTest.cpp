@@ -385,14 +385,16 @@ void PolynomialRegression_SaveLoad()
     BOOST_CHECK(pr3.get_num_terms() == pr4.get_num_terms());
     BOOST_CHECK(pr3.get_polynomial_intercept() ==
 		pr4.get_polynomial_intercept());
+    BOOST_CHECK(pr3.get_polynomial_coeffs() ==
+		pr4.get_polynomial_coeffs());
 
     // tests on the loaded surrogate based on original unit test
-//    const MatrixXd& polynomial_coeffs3 = pr4.get_polynomial_coeffs();
-//    double polynomial_intercept3 = pr4.get_polynomial_intercept();
+    const MatrixXd& loaded_coeffs = pr4.get_polynomial_coeffs();
+    double loaded_intercept = pr4.get_polynomial_intercept();
 //    pr4.value(eval_points, test_responses3);
-//
-//    BOOST_CHECK(std::abs(polynomial_intercept3) < 1.0e-10 );
-//    BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs3, 1.0e-10));
+
+    BOOST_CHECK(std::abs(loaded_intercept) < 1.0e-10 );
+    BOOST_CHECK(matrix_equals(gold_coeffs, loaded_coeffs, 1.0e-10));
 //    BOOST_CHECK(matrix_equals(gold_responses, test_responses3, 1.0e-10));
 
   }
