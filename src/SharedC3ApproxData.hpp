@@ -225,8 +225,6 @@ protected:
   int maxSolverIterations;
   /// maximum number of iterations for (future) cross iteration solver
   int crossMaxIter;
-  /// verbosity setting for C3 TPL, mapped from Dakota verbosity
-  int c3Verbosity;
   /// C3 regression solver employs a random seed
   int randomSeed;
 
@@ -457,7 +455,6 @@ inline void SharedC3ApproxData::set_parameter(String var, int val)
   if      (var.compare("max_cross_iterations")  == 0)        crossMaxIter = val;
   else if (var.compare("max_solver_iterations") == 0) maxSolverIterations = val;
   else if (var.compare("random_seed")           == 0)          randomSeed = val;
-  else if (var.compare("verbosity")             == 0)         c3Verbosity = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
