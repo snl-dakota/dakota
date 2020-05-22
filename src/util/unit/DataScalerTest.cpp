@@ -12,6 +12,9 @@
 
 #include <Teuchos_UnitTestHarness.hpp>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 using namespace dakota;
 using namespace dakota::util;
 
@@ -238,4 +241,33 @@ TEUCHOS_UNIT_TEST(util, NoScaler_getScaledFeatures_TestDefault)
 
   TEST_ASSERT(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
+
+
+TEUCHOS_UNIT_TEST(util, StandardizationScaler_serialize)
+{
+  // BMA TODO: This doesn't test serialization detection of the
+  // derived type and loading into pointer to DataScaler base
+
+  StandardizationScaler ss(create_multiple_features_matrix());
+  std::ostringstream scaler_osstream;
+  boost::archive::text_oarchive output_archive(scaler_osstream);
+  output_archive << ss;
+
+  StandardizationScaler loaded_ss;
+  std::istringstream scaler_istream(scaler_osstream.str());
+  boost::archive::text_iarchive input_archive(scaler_istream);
+  input_archive >> loaded_ss;
+
+  // These should be exact, so using a tight tol
+  TEST_ASSERT(matrix_equals(ss.get_scaler_features_offsets(),
+			    loaded_ss.get_scaler_features_offsets(),
+			    1.0e-12));
+  TEST_ASSERT(matrix_equals(ss.get_scaler_features_scale_factors(),
+			    loaded_ss.get_scaler_features_scale_factors(),
+			    1.0e-12));
+  TEST_ASSERT(matrix_equals(ss.get_scaled_features(),
+			    loaded_ss.get_scaled_features(),
+			    1.0e-12));
+}
+
 }

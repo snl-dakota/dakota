@@ -335,7 +335,6 @@ void PolynomialRegression_SaveLoad()
   another_additive_quadratic_function(eval_points, gold_responses);
 
   /* Use the Surrogates API with partially user-defined input parameters */
-  MatrixXd test_responses3;
   Teuchos::ParameterList param_list_partial("Polynomial Test Parameters");
   param_list_partial.set("max degree", degree);
   param_list_partial.set("scaler type", "none");
@@ -391,11 +390,12 @@ void PolynomialRegression_SaveLoad()
     // tests on the loaded surrogate based on original unit test
     const MatrixXd& loaded_coeffs = pr4.get_polynomial_coeffs();
     double loaded_intercept = pr4.get_polynomial_intercept();
-//    pr4.value(eval_points, test_responses3);
+    MatrixXd test_responses;
+    pr4.value(eval_points, test_responses);
 
     BOOST_CHECK(std::abs(loaded_intercept) < 1.0e-10 );
     BOOST_CHECK(matrix_equals(gold_coeffs, loaded_coeffs, 1.0e-10));
-//    BOOST_CHECK(matrix_equals(gold_responses, test_responses3, 1.0e-10));
+    BOOST_CHECK(matrix_equals(gold_responses, test_responses, 1.0e-10));
 
   }
 }

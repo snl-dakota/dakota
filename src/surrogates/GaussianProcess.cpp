@@ -64,10 +64,10 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   const int num_restarts = configOptions.get<int>("num restarts");
   
   /* Scale the data and compute build squared distances */
-  dataScaler = util::scaler_factory(
+  dataScaler = *(util::scaler_factory(
     util::DataScaler::scaler_type(configOptions.get<std::string>("scaler name")),
-    samples);
-  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
+    samples));
+  const MatrixXd& scaled_samples = dataScaler.get_scaled_features();
   compute_build_dists();
 
   if (estimateTrend) {
@@ -227,7 +227,7 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_pts;
-  dataScaler->scale_samples(samples, scaled_pred_pts);
+  dataScaler.scale_samples(samples, scaled_pred_pts);
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -287,7 +287,7 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_pts;
-  dataScaler->scale_samples(samples, scaled_pred_pts);
+  dataScaler.scale_samples(samples, scaled_pred_pts);
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -333,7 +333,7 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_point;
-  dataScaler->scale_samples(sample, scaled_pred_point);
+  dataScaler.scale_samples(sample, scaled_pred_point);
   compute_pred_dists(scaled_pred_point);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -468,7 +468,7 @@ void GaussianProcess::default_options()
 
 void GaussianProcess::compute_build_dists() {
 
-  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
+  const MatrixXd& scaled_samples = dataScaler.get_scaled_features();
   cwiseDists2.resize(numVariables);
 
   for (int k = 0; k < numVariables; k++) {
@@ -489,7 +489,7 @@ void GaussianProcess::compute_pred_dists(const MatrixXd &scaled_pred_pts) {
   cwiseMixedDists.resize(numVariables);
   cwiseMixedDists2.resize(numVariables);
   cwisePredDists2.resize(numVariables);
-  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
+  const MatrixXd& scaled_samples = dataScaler.get_scaled_features();
 
   for (int k = 0; k < numVariables; k++) {
     cwiseMixedDists[k].resize(num_pred_pts, numSamples);

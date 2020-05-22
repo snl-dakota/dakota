@@ -148,7 +148,7 @@ void PolynomialRegression::serialize(Archive& archive, const unsigned int versio
 {
   archive & boost::serialization::base_object<Surrogate>(*this);
   archive & numTerms;
-  // Need Eigen serialization first
+  archive & basisIndices;
   archive & polynomialCoeffs;
   archive & polynomialIntercept;
 }

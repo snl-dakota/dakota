@@ -93,7 +93,7 @@ public:
   virtual void default_options() = 0;
 
   /// DataScaler class for a Surrogate's build samples.
-  std::shared_ptr<util::DataScaler> dataScaler;
+  util::DataScaler dataScaler;
 
 protected:
   /// Number of samples in the Surrogate's build samples.
@@ -127,8 +127,9 @@ void Surrogate::serialize(Archive& archive, const unsigned int version)
   // For future extension such as archiving final config options (will
   // require writing a serializer that maps to ParameterList
   // serialization)
-  //  archive & dataScaler;
+  archive & dataScaler;
   archive & numSamples;
+  archive & numVariables;
   //archive & configOptions;
 }
 

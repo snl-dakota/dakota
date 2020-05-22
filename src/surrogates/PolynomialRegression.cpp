@@ -81,8 +81,8 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
   /* Scale the basis matrix */
   SCALER_TYPE scalerType = util::DataScaler::scaler_type(
       configOptions.get<std::string>("scaler type"));
-  dataScaler = util::scaler_factory(scalerType, unscaled_basis_matrix);
-  const MatrixXd& scaled_basis_matrix = dataScaler->get_scaled_features();
+  dataScaler = *(util::scaler_factory(scalerType, unscaled_basis_matrix));
+  const MatrixXd& scaled_basis_matrix = dataScaler.get_scaled_features();
 
   /* Solve the for the polynomial coefficients */
   SOLVER_TYPE solverType = util::LinearSolverBase::solver_type(
@@ -103,7 +103,7 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
   compute_basis_matrix(eval_points, unscaled_basis_matrix);
 
   /* Scale the sample points */
-  MatrixXd scaled_basis_matrix = *(dataScaler->scale_samples(unscaled_basis_matrix));
+  MatrixXd scaled_basis_matrix = *(dataScaler.scale_samples(unscaled_basis_matrix));
 
   /* Compute the prediction values*/
   approx_values = scaled_basis_matrix*(polynomialCoeffs);
@@ -149,7 +149,7 @@ void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
   compute_basis_matrix(samples, unscaled_eval_pts_basis_matrix);
 
   /* Scale the basis matrix */
-  dataScaler->scale_samples(unscaled_eval_pts_basis_matrix,
+  dataScaler.scale_samples(unscaled_eval_pts_basis_matrix,
                         scaled_eval_pts_basis_matrix);
 
   /* Compute the gradient */
@@ -174,7 +174,7 @@ void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
   compute_basis_matrix(sample, unscaled_eval_pts_basis_matrix);
 
   /* Scale the (row) basis matrix */
-  dataScaler->scale_samples(unscaled_eval_pts_basis_matrix,
+  dataScaler.scale_samples(unscaled_eval_pts_basis_matrix,
                             scaled_eval_pts_basis_matrix);
 
   for (int i = 0; i < numVariables; i++) {

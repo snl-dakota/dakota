@@ -11,6 +11,8 @@
 
 #include "util_data_types.hpp"
 
+#include <boost/serialization/serialization.hpp>
+
 #include <memory>
 
 namespace dakota {
@@ -113,7 +115,29 @@ class DataScaler {
 
     /// Scaled surrogate data matrix - (num_samples by num_features)
     MatrixXd scaledFeatures;
+
+private:
+
+  /// Allow serializers access to private class data
+  friend class boost::serialization::access;
+  /// Serializer for base class data (call from dervied with base_object)
+  template<class Archive>
+  void serialize(Archive& archive, const unsigned int version);
+
 };
+
+
+template<class Archive>
+void DataScaler::serialize(Archive& archive, const unsigned int version)
+{
+  archive & hasScaling;
+  archive & scalerFeaturesOffsets;
+  archive & scalerFeaturesScaleFactors;
+  // BMA TODO: Does this class need to store the scaled features;
+  // seems they should be cached by clients?
+  archive & scaledFeatures;
+}
+
 
 /**
  * \brief Normalizes the data using max and min feature
@@ -200,6 +224,9 @@ class NoScaler: public DataScaler {
 
 };
 
+
+// BMA TODO: Discuss whether we benefit from shared_ptr here, since
+// Boost serialization < 1.56 can't handle std::shared_ptr...
 /**
  * \brief Free function to construct DataScaler
  *
