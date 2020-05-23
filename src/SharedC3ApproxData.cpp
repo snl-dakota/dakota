@@ -41,7 +41,6 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
-  c3Verbosity(0),//problem_db.get_int("model.c3function_train.verbosity")),
   adaptConstruct(false), crossVal(false), c3RefineType(NO_C3_REFINEMENT)
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
@@ -73,8 +72,8 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   kickRank(1), maxRankSpec(std::numeric_limits<size_t>::max()),
   adaptRank(false), regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
-  crossMaxIter(5), maxSolverIterations(-1), c3Verbosity(0),
-  adaptConstruct(false), crossVal(false), c3RefineType(NO_C3_REFINEMENT)
+  crossMaxIter(5), maxSolverIterations(-1), adaptConstruct(false),
+  crossVal(false), c3RefineType(NO_C3_REFINEMENT)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)

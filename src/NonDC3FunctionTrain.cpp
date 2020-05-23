@@ -349,10 +349,7 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
   shared_data_rep->set_parameter("max_solver_iterations",
     probDescDB.get_int("method.nond.max_solver_iterations"));
 
-  short comb_type = Pecos::ADD_COMBINE;
-  int   verbosity = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
-  shared_data_rep->set_parameter("combine_type",     comb_type);
-  shared_data_rep->set_parameter("verbosity",        verbosity);
+  shared_data_rep->set_parameter("combine_type", Pecos::ADD_COMBINE); // for now
 
   shared_data_rep->set_parameter("max_poly_order",   maxOrderSpec);
   shared_data_rep->set_parameter("max_rank",         maxRankSpec);

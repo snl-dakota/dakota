@@ -197,17 +197,22 @@ void C3Approximation::build()
       ft_regress_set_alg_and_obj(ftr, AIO, FTLS);
 
     size_t r_adapt = data_rep->adaptRank ? 1 : 0;
-    ft_regress_set_adapt(ftr,     r_adapt);
-    if (max_r != std::numeric_limits<size_t>::max())
-      ft_regress_set_maxrank(ftr, max_r+1); // convert < max in C3 to <= max
-    // else use internal default (in src/lib_superlearn/regress.c, maxrank = 10
-    // assigned in ft_regress_alloc())
+    ft_regress_set_adapt(ftr, r_adapt);
     if (r_adapt) {
-      ft_regress_set_kickrank(ftr,  kick_r);
-      ft_regress_set_kfold(ftr, 5);//kfold); // match Alex's Python code (C3 default is 3)
+      ft_regress_set_kickrank(ftr, kick_r); // default is 1
+
+      // if not user-specified, use internal C3 default (in src/lib_superlearn/
+      // regress.c, maxrank = 10 assigned in ft_regress_alloc())
+      // > Could become an issue for UNIFORM_START_RANK advancement, if used
+      if (max_r != std::numeric_limits<size_t>::max())
+	ft_regress_set_maxrank(ftr, max_r);
+
+      ft_regress_set_kfold(ftr, 5);//kfold);//match Alex's Python (C3 default=3)
     }
-    ft_regress_set_roundtol(ftr,  data_rep->roundingTol);
-    ft_regress_set_verbose(ftr,   data_rep->c3Verbosity);
+    ft_regress_set_roundtol(ftr, data_rep->roundingTol);
+    short output_lev = data_rep->outputLevel;
+    if (output_lev > NORMAL_OUTPUT)
+      ft_regress_set_verbose(ftr, 1); // helpful adapt_rank diagnostics
 
     struct c3Opt* optimizer = c3opt_create(BFGS);
     int max_solver_iter = data_rep->maxSolverIterations;
@@ -217,9 +222,10 @@ void C3Approximation::build()
     }
     c3opt_set_gtol   (optimizer, data_rep->solverTol);
     c3opt_set_relftol(optimizer, data_rep->solverTol);
-    double absxtol = 1e-30;//1e-10;
+    double absxtol = 1e-30;//1e-10; // match Alex's Python
     c3opt_set_absxtol(optimizer, absxtol);
-    c3opt_set_verbose(optimizer, data_rep->c3Verbosity);
+    if (output_lev >= DEBUG_OUTPUT)
+      c3opt_set_verbose(optimizer, 1); // per opt iter diagnostics (a bit much)
 
     // free if previously built
     C3FnTrainPtrs& ftp = levApproxIter->second;
@@ -233,21 +239,15 @@ void C3Approximation::build()
     const Pecos::SDRArray& sdr_array = approxData.response_data();
     size_t ndata = approxData.points();
 
-    // JUST 1 QOI
-    // Transfer the training data to the Teuchos arrays used by the GP
-    // input variables (reformats approxData for C3)
-    double* xtrain = (double*)calloc(num_v*ndata,sizeof(double));
-    // QoI observations (reformats approxData for C3)
-    double* ytrain = (double*)calloc(ndata,sizeof(double));
-
-    // process currentPoints
+    // Training data for 1 QoI: transfer data from approxData to double* for C3
+    double* xtrain = (double*)calloc(num_v*ndata, sizeof(double)); // vars
+    double* ytrain = (double*)calloc(ndata,       sizeof(double)); // QoI
     for (i=0; i<ndata; ++i) {
       const RealVector& c_vars = sdv_array[i].continuous_variables();
       for (j=0; j<num_v; j++)
 	xtrain[j + i*num_v] = c_vars[j];
       ytrain[i] = sdr_array[i].response_function();
     }
-
 #ifdef DEBUG
     RealMatrix  in(Teuchos::View, xtrain, num_v, num_v, ndata);
     RealVector out(Teuchos::View, ytrain, ndata);
@@ -275,7 +275,7 @@ void C3Approximation::build()
     //  ftp.ft_gradient(ftg);
     //  ftp.ft_hessian(ft1d_array_jacobian(ftg));
     //}
-    //if (data_rep->outputLevel >= NORMAL_OUTPUT) {
+    if (data_rep->outputLevel > SILENT_OUTPUT) {
       Cout << "\nFunction train build() results:\n  Ranks ";
       if (data_rep->adaptRank)
 	Cout << "(adapted with max = " << max_r << " kick = " << kick_r
@@ -289,7 +289,7 @@ void C3Approximation::build()
 	     << one_approx_opts_get_nparams(opts[i]) - 1 << '\n';
       Cout << "  C3 regression size:  " << function_train_get_nparams(ft)
 	   << std::endl;
-    //}
+    }
 
     // free approximation stuff
     free(xtrain);          xtrain    = NULL;
