@@ -239,21 +239,15 @@ void C3Approximation::build()
     const Pecos::SDRArray& sdr_array = approxData.response_data();
     size_t ndata = approxData.points();
 
-    // JUST 1 QOI
-    // Transfer the training data to the Teuchos arrays used by the GP
-    // input variables (reformats approxData for C3)
-    double* xtrain = (double*)calloc(num_v*ndata,sizeof(double));
-    // QoI observations (reformats approxData for C3)
-    double* ytrain = (double*)calloc(ndata,sizeof(double));
-
-    // process currentPoints
+    // Training data for 1 QoI: transfer data from approxData to double* for C3
+    double* xtrain = (double*)calloc(num_v*ndata, sizeof(double)); // vars
+    double* ytrain = (double*)calloc(ndata,       sizeof(double)); // QoI
     for (i=0; i<ndata; ++i) {
       const RealVector& c_vars = sdv_array[i].continuous_variables();
       for (j=0; j<num_v; j++)
 	xtrain[j + i*num_v] = c_vars[j];
       ytrain[i] = sdr_array[i].response_function();
     }
-
 #ifdef DEBUG
     RealMatrix  in(Teuchos::View, xtrain, num_v, num_v, ndata);
     RealVector out(Teuchos::View, ytrain, ndata);

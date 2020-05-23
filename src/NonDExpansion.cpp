@@ -1443,7 +1443,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // This differs from multilevel_regression(), which uses max_iterations and
   // potentially max_solver_iterations.
   size_t SZ_MAX = std::numeric_limits<size_t>::max(),
-    step_candidate, best_step = SZ_MAX, best_step_candidate = SZ_MAX,
+    step_candidate, best_step, best_step_candidate,
     max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   Real step_metric, best_step_metric = DBL_MAX;
   RealVector best_stats_star;
@@ -1454,7 +1454,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 	 << "across " << num_steps << " sequence steps\n";
 
     // Generate candidates at each level
-    best_step_metric = 0.;
+    best_step_metric = 0.;  best_step = best_step_candidate = SZ_MAX;
     for (step=0; step<num_steps; ++step) {
       Cout << "\n>>>>> Generating candidate(s) for sequence step " << step+1
 	   << '\n';
