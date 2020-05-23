@@ -104,8 +104,9 @@ public:
 
   virtual void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
 
-  /// returns true if current model key has no additional refinements available
-  virtual bool saturated() const;
+  /// returns false if refinement opportunities have been exhaused for the
+  /// current model (e.g., maximum order/level/rank has been reached)
+  virtual bool advancement_available();
 
   //
   //- Heading: Member functions
@@ -687,8 +688,8 @@ inline int NonDExpansion::random_seed(size_t index) const
 }
 
 
-inline bool NonDExpansion::saturated() const
-{ return false; } // default overridden for fn train
+inline bool NonDExpansion::advancement_available()
+{ return true; } // default overridden for fn train
 
 
 inline int NonDExpansion::maximum_refinement_iterations() const
