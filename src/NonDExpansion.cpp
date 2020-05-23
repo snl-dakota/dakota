@@ -917,7 +917,7 @@ void NonDExpansion::refine_expansion()
   // --------------------------------------
   // DataMethod default for maxRefineIterations is -1, indicating no user spec.
   // Assign a context-specific default in this case.
-  size_t  iter = 1,
+  size_t SZ_MAX = std::numeric_limits<size_t>::max(), candidate, iter = 1,
     max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   bool converged = (iter > max_refine_iter);  Real metric;
 
@@ -933,11 +933,16 @@ void NonDExpansion::refine_expansion()
   while (!converged) {
 
     Cout << "\n>>>>> Begin refinement iteration " << iter << ":\n";
-    core_refinement(metric, false, true); // don't revert, print metrics
-    Cout << "\n<<<<< Refinement iteration " << iter << " completed: "
-	 << "convergence metric = " << metric << '\n';
-
-    converged = (metric <= convergenceTol || ++iter > max_refine_iter);
+    candidate = core_refinement(metric, false, true);// no revert, print metrics
+    if (candidate == SZ_MAX) {
+      Cout <<"\n<<<<< Refinement has saturated with no candidates available.\n";
+      converged = true;
+    }
+    else {
+      Cout << "\n<<<<< Refinement iteration " << iter << " completed: "
+	   << "convergence metric = " << metric << '\n';
+      converged = (metric <= convergenceTol || ++iter > max_refine_iter);
+    }
   }
 
   post_refinement(metric);
@@ -988,7 +993,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // max{Order,Rank} or previous cross validation indicated better fit with
     // lower order), no candidates will be generated for this model key.
     if (!advancement_available())
-      return std::numeric_limits<size_t>::max();
+      { metric = 0.;  return std::numeric_limits<size_t>::max(); }
 
     RealVector stats_ref;
     if (revert) pull_reference(stats_ref);
