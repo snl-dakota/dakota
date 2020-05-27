@@ -523,7 +523,7 @@ requested by the ASV.
 
 After 132 of these function evaluations, the following Dakota output
 shows the final solution using the \path{rosenbrock_bb} simulator:
-\begin{small}
+\begin{footnotesize}
 \begin{verbatim}
     Exit NPSOL - Optimal solution found.
 
@@ -549,7 +549,7 @@ shows the final solution using the \path{rosenbrock_bb} simulator:
      Total CPU        =       0.12 [parent =   0.116982, child =   0.003018]
      Total wall clock =    1.47497
 \end{verbatim}
-\end{small}
+\end{footnotesize}
 
 \subsection{Adapting These Scripts to Another Simulation}
 
@@ -1692,7 +1692,7 @@ it instead returns a tuple containing {\tt (BatchParameters, BatchResults)}.
 
 Its signature is:
 
-\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None}, \emph{ignore\_asv=False}, \emph{batch=False}}){}
+\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None},\\\emph{ignore\_asv=False}, \emph{batch=False}}){}
 
 \emph{parameters\_file} and \emph{results\_file} are the names of the parameters file that is to be read
 and the results file that  ultimately is to be written. The names can be  absolute or relative filepaths or
@@ -1703,7 +1703,7 @@ provided as command line arguments by Dakota's {\tt fork} or {\tt system} interf
 
 If \emph{results\_file} is set to the constant {\tt dakota.interfacing.UNNAMED}, the {\tt Results} or 
 {\tt BatchResults} object is constructed without a results file name.  In this case, an output stream must be 
-provided when {\tt Results.write()} or {\tt BatchResults.write()} is called. Unnamed results files are most 
+provided when\\{\tt Results.write()} or {\tt BatchResults.write()} is called. Unnamed results files are most 
 helpful when no results file will be written, as with a script intended purely for pre-processing.
 
 By default, the returned {\tt Results} or {\tt BatchResults} object enforces the active set vector (see the 
@@ -1905,7 +1905,7 @@ template engine.
 
 \subsection{dakota.interfacing Examples}
 
-In addition to those in this section, the \path{dakota/share/dakota/examples/script_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, \path{rosenbrock_bb.py}, parameters file parsing is performed manually. The other, \path{rosenbrock_bb_di.py}, demonstrates the {\tt dakota.interfacing} module.
+In addition to those in this section, the \path{dakota/share/dakota/examples/script_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, \path{rosenbrock_bb.py}, parameters file parsing is performed manually. The other, \path{rosenbrock_bb_di.py}, demonstrates the\\{\tt dakota.interfacing} module.
 
 For most applications, using {\tt dakota.interfacing} is straightforward. The first example, in Figure~\ref{diexample:simple}, is a mock analysis driver. Two variables with the descriptors {\tt x1} and {\tt x2} are read from the Dakota parameters file and used to evaluate the fictitious user function {\tt applic\_module.run()}. The result, stored in {\tt f}, is assigned to the {\tt function} value of the appropriate response. (A common error is leaving off the {\tt function} attribute, which is needed to distinguish the function value of the response from its gradient and Hessian.)
 
@@ -2574,9 +2574,11 @@ many cases using \emph{list comprehensions}:
 
 This results in
 
+\begin{small}
 \begin{verbatim}
 [0, 0.7071067812, 1, 0.7071067812, 1.224646799e-16, -0.7071067812, -1, -0.7071067812]
 \end{verbatim}
+\end{small}
 
 Alternatively, if the NumPy package is available on the host system, lists can be 
 converted to arrays, which do support MATLAB-style element-wise operations:
@@ -2590,9 +2592,11 @@ converted to arrays, which do support MATLAB-style element-wise operations:
 
 Returns:
 
+\begin{small}
 \begin{verbatim}
 [0, 0.7071067812, 1, 0.7071067812, 1.224646799e-16, -0.7071067812, -1, -0.7071067812]
 \end{verbatim}
+\end{small}
 
 \subsubsection{Strings}\label{interfaces:strings}
 

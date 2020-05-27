@@ -493,7 +493,7 @@ corresponding to prescribed probability or reliability levels.
 \begin{figure}[htbp!]
 \centering
 \begin{bigbox}
-\begin{small}
+\begin{footnotesize}
 \begin{verbatim}
 Statistics based on 10 samples:
 
@@ -552,7 +552,7 @@ Cumulative Distribution Function (CDF) for response_fn_3:
    2.0000000000e-01   6.0000000000e-01
    6.0000000000e-01   9.0000000000e-01
 \end{verbatim}
-\end{small}
+\end{footnotesize}
 \end{bigbox}
 \caption{Dakota response function statistics from UQ sampling example.}
 \label{uq:figure03}
@@ -2059,7 +2059,7 @@ that falls within the output interval is a possible output
 with no frequency information assigned to it.
 
 We have the capability to perform interval analysis using either
-\texttt{global\_interval\_est} or \texttt{local\_interval\_est}.  In
+\dakotakw{global_interval_est} or \dakotakw{local_interval_est}.  In
 the global approach, one uses either a global optimization method or a
 sampling method to assess the bounds.  \texttt{global\_interval\_est}
 allows the user to specify either \texttt{lhs}, which performs Latin
@@ -2212,12 +2212,12 @@ assignment (BPA) to each interval, indicating how likely it is that
 the uncertain input falls within the interval. The BPAs for a
 particular uncertain input variable must sum to one. The intervals
 may be overlapping, contiguous, or have gaps. In Dakota, an interval
-uncertain variable is specified as \texttt{interval\_uncertain}. When
+uncertain variable is specified as \dakotakw{interval_uncertain}. When
 one defines an interval type variable in Dakota, it is also necessary
 to specify the number of intervals defined for each variable with
-\texttt{iuv\_num\_intervals} as well the basic probability assignments
-per interval, \texttt{iuv\_interval\_probs}, and the associated bounds
-per each interval, \texttt{iuv\_interval\_bounds}. 
+\dakotakw{iuv_num_intervals} as well the basic probability assignments
+per interval, \dakotakw{iuv_interval_probs}, and the associated bounds
+per each interval, \dakotakw{iuv_interval_bounds}. 
 Figure~\ref{uq:figure16} shows the input specification for interval
 uncertain variables. 
 The example has two epistemic uncertain interval variables. 
@@ -2630,15 +2630,17 @@ prototype with a number of limitations.  See the Dakota Reference
 Manual~\cite{RefMan} for more information.
 
 \subsection{MUQ}
-MUQ is the MIT Uncertainty Quantification library.  See 
-https://bitbucket.org/mituq/muq2/src/master/ and https://mituq.bitbucket.io/index.html for additional documentation. 
-Dakota currently exposes two types of MCMC 
-approaches as supplied by MUQ: Metropolis-Hastings and Adaptive Metropolis. 
-The MUQ implementation in Dakota is a preliminary one, anticipated to grow 
+MUQ is the MIT Uncertainty Quantification library.  See
+\url{https://bitbucket.org/mituq/muq2/src/master/} and
+\url{https://mituq.bitbucket.io/index.html} for additional
+documentation.  Dakota currently exposes two types of MCMC approaches
+as supplied by MUQ: Metropolis-Hastings and Adaptive Metropolis.  The
+MUQ implementation in Dakota is a preliminary one, anticipated to grow
 in future releases of Dakotato to leverage components in MUQ that
-support Hamiltonian Monte Carlo and Langevin-based sampling strategies. 
-Note that the MUQ is an experimental capability within Dakota. Thus, the library is not exposed by
-default and must be enabled explicitely when compiling Dakota.
+support Hamiltonian Monte Carlo and Langevin-based sampling
+strategies.  Note that the MUQ is an experimental capability within
+Dakota. Thus, the library is not exposed by default and must be
+enabled explicitely when compiling Dakota.
 
 \subsection{WASABI}
 WASABI differs from the other Bayesian approaches in that it is 
@@ -2684,31 +2686,31 @@ with the QUESO, DREAM, GPMSA, MUQ, and WASABI implementations in Dakota.
 \centering
 \caption{Capabilities of Bayesian methods in Dakota}
 \label{tab:bayes_comparison}
-\begin{tabular}{|c|c|c|c|c|c|}
+\begin{tabulary}{\textwidth}{|L|C|C|C|C|C|}
 \hline
 Capability           &  QUESO  & MUQ  & GPMSA & DREAM & WASABI \\
 \hline
-Prior Distributions  &  Any continuous &  Any continuous &  Any continuous & Uniform only & Uniform only \\
-                     &  variable type  &  variable type  &  variable type  &              &              \\
+Prior Distributions  &  Any continuous variable type
+                     &  Any continuous variable type
+                     &  Any continuous variable type
+                     & Uniform only & Uniform only \\
 \hline
-Inference Type                 & MCMC with DR,   & MCMC with MH,   & MCMC with DR,   & MCMC with              & MCMC-free         \\
-                               & AM, DRAM, or MH & AM & AM, DRAM, or MH & Differential Evolution & interval analysis \\
-                               &                 &                 &                 & Adaptive Metropolis    &                   \\
+Inference Type       & MCMC with DR, AM, DRAM, or MH
+                     & MCMC with MH or AM
+                     & MCMC with DR, AM, DRAM, or MH
+                     & MCMC with Differential Evolution Adaptive Metropolis & MCMC-free interval analysis \\
 \hline
-Can use PCE/SC Emulator        &  Yes            & Yes              & Yes                    & Yes \\
+Can use PCE/SC Emulator        &  Yes            & Yes              & Yes                    & Yes  & Yes \\
 \hline
 Can use GP Emulator            &  Yes            &  Yes            & Yes (required)  & Yes                    & Yes \\
 \hline
-Likelihood-based adaptive      &  Yes            &  No             &  No             & No                     & No \\     
-emulator update                &                 &                 &                 &                        &    \\
+Likelihood-based adaptive emulator update  &  Yes            &  No             &  No             & No                     & No \\     
 \hline
 Initialize with MAP pre-solve  &  Yes            &  Yes            &  No             & No                     & No \\
 \hline
-Proposal covariance            &  prior, user,     & n/a                    &  prior, user  & n/a                    & n/a \\            
-options                        &  derivative-based &               &               &                        & \\
+Proposal covariance options    &  prior, user, derivative-based    & n/a                    &  prior, user  & n/a                    & n/a \\            
 \hline
-Can calibrate error            &  Yes            &  Yes            &  Yes (internal) & Yes                    & No          \\                
-covariance multipliers         &                 &                 &                 &                        &              \\
+Can calibrate error covariance multipliers &  Yes            &  Yes            &  Yes (internal) & Yes                    & No          \\                
 \hline
 Supports standardized space    &  Yes            &  Yes            & Yes             & Yes                    & Yes           \\             
 \hline
@@ -2716,7 +2718,7 @@ Logit transform                &  Yes            &  Yes            & Yes        
 \hline
 Posterior export               &  samples        &  samples        & samples         &  samples               & samples, density \\             
 \hline
-\end{tabular}
+\end{tabulary}
 \end{table}
 
 
@@ -2863,8 +2865,8 @@ calibrate the multipliers $m_i$ as hyper-parameters in the Bayesian
 inference process.
 
 The supported modes for calibrating observation error multipliers are
-shown in Figure \ref{fig:uq:obs_err_mult}: \texttt{one},
-\texttt{per\_experiment}, \texttt{per\_response}, and \texttt{both}.
+shown in Figure \ref{fig:uq:obs_err_mult}: \dakotakw{one},
+\dakotakw{per_experiment}, \dakotakw{per_response}, and \dakotakw{both}.
 Here, the two major blocks denote two experiments, while the inner
 blocks denote five response groups (two scalar, three field).  The
 priors on the hyper-parameters $m_i$ are taken to be inverse gamma
@@ -2890,14 +2892,14 @@ deviation approximately 0.1.
 
 Dakota's scaling options, described in
 Section~\ref{opt:additional:scaling}, can be used on Bayesian
-calibration problems, using the \texttt{calibration\_term\_scales}
+calibration problems, using the \dakotakw{calibration_term_scales}
 keyword, to scale the residuals between the data points and the model
 predictions, if desired. Additionally, Bayesian calibration
-residuals-squared can be weighted via the \texttt{calibration\_terms
+residuals-squared can be weighted via the \dakotakw{calibration_terms
 weights} specification. Neither set of weights nor scales are adjusted
 during calibration.  When response scaling is active, it is applied
-after error variance weighting and before \texttt{weights}
-application. The \texttt{calibration\_terms} keyword documentation in
+after error variance weighting and before \dakotakw{weights}
+application. The \dakotakw{calibration_terms} keyword documentation in
 the Dakota Reference Manual~\cite{RefMan} has more detail about
 weighting and scaling of the residual terms.
 
@@ -2944,7 +2946,7 @@ method(s) used to calculate model evidence.
 distribution of the parameters, calculating the corresponding likelihood values 
 at those samples, and  estimating the integral given in Eq.~\ref{eq:uq:model_evidence} 
 by brute force.  The number of samples used in the sampling of the integral is 
-determined by \texttt{evidence\_samples}. Although this method is easy, 
+determined by \dakotakw{evidence_samples}. Although this method is easy, 
 it is not efficient because each sample of the prior density requires 
 an evaluation of the simulation model to compute the corresponding likelihood.  
 Additionally, many prior samples will have very low (near zero) likelihood, 
@@ -3227,7 +3229,7 @@ Dakota Theory Manual~\cite{TheoMan} for more information regarding the
 implementation of the mutual information calculations.
 
 There are three criteria by which this algorithm is considered complete. 
-The user may specify \texttt{max\_hifi\_evaluations}, which limits the number 
+The user may specify \dakotakw{max_hifi_evaluations}, which limits the number 
 of high-fidelity model simulations Dakota will run. Note that this does not 
 include any simulations needed to perform the initial Bayesian calibration of 
 the low-fidelity model parameters. Alternatively, if the change in the mutual 

@@ -5,7 +5,7 @@ Dakota INSTALL
 Dakota is a framework which provides access to a broad variety of
 algorithms and services.  Downloading pre-built binaries from the
 Dakota web site or accessing a site-supported installation are the
-simplest routes to access Dakota.
+simplest routes to access Dakota. See https://dakota.sandia.gov.
 
 For more experienced users, building Dakota from source (either
 downloaded or checked out) allows customization with additional
@@ -326,7 +326,7 @@ Other Resources
 For additional help with installing Dakota from source, please
 visit https://dakota.sandia.gov/content/build-compile-source-code
 
-Topic include:
+Topics include:
 * accessing Dakota via repository checkout
 * source installation dependencies
 * source installation options

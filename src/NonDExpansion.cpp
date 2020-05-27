@@ -917,7 +917,7 @@ void NonDExpansion::refine_expansion()
   // --------------------------------------
   // DataMethod default for maxRefineIterations is -1, indicating no user spec.
   // Assign a context-specific default in this case.
-  size_t  iter = 1,
+  size_t SZ_MAX = std::numeric_limits<size_t>::max(), candidate, iter = 1,
     max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   bool converged = (iter > max_refine_iter);  Real metric;
 
@@ -933,11 +933,16 @@ void NonDExpansion::refine_expansion()
   while (!converged) {
 
     Cout << "\n>>>>> Begin refinement iteration " << iter << ":\n";
-    core_refinement(metric, false, true); // don't revert, print metrics
-    Cout << "\n<<<<< Refinement iteration " << iter << " completed: "
-	 << "convergence metric = " << metric << '\n';
-
-    converged = (metric <= convergenceTol || ++iter > max_refine_iter);
+    candidate = core_refinement(metric, false, true);// no revert, print metrics
+    if (candidate == SZ_MAX) {
+      Cout <<"\n<<<<< Refinement has saturated with no candidates available.\n";
+      converged = true;
+    }
+    else {
+      Cout << "\n<<<<< Refinement iteration " << iter << " completed: "
+	   << "convergence metric = " << metric << '\n';
+      converged = (metric <= convergenceTol || ++iter > max_refine_iter);
+    }
   }
 
   post_refinement(metric);
@@ -987,7 +992,8 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // if refinement opportunities have saturated (e.g., increments have reached
     // max{Order,Rank} or previous cross validation indicated better fit with
     // lower order), no candidates will be generated for this model key.
-    if (saturated()) return std::numeric_limits<size_t>::max();
+    if (!advancement_available())
+      { metric = 0.;  return std::numeric_limits<size_t>::max(); }
 
     RealVector stats_ref;
     if (revert) pull_reference(stats_ref);
@@ -1015,7 +1021,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     pull_candidate(statsStar); // pull compute_*_metric() + augmented stats
 
     if (revert)
-      { pop_increment();  push_reference(stats_ref); }
+      { pop_increment(); push_reference(stats_ref); }
     else
       merge_grid();
     break;
@@ -1442,7 +1448,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // This differs from multilevel_regression(), which uses max_iterations and
   // potentially max_solver_iterations.
   size_t SZ_MAX = std::numeric_limits<size_t>::max(),
-    step_candidate, best_step = SZ_MAX, best_step_candidate = SZ_MAX,
+    step_candidate, best_step, best_step_candidate,
     max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   Real step_metric, best_step_metric = DBL_MAX;
   RealVector best_stats_star;
@@ -1453,7 +1459,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 	 << "across " << num_steps << " sequence steps\n";
 
     // Generate candidates at each level
-    best_step_metric = 0.;
+    best_step_metric = 0.;  best_step = best_step_candidate = SZ_MAX;
     for (step=0; step<num_steps; ++step) {
       Cout << "\n>>>>> Generating candidate(s) for sequence step " << step+1
 	   << '\n';
@@ -1466,7 +1472,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
       step_candidate = core_refinement(step_metric, true, true);
       if (step_candidate == SZ_MAX)
 	Cout << "\n<<<<< Sequence step " << step+1
-	     << " has satured with no refinement candidates available.\n";
+	     << " has saturated with no refinement candidates available.\n";
       else {
 	// core_refinement() normalizes level candidates based on the number of
 	// required evaluations, which is sufficient for selection of the best
@@ -1866,6 +1872,7 @@ update_u_space_sampler(size_t sequence_index, const UShortArray& approx_orders)
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
   int seed = NonDExpansion::random_seed(sequence_index);
   if (seed) sub_iter_rep->random_seed(seed);
+  // replace w/ uSpaceModel.random_seed(seed)? -> u_space_sampler, shared approx
 
   if (tensorRegression) {
     NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;

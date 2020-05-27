@@ -2743,7 +2743,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
     static KW<short, DataMethodRep> Shdme[] = {
       // must be sorted by string (key)
 	{"iterator_scheduling", P iteratorScheduling},
-  {"nond.allocation_target", P allocationTarget},
+	{"nond.allocation_target", P allocationTarget},
+        {"nond.c3function_train.uniform_refinement_type", P c3RefineType},
 	{"nond.correction_order", P approxCorrectionOrder},
 	{"nond.covariance_control", P covarianceControl},
 	{"nond.distribution", P distributionType},
@@ -2758,7 +2759,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.multilevel_allocation_control", P multilevAllocControl},
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
-  {"nond.qoi_aggregation", P qoiAggregation},
+	{"nond.qoi_aggregation", P qoiAggregation},
 	{"nond.regression_type", P regressionType},
 	{"nond.response_level_target", P responseLevelTarget},
 	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
@@ -2784,6 +2785,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       // must be sorted by string (key)
 	{"c3function_train.refinement_control", P refinementControl},
 	{"c3function_train.refinement_type", P refinementType},
+        {"c3function_train.uniform_refinement_type", P c3RefineType},
 	{"nested.iterator_scheduling", P subMethodScheduling},
 	{"surrogate.correction_order", P approxCorrectionOrder},
 	{"surrogate.correction_type", P approxCorrectionType},

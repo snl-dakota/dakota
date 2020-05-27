@@ -89,9 +89,9 @@ method
     import_points_file = 'dakota_pstudy.3.dat'
       custom_annotated header eval_id
 \end{verbatim}
-  The \texttt{custom\_annotated} keyword has options to control
-  \texttt{header} row, \texttt{eval\_id} column, and
-  \texttt{interface\_id} column.
+  The \dakotakw{custom_annotated} keyword has options to control
+  \dakotakw{header} row, \dakotakw{eval_id} column, and
+  \dakotakw{interface_id} column.
 
 \end{itemize}
 
@@ -100,13 +100,13 @@ documented in the reference manual.  As of Dakota 6.1, tabular I/O has
 columns for all of the variables (active and inactive), not only the
 active variables as in previous versions.  To import data
 corresponding only to the active variables, use the keyword
-\texttt{active\_only} when specifying the import file.
+\dakotakw{active_only} when specifying the import file.
 
 {\bf Attention:} Prior to October 2011, samples, calibration, and
 surrogate data files were free-form format.  They now default to
-annotated format, though there are {\tt freeform} and {\tt
-  custom\_annotated} options.  For both formats, a warning will be
-generated if a specific number of data are expected, but extra is
+annotated format, though there are \dakotakw{freeform} and
+\dakotakw{custom_annotated} options.  For both formats, a warning will
+be generated if a specific number of data are expected, but extra is
 found and an error generated when there is insufficient data.  Some
 TPLs like SCOLIB and JEGA manage their own file I/O and only support
 the free-form option.

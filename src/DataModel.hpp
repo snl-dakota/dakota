@@ -55,6 +55,9 @@ enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS };
 // Note that C3 and Pecos are mutually exclusive: use of values from multiple
 // enums should not conflict
 enum { FT_LS, FT_RLS2 };//, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
+// define special values for c3RefineType
+enum { NO_C3_REFINEMENT=0, UNIFORM_START_ORDER, UNIFORM_START_RANK,
+       UNIFORM_MAX_RANK };
 
 
 /// Body class for model specification data.
@@ -374,7 +377,6 @@ public:
   /// Contains which cutoff method to use in the cross validation metric
   unsigned short subspaceIdCVMethod;
 
-
   // Function-Train Options
 
   /// type of (regularized) regression: FT_LS or FT_RLS2
@@ -405,8 +407,10 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
-  // Verbosity level
-  //size_t verbosity;
+  /// quantity to increment (start order, start rank, max rank) for FT
+  /// uniform p-refinement
+  short c3RefineType;
+
   /// number of data points used in FT construction by regression
   size_t collocationPoints;
   /// ratio of number of points to nuber of unknowns

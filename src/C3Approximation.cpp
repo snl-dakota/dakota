@@ -152,6 +152,14 @@ C3Approximation::~C3Approximation()
 { } // FT memory deallocations managed by C3FnTrainPtrs
 
 
+SizetVector C3Approximation::function_train_ranks()
+{
+  return SizetVector(Teuchos::View,
+    function_train_get_ranks(levApproxIter->second.function_train()),
+    sharedDataRep->numVars + 1);
+}
+
+
 void C3Approximation::build()
 {
   if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
@@ -170,7 +178,9 @@ void C3Approximation::build()
     abort_handler(APPROX_ERROR);
   }
   else {
-    size_t i, j, num_v = sharedDataRep->numVars, sr = data_rep->start_rank();
+    size_t i, j, num_v = sharedDataRep->numVars, kick_r = data_rep->kickRank,
+      max_r = data_rep->max_rank(), // bounds CV candidates for adapt_rank
+      sr = std::min(data_rep->start_rank(), max_r);
     SizetVector start_ranks(num_v+1);
     start_ranks(0) = 1;     start_ranks(num_v) = 1;
     for (i=1; i<num_v; ++i) start_ranks(i) = sr;
@@ -187,21 +197,35 @@ void C3Approximation::build()
       ft_regress_set_alg_and_obj(ftr, AIO, FTLS);
 
     size_t r_adapt = data_rep->adaptRank ? 1 : 0;
-    ft_regress_set_adapt(   ftr, r_adapt);
-    ft_regress_set_maxrank( ftr, data_rep->maxRank);
-    ft_regress_set_kickrank(ftr, data_rep->kickRank);
+    ft_regress_set_adapt(ftr, r_adapt);
+    if (r_adapt) {
+      ft_regress_set_kickrank(ftr, kick_r); // default is 1
+
+      // if not user-specified, use internal C3 default (in src/lib_superlearn/
+      // regress.c, maxrank = 10 assigned in ft_regress_alloc())
+      // > Could become an issue for UNIFORM_START_RANK advancement, if used
+      if (max_r != std::numeric_limits<size_t>::max())
+	ft_regress_set_maxrank(ftr, max_r);
+
+      ft_regress_set_kfold(ftr, 5);//kfold);//match Alex's Python (C3 default=3)
+    }
     ft_regress_set_roundtol(ftr, data_rep->roundingTol);
-    ft_regress_set_verbose( ftr, data_rep->c3Verbosity);
+    short output_lev = data_rep->outputLevel;
+    if (output_lev > NORMAL_OUTPUT)
+      ft_regress_set_verbose(ftr, 1); // helpful adapt_rank diagnostics
 
     struct c3Opt* optimizer = c3opt_create(BFGS);
     int max_solver_iter = data_rep->maxSolverIterations;
-    if (max_solver_iter >= 0) // Dakota default is -1 -> leave at C3 default
-      c3opt_set_maxiter(optimizer, max_solver_iter);
+    if (max_solver_iter >= 0) { // Dakota default is -1 -> leave at C3 default
+      c3opt_set_maxiter(   optimizer, max_solver_iter);
+      c3opt_ls_set_maxiter(optimizer, max_solver_iter); // line search
+    }
     c3opt_set_gtol   (optimizer, data_rep->solverTol);
     c3opt_set_relftol(optimizer, data_rep->solverTol);
-    double absxtol = 1e-10;
+    double absxtol = 1e-30;//1e-10; // match Alex's Python
     c3opt_set_absxtol(optimizer, absxtol);
-    c3opt_set_verbose(optimizer, data_rep->c3Verbosity);
+    if (output_lev >= DEBUG_OUTPUT)
+      c3opt_set_verbose(optimizer, 1); // per opt iter diagnostics (a bit much)
 
     // free if previously built
     C3FnTrainPtrs& ftp = levApproxIter->second;
@@ -215,21 +239,15 @@ void C3Approximation::build()
     const Pecos::SDRArray& sdr_array = approxData.response_data();
     size_t ndata = approxData.points();
 
-    // JUST 1 QOI
-    // Transfer the training data to the Teuchos arrays used by the GP
-    // input variables (reformats approxData for C3)
-    double* xtrain = (double*)calloc(num_v*ndata,sizeof(double));
-    // QoI observations (reformats approxData for C3)
-    double* ytrain = (double*)calloc(ndata,sizeof(double));
-
-    // process currentPoints
+    // Training data for 1 QoI: transfer data from approxData to double* for C3
+    double* xtrain = (double*)calloc(num_v*ndata, sizeof(double)); // vars
+    double* ytrain = (double*)calloc(ndata,       sizeof(double)); // QoI
     for (i=0; i<ndata; ++i) {
       const RealVector& c_vars = sdv_array[i].continuous_variables();
       for (j=0; j<num_v; j++)
 	xtrain[j + i*num_v] = c_vars[j];
       ytrain[i] = sdr_array[i].response_function();
     }
-
 #ifdef DEBUG
     RealMatrix  in(Teuchos::View, xtrain, num_v, num_v, ndata);
     RealVector out(Teuchos::View, ytrain, ndata);
@@ -237,6 +255,7 @@ void C3Approximation::build()
 #endif // DEBUG
 
     // Build FT model
+    ft_regress_set_seed(ftr, data_rep->randomSeed);
     struct FunctionTrain * ft
       = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
     ftp.function_train(ft);
@@ -256,17 +275,19 @@ void C3Approximation::build()
     //  ftp.ft_gradient(ftg);
     //  ftp.ft_hessian(ft1d_array_jacobian(ftg));
     //}
-    if (data_rep->outputLevel >= NORMAL_OUTPUT) {
+    if (data_rep->outputLevel > SILENT_OUTPUT) {
       Cout << "\nFunction train build() results:\n  Ranks ";
-      if (data_rep->adaptRank) Cout << "(adapted):\n";
-      else                     Cout << "(non-adapted):\n";
+      if (data_rep->adaptRank)
+	Cout << "(adapted with max = " << max_r << " kick = " << kick_r
+	     << "):\n";
+      else Cout << "(non-adapted):\n";
       write_data(Cout, function_train_get_ranks(ft), num_v+1);
       Cout << "  Polynomial order (non-adapted):\n";
       std::vector<OneApproxOpts*> opts = data_rep->oneApproxOpts;
       for (i=0; i<num_v; ++i)
 	Cout << "                     " << std::setw(write_precision+7)
 	     << one_approx_opts_get_nparams(opts[i]) - 1 << '\n';
-      Cout << "  Regression size:  " << function_train_get_nparams(ft)
+      Cout << "  C3 regression size:  " << function_train_get_nparams(ft)
 	   << std::endl;
     }
 
@@ -925,49 +946,16 @@ size_t C3Approximation::regression_size()
   struct FunctionTrain * ft = levApproxIter->second.function_train();
   SizetVector ft_ranks(Teuchos::View, function_train_get_ranks(ft),
 		       data_rep->numVars+1);
-  return regression_size(ft_ranks, data_rep->start_orders());
+  return regression_size(ft_ranks,                 data_rep->max_rank(),
+			 data_rep->start_orders(), data_rep->max_order());
 }
-
-
-/* compute the regression size (number of unknowns) for a set of ranks per
-   dimension and a single expansion (polynomial) order
-size_t C3Approximation::
-regression_size(const SizetVector& ranks, size_t order)
-{
-  // Each dimension has its own rank within the product of function cores.
-  // This fn estimates for the case where rank varies per dimension/core
-  // and basis order is constant.  Using 1-based indexing:
-  // > the first core is a 1 x r_1 row vector and contributes p * r_1 terms
-  // > the  last core is a r_v x 1 col vector and contributes p * r_v terms
-  // > the middle v-2 cores are matrices that contribute r_i * r_{i+1} * p terms
-  // > neighboring vec/mat dimensions must match, so there are v-1 unique ranks
-  //   (could also allow ranks.size() == v and check constraints)
-  // > could also allow p to vary per dimension in an orders array, should this
-  //   granularity become warranted in the future
-  size_t p = order + 1, num_v = sharedDataRep->numVars;
-  if (ranks.length() != num_v + 1) { // both ends padded with 1's
-    Cerr << "Error: wrong size (" << ranks.length() << ") for ranks array in "
-	 << "C3Approximation::regression_size()." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-  switch (num_v) {
-  case 1:  return p;             break; // collapses to a 1D PCE
-  case 2:  return 2.*p*ranks[1]; break; // first,last core (no middle)
-  default: { // first, last, and num_v-2 middle cores
-    size_t core, num_vm1 = num_v - 1, sum = ranks[1] + ranks[num_vm1];
-    for (core=1; core<num_vm1; ++core)
-      sum += ranks[core] * ranks[core+1];
-    return sum * p;  break;
-  }
-  }
-}
-*/
 
 
 /** compute the regression size (number of unknowns) for ranks per
     dimension and (polynomial) orders per dimension */
 size_t C3Approximation::
-regression_size(const SizetVector& ranks, const UShortArray& orders)
+regression_size(const SizetVector& ranks,  size_t max_rank,
+		const UShortArray& orders, unsigned short max_order)
 {
   // Each dimension has its own rank within the product of function cores.
   // This fn estimates for the case where rank varies per dimension/core
@@ -983,14 +971,22 @@ regression_size(const SizetVector& ranks, const UShortArray& orders)
 	 << "regression_size()." << std::endl;
     abort_handler(APPROX_ERROR);
   }
+  unsigned short p;
   switch (num_v) {
-  case 1:  return  orders[0]+1;                     break;// collapses to 1D PCE
-  case 2:  return (orders[0]+orders[1]+2)*ranks[1]; break;// first,last core
+  case 1:
+    p = std::min(orders[0], max_order) + 1;
+    return p;  break; // collapses to 1D PCE
   default: { // first, last, and num_v-2 middle cores
-    size_t core, num_vm1 = num_v - 1,
-      sum = (orders[0]+1)*ranks[1] + (orders[num_vm1]+1)*ranks[num_vm1];
-    for (core=1; core<num_vm1; ++core)
-      sum += ranks[core] * ranks[core+1] * (orders[core]+1);
+    size_t core, vm1 = num_v - 1, sum;
+    p = std::min(orders[0],   max_order) + 1;
+    sum  = p * std::min(ranks[1],   max_rank); // first
+    p = std::min(orders[vm1], max_order) + 1;
+    sum += p * std::min(ranks[vm1], max_rank); // last
+    for (core=1; core<vm1; ++core) {
+      p = std::min(orders[core], max_order) + 1;
+      sum += std::min(ranks[core],   max_rank)
+	  *  std::min(ranks[core+1], max_rank) * p; // num_v-2 middle cores
+    }
     return sum;  break;
   }
   }

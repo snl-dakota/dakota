@@ -151,11 +151,13 @@ public:
   /// return combinedC3FTPtrs
   C3FnTrainPtrs& combined_ftp();
 
-  size_t regression_size();                   // uses active ftp
-  //size_t regression_size(const SizetVector& ranks, size_t order);
-  size_t regression_size(const SizetVector& ranks, const UShortArray& orders);
+  size_t regression_size(); // uses active ftp
+  size_t regression_size(const SizetVector& ranks,  size_t max_rank,
+			 const UShortArray& orders, unsigned short max_order);
   // SharedC3ApproxData::regression_size() supports scalar rank from user spec
 
+  SizetVector function_train_ranks();
+  
   //size_t average_rank();
   //size_t maximum_rank();
 

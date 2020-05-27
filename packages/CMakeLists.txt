@@ -1,3 +1,11 @@
+#  _______________________________________________________________________
+#
+#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+#  Copyright 2014 Sandia Corporation.
+#  This software is distributed under the GNU Lesser General Public License.
+#  For more information, see the README file in the top Dakota directory.
+#  _______________________________________________________________________
+
 # All Dakota options for packages have been moved to top-level
 
 # For managing additional packages that packages like pecos and surfpack depend on

@@ -15,8 +15,8 @@
 %%\newcommand{\DakotaSANDUpdated}{@Dakota_RELEASE_DATE@} % TODO if/else \today
 \newcommand{\DakotaSANDDev}{SAND2020-xxxx}
 \newcommand{\DakotaSANDRef}{SAND2020-xxxx}
-\newcommand{\DakotaSANDUsers}{SAND2020-xxxx}
-\newcommand{\DakotaSANDTheory}{SAND2020-xxxx}
+\newcommand{\DakotaSANDUsers}{SAND2020-5001}
+\newcommand{\DakotaSANDTheory}{SAND2020-4987}
 
 
 % Need to manually break line or Eldred gets incorrectly split
@@ -39,7 +39,7 @@ Justin~G.~Winokur
   A. Maupin, Jason A. Monschke, Elliott M. Ridgway, Ahmad A. Rushdi,
   D. Thomas Seidl, J. Adam Stephens, Laura P. Swiler, Anh Tran, Dena
   M. Vigil, Timothy M. Wildey, and Justin G. Winokur; with
-  Friedrich~Menhorn (Technische Universitat Munchen) and Xiaoshu~Zeng
+  Friedrich~Menhorn (Technical University of Munich) and Xiaoshu~Zeng
   (University of Southern California)
 }
 

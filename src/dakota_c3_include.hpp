@@ -153,6 +153,7 @@ extern "C"
   void c3opt_set_gtol(struct c3Opt *, double);
   void c3opt_set_verbose(struct c3Opt *, int);
   void c3opt_set_maxiter(struct c3Opt *, size_t);
+  void c3opt_ls_set_maxiter(struct c3Opt *, size_t);
   void c3opt_set_absxtol(struct c3Opt *, double);
   void c3opt_free(struct c3Opt *);
 
@@ -183,6 +184,8 @@ extern "C"
   double ft_regress_get_regularization_weight(const struct FTRegress *);
   double * ft_regress_get_params(struct FTRegress *, size_t *);
   void ft_regress_update_params(struct FTRegress *, const double *);
+
+  void ft_regress_set_seed(struct FTRegress *, unsigned int);
 
   struct FunctionTrain *
   ft_regress_run(struct FTRegress *,struct c3Opt *,size_t,const double* xdata, const double * ydata);
