@@ -23,7 +23,8 @@ method,
 #   specify _initial_ resolutions per level, prior to refinement/adaptation
 # > Uniform refinement could support poly order (default) vs. rank (option)
 #	  collocation_ratio = 1.75     	     	     	#s4,#s5,#s6,#s7,#s8
-#	  p_refinement uniform				#s4,#s5,#s6,#s7,#s8
+#	  p_refinement uniform increment_max_rank	#s5,#s7,#s8
+#	  p_refinement uniform increment_start_order	#s4,#s6
 #	  allocation_control greedy			#s6,#s7,#s8
 #	  start_rank_sequence = 3 2 2 1 1		#s4,#s6
 #	  max_order = 10 	    			#s4,#s6

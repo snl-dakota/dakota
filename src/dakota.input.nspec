@@ -1128,7 +1128,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( function_train {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+      ( uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        increment_start_order {N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}
+        |
+        increment_max_rank {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}
+       )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ regression_type {0}
@@ -1254,7 +1258,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( multifidelity_function_train {N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+      ( uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        increment_start_order {N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}
+        |
+        increment_max_rank {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}
+       )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ allocation_control {0}
@@ -5736,7 +5744,11 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       ( function_train {N_mom(lit,surrogateType_global_function_train)}
         [ p_refinement {N_mom(type,refinementType_P_REFINEMENT)}
-          uniform {N_mom(type,refinementControl_UNIFORM_CONTROL)}
+          ( uniform {N_mom(type,refinementControl_UNIFORM_CONTROL)}
+            increment_start_order {N_mom(type,c3RefineType_UNIFORM_START_ORDER)}
+            |
+            increment_max_rank {N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}
+           )
          ]
         [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
         [ regression_type {0}
