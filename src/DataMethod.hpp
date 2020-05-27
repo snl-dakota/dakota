@@ -774,6 +774,9 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
+  /// quantity to increment (start order, start rank, max rank) for FT
+  /// uniform p-refinement
+  short c3RefineType;
   /// starting polynomial order
   UShortArray startOrderSeq;
   /// starting rank
