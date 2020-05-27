@@ -170,16 +170,24 @@ void NonDC3FunctionTrain::resolve_refinement()
   //   the best rank and the best basis order, and migrate Dakota control to
   //   defining the CV ranges.
   // > This could entail multi-index candidate generation for max{Rank,Order}
-  bool refine_err = false;
+  bool refine_err = false, adapt_err = false;
   switch (refineType) {
   case Pecos::P_REFINEMENT:
     switch (refineControl) {
     case Pecos::UNIFORM_CONTROL: // only uniform p-refine supported at this time
       // logic is weak in that UNIFORM_START_ORDER also benefits from
       // adapt_rank, but at least it makes some sense in its absence
-      c3RefineType
-	= (probDescDB.get_bool("method.nond.c3function_train.adapt_rank")) ?
-	UNIFORM_MAX_RANK : UNIFORM_START_ORDER;
+      c3RefineType = probDescDB.get_short(
+	"method.nond.c3function_train.uniform_refinement_type");
+      switch (c3RefineType) {
+    //case UNIFORM_START_ORDER: // supports with or without adapt_rank
+      case UNIFORM_MAX_RANK:    // requires adapt_rank
+	if (!probDescDB.get_bool("method.nond.c3function_train.adapt_rank"))
+	  adapt_err = true;
+	break;
+      case NO_C3_REFINEMENT:
+	refine_err = true;  break; // no default assign since spec is reqd
+      }
       break;
     default:
       refine_err = true;  break;
@@ -189,12 +197,15 @@ void NonDC3FunctionTrain::resolve_refinement()
   default: /*Pecos::H_REFINEMENT*/ refine_err   = true;              break;
   }
 
-  if (refine_err) {
+  if (refine_err)
     Cerr << "Error: refineType " << refineType << " with refineControl "
 	 << refineControl << " is not supported by function_train methods "
 	 << "at this time." << std::endl;
+  if (adapt_err)
+    Cerr << "Error: C3 uniform refinement type " << c3RefineType
+	 << " requires adapt_rank specification." << std::endl;
+  if (refine_err || adapt_err)
     abort_handler(METHOD_ERROR);
-  }
 }
 
 
