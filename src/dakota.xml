@@ -267,12 +267,11 @@
     <!ENTITY ft_method_refinement '
              <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
 	       <keyword  id="uniform4" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
-		 <!--
 		 <oneOf label="Uniform Refinement Approach">
-		   <keyword  id="order" name="order" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL_ORDER)}" label="order" />
-		   <keyword  id="rank" name="rank" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL_RANK)}" label="rank" />
+		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}" label="order" />
+		   <!-- <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mdm(type,c3RefineType_UNIFORM_START_RANK)}" label="rank" /> -->
+		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}" label="rank" />
 		 </oneOf>
-		 -->
 	       </keyword>
 	     </keyword>
 	     &default_max_refinement_iterations;
@@ -843,12 +842,11 @@
     <!ENTITY ft_model_refinement '
              <keyword  id="p_refinement" name="p_refinement" code="{N_mom(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
 	       <keyword  id="uniform4" name="uniform" code="{N_mom(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
-		 <!--
 		 <oneOf label="Uniform Refinement Approach">
-		   <keyword  id="order" name="order" code="{N_mom(type,refinementControl_UNIFORM_CONTROL_ORDER)}" label="order" />
-		   <keyword  id="rank" name="rank" code="{N_mom(type,refinementControl_UNIFORM_CONTROL_RANK)}" label="rank" />
+		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mom(type,c3RefineType_UNIFORM_START_ORDER)}" label="order" />
+		   <!-- <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mom(type,c3RefineType_UNIFORM_START_RANK)}" label="rank" /> -->
+		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}" label="rank" />
 		 </oneOf>
-		 -->
 	       </keyword>
 	     </keyword>
 	     &default_max_refinement_iterations;

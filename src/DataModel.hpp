@@ -377,7 +377,6 @@ public:
   /// Contains which cutoff method to use in the cross validation metric
   unsigned short subspaceIdCVMethod;
 
-
   // Function-Train Options
 
   /// type of (regularized) regression: FT_LS or FT_RLS2
@@ -408,8 +407,10 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
-  // Verbosity level
-  //size_t verbosity;
+  /// quantity to increment (start order, start rank, max rank) for FT
+  /// uniform p-refinement
+  short c3RefineType;
+
   /// number of data points used in FT construction by regression
   size_t collocationPoints;
   /// ratio of number of points to nuber of unknowns
