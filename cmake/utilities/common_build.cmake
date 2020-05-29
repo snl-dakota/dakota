@@ -328,8 +328,8 @@ endif()
 # Post-process unit and dakota test results. Do this even if testing was not
 # done to ensure the results from the last build are removed
 message("processing test results")
-#process_unit_test_results( ${CTEST_BINARY_DIRECTORY} )
-#process_dakota_test_results( ${CTEST_BINARY_DIRECTORY} )
+process_unit_test_results( ${CTEST_BINARY_DIRECTORY} )
+process_dakota_test_results( ${CTEST_BINARY_DIRECTORY} )
 message("done processing test results")
 
 # Enable packing if requested, regardless of status
