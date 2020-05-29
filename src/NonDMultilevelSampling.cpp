@@ -667,26 +667,17 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
           }
         }
 
-
         if (qoiAggregation==QOI_AGGREGATION_SUM) {
-          sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
+          compute_sum_sqrt_var_cost(agg_var_l, lev_cost, sum_sqrt_var_cost);
         }else if (qoiAggregation==QOI_AGGREGATION_MAX) {
-          for (qoi = 0; qoi < numFunctions ; ++qoi) {
-            sum_sqrt_var_cost_qoi[qoi] += std::sqrt(agg_var_qoi(qoi, step) * lev_cost);
-          }
+          compute_sum_sqrt_var_cost(agg_var_qoi, lev_cost, step, sum_sqrt_var_cost_qoi);
         }
         // MSE reference is MC applied to HF:
         if (mlmfIter == 0) {
           if (qoiAggregation==QOI_AGGREGATION_SUM) {
-            estimator_var0 += aggregate_mse_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
-                                               sum_Ql[2][step], sum_QlQlm1[pr11][step], sum_Qlm1[2][step],
-                                               N_l[step], step);
+            aggregate_mse_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, estimator_var0);
           }else if (qoiAggregation==QOI_AGGREGATION_MAX) {
-            for (qoi = 0; qoi < numFunctions; ++qoi) {
-              estimator_var0_qoi[qoi] += aggregate_mse_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
-                                                            sum_Ql[2][step], sum_QlQlm1[pr11][step], sum_Qlm1[2][step],
-                                                            N_l[step], step, qoi);
-            }
+            aggregate_mse_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, estimator_var0_qoi);
           }
         }
       }
@@ -698,17 +689,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
       if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
         //if(target_mean)
         if (qoiAggregation==QOI_AGGREGATION_SUM) {
-          eps_sq_div_2 = estimator_var0 * convergenceTol;
-          if (outputLevel == DEBUG_OUTPUT) {
-            Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
-          }
+          compute_eps_div_2(estimator_var0, convergenceTol, eps_sq_div_2);
         }else if (qoiAggregation==QOI_AGGREGATION_MAX) {
-          for (qoi = 0; qoi < numFunctions; ++qoi) {
-            eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol; //1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
-          }
-          if (outputLevel == DEBUG_OUTPUT) {
-            Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
-          }
+          compute_eps_div_2(estimator_var0_qoi, convergenceTol, eps_sq_div_2_qoi);
         }
       }
 

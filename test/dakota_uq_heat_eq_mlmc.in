@@ -7,25 +7,24 @@
 #environment,
 
 method,
-	model_pointer = 'HIERARCH'
-        multilevel_sampling				
-	  pilot_samples = 20		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
-	  seed = 1237			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
-#	  pilot_samples = 100 50 40 20		#s10
-#	  seed_sequence = 1234 2345 3456 4567	#s10
-	  max_iterations = 5
-	  allocation_target = mean		#s0,#s1,#s2,#s5,#s6,#s7,#s10
-#	  allocation_target = variance		#s3,#s4,#s8,#s9
-#		optimization
-	  qoi_aggregation = sum			#s0,#s1,#s2,#s3,#s4,#s10
-#	  qoi_aggregation = max			#s5,#s6,#s7,#s8,#s9
-	  convergence_tolerance = .1		#s0,#s5
-#	  convergence_tolerance = .01		#s1,#s6,#s10
-#	  convergence_tolerance = .001		#s2,#s7
-#	  convergence_tolerance = .0001
-#	  convergence_tolerance = 1.		#s3,#s8
-#	  convergence_tolerance = 0.5		#s4,#s9
-	output silent
+        model_pointer = 'HIERARCH'
+        multilevel_sampling
+          pilot_samples = 20            #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12
+          seed = 1237                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12
+#         pilot_samples = 100 50 40 20          #s10
+#         seed_sequence = 1234 2345 3456 4567   #s10
+          max_iterations = 5                    #s0,#s1,#s2,#s5,#s6,#s7,#s10
+#         max_iterations = 10                   #s3,#s4,#s8,#s9,#s11,#s12
+          allocation_target = mean              #s0,#s1,#s2,#s5,#s6,#s7,#s10
+#         allocation_target = variance          #s3,#s4,#s8,#s9,#s11,#s12
+#               optimization
+          qoi_aggregation = sum                 #s0,#s1,#s2,#s3,#s4,#s10,#s11
+#         qoi_aggregation = max                 #s5,#s6,#s7,#s8,#s9,#s12
+          convergence_tolerance = .1            #s0,#s3,#s5,#s8
+#         convergence_tolerance = .01           #s1,#s4,#s6,#s9,#s10
+#         convergence_tolerance = .001          #s2,#s7,#s11,#s12
+#         convergence_tolerance = .0001
+        output silent
 
 model,
 	id_model = 'HIERARCH'
