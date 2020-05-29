@@ -207,8 +207,8 @@ struct FTDerivedFunctions
   //struct FunctionTrain * ft_constant_at_mean;
   struct FunctionTrain * ft_diff_from_mean;
   struct FunctionTrain * ft_diff_from_mean_squared;
-  struct FunctionTrain * ft_diff_from_mean_cubed;    
-  struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan
+  //struct FunctionTrain * ft_diff_from_mean_cubed;
+  //struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan
 
   //struct FunctionTrain * ft_diff_from_mean_normalized;
   //struct FunctionTrain * ft_diff_from_mean_normalized_squared;

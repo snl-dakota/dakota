@@ -351,16 +351,17 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
     probDescDB.get_real("method.nond.regression_penalty"));
   shared_data_rep->set_parameter("solver_tol",
     probDescDB.get_real("method.nond.c3function_train.solver_tolerance"));
-  shared_data_rep->set_parameter("rounding_tol",
+  shared_data_rep->set_parameter("solver_rounding_tol",
     probDescDB.get_real("method.nond.c3function_train.rounding_tolerance"));
-  shared_data_rep->set_parameter("arithmetic_tol",
+  shared_data_rep->set_parameter("stats_rounding_tol",
     probDescDB.get_real("method.nond.c3function_train.arithmetic_tolerance"));
   shared_data_rep->set_parameter("max_cross_iterations",
     probDescDB.get_int("method.nond.c3function_train.max_cross_iterations"));
   shared_data_rep->set_parameter("max_solver_iterations",
     probDescDB.get_int("method.nond.max_solver_iterations"));
 
-  shared_data_rep->set_parameter("combine_type", Pecos::ADD_COMBINE); // for now
+  short comb_type = Pecos::ADD_COMBINE; // pass short (enum val is ambiguous)
+  shared_data_rep->set_parameter("combine_type",     comb_type); // for now
 
   shared_data_rep->set_parameter("max_poly_order",   maxOrderSpec);
   shared_data_rep->set_parameter("max_rank",         maxRankSpec);
