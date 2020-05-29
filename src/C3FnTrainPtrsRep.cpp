@@ -100,6 +100,8 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, size_t num_mom,
 
     ft_derived_fns.ft_diff_from_mean
       = subtract_const(ft, ft_derived_fns.first_moment, opts);
+    // function_train_inner_weighted() provides full accuracy for product w/o
+    // requiring overhead + precision loss of function_train_{product,round}()
     ft_derived_fns.second_central_moment =
       function_train_inner_weighted(ft_derived_fns.ft_diff_from_mean,
 				    ft_derived_fns.ft_diff_from_mean);
@@ -119,6 +121,9 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, size_t num_mom,
     //ft_derived_fns.third_moment
     //  = function_train_integrate_weighted(ft_derived_fns.ft_cubed);
 
+    // Note: this is the only remaining function_train_{product,round}() step.
+    // Since accuracy in skewness/kurtosis is not currently critical, retain
+    // rounding by round_tol.
     ft_tmp = function_train_product(ft_derived_fns.ft_diff_from_mean,
 				    ft_derived_fns.ft_diff_from_mean);
     ft_derived_fns.ft_diff_from_mean_squared
