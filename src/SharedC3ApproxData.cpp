@@ -35,8 +35,9 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   regressType(problem_db.get_short("model.surrogate.regression_type")),
   regressRegParam(problem_db.get_real("model.surrogate.regression_penalty")),
   solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
-  roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
-  arithmeticTol(
+  solverRoundingTol(
+    problem_db.get_real("model.c3function_train.rounding_tolerance")),
+  statsRoundingTol(
     problem_db.get_real("model.c3function_train.arithmetic_tolerance")),
   maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
   crossMaxIter(
@@ -71,7 +72,7 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   startOrderSpec(approx_order), maxOrder(USHRT_MAX), startRankSpec(2),
   kickRank(1), maxRankSpec(std::numeric_limits<size_t>::max()),
   adaptRank(false), regressType(FT_LS), // non-regularized least sq
-  solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
+  solverTol(1.e-10), solverRoundingTol(1.e-8), statsRoundingTol(1.e-8),
   crossMaxIter(5), maxSolverIterations(-1), adaptConstruct(false),
   crossVal(false), c3RefineType(NO_C3_REFINEMENT)
 {
