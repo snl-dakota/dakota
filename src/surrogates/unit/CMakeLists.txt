@@ -39,7 +39,7 @@ target_include_directories(PolynomialRegressionTest PRIVATE "${Teuchos_INCLUDE_D
 target_include_directories(SurrogatesToolsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 
 target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates
-  ${Teuchos_LIBRARIES})
+  ${Teuchos_LIBRARIES} Boost::filesystem)
 target_link_libraries(PolynomialRegressionTest PRIVATE dakota_surrogates
   ${Teuchos_LIBRARIES} Boost::filesystem)
 target_link_libraries(SurrogatesToolsTest PRIVATE dakota_surrogates
