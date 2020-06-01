@@ -164,6 +164,9 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
     Cout << "\nAdapted Basis Model: Initialization of adapted basis model "
 	 << "is complete." << std::endl;
 
+  // terminate here (without an error code) for now
+  // exit(0);
+
   // return whether size of variables has changed
   return (reducedRank != numFullspaceVars || // Active SS is reduced rank
 	  sub_model_resize); // Active SS is full rank but subModel resized
@@ -411,6 +414,8 @@ void AdaptedBasisModel::identify_subspace()
   
   rotationMatrix = A_q;
   Cout << "\n Rotation Matrix \n" << rotationMatrix << std::endl;
+  // reducedRank = 1;
+  Cout << "\n reducedRank \n" << reducedRank << std::endl;
 
   // TO DO
 
@@ -626,7 +631,6 @@ SizetArray AdaptedBasisModel::variables_resize()
   }
   return vc_totals;
 }
-
 
 
 /** Define the distribution of recast reduced dimension
