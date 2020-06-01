@@ -1,21 +1,23 @@
 Blurb::
-Define the characteristic values to scale linear inequalities
+Characteristic values to scale linear inequalities
+
 Description::
-Each entry in \c linear_inequality_scales may be a
-user-specified, nonzero characteristic value to be used in scaling each
-constraint. 
+Each real value in \c linear_inequality_scales is a nonzero
+characteristic value to be used in scaling each constraint. They only
+have effect when the associated method specifies \c scaling.
 
-Behavior depends on the choice of \c linear_inequality_scale_type :
-\li <tt>scale_type</tt> - behavior of \c linear_inequality_scales
-\li <tt>'none'</tt> - ignored
-\li <tt>'value'</tt> - required
-\li <tt>'auto'</tt> - optional
+This keyword is required for \ref
+variables-linear_inequality_scale_types of <tt>'value'</tt> and
+optional for <tt>'auto'</tt>.
 
-If a single real value is specified it will apply to
-all components of the constraint. 
+If a single real value is specified it will apply to all linear
+inequality constraints. Otherwise the number of values should be equal
+to the number of linear inequalities.
 
-Scaling for linear constraints is
-applied \e after any continuous variable scaling. For example, for
+Scaling for linear constraints is applied \e after any continuous
+variable scaling.
+
+For example, for
 variable scaling on continuous design variables x: \f[ \tilde{x}^j =
 \frac{x^j - x^j_O}{x^j_M} \f] we have the following system for linear
 inequality constraints \f[ a_L \leq A_i x \leq a_U \f] \f[ a_L \leq
@@ -27,6 +29,9 @@ appplied to this final transformed system, which accounts for
 continuous design variable scaling. When automatic scaling is in use
 for linear constraints they are linearly scaled by a computed
 characteristic value, but not affinely to [0,1].
+
+See the scaling information under specific methods, e.g.,
+\c method-*-scaling for details on how to use this keyword.
 
 Topics::	linear_constraints
 Examples::

@@ -1,16 +1,16 @@
+
 # Dakota Input File: rosen_syscall.in
 # Usage:
 #   dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout
 
 environment
-  graphics
-  tabular_graphics_data
-    tabular_graphics_file = 'rosen_syscall.dat'
+  tabular_data
+    tabular_data_file = 'rosen_syscall.dat'
 
 method
-  max_iterations = 100
-  convergence_tolerance = 1e-4
   conmin_frcg
+    convergence_tolerance = 1e-4
+    max_iterations = 100
 
 model
   single
@@ -23,7 +23,7 @@ variables
     descriptors       'x1'     "x2"
 
 interface
-  analysis_driver = 'rosenbrock'
+  analysis_drivers = 'rosenbrock'
     fork
     parameters_file = 'params.in'
     results_file    = 'results.out'
@@ -33,5 +33,5 @@ responses
   numerical_gradients
     method_source dakota
     interval_type forward
-    fd_gradient_step_size = 1.e-5
+    fd_step_size = 1.e-5
   no_hessians

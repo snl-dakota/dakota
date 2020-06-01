@@ -1,11 +1,11 @@
+
 # Dakota Input File: rosen_sampling.in
 # Usage:
 #   dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout
 
 environment
-  graphics
-  tabular_graphics_data
-    tabular_graphics_file = 'rosen_sampling.dat'
+  tabular_data
+    tabular_data_file = 'rosen_sampling.dat'
 
 method
   sampling
@@ -24,7 +24,7 @@ variables
     descriptors         'x1'  'x2'
 
 interface
-  analysis_driver = 'rosenbrock'
+  analysis_drivers = 'rosenbrock'
     direct
 
 responses

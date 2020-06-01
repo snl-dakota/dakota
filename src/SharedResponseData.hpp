@@ -99,8 +99,8 @@ private:
   /// used to improve output readability; length Response::functionValues
   StringArray functionLabels;
   
-  /// labels for each field group
-  StringArray fieldLabels;
+  /// labels for each primary response field
+  StringArray priFieldLabels;
   
   /// simulation variance
   RealVector simulationVariance;
@@ -111,11 +111,11 @@ private:
   /// number of scalar primary reponses (secondary computed from difference)
   size_t numScalarPrimary = 0;
 
-  /// index of field lengths for field data 
-  IntVector fieldRespGroupLengths;
+  /// length of each primary response field
+  IntVector priFieldLengths;
 
-  /// dimensions of each function
-  IntVector numCoordsPerField;
+  /// number of independent coordinates, e.g., x, t, for each field f(x,t)
+  IntVector coordsPerPriField;
   
 };
 
@@ -185,28 +185,31 @@ public:
   //- Heading: member functions
   //
 
-  // BMA: consider removing this due to potential for misuse
-  /// number of scalar responses 
+  /// number of scalar responses: primary_scalar + nonlinear
+  /// constraints; note that these are non-contiguous when primary
+  /// fields are present.
   size_t num_scalar_responses() const;
 
-  /// number of scalar primary responses (objectives, calibration terms, generic)
+  /// number of scalar primary responses
+  /// (objectives, calibration terms, generic)
   size_t num_scalar_primary() const;
 
-  /// number of field response groups
+  /// number of primary fields (primary field groups)
   size_t num_field_response_groups() const;
-  /// total number of response groups (scalars + field groups)
+  /// total number of response groups (number scalars + number pri field groups)
   size_t num_response_groups() const;
-  /// total number of field functions (1-norm of fieldRespGroupLengths)
+  /// total number of primary field functions (elements);
+  /// 1-norm of priFieldLengths
   size_t num_field_functions() const;
   /// total number of response functions (scalars + 1-norm of
-  /// fieldRespGroupLengths)
+  /// priFieldLengths)
   size_t num_functions() const;
 
-  /// length of each field for field data
+  /// length of each primary field
   const IntVector& field_lengths() const;
-  /// set field lengths (if experiment different from simulation)
+  /// set field lengths (e.g., if experiment different from simulation)
   void field_lengths(const IntVector& field_lens);
-  /// dimensions of each function
+  /// number of independent coordinates for each primary field
   const IntVector& num_coords_per_field() const;
 
   /// return a response function identifier string
@@ -220,9 +223,9 @@ public:
   /// set the response function identifier strings
   void function_labels(const StringArray& labels);
 
-  /// return the coarse (per-group) field response labels
+  /// return the coarse (per-group) primary field response labels
   const StringArray& field_group_labels();
-  /// set the coarse field group labels (must agree with number fields)
+  /// set the coarse primary field group labels (must agree with number fields)
   void field_group_labels(const StringArray& field_labels);
 
   /// return the response identifier
@@ -349,27 +352,27 @@ inline size_t SharedResponseData::num_scalar_primary() const
 
 
 inline size_t SharedResponseData::num_field_response_groups() const
-{ return srdRep->fieldRespGroupLengths.length(); }
+{ return srdRep->priFieldLengths.length(); }
 
 
 inline size_t SharedResponseData::num_response_groups() const
-{ return srdRep->numScalarResponses + srdRep->fieldRespGroupLengths.length(); }
+{ return srdRep->numScalarResponses + srdRep->priFieldLengths.length(); }
 
 
 inline size_t SharedResponseData::num_field_functions() const
-{ return srdRep->fieldRespGroupLengths.normOne(); }
+{ return srdRep->priFieldLengths.normOne(); }
 
 
 inline size_t SharedResponseData::num_functions() const
-{ return srdRep->numScalarResponses + srdRep->fieldRespGroupLengths.normOne(); }
+{ return srdRep->numScalarResponses + srdRep->priFieldLengths.normOne(); }
 
 
 inline const IntVector& SharedResponseData::field_lengths() const 
-{ return srdRep->fieldRespGroupLengths; }
+{ return srdRep->priFieldLengths; }
 
 
 inline const IntVector& SharedResponseData::num_coords_per_field() const
-{ return srdRep->numCoordsPerField; }
+{ return srdRep->coordsPerPriField; }
   
 
 inline const String& SharedResponseData::responses_id() const
@@ -415,7 +418,7 @@ inline void SharedResponseData::function_labels(const StringArray& labels)
 
 
 inline const StringArray& SharedResponseData::field_group_labels()
-{ return srdRep->fieldLabels; }
+{ return srdRep->priFieldLabels; }
 
 
 inline bool SharedResponseData::is_null() const

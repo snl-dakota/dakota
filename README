@@ -5,6 +5,7 @@ A Multilevel Parallel Object-Oriented Framework for Design Optimization,
 Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis 
 
 ------------------------------------------------------------------------------
+
             _/_/_/   
              _/_/    
         _/_/_/_/_/_/ 
@@ -16,30 +17,36 @@ Sandia National Laboratories
       Albuquerque, NM
        Livermore, CA
 
-Brian M. Adams                                       
-William J. Bohnhoff                                  
+Brian M. Adams
+William J. Bohnhoff
 Robert A. Canfield
 Keith R. Dalbey
-John P. Eddy	                               	 
 Mohamed S. Ebeida
-Michael S. Eldred                             	 
+John P. Eddy
+Michael S. Eldred
 Gianluca Geraci
 Alex A. Gorodetsky
 Russell W. Hooper
-Patricia D. Hough		       
+Patricia D. Hough
 Kenneth T. Hu
 John D. Jakeman
+Carson Kent
 Mohammad Khalil
 Kathryn A. Maupin
 Jason A. Monschke
 Elliott M. Ridgway
-Ahmad Rushdi
+Ahmad A. Rushdi
 D. Thomas Seidl
-J. Adam Stephens                             	 
+J. Adam Stephens
 Laura P. Swiler
-Dena M. Vigil			       
-Timothy M. Wildey		       
-Justin G. Winokur		       
+Anh Tran
+Dena M. Vigil
+Timothy M. Wildey
+Justin G. Winokur
+
+Friedrich Menhorn, Technical University of Munich
+Xiaoshu Zeng, University of Southern California
+
 
 ------------------------------------------------------------------------------
 License
@@ -93,6 +100,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]
   LHS		    GNU Lesser General Public License (LGPL) [SNL]
+  MUQ2              BSD 3-clause
   NCSUOpt	    MIT License
   nidr		    BSD License [SNL]
   NL2SOL	    Publicly Available
@@ -190,6 +198,7 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
+6.12               05/15/20 (refer to git submodules for TPL SHA1s)
 6.11               11/15/19 (refer to git submodules for TPL SHA1s)
 6.10               05/15/19 (refer to git submodules for TPL SHA1s)
 6.9                11/15/18 (refer to git submodules for TPL SHA1s)

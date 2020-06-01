@@ -93,12 +93,12 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     numScalarPrimary = num_scalar_primary;
     numScalarResponses = num_scalar_responses;
 
-    // extract the fieldLabels from the functionLabels (one per field group)
+    // extract the priFieldLabels from the functionLabels (one per field group)
     copy_data_partial(functionLabels, numScalarResponses, num_field_responses,
-		      fieldLabels);
+		      priFieldLabels);
     // unroll field response groups to create individual function labels
-    fieldRespGroupLengths = problem_db.get_iv("responses.lengths");
-    if (num_field_responses != fieldRespGroupLengths.length()) {
+    priFieldLengths = problem_db.get_iv("responses.lengths");
+    if (num_field_responses != priFieldLengths.length()) {
       Cerr << "Error: For each field response, you must specify " 
            << "the length of that field.  The number of elements " 
            << "in the 'lengths' vector must " 
@@ -172,13 +172,13 @@ void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
   responsesId           = srd_rep->responsesId;
 
   functionLabels        = srd_rep->functionLabels;
-  fieldLabels           = srd_rep->fieldLabels;
+  priFieldLabels        = srd_rep->priFieldLabels;
 
   numScalarResponses    = srd_rep->numScalarResponses;
   numScalarPrimary      = srd_rep->numScalarPrimary;
-  fieldRespGroupLengths = srd_rep->fieldRespGroupLengths;
+  priFieldLengths       = srd_rep->priFieldLengths;
 
-  numCoordsPerField     = srd_rep->numCoordsPerField;
+  coordsPerPriField     = srd_rep->coordsPerPriField;
 
   simulationVariance 	= srd_rep->simulationVariance;
 }
@@ -192,18 +192,18 @@ void SharedResponseDataRep::serialize(Archive& ar, const unsigned int version)
   ar & responsesId;
   // TODO: archive unrolled minimal labels if possible
   ar & functionLabels;
-  ar & fieldLabels;
+  ar & priFieldLabels;
   ar & numScalarResponses;
   ar & numScalarPrimary;
-  ar & fieldRespGroupLengths;
-  ar & numCoordsPerField;
+  ar & priFieldLengths;
+  ar & coordsPerPriField;
 #ifdef SERIALIZE_DEBUG  
   Cout << "Serializing SharedResponseDataRep:\n"
        << responseType << '\n'
        << responsesId << '\n'
        << functionLabels
        << numScalarResponses
-       << fieldRespGroupLengths
+       << priFieldLengths
        << std::endl;
 #endif
 }
@@ -215,17 +215,17 @@ bool SharedResponseDataRep::operator==(const SharedResponseDataRep& other)
 	  primaryFnType == other.primaryFnType &&
 	  responsesId == other.responsesId &&
 	  functionLabels == other.functionLabels &&
-	  fieldLabels == other.fieldLabels &&
+	  priFieldLabels == other.priFieldLabels &&
 	  numScalarResponses == other.numScalarResponses &&
 	  numScalarPrimary == other.numScalarPrimary &&
-	  fieldRespGroupLengths == other.fieldRespGroupLengths &&
-	  numCoordsPerField == other.numCoordsPerField);
+	  priFieldLengths == other.priFieldLengths &&
+	  coordsPerPriField == other.coordsPerPriField);
 }
 
 
 void SharedResponseDataRep::build_field_labels()
 {
-  size_t unroll_fns = numScalarResponses + fieldRespGroupLengths.normOne();
+  size_t unroll_fns = numScalarResponses + priFieldLengths.normOne();
   if (functionLabels.size() != unroll_fns)
     functionLabels.resize(unroll_fns);  // unique label for each QoI
 
@@ -233,9 +233,9 @@ void SharedResponseDataRep::build_field_labels()
 
   // append _<field_entry_num> to the base label
   size_t unrolled_index = numScalarResponses;
-  for (size_t i=0; i<fieldRespGroupLengths.length(); ++i)
-    for (size_t j=0; j<fieldRespGroupLengths[i]; ++j)
-      build_label(functionLabels[unrolled_index++], fieldLabels[i], j+1, "_");
+  for (size_t i=0; i<priFieldLengths.length(); ++i)
+    for (size_t j=0; j<priFieldLengths[i]; ++j)
+      build_label(functionLabels[unrolled_index++], priFieldLabels[i], j+1, "_");
 }
 
 /** Deep copies are used when recasting changes the nature of a
@@ -335,16 +335,16 @@ void SharedResponseData::field_lengths(const IntVector& field_lens)
     srdRep->copy_rep(old_rep.get());            // copy old data to new
     
     // update the field lengths
-    srdRep->fieldRespGroupLengths = field_lens;
+    srdRep->priFieldLengths = field_lens;
 
     // reshape function labels, using updated num_functions()
     srdRep->functionLabels.resize(num_functions());
-    if (field_lens.length() != srdRep->fieldLabels.size()) {
+    if (field_lens.length() != srdRep->priFieldLabels.size()) {
       // can't use existing field labels (could happen in testing); use generic
       build_labels(srdRep->functionLabels, "f");
-      // update the fieldLabels
+      // update the priFieldLabels
       copy_data_partial(srdRep->functionLabels, num_scalar_responses(),
-			num_field_response_groups(), srdRep->fieldLabels);
+			num_field_response_groups(), srdRep->priFieldLabels);
     }
     else {
       // no change in number of fields; use existing labels for build
@@ -362,7 +362,7 @@ void SharedResponseData::field_group_labels(const StringArray& field_labels)
 	 << " fields." << std::endl;
     abort_handler(-1);
   }
-  srdRep->fieldLabels = field_labels;
+  srdRep->priFieldLabels = field_labels;
   // rebuild unrolled functionLabels for field values (no size change)
   srdRep->build_field_labels();
 }

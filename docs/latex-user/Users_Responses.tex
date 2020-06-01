@@ -136,15 +136,15 @@ We plan to handle correlation or structure between field responses,
 which is currently not handled when we treat the responses as individual,
 separate scalar quantities.
 
-For all three major response types (\texttt{objective\_functions},
-\texttt{calibration\_terms}, and \texttt{response\_functions}), one
-can specify field responses (e.g. with \texttt{field\_objectives},
-\texttt{field\_calibration\_terms}, and \texttt{field\_responses}).
+For all three major response types (\dakotakw{objective_functions},
+\dakotakw{calibration_terms}, and\\\dakotakw{response_functions}), one
+can specify field responses (e.g. with \dakotakw{field_objectives},\\
+\dakotakw{field_calibration_terms}, and \dakotakw{field_responses}).
 For each type of field response, one can specify the length
-of the field (e.g. \texttt{lengths=5000}) and the number of
-independent coordinates (\texttt{num\_coordinates\_per\_field}).
+of the field (e.g. \dakotakw{lengths=5000}) and the number of
+independent coordinates (\dakotakw{num_coordinates_per_field}).
 The user can specify the independent coordinates by specifying
-\texttt{read\_field\_coordinates} and providing the coordinates in files
+\dakotakw{read_field_coordinates} and providing the coordinates in files
 named \path{<response_descriptor>.coords}.  In the case of field data
 from physical experiments used to calibrate field data from simulation
 experiments, the specification is more involved:  the user should refer
@@ -153,8 +153,8 @@ time, field responses may be specified by the user as outlined above.
 All methods can handle field data, but currently the calibration methods
 are the only methods specialized for field data, specifically they
 interpolate the simulation field data to the experiment field data points
-to calculate the residual terms.  This is applicable to \texttt{nl2sol},
-\texttt{nlssol}, \texttt{optpp\_g\_newton}, the MCMC Bayesian methods,
+to calculate the residual terms.  This is applicable to \dakotakw{nl2sol},
+\dakotakw{nlssol}, \dakotakw{optpp_g_newton}, the MCMC Bayesian methods,
 as well as general optimization methods that recast the residuals into
 a sum-of-squares error.  The other methods simply handle the field
 responses as a number of scalar responses currently. In future versions,

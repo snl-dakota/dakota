@@ -9,9 +9,12 @@ updated adaptively.
  
 <b> Default Behavior </b>
 
-Five MCMC algorithm variants are supported: \c dram, \c
+Five MCMC algorithm variants are supported in QUESO: \c dram, \c
 delayed_rejection, \c adaptive_metropolis, \c metropolis_hastings, and
 \c multilevel.  The default is \c dram.
+
+Two MCMC variants are currently supported in MUQ: \c metropolis_hastings 
+and \c adaptive_metropolis.  
 
 <b> Usage Tips </b>
 

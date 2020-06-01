@@ -115,7 +115,7 @@ Dakota.
 range of consecutive integers between specified \texttt{lower\_bounds}
 and \texttt{upper\_bounds}.
 
-\item The \texttt{discrete\_design\_set integer} specification supports 
+\item The \dakotakw{discrete_design_set} \dakotakw{integer} specification supports 
 a set of enumerated integer values through the \texttt{elements} 
 specification.  The set of values specified is stored internally as an 
 STL set container, which enforces an ordered, unique representation of 
@@ -704,8 +704,8 @@ Active set vector control may be turned off to allow the user to
 simplify the supplied interface by removing the need to check the
 content of the active set vector on each evaluation. The Interface
 Commands chapter in the Dakota Reference Manual~\cite{RefMan} provides
-additional information on this option (\texttt{deactivate
-active\_set\_vector}).  Of course, this option trades some efficiency
+additional information on this option (\dakotakw{deactivate}
+\dakotakw{active_set_vector}).  Of course, this option trades some efficiency
 for simplicity and is most appropriate for those cases in which only a
 relatively small penalty occurs when computing and returning more data
 than may be needed on a particular function evaluation.

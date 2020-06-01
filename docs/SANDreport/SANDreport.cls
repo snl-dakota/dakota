@@ -1,1916 +1,1540 @@
-% ---------------------------------------------------------------------------- %
-% $Id: SANDreport.cls,v 1.92 2010/12/13 17:15:04 rolf Exp $
-%
-% We start out with the standard LaTeX document class "article" or "report" and
-% modify it so it conforms to the Sandia Technical report style.
-% The modifications are based on "Guide to Preparing SAND Reports",
-% SAND98-0730, edited by Tamara K. Locke, and the newer "Guide to
-% Preparing SAND Reports and Other Communication Products", SAND2002-2068P.
-%
-% Get the latest version and more at
-%    http://www.cs.sandia.gov/~rolf/SANDreport
-%
-% Rolf Riesen, August 14, 2010.
-%
-%
-% 06/14/2002 v1.01
-%     Make distribution list wider. Spaces between area codes and phone numbers
-%
-% 06/17/2002 v1.02
-%     Use \raggedright for main title
-%
-% 06/19/2002 v1.03
-%     Set tocdepth to 2 to only list sections and subsections in TOC
-%
-% 08/07/2002 v1.04
-%     Added a Makefile based on one Mike Heroux provided
-%     Allow for distribution lists that span more than one page and
-%     typeset the distribution in two columns
-%
-% 11/25/2002 v1.05
-%     Some changes from Daniel Segalman to conform to the new guide
-%     (SAND2002-2068P):
-%     - Adjust top margin of the title page to conform to the MS Word
-%         template (this may or may not be correct depending on your
-%         latex/dvips initial setup. Use texconfig to setup paper and
-%         dvips).
-%     - Added the word "Printed" before the date on front page
-%     - Classification category is no longer needed on page 3; get
-%         rid of \SANDdistcategory
-%     - Added "National Nuclear Security Administration" on title page
-%     - Changed NTIS URL on page 2
-%
-%     If "strict" is not used, we'll number sections to two decimal
-%     places (1.2.3)
-%
-% 02/13/2003 v1.06
-%     New DOEbwlogo.eps from Tim Draelos. This one is smaller and has some
-%     incompatible junk removed.
-%
-% 10/16/2003 v1.7
-%     Using \ifthenelse in the addcontentsline command interfered with
-%     the subfigure class. James Gruetzner and Todd Pitts provided a fix.
-%
-%     Philippe Pebay reports that the color package needs to be imported
-%     before the graphicx package. This class file uses the graphicx package,
-%     so Philippe could not use the color package because graphicx was already
-%     loaded when his \usepackage command got executed.
-%
-% 11/19/2003 v1.8
-%     Make it work using the report class. Put "report" as an option into
-%     \documentclass[report]{SANDreport} to activate it. There were some other
-%     fixes and clean-up s as well. Mainly in the table of contents.
-%     - Changed NTIS URL on page 2
-%     - Added fleqn to \LoadClass
-%     - Can't get the report title to repeat on the first chapter page.
-%         Left it off for now.
-%     - The table of contents formatting for report class is more or less like
-%         report.cls. For article, we try to make it look like the guideline.
-%
-% 01/19/2004 v1.9
-%     - The distribution list at the end of a SAND report was modifying the
-%         description environment which interfered with its regular use. Created
-%         a separate environment to fix that.
-%     - If in "report", list chapters and sections in TOC
-%     - With the jpg option, load the jpg versions of the DOE and Sandia
-%         logos. This makes it possible to use pdftex which doesn't
-%         understand Postscript.
-%
-% 02/25/2004 v1.10
-%     - It is now SANDIA REPORT, no longer SAND REPORT. Central Technical Files
-%         now wants three copies. See the distribution examples. (Info from
-%         Philippe Pebay)
-%     - Added new commands for markings used in OUO, export controlled, and
-%         other reports not labeled "Unlimited Release". Thanks to Mark
-%         Ackermann for providing an OUO example.
-%     - In report style, the page numbers restarted after the title page. Fixed!
-%     - Big clean-up.
-%
-% 05/14/2004 v1.11
-%     - Had to comment out a line in fancyhdr.sty for pdflatex to work.
-%         Don't know why.
-%
-% 05/21/2004 v1.12
-%     - Added the options [FIGBOTCAP,normal,bf,tight] to the subfigure
-%         package in the example files from a suggestion by Philippe P. Pebay.
-%     - Added the CA and NM options to insert the respective standard distributions.
-%
-% 08/07/2004 v1.13
-%     - Use pdf versions of logos. Makes the "jpg" option obsolete. Suggestion
-%         and logos by Richard Lehoucq.
-%     - Making SANDreport.cls compatible with the hyperref package
-%     - Added SANDmath.tex from Philippe Pebay
-%
-% 08/18/2004 v1.14
-%     - \begin{SANDdistribution} now takes an optional argument (CA or NM). The
-%         respective \documentclass options are no longer valid. Several new
-%         commands are available within the SANDdistribution environment to
-%         automate distributions for special cases such as CRADA, LDRD,
-%         Classified, Patent, etc.
-%     - The distribution list is now better formatted.
-%     - Fixed a bug with \SANDreleaseType discovered by Mark Ackermann
-%     - Added the command \SANDmarkTop
-%
-% 05/20/2005 v1.15
-%     - A small change in the distribution list (D. Chavez in the LDRD office
-%         moved) Thanks to Brandon Rohrer.
-%
-% 12/05/2005 v1.16
-%     - New org numbers reflect new corporate structure 9616->4536, etc. Thanks
-%         to Philip Sackinger for doing this.
-%     - Philip also found out what the newest distribution rules for NM are.
-%     - In the example files, deleted a misleading comment about secnumdepth in
-%         the appendix. Thanks to John Mitchell for spotting this.
-%     - New SANDmath.tex from Philippe Pebay: (ver. 1.2)
-%         + add support for discrete intervals
-%         + fix some comments
-%         + replace incorrect \RequirePackage's by \usepackage'
-%     - Also from Philippe Pebay: CA distribution list changes.
-%     - Abstract will start on title page, even with report style. Thanks to
-%         Daniel Dolan for noticing it and making suggestions to fix it.
-%     - Put the title just above the first chapter in the report style
-%
-% 12/09/2005 v1.17
-%    - Fixed a bug introduced in the last version: The \cleardoublepage is
-%        only supposed to happen for chapters in the main body of a report,
-%        and it needs to happen before the page number is entered into the TOC.
-%    - Fixed several new and old bugs that dealt with markings
-%    - Fixed text on usage page about marking commands.
-%
-% 12/09/2005 v1.18
-%    - Make it work with hyperref again....
-%
-% 12/19/2005 v1.19
-%    - There were still problems with the hyperref package. Fixed it so that
-%        the page markings on the back cover are now correct.
-%
-% 12/21/2005 v1.20
-%    - Updated the distribution list according to version 2.0 of the Guide
-%
-% 03/22/2006 v1.21
-%    - Introduced \SANDrePrintDate and \begin{SANDreDistribution}
-%    - Put a page number (2) on the back cover
-%    - No institution in \SANDauthor{} in example files
-%    - Move the SNL logo on the cover towards the bottom of the page
-%    - Add a back cover with the SNL logo at the bottom of the back
-%    - Use \cleardouble page and add comment to example files to make
-%        sure TOC always starts on an odd page.
-%    - Don't put title on first page of body text (above introduction)
-%        anymore. (Changed from Ver 1.0, Sep. 2002 to Ver 2.0, Dec. 2005 of the guide.)
-%    - For article, start every section on a new page (report already does this)
-%    - Fixed URLs for DOE report ordering
-%    - \SANDmarkCover now takes only one argument! This makes it easier to draw a
-%        box around the statement and configure it as needed. See MarkOUO.tex for
-%        an example. Thanks to John Foster for the example.
-%    - Print small class file version number at bottom of inside back cover
-%    - Change by Daniel Dolan to make it work and look consistent with the mathptmx
-%        package. This leaves the Helvetica fonts on the cover alone, but lets him
-%        have the body of the report in Times.
-%    - From Debbie Johnson (Creative Arts):
-%        - In example files, use First Name, Middle Initial, Last Name on cover and title page
-%        - In example files, on cover, put author names on one line
-%        - Mail Stop for Central Technical Files is MS9018. (This was an error in the example
-%            file, not the class itself.)
-%        - Back cover was shifted right too far.
-%        - Move chapter headings up a bit.
-%        - Use the geometry package to get the margins right
-%
-% 06/10/2006 v1.22
-%    - Remove "Unclassified" from "Unclassified Unlimited Release" (Thanks Brett Bader and Mike Heroux)
-%    - Confirmed that M2497 is correct mail stop for classified reports to Central Technical
-%          Files. (Thanks Debbie Johnson)
-%    - Make the distribution list single column. This makes it easier to print labels.
-%    - D. Chavez, LDRD Office mail-stop changed from 0188 to 0123. (Thanks Brett Bader)
-%    - In examples, added \phantomsection and moved \addcontentsline{toc}{section}{References}
-%        just before the \bibliography{...} command. This helps putting the right page number
-%        into the TOC and also with hyperlinking. (Thanks Tammy Kolda)
-%    - Clarified usage of \SANDnum{} on Web page. (Thanks Tammy Kolda)
-%    - More usage and LaTeX tips on Web page. (Thanks Tammy Kolda)
-%    - Newer distributions have a fancyhdr.sty that works. Removed it.
-%
-% 06/26/2006 v1.23
-%    - Tammy Kolda found a bug when using amsmath. Seems to have been a problem with
-%        white space in the redefinition of \section. LaTeX would stop when building the TOC.
-%
-% 08/17/2006 v1.24
-%    - Changed tar file extension from .tgz to .tar.gz Some winzip versions under
-%        Windows don't seem to like the former. (Rich Lehoucq)
-%    - Org. Number for Central Technical Files changed from 8945-1 to 8944 (Tammy and Debbie)
-%
-% 09/19/2006 v1.25
-%    - David Wilson discovered that markings in report style also activated chapter
-%        name headings, which are unwanted and sometimes overlap with the markings.
-%
-% 10/03/2006 v1.26
-%    - Some Web page error fixes from Daniel Dunlavy
-%    - Mike Eldred suggested to keep internal distributions on a single line
-%
-% 10/03/2006 v1.27
-%    - Forgot to extend the width of external distributions
-%
-% 12/13/2007 v1.28
-%    - No change: Org. Number for Central Technical Files is 8944 (confirmed by Beth Watkins)
-%    - Mark the OUO examples as sample to avoid misunderstandings (Roger Suppona)
-%    - Paragraph indent is set to 0 for cover pages, but never restored (Daniel Dolan)
-%    - Use "Lorem ipsum" instead of "bla bla bla" in the examples (Stephanie Phillips)
-%        (There is a LaTeX package, lipsum.sty, that does it, but it is not always installed.
-%        Therefore, I included the text verbaitm, instead of generating it.)
-%    - If the report is an OUO document, some text on the back cover needs to disappear.
-%         Thanks to Marcia Cooper for discovering it, and providing the necessary LaTeX code.
-%    - A lot of changes from Michael Kaneshige to better match the formatting of the official
-%         SAND report template:
-%         1. Removed the odd-even margin asymmetry - made the textwidth 6.5 in and
-%	    both margins 1 in.  This is consistent with the official cover
-%	    templates, although it's not the standard LaTeX way of formatting double
-%	    sided documents.  If the document gets bound, the LaTeX way is better,
-%	    but a lot of documents exist only electronically now.
-%
-%	  2. Added more space to \topmiddlewidth and subtracted it from
-%	    \topleftwidth and \toprightwidth so that "official Use Only / Export
-%	    Controlled Information" would not get broken across lines on the title
-%	    page.
-%
-%	  3. Reduced the \vspace between the title and authors from 0.75in to
-%	    0.375in.  This is specific to my document, but with everything we were
-%	    required to add, and a moderate length title, LaTeX was generating a
-%	    blank first page because the cover page was overfilled.
-%
-%	  4. On the back cover, I centered the text block and reduced the minipage
-%	    width to make it look more like the official covers.
-%
-%	  5. The word "NOTICE" on the back cover was significantly larger than the
-%	    other text, which was not consistent with the official covers.  I
-%	    removed the \fontsize command that was causing this, and it looks more
-%	    consistent with the official covers.
-%
-%	  6. On the title page, the top block (SAND#, OUO/ECI, Printed...) was not
-%	    centered because there were topleft and topmiddle boxes, but no topright
-%	    box.  I think this was inherited from the report.cls and article.cls
-%	    classes, but to fix the asymmetry, I inserted a topright box the same as
-%	    the topleft box.  It would seem to work just as well to remove both
-%	    topleft and topright boxes, since they contain nothing, but to be
-%	    conservative, I didn't remove anything.
-%
-%	  7. Most of MarkOUO.tex has to be edited by the user, but the "Official
-%	    Use Only" (SANDmarkTopBottom) should be fairly generic.  To make it look
-%	    more like the official covers, I made it bold, 12 pt, all caps.  In
-%	    addition, I reformatted the OUO box from tabular with multicolumn
-%	    columns, hlines and vertical bars, to a minipage inside a framebox.  I
-%	    think this is smoother.
-%
-%    - The Technical Library has a new org number again: 4536 --> 9536 (Ann Smaple via Bill Hart)
-%        Also changed NM tech library org to 8944, but I am mostly guessing here...
-%        Added  (1 electronic and 1 hardcopy) for housekeeping copies and reduce spacing
-%        between distribution entries. (Ann Smaple via Bill Hart)
-%    - Central Technical Files doesn't seem to want unclassified reports anymore. (Several)
-%
-% 03/01/2008 v1.29
-%    - Added Rich Field's SAND Memo class.
-%
-% 04/23/2008 v1.30
-%    - Change the library distribution yet again (per Monica Price)
-%
-% 05/22/2008 v1.31
-%    - A template to typeset OUO memos (Rich Field)
-%    - Per management request, remove all references in the examples to Harry Potter and magic
-%
-% 04/30/2009 v1.32
-%    - When strict is used, section refernces do not work, since sections are
-%        not numbered. Not sure how to deal with this. For now just print a
-%        warning during compile and update the strict examples not to use \ref.
-%        (Problem reported by Eric Chu)
-%    - In article style, the list of figures and tables are now placed directly
-%        after the table of contents without starting a new page first. They do
-%        start on a new page in report style, since that is meant for longer
-%        documents. (Suggested by Tammy Kolda)
-%    - Tammy reports that R&A sometimes asks for no paragraph indentation in the
-%        abstract. In strict mode, this is now the case.
-%    - R&A also suggests that all paragraphs are indented the same. Until now the
-%        first paragraph after a section heading was not indented. The strict
-%        option now indents the first paragraph as well. (Suggested by Tammy Kolda)
-%    - Some people don't like their blank pages to be blank. Added the "blank"
-%        option which adds "Page intentionally blank" to blank pages
-%    - Shared text bewteen examples is now in seperate files and \input into the
-%        examples
-%
-% 07/02/2010 v1.33
-%    - More accurate use of \CoverFont (interlinear spacing)
-%    - New DOE statement on cover page
-%    - (electronic copy) instead of just (electronic) for the tech library distribution
-%
-% 08/08/2010 v1.34
-%    - Add the NNSA logo on page 3. Sand publication (and report) guidelines have always
-%        required it, but previous versions of the Word template and this class file
-%        have not used it. Thanks to David Thompson who worked it out with Jennifer Hallstrom
-%        and provided the necessary changes.
-%
-% 08/14/2010 v1.35
-%    - The NNSA logo is not necessary at CA or NM. (Linda
-%        Lovato-Montoya and Jennifer Hallstrom)
-%
-% 12/13/2010 v1.36
-%    - LDRD office MS is now 0359, org 1911
+\newcommand\SANDreportVersionOnly{v2.0c}
+\newcommand\SANDreportVersion{03/25/19 \SANDreportVersionOnly}
+% Make our output messages more easily searched
+\newcommand{\SAND@typeout}[1]{\typeout{SANDreport.cls: #1}}
 
 
-% ******************************************************************************
-% Package definitions
-%
-    % The version and date of this file
-    \newcommand\SANDreportVersionOnly{ v1.36 }		% leave the spaces before and after version
-    \newcommand\SANDreportVersionDate{2010/12/13}	% Date has to be in this format!
-
-    \typeout{Using Sandia Technical Report class: \SANDreportVersionDate, \SANDreportVersionOnly Rolf Riesen}
-    \newcommand\SANDreportVersion{\SANDreportVersionDate \SANDreportVersionOnly}
-
-    % We need LaTeX 2e or better
-    \NeedsTeXFormat{LaTeX2e}
-
-    % We need ifthenelse. \newboolean are false by default
-    \RequirePackage{ifthen}
-    \RequirePackage{color}
-    \RequirePackage{graphicx}
-
-    % Variables
-    \newboolean{blankSAND}			% Mark blank pages
-    \newboolean{relaxedSAND}
-    \newboolean{strictSAND}
-    \newboolean{reportSAND}
-    \newboolean{SANDmainProvided}
-    \newboolean{SANDnumProvided}
-    \newboolean{SANDprintDateProvided}
-    \newboolean{SANDrePrintDateProvided}
-    \newboolean{SANDauthorProvided}
-    \newboolean{SANDsupersedProvided}
-    \newboolean{SANDdistributionProvided}
-    \newboolean{inAppendix}
-    \newboolean{SANDmarkingsRequired}
-    \newboolean{MarkCover}
-    \newboolean{MarkBack}
-    \newboolean{MarkTitle}
-    \newboolean{MarkBody}
-    \newboolean{MarkBottom}
-    \newboolean{distCA}
-    \newboolean{distNM}
+\SAND@typeout{Using Sandia National Laboratories Technical Report class \SANDreportVersionOnly, www.cs.sandia.gov/SANDreport}
 
 
-    % Added 1/11/07 M. Cooper to remove additional text unnecessary for OUO documents on pg 2.
-    \newboolean{SANDnoticeOUO}
+% What are we providing
+\ProvidesClass{SANDreport}[\SANDreportVersion]
+\ProvidesFile{SANDreport.cls}[\SANDreportVersion]
 
-    % Counters
-    \newcounter{SANDprintingCnt}
-    \setcounter{SANDprintingCnt}{1}
-    \newcounter{SANDreDistCnt}
-    \setcounter{SANDreDistCnt}{1}
+% We need LaTeX 2e or better
+\NeedsTeXFormat{LaTeX2e}
 
+% Required packages
+\RequirePackage[table]{xcolor}
+\RequirePackage{array}
+\RequirePackage{xspace}
+\RequirePackage{etoolbox}
+\RequirePackage{ifthen}
+\RequirePackage{graphicx}
+\RequirePackage{amsmath}
+\RequirePackage[normalem]{ulem} %The normalem option stops ulem from redefining the \emph{} command 
+\RequirePackage[letterpaper]{geometry}
+\RequirePackage{scrbase}
+\RequirePackage{tocbasic}
 
-    % We need calc to divide by 3 in setlength and other calculations
-    \RequirePackage{calc}
-
-    % We need the fancy headers for the report markings
-    \RequirePackage{fancyhdr}
-
-
-    % Specify what this file provides
-    \ProvidesPackage{SANDreport}[\SANDreportVersion]
-    \ProvidesFile{SANDreport.cls}[\SANDreportVersion]
-
-
-    % We understand five options: "relax", "strict", "report", "blank", and "OUO"
-    % Using "relax" makes the document look more LaTeXy
-    % If no option are given, then we follow the format of SAND2002-2068P
-    % Using "strict" tries to follow the guideline even more closely
-    % Specifying "report" uses the report class instead of the article class
-    % Specifying "blank" marks blank pages with some silly text
-    % Specifying "OUO" removes some unnecessary text on page 2 for OUO documents
-    %
-    \DeclareOption{blank}{
-	\typeout{Option "blank": Mark blank pages}
-	\setboolean{blankSAND}{true}
-    }
-    \DeclareOption{relax}{
-	\typeout{Option "relax": Relaxing some of the SAND98-0730 requirements}
-	\setboolean{relaxedSAND}{true}
-    }
-    \DeclareOption{strict}{
-	\typeout{Option "strict": Follow the SAND98-0730 requirements more strictly}
-	\typeout{===============================================================================}
-	\typeout{strict: Note that section references wont work since sections are not numbered!}
-	\typeout{===============================================================================}
-	\setboolean{strictSAND}{true}
-    }
-    \ifthenelse{\boolean{relaxedSAND} \and \boolean{strictSAND}}   {
-	\ClassWarning{SANDreport.cls}{Both, "strict" and "relax" options given}
-    }{
-    }
-    \DeclareOption{report}{
-	\typeout{Option "report": Using the report class as a base.}
-	\setboolean{reportSAND}{true}
-    }
-    \DeclareOption{CA}{
-	\ClassError{SANDreport.cls}{"CA" option is obsolete}{Use
-	\@backslashchar begin{SANDdistribution}[CA] instead.}
-    }
-    \DeclareOption{NM}{
-	\ClassError{SANDreport.cls}{"NM" option is obsolete}{Use
-	\@backslashchar begin{SANDdistribution}[NM] instead.}
-    }
+% Variables
+\newboolean{blankSAND}			% Mark blank pages
+\newboolean{relaxedSAND}
+\newboolean{strictSAND}
+\newboolean{reportSAND}
+\newboolean{SANDmainProvided}
+\newboolean{SANDnumProvided}
+\newboolean{SANDprintDateProvided}
+\newboolean{SANDrePrintDateProvided}
+\newboolean{SANDauthorProvided}
+\newboolean{SANDsupersedProvided}
+\newboolean{SANDdistributionProvided}
+\newboolean{distCA}
+\newboolean{distNM}
 
 
-    % Added 1/11/07 M. Cooper to remove additional text unnecessary for OUO documents on pg 2.
-    \DeclareOption{OUO}{
-	\typeout{Option "OUO": Formatting page 2 for OUO reports}
-	\setboolean{SANDnoticeOUO}{true}
-    }
+% Counters
+\newcounter{SANDprintingCnt}
+\setcounter{SANDprintingCnt}{1}
+\newcounter{SANDreDistCnt}
+\setcounter{SANDreDistCnt}{1}
+  
 
-    % We're based on the standard article or report class and assume certain
-    % options. Set those, and pass all others to the article class
-    \ProcessOptions % We need to do it here so we get "reportSAND", and then again
-    \ifthenelse{\boolean{reportSAND}}   {
-	\DeclareOption*{\PassOptionsToClass{\CurrentOption}{report}}
-	\ProcessOptions % Repeat it here, otherwise LaTeX gets confused
-	\LoadClass[letterpaper,twoside,final,fleqn]{report}
-    }{
-	\DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
-	\ProcessOptions % Repeat it here, otherwise LaTeX gets confused
-	\LoadClass[letterpaper,twoside,final,fleqn]{article}
-    }
-
-
-    %
-    % Setup for letter paper (This IS a SAND report!)
-    %
-    \RequirePackage{geometry}
-    % \geometry{pdftex, showframe, inner=1.5in, textwidth=6in, textheight=9in}
-    % Changed textwidth to 6.5in and inner to 1in to more closely match official SAND cover templates - MJK, 1/12/07
-    \geometry{pdftex, inner=1in, textwidth=6.5in, textheight=9in}
-
-
-    % In strict mode, we want all paragraphs indented, even the very first one after
-    % a section heading. The following code does that.
-    %
-    \ifthenelse{\boolean{strictSAND}}   {
-	\RequirePackage{indentfirst}
-    }{
-    }
+\DeclareOption{strict}{
+  \SAND@typeout{Option "strict": Follow the SAND98-0730 requirements more strictly}
+  \SAND@typeout{===============================================================================}
+  \SAND@typeout{strict: Note that section references wont work since sections are not numbered!}
+  \SAND@typeout{===============================================================================}
+  \setboolean{strictSAND}{true}
+}
+\ifthenelse{\boolean{relaxedSAND} \and \boolean{strictSAND}}   {
+  \ClassWarning{SANDreport.cls}{Both, "strict" and "relax" options given}
+}{
+}
+\DeclareOption{report}{
+  \SAND@typeout{Option "report": Using the report class as a base.}
+  \setboolean{reportSAND}{true}
+}
+\DeclareOption{CA}{
+  \ClassError{SANDreport.cls}{"CA" option is obsolete}{Use
+    \@backslashchar begin{SANDdistribution}[CA] instead.}
+}
+\DeclareOption{NM}{
+  \ClassError{SANDreport.cls}{"NM" option is obsolete}{Use
+    \@backslashchar begin{SANDdistribution}[NM] instead.}
+}
 
 
 
-% ******************************************************************************
-% Check some of the user directives and setup a few things
+% Manage some options using KOMA's keyval wrappers
+\DefineFamily{SAND}
+\DefineFamilyMember{SAND}
+
+%
+% The legacy SANDreport template used a single OUO option. To maintain some compatibility but
+% still provide some better functionality, we reuse this. The OUO content tree is a little
+% obtuse. 
+%
+% We mark for two types of OUO: UCI and UCNI. Each of these needs a specific FOIA exemption number.
+% For FOIA exemption 3 (Statutory Exemption), there are subcategories of markings for each of UCI and UCNI:
+%
+% UCI
+% - Generic OUO
+% - OUO with Export Control notice (Atomic Energy Act)
+% - OUO with CRADA notice
+% - OUO with Export Control EAR notice (Export Administration Act)
+%
+% UCNI
+% - Generic OUO (regular OUO notice with added UCNI notice)
+% - OUO with CRADA (above plus CRADA notice - total of 3 notices)
+% - OUO with ITAR Export Control notice (OUO/UCNI + ITAR export control notice - total of 3)
+% - OUO with EAR Export Control notice (OUO/UCNI + EAR export control notice - total of 3)
+% - OUO with DOE Export Control notice (OUO/UCNI + DOE Atomic Energy Act EC notice - total of 3)
+%
+% So we have two broad categories of OUO with a subcategory for FOIA exemption 3. We handle this with
+% three template options:
+% - OUO, which can take two values. The default is UCI but UCNI is also valid.
+% - FOIA=n, where n is the FOIA exemption number. The default is 3 (Statutory Exemption)
+% - FOIAsubcat=flag. The flag values are intended to depend on which FOIA exemption is chosen;
+% currently only FOIA 3 has a need for this but it's possible that might change.
+% For FOIA 3, the flag values are one of: ECDOE,CRADA,ECITAR,ECEAR. This determines which additional notices
+% get added to the cover page.
 %
 
-    \AtBeginDocument{
+% Refer to the KOMA-Script guide, Chapter 12 (Basic Functions in scrbase), section 12.2 (Keys as
+% attributes of Families and their Members) for the details on how the \Family* commands work
 
-	% Do some usage checking
-	\ifthenelse{\boolean{SANDnumProvided}}   {
-	}{
-	    \ClassError{SANDreport.cls}{\@backslashchar SANDnum
-		not provided}{Insert \@backslashchar SANDnum in the preamble
-		of your document}
-	}
-	\ifthenelse{\boolean{SANDauthorProvided}}   {
-	}{
-	    \ClassError{SANDreport.cls}{\@backslashchar SANDauthor
-		not provided}{Insert \@backslashchar SANDauthor in the preamble
-		of your document}
-	}
-	\ifthenelse{\boolean{SANDprintDateProvided}}   {
-	}{
-	    \ClassError{SANDreport.cls}{\@backslashchar SANDprintDate
-		not provided}{Insert \@backslashchar SANDprintDate in the
-		preamble of your document}
-	}
+\FamilyNumericalKey{SAND}{OUO}[UCI]{SAND@OUOoption}{%
+  {no}{0},{none}{0},{UUR}{0},{UCI}{1},{UCNI}{2}%
+}
+\FamilyNumericalKey{SAND}{FOIA}[6]{SAND@FOIAoption}{%
+  {3}{3},{4}{4},{5}{5},{6}{6},{7}{7},{custom}{10}%
+}
+\FamilyNumericalKey{SAND}{FOIAsubcat}[none]{SAND@FOIAsubcatOption}{%
+  {no}{0},{none}{0},{ECDOE}{1},{CRADA}{2},{ECEAR}{3},{ECITAR}{4}%
+}
+\FamilyNumericalKey{SAND}{ClassLevel}[U]{SAND@ClassLevelOption}{%
+	{U}{0},{C}{1},{S}{2},{TS}{3}%
+}
+\FamilyNumericalKey{SAND}{ClassCat}[U]{SAND@ClassCatOption}{%
+	{U}{0},{NSI}{1},{FRD}{2},{RD}{3}%
+}
+\FamilyNumericalKey{SAND}{ClassCaveat}[none]{SAND@ClassCaveatOption}{%
+	{none}{0},{NF}{1},{S15}{2}%
+}
 
-	% Save the title, it will be cleared by \maketitle, but we need it later
-	\newsavebox{\SANDtitletempbox}
-	\sbox{\SANDtitletempbox}{\parbox{\textwidth - 1.5in}{
-	    \centering \LARGE \bf \@title \par}
-	}
+%%%%%%%%%%%%
+%%
+%%  Other class options
+%%
 
-	%
-	% Some measurements to format the title page properly
-	%
-	\newlength{\textwidththird}
-	\newlength{\topheight}
-	\newlength{\topleftwidth}
-	\newlength{\topmiddlewidth}
-	\newlength{\toprightwidth}
+% defines option "blank" and switch \if@SAND@marks@blank
+\newif\if@SAND@marks@blank
+\FamilyBoolKey{SAND}{blank}{@SAND@marks@blank}
 
-	\setlength{\textwidththird}{(\textwidth / 3) - (\fboxsep * 2)}
-	\setlength{\topleftwidth}{\the\textwidththird}
-	\setlength{\topmiddlewidth}{\the\textwidththird}
-	\setlength{\toprightwidth}{\the\textwidththird}
-	
-	% Changed following to -6, +10, and -6 from -3, +4, -3, to get "Official Use Only - Export Controlled Information
-	% to fit on one line on title page - MJK, 1/12/07
-	\addtolength{\topleftwidth}{-6em}
-	\addtolength{\topmiddlewidth}{+10em}
-	\addtolength{\toprightwidth}{-6em}
+% defines option "justified" and switch \if@SAND@text@justified
+\newif\if@SAND@text@justified
+\FamilyBoolKey{SAND}{justified}{@SAND@text@justified}
 
+% pass through options to the base class
 
-	\ifthenelse{\boolean{SANDsupersedProvided}}   {
-	    \setlength{\topheight}{1.5in}
-	}{
-	    \setlength{\topheight}{1.0in}
-	}
+\PassOptionsToPackage{paper=letter,usegeometry}{typearea}
+\DeclareOption*{\PassOptionsToClass{\CurrentOption}{SANDreport}}
+\FamilyProcessOptions{SAND}
+\ProcessOptions\relax
+\ifthenelse{\boolean{reportSAND}}{
+  \LoadClass[twoside,listof=entryprefix,numbers=endperiod,parskip=half,fontsize=12pt,titlepage=firstiscover,bibliography=toc]{scrreprt}
+}{
+  \LoadClass[twoside,listof=entryprefix,sectionentrydots=yes,numbers=endperiod,parskip=half,fontsize=12pt,titlepage=firstiscover,bibliography=toc]{scrartcl}
+}
 
-	%
-	% We want a blank line between paragraphs
-	%
-	\setlength\parskip{2ex}
+\RequirePackage{scrlayer}
+\RequirePackage{scrlayer-scrpage}
 
-
-	% We don't want a head rule
-	\renewcommand{\headrulewidth}{0pt}
+% Required fonts
+% The bopdy text font in the MS Word SAND report templates is Garamond. Without commenting on the merits of
+% that choice, getting a functional version of Garamond (with bold variants and math symbols)
+% in a LaTeX installation is non-trivial. We will proceed with Times NR until it becomes necessary to
+% change.
+\RequirePackage[T1]{fontenc}
+\RequirePackage{times}
+\RequirePackage{helvet}
+\RequirePackage{mathptmx}
 
 
-	% Some people don't like their blank pages to be blank...
-	% Turn this on using the blank option.
-	\ifthenelse{\boolean{blankSAND}}   {
-	    \makeatletter							% Code I found, but can't remember where
-	    \def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else	% \cleardoublepage from latex.ltx
-		\hbox{}								% \cleardoublepage from latex.ltx
-		\vspace*{\fill}							% Code I found, but can't remember where
-		\begin{center}							% Code I found, but can't remember where
-		    This page intentionally left blank.\\
-		    % {\CoverFont{m}{6}{7pt}(Well, it's not blank anymore...)}
-		\end{center}							% Code I found, but can't remember where
-		\vspace{\fill}							% Code I found, but can't remember where
-		% FIXME: Maybe we still want page numbers... Maybe another option?
-		\thispagestyle{empty}						% Code I found, but can't remember where
-		\newpage							% \cleardoublepage from latex.ltx
-		\if@twocolumn\hbox{}\newpage\fi\fi\fi}				% \cleardoublepage from latex.ltx
-	    \makeatother							% Code I found, but can't remember where
-	}{
-	}
+\newtoggle{SAND@OUO}
+\newtoggle{SAND@OUOtype@UCI}
+\newtoggle{SAND@OUOtype@UCNI}
 
-    } % End of AtBeginDocument{}
+\newtoggle{SAND@FOIA@statutory}
+\newtoggle{SAND@FOIA@proprietary}
+\newtoggle{SAND@FOIA@privileged}
+\newtoggle{SAND@FOIA@pii}
+\newtoggle{SAND@FOIA@lawenforcement}
+\newtoggle{SAND@FOIA@custom}
 
+\newtoggle{SAND@FOIA@ECDOE}
+\newtoggle{SAND@FOIA@CRADA}
+\newtoggle{SAND@FOIA@ECEAR}
+\newtoggle{SAND@FOIA@ECITAR}
 
+\newtoggle{SAND@CLASS}
+\newtoggle{SAND@CLASS@CONFIDENTIAL}
+\newtoggle{SAND@CLASS@SECRET}
+\newtoggle{SAND@CLASS@TOPSECRET}
+\newtoggle{SAND@CLASS@NSI}
+\newtoggle{SAND@CLASS@FRD}
+\newtoggle{SAND@CLASS@RD}
+\newtoggle{SAND@CLASS@NF}
+\newtoggle{SAND@CLASS@S15}
 
-% ******************************************************************************
-% Cover pages
+\newtoggle{SAND@OUOorCLASS}
+
 %
-
-    % ------------------------------------------------------------------------ %
-    % Font selections for the cover page \Coverfont{series}{size}{skip}
-    %
-    \newcommand{\CoverFont}[3]{
-	\fontencoding{OT1}
-	\fontfamily{phv}
-	\fontseries{#1}
-	\fontshape{n}
-	% #3 should be 20% larger than #2
-	\fontsize{#2}{#3}
-	\selectfont
-    }
-
-    \newcommand{\doCover}{
-	%
-	% Print the cover pages
-	%
-	\SANDmarks{cover}
-	\newlength{\coverindent}
-	\setlength{\coverindent}{1em}
-	\newlength{\parindentsave}
-	\setlength{\parindentsave}{\parindent}
-	\setlength{\parindent}{0em}
-
-
-	%
-	% Front Cover
-	%
-	%\hspace*{-0.375in}
-	\begin{minipage}[t]{6.0in}
-	    \CoverFont{b}{18}{22pt}
-	    SANDIA REPORT
-	    \vspace{0.125in}\\
-	    \CoverFont{m}{12}{14pt}
-	    \SANDnumVar\\
-	    \SANDreleaseTypeVar\\
-	    \ifthenelse{\boolean{SANDrePrintDateProvided}}   {
-		Printed \SANDrePrintDateVar
-	    }{
-		Printed \SANDprintDateVar
-	    }
-	    \ifthenelse{\boolean{SANDsupersedProvided}}   {
-		\vspace{0.125in}\\
-		\SANDsupersedVar
-	    }{
-		\\
-	    }
-
-	    \vspace{0.25in}
-	    \CoverFont{b}{24}{28pt}
-	    \parbox[t]{\textwidth}{
-		\raggedright
-		\@title            
-	    }
-
-
-            % Changed this space from 0.75in to 0.375in to match official SAND covers, and provide more space to prevent
-	    % overfilling the page - MJK, 1/12/07
-	    \vspace{0.375in}
-	    \CoverFont{m}{12}{14pt}
-	    \SANDauthorVar
-
-	    \vspace{0.25in}
-	    \CoverFont{m}{8}{10pt}
-	    Prepared by\\
-	    Sandia National Laboratories\\
-	    Albuquerque, New Mexico 87185 and Livermore, California 94550\\
-	    \\
-	    Sandia National Laboratories is a multi-program laboratory managed and operated by Sandia Corporation,\\
-	    a wholly owned subsidiary of Lockheed Martin Corporation, for the U.S. Department of Energy's\\
-	    National Nuclear Security Administration under contract DE-AC04-94AL85000.\\
-	    \\
-	    \MarkCoverVar
-	\end{minipage}
-
-	\vspace*{\fill} % Move the logo to the bottom of the cover page
-
-	%\hspace*{-0.5in}
-	\begin{minipage}[b]{6.0in}
-	    \includegraphics{snllineblk}
-	\end{minipage}
-
-
-
-	%
-	% Back cover
-	%
-	\newpage
-	% Added centering and reduced minipage width to match official SAND covers better - MJK, 1/12/07
-	\begin{center}
-	\begin{minipage}[t]{5.5in}
-	    \fontencoding{OT1}
-	    \fontfamily{pnc}
-	    \fontseries{m}
-	    \fontshape{n}
-	    \fontsize{9}{11pt}
-	    \selectfont
-
-	    Issued by Sandia National Laboratories, operated for the
-	    United States Department of Energy by Sandia Corporation.
-	    \vspace{\baselineskip}
-
-            % Removed \fontsize{11}{13} to make NOTICE simply bold, to match official SAND covers better, MJK - 1/12/07
-	    {\fontseries{b}\selectfont NOTICE:}
-	    This report was prepared
-	    as an account of work sponsored by an agency of
-	    the United States Government. Neither the United
-	    States Government, nor any agency thereof, nor any
-	    of their employees, nor any of their contractors,
-	    subcontractors, or their employees, make any warranty,
-	    express or implied, or assume any legal liability or
-	    responsibility for the accuracy, completeness, or
-	    usefulness of any information, apparatus, product,
-	    or process disclosed, or represent that its use
-	    would not infringe privately owned rights. Reference
-	    herein to any specific commercial product, process,
-	    or service by trade name, trademark, manufacturer, or
-	    otherwise, does not necessarily constitute or imply
-	    its endorsement, recommendation, or favoring by the
-	    United States Government, any agency thereof, or any
-	    of their contractors or subcontractors. The views and
-	    opinions expressed herein do not necessarily state
-	    or reflect those of the United States Government,
-	    any agency thereof, or any of their contractors.
-	    \vspace{\baselineskip}
-
-	    % Added 1/11/07 M. Cooper to remove additional text unnecessary for OUO documents on pg 2.
-	    \ifthenelse{\boolean{SANDnoticeOUO}}{}{
-	    Printed in the United States of America. This report has
-	    been reproduced directly from the best available copy.
-	    \vspace{\baselineskip}
-
-	    Available to DOE and DOE contractors from\\
-	    \begin{tabular}{ll}
-		\hspace*{\coverindent} & U.S. Department of Energy \\
-		& Office of Scientific and Technical Information \\
-		& P.O. Box 62 \\
-		& Oak Ridge, TN 37831 \\
-		&  \\
-	    \end{tabular}
-	    \\
-	    \begin{tabular}{lll}
-		\hspace*{\coverindent} & Telephone: & (865) 576-8401\\
-		& Facsimile: & (865) 576-5728\\
-		& E-Mail: & 	reports@adonis.osti.gov\\
-		& Online ordering: & http://www.osti.gov/bridge\\
-	    \end{tabular}
-	    \vspace{\baselineskip}
-	    \vspace{0.25in}
-
-	    Available to the public from\\
-	    \begin{tabular}{ll}
-		\hspace*{\coverindent} & U.S. Department of Commerce \\
-		& National Technical Information Service \\
-		& 5285 Port Royal Rd \\
-		& Springfield, VA 22161 \\
-		&  \\
-	    \end{tabular}
-	    \\
-	    \begin{tabular}{lll}
-		\hspace*{\coverindent} & Telephone: & (800) 553-6847 \\
-		& Facsimile: & (703) 605-6900 \\
-		& E-Mail: & orders@ntis.fedworld.gov \\
-		%& Online ordering: & http://www.ntis.gov/ordering.htm \\
-		& Online ordering: & http://www.ntis.gov/help/ordermethods.asp?loc=7-4-0\#online \\
-	    \end{tabular}
-	    }% end of text for non-OUO reports
-	    \vspace{\baselineskip}
-	    \vspace{0.125in}
-
-	    \includegraphics[width=0.75in]{DOEbwlogo}
-	    % Not necessary for SAND reports
-	    % \hfill
-	    % \includegraphics[height=0.5in]{NNSAbwlogo}
-	\end{minipage}
-	\end{center}
-
-	% Restore the original paragraph indent
-	\setlength{\parindent}{\parindentsave}
-
-	\SANDmarks{back}
-    }
-
-
-% ******************************************************************************
-% The user commands
-%
-
-    % ------------------------------------------------------------------------ %
-    % Here we define the mandatory declarations
-    %
-    \newcommand{\SANDnum}[1]{
-	\newcommand{\SANDnumVar}{#1}
-	\setboolean{SANDnumProvided}{true}
-    }
-
-    \newcommand{\SANDauthor}[1]{
-	\newcommand{\SANDauthorVar}{#1}
-	\setboolean{SANDauthorProvided}{true}
-    }
-
-    \newcommand{\SANDprintDate}[1]{
-	\newcommand{\SANDprintDateVar}{#1}
-	\setboolean{SANDprintDateProvided}{true}
-    }
-
-
-    % This one is optional
-    \newsavebox{\SANDrePrintDistBox}
-    \newsavebox{\SANDrePrintDistBoxSecond}
-    \newsavebox{\SANDrePrintDistBoxThird}
-    \newsavebox{\SANDrePrintDistBoxFourth}
-    \newsavebox{\SANDrePrintDistBoxFifth}
-    \newcommand{\SANDrePrintDateVar}{}
-
-    \newcommand{\SANDrePrintDate}[1]{
-	\renewcommand{\SANDrePrintDateVar}{#1}
-	\setboolean{SANDrePrintDateProvided}{true}
-	\stepcounter{SANDprintingCnt}
-	\ifthenelse{\value{SANDprintingCnt} = 2}   {
-	    \sbox{\SANDrePrintDistBoxSecond}{Second Printing, (#1):}
-	}{
-	    \ifthenelse{\value{SANDprintingCnt} = 3}   {
-		\sbox{\SANDrePrintDistBoxThird}{Third Printing, (#1):}
-	    }{
-		\ifthenelse{\value{SANDprintingCnt} = 4}   {
-		    \sbox{\SANDrePrintDistBoxFourth}{Fourth Printing, (#1):}
-		}{
-		    \ifthenelse{\value{SANDprintingCnt} = 5}   {
-			\sbox{\SANDrePrintDistBoxFifth}{Fifth Printing, (#1):}
-		    }{
-			\ClassError{SANDreport.cls}{\@backslashchar SANDreDistribution
-			    used more than four times!}{Do you really have more than
-			    five printings? If so, you need to amend SANDreport.cls}
-		    }
-		}
-	    }
-	}
-    }
-
-
-    % Used to need the title at the top of the first section/chapter, but that is
-    % not required anymore.  Make sure we start on an odd page.
-    \newcommand{\SANDmain}{
-	\cleardoublepage
-	\setboolean{SANDmainProvided}{true}
-    }
-
-
-    \ifthenelse{\boolean{reportSAND}}   {
-	%
-	% new 1
-	% Once we have left the preamble and are in the body of the text,
-	% we want each chapter to begin on an odd numbered page
-	%
-	% new 2
-	% After we're done with the title page, we switch to markings for body pages.
-	%
-	\renewcommand\chapter{%						% \chapter from report.cls
-	    %\if@openright\cleardoublepage\else\clearpage\fi		% deleted
-	    \ifSANDmainProvided\cleardoublepage\else\clearpage\fi	% new 1
-	    \SANDmarks{body}						% new 2
-	    % \thispagestyle{plain}%					% deleted
-	    \global\@topnum\z@						% \chapter from report.cls
-	    \@afterindentfalse						% \chapter from report.cls
-	    \secdef\@chapter\@schapter					% \chapter from report.cls
-	}								% \chapter from report.cls
-
-	%
-	% We redefine \@makechapterhead and \@schapter so we can move
-	% the chapter title a little bit higher up.
-	%
-
-	%
-	% This is for chapters in the body
-	\def\@makechapterhead#1{%					% \@makechapterhead from report.cls
-	    \vspace*{-10\p@}%						% Changed
-	    {\parindent \z@ \raggedright \normalfont			% \@makechapterhead from report.cls
-	    \ifnum \c@secnumdepth >\m@ne				% \@makechapterhead from report.cls
-		\huge\bfseries \@chapapp\space \thechapter		% \@makechapterhead from report.cls
-		\par\nobreak						% \@makechapterhead from report.cls
-		\vskip 20\p@						% \@makechapterhead from report.cls
-	    \fi								% \@makechapterhead from report.cls
-	    \interlinepenalty\@M					% \@makechapterhead from report.cls
-	    \Huge \bfseries #1\par\nobreak				% \@makechapterhead from report.cls
-	    \vskip 40\p@						% \@makechapterhead from report.cls
-	}}								% \@makechapterhead from report.cls
-
-	%
-	% This is for chapters in the preamble
-	\def\@schapter#1{\if@twocolumn					% \@schapter from report.cls
-		\@topnewpage[\@makeschapterhead{#1}]%			% \@schapter from report.cls
-	    \else							% \@schapter from report.cls
-		\@makeschapterhead{#1}%					% \@schapter from report.cls
-		\@afterheading						% \@schapter from report.cls
-	    \fi}							% \@schapter from report.cls
-	    \def\@makeschapterhead#1{%					% \@schapter from report.cls
-	    \vspace*{-10\p@}%						% Changed
-	    {\parindent \z@ \raggedright				% \@schapter from report.cls
-	    \normalfont							% \@schapter from report.cls
-	    \interlinepenalty\@M					% \@schapter from report.cls
-	    \Huge \bfseries  #1\par\nobreak				% \@schapter from report.cls
-	    \vskip 40\p@						% \@schapter from report.cls
-	}}
-
-    }{
-	% new 3
-	% We want each section starting on a new page The report class already does this
-	%
-	% new 4
-	% Center the section headings
-	%
-	\renewcommand\section{\clearpage%				% new 3
-	    \@startsection {section}{1}{\z@}%				% \section from article.cls
-	    {-3.5ex \@plus -1ex \@minus -.2ex}%				% \section from article.cls
-	    {2.3ex \@plus.2ex}%						% \section from article.cls
-	    %{\normalfont\Large\bfseries}%				% deleted
-	    {\normalfont\Large\bfseries\centering}%			% new 4
-	}								% \section from article.cls
-
-	% This is basicaly the same as above, but without the clearpage. We want that
-	% for \listof... in article.cls to conserve some paper.
-	\newcommand\SANDTOCsection{%					% new 3
-	    \@startsection {section}{1}{\z@}%				% \section from article.cls
-	    {-3.5ex \@plus -1ex \@minus -.2ex}%				% \section from article.cls
-	    {2.3ex \@plus.2ex}%						% \section from article.cls
-	    %{\normalfont\Large\bfseries}%				% deleted
-	    {\normalfont\Large\bfseries\centering}%			% new 4
-	}								% \section from article.cls
-
-	% Redefine \listoffigures and \listoftables to use \SANDTOCsection instead of \section
-	%
-	\renewcommand\listoffigures{%					% \listoffigures from article.cls
-	    \SANDTOCsection*{\listfigurename}%				% Change \section to \SANDTOCsection
-	    \@mkboth{\MakeUppercase\listfigurename}%			% \listoffigures from article.cls
-	            {\MakeUppercase\listfigurename}%			% \listoffigures from article.cls
-	    \@starttoc{lof}%						% \listoffigures from article.cls
-	}								% \listoffigures from article.cls
-	%
-	\renewcommand\listoftables{%					% \listoftables from article.cls
-	    \SANDTOCsection*{\listtablename}%				% Change \section to \SANDTOCsection
-	    \@mkboth{\MakeUppercase\listtablename}%			% \listoftables from article.cls
-	            {\MakeUppercase\listtablename}%			% \listoftables from article.cls
-	    \@starttoc{lot}%						% \listoftables from article.cls
-	}								% \listoftables from article.cls
-    }
-
-
-
-    % ------------------------------------------------------------------------ %
-    % Distribution page at the end
-    % We have to create our own description environment, so we don't
-    % disturb the original one.
-    \newlength{\SANDdistwidth}			% Max width of distribution lines
-    \setlength{\SANDdistwidth}{0.8\textwidth}
-    \newlength{\SANDMSdistwidth}		% Width of field for MS number
-    \setlength{\SANDMSdistwidth}{9ex}
-
-    \newcommand{\SANDdescriptionlabel}[1]{
-	    \makebox[3em][r]{#1}
-    }
-    \newenvironment{SANDdescription}{
-	\list{}
-	{\labelwidth\z@ \itemindent-\leftmargin \let\makelabel\SANDdescriptionlabel}
-    }{
-	\endlist
-    }
-
-    \newenvironment{SANDdistribution}[1][nothing]{
-	\setboolean{SANDdistributionProvided}{true}
-
-	\newboolean{distCRADA}
-	\newboolean{distPatent}
-	\newboolean{distLDRD}
-	\newboolean{distClassified}
-	\newcommand{\SANDdistCRADA}{
-	    \setboolean{distCRADA}{true}
-	}
-
-	\newcommand{\SANDdistPatent}{
-	    \setboolean{distPatent}{true}
-	}
-
-	\newcommand{\SANDdistLDRD}{
-	    \setboolean{distLDRD}{true}
-	}
-
-	\newcommand{\SANDdistClassified}{
-	    \setboolean{distClassified}{true}
-	    \SANDdistInternalM{2}{M2497}{Central Technical Files}{8944}
-	}
-
-
-
-	% Option NM given
-	\ifthenelse{\equal{#1}{NM}}   {
-	    \typeout{Option "NM": Using the SNL NM default distribution list.}
-	    \setboolean{distNM}{true}
-	}{
-	}
-
-	% Option CA given
-	\ifthenelse{\equal{#1}{CA}}   {
-	    \typeout{Option "CA": Using the SNL CA default distribution list.}
-	    \setboolean{distCA}{true}
-	}{
-	}
-
-	\clearpage
-	{\Large DISTRIBUTION:}
-	\normalsize
-	\raggedbottom
-	\begin{SANDdescription}
-    }{
-	\ifthenelse{\boolean{distCA}}   {
-	    % Insert the standard CA distribution
-	    \ifthenelse{\boolean{distClassified}}   {
-		\SANDdistInternal{2}{9018}{Central Technical Files}{8944 (1 electronic and 1 hardcopy)}
-	    }{}
-	    \SANDdistInternal{1}{0899}{Technical Library}{8944 (electronic copy)}
-
-	    % If this report has a Patent Caution or Patent Interest
-	    \ifthenelse{\boolean{distPatent}}   {
-		\SANDdistInternal{1}{0161}{Legal Intellectual Property}{11500}
-	    }{}
-
-	    % If this report is for CRADA work
-	    \ifthenelse{\boolean{distCRADA}}   {
-		\SANDdistInternal{1}{0115}{OFA/NFE Agreements}{10112}
-	    }{}
-
-	    % If this report is for LDRD work
-	    \ifthenelse{\boolean{distLDRD}}   {
-		\SANDdistInternal{1}{0359}{D. Chavez, LDRD Office}{1911}
-	    }{}
-
-	}{}
-
-	\ifthenelse{\boolean{distNM}}   {
-	    % Insert the standard NM distribution
-	    \ifthenelse{\boolean{distClassified}}   {
-		\SANDdistInternalM{2}{2497}{Central Technical Files}{8944 (1 electronic and 1 hardcopy)}
-	    }{}
-
-	    \SANDdistInternal{1}{0899}{Technical Library}{9536 (electronic copy)}
-
-	    % If this report has a Patent Caution or Patent Interest
-	    \ifthenelse{\boolean{distPatent}}   {
-		\SANDdistInternal{1}{0161}{Legal Intellectual Property}{11500}
-	    }{}
-
-	    % If this report is for CRADA work
-	    \ifthenelse{\boolean{distCRADA}}   {
-		\SANDdistInternal{1}{0115}{OFA/NFE Agreements}{10112}
-	    }{}
-
-	    % If this report is for LDRD work
-	    \ifthenelse{\boolean{distLDRD}}   {
-		\SANDdistInternal{1}{0359}{D. Chavez, LDRD Office}{1911}
-	    }{}
-
-	}{}
-
-	\end{SANDdescription}
-    }
-
-
-
-    %
-    % The distribution list for a reprint
-    % No housekeeping copies are needed.
-    \newenvironment{SANDreDistribution}{
-	\ifthenelse{\boolean{SANDrePrintDateProvided}}   {
-	    \setboolean{SANDdistributionProvided}{true}
-
-	    \stepcounter{SANDreDistCnt}
-	    \ifthenelse{\value{SANDreDistCnt} = 2}   {
-		\sbox{\SANDrePrintDistBox}{\usebox{\SANDrePrintDistBoxSecond}}
-	    }{
-		\ifthenelse{\value{SANDreDistCnt} = 3}   {
-		    \sbox{\SANDrePrintDistBox}{\usebox{\SANDrePrintDistBoxThird}}
-		}{
-		    \ifthenelse{\value{SANDreDistCnt} = 4}   {
-			\sbox{\SANDrePrintDistBox}{\usebox{\SANDrePrintDistBoxFourth}}
-		    }{
-			\ifthenelse{\value{SANDreDistCnt} = 5}   {
-			    \sbox{\SANDrePrintDistBox}{\usebox{\SANDrePrintDistBoxFifth}}
-			}{
-			    \ClassError{SANDreport.cls}{\@backslashchar SANDreDistribution
-				used more than four times!}{Do you really have more than
-				five printings? If so, you need to amend SANDreport.cls}
-			}
-		    }
-		}
-	    }
-
-	    \usebox{\SANDrePrintDistBox}
-	    \normalsize
-	    \raggedbottom
-	    \begin{SANDdescription}
-	}{
-	}
-    }{
-	\ifthenelse{\boolean{SANDrePrintDateProvided}}   {
-	    \end{SANDdescription}
-	}{
-	}
-    }
-
-
-    \newcommand{\SANDdistInternal}[4]{
-	\ifthenelse{\boolean{SANDdistributionProvided}}   {
-	}{
-	    \ClassError{SANDreport.cls}{\@backslashchar SANDdistribution
-		not (yet) provided}{\@backslashchar SANDdistribution must
-		be used before any \@backslashchar SANDdistInternal}
-	}
-	\item[#1] \parbox[t]{\SANDdistwidth}{\makebox[\SANDMSdistwidth][l]{MS \hfill #2}%
-		\hspace{2em} \raggedright #3, #4}
-	\vspace{-1.5ex}
-    }
-
-
-    % Use a mail channel
-    \newcommand{\SANDdistInternalM}[4]{
-	\ifthenelse{\boolean{SANDdistributionProvided}}   {
-	}{
-	    \ClassError{SANDreport.cls}{\@backslashchar SANDdistribution
-		not (yet) provided}{\@backslashchar SANDdistribution must
-		be used before any \@backslashchar SANDdistInternal}
-	}
-	\item[#1] \parbox[t]{\SANDdistwidth}{\makebox[\SANDMSdistwidth][l]{#2}\hspace{2em} \raggedright #3, #4}
-	\vspace{-1.5ex}
-    }
-
-
-    \newcommand{\SANDdistExternal}[2]{
-	\ifthenelse{\boolean{SANDdistributionProvided}}   {
-	}{
-	    \ClassError{SANDreport.cls}{\@backslashchar SANDdistribution
-		not (yet) provided}{\@backslashchar SANDdistribution must
-		be used before any \@backslashchar SANDdistExternal}
-	}
-	\item[#1] \parbox[t]{\SANDdistwidth}{#2}
-	\vspace{-1.5ex}
-    }
-
-
-
-    % ------------------------------------------------------------------------ %
-    % And now some optional declarations
-    %
-    \newcommand{\SANDsupersed}[2]{
-	\newsavebox{\SANDsupersedtempbox}
-	\newcommand{\SANDsupersedVar}{
-	    Supersedes #1 \\
-	    Dated #2
-	}
-	\sbox{\SANDsupersedtempbox}{
-	    \begin{tabular}{c}
-		Supersedes #1 \\
-		dated #2
-	    \end{tabular}
-	}
-	\setboolean{SANDsupersedProvided}{true}
-    }
-
-
-    % Distribution category is no longer needed
-    \newcommand{\SANDdistcategory}[1]{
-	\ClassWarning{SANDreport.cls}{Distribution category is no longer needed!}
-    }
-
+% Figure out the markings required
+% 
+\ifcase\SAND@OUOoption
+% 0 case, not OUO
+\togglefalse{SAND@OUO}
+\SAND@typeout{Selecting no OUO: \SAND@OUOoption}
+\or
+% 1 case, UCI
+\toggletrue{SAND@OUO}
+\toggletrue{SAND@OUOtype@UCI}
+\SAND@typeout{Selecting UCI: \SAND@OUOoption}
+\or
+% 2 case, UCNI
+\toggletrue{SAND@OUO}
+\toggletrue{SAND@OUOtype@UCNI}
+\SAND@typeout{Selecting UCNI: \SAND@OUOoption}
+\else
+% anything else, not OUO
+\togglefalse{SAND@OUO}
+\SAND@typeout{Selecting no OUO from else: \SAND@OUOoption}
+\fi
+
+\SAND@typeout{FOIA: \SAND@FOIAoption}
+\ifcase\SAND@FOIAoption\relax % 0 case
+\or\relax % 1 case
+\or\relax % 2 case
+% now it gets more interesting
+\or\toggletrue{SAND@FOIA@statutory} % 3
+\or\toggletrue{SAND@FOIA@proprietary} % 4
+\or\toggletrue{SAND@FOIA@privileged} % 5
+\or\toggletrue{SAND@FOIA@pii} % 6
+\or\toggletrue{SAND@FOIA@lawenforcement} % 7
+\or\relax\or\relax % 8,9
+\or\toggletrue{SAND@FOIA@custom} % 10
+\fi
+
+\SAND@typeout{FOIAsubcat: \SAND@FOIAsubcatOption}
+\ifcase\SAND@FOIAsubcatOption\relax % 0 case
+\or\toggletrue{SAND@FOIA@ECDOE}
+\or\toggletrue{SAND@FOIA@CRADA}
+\or\toggletrue{SAND@FOIA@ECEAR}
+\or\toggletrue{SAND@FOIA@ECITAR}
+\fi
+
+\SAND@typeout{Classification level: \SAND@ClassLevelOption}
+\ifcase\SAND@ClassLevelOption\relax
+\togglefalse{SAND@CLASS}
+\or
+\toggletrue{SAND@CLASS}
+\toggletrue{SAND@CLASS@CONFIDENTIAL}
+\or
+\toggletrue{SAND@CLASS}
+\toggletrue{SAND@CLASS@SECRET}
+\or
+\toggletrue{SAND@CLASS}
+\toggletrue{SAND@CLASS@TOPSECRET}
+\else
+\togglefalse{SAND@CLASS}
+\fi
+
+\SAND@typeout{Classification category: \SAND@ClassCatOption}
+\ifcase\SAND@ClassCatOption\relax
+\togglefalse{SAND@CLASS@NSI}
+\or
+\toggletrue{SAND@CLASS@NSI}
+\or
+\toggletrue{SAND@CLASS@FRD}
+\or
+\toggletrue{SAND@CLASS@RD}
+\fi
+
+\SAND@typeout{Classification caveat: \SAND@ClassCaveatOption}
+\ifcase\SAND@ClassCaveatOption\relax
+\togglefalse{SAND@CLASS@NF}
+\or
+\toggletrue{SAND@CLASS@NF}
+\or
+\toggletrue{SAND@CLASS@S15}
+\fi
+
+\iftoggle{SAND@OUO}{\toggletrue{SAND@OUOorCLASS}}{}
+\iftoggle{SAND@CLASS}{\toggletrue{SAND@OUOorCLASS}}{}
 
 % ******************************************************************************
 % The commands to specify the report markings.
 %
 
-    % Printed on the cover and title page below the SANDIA REPORT number
-    \newcommand{\SANDreleaseTypeVar}{Unlimited Release} % default
+% Printed on the cover and title page below the SANDIA REPORT number
+\newcommand{\SAND@marks@releaseType}{}
+\newcommand{\SANDmarkReleaseUUR}{\renewcommand{\SAND@marks@releaseType}{Unclassified Unlimited Release}}
 
-    % Printed on the cover page
-    \newcommand{\MarkCoverVar}{Approved for public release; further dissemination unlimited.} % default
+% Printed on the cover page
+\newcommand{\SAND@marks@coverVar}{Approved for public release; further dissemination unlimited.} % default
 
-    % Printed on the title page
-    \newsavebox{\MarkTitletempbox}
-    \sbox{\MarkTitletempbox}{} % default
+% Header/footer mark
+\newcommand{\SAND@marks@headfoot}{\relax}
 
-    % ----------------------------
+% Implement "this page intentionally left blank" if the user asks for it
+\if@SAND@marks@blank
+\SAND@typeout{Turning on blank page marking.}
+\def\emptypage@emptypage{%
+  \hbox{}\vspace*{\fill}
+  \begin{center}
+    This page intentionally left blank.
+  \end{center}
+  \vspace{\fill}\newpage%
+}%
+\def\cleardoublepage{%
+  \clearpage%
+  \if@twoside%
+  \ifodd\c@page%
+  % no-op
+  \else\emptypage@emptypage%
+  \fi% odd page
+  \fi% two side
+}%
+\fi
 
-    % Printed on top of cover page
-    \newcommand{\MarkTopCoverVar}{} % default
+% What kind of justification will we use
+\if@SAND@text@justified
+\SAND@typeout{Using fully-justified body text.}
+\newcommand{\SAND@text@justification}{} % default
+\else
+\SAND@typeout{Using ragged-right body text.}
+\newcommand{\SAND@text@justification}{\raggedright}
+\fi
 
-    % Printed on bottom of cover page
-    \newcommand{\MarkBotCoverVar}{} % default
-
-    % Printed on top of back cover page
-    \newcommand{\MarkTopBackVar}{} % default
-
-    % Printed on bottom of back cover page
-    \newcommand{\MarkBotBackVar}{} % default
-
-    % Printed on top of title page
-    \newcommand{\MarkTopTitleVar}{} % default
-
-    % Printed on bottom of title page
-    \newcommand{\MarkBotTitleVar}{} % default
-
-    % Printed on bottom of all body pages
-    \newcommand{\MarkBotBodyVar}{} % default
-
-    % Printed on top of all body pages
-    \newcommand{\MarkTopBodyVar}{} % default
+\geometry{total={6.5in,9in},margin=1in}
 
 
-    %
-    % The user marking commands
-    %
-    \newcommand{\SANDreleaseType}[1]{
-	\renewcommand{\SANDreleaseTypeVar}{#1}
+% Time to start
+\AtBeginDocument{
+
+  % Do some usage checking
+  \ifthenelse{\boolean{SANDnumProvided}}   {
+  }{
+    \ClassError{SANDreport.cls}{\@backslashchar SANDnum
+      not provided}{Insert \@backslashchar SANDnum in the preamble
+      of your document}
+  }
+  \ifthenelse{\boolean{SANDauthorProvided}}   {
+  }{
+    \ClassError{SANDreport.cls}{\@backslashchar SANDauthor
+      not provided}{Insert \@backslashchar SANDauthor in the preamble
+      of your document}
+  }
+  \ifthenelse{\boolean{SANDprintDateProvided}}   {
+  }{
+    \ClassError{SANDreport.cls}{\@backslashchar SANDprintDate
+      not provided}{Insert \@backslashchar SANDprintDate in the
+      preamble of your document}
+  }
+
+  % I'm not sure why this is necessary. Without it, there are undefined control sequences in colortbl
+  % which pop up in any use of \tabular. It's not effective if not in the source document (or here in
+  % AtBeginDocument) so it appears that something prior to this is undoing the colortbl setup. Some
+  % kind of weird interaction between KOMA-Script and colortbl that I gave up trying to track down - this
+  % at least works around the problem. - pwidene@sandia.gov
+  \arrayrulecolor{black}\doublerulesepcolor{black}
+  
+} % end of AtBeginDocument{}
+
+
+% ------------------------------------------------------------------------ %
+% Here we define the mandatory declarations
+% 
+\newcommand{\SANDnum}[1]{
+  \newcommand{\SANDnumVar}{#1}
+  \setboolean{SANDnumProvided}{true}
+}
+
+\newcommand{\SANDauthor}[1]{
+  \newcommand{\SANDauthorVar}{#1}
+  \setboolean{SANDauthorProvided}{true}
+}
+
+\newcommand{\SANDprintDate}[1]{
+  \newcommand{\SAND@marks@printDate}{#1}
+  \setboolean{SANDprintDateProvided}{true}
+}
+
+
+% This one is optional
+\newsavebox{\SANDrePrintDistBox}
+\newsavebox{\SANDrePrintDistBoxSecond}
+\newsavebox{\SANDrePrintDistBoxThird}
+\newsavebox{\SANDrePrintDistBoxFourth}
+\newsavebox{\SANDrePrintDistBoxFifth}
+\newcommand{\SANDrePrintDateVar}{}
+
+\newcommand{\SANDrePrintDate}[1]{
+  \renewcommand{\SANDrePrintDateVar}{#1}
+  \setboolean{SANDrePrintDateProvided}{true}
+  \stepcounter{SANDprintingCnt}
+  \ifthenelse{\value{SANDprintingCnt} = 2}   {
+    \sbox{\SANDrePrintDistBoxSecond}{Second Printing, (#1):}
+  }{
+    \ifthenelse{\value{SANDprintingCnt} = 3}   {
+      \sbox{\SANDrePrintDistBoxThird}{Third Printing, (#1):}
+    }{
+      \ifthenelse{\value{SANDprintingCnt} = 4}   {
+        \sbox{\SANDrePrintDistBoxFourth}{Fourth Printing, (#1):}
+      }{
+        \ifthenelse{\value{SANDprintingCnt} = 5}   {
+          \sbox{\SANDrePrintDistBoxFifth}{Fifth Printing, (#1):}
+        }{
+          \ClassError{SANDreport.cls}{\@backslashchar SANDreDistribution
+            used more than four times!}{Do you really have more than
+            five printings? If so, you need to amend SANDreport.cls}
+        }
+      }
     }
-
-    \newcommand{\SANDmarkBottomCover}[1]{
-	\renewcommand{\MarkBotCoverVar}{#1}
-	\setboolean{MarkCover}{true}
-	\setboolean{SANDmarkingsRequired}{true}
-    }
-
-    \newcommand{\SANDmarkTopBottom}[1]{
-	\renewcommand{\MarkBotBodyVar}{#1}
-	\renewcommand{\MarkTopBodyVar}{#1}
-	\renewcommand{\MarkBotBackVar}{#1}
-	\renewcommand{\MarkTopBackVar}{#1}
-	\renewcommand{\MarkBotTitleVar}{#1}
-	\renewcommand{\MarkTopTitleVar}{#1}
-	\renewcommand{\MarkBotCoverVar}{#1}
-	\renewcommand{\MarkTopCoverVar}{#1}
-	\setboolean{MarkTitle}{true}
-	\setboolean{MarkBack}{true}
-	\setboolean{MarkBody}{true}
-	\setboolean{MarkCover}{true}
-	\setboolean{SANDmarkingsRequired}{true}
-	\setboolean{MarkBottom}{true}
-    }
-
-    \newcommand{\SANDmarkTop}[1]{
-	\renewcommand{\MarkTopBodyVar}{#1}
-	\renewcommand{\MarkTopBackVar}{#1}
-	\renewcommand{\MarkTopTitleVar}{#1}
-	\renewcommand{\MarkTopCoverVar}{#1}
-	\setboolean{MarkTitle}{true}
-	\setboolean{MarkBack}{true}
-	\setboolean{MarkBody}{true}
-	\setboolean{MarkCover}{true}
-	\setboolean{SANDmarkingsRequired}{true}
-    }
-
-    \newcommand{\SANDmarkBottom}[1]{
-	\renewcommand{\MarkBotBodyVar}{#1}
-	\renewcommand{\MarkBotBackVar}{#1}
-	\renewcommand{\MarkBotTitleVar}{#1}
-	\renewcommand{\MarkBotCoverVar}{#1}
-	\setboolean{MarkTitle}{true}
-	\setboolean{MarkBack}{true}
-	\setboolean{MarkBody}{true}
-	\setboolean{MarkCover}{true}
-	\setboolean{SANDmarkingsRequired}{true}
-	\setboolean{MarkBottom}{true}
-    }
-
-    \newcommand{\SANDmarkTopBottomCoverBackTitle}[1]{
-	\renewcommand{\MarkTopCoverVar}{#1}
-	\renewcommand{\MarkBotCoverVar}{#1}
-	\renewcommand{\MarkTopBackVar}{#1}
-	\renewcommand{\MarkBotBackVar}{#1}
-	\renewcommand{\MarkTopTitleVar}{#1}
-	\renewcommand{\MarkBotTitleVar}{#1}
-	\setboolean{MarkTitle}{true}
-	\setboolean{MarkBack}{true}
-	\setboolean{MarkCover}{true}
-	\setboolean{SANDmarkingsRequired}{true}
-	\setboolean{MarkBottom}{true}
-    }
-
-    \newcommand{\SANDmarkTopBottomCoverTitle}[1]{
-	\renewcommand{\MarkBotTitleVar}{#1}
-	\renewcommand{\MarkTopTitleVar}{#1}
-	\renewcommand{\MarkBotCoverVar}{#1}
-	\renewcommand{\MarkTopCoverVar}{#1}
-	\setboolean{MarkTitle}{true}
-	\setboolean{MarkCover}{true}
-	\setboolean{SANDmarkingsRequired}{true}
-	\setboolean{MarkBottom}{true}
-    }
+  }
+}
 
 
-    %
-    % Internal command used to activate markings depending on what part of
-    % the document we are currently processing; e.g. \SANDmarks{body}
-    %
-    \newcommand{\SANDmarks}[1]{
-	\ifthenelse{\boolean{SANDmarkingsRequired}}   {
-	    \fancyfoot{} % Clear all foot markings
-	    \fancyhead{} % Clear all head markings
-
-	    % Fancyhdr needs a little room
-	    \setlength{\headheight}{\baselineskip}
-
-	    \pagestyle{fancy}
-	    \thispagestyle{fancy}
-
-	    \ifthenelse{\equal{#1}{cover}}   {
-		% We're on the cover page
-		\ifthenelse{\boolean{MarkCover}}   {
-		    \chead{\MarkTopCoverVar}
-		    \cfoot{\MarkBotCoverVar}
-		}{
-		    \chead{}
-		    \cfoot{}
-		}
-	    }{
-	    }
-
-	    \ifthenelse{\equal{#1}{back}}   {
-		% We're on the back cover page
-		\ifthenelse{\boolean{MarkBack}}   {
-		    \chead{\MarkTopBackVar}
-		    \cfoot{\MarkBotBackVar}
-		}{
-		    \chead{}
-		    \cfoot{}
-		}
-
-		% We do want a page number on the back cover
-		\ifthenelse{\boolean{MarkBottom}}   {
-		    \fancyfoot[LE,RO]{\thepage}
-		}{% else
-		    \fancyfoot[CE,CO]{\thepage}
-		}
-	    }{
-	    }
-
-	    \ifthenelse{\equal{#1}{title}}   {
-		% We're on the title page
-		\ifthenelse{\boolean{MarkTitle}}   {
-		    \chead{\MarkTopTitleVar}
-		    \cfoot{\MarkBotTitleVar}
-		}{% else
-		    \chead{}
-		    \cfoot{}
-		}
-
-		\ifthenelse{\boolean{MarkBottom}}   {
-		    \fancyfoot[LE,RO]{\thepage}
-		}{% else
-		    \fancyfoot[CE,CO]{\thepage}
-		}
-	    }{
-	    }
-
-	    \ifthenelse{\equal{#1}{body}}   {
-		\ifthenelse{\boolean{MarkBody}}   {
-		    \chead{\MarkTopBodyVar}
-		    \cfoot{\MarkBotBodyVar}
-		}{% else
-		    \chead{}
-		    \cfoot{}
-		}
-
-		% We're on a body page. If we're not going to mark the bottom,
-		% or body pages at all, then we might as well put the page number
-		% at the center
-		\ifthenelse{\boolean{MarkBottom} \and \boolean{MarkBody}}   {
-		    \fancyfoot[LE,RO]{\thepage}
-		}{% else
-		    \fancyfoot[CE,CO]{\thepage}
-		}
-	    }{
-	    }
-	}{
-	    %
-	    % If not SANDmarkingsRequired
-	    %
-	    \pagestyle{plain}% The default when we have no markings
-
-	    \ifthenelse{\equal{#1}{cover}}   {
-		% We're on the cover page
-
-		% No page number on cover
-		\thispagestyle{empty}
-	    }{
-	    }
-
-	    \ifthenelse{\equal{#1}{back}}   {
-		% We're on the back cover page
-
-		% We do want a page number on the back cover
-		\thispagestyle{plain}
-	    }{
-	    }
-
-	}
-    }  % end of \SANDmarks{}
+% Used to need the title at the top of the first section/chapter, but that is
+% not required anymore.  Make sure we start on an odd page.
+\newcommand{\SANDmain}{
+  \cleardoublepage
+  \setboolean{SANDmainProvided}{true}
+}
 
 
-    \newcommand{\SANDmarkCoverTitle}[2]{
-	\ClassError{SANDreport.cls}{\@backslashchar SANDmarkCoverTitle doesn't work yet; sorry.}{Don't
-	know where to put the text on the title page.}
-	\sbox{\MarkTitletempbox}{{\bf #1\\}{#2}}
-	\renewcommand{\MarkCoverVar}{{{\CoverFont{b}{12}{14pt}#1}\\ {\CoverFont{m}{8}{10pt}}{#2}}}
-    }
 
-    \newcommand{\SANDmarkCover}[1]{
-	\renewcommand{\MarkCoverVar}{{\CoverFont{m}{8}{10pt}}{#1}}
-    }
+% ------------------------------------------------------------------------ %
+% And now some optional declarations
+% 
+\newcommand{\SANDsupersed}[2]{
+  \newsavebox{\SANDsupersedtempbox}
+  \newcommand{\SANDsupersedVar}{
+    Supersedes #1 \\
+    Dated #2
+  }
+  \sbox{\SANDsupersedtempbox}{
+    \begin{tabular}{c}
+      Supersedes #1 \\
+      dated #2
+    \end{tabular}
+  }
+  \setboolean{SANDsupersedProvided}{true}
+}
 
 
-% ******************************************************************************
+% Distribution category is no longer needed
+\newcommand{\SANDdistcategory}[1]{
+  \ClassWarning{SANDreport.cls}{Distribution category is no longer needed!}
+}
+
+
+
+%
 % Table of Contents
-% The names we use to label the table of contents, and lists of figures,
-% and tables.
 %
 
-    \ifthenelse{\boolean{reportSAND}}   {
-	\renewcommand\bibname{References}
-	\setcounter{tocdepth}{3}
-    }{
-	\renewcommand{\contentsname}{\raggedright \normalfont\Large\bfseries Contents}
-	\renewcommand{\listfigurename}{\raggedright \bf Figures}
-	\renewcommand\listtablename{\raggedright \bf Tables}
-	\renewcommand\refname{\raggedright \bf \centering References}
-	\setcounter{tocdepth}{2}
+% Change the bibliography title if we are a report 
+\ifthenelse{\boolean{reportSAND}}{
+  \renewcommand{\bibname}{References}
+}{}
+
+% Don't parskip below LIST OF FIGURES/TABLES headings
+\setuptoc{lof}{noparskipfake}
+\setuptoc{lot}{noparskipfake}
+
+% Don't boldface section page numbers in TOC
+\newcommand{\SAND@format@pgnum}[1]{\normalfont\normalcolor #1}
+\DeclareTOCStyleEntry[pagenumberformat=\SAND@format@pgnum]{tocline}{section}
+% Don't boldface section titles in TOC
+\newcommand{\SAND@format@sectitle}[1]{\normalfont\normalcolor #1}
+\DeclareTOCStyleEntry[entryformat=\SAND@format@sectitle]{tocline}{section}
+% Use smaller dots in TOC entries
+\renewcommand{\@dotsep}{2}
+
+% Try to produce "tab-stopped" indentation of numbered section titles (not the numbers, which
+% should still sit at the left text boundary. 2cm is arbitrarily chosen after some
+% trial and error.
+% 
+\renewcommand{\sectionlinesformat}[4]{%
+  \ifdefempty{#3}{%
+    \@hangfrom{\hskip #2#3}{#4}%
+  }{%
+    \@hangfrom{\hbox to 2cm{#3}}{#4}%
+  }
+}
+
+% Use this from amsmath to reset the figure/table counters at each section.
+\ifthenelse{\boolean{reportSAND}}{
+  \numberwithin{figure}{chapter}
+  \numberwithin{table}{chapter}
+  % Then (has to happen after the above) change the figure/table numbering format
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \renewcommand{\thetable}{\thechapter-\arabic{table}}
+}{
+  \numberwithin{figure}{section}
+  \numberwithin{table}{section}
+  % Then (has to happen after the above) change the figure/table numbering format
+  \renewcommand{\thefigure}{\thesection-\arabic{figure}}
+  \renewcommand{\thetable}{\thesection-\arabic{table}}
+}
+
+
+\ifthenelse{\boolean{reportSAND}}{
+  \renewcommand\chapterlinesformat[3]{%
+      \@hangfrom{#2}{\MakeUppercase{#3}}%
     }
-
-    %
-    % Don't enter figures, tables, and subsections of an appendix in
-    % the main table of contents, if "strict" is used.
-    % Code from James Gruetzner and Todd Pitts. Avoids the ifthen package in
-    % \addcontentsline which interferes with the subfigure package.
-    \renewcommand{\addcontentsline}[3]{
-	\ifinAppendix%
-	    % We are in the Appendix
-	    \ifthenelse{\equal{#1}{toc}}   {
-		% And we are attempting to add something to the TOC
-		\ifreportSAND
-		    \ifthenelse{\equal{#2}{chapter}}   {
-			% It is a chapter, so we're OK
-			\addtocontents{#1}{\protect\contentsline{#2}{#3}{\thepage}}
-		    }{% else
-			% It's a section; we'll accept that too
-			\ifthenelse{\equal{#2}{section}}   {
-			    % It is a section, so we're OK
-			    \addtocontents{#1}{\protect\contentsline{#2}{#3}{\thepage}}
-			}{% else
-			    % It is not a section; skip it
-			    \relax
-			}
-		    }
-		\else
-		    \ifthenelse{\equal{#2}{section}}   {
-			% It is a section, so we're OK
-			\addtocontents{#1}{\protect\contentsline{#2}{#3}{\thepage}}
-		    }{% else
-			% It is not a section; skip it
-			\relax
-		    }
-		\fi
-	    }{
-		% We're not in TOC. Probably a figure or table; skip it
-		\relax
-	    }
-
-	\else%
-	    \addtocontents{#1}{\protect\contentsline{#2}{#3}{\thepage}}
-	\fi
-    }
-
-
-
-    % ------------------------------------------------------------------------ %
-    % Modify the look of the table of contents if we are using the article style
-    % ------------------------------------------------------------------------ %
-
-    % We want the dots closer together, and the same as in \dotfill
-    %
-    \renewcommand{\@dotsep}{2.27}
-
-    \ifthenelse{\boolean{reportSAND}}   {
-    }{
-	% For article.sty
-	% We don't want blank lines between entries and no boldface.
-	% This is the l@section definition from article.sty. We get rid of 
-	% \addvspace{1.0em... and \bfseries (if relax is not set in the main doc)
-	\renewcommand*\l@section[2]{
-	    \setlength\parskip{0ex}
-	    \ifnum \c@tocdepth >\z@
-	    \addpenalty\@secpenalty
-	    \ifthenelse{\boolean{relaxedSAND}}   {
-		\addvspace{1.0em \@plus\p@}
-	    }{
-	    }
-	    \setlength\@tempdima{1.5em}
-	    \begingroup
-		\parindent \z@ \rightskip \@pnumwidth
-		\parfillskip -\@pnumwidth
-		\leavevmode
-		\ifthenelse{\boolean{relaxedSAND}}   {
-		    \bfseries
-		}{
-		}
-		\advance\leftskip\@tempdima
-		\hskip -\leftskip
-		#1\nobreak\dotfill \nobreak\hb@xt@\@pnumwidth{\hss #2}\par
-	    \endgroup
-	\fi}
-
-	\renewcommand*\l@figure{\setlength\parskip{0ex}
-	    \@dottedtocline{1}{1.5em}{2.3em}
-	}
-
-	\let\l@table\l@figure
-    }
-
-    % ------------------------------------------------------------------------ %
-    % If there is an appendix, set it apart in the table of contents
-    %
-    \renewcommand\appendix{
-	\setboolean{inAppendix}{true}
-	\par
-	\setcounter{section}{0}
-	\setcounter{subsection}{0}
-	\setcounter{subsubsection}{0}
-	\setcounter{figure}{0}
-	\setcounter{table}{0}
-
-	\ifthenelse{\boolean{reportSAND}}   {
-	    \setcounter{chapter}{0}
-	    \gdef\@chapapp{\appendixname}
-	    \gdef\thechapter{\@Alph\c@chapter}
-	    % Insert the Appendix name in the TOC
-	    \addtocontents{toc}{\protect\subsection*{\appendixname}}
-	}{
-	    \renewcommand{\thefigure}{\thesection.\arabic{figure}}
-	    \renewcommand{\thetable}{\thesection.\arabic{table}}
-	    \gdef\thesection{\@Alph\c@section}
-	    % Insert the Appendix name in the TOC
-	    \addtocontents{toc}{\protect\subsection*{\appendixname}}
-	}
-
-	\ifthenelse{\boolean{strictSAND}}   {
-	    \setcounter{secnumdepth}{2}
-	}{
-	    \setcounter{secnumdepth}{3}
-	}
-    }
-
-
-
-% ******************************************************************************
-% Sections & Chapters
-% We want unnumbered section/chapter headings
-%
-
-    \ifthenelse{\boolean{reportSAND}}   {
-	\ifthenelse{\boolean{strictSAND}}   {
-	    % The samples in SAND98-0730 don't number sections.
-	    \setcounter{secnumdepth}{0}
-	}{
-	    % The report SAND98-0730 itself does, though ;-)
-	    \setcounter{secnumdepth}{2}
-	}
-    }{% else
-	\ifthenelse{\boolean{strictSAND}}   {
-	    % The samples in SAND98-0730 don't number sections.
-	    \setcounter{secnumdepth}{0}
-	}{
-	    % The report SAND98-0730 itself does, though ;-)
-	    \setcounter{secnumdepth}{2}
-	}
-    }
+}{}
+\setkomafont{section}{\sffamily\Large\MakeUppercase}
+\setkomafont{subsubsection}{\itshape\sffamily}
+% Always number sections down through subsubsection
+\setcounter{secnumdepth}{\subsubsectionnumdepth}
 
 
 % ******************************************************************************
 % Captions
 % We want the label bold face, and the whole captionwidth about 4",
 % and the text small
+% 
+\addtokomafont{caption}{\sffamily\bfseries}
+\setkomafont{captionlabel}{\sffamily\bfseries}
+\setcapindent{0em}
+\renewcommand*{\captionformat}{\ }
+\setcapwidth[c]{5in}
+
+% \renewcommand*{\figureformat}{\figurename~\thesection-\thefigure\autodot}
+% \renewcommand*{\tableformat}{\tablename~\thesection-\thetable\autodot}
+\newenvironment{SANDinlinenote}{%
+  \par\hspace*{.25in}\begin{minipage}{\dimexpr\textwidth-.5in}
+    \rule{\dimexpr\textwidth-.25in}{.4pt}\vspace{.25\baselineskip}
+    \SAND@text@justification{\bfseries\sffamily NOTE:}%
+}{%
+  \rule[.25\baselineskip]{\dimexpr\textwidth-.25in}{.4pt}
+  \end{minipage}
+}
+
+
+
+% 
+%  OUO text string and typeset box definitions
 %
 
-    \newlength{\SANDcaptionwidth}
-    \setlength{\SANDcaptionwidth}{4in}
-    \newsavebox{\SANDtempbox}
-    \renewcommand{\@makecaption}[2]{
-	\par\vspace{\abovecaptionskip}
-	\sbox{\SANDtempbox}{{\bf #1. }\ #2}
-	\ifthenelse{\lengthtest{\wd\SANDtempbox < \SANDcaptionwidth}}   {
-	    \begin{center}
-		{\bf #1. }\small #2
-	    \end{center}
-	}{
-	    \begin{center}
-		\parbox[t]{\SANDcaptionwidth}{{\bf #1. }\small #2}
-	    \end{center}
-	}
+
+\newlength{\SANDUCIboxwidth}
+\setlength{\SANDUCIboxwidth}{3.5in}
+\newcommand{\SANDOUOcategory}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information \textendash{} EAR.}}
+\newcommand{\SANDOUOnameorg}{Bob Loblaw / 10711}
+\newcommand{\SANDOUOdate}{Now}
+\newcommand{\SANDOUOguidance}{N/A}
+
+\newcommand{\SANDUCIcatIII}{\uline{category 3: Statutory Exemption}}
+\newcommand{\SANDUCIcatIIIEC}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information \textendash{} DOE}}
+\newcommand{\SANDUCIcatIIIITAR}{\uline{3. Statutory Exemption \textendash{} Export Controlled Information / ITAR}}
+\newcommand{\SANDUCIcatIIIEAR}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information \textendash{} EAR}}
+\newcommand{\SANDUCIcatIIICRADA}{\uline{category 3: Statutory Exemption}}
+\newcommand{\SANDCRADAdate}{today}
+\newcommand{\SANDCRADAnumber}{999999}
+\newcommand{\SANDCRADAembargo}{100 years}
+
+\newcommand{\SANDUCNIcatIIICRADA}{\uline{category 3: Statutory Exemption}}
+\newcommand{\SANDUCNIcatIIIITAR}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information \textendash{} ITAR}}
+\newcommand{\SANDUCNIcatIIIEAR}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information \textendash{} EAR}}
+\newcommand{\SANDUCNIcatIIIDOE}{\uline{category 3: Statutory Exemption \textendash{} Export Controlled Information \textendash{} DOE}}
+
+\newcommand{\SANDUCIcatIV}{\uline{category 4: Commercial/Proprietary}}
+
+\newcommand{\SANDUCIcatV}{\uline{category 5: Privileged Information}}
+\newcommand{\SANDUCIPIApprovals}{N/A}
+\newcommand{\SANDUCIcatVI}{\uline{category 6: Personal Privacy}}
+\newcommand{\SANDUCIcatVII}{\uline{category 7: Law Enforcement}}
+\newcommand{\SANDUCIwhichBox}{\relax}
+\newcommand{\SANDUCIwhichExtraBox}{\relax}
+\newcommand{\SANDUCIwhichBonusBox}{\relax}
+
+\newcommand{\SANDClassDCName}{Not A. DC}
+\newcommand{\SANDClassDCPosition}{Derivative Classifier}
+\newcommand{\SANDClassDCOrg}{DOE SNL}
+\newcommand{\SANDClassDCGuide}{CG-FAKE-2, 01/01/2099, DOE OC}
+\newcommand{\SANDClassDCDate}{NOT YET DC REVIEWED}
+\newcommand{\SANDClassDCDeclassify}{DECLASSIFICATION DATE NEEDED}
+\newcommand{\SANDClassWhichDCBox}{\relax}
+\newcommand{\SANDClassWhichWarningBox}{\relax}
+\newcommand{\SANDClassWhichExtraBox}{\relax}
+
+\newcommand{\SANDUCIcatIIIECDOEextraBox}{
+  {\bfseries Export Controlled Information:}\par
+  WARNING \textendash{} This document contains technical data whose export is restricted by the Atomic Energy Act of 1954, as
+  amended, 42 U.S.C. \S 2011 \textit{et seq}. Violations of these export laws are subject to severe criminal penalties.
+}
+
+\newcommand{\SANDUCIcatIIIECEARextraBox}{
+  {\bfseries Export Controlled Information:}\par
+  WARNING \textendash{} This document contains technical data whose export is restricted by the Export Administration Act of 1979,
+  as amended, 50 U.S.C. App. 2401 \textit{et seq}. Violations of these export laws are subject to severe criminal penalties.
+}
+
+\newcommand{\SANDUCIcatIIIECITARextraBox}{
+  {\bfseries\centering EXPORT CONTROLLED INFORMATION}\par
+  {\bfseries WARNING} \textendash{} This document contains technical data whose export is restricted by the Arms Control Act, 22 U.S.C. 39 \S
+  2751 \textit{et seq}. Violations of these export laws are subject to severe criminal penalties.
+}
+
+\newcommand{\SANDUCIcatIIICRADAextraBox}{%
+  {\bfseries PROTECTED CRADA INFORMATION}\par
+  This product contains Protected CRADA Information which was produced \SANDCRADAdate\xspace{} under CRADA No. \SANDCRADAnumber\xspace{} and is not to be further disclosed for a period of \SANDCRADAembargo\xspace{} from the date it was produced except as expressly provided for in the CRADA.
+  \par\vspace{.5\baselineskip}
+  Further dissemination authorized to the Department of Energy only; other requests shall be approved by the originating facility or
+  higher DOE programmatic authority.\par
+}
+
+\newcommand{\SANDUCIcatIVextraBox}{%
+  \par\vspace{\baselineskip}
+  \parbox{2.75in}{\bfseries \SAND@marks@thirdPartyProprietaryName\xspace{} Proprietary}\par
+  This technical data contains \SAND@marks@thirdPartyProprietaryName\xspace{} Proprietary Information furnished under
+  contract or agreement between Sandia National Laboratories and \SAND@marks@thirdPartyProprietaryName\xspace{} for the
+  controlled release of the information. Disclosure outside the Government is not authorized without
+  prior approval of the originator, or in accordance with provisions of 48 CFR 952.227 and 5
+  U.S.C. 552.\par\vspace{.5\baselineskip}
+  Further dissemination authorized to U.S. Government agencies only; other requests must be approved by
+  the originating facility or higher DOE programmatic authority.\par
+}
+
+\newcommand{\SANDUCIcatVPIextraBox}{%
+  \par\vspace{\baselineskip}
+  Any further distribution by any holder of this product or data therein to third parties representing foreign interests, foreign
+  governments, foreign companies, and foreign subsidiaries or foreign divisions of U.S. companies shall be approved by the
+  \SANDUCIPIApprovals\xspace{}, U.S. Department of Energy. Further, foreign party release may require DOE approval pursuant to 10 CFR 810,
+  and/or may be subject to Section 127 of the Atomic Energy Act.
+  \par\vspace{.5\baselineskip}
+  Further dissemination only as authorized by the originating facility or higher DOE programmatic authority; requester must possess appropriate security clearance, need-to-know, and facility approval for receipt and storage of classified documents by the DOE Office of Security Affairs.
+}
+
+\newcommand{\SANDUCNICRADAbottomBox}{
+  {\bfseries PROTECTED CRADA INFORMATION}\par
+  This product contains Protected CRADA Information which was produced \SANDCRADAdate\xspace{} under CRADA No. \SANDCRADAnumber\xspace{} and is not to be further disclosed for a period of \SANDCRADAembargo\xspace{} from the date it was produced except as expressly provided for in the CRADA.
+  \par\vspace{.5\baselineskip}
+  Further dissemination authorized to the Department of Energy only; other requests shall be approved by the originating facility or
+  higher DOE programmatic authority.\par
+}
+
+\newcommand{\SANDUCNIITARbottomBox}{
+  \parbox{\SAND@bottombox@width}{\bfseries\centering Export Controlled Information}
+  \par\vspace{.5\baselineskip}
+  WARNING \textendash{} This document contains technical data whose export is restricted by the Arms Control Act, 22 U.S.C. 39 \S
+  2751 \textit{et seq}. Violations of these export laws are subject to severe criminal penalties.
+}
+
+\newcommand{\SANDUCNIEARbottomBox}{
+  \parbox{\SAND@bottombox@width}{\bfseries\centering Export Controlled Information}
+  \par\vspace{.5\baselineskip}
+  WARNING \textendash{} This document contains technical data whose export is restricted by the Export Administration Act of 1979,
+  as amended, 50 U.S.C. App. 2401 \textit{et seq}. Violations of these export laws are subject to severe criminal penalties.
+}
+
+\newcommand{\SANDUCNIDOEbottomBox}{
+  \parbox{\SAND@bottombox@width}{\bfseries\centering Export Controlled Information}
+  \par\vspace{.5\baselineskip}
+  WARNING \textendash{} This document contains technical data whose export is restricted by the Atomic Energy Act of 1954,
+  as amended, 42 U.S.C. \S 2401 \textit{et seq}. Violations of these export laws are subject to severe criminal penalties.
+}
+
+\newcommand{\SANDClassWarningFRD}{
+    \parbox{3in}{\bfseries\centering FORMERLY RESTRICTED DATA}
+    \par\vspace{.5\baselineskip}
+    Unauthorized disclosure subject to Administrative and Criminal Sanctions. Handle as Restricted Data in Foreign Dissemination, Section 144.b, Atomic Energy Act, 1954.
+}
+
+\newcommand{\SANDClassWarningRD}{
+    \parbox{3in}{\bfseries\centering RESTRICTED DATA}
+    \par\vspace{.5\baselineskip}
+    This document contains Restricted Data as defined in the Atomic Energy Act of 1954. Unauthorized disclosure subject to Administrative and Criminal Sanctions.
+}
+
+
+% 
+% Define some boxes to use on the cover pages
+% 
+\newcommand{\SANDUCIbox}[2][1.5in]{%
+  \framebox{%
+    \vspace{.1in plus 1fill}
+    \begin{minipage}[t][#1][c]{#2}
+      \scriptsize\sffamily
+      \parbox{#2}{\bfseries\centering OFFICIAL USE ONLY}
+      \vspace{.05in}\par\raggedright
+      \uline{May} be exempt from public release under the Freedom of Information Act (5 U.S.C. 552), exemption number and category:\\ \SANDOUOcategory\xspace{}.
+      \par\vspace{.5\baselineskip}
+      Department of Energy review required before public release.
+      \par\vspace{.5\baselineskip}
+      Name/Org: \SANDOUOnameorg \hspace{.5in} Date: \SANDOUOdate
+      \par\vspace{.5\baselineskip}
+      Guidance (if applicable): \SANDOUOguidance
+    \end{minipage}%
+    \vspace{.1in plus 1fill}
+  }%
+}
+
+\newcommand{\makeUCIextrabox}[2]{%
+  \framebox{
+    \vspace{.05in plus 1fill}
+    \begin{minipage}[t][1.5in][c]{#1}
+      \scriptsize\sffamily\raggedright #2%
+    \end{minipage}%
+    \vspace{.05in plus 1fill}
+  }
+}
+
+\newlength{\SAND@ucnibox@width}
+\setlength{\SAND@ucnibox@width}{3in}
+\newcommand{\SANDUCNIbox}{%
+  \framebox{%
+    \vspace{.1in plus 1fill}
+    \begin{minipage}[t][1.5in][c]{\SAND@ucnibox@width}
+      \scriptsize\sffamily
+      \parbox{\SAND@ucnibox@width}{\bfseries\centering UNCLASSIFIED CONTROLLED NUCLEAR INFORMATION \newline NOT FOR PUBLIC DISSEMINATION}\par
+      \vspace{.1in}\raggedright
+      Unauthorized dissemination subject to civil and criminal sanctions under Section 148 of the Atomic Energy Act of 1954, as amended
+      (42 U.S.C. 2168).\par\vspace{.5\baselineskip}%
+      Reviewing Official/Org: \SANDOUOnameorg \par\vspace{.5\baselineskip}%
+      Date: \SANDOUOdate \par\vspace{.5\baselineskip}%
+      Guidance (if applicable): \SANDOUOguidance %
+    \end{minipage}%
+    \vspace{.1in plus 1fill}
+  }%
+}
+
+\newlength{\SAND@bottombox@width}
+\setlength{\SAND@bottombox@width}{6.4in}
+\newcommand{\makeUCNIbottombox}[1]{%
+  \framebox{
+    \vspace{.2in plus 1fill}
+    \begin{minipage}[t][][c]{\SAND@bottombox@width}%
+      \scriptsize\sffamily\raggedright #1 %
+    \end{minipage}%
+    \vspace{.2in plus 1fill}
+  }
+}
+
+\newcommand{\makeOpenBottomBox}[1]{%
+  \vspace{.2in plus 1fill}
+  \begin{minipage}[t][][c]{\SAND@bottombox@width}%
+    \scriptsize\sffamily\raggedright #1 %
+  \end{minipage}%
+  \vspace{.2in plus 1fill}
+}
+
+\newcommand{\makeClassDCBox}{%
+    \framebox{%
+        \begin{minipage}[t][][c]{3in}
+            \scriptsize\sffamily
+            \iftoggle{SAND@CLASS@NSI}{Derivative Declassifier review required prior to declassification \par}{}
+            Classified by: \SANDClassDCName, \SANDClassDCPosition, \SANDClassDCOrg \par
+            Derived from: \SANDClassDCGuide \par
+            Date classified: \SANDClassDCDate
+            \iftoggle{SAND@CLASS@NSI}{\par Declassify on: \SANDClassDCDeclassify}{}
+        \end{minipage}%
+    }%
+}
+
+\newcommand{\makeClassWarningBox}[1]{%
+    \framebox{
+        \begin{minipage}[t][][c]{3in}
+            \scriptsize\sffamily\raggedright #1%
+        \end{minipage}%
     }
+}
+
+\newcommand{\makeClassWarningBoxEmpty}{%
+        \begin{minipage}[t][][c]{3in}
+            \hspace{3in}
+        \end{minipage}%
+}
+
+\newcommand{\makeClassExtraBox}[1]{%
+    \begin{minipage}[t][][c]{3in}
+        \raggedright #1%
+    \end{minipage}%
+}
+
+% Determine which "admonishment" boxes to apply to the cover page
+% For reference, here are the relevant toggles
+% \newtoggle{SAND@OUOtype@UCI}
+% \newtoggle{SAND@OUOtype@UCNI}
+
+% \newtoggle{SAND@FOIA@statutory}
+% \newtoggle{SAND@FOIA@proprietary}
+% \newtoggle{SAND@FOIA@privileged}
+% \newtoggle{SAND@FOIA@pii}
+% \newtoggle{SAND@FOIA@lawenforcement}
+
+% \newtoggle{SAND@FOIA@ECDOE}
+% \newtoggle{SAND@FOIA@CRADA}
+% \newtoggle{SAND@FOIA@ECEAR}
+% \newtoggle{SAND@FOIA@ECITAR}
+
+% This is not the most efficient "programming" practice here, since
+% we'll always do a few comparisons that could be short-circuited (all of the
+% options are mutually exclusive). I'm doing it this way for
+% readability since LaTeX makes an if-then cascade kind of ugly, and I'd
+% rather optimize for maintainability vs. compile time.
+
+% These category strings are the same for UCI and UCNI, so do them separately.
+
+% User API for specifying a custom FOIA string. Can be used to give multiple FOIA categories (until the
+% class is updated to allow that through the document options). If they specify OUO=custom, they need to
+% have set this or they'll get nothing typeset.
+\newcommand{\SANDFOIAcustomCategory}[2]{
+  \newcommand{\SAND@marks@FOIAcustom}{#1}
+  \newcommand{\SAND@marks@headfoot}{#2}
+}
 
 
+\iftoggle{SAND@OUOtype@UCI}{
 
-% ******************************************************************************
-% We have to import a lot of code from report.cls and article.cls so we can
-% change a few things. We do report.cls first.
-%
+  % Begin by assuming the generic FOIA 3 exemption, and reset it if we were given something different
+  \renewcommand{\SANDOUOcategory}{\SANDUCIcatIII}
+  \renewcommand{\SAND@marks@releaseType}{Official Use Only}
+  \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY}
+  \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{3in}}  
 
-    \ifthenelse{\boolean{reportSAND}}   {
-	% We need to redo \maketitle for the report class.
-	% Omit the date and add the SAND number and so on.
-	% We also need to redo the titlepage environment to not
-	% issue a newpage command, so the abstract can go there
-	% if it is short enough. (SAND reports are supposed to have
-	% an abstract!)
+  \iftoggle{SAND@FOIA@custom}{
+    \renewcommand{\SANDOUOcategory}{\SAND@marks@FOIAcustom}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only}
+  }{}
+  \iftoggle{SAND@FOIA@proprietary}{
+    \renewcommand{\SANDOUOcategory}{\SANDUCIcatIV}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only/Sandia Proprietary}
+    \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/SANDIA PROPRIETARY}
+  }{}
+  \iftoggle{SAND@FOIA@privileged}{
+    \renewcommand{\SANDOUOcategory}{\SANDUCIcatV}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only/Applied Technology}
+    \renewcommand{\SANDUCIwhichBonusBox}{\makeOpenBottomBox{\SANDUCIcatVPIextraBox}}
+    \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/APPLIED TECHNOLOGY}
+  }{}
+  \iftoggle{SAND@FOIA@pii}{
+    \renewcommand{\SANDOUOcategory}{\SANDUCIcatVI}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only/Personally Identifiable Information}
+    \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/PERSONALLY IDENTIFIABLE INFORMATION}
+  }{}
+  \iftoggle{SAND@FOIA@lawenforcement}{
+    \renewcommand{\SANDOUOcategory}{\SANDUCIcatVII}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only/Law Enforcement}
+    \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/LAW ENFORCEMENT}
+  }{}%
 
-	%
-	% Renew the report.cls \maketitle macro
-	%
-	\if@titlepage							% \maketitle from report.cls
-	    \renewcommand\maketitle{%					% \maketitle from report.cls
-		\doCover{}
-		\begin{titlepage}%					% \maketitle from report.cls
-		    \SANDmarks{title}
-		    {
-			\begin{center}
-			% use framebox instead of makebox for debugging
-			\makebox[\topleftwidth][t]{
-			    \begin{minipage}[c][\topheight][t]{\topleftwidth}
-				% There is nothing at top left
-			    \end{minipage}
-			}
-			\makebox[\topmiddlewidth][c]{
-			    \begin{minipage}[c][\topheight][t]{\topmiddlewidth}
-			    \begin{center}
-				\SANDnumVar\\
-				\SANDreleaseTypeVar\\
-				Printed \SANDprintDateVar\\
-				\ifthenelse{\boolean{SANDrePrintDateProvided}}   {
-				    Reprinted \SANDrePrintDateVar\\
-				}{
-				}
-				\ifthenelse{\boolean{SANDsupersedProvided}}   {
-				    \bigskip
-				    \usebox{\SANDsupersedtempbox}\\
-				}{
-				}
-			    \end{center}
-			    \end{minipage}
-			}
-			% Added topright box to balance topleft, and center topmiddle - MJK, 1/12/07
-			\makebox[\toprightwidth][c]{
-			    \begin{minipage}[c][\topheight][t]{\toprightwidth}
-			    % There is nothing at top right
-			    \end{minipage}
-			}
-			\end{center}
-		    }
-		    \let\footnotesize\small				% \maketitle from report.cls
-		    \let\footnoterule\relax				% \maketitle from report.cls
-		    \let \footnote \thanks				% \maketitle from report.cls
-		    % \null\vfil					% deleted
-		    % \vskip 60\p@					% deleted
-		    \begin{center}%					% \maketitle from report.cls
-			{\LARGE \@title \par}%				% \maketitle from report.cls
-			\vskip 1em%					% \maketitle from report.cls
-			{\large						% \maketitle from report.cls
-			\lineskip .75em%				% \maketitle from report.cls
-			\begin{tabular}[t]{c}%				% \maketitle from report.cls
-			    \@author					% \maketitle from report.cls
-			\end{tabular}\par}%				% \maketitle from report.cls
-			%\vskip 1em%					% \maketitle from report.cls
-			% {\large \@date \par}%				% deleted
-		    \end{center}\par					% \maketitle from report.cls
-		    \@thanks						% \maketitle from report.cls
-		    \vfil\null						% \maketitle from report.cls
+  % three possibilities for an extra box in UCI 3
+  \iftoggle{SAND@FOIA@ECDOE}{
+    \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{3in}}
+    \renewcommand{\SANDUCIwhichExtraBox}{\makeUCIextrabox{2.75in}{\SANDUCIcatIIIECDOEextraBox}}
+    \renewcommand{\SANDOUOcategory}{\SANDUCIcatIIIEC}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only/Export Controlled Information}
+    \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/EXPORT CONTROLLED INFORMATION}
+  }{}
+  \iftoggle{SAND@FOIA@CRADA}{
+    \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{2.75in}}
+    \renewcommand{\SANDUCIwhichExtraBox}{\makeUCIextrabox{3in}{\SANDUCIcatIIICRADAextraBox}}
+    \renewcommand{\SANDOUOcategory}{\SANDUCIcatIIICRADA}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only/CRADA}
+  }{}
+  \iftoggle{SAND@FOIA@ECEAR}{
+    \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{3in}}
+    \renewcommand{\SANDUCIwhichExtraBox}{\makeUCIextrabox{2.75in}{\SANDUCIcatIIIECEARextraBox}}
+    \renewcommand{\SANDOUOcategory}{\SANDUCIcatIIIEAR}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only/Export Controlled Information}
+    \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/EXPORT CONTROLLED INFORMATION}
+  }{}
+  \iftoggle{SAND@FOIA@ECITAR}{
+    \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{3in}}
+    \renewcommand{\SANDUCIwhichExtraBox}{\makeUCIextrabox{2.75in}{\SANDUCIcatIIIECITARextraBox}}
+    \renewcommand{\SANDOUOcategory}{\SANDUCIcatIIIITAR}
+    \renewcommand{\SAND@marks@releaseType}{Official Use Only/Export Controlled Information}
+    \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/EXPORT CONTROLLED INFORMATION}
+  }{}
+}{} % UCI
 
-		\end{titlepage}%					% \maketitle from report.cls
-		\setcounter{footnote}{0}%				% \maketitle from report.cls
-		\global\let\thanks\relax				% \maketitle from report.cls
-		\global\let\maketitle\relax				% \maketitle from report.cls
-		\global\let\@thanks\@empty				% \maketitle from report.cls
-		\global\let\@author\@empty				% \maketitle from report.cls
-		\global\let\@date\@empty				% \maketitle from report.cls
-		\global\let\@title\@empty				% \maketitle from report.cls
-		\global\let\title\relax					% \maketitle from report.cls
-		\global\let\author\relax				% \maketitle from report.cls
-		\global\let\date\relax					% \maketitle from report.cls
-		\global\let\and\relax					% \maketitle from report.cls
-	    }
-	\else
-	    % {---------------------- I doubt we ever get here ------------------------}
-	    \ClassError{SANDreport.cls}{\@backslashchar maketitle definition outside
-		a title page.}{The SANDreport class cannot handle this case.}
-	\fi
+\iftoggle{SAND@OUOtype@UCNI}{
+  \renewcommand{\SANDUCIwhichBox}{\SANDUCIbox{2.95in}}
+  \renewcommand{\SANDUCIwhichExtraBox}{\SANDUCNIbox}
+  \renewcommand{\SAND@marks@releaseType}{Official Use Only/Unclassified Controlled Nuclear Information}
+  \renewcommand{\SAND@marks@headfoot}{UNCLASSIFIED CONTROLLED NUCLEAR INFORMATION}
+  % Only two extra cases for UCNI:
+  % - only need a bonus box with FOIA exemption 3
+  % - FOIA 4,5,6,7 have no bonus box so we're done
+  \iftoggle{SAND@FOIA@statutory}{
+    \renewcommand{\SANDOUOcategory}{\SANDUCIcatIII}
+    \iftoggle{SAND@FOIA@ECDOE}{
+      \renewcommand{\SANDUCIwhichBonusBox}{\makeUCNIbottombox{\SANDUCNIDOEbottomBox}}
+      \renewcommand{\SANDOUOcategory}{\SANDUCNIcatIIIDOE}
+      \renewcommand{\SAND@marks@releaseType}{Official Use Only/UCNI/Export Controlled Information}
+      \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/UCNI/EXPORT CONTROLLED INFORMATION}
+    }{}
+    \iftoggle{SAND@FOIA@CRADA}{
+      \renewcommand{\SANDUCIwhichBonusBox}{\makeUCNIbottombox{\SANDUCNICRADAbottomBox}}
+      \renewcommand{\SANDOUOcategory}{\SANDUCNIcatIIICRADA}
+      \renewcommand{\SAND@marks@releaseType}{Official Use Only/UCNI/CRADA}
+      \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/UCNI/CRADA}
+    }{}
+    \iftoggle{SAND@FOIA@ECEAR}{
+      \renewcommand{\SANDUCIwhichBonusBox}{\makeUCNIbottombox{\SANDUCNIEARbottomBox}}
+      \renewcommand{\SANDOUOcategory}{\SANDUCNIcatIIIEAR}
+      \renewcommand{\SAND@marks@releaseType}{Official Use Only/UCNI/Export Controlled Information}
+      \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/UCNI/EXPORT CONTROLLED INFORMATION}
+    }{}
+    \iftoggle{SAND@FOIA@ECITAR}{
+      \renewcommand{\SANDUCIwhichBonusBox}{\makeUCNIbottombox{\SANDUCNIITARbottomBox}}
+      \renewcommand{\SANDOUOcategory}{\SANDUCNIcatIIIITAR}
+      \renewcommand{\SAND@marks@releaseType}{Official Use Only/UCNI/Export Controlled Information}
+      \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/UCNI/EXPORT CONTROLLED INFORMATION}
+    }{}%
+  }{} % statutory
+} % UCNI
 
-	%
-	% \titlepage in the report class resets the page
-	% number, which is not correct for SANDIA Reports.
-	% It also sets the page style to empty.
-	\if@compatibility						% titlepage from report.cls
-	\renewenvironment{titlepage}					% titlepage from report.cls
-	    {%								% titlepage from report.cls
-	      \if@twocolumn						% titlepage from report.cls
-		\@restonecoltrue\onecolumn				% titlepage from report.cls
-	      \else							% titlepage from report.cls
-		\@restonecolfalse\newpage				% titlepage from report.cls
-	      \fi							% titlepage from report.cls
-	      %\thispagestyle{empty}%					% deleted
-	      %\setcounter{page}\z@					% deleted
-	    }%								% titlepage from report.cls
-	    %{\if@restonecol\twocolumn \else \newpage \fi		% deleted, we want abstract on this page
-	    {\if@restonecol\twocolumn \fi				% new version
-	    }								% titlepage from report.cls
-	\else								% titlepage from report.cls
-	\renewenvironment{titlepage}					% titlepage from report.cls
-	    {%								% titlepage from report.cls
-	      \if@twocolumn						% titlepage from report.cls
-		\@restonecoltrue\onecolumn				% titlepage from report.cls
-	      \else							% titlepage from report.cls
-		\@restonecolfalse\newpage				% titlepage from report.cls
-	      \fi							% titlepage from report.cls
-	      %\thispagestyle{empty}%					% deleted
-	      %\setcounter{page}\@ne					% deleted
-	    }%								% titlepage from report.cls
-	    %{\if@restonecol\twocolumn \else \newpage \fi		% deleted, we want abstract on this page
-	    {\if@restonecol\twocolumn \fi				% new version
-	     \if@twoside\else						% titlepage from report.cls
-		%\setcounter{page}\@ne					% deleted
-	     \fi							% titlepage from report.cls
-	    }								% titlepage from report.cls
-	\fi								% titlepage from report.cls
+\iftoggle{SAND@CLASS@CONFIDENTIAL}{
+	\renewcommand{\SAND@marks@releaseType}{Confidential}
+	\renewcommand{\SAND@marks@headfoot}{CONFIDENTIAL}
+}{}
+\iftoggle{SAND@CLASS@SECRET}{
+	\renewcommand{\SAND@marks@releaseType}{Secret}
+	\renewcommand{\SAND@marks@headfoot}{SECRET}
+}{}
+\iftoggle{SAND@CLASS@TOPSECRET}{
+	\renewcommand{\SAND@marks@releaseType}{Top Secret}
+	\renewcommand{\SAND@marks@headfoot}{TOP SECRET}
+}{}
 
-	\if@titlepage							% abstract from report.cls
-	    \renewenvironment{abstract}{%				% abstract from report.cls
-		% \titlepage						% deleted
-		%\null\vfil						% abstract from report.cls
-		\@beginparpenalty\@lowpenalty				% abstract from report.cls
-		\begin{center}%						% abstract from report.cls
-		    \bfseries \abstractname				% abstract from report.cls
-		    \@endparpenalty\@M					% abstract from report.cls
-		\end{center}%						% abstract from report.cls
-		\ifthenelse{\boolean{strictSAND}}   {			% New
-		    \setlength{\parskip}{0.75ex}			% New Don't indent the following paragraph(s)
-		    \setlength{\parindent}{0pt}				% New Don't indent the following paragraph(s)
-		    \noindent\hspace{-0.50em}				% New Don't indent the first paragraph
-		}{}}%							% New
-		% {\par\vfil\null\endtitlepage}				% deleted
-		{\par\vfil\null}					% new version
-	\else								% abstract from report.cls
-	    % {---------------------- We should never get here ------------------------}
-	    \ClassError{SANDreport.cls}{Abstract definition outside
-		a title page.}{The SANDreport class cannot handle this case.}
-	\fi								% abstract from report.cls
+\iftoggle{SAND@CLASS@NSI}{
+    \renewcommand{\SANDClassWhichWarningBox}{\makeClassWarningBoxEmpty}
+}{}
+\iftoggle{SAND@CLASS@FRD}{
+	\let\classleveltype\SAND@marks@releaseType
+	\renewcommand{\SAND@marks@releaseType}{\classleveltype{} Formerly Restricted Data}
+	\let\classlevelhead\SAND@marks@headfoot
+	\renewcommand{\SAND@marks@headfoot}{\classlevelhead{} FORMERLY RESTRICTED DATA}
+    \renewcommand{\SANDClassWhichWarningBox}{\makeClassWarningBox{\SANDClassWarningFRD}}
+}{}
+\iftoggle{SAND@CLASS@RD}{
+	\let\classleveltype\SAND@marks@releaseType
+	\renewcommand{\SAND@marks@releaseType}{\classleveltype{} Restricted Data}
+	\let\classlevelhead\SAND@marks@headfoot
+	\renewcommand{\SAND@marks@headfoot}{\classlevelhead{} RESTRICTED DATA}
+    \renewcommand{\SANDClassWhichWarningBox}{\makeClassWarningBox{\SANDClassWarningRD}}
+}{}
 
+\iftoggle{SAND@CLASS}{
+    \renewcommand{\SANDClassWhichDCBox}{\makeClassDCBox}
+}{}
+
+\iftoggle{SAND@CLASS@NF}{
+	\let\classtype\SAND@marks@releaseType
+	\renewcommand{\SAND@marks@releaseType}{\classtype{} // NOFORN}
+	\let\classhead\SAND@marks@headfoot
+	\renewcommand{\SAND@marks@headfoot}{\classhead{} // NOFORN}
+    \renewcommand{\SANDClassWhichExtraBox}{\makeClassExtraBox{No Foreign Dissemination}}
+}{}
+\iftoggle{SAND@CLASS@S15}{
+	\let\classtype\SAND@marks@releaseType
+	\renewcommand{\SAND@marks@releaseType}{\classtype{} // Sigma 15}
+	\let\classhead\SAND@marks@headfoot
+	\renewcommand{\SAND@marks@headfoot}{\classhead{} // SIGMA 15}
+    \renewcommand{\SANDClassWhichExtraBox}{\makeClassExtraBox{SIGMA 15}}
+}{}
+
+\newcommand{\SANDThirdPartyProprietary}[1]{
+  \newcommand{\SAND@marks@thirdPartyProprietaryName}{#1}
+  \renewcommand{\SAND@marks@releaseType}{Official Use Only/Third Party Proprietary Information}
+  \renewcommand{\SANDUCIwhichBonusBox}{\makeOpenBottomBox{\SANDUCIcatIVextraBox}}
+  \renewcommand{\SAND@marks@headfoot}{OFFICIAL USE ONLY/THIRD PARTY PROPRIETARY}    
+}
+
+
+%%
+%%
+%% end of marking definitions
+%%
+%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%
+%%
+%% Begin definition of cover page layers
+%%
+%%
+\iftoggle{SAND@OUO}{
+  \newcommand{\SANDcoverBackground}{SANDOUO-cover-bg}
+  \newcommand{\SANDbackcoverBackground}{SANDOUO-back-bg}
+}{   
+  \iftoggle{SAND@CLASS}{  
+      \newcommand{\SANDcoverBackground}{SANDclass-cover-bg}
+      \newcommand{\SANDbackcoverBackground}{SANDclass-back-bg}
+  }{  
+      \newcommand{\SANDcoverBackground}{SANDcover-bg}
+      \newcommand{\SANDbackcoverBackground}{SANDbackcover-bg}
+  }   
+}
+
+% background image layer to apply to cover page
+\DeclareNewLayer[background,page, mode=picture, contents={%
+  \putLL{\includegraphics{\SANDcoverBackground}}}]{SANDcover-bg}
+
+
+% cover content layer with SANDA REPORT, SAND number, printed date 
+\DeclareNewLayer[foreground,mode=text,area={1in}{1.5in}{4in}{1.5in},contents={%
+  % 
+  \color{white}\sffamily
+  {\huge\bfseries SANDIA REPORT}\\\SANDnumVar\\\ifdefempty{\SAND@marks@releaseType}{}{\SAND@marks@releaseType\\}Printed \SAND@marks@printDate}]{SANDcover-fg}
+% 
+
+\DeclareNewLayer[foreground,mode=text,area={6in}{9.75in}{2in}{1in},contents={%
+  \raggedright\sffamily\scriptsize Prepared by \newline Sandia National Laboratories \newline
+  Albuquerque, New Mexico 87185 \newline Livermore, California 94550\vfill}
+]{SANDcover-prepared}
+
+
+% 
+% Renew the maketitle macro to generate the title page and other upfront material
+% 
+\renewcommand{\maketitle}{%
+  % 
+  \DeclareNewLayer[foreground,mode=text,align=lt,area={1in}{3in}{6.5in}{4in},contents={%
+    \parbox[t]{6.5in}{\fontfamily{phv}\selectfont\sffamily {\bfseries\huge\raggedright \@title \par }}%
+    \vspace{0.2in}
+    \parbox[b]{6.5in}{\fontfamily{phv}\selectfont\sffamily {\large \SANDauthorVar }}%
+  }]{SANDcover-title}
+  \DeclarePageStyleByLayers{SANDcover}{SANDcover-bg,SANDcover-fg,SANDcover-prepared,SANDcover-title}
+  % 
+  \iftoggle{SAND@OUOorCLASS}{
+    % Add a layer containing each not-relaxed OUO admonishment 
+    \ifcsvoid{SANDUCIwhichBox}{}{
+      \DeclareNewLayer[foreground,mode=text,hoffset=1in,voffset=6.5in,width=\textwidth,align=lt,contents={\SANDUCIwhichBox}]{SAND@layer@uciboxes}
+      \AddLayersToPageStyle{SANDcover}{SAND@layer@uciboxes}
+    }%
+    \ifcsvoid{SANDUCIwhichExtraBox}{}{
+      \ModifyLayer[addcontents={\hspace{.3in}\SANDUCIwhichExtraBox}]{SAND@layer@uciboxes}
+    }%
+    \ifcsvoid{SANDUCIwhichBonusBox}{}{
+      \ModifyLayer[addcontents={\\\vspace{.1in}\SANDUCIwhichBonusBox}]{SAND@layer@uciboxes}
+    }%
+    \ifcsvoid{SANDClassWhichWarningBox}{}{
+        \ModifyLayer[addcontents={\SANDClassWhichWarningBox}]{SAND@layer@uciboxes}
+    }%
+    \ifcsvoid{SANDClassWhichDCBox}{}{
+        \ModifyLayer[addcontents={\SANDClassWhichDCBox}]{SAND@layer@uciboxes}
+    }%
+    \ifcsvoid{SANDClassWhichExtraBox}{}{
+        \ModifyLayer[addcontents={\\\vspace{.2in}\SANDClassWhichExtraBox}]{SAND@layer@uciboxes}
+    }%
+    % 
+    \DeclareNewLayer[foreground,mode=text,head,contents={\parbox{\textwidth}{\sffamily\bfseries\centering\color{white} \SAND@marks@headfoot}}]{SANDcover-header}%
+    \DeclareNewLayer[foreground,mode=text,foot,contents={\parbox{\textwidth}{\sffamily\bfseries\centering\color{white} \SAND@marks@headfoot}}]{SANDcover-footer}%
+    \AddLayersToPageStyle{SANDcover}{SANDcover-header,SANDcover-footer}%
+  }%
+
+  \thispagestyle{SANDcover}%
+  \null % force page to render with no explicit content
+  
+  \clearpage
+
+  % First page after cover, with DOE disclaimer notice, DOE seal, contact addresses on UUR reports
+
+  % Header/footer is the same for the rest of the document (until the back cover which is dealt with
+  % separately in AtEndDocument). Set the plain heading style and clear the pre-set page number location.
+  \pagestyle{plain.scrheadings}
+  \clearplainofpairofpagestyles
+  
+  % For clarity a separate if-then to deal with headings
+  \iftoggle{SAND@OUOorCLASS}{ % we have to add the document classification type tag in the header/footer
+    \setlength{\footskip}{.5\footskip}      
+    \setkomafont{pageheadfoot}{\sffamily\bfseries}
+    \chead*{\SAND@marks@headfoot}
+    \cfoot*{\pagemark\\\SAND@marks@headfoot}
+  }{
+    % Since we are a two-sided document, we have to reset the page numbers to the center even if not
+    % an OUO/CLASS report
+    \setlength{\footskip}{.5\footskip}
+    \setkomafont{pageheadfoot}{\sffamily\bfseries}
+    \cfoot*{\pagemark}
+  }
+
+  \footnotesize\begin{flushleft}
+  Issued by Sandia National Laboratories, operated for the United States Department of Energy by
+  National Technology \& Engineering Solutions of Sandia, LLC.
+
+  {\bfseries NOTICE:} This report was prepared as an account of work sponsored by an agency of the
+  United States Government. Neither the United States Government, nor any agency thereof, nor any of
+  their employees, nor any of their contractors, subcontractors, or their employees, make any
+  warranty, express or implied, or assume any legal liability or responsibility for the accuracy,
+  completeness, or usefulness of any information, apparatus, product, or process disclosed, or
+  represent that its use would not infringe privately owned rights. Reference herein to any specific
+  commercial product, process, or service by trade name, trademark, manufacturer, or otherwise, does
+  not necessarily constitute or imply its endorsement, recommendation, or favoring by the United
+  States Government, any agency thereof, or any of their contractors or subcontractors. The views and
+  opinions expressed herein do not necessarily state or reflect those of the United States
+  Government, any agency thereof, or any of their contractors.
+
+  Printed in the United States of America. This report has been reproduced directly from the best
+  available copy.
+
+  \iftoggle{SAND@OUOorCLASS}{}{
+    Available to DOE and DOE contractors from
+    
+    \hspace*{.2in} % Don't separate this from the line below
+    \begin{tabular}{ll}
+        \multicolumn{2}{l}{U.S. Department of Energy} \\
+        \multicolumn{2}{l}{Office of Scientific and Technical Information} \\
+        \multicolumn{2}{l}{P.O. Box 62} \\
+        \multicolumn{2}{l}{Oak Ridge, TN 37831} \\
+        \\
+        Telephone: & (865) 576-8401 \\
+        Facsimile: & (865) 576-5728 \\
+        E-Mail: & reports@osti.gov \\
+        Online ordering: & http://www.osti.gov/scitech \\
+    \end{tabular}
+
+    Available to the public from
+
+    \hspace*{.2in} % same!
+    \begin{tabular}{ll}
+      \multicolumn{2}{l}{U.S. Department of Commerce} \\
+      \multicolumn{2}{l}{National Technical Information Service} \\
+      \multicolumn{2}{l}{5301 Shawnee Road} \\
+      \multicolumn{2}{l}{Alexandria, VA 22312} \\
+                                 & \\
+      Telephone: & (800) 553-6847 \\
+      Facsimile: &  (703) 605-6900 \\
+      E-Mail: & orders@ntis.gov \\
+      Online order: & https://classic.ntis.gov/help/order-methods \\
+    \end{tabular}
+  }
+  
+  \includegraphics[height=1in]{DOEbwlogo}
+  \end{flushleft}
+  \clearpage
+  \normalsize
+  \SAND@text@justification
+}
+
+\renewenvironment{abstract}{%
+  \setlength{\parskip}{1ex}
+  \setlength{\parindent}{0pt}
+  {\bfseries\sffamily\Large\MakeUppercase{\abstractname}}\par
+}{}
+
+% 
+% Set up the appendix
+% We clearpage so the first appendix always begins on a new page. Any following appendix sections
+% will appear in-line with no page break - if the user wants that look, then they can insert
+% clearpages manually between their sections.
+% 
+\renewcommand*\appendix{
+  \clearpage
+  \setcounter{section}{0}
+  \setcounter{subsection}{0}
+  \setcounter{subsubsection}{0}
+  \setcounter{figure}{0}
+  \setcounter{table}{0}
+
+  \ifthenelse{\boolean{reportSAND}}{
+    \setcounter{chapter}{0}
+    % in report mode, insert a part TOC heading for the appendices - in
+    % article mode, they're just orphan-ish sections. We don't want it
+    % numbered (hence \chapter*), but we do want a TOC entry, which we have to
+    % do ourselves
+    \addcontentsline{toc}{part}{Appendices}
+  }{}
+    
+  \ifthenelse{\boolean{reportSAND}}{
+    \renewcommand*{\chapterformat}{APPENDIX~\thechapter\autodot\enskip}
+    \renewcommand*{\chaptermarkformat}{APPENDIX~\thechapter\autodot\enskip}
+    \gdef\@chapapp{\appendixname}
+    \gdef\thechapter{\@Alph\c@chapter}
+  }{
+    \renewcommand*{\sectionformat}{APPENDIX~\thesection\autodot\enskip}
+    \renewcommand*{\sectionmarkformat}{APPENDIX~\thesection\autodot\enskip}
+    \gdef\@sectionapp{\appendixname}
+    \gdef\thesection{\@Alph\c@section}
+  }
+  
+  % Reset this from the main document definition since the appendix sections don't need
+  % that "tab stopped" heading layout. This would trash this behavior for any following sections,
+  % but the only thing after this is the Distribution page, which we generate ourselves and has no
+  % subsections.
+  \renewcommand*{\sectionlinesformat}[4]{%
+    \@hangfrom{\hskip ##2##3}{##4}%
+  }
+
+  % Some evil redefinition of \addcontentsline just so we can get "Appendix" in front of the
+  % appendix TOC entries. Stolen from the appendix package (which does this for the user if
+  % they're using a class with a \chapter command; scrartcl, based on the legacy article class,
+  % doesn't have one).
+  % 
+  % Like the above, this only suffices here because the appendices are the last things in the SAND
+  % report that will be in the TOC. You'd need to restore the original \addcontentsline in
+  % case something else needs to be in the TOC that follows the appendices.
+  % 
+  \let\oldacl@pp=\addcontentsline
+  \def\addcontentsline##1##2##3{%
+    \def\@pptempa{##1}\def\@pptempb{toc}%
+    \ifx\@pptempa\@pptempb
+    % if we're doing the TOC and not another list
+    \def\@pptempa{##2}\def\@pptempb{section}%
+    % }
+    %   then if we're adding a section
+    \ifx\@pptempa\@pptempb
+    \ifthenelse{\boolean{reportSAND}}{
+      \oldacl@pp{##1}{##2}{##3}
     }{
-	%
-	% Now for the changes to article.cls functions
-	%
+      % Add a custom section entry with "Appendix" prepended to the number
+      \oldacl@pp{##1}{##2}{Appendix\space ##3}
+    }
+    \else
+    % Not doing a section, just call the original addcontentsline
+    \oldacl@pp{##1}{##2}{##3}%
+    \fi
+    \else
+    % Not doing the TOC, just call the original addcontentsline
+    \oldacl@pp{##1}{##2}{##3}%
+    \fi}%
+
+  \setcounter{secnumdepth}{2}
+}
+
+% ------------------------------------------------------------------------ %
+% Distribution page at the end
+% We have to create our own description environment, so we don't
+% disturb the original one.
+
+\newenvironment{SANDdistribution}[1][nothing]{
+  \setboolean{SANDdistributionProvided}{true}
+
+  \newtoggle{distCRADA}
+  \newtoggle{distPatent}
+  \newtoggle{distLDRD}
+  \newtoggle{distClassified}
+  \newcommand{\SANDdistCRADA}{
+    \toggletrue{distCRADA}
+  }
+
+  \newcommand{\SANDdistPatent}{
+    \toggletrue{distPatent}
+  }
+
+  \newcommand{\SANDdistLDRD}{
+    \toggletrue{distLDRD}
+  }
+
+  \newcommand{\SANDdistClassified}{
+    \toggletrue{distClassified}
+    \SANDdistInternalM{2}{M2497}{Central Technical Files}{8944}
+  }
 
 
-	%
-	% In \@maketitle, we omit the \@date and insert the SAND number and so on
-	%
-	\renewcommand{\@maketitle}{
-	    \doCover{}
-	    \newpage							% \@maketitle from article.cls
-	    {								% new
-		\begin{center}						% new
-		% use framebox instead of makebox for debugging		% new
-		\makebox[\topleftwidth][t]{				% new
-		    \begin{minipage}[c][\topheight][t]{\topleftwidth}	% new
-			% There is nothing at top left			% new
-		    \end{minipage}					% new
-		}							% new
-		\makebox[\topmiddlewidth][c]{				% new
-		    \begin{minipage}[c][\topheight][t]{\topmiddlewidth}	% new
-		    \begin{center}					% new
-			\SANDnumVar\\					% new
-			\SANDreleaseTypeVar\\				% new
-			Printed \SANDprintDateVar\\			% new
-			\ifthenelse{\boolean{SANDrePrintDateProvided}}   {	% new
-			    Reprinted \SANDrePrintDateVar\\		% new
-			}{						% new
-			}						% new
-			\ifthenelse{\boolean{SANDsupersedProvided}}   {	% new
-			    \bigskip					% new
-			    \usebox{\SANDsupersedtempbox}\\		% new
-			}{						% new
-			}						% new
-		    \end{center}					% new
-		    \end{minipage}					% new
-		}							% new
-		% Add topright box to balance topleft to center topmiddle - MJK, 1/12/07
-		\makebox[\toprightwidth][c]{				% new
-		    \begin{minipage}[c][\topheight][t]{\toprightwidth}	% new
-			% There is nothing at top right			% new
-		    \end{minipage}					% new
-		}							% new
-		\end{center}						% new
-	    }								% new
 
-	    \begin{center}						% \@maketitle from article.cls
-		\let \footnote \thanks					% \@maketitle from article.cls
-		{\LARGE \bf \@title\par}				% \@maketitle from article.cls
-		\vskip 1.5em						% \@maketitle from article.cls
-		{\large							% \@maketitle from article.cls
-		    \lineskip .5em%					% \@maketitle from article.cls
-		    \begin{tabular}[t]{c}				% \@maketitle from article.cls
-		    \@author						% \@maketitle from article.cls
-		    \end{tabular}\par					% \@maketitle from article.cls
-		}							% \@maketitle from article.cls
-	    \end{center}						% \@maketitle from article.cls
-	    \par							% \@maketitle from article.cls
-	    \vskip 1.5em						% \@maketitle from article.cls
-	}
+  % Option NM given
+  \ifthenelse{\equal{#1}{NM}}   {
+    \SAND@typeout{Option "NM": Using the SNL NM default distribution list.}
+    \setboolean{distNM}{true}
+  }{
+  }
+
+  % Option CA given
+  \ifthenelse{\equal{#1}{CA}}   {
+    \SAND@typeout{Option "CA": Using the SNL CA default distribution list.}
+    \setboolean{distCA}{true}
+  }{
+  }
+
+  %
+  %  Where in previous SANDreport style it was OK to just typeset the distribution items as they were
+  %  encountered, now a table display is required. Since we don't know how many items we'll have, we need
+  %  to collect each distribution item and do all the typesetting when the SANDdistribution environment
+  %  closes. We can use token registers to do this.
+  %
+  \newtoks\IHtoks\newtoggle{IHpresent} % Internal Hardcopy
+  \newtoks\EHtoks\newtoggle{EHpresent} % External Hardcopy
+  \newtoks\IStoks\newtoggle{ISpresent} % Internal Softcopy
+  \newtoks\EStoks\newtoggle{ESpresent} % External Softcopy
+
+  % These are utility macros to force the token expansion to happen
+  % correctly
+  \newcommand*\addEHtoks[1]{\global\EHtoks\expandafter{\the\EHtoks##1}}
+  \newcommand*\addEStoks[1]{\global\EStoks\expandafter{\the\EStoks##1}}
+  \newcommand*\addIHtoks[1]{\global\IHtoks\expandafter{\the\IHtoks##1}}
+  \newcommand*\addIStoks[1]{\global\IStoks\expandafter{\the\IStoks##1}}
+
+  % We try to map the semantics of the original SANDdist commands into the new categories. Fragile and
+  % probably will need refinement.
+  \newcommand{\SANDdistInternal}[4]{
+    \ifthenelse{\boolean{SANDdistributionProvided}}   {
+    }{
+      \ClassError{SANDreport.cls}{\@backslashchar SANDdistribution
+        not (yet) provided}{\@backslashchar SANDdistribution must
+        be used before any \@backslashchar SANDdistInternal}
+    }
+    \toggletrue{IHpresent}
+    \addIHtoks{##1 & ##3 & ##4 & ##2 \\\hline}
+  }
+  
+  \newcommand{\SANDdistInternalEmail}[3]{
+    \ifthenelse{\boolean{SANDdistributionProvided}}   {
+    }{
+      \ClassError{SANDreport.cls}{\@backslashchar SANDdistribution
+        not (yet) provided}{\@backslashchar SANDdistribution must
+        be used before any \@backslashchar SANDdistInternal}
+    }
+    \toggletrue{ISpresent}
+    \addIStoks{##1 & ##2 & ##3 \\\hline}
+  }
+  
+  % Use a mail channel? Unclear if this is needed, and currently is a noop.
+  \newcommand{\SANDdistInternalM}[4]{
+    \ifthenelse{\boolean{SANDdistributionProvided}}   {
+    }{
+      \ClassError{SANDreport.cls}{\@backslashchar SANDdistribution
+        not (yet) provided}{\@backslashchar SANDdistribution must
+        be used before any \@backslashchar SANDdistInternal}
+    }
+  }
+  
+  \newcommand{\SANDdistExternal}[3]{
+    \ifthenelse{\boolean{SANDdistributionProvided}}   {
+    }{
+      \ClassError{SANDreport.cls}{\@backslashchar SANDdistribution
+        not (yet) provided}{\@backslashchar SANDdistribution must
+        be used before any \@backslashchar SANDdistExternal}
+    }
+    \toggletrue{EHpresent}
+    % parbox used here because names and physical address might have embedded newlines
+    \addEHtoks{##1 & \parbox{2.5in}{\centering##2} & \parbox{2.5in}{##3} \\\hline }
+  }
+  
+  \newcommand{\SANDdistExternalEmail}[3]{
+    \ifthenelse{\boolean{SANDdistributionProvided}}   {
+    }{
+      \ClassError{SANDreport.cls}{\@backslashchar SANDdistribution
+        not (yet) provided}{\@backslashchar SANDdistribution must
+        be used before any \@backslashchar SANDdistExternal}
+    }
+    \toggletrue{ESpresent}
+    \addEStoks{##1 & ##2 & ##3 \\\hline}
+  }
+
+}{
+  %
+  % at \end{SANDdistribution}
+  %
+  \clearpage
+  \section*{DISTRIBUTION}
+
+  \ifthenelse{\boolean{distCA}}   {
+    % Insert the standard CA distribution
+    
+    % If this report is for LDRD work
+    \iftoggle{distLDRD}{
+      \SANDdistInternal{1}{0359}{D. Chavez, LDRD Office}{1911}
+    }{}
+
+    % If this report is for CRADA work
+    \iftoggle{distCRADA}{
+      \SANDdistInternal{1}{0115}{OFA/NFE Agreements}{10112}
+    }{}
+
+    % If this report has a Patent Caution or Patent Interest
+    \iftoggle{distPatent}{
+      \SANDdistInternal{1}{0161}{Legal Intellectual Property}{11500}
+    }{}
+
+    \iftoggle{distClassified}{
+      \SANDdistInternal{2}{9018}{Central Technical Files}{8944 (1 electronic and 1 hardcopy)}
+    }{}
+    \SANDdistInternalEmail{CA Technical Library}{8551}{cateclib@sandia.gov}
+
+  }{}
+
+  \ifthenelse{\boolean{distNM}}   {
+    % Insert the standard NM distribution
+
+    % If this report is for LDRD work
+    \iftoggle{distLDRD}{
+      \SANDdistInternal{1}{0359}{D. Chavez, LDRD Office}{1911}
+    }{}
+
+    % If this report is for CRADA work
+    \iftoggle{distCRADA}{
+      \SANDdistInternal{1}{0115}{OFA/NFE Agreements}{10112}
+    }{}
+
+    % If this report has a Patent Caution or Patent Interest
+    \iftoggle{distPatent}{
+      \SANDdistInternal{1}{0161}{Legal Intellectual Property}{11500}
+    }{}
+
+    \iftoggle{distClassified}{
+      \SANDdistInternalM{2}{2497}{Central Technical Files}{8944 (1 electronic and 1 hardcopy)}
+    }{}
+
+    \SANDdistInternalEmail{Technical Library}{01177}{libref@sandia.gov}
+
+  }{}
+
+  % 
+  % Assuming we have collected all the distribution items, we can now build the tables
+  % 
+
+  % borrowed a little latex-fu to set up the table columns from
+  % https://tex.stackexchange.com/questions/12703/how-to-create-fixed-width-table-columns-with-text-raggedright-centered-raggedlef
+  \newcolumntype{D}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{##1}}
+  \renewcommand{\arraystretch}{1.5}
+  \small\sffamily
+  \par
+  \iftoggle{EHpresent}{
+    {\bfseries Hardcopy\textemdash{}External}\par
+    \vspace{.015in}
+    \begin{tabular}{|D{1in}|D{2.5in}|D{2.5in}|}
+      \hline
+      \rowcolor[gray]{.5}\bfseries Number of \newline Copies & \bfseries Name(s) & \bfseries Company Name and \newline Company Mailing Address \\\hline
+      \the\EHtoks
+    \end{tabular}
+  }{}
+  \par
+  \iftoggle{IHpresent}{
+    {\bfseries Hardcopy\textemdash{}Internal}\par
+    \vspace{.015in}
+    \begin{tabular}{|D{1in}|D{2.5in}|D{1in}|D{1in}|}
+      \hline 
+      \rowcolor[gray]{.5}\bfseries Number of \newline Copies & \bfseries Name & \bfseries Org. & \bfseries Mailstop \\\hline
+      \the\IHtoks 
+    \end{tabular}
+  }{}
+  \par
+  \iftoggle{ESpresent}{
+    {\bfseries Email\textemdash{}External (encrypt for OUO)}\par
+    \vspace{.015in}
+    \begin{tabular}{|D{2.0in}|D{2.0in}|D{2.0in}|} \hline 
+      \rowcolor[gray]{.5}\bfseries Name & \bfseries Company Email \newline Address & \bfseries Company Name \\\hline
+      \the\EStoks 
+    \end{tabular}
+  }{}
+  \par
+  \iftoggle{ISpresent}{
+    {\bfseries Email\textemdash{}Internal (encrypt for OUO)}\par
+    \vspace{.015in}
+    \begin{tabular}{|D{2.5in}|D{1in}|D{2.5in}|} \hline 
+      \rowcolor[gray]{.5}\bfseries Name & \bfseries Org. & \bfseries Sandia Email Address \\\hline
+      \the\IStoks 
+    \end{tabular}
+  }{}
+  
+}
 
 
-	%
-	% For fancy headers, we have to redefine \maketitle. All we are doing,
-	% is to activate the headers again, and then redefine \newpage so it
-	% happens for every body page.
-	%
-	\renewcommand{\maketitle}{\par
-	    \begingroup							% \maketitle from article.cls
-	    \renewcommand\thefootnote{\@fnsymbol\c@footnote}%		% \maketitle from article.cls
-	    \def\@makefnmark{						% \maketitle from article.cls
-		\rlap{\@textsuperscript{\normalfont\@thefnmark}}}%	% \maketitle from article.cls
-	    \long\def\@makefntext##1{\parindent 1em\noindent		% \maketitle from article.cls
-		\hb@xt@1.8em{%						% \maketitle from article.cls
-		\hss\@textsuperscript{\normalfont\@thefnmark}}##1}%	% \maketitle from article.cls
-	    \if@twocolumn						% \maketitle from article.cls
-		\ifnum \col@number=\@ne					% \maketitle from article.cls
-		    \@maketitle						% \maketitle from article.cls
-		\else							% \maketitle from article.cls
-		    \twocolumn[\@maketitle]%				% \maketitle from article.cls
-		\fi							% \maketitle from article.cls
-	    \else							% \maketitle from article.cls
-		\newpage						% \maketitle from article.cls
-		% Prevents figures from going at top of page.		% \maketitle from article.cls
-		\global\@topnum\z@					% \maketitle from article.cls
-		\@maketitle						% \maketitle from article.cls
-	    \fi								% \maketitle from article.cls
-	    \SANDmarks{title}						% new
-	    \@thanks							% \maketitle from article.cls
-	    \endgroup							% \maketitle from article.cls
-	    \setcounter{footnote}{0}%					% \maketitle from article.cls
-	    \global\let\thanks\relax					% \maketitle from article.cls
-	    \global\let\maketitle\relax					% \maketitle from article.cls
-	    \global\let\@maketitle\relax				% \maketitle from article.cls
-	    \global\let\@thanks\@empty					% \maketitle from article.cls
-	    \global\let\@author\@empty					% \maketitle from article.cls
-	    \global\let\@date\@empty					% \maketitle from article.cls
-	    \global\let\@title\@empty					% \maketitle from article.cls
-	    \global\let\title\relax					% \maketitle from article.cls
-	    \global\let\author\relax					% \maketitle from article.cls
-	    \global\let\date\relax					% \maketitle from article.cls
-	    \global\let\and\relax					% \maketitle from article.cls
 
+% 
+% The distribution list for a reprint
+% No housekeeping copies are needed.
+\newenvironment{SANDreDistribution}{
+  \ifthenelse{\boolean{SANDrePrintDateProvided}}   {
+    \setboolean{SANDdistributionProvided}{true}
 
-	    %
-	    % Now we renew \newpage so that from here on the markings
-	    % of the body are used.
-	    %
-	    \renewcommand{\newpage}{%				% \newpage from latex.ltx
-		\if@noskipsec					% \newpage from latex.ltx
-		    \ifx \@nodocument\relax			% \newpage from latex.ltx
-			\leavevmode				% \newpage from latex.ltx
-			\global \@noskipsecfalse		% \newpage from latex.ltx
-		    \fi						% \newpage from latex.ltx
-		\fi						% \newpage from latex.ltx
-		\if@inlabel					% \newpage from latex.ltx
-		    \leavevmode					% \newpage from latex.ltx
-		    \global \@inlabelfalse			% \newpage from latex.ltx
-		\fi						% \newpage from latex.ltx
-		\if@nobreak \@nobreakfalse \everypar{}\fi	% \newpage from latex.ltx
-		\par						% \newpage from latex.ltx
-		\vfil						% \newpage from latex.ltx
-		\penalty -\@M					% \newpage from latex.ltx
-		\SANDmarks{body}				% new
-	    }							% \newpage from latex.ltx
-	}								% \maketitle from article.sty
-
-	\if@titlepage						% \abstract from article.cls
-	    \renewenvironment{abstract}{%			% \abstract from article.cls
-		\titlepage					% \abstract from article.cls
-		\null\vfil					% \abstract from article.cls
-		\@beginparpenalty\@lowpenalty			% \abstract from article.cls
-		\begin{center}%					% \abstract from article.cls
-		    \bfseries \abstractname			% \abstract from article.cls
-		    \@endparpenalty\@M				% \abstract from article.cls
-		\end{center}}%					% \abstract from article.cls
-		% In strict mode we don't want paragraph	% New
-		% indentation in the abstract			% New
-		\ifthenelse{\boolean{strictSAND}}   {		% New
-		    \setlength{\parskip}{0.75ex}		% New Don't indent the following paragraph(s)
-		    \setlength{\parindent}{0pt}			% New Don't indent the following paragraph(s)
-		    \noindent\hspace{-0.7em}			% New Don't indent the first paragraph
-		}{}						% New
-	    {\par\vfil\null\endtitlepage}			% \abstract from article.cls
-	\else							% \abstract from article.cls
-	    \renewenvironment{abstract}{%			% \abstract from article.cls
-		\if@twocolumn					% \abstract from article.cls
-		\section*{\abstractname}%			% \abstract from article.cls
-		\else						% \abstract from article.cls
-		\small						% \abstract from article.cls
-		\begin{center}%					% \abstract from article.cls
-		    {\bfseries \abstractname\vspace{-.5em}\vspace{\z@}}% ...from article.cls
-		\end{center}%					% \abstract from article.cls
-		\quotation					% \abstract from article.cls
-		\fi						% \abstract from article.cls
-		% In strict mode we don't want paragraph	% New
-		% indentation in the abstract			% New
-		\ifthenelse{\boolean{strictSAND}}   {		% New
-		    \setlength{\parskip}{0.75ex}		% New Don't indent the following paragraph(s)
-		    \setlength{\parindent}{0pt}			% New Don't indent the following paragraph(s)
-		    \noindent\hspace{-0.7em}			% New Don't indent the first paragraph
-		}{}						% New
-		}						% \abstract from article.cls
-	    {\if@twocolumn\else\endquotation\fi}		% \abstract from article.cls
-	\fi
+    \stepcounter{SANDreDistCnt}
+    \ifthenelse{\value{SANDreDistCnt} = 2}   {
+      \sbox{\SANDrePrintDistBox}{\usebox{\SANDrePrintDistBoxSecond}}
+    }{
+      \ifthenelse{\value{SANDreDistCnt} = 3}   {
+        \sbox{\SANDrePrintDistBox}{\usebox{\SANDrePrintDistBoxThird}}
+      }{
+        \ifthenelse{\value{SANDreDistCnt} = 4}   {
+          \sbox{\SANDrePrintDistBox}{\usebox{\SANDrePrintDistBoxFourth}}
+        }{
+          \ifthenelse{\value{SANDreDistCnt} = 5}   {
+            \sbox{\SANDrePrintDistBox}{\usebox{\SANDrePrintDistBoxFifth}}
+          }{
+            \ClassError{SANDreport.cls}{\@backslashchar SANDreDistribution
+              used more than four times!}{Do you really have more than
+              five printings? If so, you need to amend SANDreport.cls}
+          }
+        }
+      }
     }
 
+    \usebox{\SANDrePrintDistBox}
+    \normalsize
+    \raggedbottom
+    \begin{SANDdescription}
+    }{
+    }
+  }{
+    \ifthenelse{\boolean{SANDrePrintDateProvided}}   {
+    \end{SANDdescription}
+  }{
+  }
+}
 
 
-% ******************************************************************************
-% Do some checking at the end of the document
+    
+\AtEndDocument{
+  % Do some more usage checking
+  \ifthenelse{\boolean{SANDmainProvided}}   {
+  }{
+    \ClassError{SANDreport.cls}{\@backslashchar SANDmain
+      not provided}{Add \@backslashchar SANDmain before your
+      introduction (first) section of your document}
+  }
+  
+  % background image layer to apply to cover page
+  \DeclareNewLayer[background,page, mode=picture, contents={%
+    \putLL{\includegraphics{\SANDbackcoverBackground}}}]{SANDbackcover-bg}
+  
+  \DeclareNewLayer[foreground,mode=text,area={1.1in}{8.8in}{1.5in}{2in},contents={%
+    \raggedright\sffamily\scriptsize Sandia National Laboratories is a multimission laboratory
+    managed and operated by National Technology \& Engineering Solutions of Sandia LLC, a wholly owned
+    subsidiary of Honeywell International Inc., for the U.S. Department of Energy's National Nuclear
+    Security Administration under contract DE-NA0003525.\vfill}]{SANDbackcover-mission}
+  
+  
+  % 
+  % Put the Sandia Logo on the back page
+  % 
+  \cleardoublepage	% We're on the inside end page now
+  \null\vfill		% Some invisible text
+
+  \newpage		% Now we're on the outside of the end page
+  
+  \setlength{\footskip}{1.7\footskip} % reset this length for the back cover
+  \DeclarePageStyleByLayers{SANDbackcover-recto}{SANDbackcover-bg,SANDbackcover-mission,SANDcover-header,SANDcover-footer}
+  \thispagestyle{SANDbackcover-recto}
+  \null
+  
+} % End of AtEndDocument{}
+
 %
-
-    \AtEndDocument{
-	% Do some more usage checking
-	\ifthenelse{\boolean{SANDmainProvided}}   {
-	}{
-	    \ClassError{SANDreport.cls}{\@backslashchar SANDmain
-		not provided}{Add \@backslashchar SANDmain before your
-		introduction (first) section of your document}
-	}
-
-
-	%
-	% Put the Sandia Logo on the back page
-	%
-	\cleardoublepage	% We're on the inside end page now
-	\mbox{}			% Some invisible text
-	\vfill
-	\hfill {\CoverFont{m}{6}{7pt} \SANDreportVersionOnly}
-	\setboolean{SANDmarkingsRequired}{false}
-	\thispagestyle{empty}
-	\pagestyle{empty}
-	\newpage		% Now we're on the outside of the end page
-
-	\vspace*{\fill}		% Move the logo to the bottom of the page
-	\thispagestyle{empty}
-	\begin{center}
-	    \includegraphics{snllineblk}
-	\end{center}
-
-    } % End of AtEndDocument{}
+% These are included for compatibility with the existing set of examples and for people who haven't moved
+% off their usage
+%
+\DeclareOldFontCommand{\rm}{\normalfont\rmfamily}{\mathrm}
+\DeclareOldFontCommand{\sf}{\normalfont\sffamily}{\mathsf}
+\DeclareOldFontCommand{\tt}{\normalfont\ttfamily}{\mathtt}
+\DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf}
+\DeclareOldFontCommand{\it}{\normalfont\itshape}{\mathit}
+\DeclareOldFontCommand{\sl}{\normalfont\slshape}{\@nomath\sl}
+\DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc}

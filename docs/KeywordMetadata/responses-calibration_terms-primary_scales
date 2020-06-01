@@ -1,1 +1,42 @@
-DUPLICATE-primary_scales
+Blurb::
+Characteristic values to scale each calibration term
+
+Description::
+
+Each real value in \c primary_scales is a nonzero characteristic value
+to be used in scaling each calibration term. They only have effect
+when the associated method specifies \c scaling.
+
+Length: When specified, \c primary_scales must have length one of:
+
+\li One (the single value will be applied to each primary response); or
+
+\li Number of response groups (\ref responses-calibration_terms), so
+the number of scalars plus the number of fields when fields are
+present; or
+
+\li Total number of response elements, so the number of scalar
+responses plus the sum of the lengths of the fields.
+
+<b>Usage Tips:</b>
+
+Calibration only supports value-based scaling. Use scale values of 1.0
+to selectively avoid scaling a subset of response functions.
+
+Weights are applied as multipliers, scales as charateristic values /
+divisors.
+
+When scaling is active, it is applied to calibration terms after any
+residual formation (accounting for experimental data and optionally
+measurement error covariance), and before any weights. See the
+equations in \ref responses-calibration_terms.
+
+See the scaling information under specific methods, e.g.,
+\c method-*-scaling for details on how to use this keyword.
+
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::

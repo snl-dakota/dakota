@@ -56,10 +56,10 @@ public:
    *  \brief Get the gradient of the objective function at a point.
    *  \param[out] g Gradient of the objective function.
    *  \param[in] p ROL vector of parameters.
-   *  \param[in] tol Tolerance for inexact evaluation? (not used here).
+   *  \param[in] tol Tolerance for inexact evaluation (not used here).
    *
    */
-  void gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double& tol);
+  void gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double &tol);
 
 private:
 
