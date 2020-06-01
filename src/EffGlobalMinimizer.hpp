@@ -12,7 +12,7 @@
 //- Checked by:
 //- Version:
 
-//- Edited by:   Anh Tran on 12/21/2019
+//- Edited by:   Anh Tran
 
 #ifndef EGO_MINIMIZER_H
 #define EGO_MINIMIZER_H
@@ -135,11 +135,11 @@ private:
 
   /// expected improvement function for the GP
   Real expected_improvement(const RealVector& means,
-			                     const RealVector& variances);
+			    const RealVector& variances);
 
   /// expected violation function for the constraint functions
   RealVector expected_violation(const RealVector& means,
-    				                    const RealVector& variances);
+				const RealVector& variances);
 
   /// initialize and update the penaltyParameter
   void update_penalty();
@@ -151,9 +151,9 @@ private:
   /// static function used as the objective function in the
   /// Expected Improvement (EIF) problem formulation for PMA
   static void EIF_objective_eval(const Variables& sub_model_vars,
-				                        const Variables& recast_vars,
-                                const Response& sub_model_response,
-                                Response& recast_response);
+				 const Variables& recast_vars,
+				 const Response& sub_model_response,
+				 Response& recast_response);
 
   //
   //- Heading: Data
