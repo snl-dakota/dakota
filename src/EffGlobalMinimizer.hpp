@@ -33,25 +33,25 @@ namespace Dakota {
 
 class EffGlobalTraits: public TraitsBase
 {
-  public:
+    public:
 
-  /// default constructor
-  EffGlobalTraits() { }
+    /// default constructor
+    EffGlobalTraits() { }
 
-  /// destructor
-  virtual ~EffGlobalTraits() { }
+    /// destructor
+    virtual ~EffGlobalTraits() { }
 
-  /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+    /// A temporary query used in the refactor
+    virtual bool is_derived() { return true; }
 
-  /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+    /// Return the flag indicating whether method supports continuous variables
+    bool supports_continuous_variables() { return true; }
 
-  /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+    /// Return the flag indicating whether method supports nonlinear equalities
+    bool supports_nonlinear_equality() { return true; }
 
-  /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+    /// Return the flag indicating whether method supports nonlinear inequalities
+    bool supports_nonlinear_inequality() { return true; }
 };
 
 
@@ -63,153 +63,180 @@ class EffGlobalMinimizer: public SurrBasedMinimizer
 {
 public:
 
-  //
-  //- Heading: Constructors and destructor
-  //
+    //
+    //- Heading: Constructors and destructor
+    //
 
-  /// standard constructor
-  EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model);
-  /// alternate constructor for instantiations "on the fly"
-  //EffGlobalMinimizer(Model& model, int max_iterations, int max_fn_evals);
-  ~EffGlobalMinimizer(); /// destructor
+    /// standard constructor
+    EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model);
+    /// alternate constructor for instantiations "on the fly"
+    //EffGlobalMinimizer(Model& model, int max_iterations, int max_fn_evals);
+    ~EffGlobalMinimizer(); /// destructor
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
+    //
+    //- Heading: Virtual function redefinitions
+    //
 
-  //void derived_init_communicators(ParLevLIter pl_iter);
-  //void derived_set_communicators(ParLevLIter pl_iter);
-  //void derived_free_communicators(ParLevLIter pl_iter);
+    // void derived_init_communicators(ParLevLIter pl_iter);
+    // void derived_set_communicators(ParLevLIter pl_iter);
+    // void derived_free_communicators(ParLevLIter pl_iter);
 
-  void core_run();
+    void core_run();
 
-  const Model& algorithm_space_model() const;
+    const Model& algorithm_space_model() const;
 
-  void declare_sources();
+    void declare_sources();
 
 private:
 
-  //
-  //- Heading: Convenience member functions
-  //
+    //
+    //- Heading: Convenience member functions
+    //
 
-  /// called by minimize_surrogates for setUpType == "model"
-  void minimize_surrogates_on_model();
-  /// called by minimize_surrogates for setUpType == "user_functions"
-  // void minimize_surrogates_on_user_functions();
+    /// called by minimize_surrogates for setUpType == "model"
+    void minimize_surrogates_on_model();
+    /// called by minimize_surrogates for setUpType == "user_functions"
+    // void minimize_surrogates_on_user_functions();
 
-  /// determine best solution from among sample data for expected
-  ///   imporovement function
-  void get_best_sample();
+    /// determine best solution from among sample data for expected
+    /// imporovement function
+    void get_best_sample();
 
-  /// initialize
-  void initialize();
+    /// initialize
+    /// build initial GP responses
+    void build_gp();
 
-  /// augmented Lagrangian
-  /// augmented Lagrangian
-  Real get_augmented_lagrangian(const RealVector& mean,
-                                const RealVector& c_vars,
-                                const Real& eif_star);
+    /// for parallel EGO
+    /// construct the acquisition batch
+    void construct_batch_acquisition(int BatchSizeAcquisition);
 
-  /// check convergence
-  /// if EGO has converged
-  void check_convergence(const Real& eif_star,
-                        const RealVector& c_vars,
-                        RealVector prev_cv_star,
-                        unsigned short eif_convergence_cntr,
-                        unsigned short dist_convergence_cntr);
+    /// for parallel EGO
+    /// delete liar responses in fHatModel
+    void delete_liar_responses(int BatchSizeAcquisition);
 
-  /// print mean and variance if debug flag is ON
-  void debug_print_values();
+    /// for parallel EGO
+    /// query/update responses/update constraints
+    void query_batch(int BatchSizeAcquisition);
 
-  /// print counter if debug flag is ON
-  void debug_print_counter(unsigned short globalIterCount,
-                           const Real& eif_star,
-                           Real distCStar,
-                           unsigned short dist_convergence_cntr);
+    /// augmented Lagrangian
+    /// augmented Lagrangian
+    Real get_augmented_lagrangian(const RealVector& mean,
+                                  const RealVector& c_vars,
+                                  const Real& eif_star);
 
-  // DEBUG - output set of samples used to build the GP
-  // If problem is 2d, output a grid of points on the GP
-  //   and truth (if requested)
-  void debug_plots();
+    /// check convergence
+    /// if EGO has converged
+    void check_convergence(const Real& eif_star,
+                          const RealVector& c_vars,
+                          RealVector prev_cv_star,
+                          unsigned short eif_convergence_cntr,
+                          unsigned short dist_convergence_cntr);
 
-  /// expected improvement function for the GP
-  Real expected_improvement(const RealVector& means,
-			    const RealVector& variances);
+    /// print mean and variance if debug flag is ON
+    void debug_print_values();
 
-  /// expected violation function for the constraint functions
-  RealVector expected_violation(const RealVector& means,
-				const RealVector& variances);
+    /// print counter if debug flag is ON
+    void debug_print_counters(unsigned short globalIterCount,
+                              const Real& eif_star,
+                              Real distCStar,
+                              unsigned short dist_convergence_cntr);
 
-  /// initialize and update the penaltyParameter
-  void update_penalty();
+    // DEBUG - output set of samples used to build the GP
+    // If problem is 2d, output a grid of points on the GP
+    //   and truth (if requested)
+    void debug_plots();
 
-  //
-  //- Heading: Objective/constraint evaluators passed to RecastModel
-  //
+    /// expected improvement function for the GP
+    Real expected_improvement(const RealVector& means,
+  			                     const RealVector& variances);
 
-  /// static function used as the objective function in the
-  /// Expected Improvement (EIF) problem formulation for PMA
-  static void EIF_objective_eval(const Variables& sub_model_vars,
-				 const Variables& recast_vars,
-				 const Response& sub_model_response,
-				 Response& recast_response);
+    /// expected violation function for the constraint functions
+    RealVector expected_violation(const RealVector& means,
+      				                    const RealVector& variances);
 
-  //
-  //- Heading: Data
-  //
+    /// initialize and update the penaltyParameter
+    void update_penalty();
 
-  /// pointer to the active object instance used within the static evaluator
-  /// functions in order to avoid the need for static data
-  static EffGlobalMinimizer* effGlobalInstance;
-  // static EffGlobalMinimizer* prev_instance;
+    //
+    //- Heading: Objective/constraint evaluators passed to RecastModel
+    //
 
-  /// controls iteration mode: "model" (normal usage) or "user_functions"
-  /// (user-supplied functions mode for "on the fly" instantiations).
-  String setUpType;
+    /// static function used as the objective function in the
+    /// Expected Improvement (EIF) problem formulation for PMA
+    static void EIF_objective_eval(const Variables& sub_model_vars,
+  				                        const Variables& recast_vars,
+                                  const Response& sub_model_response,
+                                  Response& recast_response);
 
-  /// convergence tolerance on distance
-  /// between predicted best points
-  Real distanceTol;
+    //
+    //- Heading: Data
+    //
 
-  /// convergence tolerances
-  /// in objectives
-  Real convergenceTol;
+    /// pointer to the active object instance used within the static evaluator
+    /// functions in order to avoid the need for static data
+    static EffGlobalMinimizer* effGlobalInstance;
+    // static EffGlobalMinimizer* prev_instance;
 
-  /// GP model of response, one approximation per response function
-  Model fHatModel;
-  /// recast model which assimilates mean and variance to solve the
-  /// max(EIF) sub-problem
-  Model eifModel;
+    /// controls iteration mode: "model" (normal usage) or "user_functions"
+    /// (user-supplied functions mode for "on the fly" instantiations).
+    String setUpType;
 
-  /// minimum penalized response from among true function evaluations
-  Real meritFnStar;
-  /// true function values corresponding to the minimum penalized response
-  RealVector truthFnStar;
-  /// point that corresponds to the optimal value meritFnStar
-  RealVector varStar;
+    /// convergence tolerance on distance
+    /// between predicted best points
+    Real distanceTol;
 
-  /// order of the data used for surrogate construction, in ActiveSet
-  /// request vector 3-bit format; user may override responses spec
-  short dataOrder;
+    /// convergence tolerances
+    /// in objectives
+    Real convergenceTol;
 
-  /// declare check convergence variables
-  /// relative distance change in input measured in L2
-  Real distCStar;
+    /// GP model of response, one approximation per response function
+    Model fHatModel;
+    /// recast model which assimilates mean and variance to solve the
+    /// max(EIF) sub-problem
+    Model eifModel;
 
-  /// declare batch size for BatchSizeAcquisition
-  /// sampling point located at maximum acquisition function
-  int BatchSizeAcquisition;
+    /// minimum penalized response from among true function evaluations
+    Real meritFnStar;
+    /// true function values corresponding to the minimum penalized response
+    RealVector truthFnStar;
+    /// point that corresponds to the optimal value meritFnStar
+    RealVector varStar;
 
-  /// declare batch size for BatchSizeExploration
-  /// sampling point located at maximum posterior variance
-  int BatchSizeExploration;
+    /// order of the data used for surrogate construction, in ActiveSet
+    /// request vector 3-bit format; user may override responses spec
+    short dataOrder;
+
+    /// declare check convergence variables
+    /// relative distance change in input measured in L2
+    Real distCStar;
+
+    /// declare batch size for BatchSizeAcquisition
+    /// sampling point located at maximum acquisition function
+    int BatchSizeAcquisition;
+
+    /// declare batch size for BatchSizeExploration
+    /// sampling point located at maximum posterior variance
+    int BatchSizeExploration;
+
+    /// placeholder for batch inputs
+    /// before evaluating a batch
+    VariablesArray varsArrayBatchAcq;
+
+    /// declar parallel_flag
+    /// if model can support asynchronously parallel evaluation
+    bool parallelFlag;
+
+    /// best-so-far variables and their associates
+    /// for evaluating EI acquisition
+    Variables  varsStar;
+    RealVector cVars;
+    Response   respStar;
+    Real       eifStar;
 
 };
 
 
-inline const Model& EffGlobalMinimizer::algorithm_space_model() const
-{ return fHatModel; }
+inline const Model& EffGlobalMinimizer::algorithm_space_model() const { return fHatModel; }
 
 } // namespace Dakota
 
