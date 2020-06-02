@@ -327,6 +327,7 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version)
   archive & cwiseDists2;
   archive & thetaValues;
   archive & fixedNuggetValue;
+  archive & estimateNugget;
   archive & estimatedNuggetValue;
   archive & estimateTrend;
   archive & targetValues;
