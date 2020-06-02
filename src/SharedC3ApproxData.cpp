@@ -116,7 +116,7 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
   // uses startOrderSpec at construct time (initialize_u_space_model()) since
   // startOrder[activeKey] not meaningful until run time active key assignment
   const UShortArray& so = start_orders();
-  size_t np, max_np = maxOrder; ++max_np; // no overflow (default is USHRT_MAX)
+  size_t np, max_np = max_order(); ++max_np;//no overflow (default is USHRT_MAX)
   for (i=0; i<num_rv; ++i)
     if (no_mask || active_vars[i]) {
       switch (rv_types[i]) {
@@ -187,15 +187,21 @@ void SharedC3ApproxData::increment_order()
   case UNIFORM_START_ORDER: {
     std::map<UShortArray, UShortArray>::iterator it
       = startOrders.find(activeKey);
+    if (it == startOrders.end()) {
+      Cerr << "Error: start order lookup failure in SharedC3ApproxData::"
+	   << "increment_order()." << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
     UShortArray& start_ord = it->second;  bool incremented = false;
+    unsigned short max_ord = max_order();
     for (size_t v=0; v<numVars; ++v) {
       unsigned short &s_ord = start_ord[v];
       // unconditional increment (preserve symmetry/reproducibility w/decrement)
       ++s_ord; //s_ord += kickOrder;
       // default maxOrder is USHRT_MAX.  kickOrder not used since other exp
       // order increments (i.e., regression PCE) advance by 1
-      if (s_ord <= maxOrder) // only communicate if in bounds
-	{ incremented = true; update_basis(v, s_ord, maxOrder); }
+      if (s_ord <= max_ord) // only communicate if in bounds
+	{ incremented = true; update_basis(v, s_ord, max_ord); }
     }
     if (incremented)
       formUpdated[activeKey] = true;
@@ -208,10 +214,20 @@ void SharedC3ApproxData::increment_order()
     // To ensure symmetry with decrement, don't saturate at maxRank
     // > Must bound start_ranks vector in C3Approximation::build()
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
+    if (it == startRank.end()) {
+      Cerr << "Error: start rank lookup failure in SharedC3ApproxData::"
+	   << "increment_order()." << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
     it->second += kickRank;  formUpdated[activeKey] = true;  break;
   }
   case UNIFORM_MAX_RANK: {
-    std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
+    std::map<UShortArray, size_t>::iterator it = maxRank.find(activeKey);
+    if (it == maxRank.end()) {
+      Cerr << "Error: max rank lookup failure in SharedC3ApproxData::"
+	   << "increment_order()." << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
     it->second += kickRank;  formUpdated[activeKey] = true;  break;
   }
   }
@@ -229,13 +245,19 @@ void SharedC3ApproxData::decrement_order()
   case UNIFORM_START_ORDER: {
     std::map<UShortArray, UShortArray>::iterator it
       = startOrders.find(activeKey);
+    if (it == startOrders.end()) {
+      Cerr << "Error: start order lookup failure in SharedC3ApproxData::"
+	   << "decrement_order()." << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
     UShortArray& start_ord = it->second;  bool decremented = false;
+    unsigned short max_ord = max_order();
     for (size_t v=0; v<numVars; ++v) {
       unsigned short &s_ord = start_ord[v];
       if (s_ord) { // prevent underflow
 	--s_ord; // preserve symmetry/reproducibility w/increment
-	if (s_ord < maxOrder) // only communicate if in bounds
-	  { update_basis(v, s_ord, maxOrder); decremented = true; }
+	if (s_ord < max_ord) // only communicate if in bounds
+	  { update_basis(v, s_ord, max_ord); decremented = true; }
       }
     }
     if (decremented) formUpdated[activeKey] = true;
@@ -244,13 +266,23 @@ void SharedC3ApproxData::decrement_order()
   }
   case UNIFORM_START_RANK: {
     std::map<UShortArray, size_t>::iterator it = startRank.find(activeKey);
+    if (it == startRank.end()) {
+      Cerr << "Error: start rank lookup failure in SharedC3ApproxData::"
+	   << "decrement_order()." << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
     size_t& s_rank = it->second;  
     if (s_rank) { s_rank -= kickRank; formUpdated[activeKey] = true; }
     else          bad_range = true;
     break;
   }
   case UNIFORM_MAX_RANK:
-    std::map<UShortArray, size_t>::iterator it =   maxRank.find(activeKey);
+    std::map<UShortArray, size_t>::iterator it = maxRank.find(activeKey);
+    if (it == maxRank.end()) {
+      Cerr << "Error: max rank lookup failure in SharedC3ApproxData::"
+	   << "decrement_order()." << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
     size_t& m_rank = it->second;  
     if (m_rank) { m_rank -= kickRank; formUpdated[activeKey] = true; }
     else          bad_range = true;
@@ -274,7 +306,7 @@ void SharedC3ApproxData::pre_combine()
 	combinedOrders[i] = so[i];
   }
 
-  update_basis(combinedOrders, maxOrder);
+  update_basis(combinedOrders, max_order());
 }
 
 

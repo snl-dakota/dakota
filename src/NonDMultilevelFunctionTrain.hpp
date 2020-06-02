@@ -103,8 +103,12 @@ private:
 
   size_t start_rank(size_t index) const;
   size_t start_rank() const;
+
   unsigned short start_order(size_t index) const;
   unsigned short start_order() const;
+
+  void push_c3_active(const UShortArray& orders);
+  void push_c3_active();
 
   // scale sample profile to retain shape while enforcing an upper bound
   //void scale_profile(..., RealVector& new_N_l);
@@ -162,6 +166,24 @@ start_order(size_t index) const
 
 inline unsigned short NonDMultilevelFunctionTrain::start_order() const
 { return start_order(sequenceIndex); }
+
+
+inline void NonDMultilevelFunctionTrain::
+push_c3_active(const UShortArray& orders)
+{
+  push_c3_start_rank(start_rank());
+  push_c3_max_rank(maxRankSpec); // restore if adapted (no sequence)
+  push_c3_start_orders(orders);
+  push_c3_seed(random_seed());
+}
+
+
+inline void NonDMultilevelFunctionTrain::push_c3_active()
+{
+  UShortArray orders;
+  configure_expansion_orders(start_order(), dimPrefSpec, orders);
+  push_c3_active(orders);
+}
 
 } // namespace Dakota
 

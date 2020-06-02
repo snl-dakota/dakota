@@ -298,12 +298,21 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
   //configure_pecos_options(); // C3 does not use Pecos options
 
-  // needs to precede construct_basis()
+  // Initialize scalar attributes in SharedC3ApproxData; needs to precede
+  // construct_basis()
   initialize_c3_start_rank(startRankSpec);
   UShortArray orders;
   configure_expansion_orders(startOrderSpec, dimPrefSpec, orders);
   initialize_c3_start_orders(orders);
-  initialize_c3_db_options();
+  initialize_c3_db_options(); // includes maxRank
+
+  // Initialize keyed attributes (NonDMLFT manages a keyed level sequence,
+  // regular FT has one key that is initialized from ctor).  Keyed values
+  // are used in (uniform) refinement.
+  push_c3_start_rank(startRankSpec);
+  push_c3_max_rank(maxRankSpec); // restore if adapted (no sequence)
+  push_c3_start_orders(orders);
+  //push_c3_seed(randomSeedSpec);
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   const Pecos::MultivariateDistribution& u_dist

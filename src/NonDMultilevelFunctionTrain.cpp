@@ -226,6 +226,12 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   //configure_expansion_orders(start_order(), dimPrefSpec, orders);
   //initialize_c3_start_orders(orders);
 
+  // This is included only for completeness (redundant with {assign,increment}_
+  // specification_sequence() for MF and not used by current ML approaches
+  // (but would be important if ML incremented expansion rank/order).
+  if (methodName == MULTILEVEL_FUNCTION_TRAIN)
+    push_c3_active();
+
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
@@ -318,13 +324,9 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   // prior to any refinement/adaptation (use local attributes, not the state
   // of SharedC3ApproxData,C3Approximation
 
-  push_c3_start_rank(start_rank());
-  push_c3_max_rank(maxRankSpec); // restore if adapted (no sequence)
   UShortArray orders;
   configure_expansion_orders(start_order(), dimPrefSpec, orders);
-  push_c3_start_orders(orders);
-  push_c3_seed(random_seed());
-
+  push_c3_active(orders);
   shared_data_rep->update_basis(); // propagate order updates to oneApproxOpts
 
   size_t colloc_pts = collocation_points();
