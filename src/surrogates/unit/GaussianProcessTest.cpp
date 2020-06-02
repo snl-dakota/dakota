@@ -442,8 +442,8 @@ int test_gp(double atol){
   // BMA/DTS TODO: Is this a bug, should be gp_2D_quad ?!?
   // It might explain why my tests below failed with same gold
   // (see bottom of file)
-  gp_2D.gradient(eval_point, gp_grad);
-  gp_2D.hessian(eval_point, gp_hessian);
+  gp_2D_quad.gradient(eval_point, gp_grad);
+  gp_2D_quad.hessian(eval_point, gp_hessian);
 
   if (print_output) {
     std::cout << "\n2D trend gp gradient:\n";
@@ -465,20 +465,20 @@ int test_gp(double atol){
   }
 
   gold_value_2D << 0.77987534, 0.84715045, 0.74437935, 0.74654155;
-  gold_gp_grad << -0.312808, -0.25431;
-  gold_gp_hessian << 0.874524,  0.101448, 0.101448, -0.842713;
+  gold_gp_grad << -0.312998265, -0.25777615;
+  gold_gp_hessian << 0.86763171, 0.10209617, 0.10209617, -0.84260876;
 
-  if (!matrix_equals(pred_2D,gold_value_2D,atol)){
+  if (!matrix_equals(pred_2D, gold_value_2D, atol)){
     std::cout << "16\n";
     return 16;
   }
 
-  if (!matrix_equals(gp_grad,gold_gp_grad,atol)){
+  if (!matrix_equals(gp_grad, gold_gp_grad, atol)){
     std::cout << "17\n";
     return 17;
   }
 
-  if (!matrix_equals(gp_hessian,gold_gp_hessian,atol)){
+  if (!matrix_equals(gp_hessian, gold_gp_hessian, atol)){
     std::cout << "18\n";
     return 18;
   }
@@ -624,17 +624,15 @@ TEUCHOS_UNIT_TEST(surrogates, gaussian_process_saveload)
     MatrixXd gold_value_2D(4,1);
     gold_value_2D << 0.77987534, 0.84715045, 0.74437935, 0.74654155;
     MatrixXd gold_gp_grad(1,2);
-    gold_gp_grad << -0.312808, -0.25431;
+    gold_gp_grad << -0.312998265, -0.25777615;
     MatrixXd gold_gp_hessian(2,2);
-    gold_gp_hessian << 0.874524,  0.101448, 0.101448, -0.842713;
+    gold_gp_hessian << 0.86763171, 0.10209617, 0.10209617, -0.84260876;
 
     double atol = 5.0e-7;
     TEST_ASSERT(matrix_equals(value_load, gold_value_2D, atol));
-    // BMA ask DTS: Couldn't get these working to tolerance; see possible bug above
-    //    TEST_ASSERT(matrix_equals(grad_load, gold_gp_grad, atol));
-    //    TEST_ASSERT(matrix_equals(hess_load, gold_gp_hessian, atol));
+    TEST_ASSERT(matrix_equals(grad_load, gold_gp_grad, atol));
+    TEST_ASSERT(matrix_equals(hess_load, gold_gp_hessian, atol));
   }
 }
-
 
 }

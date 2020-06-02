@@ -82,7 +82,8 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
   SCALER_TYPE scalerType = util::DataScaler::scaler_type(
       configOptions.get<std::string>("scaler type"));
   dataScaler = *(util::scaler_factory(scalerType, unscaled_basis_matrix));
-  const MatrixXd& scaled_basis_matrix = dataScaler.get_scaled_features();
+  MatrixXd scaled_basis_matrix;
+  dataScaler.scale_samples(unscaled_basis_matrix, scaled_basis_matrix);
 
   /* Solve the for the polynomial coefficients */
   SOLVER_TYPE solverType = util::LinearSolverBase::solver_type(
@@ -99,14 +100,16 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
                                  MatrixXd &approx_values) {
 
   /* Construct the basis matrix for the eval points */
-  MatrixXd unscaled_basis_matrix;
-  compute_basis_matrix(eval_points, unscaled_basis_matrix);
+  MatrixXd unscaled_eval_pts_basis_matrix;
+  compute_basis_matrix(eval_points, unscaled_eval_pts_basis_matrix);
 
   /* Scale the sample points */
-  MatrixXd scaled_basis_matrix = *(dataScaler.scale_samples(unscaled_basis_matrix));
+  MatrixXd scaled_eval_pts_basis_matrix;
+  dataScaler.scale_samples(unscaled_eval_pts_basis_matrix,
+                           scaled_eval_pts_basis_matrix);
 
   /* Compute the prediction values*/
-  approx_values = scaled_basis_matrix*(polynomialCoeffs);
+  approx_values = scaled_eval_pts_basis_matrix*(polynomialCoeffs);
   approx_values = (approx_values.array() + polynomialIntercept).matrix();
 }
 
@@ -150,7 +153,7 @@ void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
   /* Scale the basis matrix */
   dataScaler.scale_samples(unscaled_eval_pts_basis_matrix,
-                        scaled_eval_pts_basis_matrix);
+                           scaled_eval_pts_basis_matrix);
 
   /* Compute the gradient */
   gradient = scaled_eval_pts_basis_matrix*deriv_coeffs;

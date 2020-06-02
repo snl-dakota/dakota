@@ -235,6 +235,9 @@ private:
   /// Target values for the surrogate dataset.
   MatrixXd targetValues;
 
+  /// The scaled build points for the surrogate dataset.
+  MatrixXd scaledBuildPoints;
+
   /// Vector of log-space hyperparameters.
   VectorXd thetaValues;
 
@@ -330,6 +333,7 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version)
   archive & estimateNugget;
   archive & estimatedNuggetValue;
   archive & estimateTrend;
+  archive & scaledBuildPoints;
   archive & targetValues;
   archive & basisMatrix;
   archive & betaValues;

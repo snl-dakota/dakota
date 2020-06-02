@@ -54,13 +54,6 @@ class DataScaler {
     /**
      *  \brief Apply scaling to a set of unscaled samples
      *  \param[in] unscaled_samples Unscaled matrix of samples
-     *  \returns A shared_ptr to the scaled matrix of samples
-     */
-    std::shared_ptr<MatrixXd> scale_samples(const MatrixXd &unscaled_samples);
-
-    /**
-     *  \brief Apply scaling to a set of unscaled samples
-     *  \param[in] unscaled_samples Unscaled matrix of samples
      *  \param[out] scaled_samples Scaled matrix of samples
      */
     void scale_samples(const MatrixXd &unscaled_samples, MatrixXd &scaled_samples);
@@ -76,12 +69,6 @@ class DataScaler {
      *  \returns Vector of scaling factors - (num_features)
      */
     inline const VectorXd& get_scaler_features_scale_factors() const { return scalerFeaturesScaleFactors; }
-
-    /**
-     *  \brief Get the the scaled data matrix
-     *  \returns Scaled features - (num_samples by num_features)
-     */
-    inline const MatrixXd& get_scaled_features() const { return scaledFeatures; }
 
     /**
      *  \brief Checks an individual scaler feature scale factor for being close to zero;  If it is
@@ -113,9 +100,6 @@ class DataScaler {
     /// Vector of scaling factors - (num_features)
     VectorXd scalerFeaturesScaleFactors;
 
-    /// Scaled surrogate data matrix - (num_samples by num_features)
-    MatrixXd scaledFeatures;
-
 private:
 
   /// Allow serializers access to private class data
@@ -133,9 +117,6 @@ void DataScaler::serialize(Archive& archive, const unsigned int version)
   archive & hasScaling;
   archive & scalerFeaturesOffsets;
   archive & scalerFeaturesScaleFactors;
-  // BMA TODO: Does this class need to store the scaled features;
-  // seems they should be cached by clients?
-  archive & scaledFeatures;
 }
 
 
