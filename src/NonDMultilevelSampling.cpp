@@ -393,15 +393,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     unsigned short& step = (true) ? lev : model_form; // option not active
 
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-    Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost, place_holder;
     // retrieve cost estimates across soln levels for a particular model form
-    RealVector cost = truth_model.solution_level_costs(), agg_var(num_steps), agg_var_of_var(num_steps),
-      estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions),
-      sum_sqrt_var_cost_qoi(numFunctions), sum_sqrt_var_cost_var_qoi(numFunctions), sum_sqrt_var_cost_mean_qoi(numFunctions),
-      agg_var_l_qoi(numFunctions), level_cost_vec(num_steps);
-    RealMatrix agg_var_qoi(numFunctions, num_steps), agg_var_mean_qoi(numFunctions, num_steps),
-      agg_var_var_qoi(numFunctions, num_steps), N_target_qoi(numFunctions, num_steps);
-    RealMatrix N_target_qoi_FN(numFunctions, num_steps);
+    RealVector cost = truth_model.solution_level_costs(),
+      estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions);
+    RealMatrix agg_var_qoi(numFunctions, num_steps);
 
     // For moment estimation, we accumulate telescoping sums for Q^i using
     // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -410,19 +405,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     IntRealMatrixMap sum_Ql, sum_Qlm1;
     IntIntPairRealMatrixMap sum_QlQlm1;
     initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, num_steps);
-    IntIntPair pr11(1, 1);
-
-    bool have_npsol = false, have_optpp = false;
-#ifdef HAVE_NPSOL
-    have_npsol = true;
-#endif
-#ifdef HAVE_OPTPP
-    have_optpp = true;
-#endif
 
     // Initialize for pilot sample
     SizetArray delta_N_l;
-    IntMatrix delta_N_l_qoi(numFunctions, num_steps);
     load_pilot_sample(pilotSamples, NLev, delta_N_l);
 
     // raw eval counts are accumulation of allSamples irrespective of resp faults
@@ -430,12 +415,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     RealVectorArray mu_hat(num_steps);
     Sizet2DArray &N_l = NLev[model_form];
 
-    // Safe guard.
-    for(qoi = 0; qoi < numFunctions; ++qoi) {
-      for (step = 0; step < num_steps; ++step) {
-        N_target_qoi(qoi, step) = -1;
-      }
-    }
 
 ////TODO
     //// Problem 18
@@ -604,26 +583,17 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     // now converge on sample counts per level (N_l)
     mlmfIter = 0;
     while (Pecos::l1_norm(delta_N_l) && mlmfIter <= max_iter) {
-      Real underrelaxation_factor = static_cast<Real>(mlmfIter + 1)/static_cast<Real>(max_iter + 1);
 
-      sum_sqrt_var_cost = 0.;
-      for (qoi = 0; qoi < numFunctions; ++qoi) {
-        sum_sqrt_var_cost_qoi[qoi] = 0.;
-        sum_sqrt_var_cost_mean_qoi[qoi] = 0.;
-        sum_sqrt_var_cost_var_qoi[qoi] = 0.;
-      }
       for (step=0; step<num_steps; ++step) {
 
         configure_indices(step, model_form, lev, seq_index);
-        lev_cost = level_cost(cost, step);
-        level_cost_vec[step] = lev_cost;
 
         // set the number of current samples from the defined increment
         numSamples = delta_N_l[step];
 
         // aggregate variances across QoI for estimating N_l (justification:
         // for independent QoI, sum of QoI variances = variance of QoI sum)
-        Real &agg_var_l = agg_var[step]; // carried over from prev iter if no samp
+        //Real &agg_var_l = agg_var[step]; // carried over from prev iter if no samp
 
         if (numSamples) {
 
@@ -656,29 +626,13 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
           // compute estimator variance from current sample accumulation:
           if (outputLevel >= DEBUG_OUTPUT)
             Cout << "variance of Y[" << step << "]: ";
-          //if (target_mean)
-          if (qoiAggregation==QOI_AGGREGATION_SUM) {
-            aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, agg_var_l);
-          }else if (qoiAggregation==QOI_AGGREGATION_MAX) {
-            aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, agg_var_qoi);
-          }else{
-            Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
-            abort_handler(INTERFACE_ERROR);
-          }
+
+          aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, agg_var_qoi);
         }
 
-        if (qoiAggregation==QOI_AGGREGATION_SUM) {
-          compute_sum_sqrt_var_cost(agg_var_l, lev_cost, sum_sqrt_var_cost);
-        }else if (qoiAggregation==QOI_AGGREGATION_MAX) {
-          compute_sum_sqrt_var_cost(agg_var_qoi, lev_cost, step, sum_sqrt_var_cost_qoi);
-        }
         // MSE reference is MC applied to HF:
-        if (mlmfIter == 0) {
-          if (qoiAggregation==QOI_AGGREGATION_SUM) {
-            aggregate_mse_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, estimator_var0);
-          }else if (qoiAggregation==QOI_AGGREGATION_MAX) {
-            aggregate_mse_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, estimator_var0_qoi);
-          }
+        if (mlmfIter == 0) { //TODO: Can this actually be moved down since num_samples > 0 always for mlmcIter==0
+          aggregate_mse_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, estimator_var0_qoi);
         }
       }
       // compute epsilon target based on relative tolerance: total MSE = eps^2
@@ -687,23 +641,14 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
       // discretization error, we compute an initial estimator variance and
       // then seek to reduce it by a relative_factor <= 1.
       if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
-        //if(target_mean)
-        if (qoiAggregation==QOI_AGGREGATION_SUM) {
-          compute_eps_div_2(estimator_var0, convergenceTol, eps_sq_div_2);
-        }else if (qoiAggregation==QOI_AGGREGATION_MAX) {
-          compute_eps_div_2(estimator_var0_qoi, convergenceTol, eps_sq_div_2_qoi);
-        }
+        compute_eps_div_2(estimator_var0_qoi, convergenceTol, eps_sq_div_2_qoi);
       }
 
       // update targets based on variance estimates
       //if(target_mean){
       if (outputLevel == DEBUG_OUTPUT) Cout << "N_target: " << std::endl;
 
-      if (qoiAggregation==QOI_AGGREGATION_SUM) {
-        compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1, sum_sqrt_var_cost, eps_sq_div_2, agg_var, cost, N_l, delta_N_l);
-      }else if (qoiAggregation==QOI_AGGREGATION_MAX) {
-        compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1, sum_sqrt_var_cost_qoi, eps_sq_div_2_qoi, agg_var_qoi, cost, N_l, delta_N_l);
-      }
+      compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1, eps_sq_div_2_qoi, agg_var_qoi, cost, N_l, delta_N_l);
 
       ++mlmfIter;
       Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
