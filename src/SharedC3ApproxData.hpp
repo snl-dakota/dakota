@@ -217,10 +217,13 @@ protected:
   double regressRegParam;
   /// tolerance on regression solver
   double solverTol;
-  /// tolerance when performing a truncation operation on FT expansion
-  double roundingTol;
-  /// a separate rounding tolerance for c3axpy() in combine_coefficients()
-  double arithmeticTol;
+  /// tolerance for rounding (performing a truncation operation on a FT
+  /// expansion) within the regression solver
+  double solverRoundingTol;
+  /// tolerance for rounding (performing a truncation operation on a FT
+  /// expansion) when post-processing an expansion: computing products
+  /// for moments, combining expansions with c3axpy, etc.
+  double statsRoundingTol;
   /// maximum number of iterations for regression solver
   int maxSolverIterations;
   /// maximum number of iterations for (future) cross iteration solver
@@ -442,9 +445,9 @@ inline void SharedC3ApproxData::set_parameter(String var, short val)
 
 inline void SharedC3ApproxData::set_parameter(String var, double val)
 {
-  if      (var.compare("solver_tol")               == 0)       solverTol = val;
-  else if (var.compare("rounding_tol")             == 0)     roundingTol = val;
-  else if (var.compare("arithmetic_tol")           == 0)   arithmeticTol = val;
+  if      (var.compare("solver_tol")          == 0)            solverTol = val;
+  else if (var.compare("solver_rounding_tol") == 0)    solverRoundingTol = val;
+  else if (var.compare("stats_rounding_tol")  == 0)     statsRoundingTol = val;
   else if (var.compare("regularization_parameter") == 0) regressRegParam = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
