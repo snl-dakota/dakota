@@ -94,10 +94,13 @@ private:
     //
 
     /// called by minimize_surrogates for setUpType == "model"
-    void minimize_surrogates_on_model();
+    void minimize_surrogates_on_model_deprecated();
 
     /// determine best solution from among the dataset
     void get_best_sample();
+
+    /// initialize convergence criteria (subjected to change however)
+    void initialize_convergence_variables();
 
     /// build initial GP responses after initial sampling
     void build_gp();
@@ -155,7 +158,7 @@ private:
     /// delete liar responses
     void delete_liar_responses(int BatchSizeAcquisition);
     /// evaluate batch
-    void evaluate_batch(int BatchSizeAcquisition); 
+    void evaluate_batch(int BatchSizeAcquisition);
 
     /// convergence checkers
     /// check convergence if EGO has converged
@@ -164,6 +167,8 @@ private:
                           RealVector prev_cv_star,
                           unsigned short eif_convergence_cntr,
                           unsigned short dist_convergence_cntr);
+    /// check convergence if EGO has converged
+    bool assess_convergence();
 
     /// post-processing: print best samples and responses
     void post_process();
@@ -208,6 +213,9 @@ private:
 
     /// placeholder for batch input (before querying the batch)
     VariablesArray varsArrayBatchAcquisition;
+
+    /// liar response
+    const IntResponsePair respStarLiar;
 
     /// check model parallelism
     /// bool flag if model supports asynchronous parallelism
