@@ -219,20 +219,21 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
 
   NonDExpansion::initialize_u_space_model();
 
+  initialize_c3_db_options(); // scalars (maxRankSpec,maxOrderSpec,randomSeed)
+
+  // start rank & random seed not used by C3 until C3Approx::build()
+  // > MF: assign_specification_sequence(),update_u_space_sampler() are used
+  // > ML:     increment_sample_sequence(),update_u_space_sampler() are used
   //initialize_c3_start_rank(start_rank());
-  //initialize_c3_seed(random_seed());
-  initialize_c3_db_options();
-  //UShortArray orders; // init redundant with DataFitSurrModel ctor
+  //initialize_c3_seed(random_seed()); // sequence spec
+  //
+  // init of start orders redundant w/ DataFitSurrModel/SharedC3ApproxData ctors
+  //UShortArray orders;
   //configure_expansion_orders(start_order(), dimPrefSpec, orders);
   //initialize_c3_start_orders(orders);
 
-  // This is included only for completeness (redundant with {assign,increment}_
-  // specification_sequence() for MF and not used by current ML approaches
-  // (but would be important if ML incremented expansion rank/order).
-  if (methodName == MULTILEVEL_FUNCTION_TRAIN)
-    push_c3_active();
-
-  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
+  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis and
+  // requires {start,max} order
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
   uSpaceModel.shared_approximation().construct_basis(u_dist);
@@ -326,7 +327,7 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
 
   UShortArray orders;
   configure_expansion_orders(start_order(), dimPrefSpec, orders);
-  push_c3_active(orders);
+  push_c3_active(orders); // push active start {orders,rank}, max rank, seed
   shared_data_rep->update_basis(); // propagate order updates to oneApproxOpts
 
   size_t colloc_pts = collocation_points();
@@ -385,6 +386,12 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
 
+  // MF FT: {assign,increment}_specification_sequence() advance ranks/orders.
+  // ML FT: no rank/order advancement from this class (only occurs implicitly
+  //        via C3 adapt_rank); if advancing from this class, uncomment below
+  //        (within this virtual level fn called from multilevel_regression()):
+  //push_c3_active();
+
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   update_u_space_sampler(step, shared_data_rep->start_orders());
@@ -433,9 +440,9 @@ compute_sample_increment(const RealVector& regress_metrics,
   // > May need to tune this user spec (and its default)
 
   // update targets based on regression size
-  RealVector new_N_l = regress_metrics; // number of unknowns (RMS across QoI)
-  if (collocRatio > 0.)  new_N_l.scale(collocRatio);
-  else                   new_N_l.scale(2.); // default: over-sample 2x
+  RealVector new_N_l  = regress_metrics; // number of unknowns (RMS across QoI)
+  if (collocRatio > 0.) new_N_l.scale(collocRatio);
+  else                  new_N_l.scale(2.); // default: over-sample 2x
 
   // Retain the shape of the profile but enforce an upper bound
   //scale_profile(..., new_N_l);

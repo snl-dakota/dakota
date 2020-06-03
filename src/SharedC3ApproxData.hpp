@@ -100,15 +100,24 @@ public:
   // get SharedOrthogPolyApproxData::basisTypes
   //const ShortArray& basis_types() const;
 
-  /// return current basis polynomial order (active key in startOrders)
+  /// return active start value for basis order
   const UShortArray& start_orders() const;
-  /// return maximum basis order
+  /// return active start value for basis order (mutable)
+  UShortArray& start_orders();
+  /// return active maximum value for basis order
   unsigned short max_order() const;
+  /// return active maximum value for basis order (mutable)
+  unsigned short& max_order();
 
-  /// return current expansion rank (active key in startRank)
+  /// return active start value for expansion rank
   size_t start_rank() const;
-  /// return maximum expansion rank
+  /// return active start value for expansion rank (mutable)
+  size_t& start_rank();
+  /// return active maximum value for expansion rank
   size_t max_rank() const;
+  /// return active maximum value for expansion rank (mutable)
+  size_t& max_rank();
+
   /// return adaptRank
   bool adapt_rank() const;
 
@@ -180,13 +189,13 @@ protected:
 
   /// starting user specification for polynomial orders (from start_order
   /// scalar plus anisotropic dimension preference)
-  UShortArray startOrderSpec;
+  UShortArray startOrders;
   /// starting values for polynomial order (prior to adaptive refinement);
   /// for each model key, there is an array of polynomial orders per variable
-  std::map<UShortArray, UShortArray> startOrders;
+  std::map<UShortArray, UShortArray> startOrdersMap;
   /// polynomial basis order for combined expansion for each variable core
   UShortArray combinedOrders;
-  /// maximum value for polynomial order (if adapted)
+  /// maximum value for polynomial order from user spec
   unsigned short maxOrder;
 
   // the remaining data are separate as can be seen in C3Approximation::build()
@@ -194,19 +203,19 @@ protected:
   /// starting user specification for rank (not augmented by dimension
   /// preference); Note: rank sequence spec is managed externally and becomes
   /// reflected in startRank model index mapping
-  size_t startRankSpec; // or SizetArray for start_rank_sequence spec
+  size_t startRank; // or SizetArray for start_rank_sequence spec
   /// starting values for rank (note: adapt_rank currently covers refinement);
   /// for each model index key, there is a scalar starting rank (recovered
   /// rank in C3FnrainPtrs can vary per core/variable and per QoI)
-  std::map<UShortArray, size_t> startRank;
+  std::map<UShortArray, size_t> startRankMap;
   /// user specification for increment in rank used within adapt_rank
   size_t kickRank;
-  /// scalar user specification for max rank
-  size_t maxRankSpec;
+  /// scalar user specification for maximum allowable rank when adapting
+  size_t maxRank;
   /// user specification for maximum rank used within adapt_rank;
   /// usually a scalar specification but can be adapted per model key
   /// for UNIFORM_MAX_RANK refine type
-  std::map<UShortArray, size_t> maxRank;
+  std::map<UShortArray, size_t> maxRankMap;
   /// internal C3 adaptation that identifies the best rank representation
   /// for a set of sample data based on cross validation
   bool adaptRank;
@@ -282,12 +291,12 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
 
   // these aren't used enough to warrant active iterators
   bool form = false;
-  if (startOrders.find(key) == startOrders.end())
-    { startOrders[key]      =  startOrderSpec;  form = true; }
-  if (startRank.find(key)   == startRank.end()) 
-    { startRank[key]        =  startRankSpec;   form = true; }
-  if (maxRank.find(key)     == maxRank.end())
-    { maxRank[key]          =  maxRankSpec;     if (adaptRank) form = true; }
+  if (startOrdersMap.find(key) == startOrdersMap.end())
+    { startOrdersMap[key]      =  startOrders;  form = true; }
+  if (startRankMap.find(key)   == startRankMap.end()) 
+    { startRankMap[key]        =  startRank;    form = true; }
+  if (maxRankMap.find(key)     == maxRankMap.end())
+    { maxRankMap[key]          =  maxRank;      if (adaptRank) form = true; }
 
   // ensure approximation rebuild, when needed, in absence of sample increment
   if (form) formUpdated[key] = true;
@@ -295,7 +304,7 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
 
 
 inline void SharedC3ApproxData::update_basis()
-{ update_basis(startOrders[activeKey], maxOrder); }
+{ update_basis(startOrdersMap[activeKey], maxOrder); }
 
 
 inline short SharedC3ApproxData::discrepancy_type() const
@@ -305,8 +314,16 @@ inline short SharedC3ApproxData::discrepancy_type() const
 inline const UShortArray& SharedC3ApproxData::start_orders() const
 {
   std::map<UShortArray, UShortArray>::const_iterator cit
-    = startOrders.find(activeKey);
-  return (cit == startOrders.end()) ? startOrderSpec : cit->second;
+    = startOrdersMap.find(activeKey);
+  return (cit == startOrdersMap.end()) ? startOrders : cit->second;
+}
+
+
+inline UShortArray& SharedC3ApproxData::start_orders()
+{
+  std::map<UShortArray, UShortArray>::iterator it
+    = startOrdersMap.find(activeKey);
+  return (it == startOrdersMap.end()) ? startOrders : it->second;
 }
 
 
@@ -314,17 +331,37 @@ inline unsigned short SharedC3ApproxData::max_order() const
 { return maxOrder; }
 
 
+inline unsigned short& SharedC3ApproxData::max_order()
+{ return maxOrder; }
+
+
 inline size_t SharedC3ApproxData::start_rank() const
 {
-  std::map<UShortArray, size_t>::const_iterator cit = startRank.find(activeKey);
-  return (cit == startRank.end()) ? startRankSpec : cit->second;
+  std::map<UShortArray, size_t>::const_iterator cit
+    = startRankMap.find(activeKey);
+  return (cit == startRankMap.end()) ? startRank : cit->second;
+}
+
+
+inline size_t& SharedC3ApproxData::start_rank()
+{
+  std::map<UShortArray, size_t>::iterator it = startRankMap.find(activeKey);
+  return (it == startRankMap.end()) ? startRank : it->second;
 }
 
 
 inline size_t SharedC3ApproxData::max_rank() const
 {
-  std::map<UShortArray, size_t>::const_iterator cit = maxRank.find(activeKey);
-  return (cit == maxRank.end()) ? maxRankSpec : cit->second;
+  std::map<UShortArray, size_t>::const_iterator cit
+    = maxRankMap.find(activeKey);
+  return (cit == maxRankMap.end()) ? maxRank : cit->second;
+}
+
+
+inline size_t& SharedC3ApproxData::max_rank()
+{
+  std::map<UShortArray, size_t>::iterator it = maxRankMap.find(activeKey);
+  return (it == maxRankMap.end()) ? maxRank : it->second;
 }
 
 
@@ -404,7 +441,7 @@ inline size_t SharedC3ApproxData::max_rank_regression_size()
 inline void SharedC3ApproxData::
 set_parameter(String var, const UShortArray& val)
 {
-  if (var.compare("start_poly_order") == 0) startOrderSpec = val;
+  if (var.compare("start_poly_order") == 0)    startOrders = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
@@ -418,9 +455,9 @@ inline void SharedC3ApproxData::set_parameter(String var, unsigned short val)
 
 inline void SharedC3ApproxData::set_parameter(String var, size_t val)
 {
-  if (var.compare("start_rank")     == 0)    startRankSpec = val;
+  if (var.compare("start_rank")     == 0)        startRank = val;
   else if (var.compare("kick_rank") == 0)         kickRank = val;
-  else if (var.compare("max_rank")  == 0)      maxRankSpec = val;
+  else if (var.compare("max_rank")  == 0)          maxRank = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
@@ -466,15 +503,15 @@ inline void SharedC3ApproxData::
 set_active_parameter(String var, const UShortArray& val)
 {
   if (var.compare("start_poly_order") == 0)
-    { startOrders[activeKey] = val; /*update_basis();*/ }
+    { startOrdersMap[activeKey] = val; /*update_basis();*/ }
   else Cerr << "Unrecognized C3 active parameter: " << var << std::endl;
 }
 
 
 inline void SharedC3ApproxData::set_active_parameter(String var, size_t val)
 {
-  if      (var.compare("start_rank") == 0) startRank[activeKey] = val;
-  else if (var.compare("max_rank")   == 0)   maxRank[activeKey] = val;
+  if      (var.compare("start_rank") == 0) startRankMap[activeKey] = val;
+  else if (var.compare("max_rank")   == 0)   maxRankMap[activeKey] = val;
   else Cerr << "Unrecognized C3 active parameter: " << var << std::endl;
 }
 

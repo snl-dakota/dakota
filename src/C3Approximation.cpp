@@ -203,7 +203,7 @@ void C3Approximation::build()
 
       // if not user-specified, use internal C3 default (in src/lib_superlearn/
       // regress.c, maxrank = 10 assigned in ft_regress_alloc())
-      // > Could become an issue for UNIFORM_START_RANK advancement, if used
+      // > default could become an issue for UNIFORM_START_RANK advancement
       if (max_r != std::numeric_limits<size_t>::max())
 	ft_regress_set_maxrank(ftr, max_r);
 

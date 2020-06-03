@@ -1207,7 +1207,7 @@ configure_sequence(unsigned short& num_steps, unsigned short& fixed_index,
   }
 }
 
-  
+
 void NonDExpansion::
 configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 {
