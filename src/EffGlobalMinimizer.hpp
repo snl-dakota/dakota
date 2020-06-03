@@ -12,7 +12,7 @@
 //- Checked by:
 //- Version:
 
-//- Edited by:   Anh Tran
+//- Edited by:   Anh Tran on 12/21/2019
 
 #ifndef EGO_MINIMIZER_H
 #define EGO_MINIMIZER_H
@@ -33,25 +33,25 @@ namespace Dakota {
 
 class EffGlobalTraits: public TraitsBase
 {
-    public:
+  public:
 
-    /// default constructor
-    EffGlobalTraits() { }
+  /// default constructor
+  EffGlobalTraits() { }
 
-    /// destructor
-    virtual ~EffGlobalTraits() { }
+  /// destructor
+  virtual ~EffGlobalTraits() { }
 
-    /// A temporary query used in the refactor
-    virtual bool is_derived() { return true; }
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
 
-    /// Return the flag indicating whether method supports continuous variables
-    bool supports_continuous_variables() { return true; }
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
 
-    /// Return the flag indicating whether method supports nonlinear equalities
-    bool supports_nonlinear_equality() { return true; }
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
 
-    /// Return the flag indicating whether method supports nonlinear inequalities
-    bool supports_nonlinear_inequality() { return true; }
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
 };
 
 
@@ -77,9 +77,9 @@ public:
     //- Heading: Virtual function redefinitions
     //
 
-    // void derived_init_communicators(ParLevLIter pl_iter);
-    // void derived_set_communicators(ParLevLIter pl_iter);
-    // void derived_free_communicators(ParLevLIter pl_iter);
+    //void derived_init_communicators(ParLevLIter pl_iter);
+    //void derived_set_communicators(ParLevLIter pl_iter);
+    //void derived_free_communicators(ParLevLIter pl_iter);
 
     void core_run();
 
@@ -95,55 +95,29 @@ private:
 
     /// called by minimize_surrogates for setUpType == "model"
     void minimize_surrogates_on_model();
-    /// called by minimize_surrogates for setUpType == "user_functions"
-    // void minimize_surrogates_on_user_functions();
 
-    /// determine best solution from among sample data for expected
-    /// imporovement function
+    /// determine best solution from among the dataset
     void get_best_sample();
 
-    /// initialize
-    /// build initial GP responses
+    /// build initial GP responses after initial sampling
     void build_gp();
 
-    /// for parallel EGO
-    /// construct the acquisition batch
-    void construct_batch_acquisition(int BatchSizeAcquisition);
-
-    /// for parallel EGO
-    /// delete liar responses in fHatModel
-    void delete_liar_responses(int BatchSizeAcquisition);
-
-    /// for parallel EGO
-    /// query/update responses/update constraints
-    void query_batch(int BatchSizeAcquisition);
-
-    /// augmented Lagrangian
-    /// augmented Lagrangian
+    /// get augmented Lagrangian
     Real get_augmented_lagrangian(const RealVector& mean,
                                   const RealVector& c_vars,
                                   const Real& eif_star);
-
-    /// check convergence
-    /// if EGO has converged
-    void check_convergence(const Real& eif_star,
-                          const RealVector& c_vars,
-                          RealVector prev_cv_star,
-                          unsigned short eif_convergence_cntr,
-                          unsigned short dist_convergence_cntr);
 
     /// print mean and variance if debug flag is ON
     void debug_print_values();
 
     /// print counter if debug flag is ON
-    void debug_print_counters(unsigned short globalIterCount,
-                              const Real& eif_star,
-                              Real distCStar,
-                              unsigned short dist_convergence_cntr);
+    void debug_print_counter(unsigned short globalIterCount,
+                             const Real& eif_star,
+                             Real distCStar,
+                             unsigned short dist_convergence_cntr);
 
     // DEBUG - output set of samples used to build the GP
-    // If problem is 2d, output a grid of points on the GP
-    //   and truth (if requested)
+    // If problem is 2d, output a grid of points on the GP and truth (if requested)
     void debug_plots();
 
     /// expected improvement function for the GP
@@ -168,6 +142,32 @@ private:
                                   const Response& sub_model_response,
                                   Response& recast_response);
 
+    /// function that checks if model supports asynchronous parallelism
+    bool check_parallelism();
+
+    /// sequential EGO implementation: main function
+    void serial_ego();
+
+    /// synchronous batch-sequential implementation: main function
+    void batch_synchronous_ego();
+    /// construct batch acquisition
+    void construct_batch_acquisition(int BatchSizeAcquisition, VariablesArray varsArrayBatchAcquisition);
+    /// delete liar responses
+    void delete_liar_responses(int BatchSizeAcquisition);
+    /// evaluate batch
+    void evaluate_batch(int BatchSizeAcquisition); 
+
+    /// convergence checkers
+    /// check convergence if EGO has converged
+    void check_convergence_deprecated(const Real& eif_star,
+                          const RealVector& c_vars,
+                          RealVector prev_cv_star,
+                          unsigned short eif_convergence_cntr,
+                          unsigned short dist_convergence_cntr);
+
+    /// post-processing: print best samples and responses
+    void post_process();
+
     //
     //- Heading: Data
     //
@@ -180,14 +180,6 @@ private:
     /// controls iteration mode: "model" (normal usage) or "user_functions"
     /// (user-supplied functions mode for "on the fly" instantiations).
     String setUpType;
-
-    /// convergence tolerance on distance
-    /// between predicted best points
-    Real distanceTol;
-
-    /// convergence tolerances
-    /// in objectives
-    Real convergenceTol;
 
     /// GP model of response, one approximation per response function
     Model fHatModel;
@@ -206,37 +198,49 @@ private:
     /// request vector 3-bit format; user may override responses spec
     short dataOrder;
 
-    /// declare check convergence variables
-    /// relative distance change in input measured in L2
-    Real distCStar;
-
-    /// declare batch size for BatchSizeAcquisition
-    /// sampling point located at maximum acquisition function
+    /// declare batch sizes
+    /// sampling point located at maximum acquisition function for BatchSizeAcquisition
     int BatchSizeAcquisition;
-
-    /// declare batch size for BatchSizeExploration
-    /// sampling point located at maximum posterior variance
+    /// sampling point located at maximum posterior variance for BatchSizeExploration
     int BatchSizeExploration;
+    /// number of points in the current GP
+    size_t numDataPts;
 
-    /// placeholder for batch inputs
-    /// before evaluating a batch
-    VariablesArray varsArrayBatchAcq;
+    /// placeholder for batch input (before querying the batch)
+    VariablesArray varsArrayBatchAcquisition;
 
-    /// declar parallel_flag
-    /// if model can support asynchronously parallel evaluation
+    /// check model parallelism
+    /// bool flag if model supports asynchronous parallelism
     bool parallelFlag;
 
-    /// best-so-far variables and their associates
-    /// for evaluating EI acquisition
-    Variables  varsStar;
-    RealVector cVars;
-    Response   respStar;
-    Real       eifStar;
+    /// convergence checkers
+    /// tolerance convergence on distance between predicted best-so-far samples
+    Real distanceTol;
+    /// limit convergence (compared with tolerance) in input measured in L2
+    Real distCStar;
+    /// tolerance convergence in objectives
+    Real convergenceTol;
+    /// counter for convergence in EIF
+    unsigned short eifConvergenceCntr;
+    /// limit convergence (compared with counter) of EIF
+    unsigned short eifConvergenceLimit;
+    /// counter for distance in input space
+    unsigned short distConvergenceCntr;
+    /// limit for distance (compared with counter) in input space
+    unsigned short distConvergenceLimit;
+    /// counter for global iteration
+    unsigned short globalIterCount;
+    /// bool flag for convergence
+    bool approxConverged;
+    /// previous best-so-far sample
+    RealVector prevCvStar;
+
 
 };
 
 
-inline const Model& EffGlobalMinimizer::algorithm_space_model() const { return fHatModel; }
+inline const Model& EffGlobalMinimizer::algorithm_space_model() const
+{ return fHatModel; }
 
 } // namespace Dakota
 
