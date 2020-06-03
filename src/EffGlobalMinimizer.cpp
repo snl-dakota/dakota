@@ -560,7 +560,7 @@ void EffGlobalMinimizer::serial_ego() {
     // little value in updating the GP since the new training point will
     // essentially be the previous optimal point.
 
-    Real distCStar = (prevCvStar.empty()) ? DBL_MAX : rel_change_L2(c_vars, prevCvStar);
+    distCStar = (prevCvStar.empty()) ? DBL_MAX : rel_change_L2(c_vars, prevCvStar);
     // update prevCvStar
     copy_data(c_vars, prevCvStar);
     if (distCStar < distanceTol)
@@ -615,8 +615,8 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
     ++globalIterCount;
 
     // reset the convergence counters
-    unsigned short distConvergenceCntr = 0; // reset distance convergence counters
-    unsigned short distConvergenceLimit = BatchSizeAcquisition; // reset convergence limit for parallel EGO
+    distConvergenceCntr = 0; // reset distance convergence counters
+    distConvergenceLimit = BatchSizeAcquisition; // reset convergence limit for parallel EGO
 
     Cout << "\n>>>>> Initiating global optimization\n";
 
@@ -645,7 +645,6 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
         bestResponseArray.front().function_values(truthFnStar); // debug
 
         // execute GLOBAL search and retrieve results
-        // Cout << "\n>>>>> Initiating global optimization\n";
         ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
         approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
         const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
@@ -679,8 +678,7 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
         Cout << "\nParallel EGO: Adding liar response...\n"; // debug
 
         // append constant liar to fHatModel (aka heuristic liar)
-        if (_i < BatchSizeAcquisition - 1)
-            fHatModel.append_approximation(vars_star, resp_star_liar, true);
+        fHatModel.append_approximation(vars_star, resp_star_liar, true);
 
         // update constraints based on the constant liar
         if (numNonlinearConstraints) {
@@ -740,7 +738,7 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
         // If the dist between successive points is very small, then there is
         // little value in updating the GP since the new training point will
         // essentially be the previous optimal point.
-        Real distCStar = (prevCvStar.empty()) ? DBL_MAX : rel_change_L2(c_vars, prevCvStar);
+        distCStar = (prevCvStar.empty()) ? DBL_MAX : rel_change_L2(c_vars, prevCvStar);
         // update prevCvStar
         copy_data(c_vars, prevCvStar);
 
@@ -948,7 +946,7 @@ void EffGlobalMinimizer::check_convergence_deprecated(const Real& eif_star,
     // little value in updating the GP since the new training point will
     // essentially be the previous optimal point.
 
-    Real distCStar = (prevCvStar.empty()) ? DBL_MAX : rel_change_L2(c_vars, prevCvStar);
+    distCStar = (prevCvStar.empty()) ? DBL_MAX : rel_change_L2(c_vars, prevCvStar);
     // update prevCvStar
     copy_data(c_vars, prevCvStar);
     if (distCStar < distanceTol)
