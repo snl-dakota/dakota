@@ -170,10 +170,11 @@ void EffGlobalMinimizer::core_run() {
         // build initial GP once for all response functions: fHatModel.build_approximation()
         build_gp();
 
+        // check if iterated model supports asynchronous parallelism
+        parallelFlag = check_parallelism();
+
         // iterate until EGO converges
         while (!approxConverged) {
-            parallelFlag = check_parallelism(); // check if iterated model supports asynchronous parallelism
-
             if (parallelFlag) { // begin if parallelFlag = true -- then run in parallel
                 batch_synchronous_ego(); // batch-sequential parallelization
             } // end if parallelFlag = true -- then run in parallel
