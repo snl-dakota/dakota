@@ -148,7 +148,7 @@ find_package(Perl REQUIRED)
 
 # Python is optionally required by Dakota, Teuchos, and Acro; probe
 # for the interpreter here at top-level:
-include(FindPythonInterp)
+find_package(PythonInterp "3.1")  # 3.1 is needed by h5py tests
 
 # Conditionally find Java JDK needed for input spec, docs, Java API
 include(DakotaFindJava)

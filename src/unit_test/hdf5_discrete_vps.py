@@ -74,8 +74,8 @@ class Evaluations(unittest.TestCase):
 
     def test_tabular_data(self):
         descriptors = self._metadata + self._variables + self._responses
-        self.assertItemsEqual(descriptors, self._tdata.keys())
-        for ii in self._tdata.values():
+        self.assertListEqual(descriptors, list(self._tdata.keys()))
+        for ii in list(self._tdata.values()):
             self.assertEqual(len(ii), 3)
 
     def test_parameter_sets(self):
@@ -155,23 +155,23 @@ class EvaluationsStructure(unittest.TestCase):
         #expected_recast_models = ["RECAST_NO_MODEL_ID_DATA_TRANSFORM"]
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             model_types = [k for k in h["/models"]]
-            self.assertItemsEqual(expected_model_types, model_types)
+            self.assertListEqual(expected_model_types, model_types)
             sim_models = [k for k in h["/models/simulation"]]
-            self.assertItemsEqual(expected_sim_models, sim_models)
+            self.assertListEqual(expected_sim_models, sim_models)
             #recast_models = [k for k in h["/models/recast"]]
-            #self.assertItemsEqual(expected_recast_models, recast_models)
+            #self.assertListEqual(expected_recast_models, recast_models)
 
     def test_sources(self):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Methods
             method_sources = [k for k in h["/methods/NO_METHOD_ID/sources/"]]
-            #self.assertItemsEqual(method_sources,["RECAST_NO_MODEL_ID_DATA_TRANSFORM"])
-            self.assertItemsEqual(method_sources,["NO_MODEL_ID"])
+            #self.assertListEqual(method_sources,["RECAST_NO_MODEL_ID_DATA_TRANSFORM"])
+            self.assertListEqual(method_sources,["NO_MODEL_ID"])
             # Models
             #model_sources = [k for k in h["/models/recast/RECAST_NO_MODEL_ID_DATA_TRANSFORM/sources/"]]
-            #self.assertItemsEqual(model_sources,["NO_MODEL_ID"])
+            #self.assertListEqual(model_sources,["NO_MODEL_ID"])
             model_sources = [k for k in h["/models/simulation/NO_MODEL_ID/sources/"]]
-            self.assertItemsEqual(model_sources,["NO_ID"])
+            self.assertListEqual(model_sources,["NO_ID"])
 
     def test_variables_presence(self):
         with h5py.File(_TEST_NAME + ".h5","r") as h:

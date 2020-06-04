@@ -106,9 +106,9 @@ class EvaluationsStructure(unittest.TestCase):
         #expected_recast_models = ["RECAST_NO_MODEL_ID_DATA_TRANSFORM"]
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             model_types = [k for k in h["/models"]]
-            self.assertItemsEqual(expected_model_types, model_types)
+            self.assertListEqual(expected_model_types, model_types)
             sim_models = [k for k in h["/models/simulation"]]
-            self.assertItemsEqual(expected_sim_models, sim_models)
+            self.assertListEqual(expected_sim_models, sim_models)
             #recast_models = [k for k in h["/models/recast"]]
             #self.assertItemsEqual(expected_recast_models, recast_models)
 
@@ -117,12 +117,12 @@ class EvaluationsStructure(unittest.TestCase):
             # Methods
             method_sources = [k for k in h["/methods/NO_METHOD_ID/sources/"]]
             #self.assertItemsEqual(method_sources,["RECAST_NO_MODEL_ID_DATA_TRANSFORM"])
-            self.assertItemsEqual(method_sources,["NO_MODEL_ID"])
+            self.assertListEqual(method_sources,["NO_MODEL_ID"])
             # Models
             #model_sources = [k for k in h["/models/recast/RECAST_NO_MODEL_ID_DATA_TRANSFORM/sources/"]]
             #self.assertItemsEqual(model_sources,["NO_MODEL_ID"])
             model_sources = [k for k in h["/models/simulation/NO_MODEL_ID/sources/"]]
-            self.assertItemsEqual(model_sources,["NO_ID"])
+            self.assertListEqual(model_sources,["NO_ID"])
 
     def test_gradient_presence(self):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
@@ -135,13 +135,13 @@ class TabularData(unittest.TestCase):
         variables = ["x1", "x2", "Y"]
         responses = ['displacement01', 'displacement02', 'g']        
         descriptors = metadata + variables + responses
-        self.assertItemsEqual(descriptors, tdata.keys())
+        self.assertListEqual(descriptors, list(tdata.keys()))
 
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/models/simulation/NO_MODEL_ID/variables/continuous"]
             hasv = h["/models/simulation/NO_MODEL_ID/metadata/active_set_vector"]
-            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
             hindex = 0
             for i, eid in enumerate(tdata["%eval_id"]):
                 while not all((a & 1 for a in hasv[hindex,:])):
@@ -154,7 +154,7 @@ class TabularData(unittest.TestCase):
                     
             # Responses
             hresps = h["/models/simulation/NO_MODEL_ID/responses/functions"]
-            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            self.assertListEqual(responses, hresps.dims[1][0][:].tolist())
             hindex = 0
             for i, eid in enumerate(tdata["%eval_id"]):
                 while not all((a & 1 for a in hasv[hindex,:])):
@@ -170,19 +170,19 @@ class RestartData(unittest.TestCase):
         rdata = hce.read_restart_file(_TEST_NAME + ".rst")
         variables = ["x1", "x2", "Y"]
         responses = ['displacement01', 'displacement02', 'g']        
-        self.assertItemsEqual(variables, rdata["variables"]["continuous"].keys())
-        self.assertItemsEqual(responses, rdata["response"].keys())
+        self.assertListEqual(variables, list(rdata["variables"]["continuous"].keys()))
+        self.assertListEqual(responses, list(rdata["response"].keys()))
         
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/interfaces/NO_ID/NO_MODEL_ID/variables/continuous"]
-            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(rdata["eval_id"], rdata["variables"]["continuous"][v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
             hresps = h["/interfaces/NO_ID/NO_MODEL_ID/responses/functions"]
             # Responses
-            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            self.assertListEqual(responses, hresps.dims[1][0][:].tolist())
             for i, r in enumerate(responses):
                 for eid, tr, hr in zip(rdata["eval_id"], rdata["response"][r], hresps[:,i]):
                     self.assertAlmostEqual(tr["function"], hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)

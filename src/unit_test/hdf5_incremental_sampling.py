@@ -34,7 +34,7 @@ class Moments(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             ## Verify the presence of all the increment data
             self.assertEqual(expected_num_incr, len(list(h["/methods/sampling/results/execution:1/"].keys())))
-            for n in h["/methods/sampling/results/execution:1"].keys():
+            for n in list(h["/methods/sampling/results/execution:1"].keys()):
                 self.assertTrue(n in expected_incr)
             # descriptors
             hdf5_descriptors = set(h["/methods/sampling/results/execution:1/increment:1/moments/"].keys())
@@ -145,7 +145,7 @@ class LevelMappings(unittest.TestCase):
         # 3. Verify that the following rows match any probability, reliability, and gen. rel. results
         #    from the hdf5 file. These are easier because we know which columns to find the data and
         #    scales in.
-                
+        print(console_mappings) 
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             for i in range(expected_num_incr):
                 for r in expected_descriptors:
@@ -161,7 +161,7 @@ class LevelMappings(unittest.TestCase):
                     # Verify the dimension scale label of the datasets
                     for label in has_result:
                         self.assertEqual(label,
-                            h["/methods/sampling/results/execution:1/increment:%d/%s/%s" % (i+1, label, r)].dims[0].keys()[0])
+                            list(h["/methods/sampling/results/execution:1/increment:%d/%s/%s" % (i+1, label, r)].dims[0].keys())[0])
 
                     # compare the total number of results in the console and hdf5 file
                     num_console_rows = len(console_mappings[i][r])
@@ -174,7 +174,7 @@ class LevelMappings(unittest.TestCase):
                     if 'response_levels' in has_result:
                         # Determine the 'compute'd column for the response_levels
                         for j, c in enumerate(console_mappings[i][r][0][1:]):
-                            if c:
+                            if c is not None:
                                 console_ri = j+1
                                 break
                         # Loop over the response_levels and verify the user request and computed values
@@ -227,8 +227,8 @@ class Correlations(unittest.TestCase):
         expected_incr = set("increment:%d" % (i+1,) for i in range(expected_num_incr))
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             # Check number and names of increment groups
-            self.assertEqual(len(h[exec_linkname].keys()), 3)
-            for incr in h[exec_linkname].keys():
+            self.assertEqual(len(list(h[exec_linkname].keys())), 3)
+            for incr in list(h[exec_linkname].keys()):
                 self.assertTrue(incr in expected_incr)     
             for i, corr in enumerate(console_corrs):
                 # Dimensionality of datasets
@@ -269,8 +269,8 @@ class Correlations(unittest.TestCase):
         expected_incr = set("increment:%d" % (i+1,) for i in range(expected_num_incr))
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             # Check number and names of increment groups
-            self.assertEqual(len(h[exec_linkname].keys()), 3)
-            for incr in h[exec_linkname].keys():
+            self.assertEqual(len(list(h[exec_linkname].keys())), 3)
+            for incr in list(h[exec_linkname].keys()):
                 self.assertTrue(incr in expected_incr)     
             for i, corr in enumerate(console_corrs):
                 # Dimensionality of datasets
@@ -279,7 +279,7 @@ class Correlations(unittest.TestCase):
                 self.assertEqual(set(corr.keys()), set(hdf_partial.keys()))
                 # for each response, verify data are the same length, factors are same,
                 # and data are the same
-                for resp in corr.keys():
+                for resp in list(corr.keys()):
                     self.assertEqual(len(corr[resp][1]), hdf_partial[resp].shape[0])
                     for cf, hf in zip(corr[resp][0], hdf_partial[resp].dims[0][0][:]):
                         self.assertEqual(cf, hf)
@@ -306,7 +306,7 @@ class EvaluationsStructure(unittest.TestCase):
     def test_sources(self):
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             method_sources = [k for k in h["/methods/sampling/sources/"]]
-            self.assertItemsEqual(method_sources,["NO_MODEL_ID"])
+            self.assertListEqual(method_sources,["NO_MODEL_ID"])
             with self.assertRaises((KeyError,ValueError)):
                 h["/models/simulation/NO_MODEL_ID/sources/"]
 
@@ -317,18 +317,18 @@ class TabularData(unittest.TestCase):
         variables = ["x1", "x2", "x3"]
         responses = ["f", "c"]
         descriptors = metadata + variables + responses
-        self.assertItemsEqual(descriptors, tdata.keys())
+        self.assertListEqual(descriptors, list(tdata.keys()))
 
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/models/simulation/NO_MODEL_ID/variables/continuous"]
-            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(tdata["%eval_id"], tdata[v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
             hresps = h["/models/simulation/NO_MODEL_ID/responses/functions"]
             # Responses
-            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            self.assertListEqual(responses, hresps.dims[1][0][:].tolist())
             for i, r in enumerate(responses):
                 for eid, tr, hr in zip(tdata["%eval_id"],tdata[r], hresps[:,i]):
                     self.assertAlmostEqual(tr, hr, msg="Bad comparison for response '%s'" % r, places=9)
