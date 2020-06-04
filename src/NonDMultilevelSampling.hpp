@@ -413,6 +413,12 @@ private:
   /// sum up variances across QoI (using sum_YY with means from sum_Y)
   Real aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
 			       const SizetArray& N_l);
+
+
+  /// wrapper for aggregate_variance_Qsum 
+  Real aggregate_variance_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+ 									IntIntPairRealMatrixMap sum_QlQlm1, 
+									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
   /// sum up variances across QoI (using sum_YY with means from sum_Y)
   Real aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 			       const Real* sum_QlQl,     const Real* sum_QlQlm1,
@@ -423,6 +429,10 @@ private:
                                const Real* sum_QlQl,     const Real* sum_QlQlm1,
                                const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
                                const size_t& lev, const size_t& qoi);
+  /// wrapper for var_of_var_ml 
+  Real aggregate_variance_variance_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+ 									IntIntPairRealMatrixMap sum_QlQlm1, 
+									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
 
   /// sum up Monte Carlo estimates for mean squared error (MSE) across
   /// QoI using discrepancy variances
@@ -437,6 +447,14 @@ private:
   void aggregate_mse_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
  									IntIntPairRealMatrixMap sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi);
+
+  Real aggregate_mse_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+							IntIntPairRealMatrixMap sum_QlQlm1, 
+							const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
+
+  Real aggregate_mse_variance_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+							IntIntPairRealMatrixMap sum_QlQlm1, 
+							const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
 
   /// sum up Monte Carlo estimates for mean squared error (MSE) across
   /// QoI using discrepancy sums
@@ -509,7 +527,7 @@ private:
   static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
 
-  void assign_static_member(Real &conv_tol, size_t &qoi, RealVector &level_cost_vec, IntRealMatrixMap &sum_Ql,
+  void assign_static_member(Real &conv_tol, size_t &qoi, size_t &qoi_aggregation, size_t &num_functions, RealVector &level_cost_vec, IntRealMatrixMap &sum_Ql,
                             IntRealMatrixMap &sum_Qlm1, IntIntPairRealMatrixMap &sum_QlQlm1,
                             RealVector &pilot_samples) const;
 
@@ -792,18 +810,9 @@ aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
 									const Sizet2DArray& N_l, const size_t& step, RealMatrix& agg_var_qoi){
 	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
 		if (allocationTarget == TARGET_MEAN) {
-    		IntIntPair pr11(1, 1);
-			agg_var_qoi(qoi, step) = aggregate_variance_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
-		                                                   sum_Ql[2][step], sum_QlQlm1[pr11][step],
-		                                                   sum_Qlm1[2][step],
-                                                           N_l[step], step, qoi);
+			agg_var_qoi(qoi, step) = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
 		} else if (allocationTarget == TARGET_VARIANCE) {
-			Real place_holder;
-			agg_var_qoi(qoi, step) = ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
-			                                                         N_l[step][qoi], qoi, false, place_holder)
-			                                      : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
-			                                                        N_l[step][qoi], qoi, step, false, place_holder)) *
-			                          N_l[step][qoi]; //As described in the paper by Krumscheid, Pisaroni, Nobile
+			agg_var_qoi(qoi, step) = aggregate_variance_variance_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); //As described in the paper by Krumscheid, Pisaroni, Nobile
 		}else{
 		    Cout << "NonDMultilevelSampling::aggregate_variance_target_Qsum: allocationTarget is not known.\n";
 		    abort_handler(INTERFACE_ERROR);
@@ -812,6 +821,19 @@ aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
     	check_negative(agg_var_qoi(qoi, step));
     }
  }
+
+inline Real NonDMultilevelSampling::aggregate_variance_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+ 									IntIntPairRealMatrixMap sum_QlQlm1, 
+									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi){
+    IntIntPair pr11(1, 1);
+	Real agg_var_l = 0.;
+	agg_var_l = aggregate_variance_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
+		                                                   sum_Ql[2][step], sum_QlQlm1[pr11][step],
+		                                                   sum_Qlm1[2][step],
+                                                           N_l[step], step, qoi);
+
+	return agg_var_l;
+}
 
 inline Real NonDMultilevelSampling::
 aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
@@ -848,6 +870,20 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 	return agg_var_l;
 }
 
+inline Real NonDMultilevelSampling::aggregate_variance_variance_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+ 									IntIntPairRealMatrixMap sum_QlQlm1, 
+									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi){
+	Real place_holder;
+	Real agg_var_l = 0.;
+	agg_var_l = ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
+	                                                         N_l[step][qoi], qoi, false, place_holder)
+	                                      : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
+	                                                        N_l[step][qoi], qoi, step, false, place_holder)) *
+	                          N_l[step][qoi]; //As described in the paper by Krumscheid, Pisaroni, Nobile
+
+	return agg_var_l;
+}
+
 
 inline Real NonDMultilevelSampling::
 aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l)
@@ -876,21 +912,37 @@ aggregate_mse_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1,
 							const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi){
 	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
 		if (allocationTarget == TARGET_MEAN) {
-	    	IntIntPair pr11(1, 1);
-			estimator_var0_qoi[qoi] += aggregate_mse_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
-                                                            sum_Ql[2][step], sum_QlQlm1[pr11][step], sum_Qlm1[2][step],
-                                                            N_l[step], step, qoi);
+			estimator_var0_qoi[qoi] += aggregate_mse_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
 		} else if (allocationTarget == TARGET_VARIANCE) {
-			Real place_holder;
-			estimator_var0_qoi[qoi] += ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
-	                                            N_l[step][qoi], qoi, false, place_holder)
-	                         : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
-	                                           N_l[step][qoi], qoi, step, false, place_holder));
+			estimator_var0_qoi[qoi] += aggregate_mse_variance_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
 		}else{
 	        Cout << "NonDMultilevelSampling::aggregate_mse_target_Qsum: allocationTarget is not known.\n";
 	        abort_handler(INTERFACE_ERROR);
 	    }
 	}
+}
+
+inline Real NonDMultilevelSampling::
+aggregate_mse_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+							IntIntPairRealMatrixMap sum_QlQlm1, 
+							const Sizet2DArray& N_l, const size_t& step, const size_t& qoi){
+	IntIntPair pr11(1, 1);
+	Real agg_mse_l = aggregate_mse_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
+                                                            sum_Ql[2][step], sum_QlQlm1[pr11][step], sum_Qlm1[2][step],
+                                                            N_l[step], step, qoi);
+	return agg_mse_l;
+}
+
+inline Real NonDMultilevelSampling::
+aggregate_mse_variance_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+							IntIntPairRealMatrixMap sum_QlQlm1, 
+							const Sizet2DArray& N_l, const size_t& step, const size_t& qoi){
+	Real place_holder;
+	Real agg_mse_l = ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
+	                                            N_l[step][qoi], qoi, false, place_holder)
+	                         : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
+	                                           N_l[step][qoi], qoi, step, false, place_holder));
+	return agg_mse_l;
 }
 
 inline Real NonDMultilevelSampling::
@@ -1012,6 +1064,8 @@ inline void NonDMultilevelSampling::compute_eps_div_2(const RealVector& estimato
 		#endif
 		if( allocationTarget == TARGET_VARIANCE && (have_npsol || have_optpp) && useTargetVarianceOptimizationFlag){
 			size_t qoi_copy = qoi;
+			size_t qoiAggregation_copy = qoiAggregation;
+			size_t numFunctions_copy = numFunctions;
 	        Cout << "Numerical Optimization for sample allocation targeting variance using " << (have_npsol ? "NPSOL" : "OPTPP") << std::endl;
 			RealVector initial_point, pilot_samples;
 			initial_point.size(num_steps);
@@ -1049,7 +1103,7 @@ inline void NonDMultilevelSampling::compute_eps_div_2(const RealVector& estimato
 			nonlin_eq_targets.size(1); //init to 0
 			nonlin_eq_targets[0] = eps_sq_div_2[qoi]; //convergenceTol;
 
-			assign_static_member(nonlin_eq_targets[0], qoi_copy, level_cost_vec, sum_Ql, sum_Qlm1, sum_QlQlm1, pilot_samples);
+			assign_static_member(nonlin_eq_targets[0], qoi_copy, qoiAggregation_copy, numFunctions_copy, level_cost_vec, sum_Ql, sum_Qlm1, sum_QlQlm1, pilot_samples);
 
 			std::unique_ptr<Iterator> optimizer;
 			#ifdef HAVE_NPSOL

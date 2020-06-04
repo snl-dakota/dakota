@@ -797,18 +797,22 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
   static size_t *static_qoi(NULL);
   static Real *static_eps_sq_div_2(NULL);
   static RealVector *static_Nlq_pilot(NULL);
+  static size_t *static_numFunctions(NULL);
+  static size_t  *static_qoiAggregation(NULL);
 
   static IntRealMatrixMap *static_sum_Ql(NULL);
   static IntRealMatrixMap *static_sum_Qlm1(NULL);
   static IntIntPairRealMatrixMap *static_sum_QlQlm1(NULL);
 
-void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, RealVector &level_cost_vec,
+void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, size_t &qoi_aggregation, size_t &num_functions, RealVector &level_cost_vec,
 						  IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
 						  IntIntPairRealMatrixMap &sum_QlQlm1,
 						  RealVector &pilot_samples) const
 {
     static_lev_cost_vec= &level_cost_vec;
     static_qoi = &qoi;
+    static_qoiAggregation = &qoi_aggregation;
+    static_numFunctions = &num_functions;
     static_sum_Ql = &sum_Ql;
     static_sum_Qlm1 = &sum_Qlm1;
     static_sum_QlQlm1 = &sum_QlQlm1;
@@ -3288,21 +3292,45 @@ void NonDMultilevelSampling::print_results(std::ostream& s, short results_state)
     Real Nlq = x[lev];
     size_t Nlq_pilot = (*static_Nlq_pilot)[lev];
     size_t qoi = *static_qoi;
+    size_t nb_qois = *static_numFunctions;
+    short  qoiAggregation = *static_qoiAggregation;
     size_t num_lev = n;
     RealVector agg_estim_var_l;
     agg_estim_var_l.size(num_lev);
     Real agg_estim_var = 0;
 
-    agg_estim_var_l[0] = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
-                                     compute_gradient, grad_g[0][0]);
-    agg_estim_var += agg_estim_var_l[0];
-    for (lev = 1; lev < num_lev; ++lev) {
-      Nlq = x[lev];
-      Nlq_pilot = (*static_Nlq_pilot)[lev];
 
-      agg_estim_var_l[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
-                                       compute_gradient, grad_g[0][lev]);
-      agg_estim_var += agg_estim_var_l[lev];
+    if (qoiAggregation==QOI_AGGREGATION_SUM) {
+      agg_estim_var_l[0] = 0;
+      for(size_t qoi = 0; qoi < nb_qois; ++qoi){
+        agg_estim_var_l[0] += var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
+                                         compute_gradient, grad_g[0][0]);
+        agg_estim_var += agg_estim_var_l[0];
+        for (lev = 1; lev < num_lev; ++lev) {
+          Nlq = x[lev];
+          Nlq_pilot = (*static_Nlq_pilot)[lev];
+
+          agg_estim_var_l[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
+                                           compute_gradient, grad_g[0][lev]);
+          agg_estim_var += agg_estim_var_l[lev];
+        }
+      }
+    }
+    else if(qoiAggregation==QOI_AGGREGATION_MAX){
+      agg_estim_var_l[0] = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
+                                     compute_gradient, grad_g[0][0]);
+      agg_estim_var += agg_estim_var_l[0];
+      for (lev = 1; lev < num_lev; ++lev) {
+        Nlq = x[lev];
+        Nlq_pilot = (*static_Nlq_pilot)[lev];
+
+        agg_estim_var_l[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
+                                         compute_gradient, grad_g[0][lev]);
+        agg_estim_var += agg_estim_var_l[lev];
+      }
+    }else{
+      Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
+      abort_handler(INTERFACE_ERROR);
     }
 
     g[0] = agg_estim_var; // - (*static_eps_sq_div_2);
