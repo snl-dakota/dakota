@@ -1349,6 +1349,8 @@ compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
 
 void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
 {
+  // clear any persistent state from previous (e.g., for OUU)
+  NLev.clear();
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
@@ -1397,16 +1399,23 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
 
   // promotion of combined to active can occur here or be deferred until
   // downstream (when this function is a helper within another algorithm)
-  if (to_active)
+  if (to_active) {
+    // generate summary output across model sequence
+    NLev.resize(num_steps);
+    for (step=0; step<num_steps; ++step) {
+      configure_indices(step, form, lev, seq_index);
+      NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
+    }
+    RealVector cost;  configure_cost(num_steps, multilev, cost);
+    compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
+    // promote combined expansion to active
     combined_to_active();
+  }
 }
 
 
 void NonDExpansion::greedy_multifidelity_expansion()
 {
-  // clear any persistent state from previous (e.g., for OUU)
-  NLev.clear();
-
   // Generate MF reference expansion that is starting pt for greedy refinement:
   // > Only generate combined{MultiIndex,ExpCoeffs,ExpCoeffGrads}; active
   //   multiIndex,expansionCoeff{s,Grads} remain at ref state (no roll up)
