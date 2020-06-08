@@ -180,10 +180,10 @@ void C3Approximation::build()
   else {
     size_t i, j, num_v = sharedDataRep->numVars, kick_r = data_rep->kickRank,
       max_r = data_rep->max_rank(), // bounds CV candidates for adapt_rank
-      sr = std::min(data_rep->start_rank(), max_r);
+      start_r = std::min(data_rep->start_rank(), max_r);
     SizetVector start_ranks(num_v+1);
     start_ranks(0) = 1;     start_ranks(num_v) = 1;
-    for (i=1; i<num_v; ++i) start_ranks(i) = sr;
+    for (i=1; i<num_v; ++i) start_ranks(i) = start_r;
 
     struct FTRegress * ftr = ft_regress_alloc(num_v, data_rep->multiApproxOpts,
 					      start_ranks.values());
@@ -278,8 +278,8 @@ void C3Approximation::build()
     if (data_rep->outputLevel > SILENT_OUTPUT) {
       Cout << "\nFunction train build() results:\n  Ranks ";
       if (data_rep->adaptRank)
-	Cout << "(adapted with max = " << max_r << " kick = " << kick_r
-	     << "):\n";
+	Cout << "(adapted with start = " << start_r << " kick = " << kick_r
+	     << " max = " << max_r << "):\n";
       else Cout << "(non-adapted):\n";
       write_data(Cout, function_train_get_ranks(ft), num_v+1);
       Cout << "  Polynomial order (non-adapted):\n";

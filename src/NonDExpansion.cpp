@@ -1406,6 +1406,7 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
       configure_indices(step, form, lev, seq_index);
       NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
     }
+    // *** TO DO: add protection if cost not specified (not reqd for MF exp)
     RealVector cost;  configure_cost(num_steps, multilev, cost);
     compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
     // promote combined expansion to active

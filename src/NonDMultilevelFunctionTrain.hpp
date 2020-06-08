@@ -14,6 +14,8 @@
 #define NOND_MULTILEVEL_FUNCTION_TRAIN_H
 
 #include "NonDC3FunctionTrain.hpp"
+#include "SharedC3ApproxData.hpp"
+
 
 namespace Dakota {
 
@@ -173,8 +175,12 @@ push_c3_active(const UShortArray& orders)
 {
   push_c3_start_rank(start_rank());
   push_c3_max_rank(maxRankSpec); // restore if adapted (no sequence)
-  push_c3_start_orders(orders);
   push_c3_seed(random_seed());
+
+  push_c3_start_orders(orders);
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->update_basis(); // propagate order updates to oneApproxOpts
 }
 
 

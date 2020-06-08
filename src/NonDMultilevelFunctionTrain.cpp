@@ -318,9 +318,6 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
 
 void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-
   // This fn assigns the user specification from the relevant model sequences,
   // prior to any refinement/adaptation (use local attributes, not the state
   // of SharedC3ApproxData,C3Approximation
@@ -328,7 +325,6 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   UShortArray orders;
   configure_expansion_orders(start_order(), dimPrefSpec, orders);
   push_c3_active(orders); // push active start {orders,rank}, max rank, seed
-  shared_data_rep->update_basis(); // propagate order updates to oneApproxOpts
 
   size_t colloc_pts = collocation_points();
   if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined
@@ -355,13 +351,36 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
 void NonDMultilevelFunctionTrain::increment_specification_sequence()
 {
   // regression
-  // advance expansionOrder and/or collocationPoints, as admissible
-  size_t next_i = sequenceIndex + 1;
-  if (next_i <  collocPtsSeqSpec.size() || next_i <  startRankSeqSpec.size() ||
-      next_i < startOrderSeqSpec.size() || next_i < randomSeedSeqSpec.size())
+
+  // advance sequence specs (Note: sequenceIndex admissibility is adequately
+  // handled in active value accessors)
+  //size_t next_i = sequenceIndex + 1;
+  //if (next_i <  collocPtsSeqSpec.size() || next_i < startRankSeqSpec.size() ||
+  //    next_i < startOrderSeqSpec.size() || next_i < randomSeedSeqSpec.size())
     ++sequenceIndex;
 
   assign_specification_sequence();
+}
+
+
+void NonDMultilevelFunctionTrain::
+initialize_ml_regression(size_t num_lev, bool& import_pilot)
+{
+  NonDExpansion::initialize_ml_regression(num_lev, import_pilot);
+
+  // Build point import is active only for the pilot sample and we overlay an
+  // additional pilot_sample spec, but we do not augment with samples from a
+  // collocation pts/ratio enforcement (pts/ratio controls take over on
+  // subsequent iterations).
+  if (!importBuildPointsFile.empty()) {
+    if (multilevDiscrepEmulation == RECURSIVE_EMULATION) {
+      Cout << "\nPilot sample to include imported build points.\n";
+      import_pilot = true;
+    }
+    else
+      Cerr << "Warning: build data import only supported for recursive "
+	   << "emulation in multilevel_regression()." << std::endl;
+  }
 }
 
 
@@ -386,36 +405,18 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
 
-  // MF FT: {assign,increment}_specification_sequence() advance ranks/orders.
-  // ML FT: no rank/order advancement from this class (only occurs implicitly
-  //        via C3 adapt_rank); if advancing from this class, uncomment below
-  //        (within this virtual level fn called from multilevel_regression()):
-  //push_c3_active();
+  // ML FT: This virtual fn is called from multilevel_regression() for the
+  //   current resolution level.  No explicit rank/order refinement occurs
+  //   (only implicit via C3 adapt_rank), but sequence spec (along with any
+  //   future advancements) must be propagated.
+  // MF FT: rank/order advancements occur in {assign,increment}_specification_
+  //   sequence() above
+  sequenceIndex = step;
+  UShortArray orders;
+  configure_expansion_orders(start_order(), dimPrefSpec, orders);
+  push_c3_active(orders);
 
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  update_u_space_sampler(step, shared_data_rep->start_orders());
-}
-
-
-void NonDMultilevelFunctionTrain::
-initialize_ml_regression(size_t num_lev, bool& import_pilot)
-{
-  NonDExpansion::initialize_ml_regression(num_lev, import_pilot);
-
-  // Build point import is active only for the pilot sample and we overlay an
-  // additional pilot_sample spec, but we do not augment with samples from a
-  // collocation pts/ratio enforcement (pts/ratio controls take over on
-  // subsequent iterations).
-  if (!importBuildPointsFile.empty()) {
-    if (multilevDiscrepEmulation == RECURSIVE_EMULATION) {
-      Cout << "\nPilot sample to include imported build points.\n";
-      import_pilot = true;
-    }
-    else
-      Cerr << "Warning: build data import only supported for recursive "
-	   << "emulation in multilevel_regression()." << std::endl;
-  }
+  update_u_space_sampler(step, orders);
 }
 
 
