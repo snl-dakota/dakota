@@ -709,13 +709,15 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
   if (diag_set.empty()) {
     // conditionally print default diagnostics
     if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
-      Cout << "\nSurrogate quality metrics for " << func_description << ":\n";
+      Cout << "\nSurrogate quality metrics at build (training) points for "
+	   << func_description << ":\n";
       for (const auto& req_diag : {"root_mean_squared", "mean_abs", "rsquared"})
 	diagnostic(req_diag);
     }
   }
   else {
-    Cout << "\nSurrogate quality metrics for " << func_description << ":\n";
+    Cout << "\nSurrogate quality metrics at build (training) points for "
+	 << func_description << ":\n";
     for (const auto& req_diag : diag_set)
       diagnostic(req_diag);
    
@@ -797,28 +799,18 @@ challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
   }
   
   String func_description = approxLabel.empty() ? 
-    "function " + boost::lexical_cast<std::string>(fn_index+1) : approxLabel;  
-
-  // copy
+    "function " + std::to_string(fn_index+1) : approxLabel;
   StringArray diag_set = 
     ((SharedSurfpackApproxData*)sharedDataRep)->diagnosticSet;
-  if (diag_set.empty()) {
-    // conditionally print default diagnostics
-    if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
-      Cout << "\nSurrogate quality metrics (challenge data) for " 
-	   << func_description << ":\n";
-      diag_set.push_back("root_mean_squared");	
-      diag_set.push_back("mean_abs");
-      diag_set.push_back("rsquared");
-      challenge_diagnostic(diag_set, challenge_points, challenge_responses);
-    }
+  // conditionally print default diagnostics
+  if (diag_set.empty() && sharedDataRep->outputLevel > NORMAL_OUTPUT) {
+    diag_set.push_back("root_mean_squared");
+    diag_set.push_back("mean_abs");
+    diag_set.push_back("rsquared");
   }
-  else {
-    Cout << "\nSurrogate quality metrics (challenge data) for " 
-	 << func_description << ":\n";
-    challenge_diagnostic(diag_set, challenge_points, challenge_responses);
-  }
-
+  Cout << "\nSurrogate quality metrics at challenge (test) points for "
+       << func_description << ":\n";
+  challenge_diagnostic(diag_set, challenge_points, challenge_responses);
 }
 
 
