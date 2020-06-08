@@ -59,6 +59,54 @@ SurrogatesPolyApprox(const SharedApproxData& shared_data):
 }
 
 
+bool SurrogatesPolyApprox::diagnostics_available()
+{ return true; }
+
+
+Real SurrogatesPolyApprox::diagnostic(const String& metric_type)
+{
+  // BMA TODO: Check for null in case not yet built?!?
+
+  // BMA TODO: Once DTS finalizes interface for metric at build points
+  Real approx_diag = std::numeric_limits<Real>::quiet_NaN();
+  // = model->metric(metric_type);
+
+  Cout << std::setw(20) << metric_type << "  " << approx_diag << '\n';
+
+  return approx_diag;
+}
+
+
+void SurrogatesPolyApprox::primary_diagnostics(int fn_index)
+{
+  String func_description = approxLabel.empty() ?
+    "function " + std::to_string(fn_index+1) : approxLabel;
+  SharedSurfpackApproxData* shared_surf_data_rep
+    = (SharedSurfpackApproxData*)sharedDataRep;
+  const StringArray& diag_set = shared_surf_data_rep->diagnosticSet;
+  if (diag_set.empty()) {
+    // conditionally print default diagnostics
+    if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
+      Cout << "\nSurrogate quality metrics for " << func_description << ":\n";
+      for (const auto& req_diag : {"root_mean_squared", "mean_abs", "rsquared"})
+	diagnostic(req_diag);
+    }
+  }
+  else {
+    Cout << "\nSurrogate quality metrics for " << func_description << ":\n";
+    for (const auto& req_diag : diag_set)
+      diagnostic(req_diag);
+  }
+}
+
+
+void SurrogatesPolyApprox::
+challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+                             const RealVector& challenge_responses)
+{
+}
+
+
 int
 SurrogatesPolyApprox::min_coefficients() const
 {

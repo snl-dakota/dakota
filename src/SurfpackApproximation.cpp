@@ -701,8 +701,8 @@ Real SurfpackApproximation::diagnostic(const String& metric_type,
 
 void SurfpackApproximation::primary_diagnostics(int fn_index)
 {
-  String func_description = approxLabel.empty() ? 
-    "function " + boost::lexical_cast<std::string>(fn_index+1) : approxLabel;  
+  String func_description = approxLabel.empty() ?
+    "function " + std::to_string(fn_index+1) : approxLabel;
   SharedSurfpackApproxData* shared_surf_data_rep
     = (SharedSurfpackApproxData*)sharedDataRep;
   const StringArray& diag_set = shared_surf_data_rep->diagnosticSet;
@@ -710,16 +710,14 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
     // conditionally print default diagnostics
     if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
       Cout << "\nSurrogate quality metrics for " << func_description << ":\n";
-      diagnostic("root_mean_squared");	
-      diagnostic("mean_abs");
-      diagnostic("rsquared");
+      for (const auto& req_diag : {"root_mean_squared", "mean_abs", "rsquared"})
+	diagnostic(req_diag);
     }
   }
   else {
     Cout << "\nSurrogate quality metrics for " << func_description << ":\n";
-    int num_diag = diag_set.size();
-    for (int j = 0; j < num_diag; ++j)
-      diagnostic(diag_set[j]);
+    for (const auto& req_diag : diag_set)
+      diagnostic(req_diag);
    
     // BMA TODO: at runtime verify (though Surfpack will too) 
     //  * 1/N <= percentFold <= 0.5
@@ -749,8 +747,7 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
       //CrossValidationFitness CV_fitness(num_folds);
       //VecDbl cv_metrics;
       //CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
-      
-      for (int j = 0; j < num_diag; ++j) {
+      for (int j = 0; j < diag_set.size(); ++j) {
         const String& metric_type = diag_set[j];
         if (metric_type == "rsquared")
           Cout << std::setw(20) << metric_type
@@ -773,7 +770,7 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
       //VecDbl cv_metrics;
       //CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
      
-      for (int j = 0; j < num_diag; ++j) {
+      for (int j = 0; j < diag_set.size(); ++j) {
         const String& metric_type = diag_set[j];
         if (metric_type == "rsquared")
           Cout << std::setw(20) << metric_type 
