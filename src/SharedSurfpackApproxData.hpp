@@ -42,7 +42,10 @@ class SharedSurfpackApproxData: public SharedApproxData
 
   friend class SurfpackApproximation;
     
-    friend class VPSApproximation;  // Mohamed Ebeida
+  friend class VPSApproximation;  // Mohamed Ebeida
+
+  friend class SurrogatesGPApprox;
+  friend class SurrogatesPolyApprox;
 
 public:
 
@@ -88,6 +91,9 @@ private:
   /// aggregate {active,all} {continuous,discrete int,discrete real}
   /// variables into ra
   void vars_to_realarray(const Variables& vars, RealArray& ra);
+
+  /// validate metric names and cross validation options
+  void validate_metrics(const std::set<std::string>& allowed_metrics);
 
   //
   //- Heading: Data

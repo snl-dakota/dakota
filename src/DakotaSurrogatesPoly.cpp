@@ -15,6 +15,7 @@
 
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
+#include "SharedSurfpackApproxData.hpp"
 
 // Headers from Surrogates module
 #include "PolynomialRegression.hpp"
@@ -37,6 +38,16 @@ SurrogatesPolyApprox(const ProblemDescDB& problem_db,
 		    );
 //  surrogateOpts.set("advanced_options_file",
 //		    problem_db.get_string("model.advanced_options_file"));
+
+  // validate supported metrics
+  std::set<std::string> allowed_metrics =
+    { "sum_squared", "mean_squared", "root_mean_squared",
+      "sum_abs", "mean_abs", "max_abs",
+      "sum_abs_percent", "mean_abs_percent", // APE, MAPE
+      "rsquared" };
+  SharedSurfpackApproxData* shared_surf_data_rep
+    = (SharedSurfpackApproxData*)sharedDataRep;
+  shared_surf_data_rep->validate_metrics(allowed_metrics);
 }
 
 

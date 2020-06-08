@@ -213,4 +213,40 @@ copy_matrix(const RealSymMatrix& rsm, SurfpackMatrix<Real>& surfpack_matrix)
       surfpack_matrix(i,j) = rsm(i,j);
 }
 
+
+void SharedSurfpackApproxData::
+validate_metrics(const std::set<std::string>& allowed_metrics)
+{
+  bool err_found = false;
+  for (const auto& req_metric : diagnosticSet)
+    if (allowed_metrics.count(req_metric) == 0) {
+      Cerr << "Error: surrogate metric '" << req_metric
+	   << "' invalid for " << approxType << " surrogate.\n";
+      err_found = true;
+    }
+  if (err_found) {
+    Cerr << "Valid metrics for " << approxType << " surrogate include:\n  ";
+    std::copy(allowed_metrics.begin(), allowed_metrics.end(),
+	      std::ostream_iterator<std::string>(Cerr, " "));
+    Cerr << std::endl;
+  }
+
+  if (crossValidateFlag) {
+    if (numFolds > 0 && numFolds < 2) {
+      Cerr << "Error: cross_validation folds must be 2 or greater."
+	   << std::endl;
+      err_found = true;
+    }
+    if (percentFold < 0.0 || percentFold > 0.5) {
+      Cerr << "Error: cross_validation percent must be between 0.0 and 0.5"
+	   << std::endl;
+      err_found = true;
+    }
+  }
+
+  if (err_found)
+    abort_handler(PARSE_ERROR);
+}
+
+
 } // namespace Dakota

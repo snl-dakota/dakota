@@ -271,48 +271,11 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
 
   // validate diagnostic settings (preliminary); TODO: do more at
   // run time and move to both ctors
-  bool err_found = false;
-  const StringArray& diag_set = shared_surf_data_rep->diagnosticSet;
-  if (!diag_set.empty()) {
-    std::set<std::string> valid_metrics;
-    valid_metrics.insert("sum_squared");
-    valid_metrics.insert("mean_squared");
-    valid_metrics.insert("root_mean_squared");
-    valid_metrics.insert("sum_abs");
-    valid_metrics.insert("mean_abs");
-    valid_metrics.insert("max_abs");
-    valid_metrics.insert("rsquared");
-
-    int num_diag = diag_set.size();
-    for (int j = 0; j < num_diag; ++j)
-      if (valid_metrics.find(diag_set[j]) == valid_metrics.end()) {
-	Cerr << "Error: surrogate metric '" << diag_set[j] 
-	     << "' is not available in Dakota.\n";
-	err_found = true;
-      }	
-    if (err_found) {
-      Cerr << "Valid surrogate metrics include:\n  ";
-      std::copy(valid_metrics.begin(), valid_metrics.end(), 
-		std::ostream_iterator<std::string>(Cerr, " "));
-      Cerr << std::endl;
-    }
-  }
-  if (shared_surf_data_rep->crossValidateFlag) {
-    if (shared_surf_data_rep->numFolds > 0 &&
-	shared_surf_data_rep->numFolds < 2) {
-      Cerr << "Error: cross_validation folds must be 2 or greater."
-	   << std::endl;
-      err_found = true;
-    }
-    if (shared_surf_data_rep->percentFold < 0.0 ||
-	shared_surf_data_rep->percentFold > 0.5) {
-      Cerr << "Error: cross_validation percent must be between 0.0 and 0.5"
-	   << std::endl;
-      err_found = true;
-    }
-  }
-  if (err_found)
-    abort_handler(-1);
+  std::set<std::string> allowed_metrics =
+    { "sum_squared", "mean_squared", "root_mean_squared",
+      "sum_abs", "mean_abs", "max_abs",
+      "rsquared" };
+  shared_surf_data_rep->validate_metrics(allowed_metrics);
 }
 
 
