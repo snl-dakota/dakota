@@ -45,12 +45,11 @@ extern ProblemDescDB *Dak_pddb;	  // defined in dakota_global_defs.cpp
     derived constructor selects this base class constructor in its
     initialization list (to avoid the recursion of the base class constructor
     calling get_db() again).  Since the letter IS the representation, its
-    representation pointer is set to NULL (an uninitialized pointer causes
-    problems in ~ProblemDescDB). */
+    representation pointer is set to NULL. */
 ProblemDescDB::ProblemDescDB(BaseConstructor, ParallelLibrary& parallel_lib):
   parallelLib(parallel_lib), environmentCntr(0), methodDBLocked(true),
   modelDBLocked(true), variablesDBLocked(true), interfaceDBLocked(true),
-  responsesDBLocked(true), dbRep(NULL), referenceCount(1)
+  responsesDBLocked(true)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "ProblemDescDB::ProblemDescDB(BaseConstructor) called to build base "
@@ -62,8 +61,7 @@ ProblemDescDB::ProblemDescDB(BaseConstructor, ParallelLibrary& parallel_lib):
 /** The default constructor: dbRep is NULL in this case.  This makes
     it necessary to check for NULL in the copy constructor, assignment
     operator, and destructor. */
-ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib), dbRep(NULL),
-  referenceCount(1)
+ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "ProblemDescDB::ProblemDescDB() called to build empty db object."
@@ -79,15 +77,14 @@ ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib), dbRep(NULL),
     inherited by the derived classes. */
 ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
   parallelLib(parallel_lib),
-  referenceCount(1) // not used since this is the envelope, not the letter
+  // Set the rep pointer to the appropriate db type
+  dbRep(get_db(parallel_lib))
+
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "ProblemDescDB::ProblemDescDB(ParallelLibrary&) called to "
        << "instantiate envelope." << std::endl;
 #endif
-
-  // Set the rep pointer to the appropriate db type
-  dbRep = get_db(parallel_lib);
   if (!dbRep) // bad settings or insufficient memory
     abort_handler(-1);
 }
@@ -102,80 +99,53 @@ ProblemDescDB* ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
        << std::endl;
 #endif
 
-   Dak_pddb = this;	// for use in abort_handler()
+  Dak_pddb = this;	// for use in abort_handler()
 
   //if (xml_flag)
   //  return new XMLProblemDescDB(parallel_lib);
   //else
-    return new NIDRProblemDescDB(parallel_lib);
+  return new NIDRProblemDescDB(parallel_lib);
 }
 
 
-/** Copy constructor manages sharing of dbRep and incrementing of
-    referenceCount. */
+/** Copy constructor manages sharing of dbRep */
 ProblemDescDB::ProblemDescDB(const ProblemDescDB& db):
   parallelLib(db.parallel_library())
 {
-  // Increment new (no old to decrement)
   dbRep = db.dbRep;
-  if (dbRep) // Check for an assignment of NULL
-    dbRep->referenceCount++;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "ProblemDescDB::ProblemDescDB(ProblemDescDB&)" << std::endl;
   if (dbRep)
-    Cout << "dbRep referenceCount = " << dbRep->referenceCount << std::endl;
+    Cout << "dbRep referenceCount = " << dbRep.use_count() << std::endl;
 #endif
 }
 
 
-/** Assignment operator decrements referenceCount for old dbRep, assigns
-    new dbRep, and increments referenceCount for new dbRep. */
+/** Assignment operator shares the dbRep. */
 ProblemDescDB ProblemDescDB::operator=(const ProblemDescDB& db)
 {
-  if (dbRep != db.dbRep) { // normal case: old != new
-    // Decrement old
-    if (dbRep) // Check for NULL
-      if ( --dbRep->referenceCount == 0 )
-	delete dbRep;
-    // Assign and increment new
-    dbRep = db.dbRep;
-    if (dbRep) // Check for NULL
-      dbRep->referenceCount++;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
+  dbRep = db.dbRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "ProblemDescDB::operator=(ProblemDescDB&)" << std::endl;
   if (dbRep)
-    Cout << "dbRep referenceCount = " << dbRep->referenceCount << std::endl;
+    Cout << "dbRep referenceCount = " << dbRep.use_count() << std::endl;
 #endif
 
   return *this; // calls copy constructor since returned by value
 }
 
 
-/** Destructor decrements referenceCount and only deletes dbRep
-    when referenceCount reaches zero. */
+/** dbRep only deleted when its reference count reaches zero. */
 ProblemDescDB::~ProblemDescDB()
 {
   if (this == Dak_pddb)
-	Dak_pddb = 0;
-  // Check for NULL pointer
-  if (dbRep) {
-    --dbRep->referenceCount;
+    Dak_pddb = NULL;
+
 #ifdef REFCOUNT_DEBUG
-    Cout << "dbRep referenceCount decremented to " << dbRep->referenceCount
-	 << std::endl;
+  Cout << "~ProblemDescDB() referenceCount " << dbRep.use_count() << std::endl;
 #endif
-    if (dbRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dbRep" << std::endl;
-#endif
-      delete dbRep;
-    }
-  }
 }
 
 

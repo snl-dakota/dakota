@@ -498,9 +498,7 @@ private:
   bool responsesDBLocked;
 
   /// pointer to the letter (initialized only for the envelope)
-  ProblemDescDB* dbRep;
-  /// number of objects sharing dbRep
-  int referenceCount;
+  std::shared_ptr<ProblemDescDB> dbRep;
 };
 
 
