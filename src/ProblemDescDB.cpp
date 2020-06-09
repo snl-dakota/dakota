@@ -2297,7 +2297,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
     KW<String, DataEnvironmentRep> *kw;
     if ((kw = (KW<String, DataEnvironmentRep>*)Binsearch(Sde, L)))
-	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
@@ -2593,7 +2593,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 
     KW<int, DataEnvironmentRep> *kw;
     if ((kw = (KW<int, DataEnvironmentRep>*)Binsearch(Ide, L)))
-	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
@@ -2833,7 +2833,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
     KW<unsigned short, DataEnvironmentRep> *kw;
     if ((kw = (KW<unsigned short, DataEnvironmentRep>*)Binsearch(UShde, L)))
-	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
@@ -3118,7 +3118,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataEnvironmentRep> *kw;
     if ((kw = (KW<bool, DataEnvironmentRep>*)Binsearch(Bde, L)))
-	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)

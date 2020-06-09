@@ -1995,7 +1995,7 @@ env_int(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 env_start(const char *keyname, Values *val, void **g, void *v)
 {
-  *g = (void*)pDDBInstance->environmentSpec.dataEnvRep;
+  *g = (void*)pDDBInstance->environmentSpec.dataEnvRep.get();
 }
 
 void NIDRProblemDescDB::
