@@ -248,12 +248,12 @@ void /*Dakota::*/run_dakota_data()
     Cout << "Library mode 2: run_dakota_data()\n";
     // This version uses direct Data instance population.  Initial instantiation
     // populates all the defaults.  Default Environment and Model data are used.
-    Dakota::DataMethodRep*    dmr = dme.data_rep();
+    Dakota::DataMethodRep& dmr = *dme.data_rep();
     Dakota::DataVariablesRep* dvr =  dv.data_rep();
     Dakota::DataInterfaceRep* dir =  di.data_rep();
     Dakota::DataResponsesRep* drr =  dr.data_rep();
     // Set any non-default values: mimic default_input
-    dmr->methodName = Dakota::OPTPP_Q_NEWTON;
+    dmr.methodName = Dakota::OPTPP_Q_NEWTON;
     dvr->numContinuousDesVars = 2;
     dir->interfaceType = Dakota::TEST_INTERFACE;
     if (parallel_lib.mpirun_flag()) {

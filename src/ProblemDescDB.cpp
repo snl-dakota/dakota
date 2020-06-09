@@ -1461,7 +1461,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
     KW<RealVector, DataMethodRep> *kw;
     if ((kw = (KW<RealVector, DataMethodRep>*)Binsearch(RVdme, L)))
-    	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+      return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->methodDBLocked)
@@ -1678,7 +1678,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     #undef P
     KW<IntVector, DataMethodRep> *kw;
     if ((kw = (KW<IntVector, DataMethodRep>*)Binsearch(IVdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if (L = Begins(entry_name, "model.")) {
     if (dbRep->modelDBLocked)
@@ -1773,7 +1773,7 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 
     KW<SizetArray, DataMethodRep> *kw;
     if ((kw = (KW<SizetArray, DataMethodRep>*)Binsearch(SZAdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
 
   Bad_name(entry_name, "get_sza");
@@ -1803,7 +1803,7 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 
     KW<UShortArray, DataMethodRep> *kw;
     if ((kw = (KW<UShortArray, DataMethodRep>*)Binsearch(USAdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
 
   Bad_name(entry_name, "get_usa");
@@ -1846,7 +1846,7 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 
     KW<RealVectorArray, DataMethodRep> *kw;
     if ((kw = (KW<RealVectorArray, DataMethodRep>*)Binsearch(RVAdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
 
   Bad_name(entry_name, "get_rva");
@@ -2140,7 +2140,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
     KW<StringArray, DataMethodRep> *kw;
     if ((kw = (KW<StringArray, DataMethodRep>*)Binsearch(SAds, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2374,7 +2374,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
     KW<String, DataMethodRep> *kw;
     if ((kw = (KW<String, DataMethodRep>*)Binsearch(Sdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2537,7 +2537,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 
     KW<Real, DataMethodRep> *kw;
     if ((kw = (KW<Real, DataMethodRep>*)Binsearch(Rdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2645,7 +2645,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 
     KW<int, DataMethodRep> *kw;
     if ((kw = (KW<int, DataMethodRep>*)Binsearch(Idme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2745,7 +2745,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
     KW<short, DataMethodRep> *kw;
     if ((kw = (KW<short, DataMethodRep>*)Binsearch(Shdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2873,7 +2873,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
     KW<unsigned short, DataMethodRep> *kw;
     if ((kw = (KW<unsigned short, DataMethodRep>*)Binsearch(UShdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2963,7 +2963,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
     KW<size_t, DataMethodRep> *kw;
     if ((kw = (KW<size_t, DataMethodRep>*)Binsearch(Szdmo, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -3181,7 +3181,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataMethodRep> *kw;
     if ((kw = (KW<bool, DataMethodRep>*)Binsearch(Bdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -3555,7 +3555,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 
     KW<RealVectorArray, DataMethodRep> *kw;
     if ((kw = (KW<RealVectorArray, DataMethodRep>*)Binsearch(RVAdme, L))) {
-      dbRep->dataMethodIter->dataMethodRep->*kw->p = rva;
+      dbRep->dataMethodIter->dataMethodRep.get()->*kw->p = rva;
       return;
     }
   }

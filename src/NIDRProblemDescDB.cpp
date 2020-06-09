@@ -1282,7 +1282,7 @@ method_start(const char *keyname, Values *val, void **g, void *v)
   Botch:		botch("new failure in method_start");
   if (!(mi->dme0 = new DataMethod))
     goto Botch;
-  mi->dme = mi->dme0->dataMethodRep;
+  mi->dme = mi->dme0->dataMethodRep.get();
   *g = (void*)mi;
 }
 

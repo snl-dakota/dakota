@@ -243,6 +243,8 @@ class DataMethodRep
 
 public:
 
+  ~DataMethodRep();                            ///< destructor
+
   //
   //- Heading: Data
   //
@@ -1222,7 +1224,6 @@ private:
   //
 
   DataMethodRep();                             ///< constructor
-  ~DataMethodRep();                            ///< destructor
 
   //
   //- Heading: Member methods
@@ -1240,8 +1241,6 @@ private:
   //- Heading: Private data members
   //
 
-  /// number of handle objects sharing this dataMethodRep
-  int referenceCount;
 };
 
 
@@ -1297,7 +1296,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataMethodRep
-  DataMethodRep* data_rep();
+  std::shared_ptr<DataMethodRep> data_rep();
 
 private:
 
@@ -1306,11 +1305,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataMethodRep* dataMethodRep;
+  std::shared_ptr<DataMethodRep> dataMethodRep;
 };
 
 
-inline DataMethodRep* DataMethod::data_rep()
+inline std::shared_ptr<DataMethodRep> DataMethod::data_rep()
 {return dataMethodRep; }
 
 
