@@ -1422,7 +1422,7 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
     #undef P
     KW<RealMatrixArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealMatrixArray, DataVariablesRep>*)Binsearch(RMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rma");
   return abort_handler_t<const RealMatrixArray&>(PARSE_ERROR);
@@ -1575,7 +1575,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
     KW<RealVector, DataVariablesRep> *kw;
     if ((kw = (KW<RealVector, DataVariablesRep>*)Binsearch(RVdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if (strbegins(entry_name, "interface.")) {
     if (dbRep->interfaceDBLocked)
@@ -1662,7 +1662,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 
     KW<IntVector, DataVariablesRep> *kw;
     if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
 	if (dbRep->methodDBLocked)
@@ -1744,7 +1744,7 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 
     KW<BitArray, DataVariablesRep> *kw;
     if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
 
   Bad_name(entry_name, "get_ba");
@@ -1918,7 +1918,7 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 
     KW<IntSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntSetArray, DataVariablesRep>*)Binsearch(ISAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_isa");
   return abort_handler_t<const IntSetArray&>(PARSE_ERROR);
@@ -1942,7 +1942,7 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 
     KW<StringSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringSetArray, DataVariablesRep>*)Binsearch(SSAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_ssa");
   return abort_handler_t<const StringSetArray&>(PARSE_ERROR);
@@ -1967,7 +1967,7 @@ const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 
     KW<RealSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealSetArray, DataVariablesRep>*)Binsearch(RSAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rsa");
   return abort_handler_t<const RealSetArray&>(PARSE_ERROR);
@@ -1993,7 +1993,7 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 
     KW<IntRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntRealMapArray, DataVariablesRep>*)Binsearch(IRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_irma");
   return abort_handler_t<const IntRealMapArray&>(PARSE_ERROR);
@@ -2018,7 +2018,7 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
 
     KW<StringRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringRealMapArray, DataVariablesRep>*)Binsearch(SRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_srma");
   return abort_handler_t<const StringRealMapArray&>(PARSE_ERROR);
@@ -2045,7 +2045,7 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 
     KW<RealRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealRealMapArray, DataVariablesRep>*)Binsearch(RRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rrma");
   return abort_handler_t<const RealRealMapArray&>(PARSE_ERROR);
@@ -2073,7 +2073,7 @@ get_rrrma(const String& entry_name) const
     KW<RealRealPairRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealRealPairRealMapArray, DataVariablesRep>*)
 	 Binsearch(RRRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rrrma");
   return abort_handler_t<const RealRealPairRealMapArray&>(PARSE_ERROR);
@@ -2101,7 +2101,7 @@ get_iirma(const String& entry_name) const
     KW<IntIntPairRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntIntPairRealMapArray, DataVariablesRep>*)
 	 Binsearch(IIRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_iirma");
   return abort_handler_t<const IntIntPairRealMapArray&>(PARSE_ERROR);
@@ -2215,7 +2215,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
     KW<StringArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringArray, DataVariablesRep>*)Binsearch(SAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
@@ -2791,7 +2791,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
     KW<short, DataVariablesRep> *kw;
     if ((kw = (KW<short, DataVariablesRep>*)Binsearch(Shdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
@@ -2988,7 +2988,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     std::list<DataVariables>::iterator v_iter = dbRep->dataVariablesIter;
-    DataVariablesRep* VRep = v_iter->dataVarsRep;
+    DataVariablesRep* VRep = v_iter->dataVarsRep.get();
 
     // DataVariables helper functions
     struct HelperFcn { const char *name; int no; };
@@ -3228,7 +3228,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataVariablesRep> *kw;
     if ((kw = (KW<bool, DataVariablesRep>*)Binsearch(Bdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
@@ -3401,7 +3401,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 
     KW<RealVector, DataVariablesRep> *kw;
     if ((kw = (KW<RealVector, DataVariablesRep>*)Binsearch(RVdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep->*kw->p = rv;
+	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rv;
 	return;
 	}
   }
@@ -3471,7 +3471,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 
     KW<IntVector, DataVariablesRep> *kw;
     if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep->*kw->p = iv;
+	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = iv;
 	return;
 	}
   }
@@ -3512,7 +3512,7 @@ void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 
     KW<BitArray, DataVariablesRep> *kw;
     if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep->*kw->p = ba;
+	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = ba;
 	return;
 	}
   }
@@ -3590,7 +3590,7 @@ void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 
     KW<IntSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntSetArray, DataVariablesRep>*)Binsearch(ISAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = isa;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = isa;
       return;
     }
   }
@@ -3615,7 +3615,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 
     KW<RealSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealSetArray, DataVariablesRep>*)Binsearch(RSAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = rsa;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rsa;
       return;
     }
   }
@@ -3641,7 +3641,7 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 
     KW<IntRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntRealMapArray, DataVariablesRep>*)Binsearch(IRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = irma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = irma;
       return;
     }
   }
@@ -3665,7 +3665,7 @@ void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma
 
     KW<StringRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringRealMapArray, DataVariablesRep>*)Binsearch(SRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = srma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = srma;
       return;
     }
   }
@@ -3690,7 +3690,7 @@ void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 
     KW<RealRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealRealMapArray, DataVariablesRep>*)Binsearch(RRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = rrma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rrma;
       return;
     }
   }
@@ -3715,7 +3715,7 @@ set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 
     KW<RealRealPairRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealRealPairRealMapArray, DataVariablesRep>*)Binsearch(RRRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = rrrma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rrrma;
       return;
     }
   }
@@ -3740,7 +3740,7 @@ set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 
     KW<IntIntPairRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntIntPairRealMapArray, DataVariablesRep>*)Binsearch(IIRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = iirma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = iirma;
       return;
     }
   }
@@ -3803,7 +3803,7 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 
     KW<StringArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringArray, DataVariablesRep>*)Binsearch(SAdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep->*kw->p = sa;
+	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = sa;
 	return;
 	}
   }

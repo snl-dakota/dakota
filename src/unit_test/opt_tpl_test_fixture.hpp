@@ -222,13 +222,13 @@ Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test_Fixture::create_default_env(un
     // This version uses direct Data instance population.  Initial instantiation
     // populates all the defaults.  Default Environment and Model data are used.
     Dakota::DataMethodRep& dmr = *dme.data_rep();
-    Dakota::DataVariablesRep* dvr =  dv.data_rep();
+    Dakota::DataVariablesRep& dvr =  *dv.data_rep();
     Dakota::DataInterfaceRep* dir =  di.data_rep();
     Dakota::DataResponsesRep* drr =  dr.data_rep();
     // Set any non-default values: mimic default_input
     dmr.methodOutput = SILENT_OUTPUT;
     dmr.methodName = method_name;
-    dvr->numContinuousDesVars = 2;
+    dvr.numContinuousDesVars = 2;
     dir->interfaceType = Dakota::TEST_INTERFACE;
     dir->analysisDrivers.push_back("simple_quad");
     drr->numObjectiveFunctions = 1;

@@ -2282,7 +2282,7 @@ var_start(const char *keyname, Values *val, void **g, void *v)
   memset(vi, 0, sizeof(Var_Info));
   if (!(vi->dv_handle = new DataVariables))
     goto Botch;
-  vi->dv = vi->dv_handle->dataVarsRep;
+  vi->dv = vi->dv_handle->dataVarsRep.get();
   *g = (void*)vi;
 }
 
@@ -5399,7 +5399,7 @@ make_variable_defaults(std::list<DataVariables>* dvl)
   /// stored separately
   std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
   for(; It != Ite; ++It) {
-    dv = It->dataVarsRep;
+    dv = It->dataVarsRep.get();
     // size the aggregate labels, bounds, values arrays for
     // real-valued uncertain
     for(k = 0; k < NUM_UNC_REAL_CONT; ++k) {
@@ -6237,7 +6237,7 @@ check_variables(std::list<DataVariables>* dvl)
       vi = new Var_Info;
       memset(vi, 0, sizeof(Var_Info));
       vi->dv_handle = &*It;
-      vi->dv = dv = It->dataVarsRep;
+      vi->dv = dv = It->dataVarsRep.get();
 
       // flatten 2D {Real,Int}{Vector,Set}Arrays back into Var_Info 1D arrays
 
@@ -6403,7 +6403,7 @@ check_variables(std::list<DataVariables>* dvl)
   // explicitly set descriptors.
   std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
   for(; It != Ite; ++It) {
-    const DataVariablesRep* dvr = It->data_rep();
+    const DataVariablesRep* dvr = It->data_rep().get();
     check_descriptor_format(dvr->continuousDesignLabels);
     check_descriptor_format(dvr->discreteDesignRangeLabels);
     check_descriptor_format(dvr->discreteDesignSetIntLabels);
