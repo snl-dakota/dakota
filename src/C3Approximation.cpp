@@ -275,7 +275,7 @@ void C3Approximation::build()
     //  ftp.ft_gradient(ftg);
     //  ftp.ft_hessian(ft1d_array_jacobian(ftg));
     //}
-    if (data_rep->outputLevel > SILENT_OUTPUT) {
+    //if (data_rep->outputLevel > SILENT_OUTPUT) {
       Cout << "\nFunction train build() results:\n  Ranks ";
       if (data_rep->adaptRank)
 	Cout << "(adapted with start = " << start_r << " kick = " << kick_r
@@ -289,7 +289,7 @@ void C3Approximation::build()
 	     << one_approx_opts_get_nparams(opts[i]) - 1 << '\n';
       Cout << "  C3 regression size:  " << function_train_get_nparams(ft)
 	   << std::endl;
-    }
+    //}
 
     // free approximation stuff
     free(xtrain);          xtrain    = NULL;

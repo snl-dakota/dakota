@@ -36,9 +36,9 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   regressRegParam(problem_db.get_real("model.surrogate.regression_penalty")),
   solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
   solverRoundingTol(
-    problem_db.get_real("model.c3function_train.rounding_tolerance")),
+    problem_db.get_real("model.c3function_train.solver_rounding_tolerance")),
   statsRoundingTol(
-    problem_db.get_real("model.c3function_train.arithmetic_tolerance")),
+    problem_db.get_real("model.c3function_train.stats_rounding_tolerance")),
   maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
