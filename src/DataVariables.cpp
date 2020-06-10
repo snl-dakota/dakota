@@ -13,7 +13,6 @@
 #include "DataVariables.hpp"
 #include "dakota_data_io.hpp"
 
-
 namespace Dakota {
 
 // Default constructor:

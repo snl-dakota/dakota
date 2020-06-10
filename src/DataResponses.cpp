@@ -28,8 +28,7 @@ DataResponsesRep::DataResponsesRep():
   calibrationDataFlag(false), numExperiments(1), numExpConfigVars(0),
   scalarDataFormat(TABULAR_EXPER_ANNOT), ignoreBounds(false), centralHess(false), 
   methodSource("dakota"), intervalType("forward"), interpolateFlag(false),
-  fdGradStepType("relative"), fdHessStepType("relative"), readFieldCoords(false),
-  referenceCount(1)
+  fdGradStepType("relative"), fdHessStepType("relative"), readFieldCoords(false)
 { }
 
 
@@ -137,22 +136,19 @@ DataResponses::DataResponses(): dataRespRep(new DataResponsesRep())
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "DataResponses::DataResponses(), dataRespRep referenceCount = "
-       << dataRespRep->referenceCount << std::endl;
+       << dataRespRep.use_count() << std::endl;
 #endif
 }
 
 
 DataResponses::DataResponses(const DataResponses& data_resp)
 {
-  // Increment new (no old to decrement)
   dataRespRep = data_resp.dataRespRep;
-  if (dataRespRep) // Check for an assignment of NULL
-    ++dataRespRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataResponses::DataResponses(DataResponses&)" << std::endl;
   if (dataRespRep)
-    Cout << "dataRespRep referenceCount = " << dataRespRep->referenceCount
+    Cout << "dataRespRep referenceCount = " << dataRespRep.use_count()
 	 << std::endl;
 #endif
 }
@@ -160,23 +156,12 @@ DataResponses::DataResponses(const DataResponses& data_resp)
 
 DataResponses& DataResponses::operator=(const DataResponses& data_resp)
 {
-  if (dataRespRep != data_resp.dataRespRep) { // normal case: old != new
-    // Decrement old
-    if (dataRespRep) // Check for NULL
-      if ( --dataRespRep->referenceCount == 0 ) 
-	delete dataRespRep;
-    // Assign and increment new
-    dataRespRep = data_resp.dataRespRep;
-    if (dataRespRep) // Check for NULL
-      ++dataRespRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
+  dataRespRep = data_resp.dataRespRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataResponses::operator=(DataResponses&)" << std::endl;
   if (dataRespRep)
-    Cout << "dataRespRep referenceCount = " << dataRespRep->referenceCount
+    Cout << "dataRespRep referenceCount = " << dataRespRep.use_count()
 	 << std::endl;
 #endif
 
@@ -186,19 +171,10 @@ DataResponses& DataResponses::operator=(const DataResponses& data_resp)
 
 DataResponses::~DataResponses()
 {
-  if (dataRespRep) { // Check for NULL
-    --dataRespRep->referenceCount; // decrement
 #ifdef REFCOUNT_DEBUG
-    Cout << "dataRespRep referenceCount decremented to "
-         << dataRespRep->referenceCount << std::endl;
+    Cout << "~DataResponses() dataRespRep referenceCount "
+         << dataRespRep.use_count() << std::endl;
 #endif
-    if (dataRespRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataRespRep" << std::endl;
-#endif
-      delete dataRespRep;
-    }
-  }
 }
 
 } // namespace Dakota

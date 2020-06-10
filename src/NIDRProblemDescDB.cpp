@@ -604,7 +604,7 @@ iface_start(const char *keyname, Values *val, void **g, void *v)
   Botch:		botch("new failure in iface_start");
   if (!(ii->di_handle = new DataInterface))
     goto Botch;
-  ii->di = ii->di_handle->dataIfaceRep;
+  ii->di = ii->di_handle->dataIfaceRep.get();
   *g = (void*)ii;
 }
 
@@ -1632,7 +1632,7 @@ resp_start(const char *keyname, Values *val, void **g, void *v)
   Botch:		botch("new failure in resp_start");
   if (!(ri->dr0 = new DataResponses))
     goto Botch;
-  ri->dr = ri->dr0->dataRespRep;
+  ri->dr = ri->dr0->dataRespRep.get();
   *g = (void*)ri;
 }
 
@@ -1784,9 +1784,9 @@ check_responses(std::list<DataResponses>* drl)
   // explicitly set descriptors.
   std::list<DataResponses>::iterator It = drl->begin(), Ite = drl->end();
   for(; It != Ite; ++It) {
-    const DataResponsesRep* drr = It->data_rep();
-    check_descriptor_format(drr->responseLabels);
-    check_descriptors_for_repeats(drr->responseLabels);
+    const DataResponsesRep& drr = *It->data_rep();
+    check_descriptor_format(drr.responseLabels);
+    check_descriptors_for_repeats(drr.responseLabels);
   }
 }
 
@@ -1835,7 +1835,7 @@ make_response_defaults(std::list<DataResponses>* drl)
   std::list<DataResponses>::iterator It = drl->begin(), Ite = drl->end();
   for(; It != Ite; It++) {
 
-    DataResponsesRep *dr = It->dataRespRep;
+    DataResponsesRep *dr = It->dataRespRep.get();
 
     for(sc = Str_chk, i = 0; i < Numberof(Str_chk); ++sc, ++i)
       if ((n1 = dr->*sc->n) && (n = (dr->*sc->sa).size()) > 0
@@ -6403,44 +6403,44 @@ check_variables(std::list<DataVariables>* dvl)
   // explicitly set descriptors.
   std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
   for(; It != Ite; ++It) {
-    const DataVariablesRep* dvr = It->data_rep().get();
-    check_descriptor_format(dvr->continuousDesignLabels);
-    check_descriptor_format(dvr->discreteDesignRangeLabels);
-    check_descriptor_format(dvr->discreteDesignSetIntLabels);
-    check_descriptor_format(dvr->discreteDesignSetStrLabels);
-    check_descriptor_format(dvr->discreteDesignSetRealLabels);
-    check_descriptor_format(dvr->continuousStateLabels);
-    check_descriptor_format(dvr->discreteStateRangeLabels);
-    check_descriptor_format(dvr->discreteStateSetIntLabels);
-    check_descriptor_format(dvr->discreteStateSetStrLabels);
-    check_descriptor_format(dvr->discreteStateSetRealLabels);
-    check_descriptor_format(dvr->continuousAleatoryUncLabels);
-    check_descriptor_format(dvr->discreteIntAleatoryUncLabels);
-    check_descriptor_format(dvr->discreteStrAleatoryUncLabels);
-    check_descriptor_format(dvr->discreteRealAleatoryUncLabels);
-    check_descriptor_format(dvr->continuousEpistemicUncLabels);
-    check_descriptor_format(dvr->discreteIntEpistemicUncLabels);
-    check_descriptor_format(dvr->discreteStrEpistemicUncLabels);
-    check_descriptor_format(dvr->discreteRealEpistemicUncLabels);
+    const DataVariablesRep& dvr = *It->data_rep();
+    check_descriptor_format(dvr.continuousDesignLabels);
+    check_descriptor_format(dvr.discreteDesignRangeLabels);
+    check_descriptor_format(dvr.discreteDesignSetIntLabels);
+    check_descriptor_format(dvr.discreteDesignSetStrLabels);
+    check_descriptor_format(dvr.discreteDesignSetRealLabels);
+    check_descriptor_format(dvr.continuousStateLabels);
+    check_descriptor_format(dvr.discreteStateRangeLabels);
+    check_descriptor_format(dvr.discreteStateSetIntLabels);
+    check_descriptor_format(dvr.discreteStateSetStrLabels);
+    check_descriptor_format(dvr.discreteStateSetRealLabels);
+    check_descriptor_format(dvr.continuousAleatoryUncLabels);
+    check_descriptor_format(dvr.discreteIntAleatoryUncLabels);
+    check_descriptor_format(dvr.discreteStrAleatoryUncLabels);
+    check_descriptor_format(dvr.discreteRealAleatoryUncLabels);
+    check_descriptor_format(dvr.continuousEpistemicUncLabels);
+    check_descriptor_format(dvr.discreteIntEpistemicUncLabels);
+    check_descriptor_format(dvr.discreteStrEpistemicUncLabels);
+    check_descriptor_format(dvr.discreteRealEpistemicUncLabels);
 
-    check_descriptors_for_repeats(dvr->continuousDesignLabels,
-                                  dvr->discreteDesignRangeLabels,
-                                  dvr->discreteDesignSetIntLabels,
-                                  dvr->discreteDesignSetStrLabels,
-                                  dvr->discreteDesignSetRealLabels,
-                                  dvr->continuousStateLabels,
-                                  dvr->discreteStateRangeLabels,
-                                  dvr->discreteStateSetIntLabels,
-                                  dvr->discreteStateSetStrLabels,
-                                  dvr->discreteStateSetRealLabels,
-                                  dvr->continuousAleatoryUncLabels,
-                                  dvr->discreteIntAleatoryUncLabels,
-                                  dvr->discreteStrAleatoryUncLabels,
-                                  dvr->discreteRealAleatoryUncLabels,
-                                  dvr->continuousEpistemicUncLabels,
-                                  dvr->discreteIntEpistemicUncLabels,
-                                  dvr->discreteStrEpistemicUncLabels,
-                                  dvr->discreteRealEpistemicUncLabels);
+    check_descriptors_for_repeats(dvr.continuousDesignLabels,
+                                  dvr.discreteDesignRangeLabels,
+                                  dvr.discreteDesignSetIntLabels,
+                                  dvr.discreteDesignSetStrLabels,
+                                  dvr.discreteDesignSetRealLabels,
+                                  dvr.continuousStateLabels,
+                                  dvr.discreteStateRangeLabels,
+                                  dvr.discreteStateSetIntLabels,
+                                  dvr.discreteStateSetStrLabels,
+                                  dvr.discreteStateSetRealLabels,
+                                  dvr.continuousAleatoryUncLabels,
+                                  dvr.discreteIntAleatoryUncLabels,
+                                  dvr.discreteStrAleatoryUncLabels,
+                                  dvr.discreteRealAleatoryUncLabels,
+                                  dvr.continuousEpistemicUncLabels,
+                                  dvr.discreteIntEpistemicUncLabels,
+                                  dvr.discreteStrEpistemicUncLabels,
+                                  dvr.discreteRealEpistemicUncLabels);
   }
 }
 

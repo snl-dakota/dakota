@@ -47,6 +47,8 @@ class DataResponsesRep
 
 public:
 
+  ~DataResponsesRep();                               ///< destructor
+
   //
   //- Heading: Data
   //
@@ -257,7 +259,6 @@ private:
   //
 
   DataResponsesRep();                                ///< constructor
-  ~DataResponsesRep();                               ///< destructor
 
   //
   //- Heading: Member methods
@@ -275,8 +276,6 @@ private:
   //- Heading: Private data members
   //
 
-  /// number of handle objects sharing this dataResponsesRep
-  int referenceCount;
 };   
 
 
@@ -334,7 +333,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataRespRep
-  DataResponsesRep* data_rep();
+  std::shared_ptr<DataResponsesRep> data_rep();
 
 private:
 
@@ -343,11 +342,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataResponsesRep* dataRespRep;
+  std::shared_ptr<DataResponsesRep> dataRespRep;
 };
 
 
-inline DataResponsesRep* DataResponses::data_rep()
+inline std::shared_ptr<DataResponsesRep> DataResponses::data_rep()
 {return dataRespRep; }
 
 

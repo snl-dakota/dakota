@@ -250,23 +250,23 @@ void /*Dakota::*/run_dakota_data()
     // populates all the defaults.  Default Environment and Model data are used.
     Dakota::DataMethodRep& dmr = *dme.data_rep();
     Dakota::DataVariablesRep& dvr = *dv.data_rep();
-    Dakota::DataInterfaceRep* dir =  di.data_rep();
-    Dakota::DataResponsesRep* drr =  dr.data_rep();
+    Dakota::DataInterfaceRep& dir = *di.data_rep();
+    Dakota::DataResponsesRep& drr = *dr.data_rep();
     // Set any non-default values: mimic default_input
     dmr.methodName = Dakota::OPTPP_Q_NEWTON;
     dvr.numContinuousDesVars = 2;
-    dir->interfaceType = Dakota::TEST_INTERFACE;
+    dir.interfaceType = Dakota::TEST_INTERFACE;
     if (parallel_lib.mpirun_flag()) {
-      dir->analysisDrivers.push_back("plugin_text_book");
-      drr->numObjectiveFunctions = 1;
-      drr->numNonlinearIneqConstraints = 2;
+      dir.analysisDrivers.push_back("plugin_text_book");
+      drr.numObjectiveFunctions = 1;
+      drr.numNonlinearIneqConstraints = 2;
     }
     else {
-      dir->analysisDrivers.push_back("plugin_rosenbrock");
-      drr->numObjectiveFunctions = 1;
+      dir.analysisDrivers.push_back("plugin_rosenbrock");
+      drr.numObjectiveFunctions = 1;
     }
-    drr->gradientType = "analytic";
-    drr->hessianType  = "none";
+    drr.gradientType = "analytic";
+    drr.hessianType  = "none";
   }
   env.insert_nodes(dme, dmo, dv, di, dr);
 

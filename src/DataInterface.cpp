@@ -29,7 +29,7 @@ DataInterfaceRep::DataInterfaceRep():
   failAction("abort"), retryLimit(1), activeSetVectorFlag(true),
   evalCacheFlag(true), nearbyEvalCacheFlag(false),
   nearbyEvalCacheTol(DBL_EPSILON), // default relative tolerance is tight
-  restartFileFlag(true), referenceCount(1), useWorkdir(false), dirTag(false),
+  restartFileFlag(true), useWorkdir(false), dirTag(false),
   dirSave(false), templateReplace(false), numpyFlag(false)
   // asynchLocal{Eval,Analysis}Concurrency, procsPer{Eval,Analysis} and
   // {eval,analysis}Servers default to zero in order to allow detection of
@@ -92,22 +92,19 @@ DataInterface::DataInterface(): dataIfaceRep(new DataInterfaceRep())
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "DataInterface::DataInterface(), dataIfaceRep referenceCount = "
-       << dataIfaceRep->referenceCount << std::endl;
+       << dataIfaceRep.use_count() << std::endl;
 #endif
 }
 
 
 DataInterface::DataInterface(const DataInterface& data_resp)
 {
-  // Increment new (no old to decrement)
   dataIfaceRep = data_resp.dataIfaceRep;
-  if (dataIfaceRep) // Check for an assignment of NULL
-    ++dataIfaceRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataInterface::DataInterface(DataInterface&)" << std::endl;
   if (dataIfaceRep)
-    Cout << "dataIfaceRep referenceCount = " << dataIfaceRep->referenceCount
+    Cout << "dataIfaceRep referenceCount = " << dataIfaceRep.use_count()
 	 << std::endl;
 #endif
 }
@@ -115,23 +112,12 @@ DataInterface::DataInterface(const DataInterface& data_resp)
 
 DataInterface& DataInterface::operator=(const DataInterface& data_interface)
 {
-  if (dataIfaceRep != data_interface.dataIfaceRep) { // normal case: old != new
-    // Decrement old
-    if (dataIfaceRep) // Check for NULL
-      if ( --dataIfaceRep->referenceCount == 0 ) 
-	delete dataIfaceRep;
-    // Assign and increment new
-    dataIfaceRep = data_interface.dataIfaceRep;
-    if (dataIfaceRep) // Check for NULL
-      ++dataIfaceRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
+  dataIfaceRep = data_interface.dataIfaceRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataInterface::operator=(DataInterface&)" << std::endl;
   if (dataIfaceRep)
-    Cout << "dataIfaceRep referenceCount = " << dataIfaceRep->referenceCount
+    Cout << "dataIfaceRep referenceCount = " << dataIfaceRep.use_count()
 	 << std::endl;
 #endif
 
@@ -141,19 +127,10 @@ DataInterface& DataInterface::operator=(const DataInterface& data_interface)
 
 DataInterface::~DataInterface()
 {
-  if (dataIfaceRep) { // Check for NULL
-    --dataIfaceRep->referenceCount; // decrement
 #ifdef REFCOUNT_DEBUG
-    Cout << "dataIfaceRep referenceCount decremented to "
-         << dataIfaceRep->referenceCount << std::endl;
+    Cout << "~DataInterface() dataIfaceRep referenceCount "
+         << dataIfaceRep.use_count() << std::endl;
 #endif
-    if (dataIfaceRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataIfaceRep" << std::endl;
-#endif
-      delete dataIfaceRep;
-    }
-  }
 }
 
 } // namespace Dakota

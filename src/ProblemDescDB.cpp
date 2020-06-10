@@ -1607,7 +1607,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
     KW<RealVector, DataResponsesRep> *kw;
     if ((kw = (KW<RealVector, DataResponsesRep>*)Binsearch(RVdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rv");
   return abort_handler_t<const RealVector&>(PARSE_ERROR);
@@ -1703,7 +1703,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     #undef P
     KW<IntVector, DataResponsesRep> *kw;
     if ((kw = (KW<IntVector, DataResponsesRep>*)Binsearch(IVdr, L)))
-      return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+      return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_iv");
   return abort_handler_t<const IntVector&>(PARSE_ERROR);
@@ -1893,7 +1893,7 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 
     KW<IntSet, DataResponsesRep> *kw;
     if ((kw = (KW<IntSet, DataResponsesRep>*)Binsearch(ISdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_is");
   return abort_handler_t<const IntSet&>(PARSE_ERROR);
@@ -2123,7 +2123,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
   //   KW<StringArray, DataEnvironmentRep> *kw;
   //   if ((kw = (KW<StringArray, DataEnvironmentRep>*)Binsearch(SAenv, L)))
-  // 	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+  // 	return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   // }
   // else
   if ((L = Begins(entry_name, "method."))) {
@@ -2230,7 +2230,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
     KW<StringArray, DataInterfaceRep> *kw;
     if ((kw = (KW<StringArray, DataInterfaceRep>*)Binsearch(SAdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
@@ -2248,7 +2248,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
     KW<StringArray, DataResponsesRep> *kw;
     if ((kw = (KW<StringArray, DataResponsesRep>*)Binsearch(SAdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_sa");
   return abort_handler_t<const StringArray&>(PARSE_ERROR);
@@ -2434,7 +2434,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
     KW<String, DataInterfaceRep> *kw;
     if ((kw = (KW<String, DataInterfaceRep>*)Binsearch(Sdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
@@ -2455,7 +2455,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
     KW<String, DataResponsesRep> *kw;
     if ((kw = (KW<String, DataResponsesRep>*)Binsearch(Sdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
 
   }
   Bad_name(entry_name, "get_string");
@@ -2693,7 +2693,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 
     KW<int, DataInterfaceRep> *kw;
     if ((kw = (KW<int, DataInterfaceRep>*)Binsearch(Idi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_int");
   return abort_handler_t<int>(PARSE_ERROR);
@@ -2806,7 +2806,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
     KW<short, DataInterfaceRep> *kw;
     if ((kw = (KW<short, DataInterfaceRep>*)Binsearch(Shdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_short");
   return abort_handler_t<short>(PARSE_ERROR);
@@ -2912,7 +2912,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
     KW<unsigned short, DataInterfaceRep> *kw;
     if ((kw = (KW<unsigned short, DataInterfaceRep>*)Binsearch(UShdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
@@ -2925,7 +2925,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
     KW<unsigned short, DataResponsesRep> *kw;
     if ((kw = (KW<unsigned short, DataResponsesRep>*)Binsearch(UShdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_ushort");
   return abort_handler_t<unsigned short>(PARSE_ERROR);
@@ -3091,7 +3091,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
     KW<size_t, DataResponsesRep> *kw;
     if ((kw = (KW<size_t, DataResponsesRep>*)Binsearch(Szdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_sizet");
   return abort_handler_t<size_t>(PARSE_ERROR);
@@ -3256,7 +3256,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataInterfaceRep> *kw;
     if ((kw = (KW<bool, DataInterfaceRep>*)Binsearch(Bdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
@@ -3273,7 +3273,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataResponsesRep> *kw;
     if ((kw = (KW<bool, DataResponsesRep>*)Binsearch(Bdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_bool");
   return abort_handler_t<bool>(PARSE_ERROR);
@@ -3422,7 +3422,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 
     KW<RealVector, DataResponsesRep> *kw;
     if ((kw = (KW<RealVector, DataResponsesRep>*)Binsearch(RVdr, L))) {
-	dbRep->dataResponsesIter->dataRespRep->*kw->p = rv;
+	dbRep->dataResponsesIter->dataRespRep.get()->*kw->p = rv;
 	return;
 	}
   }
@@ -3821,7 +3821,7 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 
     KW<StringArray, DataResponsesRep> *kw;
     if ((kw = (KW<StringArray, DataResponsesRep>*)Binsearch(SAdr, L))) {
-	dbRep->dataResponsesIter->dataRespRep->*kw->p = sa;
+	dbRep->dataResponsesIter->dataRespRep.get()->*kw->p = sa;
 	return;
 	}
   }
