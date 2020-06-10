@@ -1510,7 +1510,7 @@ model_start(const char *keyname, Values *val, void **g, void *v)
   Botch:		botch("new failure in model_start");
   if (!(mi->dmo0 = new DataModel))
     goto Botch;
-  dm = mi->dmo = mi->dmo0->dataModelRep;
+  dm = mi->dmo = mi->dmo0->dataModelRep.get();
   *g = (void*)mi;
 }
 

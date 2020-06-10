@@ -437,7 +437,7 @@ private:
   void receive_db_buffer();
   /// helper function for determining whether an interface specification
   /// should be active, based on model type
-  bool model_has_interface(DataModelRep* model_rep) const;
+  bool model_has_interface(const DataModelRep& model_rep) const;
 
   /// echo the (potentially) specified input file or string to stdout
   void echo_input_file(const std::string& dakota_input_file,
@@ -696,16 +696,16 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
 }
 
 
-inline bool ProblemDescDB::model_has_interface(DataModelRep* model_rep) const
+inline bool ProblemDescDB::model_has_interface(const DataModelRep& model_rep) const
 {
   // The following Models pull from the interface specification:
   //   SimulationModel (userDefinedInterface)
   //   NestedModel (optionalInterface)
   //   DataFitSurrModel (approxInterface)
-  return ( model_rep->modelType == "simulation" ||
-	   model_rep->modelType == "nested" ||
-	   ( model_rep->modelType == "surrogate" &&
-	     model_rep->surrogateType != "hierarchical") );
+  return ( model_rep.modelType == "simulation" ||
+	   model_rep.modelType == "nested" ||
+	   ( model_rep.modelType == "surrogate" &&
+	     model_rep.surrogateType != "hierarchical") );
 }
 
 } // namespace Dakota
