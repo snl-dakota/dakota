@@ -43,8 +43,7 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   modelExportPrefix(
     problem_db.get_string("model.surrogate.model_export_prefix")),
   modelExportFormat(
-    problem_db.get_ushort("model.surrogate.model_export_format")),
-  dataRep(NULL), referenceCount(1)
+    problem_db.get_ushort("model.surrogate.model_export_format"))
 {
   // increment the buildDataOrder based on derivative usage and response
   // gradient/Hessian specifications and approximation type support.  The
@@ -109,8 +108,7 @@ SharedApproxData::
 SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 		 size_t num_vars, short data_order, short output_level):
   numVars(num_vars), approxType(approx_type), outputLevel(output_level),
-  modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
-  dataRep(NULL), referenceCount(1)
+  modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix("")
 {
   bool global_approx = strbegins(approxType, "global_");
   buildDataOrder = 1;
@@ -147,13 +145,10 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 }
 
 
-/** For the default constructor, dataRep is NULL.  This makes it
-    necessary to check for NULL in the copy constructor, assignment
-    operator, and destructor. */
-SharedApproxData::SharedApproxData():
+/** For the default constructor, dataRep is NULL. */
+  SharedApproxData::SharedApproxData() //:
   //buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
   //modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
-  dataRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData() called to build empty "
@@ -166,15 +161,15 @@ SharedApproxData::SharedApproxData():
     execute get_shared_data, since SharedApproxData(BaseConstructor, problem_db)
     builds the actual base class data for the derived approximations. */
 SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
-  referenceCount(1)
+  // Set the rep pointer to the appropriate derived type
+  dataRep(get_shared_data(problem_db, num_vars))
+
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData(ProblemDescDB&) called to "
        << "instantiate envelope." << std::endl;
 #endif
 
-  // Set the rep pointer to the appropriate derived type
-  dataRep = get_shared_data(problem_db, num_vars);
   if ( !dataRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -228,16 +223,15 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 SharedApproxData::
 SharedApproxData(const String& approx_type, const UShortArray& approx_order,
 		 size_t num_vars, short data_order, short output_level):
-  referenceCount(1)
+  // Set the rep pointer to the appropriate derived type
+  dataRep(get_shared_data(approx_type, approx_order, num_vars,
+			  data_order, output_level))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData(String&) called to instantiate "
        << "envelope." << std::endl;
 #endif
 
-  // Set the rep pointer to the appropriate derived type
-  dataRep = get_shared_data(approx_type, approx_order, num_vars,
-			    data_order, output_level);
   if ( !dataRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -297,15 +291,12 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
     of referenceCount. */
 SharedApproxData::SharedApproxData(const SharedApproxData& shared_data)
 {
-  // Increment new (no old to decrement)
   dataRep = shared_data.dataRep;
-  if (dataRep) // Check for an assignment of NULL
-    ++dataRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData(SharedApproxData&)" << std::endl;
   if (dataRep)
-    Cout << "dataRep referenceCount = " << dataRep->referenceCount
+    Cout << "dataRep referenceCount = " << dataRep.use_count()
 	 << std::endl;
 #endif
 }
@@ -316,23 +307,12 @@ SharedApproxData::SharedApproxData(const SharedApproxData& shared_data)
 SharedApproxData SharedApproxData::
 operator=(const SharedApproxData& shared_data)
 {
-  if (dataRep != shared_data.dataRep) { // normal case: old != new
-    // Decrement old
-    if (dataRep) // Check for NULL
-      if ( --dataRep->referenceCount == 0 ) 
-	delete dataRep;
-    // Assign and increment new
-    dataRep = shared_data.dataRep;
-    if (dataRep) // Check for NULL
-      ++dataRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
+  dataRep = shared_data.dataRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::operator=(SharedApproxData&)" << std::endl;
   if (dataRep)
-    Cout << "dataRep referenceCount = " << dataRep->referenceCount
+    Cout << "dataRep referenceCount = " << dataRep.use_count()
 	 << std::endl;
 #endif
 
@@ -344,20 +324,10 @@ operator=(const SharedApproxData& shared_data)
     when referenceCount reaches zero. */
 SharedApproxData::~SharedApproxData()
 { 
-  // Check for NULL pointer 
-  if (dataRep) {
-    --dataRep->referenceCount;
 #ifdef REFCOUNT_DEBUG
-    Cout << "dataRep referenceCount decremented to " 
-	 << dataRep->referenceCount << std::endl;
+    Cout << "~SharedApproxData() dataRep referenceCount " 
+	 << dataRep.use_count() << std::endl;
 #endif
-    if (dataRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataRep" << std::endl;
-#endif
-      delete dataRep;
-    }
-  }
 }
 
 

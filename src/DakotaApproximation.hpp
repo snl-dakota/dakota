@@ -368,8 +368,9 @@ protected:
   /// label for approximation, if applicable
   String approxLabel;
 
+  // BMA: left this as pointer to rep even though could be to envelope
   /// contains the approximation data that is shared among the response set
-  SharedApproxData* sharedDataRep;
+  std::shared_ptr<SharedApproxData> sharedDataRep;
 
 private:
 

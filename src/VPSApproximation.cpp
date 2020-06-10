@@ -82,7 +82,8 @@ namespace Dakota
     VPSApproximation::VPSApproximation(const SharedApproxData& shared_data):
                                        Approximation(NoDBBaseConstructor(), shared_data)
     {
-        SharedSurfpackApproxData* dat = dynamic_cast<SharedSurfpackApproxData*> (shared_data.data_rep());
+      std::shared_ptr<SharedSurfpackApproxData> dat =
+	std::dynamic_pointer_cast<SharedSurfpackApproxData>(shared_data.data_rep());
         
         surrogateOrder = dat->approxOrder;
         

@@ -471,7 +471,7 @@ void NonDExpansion::initialize_u_space_model()
 
   // if all variables mode, init bookkeeping for the random variable subset
   if (allVars) {
-    SharedApproxData* shared_data_rep =
+    std::shared_ptr<SharedApproxData> shared_data_rep =
       uSpaceModel.shared_approximation().data_rep();
 
     BitArray random_vars_key(numContinuousVars); // init to false
@@ -501,8 +501,8 @@ void NonDExpansion::configure_pecos_options()
   // {Orthog,Interp}PolyApproximation are passed in Pecos::
   // {Expansion,Basis,Regression}ConfigOptions.   Note: passing outputLevel
   // and useDerivs again is redundant with the DataFitSurrModel ctor.
-  SharedPecosApproxData* shared_data_rep =
-    (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
+  std::shared_ptr<SharedPecosApproxData> shared_data_rep =
+    std::dynamic_pointer_cast<SharedPecosApproxData>(uSpaceModel.shared_approximation().data_rep());
   Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
     expansionBasisType, iteratedModel.correction_type(),
     multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,
@@ -524,8 +524,8 @@ void NonDExpansion::initialize_u_space_grid()
     //
     // Note: not used by C3; Pecos restriction is appropriate (PCE/SC basis)
     //
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
+    std::shared_ptr<SharedPecosApproxData> shared_data_rep =
+      std::dynamic_pointer_cast<SharedPecosApproxData>(uSpaceModel.shared_approximation().data_rep());
 
     NonDIntegration* u_space_sampler_rep = 
       (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1896,7 +1896,7 @@ void NonDExpansion::statistics_type(short stats_type, bool clear_bits)
   if (statsType != stats_type) {
     statsType = stats_type;
 
-    SharedApproxData* shared_data_rep
+    std::shared_ptr<SharedApproxData> shared_data_rep
       = uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->refinement_statistics_type(stats_type);
 
@@ -3465,7 +3465,7 @@ void NonDExpansion::archive_sobol_indices() {
   size_t i, j, num_indices;
   if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
     // create aggregate interaction labels (once for all response fns)
-    SharedApproxData* shared_data_rep
+    std::shared_ptr<SharedApproxData> shared_data_rep
       = uSpaceModel.shared_approximation().data_rep();
     const Pecos::BitArrayULongMap& sobol_map
       = shared_data_rep->sobol_index_map();
@@ -3820,7 +3820,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
   StringArray sobol_labels;  size_t i, j, num_indices;
   if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
     // create aggregate interaction labels (once for all response fns)
-    SharedApproxData* shared_data_rep
+    std::shared_ptr<SharedApproxData> shared_data_rep
       = uSpaceModel.shared_approximation().data_rep();
     const Pecos::BitArrayULongMap& sobol_map
       = shared_data_rep->sobol_index_map();

@@ -821,8 +821,8 @@ void NonDPolynomialChaos::initialize_u_space_model()
   configure_pecos_options(); // pulled out of base because C3 does not use it
 
   SharedApproxData& shared_data = uSpaceModel.shared_approximation();
-  SharedPecosApproxData* shared_data_rep
-    = (SharedPecosApproxData*)shared_data.data_rep();
+  std::shared_ptr<SharedPecosApproxData> shared_data_rep
+    = std::dynamic_pointer_cast<SharedPecosApproxData>(shared_data.data_rep());
   // Transfer regression data: cross validation, noise tol, and L2 penalty.
   // Note: regression solver type is transferred via expansionCoeffsApproach
   //       in NonDExpansion::initialize_u_space_model()
@@ -893,8 +893,8 @@ void NonDPolynomialChaos::compute_expansion()
 				 numFunctions);
 
     // post the shared data
-    SharedPecosApproxData* data_rep
-      = (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
+    std::shared_ptr<SharedPecosApproxData> data_rep
+      = std::dynamic_pointer_cast<SharedPecosApproxData>(uSpaceModel.shared_approximation().data_rep());
     data_rep->allocate(multi_index); // defines multiIndex, sobolIndexMap
 
     // post coefficients to the OrthogPolyApproximation instances (also calls
@@ -921,8 +921,8 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   // facilitate usage from other surrogate types (especially GP).
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   SharedApproxData&          shared_approx = uSpaceModel.shared_approximation();
-  SharedPecosApproxData* shared_data_rep
-    = (SharedPecosApproxData*)shared_approx.data_rep();
+  std::shared_ptr<SharedPecosApproxData> shared_data_rep
+    = std::dynamic_pointer_cast<SharedPecosApproxData>(shared_approx.data_rep());
   const Pecos::SDVArray& sdv_array
     = poly_approxs[0].surrogate_data().variables_data();
   int num_surr_data_pts = sdv_array.size();
@@ -1050,8 +1050,8 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
 /** Used for uniform refinement of regression-based PCE. */
 void NonDPolynomialChaos::increment_order_from_grid()
 {
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
+  std::shared_ptr<SharedPecosApproxData> shared_data_rep
+    = std::dynamic_pointer_cast<SharedPecosApproxData>(uSpaceModel.shared_approximation().data_rep());
 
   // update expansion order based on existing collocation ratio and
   // updated number of truth model samples
@@ -1067,8 +1067,8 @@ void NonDPolynomialChaos::increment_order_from_grid()
 
 void NonDPolynomialChaos::update_samples_from_order_increment()
 {
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
+  std::shared_ptr<SharedPecosApproxData> shared_data_rep
+    = std::dynamic_pointer_cast<SharedPecosApproxData>(uSpaceModel.shared_approximation().data_rep());
   const UShortArray& exp_order = shared_data_rep->expansion_order();
   size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
     Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
@@ -1220,8 +1220,8 @@ void NonDPolynomialChaos::export_coefficients()
 
   // export the PCE coefficients for all QoI and a shared multi-index.
   // Annotation provides questionable value in this context & is off for now.
-  SharedPecosApproxData* data_rep
-  = (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
+  std::shared_ptr<SharedPecosApproxData> data_rep
+    = std::dynamic_pointer_cast<SharedPecosApproxData>(uSpaceModel.shared_approximation().data_rep());
   String context("polynomial chaos expansion export file");
   TabularIO::write_data_tabular(expansionExportFile, context, coeffs_array,
 				data_rep->multi_index());
