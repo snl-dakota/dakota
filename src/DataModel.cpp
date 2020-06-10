@@ -51,7 +51,7 @@ DataModelRep::DataModelRep():
   decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
   subspaceIdCVMethod(CV_ID_DEFAULT), regressionType(FT_LS),
   regressionL2Penalty(0.), maxSolverIterations(-1), maxCrossIterations(1),
-  solverTol(1.e-10), solverRoundingTol(1.e-8), statsRoundingTol(1.e-8),
+  solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
   tensorGridFlag(false), startOrder(2), maxOrder(USHRT_MAX),
   startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
   adaptRank(false), c3RefineType(NO_C3_REFINEMENT),

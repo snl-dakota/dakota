@@ -72,7 +72,7 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   startOrders(approx_order), maxOrder(USHRT_MAX), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
-  solverTol(1.e-10), solverRoundingTol(1.e-8), statsRoundingTol(1.e-8),
+  solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
   crossMaxIter(5), maxSolverIterations(-1), adaptConstruct(false),
   crossVal(false), c3RefineType(NO_C3_REFINEMENT)
 {
