@@ -319,7 +319,7 @@ public:
 
   /// returns approxRep for access to derived class member functions
   /// that are not mapped to the top Approximation level
-  Approximation* approx_rep() const;
+  std::shared_ptr<Approximation> approx_rep() const;
 
 protected:
 
@@ -393,9 +393,7 @@ private:
   //
 
   /// pointer to the letter (initialized only for the envelope)
-  Approximation* approxRep;
-  /// number of objects sharing approxRep
-  int referenceCount;
+  std::shared_ptr<Approximation> approxRep;
 };
 
 
@@ -600,7 +598,7 @@ inline void Approximation::check_points(size_t num_build_pts)
 }
 
 
-inline Approximation* Approximation::approx_rep() const
+inline std::shared_ptr<Approximation> Approximation::approx_rep() const
 { return approxRep; }
 
 } // namespace Dakota

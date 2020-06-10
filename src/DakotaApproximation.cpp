@@ -44,13 +44,12 @@ namespace Dakota {
     class letter and the derived constructor selects this base class
     constructor in its initialization list (to avoid recursion in the
     base class constructor calling get_approx() again).  Since the
-    letter IS the representation, its rep pointer is set to NULL (an
-    uninitialized pointer causes problems in ~Approximation). */
+    letter IS the representation, its rep pointer is set to NULL. */
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 			     const SharedApproxData& shared_data,
                              const String& approx_label):
   approxData(true), approxLabel(approx_label),
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
+  sharedDataRep(shared_data.data_rep())
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
@@ -64,12 +63,10 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     class letter and the derived constructor selects this base class
     constructor in its initialization list (to avoid recursion in the
     base class constructor calling get_approx() again).  Since the
-    letter IS the representation, its rep pointer is set to NULL (an
-    uninitialized pointer causes problems in ~Approximation). */
+    letter IS the representation, its rep pointer is set to NULL. */
 Approximation::
 Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
-  approxData(true), sharedDataRep(shared_data.data_rep()),
-  approxRep(NULL), referenceCount(1)
+  approxData(true), sharedDataRep(shared_data.data_rep())
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
@@ -80,11 +77,8 @@ Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
 
 /** The default constructor is used in Array<Approximation> instantiations
     and by the alternate envelope constructor.  approxRep is NULL in this
-    case (problem_db is needed to build a meaningful Approximation object).
-    This makes it necessary to check for NULL in the copy constructor,
-    assignment operator, and destructor. */
-Approximation::Approximation():
-  sharedDataRep(NULL), approxRep(NULL), referenceCount(1)
+    case (problem_db is needed to build a meaningful Approximation object). */
+Approximation::Approximation()
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation() called to build empty approximation "
@@ -99,15 +93,14 @@ Approximation::Approximation():
 Approximation::
 Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
               const String& approx_label):
-  sharedDataRep(NULL), referenceCount(1)
+  // Set the rep pointer to the appropriate derived type
+  approxRep(get_approx(problem_db, shared_data, approx_label))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(ProblemDescDB&) called to instantiate "
        << "envelope." << std::endl;
 #endif
 
-  // Set the rep pointer to the appropriate derived type
-  approxRep = get_approx(problem_db, shared_data, approx_label);
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -173,15 +166,14 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
     the fly.  Since it does not have access to problem_db, it utilizes
     the NoDBBaseConstructor constructor chain. */
 Approximation::Approximation(const SharedApproxData& shared_data):
-  sharedDataRep(NULL), referenceCount(1)
+  // Set the rep pointer to the appropriate derived type
+  approxRep(get_approx(shared_data))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(String&) called to instantiate "
        << "envelope." << std::endl;
 #endif
 
-  // Set the rep pointer to the appropriate derived type
-  approxRep = get_approx(shared_data);
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -242,41 +234,25 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
     of referenceCount. */
 Approximation::Approximation(const Approximation& approx)
 {
-  // Increment new (no old to decrement)
   approxRep = approx.approxRep;
-  if (approxRep) // Check for an assignment of NULL
-    ++approxRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(Approximation&)" << std::endl;
   if (approxRep)
-    Cout << "approxRep referenceCount = " << approxRep->referenceCount
+    Cout << "approxRep referenceCount = " << approxRep.use_count()
 	 << std::endl;
 #endif
 }
 
 
-/** Assignment operator decrements referenceCount for old approxRep, assigns
-    new approxRep, and increments referenceCount for new approxRep. */
 Approximation Approximation::operator=(const Approximation& approx)
 {
-  if (approxRep != approx.approxRep) { // normal case: old != new
-    // Decrement old
-    if (approxRep) // Check for NULL
-      if ( --approxRep->referenceCount == 0 ) 
-	delete approxRep;
-    // Assign and increment new
-    approxRep = approx.approxRep;
-    if (approxRep) // Check for NULL
-      ++approxRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
+  approxRep = approx.approxRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::operator=(Approximation&)" << std::endl;
   if (approxRep)
-    Cout << "approxRep referenceCount = " << approxRep->referenceCount
+    Cout << "approxRep referenceCount = " << approxRep.use_count()
 	 << std::endl;
 #endif
 
@@ -288,20 +264,10 @@ Approximation Approximation::operator=(const Approximation& approx)
     when referenceCount reaches zero. */
 Approximation::~Approximation()
 { 
-  // Check for NULL pointer 
-  if (approxRep) {
-    --approxRep->referenceCount;
 #ifdef REFCOUNT_DEBUG
-    Cout << "approxRep referenceCount decremented to " 
-	 << approxRep->referenceCount << std::endl;
+  Cout << "~Approximation() approxRep referenceCount " 
+       << approxRep->use_count() << std::endl;
 #endif
-    if (approxRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting approxRep" << std::endl;
-#endif
-      delete approxRep;
-    }
-  }
 }
 
 

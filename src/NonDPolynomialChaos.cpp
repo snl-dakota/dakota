@@ -1009,7 +1009,7 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
   // facilitate usage from other surrogate types (especially GP).
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep
-    = (PecosApproximation*)poly_approxs[0].approx_rep();
+    = (PecosApproximation*)poly_approxs[0].approx_rep().get();
 
   // reference A built from surrData and reference multiIndex
   poly_approx_rep->build_linear_system(A, multi_index);
@@ -1130,7 +1130,7 @@ sample_allocation_metric(Real& sparsity_metric, Real power)
   Real sum = 0., max = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     PecosApproximation* poly_approx_q
-      = (PecosApproximation*)poly_approxs[qoi].approx_rep();
+      = (PecosApproximation*)poly_approxs[qoi].approx_rep().get();
     size_t sparsity_q = poly_approx_q->sparsity();
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi

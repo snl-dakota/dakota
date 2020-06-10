@@ -2405,11 +2405,11 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   // This context can be specific to PCE via Pecos
   PecosApproximation* poly_approx_rep
-    = (PecosApproximation*)poly_approxs[0].approx_rep();
+    = (PecosApproximation*)poly_approxs[0].approx_rep().get();
   min_decay = poly_approx_rep->dimension_decay_rates();
   size_t i, j;
   for (i=1; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep().get();
     const RealVector& decay_i = poly_approx_rep->dimension_decay_rates();
     for (j=0; j<numContinuousVars; ++j)
       if (decay_i[j] < min_decay[j])
@@ -3957,7 +3957,7 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
 	std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
 	PecosApproximation* poly_approx_rep;
 	for (size_t i=0; i<numFunctions; ++i) {
-	  poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+	  poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep().get();
 	  s << "Variable decay rates for response function " << i+1 << ":\n"
 	    << poly_approx_rep->dimension_decay_rates();
 	}
