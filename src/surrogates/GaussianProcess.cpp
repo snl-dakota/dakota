@@ -11,6 +11,7 @@
 
 #include "ROL_Algorithm.hpp"
 #include "ROL_Bounds.hpp"
+#include "ROL_LineSearchStep.hpp"
 
 #include "Teuchos_oblackholestream.hpp"
 #include "Teuchos_XMLParameterListHelpers.hpp"
@@ -128,7 +129,13 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
 
   auto gp_objective = std::make_shared<GP_Objective>(*this);
   int dim = numVariables + 1 + numPolyTerms + numNuggetTerms;
-  ROL::Algorithm<double> algo("Line Search",*gp_mle_rol_params);
+
+  // Define algorithm
+  ROL::Ptr<ROL::Step<double>> step = 
+    ROL::makePtr<ROL::LineSearchStep<double>>(*gp_mle_rol_params);
+  ROL::Ptr<ROL::StatusTest<double>>
+    status = ROL::makePtr<ROL::StatusTest<double>>(*gp_mle_rol_params);
+  ROL::Algorithm<double> algo(step, status, false);
 
   /* set up parameter vectors and bounds */
   ROL::Ptr<std::vector<double> > x_ptr = ROL::makePtr<std::vector<double>>(dim, 0.0);
