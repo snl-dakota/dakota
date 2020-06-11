@@ -735,14 +735,14 @@ bool NonDPolynomialChaos::resize()
   // Rather than caching these settings in the class, just preserve them
   // from the previously constructed expansionSampler:
   NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep();
+    = (NonDSampling*)expansionSampler.iterator_rep().get();
   unsigned short sample_type(SUBMETHOD_DEFAULT); String rng;
   if (exp_sampler_rep) {
     sample_type = exp_sampler_rep->sampling_scheme();
     rng         = exp_sampler_rep->random_number_generator();
   }
   NonDAdaptImpSampling* imp_sampler_rep
-    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep().get();
   unsigned short int_refine(NO_INT_REFINE); IntVector refine_samples;
   if (imp_sampler_rep) {
     int_refine = imp_sampler_rep->sampling_scheme();

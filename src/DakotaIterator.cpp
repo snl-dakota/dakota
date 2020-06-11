@@ -159,7 +159,7 @@ size_t Iterator::noSpecIdNum = 0;
     constructor in its initialization list (to avoid the recursion of
     the base class constructor calling get_iterator() again).  Since
     the letter IS the representation, its representation pointer is
-    set to NULL (an uninitialized pointer causes problems in ~Iterator). */
+    set to NULL */
 Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
 		   std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
@@ -188,7 +188,7 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   evaluationsDB(evaluation_store_db),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   methodId(problem_db.get_string("method.id")), execNum(0),
-  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  methodTraits(traits)
 {
   if (methodId.empty())
     methodId = user_auto_id();
@@ -218,7 +218,7 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
   outputLevel(model.output_level()), summaryOutputFlag(false), topLevel(false),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
-  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  execNum(0), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
 #ifdef REFCOUNT_DEBUG
@@ -243,8 +243,7 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
   outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false), topLevel(false),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  methodId(no_spec_id()), execNum(0),
-  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  methodId(no_spec_id()), execNum(0), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
@@ -256,14 +255,13 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
 /** The default constructor is used in Vector<Iterator> instantiations
     and for initialization of Iterator objects contained in
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
-    case, making it necessary to check for NULL pointers in the copy
-    constructor, assignment operator, and destructor. */
+    case. */
 Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   myModelLayers(0), methodName(DEFAULT_METHOD),
-  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  execNum(0), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
@@ -272,22 +270,17 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
 }
 
 
-/** This constructor assigns a representation pointer and optionally
-    increments its reference count.  It behaves the same as a default
-    construction followed by assign_rep(). */
-Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr,
-		   std::shared_ptr<TraitsBase> traits):
+// BMA NOTE: This ctor unused as of shared_ptr refactor
+/** This constructor assigns a representation pointer into this
+    envelope, transferring ownership.  It behaves the same as a
+    default construction followed by assign_rep(). */
+Iterator::Iterator(Iterator* iterator_rep, std::shared_ptr<TraitsBase> traits):
   // same as default ctor above
   probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   myModelLayers(0), methodName(DEFAULT_METHOD),
-  // bypass some logic in assign_rep():
-  iteratorRep(iterator_rep), referenceCount(1), methodTraits(traits)
+  iteratorRep(iterator_rep), methodTraits(traits)
 {
-  // relevant portion of assign_rep():
-  if (iteratorRep && ref_count_incr)
-    ++iteratorRep->referenceCount;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
        << "base class object." << std::endl;
@@ -305,10 +298,8 @@ Iterator::Iterator(ProblemDescDB& problem_db,
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
   methodTraits(traits),
-  referenceCount(1) // not used since this is the envelope, not the letter
+  iteratorRep(get_iterator(problem_db))
 {
-  iteratorRep = get_iterator(problem_db);
-  
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -388,15 +379,13 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db)
 Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), methodTraits(traits),
-  referenceCount(1) // not used since this is the envelope, not the letter
+  // Set the rep pointer to the appropriate iterator type
+  iteratorRep(get_iterator(problem_db, model))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(Model&) called to instantiate "
        << "envelope." << std::endl;
 #endif
-
-  // Set the rep pointer to the appropriate iterator type
-  iteratorRep = get_iterator(problem_db, model);
 
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
@@ -649,15 +638,13 @@ Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<Tr
   probDescDB(model.problem_description_db()),
   parallelLib(model.parallel_library()), resultsDB(iterator_results_db),
   evaluationsDB(evaluation_store_db),  methodTraits(traits), 
-  referenceCount(1) // not used since this is the envelope, not the letter
+  // Set the rep pointer to the appropriate iterator type
+  iteratorRep(get_iterator(method_string, model))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(Model&) called to instantiate "
        << "envelope." << std::endl;
 #endif
-
-  // Set the rep pointer to the appropriate iterator type
-  iteratorRep = get_iterator(method_string, model);
 
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
@@ -778,48 +765,32 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
 }
 
 
-/** Copy constructor manages sharing of iteratorRep and incrementing
-    of referenceCount. */
+/** Copy constructor manages sharing of iteratorRep. */
 Iterator::Iterator(const Iterator& iterator):
   probDescDB(iterator.problem_description_db()),
   parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db), 
   evaluationsDB(evaluation_store_db), methodTraits(iterator.traits())
 {
-  // Increment new (no old to decrement)
+  // BMA TODO: didn't occur to me that these could be done with ctor....
   iteratorRep = iterator.iteratorRep;
-  if (iteratorRep) // Check for an assignment of NULL
-    ++iteratorRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(Iterator&)" << std::endl;
   if (iteratorRep)
-    Cout << "iteratorRep referenceCount = " << iteratorRep->referenceCount
+    Cout << "iteratorRep referenceCount = " << iteratorRep->use_count()
 	 << std::endl;
 #endif
 }
 
 
-/** Assignment operator decrements referenceCount for old iteratorRep, assigns
-    new iteratorRep, and increments referenceCount for new iteratorRep. */
 Iterator Iterator::operator=(const Iterator& iterator)
 {
-  if (iteratorRep != iterator.iteratorRep) { // normal case: old != new
-    // Decrement old
-    if (iteratorRep) // Check for NULL
-      if ( --iteratorRep->referenceCount == 0 )
-	delete iteratorRep;
-    // Assign and increment new
-    iteratorRep = iterator.iteratorRep;
-    if (iteratorRep) // Check for NULL
-      ++iteratorRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
+  iteratorRep = iterator.iteratorRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::operator=(Iterator&)" << std::endl;
   if (iteratorRep)
-    Cout << "iteratorRep referenceCount = " << iteratorRep->referenceCount
+    Cout << "iteratorRep referenceCount = " << iteratorRep->use_count()
 	 << std::endl;
 #endif
 
@@ -827,73 +798,41 @@ Iterator Iterator::operator=(const Iterator& iterator)
 }
 
 
-/** Destructor decrements referenceCount and only deletes iteratorRep
-    when referenceCount reaches zero. */
 Iterator::~Iterator()
 {
-  if (iteratorRep) { // Check for NULL pointer
-    --iteratorRep->referenceCount;
 #ifdef REFCOUNT_DEBUG
-    Cout << "iteratorRep referenceCount decremented to "
-         << iteratorRep->referenceCount << std::endl;
+    Cout << "~Iterator() iteratorRep referenceCount "
+         << iteratorRep.use_count << std::endl;
 #endif
-    if (iteratorRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting iteratorRep" << std::endl;
-#endif
-      delete iteratorRep;
-    }
-  }
 }
 
 
-/** Similar to the assignment operator, the assign_rep() function
-    decrements referenceCount for the old iteratorRep and assigns the
-    new iteratorRep.  It is different in that it is used for
-    publishing derived class letters to existing envelopes, as opposed
-    to sharing representations among multiple envelopes (in
-    particular, assign_rep is passed a letter object and operator= is
-    passed an envelope object).  Letter assignment supports two models as
-    governed by ref_count_incr:
+/** The assign_rep() function is used for publishing derived class
+    letters to existing envelopes, as opposed to sharing
+    representations among multiple envelopes (in particular,
+    assign_rep is passed a letter object and operator= is passed an
+    envelope object).
 
-    \li ref_count_incr = true (default): the incoming letter belongs to
-    another envelope.  In this case, increment the reference count in the
-    normal manner so that deallocation of the letter is handled properly.
+    This will transfer ownership of the passed memory to the
+    shared_ptr in this envelope. Use case assumes the incoming letter
+    is instantiated on the fly and has no envelope.  This case is
+    modeled after get_iterator(): a letter is dynamically allocated
+    using new and passed into assign_rep (its memory management is
+    passed over to the envelope).
 
-    \li ref_count_incr = false: the incoming letter is instantiated on the
-    fly and has no envelope.  This case is modeled after get_iterator():
-    a letter is dynamically allocated using new and passed into assign_rep,
-    the letter's reference count is not incremented, and the letter is not
-    remotely deleted (its memory management is passed over to the envelope). */
+    Historically this API supported passing the letter from another
+    envelope with ref_count_incr = true, but until it is further
+    updated to accept a shared_ptr, only the case of transferring
+    ownership to this envelope is supported. There were no use cases
+    with true. */
 void Iterator::assign_rep(Iterator* iterator_rep, bool ref_count_incr)
 {
-  if (iteratorRep == iterator_rep) {
-    // if ref_count_incr = true (rep from another envelope), do nothing as
-    // referenceCount should already be correct (see also operator= logic).
-    // if ref_count_incr = false (rep from on the fly), then this is an error.
-    if (!ref_count_incr) {
-      Cerr << "Error: duplicated iterator_rep pointer assignment without "
-	   << "reference count increment in Iterator::assign_rep()."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-  }
-  else { // normal case: old != new
-    // Decrement old
-    if (iteratorRep) // Check for NULL
-      if ( --iteratorRep->referenceCount == 0 )
-	delete iteratorRep;
-    // Assign new
-    iteratorRep = iterator_rep;
-    // Increment new
-    if (iteratorRep && ref_count_incr) // Check for NULL & honor ref_count_incr
-      ++iteratorRep->referenceCount;
-  }
+  iteratorRep.reset(iterator_rep);
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::assign_rep(Iterator*)" << std::endl;
   if (iteratorRep)
-    Cout << "iteratorRep referenceCount = " << iteratorRep->referenceCount
+    Cout << "iteratorRep referenceCount = " << iteratorRep.use_count()
 	 << std::endl;
 #endif
 }

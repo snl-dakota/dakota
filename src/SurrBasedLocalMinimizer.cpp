@@ -244,12 +244,14 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
 	constraintTol = aspm_constr_tol;
       else { // neither has spec: assign default and enforce consistency
 	constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
-	Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
+	std::shared_ptr<Minimizer> aspm =
+	  std::dynamic_pointer_cast<Minimizer>(approxSubProbMinimizer.iterator_rep());
 	aspm->constraint_tolerance(constraintTol);
       }
     }
     else { // SBLM method spec takes precedence over approxSubProbMinimizer spec
-      Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
+      std::shared_ptr<Minimizer> aspm =
+	std::dynamic_pointer_cast<Minimizer>(approxSubProbMinimizer.iterator_rep());
       aspm->constraint_tolerance(constraintTol);
     }
     probDescDB.set_db_method_node(method_index); // restore method only
@@ -260,7 +262,8 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
       = probDescDB.get_iterator(approx_method_name, approxSubProbModel);
     if (constraintTol <= 0.) // not specified in SBLM method spec
       constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
-    Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
+    std::shared_ptr<Minimizer> aspm =
+      std::dynamic_pointer_cast<Minimizer>(approxSubProbMinimizer.iterator_rep());
     aspm->constraint_tolerance(constraintTol);
   }
 }

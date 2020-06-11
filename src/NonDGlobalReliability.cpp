@@ -774,8 +774,8 @@ void NonDGlobalReliability::importance_sampling()
   const ShortArray& final_res_asv = finalStatistics.active_set_request_vector();
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   // rep needed for access to functions not mapped to Iterator level
-  NonDAdaptImpSampling* importance_sampler_rep
-    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+  std::shared_ptr<NonDAdaptImpSampling> importance_sampler_rep
+    = std::dynamic_pointer_cast<NonDAdaptImpSampling>(importanceSampler.iterator_rep());
 
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
 

@@ -448,14 +448,14 @@ bool NonDMultilevelPolynomialChaos::resize()
   // Rather than caching these settings in the class, just preserve them
   // from the previously constructed expansionSampler:
   NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep();
+    = (NonDSampling*)expansionSampler.iterator_rep().get();
   unsigned short sample_type(SUBMETHOD_DEFAULT); String rng;
   if (exp_sampler_rep) {
     sample_type = exp_sampler_rep->sampling_scheme();
     rng         = exp_sampler_rep->random_number_generator();
   }
   NonDAdaptImpSampling* imp_sampler_rep
-    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep().get();
   unsigned short int_refine(NO_INT_REFINE); IntVector refine_samples;
   if (imp_sampler_rep) {
     int_refine = imp_sampler_rep->sampling_scheme();
@@ -584,7 +584,7 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: {
     NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep().get();
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -594,7 +594,7 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep().get();
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -651,7 +651,7 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: {
     NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep().get();
     if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
@@ -663,7 +663,7 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep().get();
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);

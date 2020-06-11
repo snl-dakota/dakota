@@ -528,7 +528,7 @@ void NonDExpansion::initialize_u_space_grid()
       std::dynamic_pointer_cast<SharedPecosApproxData>(uSpaceModel.shared_approximation().data_rep());
 
     NonDIntegration* u_space_sampler_rep = 
-      (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
+      (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep().get();
     u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
 
     numSamplesOnModel = u_space_sampler_rep->maximum_evaluation_concurrency()
@@ -716,7 +716,7 @@ void NonDExpansion::initialize_expansion()
   if (expansionSampler.method_name() == LIST_SAMPLING &&
       numUncertainQuant == 0) {
     NonDSampling* exp_sampler_rep
-      = (NonDSampling*)expansionSampler.iterator_rep();
+      = (NonDSampling*)expansionSampler.iterator_rep().get();
     exp_sampler_rep->
       transform_samples(uSpaceModel.probability_transformation());
   }
@@ -736,7 +736,7 @@ void NonDExpansion::compute_expansion()
 #endif // DERIV_DEBUG
 
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  NonD* u_space_sampler_rep = (NonD*)u_space_sampler.iterator_rep();
+  NonD* u_space_sampler_rep = (NonD*)u_space_sampler.iterator_rep().get();
 
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
@@ -967,7 +967,7 @@ void NonDExpansion::pre_refinement()
 {
   // initialize refinement algorithms (if necessary)
 
-  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
+  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep().get();
 
   // now embedded in IncrementalSparseGridDriver::compute_grid():
   //nond_sparse->update_reference();
@@ -1069,7 +1069,7 @@ void NonDExpansion::increment_grid(bool update_anisotropy)
     case Pecos::QUADRATURE:              case Pecos::CUBATURE:
     case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
       NonDIntegration* nond_integration = (NonDIntegration*)
-	uSpaceModel.subordinate_iterator().iterator_rep();
+	uSpaceModel.subordinate_iterator().iterator_rep().get();
       nond_integration->increment_grid(); break;
     }
     case Pecos::ORTHOG_LEAST_INTERPOLATION: // case Pecos::SAMPLING:
@@ -1082,7 +1082,7 @@ void NonDExpansion::increment_grid(bool update_anisotropy)
     // Dimension adaptive refinement: define anisotropic preference
     // vector from total Sobol' indices, averaged over response fn set.
     NonDIntegration* nond_integration = (NonDIntegration*)
-      uSpaceModel.subordinate_iterator().iterator_rep();
+      uSpaceModel.subordinate_iterator().iterator_rep().get();
     if (update_anisotropy) { // weight SSG to emphasize larger Sobol indices
       RealVector dim_pref;
       reduce_total_sobol_sets(dim_pref);
@@ -1096,7 +1096,7 @@ void NonDExpansion::increment_grid(bool update_anisotropy)
     // Dimension adaptive refinement: define anisotropic weight vector
     // from min of spectral decay rates (PCE only) over response fn set.
     NonDIntegration* nond_integration = (NonDIntegration*)
-      uSpaceModel.subordinate_iterator().iterator_rep();
+      uSpaceModel.subordinate_iterator().iterator_rep().get();
     if (update_anisotropy) { // weight SSG to emphasize slower decay
       RealVector aniso_wts;
       reduce_decay_rate_sets(aniso_wts);
@@ -1113,7 +1113,7 @@ void NonDExpansion::increment_grid(bool update_anisotropy)
 void NonDExpansion::decrement_grid()
 {
   NonDIntegration* nond_integration = (NonDIntegration*)
-    uSpaceModel.subordinate_iterator().iterator_rep();
+    uSpaceModel.subordinate_iterator().iterator_rep().get();
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:              case Pecos::CUBATURE:
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
@@ -1133,7 +1133,7 @@ void NonDExpansion::push_increment()
   switch (expansionCoeffsApproach) {
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
-      uSpaceModel.subordinate_iterator().iterator_rep();
+      uSpaceModel.subordinate_iterator().iterator_rep().get();
     nond_integration->push_grid_increment();
     break;
   }
@@ -1154,7 +1154,7 @@ void NonDExpansion::pop_increment()
   switch (expansionCoeffsApproach) {
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
-      uSpaceModel.subordinate_iterator().iterator_rep();
+      uSpaceModel.subordinate_iterator().iterator_rep().get();
     nond_integration->pop_grid_increment();
     break;
   }
@@ -1167,7 +1167,7 @@ void NonDExpansion::merge_grid()
   switch (expansionCoeffsApproach) {
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
-      uSpaceModel.subordinate_iterator().iterator_rep();    
+      uSpaceModel.subordinate_iterator().iterator_rep().get();    
     nond_integration->merge_grid_increment();
     nond_integration->update_reference();
     break;
@@ -1649,7 +1649,7 @@ initialize_ml_regression(size_t num_steps, bool& import_pilot)
   statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Multilevel variance aggregation requires independent sample sets
-  Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
+  Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep().get();
   if (u_sub_iter != NULL)
     ((Analyzer*)u_sub_iter)->vary_pattern(true);
 
@@ -1672,7 +1672,7 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: {
     // convert incoming candidate index to selected trial set
     NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep().get();
     // active_mi index -> iterator mapping has not been invalidated
     // since candidate selection was previously deferred
     const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
@@ -1701,7 +1701,7 @@ void NonDExpansion::
 select_index_set_candidate(std::set<UShortArray>::const_iterator cit_star)
 {
   NonDSparseGrid* nond_sparse
-    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep().get();
   nond_sparse->update_sets(*cit_star); // invalidates cit_star
   uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
   nond_sparse->update_reference();
@@ -1765,7 +1765,7 @@ void NonDExpansion::increment_order_and_grid()
   // update u-space sampler to use new sample count
   if (tensorRegression) {
     NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep().get();
     nond_quad->samples(numSamplesOnModel);
     if (nond_quad->mode() == RANDOM_TENSOR)
       nond_quad->increment_grid(); // increment dimension quad order
@@ -1785,7 +1785,7 @@ void NonDExpansion::decrement_order_and_grid()
   // update u-space sampler to use new sample count
   if (tensorRegression) {
     NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep().get();
     nond_quad->samples(numSamplesOnModel);
     //if (nond_quad->mode() == RANDOM_TENSOR) ***
     //  nond_quad->decrement_grid(); // decrement dimension quad order
@@ -1832,7 +1832,7 @@ void NonDExpansion::update_expansion()
     case Pecos::QUADRATURE:              case Pecos::CUBATURE:
     case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
       NonDIntegration* nond_int = (NonDIntegration*)
-	uSpaceModel.subordinate_iterator().iterator_rep();
+	uSpaceModel.subordinate_iterator().iterator_rep().get();
       nond_int->push_grid_increment(); break;
     }
     // no-op for SAMPLING, all REGRESSION cases
@@ -1844,7 +1844,7 @@ void NonDExpansion::update_expansion()
     case Pecos::QUADRATURE:              case Pecos::CUBATURE:
     case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
       NonDIntegration* nond_int = (NonDIntegration*)
-	uSpaceModel.subordinate_iterator().iterator_rep();
+	uSpaceModel.subordinate_iterator().iterator_rep().get();
       nond_int->evaluate_grid_increment();// TPQ/Cub: not currently an increment
       break;
     }
@@ -1869,7 +1869,7 @@ void NonDExpansion::update_expansion()
 void NonDExpansion::
 update_u_space_sampler(size_t sequence_index, const UShortArray& approx_orders)
 {
-  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
+  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep().get();
   int seed = NonDExpansion::random_seed(sequence_index);
   if (seed) sub_iter_rep->random_seed(seed);
   // replace w/ uSpaceModel.random_seed(seed)? -> u_space_sampler, shared approx
@@ -1955,7 +1955,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
   // point for the surplus calculation changes (and the overlay should
   // eventually be inexpensive since each point set is only evaluated once).
   NonDSparseGrid* nond_sparse
-    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep().get();
   const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
   std::set<UShortArray>::const_iterator cit, cit_star = active_mi.end();
   Real delta; delta_star = -DBL_MAX;  size_t index = 0, index_star = _NPOS;
@@ -2022,7 +2022,7 @@ void NonDExpansion::finalize_sets(bool converged_within_tol, bool reverted)
 {
   Cout << "\n<<<<< Finalization of generalized sparse grid sets.\n";
   NonDSparseGrid* nond_sparse
-    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep().get();
   // apply all remaining increments not previously selected
   bool output_sets = (outputLevel >= VERBOSE_OUTPUT);
   nond_sparse->finalize_sets(output_sets, converged_within_tol, reverted);
@@ -2720,7 +2720,7 @@ void NonDExpansion::compute_numerical_level_mappings()
     refine_sampler(imp_sampler_stats, min_max_fns);
   }
   NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep();
+    = (NonDSampling*)expansionSampler.iterator_rep().get();
 
   // flags for limiting unneeded computation (matched in print_results())
   bool z_to_beta = (respLevelTarget == RELIABILITIES),
@@ -3058,7 +3058,7 @@ void NonDExpansion::compute_numerical_statistics()
   bool list_sampling = (expansionSampler.method_name() == LIST_SAMPLING),
         imp_sampling = !importanceSampler.is_null();
   NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep();
+    = (NonDSampling*)expansionSampler.iterator_rep().get();
   size_t i, j, cntr = 0, sampler_cntr = 0,
     moment_offset = (finalMomentsType) ? 2 : 0,
     sampler_moment_offset = (exp_sampler_rep->final_moments_type()) ? 2 : 0;
@@ -3161,9 +3161,9 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
   int exp_cv = exp_vars.numRows();
 
   NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep();
+    = (NonDSampling*)expansionSampler.iterator_rep().get();
   NonDAdaptImpSampling* imp_sampler_rep
-    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep().get();
 
   size_t i, j, exp_sampler_cntr = 0;
   imp_sampler_stats.resize(numFunctions);
@@ -3323,7 +3323,7 @@ run_sampler(const ShortArray& sampler_asv, RealVector& exp_sampler_stats)
   expansionSampler.run(pl_iter);
 
   NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep();
+    = (NonDSampling*)expansionSampler.iterator_rep().get();
   if (expansionSampler.method_name() == LIST_SAMPLING)
     // full set of numerical statistics, including PDFs
     exp_sampler_rep->compute_statistics(expansionSampler.all_samples(),
@@ -3346,7 +3346,7 @@ refine_sampler(RealVectorArray& imp_sampler_stats,
   else if (pdfOutput && !expansionSampler.is_null()) {
     // NonDSampling::extremeValues not avail (pdfOutput off)
     NonDSampling* exp_sampler_rep
-      = (NonDSampling*)expansionSampler.iterator_rep();
+      = (NonDSampling*)expansionSampler.iterator_rep().get();
     exp_sampler_rep->compute_intervals(min_max_fns);
   }
 }
@@ -3946,7 +3946,7 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
       if (outputLevel == DEBUG_OUTPUT) {
 	// output fine-grained data on generalized index sets
 	NonDSparseGrid* nond_sparse
-	  = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+	  = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep().get();
 	nond_sparse->print_smolyak_multi_index();
       }
       break;
@@ -3995,7 +3995,7 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
 
     // Print level mapping statistics (typically from sampling on expansion)
     NonDSampling* exp_sampler_rep
-      = (NonDSampling*)expansionSampler.iterator_rep();
+      = (NonDSampling*)expansionSampler.iterator_rep().get();
     bool exp_sampling = (exp_sampler_rep != NULL),
         list_sampling = (exp_sampling &&
 			 exp_sampler_rep->method_name() == LIST_SAMPLING);

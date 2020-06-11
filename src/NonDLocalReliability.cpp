@@ -546,8 +546,8 @@ void NonDLocalReliability::core_run()
   // post-process level mappings to define PDFs (using prob_refined and
   // all_levels_computed modes)
   if (pdfOutput && integrationRefinement) {
-    NonDAdaptImpSampling* import_sampler_rep
-      = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+    std::shared_ptr<NonDAdaptImpSampling> import_sampler_rep
+      = std::dynamic_pointer_cast<NonDAdaptImpSampling>(importanceSampler.iterator_rep());
     compute_densities(import_sampler_rep->extreme_values(), true, true);
   } // else no extreme values to define outer PDF bins
 }
@@ -2331,8 +2331,8 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
   if (integrationRefinement &&                                  // IS/AIS/MMAIS
       levelCount < requestedRespLevels[respFnCount].length()) { // RIA only
     // rep needed for access to functions not mapped to Iterator level
-    NonDAdaptImpSampling* import_sampler_rep
-      = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+    std::shared_ptr<NonDAdaptImpSampling> import_sampler_rep
+      = std::dynamic_pointer_cast<NonDAdaptImpSampling>(importanceSampler.iterator_rep());
     bool x_data_flag = false;
     import_sampler_rep->
       initialize(mpp_u, x_data_flag, respFnCount, p, requestedTargetLevel);
