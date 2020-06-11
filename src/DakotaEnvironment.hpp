@@ -172,9 +172,7 @@ private:
   //
 
   /// pointer to the letter (initialized only for the envelope)
-  Environment* environmentRep;
-  /// number of objects sharing environmentRep
-  int referenceCount;
+  std::shared_ptr<Environment> environmentRep;
 };
 
 
