@@ -769,11 +769,9 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
 Iterator::Iterator(const Iterator& iterator):
   probDescDB(iterator.problem_description_db()),
   parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db), 
-  evaluationsDB(evaluation_store_db), methodTraits(iterator.traits())
+  evaluationsDB(evaluation_store_db), methodTraits(iterator.traits()),
+  iteratorRep(iterator.iteratorRep)
 {
-  // BMA TODO: didn't occur to me that these could be done with ctor....
-  iteratorRep = iterator.iteratorRep;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(Iterator&)" << std::endl;
   if (iteratorRep)
@@ -813,21 +811,16 @@ Iterator::~Iterator()
     assign_rep is passed a letter object and operator= is passed an
     envelope object).
 
-    This will transfer ownership of the passed memory to the
-    shared_ptr in this envelope. Use case assumes the incoming letter
-    is instantiated on the fly and has no envelope.  This case is
-    modeled after get_iterator(): a letter is dynamically allocated
-    using new and passed into assign_rep (its memory management is
-    passed over to the envelope).
+    Use case assumes the incoming letter is instantiated on the fly
+    and has no envelope.  This case is modeled after get_iterator(): a
+    letter is dynamically allocated and passed into assign_rep (its
+    memory management is passed over to the envelope).
 
-    Historically this API supported passing the letter from another
-    envelope with ref_count_incr = true, but until it is further
-    updated to accept a shared_ptr, only the case of transferring
-    ownership to this envelope is supported. There were no use cases
-    with true. */
-void Iterator::assign_rep(Iterator* iterator_rep, bool ref_count_incr)
+    If the letter happens to be managed by another envelope, it will
+    persist as long as the last envelope referencing it. */
+void Iterator::assign_rep(std::shared_ptr<Iterator> iterator_rep)
 {
-  iteratorRep.reset(iterator_rep);
+  iteratorRep = iterator_rep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::assign_rep(Iterator*)" << std::endl;

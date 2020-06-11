@@ -99,14 +99,14 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
   if (npsolFlag) {
 #ifdef HAVE_NPSOL  
     int npsol_deriv_level = 3;
-    minMaxOptimizer.assign_rep(new 
-      NPSOLOptimizer(minMaxModel, npsol_deriv_level, convergenceTol), false);
+    minMaxOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
+			       (minMaxModel, npsol_deriv_level, convergenceTol));
 #endif // HAVE_NPSOL
   }
   else {
 #ifdef HAVE_OPTPP
-    minMaxOptimizer.assign_rep(new
-      SNLLOptimizer("optpp_q_newton", minMaxModel), false);
+    minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			       ("optpp_q_newton", minMaxModel));
 #endif // HAVE_OPTPP
   }
 
@@ -306,8 +306,8 @@ void NonDLocalInterval::method_recourse()
   if (npsolFlag) {
     // if NPSOL already assigned, then reassign; otherwise just set the flag.
 #ifdef HAVE_OPTPP
-    minMaxOptimizer.assign_rep(
-      new SNLLOptimizer("optpp_q_newton", minMaxModel), false);
+    minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			       ("optpp_q_newton", minMaxModel));
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalInterval "
 	 << "(OPT++ NIP unavailable).\n";

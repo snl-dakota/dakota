@@ -1397,11 +1397,10 @@ void ActiveSubspaceModel::init_fullspace_sampler(unsigned short sample_type)
     sample_type = SUBMETHOD_RANDOM; // default to Monte Carlo sampling
 
   // configure this sampler initially to work with initialSamples
-  NonDLHSSampling* ndlhss =
-    new NonDLHSSampling(subModel, sample_type, initialSamples, randomSeed,
-                        rng, true);
-
-  fullspaceSampler.assign_rep(ndlhss, false);
+  auto ndlhss =
+    std::make_shared<NonDLHSSampling>(subModel, sample_type, initialSamples,
+				      randomSeed, rng, true);
+  fullspaceSampler.assign_rep(ndlhss);
 
   // TODO: review whether this is needed
   fullspaceSampler.sub_iterator_flag(true);

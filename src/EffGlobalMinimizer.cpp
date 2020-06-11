@@ -100,8 +100,8 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 
   Iterator dace_iterator;
   // The following uses on the fly derived ctor:
-  dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
+  dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, sample_type,
+    samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM));
   // only use derivatives if the user requested and they are available
   dace_iterator.active_set_request_values(dataOrder);
 
@@ -145,8 +145,8 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   int max_iterations = 10000, max_fn_evals = 50000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
   #ifdef HAVE_NCSU
-    approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations,
-      max_fn_evals, min_box_size, vol_box_size), false);
+  approxSubProbMinimizer.assign_rep(std::make_shared<NCSUOptimizer>(eifModel, max_iterations,
+      max_fn_evals, min_box_size, vol_box_size));
   #else
     Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
          << "Aborting process." << std::endl;

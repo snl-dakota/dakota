@@ -125,9 +125,9 @@ namespace Dakota
                 //**NOTE:  We are hardcoding the sample type to LHS and the approximation type to kriging for now
 		//if (sampleDesign == RANDOM_SAMPLING)
 		//{
-		gpBuild.assign_rep(new NonDLHSSampling(iteratedModel, SUBMETHOD_DEFAULT,
-							   samples, randomSeed, rngName,
-							   varyPattern, ACTIVE_UNIFORM), false);
+		gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, SUBMETHOD_DEFAULT,
+								     samples, randomSeed, rngName,
+								     varyPattern, ACTIVE_UNIFORM));
 		//}
 		//else
 		//{
@@ -1782,8 +1782,8 @@ construct_fsu_sampler(Iterator& u_space_sampler, Model& u_model,
     abort_handler(-1);
   }
 
-  u_space_sampler.assign_rep(new FSUDesignCompExp(u_model, num_samples, seed, 
-						  sample_type), false);
+  u_space_sampler.assign_rep(std::make_shared<FSUDesignCompExp>
+			     (u_model, num_samples, seed, sample_type));
 }
 
 // Mohamed and Laura

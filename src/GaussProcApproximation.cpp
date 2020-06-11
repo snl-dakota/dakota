@@ -386,9 +386,9 @@ void GaussProcApproximation::optimize_theta_global()
   // NCSU DIRECT optimize of Negative Log Likelihood
   // Uses default convergence tolerance settings in NCSUOptimizer wrapper!
   int max_iterations = 1000, max_fn_evals = 10000;
-  nll_optimizer.assign_rep(
-    new NCSUOptimizer(theta_lbnds,theta_ubnds,max_iterations,max_fn_evals,
-		      negloglikNCSU),false);
+  nll_optimizer.assign_rep
+    (std::make_shared<NCSUOptimizer>(theta_lbnds, theta_ubnds, max_iterations,
+				     max_fn_evals, negloglikNCSU));
   nll_optimizer.run(); // no pl_iter needed for this optimization
   const Variables& vars_star = nll_optimizer.variables_results();
   const Response&  resp_star = nll_optimizer.response_results();
@@ -821,12 +821,12 @@ void GaussProcApproximation::optimize_theta_multipoint()
   for (i=0; i<3; i++) {
     for (j=0; j<num_v; j++)
       thetaParams[j] = THETA_INIT_STARTS[i];
-    nll_optimizer.assign_rep(
-      new SNLLOptimizer(
+    nll_optimizer.assign_rep
+      (std::make_shared<SNLLOptimizer>(
         thetaParams, theta_lbnds, theta_ubnds, lin_ineq_coeffs,
 	lin_ineq_lower_bnds, lin_ineq_lower_bnds, lin_eq_coeffs,
 	lin_eq_targets, nln_ineq_lower_bnds, nln_ineq_upper_bnds,
-	nln_eq_targets, negloglik, constraint_eval), false);
+	nln_eq_targets, negloglik, constraint_eval));
     nll_optimizer.run(); // no pl_iter needed for this optimization
     const Variables& vars_star = nll_optimizer.variables_results();
     const Response&  resp_star = nll_optimizer.response_results();

@@ -62,8 +62,8 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
-  gpBuild.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-     samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM), false);
+  gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, sample_type,
+     samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM));
   //distribution 1 which is the distribution that the initial set of samples
   //used to build the initial GP are drawn from this should "ALWAYS" be 
   //uniform in the input of the GP (even if the nominal distribution is not

@@ -171,11 +171,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       unsigned short sample_type = SUBMETHOD_LHS;
       bool vary_pattern = true;
       String rng("mt19937");
-      NonDLHSSampling* lhs_sampler_rep;
-      lhs_sampler_rep =
-        new NonDLHSSampling(hifiModel, sample_type, num_lhs_samples, randomSeed,
-                            rng, vary_pattern, ACTIVE_UNIFORM);
-      hifiSampler.assign_rep(lhs_sampler_rep, false);
+      auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>
+	(hifiModel, sample_type, num_lhs_samples, randomSeed, rng, vary_pattern,
+	 ACTIVE_UNIFORM);
+      hifiSampler.assign_rep(lhs_sampler_rep);
     }
   }
 
@@ -255,7 +254,7 @@ void NonDBayesCalibration::construct_mcmc_model()
       rule_growth = probDescDB.get_short("method.nond.growth_override");
     bool pw_basis = probDescDB.get_bool("method.nond.piecewise_basis"),
        use_derivs = probDescDB.get_bool("method.derivative_usage");
-    NonDExpansion* se_rep;
+    std::shared_ptr<NonDExpansion> se_rep;
 
     if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
       unsigned short ssg_level
@@ -269,12 +268,12 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  exp_coeff_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
 	else if (refine_cntl)
 	  exp_coeff_approach = Pecos::INCREMENTAL_SPARSE_GRID;
-	se_rep = new NonDStochCollocation(inbound_model, exp_coeff_approach,
+	se_rep = std::make_shared<NonDStochCollocation>(inbound_model, exp_coeff_approach,
 	  ssg_level, dim_pref, u_space_type, refine_type, refine_cntl,
 	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       }
       else if (tpq_order != USHRT_MAX)
-	se_rep = new NonDStochCollocation(inbound_model, Pecos::QUADRATURE,
+	se_rep = std::make_shared<NonDStochCollocation>(inbound_model, Pecos::QUADRATURE,
 	  tpq_order, dim_pref, u_space_type, refine_type, refine_cntl,
 	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
@@ -290,20 +289,20 @@ void NonDBayesCalibration::construct_mcmc_model()
       if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?
 	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
-	se_rep = new NonDPolynomialChaos(inbound_model, exp_coeff_approach,
+	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model, exp_coeff_approach,
 	  ssg_level, dim_pref, u_space_type, refine_type, refine_cntl,
 	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       }
       else if (tpq_order != USHRT_MAX)
-	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::QUADRATURE,
+	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model, Pecos::QUADRATURE,
 	  tpq_order, dim_pref, u_space_type, refine_type, refine_cntl,
 	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       else if (cub_int != USHRT_MAX)
-	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::CUBATURE,
+	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model, Pecos::CUBATURE,
 	  cub_int, dim_pref, u_space_type, refine_type, refine_cntl,
 	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       else { // regression PCE: LeastSq/CS, OLI
-	se_rep = new NonDPolynomialChaos(inbound_model,
+	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
 	  probDescDB.get_ushort("method.nond.expansion_order"), dim_pref,
 	  probDescDB.get_sizet("method.nond.collocation_points"),
@@ -334,13 +333,13 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  exp_coeff_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
 	else if (refine_cntl)
 	  exp_coeff_approach = Pecos::INCREMENTAL_SPARSE_GRID;
-	se_rep = new NonDMultilevelStochCollocation(inbound_model,
+	se_rep = std::make_shared<NonDMultilevelStochCollocation>(inbound_model,
 	  exp_coeff_approach, ssg_level_seq, dim_pref, u_space_type,
 	  refine_type, refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep,
 	  rule_nest, rule_growth, pw_basis, use_derivs);
       }
       else if (!tpq_order_seq.empty())
-	se_rep = new NonDMultilevelStochCollocation(inbound_model,
+	se_rep = std::make_shared<NonDMultilevelStochCollocation>(inbound_model,
 	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep, rule_nest,
 	  rule_growth, pw_basis, use_derivs);
@@ -359,19 +358,19 @@ void NonDBayesCalibration::construct_mcmc_model()
       if (!ssg_level_seq.empty()) {
 	short exp_coeff_approach = (refine_cntl) ?
 	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
-	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
+	se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(inbound_model,
 	  exp_coeff_approach, ssg_level_seq, dim_pref, u_space_type,
 	  refine_type, refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep,
 	  rule_nest, rule_growth, pw_basis, use_derivs);
       }
       else if (!tpq_order_seq.empty())
-	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
+	se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(inbound_model,
 	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep, rule_nest,
 	  rule_growth, pw_basis, use_derivs);
       else { // regression PCE: LeastSq/CS, OLI
 	SizetArray seed_seq(1, randomSeed); // reuse bayes_calib scalar spec
-	se_rep = new NonDMultilevelPolynomialChaos(
+	se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(
 	  MULTIFIDELITY_POLYNOMIAL_CHAOS, inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
 	  probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
@@ -389,7 +388,7 @@ void NonDBayesCalibration::construct_mcmc_model()
 
     else if (emulatorType == ML_PCE_EMULATOR) {
       SizetArray seed_seq(1, randomSeed); // reuse bayes_calib scalar spec
-      se_rep = new NonDMultilevelPolynomialChaos(MULTILEVEL_POLYNOMIAL_CHAOS,
+      se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(MULTILEVEL_POLYNOMIAL_CHAOS,
 	inbound_model, probDescDB.get_short("method.nond.regression_type"),
 	probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
 	probDescDB.get_sza("method.nond.collocation_points"), // sequence
@@ -411,7 +410,7 @@ void NonDBayesCalibration::construct_mcmc_model()
       probDescDB.get_int("method.nond.max_refinement_iterations"));
     se_rep->convergence_tolerance(convergenceTol);
 
-    stochExpIterator.assign_rep(se_rep, false);
+    stochExpIterator.assign_rep(se_rep);
     // no CDF or PDF level mappings
     RealVectorArray empty_rv_array; // empty
     se_rep->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,
@@ -456,10 +455,10 @@ void NonDBayesCalibration::construct_mcmc_model()
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
     // samples in regions of higher prior density
-    NonDLHSSampling* lhs_rep = new
-      NonDLHSSampling(lhs_model, sample_type, samples, randomSeed,
-        probDescDB.get_string("method.random_number_generator"));
-    lhs_iterator.assign_rep(lhs_rep, false);
+    auto lhs_rep = std::make_shared<NonDLHSSampling>
+      (lhs_model, sample_type, samples, randomSeed,
+       probDescDB.get_string("method.random_number_generator"));
+    lhs_iterator.assign_rep(lhs_rep);
 
     ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
     gp_set.request_values(mcmcDerivOrder); // for misfit Hessian
@@ -629,16 +628,16 @@ void NonDBayesCalibration::construct_map_optimizer()
   case SUBMETHOD_SQP: {
     // SQP with BFGS Hessians
     int npsol_deriv_level = 3;
-    mapOptimizer.assign_rep(new
-      NPSOLOptimizer(negLogPostModel, npsol_deriv_level, convergenceTol),false);
+    mapOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
+			    (negLogPostModel, npsol_deriv_level, convergenceTol));
     break;
   }
 #endif
 #ifdef HAVE_OPTPP
   case SUBMETHOD_NIP:
     // full Newton (OPTPP::OptBCNewton)
-    mapOptimizer.assign_rep(new 
-      SNLLOptimizer("optpp_newton", negLogPostModel), false);
+    mapOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			    ("optpp_newton", negLogPostModel));
     break;
 #endif
   }
@@ -1225,10 +1224,10 @@ void NonDBayesCalibration::build_designs(RealMatrix& design_matrix)
     bool vary_pattern = true;
     String rng("mt19937");
     int random_seed_1 = randomSeed+1;
-    NonDLHSSampling* lhs_sampler_rep2 =
-      new NonDLHSSampling(hifiModel, sample_type, new_candidates, random_seed_1,
-			  rng, vary_pattern, ACTIVE_UNIFORM);
-    lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
+    auto lhs_sampler_rep2 = std::make_shared<NonDLHSSampling>
+      (hifiModel, sample_type, new_candidates, random_seed_1,
+       rng, vary_pattern, ACTIVE_UNIFORM);
+    lhs_iterator2.assign_rep(lhs_sampler_rep2);
     lhs_iterator2.pre_run();
 
     // populate the sub-matrix (possibly full matrix) of generated candidates

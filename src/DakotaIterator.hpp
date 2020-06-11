@@ -50,7 +50,6 @@ public:
 
   /// default constructor
   Iterator( std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()) );
-  // BMA TODO: This ctor might be preferred over assign_rep() due to RAII
   /// alternate envelope constructor that assigns a representation pointer
   Iterator(Iterator* iterator_rep, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard envelope constructor, which constructs its own model(s)
@@ -249,7 +248,7 @@ public:
   void run();
 
   /// replaces existing letter with a new one
-  void assign_rep(Iterator* iterator_rep, bool ref_count_incr);
+  void assign_rep(std::shared_ptr<Iterator> iterator_rep);
 
   /// set the iteratedModel (iterators and meta-iterators using a single
   /// model instance)

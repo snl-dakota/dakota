@@ -110,8 +110,9 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
 
     // The following uses on the fly derived ctor:
     short mode = (eifFlag) ? ACTIVE_UNIFORM : ACTIVE;
-    daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-      numSamples, seedSpec, rngName, false, mode), false);
+    daceIterator.assign_rep(std::make_shared<NonDLHSSampling>
+			    (iteratedModel, sample_type, numSamples, seedSpec,
+			     rngName, false, mode));
     // only use derivatives if the user requested and they are available
     daceIterator.active_set_request_values(dataOrder);
 
@@ -178,9 +179,9 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     int max_direct_iter = 1000, max_direct_eval = 10000; // 10*defaults
 #ifdef HAVE_NCSU  
     // EGO with DIRECT (exploits GP variance)
-    intervalOptimizer.assign_rep(new
-      NCSUOptimizer(intervalOptModel, max_direct_iter, max_direct_eval,
-		    min_box_size, vol_box_size), false);
+    intervalOptimizer.assign_rep(std::make_shared<NCSUOptimizer>
+				 (intervalOptModel, max_direct_iter,
+				  max_direct_eval, min_box_size, vol_box_size));
 #else
     Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
 	 << " interval bounds from the GP model." << std::endl;
@@ -196,9 +197,9 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
 
 #ifdef HAVE_ACRO
     // mixed EA (ignores GP variance)
-    intervalOptimizer.assign_rep(new
-      COLINOptimizer("coliny_ea", intervalOptModel, seedSpec, max_ea_iter,
-		     max_ea_eval), false);
+    intervalOptimizer.assign_rep(std::make_shared<COLINOptimizer>
+				 ("coliny_ea", intervalOptModel, seedSpec,
+				  max_ea_iter, max_ea_eval));
 //#elif HAVE_JEGA
 //    intervalOptimizer.assign_rep(new
 //      JEGAOptimizer(intervalOptModel, max_iter, max_eval, min_box_size,

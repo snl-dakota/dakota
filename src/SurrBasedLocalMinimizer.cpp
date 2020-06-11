@@ -1362,11 +1362,11 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
     
     // setup optimization problem for updating tau
 #ifdef HAVE_NPSOL
-    tau_minimizer.assign_rep(new NPSOLOptimizer(tau_and_x_initial,
+    tau_minimizer.assign_rep(std::make_shared<NPSOLOptimizer>(tau_and_x_initial,
       tau_and_x_lower_bnds, tau_and_x_upper_bnds, lin_ineq_coeffs,
       lin_ineq_lower_bnds, lin_ineq_lower_bnds, lin_eq_coeffs, lin_eq_targets,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,
-      hom_objective_eval, hom_constraint_eval, deriv_level, conv_tol), false);
+      hom_objective_eval, hom_constraint_eval, deriv_level, conv_tol));
 #endif
 
     // find optimum tau by solving approximate subproblem

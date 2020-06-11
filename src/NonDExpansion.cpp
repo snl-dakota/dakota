@@ -282,7 +282,7 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
     abort_handler(METHOD_ERROR);
   }
 
-  u_space_sampler.assign_rep(new NonDCubature(g_u_model, cub_int_order), false);
+  u_space_sampler.assign_rep(std::make_shared<NonDCubature>(g_u_model, cub_int_order));
 }
 
 
@@ -308,8 +308,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
-  u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, quad_order, dim_pref, driver_mode), false);
+  u_space_sampler.assign_rep(std::make_shared<NonDQuadrature>
+			     (g_u_model, quad_order, dim_pref, driver_mode));
 }
 
 
@@ -341,9 +341,9 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
-  u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, quad_order, dim_pref, driver_mode,
-		   filtered_samples), false);
+  u_space_sampler.assign_rep(std::make_shared<NonDQuadrature>
+			     (g_u_model, quad_order, dim_pref, driver_mode,
+			      filtered_samples));
 }
 
 
@@ -375,9 +375,9 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
-  u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, quad_order, dim_pref, driver_mode,
-		   sub_samples, seed), false);
+  u_space_sampler.assign_rep(std::make_shared<NonDQuadrature>
+			     (g_u_model, quad_order, dim_pref, driver_mode,
+			      sub_samples, seed));
 }
 
 
@@ -424,9 +424,9 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
-  u_space_sampler.assign_rep(new
-    NonDSparseGrid(g_u_model, ssg_level, dim_pref, expansionCoeffsApproach,
-		   driver_mode, growth_rate, refineControl, track_wts), false);
+  u_space_sampler.assign_rep(std::make_shared< NonDSparseGrid>
+			     (g_u_model, ssg_level, dim_pref, expansionCoeffsApproach,
+			      driver_mode, growth_rate, refineControl, track_wts));
 }
 
 
@@ -561,7 +561,7 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
   if (!exp_sampling)
     return;
 
-  NonD* exp_sampler_rep;
+  std::shared_ptr<NonD> exp_sampler_rep;
   if (import_pts) {
     RealMatrix x_samples; // imports are always from user space
     // Analyzer::update_model_from_sample() currently updates only the active 
@@ -573,7 +573,7 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     numSamplesOnExpansion = x_samples.numCols();
     // transform to u space must follow runtime dist param updates,
     // so pass x_samples for now and transform at runtime
-    exp_sampler_rep = new NonDSampling(uSpaceModel, x_samples);//u_samples);
+    exp_sampler_rep = std::make_shared<NonDSampling>(uSpaceModel, x_samples);//u_samples);
     exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
       requestedRelLevels, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag, true); // compute/print PDFs
@@ -589,9 +589,9 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     // sampling mode.  Don't vary sampling pattern since we want to reuse
     // same sampling stencil for different design/epistemic vars or for
     // (goal-oriented) adaptivity.
-    exp_sampler_rep
-      = new NonDLHSSampling(uSpaceModel, sample_type, numSamplesOnExpansion,
-			    first_seed(), rng, false, ALEATORY_UNCERTAIN);
+    exp_sampler_rep = std::make_shared<NonDLHSSampling>
+      (uSpaceModel, sample_type, numSamplesOnExpansion,
+       first_seed(), rng, false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // needs to precede exp_sampler_rep->requested_levels()
@@ -623,12 +623,10 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
       }
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
-      NonDAdaptImpSampling* imp_sampler_rep
-	= new NonDAdaptImpSampling(uSpaceModel, sample_type, ais_samples,
-				   first_seed(), rng, vary_pattern,
-				   integration_refine, cdfFlag, false, false,
-				   track_extreme);
-      importanceSampler.assign_rep(imp_sampler_rep, false);
+      auto imp_sampler_rep = std::make_shared<NonDAdaptImpSampling>
+	(uSpaceModel, sample_type, ais_samples, first_seed(), rng, vary_pattern,
+	 integration_refine, cdfFlag, false, false, track_extreme);
+      importanceSampler.assign_rep(imp_sampler_rep);
 
       imp_sampler_rep->output_level(outputLevel);
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
@@ -640,7 +638,7 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
   // publish output verbosity
   exp_sampler_rep->output_level(outputLevel);
   // store rep inside envelope
-  expansionSampler.assign_rep(exp_sampler_rep, false);
+  expansionSampler.assign_rep(exp_sampler_rep);
 }
 
 

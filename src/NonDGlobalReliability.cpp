@@ -159,20 +159,20 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;
-  NonDLHSSampling* lhs_sampler_rep;
   // instantiate the Nataf ProbabilityTransform and GP DataFit recursions
   if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
 
     // The following uses on the fly derived ctor:
-    lhs_sampler_rep = new NonDLHSSampling(iteratedModel, sample_type, samples,
-      lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
+    auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>
+      (iteratedModel, sample_type, samples,
+       lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
     //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
     //lhs_sampler_rep = new DDACEDesignCompExp(iteratedModel, samples, symbols,
     //                                         lhs_seed, dace_method);
     //unsigned short dace_method = FSU_HAMMERSLEY;
     //lhs_sampler_rep = new FSUDesignCompExp(iteratedModel, samples, lhs_seed,
     //                                       dace_method);
-    dace_iterator.assign_rep(lhs_sampler_rep, false);
+    dace_iterator.assign_rep(lhs_sampler_rep);
 
     // Construct g-hat(x) using a GP approximation over the active/uncertain
     // vars (same view as iteratedModel: not the typical All view for DACE).
@@ -212,15 +212,16 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     //Iterator dace_iterator(g_u_model, dace_method, ...);
 
     // The following use on-the-fly derived ctors:
-    lhs_sampler_rep = new NonDLHSSampling(g_u_model, sample_type,
-      samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
+    auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>
+      (g_u_model, sample_type,
+       samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
     //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
     //lhs_sampler_rep = new DDACEDesignCompExp(g_u_model, samples, symbols,
     //                                         lhs_seed, dace_method);
     //unsigned short dace_method = FSU_HAMMERSLEY;
     //lhs_sampler_rep = new FSUDesignCompExp(g_u_model, samples, lhs_seed,
     //                                       dace_method);
-    dace_iterator.assign_rep(lhs_sampler_rep, false);
+    dace_iterator.assign_rep(lhs_sampler_rep);
 
     // Construct G-hat(u) using a GP approximation over the active/uncertain
     // variables (using the same view as iteratedModel/g_u_model: not the
@@ -283,8 +284,9 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   int max_iter = 1000, max_eval = 10000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU  
-  mppOptimizer.assign_rep(new NCSUOptimizer(mppModel, max_iter, max_eval,
-					    min_box_size, vol_box_size), false);
+  mppOptimizer.assign_rep(std::make_shared<NCSUOptimizer>
+			  (mppModel, max_iter, max_eval,
+			   min_box_size, vol_box_size));
   //#ifdef HAVE_ACRO
   //int coliny_seed = 0; // system-generated, for now
   //mppOptimizer.assign_rep(new
@@ -308,11 +310,11 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   bool x_model_flag = false, use_model_bounds = true, track_extreme = pdfOutput;
   integrationRefinement = MMAIS; vary_pattern = true;
 
-  NonDAdaptImpSampling* importance_sampler_rep = new
-    NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples, refine_seed,
-			 rng, vary_pattern, integrationRefinement, cdfFlag,
-			 x_model_flag, use_model_bounds, track_extreme);
-  importanceSampler.assign_rep(importance_sampler_rep, false);
+  auto importance_sampler_rep = std::make_shared<NonDAdaptImpSampling>
+    (uSpaceModel, sample_type, refine_samples, refine_seed,
+     rng, vary_pattern, integrationRefinement, cdfFlag,
+     x_model_flag, use_model_bounds, track_extreme);
+  importanceSampler.assign_rep(importance_sampler_rep);
 }
 
 

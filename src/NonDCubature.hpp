@@ -44,6 +44,8 @@ public:
   // alternate constructor for instantiations "on the fly"
   NonDCubature(Model& model, unsigned short cub_int_order);
 
+  ~NonDCubature();                                       ///< destructor
+
   //
   //- Heading: Member functions
   //
@@ -58,7 +60,6 @@ protected:
   //
 
   NonDCubature(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDCubature();                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions

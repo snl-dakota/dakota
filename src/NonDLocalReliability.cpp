@@ -314,14 +314,14 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       Real conv_tol = -1.; // use NPSOL default
 
 #ifdef HAVE_NPSOL
-      mppOptimizer.assign_rep(new NPSOLOptimizer(mppModel, npsol_deriv_level,
-	conv_tol), false);
+      mppOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
+			      (mppModel, npsol_deriv_level, conv_tol));
 #endif
     }
 #ifdef HAVE_OPTPP
     else
-      mppOptimizer.assign_rep(new SNLLOptimizer("optpp_q_newton", mppModel),
-	false);
+      mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			      ("optpp_q_newton", mppModel));
 #endif
   }
 
@@ -372,30 +372,33 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // AIS is performed in u-space WITHOUT a surrogate: pass a truth u-space
     // model when available, construct one when not.
-    NonDAdaptImpSampling* import_sampler_rep = NULL;
+    std::shared_ptr<NonDAdaptImpSampling> import_sampler_rep;
     switch (mppSearchType) {
     case AMV_X: case AMV_PLUS_X: case TANA_X: case QMEA_X: {
       Model g_u_model;
       g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
 	STD_NORMAL_U), false); // original distribution bnds
-      import_sampler_rep = new NonDAdaptImpSampling(g_u_model, sample_type,
-	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	cdfFlag, x_model_flag, use_model_bounds, track_extreme);
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
+	(g_u_model, sample_type,
+	 refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
+	 cdfFlag, x_model_flag, use_model_bounds, track_extreme);
       break;
     }
     case AMV_U: case AMV_PLUS_U: case TANA_U: case QMEA_U:
-      import_sampler_rep = new NonDAdaptImpSampling(uSpaceModel.truth_model(),
-	sample_type, refine_samples, refine_seed, rng, vary_pattern,
-	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
-	track_extreme);
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
+	(uSpaceModel.truth_model(),
+	 sample_type, refine_samples, refine_seed, rng, vary_pattern,
+	 integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
+	 track_extreme);
       break;
     case NO_APPROX:
-      import_sampler_rep = new NonDAdaptImpSampling(uSpaceModel, sample_type,
-	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	cdfFlag, x_model_flag, use_model_bounds, track_extreme);
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
+	(uSpaceModel, sample_type,
+	 refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
+	 cdfFlag, x_model_flag, use_model_bounds, track_extreme);
       break;
     }
-    importanceSampler.assign_rep(import_sampler_rep, false);
+    importanceSampler.assign_rep(import_sampler_rep);
   }
 
   // Size the output arrays, augmenting sizing in NonDReliability.  Relative to
@@ -2818,8 +2821,8 @@ void NonDLocalReliability::method_recourse()
        << "detected method conflict.\n\n";
   if (mppSearchType && npsolFlag) {
 #ifdef HAVE_OPTPP
-    mppOptimizer.assign_rep(
-      new SNLLOptimizer("optpp_q_newton", mppModel), false);
+    mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			    ("optpp_q_newton", mppModel));
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalReliability "
 	 << "(OPT++ NIP unavailable).\n";
