@@ -61,6 +61,8 @@ double compute_metric(const VectorXd &p, const VectorXd &d,
      return (p - d).cwiseQuotient(d).lpNorm<1>();
    case METRIC_TYPE::MEAN_ABS_PERCENTAGE_ERROR: 
      return (p - d).cwiseQuotient(d).lpNorm<1>()/N;
+   /* Warning: This definition of R^2 only has meaning for OLS when
+    * d is the training responses */
    case METRIC_TYPE::R_SQUARED :
      double dbar = d.sum()/N;
      return (p.array() - dbar).matrix().squaredNorm()

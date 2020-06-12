@@ -31,8 +31,24 @@ class Surrogate {
 
 public:
 
-  /// Default constructor.
+  /// Constructor that uses defaultConfigOptions and does not build.
   Surrogate();
+
+  /**
+   * \brief Constructor that sets configOptions but does not build.
+   * \param[in] param_list List that overrides entries in defaultConfigOptions.
+   */
+  Surrogate(const Teuchos::ParameterList& param_list);
+
+  /**
+   * \brief Constructor for the Surrogate that sets configOptions
+   *        and builds the GP.
+   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
+   * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
+   * \param[in] param_list List that overrides entries in defaultConfigOptions
+   */
+  Surrogate(const MatrixXd &samples, const MatrixXd &response,
+            const Teuchos::ParameterList &param_list);
 
   /// Default destructor.
   virtual ~Surrogate();
@@ -91,6 +107,26 @@ public:
 
   /// DataScaler class for a Surrogate's build samples.
   std::shared_ptr<util::DataScaler> dataScaler;
+
+  /// Evalute metrics at specified points (within surrogates)
+  VectorXd evaluate_metrics(const StringArray &mnames,
+                            const MatrixXd &points,
+                            const MatrixXd &ref_values);
+
+  /// Evalute metrics at specified points (from Dakota)
+  RealMatrix evaluate_metrics(const StringArray &mnames,
+                              const RealMatrix &points,
+                              const RealMatrix &ref_values);
+
+  /// Perform K-folds cross-validation (within surrogates)
+  VectorXd cross_validate(const MatrixXd &samples,
+    const MatrixXd &response, const StringArray &mnames,
+    const int num_folds = 5, const int seed = 20);
+
+  /// Perform K-folds cross-validation (from Dakota)
+  RealMatrix cross_validate(const RealMatrix &samples,
+    const RealMatrix &response, const StringArray &mnames,
+    const int num_folds = 5, const int seed = 20);
 
 protected:
   /// Number of samples in the Surrogate's build samples.

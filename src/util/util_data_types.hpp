@@ -17,7 +17,6 @@
 
 #include "Eigen/Dense"
 
-
 /// dakota (lowercase) namespace for new %Dakota modules
 namespace dakota {
 
@@ -55,6 +54,9 @@ using RealVector = Teuchos::SerialDenseVector<int, Real>;
 
 /// Teuchos ParameterList for options management in Dakota namespace
 using ParameterList = Teuchos::ParameterList;
+
+/// Array of strings
+using StringArray = std::vector<std::string>;
 
 }  // namespace dakota
 

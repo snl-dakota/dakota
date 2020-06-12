@@ -92,6 +92,14 @@ double p_norm(const T &v, double p)
   return std::pow(sum, 1./p);
 }
 
+/// Random permutation of int array
+void random_permutation(const int num_pts,
+  const unsigned int seed, VectorXi &permutations);
+
+/// Generate indices for cross validation folds
+void create_cv_folds(const int num_folds, const int num_pts,
+  std::vector<VectorXi> &fold_indices, const int seed = 22);
+
 } // namespace util
 } // namespace dakota
 

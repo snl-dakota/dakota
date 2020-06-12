@@ -11,6 +11,7 @@
 
 #include <Teuchos_UnitTestHarness.hpp>
 
+using namespace dakota;
 using namespace dakota::util;
 
 // ------------------------------------------------------------
@@ -95,4 +96,57 @@ TEUCHOS_UNIT_TEST(util, p_norm)
   TEST_FLOATING_EQUALITY(140.50736087767584, p_norm(vals, 0.7), 1.e-10);
 }
 
-// ------------------------------------------------------------
+TEUCHOS_UNIT_TEST(util, random_permutation)
+{
+  const int num_pts = 9;
+  const int seed = 2;
+  const int num_features = 3;
+
+  VectorXi gold_permutation_indices(num_pts);
+  gold_permutation_indices << 1, 8, 4, 2, 0,
+                              5, 7, 3, 6;
+
+  VectorXi linear_indices =
+    VectorXi::LinSpaced(num_pts, 0, num_pts-1);
+
+  VectorXi permutation_indices = linear_indices;
+
+  std::cout << "\n" << "original vector: ";
+  std::cout << permutation_indices.transpose() << "\n";
+
+  random_permutation(num_pts, (unsigned int) 22,
+    permutation_indices);
+
+  std::cout << "permuted vector: ";
+  std::cout << permutation_indices.transpose() << "\n";
+
+  TEST_EQUALITY(permutation_indices, gold_permutation_indices);
+}
+
+TEUCHOS_UNIT_TEST(util, create_cross_validation_folds)
+{
+  const int num_pts = 9;
+  const int seed = 2;
+  const int num_folds = 4;
+  const int num_features = 3;
+
+  std::vector<VectorXi> cv_folds, gold_cv_folds;
+  gold_cv_folds.resize(num_folds);
+  gold_cv_folds[0].resize(2);
+  gold_cv_folds[0] << 1, 8;
+  gold_cv_folds[1].resize(2);
+  gold_cv_folds[1] << 4, 2;
+  gold_cv_folds[2].resize(2);
+  gold_cv_folds[2] << 0, 5;
+  gold_cv_folds[3].resize(3);
+  gold_cv_folds[3] << 7, 3, 6;
+
+  create_cv_folds(num_folds, num_pts, cv_folds);
+  std::cout << "\n\n";
+  for (int i = 0; i < num_folds; i++) {
+    std::cout << "fold indices " << i << ": ";
+    std::cout << cv_folds[i].transpose() << "\n";
+    TEST_EQUALITY(cv_folds[i], gold_cv_folds[i]);
+  }
+
+}
