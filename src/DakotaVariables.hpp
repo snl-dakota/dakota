@@ -637,9 +637,7 @@ private:
   //
 
   /// pointer to the letter (initialized only for the envelope)
-  Variables* variablesRep;
-  /// number of objects sharing variablesRep
-  int referenceCount;
+  std::shared_ptr<Variables> variablesRep;
 };
 
 

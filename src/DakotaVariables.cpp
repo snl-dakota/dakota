@@ -39,12 +39,11 @@ namespace Dakota {
     and the derived constructor selects this base class constructor in its 
     initialization list (to avoid the recursion of the base class constructor
     calling get_variables() again).  Since the letter IS the representation, 
-    its representation pointer is set to NULL (an uninitialized pointer causes
-    problems in ~Variables). */
+    its representation pointer is set to NULL. */
 Variables::
 Variables(BaseConstructor, const ProblemDescDB& problem_db,
 	  const std::pair<short,short>& view):
-  sharedVarsData(problem_db, view), variablesRep(NULL), referenceCount(1)
+  sharedVarsData(problem_db, view)
 {
   shape(); // size all*Vars arrays
   build_views(); // construct active/inactive views of all arrays
@@ -61,11 +60,10 @@ Variables(BaseConstructor, const ProblemDescDB& problem_db,
     and the derived constructor selects this base class constructor in its 
     initialization list (to avoid the recursion of the base class constructor
     calling get_variables() again).  Since the letter IS the representation, 
-    its representation pointer is set to NULL (an uninitialized pointer causes
-    problems in ~Variables). */
+    its representation pointer is set to NULL. */
 Variables::
 Variables(BaseConstructor, const SharedVariablesData& svd):
-  sharedVarsData(svd), variablesRep(NULL), referenceCount(1)
+  sharedVarsData(svd)
 {
   shape(); // size all*Vars arrays
   build_views(); // construct active/inactive views of all arrays
@@ -78,11 +76,8 @@ Variables(BaseConstructor, const SharedVariablesData& svd):
 
 
 /** The default constructor: variablesRep is NULL in this case (a populated
-    problem_db is needed to build a meaningful Variables object).  This
-    makes it necessary to check for NULL in the copy constructor, assignment
-    operator, and destructor. */
-Variables::Variables():
-  variablesRep(NULL), referenceCount(1)
+    problem_db is needed to build a meaningful Variables object). */
+Variables::Variables()
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::Variables() called to build empty variables object."
@@ -97,15 +92,14 @@ Variables::Variables():
     since the constructor overloaded with BaseConstructor builds the
     actual base class data inherited by the derived classes. */
 Variables::Variables(const ProblemDescDB& problem_db):
-  referenceCount(1) // not used since this is the envelope, not the letter
+  // Set the rep pointer to the appropriate derived variables class
+  variablesRep(get_variables(problem_db))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::Variables(ProblemDescDB&) called to instantiate envelope."
        << std::endl;
 #endif
 
-  // Set the rep pointer to the appropriate derived variables class
-  variablesRep = get_variables(problem_db);
   if (!variablesRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -145,15 +139,14 @@ Variables* Variables::get_variables(const ProblemDescDB& problem_db)
     invokes the default derived/base constructors, followed by a
     resize() based on vars_comps. */
 Variables::Variables(const SharedVariablesData& svd):
-  referenceCount(1) // not used since this is the envelope, not the letter
+  // for variablesRep, instantiate the appropriate derived variables class
+  variablesRep(get_variables(svd))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::Variables(SharedVariablesData&) called to instantiate "
        << "envelope." << std::endl;
 #endif
 
-  // for variablesRep, instantiate the appropriate derived variables class
-  variablesRep = get_variables(svd);
   if (!variablesRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -232,45 +225,28 @@ Variables::get_view(const ProblemDescDB& problem_db) const
 }
 
 
-/** Copy constructor manages sharing of variablesRep and incrementing
-    of referenceCount. */
+/** Copy constructor manages sharing of variablesRep. */
 Variables::Variables(const Variables& vars)
 {
   variablesRep = vars.variablesRep;
-  // Increment new (no old to decrement)
-  if (variablesRep) // Check for assignment of NULL
-    ++variablesRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::Variables(Variables&)" << std::endl;
   if (variablesRep)
-    Cout << "variablesRep referenceCount = " << variablesRep->referenceCount
+    Cout << "variablesRep referenceCount = " << variablesRep.use_count()
 	 << std::endl;
 #endif
 }
 
 
-/** Assignment operator decrements referenceCount for old variablesRep, assigns
-    new variablesRep, and increments referenceCount for new variablesRep. */
 Variables Variables::operator=(const Variables& vars)
 {
-  if (variablesRep != vars.variablesRep) { // normal case: old != new
-    // Decrement old
-    if (variablesRep) // Check for NULL
-      if (--variablesRep->referenceCount == 0) 
-	delete variablesRep;
-    // Assign and increment new
-    variablesRep = vars.variablesRep;
-    if (variablesRep) // Check for NULL
-      ++variablesRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
+  variablesRep = vars.variablesRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::operator=(Variables&)" << std::endl;
   if (variablesRep)
-    Cout << "variablesRep referenceCount = " << variablesRep->referenceCount
+    Cout << "variablesRep referenceCount = " << variablesRep.use_count()
 	 << std::endl;
 #endif
 
@@ -278,24 +254,12 @@ Variables Variables::operator=(const Variables& vars)
 }
 
 
-/** Destructor decrements referenceCount and only deletes variablesRep
-    when referenceCount reaches zero. */
 Variables::~Variables()
 { 
-  if (variablesRep) { // Check for NULL pointer
-    // envelope only: decrement letter reference count and delete if 0
-    --variablesRep->referenceCount;
 #ifdef REFCOUNT_DEBUG
-    Cout << "variablesRep referenceCount decremented to " 
-         << variablesRep->referenceCount << std::endl;
+    Cout << "~Variables() variablesRep referenceCount "
+         << variablesRep.use_count() << std::endl;
 #endif
-    if (variablesRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting variablesRep" << std::endl;
-#endif
-      delete variablesRep;
-    }
-  }
 }
 
 
@@ -539,17 +503,15 @@ void Variables::load(Archive& ar, const unsigned int version)
   ar & svd;
 
   if (variablesRep) { // should not occur in current usage
+    // BMA: Leaving this conditional due to related problems in Response
     if (sharedVarsData.view() != svd.view()) {
-      // decrement old reference count and replace with new letter
       Cerr << "Warning: variables type mismatch in Variables::load(Archive&)."
 	   << std::endl;
-      if (--variablesRep->referenceCount == 0) 
-	delete variablesRep;
-      variablesRep = get_variables(svd);
+      variablesRep.reset(get_variables(svd));
     }
   }
   else // read from restart: variablesRep must be instantiated
-    variablesRep = get_variables(svd);
+    variablesRep.reset(get_variables(svd));
 
   // This code block would normally be the default implementation
   // (without variablesRep forwards), but we must support creation
@@ -667,17 +629,15 @@ void Variables::read_annotated(std::istream& s)
   SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
 
   if (variablesRep) { // should not occur in current usage
+    // BMA: Leaving this conditional due to related problems in Response
     if (sharedVarsData.view() != view) {
-      // decrement old reference count and replace with new letter
       Cerr << "Warning: variables type mismatch in Variables::read(istream&)."
 	   << std::endl;
-      if (--variablesRep->referenceCount == 0) 
-        delete variablesRep;
-      variablesRep = get_variables(svd);
+      variablesRep.reset(get_variables(svd));
     }
   }
   else // read from neutral file: variablesRep must be instantiated
-    variablesRep = get_variables(svd);
+    variablesRep.reset(get_variables(svd));
 
   // This code block would normally be the default implementation (without
   // variablesRep forwards), but we must support creation of new letters above.
@@ -786,16 +746,13 @@ void Variables::read(MPIUnpackBuffer& s)
 
     if (variablesRep) { // should not occur in current usage
       if (sharedVarsData.view() != view) {
-	// decrement old reference count and replace with new letter
 	Cerr << "Warning: variables type mismatch in "
 	     << "Variables::read(MPIUnpackBuffer&)." << std::endl;
-	if (--variablesRep->referenceCount == 0) 
-	  delete variablesRep;
-	variablesRep = get_variables(svd);
+	variablesRep.reset(get_variables(svd));
       }
     }
     else // buffer read on slaves: variablesRep must be instantiated
-      variablesRep = get_variables(svd);
+      variablesRep.reset(get_variables(svd));
 
     // This code block would normally be the default implementation (without
     // variablesRep forwards), but we must support additional logic above/below.
@@ -812,9 +769,7 @@ void Variables::read(MPIUnpackBuffer& s)
   }
   else if (variablesRep) {
     // empty variables envelope sent across buffer; make this one match
-    if (--variablesRep->referenceCount == 0)
-      delete variablesRep;
-    variablesRep = NULL;
+    variablesRep.reset();
   }
 }
 
@@ -884,9 +839,11 @@ Variables Variables::copy(bool deep_svd) const
   // shallow copy of SharedVariablesData
   if (variablesRep) {
     // deep copy of Variables
-    vars.variablesRep = (deep_svd) ?
-      get_variables(variablesRep->sharedVarsData.copy()) : // deep SVD copy
-      get_variables(variablesRep->sharedVarsData);      // shallow SVD copy
+    vars.variablesRep.reset
+      ( deep_svd ?
+	get_variables(variablesRep->sharedVarsData.copy()) : // deep SVD copy
+	get_variables(variablesRep->sharedVarsData)       // shallow SVD copy
+	);
 
     vars.variablesRep->allContinuousVars   = variablesRep->allContinuousVars;
     vars.variablesRep->allDiscreteIntVars  = variablesRep->allDiscreteIntVars;
@@ -942,7 +899,7 @@ bool nearby(const Variables& vars1, const Variables& vars2, Real tol)
 {
   // this operator is a friend of Variables
 
-  Variables *v1_rep = vars1.variablesRep, *v2_rep = vars2.variablesRep;
+  std::shared_ptr<Variables> v1_rep = vars1.variablesRep, v2_rep = vars2.variablesRep;
 
   // Require different rep pointers
   if (v1_rep == v2_rep)
@@ -967,7 +924,7 @@ bool operator==(const Variables& vars1, const Variables& vars2)
 {
   // this function is a friend of Variables
 
-  Variables *v1_rep = vars1.variablesRep, *v2_rep = vars2.variablesRep;
+  std::shared_ptr<Variables> v1_rep = vars1.variablesRep, v2_rep = vars2.variablesRep;
 
   if (v1_rep == v2_rep)
     return true;
@@ -993,7 +950,7 @@ std::size_t hash_value(const Variables& vars)
 
   std::size_t seed = 0;
   // require identical views and variables data
-  Variables *v_rep = vars.variablesRep;
+  std::shared_ptr<Variables> v_rep = vars.variablesRep;
   boost::hash_combine(seed, v_rep->sharedVarsData.view());
   // hash_value() for SerialDenseVectors and StringMultiArrays defined
   // in dakota_data_util.hpp
