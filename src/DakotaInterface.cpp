@@ -58,8 +58,7 @@ size_t Interface::noSpecIdNum = 0;
     and the derived constructor selects this base class constructor in its 
     initialization list (to avoid the recursion of the base class constructor
     calling get_interface() again).  Since this is the letter and the letter 
-    IS the representation, interfaceRep is set to NULL (an uninitialized 
-    pointer causes problems in ~Interface). */
+    IS the representation, interfaceRep is set to NULL. */
 Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db): 
   interfaceType(problem_db.get_ushort("interface.type")),
   interfaceId(problem_db.get_string("interface.id")), 
@@ -72,7 +71,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
   multiProcEvalFlag(false), ieDedMasterFlag(false),
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  Interfaces support the full granularity in verbosity.
-  appendIfaceId(true), interfaceRep(NULL), referenceCount(1), asl(NULL)
+  appendIfaceId(true), asl(NULL)
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
@@ -177,8 +176,7 @@ Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
   outputLevel(output_level), currEvalId(0), 
   fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT), evalIdCntr(0), 
   newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
-  ieDedMasterFlag(false), appendIfaceId(true), interfaceRep(NULL),
-  referenceCount(1)
+  ieDedMasterFlag(false), appendIfaceId(true)
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
@@ -192,7 +190,7 @@ Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
 
 
 /** used in Model envelope class instantiations */
-Interface::Interface(): interfaceRep(NULL), referenceCount(1)
+Interface::Interface()
 { }
 
 
@@ -200,15 +198,15 @@ Interface::Interface(): interfaceRep(NULL), referenceCount(1)
     only needs to extract enough data to properly execute get_interface, since
     Interface::Interface(BaseConstructor, problem_db) builds the 
     actual base class data inherited by the derived interfaces. */
-Interface::Interface(ProblemDescDB& problem_db): referenceCount(1)
+Interface::Interface(ProblemDescDB& problem_db):
+  // Set the rep pointer to the appropriate interface type
+  interfaceRep(get_interface(problem_db))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Interface::Interface(ProblemDescDB&) called to instantiate envelope."
        << std::endl;
 #endif
 
-  // Set the rep pointer to the appropriate interface type
-  interfaceRep = get_interface(problem_db);
   if (!interfaceRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -316,45 +314,27 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 }
 
 
-/** Copy constructor manages sharing of interfaceRep and incrementing
-    of referenceCount. */
-Interface::Interface(const Interface& interface_in)
+/** Copy constructor manages sharing of interfaceRep */
+Interface::Interface(const Interface& interface_in):
+  interfaceRep(interface_in.interfaceRep)
 {
-  // Increment new (no old to decrement)
-  interfaceRep = interface_in.interfaceRep;
-  if (interfaceRep) // Check for an assignment of NULL
-    ++interfaceRep->referenceCount;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Interface::Interface(Interface&)" << std::endl;
   if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep->referenceCount
+    Cout << "interfaceRep referenceCount = " << interfaceRep.use_count()
 	 << std::endl;
 #endif
 }
 
 
-/** Assignment operator decrements referenceCount for old interfaceRep, assigns
-    new interfaceRep, and increments referenceCount for new interfaceRep. */
 Interface Interface::operator=(const Interface& interface_in)
 {
-  if (interfaceRep != interface_in.interfaceRep) { // normal case: old != new
-    // Decrement old
-    if (interfaceRep) // Check for NULL
-      if ( --interfaceRep->referenceCount == 0 ) 
-	delete interfaceRep;
-    // Assign and increment new
-    interfaceRep = interface_in.interfaceRep;
-    if (interfaceRep) // Check for NULL
-      ++interfaceRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
+  interfaceRep = interface_in.interfaceRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Interface::operator=(Interface&)" << std::endl;
   if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep->referenceCount
+    Cout << "interfaceRep referenceCount = " << interfaceRep.use_count()
 	 << std::endl;
 #endif
 
@@ -362,24 +342,12 @@ Interface Interface::operator=(const Interface& interface_in)
 }
 
 
-/** Destructor decrements referenceCount and only deletes interfaceRep
-    if referenceCount is zero. */
 Interface::~Interface()
 { 
-  // Check for NULL pointer 
-  if (interfaceRep) {
-    --interfaceRep->referenceCount;
 #ifdef REFCOUNT_DEBUG
-    Cout << "interfaceRep referenceCount decremented to " 
+    Cout << "~Interface() interfaceRep referenceCount " 
          << interfaceRep->referenceCount << std::endl;
 #endif
-    if (interfaceRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting interfaceRep" << std::endl;
-#endif
-      delete interfaceRep;
-    }
-  }
 }
 
 
@@ -403,33 +371,12 @@ Interface::~Interface()
     remotely deleted (its memory management is passed over to the envelope). */
 void Interface::assign_rep(Interface* interface_rep, bool ref_count_incr)
 {
-  if (interfaceRep == interface_rep) {
-    // if ref_count_incr = true (rep from another envelope), do nothing as
-    // referenceCount should already be correct (see also operator= logic).
-    // if ref_count_incr = false (rep from on the fly), then this is an error.
-    if (!ref_count_incr) {
-      Cerr << "Error: duplicated interface_rep pointer assignment without "
-	   << "reference count increment in Interface::assign_rep()."
-	   << std::endl;
-      abort_handler(-1);
-    }
-  }
-  else { // normal case: old != new
-    // Decrement old
-    if (interfaceRep) // Check for NULL
-      if ( --interfaceRep->referenceCount == 0 ) 
-	delete interfaceRep;
-    // Assign new
-    interfaceRep = interface_rep;
-    // Increment new
-    if (interfaceRep && ref_count_incr) // Check for NULL & honor ref_count_incr
-      interfaceRep->referenceCount++;
-  }
+  interfaceRep.reset(interface_rep);
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Interface::assign_rep(Interface*)" << std::endl;
   if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep->referenceCount
+    Cout << "interfaceRep referenceCount = " << interfaceRep.use_count()
 	 << std::endl;
 #endif
 }

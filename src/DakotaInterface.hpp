@@ -455,9 +455,7 @@ private:
   int numAlgebraicResponses;
 
   /// pointer to the letter (initialized only for the envelope)
-  Interface* interfaceRep;
-  /// number of objects sharing interfaceRep
-  int referenceCount;
+  std::shared_ptr<Interface> interfaceRep;
 
   /// pointer to an AMPL solver library (ASL) object
   ASL *asl;
