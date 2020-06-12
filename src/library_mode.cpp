@@ -446,8 +446,8 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
     const MPI_Comm& analysis_comm = ml_iter->analysis_comm();
 
     // don't increment ref count since no other envelope shares this letter
-    model_interface.assign_rep(new
-      SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
+    model_interface.assign_rep(std::make_shared<SIM::ParallelDirectApplicInterface>
+			       (problem_db, analysis_comm));
   }
   problem_db.set_db_model_nodes(model_index);            // restore
 }
