@@ -927,7 +927,8 @@ void NonDLocalReliability::mpp_search()
 
 	Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
 	BoolDequeArray nonlinear_resp_map(2);
-	RecastModel* mpp_model_rep = (RecastModel*)mppModel.model_rep();
+	std::shared_ptr<RecastModel> mpp_model_rep =
+	  std::dynamic_pointer_cast<RecastModel>(mppModel.model_rep());
 	if (ria_flag) { // RIA: g is in constraint
 	  primary_resp_map.resize(1);   // one objective, no contributors
 	  secondary_resp_map.resize(1); // one constraint, one contributor
@@ -1574,7 +1575,8 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       mode |= 4;
       // RecastModel::transform_set() normally handles this, but we are
       // bypassing the Recast and pulling iteratedModel data from data_pairs
-      RecastModel* pt_model_rep = (RecastModel*)uSpaceModel.model_rep();
+      std::shared_ptr<RecastModel> pt_model_rep =
+	std::dynamic_pointer_cast<RecastModel>(uSpaceModel.model_rep());
       if (pt_model_rep->nonlinear_variables_mapping())
 	mode |= 2; // fnGradX needed to transform fnHessX to fnHessU
     }

@@ -1078,7 +1078,8 @@ void Minimizer::archive_best_results() {
     archive_best_residuals();
     archive_best_variables();
   } else { //calibration with data
-    DataTransformModel* dt_model_rep = static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+    std::shared_ptr<DataTransformModel> dt_model_rep =
+      std::dynamic_pointer_cast<DataTransformModel>(dataTransformModel.model_rep());
     if(dt_model_rep->num_config_vars())
       archive_best_variables(true);
     else

@@ -515,7 +515,8 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	// construct global optimizer and its EI/EF recast model
 	Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
 	BoolDequeArray nonlinear_resp_map(1, BoolDeque(1, true));
-	RecastModel* mpp_model_rep = (RecastModel*)mppModel.model_rep();
+	std::shared_ptr<RecastModel> mpp_model_rep =
+	  std::dynamic_pointer_cast<RecastModel>(mppModel.model_rep());
 	if (ria_flag) {
 	  // Standard RIA : min u'u s.t. g = z_bar
 	  // use RIA evaluators to recast g into global opt subproblem

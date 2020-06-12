@@ -282,7 +282,8 @@ void NonDGlobalInterval::core_run()
   BoolDequeArray nonlinear_resp_map(1);
   nonlinear_resp_map[0] = BoolDeque(numFunctions, false);
   BoolDeque max_sense(1);
-  RecastModel* int_opt_model_rep = (RecastModel*)intervalOptModel.model_rep();
+  std::shared_ptr<RecastModel> int_opt_model_rep =
+    std::dynamic_pointer_cast<RecastModel>(intervalOptModel.model_rep());
 
   initialize(); // virtual fn
 

@@ -242,7 +242,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
             primary_resp_map[0].resize(numFunctions);
             for (size_t i=0; i<numFunctions; i++)
                 primary_resp_map[0][i] = i;
-            RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
+	    std::shared_ptr<RecastModel> eif_model_rep =
+	      std::dynamic_pointer_cast<RecastModel>(eifModel.model_rep());
             eif_model_rep->init_maps(vars_map, false, NULL, NULL,
                                       primary_resp_map, secondary_resp_map, nonlinear_resp_map,
                                       EIF_objective_eval, NULL);
@@ -478,7 +479,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         primary_resp_map[0].resize(numFunctions);
         for (size_t i=0; i<numFunctions; i++)
             primary_resp_map[0][i] = i;
-        RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
+	std::shared_ptr<RecastModel> eif_model_rep =
+	  std::dynamic_pointer_cast<RecastModel>(eifModel.model_rep());
         eif_model_rep->init_maps(vars_map, false, NULL, NULL,
                                   primary_resp_map, secondary_resp_map, nonlinear_resp_map,
                                   EIF_objective_eval, NULL);

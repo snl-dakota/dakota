@@ -431,7 +431,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   set_model_states(minimizeIndex);
 
   // set up recursive corrections across all model forms
-  ((HierarchSurrModel*)(iteratedModel.model_rep()))->
+  (std::dynamic_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->
     correction_mode(FULL_MODEL_FORM_CORRECTION);
 
   // Set the trust region center and bounds for approxSubProbOptimizer
@@ -832,7 +832,7 @@ optimize(const RealVector &x, int max_iter, int index)
   set_model_states(index);
 
   // set up recursive corrections across all solution levels
-  ((HierarchSurrModel*)(iteratedModel.model_rep()))->
+  (std::dynamic_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->
     correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
 
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);

@@ -1079,7 +1079,7 @@ public:
 
   /// returns modelRep for access to derived class member functions
   /// that are not mapped to the top Model level
-  Model* model_rep() const;
+  std::shared_ptr<Model> model_rep() const;
 
   /// set the specified configuration to the Model's inactive vars,
   /// converting from real to integer or through index to string value
@@ -1598,9 +1598,7 @@ private:
   BoolDeque recastFlags;
 
   /// pointer to the letter (initialized only for the envelope)
-  Model* modelRep;
-  /// number of objects sharing modelRep
-  int referenceCount;
+  std::shared_ptr<Model> modelRep;
 
   /// the last used model ID number for on-the-fly instantiations
   /// (increment before each use)
@@ -3626,7 +3624,7 @@ inline bool Model::is_null() const
 { return (modelRep) ? false : true; }
 
 
-inline Model* Model::model_rep() const
+inline std::shared_ptr<Model> Model::model_rep() const
 { return modelRep; }
 
 

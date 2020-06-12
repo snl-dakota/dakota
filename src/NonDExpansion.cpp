@@ -1811,7 +1811,7 @@ void NonDExpansion::update_model_from_samples()
 {
   // enforce total pts (increment managed in DataFitSurrModel::rebuild_global())
   uSpaceModel.subordinate_iterator().sampling_reference(0);
-  DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
+  DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep().get();
   dfs_model->total_points(numSamplesOnModel);
 }
 
