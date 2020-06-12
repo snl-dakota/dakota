@@ -346,7 +346,7 @@ protected:
   /// Implementation of data copy for Response letters (specialized by
   /// some derived letter types); pulls base class data from
   /// source_resp_rep into the this object.  
-  virtual void copy_rep(Response* source_resp_rep);
+  virtual void copy_rep(std::shared_ptr<Response> source_resp_rep);
 
   //
   //- Heading: Protected data members
@@ -468,9 +468,7 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  Response* responseRep;
-  /// number of handle objects sharing responseRep
-  int referenceCount;
+  std::shared_ptr<Response> responseRep;
 };
 
 

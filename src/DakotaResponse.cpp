@@ -39,12 +39,11 @@ namespace Dakota {
     and the derived constructor selects this base class constructor in its 
     initialization list (to avoid the recursion of the base class constructor
     calling get_response() again).  Since the letter IS the representation, 
-    its representation pointer is set to NULL (an uninitialized pointer causes
-    problems in ~Response). */
+    its representation pointer is set to NULL. */
 Response::
 Response(BaseConstructor, const Variables& vars,
 	 const ProblemDescDB& problem_db):
-  sharedRespData(problem_db), responseRep(NULL), referenceCount(1)
+  sharedRespData(problem_db)
 {
   // the derivative arrays must accomodate either active or inactive variables,
   // but the default is active variables.  Derivative arrays are resized if a
@@ -113,8 +112,7 @@ Response(BaseConstructor, const Variables& vars,
     option to support I/O in bestResponseArray.front(). */
 Response::
 Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
-  sharedRespData(srd), responseActiveSet(set), responseRep(NULL),
-  referenceCount(1)
+  sharedRespData(srd), responseActiveSet(set)
 {
   shape_rep(set);
 
@@ -134,7 +132,7 @@ Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
     option to support I/O in bestResponseArray.front(). */
 Response::Response(BaseConstructor, const ActiveSet& set):
   sharedRespData(set), // minimal unshared definition
-  responseActiveSet(set), responseRep(NULL), referenceCount(1)
+  responseActiveSet(set)
 {
   shape_rep(set);
 
@@ -151,8 +149,7 @@ Response::Response(BaseConstructor, const ActiveSet& set):
     SharedResponseData. */
 Response::Response(BaseConstructor, const SharedResponseData& srd):
   sharedRespData(srd), functionValues(srd.num_functions()),
-  responseActiveSet(functionValues.length()), responseRep(NULL),
-  referenceCount(1)
+  responseActiveSet(functionValues.length())
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response(BaseConstructor) called to build base class "
@@ -162,10 +159,8 @@ Response::Response(BaseConstructor, const SharedResponseData& srd):
 
 
 /** The default constructor: responseRep is NULL in this case (a populated
-    problem_db is needed to build a meaningful Response object).  This
-    makes it necessary to check for NULL in the copy constructor, assignment
-    operator, and destructor. */
-Response::Response(): responseRep(NULL), referenceCount(1)
+    problem_db is needed to build a meaningful Response object). */
+Response::Response()
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response() called to build empty response object."
@@ -181,15 +176,14 @@ Response::Response(): responseRep(NULL), referenceCount(1)
     actual base class data inherited by the derived classes. */
 Response::
 Response(short type, const Variables& vars, const ProblemDescDB& problem_db):
-  referenceCount(1) // not used since this is the envelope, not the letter
+  // Set the rep pointer to the appropriate derived response class
+  responseRep(get_response(type, vars, problem_db))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response(short, Variables&, ProblemDescDB&) called to "
        << "instantiate envelope." << std::endl;
 #endif
 
-  // Set the rep pointer to the appropriate derived response class
-  responseRep = get_response(type, vars, problem_db);
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -199,15 +193,14 @@ Response(short type, const Variables& vars, const ProblemDescDB& problem_db):
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
 Response::Response(const SharedResponseData& srd, const ActiveSet& set):
-  referenceCount(1) // not used since this is the envelope, not the letter
+  // for responseRep, instantiate the appropriate derived response class
+  responseRep(get_response(srd, set))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response(SharedResponseData&, ActiveSet&) called to "
        << "instantiate envelope." << std::endl;
 #endif
 
-  // for responseRep, instantiate the appropriate derived response class
-  responseRep = get_response(srd, set);
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -217,15 +210,14 @@ Response::Response(const SharedResponseData& srd, const ActiveSet& set):
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
 Response::Response(short type, const ActiveSet& set):
-  referenceCount(1) // not used since this is the envelope, not the letter
+  // for responseRep, instantiate the appropriate derived response class
+  responseRep(get_response(type, set))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response(short, ActiveSet&) called to instantiate "
        << "envelope." << std::endl;
 #endif
 
-  // for responseRep, instantiate the appropriate derived response class
-  responseRep = get_response(type, set);
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -235,59 +227,40 @@ Response::Response(short type, const ActiveSet& set):
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
 Response::Response(const SharedResponseData& srd):
-  referenceCount(1) // not used since this is the envelope, not the letter
+  // for responseRep, instantiate the appropriate derived response class
+  responseRep(get_response(srd))
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response(SharedResponseData&) called to instantiate "
        << "envelope." << std::endl;
 #endif
 
-  // for responseRep, instantiate the appropriate derived response class
-  responseRep = get_response(srd);
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
 }
 
 
-/** Copy constructor manages sharing of responseRep and incrementing
-    of referenceCount. */
-Response::Response(const Response& resp)
+/** Copy constructor manages sharing of responseRep. */
+Response::Response(const Response& resp):
+  responseRep(resp.responseRep)
 {
-  responseRep = resp.responseRep;
-  // Increment new (no old to decrement)
-  if (responseRep) // Check for assignment of NULL
-    ++responseRep->referenceCount;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response(Response&)" << std::endl;
   if (responseRep)
-    Cout << "responseRep referenceCount = " << responseRep->referenceCount
+    Cout << "responseRep referenceCount = " << responseRep.use_count()
 	 << std::endl;
 #endif
 }
 
 
-/** Assignment operator decrements referenceCount for old responseRep, assigns
-    new responseRep, and increments referenceCount for new responseRep. */
 Response Response::operator=(const Response& resp)
 {
-  if (responseRep != resp.responseRep) { // normal case: old != new
-    // Decrement old
-    if (responseRep) // Check for NULL
-      if ( --responseRep->referenceCount == 0 ) 
-	delete responseRep;
-    // Assign and increment new
-    responseRep = resp.responseRep;
-    if (responseRep) // Check for NULL
-      ++responseRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
+  responseRep = resp.responseRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::operator=(Response&)" << std::endl;
   if (responseRep)
-    Cout << "responseRep referenceCount = " << responseRep->referenceCount
+    Cout << "responseRep referenceCount = " << responseRep.use_count()
 	 << std::endl;
 #endif
 
@@ -295,24 +268,12 @@ Response Response::operator=(const Response& resp)
 }
 
 
-/** Destructor decrements referenceCount and only deletes responseRep
-    when referenceCount reaches zero. */
 Response::~Response()
 { 
-  if (responseRep) { // Check for NULL pointer
-    // envelope only: decrement letter reference count and delete if 0
-    --responseRep->referenceCount;
 #ifdef REFCOUNT_DEBUG
-    Cout << "responseRep referenceCount decremented to " 
-         << responseRep->referenceCount << std::endl;
+    Cout << "~Response() responseRep referenceCount "
+         << responseRep.use_count() << std::endl;
 #endif
-    if (responseRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting responseRep" << std::endl;
-#endif
-      delete responseRep;
-    }
-  }
 }
 
 
@@ -444,9 +405,11 @@ Response Response::copy(bool deep_srd) const
 
   if (responseRep) {
     // allocate a responseRep letter, copy data attributes, share the srd
-    response.responseRep = (deep_srd) ?
-      get_response(responseRep->sharedRespData.copy()) : // deep SRD copy
-      get_response(responseRep->sharedRespData);      // shallow SRD copy
+    response.responseRep.reset
+      ( deep_srd ?
+	get_response(responseRep->sharedRespData.copy()) : // deep SRD copy
+	get_response(responseRep->sharedRespData)      // shallow SRD copy
+	);
     // allow derived classes to specialize copy_rep if they augment
     // the base class data
     response.responseRep->copy_rep(responseRep);
@@ -456,7 +419,7 @@ Response Response::copy(bool deep_srd) const
 }
 
 
-void Response::copy_rep(Response* source_resp_rep)
+void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
 {
   functionValues    = source_resp_rep->functionValues;
   fieldCoords       = source_resp_rep->fieldCoords;
@@ -933,16 +896,15 @@ void Response::read_annotated(std::istream& s)
 {
   short type;
   s >> type;
+
   if (responseRep) { // should not occur in current usage
+    // BMA TODO: Leaving this logic as was required for MPIUnpackBuffer case
     if (responseRep->sharedRespData.is_null() ||
-	type != responseRep->sharedRespData.response_type()) {
-      if (--responseRep->referenceCount == 0)
-	delete responseRep;
-      responseRep = get_response(type);
-    }
+	type != responseRep->sharedRespData.response_type())
+      responseRep.reset(get_response(type));
   }
   else // read into empty envelope: responseRep must be instantiated
-    responseRep = get_response(type);
+    responseRep.reset(get_response(type));
 
   responseRep->read_annotated_rep(s); // fwd to new/existing rep
   responseRep->sharedRespData.response_type(type);
@@ -1113,25 +1075,23 @@ void Response::read(MPIUnpackBuffer& s)
   if (has_rep) { // response is not an empty handle
     short type;
     s >> type;
+
     if (responseRep) { // responseRep should not be defined in current usage
+      // BMA TODO: This use case does appear to be hit. More aggressively
+      // resetting without checking the following conditional causes problems
+      // in pdakota_pareto_pcbdo_short_column, pdakota_uq_short_column_ivp_exp
       if (responseRep->sharedRespData.is_null() ||
-	  type != responseRep->sharedRespData.response_type()) {
-	if (--responseRep->referenceCount == 0)
-	  delete responseRep;
-	responseRep = get_response(type);
-      }
+	  type != responseRep->sharedRespData.response_type())
+	responseRep.reset(get_response(type));
     }
     else
-      responseRep = get_response(type);
+      responseRep.reset(get_response(type));
 
     responseRep->read_rep(s); // fwd to rep
     responseRep->sharedRespData.response_type(type);
   }
-  else if (responseRep) {
-    if (--responseRep->referenceCount == 0)
-      delete responseRep;
-    responseRep = NULL;
-  }
+  else if (responseRep)
+    responseRep.reset();
 }
 
 
@@ -1646,13 +1606,13 @@ void Response::reset_inactive()
 /// equality operator for Response
 bool operator==(const Response& resp1, const Response& resp2)
 {
-  Response *rep1 = resp1.responseRep, *rep2 = resp2.responseRep;
-  if (rep1 != NULL && rep2 != NULL) // envelope
+  std::shared_ptr<Response> rep1 = resp1.responseRep, rep2 = resp2.responseRep;
+  if (rep1 && rep2) // both envelope; compare letter member data
     return (rep1->responseActiveSet == rep2->responseActiveSet &&
 	    rep1->functionValues    == rep2->functionValues    &&
 	    rep1->functionGradients == rep2->functionGradients &&
 	    rep1->functionHessians  == rep2->functionHessians);
-  else if (rep1 == NULL && rep2 == NULL) // letter
+  else if (!rep1 && !rep2) // both letters
     return (resp1.responseActiveSet == resp2.responseActiveSet &&
 	    resp1.functionValues    == resp2.functionValues    &&
 	    resp1.functionGradients == resp2.functionGradients &&
@@ -1832,16 +1792,15 @@ void Response::load(Archive& ar, const unsigned int version)
 {
   short type;
   ar & type;
+
   if (responseRep) { // should not occur in current usage
+    // BMA TODO: Leaving this logic as was required for MPIUnpackBuffer case
     if (responseRep->sharedRespData.is_null() ||
-	type != responseRep->sharedRespData.response_type()) {
-      if (--responseRep->referenceCount == 0)
-	delete responseRep;
-      responseRep = get_response(type);
-    }
+	type != responseRep->sharedRespData.response_type())
+      responseRep.reset(get_response(type));
   }
   else // read from restart: responseRep must be instantiated
-    responseRep = get_response(type);
+    responseRep.reset(get_response(type));
 
   responseRep->load_rep(ar, version); // fwd to new/existing rep
   responseRep->sharedRespData.response_type(type);
