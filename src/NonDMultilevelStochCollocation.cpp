@@ -50,8 +50,8 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-    u_space_type), false); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, u_space_type)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -86,11 +86,12 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet sc_set(asv, recast_set.derivative_vector());
   String empty_str; // build data import not supported for structured grids
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED, false,
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")), false);
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+    (u_space_sampler, g_u_model,
+     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
+     outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED, false,
+     probDescDB.get_string("method.export_approx_points_file"),
+     probDescDB.get_ushort("method.export_approx_format")));
   initialize_u_space_model();
 
   // -------------------------------
@@ -145,8 +146,8 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-    u_space_type), false); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, u_space_type)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -173,9 +174,10 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // TO DO: support surrogate Hessians in helper mode.
   ShortArray asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
   ActiveSet sc_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse), false);
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+    (u_space_sampler, g_u_model,
+     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
+     outputLevel, pt_reuse));
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion

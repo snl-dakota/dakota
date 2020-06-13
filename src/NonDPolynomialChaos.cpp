@@ -76,8 +76,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
-		       false); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -121,13 +121,14 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, importBuildPointsFile,
-    problem_db.get_ushort("method.import_build_format"),
-    problem_db.get_bool("method.import_build_active_only"),
-    problem_db.get_string("method.export_approx_points_file"),
-    problem_db.get_ushort("method.export_approx_format")), false);
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+    (u_space_sampler, g_u_model,
+     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+     outputLevel, pt_reuse, importBuildPointsFile,
+     problem_db.get_ushort("method.import_build_format"),
+     problem_db.get_bool("method.import_build_active_only"),
+     problem_db.get_string("method.export_approx_points_file"),
+     problem_db.get_ushort("method.export_approx_format")));
   initialize_u_space_model();
 
   // -------------------------------------
@@ -174,8 +175,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
-		       false); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -211,9 +212,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // DFSModel consumes QoI aggregations. Helper mode: support surrogate Hessians
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse), false);
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+    (u_space_sampler, g_u_model,
+     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+     outputLevel, pt_reuse));
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -253,8 +255,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
-		       false); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -283,10 +285,11 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, importBuildPointsFile, import_build_format,
-    import_build_active_only), false);
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+    (u_space_sampler, g_u_model,
+     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+     outputLevel, pt_reuse, importBuildPointsFile, import_build_format,
+     import_build_active_only));
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -621,8 +624,8 @@ bool NonDPolynomialChaos::resize()
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
-		       false); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -709,9 +712,10 @@ bool NonDPolynomialChaos::resize()
       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::CUBATURE) {
     approx_type = "global_projection_orthogonal_polynomial";
-    uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-      pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-      outputLevel, pt_reuse), false);
+    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+      (u_space_sampler, g_u_model,
+       pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+       outputLevel, pt_reuse));
   }
   else {
     approx_type = "global_regression_orthogonal_polynomial";
@@ -721,9 +725,10 @@ bool NonDPolynomialChaos::resize()
     //  = (DataFitSurrModel*)uSpaceModel.model_rep();
     //unsigned short import_format = orig_dfs_model->import_build_format();
     //bool      import_active_only = orig_dfs_model->import_build_active_only();
-    uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-      pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-      outputLevel, pt_reuse), false); // no import after resize
+    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+      (u_space_sampler, g_u_model,
+       pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+       outputLevel, pt_reuse)); // no import after resize
     //, importBuildPointsFile, import_format, import_active_only), false);
   }
 

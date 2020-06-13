@@ -377,13 +377,13 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   if (!orig_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (require_hessians)                        recast_resp_order |= 4;
 
-  iteratedModel.assign_rep(new
-    RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
-		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
-		set_recast, primary_resp_map_indices,
-		secondary_resp_map_indices, recast_secondary_offset,
-		recast_resp_order, nonlinear_resp_map, pri_resp_recast,
-		sec_resp_recast), false);
+  iteratedModel.assign_rep(std::make_shared<RecastModel>
+    (iteratedModel, var_map_indices, recast_vars_comps_total,
+     all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
+     set_recast, primary_resp_map_indices,
+     secondary_resp_map_indices, recast_secondary_offset,
+     recast_resp_order, nonlinear_resp_map, pri_resp_recast,
+     sec_resp_recast));
   ++myModelLayers;
 
 

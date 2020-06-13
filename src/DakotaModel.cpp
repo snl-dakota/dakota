@@ -325,7 +325,7 @@ Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
 
 /** Used only by the envelope constructor to initialize modelRep to the
     appropriate derived type, as given by the modelType attribute. */
-Model* Model::get_model(ProblemDescDB& problem_db)
+std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter: Getting model " << modelType
@@ -337,21 +337,21 @@ Model* Model::get_model(ProblemDescDB& problem_db)
 
   const String& model_type = problem_db.get_string("model.type");
   if ( model_type == "simulation" )
-    return new SimulationModel(problem_db);
+    return std::make_shared<SimulationModel>(problem_db);
   else if ( model_type == "nested")
-    return new NestedModel(problem_db);
+    return std::make_shared<NestedModel>(problem_db);
   else if ( model_type == "surrogate") {
     if (problem_db.get_string("model.surrogate.type") == "hierarchical")
-      return new HierarchSurrModel(problem_db); // hierarchical approx
+      return std::make_shared<HierarchSurrModel>(problem_db); // hierarchical approx
     else
-      return new DataFitSurrModel(problem_db);  // local/multipt/global approx
+      return std::make_shared<DataFitSurrModel>(problem_db);  // local/multipt/global approx
   }
   else if ( model_type == "active_subspace" )
-    return new ActiveSubspaceModel(problem_db);
+    return std::make_shared<ActiveSubspaceModel>(problem_db);
   else if ( model_type == "adapted_basis" )
-    return new AdaptedBasisModel(problem_db);
+    return std::make_shared<AdaptedBasisModel>(problem_db);
   else if ( model_type == "random_field" )
-    return new RandomFieldModel(problem_db);
+    return std::make_shared<RandomFieldModel>(problem_db);
   else {
     Cerr << "Invalid model type: " << model_type << std::endl;
     return NULL;
@@ -397,27 +397,22 @@ Model::~Model()
 }
 
 
-/** Similar to the assignment operator, the assign_rep() function
-    decrements referenceCount for the old modelRep and assigns the new
-    modelRep.  It is different in that it is used for publishing
-    derived class letters to existing envelopes, as opposed to sharing
+/** The assign_rep() function is used for publishing derived class
+    letters to existing envelopes, as opposed to sharing
     representations among multiple envelopes (in particular,
     assign_rep is passed a letter object and operator= is passed an
-    envelope object).  Letter assignment supports two models as
-    governed by ref_count_incr:
+    envelope object).
 
-    \li ref_count_incr = true (default): the incoming letter belongs to
-    another envelope.  In this case, increment the reference count in the
-    normal manner so that deallocation of the letter is handled properly.
+    Use case assumes the incoming letter is instantiated on the fly
+    and has no envelope.  This case is modeled after get_model(): a
+    letter is dynamically allocated and passed into assign_rep (its
+    memory management is passed over to the envelope).
 
-    \li ref_count_incr = false: the incoming letter is instantiated on the
-    fly and has no envelope.  This case is modeled after get_model():
-    a letter is dynamically allocated using new and passed into assign_rep,
-    the letter's reference count is not incremented, and the letter is not
-    remotely deleted (its memory management is passed over to the envelope). */
-void Model::assign_rep(Model* model_rep, bool ref_count_incr)
+    If the letter happens to be managed by another envelope, it will
+    persist as long as the last envelope referencing it. */
+void Model::assign_rep(std::shared_ptr<Model> model_rep)
 {
-  modelRep.reset(model_rep);
+  modelRep = model_rep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::assign_rep(Model*)" << std::endl;

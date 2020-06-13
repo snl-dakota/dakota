@@ -518,7 +518,7 @@ public:
   //
  
   /// replaces existing letter with a new one
-  void assign_rep(Model* model_rep, bool ref_count_incr = true);
+  void assign_rep(std::shared_ptr<Model> model_rep);
 
   // VARIABLES
 
@@ -1433,7 +1433,7 @@ private:
   //
 
   /// Used by the envelope to instantiate the correct letter class
-  Model* get_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
 
   /// evaluate numerical gradients using finite differences.  This
   /// routine is selected with "method_source dakota" (the default

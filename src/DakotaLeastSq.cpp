@@ -132,7 +132,7 @@ void LeastSq::weight_model()
     }
 
   // TODO: pass sqrt to WeightingModel
-  iteratedModel.assign_rep(new WeightingModel(iteratedModel), false);
+  iteratedModel.assign_rep(std::make_shared<WeightingModel>(iteratedModel));
   ++myModelLayers;
 }
 

@@ -172,8 +172,8 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
   transformVars = true;
 
   if (transformVars) {
-    sub_model.assign_rep(new
-      ProbabilityTransformModel(problem_db.get_model(), STD_NORMAL_U), false);
+    sub_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+			 (problem_db.get_model(), STD_NORMAL_U));
   } else {
     sub_model = problem_db.get_model();
   }
@@ -807,9 +807,8 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
 
     // Create a local active subspace model using the light-weight constructor:
     Model asm_model_tmp;
-    asm_model_tmp.assign_rep(new ActiveSubspaceModel(subModel, ii,
-						     leftSingularVectors,
-						     QUIET_OUTPUT), false);
+    asm_model_tmp.assign_rep(std::make_shared<ActiveSubspaceModel>
+			     (subModel, ii, leftSingularVectors, QUIET_OUTPUT));
 
     String sample_reuse = "", approx_type = "global_moving_least_squares";
     ActiveSet surr_set = current_response().active_set(); // copy
@@ -819,10 +818,10 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
     Iterator dace_iterator;
 
     Model cv_surr_model;
-    cv_surr_model.assign_rep(new DataFitSurrModel(dace_iterator, asm_model_tmp,
-                             surr_set, approx_type, approx_order, corr_type,
-                             corr_order, data_order, QUIET_OUTPUT,sample_reuse),
-                             false);
+    cv_surr_model.assign_rep(std::make_shared<DataFitSurrModel>
+			     (dace_iterator, asm_model_tmp,
+			      surr_set, approx_type, approx_order, corr_type,
+			      corr_order, data_order, QUIET_OUTPUT,sample_reuse));
 
 
     Teuchos::BLAS<int, Real> teuchos_blas;
@@ -1646,7 +1645,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSubspace Model: correl_y = \n" << correl_y;
-  mvDist.correlation_matrix(correl_y);
+  //  mvDist.correlation_matrix(correl_y);
 
   // Set inactive subspace variables
   // mu_z = inactiveBasis^T * mu_x
@@ -1813,8 +1812,12 @@ void ActiveSubspaceModel::build_surrogate()
   // Initialize surrogateModel here, switch it out with subModel after subspace
   // is built.
 
+  // BMA TODO: This needs to be redesigned. The DataFitSurrModel
+  // should probably wrap the envelope of this ActiveSubspaceModel,
+  // but we only have access to the letter (modelRep) via *this.
+
   Model asm_model;
-  asm_model.assign_rep(this, false);
+  asm_model.assign_rep(shared_from_this());
 
   String sample_reuse = "", approx_type = "global_moving_least_squares";
   ActiveSet surr_set = current_response().active_set(); // copy
@@ -1824,10 +1827,10 @@ void ActiveSubspaceModel::build_surrogate()
   short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
   Iterator dace_iterator;
 
-  surrogateModel.assign_rep(new DataFitSurrModel(dace_iterator, asm_model,
-                            surr_set, approx_type, approx_order, corr_type,
-                            corr_order, data_order, outputLevel, sample_reuse),
-                            false);
+  surrogateModel.assign_rep(std::make_shared<DataFitSurrModel>
+			    (dace_iterator, asm_model,
+			     surr_set, approx_type, approx_order, corr_type,
+			     corr_order, data_order, outputLevel, sample_reuse));
 
   const RealMatrix& all_vars_x = fullspaceSampler.all_samples();
   const IntResponseMap& all_responses = fullspaceSampler.all_responses();

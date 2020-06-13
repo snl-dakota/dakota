@@ -203,9 +203,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
   if (calibrationData) {
-    residualModel.assign_rep(new
-      DataTransformModel(mcmcModel, expData, numHyperparams, 
-			 obsErrorMultiplierMode, mcmcDerivOrder), false);
+    residualModel.assign_rep(std::make_shared<DataTransformModel>
+			     (mcmcModel, expData, numHyperparams,
+			      obsErrorMultiplierMode, mcmcDerivOrder));
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     for (i=0; i<numHyperparams; ++i) {
@@ -449,8 +449,8 @@ void NonDBayesCalibration::construct_mcmc_model()
     // these purposes, but +/-3 sigma has little to no effect in current tests.
     bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
     if (standardizedSpace)
-      lhs_model.assign_rep(new ProbabilityTransformModel(inbound_model,
-	ASKEY_U, truncate_bnds), false); //, 3.)
+      lhs_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+			   (inbound_model, ASKEY_U, truncate_bnds)); //, 3.)
     else
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
@@ -462,19 +462,20 @@ void NonDBayesCalibration::construct_mcmc_model()
 
     ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
     gp_set.request_values(mcmcDerivOrder); // for misfit Hessian
-    mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, lhs_model,
-      gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-      outputLevel, sample_reuse, import_pts_file,
-      probDescDB.get_ushort("method.import_build_format"),
-      probDescDB.get_bool("method.import_build_active_only")), false);
+    mcmcModel.assign_rep(std::make_shared<DataFitSurrModel>
+      (lhs_iterator, lhs_model,
+       gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
+       outputLevel, sample_reuse, import_pts_file,
+       probDescDB.get_ushort("method.import_build_format"),
+       probDescDB.get_bool("method.import_build_active_only")));
     break;
   }
 
   case NO_EMULATOR:
     mcmcModelHasSurrogate = (inbound_model.model_type() == "surrogate");
     if (standardizedSpace)
-      mcmcModel.assign_rep(new
-	ProbabilityTransformModel(inbound_model, ASKEY_U), false);
+      mcmcModel.assign_rep(std::make_shared<ProbabilityTransformModel>
+			   (inbound_model, ASKEY_U));
     else
       mcmcModel = inbound_model; // shared rep
 
@@ -609,12 +610,12 @@ void NonDBayesCalibration::construct_map_model()
   }
 
   // RecastModel for bound-constrained argmin(misfit - log prior)
-  negLogPostModel.assign_rep(new 
-    RecastModel(residualModel, vars_map_indices, recast_vc_totals, 
-		all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
-		set_recast, primary_resp_map_indices, 
-		secondary_resp_map_indices, 0, nlp_resp_order, 
-		nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
+  negLogPostModel.assign_rep(std::make_shared<RecastModel>
+    (residualModel, vars_map_indices, recast_vc_totals,
+     all_relax_di, all_relax_dr, nonlinear_vars_map, nullptr,
+     set_recast, primary_resp_map_indices,
+     secondary_resp_map_indices, 0, nlp_resp_order,
+     nonlinear_resp_map, neg_log_post_resp_mapping, nullptr));
 }
 
 
@@ -824,9 +825,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
     mcmcModel.continuous_variables(initial_point);
-    residualModel.assign_rep(new
-      DataTransformModel(mcmcModel, expData, numHyperparams,
-			 obsErrorMultiplierMode, mcmcDerivOrder), false);
+    residualModel.assign_rep(std::make_shared<DataTransformModel>
+			     (mcmcModel, expData, numHyperparams,
+			      obsErrorMultiplierMode, mcmcDerivOrder));
     construct_map_optimizer();
 
     // Run the underlying calibration solver (MCMC)
@@ -3390,7 +3391,7 @@ void NonDBayesCalibration::scale_model()
     Cout << "Initializing scaling transformation" << std::endl;
 
   // residualModel becomes the sub-model of a RecastModel:
-  residualModel.assign_rep(new ScalingModel(residualModel), false);
+  residualModel.assign_rep(std::make_shared<ScalingModel>(residualModel));
   // scalingModel = residualModel;
 }
 
@@ -3413,7 +3414,7 @@ void NonDBayesCalibration::weight_model()
     }
 
   // TODO: pass sqrt to WeightingModel
-  residualModel.assign_rep(new WeightingModel(residualModel), false);
+  residualModel.assign_rep(std::make_shared<WeightingModel>(residualModel));
 }
 
 } // namespace Dakota

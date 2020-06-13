@@ -189,12 +189,12 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     // = (!optimizationFlag && approxSubProbObj == SINGLE_OBJECTIVE &&
     //    iteratedModel.hessian_type() == "none") ? gnewton_set_recast : NULL;
 
-    approxSubProbModel.assign_rep(new RecastModel(iteratedModel,
+    approxSubProbModel.assign_rep(std::make_shared<RecastModel>(iteratedModel,
       recast_vars_map, recast_vars_comps_total, all_relax_di, all_relax_dr,
-      false, NULL, set_recast, recast_primary_resp_map,
+      false, nullptr, set_recast, recast_primary_resp_map,
       recast_secondary_resp_map, recast_offset, recast_resp_order,
       nonlinear_resp_map, approx_subprob_objective_eval,
-      approx_subprob_constraint_eval), false);
+      approx_subprob_constraint_eval));
 
     // these formulations have converted multiple objectives or
     // calibration terms to a single objective

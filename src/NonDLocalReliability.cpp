@@ -216,13 +216,14 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Model g_hat_x_model;  Iterator dace_iterator;
     ActiveSet dfs_set = iteratedModel.current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
-    g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
-      dfs_set, approx_type, approx_order, corr_type, corr_order, ai_data_order,
-      outputLevel, sample_reuse), false);
+    g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>
+			     (dace_iterator, iteratedModel,dfs_set, approx_type,
+			      approx_order, corr_type, corr_order, ai_data_order,
+			      outputLevel, sample_reuse));
 
     // transform g_hat_x_model from x-space to u-space; truncate distrib bnds
-    uSpaceModel.assign_rep(new
-      ProbabilityTransformModel(g_hat_x_model, STD_NORMAL_U, true), false);
+    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>
+			   (g_hat_x_model, STD_NORMAL_U, true));
     break;
   }
   case AMV_U: case AMV_PLUS_U: case TANA_U: case QMEA_U: {
@@ -230,8 +231,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // Recast g(x) to G(u); truncate distribution bounds
     Model g_u_model;
-    g_u_model.assign_rep(new
-      ProbabilityTransformModel(iteratedModel, STD_NORMAL_U, true), false);
+    g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+			 (iteratedModel, STD_NORMAL_U, true));
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
@@ -247,15 +248,16 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Iterator dace_iterator;
     ActiveSet dfs_set = g_u_model.current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
-    uSpaceModel.assign_rep(new DataFitSurrModel(dace_iterator, g_u_model,
-      dfs_set, approx_type, approx_order, corr_type, corr_order, ai_data_order,
-      outputLevel, sample_reuse), false);
+    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+			   (dace_iterator, g_u_model, dfs_set, approx_type,
+			    approx_order, corr_type, corr_order, ai_data_order,
+			    outputLevel, sample_reuse));
     break;
   }
   case NO_APPROX: { // Recast( iteratedModel )
     // Recast g(x) to G(u); truncate distribution bounds
-    uSpaceModel.assign_rep(new
-      ProbabilityTransformModel(iteratedModel, STD_NORMAL_U, true), false);
+    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>
+			   (iteratedModel, STD_NORMAL_U, true));
     // detect PMA2 condition and augment mppModel data requirements
     bool pma2_flag = false;
     if (integrationOrder == 2)
@@ -279,9 +281,9 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   if (mppSearchType) {
     SizetArray recast_vars_comps_total;  // default: empty; no change in size
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
-    mppModel.assign_rep(
-      new RecastModel(uSpaceModel, recast_vars_comps_total, all_relax_di,
-		      all_relax_dr, 1, 1, 0, recast_resp_order), false);
+    mppModel.assign_rep(std::make_shared<RecastModel>
+			(uSpaceModel, recast_vars_comps_total, all_relax_di,
+			 all_relax_dr, 1, 1, 0, recast_resp_order));
     RealVector nln_eq_targets(1, false); nln_eq_targets = 0.;
     mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
 
@@ -376,8 +378,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     switch (mppSearchType) {
     case AMV_X: case AMV_PLUS_X: case TANA_X: case QMEA_X: {
       Model g_u_model;
-      g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-	STD_NORMAL_U), false); // original distribution bnds
+      g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+			   (iteratedModel, STD_NORMAL_U)); // original distribution bnds
       import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
 	(g_u_model, sample_type,
 	 refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,

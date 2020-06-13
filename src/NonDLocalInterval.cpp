@@ -56,9 +56,9 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 3; // gradient-based quasi-Newton optimizers
-  minMaxModel.assign_rep(
-    new RecastModel(iteratedModel, recast_vars_comps_total, all_relax_di,
-		    all_relax_dr, 1, 0, 0, recast_resp_order), false);
+  minMaxModel.assign_rep(std::make_shared<RecastModel>
+			 (iteratedModel, recast_vars_comps_total, all_relax_di,
+			  all_relax_dr, 1, 0, 0, recast_resp_order));
 
   unsigned short opt_algorithm = probDescDB.get_ushort("method.sub_method");
   if (opt_algorithm == SUBMETHOD_SQP) {

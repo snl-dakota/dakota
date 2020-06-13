@@ -105,8 +105,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     }
 
     if (basis_expansion) {
-      actualModel.assign_rep(new
-	ProbabilityTransformModel(problem_db.get_model(), u_space_type), false);
+      actualModel.assign_rep(std::make_shared<ProbabilityTransformModel>
+			     (problem_db.get_model(), u_space_type));
       // overwrite mvDist from Model ctor by copying transformed u-space dist
       // (keep them distinct to allow for different active views).
       // construct time augmented with run time pull_distribution_parameters().
