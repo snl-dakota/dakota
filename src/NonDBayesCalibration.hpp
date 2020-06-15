@@ -561,6 +561,7 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
 }
 
 
+/* BMA: Disable specialization until MarginalsCorrDistribution handles active vs. all
 template <> 
 inline Real NonDBayesCalibration::prior_density(const RealVector& vec)
 {
@@ -576,7 +577,7 @@ inline Real NonDBayesCalibration::prior_density(const RealVector& vec)
 
   return pdf;
 }
-
+*/
 
 template <typename VectorType> 
 Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
@@ -620,6 +621,7 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 }
 
 
+/* BMA: Disable specialization until MarginalsCorrDistribution handles active vs. all
 template <> 
 inline Real NonDBayesCalibration::log_prior_density(const RealVector& vec)
 {
@@ -633,7 +635,7 @@ inline Real NonDBayesCalibration::log_prior_density(const RealVector& vec)
 
   return log_pdf;
 }
-
+*/
 
 template <typename Engine> 
 void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
