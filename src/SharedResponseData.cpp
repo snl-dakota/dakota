@@ -270,7 +270,7 @@ void SharedResponseData::reshape(size_t num_fns)
 {
   if (num_functions() != num_fns) {
     // separate sharing if needed
-    //if (srdRep->use_count() > 1) { // shared rep: separate
+    //if (srdRep.use_count() > 1) { // shared rep: separate
 #ifdef REFCOUNT_DEBUG
     Cout << "SharedResponseData::reshape() called.\n"
 	 << "  srdRep use_count before = " << srdRep.use_count() << std::endl;

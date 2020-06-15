@@ -775,7 +775,7 @@ Iterator::Iterator(const Iterator& iterator):
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(Iterator&)" << std::endl;
   if (iteratorRep)
-    Cout << "iteratorRep referenceCount = " << iteratorRep->use_count()
+    Cout << "iteratorRep referenceCount = " << iteratorRep.use_count()
 	 << std::endl;
 #endif
 }
@@ -788,7 +788,7 @@ Iterator Iterator::operator=(const Iterator& iterator)
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::operator=(Iterator&)" << std::endl;
   if (iteratorRep)
-    Cout << "iteratorRep referenceCount = " << iteratorRep->use_count()
+    Cout << "iteratorRep referenceCount = " << iteratorRep.use_count()
 	 << std::endl;
 #endif
 

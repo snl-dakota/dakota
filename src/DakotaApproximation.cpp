@@ -263,7 +263,7 @@ Approximation::~Approximation()
 { 
 #ifdef REFCOUNT_DEBUG
   Cout << "~Approximation() approxRep referenceCount " 
-       << approxRep->use_count() << std::endl;
+       << approxRep.use_count() << std::endl;
 #endif
 }
 
