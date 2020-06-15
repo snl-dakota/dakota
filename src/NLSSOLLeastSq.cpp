@@ -72,9 +72,7 @@ NLSSOLLeastSq::NLSSOLLeastSq(Model& model):
 
 
 NLSSOLLeastSq::~NLSSOLLeastSq()
-{
-  // Virtual destructor handles referenceCount at Iterator level.
-}
+{ }
 
 
 void NLSSOLLeastSq::

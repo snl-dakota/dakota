@@ -287,8 +287,7 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
 }
 
 
-/** Copy constructor manages sharing of dataRep and incrementing
-    of referenceCount. */
+/** Copy constructor manages sharing of dataRep. */
 SharedApproxData::SharedApproxData(const SharedApproxData& shared_data)
 {
   dataRep = shared_data.dataRep;
@@ -302,8 +301,6 @@ SharedApproxData::SharedApproxData(const SharedApproxData& shared_data)
 }
 
 
-/** Assignment operator decrements referenceCount for old dataRep, assigns
-    new dataRep, and increments referenceCount for new dataRep. */
 SharedApproxData SharedApproxData::
 operator=(const SharedApproxData& shared_data)
 {
@@ -320,8 +317,6 @@ operator=(const SharedApproxData& shared_data)
 }
 
 
-/** Destructor decrements referenceCount and only deletes dataRep
-    when referenceCount reaches zero. */
 SharedApproxData::~SharedApproxData()
 { 
 #ifdef REFCOUNT_DEBUG

@@ -432,7 +432,7 @@ private:
 
 
 inline NestedModel::~NestedModel()
-{ } // Virtual destructor handles referenceCount at Strategy level.
+{ }
 
 
 /*

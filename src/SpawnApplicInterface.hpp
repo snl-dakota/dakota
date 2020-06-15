@@ -67,7 +67,7 @@ SpawnApplicInterface(const ProblemDescDB& problem_db):
 
 
 inline SpawnApplicInterface::~SpawnApplicInterface() 
-{ /* Virtual destructor handles referenceCount at Interface level. */ }
+{ }
 
 } // namespace Dakota
 

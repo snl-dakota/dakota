@@ -250,11 +250,9 @@ Environment Environment::operator=(const Environment& env)
 }
 
 
-/** Destructor decrements referenceCount and only deletes environmentRep
-    when referenceCount reaches zero. */
 Environment::~Environment()
 { 
-  if (environmentRep) { // envelope: manage ref count & delete environmentRep
+  if (environmentRep) { // envelope
 #ifdef REFCOUNT_DEBUG
     cout << "~Environment() environmentRep referenceCount " 
 	 << environmentRep.use_count() << std::endl;

@@ -230,8 +230,7 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 }
 
 
-/** Copy constructor manages sharing of approxRep and incrementing
-    of referenceCount. */
+/** Copy constructor manages sharing of approxRep. */
 Approximation::Approximation(const Approximation& approx)
 {
   approxRep = approx.approxRep;
@@ -260,8 +259,6 @@ Approximation Approximation::operator=(const Approximation& approx)
 }
 
 
-/** Destructor decrements referenceCount and only deletes approxRep
-    when referenceCount reaches zero. */
 Approximation::~Approximation()
 { 
 #ifdef REFCOUNT_DEBUG

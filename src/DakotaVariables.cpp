@@ -834,7 +834,7 @@ Variables Variables::copy(bool deep_svd) const
        << "representation sharing." << std::endl;
 #endif
 
-  Variables vars; // new envelope: referenceCount=1, variablesRep=NULL
+  Variables vars; // new envelope, variablesRep=NULL
 
   // shallow copy of SharedVariablesData
   if (variablesRep) {

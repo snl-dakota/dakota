@@ -42,9 +42,7 @@ EmbedHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 
 
 EmbedHybridMetaIterator::~EmbedHybridMetaIterator()
-{
-  // Virtual destructor handles referenceCount at Iterator level.
-}
+{ }
 
 
 void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)

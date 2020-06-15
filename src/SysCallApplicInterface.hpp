@@ -93,7 +93,7 @@ private:
 
 
 inline SysCallApplicInterface::~SysCallApplicInterface() 
-{ /* Virtual destructor handles referenceCount at Interface level. */ }
+{ }
 
 
 /** Check for completion of active asynch jobs (tracked with sysCallSet).

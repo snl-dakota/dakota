@@ -47,9 +47,7 @@ NOWPACOptimizer::NOWPACOptimizer(Model& model):
 
 
 NOWPACOptimizer::~NOWPACOptimizer()
-{
-  // Virtual destructor handles referenceCount at Iterator level
-}
+{ }
 
 
 void NOWPACOptimizer::initialize_options()

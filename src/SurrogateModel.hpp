@@ -240,7 +240,7 @@ private:
 
 
 inline SurrogateModel::~SurrogateModel()
-{ } // Virtual destructor handles referenceCount at Strategy level.
+{ }
 
 
 inline Pecos::ProbabilityTransformation& SurrogateModel::
