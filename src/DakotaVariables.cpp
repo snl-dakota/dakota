@@ -108,7 +108,8 @@ Variables::Variables(const ProblemDescDB& problem_db):
 /** Initializes variablesRep to the appropriate derived type, as given
     by problem_db attributes.  The standard derived class constructors
     are invoked.  */
-Variables* Variables::get_variables(const ProblemDescDB& problem_db)
+std::shared_ptr<Variables>
+Variables::get_variables(const ProblemDescDB& problem_db)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_variables(ProblemDescDB&)." 
@@ -122,14 +123,14 @@ Variables* Variables::get_variables(const ProblemDescDB& problem_db)
   switch (active_view) {
   case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
   case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
-    return new MixedVariables(problem_db, view); break;
+    return std::make_shared<MixedVariables>(problem_db, view); break;
   case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
   case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
-    return new RelaxedVariables(problem_db, view); break;
+    return std::make_shared<RelaxedVariables>(problem_db, view); break;
   default:
     Cerr << "Variables active view " << active_view << " not currently "
 	 << "supported in derived Variables classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Variables>(); break;
   }
 }
 
@@ -154,7 +155,8 @@ Variables::Variables(const SharedVariablesData& svd):
 
 /** Initializes variablesRep to the appropriate derived type, as given
     by view.  The default derived class constructors are invoked. */
-Variables* Variables::get_variables(const SharedVariablesData& svd) const
+std::shared_ptr<Variables>
+Variables::get_variables(const SharedVariablesData& svd) const
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_variables()." << std::endl;
@@ -164,14 +166,14 @@ Variables* Variables::get_variables(const SharedVariablesData& svd) const
   switch (active_view) {
   case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
   case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
-    return new MixedVariables(svd); break;
+    return std::make_shared<MixedVariables>(svd); break;
   case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
   case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
-    return new RelaxedVariables(svd); break;
+    return std::make_shared<RelaxedVariables>(svd); break;
   default:
     Cerr << "Variables active view " << active_view << " not currently "
 	 << "supported in derived Variables classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Variables>(); break;
   }
 }
 
@@ -506,11 +508,11 @@ void Variables::load(Archive& ar, const unsigned int version)
     if (sharedVarsData.view() != svd.view()) {
       Cerr << "Warning: variables type mismatch in Variables::load(Archive&)."
 	   << std::endl;
-      variablesRep.reset(get_variables(svd));
+      variablesRep = get_variables(svd);
     }
   }
   else // read from restart: variablesRep must be instantiated
-    variablesRep.reset(get_variables(svd));
+    variablesRep = get_variables(svd);
 
   // This code block would normally be the default implementation
   // (without variablesRep forwards), but we must support creation
@@ -632,11 +634,11 @@ void Variables::read_annotated(std::istream& s)
     if (sharedVarsData.view() != view) {
       Cerr << "Warning: variables type mismatch in Variables::read(istream&)."
 	   << std::endl;
-      variablesRep.reset(get_variables(svd));
+      variablesRep = get_variables(svd);
     }
   }
   else // read from neutral file: variablesRep must be instantiated
-    variablesRep.reset(get_variables(svd));
+    variablesRep = get_variables(svd);
 
   // This code block would normally be the default implementation (without
   // variablesRep forwards), but we must support creation of new letters above.
@@ -747,11 +749,11 @@ void Variables::read(MPIUnpackBuffer& s)
       if (sharedVarsData.view() != view) {
 	Cerr << "Warning: variables type mismatch in "
 	     << "Variables::read(MPIUnpackBuffer&)." << std::endl;
-	variablesRep.reset(get_variables(svd));
+	variablesRep = get_variables(svd);
       }
     }
     else // buffer read on slaves: variablesRep must be instantiated
-      variablesRep.reset(get_variables(svd));
+      variablesRep = get_variables(svd);
 
     // This code block would normally be the default implementation (without
     // variablesRep forwards), but we must support additional logic above/below.
@@ -838,11 +840,9 @@ Variables Variables::copy(bool deep_svd) const
   // shallow copy of SharedVariablesData
   if (variablesRep) {
     // deep copy of Variables
-    vars.variablesRep.reset
-      ( deep_svd ?
-	get_variables(variablesRep->sharedVarsData.copy()) : // deep SVD copy
-	get_variables(variablesRep->sharedVarsData)       // shallow SVD copy
-	);
+    vars.variablesRep =  deep_svd ?
+      get_variables(variablesRep->sharedVarsData.copy()) : // deep SVD copy
+      get_variables(variablesRep->sharedVarsData);         // shallow SVD copy
 
     vars.variablesRep->allContinuousVars   = variablesRep->allContinuousVars;
     vars.variablesRep->allDiscreteIntVars  = variablesRep->allDiscreteIntVars;

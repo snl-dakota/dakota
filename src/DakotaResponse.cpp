@@ -280,7 +280,7 @@ Response::~Response()
 /** Initializes responseRep to the appropriate derived type, as given
     by problem_db attributes.  The standard derived class constructors
     are invoked.  */
-Response* Response::
+std::shared_ptr<Response> Response::
 get_response(short type, const Variables& vars,
 	     const ProblemDescDB& problem_db) const
 {
@@ -292,22 +292,24 @@ get_response(short type, const Variables& vars,
   // This get_response version invokes the standard constructor.
   switch (type) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(vars, problem_db); break;
+    return std::make_shared<SimulationResponse>(vars, problem_db); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(vars, problem_db); break;
+    return std::make_shared<ExperimentResponse>(vars, problem_db); break;
   case BASE_RESPONSE:
-    return new Response(BaseConstructor(), vars, problem_db); break;
+    return std::shared_ptr<Response>
+      (new Response(BaseConstructor(), vars, problem_db));
+    break;
   default:
     Cerr << "Response type " << type << " not currently supported in derived "
 	 << "Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
 
 /** Initializes responseRep to the appropriate derived type, as given
     by SharedResponseData::responseType. */
-Response* Response::
+std::shared_ptr<Response> Response::
 get_response(const SharedResponseData& srd, const ActiveSet& set) const
 {
 #ifdef REFCOUNT_DEBUG
@@ -316,22 +318,24 @@ get_response(const SharedResponseData& srd, const ActiveSet& set) const
 
   switch (srd.response_type()) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(srd, set); break;
+    return std::make_shared<SimulationResponse>(srd, set); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(srd, set); break;
+    return std::make_shared<ExperimentResponse>(srd, set); break;
   case BASE_RESPONSE:
-    return new Response(BaseConstructor(), srd, set); break;
+    return std::shared_ptr<Response>(new Response(BaseConstructor(), srd, set));
+    break;
   default:
     Cerr << "Response type " << srd.response_type() << " not currently "
 	 << "supported in derived Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
 
 /** Initializes responseRep to the appropriate derived class, as given
     by type. */
-Response* Response::get_response(short type, const ActiveSet& set) const
+std::shared_ptr<Response>
+Response::get_response(short type, const ActiveSet& set) const
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_response(short, ActiveSet&)."
@@ -340,22 +344,24 @@ Response* Response::get_response(short type, const ActiveSet& set) const
 
   switch (type) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(set); break;
+    return std::make_shared<SimulationResponse>(set); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(set); break;
+    return std::make_shared<ExperimentResponse>(set); break;
   case BASE_RESPONSE:
-    return new Response(BaseConstructor(), set); break;
+    return std::shared_ptr<Response>(new Response(BaseConstructor(), set));
+    break;
   default:
     Cerr << "Response type " << type << " not currently supported in derived "
 	 << "Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
 
 /** Initializes responseRep to the appropriate derived type, as given
     by SharedResponseData::responseType. */
-Response* Response::get_response(const SharedResponseData& srd) const
+std::shared_ptr<Response>
+Response::get_response(const SharedResponseData& srd) const
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_response()." << std::endl;
@@ -363,22 +369,23 @@ Response* Response::get_response(const SharedResponseData& srd) const
 
   switch (srd.response_type()) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(srd); break;
+    return std::make_shared<SimulationResponse>(srd); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(srd); break;
+    return std::make_shared<ExperimentResponse>(srd); break;
   case BASE_RESPONSE:
-    return new Response(BaseConstructor(), srd); break;
+    return std::shared_ptr<Response>(new Response(BaseConstructor(), srd));
+    break;
   default:
     Cerr << "Response type " << srd.response_type() << " not currently "
 	 << "supported in derived Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
 
 /** Initializes responseRep to the appropriate derived type, as given
     by type. */
-Response* Response::get_response(short type) const
+std::shared_ptr<Response> Response::get_response(short type) const
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_response()." << std::endl;
@@ -386,15 +393,15 @@ Response* Response::get_response(short type) const
 
   switch (type) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(); break;
+    return std::make_shared<SimulationResponse>(); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(); break;
+    return std::make_shared<ExperimentResponse>(); break;
   case BASE_RESPONSE:
-    return new Response();           break;
+    return std::make_shared<Response>();           break;
   default:
     Cerr << "Response type " << type << " not currently supported in "
 	 << "derived Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
@@ -405,11 +412,9 @@ Response Response::copy(bool deep_srd) const
 
   if (responseRep) {
     // allocate a responseRep letter, copy data attributes, share the srd
-    response.responseRep.reset
-      ( deep_srd ?
-	get_response(responseRep->sharedRespData.copy()) : // deep SRD copy
-	get_response(responseRep->sharedRespData)      // shallow SRD copy
-	);
+    response.responseRep = deep_srd ?
+      get_response(responseRep->sharedRespData.copy()) : // deep SRD copy
+      get_response(responseRep->sharedRespData);      // shallow SRD copy
     // allow derived classes to specialize copy_rep if they augment
     // the base class data
     response.responseRep->copy_rep(responseRep);
@@ -901,10 +906,10 @@ void Response::read_annotated(std::istream& s)
     // BMA TODO: Leaving this logic as was required for MPIUnpackBuffer case
     if (responseRep->sharedRespData.is_null() ||
 	type != responseRep->sharedRespData.response_type())
-      responseRep.reset(get_response(type));
+      responseRep = get_response(type);
   }
   else // read into empty envelope: responseRep must be instantiated
-    responseRep.reset(get_response(type));
+    responseRep = get_response(type);
 
   responseRep->read_annotated_rep(s); // fwd to new/existing rep
   responseRep->sharedRespData.response_type(type);
@@ -1082,10 +1087,10 @@ void Response::read(MPIUnpackBuffer& s)
       // in pdakota_pareto_pcbdo_short_column, pdakota_uq_short_column_ivp_exp
       if (responseRep->sharedRespData.is_null() ||
 	  type != responseRep->sharedRespData.response_type())
-	responseRep.reset(get_response(type));
+	responseRep = get_response(type);
     }
     else
-      responseRep.reset(get_response(type));
+      responseRep = get_response(type);
 
     responseRep->read_rep(s); // fwd to rep
     responseRep->sharedRespData.response_type(type);
@@ -1797,10 +1802,10 @@ void Response::load(Archive& ar, const unsigned int version)
     // BMA TODO: Leaving this logic as was required for MPIUnpackBuffer case
     if (responseRep->sharedRespData.is_null() ||
 	type != responseRep->sharedRespData.response_type())
-      responseRep.reset(get_response(type));
+      responseRep = get_response(type);
   }
   else // read from restart: responseRep must be instantiated
-    responseRep.reset(get_response(type));
+    responseRep = get_response(type);
 
   responseRep->load_rep(ar, version); // fwd to new/existing rep
   responseRep->sharedRespData.response_type(type);

@@ -425,7 +425,7 @@ private:
   const Response& get_response(short type, const Variables& vars);
 
   /// Used by the envelope constructor to instantiate the correct letter class
-  ProblemDescDB* get_db(ParallelLibrary& parallel_lib);
+  std::shared_ptr<ProblemDescDB> get_db(ParallelLibrary& parallel_lib);
 
   /// MPI send of a large buffer containing environmentSpec and all objects
   /// in dataMethodList, dataModelList, dataVariablesList, dataInterfaceList,

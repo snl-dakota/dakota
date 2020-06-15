@@ -165,7 +165,7 @@ private:
   //
 
   /// Used by the envelope to instantiate the correct letter class.
-  Environment* get_environment(const String& env_type);
+  std::shared_ptr<Environment> get_environment(const String& env_type);
 
   //
   //- Heading: Data

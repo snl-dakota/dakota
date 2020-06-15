@@ -115,7 +115,7 @@ Constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd):
 
 /** Initializes constraintsRep to the appropriate derived type, as given
     by the variables view. */
-Constraints* Constraints::
+std::shared_ptr<Constraints> Constraints::
 get_constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd)
 {
 #ifdef REFCOUNT_DEBUG
@@ -128,14 +128,17 @@ get_constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd)
   switch (active_view) {
   case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
   case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
-    return new MixedVarConstraints(problem_db, svd);   break;
+    return std::make_shared<MixedVarConstraints>(problem_db, svd);
+    break;
   case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
   case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
-    return new RelaxedVarConstraints(problem_db, svd); break;
+    return std::make_shared<RelaxedVarConstraints>(problem_db, svd);
+    break;
   default:
     Cerr << "Constraints active view " << active_view << " not currently "
 	 << "supported in derived Constraints classes." << std::endl;
-    return NULL;                                       break;
+    return std::shared_ptr<Constraints>();
+    break;
   }
 }
 
@@ -159,7 +162,8 @@ Constraints::Constraints(const SharedVariablesData& svd):
 
 /** Initializes constraintsRep to the appropriate derived type, as given by
     the variables view. The default derived class constructors are invoked. */
-Constraints* Constraints::get_constraints(const SharedVariablesData& svd) const
+std::shared_ptr<Constraints>
+Constraints::get_constraints(const SharedVariablesData& svd) const
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_constraints(pair<short,short>&)"
@@ -170,14 +174,17 @@ Constraints* Constraints::get_constraints(const SharedVariablesData& svd) const
   switch (active_view) {
   case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
   case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
-    return new MixedVarConstraints(svd);   break;
+    return std::make_shared<MixedVarConstraints>(svd);
+    break;
   case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
   case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
-    return new RelaxedVarConstraints(svd); break;
+    return std::make_shared<RelaxedVarConstraints>(svd);
+    break;
   default:
     Cerr << "Constraints active view " << active_view << " not currently "
 	 << "supported in derived Constraints classes." << std::endl;
-    return NULL;                           break;
+    return std::shared_ptr<Constraints>();
+    break;
   }
 }
 
@@ -351,7 +358,7 @@ Constraints Constraints::copy() const
 
   if (constraintsRep) {
     // new letter: allocate a constraintsRep
-    con.constraintsRep.reset(get_constraints(constraintsRep->sharedVarsData));
+    con.constraintsRep = get_constraints(constraintsRep->sharedVarsData);
 
     // nonlinear constraints
     con.constraintsRep->numNonlinearIneqCons

@@ -331,7 +331,7 @@ void Iterator::declare_sources() {
     Supports all iterators and meta-iterators.  These instantiations
     will NOT recurse on the Iterator(problem_db) constructor due to
     the use of BaseConstructor. */
-Iterator* Iterator::get_iterator(ProblemDescDB& problem_db)
+std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db)
 {
   unsigned short method_name = problem_db.get_ushort("method.algorithm");
 #ifdef REFCOUNT_DEBUG
@@ -347,18 +347,18 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db)
   case HYBRID:
     switch (problem_db.get_ushort("method.sub_method")) {
     case SUBMETHOD_COLLABORATIVE:
-      return new CollabHybridMetaIterator(problem_db);       break;
+      return std::make_shared<CollabHybridMetaIterator>(problem_db); break;
     case SUBMETHOD_EMBEDDED:
-      return new EmbedHybridMetaIterator(problem_db);        break;
+      return std::make_shared<EmbedHybridMetaIterator>(problem_db); break;
     case SUBMETHOD_SEQUENTIAL:
-      return new SeqHybridMetaIterator(problem_db);          break;
+      return std::make_shared<SeqHybridMetaIterator>(problem_db); break;
     default:
       Cerr << "Invalid hybrid meta-iterator type." << std::endl;
-      return NULL;                                           break;
+      return std::shared_ptr<Iterator>(); break;
     }
     break;
   case PARETO_SET: case MULTI_START:
-    return new ConcurrentMetaIterator(problem_db);           break;
+    return std::make_shared<ConcurrentMetaIterator>(problem_db); break;
   default:
     // rather than create additional derived constructors for non-meta-iterators
     // that differ only in creation of their own Model instance, perform the
@@ -397,7 +397,8 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Trai
     is supported to enable use of meta-iterators as components.  These
     instantiations will NOT recurse on the Iterator(problem_db, model)
     constructor due to the use of BaseConstructor. */
-Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
+std::shared_ptr<Iterator>
+Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 {
   unsigned short method_name = problem_db.get_ushort("method.algorithm");
 #ifdef REFCOUNT_DEBUG
@@ -407,204 +408,234 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 
   switch (method_name) {
   case HYBRID:
-    switch (problem_db.get_ushort("method.sub_method")) {
+   switch (problem_db.get_ushort("method.sub_method")) {
     case SUBMETHOD_COLLABORATIVE:
-      return new CollabHybridMetaIterator(problem_db, model); break;
+      return std::make_shared<CollabHybridMetaIterator>(problem_db, model); break;
     case SUBMETHOD_EMBEDDED:
-      return new EmbedHybridMetaIterator(problem_db, model);  break;
+      return std::make_shared<EmbedHybridMetaIterator>(problem_db, model); break;
     case SUBMETHOD_SEQUENTIAL:
-      return new SeqHybridMetaIterator(problem_db, model);    break;
+      return std::make_shared<SeqHybridMetaIterator>(problem_db, model); break;
     default:
       Cerr << "Invalid hybrid meta-iterator type." << std::endl;
-      return NULL;                                            break;
+      return std::shared_ptr<Iterator>(); break;
     }
     break;
   case PARETO_SET: case MULTI_START:
-    return new ConcurrentMetaIterator(problem_db, model); break;
+    return std::make_shared<ConcurrentMetaIterator>(problem_db, model); break;
   case CENTERED_PARAMETER_STUDY: case   LIST_PARAMETER_STUDY: 
   case MULTIDIM_PARAMETER_STUDY: case VECTOR_PARAMETER_STUDY: 
-    return new ParamStudy(problem_db, model);             break;
+    return std::make_shared<ParamStudy>(problem_db, model); break;
   case RICHARDSON_EXTRAP:
-    return new RichExtrapVerification(problem_db, model); break;
+    return std::make_shared<RichExtrapVerification>(problem_db, model); break;
   case LOCAL_RELIABILITY:
-    return new NonDLocalReliability(problem_db, model);   break;
+    return std::make_shared<NonDLocalReliability>(problem_db, model); break;
   case LOCAL_INTERVAL_EST:
-    return new NonDLocalSingleInterval(problem_db, model);break;
+    return std::make_shared<NonDLocalSingleInterval>(problem_db, model); break;
   case LOCAL_EVIDENCE:
-    return new NonDLocalEvidence(problem_db, model);      break;
+    return std::make_shared<NonDLocalEvidence>(problem_db, model); break;
   case GLOBAL_RELIABILITY:
-    return new NonDGlobalReliability(problem_db, model);  break;
+    return std::make_shared<NonDGlobalReliability>(problem_db, model); break;
   case GLOBAL_INTERVAL_EST:
     switch (probDescDB.get_ushort("method.sub_method")) {
     case SUBMETHOD_LHS:
-      return new NonDLHSSingleInterval(problem_db, model); break;
-    default: return new NonDGlobalSingleInterval(problem_db, model); break;
-    } break;
+      return std::make_shared<NonDLHSSingleInterval>(problem_db, model); break;
+    default:
+      return std::make_shared<NonDGlobalSingleInterval>(problem_db, model);
+      break;
+    }
+    break;
   case GLOBAL_EVIDENCE:
     switch (probDescDB.get_ushort("method.sub_method")) {
-    case SUBMETHOD_LHS: return new NonDLHSEvidence(problem_db, model);    break;
-    default:            return new NonDGlobalEvidence(problem_db, model); break;
-    } break;
+    case SUBMETHOD_LHS:
+      return std::make_shared<NonDLHSEvidence>(problem_db, model); break;
+    default:
+      return std::make_shared<NonDGlobalEvidence>(problem_db, model); break;
+    }
+    break;
   case POLYNOMIAL_CHAOS:
-    return new NonDPolynomialChaos(problem_db, model);           break;
+    return std::make_shared<NonDPolynomialChaos>(problem_db, model); break;
   case MULTILEVEL_POLYNOMIAL_CHAOS: case MULTIFIDELITY_POLYNOMIAL_CHAOS:
-    return new NonDMultilevelPolynomialChaos(problem_db, model); break;
+    return std::make_shared<NonDMultilevelPolynomialChaos>(problem_db, model);
+    break;
   case STOCH_COLLOCATION:
-    return new NonDStochCollocation(problem_db, model); break;
+    return std::make_shared<NonDStochCollocation>(problem_db, model); break;
   case MULTIFIDELITY_STOCH_COLLOCATION:
-    return new NonDMultilevelStochCollocation(problem_db, model); break;
+    return std::make_shared<NonDMultilevelStochCollocation>(problem_db, model);
+    break;
 #ifdef HAVE_C3
   case C3_FUNCTION_TRAIN:
-    return new NonDC3FunctionTrain(problem_db, model); break;
+    return std::make_shared<NonDC3FunctionTrain>(problem_db, model); break;
   case MULTILEVEL_FUNCTION_TRAIN: case MULTIFIDELITY_FUNCTION_TRAIN:
-    return new NonDMultilevelFunctionTrain(problem_db, model); break;
+    return std::make_shared<NonDMultilevelFunctionTrain>(problem_db, model);
+    break;
 #endif
   case SURROGATE_BASED_UQ:
-    return new NonDSurrogateExpansion(problem_db, model); break;
+    return std::make_shared<NonDSurrogateExpansion>(problem_db, model); break;
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
     case SUBMETHOD_GPMSA:
 #ifdef HAVE_QUESO_GPMSA
-      return new NonDGPMSABayesCalibration(problem_db, model);  break;
+      return std::make_shared<NonDGPMSABayesCalibration>(problem_db, model);
+      break;
 #else
       Cerr << "\nError: QUESO/GPMSA Bayesian calibration method unavailable.\n"
 	   << "(Not enabled in some Dakota distributions due to dependence on "
 	   << "GSL;\ncan be enabled when compiling from source code.)\n";
-      return NULL; break;
+      return std::shared_ptr<Iterator>(); break;
 #endif
     case SUBMETHOD_QUESO:
 #ifdef HAVE_QUESO
-      return new NonDQUESOBayesCalibration(problem_db, model);  break;
+      return std::make_shared<NonDQUESOBayesCalibration>(problem_db, model);
+      break;
 #else
       Cerr << "\nError: QUESO Bayesian calibration method unavailable.\n"
 	   << "(Not enabled in some Dakota distributions due to dependence on "
 	   << "GSL;\ncan be enabled when compiling from source code.)\n";
-      return NULL; break;
+      return std::shared_ptr<Iterator>(); break;
 #endif
 #ifdef HAVE_DREAM
     case SUBMETHOD_DREAM:
-      return new NonDDREAMBayesCalibration(problem_db, model);  break;
+      return std::make_shared<NonDDREAMBayesCalibration>(problem_db, model);
+      break;
 #endif
 #ifdef HAVE_MUQ
     case SUBMETHOD_MUQ:
-      return new NonDMUQBayesCalibration(problem_db, model);  break;
+      return std::make_shared<NonDMUQBayesCalibration>(problem_db, model); break;
 #endif
     case SUBMETHOD_WASABI:
-      return new NonDWASABIBayesCalibration(problem_db, model); break;
+      return std::make_shared<NonDWASABIBayesCalibration>(problem_db, model);
+      break;
     default:
       Cerr << "\nError: Bayesian calibration method '"
 	   << submethod_enum_to_string(
 	      probDescDB.get_ushort("method.sub_method")) << "' unavailable.\n";
-      return NULL;                                              break;
+      return std::shared_ptr<Iterator>(); break;
     }
     break;
-  case GPAIS:     return new NonDGPImpSampling(problem_db, model);     break;
-  case POF_DARTS: return new NonDPOFDarts(problem_db, model);          break;
-  case RKD_DARTS: return new NonDRKDDarts(problem_db, model);          break;
+  case GPAIS:
+    return std::make_shared<NonDGPImpSampling>(problem_db, model); break;
+  case POF_DARTS:
+    return std::make_shared<NonDPOFDarts>(problem_db, model); break;
+  case RKD_DARTS:
+    return std::make_shared<NonDRKDDarts>(problem_db, model); break;
   case IMPORTANCE_SAMPLING:
-    return new NonDAdaptImpSampling(problem_db, model);  break;
+    return std::make_shared<NonDAdaptImpSampling>(problem_db, model); break;
 #ifdef HAVE_ADAPTIVE_SAMPLING
   case ADAPTIVE_SAMPLING:
-    return new NonDAdaptiveSampling(problem_db, model);  break;
+    return std::make_shared<NonDAdaptiveSampling>(problem_db, model); break;
 #endif
 #ifdef HAVE_MUQ
   case MUQ_SAMPLING:
-    return new NonDMUQBayesCalibration(problem_db, model);  break;
+    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model); break;
 #endif
   case RANDOM_SAMPLING:
-    return new NonDLHSSampling(problem_db, model); break;
+    return std::make_shared<NonDLHSSampling>(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
-    return new NonDMultilevelSampling(problem_db, model); break;
+    return std::make_shared<NonDMultilevelSampling>(problem_db, model); break;
   case DATA_FIT_SURROGATE_BASED_LOCAL:
-    return new DataFitSurrBasedLocalMinimizer(problem_db, model);  break;
+    return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
+    break;
   case HIERARCH_SURROGATE_BASED_LOCAL:
-    return new HierarchSurrBasedLocalMinimizer(problem_db, model);  break;
+    return std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
+    break;
   case SURROGATE_BASED_LOCAL:
     if (model.surrogate_type() == "hierarchical")
-      return new HierarchSurrBasedLocalMinimizer(problem_db, model);
+      return std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
     else
-      return new DataFitSurrBasedLocalMinimizer(problem_db, model);
+      return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
     break;
   case SURROGATE_BASED_GLOBAL:
-    return new SurrBasedGlobalMinimizer(problem_db, model); break;
-  case EFFICIENT_GLOBAL: return new EffGlobalMinimizer(problem_db, model);break;
-  case NONLINEAR_CG: return new NonlinearCGOptimizer(problem_db, model);  break;
-  case GENIE_OPT_DARTS: return new OptDartsOptimizer(problem_db, model); break;
-  case GENIE_DIRECT: return new OptDartsOptimizer(problem_db, model); break;
+    return std::make_shared<SurrBasedGlobalMinimizer>(problem_db, model); break;
+  case EFFICIENT_GLOBAL:
+    return std::make_shared<EffGlobalMinimizer>(problem_db, model); break;
+  case NONLINEAR_CG:
+    return std::make_shared<NonlinearCGOptimizer>(problem_db, model);  break;
+  case GENIE_OPT_DARTS:
+    return std::make_shared<OptDartsOptimizer>(problem_db, model); break;
+  case GENIE_DIRECT: 
+    return std::make_shared<OptDartsOptimizer>(problem_db, model); break;
 #ifdef HAVE_OPTPP
   case OPTPP_G_NEWTON:
-    return new SNLLLeastSq(problem_db, model);   break;
+    return std::make_shared<SNLLLeastSq>(problem_db, model); break;
   case OPTPP_Q_NEWTON: case OPTPP_FD_NEWTON: case OPTPP_NEWTON:
   case OPTPP_CG:       case OPTPP_PDS:
-    return new SNLLOptimizer(problem_db, model); break;
+    return std::make_shared<SNLLOptimizer>(problem_db, model); break;
 #endif
 #ifdef DAKOTA_HOPS
   case ASYNCH_PATTERN_SEARCH:
-    return new APPSOptimizer(problem_db, model); break;
+    return std::make_shared<APPSOptimizer>(problem_db, model); break;
 #endif
 #ifdef HAVE_ACRO
   case COLINY_BETA: case COLINY_COBYLA:         case COLINY_DIRECT:
   case COLINY_EA:   case COLINY_PATTERN_SEARCH: case COLINY_SOLIS_WETS:
-    return new COLINOptimizer(problem_db, model); break;
+    return std::make_shared<COLINOptimizer>(problem_db, model); break;
   case BRANCH_AND_BOUND:
-    return new PebbldMinimizer(problem_db, model); break;
+    return std::make_shared<PebbldMinimizer>(problem_db, model); break;
 #endif
 #ifdef HAVE_JEGA
-  case MOGA: case SOGA: return new JEGAOptimizer(problem_db, model); break;
+  case MOGA: case SOGA:
+    return std::make_shared<JEGAOptimizer>(problem_db, model); break;
 #endif
 #ifdef DAKOTA_DL_SOLVER
-  case DL_SOLVER: return new DLSolver(problem_db, model); break;
+  case DL_SOLVER: return std::make_shared<DLSolver>(problem_db, model); break;
 #endif
 #ifdef HAVE_NOMAD
   case MESH_ADAPTIVE_SEARCH:
-    return new NomadOptimizer(problem_db, model); break;
+    return std::make_shared<NomadOptimizer>(problem_db, model); break;
 #endif
 #ifdef HAVE_NOWPAC
   case MIT_NOWPAC: case MIT_SNOWPAC:
-    return new NOWPACOptimizer(problem_db, model); break;
+    return std::make_shared<NOWPACOptimizer>(problem_db, model); break;
 #endif
 #ifdef HAVE_NPSOL
-  case NPSOL_SQP:   return new NPSOLOptimizer(problem_db, model);  break;
-  case NLSSOL_SQP:  return new NLSSOLLeastSq(problem_db, model);   break;
+  case NPSOL_SQP:
+    return std::make_shared<NPSOLOptimizer>(problem_db, model); break;
+  case NLSSOL_SQP:
+    return std::make_shared<NLSSOLLeastSq>(problem_db, model); break;
 #endif
 #ifdef HAVE_NLPQL
-  case NLPQL_SQP:   return new NLPQLPOptimizer(problem_db, model); break;
+  case NLPQL_SQP:
+    return std::make_shared<NLPQLPOptimizer>(problem_db, model); break;
 #endif
 #ifdef HAVE_NL2SOL
-  case NL2SOL:      return new NL2SOLLeastSq(problem_db, model);   break;
+  case NL2SOL:
+    return std::make_shared<NL2SOLLeastSq>(problem_db, model);   break;
 #endif
 //#ifdef DAKOTA_RSQP
-//  case REDUCED_SQP: return new rSQPOptimizer(problem_db, model);   break;
+//  case REDUCED_SQP: return std::make_shared<rSQPOptimizer>(problem_db, model);   break;
 //#endif
 #ifdef HAVE_DOT
   case DOT_BFGS: case DOT_FRCG: case DOT_MMFD: case DOT_SLP: case DOT_SQP:
-    return new DOTOptimizer(problem_db, model); break;
+    return std::make_shared<DOTOptimizer>(problem_db, model); break;
 #endif
 #ifdef HAVE_CONMIN
   case CONMIN_FRCG: case CONMIN_MFD:
-    return new CONMINOptimizer(problem_db, model); break;
+    return std::make_shared<CONMINOptimizer>(problem_db, model); break;
 #endif
 #ifdef HAVE_DDACE
-  case DACE: return new DDACEDesignCompExp(problem_db, model); break;
+  case DACE:
+    return std::make_shared<DDACEDesignCompExp>(problem_db, model); break;
 #endif
 #ifdef HAVE_FSUDACE
   case FSU_CVT: case FSU_HALTON: case FSU_HAMMERSLEY:
-    return new FSUDesignCompExp(problem_db, model); break;
+    return std::make_shared<FSUDesignCompExp>(problem_db, model); break;
 #endif
 #ifdef HAVE_PSUADE
-  case PSUADE_MOAT: return new PSUADEDesignCompExp(problem_db, model); break;
+  case PSUADE_MOAT:
+    return std::make_shared<PSUADEDesignCompExp>(problem_db, model); break;
 #endif
 #ifdef HAVE_NCSU
-  case NCSU_DIRECT: return new NCSUOptimizer(problem_db, model);       break;
+  case NCSU_DIRECT:
+    return std::make_shared<NCSUOptimizer>(problem_db, model);       break;
 #endif
 #ifdef HAVE_ROL
   case ROL:
-    return new ROLOptimizer(problem_db, model); break;
+    return std::make_shared<ROLOptimizer>(problem_db, model); break;
 #endif
 #ifdef HAVE_DEMO_TPL
   case DEMO_TPL:
-    return new DemoTPLOptimizer(problem_db, model); break;
+    return std::make_shared<DemoTPLOptimizer>(problem_db, model); break;
 #endif
   default:
     switch (method_name) {
@@ -624,7 +655,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 	   << " not available.\n";
       break;
     }
-    return NULL; break;
+    return std::shared_ptr<Iterator>(); break;
   }
 }
 
@@ -655,7 +686,8 @@ Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<Tr
     the appropriate derived type, as given by the passed method_string.
     Lightweight instantiations by name are supported by a subset of
     Iterators (primarily Minimizers). */
-Iterator* Iterator::get_iterator(const String& method_string, Model& model)
+std::shared_ptr<Iterator>
+Iterator::get_iterator(const String& method_string, Model& model)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter: getting iterator " <<  method_string
@@ -666,87 +698,87 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
   // constructor due to the use of BaseConstructor.
 
   //if (method_string == "data_fit_surrogate_based_local") {
-  //  return new DataFitSurrBasedLocalMinimizer(model);
+  //  return std::make_shared<DataFitSurrBasedLocalMinimizer(model);
   //else if (method_string == "hierarch_surrogate_based_local") {
-  //  return new HierarchSurrBasedLocalMinimizer(model);
+  //  return std::make_shared<HierarchSurrBasedLocalMinimizer(model);
   //else if (method_string == "surrogate_based_local") {
   //  return (model.surrogate_type() == "hierarchical) ?
-  //    new HierarchSurrBasedLocalMinimizer(model) :
-  //    new DataFitSurrBasedLocalMinimizer(model);
+  //    std::make_shared<HierarchSurrBasedLocalMinimizer(model) :
+  //    std::make_shared<DataFitSurrBasedLocalMinimizer(model);
   //else if (method_string == "surrogate_based_global")
-  //  return new SurrBasedGlobalMinimizer(model);
+  //  return std::make_shared<SurrBasedGlobalMinimizer(model);
   //else if (method_string == "efficient_global")
-  //  return new EffGlobalMinimizer(model);
+  //  return std::make_shared<EffGlobalMinimizer(model);
 
   if (strbegins(method_string, "genie_"))
-    return new OptDartsOptimizer(model);
+    return std::make_shared<OptDartsOptimizer>(model);
 #ifdef HAVE_OPTPP
   else if (strbegins(method_string, "optpp_")) {
     if (strends(method_string, "_g_newton"))
-      return new SNLLLeastSq(method_string, model);
+      return std::make_shared<SNLLLeastSq>(method_string, model);
     else
-      return new SNLLOptimizer(method_string, model);
+      return std::make_shared<SNLLOptimizer>(method_string, model);
   }
 #endif
 #ifdef DAKOTA_HOPS
   else if (method_string == "asynch_pattern_search")
-    return new APPSOptimizer(model);
+    return std::make_shared<APPSOptimizer>(model);
 #endif
 #ifdef HAVE_ACRO
   else if (strbegins(method_string, "coliny_"))
-    return new COLINOptimizer(method_string, model);
+    return std::make_shared<COLINOptimizer>(method_string, model);
   else if (method_string == "branch_and_bound")
-    return new PebbldMinimizer(model);
+    return std::make_shared<PebbldMinimizer>(model);
 #endif
 #ifdef HAVE_JEGA
   //else if (method_string == "moga" || method_string == "soga")
-  //  return new JEGAOptimizer(model);
+  //  return std::make_shared<JEGAOptimizer>(model);
 #endif
 #ifdef DAKOTA_DL_SOLVER
   //else if (method_string == "dl_solver")
-  //  return new DLSolver(model);
+  //  return std::make_shared<DLSolver>(model);
 #endif
 #ifdef HAVE_NOMAD
   else if (method_string == "mesh_adaptive_search")
-    return new NomadOptimizer(model);
+    return std::make_shared<NomadOptimizer>(model);
 #endif
 #ifdef HAVE_NOWPAC
   else if (strends(method_string, "nowpac"))
-    return new NOWPACOptimizer(model);
+    return std::make_shared<NOWPACOptimizer>(model);
 #endif
 #ifdef HAVE_NPSOL
   else if (method_string == "npsol_sqp")
-    return new NPSOLOptimizer(model);
+    return std::make_shared<NPSOLOptimizer>(model);
   else if (method_string == "nlssol_sqp")
-    return new NLSSOLLeastSq(model);
+    return std::make_shared<NLSSOLLeastSq>(model);
 #endif
 #ifdef HAVE_NLPQL
   else if (method_string == "nlpql_sqp")
-    return new NLPQLPOptimizer(model);
+    return std::make_shared<NLPQLPOptimizer>(model);
 #endif
 #ifdef HAVE_NL2SOL
   else if (method_string == "nl2sol")
-    return new NL2SOLLeastSq(model);
+    return std::make_shared<NL2SOLLeastSq>(model);
 #endif
 #ifdef HAVE_DOT
   else if (strbegins(method_string, "dot_"))
-    return new DOTOptimizer(method_string, model);
+    return std::make_shared<DOTOptimizer>(method_string, model);
 #endif
 #ifdef HAVE_CONMIN
   else if (strbegins(method_string, "conmin_"))
-    return new CONMINOptimizer(method_string, model);
+    return std::make_shared<CONMINOptimizer>(method_string, model);
 #endif
 #ifdef HAVE_NCSU
   else if (method_string == "ncsu_direct")
-    return new NCSUOptimizer(model);
+    return std::make_shared<NCSUOptimizer>(model);
 #endif
 #ifdef HAVE_NCSU
   else if (method_string == "ncsu_direct")
-    return new NCSUOptimizer(model);
+    return std::make_shared<NCSUOptimizer>(model);
 #endif
 #ifdef HAVE_ROL
   else if (method_string == "rol")
-    return new ROLOptimizer(method_string, model);
+    return std::make_shared<ROLOptimizer>(method_string, model);
 #endif
   else {
     if ( method_string == "npsol_sqp" || method_string == "nlpql_sqp" ||
@@ -760,7 +792,7 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
 	   << "\nnl2sol may be a suitable alternative.\n";
     else
       Cerr << "Method " << method_string << " not available by name.\n";
-    return NULL;
+    return std::shared_ptr<Iterator>();
   }
 }
 

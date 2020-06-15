@@ -380,13 +380,13 @@ private:
 
   /// Used only by the standard envelope constructor to initialize
   /// approxRep to the appropriate derived type.
-  Approximation* get_approx(ProblemDescDB& problem_db,
-			    const SharedApproxData& shared_data,
-                            const String& approx_label);
+  std::shared_ptr<Approximation>
+  get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
+	     const String& approx_label);
 
   /// Used only by the alternate envelope constructor to initialize
   /// approxRep to the appropriate derived type.
-  Approximation* get_approx(const SharedApproxData& shared_data);
+  std::shared_ptr<Approximation> get_approx(const SharedApproxData& shared_data);
 
   //
   //- Heading: Data

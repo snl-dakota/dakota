@@ -407,17 +407,17 @@ private:
 
 
   /// Used by standard envelope constructor to instantiate a new letter class
-  Response* get_response(short type, const Variables& vars,
-			 const ProblemDescDB& problem_db) const;
+  std::shared_ptr<Response>get_response(short type, const Variables& vars,
+					const ProblemDescDB& problem_db) const;
   /// Used by alternate envelope constructor to instantiate a new letter class
-  Response* get_response(const SharedResponseData& srd,
-			 const ActiveSet& set) const;
+  std::shared_ptr<Response> get_response(const SharedResponseData& srd,
+					 const ActiveSet& set) const;
   /// Used by alternate envelope constructor to instantiate a new letter class
-  Response* get_response(short type, const ActiveSet& set) const;
+  std::shared_ptr<Response> get_response(short type, const ActiveSet& set) const;
   /// Used by copy() to instantiate a new letter class
-  Response* get_response(const SharedResponseData& srd) const;
+  std::shared_ptr<Response> get_response(const SharedResponseData& srd) const;
   /// Used by read functions to instantiate a new letter class
-  Response* get_response(short type) const;
+  std::shared_ptr<Response> get_response(short type) const;
 
   /// read a letter object in annotated format from an std::istream
   void read_annotated_rep(std::istream& s);

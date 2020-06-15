@@ -491,11 +491,14 @@ private:
   //
 
   /// Used by the envelope to instantiate the correct letter class
-  Iterator* get_iterator(ProblemDescDB& problem_db);
+  std::shared_ptr<Iterator>
+  get_iterator(ProblemDescDB& problem_db);
   /// Used by the envelope to instantiate the correct letter class
-  Iterator* get_iterator(ProblemDescDB& problem_db, Model& model);
+  std::shared_ptr<Iterator>
+  get_iterator(ProblemDescDB& problem_db, Model& model);
   /// Used by the envelope to instantiate the correct letter class
-  Iterator* get_iterator(const String& method_string, Model& model);
+  std::shared_ptr<Iterator>
+  get_iterator(const String& method_string, Model& model);
 
   /// return the next available method ID for no-ID user methods
   static String user_auto_id();

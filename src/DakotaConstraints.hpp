@@ -398,11 +398,13 @@ private:
 
   /// Used only by the constructor to initialize constraintsRep to the 
   /// appropriate derived type.
-  Constraints* get_constraints(const ProblemDescDB& problem_db,
-			       const SharedVariablesData& svd);
+  std::shared_ptr<Constraints>
+  get_constraints(const ProblemDescDB& problem_db,
+		  const SharedVariablesData& svd);
   /// Used by copy() to initialize constraintsRep to the appropriate
   /// derived type.
-  Constraints* get_constraints(const SharedVariablesData& svd) const;
+  std::shared_ptr<Constraints>
+  get_constraints(const SharedVariablesData& svd) const;
 
   //
   //- Heading: Data

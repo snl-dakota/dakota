@@ -203,7 +203,7 @@ Environment::Environment(const String& env_type):
 
 /** Used only by the envelope constructor to initialize environmentRep to the 
     appropriate derived type, as given by the environmentName attribute. */
-Environment* Environment::get_environment(const String& env_type)
+std::shared_ptr<Environment> Environment::get_environment(const String& env_type)
 {
 #ifdef REFCOUNT_DEBUG
   cout << "Envelope instantiating letter: Getting environment " << env_type
@@ -211,13 +211,13 @@ Environment* Environment::get_environment(const String& env_type)
 #endif
 
   if (env_type == "executable")
-    return new ExecutableEnvironment();
+    return std::make_shared<ExecutableEnvironment>();
   else if (env_type == "library")
-    return new LibraryEnvironment();
-  else {
+    return std::make_shared<LibraryEnvironment>();
+  else
     Cerr << "Invalid environment type: " << env_type << std::endl;
-    return NULL;
-  }
+
+  return std::shared_ptr<Environment>();
 }
 
 

@@ -92,7 +92,8 @@ ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
 
 /** Initializes dbRep to the appropriate derived type.  The standard
     derived class constructors are invoked.  */
-ProblemDescDB* ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
+std::shared_ptr<ProblemDescDB>
+ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_db(ParallelLibrary&)."
@@ -104,7 +105,7 @@ ProblemDescDB* ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
   //if (xml_flag)
   //  return new XMLProblemDescDB(parallel_lib);
   //else
-  return new NIDRProblemDescDB(parallel_lib);
+  return std::make_shared<NIDRProblemDescDB>(parallel_lib);
 }
 
 

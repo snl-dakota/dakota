@@ -177,7 +177,7 @@ SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
 
 /** Used only by the envelope constructor to initialize dataRep to the 
     appropriate derived type. */
-SharedApproxData* SharedApproxData::
+std::shared_ptr<SharedApproxData> SharedApproxData::
 get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 {
 #ifdef REFCOUNT_DEBUG
@@ -192,10 +192,10 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
   //  return new SharedTANA3ApproxData(problem_db, num_vars);
   if (strends(approx_type, "_orthogonal_polynomial") ||
       strends(approx_type, "_interpolation_polynomial"))
-    return new SharedPecosApproxData(problem_db, num_vars);
+    return std::make_shared<SharedPecosApproxData>(problem_db, num_vars);
 #ifdef HAVE_C3
   else if (approx_type == "global_function_train")
-    return new SharedC3ApproxData(problem_db, num_vars);
+    return std::make_shared<SharedC3ApproxData>(problem_db, num_vars);
 #endif
   //else if (approx_type == "global_gaussian")
   //  return new SharedGaussProcApproxData(problem_db, num_vars);
@@ -206,13 +206,14 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 	   approx_type == "global_radial_basis"   ||
 	   approx_type == "global_mars"           ||
 	   approx_type == "global_moving_least_squares")
-    return new SharedSurfpackApproxData(problem_db, num_vars);
+    return std::make_shared<SharedSurfpackApproxData>(problem_db, num_vars);
 #endif // HAVE_SURFPACK
   else {
     //Cerr << "Error: SharedApproxData type " << approx_type
     //     << " not available." << std::endl;
     //return NULL;
-    return new SharedApproxData(BaseConstructor(), problem_db, num_vars);
+    return std::shared_ptr<SharedApproxData>
+      (new SharedApproxData(BaseConstructor(), problem_db, num_vars));
   }
 }
 
@@ -239,7 +240,7 @@ SharedApproxData(const String& approx_type, const UShortArray& approx_order,
 
 /** Used only by the envelope constructor to initialize dataRep to the 
     appropriate derived type. */
-SharedApproxData* SharedApproxData::
+std::shared_ptr<SharedApproxData> SharedApproxData::
 get_shared_data(const String& approx_type, const UShortArray& approx_order, 
 		size_t num_vars, short data_order, short output_level)
 {
@@ -248,19 +249,18 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
        << std::endl;
 #endif
 
-  SharedApproxData* approx;
   //if (approx_type == "local_taylor")
   //  approx = new SharedTaylorApproxData(num_vars, data_order, output_level);
   //else if (approx_type == "multipoint_tana")
   //  approx = new SharedTANA3ApproxData(num_vars, data_order, output_level);
   if (strends(approx_type, "_orthogonal_polynomial") ||
       strends(approx_type, "_interpolation_polynomial"))
-    approx = new SharedPecosApproxData(approx_type, approx_order, num_vars,
-				       data_order, output_level);
+    return std::make_shared<SharedPecosApproxData>
+      (approx_type, approx_order, num_vars, data_order, output_level);
 #ifdef HAVE_C3
   else if (approx_type == "global_function_train")
-    approx = new SharedC3ApproxData(approx_type, approx_order, num_vars,
-				    data_order, output_level);
+    return std::make_shared<SharedC3ApproxData>
+      (approx_type, approx_order, num_vars, data_order, output_level);
 #endif
   //else if (approx_type == "global_gaussian")
   //  approx = new SharedGaussProcApproxData(num_vars, data_order,output_level);
@@ -273,17 +273,18 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
 	   approx_type == "global_moving_least_squares" ||
        approx_type == "global_voronoi_surrogate"
            )
-    approx = new SharedSurfpackApproxData(approx_type, approx_order, num_vars,
-					  data_order, output_level);
+    return std::make_shared<SharedSurfpackApproxData>
+      (approx_type, approx_order, num_vars, data_order, output_level);
 #endif // HAVE_SURFPACK
   else {
     //Cerr << "Error: ApproxData type " << approx_type << " not available."
     //     << std::endl;
     //approx = NULL;
-    approx = new SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars,
-				  data_order, output_level);
+    return std::shared_ptr<SharedApproxData>
+      (new SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars,
+			    data_order, output_level));
   }
-  return approx;
+  return std::shared_ptr<SharedApproxData>();
 }
 
 

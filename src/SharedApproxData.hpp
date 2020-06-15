@@ -270,14 +270,14 @@ private:
 
   /// Used only by the standard envelope constructor to initialize
   /// dataRep to the appropriate derived type.
-  SharedApproxData* get_shared_data(ProblemDescDB& problem_db, size_t num_vars);
+  std::shared_ptr<SharedApproxData>
+  get_shared_data(ProblemDescDB& problem_db, size_t num_vars);
 
   /// Used only by the alternate envelope constructor to initialize
   /// dataRep to the appropriate derived type.
-  SharedApproxData* get_shared_data(const String& approx_type,
-				    const UShortArray& approx_order,
-				    size_t num_vars, short data_order,
-				    short output_level);
+  std::shared_ptr<SharedApproxData>
+  get_shared_data(const String& approx_type, const UShortArray& approx_order,
+		  size_t num_vars, short data_order, short output_level);
 
   //
   //- Heading: Data

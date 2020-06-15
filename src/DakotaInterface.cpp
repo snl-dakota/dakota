@@ -214,7 +214,7 @@ Interface::Interface(ProblemDescDB& problem_db):
 
 /** used only by the envelope constructor to initialize interfaceRep
     to the appropriate derived type. */
-Interface* Interface::get_interface(ProblemDescDB& problem_db)
+std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
 {
   const unsigned short interface_type = problem_db.get_ushort("interface.type");
 #ifdef REFCOUNT_DEBUG
@@ -228,65 +228,64 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   const String& algebraic_map_file
     = problem_db.get_string("interface.algebraic_mappings");
   if (interface_type == SYSTEM_INTERFACE)
-    return new SysCallApplicInterface(problem_db);
-
+    return std::make_shared<SysCallApplicInterface>(problem_db);
   else if (interface_type == FORK_INTERFACE) {
 #if defined(HAVE_SYS_WAIT_H) && defined(HAVE_UNISTD_H) // includes CYGWIN/MINGW
-    return new ForkApplicInterface(problem_db);
+    return std::make_shared<ForkApplicInterface>(problem_db);
 #elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
-    return new SpawnApplicInterface(problem_db);
+    return std::make_shared<SpawnApplicInterface>(problem_db);
 #else
     Cerr << "Fork interface requested, but not enabled in this DAKOTA "
 	 << "executable." << std::endl;
-    return NULL;
+    return std::shared_ptr<Interface>();
 #endif
   }
 
   else if (interface_type == TEST_INTERFACE)
-    return new TestDriverInterface(problem_db);
+    return std::make_shared<TestDriverInterface>(problem_db);
   // Note: in the case of a plug-in direct interface, this object gets replaced
   // using Interface::assign_rep().  Error checking in DirectApplicInterface::
   // derived_map_ac() should catch if this replacement fails to occur properly.
 
 #ifdef DAKOTA_GRID
   else if (interface_type == GRID_INTERFACE)
-    return new GridApplicInterface(problem_db);
+    return std::make_shared<GridApplicInterface>(problem_db);
 #endif
 
   else if (interface_type == MATLAB_INTERFACE) {
 #ifdef DAKOTA_MATLAB
-    return new MatlabInterface(problem_db);
+    return std::make_shared<MatlabInterface>(problem_db);
 #else
     Cerr << "Direct Matlab interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
-      return NULL;
+    return std::shared_ptr<Interface>();
 #endif
   }
 
   else if (interface_type == PYTHON_INTERFACE) {
 #ifdef DAKOTA_PYTHON
-    return new PythonInterface(problem_db);
+    return std::make_shared<PythonInterface>(problem_db);
 #else
     Cerr << "Direct Python interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
-    return NULL;
+    return std::shared_ptr<Interface>();
 #endif
   }
 
   else if (interface_type == SCILAB_INTERFACE) {
 #ifdef DAKOTA_SCILAB
-    return new ScilabInterface(problem_db);
+    return std::make_shared<ScilabInterface>(problem_db);
 #else
     Cerr << "Direct Scilab interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
-    return NULL;
+    return std::shared_ptr<Interface>();
 #endif
   }
 
   // Should not be needed since ApproximationInterface is plugged-in from
   // DataFitSurrModel using Interface::assign_rep().
   //else if (interface_type == APPROX_INTERFACE)
-  //  return new ApproximationInterface(problem_db, num_acv, num_fns);
+  //  return std::make_shared<ApproximationInterface>(problem_db, num_acv, num_fns);
 
   // In the case where only algebraic mappings are used, then no derived map
   // functionality is needed and ApplicationInterface is used for the letter.
@@ -295,7 +294,7 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
     Cout << ">>>>> new ApplicationInterface: " << algebraic_map_file
 	 << std::endl;
 #endif // DEBUG
-    return new ApplicationInterface(problem_db);
+    return std::make_shared<ApplicationInterface>(problem_db);
   }
 
   // If the interface type is empty (e.g., from default DataInterface creation
@@ -303,14 +302,15 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   else if (interface_type == DEFAULT_INTERFACE) {
     Cerr << "Warning: empty interface type in Interface::get_interface()."
 	 << std::endl;
-    return new ApplicationInterface(problem_db);
+    return std::make_shared<ApplicationInterface>(problem_db);
   }
 
   else {
     Cerr << "Invalid interface: " << interface_enum_to_string(interface_type) 
 	 << std::endl;
-    return NULL;
   }
+
+  return std::shared_ptr<Interface>();
 }
 
 

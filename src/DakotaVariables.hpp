@@ -604,10 +604,10 @@ private:
 
   /// Used by the standard envelope constructor to instantiate the
   /// correct letter class
-  Variables* get_variables(const ProblemDescDB& problem_db);
+  std::shared_ptr<Variables> get_variables(const ProblemDescDB& problem_db);
   /// Used by the alternate envelope constructors, by read functions,
   /// and by copy() to instantiate a new letter class
-  Variables* get_variables(const SharedVariablesData& svd) const;
+  std::shared_ptr<Variables> get_variables(const SharedVariablesData& svd) const;
 
   /// infer domain from method selection
   short method_map(short view_spec, bool relaxed) const;

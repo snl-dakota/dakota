@@ -352,10 +352,10 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
     return std::make_shared<AdaptedBasisModel>(problem_db);
   else if ( model_type == "random_field" )
     return std::make_shared<RandomFieldModel>(problem_db);
-  else {
+  else
     Cerr << "Invalid model type: " << model_type << std::endl;
-    return NULL;
-  }
+
+  return std::shared_ptr<Model>();
 }
 
 

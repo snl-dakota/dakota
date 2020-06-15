@@ -108,7 +108,7 @@ Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 
 /** Used only by the envelope constructor to initialize approxRep to the 
     appropriate derived type. */
-Approximation* Approximation::
+std::shared_ptr<Approximation> Approximation::
 get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
            const String& approx_label)
 {
@@ -116,27 +116,33 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
   Cout << "Envelope instantiating letter in get_approx(ProblemDescDB&)."
        << std::endl;
 #endif
-
   bool pw_decomp = problem_db.get_bool("model.surrogate.domain_decomp");
   if (pw_decomp) {
-    return new VPSApproximation(problem_db, shared_data, approx_label);
+    return std::make_shared<VPSApproximation>
+      (problem_db, shared_data, approx_label);
   }
   else {
     const String& approx_type = shared_data.data_rep()->approxType;
     if (approx_type == "local_taylor")
-      return new TaylorApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<TaylorApproximation>
+	(problem_db, shared_data, approx_label);
     else if (approx_type == "multipoint_tana")
-      return new TANA3Approximation(problem_db, shared_data, approx_label);
+      return std::make_shared<TANA3Approximation>
+	(problem_db, shared_data, approx_label);
     else if (approx_type == "multipoint_qmea")
-      return new QMEApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<QMEApproximation>
+	(problem_db, shared_data, approx_label);
     else if (strends(approx_type, "_orthogonal_polynomial") ||
 	     strends(approx_type, "_interpolation_polynomial"))
-      return new PecosApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<PecosApproximation>
+	(problem_db, shared_data, approx_label);
     else if (approx_type == "global_gaussian")
-      return new GaussProcApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<GaussProcApproximation>
+	(problem_db, shared_data, approx_label);
 #ifdef HAVE_C3
     else if (approx_type == "global_function_train")
-      return new C3Approximation(problem_db, shared_data, approx_label);
+      return std::make_shared<C3Approximation>
+	(problem_db, shared_data, approx_label);
 #endif
 #ifdef HAVE_SURFPACK
     else if (approx_type == "global_polynomial"     ||
@@ -145,20 +151,23 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 	     approx_type == "global_radial_basis"   ||
 	     approx_type == "global_mars"           ||
 	     approx_type == "global_moving_least_squares")
-      return new SurfpackApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<SurfpackApproximation>
+	(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
     else if (approx_type == "global_exp_gauss_proc")
-      return new SurrogatesGPApprox(problem_db, shared_data, approx_label);
+      return std::make_shared<SurrogatesGPApprox>
+	(problem_db, shared_data, approx_label);
     else if (approx_type == "global_exp_poly")
-      return new SurrogatesPolyApprox(problem_db, shared_data, approx_label);
+      return std::make_shared<SurrogatesPolyApprox>
+	(problem_db, shared_data, approx_label);
 #endif // HAVE_DAKOTA_SURROGATES
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."
 	   << std::endl;
-      return NULL;
     }
   }
+  return std::shared_ptr<Approximation>();
 }
 
 
@@ -181,31 +190,31 @@ Approximation::Approximation(const SharedApproxData& shared_data):
 
 /** Used only by the envelope constructor to initialize approxRep to the 
     appropriate derived type. */
-Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
+std::shared_ptr<Approximation>
+Approximation::get_approx(const SharedApproxData& shared_data)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_approx(String&)." << std::endl;
 #endif
 
-  Approximation* approx;
   const String&  approx_type = shared_data.data_rep()->approxType;
   if (approx_type == "local_taylor")
-    approx = new TaylorApproximation(shared_data);
+    return std::make_shared<TaylorApproximation>(shared_data);
   else if (approx_type == "multipoint_tana")
-    approx = new TANA3Approximation(shared_data);
+    return std::make_shared<TANA3Approximation>(shared_data);
   else if (approx_type == "multipoint_qmea")
-    approx = new QMEApproximation(shared_data);
+    return std::make_shared<QMEApproximation>(shared_data);
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
-    approx = new PecosApproximation(shared_data);
+    return std::make_shared<PecosApproximation>(shared_data);
 #ifdef HAVE_C3
   else if (approx_type == "global_function_train")
-    approx = new C3Approximation(shared_data);
+    return std::make_shared<C3Approximation>(shared_data);
 #endif
   else if (approx_type == "global_gaussian")
-    approx = new GaussProcApproximation(shared_data);
+    return std::make_shared<GaussProcApproximation>(shared_data);
   else if (approx_type == "global_voronoi_surrogate")
-    approx = new VPSApproximation(shared_data);
+    return std::make_shared<VPSApproximation>(shared_data);
 #ifdef HAVE_SURFPACK
   else if (approx_type == "global_polynomial"     ||
 	   approx_type == "global_kriging"        ||
@@ -213,20 +222,19 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 	   approx_type == "global_radial_basis"   ||
 	   approx_type == "global_mars"           ||
 	   approx_type == "global_moving_least_squares")
-    approx = new SurfpackApproximation(shared_data);
+    return std::make_shared<SurfpackApproximation>(shared_data);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-    else if (approx_type == "global_exp_gauss_proc")
-      return new SurrogatesGPApprox(shared_data);
-    else if (approx_type == "global_exp_poly")
-      return new SurrogatesPolyApprox(shared_data);
+  else if (approx_type == "global_exp_gauss_proc")
+    return std::make_shared<SurrogatesGPApprox>(shared_data);
+  else if (approx_type == "global_exp_poly")
+    return std::make_shared<SurrogatesPolyApprox>(shared_data);
 #endif // HAVE_DAKOTA_SURROGATES
-  else {
+  else
     Cerr << "Error: Approximation type " << approx_type << " not available."
 	 << std::endl;
-    approx = NULL;
-  }
-  return approx;
+
+  return std::shared_ptr<Approximation>();
 }
 
 
