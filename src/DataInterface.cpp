@@ -97,10 +97,9 @@ DataInterface::DataInterface(): dataIfaceRep(new DataInterfaceRep())
 }
 
 
-DataInterface::DataInterface(const DataInterface& data_resp)
+DataInterface::DataInterface(const DataInterface& data_resp):
+  dataIfaceRep(data_resp.dataIfaceRep)
 {
-  dataIfaceRep = data_resp.dataIfaceRep;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "DataInterface::DataInterface(DataInterface&)" << std::endl;
   if (dataIfaceRep)

@@ -288,10 +288,9 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
 
 
 /** Copy constructor manages sharing of dataRep. */
-SharedApproxData::SharedApproxData(const SharedApproxData& shared_data)
+SharedApproxData::SharedApproxData(const SharedApproxData& shared_data):
+  dataRep(shared_data.dataRep)
 {
-  dataRep = shared_data.dataRep;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData(SharedApproxData&)" << std::endl;
   if (dataRep)

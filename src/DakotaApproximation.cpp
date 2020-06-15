@@ -231,10 +231,9 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 
 
 /** Copy constructor manages sharing of approxRep. */
-Approximation::Approximation(const Approximation& approx)
+Approximation::Approximation(const Approximation& approx):
+  approxRep(approx.approxRep)
 {
-  approxRep = approx.approxRep;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(Approximation&)" << std::endl;
   if (approxRep)

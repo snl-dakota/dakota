@@ -110,9 +110,9 @@ ProblemDescDB* ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
 
 /** Copy constructor manages sharing of dbRep */
 ProblemDescDB::ProblemDescDB(const ProblemDescDB& db):
-  parallelLib(db.parallel_library())
+  parallelLib(db.parallel_library()),
+  dbRep(db.dbRep)
 {
-  dbRep = db.dbRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "ProblemDescDB::ProblemDescDB(ProblemDescDB&)" << std::endl;

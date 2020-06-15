@@ -226,10 +226,9 @@ Variables::get_view(const ProblemDescDB& problem_db) const
 
 
 /** Copy constructor manages sharing of variablesRep. */
-Variables::Variables(const Variables& vars)
+Variables::Variables(const Variables& vars):
+  variablesRep(vars.variablesRep)
 {
-  variablesRep = vars.variablesRep;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::Variables(Variables&)" << std::endl;
   if (variablesRep)

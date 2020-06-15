@@ -141,10 +141,9 @@ DataResponses::DataResponses(): dataRespRep(new DataResponsesRep())
 }
 
 
-DataResponses::DataResponses(const DataResponses& data_resp)
+DataResponses::DataResponses(const DataResponses& data_resp):
+  dataRespRep(data_resp.dataRespRep)
 {
-  dataRespRep = data_resp.dataRespRep;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "DataResponses::DataResponses(DataResponses&)" << std::endl;
   if (dataRespRep)

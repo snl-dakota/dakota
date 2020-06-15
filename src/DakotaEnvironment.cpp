@@ -222,10 +222,9 @@ Environment* Environment::get_environment(const String& env_type)
 
 
 /** Copy constructor manages sharing of environmentRep. */
-Environment::Environment(const Environment& env)
+Environment::Environment(const Environment& env):
+  environmentRep(env.environmentRep)
 {
-  environmentRep = env.environmentRep;
-
 #ifdef REFCOUNT_DEBUG
   cout << "Environment::Environment(Environment&)" << std::endl;
   if (environmentRep)

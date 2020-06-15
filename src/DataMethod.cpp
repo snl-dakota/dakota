@@ -685,9 +685,9 @@ DataMethod::DataMethod(): dataMethodRep(new DataMethodRep())
 }
 
 
-DataMethod::DataMethod(const DataMethod& data_method)
+DataMethod::DataMethod(const DataMethod& data_method):
+  dataMethodRep(data_method.dataMethodRep)
 {
-  dataMethodRep = data_method.dataMethodRep;
 #ifdef REFCOUNT_DEBUG
   Cout << "DataMethod::DataMethod(DataMethod&)" << std::endl;
   if (dataMethodRep)

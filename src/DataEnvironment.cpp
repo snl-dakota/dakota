@@ -83,10 +83,9 @@ DataEnvironment::DataEnvironment(): dataEnvRep(new DataEnvironmentRep())
 }
 
 
-DataEnvironment::DataEnvironment(const DataEnvironment& data_env)
+DataEnvironment::DataEnvironment(const DataEnvironment& data_env):
+  dataEnvRep(data_env.dataEnvRep)
 {
-  dataEnvRep = data_env.dataEnvRep;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "DataEnvironment::DataEnvironment(DataEnvironment&)" << endl;
   if (dataEnvRep)

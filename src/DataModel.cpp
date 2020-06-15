@@ -214,9 +214,9 @@ DataModel::DataModel(): dataModelRep(new DataModelRep())
 }
 
 
-DataModel::DataModel(const DataModel& data_model)
+DataModel::DataModel(const DataModel& data_model):
+  dataModelRep(data_model.dataModelRep)
 {
-  dataModelRep = data_model.dataModelRep;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataModel::DataModel(DataModel&)" << std::endl;

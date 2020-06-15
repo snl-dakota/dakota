@@ -343,10 +343,9 @@ DataVariables::DataVariables(): dataVarsRep(new DataVariablesRep())
 }
 
 
-DataVariables::DataVariables(const DataVariables& data_vars)
+DataVariables::DataVariables(const DataVariables& data_vars):
+  dataVarsRep(data_vars.dataVarsRep)
 {
-  dataVarsRep = data_vars.dataVarsRep;
-
 #ifdef REFCOUNT_DEBUG
   Cout << "DataVariables::DataVariables(DataVariables&)" << std::endl;
   if (dataVarsRep)
