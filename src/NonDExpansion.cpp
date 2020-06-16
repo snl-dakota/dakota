@@ -1208,34 +1208,28 @@ configure_sequence(unsigned short& num_steps, unsigned short& fixed_index,
 }
 
 
-void NonDExpansion::
-configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
+bool NonDExpansion::
+query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 {
+  bool cost_defined = true;
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   ModelLIter m_iter;
   if (multilevel) {
     ModelLIter m_iter = --ordered_models.end(); // HF model
-    cost = m_iter->solution_level_costs(); // can be empty
-    if (cost.length() != num_steps) {
-      Cerr << "Error: missing required simulation costs in NonDExpansion::"
-	   << "configure_cost()." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
+    cost = m_iter->solution_level_costs();      // can be empty
+    if (cost.length() != num_steps)
+      cost_defined = false;
   }
   else  {
     cost.sizeUninitialized(num_steps);
     m_iter = ordered_models.begin();
-    bool missing_cost = false;
     for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
       cost[i] = m_iter->solution_level_cost(); // cost for active soln index
-      if (cost[i] <= 0.) missing_cost = true;
-    }
-    if (missing_cost) {
-      Cerr << "Error: missing required simulation cost in NonDExpansion::"
-	   << "configure_cost()." << std::endl;
-      abort_handler(METHOD_ERROR);
+      if (cost[i] <= 0.) cost_defined = false;
     }
   }
+  if (!cost_defined) cost.sizeUninitialized(0); // for compute_equivalent_cost()
+  return cost_defined;
 }
 
 
@@ -1406,8 +1400,8 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
       configure_indices(step, form, lev, seq_index);
       NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
     }
-    // *** TO DO: add protection if cost not specified (not reqd for MF exp)
-    RealVector cost;  configure_cost(num_steps, multilev, cost);
+    // cost specification is optional for multifidelity_expansion()
+    RealVector cost;  query_cost(num_steps, multilev, cost); // if provided
     compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
     // promote combined expansion to active
     combined_to_active();

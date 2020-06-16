@@ -268,9 +268,11 @@ protected:
   void configure_sequence(unsigned short& num_steps,
 			  unsigned short& fixed_index,
 			  bool& multilevel, bool mf_precedence);
-  /// configure fidelity/level counts from model hierarchy
+  /// extract cost estimates from model hierarchy (forms or resolutions)
   void configure_cost(unsigned short num_steps, bool multilevel,
 		      RealVector& cost);
+  /// extract cost estimates from model hierarchy, if available
+  bool query_cost(unsigned short num_steps, bool multilevel, RealVector& cost);
   /// configure response mode and active/truth/surrogate model keys within a
   /// hierarchical model.  s_index is the sequence index that defines the
   /// active dimension for a model sequence.
@@ -702,6 +704,18 @@ inline void NonDExpansion::maximum_refinement_iterations(int max_refine_iter)
 
 inline const Model& NonDExpansion::algorithm_space_model() const
 { return uSpaceModel; }
+
+
+inline void NonDExpansion::
+configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
+{
+  bool cost_defined = query_cost(num_steps, multilevel, cost);
+  if (!cost_defined) {
+    Cerr << "Error: missing required simulation cost data in NonDExpansion::"
+	 << "configure_cost()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
 
 
 inline size_t NonDExpansion::collocation_points() const
