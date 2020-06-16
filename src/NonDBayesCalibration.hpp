@@ -525,8 +525,6 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? mcmcModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
-  const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
   if (mv_dist.correlation()) {
     Cerr << "Error: prior_density() uses a product of marginal densities\n"
 	 << "       and can only be used for independent random variables."
@@ -534,18 +532,24 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
     abort_handler(METHOD_ERROR);
   }
 
-  size_t v, num_rv = mv_dist.random_variables().size();
+  // Don't need to map indices so long as activeVars corresponds to vec
+  //const SharedVariablesData& svd
+  //  = iteratedModel.current_variables().shared_data();
+
   const BitArray& active_vars = mv_dist.active_variables();
+  bool no_mask = active_vars.empty();
+  size_t v, num_rv = mv_dist.random_variables().size(),
+         active_rv = (no_mask) ? num_rv : active_vars.count();
+  if (active_rv != numContinuousVars) { // avoid call to .length()/.size()
+    PCerr << "Error: active variable size mismatch in NonDBayesCalibration::"
+	   << "prior_density(): " << active_rv << " expected, "
+	  << numContinuousVars << " provided." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
   Real pdf = 1.;
-  if (active_vars.empty()) {
-    if (num_rv != numContinuousVars) {
-      Cerr << "Error: active variable size mismatch in NonDBayesCalibration::"
-	   << "log_prior_density()" << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
+  if (no_mask)
     for (v=0; v<num_rv; ++v)
       pdf *= mv_dist.pdf(vec[v], v);
-  }
   else {
     size_t av_cntr = 0;
     for (v=0; v<num_rv; ++v)
@@ -561,23 +565,30 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
 }
 
 
-/* BMA: Disable specialization until MarginalsCorrDistribution handles active vs. all
 template <> 
 inline Real NonDBayesCalibration::prior_density(const RealVector& vec)
 {
   // template specialization supports RealVector (e.g., for MAP pre-solve)
 
-  Real pdf = (standardizedSpace) ?
-    mcmcModel.multivariate_distribution().pdf(vec) :    // u_dist
-    iteratedModel.multivariate_distribution().pdf(vec); // x_dist
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution() // u_dist
+    : iteratedModel.multivariate_distribution();                  // x_dist
 
-  // the estimated param is mult^2 ~ invgamma(alpha,beta)
-  for (size_t i=0; i<numHyperparams; ++i)
-    pdf *= invGammaDists[i].pdf(vec[numContinuousVars + i]);
-
+  Real pdf;
+  if (numHyperparams) {
+    // evaluate PDF for random variables
+    RealVector rv_vec(Teuchos::View, vec.values(), numContinuousVars);
+    pdf = mv_dist.pdf(rv_vec);
+    // augment w/ hyperparams: estimated param is mult^2 ~ invgamma(alpha,beta)
+    for (size_t i=0; i<numHyperparams; ++i)
+      pdf *= invGammaDists[i].pdf(vec[numContinuousVars + i]);
+  }
+  else
+    pdf = mv_dist.pdf(vec);
+    
   return pdf;
 }
-*/
+
 
 template <typename VectorType> 
 Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
@@ -585,8 +596,6 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? mcmcModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
-  const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
   if (mv_dist.correlation()) {
     Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
 	 << "       and can only be used for independent random variables."
@@ -594,18 +603,24 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
     abort_handler(METHOD_ERROR);
   }
 
-  size_t v, num_rv = mv_dist.random_variables().size();
+  // Don't need to map indices so long as activeVars corresponds to vec
+  //const SharedVariablesData& svd
+  //  = iteratedModel.current_variables().shared_data();
+
   const BitArray& active_vars = mv_dist.active_variables();
+  bool no_mask = active_vars.empty();
+  size_t v, num_rv = mv_dist.random_variables().size(),
+         active_rv = (no_mask) ? num_rv : active_vars.count();
+  if (active_rv != numContinuousVars) { // avoid call to .length()/.size()
+    PCerr << "Error: active variable size mismatch in NonDBayesCalibration::"
+	   << "log_prior_density(): " << active_rv << " expected, "
+	  << numContinuousVars << " provided." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
   Real log_pdf = 0.;
-  if (active_vars.empty()) {
-    if (num_rv != numContinuousVars) {
-      Cerr << "Error: active variable size mismatch in NonDBayesCalibration::"
-	   << "log_prior_density()" << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
+  if (no_mask)
     for (v=0; v<num_rv; ++v)
       log_pdf += mv_dist.log_pdf(vec[v], v);
-  }
   else {
     size_t av_cntr = 0;
     for (v=0; v<num_rv; ++v)
@@ -621,21 +636,28 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 }
 
 
-/* BMA: Disable specialization until MarginalsCorrDistribution handles active vs. all
 template <> 
 inline Real NonDBayesCalibration::log_prior_density(const RealVector& vec)
 {
-  Real log_pdf = (standardizedSpace) ?
-    mcmcModel.multivariate_distribution().log_pdf(vec) :    // u_dist
-    iteratedModel.multivariate_distribution().log_pdf(vec); // x_dist
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution() // u_dist
+    : iteratedModel.multivariate_distribution();                  // x_dist
 
-  // the estimated param is mult^2 ~ invgamma(alpha,beta)
-  for (size_t i=0; i<numHyperparams; ++i)
-    log_pdf += invGammaDists[i].log_pdf(vec[numContinuousVars + i]);
+  Real log_pdf;
+  if (numHyperparams) {
+    // evaluate PDF for random variables
+    RealVector rv_vec(Teuchos::View, vec.values(), numContinuousVars);
+    log_pdf = mv_dist.log_pdf(rv_vec);
+    // augment w/ hyperparams: estimated param is mult^2 ~ invgamma(alpha,beta)
+    for (size_t i=0; i<numHyperparams; ++i)
+      log_pdf += invGammaDists[i].log_pdf(vec[numContinuousVars + i]);
+  }
+  else
+    log_pdf = mv_dist.log_pdf(vec);
 
   return log_pdf;
 }
-*/
+
 
 template <typename Engine> 
 void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
