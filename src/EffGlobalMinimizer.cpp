@@ -167,7 +167,7 @@ void EffGlobalMinimizer::core_run() {
         // initialize convergence and flag variables
         initialize_convergence_variables();
 
-        // build initial GP once for all response functions: fHatModel.build_approximation()
+        // build initial GP for all response functions: fHatModel.build_approximation()
         build_gp();
 
         // check if iterated model supports asynchronous parallelism
@@ -178,7 +178,7 @@ void EffGlobalMinimizer::core_run() {
             if (parallelFlag) { // begin if parallelFlag = true -- then run in parallel
                 batch_synchronous_ego(); // batch-sequential parallelization
             } // end if parallelFlag = true -- then run in parallel
-            else { // else begin parallelFlag = false -- then run sequentially (reinstate old sequential implementation)
+            else { // else begin parallelFlag = false -- then run sequentially 
                 serial_ego();
             } // end if parallelFlag = false -- then run sequentially
         } // end approx convergence while loop
@@ -633,66 +633,66 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
                               EIF_objective_eval, NULL);
 
     // initialize input array for batch construction
-    VariablesArray varsArrayBatchAcquisition(BatchSizeAcquisition);
+    // VariablesArray varsArrayBatchAcquisition(BatchSizeAcquisition);
 
     // Note: vars_star: input; resp_star: output (liar); resp_star_truth: output (true)
     // construct the batch
-    // construct_batch_acquisition(BatchSizeAcquisition, varsArrayBatchAcquisition); // attempting consolidated
-    for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
+    construct_batch_acquisition(BatchSizeAcquisition, varsArrayBatchAcquisition); // attempting consolidated
+    // for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
 
-        // determine fnStar from among sample data
-        get_best_sample();
-        bestVariablesArray.front().continuous_variables(varStar); // debug
-        bestResponseArray.front().function_values(truthFnStar); // debug
+    //     // determine fnStar from among sample data
+    //     get_best_sample();
+    //     bestVariablesArray.front().continuous_variables(varStar); // debug
+    //     bestResponseArray.front().function_values(truthFnStar); // debug
 
-        // execute GLOBAL search and retrieve results
-        ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-        approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
-        const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
-        const RealVector& c_vars          = vars_star.continuous_variables();
-        const Response&   resp_star       = approxSubProbMinimizer.response_results();
-        const Real&       eif_star        = resp_star.function_value(0);
+    //     // execute GLOBAL search and retrieve results
+    //     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    //     approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
+    //     const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
+    //     const RealVector& c_vars          = vars_star.continuous_variables();
+    //     const Response&   resp_star       = approxSubProbMinimizer.response_results();
+    //     const Real&       eif_star        = resp_star.function_value(0);
 
-        // get expected value for output
-        fHatModel.continuous_variables(c_vars);
-        fHatModel.evaluate();
-        const Response& approx_response = fHatModel.current_response();
+    //     // get expected value for output
+    //     fHatModel.continuous_variables(c_vars);
+    //     fHatModel.evaluate();
+    //     const Response& approx_response = fHatModel.current_response();
 
-        Real aug_lag = augmented_lagrangian_merit(approx_response.function_values(),
-                                          iteratedModel.primary_response_fn_sense(),
-                                          iteratedModel.primary_response_fn_weights(),
-                                          origNonlinIneqLowerBnds,
-                                          origNonlinIneqUpperBnds,
-                                          origNonlinEqTargets);
+    //     Real aug_lag = augmented_lagrangian_merit(approx_response.function_values(),
+    //                                       iteratedModel.primary_response_fn_sense(),
+    //                                       iteratedModel.primary_response_fn_weights(),
+    //                                       origNonlinIneqLowerBnds,
+    //                                       origNonlinIneqUpperBnds,
+    //                                       origNonlinEqTargets);
 
-        Cout << "\nResults of EGO iteration:\nFinal point =\n"
-                << c_vars << "Expected Improvement    =\n                     "
-                << std::setw(write_precision+7) << -eif_star
-                << "\n                     " << std::setw(write_precision+7)
-                << aug_lag << " [merit]\n";
+    //     Cout << "\nResults of EGO iteration:\nFinal point =\n"
+    //             << c_vars << "Expected Improvement    =\n                     "
+    //             << std::setw(write_precision+7) << -eif_star
+    //             << "\n                     " << std::setw(write_precision+7)
+    //             << aug_lag << " [merit]\n";
 
-        // impose constant liar -- temporarily cast constant liar as observations
-        const IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + _i + 1, approx_response); // implement a liar counter
+    //     // impose constant liar -- temporarily cast constant liar as observations
+    //     const IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + _i + 1, approx_response); // implement a liar counter
 
-        // update GP
-        numDataPts = fHatModel.approximation_data(0).points(); // debug
-        Cout << "\nParallel EGO: Adding liar response...\n"; // debug
+    //     // update GP
+    //     numDataPts = fHatModel.approximation_data(0).points(); // debug
+    //     Cout << "\nParallel EGO: Adding liar response...\n"; // debug
 
-        // append constant liar to fHatModel (aka heuristic liar)
-        fHatModel.append_approximation(vars_star, resp_star_liar, true);
+    //     // append constant liar to fHatModel (aka heuristic liar)
+    //     fHatModel.append_approximation(vars_star, resp_star_liar, true);
 
-        // update constraints based on the constant liar
-        if (numNonlinearConstraints) {
-            const RealVector& fns_star_liar = resp_star_liar.second.function_values();
-            Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
-            if (norm_cv_star < etaSequence)
-                update_augmented_lagrange_multipliers(fns_star_liar);
-            else
-                update_penalty();
-        }
-        Cout << "Parallel EGO: Finished adding liar responses!\n";
-        varsArrayBatchAcquisition[_i] = vars_star.copy();
-    }
+    //     // update constraints based on the constant liar
+    //     if (numNonlinearConstraints) {
+    //         const RealVector& fns_star_liar = resp_star_liar.second.function_values();
+    //         Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
+    //         if (norm_cv_star < etaSequence)
+    //             update_augmented_lagrange_multipliers(fns_star_liar);
+    //         else
+    //             update_penalty();
+    //     }
+    //     Cout << "Parallel EGO: Finished adding liar responses!\n";
+    //     varsArrayBatchAcquisition[_i] = vars_star.copy();
+    // }
 
     // delete liar responses
     // delete_liar_responses(BatchSizeAcquisition); // attempting consolidated
