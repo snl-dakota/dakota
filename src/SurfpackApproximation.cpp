@@ -30,7 +30,6 @@
 #include "SurfpackInterface.h"
  
 #include <algorithm>
-#include <boost/math/special_functions/round.hpp>
 
 
 namespace Dakota {
@@ -722,33 +721,11 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
       diagnostic(req_diag);
    
     // BMA TODO: at runtime verify (though Surfpack will too) 
-    //  * 1/N <= percentFold <= 0.5
-    //  * 2 <= numFolds <= N
     if (shared_surf_data_rep->crossValidateFlag) {
-      int num_folds = shared_surf_data_rep->numFolds;
-      // if no folds, try percent, otherwise set default = 10
-      if (num_folds == 0) {
-        if (shared_surf_data_rep->percentFold > 0.0) {
-          num_folds = boost::math::iround(1./shared_surf_data_rep->percentFold);
-          if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
-            Cout << "Info: cross_validate num_folds = " << num_folds 
-                 << " calculated from specified percent = "
-                 << shared_surf_data_rep->percentFold << "." << std::endl;
-        }
-        else {
-          num_folds = 10;
-          if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
-            Cout << "Info: default num_folds = " << num_folds << " used."
-                 << std::endl;
-        }
-      }
-
+      unsigned num_folds = shared_surf_data_rep->numFolds;
       Cout << "\nSurrogate quality metrics (" << num_folds << "-fold CV) for " 
            << func_description << ":\n";
       RealArray cv_metrics = cv_diagnostic(diag_set, num_folds);
-      //CrossValidationFitness CV_fitness(num_folds);
-      //VecDbl cv_metrics;
-      //CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
       for (int j = 0; j < diag_set.size(); ++j) {
         const String& metric_type = diag_set[j];
         if (metric_type == "rsquared")
@@ -760,18 +737,12 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
           Cout << std::setw(20) << metric_type << std::setw(20) << cv_metrics[j] 
                << std::endl;
       }
-
     }
     if (shared_surf_data_rep->pressFlag) {
       Cout << "\nSurrogate quality metrics (PRESS/leave-one-out) for " 
            << func_description << ":\n";
-     
       // perform press as CV with N folds
       RealArray cv_metrics = cv_diagnostic(diag_set, surfData->size());
-      //CrossValidationFitness CV_fitness(surfData->size());
-      //VecDbl cv_metrics;
-      //CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
-     
       for (int j = 0; j < diag_set.size(); ++j) {
         const String& metric_type = diag_set[j];
         if (metric_type == "rsquared")

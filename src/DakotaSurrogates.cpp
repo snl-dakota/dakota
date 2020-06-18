@@ -19,6 +19,7 @@
  
 
 using dakota::MatrixXd;
+using dakota::VectorXd;
 
 
 namespace Dakota {
@@ -59,6 +60,21 @@ Real SurrogatesBaseApprox::diagnostic(const String& metric_type)
 }
 
 
+RealArray
+SurrogatesBaseApprox::cv_diagnostic(const StringArray& metric_types,
+				    unsigned num_folds)
+{
+  MatrixXd vars, resp;
+  convert_surrogate_data(vars,resp);
+
+  VectorXd cv_metrics_eigen =
+    model->cross_validate(vars, resp, metric_types, num_folds, 6716);
+
+  return RealArray(cv_metrics_eigen.data(),
+		   cv_metrics_eigen.data() + cv_metrics_eigen.size());
+}
+
+
 void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
 {
   // BMA TODO: Check for null in case not yet built?!?
@@ -84,6 +100,24 @@ void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
 	 << func_description << ":\n";
     for (size_t i=0; i<diag_set.size(); ++i)
       Cout << std::setw(20) << diag_set[i] << "  " << metric_vals[i] << '\n';
+
+    if (shared_surf_data_rep->crossValidateFlag) {
+      size_t num_folds = shared_surf_data_rep->numFolds;
+      RealArray cv_metrics = cv_diagnostic(diag_set, num_folds);
+      Cout << "\nSurrogate quality metrics (" << num_folds << "-fold CV) for "
+           << func_description << ":\n";
+      for (size_t i=0; i<diag_set.size(); ++i)
+	Cout << std::setw(20) << diag_set[i] << "  " << cv_metrics[i] << '\n';
+    }
+
+    if (shared_surf_data_rep->pressFlag) {
+      RealArray cv_metrics = cv_diagnostic(diag_set, vars.rows());
+      Cout << "\nSurrogate quality metrics (PRESS/leave-one-out) for "
+           << func_description << ":\n";
+      for (size_t i=0; i<diag_set.size(); ++i)
+	Cout << std::setw(20) << diag_set[i] << "  " << cv_metrics[i] << '\n';
+    }
+
   }
 }
 

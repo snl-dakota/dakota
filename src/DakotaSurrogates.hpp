@@ -51,6 +51,9 @@ public:
 
   Real diagnostic(const String& metric_type) override;
 
+  RealArray cv_diagnostic(const StringArray& metric_types,
+			  unsigned num_folds) override;
+
   void primary_diagnostics(int fn_index) override;
 
   void challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,

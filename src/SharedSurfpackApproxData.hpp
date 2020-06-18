@@ -98,6 +98,9 @@ private:
   /// validate metric names and cross validation options
   void validate_metrics(const std::set<std::string>& allowed_metrics);
 
+  /// compute number of folds from numFols/percentFold
+  unsigned compute_folds();
+
   //
   //- Heading: Data
   //

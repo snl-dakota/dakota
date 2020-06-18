@@ -242,11 +242,31 @@ validate_metrics(const std::set<std::string>& allowed_metrics)
 	   << std::endl;
       err_found = true;
     }
+
+    // calculate folds from default or percent if needed
+    if (numFolds == 0) {
+      if (percentFold > 0.0) {
+	numFolds = boost::math::iround(1./percentFold);
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "Info: cross_validate num_folds = " << numFolds
+	       << " calculated from specified percent = "
+	       << percentFold << "." << std::endl;
+      }
+      else {
+	numFolds = 10;
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "Info: default num_folds = " << numFolds << " used."
+	       << std::endl;
+      }
+    }
+
   }
 
   if (err_found)
     abort_handler(PARSE_ERROR);
 }
+
+
 
 
 } // namespace Dakota
