@@ -59,6 +59,7 @@ class SharedApproxData
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
   friend class SurrogatesGPApprox;
+  friend class SurrogatesBaseApprox;
   friend class SurrogatesPolyApprox;
 #endif // HAVE_DAKOTA_SURROGATES
 

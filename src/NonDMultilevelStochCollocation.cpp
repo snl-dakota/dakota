@@ -360,9 +360,11 @@ print_results(std::ostream& s, short results_state)
     if (!NLev.empty()) {
       s << "<<<<< Samples per solution level:\n";
       print_multilevel_evaluation_summary(s, NLev);
-      s << "<<<<< Equivalent number of high fidelity evaluations: "
-	<< equivHFEvals << std::endl;
-      archive_equiv_hf_evals(equivHFEvals);
+      if (equivHFEvals > 0.) {
+	s << "<<<<< Equivalent number of high fidelity evaluations: "
+	  << equivHFEvals << std::endl;
+	archive_equiv_hf_evals(equivHFEvals);
+      }
     }
     break;
   }

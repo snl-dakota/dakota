@@ -390,9 +390,9 @@ public:
   /// optimization tolerance for FT regression
   Real solverTol;
   /// Rounding tolerance for FT regression
-  Real roundingTol;
+  Real solverRoundingTol;
   /// arithmetic (rounding) tolerance for FT sums and products
-  Real arithmeticTol;
+  Real statsRoundingTol;
   /// sub-sample a tensor grid for generating regression data
   bool tensorGridFlag;
   /// starting polynomial order

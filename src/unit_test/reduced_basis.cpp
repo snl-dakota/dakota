@@ -19,8 +19,6 @@
 #include <Teuchos_UnitTestHarness.hpp> 
 #include <Teuchos_SerialDenseHelpers.hpp>
 
-#include "DakotaSurrogatesGP.hpp"
-
 using namespace Dakota;
 
 namespace {
@@ -371,7 +369,9 @@ TEUCHOS_UNIT_TEST(reduced_basis, truncations)
 
 #ifdef HAVE_DAKOTA_SURROGATES
 
+#include "DakotaSurrogatesGP.hpp"
 #include "GaussianProcess.hpp"
+
 
 // test construction and evaluation of a GP surrogate from data
 // matrices; one approximation per response

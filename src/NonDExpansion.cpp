@@ -1207,35 +1207,29 @@ configure_sequence(unsigned short& num_steps, unsigned short& fixed_index,
   }
 }
 
-  
-void NonDExpansion::
-configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
+
+bool NonDExpansion::
+query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 {
+  bool cost_defined = true;
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   ModelLIter m_iter;
   if (multilevel) {
     ModelLIter m_iter = --ordered_models.end(); // HF model
-    cost = m_iter->solution_level_costs(); // can be empty
-    if (cost.length() != num_steps) {
-      Cerr << "Error: missing required simulation costs in NonDExpansion::"
-	   << "configure_cost()." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
+    cost = m_iter->solution_level_costs();      // can be empty
+    if (cost.length() != num_steps)
+      cost_defined = false;
   }
   else  {
     cost.sizeUninitialized(num_steps);
     m_iter = ordered_models.begin();
-    bool missing_cost = false;
     for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
       cost[i] = m_iter->solution_level_cost(); // cost for active soln index
-      if (cost[i] <= 0.) missing_cost = true;
-    }
-    if (missing_cost) {
-      Cerr << "Error: missing required simulation cost in NonDExpansion::"
-	   << "configure_cost()." << std::endl;
-      abort_handler(METHOD_ERROR);
+      if (cost[i] <= 0.) cost_defined = false;
     }
   }
+  if (!cost_defined) cost.sizeUninitialized(0); // for compute_equivalent_cost()
+  return cost_defined;
 }
 
 
@@ -1349,6 +1343,8 @@ compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
 
 void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
 {
+  // clear any persistent state from previous (e.g., for OUU)
+  NLev.clear();
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
@@ -1397,16 +1393,24 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
 
   // promotion of combined to active can occur here or be deferred until
   // downstream (when this function is a helper within another algorithm)
-  if (to_active)
+  if (to_active) {
+    // generate summary output across model sequence
+    NLev.resize(num_steps);
+    for (step=0; step<num_steps; ++step) {
+      configure_indices(step, form, lev, seq_index);
+      NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
+    }
+    // cost specification is optional for multifidelity_expansion()
+    RealVector cost;  query_cost(num_steps, multilev, cost); // if provided
+    compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
+    // promote combined expansion to active
     combined_to_active();
+  }
 }
 
 
 void NonDExpansion::greedy_multifidelity_expansion()
 {
-  // clear any persistent state from previous (e.g., for OUU)
-  NLev.clear();
-
   // Generate MF reference expansion that is starting pt for greedy refinement:
   // > Only generate combined{MultiIndex,ExpCoeffs,ExpCoeffGrads}; active
   //   multiIndex,expansionCoeff{s,Grads} remain at ref state (no roll up)
