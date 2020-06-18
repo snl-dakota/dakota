@@ -90,29 +90,32 @@ void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
 
 void SurrogatesBaseApprox::
 challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
-                             const RealVector& challenge_responses)
+		      const RealVector& challenge_responses)
 {
-  // BMA TODO w/ DTS: possibly map chall pts/responses to Eigen once here
-
   String func_description = approxLabel.empty() ?
     "function " + std::to_string(fn_index+1) : approxLabel;
   StringArray diag_set =
     ((SharedSurfpackApproxData*)sharedDataRep)->diagnosticSet;
+
   // conditionally print default diagnostics
-  if (diag_set.empty() && sharedDataRep->outputLevel > NORMAL_OUTPUT) {
-    diag_set.push_back("root_mean_squared");
-    diag_set.push_back("mean_abs");
-    diag_set.push_back("rsquared");
-  }
-  Cout << "\nSurrogate quality metrics at challenge (test) points for "
-       << func_description << ":\n";
+  if (diag_set.empty() && sharedDataRep->outputLevel > NORMAL_OUTPUT)
+    diag_set = {"root_mean_squared", "mean_abs", "rsquared"};
 
-  for (const auto& metric_type : diag_set) {
-    // BMA TODO: Once DTS finalizes interface for metric at build points
-    Real approx_diag = std::numeric_limits<Real>::quiet_NaN();
-    // = model->metric(metric_type, challenge_points, challenge_reponses);
+  if (!diag_set.empty()) {
 
-    Cout << std::setw(20) << metric_type << "  " << approx_diag << '\n';
+    // using Eigen Map to avoid reliance on Teuchos adapter
+    Eigen::Map<Eigen::MatrixXd> vars(challenge_points.values(),
+				     challenge_points.numRows(),
+				     challenge_points.numCols());
+    Eigen::Map<Eigen::MatrixXd> resp(challenge_responses.values(),
+				     challenge_responses.length(), 1);
+
+    auto metric_vals = model->evaluate_metrics(diag_set, vars, resp);
+
+    Cout << "\nSurrogate quality metrics at challenge (test) points for "
+	 << func_description << ":\n";
+    for (size_t i=0; i<diag_set.size(); ++i)
+      Cout << std::setw(20) << diag_set[i] << "  " << metric_vals[i] << '\n';
   }
 }
 
@@ -177,12 +180,9 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
   const size_t num_vars = c_vars.length();
   const size_t num_qoi = 1;
 
-  //Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
-  // Need to use Teuchos-to-Eigen converters - RWH
-  MatrixXd eval_pts(num_evals, num_vars);
-  MatrixXd pred    (num_evals, num_qoi);
-  for (size_t j = 0; j < num_vars; j++)
-    eval_pts(0,j) = c_vars[j];
+  // Could instead use RowVectorXd
+  Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
+  MatrixXd pred(num_evals, num_qoi);
 
   model->value(eval_pts, pred);
 
@@ -194,13 +194,9 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   const size_t num_evals = 1;
   const size_t num_vars = c_vars.length();
 
-  // Need to use Teuchos-to-Eigen converters - RWH
-  MatrixXd eval_pts(num_evals, num_vars);
-  for (size_t j = 0; j < num_vars; j++)
-    eval_pts(0,j) = c_vars[j];
+  Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
 
-  // could avoid the temporary and copy by passing an Eigen view of
-  // approxGradient
+  // not sending Eigen view of approxGradient as model->gradient calls resize()
   const size_t qoi = 0; // only one response for now
   MatrixXd pred_grad(num_evals, num_vars);
   model->gradient(eval_pts, pred_grad, qoi);
