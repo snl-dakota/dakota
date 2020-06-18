@@ -51,7 +51,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
   mval /= N;
   mval = std::sqrt(mval);
 
-  metric = compute_metric(p, d, "rms");
+  metric = compute_metric(p, d, "root_mean_squared");
 
   TEST_ASSERT(std::abs(mval - metric) < atol);
 

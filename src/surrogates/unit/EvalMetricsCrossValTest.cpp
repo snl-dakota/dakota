@@ -55,7 +55,7 @@ TEUCHOS_UNIT_TEST(surrogates, eval_metrics_and_cross_validation)
 
   /* Evaluate metrics */
   StringArray metrics_names = {"sum_squared", "mean_squared",
-  "rms", "sum_abs", "mean_abs", "max_abs"};
+  "root_mean_squared", "sum_abs", "mean_abs", "max_abs"};
   //"rsquared"};
   //"ape, "mape", "rsquared"};
   

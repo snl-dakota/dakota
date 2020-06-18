@@ -22,7 +22,7 @@ static BimapMetrictypeStr type_name_bimap =
   boost::assign::list_of< BimapMetrictypeStr::relation >
   (METRIC_TYPE::SUM_SQUARED, "sum_squared")
   (METRIC_TYPE::MEAN_SQUARED, "mean_squared")
-  (METRIC_TYPE::ROOT_MEAN_SQUARED, "rms")
+  (METRIC_TYPE::ROOT_MEAN_SQUARED, "root_mean_squared")
   (METRIC_TYPE::SUM_ABS, "sum_abs")
   (METRIC_TYPE::MEAN_ABS, "mean_abs")
   (METRIC_TYPE::MAX_ABS, "max_abs")

@@ -75,8 +75,11 @@ RealMatrix Surrogate::evaluate_metrics(const StringArray &mnames,
 
   const int num_metrics = mnames.size();
   /* Assuming numQOI = 1 */
-  Eigen::Map<MatrixXd> eigen_points(points.values(), num_metrics, 1);
-  Eigen::Map<MatrixXd> eigen_ref_values(ref_values.values(), num_metrics, 1);
+  Eigen::Map<MatrixXd> eigen_points(points.values(), points.numRows(),
+				    points.numCols());
+  Eigen::Map<MatrixXd> eigen_ref_values(ref_values.values(),
+					ref_values.numRows(),
+					ref_values.numCols());
   VectorXd eigen_metrics = evaluate_metrics(mnames, eigen_points,
     eigen_ref_values);
 
