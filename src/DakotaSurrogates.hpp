@@ -68,6 +68,9 @@ protected:
   /// The native surrogate model
   std::shared_ptr<dakota::surrogates::Surrogate> model;
 
+  /// Advanced configurations options filename
+  String advanced_options_file;
+
 };
 
 } // namespace Dakota

@@ -119,8 +119,14 @@ SurrogatesGPApprox::build()
   surrogateOpts.set("length-scale bounds", length_scale_bounds);
 
   // construct the surrogate
-  model.reset(new dakota::surrogates::GaussianProcess
-	      (vars, resp, surrogateOpts));
+  if (!advanced_options_file.empty()) {
+    model.reset(new dakota::surrogates::GaussianProcess
+	        (vars, resp, advanced_options_file));
+  }
+  else {
+    model.reset(new dakota::surrogates::GaussianProcess
+	        (vars, resp, surrogateOpts));
+  }
 }
 
 

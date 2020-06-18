@@ -9,6 +9,7 @@
 
 #include "DakotaSurrogates.hpp"
 
+#include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
 
 // Headers from Surrogates module
@@ -26,7 +27,9 @@ SurrogatesBaseApprox(const ProblemDescDB& problem_db,
 		     const SharedApproxData& shared_data,
 		     const String& approx_label):
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
-{ }
+{
+  advanced_options_file = problem_db.get_string("model.advanced_options_file");
+}
 
 
 SurrogatesBaseApprox::

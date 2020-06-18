@@ -55,8 +55,16 @@ SurrogatesPolyApprox::build()
 {
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp);
-  model.reset(new dakota::surrogates::PolynomialRegression
-	      (vars, resp, surrogateOpts));
+
+  // construct the surrogate
+  if (!advanced_options_file.empty()) {
+    model.reset(new dakota::surrogates::PolynomialRegression
+	        (vars, resp, advanced_options_file));
+  }
+  else {
+    model.reset(new dakota::surrogates::PolynomialRegression
+	        (vars, resp, surrogateOpts));
+  }
 }
 
 
