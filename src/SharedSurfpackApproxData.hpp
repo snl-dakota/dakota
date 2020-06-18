@@ -44,6 +44,7 @@ class SharedSurfpackApproxData: public SharedApproxData
     
   friend class VPSApproximation;  // Mohamed Ebeida
 
+  friend class SurrogatesBaseApprox;
   friend class SurrogatesGPApprox;
   friend class SurrogatesPolyApprox;
 
@@ -87,9 +88,11 @@ private:
 			     const RealVector& drv, RealArray& ra);
   /// aggregate {continuous,discrete int,discrete real} variables 
   /// from SurrogateDataVars into ra
+  //template<typename ArrayT>
   void sdv_to_realarray(const Pecos::SurrogateDataVars& sdv, RealArray& ra);
   /// aggregate {active,all} {continuous,discrete int,discrete real}
   /// variables into ra
+  //template<typename ArrayT>
   void vars_to_realarray(const Variables& vars, RealArray& ra);
 
   /// validate metric names and cross validation options

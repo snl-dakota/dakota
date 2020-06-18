@@ -45,6 +45,17 @@ public:
   /// destructor
   ~SurrogatesBaseApprox() { }
 
+  // diagnostics: all documented at base class
+
+  bool diagnostics_available() override;
+
+  Real diagnostic(const String& metric_type) override;
+
+  void primary_diagnostics(int fn_index) override;
+
+  void challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+                             const RealVector& challenge_responses) override;
+
   // Modify configuration options through the parameterList (non-const)
   dakota::ParameterList& getSurrogateOpts();
 
