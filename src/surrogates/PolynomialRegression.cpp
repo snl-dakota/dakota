@@ -9,6 +9,8 @@
 #include "PolynomialRegression.hpp"
 #include "surrogates_tools.hpp"
 
+#include "Teuchos_XMLParameterListCoreHelpers.hpp"
+
 namespace dakota {
 namespace surrogates {
 
@@ -26,11 +28,26 @@ PolynomialRegression::PolynomialRegression(const ParameterList &param_list) {
   configOptions = param_list;
 }
 
+PolynomialRegression::PolynomialRegression(const std::string &param_list_xml_filename) {
+  default_options();
+  auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
+  configOptions = *param_list;
+}
+
 PolynomialRegression::PolynomialRegression(const MatrixXd &samples,
                                            const MatrixXd &response,
                                            const ParameterList &param_list) {
   default_options();
   configOptions = param_list;
+  build(samples, response);
+}
+
+PolynomialRegression::PolynomialRegression(const MatrixXd &samples,
+                                           const MatrixXd &response,
+                                           const std::string &param_list_xml_filename) {
+  default_options();
+  auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
+  configOptions = *param_list;
   build(samples, response);
 }
 
