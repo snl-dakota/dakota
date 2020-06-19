@@ -177,13 +177,14 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
   // num_samples x num_qoi
   resp.resize(num_pts, num_qoi);
 
-  // Need to use Teuchos-to-Eigen converters - RWH
-  for (size_t i=0; i<num_pts; ++i)
-  {
-    const RealVector& c_vars = sdv_array[i].continuous_variables();
-    for (size_t j=0; j<num_v; j++){
-      vars(i,j) = c_vars[j];
-    }
+  // gymnastics since underlying merge_data_partial is strongly typed
+  // and can't pass an Eigen type
+  RealArray x(num_v);
+  Eigen::Map<VectorXd> x_eig(x.data(), num_v);
+  for (size_t i=0; i<num_pts; ++i) {
+    ((SharedSurfpackApproxData*)sharedDataRep)->
+      sdv_to_realarray(sdv_array[i], x);
+    vars.row(i) = x_eig;
     resp(i,0) = sdr_array[i].response_function();
   }
 }
@@ -191,13 +192,17 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
 
 Real SurrogatesBaseApprox::value(const Variables& vars)
 {
-  return value(vars.continuous_variables());
+  RealVector x_rv(sharedDataRep->numVars);
+  ((SharedSurfpackApproxData*)sharedDataRep)->vars_to_realarray(vars, x_rv);
+  return value(x_rv);
 }
 
 
 const RealVector& SurrogatesBaseApprox::gradient(const Variables& vars)
 {
-  return gradient(vars.continuous_variables());
+  RealVector x_rv(sharedDataRep->numVars);
+  ((SharedSurfpackApproxData*)sharedDataRep)->vars_to_realarray(vars, x_rv);
+  return gradient(x_rv);
 }
 
 

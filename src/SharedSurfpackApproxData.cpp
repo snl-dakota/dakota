@@ -16,8 +16,6 @@
 
 #include "SharedSurfpackApproxData.hpp"
 #include "ProblemDescDB.hpp"
-#include "DakotaVariables.hpp"
-#include "SurrogateData.hpp"
 #include "dakota_data_io.hpp"
 
 // Headers from Surfpack
@@ -88,57 +86,6 @@ SharedSurfpackApproxData(const String& approx_type,
 
 
 void SharedSurfpackApproxData::
-merge_variable_arrays(const RealVector& cv,  const IntVector& div,
-		      const RealVector& drv, RealArray& ra)
-{
-  size_t num_cv = cv.length(), num_div = div.length(), num_drv = drv.length(),
-         num_v  = num_cv + num_div + num_drv;
-  ra.resize(num_v);
-  if (num_cv)   copy_data_partial(cv,  ra, 0);
-  if (num_div) merge_data_partial(div, ra, num_cv);
-  if (num_drv)  copy_data_partial(drv, ra, num_cv+num_div);
-}
-
-
-void SharedSurfpackApproxData::
-sdv_to_realarray(const Pecos::SurrogateDataVars& sdv, RealArray& ra)
-{
-  // check incoming vars for correct length (active or all views)
-  const RealVector&  cv = sdv.continuous_variables();
-  const IntVector&  div = sdv.discrete_int_variables();
-  const RealVector& drv = sdv.discrete_real_variables();
-  if (cv.length() + div.length() + drv.length() == numVars)
-    merge_variable_arrays(cv, div, drv, ra);
-  else {
-    Cerr << "Error: bad parameter set length in SharedSurfpackApproxData::"
-	 << "sdv_to_realarray(): " << numVars << " != " << cv.length() << " + "
-	 << div.length() << " + " << drv.length() << "." << std::endl;
-    abort_handler(-1);
-  }
-}
-  
-
-void SharedSurfpackApproxData::
-vars_to_realarray(const Variables& vars, RealArray& ra)
-{
-  // check incoming vars for correct length (active or all views)
-  if (vars.cv() + vars.div() + vars.drv() == numVars)
-    merge_variable_arrays(vars.continuous_variables(),
-			  vars.discrete_int_variables(),
-			  vars.discrete_real_variables(), ra);
-  else if (vars.acv() + vars.adiv() + vars.adrv() == numVars)
-    merge_variable_arrays(vars.all_continuous_variables(),
-			  vars.all_discrete_int_variables(),
-			  vars.all_discrete_real_variables(), ra);
-  else {
-    Cerr << "Error: bad parameter set length in SharedSurfpackApproxData::"
-	 << "vars_to_realarray()." << std::endl;
-    abort_handler(-1);
-  }
-}
-  
-
-void SharedSurfpackApproxData::
 add_sd_to_surfdata(const Pecos::SurrogateDataVars& sdv,
 		   const Pecos::SurrogateDataResp& sdr, short fail_code,
 		   SurfData& surf_data)
@@ -152,7 +99,7 @@ add_sd_to_surfdata(const Pecos::SurrogateDataVars& sdv,
   // be contained within SDV's continuousVars (see Approximation::add(Real*)),
   // although it depends on eval cache lookups as shown in
   // ApproximationInterface::update_approximation().
-  RealArray x; 
+  RealArray x(numVars);
   sdv_to_realarray(sdv, x);
   Real f = sdr.response_function();
 

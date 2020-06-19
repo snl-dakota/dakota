@@ -411,7 +411,7 @@ void SurfpackApproximation::build()
     if (!sharedDataRep->approxCLowerBnds.empty() ||
 	!sharedDataRep->approxDILowerBnds.empty() ||
 	!sharedDataRep->approxDRLowerBnds.empty()) {
-      RealArray lb;
+      RealArray lb(sharedDataRep->numVars);
       shared_surf_data_rep->merge_variable_arrays(
 	sharedDataRep->approxCLowerBnds, sharedDataRep->approxDILowerBnds,
 	sharedDataRep->approxDRLowerBnds, lb);
@@ -420,7 +420,7 @@ void SurfpackApproximation::build()
     if (!sharedDataRep->approxCUpperBnds.empty() ||
 	!sharedDataRep->approxDIUpperBnds.empty() ||
 	!sharedDataRep->approxDRUpperBnds.empty()) {
-      RealArray ub;
+      RealArray ub(sharedDataRep->numVars);
       shared_surf_data_rep->merge_variable_arrays(
 	sharedDataRep->approxCUpperBnds, sharedDataRep->approxDIUpperBnds,
 	sharedDataRep->approxDRUpperBnds, ub);
@@ -516,7 +516,7 @@ Real SurfpackApproximation::value(const Variables& vars)
     abort_handler(-1);
   }
 
-  RealArray x_array;
+  RealArray x_array(sharedDataRep->numVars);
   ((SharedSurfpackApproxData*)sharedDataRep)->vars_to_realarray(vars, x_array);
   return (*model)(x_array);
 }
@@ -526,7 +526,7 @@ const RealVector& SurfpackApproximation::gradient(const Variables& vars)
 {
   approxGradient.sizeUninitialized(vars.cv());
   try {
-    RealArray x_array;
+    RealArray x_array(sharedDataRep->numVars);
     ((SharedSurfpackApproxData*)sharedDataRep)
       ->vars_to_realarray(vars, x_array);
     VecDbl local_grad = model->gradient(x_array);
@@ -552,7 +552,7 @@ const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
 	   << std::endl;
       abort_handler(-1);
     }
-    RealArray x_array;
+    RealArray x_array(sharedDataRep->numVars);
     ((SharedSurfpackApproxData*)sharedDataRep)
       ->vars_to_realarray(vars, x_array);
     MtxDbl sm = model->hessian(x_array);
@@ -573,7 +573,7 @@ const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
 Real SurfpackApproximation::prediction_variance(const Variables& vars)
 {
   try {
-    RealArray x_array;
+    RealArray x_array(sharedDataRep->numVars);
     ((SharedSurfpackApproxData*)sharedDataRep)
       ->vars_to_realarray(vars, x_array);
     return model->variance(x_array);
@@ -881,7 +881,7 @@ add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
     return;
 
   // Surfpack's RealArray is std::vector<double>
-  RealArray x; 
+  RealArray x(sharedDataRep->numVars);
   Real f;
   RealArray gradient;
   SurfpackMatrix<Real> hessian;
