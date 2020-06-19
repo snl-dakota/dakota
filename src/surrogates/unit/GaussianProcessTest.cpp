@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -480,6 +480,34 @@ int test_gp(double atol){
   return 0;
 }
 
+int test_gp_read_from_parameterlist() {
+  // Test reading from a ParameterList XML file.
+  std::string test_parameterlist_file = "gp_test_data/GP_test_parameterlist.xml";
+  GaussianProcess gp(test_parameterlist_file);
+
+  ParameterList plist;
+  gp.get_options(plist);
+
+  if ( plist.get<std::string>("scaler name") != "standardization" ) return 1;
+  if ( plist.get<int>("num restarts") != 10 )                       return 2;
+  if ( plist.get<int>("gp seed") != 42 )                            return 3;
+  
+  const ParameterList plist_nugget = plist.get<ParameterList>("Nugget");
+  if ( plist_nugget.get<double>("fixed nugget") - 9.99999999999999980e-13 > 1e-14 ) return 4;
+  if ( plist_nugget.get<bool>("estimate nugget") )                                  return 5;
+
+  const ParameterList plist_trend = plist.get<ParameterList>("Trend");
+  if ( plist_trend.get<bool>("estimate trend") ) return 6;
+
+  const ParameterList plist_options = plist_trend.get<ParameterList>("Options");
+  if ( plist_options.get<int>("max degree") != 2 )                         return 7;
+  if ( plist_options.get<double>("p-norm") - 1.0 > 1e-4 )                  return 8;
+  if ( plist_options.get<std::string>("scaler type") != "none" )           return 9;
+  if ( plist_options.get<std::string>("regression solver type") != "SVD" ) return 10;
+
+  return 0;
+}
+
 //----------------------------------------------------------------
 // Unit tests
 
@@ -490,6 +518,10 @@ int test_gp(double atol){
 TEUCHOS_UNIT_TEST(surrogates, gaussian_process)
 {
   TEST_ASSERT(!test_gp(5e-7));
+
+  int result = test_gp_read_from_parameterlist();
+  // std::cout << "result: " << result << std::endl;
+  TEST_ASSERT(result == 0);
 }
 
 }

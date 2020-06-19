@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -897,9 +897,11 @@ print_results(std::ostream& s, short results_state)
     if (!NLev.empty()) {
       s << "<<<<< Samples per solution level:\n";
       print_multilevel_evaluation_summary(s, NLev);
-      s << "<<<<< Equivalent number of high fidelity evaluations: "
-	<< equivHFEvals << std::endl;
-      archive_equiv_hf_evals(equivHFEvals);
+      if (equivHFEvals > 0.) {
+	s << "<<<<< Equivalent number of high fidelity evaluations: "
+	  << equivHFEvals << std::endl;
+	archive_equiv_hf_evals(equivHFEvals);
+      }
     }
     break;
   }

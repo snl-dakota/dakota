@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -219,14 +219,21 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
 
   NonDExpansion::initialize_u_space_model();
 
+  initialize_c3_db_options(); // scalars (maxRankSpec,maxOrderSpec,randomSeed)
+
+  // start rank & random seed not used by C3 until C3Approx::build()
+  // > MF: assign_specification_sequence(),update_u_space_sampler() are used
+  // > ML:     increment_sample_sequence(),update_u_space_sampler() are used
   //initialize_c3_start_rank(start_rank());
-  //initialize_c3_seed(random_seed());
-  initialize_c3_db_options();
-  //UShortArray orders; // init redundant with DataFitSurrModel ctor
+  //initialize_c3_seed(random_seed()); // sequence spec
+  //
+  // init of start orders redundant w/ DataFitSurrModel/SharedC3ApproxData ctors
+  //UShortArray orders;
   //configure_expansion_orders(start_order(), dimPrefSpec, orders);
   //initialize_c3_start_orders(orders);
 
-  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
+  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis and
+  // requires {start,max} order
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
   uSpaceModel.shared_approximation().construct_basis(u_dist);
@@ -311,21 +318,13 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
 
 void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-
   // This fn assigns the user specification from the relevant model sequences,
   // prior to any refinement/adaptation (use local attributes, not the state
   // of SharedC3ApproxData,C3Approximation
 
-  push_c3_start_rank(start_rank());
-  push_c3_max_rank(maxRankSpec); // restore if adapted (no sequence)
   UShortArray orders;
   configure_expansion_orders(start_order(), dimPrefSpec, orders);
-  push_c3_start_orders(orders);
-  push_c3_seed(random_seed());
-
-  shared_data_rep->update_basis(); // propagate order updates to oneApproxOpts
+  push_c3_active(orders); // push active start {orders,rank}, max rank, seed
 
   size_t colloc_pts = collocation_points();
   if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined
@@ -352,40 +351,15 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
 void NonDMultilevelFunctionTrain::increment_specification_sequence()
 {
   // regression
-  // advance expansionOrder and/or collocationPoints, as admissible
-  size_t next_i = sequenceIndex + 1;
-  if (next_i <  collocPtsSeqSpec.size() || next_i <  startRankSeqSpec.size() ||
-      next_i < startOrderSeqSpec.size() || next_i < randomSeedSeqSpec.size())
+
+  // advance sequence specs (Note: sequenceIndex admissibility is adequately
+  // handled in active value accessors)
+  //size_t next_i = sequenceIndex + 1;
+  //if (next_i <  collocPtsSeqSpec.size() || next_i < startRankSeqSpec.size() ||
+  //    next_i < startOrderSeqSpec.size() || next_i < randomSeedSeqSpec.size())
     ++sequenceIndex;
 
   assign_specification_sequence();
-}
-
-
-void NonDMultilevelFunctionTrain::
-infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
-{
-  size_t i, num_steps = pilot.size(), regress_i, regress_rank;
-  UShortArray so_i;
-  for (i=0; i<num_steps; ++i) {
-    configure_expansion_orders(start_order(i), dimPrefSpec, so_i);
-    regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
-      maxRankSpec : start_rank(i);
-    regress_i = SharedC3ApproxData::regression_size(numContinuousVars,
-      regress_rank, maxRankSpec, so_i, maxOrderSpec);
-    pilot[i] = (size_t)std::floor(collocRatio * (Real)regress_i + .5);
-  }
-}
-
-
-void NonDMultilevelFunctionTrain::
-increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
-{
-  numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
-
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  update_u_space_sampler(step, shared_data_rep->start_orders());
 }
 
 
@@ -411,6 +385,42 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 
 
 void NonDMultilevelFunctionTrain::
+infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
+{
+  size_t i, num_steps = pilot.size(), regress_i, regress_rank;
+  UShortArray so_i;
+  for (i=0; i<num_steps; ++i) {
+    configure_expansion_orders(start_order(i), dimPrefSpec, so_i);
+    regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
+      maxRankSpec : start_rank(i);
+    regress_i = SharedC3ApproxData::regression_size(numContinuousVars,
+      regress_rank, maxRankSpec, so_i, maxOrderSpec);
+    pilot[i] = (size_t)std::floor(collocRatio * (Real)regress_i + .5);
+  }
+}
+
+
+void NonDMultilevelFunctionTrain::
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
+{
+  numSamplesOnModel = new_samp; // total_samp,lev not used by this derived class
+
+  // ML FT: This virtual fn is called from multilevel_regression() for the
+  //   current resolution level.  No explicit rank/order refinement occurs
+  //   (only implicit via C3 adapt_rank), but sequence spec (along with any
+  //   future advancements) must be propagated.
+  // MF FT: rank/order advancements occur in {assign,increment}_specification_
+  //   sequence() above
+  sequenceIndex = step;
+  UShortArray orders;
+  configure_expansion_orders(start_order(), dimPrefSpec, orders);
+  push_c3_active(orders);
+
+  update_u_space_sampler(step, orders);
+}
+
+
+void NonDMultilevelFunctionTrain::
 compute_sample_increment(const RealVector& regress_metrics,
 			 const SizetArray& N_l, SizetArray& delta_N_l)
 {
@@ -431,9 +441,9 @@ compute_sample_increment(const RealVector& regress_metrics,
   // > May need to tune this user spec (and its default)
 
   // update targets based on regression size
-  RealVector new_N_l = regress_metrics; // number of unknowns (RMS across QoI)
-  if (collocRatio > 0.)  new_N_l.scale(collocRatio);
-  else                   new_N_l.scale(2.); // default: over-sample 2x
+  RealVector new_N_l  = regress_metrics; // number of unknowns (RMS across QoI)
+  if (collocRatio > 0.) new_N_l.scale(collocRatio);
+  else                  new_N_l.scale(2.); // default: over-sample 2x
 
   // Retain the shape of the profile but enforce an upper bound
   //scale_profile(..., new_N_l);
@@ -458,9 +468,11 @@ print_results(std::ostream& s, short results_state)
     if (!NLev.empty()) {
       s << "<<<<< Samples per solution level:\n";
       print_multilevel_evaluation_summary(s, NLev);
-      s << "<<<<< Equivalent number of high fidelity evaluations: "
-	<< equivHFEvals << std::endl;
-      archive_equiv_hf_evals(equivHFEvals);
+      if (equivHFEvals > 0.) {
+	s << "<<<<< Equivalent number of high fidelity evaluations: "
+	  << equivHFEvals << std::endl;
+	archive_equiv_hf_evals(equivHFEvals);
+      }
     }
     break;
   }

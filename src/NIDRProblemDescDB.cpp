@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -6773,7 +6773,6 @@ static Method_mp_ord
 
 static Real
 	MP_(absConvTol),
-	MP_(arithmeticTol),
 	MP_(centeringParam),
 	MP_(collocationRatio),
 	MP_(collocRatioTermsOrder),
@@ -6808,13 +6807,14 @@ static Real
         MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
-	MP_(roundingTol),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
         MP_(smoothFactor),
  	MP_(solnTarget),
+	MP_(solverRoundingTol),
 	MP_(solverTol),
+	MP_(statsRoundingTol),
 	MP_(stepLenToBoundary),
 	MP_(threshDelta),
 	MP_(threshStepLength),
@@ -7424,7 +7424,6 @@ static Model_mp_utype
 static Real
         MP_(adaptedBasisCollocRatio),
         MP_(annRange),
-	MP_(arithmeticTol),
 	MP_(collocationRatio),
 	MP_(convergenceTolerance),
 	MP_(decreaseTolerance),
@@ -7434,8 +7433,9 @@ static Real
 	MP_(percentFold),
 	MP_(regressionL2Penalty),
 	MP_(relTolerance),
-	MP_(roundingTol),
+	MP_(solverRoundingTol),
 	MP_(solverTol),
+	MP_(statsRoundingTol),
 	MP_(truncationTolerance);
 
 static RealVector

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -2539,9 +2539,9 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"nl2sol.initial_trust_radius", P initTRRadius},
       {"nl2sol.singular_conv_tol", P singConvTol},
       {"nl2sol.singular_radius", P singRadius},
-      {"nond.c3function_train.arithmetic_tolerance", P arithmeticTol},
-      {"nond.c3function_train.rounding_tolerance", P roundingTol},
+      {"nond.c3function_train.solver_rounding_tolerance", P solverRoundingTol},
       {"nond.c3function_train.solver_tolerance", P solverTol},
+      {"nond.c3function_train.stats_rounding_tolerance", P statsRoundingTol},
       {"nond.collocation_ratio", P collocationRatio},
       {"nond.collocation_ratio_terms_order", P collocRatioTermsOrder},
       {"nond.multilevel_estimator_rate", P multilevEstimatorRate},
@@ -2580,10 +2580,10 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"active_subspace.truncation_method.energy.truncation_tolerance",
        P truncationTolerance},
       {"adapted_basis.collocation_ratio", P adaptedBasisCollocRatio},
-      {"c3function_train.arithmetic_tolerance", P arithmeticTol},
       {"c3function_train.collocation_ratio", P collocationRatio},
-      {"c3function_train.rounding_tolerance", P roundingTol},
+      {"c3function_train.solver_rounding_tolerance", P solverRoundingTol},
       {"c3function_train.solver_tolerance", P solverTol},
+      {"c3function_train.stats_rounding_tolerance", P statsRoundingTol},
       {"convergence_tolerance", P convergenceTolerance},
       {"surrogate.discont_grad_thresh", P discontGradThresh},
       {"surrogate.discont_jump_thresh", P discontJumpThresh},
