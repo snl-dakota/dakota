@@ -21,6 +21,8 @@
 #include "GaussianKDE.hpp"
 #include "ANN/ANN.h" 
 
+//#define DEBUG
+
 namespace Dakota {
 
 
@@ -548,13 +550,23 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
   }
   Real pdf = 1.;
   if (no_mask)
-    for (v=0; v<num_rv; ++v)
+    for (v=0; v<num_rv; ++v) {
+#ifdef DEBUG
+      Cout << "Variable " << v+1 << " = " << vec[v] << " prior density = "
+	   << mv_dist.pdf(vec[v], v) << std::endl;
+#endif // DEBUG
       pdf *= mv_dist.pdf(vec[v], v);
+    }
   else {
     size_t av_cntr = 0;
     for (v=0; v<num_rv; ++v)
-      if (active_vars[v])
+      if (active_vars[v]) {
+#ifdef DEBUG
+	Cout << "Variable " << v+1 << " = " << vec[av_cntr]<<" prior density = "
+	     << mv_dist.pdf(vec[av_cntr], v) << std::endl;
+#endif // DEBUG
 	pdf *= mv_dist.pdf(vec[av_cntr++], v);
+      }
   }
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
@@ -619,13 +631,26 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
   }
   Real log_pdf = 0.;
   if (no_mask)
-    for (v=0; v<num_rv; ++v)
+    for (v=0; v<num_rv; ++v) {
+#ifdef DEBUG
+      Cout << "Variable " << v+1 << " = " << vec[v] << " prior density = "
+	   << mv_dist.pdf(vec[v], v) << " log prior density = "
+	   << mv_dist.log_pdf(vec[v], v) << std::endl;
+#endif // DEBUG
       log_pdf += mv_dist.log_pdf(vec[v], v);
+    }
   else {
     size_t av_cntr = 0;
     for (v=0; v<num_rv; ++v)
-      if (active_vars[v])
+      if (active_vars[v]) {
+#ifdef DEBUG
+	Cout << "Variable " << v+1 << " = " << vec[av_cntr]
+	     << " prior density = "     << mv_dist.pdf(vec[av_cntr], v) 
+	     << " log prior density = " << mv_dist.log_pdf(vec[av_cntr], v)
+	     << std::endl;
+#endif // DEBUG
 	log_pdf += mv_dist.log_pdf(vec[av_cntr++], v);
+      }
   }
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
