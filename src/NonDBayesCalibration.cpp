@@ -188,6 +188,18 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
+  // Errors if there are correlations and the user hasn't specified standardized_space,
+  // since this is currently unsupported.
+  // Note that gamma distribution should be supported but currently results in a seg fault.
+  if ( !standardizedSpace && iteratedModel.multivariate_distribution().correlation() ){
+    Cerr << "Error: correlation is only supported if user specifies standardized_space.\n"
+      << "    Only the following types of correlated random variables are supported:\n"
+      << "    unbounded normal, untruncated lognormal, uniform, exponential, gumbel, \n" 
+      << "    frechet, and weibull."
+	    << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
   // Construct emulator objects for raw QoI, prior to data residual recast
   construct_mcmc_model();
   // define variable augmentation within residualModel
