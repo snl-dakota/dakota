@@ -131,6 +131,7 @@ responses
 #  nonlinear_inequality_upper_bounds = 3*0.0  #s19,#s20,#s21,#s22
 #  analytic_gradients                         #s19,#s20
 #  numerical_gradients                        #s21,#s22
+#    central fd_step_size 0.0001              #s21,#s22
 #  no_hessians                                #s19,#s20,#s21,#s22
 
 # CANTILEVER
