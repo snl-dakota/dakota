@@ -309,6 +309,58 @@ void  PolynomialRegressionSurrogate_gradient_and_hessian() {
 }
 
 
+void save_free(const PolynomialRegression& surr_out, const std::string& outfile,
+	       bool binary)
+{
+  if (binary) {
+    std::ofstream model_ostream(outfile, std::ios::out|std::ios::binary);
+    if (!model_ostream.good())
+      throw std::runtime_error("Failure opening model file '" + outfile +
+			       "' for binary save.");
+
+    boost::archive::binary_oarchive output_archive(model_ostream);
+    output_archive << surr_out;
+    std::cout << "Model saved to binary file '" << outfile << "'."
+	      << std::endl;
+  }
+  else {
+    std::ofstream model_ostream(outfile, std::ios::out);
+    if (!model_ostream.good())
+      throw std::runtime_error("Failure opening model file '" + outfile +
+			       "' for save.");
+    boost::archive::text_oarchive output_archive(model_ostream);
+    output_archive << surr_out;
+    std::cout << "Model saved to text file '" << outfile << "'."
+	      << std::endl;
+  }
+}
+
+
+void load_free(const std::string& infile, bool binary,
+	       PolynomialRegression& pr4)
+{
+  if (binary) {
+    std::ifstream model_istream(infile, std::ios::in|std::ios::binary);
+    if (!model_istream.good())
+      throw std::string("Failure opening model file for load.");
+
+    boost::archive::binary_iarchive input_archive(model_istream);
+    input_archive >> pr4;
+    std::cout << "Model loaded from binary file '" << infile << "'."
+	      << std::endl;
+  }
+  else {
+    std::ifstream model_istream(infile, std::ios::in);
+    if (!model_istream.good())
+      throw std::string("Failure opening model file for load.");
+
+    boost::archive::text_iarchive input_archive(model_istream);
+    input_archive >> pr4;
+    std::cout << "Model loaded from text file." << std::endl;
+  }
+}
+
+
 /// Create, evaluate, and save a basic polynomial; load and verify
 /// same evals (based on multivariate_regression_builder test)
 void PolynomialRegression_SaveLoad()
@@ -344,42 +396,13 @@ void PolynomialRegression_SaveLoad()
   // Initially modelling what save/load functions would do for binary/text
   for (bool binary : {true, false} ) {
 
-    std::string filename("poly_test.bin");
-    std::ostringstream model_osstream;
-    if (binary) {
-      boost::filesystem::remove(filename);
-      std::ofstream model_ostream(filename, std::ios::out|std::ios::binary);
-      if (!model_ostream.good())
-	throw std::string("Failure opening model file for save.");
+    std::string filename("poly_test.surr");
 
-      boost::archive::binary_oarchive output_archive(model_ostream);
-      output_archive << pr3;
-      std::cout << "Model saved to binary file '" << filename << "'."
-		<< std::endl;
-    }
-    else {
-      boost::archive::text_oarchive output_archive(model_osstream);
-      output_archive << pr3;
-      std::cout << "Model saved to text string." << std::endl;
-    }
+    boost::filesystem::remove(filename);
+    save_free(pr3, filename, binary);
 
     PolynomialRegression pr4;
-    if (binary) {
-      std::ifstream model_istream(filename, std::ios::in|std::ios::binary);
-      if (!model_istream.good())
-	throw std::string("Failure opening model file for load.");
-
-      boost::archive::binary_iarchive input_archive(model_istream);
-      input_archive >> pr4;
-      std::cout << "Model loaded from binary file '" << filename << "'."
-		<< std::endl;
-    }
-    else {
-      std::istringstream model_istream(model_osstream.str());
-      boost::archive::text_iarchive input_archive(model_istream);
-      input_archive >> pr4;
-      std::cout << "Model loaded from text string." << std::endl;
-    }
+    load_free(filename, binary, pr4);
 
     BOOST_CHECK(pr3.get_num_terms() == pr4.get_num_terms());
     BOOST_CHECK(pr3.get_polynomial_intercept() ==

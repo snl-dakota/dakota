@@ -39,7 +39,8 @@ if(TARGET Eigen3::Eigen)
   ${EIGEN3_INCLUDE_DIR}")
 endif()
 
-target_link_libraries(dakota_util PRIVATE Boost::boost Boost::serialization)
+target_link_libraries(dakota_util PRIVATE Boost::boost
+  PUBLIC Boost::serialization)
 
 target_include_directories(dakota_util PRIVATE
   ${Teuchos_INCLUDE_DIRS})

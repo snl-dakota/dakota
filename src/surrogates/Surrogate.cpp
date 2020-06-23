@@ -36,7 +36,6 @@ void Surrogate::get_options(ParameterList &options) {
 }
 
 
-
 } // namespace surrogates
 } // namespace dakota
 
