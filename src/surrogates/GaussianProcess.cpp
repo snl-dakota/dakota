@@ -157,8 +157,14 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   (*hi_ptr)[0] = log(sigma_bounds(1));
   /* length scale bounds */
   for (int i = 0; i < numVariables; i++) {
-    (*lo_ptr)[i+1] = log(length_scale_bounds(i,0));
-    (*hi_ptr)[i+1] = log(length_scale_bounds(i,1));
+    if (length_scale_bounds.rows() > 1) {
+      (*lo_ptr)[i+1] = log(length_scale_bounds(i,0));
+      (*hi_ptr)[i+1] = log(length_scale_bounds(i,1));
+    }
+    else {
+      (*lo_ptr)[i+1] = log(length_scale_bounds(0,0));
+      (*hi_ptr)[i+1] = log(length_scale_bounds(0,1));
+    }
   }
   if (estimateTrend) {
     for (int i = 0; i < numPolyTerms; i++) {
@@ -447,7 +453,10 @@ void GaussianProcess::default_options()
   VectorXd sigma_bounds(2);
   sigma_bounds(0) = 1.0e-2;
   sigma_bounds(1) = 1.0e2;
-  // length scale bounds - num_vars x 2
+  // length scale bounds - can be num_vars x 2 if specified in a PL
+  // this way.
+  // Otherwise these are bounds for all length-scales
+  // and length scale bounds is 1 x 2
   MatrixXd length_scale_bounds(1,2);
   length_scale_bounds(0,0) = 1.0e-2;
   length_scale_bounds(0,1) = 1.0e2;
@@ -585,8 +594,14 @@ void GaussianProcess::generate_initial_guesses(const VectorXd &sigma_bounds,
       mean = 0.5*(log(sigma_bounds(1)) + log(sigma_bounds(0)));
     }
     else {
-      span = 0.5*(log(length_scale_bounds(j-1,1)) - log(length_scale_bounds(j-1,0)));
-      mean = 0.5*(log(length_scale_bounds(j-1,1)) + log(length_scale_bounds(j-1,0)));
+      if (length_scale_bounds.rows() > 1) {
+        span = 0.5*(log(length_scale_bounds(j-1,1)) - log(length_scale_bounds(j-1,0)));
+        mean = 0.5*(log(length_scale_bounds(j-1,1)) + log(length_scale_bounds(j-1,0)));
+      }
+      else {
+        span = 0.5*(log(length_scale_bounds(0,1)) - log(length_scale_bounds(0,0)));
+        mean = 0.5*(log(length_scale_bounds(0,1)) + log(length_scale_bounds(0,0)));
+      }
     }
     for (int i = 0; i < num_restarts; i++) {
       initial_guesses(i,j) = span*initial_guesses(i,j) + mean;
