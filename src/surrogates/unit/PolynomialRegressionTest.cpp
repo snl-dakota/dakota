@@ -12,16 +12,10 @@
 #include "PolynomialRegression.hpp"
 #include "surrogates_tools.hpp"
 
+#include <boost/filesystem.hpp>
 #include <boost/random.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/test/minimal.hpp>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/filesystem.hpp>
-#include <fstream>
 
 using namespace dakota;
 using namespace dakota::util;
@@ -399,10 +393,10 @@ void PolynomialRegression_SaveLoad()
     std::string filename("poly_test.surr");
 
     boost::filesystem::remove(filename);
-    save_free(pr3, filename, binary);
+    Surrogate::save(pr3, filename, binary);
 
     PolynomialRegression pr4;
-    load_free(filename, binary, pr4);
+    Surrogate::load(filename, binary, pr4);
 
     BOOST_CHECK(pr3.get_num_terms() == pr4.get_num_terms());
     BOOST_CHECK(pr3.get_polynomial_intercept() ==

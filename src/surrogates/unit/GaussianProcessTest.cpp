@@ -549,42 +549,13 @@ TEUCHOS_UNIT_TEST(surrogates, gaussian_process_saveload)
   // Initially modelling what save/load functions would do for binary/text
   for (bool binary : {true, false} ) {
 
-    std::string filename("gp_test.bin");
-    std::ostringstream model_osstream;
-    if (binary) {
-      boost::filesystem::remove(filename);
-      std::ofstream model_ostream(filename, std::ios::out|std::ios::binary);
-      if (!model_ostream.good())
-	throw std::string("Failure opening model file for save.");
+    std::string filename("gp_test.surr");
 
-      boost::archive::binary_oarchive output_archive(model_ostream);
-      output_archive << gp_2D_quad;
-      std::cout << "Model saved to binary file '" << filename << "'."
-		<< std::endl;
-    }
-    else {
-      boost::archive::text_oarchive output_archive(model_osstream);
-      output_archive << gp_2D_quad;
-      std::cout << "Model saved to text string." << std::endl;
-    }
+    boost::filesystem::remove(filename);
+    Surrogate::save(gp_2D_quad, filename, binary);
 
     GaussianProcess gp_loaded;
-    if (binary) {
-      std::ifstream model_istream(filename, std::ios::in|std::ios::binary);
-      if (!model_istream.good())
-	throw std::string("Failure opening model file for load.");
-
-      boost::archive::binary_iarchive input_archive(model_istream);
-      input_archive >> gp_loaded;
-      std::cout << "Model loaded from binary file '" << filename << "'."
-		<< std::endl;
-    }
-    else {
-      std::istringstream model_istream(model_osstream.str());
-      boost::archive::text_iarchive input_archive(model_istream);
-      input_archive >> gp_loaded;
-      std::cout << "Model loaded from text string." << std::endl;
-    }
+    Surrogate::load(filename, binary, gp_loaded);
 
     // For now, just checking same as original test instead of diffing
     // saved vs. loaded properties.
