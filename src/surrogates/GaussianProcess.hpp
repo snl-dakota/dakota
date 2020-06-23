@@ -13,6 +13,9 @@
 #include "PolynomialRegression.hpp"
 #include "Surrogate.hpp"
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/vector.hpp>
+
 namespace dakota {
 
 namespace surrogates {
@@ -254,6 +257,9 @@ private:
   /// Target values for the surrogate dataset.
   MatrixXd targetValues;
 
+  /// The scaled build points for the surrogate dataset.
+  MatrixXd scaledBuildPoints;
+
   /// Vector of log-space hyperparameters.
   VectorXd thetaValues;
 
@@ -326,8 +332,38 @@ private:
   /// Numerical constant -- needed for negative marginal log-likelihood.
   const double PI = 3.14159265358979323846;
 
+private:
+
+  /// Allow serializers access to private class data
+  friend class boost::serialization::access;
+  /// Serializer for save/load
+  template<class Archive>
+  void serialize(Archive& archive, const unsigned int version);
+
 }; // class GaussianProcess
 
+
+template<class Archive>
+void GaussianProcess::serialize(Archive& archive, const unsigned int version)
+{
+  archive & boost::serialization::base_object<Surrogate>(*this);
+
+  // BMA: Initial cut is aggressive, serializing most members
+  archive & cwiseDists2;
+  archive & thetaValues;
+  archive & fixedNuggetValue;
+  archive & estimateNugget;
+  archive & estimatedNuggetValue;
+  archive & estimateTrend;
+  archive & scaledBuildPoints;
+  archive & targetValues;
+  archive & basisMatrix;
+  archive & betaValues;
+  // BMA TODO: leaving this as shared_ptr pending discussion as it seems natural
+  if (Archive::is_loading::value)
+    polyRegression.reset(new PolynomialRegression());
+  archive & *polyRegression;
+}
 
 }  // namespace surrogates
 }  // namespace dakota

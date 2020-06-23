@@ -80,18 +80,18 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   const int num_restarts = configOptions.get<int>("num restarts");
   
   /* Scale the data and compute build squared distances */
-  dataScaler = util::scaler_factory(
+  dataScaler = *(util::scaler_factory(
     util::DataScaler::scaler_type(configOptions.get<std::string>("scaler name")),
-    samples);
-  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
+    samples));
+  dataScaler.scale_samples(samples, scaledBuildPoints);
   compute_build_dists();
 
   if (estimateTrend) {
     polyRegression = std::make_shared<PolynomialRegression>
-                     (scaled_samples, targetValues,
+                     (scaledBuildPoints, targetValues,
                       configOptions.sublist("Trend").sublist("Options"));
     numPolyTerms = polyRegression->get_num_terms();
-    polyRegression->compute_basis_matrix(scaled_samples, basisMatrix);
+    polyRegression->compute_basis_matrix(scaledBuildPoints, basisMatrix);
     beta_bounds = MatrixXd::Ones(numPolyTerms,2);
     beta_bounds.col(0) *= -betaBound;
     beta_bounds.col(1) *= betaBound;
@@ -249,7 +249,7 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_pts;
-  dataScaler->scale_samples(samples, scaled_pred_pts);
+  dataScaler.scale_samples(samples, scaled_pred_pts);
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -309,7 +309,7 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_pts;
-  dataScaler->scale_samples(samples, scaled_pred_pts);
+  dataScaler.scale_samples(samples, scaled_pred_pts);
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -355,7 +355,7 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_point;
-  dataScaler->scale_samples(sample, scaled_pred_point);
+  dataScaler.scale_samples(sample, scaled_pred_point);
   compute_pred_dists(scaled_pred_point);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -493,14 +493,13 @@ void GaussianProcess::default_options()
 
 void GaussianProcess::compute_build_dists() {
 
-  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
   cwiseDists2.resize(numVariables);
 
   for (int k = 0; k < numVariables; k++) {
     cwiseDists2[k].resize(numSamples,numSamples);
     for (int i = 0; i < numSamples; i++) {
       for (int j = i; j < numSamples; j++) {
-        cwiseDists2[k](i,j) = pow(scaled_samples(i,k) - scaled_samples(j,k), 2);
+        cwiseDists2[k](i,j) = pow(scaledBuildPoints(i,k) - scaledBuildPoints(j,k), 2);
         if (i != j)
           cwiseDists2[k](j,i) = cwiseDists2[k](i,j);
       }
@@ -514,14 +513,13 @@ void GaussianProcess::compute_pred_dists(const MatrixXd &scaled_pred_pts) {
   cwiseMixedDists.resize(numVariables);
   cwiseMixedDists2.resize(numVariables);
   cwisePredDists2.resize(numVariables);
-  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
 
   for (int k = 0; k < numVariables; k++) {
     cwiseMixedDists[k].resize(num_pred_pts, numSamples);
     cwisePredDists2[k].resize(num_pred_pts, num_pred_pts);
     for (int i = 0; i < num_pred_pts; i++) {
       for (int j = 0; j < numSamples; j++) {
-        cwiseMixedDists[k](i,j) = scaled_pred_pts(i,k) - scaled_samples(j,k);
+        cwiseMixedDists[k](i,j) = scaled_pred_pts(i,k) - scaledBuildPoints(j,k);
       }
       for (int j = i; j < num_pred_pts; j++) {
         cwisePredDists2[k](i,j) = pow(scaled_pred_pts(i,k) - scaled_pred_pts(j,k), 2);

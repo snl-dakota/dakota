@@ -44,7 +44,7 @@ target_include_directories(dakota_surrogates SYSTEM PRIVATE
 dakota_strict_warnings(dakota_surrogates)
 dakota_gcov_target(dakota_surrogates)
 
-target_link_libraries(dakota_surrogates PUBLIC dakota_util)
+target_link_libraries(dakota_surrogates PUBLIC dakota_util Boost::serialization)
 
 install(FILES ${surrogates_headers} DESTINATION "include")
 install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
