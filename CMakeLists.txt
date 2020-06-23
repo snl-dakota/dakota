@@ -226,6 +226,10 @@ dakota_gcov_init()
 # BMA TODO: Finer granularity in packages to build Trilinos, Eigen
 # first, then optionally Pecos, Surfpack, surrogates.
 if(DAKOTA_MODULE_UTIL)
+  # BMA TODO: Manage this under packages/, yet so src/ can add pybind11 modules
+  if(DAKOTA_PYTHON AND DAKOTA_PYBIND11)
+    add_subdirectory(packages/external/pybind11)
+  endif()
   add_subdirectory(src/util)
 endif()
 if(BUILD_IN_TRILINOS)
