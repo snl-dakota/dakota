@@ -12,12 +12,9 @@
 #include "PolynomialRegression.hpp"
 #include "surrogates_tools.hpp"
 
-<<<<<<< HEAD
 #include "Teuchos_XMLParameterListCoreHelpers.hpp"
 
-=======
 #include <boost/filesystem.hpp>
->>>>>>> fc8b25c1658cf011889052296a08e3c918fa9678
 #include <boost/random.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/test/minimal.hpp>
@@ -358,6 +355,10 @@ void load_free(const std::string& infile, bool binary,
 }
 
 void PolynomialRegressionSurrogate_parameter_list_import() {
+  int num_vars    = 2,
+      num_samples = 20,
+      degree      = 3;
+
   MatrixXd samples, responses;
   get_samples(num_vars, num_samples, samples);
   cubic_bivariate_function(samples, responses);
