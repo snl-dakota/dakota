@@ -473,6 +473,11 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   case NO_EMULATOR:
     mcmcModelHasSurrogate = (inbound_model.model_type() == "surrogate");
+    // ASKEY_U is currently the best option for scaling the probability space
+    // (but could be expanded when the intent is not orthogonal polynomials).
+    // If an override is needed to decorrelate priors be transforming to
+    // STD_NORMAL space, this is managed by ProbabilityTransformModel::
+    // verify_correlation_support() on a variable-by-variable basis.
     if (standardizedSpace)
       mcmcModel.assign_rep(new
 	ProbabilityTransformModel(inbound_model, ASKEY_U), false);
