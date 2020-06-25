@@ -149,17 +149,17 @@ find_package(Perl REQUIRED)
 # Python is optionally required by Dakota, Teuchos, and Acro; probe
 # for the interpreter here at top-level:
 
-#find_package(PythonInterp "3.1")  # 3.1 is needed by h5py tests
+find_package(PythonInterp "3.1")  # 3.1 is needed by h5py tests
 #For the future, we should use the FindPython module for cmake 3.12 or greater
 #Because FindPythonInterp is deprecated
-find_package(Python3 COMPONENTS Interpreter Development)
+#find_package(Python3 COMPONENTS Interpreter Development)
 
-message("Python_FOUND:${Python_FOUND}")
-message("Python_Interpreter_FOUND:${Python_Interpreter_FOUND}")
-message("Python_VERSION:${Python_VERSION}")
-message("Python_EXECUTABLE:${Python_EXECUTABLE}")
-message("Python_Development_FOUND:${Python_Development_FOUND}")
-message("Python_LIBRARIES:${Python_LIBRARIES}")
+#message("Python_FOUND:${Python_FOUND}")
+#message("Python_Interpreter_FOUND:${Python_Interpreter_FOUND}")
+#message("Python_VERSION:${Python_VERSION}")
+#message("Python_EXECUTABLE:${Python_EXECUTABLE}")
+#message("Python_Development_FOUND:${Python_Development_FOUND}")
+#message("Python_LIBRARIES:${Python_LIBRARIES}")
 
 # Conditionally find Java JDK needed for input spec, docs, Java API
 include(DakotaFindJava)
