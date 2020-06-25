@@ -13,6 +13,9 @@
 #include <string>
 #include <Teuchos_UnitTestHarness.hpp> 
 
+namespace Dakota {
+  extern PRPCache data_pairs;
+
 TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
 {
   // Dakota input string:
@@ -82,6 +85,9 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
       TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
     }
   }
+
+  // Clear the cache
+  data_pairs.clear();
 }
 
 TEUCHOS_UNIT_TEST(surrogates_gp,xml_read)
@@ -145,13 +151,16 @@ TEUCHOS_UNIT_TEST(surrogates_gp,xml_read)
   double gold_values[NUM_COLS][NUM_ROWS] =
     {{ 0.2, -0.3, 0.4, -0.25 },  //x1
      { 0.45, -0.7, -0.1, 0.33 }, //x2
-     { 0.00638704, 0.0165017, 0.0839691, 0.867002 }};
+     { 0.779859, 0.846712, 0.744503, 0.746541 }};
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
       TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-5 );
     }
   }
+
+  // Clear the cache
+  data_pairs.clear();
 }
 
 TEUCHOS_UNIT_TEST(surrogates_gp,xml_read_alternate_parameters)
@@ -226,4 +235,5 @@ TEUCHOS_UNIT_TEST(surrogates_gp,xml_read_alternate_parameters)
       TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
     }
   }
+}
 }
