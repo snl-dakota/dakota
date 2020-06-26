@@ -469,9 +469,9 @@ void GaussianProcess::default_options()
   defaultConfigOptions.set("sigma bounds", sigma_bounds, "sigma [lb, ub]");
   // BMA: Do we want to allow 1 x 2 always as a fallback?
   defaultConfigOptions.set("length-scale bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
-  defaultConfigOptions.set("scaler name", "mean normalization", "scaler for variables");
-  defaultConfigOptions.set("num restarts", 5, "local optimizer number of initial iterates");
-  defaultConfigOptions.set("gp seed", 129, "random seed for initial iterate generation");
+  defaultConfigOptions.set("scaler name", "standardization", "scaler for variables");
+  defaultConfigOptions.set("num restarts", 10, "local optimizer number of initial iterates");
+  defaultConfigOptions.set("gp seed", 42, "random seed for initial iterate generation");
   /* Nugget */
   defaultConfigOptions.sublist("Nugget")
                       .set("fixed nugget", 0.0, "fixed nugget term");

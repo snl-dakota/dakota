@@ -1,26 +1,10 @@
 <ParameterList name="GP Test Parameters">
-  <!--Parameter docString="" id="0" isDefault="false" isUsed="true" name="sigma bounds" type="any" value="0.01 100"/-->
-  <!--Parameter docString="" id="1" isDefault="false" isUsed="true" name="length-scale bounds" type="any" value="0.01  100"/-->
-  <Parameter docString="" id="2" isDefault="false" isUsed="true" name="scaler name" type="string" value="standardization"/>
-  <Parameter docString="" id="3" isDefault="false" isUsed="true" name="num restarts" type="int" value="10"/>
-  <ParameterList id="7" name="Nugget">
-    <Parameter docString="" id="4" isDefault="false" isUsed="true" name="fixed nugget" type="double" value="0.0"/>
-    <Parameter docString="" id="5" isDefault="true" isUsed="true" name="estimate nugget" type="bool" value="true"/>
-    <!--Parameter docString="" id="6" isDefault="true" isUsed="true" name="nugget bounds" type="any" value="3.17e-08
-    0.01"/-->
+  <Parameter name="scaler name" type="string" value="standardization"/>
+  <Parameter name="num restarts" type="int" value="10"/>
+  <ParameterList name="Nugget">
+    <Parameter name="fixed nugget" type="double" value="0.0"/>
+    <Parameter name="estimate nugget" type="bool" value="true"/>
   </ParameterList>
-  <Parameter docString="" id="8" isDefault="false" isUsed="true" name="gp seed" type="int" value="42"/>
-  <!--
-  <ParameterList id="15" name="Trend">
-    <Parameter docString="estimate a trend term" id="9" isDefault="false" isUsed="true" name="estimate trend" type="bool" value="false"/>
-    <ParameterList id="14" name="Options">
-      <Parameter docString="Maximum polynomial order" id="10" isDefault="false" isUsed="true" name="max degree" type="int" value="2"/>
-      <Parameter docString="P-Norm in hyperbolic cross" id="11" isDefault="false" isUsed="true" name="p-norm" type="double" value="1.00000000000000000e+00"/>
-      <Parameter docString="Type of data scaling" id="12" isDefault="false" isUsed="true" name="scaler type" type="string" value="none"/>
-      <Parameter docString="Type of regression solver" id="13" isDefault="false" isUsed="true" name="regression solver type" type="string" value="SVD"/>
-    </ParameterList>
-  </ParameterList>
-  -->
-  <Validators/>
+  <Parameter name="gp seed" type="int" value="42"/>
 </ParameterList>
 

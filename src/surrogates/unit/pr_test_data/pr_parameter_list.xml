@@ -1,8 +1,7 @@
 <ParameterList name="Polynomial Test Parameters">
-  <Parameter docString="" id="0" isDefault="false" isUsed="true" name="max degree" type="int" value="3"/>
-  <Parameter docString="" id="1" isDefault="true" isUsed="true" name="reduced basis" type="bool" value="false"/>
-  <Parameter docString="" id="2" isDefault="true" isUsed="true" name="p-norm" type="double" value="1.00000000000000000e+00"/>
-  <Parameter docString="" id="3" isDefault="true" isUsed="true" name="scaler type" type="string" value="none"/>
-  <Parameter docString="" id="4" isDefault="true" isUsed="true" name="regression solver type" type="string" value="SVD"/>
-  <Validators/>
+  <Parameter name="max degree" type="int" value="3"/>
+  <Parameter name="reduced basis" type="bool" value="false"/>
+  <Parameter name="p-norm" type="double" value="1.00000000000000000e+00"/>
+  <Parameter name="scaler type" type="string" value="none"/>
+  <Parameter name="regression solver type" type="string" value="SVD"/>
 </ParameterList>
