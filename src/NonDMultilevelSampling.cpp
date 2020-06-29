@@ -406,8 +406,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     seq_index = 2;
     unsigned short lev = USHRT_MAX;
     unsigned short& step = (true) ? lev : model_form;
-    
-
+      
     // For moment estimation, we accumulate telescoping sums for Q^i using
     // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
     // For computing N_l from estimator variance, we accumulate square of Y1
@@ -611,38 +610,14 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
         // aggregate variances across QoI for estimating N_l (justification:
         // for independent QoI, sum of QoI variances = variance of QoI sum)
         //Real &agg_var_l = agg_var[step]; // carried over from prev iter if no samp
-
         if (numSamples) {
 
-      	  // advance any sequence specifications (seed_sequence)
-      	  assign_specification_sequence(step);
-          // generate new MC parameter sets
-          get_parameter_sets(iteratedModel);// pull dist params from any model
+          evaluate_sample_increment(step);
 
-          // export separate output files for each data set.  truth_model()
-          // has the correct data when in bypass-surrogate mode.
-          if (exportSampleSets)
-            export_all_samples("ml_", iteratedModel.truth_model(),
-			       mlmfIter, step);
+          accumulate_sums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, mu_hat, N_l);
 
-          // compute allResponses from allVariables using hierarchical model
-          evaluate_parameter_sets(iteratedModel, true, false);
-
-          // process allResponses: accumulate new samples for each qoi and
-          // update number of successful samples for each QoI
-          //if (mlmfIter == 0) accumulate_offsets(mu_hat[step]);
-
-          accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
-                              mu_hat[step], N_l[step]);
-          if (outputLevel == DEBUG_OUTPUT)
-            Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n" << sum_Ql[1]
-                 << sum_Ql[2] << sum_Qlm1[1] << sum_Qlm1[2] << std::endl;
           // update raw evaluation counts
           raw_N_l[step] += numSamples;
-
-          // compute estimator variance from current sample accumulation:
-          if (outputLevel >= DEBUG_OUTPUT)
-            Cout << "variance of Y[" << step << "]: ";
 
           aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, agg_var_qoi);
         }
@@ -1494,6 +1469,22 @@ configure_indices(unsigned short group, unsigned short form,
   }
 }
 
+void NonDMultilevelSampling::evaluate_sample_increment(const unsigned short& step){
+  // advance any sequence specifications (seed_sequence)
+  assign_specification_sequence(step);
+  // generate new MC parameter sets
+  get_parameter_sets(iteratedModel);// pull dist params from any model
+
+  // export separate output files for each data set.  truth_model()
+  // has the correct data when in bypass-surrogate mode.
+  if (exportSampleSets)
+  export_all_samples("ml_", iteratedModel.truth_model(),
+       mlmfIter, step);
+
+  // compute allResponses from allVariables using hierarchical model
+  evaluate_parameter_sets(iteratedModel, true, false);
+}
+
 
 void NonDMultilevelSampling::assign_specification_sequence(size_t index)
 {
@@ -1504,6 +1495,20 @@ void NonDMultilevelSampling::assign_specification_sequence(size_t index)
   int seed_i = random_seed(index);
   if (seed_i) randomSeed = seed_i;// propagate to NonDSampling::initialize_lhs()
   // else previous value will allow existing RNG to continue for varyPattern
+}
+
+void NonDMultilevelSampling::accumulate_sums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+         IntIntPairRealMatrixMap& sum_QlQlm1, const size_t step,
+         const RealVectorArray& offset, Sizet2DArray& N_l){
+  // process allResponses: accumulate new samples for each qoi and
+  // update number of successful samples for each QoI
+  //if (mlmfIter == 0) accumulate_offsets(mu_hat[step]);
+  accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
+                      offset[step], N_l[step]);
+
+  if (outputLevel == DEBUG_OUTPUT)
+    Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n" << sum_Ql[1]
+         << sum_Ql[2] << sum_Qlm1[1] << sum_Qlm1[2] << std::endl;
 }
 
 

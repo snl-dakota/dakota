@@ -90,6 +90,8 @@ private:
   ///
   void initialize_key_cost_steps(const unsigned short& model_form, size_t& num_steps, RealVector& cost);
 
+  void evaluate_sample_increment(const unsigned short& step);
+
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
   void shared_increment(size_t iter, size_t lev);
@@ -164,6 +166,12 @@ private:
   /// accumulate initial approximation to mean vector, for use as offsets in
   /// subsequent accumulations
   void accumulate_offsets(RealVector& mu);
+
+  /// update running QoI sums for one model (sum_Q) using set of model
+  /// evaluations within allResponses; used for level 0 from other accumulators
+  void accumulate_sums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+			   IntIntPairRealMatrixMap& sum_QlQlm1, const size_t step,
+			   const RealVectorArray& offset, Sizet2DArray& N_l);
 
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
@@ -819,10 +827,13 @@ aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
   return agg_var_l;
 }
 
- inline void NonDMultilevelSampling::
- aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
-									const Sizet2DArray& N_l, const size_t& step, RealMatrix& agg_var_qoi){
+inline void NonDMultilevelSampling::
+aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+									IntIntPairRealMatrixMap sum_QlQlm1, 
+								const Sizet2DArray& N_l, const size_t& step, RealMatrix& agg_var_qoi){
+
+	// compute estimator variance from current sample accumulation:
+	if (outputLevel >= DEBUG_OUTPUT) Cout << "variance of Y[" << step << "]: ";
 	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
 		if (allocationTarget == TARGET_MEAN) {
 			agg_var_qoi(qoi, step) = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
@@ -833,9 +844,9 @@ aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
 		    abort_handler(INTERFACE_ERROR);
 		}
 
-    	check_negative(agg_var_qoi(qoi, step));
-    }
- }
+		check_negative(agg_var_qoi(qoi, step));
+	}
+}
 
 inline Real NonDMultilevelSampling::aggregate_variance_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
  									IntIntPairRealMatrixMap sum_QlQlm1, 
