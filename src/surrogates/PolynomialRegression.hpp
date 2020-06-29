@@ -14,6 +14,8 @@
 #include "Surrogate.hpp"
 #include "util_data_types.hpp"
 
+#include <boost/serialization/base_object.hpp>
+
 namespace dakota {
 namespace surrogates {
 /**
@@ -154,7 +156,25 @@ private:
   MatrixXd polynomialCoeffs;
   /// Offset/intercept term for the polynomial surrogate.
   double polynomialIntercept;
+
+  /// Allow serializers access to private class data
+  friend class boost::serialization::access;
+  /// Serializer for save/load
+  template<class Archive>
+  void serialize(Archive& archive, const unsigned int version);
 };
+
+
+template<class Archive>
+void PolynomialRegression::serialize(Archive& archive, const unsigned int version)
+{
+  archive & boost::serialization::base_object<Surrogate>(*this);
+  archive & numTerms;
+  archive & basisIndices;
+  archive & polynomialCoeffs;
+  archive & polynomialIntercept;
+}
+
 
 } // namespace surrogates
 } // namespace dakota
