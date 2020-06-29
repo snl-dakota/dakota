@@ -50,6 +50,11 @@ dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/gp_test_data"
   surrogates_unit_test_copied_files
   )
 
+dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/pr_test_data"
+  "${CMAKE_CURRENT_BINARY_DIR}/pr_test_data"
+  surrogates_unit_test_copied_files
+  )
+
 # Add a single target for all copied files
 add_custom_target(surrogates_unit_test_files ALL
   DEPENDS ${surrogates_unit_test_copied_files})

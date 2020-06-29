@@ -12,6 +12,8 @@
 #include "PolynomialRegression.hpp"
 #include "surrogates_tools.hpp"
 
+#include "Teuchos_XMLParameterListCoreHelpers.hpp"
+
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>
 #include <boost/random/uniform_real.hpp>
@@ -272,7 +274,7 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
   BOOST_CHECK(matrix_equals(gold_responses6, test_responses6, 1.0e-10));
 }
 
-void  PolynomialRegressionSurrogate_gradient_and_hessian() {
+void PolynomialRegressionSurrogate_gradient_and_hessian() {
 
   int num_vars    = 2,
       num_samples = 20,
@@ -302,7 +304,6 @@ void  PolynomialRegressionSurrogate_gradient_and_hessian() {
   BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
 }
 
-
 void save_free(const PolynomialRegression& surr_out, const std::string& outfile,
 	       bool binary)
 {
@@ -329,7 +330,6 @@ void save_free(const PolynomialRegression& surr_out, const std::string& outfile,
   }
 }
 
-
 void load_free(const std::string& infile, bool binary,
 	       PolynomialRegression& pr4)
 {
@@ -354,6 +354,31 @@ void load_free(const std::string& infile, bool binary,
   }
 }
 
+void PolynomialRegressionSurrogate_parameter_list_import() {
+  int num_vars    = 2,
+      num_samples = 20,
+      degree      = 3;
+
+  MatrixXd samples, responses;
+  get_samples(num_vars, num_samples, samples);
+  cubic_bivariate_function(samples, responses);
+
+  PolynomialRegression pr(samples, responses, "pr_test_data/pr_parameter_list.xml");
+
+  MatrixXd gradient, hessian;
+  pr.gradient(samples.topRows(2), gradient);
+  pr.hessian(samples.topRows(1), hessian);
+
+  MatrixXd gold_gradient(2,2);
+  gold_gradient << 1.59711,  1.06684, 
+                   0.691654, 2.90352;
+
+  MatrixXd gold_hessian(2,2);
+  gold_hessian << -2.75852, 0.04462,
+                   0.04462, -1.83287;
+
+  BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
+}
 
 /// Create, evaluate, and save a basic polynomial; load and verify
 /// same evals (based on multivariate_regression_builder test)
@@ -432,6 +457,9 @@ int test_main(int argc, char* argv[]) // note the name!
   PolynomialRegressionSurrogate_multivariate_regression_builder();
   PolynomialRegressionSurrogate_gradient_and_hessian();
 
+  // ParameterList import test
+  PolynomialRegressionSurrogate_parameter_list_import();
+  
   // Serialization tests
   PolynomialRegression_SaveLoad();
 

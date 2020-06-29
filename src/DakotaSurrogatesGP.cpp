@@ -26,10 +26,8 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
 		   const String& approx_label):
   SurrogatesBaseApprox(problem_db, shared_data, approx_label)
 {
-  // The ProblemDB defaults trendOrder to reduced_quadratic, so always
-  // uses a trend; for now mapping to full quadratic
-  // DTS: Updating default behavior to have no trend (i.e. if trend
-  // keyword is absent there is no trend
+  // DTS: Updated default behavior to have no trend (i.e. if trend
+  // keyword is absent there is no trend)
   surrogateOpts.sublist("Trend").set("estimate trend", true);
   const String& trend_string =
     problem_db.get_string("model.surrogate.trend_order");
@@ -59,24 +57,13 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   // Number of optimization restarts
   int num_restarts = problem_db.get_int("model.surrogate.num_restarts");
   surrogateOpts.set("num restarts", num_restarts);
-
-  // hard coding for now; deterministic optimizer starts
-  surrogateOpts.set("gp seed", 42);
-
-  //  surrogateOpts.set("advanced_options_file",
-  //		    problem_db.get_string("model.advanced_options_file"));
 }
 
 
 /// On-the-fly constructor
 SurrogatesGPApprox::
 SurrogatesGPApprox(const SharedApproxData& shared_data):
-  SurrogatesBaseApprox(shared_data)
-{
-  // hard-coded to reproduce historical unit tests for now
-  surrogateOpts.sublist("Nugget").set("fixed nugget", 1.0e-12);
-}
-
+  SurrogatesBaseApprox(shared_data) {}
 
 int
 SurrogatesGPApprox::min_coefficients() const
@@ -93,30 +80,6 @@ SurrogatesGPApprox::build()
 {
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp);
-
-  // Hard-coded values to quickly get things working ...
-  // See src/surrogates/unit/gp_approximation_ts.cpp for correspondence
-
-  // TODO: probably manage these through XML
-
-  surrogateOpts.set("scaler name", "standardization");
-  surrogateOpts.set("num restarts", 10);
-
-  // bound constraints -- will be converted to log-scale internally
-  // sigma bounds - lower and upper
-  VectorXd sigma_bounds(2);
-  sigma_bounds(0) = 1.0e-2;
-  sigma_bounds(1) = 1.0e2;
-  surrogateOpts.set("sigma bounds", sigma_bounds);
-
-  // length scale bounds - num_vars x 2
-  size_t num_v = sharedDataRep->numVars;
-  MatrixXd length_scale_bounds(num_v, 2);
-  for(size_t i=0; i<num_v; ++i) {
-    length_scale_bounds(i,0) = 1.0e-2;
-    length_scale_bounds(i,1) = 1.0e2;
-  }
-  surrogateOpts.set("length-scale bounds", length_scale_bounds);
 
   // construct the surrogate
   if (!advanced_options_file.empty()) {
