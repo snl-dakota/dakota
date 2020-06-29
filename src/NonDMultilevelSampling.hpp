@@ -486,7 +486,7 @@ private:
                           const size_t& lev, const size_t& qoi);
 
   /// compute epsilon^2/2 term for each qoi based on reference estimator_var0 and relative convergence tolereance
-  void compute_eps_div_2(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi);
+  void set_convergence_tol(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi);
 
 /// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
   void compute_sample_allocation_target(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
@@ -1007,7 +1007,7 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
     return agg_mse;
   }
 
-inline void NonDMultilevelSampling::compute_eps_div_2(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi){
+inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi){
    for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
            eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
    

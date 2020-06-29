@@ -106,18 +106,24 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   if (err_flag)
     abort_handler(METHOD_ERROR);
 
-  switch (pilot_size) {
-  case 0: maxEvalConcurrency *= 100;             break;
-  case 1: maxEvalConcurrency *= pilotSamples[0]; break;
-  default: {
-    size_t max_ps = 0;
-    for (i=0; i<pilot_size; ++i)
-      if (pilotSamples[i] > max_ps)
-	max_ps = pilotSamples[i];
-    if (max_ps)
-      maxEvalConcurrency *= max_ps;
-    break;
+  if( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples), [](int i){ return i > 0; }) ){
+    Cerr << "\nError: Some levels have pilot samples of size 0 in "
+       << method_enum_to_string(methodName) << "." << std::endl;
+    abort_handler(INTERFACE_ERROR);
   }
+
+  switch (pilot_size) {
+    case 0: maxEvalConcurrency *= 100;             break;
+    case 1: maxEvalConcurrency *= pilotSamples[0]; break;
+    default: {
+      size_t max_ps = 0;
+      for (i=0; i<pilot_size; ++i)
+        if (pilotSamples[i] > max_ps)
+  	max_ps = pilotSamples[i];
+      if (max_ps)
+        maxEvalConcurrency *= max_ps;
+      break;
+    }
   }
 
   max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
@@ -620,11 +626,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
           raw_N_l[step] += numSamples;
 
           aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, agg_var_qoi);
-        }
-
-        // MSE reference is MC applied to HF:
-        if (mlmfIter == 0) { //TODO: Can this actually be moved down since num_samples > 0 always for mlmcIter==0
-          aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
+          // MSE reference is MC applied to HF
+          if (mlmfIter == 0) aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
         }
       }
       // compute epsilon target based on relative tolerance: total MSE = eps^2
@@ -633,7 +636,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
       // discretization error, we compute an initial estimator variance and
       // then seek to reduce it by a relative_factor <= 1.
       if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
-        compute_eps_div_2(estimator_var0_qoi, convergenceTol, eps_sq_div_2_qoi);
+        set_convergence_tol(estimator_var0_qoi, convergenceTol, eps_sq_div_2_qoi);
       }
 
       // update targets based on variance estimates
