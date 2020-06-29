@@ -167,6 +167,10 @@ public:
    */
   void set_opt_params(const std::vector<double> &opt_params);
 
+
+  std::shared_ptr<Surrogate> clone() const override
+  { return std::make_shared<GaussianProcess>(configOptions); }
+
 private:
   /* Private utility functions */
 

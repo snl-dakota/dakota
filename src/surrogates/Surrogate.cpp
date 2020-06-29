@@ -110,6 +110,9 @@ VectorXd Surrogate::cross_validate(const MatrixXd &samples,
 
   util::create_cv_folds(num_folds, num_samples, cv_folds, seed);
 
+  // clone the surrogate's configuration so CV doesn't invalidate *this
+  std::shared_ptr<Surrogate> cv_surrogate = this->clone();
+
   for (int i = 0; i < num_folds; i++) {
     /* validation samples */
     fold_indices = cv_folds[i];
@@ -139,9 +142,9 @@ VectorXd Surrogate::cross_validate(const MatrixXd &samples,
       }
     }
 
-    this->build(train_samples, train_response);
-    metrics_values = evaluate_metrics(mnames, val_samples,
-        val_response);
+    cv_surrogate->build(train_samples, train_response);
+    metrics_values =
+      cv_surrogate->evaluate_metrics(mnames, val_samples, val_response);
     cv_results += metrics_values;
 
   }

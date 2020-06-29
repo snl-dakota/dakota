@@ -138,6 +138,10 @@ public:
   /// Set the polynomial surrogate's coefficients.
   void set_polynomial_coeffs(const MatrixXd &coeffs);
 
+
+  std::shared_ptr<Surrogate> clone() const override
+  { return std::make_shared<PolynomialRegression>(configOptions); }
+
 private:
   /// Construct and populate the defaultConfigOptions.
   void default_options() override;

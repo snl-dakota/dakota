@@ -143,6 +143,10 @@ protected:
   /// Key/value options to configure the surrogate - will override defaultConfigOptions.
   ParameterList configOptions;
 
+  // BMA: Could instead use virtual copy constructor idiom
+  /// clone derived Surrogate class for use in cross-validation
+  virtual std::shared_ptr<Surrogate> clone() const = 0;
+
 };
 
 } // namespace surrogates
