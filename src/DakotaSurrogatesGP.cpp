@@ -37,6 +37,11 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 1);
   else if (trend_string == "quadratic")
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
+  else if (trend_string == "reduced_quadratic")
+  {
+    surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
+    surrogateOpts.sublist("Trend").sublist("Options").set("reduced basis", true);
+  }
   else
     surrogateOpts.sublist("Trend").set("estimate trend", false);
 

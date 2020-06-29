@@ -3631,9 +3631,7 @@
                     <oneOf label="Trend Order">
                       <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant"   />
                       <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear"   />
-		      <!--
-                          <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic"   />
-		      -->
+                      <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic"   />
                       <keyword  id="quadratic" name="quadratic" code="{N_mom(lit,trendOrder_quadratic)}" label="Quadratic"   />
                     </oneOf>
                   </keyword>

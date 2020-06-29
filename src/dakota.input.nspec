@@ -5661,6 +5661,8 @@ KEYWORD model {N_mom3(start,0,stop)}
           |
           linear {N_mom(lit,trendOrder_linear)}
           |
+          reduced_quadratic {N_mom(lit,trendOrder_reduced_quadratic)}
+          |
           quadratic {N_mom(lit,trendOrder_quadratic)}
          ]
         [ num_restarts INTEGER > 1 {N_mom(int,numRestarts)} ]
