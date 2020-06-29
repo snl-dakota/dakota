@@ -87,6 +87,9 @@ private:
   void multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 					   unsigned short hf_model_form);
 
+  ///
+  void initialize_key_cost_steps(const unsigned short& model_form, size_t& num_steps, RealVector& cost);
+
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
   void shared_increment(size_t iter, size_t lev);
@@ -444,6 +447,11 @@ private:
 
   /// sum up Monte Carlo estimates for mean squared error (MSE) for
   /// QoI using discrepancy sums based on allocation target
+  void aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, 
+						  const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi);
+  
+  /// sum up Monte Carlo estimates for mean squared error (MSE) for
+  /// QoI using discrepancy sums based on allocation target
   void aggregate_mse_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
  									IntIntPairRealMatrixMap sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi);
@@ -539,6 +547,9 @@ private:
   //- Heading: Data
   //
 
+  unsigned short seq_index;
+  size_t max_iter;
+
   /// total number of successful sample evaluations (excluding faults)
   /// for each model form, discretization level, and QoI
   Sizet3DArray NLev;
@@ -586,6 +597,10 @@ private:
   bool exportSampleSets;
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
+
+
+  RealMatrix N_target_qoi;
+  RealMatrix N_target_qoi_FN;
 };
 
 
@@ -907,6 +922,14 @@ aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
 }
 
 inline void NonDMultilevelSampling::
+aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, 
+						  const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi){
+	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
+		estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step)/N_l[step][qoi];
+	}
+}
+
+inline void NonDMultilevelSampling::
 aggregate_mse_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
 							IntIntPairRealMatrixMap sum_QlQlm1, 
 							const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi){
@@ -976,6 +999,9 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 inline void NonDMultilevelSampling::compute_eps_div_2(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi){
    for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
            eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
+   
+   		   //Cout << "I AM HARDCODED FOR PROBLEM 18 = " << eps_sq_div_2_qoi << std::endl;
+           //eps_sq_div_2_qoi[qoi] = 1.389824213484928e-7; //estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
    }
    if (outputLevel == DEBUG_OUTPUT)
            Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
@@ -990,7 +1016,7 @@ inline void NonDMultilevelSampling::compute_eps_div_2(const RealVector& estimato
 	size_t num_steps = agg_var_qoi_in.numCols();
 	RealVector level_cost_vec(num_steps);
 	RealVector sum_sqrt_var_cost;
-	RealMatrix N_target_qoi, delta_N_l_qoi;
+	RealMatrix delta_N_l_qoi;
 	RealVector eps_sq_div_2;
 	RealMatrix agg_var_qoi;
 
@@ -1015,6 +1041,7 @@ inline void NonDMultilevelSampling::compute_eps_div_2(const RealVector& estimato
 		}
 
 		N_target_qoi.shape(nb_aggregation_qois, num_steps);
+		N_target_qoi_FN.shape(nb_aggregation_qois, num_steps);
 		delta_N_l_qoi.shape(nb_aggregation_qois, num_steps);
 	}else if (qoiAggregation==QOI_AGGREGATION_MAX) {
 		nb_aggregation_qois = numFunctions;
@@ -1034,6 +1061,7 @@ inline void NonDMultilevelSampling::compute_eps_div_2(const RealVector& estimato
 			}
 		}
 		N_target_qoi.shape(numFunctions, num_steps);
+		N_target_qoi_FN.shape(numFunctions, num_steps);
 		delta_N_l_qoi.shape(numFunctions, num_steps);
 	}else{
   	  Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
@@ -1048,6 +1076,7 @@ inline void NonDMultilevelSampling::compute_eps_div_2(const RealVector& estimato
 		for (size_t step = 0; step < num_steps; ++step) {
 	      	level_cost_vec[step] = level_cost(cost, step);
 			N_target_qoi(qoi, step) = std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
+			N_target_qoi_FN(qoi, step) = N_target_qoi(qoi, step);
 			//N_target_qoi_FN(qoi, step) = N_target_qoi(qoi, step);
 			if (outputLevel == DEBUG_OUTPUT) {
 			Cout << "\t\tVar of target: " << agg_var_qoi(qoi, step) << std::endl;
@@ -1190,6 +1219,7 @@ inline void NonDMultilevelSampling::compute_eps_div_2(const RealVector& estimato
 			}
 		}
 	}
+
 	for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
 		for (size_t step = 0; step < num_steps; ++step) {
 		    if(allocationTarget == TARGET_MEAN){

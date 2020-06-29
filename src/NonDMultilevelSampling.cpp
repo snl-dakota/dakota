@@ -120,6 +120,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   }
   }
 
+  max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   // For testing multilevel_mc_Qsum():
   //subIteratorFlag = true;
 }
@@ -254,7 +255,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
   size_t qoi, num_steps = truth_model.solution_levels();// 1 model form
   unsigned short& step = (true) ? lev : model_form; // option not active
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_costs(), agg_var(num_steps);
@@ -382,8 +382,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     with multiple discretization levels. */
 void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
 {
+
     // assign truth model form (solution level assignment is deferred until loop)
-    UShortArray truth_key;
+    /*UShortArray truth_key;
     unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
     Pecos::DiscrepancyCalculator::form_key(0, model_form, lev, truth_key);
     iteratedModel.active_model_key(truth_key);
@@ -393,10 +394,19 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     unsigned short& step = (true) ? lev : model_form; // option not active
 
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+     // retrieve cost estimates across soln levels for a particular model form
+    RealVector cost = truth_model.solution_level_costs(), estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions);
+    */
+    
     // retrieve cost estimates across soln levels for a particular model form
-    RealVector cost = truth_model.solution_level_costs(),
+    RealVector cost,
       estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions);
-    RealMatrix agg_var_qoi(numFunctions, num_steps);
+    size_t num_steps;//1 model form
+    initialize_key_cost_steps(model_form, num_steps, cost);
+    seq_index = 2;
+    unsigned short lev = USHRT_MAX;
+    unsigned short& step = (true) ? lev : model_form;
+    
 
     // For moment estimation, we accumulate telescoping sums for Q^i using
     // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -405,6 +415,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     IntRealMatrixMap sum_Ql, sum_Qlm1;
     IntIntPairRealMatrixMap sum_QlQlm1;
     initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, num_steps);
+    RealMatrix agg_var_qoi(numFunctions, num_steps);
 
     // Initialize for pilot sample
     SizetArray delta_N_l;
@@ -415,13 +426,12 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     RealVectorArray mu_hat(num_steps);
     Sizet2DArray &N_l = NLev[model_form];
 
-
 ////TODO
     //// Problem 18
     /*
     Real N_L_exact, N_H_exact;
 
-    Real x = iteratedModel.current_variables().all_continuous_variables()[0];
+    Real x = iteratedModel.current_variables().all_continuous_variables()[1];
     Real Ac = iteratedModel.current_variables().all_discrete_real_variables()[0];
     if(Ac == -1)
       Ac = 0.5/6. * x + 0.4;
@@ -512,7 +522,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
       */
 
       //// Problem 18
-      /*if(allocationTarget == TARGET_MEAN) {
+      /*
+      if(allocationTarget == TARGET_MEAN) {
         convergenceTol = var_H / N_MC;
         Real lagrange_mult = 1. / convergenceTol * (std::sqrt(var_L * C_L) + std::sqrt(var_deltaHL * C_H));
 
@@ -523,7 +534,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
         RealVector initial_point;
         initial_point.size(2);
 
-        Cout << "Qoi: " << qoi << ", Pilot samples: " << std::endl;
+        //Cout << "Qoi: " << qoi << ", Pilot samples: " << std::endl;
         for (step = 0; step < 2; ++step) {
           initial_point[step] = 10.; //pilot_samples[step]; //N_target_mean_qoi[step][qoi]; //pilot_samples[step];//N_target_qoi[qoi][step]; //> pilot_samples[step] ? N_target_qoi[qoi][step] : pilot_samples[step];
         }
@@ -536,6 +547,12 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
         for (step = 0; step < 2; ++step) {
           var_lower_bnds[step] = 7.; //pilot_samples[step] > 5. ? pilot_samples[step] : 5.;
         }
+
+        RealVector level_cost_vec(2);
+        for (step = 0; step < N_l.size(); ++step) {
+          level_cost_vec[step] = level_cost(cost, step);
+        }
+
         //var_lower_bnds.putScalar(3.); //Set to 3 to avoid NaNs
         var_upper_bnds.size(num_steps); //init to 0
         var_upper_bnds.putScalar(1e10); //Set to high upper bound
@@ -576,9 +593,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
         throw IO_ERROR;
       }
 
-    }*/
+    }
+    */
     ////
-
 
     // now converge on sample counts per level (N_l)
     mlmfIter = 0;
@@ -632,7 +649,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
 
         // MSE reference is MC applied to HF:
         if (mlmfIter == 0) { //TODO: Can this actually be moved down since num_samples > 0 always for mlmcIter==0
-          aggregate_mse_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, estimator_var0_qoi);
+          aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
         }
       }
       // compute epsilon target based on relative tolerance: total MSE = eps^2
@@ -687,15 +704,19 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
       var_of_moment_tmp.size(1);
       RealVector pilot_samples;
       pilot_samples.size(2);
+      RealVector level_cost_vec(2);
       for (step = 0; step < N_l.size(); ++step) {
         pilot_samples[step] = N_l[step][1];
+        level_cost_vec[step] = level_cost(cost, step);
       }
+      size_t qoiAggregation_copy = qoiAggregation;
+      size_t numFunctions_copy = numFunctions;
       Nl_tmp.size(2);
       Nl_tmp[0] = N_l[0][0];
       Nl_tmp[1] = N_l[1][0];
       size_t qoi_tmp = 1;
       exact_var_of_moment = exact_var_of_var_problem18(Nl_tmp);
-      assign_static_member(convergenceTol, qoi_tmp, level_cost_vec, sum_Ql, sum_Qlm1, sum_QlQlm1, pilot_samples);
+      assign_static_member(convergenceTol, qoi_tmp, qoiAggregation_copy, numFunctions_copy, level_cost_vec, sum_Ql, sum_Qlm1, sum_QlQlm1, pilot_samples);
       target_var_constraint_eval_optpp(OPTPP::NLPFunction, 2, Nl_tmp, var_of_moment_tmp, grad_g_dummy, result_mode_dummy);
       thought_var_of_moment = var_of_moment_tmp[0];
 
@@ -741,7 +762,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     Real cm1, cm2, cm3, cm4, cm1l, cm2l, cm3l, cm4l;
     if (momentStats.empty())
       momentStats.shapeUninitialized(4, numFunctions);
-    for (qoi = 0; qoi < numFunctions; ++qoi) {
+    for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
       cm1 = cm2 = cm3 = cm4 = 0.;
       for (step=0; step<num_steps; ++step) {
         size_t Nlq = N_l[step][qoi];
@@ -971,7 +992,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
   unsigned short& group = lev; // no alias switch for this algorithm
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
@@ -1199,7 +1220,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
   unsigned short& group = lev; // no alias switch for this algorithm
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
@@ -1434,6 +1455,17 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
   equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equivalent HF evals
 }
 
+
+void NonDMultilevelSampling::initialize_key_cost_steps(const unsigned short& model_form, size_t& num_steps, RealVector& cost){
+    // assign truth model form (solution level assignment is deferred until loop)
+    UShortArray truth_key;
+    unsigned short lev = USHRT_MAX; // lev updated in loop below
+    Pecos::DiscrepancyCalculator::form_key(0, model_form, lev, truth_key);
+    iteratedModel.active_model_key(truth_key);
+    Model& truth_model = iteratedModel.truth_model();
+    num_steps = truth_model.solution_levels();
+    cost = truth_model.solution_level_costs();
+}
 
 void NonDMultilevelSampling::
 configure_indices(unsigned short group, unsigned short form,
@@ -2471,7 +2503,7 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
     // of zero and corresponding final CV increment of zero.  Therefore, this
     // iteration completes on the previous CV increment and is more consistent
     // with finalCVRefinement=true.
-    size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+
     if (iter < max_iter || finalCVRefinement) {
       // hierarchical surrogate mode could be BYPASS_SURROGATE for CV or
       // BYPASS_SURROGATE/AGGREGATED_MODELS for ML-CV
