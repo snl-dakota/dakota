@@ -47,111 +47,109 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   BatchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
   setUpType("model"), dataOrder(1)
 {
-  // historical default convergence tolerances
-  if (convergenceTol < 0.0) convergenceTol = 1.0e-12;
-  distanceTol = probDescDB.get_real("method.x_conv_tol");
-  if (distanceTol < 0.0) distanceTol = 1.0e-8;
+    // historical default convergence tolerances
+    if (convergenceTol < 0.0) convergenceTol = 1.0e-12;
+    distanceTol = probDescDB.get_real("method.x_conv_tol");
+    if (distanceTol < 0.0) distanceTol = 1.0e-8;
 
-  bestVariablesArray.push_back(iteratedModel.current_variables().copy());
+    bestVariablesArray.push_back(iteratedModel.current_variables().copy());
 
-  // initialize augmented Lagrange multipliers
-  size_t num_multipliers = numNonlinearEqConstraints;
-  for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
-    if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
-      ++num_multipliers;
-    if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
-      ++num_multipliers;
-  }
-  augLagrangeMult.resize(num_multipliers);
-  augLagrangeMult = 0.;
-
-  truthFnStar.resize(numFunctions);
-
-  // Always build a global Gaussian process model.  No correction is needed.
-  String approx_type = "global_kriging";
-  if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
-    approx_type = "global_gaussian";
-
-  String sample_reuse = "none"; // *** TO DO: allow reuse separate from import
-  UShortArray approx_order; // empty
-  short corr_order = -1, corr_type = NO_CORRECTION;
-  if (probDescDB.get_bool("method.derivative_usage")) {
-    if (approx_type == "global_gaussian") {
-      Cerr << "\nError: efficient_global does not support gaussian_process "
-	   << "when derivatives present; use kriging instead." << std::endl;
-      abort_handler(METHOD_ERROR);
+    // initialize augmented Lagrange multipliers
+    size_t num_multipliers = numNonlinearEqConstraints;
+    for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
+        if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
+            ++num_multipliers;
+        if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
+            ++num_multipliers;
     }
-    if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
-    if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
-  }
-  int db_samples = probDescDB.get_int("method.samples");
-  int samples = (db_samples > 0) ? db_samples :
-    (numContinuousVars+1)*(numContinuousVars+2)/2;
-  int lhs_seed = probDescDB.get_int("method.random_seed");
-  unsigned short sample_type = SUBMETHOD_DEFAULT;
-  String rng; // empty string: use default
-  //int symbols = samples; // symbols needed for DDACE
-  bool vary_pattern = false;// for consistency across any outer loop invocations
-  // get point samples file
-  const String& import_pts_file
-    = probDescDB.get_string("method.import_build_points_file");
-  if (!import_pts_file.empty()) // *** TO DO: allow reuse separate from import
-    { samples = 0; sample_reuse = "all"; }
+    augLagrangeMult.resize(num_multipliers);
+    augLagrangeMult = 0.;
 
-  Iterator dace_iterator;
-  // The following uses on the fly derived ctor:
-  dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
-  // only use derivatives if the user requested and they are available
-  dace_iterator.active_set_request_values(dataOrder);
+    truthFnStar.resize(numFunctions);
 
-  // Construct f-hat (fHatModel) using a GP approximation for each response function over
-  // the active/design vars (same view as iteratedModel: not the typical All
-  // view for DACE).
-  //const Variables& curr_vars = iteratedModel.current_variables();
-  ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
-  gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-  fHatModel.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
-    gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
-    outputLevel, sample_reuse, import_pts_file,
-    probDescDB.get_ushort("method.import_build_format"),
-    probDescDB.get_bool("method.import_build_active_only"),
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")), false);
+    // Always build a global Gaussian process model.  No correction is needed.
+    String approx_type = "global_kriging";
+    if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
+        approx_type = "global_gaussian";
 
-  // Following this ctor, IteratorScheduler::init_iterator() initializes the
-  // parallel configuration for EffGlobalMinimizer + iteratedModel using
-  // EffGlobalMinimizer's maxEvalConcurrency.  During fHatModel construction
-  // above, DataFitSurrModel::derived_init_communicators() initializes the
-  // parallel config for dace_iterator + iteratedModel using dace_iterator's
-  // maxEvalConcurrency.  The only iteratedModel concurrency currently exercised
-  // is that used by dace_iterator within the initial GP construction, but the
-  // EffGlobalMinimizer maxEvalConcurrency must still be set so as to avoid
-  // parallel config errors resulting from avail_procs > max_concurrency within
-  // IteratorScheduler::init_iterator().  A max of the local derivative
-  // concurrency and the DACE concurrency is used for this purpose.
-  maxEvalConcurrency = std::max(maxEvalConcurrency,	dace_iterator.maximum_evaluation_concurrency());
+    String sample_reuse = "none"; // *** TO DO: allow reuse separate from import
+    UShortArray approx_order; // empty
+    short corr_order = -1, corr_type = NO_CORRECTION;
+    if (probDescDB.get_bool("method.derivative_usage")) {
+        if (approx_type == "global_gaussian") {
+            Cerr << "\nError: efficient_global does not support gaussian_process "
+      	   << "when derivatives present; use kriging instead." << std::endl;
+            abort_handler(METHOD_ERROR);
+        }
+        if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
+        if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
+    }
+    int db_samples = probDescDB.get_int("method.samples");
+    int samples = (db_samples > 0) ? db_samples :
+      (numContinuousVars+1)*(numContinuousVars+2)/2;
+    int lhs_seed = probDescDB.get_int("method.random_seed");
+    unsigned short sample_type = SUBMETHOD_DEFAULT;
+    String rng; // empty string: use default
+    //int symbols = samples; // symbols needed for DDACE
+    bool vary_pattern = false;// for consistency across any outer loop invocations
+    // get point samples file
+    const String& import_pts_file = probDescDB.get_string("method.import_build_points_file");
+    if (!import_pts_file.empty()) // *** TO DO: allow reuse separate from import
+      { samples = 0; sample_reuse = "all"; }
 
-  // Configure a RecastModel with one objective and no constraints using the
-  // alternate minimalist constructor: the recast fn pointers are reset for
-  // each level within the run fn.
-  SizetArray recast_vars_comps_total; // default: empty; no change in size
-  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
-  short recast_resp_order = 1; // nongradient-based optimizers
-  eifModel.assign_rep(new RecastModel(fHatModel, recast_vars_comps_total, all_relax_di,
-		    all_relax_dr, 1, 0, 0, recast_resp_order), false);
+    Iterator dace_iterator;
+    // The following uses on the fly derived ctor:
+    dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type, samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
+    // only use derivatives if the user requested and they are available
+    dace_iterator.active_set_request_values(dataOrder);
 
-  // must use alternate NoDB ctor chain
-  int max_iterations = 10000, max_fn_evals = 50000;
-  double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-  #ifdef HAVE_NCSU
-    approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations,
-      max_fn_evals, min_box_size, vol_box_size), false);
-  #else
-    Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
-         << "Aborting process." << std::endl;
-    abort_handler(METHOD_ERROR);
-  #endif //HAVE_NCSU
+    // Construct f-hat (fHatModel) using a GP approximation for each response function over
+    // the active/design vars (same view as iteratedModel: not the typical All
+    // view for DACE).
+    //const Variables& curr_vars = iteratedModel.current_variables();
+    ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+    gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+    fHatModel.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
+        gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
+        outputLevel, sample_reuse, import_pts_file,
+        probDescDB.get_ushort("method.import_build_format"),
+        probDescDB.get_bool("method.import_build_active_only"),
+        probDescDB.get_string("method.export_approx_points_file"),
+        probDescDB.get_ushort("method.export_approx_format")), false);
+
+    // Following this ctor, IteratorScheduler::init_iterator() initializes the
+    // parallel configuration for EffGlobalMinimizer + iteratedModel using
+    // EffGlobalMinimizer's maxEvalConcurrency.  During fHatModel construction
+    // above, DataFitSurrModel::derived_init_communicators() initializes the
+    // parallel config for dace_iterator + iteratedModel using dace_iterator's
+    // maxEvalConcurrency.  The only iteratedModel concurrency currently exercised
+    // is that used by dace_iterator within the initial GP construction, but the
+    // EffGlobalMinimizer maxEvalConcurrency must still be set so as to avoid
+    // parallel config errors resulting from avail_procs > max_concurrency within
+    // IteratorScheduler::init_iterator().  A max of the local derivative
+    // concurrency and the DACE concurrency is used for this purpose.
+    maxEvalConcurrency = std::max(maxEvalConcurrency,	dace_iterator.maximum_evaluation_concurrency());
+
+    // Configure a RecastModel with one objective and no constraints using the
+    // alternate minimalist constructor: the recast fn pointers are reset for
+    // each level within the run fn.
+    SizetArray recast_vars_comps_total; // default: empty; no change in size
+    BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+    short recast_resp_order = 1; // nongradient-based optimizers
+    eifModel.assign_rep(new RecastModel(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order), false);
+    varModel.assign_rep(new RecastModel(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order), false);
+
+    // must use alternate NoDB ctor chain
+    int max_iterations = 10000, max_fn_evals = 50000;
+    double min_box_size = 1.e-15, vol_box_size = 1.e-15;
+    #ifdef HAVE_NCSU
+        approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations, max_fn_evals, min_box_size, vol_box_size), false);
+        approxSubProbMinimizer.assign_rep(new NCSUOptimizer(varModel, max_iterations, max_fn_evals, min_box_size, vol_box_size), false);
+    #else
+      Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
+           << "Aborting process." << std::endl;
+      abort_handler(METHOD_ERROR);
+    #endif //HAVE_NCSU
 }
 
 
@@ -178,7 +176,7 @@ void EffGlobalMinimizer::core_run() {
             if (parallelFlag) { // begin if parallelFlag = true -- then run in parallel
                 batch_synchronous_ego(); // batch-sequential parallelization
             } // end if parallelFlag = true -- then run in parallel
-            else { // else begin parallelFlag = false -- then run sequentially 
+            else { // else begin parallelFlag = false -- then run sequentially
                 serial_ego();
             } // end if parallelFlag = false -- then run sequentially
         } // end approx convergence while loop
@@ -232,7 +230,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model_deprecated() {
 }
 
 
-/** To maximize expected improvement, the approxSubProbMinimizer will minimize -(expected_improvement). */
+/** To maximize expected improvement, the approxSubProbMinimizer will minimize -(compute_expected_improvement). **/
 void EffGlobalMinimizer::EIF_objective_eval(const Variables& sub_model_vars,
 		   const Variables& recast_vars,
 		   const Response& sub_model_response,
@@ -243,18 +241,33 @@ void EffGlobalMinimizer::EIF_objective_eval(const Variables& sub_model_vars,
     const ShortArray& recast_asv = recast_response.active_set_request_vector();
 
     if (recast_asv[0] & 1) { // return -EI since we are maximizing
-        Real neg_ei = - effGlobalInstance->expected_improvement(means, variances);
+        Real neg_ei = - effGlobalInstance->compute_expected_improvement(means, variances);
         recast_response.function_value(neg_ei, 0);
     }
 }
 
+/** To maximize variances, the approxSubProbMinimizer will minimize -(variances). **/
+void EffGlobalMinimizer::Variances_objective_eval(const Variables& sub_model_vars,
+		   const Variables& recast_vars,
+		   const Response& sub_model_response,
+		   Response& recast_response) {
+    // Means are passed in, but must retrieve variance from the GP
+    // const RealVector& means = sub_model_response.function_values();
+    const RealVector& variances = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
+    const ShortArray& recast_asv = recast_response.active_set_request_vector();
 
-Real EffGlobalMinimizer::expected_improvement(const RealVector& means, const RealVector& variances) {
+    if (recast_asv[0] & 1) { // return -EI since we are maximizing
+        Real neg_var = - effGlobalInstance->compute_variances(variances);
+        recast_response.function_value(neg_var, 0);
+    }
+}
+
+/** Compute the EI acquisition function **/
+Real EffGlobalMinimizer::compute_expected_improvement(const RealVector& means, const RealVector& variances) {
     // Objective calculation will incorporate any sense changes or
     // weights, such that this is an objective to minimize.
     Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
   			                  iteratedModel.primary_response_fn_weights()), stdv;
-
     if ( numNonlinearConstraints ) {
         // mean_M = mean_f + lambda*EV + r_p*EV*EV
         // stdv_M = stdv_f
@@ -268,7 +281,6 @@ Real EffGlobalMinimizer::expected_improvement(const RealVector& means, const Rea
         // stdv_M = sqrt(var_f)
         stdv = std::sqrt(variances[0]); // *** sqrt(sum(variances(1:nUsrPrimaryFns))
     }
-
     // Calculate the expected improvement
     Real cdf, pdf;
     Real snv = (meritFnStar - mean); // standard normal variate
@@ -282,14 +294,22 @@ Real EffGlobalMinimizer::expected_improvement(const RealVector& means, const Rea
         cdf = Pecos::NormalRandomVariable::std_cdf(snv);
         pdf = Pecos::NormalRandomVariable::std_pdf(snv);
     }
-
-    Real ei  = (meritFnStar - mean) * cdf + stdv * pdf;
-
-    return ei;
+    Real real_ei = (meritFnStar - mean) * cdf + stdv * pdf;
+    return real_ei;
 }
 
 
+/** Compute the variances **/
+Real EffGlobalMinimizer::compute_variances(const RealVector& variances) {
+    // Objective calculation will incorporate any sense changes or
+    // weights, such that this is an objective to minimize.
+    const Real& stdv = std::sqrt(variances[0]); // *** sqrt(sum(variances(1:nUsrPrimaryFns))
+    // Calculate the variances
+    Real real_variances = stdv;
+    return real_variances;
+}
 
+/** Compute the expected violation for constraints **/
 RealVector EffGlobalMinimizer::expected_violation(const RealVector& means, const RealVector& variances) {
     RealVector ev(numNonlinearConstraints);
 
@@ -353,7 +373,7 @@ RealVector EffGlobalMinimizer::expected_violation(const RealVector& means, const
 }
 
 
-
+/** Get the best-so-far sample **/
 void EffGlobalMinimizer::get_best_sample() {
     // pull the samples and responses from data used to build latest GP
     // to determine fnStar for use in the expected improvement function
@@ -476,17 +496,21 @@ void EffGlobalMinimizer::build_gp() {
     // any higher level recursions, propagate them up the instantiate-on-the-fly
     // Model recursion so that they are correct when they propagate back down.
     eifModel.update_from_subordinate_model(); // depth = max
+    varModel.update_from_subordinate_model(); // depth = max
 
     // (We might want a more selective update from submodel, or make a
-    // new EIFModel specialization of RecastModel.)  Always want to
+    // new eifModel specialization of RecastModel.)  Always want to
     // minimize the negative expected improvement as posed in the
     // eifModel, which consumes min/max sense and weights, and recasts
     // nonlinear constraints, so we don't let these propagate to the
     // approxSubproblemMinimizer.
     eifModel.primary_response_fn_sense(BoolDeque());
     eifModel.primary_response_fn_weights(RealVector(), false); // no recursion
-    eifModel.reshape_constraints(0,0, eifModel.num_linear_ineq_constraints(),
-               eifModel.num_linear_eq_constraints());
+    eifModel.reshape_constraints(0,0, eifModel.num_linear_ineq_constraints(), eifModel.num_linear_eq_constraints());
+
+    varModel.primary_response_fn_sense(BoolDeque());
+    varModel.primary_response_fn_weights(RealVector(), false); // no recursion
+    varModel.reshape_constraints(0,0, varModel.num_linear_ineq_constraints(), varModel.num_linear_eq_constraints());
 
     // Build initial GP once for all response functions
     fHatModel.build_approximation();
@@ -520,6 +544,11 @@ void EffGlobalMinimizer::serial_ego() {
     eif_model_rep->init_maps(vars_map, false, NULL, NULL,
                               primary_resp_map, secondary_resp_map, nonlinear_resp_map,
                               EIF_objective_eval, NULL);
+
+    RecastModel* var_model_rep = (RecastModel*)varModel.model_rep();
+    var_model_rep->init_maps(vars_map, false, NULL, NULL,
+                                                        primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+                                                        EIF_objective_eval, NULL);
 
     // determine fnStar from among sample data
     get_best_sample();
@@ -628,6 +657,7 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
     for (size_t i=0; i<numFunctions; i++)
         primary_resp_map[0][i] = i;
     RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
+    RecastModel* var_model_rep = (RecastModel*)varModel.model_rep();
     eif_model_rep->init_maps(vars_map, false, NULL, NULL,
                               primary_resp_map, secondary_resp_map, nonlinear_resp_map,
                               EIF_objective_eval, NULL);
@@ -637,62 +667,62 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
 
     // Note: vars_star: input; resp_star: output (liar); resp_star_truth: output (true)
     // construct the batch
-    construct_batch_acquisition(BatchSizeAcquisition, varsArrayBatchAcquisition); // attempting consolidated
-    // for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
+    // construct_batch_acquisition(BatchSizeAcquisition, varsArrayBatchAcquisition); // attempting consolidated
+    for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
 
-    //     // determine fnStar from among sample data
-    //     get_best_sample();
-    //     bestVariablesArray.front().continuous_variables(varStar); // debug
-    //     bestResponseArray.front().function_values(truthFnStar); // debug
+        // determine fnStar from among sample data
+        get_best_sample();
+        bestVariablesArray.front().continuous_variables(varStar); // debug
+        bestResponseArray.front().function_values(truthFnStar); // debug
 
-    //     // execute GLOBAL search and retrieve results
-    //     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    //     approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
-    //     const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
-    //     const RealVector& c_vars          = vars_star.continuous_variables();
-    //     const Response&   resp_star       = approxSubProbMinimizer.response_results();
-    //     const Real&       eif_star        = resp_star.function_value(0);
+        // execute GLOBAL search and retrieve results
+        ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+        approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
+        const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
+        const RealVector& c_vars          = vars_star.continuous_variables();
+        const Response&   resp_star       = approxSubProbMinimizer.response_results();
+        const Real&       eif_star        = resp_star.function_value(0);
 
-    //     // get expected value for output
-    //     fHatModel.continuous_variables(c_vars);
-    //     fHatModel.evaluate();
-    //     const Response& approx_response = fHatModel.current_response();
+        // get expected value for output
+        fHatModel.continuous_variables(c_vars);
+        fHatModel.evaluate();
+        const Response& approx_response = fHatModel.current_response();
 
-    //     Real aug_lag = augmented_lagrangian_merit(approx_response.function_values(),
-    //                                       iteratedModel.primary_response_fn_sense(),
-    //                                       iteratedModel.primary_response_fn_weights(),
-    //                                       origNonlinIneqLowerBnds,
-    //                                       origNonlinIneqUpperBnds,
-    //                                       origNonlinEqTargets);
+        Real aug_lag = augmented_lagrangian_merit(approx_response.function_values(),
+                                          iteratedModel.primary_response_fn_sense(),
+                                          iteratedModel.primary_response_fn_weights(),
+                                          origNonlinIneqLowerBnds,
+                                          origNonlinIneqUpperBnds,
+                                          origNonlinEqTargets);
 
-    //     Cout << "\nResults of EGO iteration:\nFinal point =\n"
-    //             << c_vars << "Expected Improvement    =\n                     "
-    //             << std::setw(write_precision+7) << -eif_star
-    //             << "\n                     " << std::setw(write_precision+7)
-    //             << aug_lag << " [merit]\n";
+        Cout << "\nResults of EGO iteration:\nFinal point =\n"
+                << c_vars << "Expected Improvement    =\n                     "
+                << std::setw(write_precision+7) << -eif_star
+                << "\n                     " << std::setw(write_precision+7)
+                << aug_lag << " [merit]\n";
 
-    //     // impose constant liar -- temporarily cast constant liar as observations
-    //     const IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + _i + 1, approx_response); // implement a liar counter
+        // impose constant liar -- temporarily cast constant liar as observations
+        const IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + _i + 1, approx_response); // implement a liar counter
 
-    //     // update GP
-    //     numDataPts = fHatModel.approximation_data(0).points(); // debug
-    //     Cout << "\nParallel EGO: Adding liar response...\n"; // debug
+        // update GP
+        numDataPts = fHatModel.approximation_data(0).points(); // debug
+        Cout << "\nParallel EGO: Adding liar response...\n"; // debug
 
-    //     // append constant liar to fHatModel (aka heuristic liar)
-    //     fHatModel.append_approximation(vars_star, resp_star_liar, true);
+        // append constant liar to fHatModel (aka heuristic liar)
+        fHatModel.append_approximation(vars_star, resp_star_liar, true);
 
-    //     // update constraints based on the constant liar
-    //     if (numNonlinearConstraints) {
-    //         const RealVector& fns_star_liar = resp_star_liar.second.function_values();
-    //         Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
-    //         if (norm_cv_star < etaSequence)
-    //             update_augmented_lagrange_multipliers(fns_star_liar);
-    //         else
-    //             update_penalty();
-    //     }
-    //     Cout << "Parallel EGO: Finished adding liar responses!\n";
-    //     varsArrayBatchAcquisition[_i] = vars_star.copy();
-    // }
+        // update constraints based on the constant liar
+        if (numNonlinearConstraints) {
+            const RealVector& fns_star_liar = resp_star_liar.second.function_values();
+            Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
+            if (norm_cv_star < etaSequence)
+                update_augmented_lagrange_multipliers(fns_star_liar);
+            else
+                update_penalty();
+        }
+        Cout << "Parallel EGO: Finished adding liar responses!\n";
+        varsArrayBatchAcquisition[_i] = vars_star.copy();
+    }
 
     // delete liar responses
     // delete_liar_responses(BatchSizeAcquisition); // attempting consolidated
@@ -1078,7 +1108,7 @@ void EffGlobalMinimizer::debug_plots() {
                         	    RealVector merit(1);
                         	    merit[0] = m;
 
-                        	    Real ei = expected_improvement(merit, test_pt);
+                        	    Real ei = compute_expected_improvement(merit, test_pt);
 
                         	    eifOut << '\n' << std::setw(13) << test_pt[0] << ' '
                               		   << std::setw(13) << test_pt[1] << ' ' << std::setw(13) << ei;

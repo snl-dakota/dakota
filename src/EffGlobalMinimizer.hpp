@@ -124,8 +124,9 @@ private:
     void debug_plots();
 
     /// expected improvement function for the GP
-    Real expected_improvement(const RealVector& means,
-  			                     const RealVector& variances);
+    Real compute_expected_improvement(const RealVector& means, const RealVector& variances);
+    /// variance function for the GP
+    Real compute_variances(const RealVector& variances);
 
     /// expected violation function for the constraint functions
     RealVector expected_violation(const RealVector& means,
@@ -141,6 +142,11 @@ private:
     /// static function used as the objective function in the
     /// Expected Improvement (EIF) problem formulation for PMA
     static void EIF_objective_eval(const Variables& sub_model_vars,
+  				                        const Variables& recast_vars,
+                                  const Response& sub_model_response,
+                                  Response& recast_response);
+    /// Variance formulation for primary
+    static void Variances_objective_eval(const Variables& sub_model_vars,
   				                        const Variables& recast_vars,
                                   const Response& sub_model_response,
                                   Response& recast_response);
@@ -191,6 +197,9 @@ private:
     /// recast model which assimilates mean and variance to solve the
     /// max(EIF) sub-problem
     Model eifModel;
+    /// recast model which explores by maximizing variances to solve the
+    /// max(variances) sub-problem
+    Model varModel;
 
     /// minimum penalized response from among true function evaluations
     Real meritFnStar;
