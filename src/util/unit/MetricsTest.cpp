@@ -103,7 +103,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
   TEST_ASSERT(std::abs(mval - metric) < atol);
 
   /* R_SQUARED */
-  double dbar, numer, denom = 0.0;
+  double dbar = 0.0, numer = 0.0, denom = 0.0;
   mval = 0.0;
   for (int i = 0; i < N; i++)
     dbar += d(i);
