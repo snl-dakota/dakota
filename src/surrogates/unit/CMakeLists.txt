@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014 Sandia Corporation.
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -33,17 +33,33 @@ dakota_add_unit_test(NAME SurrogatesToolsTest SOURCES
   SurrogatesToolsTest.cpp
 )
 
+dakota_add_unit_test(NAME EvalMetricsCrossValTest SOURCES
+  teuchos_unit_test_driver.cpp
+  EvalMetricsCrossValTest.cpp
+)
+
 # BMA NOTE: I think we only need state the immediate deps? So no dakota_util
 target_include_directories(GaussianProcessTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(PolynomialRegressionTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(SurrogatesToolsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
+target_include_directories(EvalMetricsCrossValTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 
-target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
-target_link_libraries(PolynomialRegressionTest PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
-target_link_libraries(SurrogatesToolsTest PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
+target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates
+  ${Teuchos_LIBRARIES} Boost::filesystem)
+target_link_libraries(PolynomialRegressionTest PRIVATE dakota_surrogates
+  ${Teuchos_LIBRARIES} Boost::filesystem)
+target_link_libraries(SurrogatesToolsTest PRIVATE dakota_surrogates
+  ${Teuchos_LIBRARIES})
+target_link_libraries(EvalMetricsCrossValTest PRIVATE dakota_surrogates
+  ${Teuchos_LIBRARIES})
 
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/gp_test_data"
   "${CMAKE_CURRENT_BINARY_DIR}/gp_test_data"
+  surrogates_unit_test_copied_files
+  )
+
+dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/pr_test_data"
+  "${CMAKE_CURRENT_BINARY_DIR}/pr_test_data"
   surrogates_unit_test_copied_files
   )
 

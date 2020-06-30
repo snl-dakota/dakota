@@ -8,7 +8,7 @@ import copy
 from . import dprepro as dprepro_mod
 
 __author__ = 'J. Adam Stephens'
-__copyright__ = 'Copyright 2014 Sandia Corporation'
+__copyright__ = 'Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
 __license__ = 'GNU Lesser General Public License'
 
 PYTHON3 = True if sys.version_info[0] == 3 else False 
@@ -134,7 +134,7 @@ class Parameters(object):
 
 # Datatype to hold ASV element for a single response. function, gradient,
 # and hession are set to True or False. 
-_asvType = collections.namedtuple("ASVType",["function","gradient","hessian"])
+_ASVType = collections.namedtuple("_ASVType",["function","gradient","hessian"])
 
 
 # A class to hold the ASV and data for a single response
@@ -166,7 +166,7 @@ class Response(object):
         self._descriptor = descriptor
         self._num_deriv_vars = num_deriv_vars
         int_asv = int(asv)
-        self.asv = _asvType(int_asv & 1 == 1, int_asv & 2 == 2, 
+        self.asv = _ASVType(int_asv & 1 == 1, int_asv & 2 == 2, 
                 int_asv &4 == 4)
         self._function = None
         self._gradient = None

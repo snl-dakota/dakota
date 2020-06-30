@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -91,6 +91,14 @@ double p_norm(const T &v, double p)
 
   return std::pow(sum, 1./p);
 }
+
+/// Random permutation of int array
+void random_permutation(const int num_pts,
+  const unsigned int seed, VectorXi &permutations);
+
+/// Generate indices for cross validation folds
+void create_cv_folds(const int num_folds, const int num_pts,
+  std::vector<VectorXi> &fold_indices, const int seed = 22);
 
 } // namespace util
 } // namespace dakota

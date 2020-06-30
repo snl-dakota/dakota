@@ -831,10 +831,10 @@
 	     ' >
 
     <!ENTITY ft_method_tols '
-		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mdm(Real,roundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-8" >
+		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mdm(Real,solverRoundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.e-10" >
 		    <param type="REAL" />
 		  </keyword>
-		  <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mdm(Real,arithmeticTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.0e-2" >
+		  <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mdm(Real,statsRoundingTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.e-10" >
 		    <param type="REAL" />
 		  </keyword>
 	     ' >
@@ -892,10 +892,10 @@
 	     ' >
 
     <!ENTITY ft_model_tols '
-	     <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,roundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-8" >
+	     <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,solverRoundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.e-10" >
 	       <param type="REAL" />
 	     </keyword>
-	     <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mom(Real,arithmeticTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.0e-2" >
+	     <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mom(Real,statsRoundingTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.e-10" >
 	       <param type="REAL" />
 	     </keyword>
 	     ' >

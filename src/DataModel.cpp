@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -27,7 +27,7 @@ DataModelRep::DataModelRep():
   importBuildFormat(TABULAR_ANNOTATED),  importUseVariableLabels(false),
   importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
-  exportApproxFormat(TABULAR_ANNOTATED), numRestarts(20),
+  exportApproxFormat(TABULAR_ANNOTATED), numRestarts(10),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
   krigingNugget(0.0), krigingFindNugget(0), mlsWeightFunction(0),
@@ -51,7 +51,7 @@ DataModelRep::DataModelRep():
   decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
   subspaceIdCVMethod(CV_ID_DEFAULT), regressionType(FT_LS),
   regressionL2Penalty(0.), maxSolverIterations(-1), maxCrossIterations(1),
-  solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-8),
+  solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
   tensorGridFlag(false), startOrder(2), maxOrder(USHRT_MAX),
   startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
   adaptRank(false), c3RefineType(NO_C3_REFINEMENT),
@@ -97,7 +97,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
     << regressionType << regressionL2Penalty << maxSolverIterations
-    << maxCrossIterations << solverTol << roundingTol << arithmeticTol
+    << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << maxOrder
     << startRank << kickRank << maxRank << adaptRank << c3RefineType
     << collocationPoints << collocationRatio
@@ -144,7 +144,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> subspaceIdConstantine >> subspaceIdEnergy >> subspaceBuildSurrogate
     >> subspaceDimension >> subspaceNormalization >> numReplicates
     >> regressionType >> regressionL2Penalty >> maxSolverIterations
-    >> maxCrossIterations >> solverTol >> roundingTol >> arithmeticTol
+    >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
     >> tensorGridFlag >> startOrder >> maxOrder
     >> startRank >> kickRank >> maxRank >> adaptRank >> c3RefineType
     >> collocationPoints >> collocationRatio
@@ -191,7 +191,7 @@ void DataModelRep::write(std::ostream& s) const
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
     << regressionType << regressionL2Penalty << maxSolverIterations
-    << maxCrossIterations << solverTol << roundingTol << arithmeticTol
+    << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << maxOrder
     << startRank << kickRank << maxRank << adaptRank << c3RefineType
     << collocationPoints << collocationRatio

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -13,6 +13,8 @@
 #include "LinearSolvers.hpp"
 #include "Surrogate.hpp"
 #include "util_data_types.hpp"
+
+#include <boost/serialization/base_object.hpp>
 
 namespace dakota {
 namespace surrogates {
@@ -44,6 +46,15 @@ public:
   PolynomialRegression(const ParameterList &options);
 
   /**
+   * \brief Constructor for the PolynomialRegression class that sets configOptions
+   *        but does not build the surrogate.
+   *
+   * \param[in] param_list_xml_filename A ParameterList file (relative to the location of the
+   * Dakota input file) that overrides entries in defaultConfigOptions.
+   */
+  PolynomialRegression(const std::string &param_list_xml_filename); 
+
+  /**
    * \brief Constructor sets configOptions and builds the Polynomial Regression
    *        surrogate.
    *
@@ -53,6 +64,19 @@ public:
    */
   PolynomialRegression(const MatrixXd &samples, const MatrixXd &response,
 		                   const ParameterList &options);
+
+  /**
+   * \brief Constructor for the PolynomialRegression class that sets configOptions
+   *        and builds the surrogate.
+   *
+   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
+   * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1;
+   *  only 1 response is supported currently).
+   * \param[in] param_list_xml_filename A ParameterList file (relative to the location of the
+   *  Dakota input file) that overrides entries in defaultConfigOptions.
+   */
+  PolynomialRegression(const MatrixXd &samples, const MatrixXd &response,
+                       const std::string &param_list_xml_filename);  
 
   /// Default destructor
   ~PolynomialRegression();
@@ -116,6 +140,10 @@ public:
   /// Set the polynomial surrogate's coefficients.
   void set_polynomial_coeffs(const MatrixXd &coeffs);
 
+
+  std::shared_ptr<Surrogate> clone() const override
+  { return std::make_shared<PolynomialRegression>(configOptions); }
+
 private:
   /// Construct and populate the defaultConfigOptions.
   void default_options() override;
@@ -132,7 +160,25 @@ private:
   MatrixXd polynomialCoeffs;
   /// Offset/intercept term for the polynomial surrogate.
   double polynomialIntercept;
+
+  /// Allow serializers access to private class data
+  friend class boost::serialization::access;
+  /// Serializer for save/load
+  template<class Archive>
+  void serialize(Archive& archive, const unsigned int version);
 };
+
+
+template<class Archive>
+void PolynomialRegression::serialize(Archive& archive, const unsigned int version)
+{
+  archive & boost::serialization::base_object<Surrogate>(*this);
+  archive & numTerms;
+  archive & basisIndices;
+  archive & polynomialCoeffs;
+  archive & polynomialIntercept;
+}
+
 
 } // namespace surrogates
 } // namespace dakota

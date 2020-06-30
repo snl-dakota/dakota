@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -12,6 +12,9 @@
 #include "DataScaler.hpp"
 #include "PolynomialRegression.hpp"
 #include "Surrogate.hpp"
+
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/vector.hpp>
 
 namespace dakota {
 
@@ -57,6 +60,15 @@ public:
 
   /**
    * \brief Constructor for the GaussianProcess that sets configOptions
+   *        but does not build the GP.
+   *
+   * \param[in] param_list_xml_filename A ParameterList file (relative to the location of the
+   * Dakota input file) that overrides entries in defaultConfigOptions.
+   */
+  GaussianProcess(const std::string &param_list_xml_filename);
+
+  /**
+   * \brief Constructor for the GaussianProcess that sets configOptions
    *        and builds the GP.
    * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
    * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
@@ -64,6 +76,19 @@ public:
    */
   GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
                   const Teuchos::ParameterList &param_list);
+
+  /**
+   * \brief Constructor for the GaussianProcess that sets configOptions
+   *        and builds the GP.
+   *
+   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
+   * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1;
+   *  only 1 response is supported currently).
+   * \param[in] param_list_xml_filename A ParameterList file (relative to the location of the
+   *  Dakota input file) that overrides entries in defaultConfigOptions.
+   */
+  GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
+                  const std::string &param_list_xml_filename);
 
   /// Default destructor
   ~GaussianProcess();
@@ -144,6 +169,10 @@ public:
    *  \param[in] opt_params Vector of optimization parameter values.
    */
   void set_opt_params(const std::vector<double> &opt_params);
+
+
+  std::shared_ptr<Surrogate> clone() const override
+  { return std::make_shared<GaussianProcess>(configOptions); }
 
 private:
   /* Private utility functions */
@@ -232,6 +261,9 @@ private:
   /// Target values for the surrogate dataset.
   MatrixXd targetValues;
 
+  /// The scaled build points for the surrogate dataset.
+  MatrixXd scaledBuildPoints;
+
   /// Vector of log-space hyperparameters.
   VectorXd thetaValues;
 
@@ -304,8 +336,38 @@ private:
   /// Numerical constant -- needed for negative marginal log-likelihood.
   const double PI = 3.14159265358979323846;
 
+private:
+
+  /// Allow serializers access to private class data
+  friend class boost::serialization::access;
+  /// Serializer for save/load
+  template<class Archive>
+  void serialize(Archive& archive, const unsigned int version);
+
 }; // class GaussianProcess
 
+
+template<class Archive>
+void GaussianProcess::serialize(Archive& archive, const unsigned int version)
+{
+  archive & boost::serialization::base_object<Surrogate>(*this);
+
+  // BMA: Initial cut is aggressive, serializing most members
+  archive & cwiseDists2;
+  archive & thetaValues;
+  archive & fixedNuggetValue;
+  archive & estimateNugget;
+  archive & estimatedNuggetValue;
+  archive & estimateTrend;
+  archive & scaledBuildPoints;
+  archive & targetValues;
+  archive & basisMatrix;
+  archive & betaValues;
+  // BMA TODO: leaving this as shared_ptr pending discussion as it seems natural
+  if (Archive::is_loading::value)
+    polyRegression.reset(new PolynomialRegression());
+  archive & *polyRegression;
+}
 
 }  // namespace surrogates
 }  // namespace dakota

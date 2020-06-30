@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -210,7 +210,10 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 	   approx_type == "global_neural_network" || // TO DO: Two ANN's ?
 	   approx_type == "global_radial_basis"   ||
 	   approx_type == "global_mars"           ||
-	   approx_type == "global_moving_least_squares")
+	   approx_type == "global_moving_least_squares" ||
+	   // Overloading use of SharedSurfpackApproxData for now:
+	   approx_type == "global_exp_gauss_proc" ||
+	   approx_type == "global_exp_poly")
     return new SharedSurfpackApproxData(problem_db, num_vars);
 #endif // HAVE_SURFPACK
   else {

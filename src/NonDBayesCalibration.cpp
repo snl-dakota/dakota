@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -186,6 +186,18 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
     break;
+  }
+
+  // Errors if there are correlations and the user hasn't specified standardized_space,
+  // since this is currently unsupported.
+  // Note that gamma distribution should be supported but currently results in a seg fault.
+  if ( !standardizedSpace && iteratedModel.multivariate_distribution().correlation() ){
+    Cerr << "Error: correlation is only supported if user specifies standardized_space.\n"
+      << "    Only the following types of correlated random variables are supported:\n"
+      << "    unbounded normal, untruncated lognormal, uniform, exponential, gumbel, \n" 
+      << "    frechet, and weibull."
+	    << std::endl;
+    abort_handler(METHOD_ERROR);
   }
 
   // Construct emulator objects for raw QoI, prior to data residual recast
@@ -473,6 +485,11 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   case NO_EMULATOR:
     mcmcModelHasSurrogate = (inbound_model.model_type() == "surrogate");
+    // ASKEY_U is currently the best option for scaling the probability space
+    // (but could be expanded when the intent is not orthogonal polynomials).
+    // If an override is needed to decorrelate priors be transforming to
+    // STD_NORMAL space, this is managed by ProbabilityTransformModel::
+    // verify_correlation_support() on a variable-by-variable basis.
     if (standardizedSpace)
       mcmcModel.assign_rep(new
 	ProbabilityTransformModel(inbound_model, ASKEY_U), false);

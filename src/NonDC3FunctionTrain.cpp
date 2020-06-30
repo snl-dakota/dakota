@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -269,7 +269,7 @@ config_regression(size_t colloc_pts, size_t regress_size, int seed,
     // number of samples differs)
     // Note: uniform refinement uses DFSModel::rebuild_approximation()
     // which directly computes sample increment
-    // *** TO DO: would be good to disntinguish top-level seed fixing for OUU
+    // *** TO DO: would be good to distinguish top-level seed fixing for OUU
     //            from lower-level seed fixing across levels or refine iters.
     if (refineType && fixedSeed)
       Cerr << "Warning: combining sample refinement with fixed_seed is more "
@@ -298,14 +298,18 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
   //configure_pecos_options(); // C3 does not use Pecos options
 
-  // needs to precede construct_basis()
+  // Initialize scalar attributes in SharedC3ApproxData; needs to precede
+  // construct_basis() which uses {start,max}Order
   initialize_c3_start_rank(startRankSpec);
-  UShortArray orders;
-  configure_expansion_orders(startOrderSpec, dimPrefSpec, orders);
-  initialize_c3_start_orders(orders);
-  initialize_c3_db_options();
+  initialize_c3_db_options(); // scalars (max{Rank,Order}Spec,randomSeed)
 
-  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
+  // init of start orders redundant w/ DataFitSurrModel/SharedC3ApproxData ctors
+  //UShortArray orders;
+  //configure_expansion_orders(startOrderSpec, dimPrefSpec, orders);
+  //initialize_c3_start_orders(orders);
+
+  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis and
+  // requires {start,max} order
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
   uSpaceModel.shared_approximation().construct_basis(u_dist);
@@ -351,16 +355,17 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
     probDescDB.get_real("method.nond.regression_penalty"));
   shared_data_rep->set_parameter("solver_tol",
     probDescDB.get_real("method.nond.c3function_train.solver_tolerance"));
-  shared_data_rep->set_parameter("rounding_tol",
-    probDescDB.get_real("method.nond.c3function_train.rounding_tolerance"));
-  shared_data_rep->set_parameter("arithmetic_tol",
-    probDescDB.get_real("method.nond.c3function_train.arithmetic_tolerance"));
+  shared_data_rep->set_parameter("solver_rounding_tol", probDescDB.get_real(
+    "method.nond.c3function_train.solver_rounding_tolerance"));
+  shared_data_rep->set_parameter("stats_rounding_tol", probDescDB.get_real(
+    "method.nond.c3function_train.stats_rounding_tolerance"));
   shared_data_rep->set_parameter("max_cross_iterations",
     probDescDB.get_int("method.nond.c3function_train.max_cross_iterations"));
   shared_data_rep->set_parameter("max_solver_iterations",
     probDescDB.get_int("method.nond.max_solver_iterations"));
 
-  shared_data_rep->set_parameter("combine_type", Pecos::ADD_COMBINE); // for now
+  short comb_type = Pecos::ADD_COMBINE;// for now; pass short (enum = ambiguous)
+  shared_data_rep->set_parameter("combine_type",     comb_type);
 
   shared_data_rep->set_parameter("max_poly_order",   maxOrderSpec);
   shared_data_rep->set_parameter("max_rank",         maxRankSpec);
