@@ -5657,6 +5657,8 @@ KEYWORD model {N_mom3(start,0,stop)}
     ( global {0}
       ( experimental_gaussian_process {N_mom(lit,surrogateType_global_exp_gauss_proc)}
         [ trend {0}
+          none {N_mom(lit,trendOrder_none)}
+          |
           constant {N_mom(lit,trendOrder_constant)}
           |
           linear {N_mom(lit,trendOrder_linear)}

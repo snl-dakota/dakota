@@ -37,6 +37,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
     "    global \n"
     "      actual_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
+    "        trend none \n"
     "        find_nugget 1 \n"
     "        num_restarts 10 \n"
     "      import_points_file 'gauss_proc_test_files/gauss_proc_build_points.dat' \n"
@@ -235,6 +236,9 @@ TEUCHOS_UNIT_TEST(surrogates_gp,xml_read_alternate_parameters)
       TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
     }
   }
+
+  // Clear the cache
+  data_pairs.clear();
 }
 
 
@@ -301,15 +305,12 @@ TEUCHOS_UNIT_TEST(surrogates_gp, reduced_quadratic)
   double gold_values[NUM_COLS][NUM_ROWS] =
     {{ 0.2, -0.3, 0.4, -0.25 },  //x1
      { 0.45, -0.7, -0.1, 0.33 }, //x2
-     { 0.77985942, 0.84671183, 0.7445029, 0.74654101 }}; //herbie
+     { 0.7798753385, 0.8471677755, 0.7443797333, 0.7465426593 }}; //herbie
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
+      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-9 );
     }
   }
-
-  // Clear the cache
-  data_pairs.clear();
 }
 }
