@@ -195,7 +195,7 @@ void NonDLocalInterval::core_run()
   nonlinear_resp_map[0] = BoolDeque(numFunctions, false);
   BoolDeque max_sense(1);
   std::shared_ptr<RecastModel> model_rep =
-    std::dynamic_pointer_cast<RecastModel>(minMaxModel.model_rep());
+    std::static_pointer_cast<RecastModel>(minMaxModel.model_rep());
 
   initialize(); // virtual fn for initializing loop controls
 

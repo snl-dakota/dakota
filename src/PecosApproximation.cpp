@@ -32,7 +32,7 @@ PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
   // the shared data representation.
 
   std::shared_ptr<SharedPecosApproxData> shared_pecos_data_rep
-    = std::dynamic_pointer_cast<SharedPecosApproxData>(sharedDataRep);
+    = std::static_pointer_cast<SharedPecosApproxData>(sharedDataRep);
   pecosBasisApprox
     = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
 
@@ -60,7 +60,7 @@ PecosApproximation(ProblemDescDB& problem_db,
   // the shared data representation.
 
   std::shared_ptr<SharedPecosApproxData> shared_pecos_data_rep
-    = std::dynamic_pointer_cast<SharedPecosApproxData>(sharedDataRep);
+    = std::static_pointer_cast<SharedPecosApproxData>(sharedDataRep);
   pecosBasisApprox
     = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
 

@@ -245,7 +245,8 @@ void Optimizer::print_results(std::ostream& s, short results_state)
         // TODO: approximate models with interpolation of field data may
         // not have recovered the correct best residuals
 	std::shared_ptr<DataTransformModel> dt_model_rep =
-	  std::dynamic_pointer_cast<DataTransformModel>(dataTransformModel.model_rep());
+	  std::static_pointer_cast<DataTransformModel>
+	  (dataTransformModel.model_rep());
         dt_model_rep->print_best_responses(s, best_vars, bestResponseArray[i],
                                            num_best, i);
       }
@@ -590,7 +591,7 @@ void Optimizer::post_run(std::ostream& s)
     // must do before lookup in retrieve, which is in user space
     if (scaleFlag) {
       std::shared_ptr<ScalingModel> scale_model_rep =
-        std::dynamic_pointer_cast<ScalingModel>(scalingModel.model_rep());
+        std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
       best_vars.continuous_variables
         (scale_model_rep->cv_scaled2native(best_vars.continuous_variables()));
     }
@@ -622,7 +623,7 @@ void Optimizer::post_run(std::ostream& s)
     else if (scaleFlag) {
       // ScalingModel manages which transformations are needed
       std::shared_ptr<ScalingModel> scale_model_rep =
-        std::dynamic_pointer_cast<ScalingModel>(scalingModel.model_rep());
+        std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
       scale_model_rep->resp_scaled2native(best_vars, best_resp);
     }
   }

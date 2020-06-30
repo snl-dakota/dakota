@@ -50,7 +50,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
   //sharedDataRep((SharedSurfpackApproxData*)shared_data.data_rep())
 {
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep
-    = std::dynamic_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+    = std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
 
   ParamMap args;
 
@@ -324,7 +324,7 @@ SurfpackApproximation(const SharedApproxData& shared_data):
   //sharedDataRep((SharedSurfpackApproxData*)shared_data.data_rep())
 {
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep
-    = std::dynamic_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+    = std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
 
   ParamMap args;
   args["verbosity"] = toString<short>(sharedDataRep->outputLevel);
@@ -429,7 +429,7 @@ void SurfpackApproximation::build()
   }
 
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep
-    = std::dynamic_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+    = std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
 
   /// surfData will be deleted in dtor
   /// \todo Right now, we're completely deleting the old data and then
@@ -742,7 +742,7 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
   String func_description = approxLabel.empty() ? 
     "function " + boost::lexical_cast<std::string>(fn_index+1) : approxLabel;  
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep
-    = std::dynamic_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+    = std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   const StringArray& diag_set = shared_surf_data_rep->diagnosticSet;
   if (diag_set.empty()) {
     // conditionally print default diagnostics
@@ -842,7 +842,7 @@ challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
 
   // copy
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep
-    = std::dynamic_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+    = std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   StringArray diag_set = shared_surf_data_rep->diagnosticSet;
   if (diag_set.empty()) {
     // conditionally print default diagnostics
@@ -913,7 +913,7 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 	 << '\n';
 
   std::shared_ptr<SharedSurfpackApproxData> data_rep
-    = std::dynamic_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+    = std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   size_t i, num_data_pts = approxData.points();
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
   const Pecos::SDRArray& sdr_array = approxData.response_data();
@@ -968,7 +968,7 @@ add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
 
   // Print out the anchor continuous variables
   std::shared_ptr<SharedSurfpackApproxData> data_rep
-    = std::dynamic_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+    = std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   data_rep->sdv_to_realarray(anchor_vars, x);
   if (sharedDataRep->outputLevel > NORMAL_OUTPUT)
     Cout << "Anchor point vars\n" << x;

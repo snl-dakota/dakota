@@ -731,7 +731,8 @@ void NonDMultilevelPolynomialChaos::
 update_from_specification(bool update_exp, bool update_sampler,
 			  bool update_from_ratio)
 {
-  std::shared_ptr<SharedPecosApproxData> shared_data_rep = std::dynamic_pointer_cast<SharedPecosApproxData>
+  std::shared_ptr<SharedPecosApproxData> shared_data_rep =
+    std::static_pointer_cast<SharedPecosApproxData>
     (uSpaceModel.shared_approximation().data_rep());
   if (update_exp) {
     // update expansion order within Pecos::SharedOrthogPolyApproxData
@@ -802,7 +803,8 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
   }
 
 
-  std::shared_ptr<SharedPecosApproxData> shared_data_rep = std::dynamic_pointer_cast<SharedPecosApproxData>
+  std::shared_ptr<SharedPecosApproxData> shared_data_rep =
+    std::static_pointer_cast<SharedPecosApproxData>
     (uSpaceModel.shared_approximation().data_rep());
   if (update_exp) {
     //increment_order_from_grid(total_samp); // not sufficient in this context
@@ -851,7 +853,8 @@ compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
   // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
   // update targets based on sparsity estimates
-  std::shared_ptr<SharedPecosApproxData> data_rep = std::dynamic_pointer_cast<SharedPecosApproxData>
+  std::shared_ptr<SharedPecosApproxData> data_rep =
+    std::static_pointer_cast<SharedPecosApproxData>
     (uSpaceModel.shared_approximation().data_rep());
   const std::map<UShortArray, UShort2DArray>& mi_map
     = data_rep->multi_index_map();

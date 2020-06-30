@@ -689,7 +689,7 @@ void NonDQUESOBayesCalibration::filter_chain_by_conditioning()
 	 << batchSize << " from aggregate MCMC chain containing "
 	 << unique_samples.size() << " samples.\n";
   std::shared_ptr<NonDExpansion> nond_exp =
-    std::dynamic_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
+    std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
   nond_exp->select_refinement_points(unique_samples, batchSize, allSamples);
 }
 
@@ -758,8 +758,8 @@ void NonDQUESOBayesCalibration::update_model()
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     // Adapt the expansion in sync with the dataset using a top-down design
     // (more explicit than embedded logic w/i mcmcModel.append_approximation).
-    std::shared_ptr<NonDExpansion> se_iterator
-      = std::dynamic_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
+    std::shared_ptr<NonDExpansion> se_iterator =
+      std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
     se_iterator->append_expansion(allSamples, allResponses);
     // TO DO: order increment places addtnl reqmts on emulator conv assessment
     break;

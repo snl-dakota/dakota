@@ -3129,7 +3129,7 @@ user_space_to_iterator_space(const Variables& user_vars,
 	ActiveSet recast_set  = recast_resp.active_set();    // copy
 	// to propagate vars bottom up, inverse of std transform is reqd
 	RecastModel& recast_model_rep =
-	  *std::dynamic_pointer_cast<RecastModel>(ml_rit->model_rep());
+	  *std::static_pointer_cast<RecastModel>(ml_rit->model_rep());
 	recast_model_rep.inverse_transform_variables(iter_vars, recast_vars);
 	recast_model_rep.
 	  inverse_transform_set(iter_vars, iter_resp.active_set(), recast_set);
@@ -3173,7 +3173,7 @@ iterator_space_to_user_space(const Variables& iter_vars,
 	ActiveSet recast_set  = recast_resp.active_set();   // copy
 	// to propagate vars top down, forward transform is reqd
 	RecastModel& recast_model_rep =
-	  *std::dynamic_pointer_cast<RecastModel>(ml_it->model_rep());
+	  *std::static_pointer_cast<RecastModel>(ml_it->model_rep());
 	recast_model_rep.transform_variables(user_vars, recast_vars);
 	recast_model_rep.
 	  transform_set(user_vars, user_resp.active_set(), recast_set);

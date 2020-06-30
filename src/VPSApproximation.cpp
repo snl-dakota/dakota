@@ -83,7 +83,7 @@ namespace Dakota
                                        Approximation(NoDBBaseConstructor(), shared_data)
     {
       std::shared_ptr<SharedSurfpackApproxData> dat =
-	std::dynamic_pointer_cast<SharedSurfpackApproxData>(shared_data.data_rep());
+	std::static_pointer_cast<SharedSurfpackApproxData>(shared_data.data_rep());
         
         surrogateOrder = dat->approxOrder;
         

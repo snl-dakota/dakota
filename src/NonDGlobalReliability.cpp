@@ -518,7 +518,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
 	BoolDequeArray nonlinear_resp_map(1, BoolDeque(1, true));
 	std::shared_ptr<RecastModel> mpp_model_rep =
-	  std::dynamic_pointer_cast<RecastModel>(mppModel.model_rep());
+	  std::static_pointer_cast<RecastModel>(mppModel.model_rep());
 	if (ria_flag) {
 	  // Standard RIA : min u'u s.t. g = z_bar
 	  // use RIA evaluators to recast g into global opt subproblem
@@ -779,8 +779,9 @@ void NonDGlobalReliability::importance_sampling()
   const ShortArray& final_res_asv = finalStatistics.active_set_request_vector();
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   // rep needed for access to functions not mapped to Iterator level
-  std::shared_ptr<NonDAdaptImpSampling> importance_sampler_rep
-    = std::dynamic_pointer_cast<NonDAdaptImpSampling>(importanceSampler.iterator_rep());
+  std::shared_ptr<NonDAdaptImpSampling> importance_sampler_rep =
+    std::static_pointer_cast<NonDAdaptImpSampling>
+    (importanceSampler.iterator_rep());
 
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
 

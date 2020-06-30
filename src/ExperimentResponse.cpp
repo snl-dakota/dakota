@@ -148,7 +148,8 @@ void ExperimentResponse::copy_rep(std::shared_ptr<Response> source_resp_rep)
   Response::copy_rep(source_resp_rep);
   // specialization for experiment; assume the source and destination
   // rep are same derived type
-  auto expt_resp_rep = std::dynamic_pointer_cast<ExperimentResponse>(source_resp_rep);
+  auto expt_resp_rep =
+    std::static_pointer_cast<ExperimentResponse>(source_resp_rep);
   if (expt_resp_rep)
     expDataCovariance = expt_resp_rep->expDataCovariance;
   else

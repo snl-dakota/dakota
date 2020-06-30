@@ -502,7 +502,8 @@ void NonDExpansion::configure_pecos_options()
   // {Expansion,Basis,Regression}ConfigOptions.   Note: passing outputLevel
   // and useDerivs again is redundant with the DataFitSurrModel ctor.
   std::shared_ptr<SharedPecosApproxData> shared_data_rep =
-    std::dynamic_pointer_cast<SharedPecosApproxData>(uSpaceModel.shared_approximation().data_rep());
+    std::static_pointer_cast<SharedPecosApproxData>
+    (uSpaceModel.shared_approximation().data_rep());
   Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
     expansionBasisType, iteratedModel.correction_type(),
     multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,
@@ -525,7 +526,8 @@ void NonDExpansion::initialize_u_space_grid()
     // Note: not used by C3; Pecos restriction is appropriate (PCE/SC basis)
     //
     std::shared_ptr<SharedPecosApproxData> shared_data_rep =
-      std::dynamic_pointer_cast<SharedPecosApproxData>(uSpaceModel.shared_approximation().data_rep());
+      std::static_pointer_cast<SharedPecosApproxData>
+      (uSpaceModel.shared_approximation().data_rep());
 
     std::shared_ptr<NonDIntegration> u_space_sampler_rep =
       std::static_pointer_cast<NonDIntegration>
@@ -714,8 +716,8 @@ void NonDExpansion::initialize_expansion()
   // into standardized space (must follow any dist param updates)
   if (expansionSampler.method_name() == LIST_SAMPLING &&
       numUncertainQuant == 0) {
-    std::shared_ptr<NonDSampling> exp_sampler_rep
-      = std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
+    std::shared_ptr<NonDSampling> exp_sampler_rep =
+      std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
     exp_sampler_rep->
       transform_samples(uSpaceModel.probability_transformation());
   }
@@ -2040,8 +2042,8 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
 void NonDExpansion::finalize_sets(bool converged_within_tol, bool reverted)
 {
   Cout << "\n<<<<< Finalization of generalized sparse grid sets.\n";
-  std::shared_ptr<NonDSparseGrid> nond_sparse
-    = std::static_pointer_cast<NonDSparseGrid>
+  std::shared_ptr<NonDSparseGrid> nond_sparse =
+    std::static_pointer_cast<NonDSparseGrid>
     (uSpaceModel.subordinate_iterator().iterator_rep());
   // apply all remaining increments not previously selected
   bool output_sets = (outputLevel >= VERBOSE_OUTPUT);
@@ -2424,8 +2426,8 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   // This context can be specific to PCE via Pecos
-  std::shared_ptr<PecosApproximation> poly_approx_rep
-    = std::static_pointer_cast<PecosApproximation>(poly_approxs[0].approx_rep());
+  std::shared_ptr<PecosApproximation> poly_approx_rep =
+    std::static_pointer_cast<PecosApproximation>(poly_approxs[0].approx_rep());
   min_decay = poly_approx_rep->dimension_decay_rates();
   size_t i, j;
   for (i=1; i<numFunctions; ++i) {
@@ -2740,8 +2742,8 @@ void NonDExpansion::compute_numerical_level_mappings()
     run_sampler(sampler_asv, exp_sampler_stats);
     refine_sampler(imp_sampler_stats, min_max_fns);
   }
-  std::shared_ptr<NonDSampling> exp_sampler_rep
-    = std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
+  std::shared_ptr<NonDSampling> exp_sampler_rep =
+    std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
 
   // flags for limiting unneeded computation (matched in print_results())
   bool z_to_beta = (respLevelTarget == RELIABILITIES),
@@ -3078,8 +3080,8 @@ void NonDExpansion::compute_numerical_statistics()
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   bool list_sampling = (expansionSampler.method_name() == LIST_SAMPLING),
         imp_sampling = !importanceSampler.is_null();
-  std::shared_ptr<NonDSampling> exp_sampler_rep
-    = std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
+  std::shared_ptr<NonDSampling> exp_sampler_rep =
+    std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
   size_t i, j, cntr = 0, sampler_cntr = 0,
     moment_offset = (finalMomentsType) ? 2 : 0,
     sampler_moment_offset = (exp_sampler_rep->final_moments_type()) ? 2 : 0;

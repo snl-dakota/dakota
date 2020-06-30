@@ -188,7 +188,8 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     // possibly scaled by sigma^-1/2.  This should be correct in
     // interpolation cases as well.
     std::shared_ptr<DataTransformModel> dt_model_rep =
-      std::dynamic_pointer_cast<DataTransformModel>(dataTransformModel.model_rep());
+      std::static_pointer_cast<DataTransformModel>
+      (dataTransformModel.model_rep());
     dt_model_rep->print_best_responses(s, best_vars, 
                                        bestResponseArray.front(), num_best, best_ind);
   }
@@ -358,7 +359,7 @@ void LeastSq::post_run(std::ostream& s)
   // Transform variables back to inbound model, before any potential lookup
   if (scaleFlag) {
     std::shared_ptr<ScalingModel> scale_model_rep =
-      std::dynamic_pointer_cast<ScalingModel>(scalingModel.model_rep());
+      std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
     best_vars.continuous_variables
       (scale_model_rep->cv_scaled2native(iter_vars.continuous_variables()));
   }
@@ -533,7 +534,7 @@ void LeastSq::post_run(std::ostream& s)
   // BMA TODO: constrained LSQ with scaling test
   if (scaleFlag && numNonlinearConstraints > 0) {
     std::shared_ptr<ScalingModel> scale_model_rep =
-      std::dynamic_pointer_cast<ScalingModel>(scalingModel.model_rep());
+      std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
     RealVector best_fns = best_resp.function_values_view();
     // only requesting scaling of constraints, so no need for variable Jacobian
     activeSet.request_values(1);
@@ -621,7 +622,7 @@ void LeastSq::get_confidence_intervals(const Variables& native_vars,
   Response ultimate_resp = scaleFlag ? iter_resp.copy() : iter_resp; 
   if (scaleFlag) {
     std::shared_ptr<ScalingModel> scale_model_rep =
-      std::dynamic_pointer_cast<ScalingModel>(scalingModel.model_rep());
+      std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
     bool unscale_resp = false;
     scale_model_rep->response_modify_s2n(native_vars, iter_resp,
 					 ultimate_resp, 0, numLeastSqTerms,
