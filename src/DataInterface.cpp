@@ -89,47 +89,22 @@ void DataInterfaceRep::write(std::ostream& s) const
 
 
 DataInterface::DataInterface(): dataIfaceRep(new DataInterfaceRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataInterface::DataInterface(), dataIfaceRep referenceCount = "
-       << dataIfaceRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataInterface::DataInterface(const DataInterface& data_resp):
   dataIfaceRep(data_resp.dataIfaceRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataInterface::DataInterface(DataInterface&)" << std::endl;
-  if (dataIfaceRep)
-    Cout << "dataIfaceRep referenceCount = " << dataIfaceRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataInterface& DataInterface::operator=(const DataInterface& data_interface)
 {
   dataIfaceRep = data_interface.dataIfaceRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataInterface::operator=(DataInterface&)" << std::endl;
-  if (dataIfaceRep)
-    Cout << "dataIfaceRep referenceCount = " << dataIfaceRep.use_count()
-	 << std::endl;
-#endif
-
   return *this;
 }
 
 
 DataInterface::~DataInterface()
-{
-#ifdef REFCOUNT_DEBUG
-    Cout << "~DataInterface() dataIfaceRep referenceCount "
-         << dataIfaceRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

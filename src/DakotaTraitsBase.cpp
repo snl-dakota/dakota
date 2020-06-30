@@ -25,10 +25,6 @@ static const char rcsId[]="@(#) $Id: DakotaOptTraits.hpp 0001 2017-02-21 10:35:1
 namespace Dakota {
 
 TraitsBase::TraitsBase()
-{
-  #ifdef REFCOUNT_DEBUG
-  Cout << "TraitsBase::TraitsBase() called to build enevelope object.\n";
-#endif
-}
+{ /* empty ctor */ }
 
 } // namespace Dakota

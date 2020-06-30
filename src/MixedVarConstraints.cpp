@@ -135,12 +135,6 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
   copy_data_partial(dssrv_l_bnds, allDiscreteRealLowerBnds, start);
   copy_data_partial(dssrv_u_bnds, allDiscreteRealUpperBnds, start);
   //start += dssrv_l_bnds.length();
-
-#ifdef REFCOUNT_DEBUG
-  const std::pair<short,short>& view = sharedVarsData.view();
-  Cout << "MixedVarConstraints letter instantiated: view active = "
-       << view.first << " inactive = " << view.second << endl;
-#endif
 }
 
 

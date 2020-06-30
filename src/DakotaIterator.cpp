@@ -137,8 +137,6 @@
 #include <boost/assign.hpp>
 #include <boost/lexical_cast.hpp>
 
-//#define REFCOUNT_DEBUG
-
 static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 namespace Dakota {
@@ -196,11 +194,6 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "methodName = " << method_enum_to_string(methodName) << '\n';
     // iteratorRep = get_iterator(problem_db);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db) "
-       << "called to build letter base class\n";
-#endif
 }
 
 
@@ -221,10 +214,6 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
   execNum(0), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
-       << "class\n";
-#endif
 }
 
 
@@ -244,12 +233,7 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   methodId(no_spec_id()), execNum(0), methodTraits(traits)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
-       << "class\n";
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** The default constructor is used in Vector<Iterator> instantiations
@@ -262,12 +246,7 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   myModelLayers(0), methodName(DEFAULT_METHOD),
   execNum(0), methodTraits(traits)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator() called to build empty envelope "
-       << "base class object." << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 // BMA NOTE: This ctor unused as of shared_ptr refactor
@@ -280,12 +259,7 @@ Iterator::Iterator(Iterator* iterator_rep, std::shared_ptr<TraitsBase> traits):
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   myModelLayers(0), methodName(DEFAULT_METHOD),
   iteratorRep(iterator_rep), methodTraits(traits)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator() called to build empty envelope "
-       << "base class object." << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** Envelope constructor only needs to extract enough data to properly
@@ -334,10 +308,6 @@ void Iterator::declare_sources() {
 std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db)
 {
   unsigned short method_name = problem_db.get_ushort("method.algorithm");
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: getting iterator case " << method_name
-       << " = " << method_enum_to_string(method_name) << std::endl;
-#endif
 
   // Meta-iterators support special constructors that are not bound to a Model
   // instance for top-level instantiation of general meta-iteration.  However,
@@ -382,11 +352,6 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Trai
   // Set the rep pointer to the appropriate iterator type
   iteratorRep(get_iterator(problem_db, model))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator(Model&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -401,10 +366,6 @@ std::shared_ptr<Iterator>
 Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 {
   unsigned short method_name = problem_db.get_ushort("method.algorithm");
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: getting iterator case " << method_name
-       << " = " << method_enum_to_string(method_name) << std::endl;
-#endif
 
   switch (method_name) {
   case HYBRID:
@@ -672,11 +633,6 @@ Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<Tr
   // Set the rep pointer to the appropriate iterator type
   iteratorRep(get_iterator(method_string, model))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator(Model&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -689,11 +645,6 @@ Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<Tr
 std::shared_ptr<Iterator>
 Iterator::get_iterator(const String& method_string, Model& model)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: getting iterator " <<  method_string
-       << " by name." << std::endl;
-#endif
-
   // These instantiations will NOT recurse on the Iterator(model)
   // constructor due to the use of BaseConstructor.
 
@@ -803,38 +754,18 @@ Iterator::Iterator(const Iterator& iterator):
   parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db), 
   evaluationsDB(evaluation_store_db), methodTraits(iterator.traits()),
   iteratorRep(iterator.iteratorRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator(Iterator&)" << std::endl;
-  if (iteratorRep)
-    Cout << "iteratorRep referenceCount = " << iteratorRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 Iterator Iterator::operator=(const Iterator& iterator)
 {
   iteratorRep = iterator.iteratorRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::operator=(Iterator&)" << std::endl;
-  if (iteratorRep)
-    Cout << "iteratorRep referenceCount = " << iteratorRep.use_count()
-	 << std::endl;
-#endif
-
   return *this; // calls copy constructor since returned by value
 }
 
 
 Iterator::~Iterator()
-{
-#ifdef REFCOUNT_DEBUG
-    Cout << "~Iterator() iteratorRep referenceCount "
-         << iteratorRep.use_count << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 
 /** The assign_rep() function is used for publishing derived class
@@ -853,13 +784,6 @@ Iterator::~Iterator()
 void Iterator::assign_rep(std::shared_ptr<Iterator> iterator_rep)
 {
   iteratorRep = iterator_rep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::assign_rep(Iterator*)" << std::endl;
-  if (iteratorRep)
-    Cout << "iteratorRep referenceCount = " << iteratorRep.use_count()
-	 << std::endl;
-#endif
 }
 
 

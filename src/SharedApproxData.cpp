@@ -89,11 +89,6 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
 
   // initialize sequence of one empty key for Approximation::approxData
   approxDataKeys.resize(1);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(BaseConstructor) called to build "
-       << "base class for letter." << std::endl;
-#endif
 }
 
 
@@ -137,24 +132,14 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 
   // initialize sequence of one empty key for first Approximation::approxData
   approxDataKeys.resize(1);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(NoDBBaseConstructor) called to "
-       << "build base class for letter." << std::endl;
-#endif
 }
 
 
 /** For the default constructor, dataRep is NULL. */
-  SharedApproxData::SharedApproxData() //:
+SharedApproxData::SharedApproxData() //:
   //buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
   //modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData() called to build empty "
-       << "approximation object." << std::endl;
-#endif
-}
+{ /* empty ctor */}
 
 
 /** Envelope constructor only needs to extract enough data to properly
@@ -163,13 +148,7 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
   // Set the rep pointer to the appropriate derived type
   dataRep(get_shared_data(problem_db, num_vars))
-
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(ProblemDescDB&) called to "
-       << "instantiate envelope." << std::endl;
-#endif
-
   if ( !dataRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -180,11 +159,6 @@ SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
 std::shared_ptr<SharedApproxData> SharedApproxData::
 get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_shared_data(ProblemDescDB&)."
-       << std::endl;
-#endif
-
   const String& approx_type = problem_db.get_string("model.surrogate.type");
   //if (approx_type == "local_taylor")
   //  return new SharedTaylorApproxData(problem_db, num_vars);
@@ -228,11 +202,6 @@ SharedApproxData(const String& approx_type, const UShortArray& approx_order,
   dataRep(get_shared_data(approx_type, approx_order, num_vars,
 			  data_order, output_level))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(String&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   if ( !dataRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -244,11 +213,6 @@ std::shared_ptr<SharedApproxData> SharedApproxData::
 get_shared_data(const String& approx_type, const UShortArray& approx_order, 
 		size_t num_vars, short data_order, short output_level)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_shared_data(String&)."
-       << std::endl;
-#endif
-
   //if (approx_type == "local_taylor")
   //  approx = new SharedTaylorApproxData(num_vars, data_order, output_level);
   //else if (approx_type == "multipoint_tana")
@@ -291,39 +255,19 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
 /** Copy constructor manages sharing of dataRep. */
 SharedApproxData::SharedApproxData(const SharedApproxData& shared_data):
   dataRep(shared_data.dataRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(SharedApproxData&)" << std::endl;
-  if (dataRep)
-    Cout << "dataRep referenceCount = " << dataRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 SharedApproxData SharedApproxData::
 operator=(const SharedApproxData& shared_data)
 {
   dataRep = shared_data.dataRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::operator=(SharedApproxData&)" << std::endl;
-  if (dataRep)
-    Cout << "dataRep referenceCount = " << dataRep.use_count()
-	 << std::endl;
-#endif
-
   return *this; // calls copy constructor since returned by value
 }
 
 
 SharedApproxData::~SharedApproxData()
-{ 
-#ifdef REFCOUNT_DEBUG
-    Cout << "~SharedApproxData() dataRep referenceCount " 
-	 << dataRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 
 void SharedApproxData::active_model_key(const UShortArray& key)

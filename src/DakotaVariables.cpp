@@ -25,8 +25,6 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/array.hpp>
 
-//#define REFCOUNT_DEBUG
-
 static const char rcsId[]="@(#) $Id: DakotaVariables.cpp 7037 2010-10-23 01:18:08Z mseldre $";
 
 BOOST_CLASS_EXPORT(Dakota::Variables)
@@ -47,11 +45,6 @@ Variables(BaseConstructor, const ProblemDescDB& problem_db,
 {
   shape(); // size all*Vars arrays
   build_views(); // construct active/inactive views of all arrays
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Variables::Variables(BaseConstructor) called to build base class "
-       << "data for letter object." << std::endl;
-#endif
 }
 
 
@@ -67,23 +60,13 @@ Variables(BaseConstructor, const SharedVariablesData& svd):
 {
   shape(); // size all*Vars arrays
   build_views(); // construct active/inactive views of all arrays
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Variables::Variables(BaseConstructor) called to build base class "
-       << "data for letter object." << std::endl;
-#endif
 }
 
 
 /** The default constructor: variablesRep is NULL in this case (a populated
     problem_db is needed to build a meaningful Variables object). */
 Variables::Variables()
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Variables::Variables() called to build empty variables object."
-       << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** This is the primary envelope constructor which uses problem_db to
@@ -95,11 +78,6 @@ Variables::Variables(const ProblemDescDB& problem_db):
   // Set the rep pointer to the appropriate derived variables class
   variablesRep(get_variables(problem_db))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Variables::Variables(ProblemDescDB&) called to instantiate envelope."
-       << std::endl;
-#endif
-
   if (!variablesRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -111,11 +89,6 @@ Variables::Variables(const ProblemDescDB& problem_db):
 std::shared_ptr<Variables>
 Variables::get_variables(const ProblemDescDB& problem_db)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_variables(ProblemDescDB&)." 
-       << std::endl;
-#endif
-
   std::pair<short,short> view = get_view(problem_db);
 
   // This get_variables version invokes the standard constructor.
@@ -143,11 +116,6 @@ Variables::Variables(const SharedVariablesData& svd):
   // for variablesRep, instantiate the appropriate derived variables class
   variablesRep(get_variables(svd))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Variables::Variables(SharedVariablesData&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   if (!variablesRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -158,10 +126,6 @@ Variables::Variables(const SharedVariablesData& svd):
 std::shared_ptr<Variables>
 Variables::get_variables(const SharedVariablesData& svd) const
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_variables()." << std::endl;
-#endif
-
   short active_view = svd.view().first;
   switch (active_view) {
   case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
@@ -230,38 +194,18 @@ Variables::get_view(const ProblemDescDB& problem_db) const
 /** Copy constructor manages sharing of variablesRep. */
 Variables::Variables(const Variables& vars):
   variablesRep(vars.variablesRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Variables::Variables(Variables&)" << std::endl;
-  if (variablesRep)
-    Cout << "variablesRep referenceCount = " << variablesRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 Variables Variables::operator=(const Variables& vars)
 {
   variablesRep = vars.variablesRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Variables::operator=(Variables&)" << std::endl;
-  if (variablesRep)
-    Cout << "variablesRep referenceCount = " << variablesRep.use_count()
-	 << std::endl;
-#endif
-
   return *this; // calls copy constructor since returned by value
 }
 
 
 Variables::~Variables()
-{ 
-#ifdef REFCOUNT_DEBUG
-    Cout << "~Variables() variablesRep referenceCount "
-         << variablesRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 
 void Variables::inactive_view(short view2)
@@ -829,12 +773,6 @@ Variables Variables::copy(bool deep_svd) const
 {
   // the envelope class instantiates a new envelope and a new letter and copies
   // current attributes into the new objects.
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Variables::copy() called to generate a deep copy with no "
-       << "representation sharing." << std::endl;
-#endif
-
   Variables vars; // new envelope, variablesRep=NULL
 
   // shallow copy of SharedVariablesData

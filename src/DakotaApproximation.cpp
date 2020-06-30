@@ -50,12 +50,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
                              const String& approx_label):
   approxData(true), approxLabel(approx_label),
   sharedDataRep(shared_data.data_rep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(BaseConstructor) called to build base "
-       << "class for letter." << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** This constructor is the one which must build the base class data
@@ -67,24 +62,14 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 Approximation::
 Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
   approxData(true), sharedDataRep(shared_data.data_rep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
-       << "base class for letter." << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** The default constructor is used in Array<Approximation> instantiations
     and by the alternate envelope constructor.  approxRep is NULL in this
     case (problem_db is needed to build a meaningful Approximation object). */
 Approximation::Approximation()
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation() called to build empty approximation "
-       << "object." << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** Envelope constructor only needs to extract enough data to properly
@@ -96,11 +81,6 @@ Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
   // Set the rep pointer to the appropriate derived type
   approxRep(get_approx(problem_db, shared_data, approx_label))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(ProblemDescDB&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -112,10 +92,6 @@ std::shared_ptr<Approximation> Approximation::
 get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
            const String& approx_label)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_approx(ProblemDescDB&)."
-       << std::endl;
-#endif
   bool pw_decomp = problem_db.get_bool("model.surrogate.domain_decomp");
   if (pw_decomp) {
     return std::make_shared<VPSApproximation>
@@ -178,11 +154,6 @@ Approximation::Approximation(const SharedApproxData& shared_data):
   // Set the rep pointer to the appropriate derived type
   approxRep(get_approx(shared_data))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(String&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -193,10 +164,6 @@ Approximation::Approximation(const SharedApproxData& shared_data):
 std::shared_ptr<Approximation>
 Approximation::get_approx(const SharedApproxData& shared_data)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_approx(String&)." << std::endl;
-#endif
-
   const String&  approx_type = shared_data.data_rep()->approxType;
   if (approx_type == "local_taylor")
     return std::make_shared<TaylorApproximation>(shared_data);
@@ -241,38 +208,18 @@ Approximation::get_approx(const SharedApproxData& shared_data)
 /** Copy constructor manages sharing of approxRep. */
 Approximation::Approximation(const Approximation& approx):
   approxRep(approx.approxRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(Approximation&)" << std::endl;
-  if (approxRep)
-    Cout << "approxRep referenceCount = " << approxRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 Approximation Approximation::operator=(const Approximation& approx)
 {
   approxRep = approx.approxRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::operator=(Approximation&)" << std::endl;
-  if (approxRep)
-    Cout << "approxRep referenceCount = " << approxRep.use_count()
-	 << std::endl;
-#endif
-
   return *this; // calls copy constructor since returned by value
 }
 
 
 Approximation::~Approximation()
-{ 
-#ifdef REFCOUNT_DEBUG
-  Cout << "~Approximation() approxRep referenceCount " 
-       << approxRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 
 /** This is the common base class portion of the virtual fn and is

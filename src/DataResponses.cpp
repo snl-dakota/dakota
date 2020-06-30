@@ -133,47 +133,22 @@ void DataResponsesRep::write(std::ostream& s) const
 
 
 DataResponses::DataResponses(): dataRespRep(new DataResponsesRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataResponses::DataResponses(), dataRespRep referenceCount = "
-       << dataRespRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataResponses::DataResponses(const DataResponses& data_resp):
   dataRespRep(data_resp.dataRespRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataResponses::DataResponses(DataResponses&)" << std::endl;
-  if (dataRespRep)
-    Cout << "dataRespRep referenceCount = " << dataRespRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataResponses& DataResponses::operator=(const DataResponses& data_resp)
 {
   dataRespRep = data_resp.dataRespRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataResponses::operator=(DataResponses&)" << std::endl;
-  if (dataRespRep)
-    Cout << "dataRespRep referenceCount = " << dataRespRep.use_count()
-	 << std::endl;
-#endif
-
   return *this;
 }
 
 
 DataResponses::~DataResponses()
-{
-#ifdef REFCOUNT_DEBUG
-    Cout << "~DataResponses() dataRespRep referenceCount "
-         << dataRespRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

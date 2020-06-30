@@ -226,12 +226,6 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
       allDiscreteRealUpperBnds[adiv_offset] = dssrv_u_bnds[i];
       ++adrv_offset;
     }
-
-#ifdef REFCOUNT_DEBUG
-  const std::pair<short,short>& view = sharedVarsData.view();
-  Cout << "RelaxedVarConstraints letter instantiated: view active = " 
-       << view.first << " inactive = " << view.second << std::endl;
-#endif
 }
 
 

@@ -29,7 +29,6 @@
 
 //#define DEBUG
 //#define MPI_DEBUG
-//#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: ProblemDescDB.cpp 7007 2010-10-06 15:54:39Z wjbohnh $";
 
@@ -50,24 +49,14 @@ ProblemDescDB::ProblemDescDB(BaseConstructor, ParallelLibrary& parallel_lib):
   parallelLib(parallel_lib), environmentCntr(0), methodDBLocked(true),
   modelDBLocked(true), variablesDBLocked(true), interfaceDBLocked(true),
   responsesDBLocked(true)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::ProblemDescDB(BaseConstructor) called to build base "
-       << "class data for letter object." << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** The default constructor: dbRep is NULL in this case.  This makes
     it necessary to check for NULL in the copy constructor, assignment
     operator, and destructor. */
 ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::ProblemDescDB() called to build empty db object."
-       << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** This is the envelope constructor which uses problem_db to build a
@@ -81,10 +70,6 @@ ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
   dbRep(get_db(parallel_lib))
 
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::ProblemDescDB(ParallelLibrary&) called to "
-       << "instantiate envelope." << std::endl;
-#endif
   if (!dbRep) // bad settings or insufficient memory
     abort_handler(-1);
 }
@@ -95,11 +80,6 @@ ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
 std::shared_ptr<ProblemDescDB>
 ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_db(ParallelLibrary&)."
-       << std::endl;
-#endif
-
   Dak_pddb = this;	// for use in abort_handler()
 
   //if (xml_flag)
@@ -113,27 +93,13 @@ ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
 ProblemDescDB::ProblemDescDB(const ProblemDescDB& db):
   parallelLib(db.parallel_library()),
   dbRep(db.dbRep)
-{
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::ProblemDescDB(ProblemDescDB&)" << std::endl;
-  if (dbRep)
-    Cout << "dbRep referenceCount = " << dbRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** Assignment operator shares the dbRep. */
 ProblemDescDB ProblemDescDB::operator=(const ProblemDescDB& db)
 {
   dbRep = db.dbRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::operator=(ProblemDescDB&)" << std::endl;
-  if (dbRep)
-    Cout << "dbRep referenceCount = " << dbRep.use_count() << std::endl;
-#endif
-
   return *this; // calls copy constructor since returned by value
 }
 
@@ -143,10 +109,6 @@ ProblemDescDB::~ProblemDescDB()
 {
   if (this == Dak_pddb)
     Dak_pddb = NULL;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "~ProblemDescDB() referenceCount " << dbRep.use_count() << std::endl;
-#endif
 }
 
 

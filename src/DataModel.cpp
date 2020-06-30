@@ -206,48 +206,22 @@ void DataModelRep::write(std::ostream& s) const
 
 
 DataModel::DataModel(): dataModelRep(new DataModelRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataModel::DataModel(), dataModelRep referenceCount = "
-       << dataModelRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataModel::DataModel(const DataModel& data_model):
   dataModelRep(data_model.dataModelRep)
-{
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataModel::DataModel(DataModel&)" << std::endl;
-  if (dataModelRep)
-    Cout << "dataModelRep referenceCount = " << dataModelRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataModel& DataModel::operator=(const DataModel& data_model)
 {
   dataModelRep = data_model.dataModelRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataModel::operator=(DataModel&)" << std::endl;
-  if (dataModelRep)
-    Cout << "dataModelRep referenceCount = " << dataModelRep.use_count()
-	 << std::endl;
-#endif
-
   return *this;
 }
 
 
 DataModel::~DataModel()
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "~DataModel dataModelRep referenceCount "
-       << dataModelRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor*/ }
 
 } // namespace Dakota

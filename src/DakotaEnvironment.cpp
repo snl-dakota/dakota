@@ -44,11 +44,6 @@ Environment::Environment(BaseConstructor):
 
   // Initialize paths used by WorkdirHelper
   WorkdirHelper::initialize();
-
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(BaseConstructor) called to "
-       << "build letter base class." << std::endl;
-#endif
 }
 
 
@@ -83,11 +78,6 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 
   // these data were previously statically initialized, so perform first
   WorkdirHelper::initialize();
-
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(BaseConstructor, int, char*) called "
-       << "to build letter base class." << std::endl;
-#endif
 }
 
 
@@ -113,23 +103,13 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
 
   // Initialize paths used by WorkdirHelper
   WorkdirHelper::initialize();
-
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(BaseConstructor, ProgramOptions&) called "
-       << "to build letter base class." << std::endl;
-#endif
 }
 
 
 /** Default envelope constructor.  environmentRep is NULL in this
     case. */
 Environment::Environment()
-{
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment() called to build empty envelope base "
-       << "class object." << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** Envelope constructor for ExecutableEnvironment.  Selection of
@@ -138,11 +118,6 @@ Environment::Environment(int argc, char* argv[]):
   // set the rep pointer to the appropriate environment type
   environmentRep(new ExecutableEnvironment(argc, argv))
 {
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(int, char*) called to instantiate "
-       << "envelope for executable letter." << std::endl;
-#endif
-
   if ( !environmentRep ) // insufficient memory
     abort_handler(-1);
 }
@@ -155,11 +130,6 @@ Environment(ProgramOptions prog_opts):
   // set the rep pointer to the appropriate environment type
   environmentRep(new LibraryEnvironment(prog_opts))
 {
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(ProgramOptions&) called to instantiate "
-       << "envelope for library letter." << std::endl;
-#endif
-
   if ( !environmentRep ) // insufficient memory
     abort_handler(-1);
 }
@@ -172,11 +142,6 @@ Environment(MPI_Comm dakota_mpi_comm, ProgramOptions prog_opts):
   // set the rep pointer to the appropriate environment type
   environmentRep(new LibraryEnvironment(dakota_mpi_comm, prog_opts))
 {
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(MPI_Comm, ProgramOptions&) called to "
-       << "instantiate envelope for library letter." << std::endl;
-#endif
-
   if ( !environmentRep ) // insufficient memory
     abort_handler(-1);
 }
@@ -191,11 +156,6 @@ Environment::Environment(const String& env_type):
   // set the rep pointer to the appropriate environment type
   environmentRep(get_environment(env_type))
 {
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(String&) called to instantiate envelope."
-       << std::endl;
-#endif
-
   if ( !environmentRep ) // bad name or insufficient memory
     abort_handler(-1);
 }
@@ -205,11 +165,6 @@ Environment::Environment(const String& env_type):
     appropriate derived type, as given by the environmentName attribute. */
 std::shared_ptr<Environment> Environment::get_environment(const String& env_type)
 {
-#ifdef REFCOUNT_DEBUG
-  cout << "Envelope instantiating letter: Getting environment " << env_type
-       << std::endl;
-#endif
-
   if (env_type == "executable")
     return std::make_shared<ExecutableEnvironment>();
   else if (env_type == "library")
@@ -224,41 +179,19 @@ std::shared_ptr<Environment> Environment::get_environment(const String& env_type
 /** Copy constructor manages sharing of environmentRep. */
 Environment::Environment(const Environment& env):
   environmentRep(env.environmentRep)
-{
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(Environment&)" << std::endl;
-  if (environmentRep)
-    cout << "environmentRep referenceCount = " << environmentRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 Environment Environment::operator=(const Environment& env)
 {
   environmentRep = env.environmentRep;
-
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::operator=(Environment&)" << std::endl;
-  if (environmentRep)
-    cout << "environmentRep referenceCount = " << environmentRep.use_count()
-	 << std::endl;
-#endif
-
   return *this; // calls copy constructor since returned by value
 }
 
 
 Environment::~Environment()
 { 
-  if (environmentRep) { // envelope
-#ifdef REFCOUNT_DEBUG
-    cout << "~Environment() environmentRep referenceCount " 
-	 << environmentRep.use_count() << std::endl;
-#endif
-    ;
-  }
-  else // letter: base class destruction
+  if (!environmentRep) // letter: base class destruction
     destruct();
 }
 

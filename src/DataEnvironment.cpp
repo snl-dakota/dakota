@@ -75,47 +75,22 @@ void DataEnvironmentRep::write(std::ostream& s) const
 
 
 DataEnvironment::DataEnvironment(): dataEnvRep(new DataEnvironmentRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataEnvironment::DataEnvironment(), dataEnvRep referenceCount = "
-       << dataEnvRep.use_count() << endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataEnvironment::DataEnvironment(const DataEnvironment& data_env):
   dataEnvRep(data_env.dataEnvRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataEnvironment::DataEnvironment(DataEnvironment&)" << endl;
-  if (dataEnvRep)
-    Cout << "dataEnvRep referenceCount = " << dataEnvRep.use_count()
-	 << endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataEnvironment& DataEnvironment::operator=(const DataEnvironment& data_env)
 {
   dataEnvRep = data_env.dataEnvRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataEnvironment::operator=(DataEnvironment&)" << endl;
-  if (dataEnvRep)
-    Cout << "dataEnvRep referenceCount = " << dataEnvRep.use_count()
-	 << endl;
-#endif
-
   return *this;
 }
 
 
 DataEnvironment::~DataEnvironment()
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "~DataEnvironment() dataEnvRep referenceCount "
-       << dataEnvRep.use_count() << endl;
-#endif
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

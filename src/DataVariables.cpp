@@ -335,47 +335,22 @@ void DataVariablesRep::write(std::ostream& s) const
 
 
 DataVariables::DataVariables(): dataVarsRep(new DataVariablesRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataVariables::DataVariables(), dataVarsRep referenceCount = "
-       << dataVarsRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataVariables::DataVariables(const DataVariables& data_vars):
   dataVarsRep(data_vars.dataVarsRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataVariables::DataVariables(DataVariables&)" << std::endl;
-  if (dataVarsRep)
-    Cout << "dataVarsRep referenceCount = " << dataVarsRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataVariables DataVariables::operator=(const DataVariables& data_vars)
 {
   dataVarsRep = data_vars.dataVarsRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataVariables::operator=(DataVariables&)" << std::endl;
-  if (dataVarsRep)
-    Cout << "dataVarsRep referenceCount = " << dataVarsRep.use_count()
-	 << std::endl;
-#endif
-
   return *this;
 }
 
 
 DataVariables::~DataVariables()
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "~DataVariables() dataVarsRep referenceCount "
-       << dataVarsRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

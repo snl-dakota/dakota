@@ -53,11 +53,6 @@ Constraints(BaseConstructor, const ProblemDescDB& problem_db,
   shape(); // size all*{Lower,Upper}Bnds arrays
   build_views(); // construct active/inactive views of all arrays
   manage_linear_constraints(problem_db); // manage linear constraints
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(BaseConstructor) called to build base "
-       << "class data for letter object." << std::endl;
-#endif
 }
 
 
@@ -75,11 +70,6 @@ Constraints(BaseConstructor, const SharedVariablesData& svd):
   shape(); // size all*{Lower,Upper}Bnds arrays
   build_views(); // construct active/inactive views of all arrays
   // no linear constraints for this lightweight ctor
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(BaseConstructor) called to build base "
-       << "class data for letter object." << std::endl;
-#endif
 }
 
 
@@ -87,12 +77,7 @@ Constraints(BaseConstructor, const SharedVariablesData& svd):
     populated problem_db is needed to build a meaningful Constraints
     object). */
 Constraints::Constraints()
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints() called to build empty "
-       << "variable constraints object." << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** The envelope constructor only needs to extract enough data to
@@ -104,10 +89,6 @@ Constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd):
   // Set the rep pointer to the appropriate variable constraints type
   constraintsRep(get_constraints(problem_db, svd))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(ProblemDescDB&,cnst std:pair<short,short>&)"
-       << " called to instantiate envelope." << std::endl;
-#endif
   if (!constraintsRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -118,12 +99,6 @@ Constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd):
 std::shared_ptr<Constraints> Constraints::
 get_constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_constraints(ProblemDescDB&)."
-       << std::endl;
-#endif
-
-
   short active_view = svd.view().first;
   switch (active_view) {
   case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
@@ -151,10 +126,6 @@ Constraints::Constraints(const SharedVariablesData& svd):
   // Set the rep pointer to the appropriate variable constraints type
   constraintsRep(get_constraints(svd))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(const std::pair<short,short>&) called "
-       << "to instantiate envelope." << std::endl;
-#endif
   if (!constraintsRep)
     abort_handler(-1);
 }
@@ -165,11 +136,6 @@ Constraints::Constraints(const SharedVariablesData& svd):
 std::shared_ptr<Constraints>
 Constraints::get_constraints(const SharedVariablesData& svd) const
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_constraints(pair<short,short>&)"
-       << std::endl;
-#endif
-
   short active_view = svd.view().first;
   switch (active_view) {
   case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
@@ -193,12 +159,6 @@ Constraints::get_constraints(const SharedVariablesData& svd) const
 Constraints::Constraints(const Constraints& con)
 {
   constraintsRep = con.constraintsRep;
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(Constraints&)" << std::endl;
-  if (constraintsRep)
-    Cout << "constraintsRep referenceCount = " << constraintsRep.use_count()
-	 << std::endl;
-#endif
 }
 
 
@@ -206,23 +166,12 @@ Constraints::Constraints(const Constraints& con)
 Constraints Constraints::operator=(const Constraints& con)
 {
   constraintsRep = con.constraintsRep;
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::operator=(Constraints&)" << std::endl;
-  if (constraintsRep)
-    Cout << "constraintsRep referenceCount = " << constraintsRep.use_count()
-	 << std::endl;
-#endif
   return *this; // calls copy constructor since returned by value
 }
 
 
 Constraints::~Constraints()
-{ 
-#ifdef REFCOUNT_DEBUG
-    Cout << "~Constraints() referenceCount "
-         << constraintsRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 
 void Constraints::build_active_views()
@@ -348,12 +297,6 @@ Constraints Constraints::copy() const
 {
   // the envelope class instantiates a new envelope and a new letter and copies
   // current attributes into the new objects.
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::copy() called to generate a deep copy with no "
-       << "representation sharing." << std::endl;
-#endif
-
   Constraints con; // new envelope: constraintsRep=NULL
 
   if (constraintsRep) {

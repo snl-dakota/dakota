@@ -28,8 +28,6 @@
 #include "pecos_stat_util.hpp"
 #include "EvaluationStore.hpp"
 
-//#define REFCOUNT_DEBUG
-
 static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 
@@ -213,11 +211,6 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
       fdHessByGradStepSize = fdHessByFnStepSize = fdhss[0];
   }
   */
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(BaseConstructor, ProblemDescDB&) called "
-       << "to build letter base class\n";
-#endif
 }
 
 
@@ -255,12 +248,6 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 
   currentResponse = (share_srd) ?
     Response(srd, set) : Response(srd.response_type(), set);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(NoDBBaseConstructor, ParallelLibrary&, "
-       << "SharedVariablesData&, ActiveSet&, short) called to build letter "
-       << "base class\n";
-#endif
 }
 
 
@@ -282,12 +269,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
   prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(LightWtBaseConstructor, ProblemDescDB&, "
-       << "ParallelLibrary&) called to build letter base class\n";
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** The default constructor is used in vector<Model> instantiations
@@ -297,11 +279,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
     object). */
 Model::Model():
   probDescDB(dummy_db), parallelLib(dummy_lib), evaluationsDB(evaluation_store_db)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(), modelRep = NULL" << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 /** Used in model instantiations within strategy constructors.
@@ -313,11 +291,6 @@ Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
   evaluationsDB(evaluation_store_db),
   modelRep(get_model(problem_db))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(ProblemDescDB&) called to instantiate envelope."
-       << std::endl;
-#endif
-
   if ( !modelRep ) // bad type or insufficient memory
     abort_handler(MODEL_ERROR);
 }
@@ -327,11 +300,6 @@ Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
     appropriate derived type, as given by the modelType attribute. */
 std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: Getting model " << modelType
-       << std::endl;
-#endif
-
   // These instantiations will NOT recurse on the Model(problem_db)
   // constructor due to the use of BaseConstructor.
 
@@ -363,38 +331,18 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
 Model::Model(const Model& model): probDescDB(model.problem_description_db()),
   parallelLib(probDescDB.parallel_library()), evaluationsDB(evaluation_store_db),
   modelRep(model.modelRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(Model&)" << std::endl;
-  if (modelRep)
-    Cout << "modelRep referenceCount = " << modelRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 Model Model::operator=(const Model& model)
 {
   modelRep = model.modelRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::operator=(Model&)" << std::endl;
-  if (modelRep)
-    Cout << "modelRep referenceCount = " << modelRep.use_count()
-	 << std::endl;
-#endif
-
   return *this;
 }
 
 
 Model::~Model()
-{
-#ifdef REFCOUNT_DEBUG
-    Cout << "~Model() modelRep referenceCount "
-         << modelRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 
 /** The assign_rep() function is used for publishing derived class
@@ -413,13 +361,6 @@ Model::~Model()
 void Model::assign_rep(std::shared_ptr<Model> model_rep)
 {
   modelRep = model_rep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::assign_rep(Model*)" << std::endl;
-  if (modelRep)
-    Cout << "modelRep referenceCount = " << modelRep.use_count()
-	 << std::endl;
-#endif
 }
 
 

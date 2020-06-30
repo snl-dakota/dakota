@@ -677,47 +677,22 @@ void DataMethodRep::write(std::ostream& s) const
 
 
 DataMethod::DataMethod(): dataMethodRep(new DataMethodRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::DataMethod(), dataMethodRep referenceCount = "
-       << dataMethodRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataMethod::DataMethod(const DataMethod& data_method):
   dataMethodRep(data_method.dataMethodRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::DataMethod(DataMethod&)" << std::endl;
-  if (dataMethodRep)
-    Cout << "dataMethodRep referenceCount = " << dataMethodRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 DataMethod& DataMethod::operator=(const DataMethod& data_method)
 {
   dataMethodRep = data_method.dataMethodRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::operator=(DataMethod&)" << std::endl;
-  if (dataMethodRep)
-    Cout << "dataMethodRep referenceCount = " << dataMethodRep.use_count()
-	 << std::endl;
-#endif
-
   return *this;
 }
 
 
 DataMethod::~DataMethod()
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "~DataMethod() dataMethodRep referenceCount "
-       << dataMethodRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

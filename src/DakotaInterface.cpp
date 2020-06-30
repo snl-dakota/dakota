@@ -45,7 +45,6 @@
 #endif // HAVE_AMPL
 
 //#define DEBUG
-//#define REFCOUNT_DEBUG
 
 namespace Dakota {
 
@@ -163,11 +162,6 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
     abort_handler(-1);
 #endif // HAVE_AMPL
   }
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::Interface(BaseConstructor, ProblemDescDB&) called to "
-       << "build base class data for letter object." << std::endl;
-#endif
 }
 
 
@@ -181,11 +175,6 @@ Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
 #endif // DEBUG
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::Interface(NoDBBaseConstructor) called to build base "
-       << "class data for letter object." << std::endl;
-#endif
 }
 
 
@@ -202,11 +191,6 @@ Interface::Interface(ProblemDescDB& problem_db):
   // Set the rep pointer to the appropriate interface type
   interfaceRep(get_interface(problem_db))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::Interface(ProblemDescDB&) called to instantiate envelope."
-       << std::endl;
-#endif
-
   if (!interfaceRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -217,10 +201,6 @@ Interface::Interface(ProblemDescDB& problem_db):
 std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
 {
   const unsigned short interface_type = problem_db.get_ushort("interface.type");
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: Getting interface "
-       << interface_enum_to_string(interface_type) << std::endl;
-#endif
 
   // In the case where a derived interface type has been selected for managing
   // analysis_drivers, then this determines the letter instantiation and any 
@@ -317,38 +297,18 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
 /** Copy constructor manages sharing of interfaceRep */
 Interface::Interface(const Interface& interface_in):
   interfaceRep(interface_in.interfaceRep)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::Interface(Interface&)" << std::endl;
-  if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep.use_count()
-	 << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 Interface Interface::operator=(const Interface& interface_in)
 {
   interfaceRep = interface_in.interfaceRep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::operator=(Interface&)" << std::endl;
-  if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep.use_count()
-	 << std::endl;
-#endif
-
   return *this; // calls copy constructor since returned by value
 }
 
 
 Interface::~Interface()
-{ 
-#ifdef REFCOUNT_DEBUG
-    Cout << "~Interface() interfaceRep referenceCount " 
-         << interfaceRep->referenceCount << std::endl;
-#endif
-}
+{ /* empty dtor */ }
 
 
 /** DEPRECATED but temporarily left for library mode clients needing to
@@ -377,13 +337,6 @@ Interface::~Interface()
 void Interface::assign_rep(Interface* interface_rep, bool ref_count_incr)
 {
   interfaceRep.reset(interface_rep);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::assign_rep(Interface*)" << std::endl;
-  if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep.use_count()
-	 << std::endl;
-#endif
 }
 
 
@@ -403,13 +356,6 @@ void Interface::assign_rep(Interface* interface_rep, bool ref_count_incr)
 void Interface::assign_rep(std::shared_ptr<Interface> interface_rep)
 {
   interfaceRep = interface_rep;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::assign_rep(Interface*)" << std::endl;
-  if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep.use_count()
-	 << std::endl;
-#endif
 }
 
 
