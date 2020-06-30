@@ -596,6 +596,13 @@ private:
   ///   - max = take maximum sample allocation over QoIs for each level
   short qoiAggregation;
 
+	/// store the convergence_tolerance_type input specification, prior to run-time
+  /// Options right now:
+  ///   - relative = computes reference tolerance in first iteration and sets convergence_tolerance as 
+  ///								 reference tolerance * convergence_tol
+  ///   - absolute = sets convergence tolerance from input
+  short convergenceTolType;
+
   /// mean squared error of mean estimator from pilot sample MC on HF model
   RealVector mcMSEIter0;
   /// equivalent number of high fidelity evaluations accumulated using samples
@@ -1023,18 +1030,27 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 
 inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi)
 {
-   // compute epsilon target based on relative tolerance: total MSE = eps^2
-   // which is equally apportioned (eps^2 / 2) among discretization MSE and
-   // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
-   // discretization error, we compute an initial estimator variance and
-   // then seek to reduce it by a relative_factor <= 1.
-   for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-           eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
-   		   //Cout << "I AM HARDCODED FOR PROBLEM 18 = " << eps_sq_div_2_qoi << std::endl;
-           //eps_sq_div_2_qoi[qoi] = 1.389824213484928e-7; //estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
-   }
-   if (outputLevel == DEBUG_OUTPUT)
-           Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
+	// compute epsilon target based on relative tolerance: total MSE = eps^2
+	// which is equally apportioned (eps^2 / 2) among discretization MSE and
+	// estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
+	// discretization error, we compute an initial estimator variance and
+	// then seek to reduce it by a relative_factor <= 1.
+	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
+	  if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)	 
+			eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
+		else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)
+			eps_sq_div_2_qoi[qoi] = convergenceTol;
+		else
+			{
+  	  Cerr << "NonDMultilevelSampling::multilevel_mc_Qsum: convergenceTolType is not known.\n";
+  	  abort_handler(INTERFACE_ERROR);
+		}
+
+		//Cout << "I AM HARDCODED FOR PROBLEM 18 = " << eps_sq_div_2_qoi << std::endl;
+		//eps_sq_div_2_qoi[qoi] = 1.389824213484928e-7; //estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
+	}
+	if (outputLevel == DEBUG_OUTPUT)
+	       Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
 }
 
 inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 

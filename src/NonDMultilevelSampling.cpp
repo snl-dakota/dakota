@@ -38,6 +38,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   mlmfIter(0),
   allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
+  convergenceTolType(problem_db.get_short("method.nond.convergence_tolerance_type")),
   useTargetVarianceOptimizationFlag(problem_db.get_bool("method.nond.allocation_target.variance.optimization")),
   finalCVRefinement(true),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),

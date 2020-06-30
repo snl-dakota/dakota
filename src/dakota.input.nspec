@@ -2680,8 +2680,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       max {N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_tolerance_type {0}
+      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+      |
+      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+     ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
       |

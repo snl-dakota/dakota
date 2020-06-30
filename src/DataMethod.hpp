@@ -197,6 +197,9 @@ enum {QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM};
 
 // target variance for fitting sample allocation
 enum {TARGET_MEAN, TARGET_VARIANCE};
+
+// define special values for computation of convergence tolerance, either absolute or relative 
+enum {CONVERGENCE_TOLERANCE_TYPE_RELATIVE, CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE};
 // ---------------
 // NonDReliability
 // ---------------
@@ -959,6 +962,8 @@ public:
   bool useTargetVarianceOptimizationFlag;
   /// the |c qoi_aggregation_norm selection in \ref MethodMultilevelMC
   short qoiAggregation;
+  /// the |c convergence_tolerance_type selection in \ref MethodMultilevelMC
+  short convergenceToleranceType;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
   short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE

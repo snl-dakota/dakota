@@ -2787,8 +2787,15 @@
 		<keyword  id="max" name="max" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}" label="max"   />
 		</oneOf>
 	   </keyword>
+	   &default_convergence_tolerance;
+       <keyword  id="convergence_tolerance_type" name="convergence_tolerance_type" code="{0}" label="Type of convergence tolerance"  minOccurs="0" default="relative" >
+        <oneOf label="Convergence tolerance type">
+		<keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}" label="relative"   />
+		<keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}" label="absolute"   />
+		</oneOf>
+       </keyword>
 	  &default_max_iterations;
-	  &default_convergence_tolerance;
+	  <!-- &default_convergence_tolerance; -->
 	  &default_final_moments;
 	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
 	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
