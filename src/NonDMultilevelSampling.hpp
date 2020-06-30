@@ -498,6 +498,9 @@ private:
   // have no bias correction (no additional variance from an estimated center).
   void compute_moments(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, const Sizet2DArray& N_l);
 
+  // compute the equivalent number of HF evaluations (includes any sim faults)
+  void compute_equiv_HF_evals(const SizetArray& raw_N_l, const RealVector& cost);
+  
   /// convert uncentered (raw) moments to centered moments; biased estimators
   static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 			      Real& cm1, Real& cm2, Real& cm3, Real& cm4,
@@ -835,8 +838,8 @@ aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
 inline void NonDMultilevelSampling::
 aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
 									IntIntPairRealMatrixMap sum_QlQlm1, 
-								const Sizet2DArray& N_l, const size_t& step, RealMatrix& agg_var_qoi){
-
+								const Sizet2DArray& N_l, const size_t& step, RealMatrix& agg_var_qoi)
+{
 	// compute estimator variance from current sample accumulation:
 	if (outputLevel >= DEBUG_OUTPUT) Cout << "variance of Y[" << step << "]: ";
 	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
@@ -855,8 +858,9 @@ aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm
 
 inline Real NonDMultilevelSampling::aggregate_variance_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
  									IntIntPairRealMatrixMap sum_QlQlm1, 
-									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi){
-    IntIntPair pr11(1, 1);
+									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
+{
+  IntIntPair pr11(1, 1);
 	Real agg_var_l = 0.;
 	agg_var_l = aggregate_variance_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
 		                                                   sum_Ql[2][step], sum_QlQlm1[pr11][step],
@@ -903,7 +907,8 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 
 inline Real NonDMultilevelSampling::aggregate_variance_variance_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
  									IntIntPairRealMatrixMap sum_QlQlm1, 
-									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi){
+									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
+{
 	Real place_holder;
 	Real agg_var_l = 0.;
 	agg_var_l = ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
@@ -939,7 +944,8 @@ aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
 
 inline void NonDMultilevelSampling::
 aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, 
-						  const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi){
+						  						const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi)
+{
 	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
 		estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step)/N_l[step][qoi];
 	}
@@ -947,8 +953,9 @@ aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi,
 
 inline void NonDMultilevelSampling::
 aggregate_mse_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
-							IntIntPairRealMatrixMap sum_QlQlm1, 
-							const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi){
+													IntIntPairRealMatrixMap sum_QlQlm1, 
+													const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi)
+{
 	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
 		if (allocationTarget == TARGET_MEAN) {
 			estimator_var0_qoi[qoi] += aggregate_mse_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
@@ -957,14 +964,15 @@ aggregate_mse_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1,
 		}else{
 	        Cout << "NonDMultilevelSampling::aggregate_mse_target_Qsum: allocationTarget is not known.\n";
 	        abort_handler(INTERFACE_ERROR);
-	    }
+    }
 	}
 }
 
 inline Real NonDMultilevelSampling::
 aggregate_mse_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
 							IntIntPairRealMatrixMap sum_QlQlm1, 
-							const Sizet2DArray& N_l, const size_t& step, const size_t& qoi){
+							const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
+{
 	IntIntPair pr11(1, 1);
 	Real agg_mse_l = aggregate_mse_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
                                                             sum_Ql[2][step], sum_QlQlm1[pr11][step], sum_Qlm1[2][step],
@@ -975,7 +983,8 @@ aggregate_mse_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1,
 inline Real NonDMultilevelSampling::
 aggregate_mse_variance_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
 							IntIntPairRealMatrixMap sum_QlQlm1, 
-							const Sizet2DArray& N_l, const size_t& step, const size_t& qoi){
+							const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
+{
 	Real place_holder;
 	Real agg_mse_l = ((step == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
 	                                            N_l[step][qoi], qoi, false, place_holder)
@@ -996,23 +1005,24 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   return agg_mse;
 }
 
-  inline Real NonDMultilevelSampling::
-  aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
-                     const Real* sum_QlQl,     const Real* sum_QlQlm1,
-                     const Real* sum_Qlm1Qlm1, const SizetArray& N_l, const size_t& lev, const size_t& qoi)
-  {
-    Real agg_mse = 0., mu_Ql, mu_Qlm1, var_Y; size_t Nlq;
-    Nlq = N_l[qoi];
-    var_Y = (lev) ?
-            variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
-                          sum_Qlm1Qlm1[qoi], Nlq) :
-            variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], Nlq);
-    agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
+inline Real NonDMultilevelSampling::
+aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+                   const Real* sum_QlQl,     const Real* sum_QlQlm1,
+                   const Real* sum_Qlm1Qlm1, const SizetArray& N_l, const size_t& lev, const size_t& qoi)
+{
+  Real agg_mse = 0., mu_Ql, mu_Qlm1, var_Y; size_t Nlq;
+  Nlq = N_l[qoi];
+  var_Y = (lev) ?
+          variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+                        sum_Qlm1Qlm1[qoi], Nlq) :
+          variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], Nlq);
+  agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
 
-    return agg_mse;
-  }
+  return agg_mse;
+}
 
-inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi){
+inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi)
+{
    // compute epsilon target based on relative tolerance: total MSE = eps^2
    // which is equally apportioned (eps^2 / 2) among discretization MSE and
    // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
@@ -1027,66 +1037,11 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
            Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
 }
 
-  
-  inline void NonDMultilevelSampling::compute_moments(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, const Sizet2DArray& N_l){
-    //RealMatrix Q_raw_mom(numFunctions, 4);
-    RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q2l = sum_Ql[2],
-        &sum_Q3l = sum_Ql[3], &sum_Q4l = sum_Ql[4],
-        &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
-        &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
-    Real cm1, cm2, cm3, cm4, cm1l, cm2l, cm3l, cm4l;
-    size_t num_steps = sum_Q1l.numCols();
-    assert(sum_Q1l.numCols() == sum_Q2l.numCols() && sum_Q2l.numCols() == sum_Q3l.numCols()&& sum_Q3l.numCols() == sum_Q4l.numCols());
-    if (momentStats.empty())
-      momentStats.shapeUninitialized(4, numFunctions);
-    for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-      cm1 = cm2 = cm3 = cm4 = 0.;
-      for (size_t step=0; step<num_steps; ++step) {
-        size_t Nlq = N_l[step][qoi];
-        // roll up unbiased moments centered on level mean
-        uncentered_to_centered(sum_Q1l(qoi, step) / Nlq, sum_Q2l(qoi, step) / Nlq,
-                               sum_Q3l(qoi, step) / Nlq, sum_Q4l(qoi, step) / Nlq,
-                               cm1l, cm2l, cm3l, cm4l, Nlq);
-        cm1 += cm1l;
-        cm2 += cm2l;
-        cm3 += cm3l;
-        cm4 += cm4l;
-        if (outputLevel == DEBUG_OUTPUT)
-        Cout << "CM_l   for level " << step << ": "
-             << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
-        if (step) {
-          uncentered_to_centered(sum_Q1lm1(qoi, step) / Nlq, sum_Q2lm1(qoi, step) / Nlq,
-                                 sum_Q3lm1(qoi, step) / Nlq, sum_Q4lm1(qoi, step) / Nlq,
-                                 cm1l, cm2l, cm3l, cm4l, Nlq);
-          cm1 -= cm1l;
-          cm2 -= cm2l;
-          cm3 -= cm3l;
-          cm4 -= cm4l;
-          if (outputLevel == DEBUG_OUTPUT)
-          Cout << "CM_lm1 for level " << step << ": "
-               << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
-        }
-      }
-      check_negative(cm2);
-      check_negative(cm4);
-      Real *mom_q = momentStats[qoi];
-      if (finalMomentsType == CENTRAL_MOMENTS) {
-        mom_q[0] = cm1;
-        mom_q[1] = cm2;
-        mom_q[2] = cm3;
-        mom_q[3] = cm4;
-      } else
-        centered_to_standard(cm1, cm2, cm3, cm4,
-                             mom_q[0], mom_q[1], mom_q[2], mom_q[3]);
-    }
-  }
-
-  inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
  									IntIntPairRealMatrixMap sum_QlQlm1, const RealVector& eps_sq_div_2_in, 
   										const RealMatrix& agg_var_qoi_in, const RealVector& cost, 
-  										const Sizet2DArray& N_l, SizetArray& delta_N_l){
-	
-
+  										const Sizet2DArray& N_l, SizetArray& delta_N_l)
+{
 	size_t num_steps = agg_var_qoi_in.numCols();
 	RealVector level_cost_vec(num_steps);
 	RealVector sum_sqrt_var_cost;
@@ -1140,10 +1095,10 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 	}else{
   	  Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
   	  abort_handler(INTERFACE_ERROR);
-  	}
+	}
 
-    for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
-    	Real fact_qoi = sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
+  for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
+  	Real fact_qoi = sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
 		if (outputLevel == DEBUG_OUTPUT)
 			Cout << "\n\tN_target for Qoi: " << qoi << ", with lagrange: " << fact_qoi << std::endl;
 
@@ -1158,7 +1113,7 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 			Cout << "\t\tN_target_qoi: " << N_target_qoi(qoi, step) << "\n";
 			}
 		}
-	    bool have_npsol = false, have_optpp = false;
+    bool have_npsol = false, have_optpp = false;
 		#ifdef HAVE_NPSOL
 		    have_npsol = true;
 		#endif
@@ -1322,10 +1277,70 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 	}else{
   	  Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
   	  abort_handler(INTERFACE_ERROR);
-  	}
+	}
+}
 
-	
-  }
+inline void NonDMultilevelSampling::compute_moments(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, const Sizet2DArray& N_l)
+{
+	//RealMatrix Q_raw_mom(numFunctions, 4);
+	RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q2l = sum_Ql[2],
+	    &sum_Q3l = sum_Ql[3], &sum_Q4l = sum_Ql[4],
+	    &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
+	    &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
+	Real cm1, cm2, cm3, cm4, cm1l, cm2l, cm3l, cm4l;
+	size_t num_steps = sum_Q1l.numCols();
+	assert(sum_Q1l.numCols() == sum_Q2l.numCols() && sum_Q2l.numCols() == sum_Q3l.numCols()&& sum_Q3l.numCols() == sum_Q4l.numCols());
+	if (momentStats.empty())
+	  momentStats.shapeUninitialized(4, numFunctions);
+		for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
+	  cm1 = cm2 = cm3 = cm4 = 0.;
+	  for (size_t step=0; step<num_steps; ++step) {
+	    size_t Nlq = N_l[step][qoi];
+	    // roll up unbiased moments centered on level mean
+	    uncentered_to_centered(sum_Q1l(qoi, step) / Nlq, sum_Q2l(qoi, step) / Nlq,
+	                           sum_Q3l(qoi, step) / Nlq, sum_Q4l(qoi, step) / Nlq,
+	                           cm1l, cm2l, cm3l, cm4l, Nlq);
+	    cm1 += cm1l;
+	    cm2 += cm2l;
+	    cm3 += cm3l;
+	    cm4 += cm4l;
+	    if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "CM_l   for level " << step << ": "
+	         << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
+	    if (step) {
+	      uncentered_to_centered(sum_Q1lm1(qoi, step) / Nlq, sum_Q2lm1(qoi, step) / Nlq,
+	                             sum_Q3lm1(qoi, step) / Nlq, sum_Q4lm1(qoi, step) / Nlq,
+	                             cm1l, cm2l, cm3l, cm4l, Nlq);
+	      cm1 -= cm1l;
+	      cm2 -= cm2l;
+	      cm3 -= cm3l;
+	      cm4 -= cm4l;
+	      if (outputLevel == DEBUG_OUTPUT)
+	      Cout << "CM_lm1 for level " << step << ": "
+	           << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
+	    }
+	  }
+	  check_negative(cm2);
+	  check_negative(cm4);
+	  Real *mom_q = momentStats[qoi];
+	  if (finalMomentsType == CENTRAL_MOMENTS) {
+	    mom_q[0] = cm1;
+	    mom_q[1] = cm2;
+	    mom_q[2] = cm3;
+	    mom_q[3] = cm4;
+	  } else
+	    centered_to_standard(cm1, cm2, cm3, cm4,
+	                         mom_q[0], mom_q[1], mom_q[2], mom_q[3]);
+	}
+}
+
+inline void NonDMultilevelSampling::compute_equiv_HF_evals(const SizetArray& raw_N_l, const RealVector& cost){
+	size_t num_steps = raw_N_l.size();
+	equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
+	for (size_t step=1; step<num_steps; ++step)// subsequent levels incur 2 model costs
+	  equivHFEvals += raw_N_l[step] * (cost[step] + cost[step - 1]);
+	equivHFEvals /= cost[num_steps - 1]; // normalize into equivalent HF evals
+}
 
 
 inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
@@ -1465,7 +1480,8 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
 }
 
 inline Real NonDMultilevelSampling::var_of_var_ml_l0(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
-                                                      const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g){
+                                                      const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g)
+{
   Real cm1l, cm2l, cm3l, cm4l, cm2l_sq, var_of_var;
 
   IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
@@ -1495,7 +1511,8 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(IntRealMatrixMap sum_Ql, In
 
 
 inline Real NonDMultilevelSampling::var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
-                                                     const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g){
+                                                     const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g)
+{
   Real cm1l, cm2l, cm3l, cm4l, cm2l_sq, var_of_var;
 
   IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
@@ -1524,7 +1541,8 @@ inline Real NonDMultilevelSampling::var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, 
 }
 
 inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
-                                                    const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g){
+                                                    const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g)
+{
   Real cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
       cm3lm1, cm4lm1, cm1l_sq, cm2l_sq, cm2lm1_sq,
       mu_Q2l, mu_Q2lm1, mu_Q2lQ2lm1,
