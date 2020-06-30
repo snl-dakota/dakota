@@ -739,15 +739,16 @@ bool NonDPolynomialChaos::resize()
   // -----------------------------------------
   // Rather than caching these settings in the class, just preserve them
   // from the previously constructed expansionSampler:
-  NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep().get();
+  std::shared_ptr<NonDSampling> exp_sampler_rep =
+    std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
   unsigned short sample_type(SUBMETHOD_DEFAULT); String rng;
   if (exp_sampler_rep) {
     sample_type = exp_sampler_rep->sampling_scheme();
     rng         = exp_sampler_rep->random_number_generator();
   }
-  NonDAdaptImpSampling* imp_sampler_rep
-    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep().get();
+  std::shared_ptr<NonDAdaptImpSampling> imp_sampler_rep =
+    std::static_pointer_cast<NonDAdaptImpSampling>
+    (importanceSampler.iterator_rep());
   unsigned short int_refine(NO_INT_REFINE); IntVector refine_samples;
   if (imp_sampler_rep) {
     int_refine = imp_sampler_rep->sampling_scheme();
@@ -1013,8 +1014,8 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
   // TO DO: utilize static fn instead of 0th poly_approx; this would also
   // facilitate usage from other surrogate types (especially GP).
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep
-    = (PecosApproximation*)poly_approxs[0].approx_rep().get();
+  std::shared_ptr<PecosApproximation> poly_approx_rep =
+    std::static_pointer_cast<PecosApproximation>(poly_approxs[0].approx_rep());
 
   // reference A built from surrData and reference multiIndex
   poly_approx_rep->build_linear_system(A, multi_index);
@@ -1134,8 +1135,8 @@ sample_allocation_metric(Real& sparsity_metric, Real power)
        pow_inf = (power == std::numeric_limits<Real>::max());
   Real sum = 0., max = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    PecosApproximation* poly_approx_q
-      = (PecosApproximation*)poly_approxs[qoi].approx_rep().get();
+    std::shared_ptr<PecosApproximation> poly_approx_q =
+      std::static_pointer_cast<PecosApproximation>(poly_approxs[qoi].approx_rep());
     size_t sparsity_q = poly_approx_q->sparsity();
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi

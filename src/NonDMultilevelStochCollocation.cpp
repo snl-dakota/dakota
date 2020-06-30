@@ -266,8 +266,9 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
 {
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep().get();
+    std::shared_ptr<NonDQuadrature> nond_quad =
+      std::static_pointer_cast<NonDQuadrature>
+      (uSpaceModel.subordinate_iterator().iterator_rep());
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -276,8 +277,9 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep().get();
+    std::shared_ptr<NonDSparseGrid> nond_sparse =
+      std::static_pointer_cast<NonDSparseGrid>
+      (uSpaceModel.subordinate_iterator().iterator_rep());
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -297,8 +299,9 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
 {
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep().get();
+    std::shared_ptr<NonDQuadrature> nond_quad =
+      std::static_pointer_cast<NonDQuadrature>
+      (uSpaceModel.subordinate_iterator().iterator_rep());
     if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
@@ -309,8 +312,9 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep().get();
+    std::shared_ptr<NonDSparseGrid> nond_sparse =
+      std::static_pointer_cast<NonDSparseGrid>
+      (uSpaceModel.subordinate_iterator().iterator_rep());
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);

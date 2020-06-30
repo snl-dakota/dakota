@@ -411,8 +411,8 @@ void NonDStochCollocation::initialize_covariance()
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   size_t i, j;
   for (i=0; i<numFunctions; ++i) {
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep().get();
+    std::shared_ptr<PecosApproximation> pa_rep_i =
+      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
     pa_rep_i->clear_covariance_pointers();
     for (j=0; j<=i; ++j)
       pa_rep_i->initialize_covariance(poly_approxs[j]);
@@ -428,8 +428,8 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
 
   if (deltaRespMean.empty()) deltaRespMean.sizeUninitialized(numFunctions);
   for (size_t i=0; i<numFunctions; ++i) {
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep().get();
+    std::shared_ptr<PecosApproximation> pa_rep_i =
+      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
     if (pa_rep_i->expansion_coefficient_flag()) {
       if (combined_stats)
 	// refinement assessed for impact on combined expansion from roll up
@@ -476,8 +476,8 @@ compute_delta_variance(bool update_ref, bool print_metric)
   if (deltaRespVariance.empty())
     deltaRespVariance.sizeUninitialized(numFunctions);
   for (size_t i=0; i<numFunctions; ++i) {
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep().get();
+    std::shared_ptr<PecosApproximation> pa_rep_i =
+      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
     Real& delta = deltaRespVariance[i];
     if (pa_rep_i->expansion_coefficient_flag()) {
       if (combined_stats)
@@ -517,8 +517,8 @@ compute_delta_covariance(bool update_ref, bool print_metric)
   if (deltaRespCovariance.empty())
     deltaRespCovariance.shapeUninitialized(numFunctions);
   for (i=0; i<numFunctions; ++i) {
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep().get();
+    std::shared_ptr<PecosApproximation> pa_rep_i =
+      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
     if (pa_rep_i->expansion_coefficient_flag()) {
       for (j=0; j<=i; ++j) {
 	Approximation& approx_j = poly_approxs[j];
@@ -654,8 +654,9 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 	       pl_len = requestedProbLevels[i].length(),
 	       bl_len = requestedRelLevels[i].length(),
 	       gl_len = requestedGenRelLevels[i].length();
-	PecosApproximation* pa_rep_i
-	  = (PecosApproximation*)poly_approxs[i].approx_rep().get();
+	std::shared_ptr<PecosApproximation> pa_rep_i =
+	  std::static_pointer_cast<PecosApproximation>
+	  (poly_approxs[i].approx_rep());
 	if (pa_rep_i->expansion_coefficient_flag()) {
 	  if (respLevelTarget == RELIABILITIES)
 	    for (j=0; j<rl_len; ++j, ++cntr) {
@@ -802,8 +803,9 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	       pl_len = requestedProbLevels[i].length(),
 	       bl_len = requestedRelLevels[i].length(),
 	       gl_len = requestedGenRelLevels[i].length();
-	PecosApproximation* pa_rep_i
-	  = (PecosApproximation*)poly_approxs[i].approx_rep().get();
+	std::shared_ptr<PecosApproximation> pa_rep_i =
+	  std::static_pointer_cast<PecosApproximation>
+	  (poly_approxs[i].approx_rep());
 	cntr += moment_offset; // skip moments if present
 	if (pa_rep_i->expansion_coefficient_flag()) {
 	  if (respLevelTarget == RELIABILITIES)
@@ -947,14 +949,15 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
     switch (refineMetric) {
     case Pecos::COVARIANCE_METRIC: {
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-      PecosApproximation* poly_approx_rep;
+      std::shared_ptr<PecosApproximation> poly_approx_rep;
       bool full_covar = (covarianceControl == FULL_COVARIANCE);
       size_t vec_len = (full_covar) ?
 	(numFunctions*(numFunctions + 3))/2 : 2*numFunctions;
       if (stats_star.length() != vec_len) stats_star.sizeUninitialized(vec_len);
       // pull means
       for (size_t i=0; i<numFunctions; ++i) {
-	poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep().get();
+	poly_approx_rep =
+	std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
 	stats_star[i] = (combined_stats) ?
 	  poly_approx_rep->combined_moment(0) + deltaRespMean[i] :
 	  poly_approx_rep->moment(0)          + deltaRespMean[i];
@@ -1002,8 +1005,8 @@ analytic_delta_level_mappings(const RealVector& level_maps_ref,
     bl_len = requestedRelLevels[i].length();
     gl_len = requestedGenRelLevels[i].length();
     pl_bl_gl_len = pl_len+bl_len+gl_len;
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep().get();
+    std::shared_ptr<PecosApproximation> pa_rep_i =
+      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
     if (respLevelTarget == RELIABILITIES)
       for (j=0; j<rl_len; ++j, ++cntr) {
 	// Note: this captures the more likely of the Pecos::

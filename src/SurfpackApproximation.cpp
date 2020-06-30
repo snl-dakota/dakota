@@ -555,7 +555,8 @@ Real SurfpackApproximation::value(const Variables& vars)
   }
 
   RealArray x_array;
-  ((SharedSurfpackApproxData*)sharedDataRep.get())->vars_to_realarray(vars, x_array);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_array);
   return (*model)(x_array);
 }
 
@@ -565,8 +566,8 @@ const RealVector& SurfpackApproximation::gradient(const Variables& vars)
   approxGradient.sizeUninitialized(vars.cv());
   try {
     RealArray x_array;
-    ((SharedSurfpackApproxData*)sharedDataRep.get())
-      ->vars_to_realarray(vars, x_array);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      vars_to_realarray(vars, x_array);
     VecDbl local_grad = model->gradient(x_array);
     for (unsigned i = 0; i < surfData->xSize(); i++)
       approxGradient[i] = local_grad[i];
@@ -591,8 +592,8 @@ const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
       abort_handler(-1);
     }
     RealArray x_array;
-    ((SharedSurfpackApproxData*)sharedDataRep.get())
-      ->vars_to_realarray(vars, x_array);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      vars_to_realarray(vars, x_array);
     MtxDbl sm = model->hessian(x_array);
     ///\todo Make this acceptably efficient
     for (size_t i = 0; i < num_cv; i++)
@@ -612,8 +613,8 @@ Real SurfpackApproximation::prediction_variance(const Variables& vars)
 {
   try {
     RealArray x_array;
-    ((SharedSurfpackApproxData*)sharedDataRep.get())
-      ->vars_to_realarray(vars, x_array);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      vars_to_realarray(vars, x_array);
     return model->variance(x_array);
   }
   catch (...) {
