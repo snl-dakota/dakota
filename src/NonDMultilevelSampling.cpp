@@ -387,23 +387,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
 void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
-{
-
-    // assign truth model form (solution level assignment is deferred until loop)
-    /*UShortArray truth_key;
-    unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-    Pecos::DiscrepancyCalculator::form_key(0, model_form, lev, truth_key);
-    iteratedModel.active_model_key(truth_key);
-    Model& truth_model = iteratedModel.truth_model();
-
-    size_t qoi, num_steps = truth_model.solution_levels();//1 model form
-    unsigned short& step = (true) ? lev : model_form; // option not active
-
-    size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-     // retrieve cost estimates across soln levels for a particular model form
-    RealVector cost = truth_model.solution_level_costs(), estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions);
-    */
-    
+{    
     // retrieve cost estimates across soln levels for a particular model form
     RealVector cost,
       estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions);
@@ -627,14 +611,11 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
 
           aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, agg_var_qoi);
           // MSE reference is MC applied to HF
-          if (mlmfIter == 0) aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
+          if (mlmfIter == 0) {
+            aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
+          }
         }
       }
-      // compute epsilon target based on relative tolerance: total MSE = eps^2
-      // which is equally apportioned (eps^2 / 2) among discretization MSE and
-      // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
-      // discretization error, we compute an initial estimator variance and
-      // then seek to reduce it by a relative_factor <= 1.
       if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
         set_convergence_tol(estimator_var0_qoi, convergenceTol, eps_sq_div_2_qoi);
       }
@@ -729,57 +710,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     */
     ////
 
-    // Roll up expected value estimators for central moments.  Final expected
-    // value is sum of expected values from telescopic sum.  Note: raw moments
-    // have no bias correction (no additional variance from an estimated center).
-    //RealMatrix Q_raw_mom(numFunctions, 4);
-    RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q2l = sum_Ql[2],
-        &sum_Q3l = sum_Ql[3], &sum_Q4l = sum_Ql[4],
-        &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
-        &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
-    Real cm1, cm2, cm3, cm4, cm1l, cm2l, cm3l, cm4l;
-    if (momentStats.empty())
-      momentStats.shapeUninitialized(4, numFunctions);
-    for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-      cm1 = cm2 = cm3 = cm4 = 0.;
-      for (step=0; step<num_steps; ++step) {
-        size_t Nlq = N_l[step][qoi];
-        // roll up unbiased moments centered on level mean
-        uncentered_to_centered(sum_Q1l(qoi, step) / Nlq, sum_Q2l(qoi, step) / Nlq,
-                               sum_Q3l(qoi, step) / Nlq, sum_Q4l(qoi, step) / Nlq,
-                               cm1l, cm2l, cm3l, cm4l, Nlq);
-        cm1 += cm1l;
-        cm2 += cm2l;
-        cm3 += cm3l;
-        cm4 += cm4l;
-        if (outputLevel == DEBUG_OUTPUT)
-        Cout << "CM_l   for level " << step << ": "
-             << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
-        if (step) {
-          uncentered_to_centered(sum_Q1lm1(qoi, step) / Nlq, sum_Q2lm1(qoi, step) / Nlq,
-                                 sum_Q3lm1(qoi, step) / Nlq, sum_Q4lm1(qoi, step) / Nlq,
-                                 cm1l, cm2l, cm3l, cm4l, Nlq);
-          cm1 -= cm1l;
-          cm2 -= cm2l;
-          cm3 -= cm3l;
-          cm4 -= cm4l;
-          if (outputLevel == DEBUG_OUTPUT)
-          Cout << "CM_lm1 for level " << step << ": "
-               << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
-        }
-      }
-      check_negative(cm2);
-      check_negative(cm4);
-      Real *mom_q = momentStats[qoi];
-      if (finalMomentsType == CENTRAL_MOMENTS) {
-        mom_q[0] = cm1;
-        mom_q[1] = cm2;
-        mom_q[2] = cm3;
-        mom_q[3] = cm4;
-      } else
-        centered_to_standard(cm1, cm2, cm3, cm4,
-                             mom_q[0], mom_q[1], mom_q[2], mom_q[3]);
-    }
+    compute_moments(sum_Ql, sum_Qlm1, N_l);
 
     // populate finalStatErrors
     compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);

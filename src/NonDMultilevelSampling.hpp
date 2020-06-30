@@ -488,10 +488,15 @@ private:
   /// compute epsilon^2/2 term for each qoi based on reference estimator_var0 and relative convergence tolereance
   void set_convergence_tol(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi);
 
-/// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
+  /// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
   void compute_sample_allocation_target(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
  									IntIntPairRealMatrixMap sum_QlQlm1, const RealVector& eps_sq_div_2, const RealMatrix& agg_var_qoi, 
   										const RealVector& cost, const Sizet2DArray& N_l, SizetArray& delta_N_l);
+  
+  // Roll up expected value estimators for central moments.  Final expected
+  // value is sum of expected values from telescopic sum.  Note: raw moments
+  // have no bias correction (no additional variance from an estimated center).
+  void compute_moments(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, const Sizet2DArray& N_l);
 
   /// convert uncentered (raw) moments to centered moments; biased estimators
   static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
@@ -1008,15 +1013,73 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   }
 
 inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi){
+   // compute epsilon target based on relative tolerance: total MSE = eps^2
+   // which is equally apportioned (eps^2 / 2) among discretization MSE and
+   // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
+   // discretization error, we compute an initial estimator variance and
+   // then seek to reduce it by a relative_factor <= 1.
    for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
            eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
-   
    		   //Cout << "I AM HARDCODED FOR PROBLEM 18 = " << eps_sq_div_2_qoi << std::endl;
            //eps_sq_div_2_qoi[qoi] = 1.389824213484928e-7; //estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
    }
    if (outputLevel == DEBUG_OUTPUT)
            Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
 }
+
+  
+  inline void NonDMultilevelSampling::compute_moments(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, const Sizet2DArray& N_l){
+    //RealMatrix Q_raw_mom(numFunctions, 4);
+    RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q2l = sum_Ql[2],
+        &sum_Q3l = sum_Ql[3], &sum_Q4l = sum_Ql[4],
+        &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
+        &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
+    Real cm1, cm2, cm3, cm4, cm1l, cm2l, cm3l, cm4l;
+    size_t num_steps = sum_Q1l.numCols();
+    assert(sum_Q1l.numCols() == sum_Q2l.numCols() && sum_Q2l.numCols() == sum_Q3l.numCols()&& sum_Q3l.numCols() == sum_Q4l.numCols());
+    if (momentStats.empty())
+      momentStats.shapeUninitialized(4, numFunctions);
+    for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
+      cm1 = cm2 = cm3 = cm4 = 0.;
+      for (size_t step=0; step<num_steps; ++step) {
+        size_t Nlq = N_l[step][qoi];
+        // roll up unbiased moments centered on level mean
+        uncentered_to_centered(sum_Q1l(qoi, step) / Nlq, sum_Q2l(qoi, step) / Nlq,
+                               sum_Q3l(qoi, step) / Nlq, sum_Q4l(qoi, step) / Nlq,
+                               cm1l, cm2l, cm3l, cm4l, Nlq);
+        cm1 += cm1l;
+        cm2 += cm2l;
+        cm3 += cm3l;
+        cm4 += cm4l;
+        if (outputLevel == DEBUG_OUTPUT)
+        Cout << "CM_l   for level " << step << ": "
+             << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
+        if (step) {
+          uncentered_to_centered(sum_Q1lm1(qoi, step) / Nlq, sum_Q2lm1(qoi, step) / Nlq,
+                                 sum_Q3lm1(qoi, step) / Nlq, sum_Q4lm1(qoi, step) / Nlq,
+                                 cm1l, cm2l, cm3l, cm4l, Nlq);
+          cm1 -= cm1l;
+          cm2 -= cm2l;
+          cm3 -= cm3l;
+          cm4 -= cm4l;
+          if (outputLevel == DEBUG_OUTPUT)
+          Cout << "CM_lm1 for level " << step << ": "
+               << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
+        }
+      }
+      check_negative(cm2);
+      check_negative(cm4);
+      Real *mom_q = momentStats[qoi];
+      if (finalMomentsType == CENTRAL_MOMENTS) {
+        mom_q[0] = cm1;
+        mom_q[1] = cm2;
+        mom_q[2] = cm3;
+        mom_q[3] = cm4;
+      } else
+        centered_to_standard(cm1, cm2, cm3, cm4,
+                             mom_q[0], mom_q[1], mom_q[2], mom_q[3]);
+    }
+  }
 
   inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
  									IntIntPairRealMatrixMap sum_QlQlm1, const RealVector& eps_sq_div_2_in, 
