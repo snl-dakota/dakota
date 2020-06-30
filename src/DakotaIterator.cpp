@@ -249,17 +249,18 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
 { /* empty ctor */ }
 
 
-// BMA NOTE: This ctor unused as of shared_ptr refactor
+// BMA: Disabled unused ctor when deploying shared_ptr for iteratorRep
 /** This constructor assigns a representation pointer into this
     envelope, transferring ownership.  It behaves the same as a
     default construction followed by assign_rep(). */
-Iterator::Iterator(Iterator* iterator_rep, std::shared_ptr<TraitsBase> traits):
-  // same as default ctor above
-  probDescDB(dummy_db), parallelLib(dummy_lib),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
-  myModelLayers(0), methodName(DEFAULT_METHOD),
-  iteratorRep(iterator_rep), methodTraits(traits)
-{ /* empty ctor */ }
+//Iterator::Iterator(std::shared_ptr<Iterator> iterator_rep,
+//		   std::shared_ptr<TraitsBase> traits):
+//  // same as default ctor above
+//  probDescDB(dummy_db), parallelLib(dummy_lib),
+//  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+//  myModelLayers(0), methodName(DEFAULT_METHOD),
+//  iteratorRep(iterator_rep), methodTraits(traits)
+//{ /* empty ctor */ }
 
 
 /** Envelope constructor only needs to extract enough data to properly

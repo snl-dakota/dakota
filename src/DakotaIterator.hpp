@@ -50,8 +50,9 @@ public:
 
   /// default constructor
   Iterator( std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()) );
+  // BMA: Disabled unused ctor when deploying shared_ptr for iteratorRep
   /// alternate envelope constructor that assigns a representation pointer
-  Iterator(Iterator* iterator_rep, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  //  Iterator(std::shared_ptr<Iterator> iterator_rep, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard envelope constructor, which constructs its own model(s)
   Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor which uses the ProblemDescDB but

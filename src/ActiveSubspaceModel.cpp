@@ -1814,7 +1814,9 @@ void ActiveSubspaceModel::build_surrogate()
 
   // BMA TODO: This needs to be redesigned. The DataFitSurrModel
   // should probably wrap the envelope of this ActiveSubspaceModel,
-  // but we only have access to the letter (modelRep) via *this.
+  // but we only have access to the letter (modelRep) via
+  // *this. Doesn't really make sense to instantiate an Iterator that
+  // wraps *this Model.
 
   Model asm_model;
   asm_model.assign_rep(shared_from_this());

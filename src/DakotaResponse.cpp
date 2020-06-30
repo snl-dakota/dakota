@@ -814,8 +814,7 @@ void Response::read_annotated(std::istream& s)
   short type;
   s >> type;
 
-  if (responseRep) { // should not occur in current usage
-    // BMA TODO: Leaving this logic as was required for MPIUnpackBuffer case
+  if (responseRep) { // allow reuse in loaded Response objects
     if (responseRep->sharedRespData.is_null() ||
 	type != responseRep->sharedRespData.response_type())
       responseRep = get_response(type);
@@ -993,10 +992,7 @@ void Response::read(MPIUnpackBuffer& s)
     short type;
     s >> type;
 
-    if (responseRep) { // responseRep should not be defined in current usage
-      // BMA TODO: This use case does appear to be hit. More aggressively
-      // resetting without checking the following conditional causes problems
-      // in pdakota_pareto_pcbdo_short_column, pdakota_uq_short_column_ivp_exp
+    if (responseRep) {  // allow reuse in received Response objects
       if (responseRep->sharedRespData.is_null() ||
 	  type != responseRep->sharedRespData.response_type())
 	responseRep = get_response(type);
