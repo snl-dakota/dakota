@@ -11,6 +11,7 @@
 
 #include "ROL_Algorithm.hpp"
 #include "ROL_Bounds.hpp"
+#include "ROL_LineSearchStep.hpp"
 
 #include "Teuchos_oblackholestream.hpp"
 #include "Teuchos_XMLParameterListCoreHelpers.hpp"
@@ -80,18 +81,18 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   const int num_restarts = configOptions.get<int>("num restarts");
   
   /* Scale the data and compute build squared distances */
-  dataScaler = util::scaler_factory(
+  dataScaler = *(util::scaler_factory(
     util::DataScaler::scaler_type(configOptions.get<std::string>("scaler name")),
-    samples);
-  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
+    samples));
+  dataScaler.scale_samples(samples, scaledBuildPoints);
   compute_build_dists();
 
   if (estimateTrend) {
     polyRegression = std::make_shared<PolynomialRegression>
-                     (scaled_samples, targetValues,
+                     (scaledBuildPoints, targetValues,
                       configOptions.sublist("Trend").sublist("Options"));
     numPolyTerms = polyRegression->get_num_terms();
-    polyRegression->compute_basis_matrix(scaled_samples, basisMatrix);
+    polyRegression->compute_basis_matrix(scaledBuildPoints, basisMatrix);
     beta_bounds = MatrixXd::Ones(numPolyTerms,2);
     beta_bounds.col(0) *= -betaBound;
     beta_bounds.col(1) *= betaBound;
@@ -144,7 +145,13 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
 
   auto gp_objective = std::make_shared<GP_Objective>(*this);
   int dim = numVariables + 1 + numPolyTerms + numNuggetTerms;
-  ROL::Algorithm<double> algo("Line Search",*gp_mle_rol_params);
+
+  // Define algorithm
+  ROL::Ptr<ROL::Step<double>> step = 
+    ROL::makePtr<ROL::LineSearchStep<double>>(*gp_mle_rol_params);
+  ROL::Ptr<ROL::StatusTest<double>>
+    status = ROL::makePtr<ROL::StatusTest<double>>(*gp_mle_rol_params);
+  ROL::Algorithm<double> algo(step, status, false);
 
   /* set up parameter vectors and bounds */
   ROL::Ptr<std::vector<double> > x_ptr = ROL::makePtr<std::vector<double>>(dim, 0.0);
@@ -157,8 +164,14 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   (*hi_ptr)[0] = log(sigma_bounds(1));
   /* length scale bounds */
   for (int i = 0; i < numVariables; i++) {
-    (*lo_ptr)[i+1] = log(length_scale_bounds(i,0));
-    (*hi_ptr)[i+1] = log(length_scale_bounds(i,1));
+    if (length_scale_bounds.rows() > 1) {
+      (*lo_ptr)[i+1] = log(length_scale_bounds(i,0));
+      (*hi_ptr)[i+1] = log(length_scale_bounds(i,1));
+    }
+    else {
+      (*lo_ptr)[i+1] = log(length_scale_bounds(0,0));
+      (*hi_ptr)[i+1] = log(length_scale_bounds(0,1));
+    }
   }
   if (estimateTrend) {
     for (int i = 0; i < numPolyTerms; i++) {
@@ -243,7 +256,7 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_pts;
-  dataScaler->scale_samples(samples, scaled_pred_pts);
+  dataScaler.scale_samples(samples, scaled_pred_pts);
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -303,7 +316,7 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_pts;
-  dataScaler->scale_samples(samples, scaled_pred_pts);
+  dataScaler.scale_samples(samples, scaled_pred_pts);
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -349,7 +362,7 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_point;
-  dataScaler->scale_samples(sample, scaled_pred_point);
+  dataScaler.scale_samples(sample, scaled_pred_point);
   compute_pred_dists(scaled_pred_point);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -447,7 +460,10 @@ void GaussianProcess::default_options()
   VectorXd sigma_bounds(2);
   sigma_bounds(0) = 1.0e-2;
   sigma_bounds(1) = 1.0e2;
-  // length scale bounds - num_vars x 2
+  // length scale bounds - can be num_vars x 2 if specified in a PL
+  // this way.
+  // Otherwise these are bounds for all length-scales
+  // and length scale bounds is 1 x 2
   MatrixXd length_scale_bounds(1,2);
   length_scale_bounds(0,0) = 1.0e-2;
   length_scale_bounds(0,1) = 1.0e2;
@@ -460,9 +476,9 @@ void GaussianProcess::default_options()
   defaultConfigOptions.set("sigma bounds", sigma_bounds, "sigma [lb, ub]");
   // BMA: Do we want to allow 1 x 2 always as a fallback?
   defaultConfigOptions.set("length-scale bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
-  defaultConfigOptions.set("scaler name", "mean normalization", "scaler for variables");
-  defaultConfigOptions.set("num restarts", 5, "local optimizer number of initial iterates");
-  defaultConfigOptions.set("gp seed", 129, "random seed for initial iterate generation");
+  defaultConfigOptions.set("scaler name", "standardization", "scaler for variables");
+  defaultConfigOptions.set("num restarts", 10, "local optimizer number of initial iterates");
+  defaultConfigOptions.set("gp seed", 42, "random seed for initial iterate generation");
   /* Nugget */
   defaultConfigOptions.sublist("Nugget")
                       .set("fixed nugget", 0.0, "fixed nugget term");
@@ -484,14 +500,13 @@ void GaussianProcess::default_options()
 
 void GaussianProcess::compute_build_dists() {
 
-  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
   cwiseDists2.resize(numVariables);
 
   for (int k = 0; k < numVariables; k++) {
     cwiseDists2[k].resize(numSamples,numSamples);
     for (int i = 0; i < numSamples; i++) {
       for (int j = i; j < numSamples; j++) {
-        cwiseDists2[k](i,j) = pow(scaled_samples(i,k) - scaled_samples(j,k), 2);
+        cwiseDists2[k](i,j) = pow(scaledBuildPoints(i,k) - scaledBuildPoints(j,k), 2);
         if (i != j)
           cwiseDists2[k](j,i) = cwiseDists2[k](i,j);
       }
@@ -505,14 +520,13 @@ void GaussianProcess::compute_pred_dists(const MatrixXd &scaled_pred_pts) {
   cwiseMixedDists.resize(numVariables);
   cwiseMixedDists2.resize(numVariables);
   cwisePredDists2.resize(numVariables);
-  const MatrixXd& scaled_samples = dataScaler->get_scaled_features();
 
   for (int k = 0; k < numVariables; k++) {
     cwiseMixedDists[k].resize(num_pred_pts, numSamples);
     cwisePredDists2[k].resize(num_pred_pts, num_pred_pts);
     for (int i = 0; i < num_pred_pts; i++) {
       for (int j = 0; j < numSamples; j++) {
-        cwiseMixedDists[k](i,j) = scaled_pred_pts(i,k) - scaled_samples(j,k);
+        cwiseMixedDists[k](i,j) = scaled_pred_pts(i,k) - scaledBuildPoints(j,k);
       }
       for (int j = i; j < num_pred_pts; j++) {
         cwisePredDists2[k](i,j) = pow(scaled_pred_pts(i,k) - scaled_pred_pts(j,k), 2);
@@ -585,8 +599,14 @@ void GaussianProcess::generate_initial_guesses(const VectorXd &sigma_bounds,
       mean = 0.5*(log(sigma_bounds(1)) + log(sigma_bounds(0)));
     }
     else {
-      span = 0.5*(log(length_scale_bounds(j-1,1)) - log(length_scale_bounds(j-1,0)));
-      mean = 0.5*(log(length_scale_bounds(j-1,1)) + log(length_scale_bounds(j-1,0)));
+      if (length_scale_bounds.rows() > 1) {
+        span = 0.5*(log(length_scale_bounds(j-1,1)) - log(length_scale_bounds(j-1,0)));
+        mean = 0.5*(log(length_scale_bounds(j-1,1)) + log(length_scale_bounds(j-1,0)));
+      }
+      else {
+        span = 0.5*(log(length_scale_bounds(0,1)) - log(length_scale_bounds(0,0)));
+        mean = 0.5*(log(length_scale_bounds(0,1)) + log(length_scale_bounds(0,0)));
+      }
     }
     for (int i = 0; i < num_restarts; i++) {
       initial_guesses(i,j) = span*initial_guesses(i,j) + mean;

@@ -15,6 +15,10 @@
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "Teuchos_SerialDenseVector.hpp"
 
+// extend Eigen matrices with Boost serialization
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/array.hpp>
+#define EIGEN_MATRIX_PLUGIN "util_eigen_plugins.hpp"
 #include "Eigen/Dense"
 
 /// dakota (lowercase) namespace for new %Dakota modules

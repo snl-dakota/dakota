@@ -23,8 +23,9 @@ set(util_headers
   DataScaler.hpp
   LinearSolvers.hpp
   metrics.hpp
-  util_math_tools.hpp
   util_data_types.hpp
+  util_eigen_plugins.hpp
+  util_math_tools.hpp
   )
 
 add_library(dakota_util ${util_sources} ${util_headers})
@@ -40,12 +41,15 @@ if(TARGET Eigen3::Eigen)
   ${EIGEN3_INCLUDE_DIR}")
 endif()
 
-target_link_libraries(dakota_util PRIVATE Boost::boost)
+target_link_libraries(dakota_util PRIVATE Boost::boost
+  PUBLIC Boost::serialization)
 
 target_include_directories(dakota_util PRIVATE
   ${Teuchos_INCLUDE_DIRS})
 
-target_include_directories(dakota_util INTERFACE
+# BMA TODO: review with Tom how to handle correctly (PUBLIC vs INTERFACE)
+#target_include_directories(dakota_util INTERFACE
+target_include_directories(dakota_util PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>
 )

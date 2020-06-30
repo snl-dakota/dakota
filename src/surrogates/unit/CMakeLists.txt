@@ -44,13 +44,22 @@ target_include_directories(PolynomialRegressionTest PRIVATE "${Teuchos_INCLUDE_D
 target_include_directories(SurrogatesToolsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(EvalMetricsCrossValTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 
-target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
-target_link_libraries(PolynomialRegressionTest PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
-target_link_libraries(SurrogatesToolsTest PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
-target_link_libraries(EvalMetricsCrossValTest PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
+target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates
+  ${Teuchos_LIBRARIES} Boost::filesystem)
+target_link_libraries(PolynomialRegressionTest PRIVATE dakota_surrogates
+  ${Teuchos_LIBRARIES} Boost::filesystem)
+target_link_libraries(SurrogatesToolsTest PRIVATE dakota_surrogates
+  ${Teuchos_LIBRARIES})
+target_link_libraries(EvalMetricsCrossValTest PRIVATE dakota_surrogates
+  ${Teuchos_LIBRARIES})
 
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/gp_test_data"
   "${CMAKE_CURRENT_BINARY_DIR}/gp_test_data"
+  surrogates_unit_test_copied_files
+  )
+
+dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/pr_test_data"
+  "${CMAKE_CURRENT_BINARY_DIR}/pr_test_data"
   surrogates_unit_test_copied_files
   )
 

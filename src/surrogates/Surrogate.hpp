@@ -12,6 +12,16 @@
 #include "DataScaler.hpp"
 #include "util_data_types.hpp"
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <fstream>
+
+
 namespace dakota {
 namespace surrogates {
 
@@ -106,7 +116,17 @@ public:
   virtual void default_options() = 0;
 
   /// DataScaler class for a Surrogate's build samples.
-  std::shared_ptr<util::DataScaler> dataScaler;
+  util::DataScaler dataScaler;
+
+  /// serialize Surrogate (derived type only) to file
+  template<typename DerivedSurr>
+  static void save(const DerivedSurr& surr_out, const std::string& outfile,
+		   const bool binary);
+
+  /// serialize Surrogate (derived type only) from file
+  template<typename DerivedSurr>
+  static void load(const std::string& infile, const bool binary,
+		   DerivedSurr& pr4);
 
   /// Evalute metrics at specified points (within surrogates)
   VectorXd evaluate_metrics(const StringArray &mnames,
@@ -147,9 +167,88 @@ protected:
   /// clone derived Surrogate class for use in cross-validation
   virtual std::shared_ptr<Surrogate> clone() const = 0;
 
+
+private:
+
+  /// Allow serializers access to private class data
+  friend class boost::serialization::access;
+  /// Serializer for base class data (call from dervied with base_object)
+  template<class Archive>
+  void serialize(Archive& archive, const unsigned int version);
+
 };
+
+
+template<typename DerivedSurr>
+void Surrogate::save(const DerivedSurr& surr_out, const std::string& outfile,
+		     const bool binary)
+{
+  if (binary) {
+    std::ofstream model_ostream(outfile, std::ios::out|std::ios::binary);
+    if (!model_ostream.good())
+      throw std::runtime_error("Failure opening model file '" + outfile +
+			       "' for binary save.");
+
+    boost::archive::binary_oarchive output_archive(model_ostream);
+    output_archive << surr_out;
+    std::cout << "Model saved to binary file '" << outfile << "'."
+	      << std::endl;
+  }
+  else {
+    std::ofstream model_ostream(outfile, std::ios::out);
+    if (!model_ostream.good())
+      throw std::runtime_error("Failure opening model file '" + outfile +
+			       "' for save.");
+    boost::archive::text_oarchive output_archive(model_ostream);
+    output_archive << surr_out;
+    std::cout << "Model saved to text file '" << outfile << "'."
+	      << std::endl;
+  }
+}
+
+
+template<typename DerivedSurr>
+void Surrogate::load(const std::string& infile, const bool binary,
+		     DerivedSurr& surr_in)
+{
+  if (binary) {
+    std::ifstream model_istream(infile, std::ios::in|std::ios::binary);
+    if (!model_istream.good())
+      throw std::string("Failure opening model file for load.");
+
+    boost::archive::binary_iarchive input_archive(model_istream);
+    input_archive >> surr_in;
+    std::cout << "Model loaded from binary file '" << infile << "'."
+	      << std::endl;
+  }
+  else {
+    std::ifstream model_istream(infile, std::ios::in);
+    if (!model_istream.good())
+      throw std::string("Failure opening model file for load.");
+
+    boost::archive::text_iarchive input_archive(model_istream);
+    input_archive >> surr_in;
+    std::cout << "Model loaded from text file." << std::endl;
+  }
+}
+
+
+template<class Archive>
+void Surrogate::serialize(Archive& archive, const unsigned int version)
+{
+  // For future extension such as archiving final config options (will
+  // require writing a serializer that maps to ParameterList
+  // serialization)
+  archive & dataScaler;
+  archive & numSamples;
+  archive & numVariables;
+  //archive & configOptions;
+}
 
 } // namespace surrogates
 } // namespace dakota
+
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(dakota::surrogates::Surrogate)
 
 #endif // include guard
