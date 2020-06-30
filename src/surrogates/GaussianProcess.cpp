@@ -491,6 +491,8 @@ void GaussianProcess::default_options()
   defaultConfigOptions.sublist("Trend").sublist("Options")
                       .set("max degree", 2, "Maximum polynomial order");
   defaultConfigOptions.sublist("Trend").sublist("Options")
+                      .set("reduced basis", false, "Use Reduced Basis");
+  defaultConfigOptions.sublist("Trend").sublist("Options")
                       .set("p-norm", 1.0, "P-Norm in hyperbolic cross");
   defaultConfigOptions.sublist("Trend").sublist("Options")
                       .set("scaler type", "none", "Type of data scaling");

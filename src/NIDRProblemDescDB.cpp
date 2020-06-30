@@ -7351,6 +7351,7 @@ static Model_mp_lit
 	MP2(surrogateType,local_taylor),
         MP2(surrogateType,multipoint_qmea),
         MP2(surrogateType,multipoint_tana),
+        MP2(trendOrder,none),
         MP2(trendOrder,constant),
         MP2(trendOrder,linear),
         MP2(trendOrder,reduced_quadratic),

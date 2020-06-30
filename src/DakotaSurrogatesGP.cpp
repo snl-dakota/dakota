@@ -38,7 +38,12 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 1);
   else if (trend_string == "quadratic")
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
-  else
+  else if (trend_string == "reduced_quadratic")
+  {
+    surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
+    surrogateOpts.sublist("Trend").sublist("Options").set("reduced basis", true);
+  }
+  else if (trend_string == "none")
     surrogateOpts.sublist("Trend").set("estimate trend", false);
 
   // TODO: Surfpack find_nugget is an integer; likely want bool or
