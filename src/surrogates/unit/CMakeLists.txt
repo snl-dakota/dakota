@@ -36,6 +36,9 @@ dakota_add_unit_test(NAME SurrogatesToolsTest SOURCES
 dakota_add_unit_test(NAME EvalMetricsCrossValTest SOURCES
   teuchos_unit_test_driver.cpp
   EvalMetricsCrossValTest.cpp
+  # To force linking against fortran runtime needed to teuchosnumerics
+  # dependence on BLAS/LAPACK (TODO: root cause the link chain)
+  empty.f90
 )
 
 # BMA NOTE: I think we only need state the immediate deps? So no dakota_util
