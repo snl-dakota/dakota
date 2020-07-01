@@ -116,7 +116,7 @@ Environment::Environment()
     derived type by get_environment() is not necessary in this case. */
 Environment::Environment(int argc, char* argv[]):
   // set the rep pointer to the appropriate environment type
-  environmentRep(new ExecutableEnvironment(argc, argv))
+  environmentRep(std::make_shared<ExecutableEnvironment>(argc, argv))
 {
   if ( !environmentRep ) // insufficient memory
     abort_handler(-1);
@@ -128,7 +128,7 @@ Environment::Environment(int argc, char* argv[]):
 Environment::
 Environment(ProgramOptions prog_opts): 
   // set the rep pointer to the appropriate environment type
-  environmentRep(new LibraryEnvironment(prog_opts))
+  environmentRep(std::make_shared<LibraryEnvironment>(prog_opts))
 {
   if ( !environmentRep ) // insufficient memory
     abort_handler(-1);
@@ -140,7 +140,7 @@ Environment(ProgramOptions prog_opts):
 Environment::
 Environment(MPI_Comm dakota_mpi_comm, ProgramOptions prog_opts): 
   // set the rep pointer to the appropriate environment type
-  environmentRep(new LibraryEnvironment(dakota_mpi_comm, prog_opts))
+  environmentRep(std::make_shared<LibraryEnvironment>(dakota_mpi_comm, prog_opts))
 {
   if ( !environmentRep ) // insufficient memory
     abort_handler(-1);
