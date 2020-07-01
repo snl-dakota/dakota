@@ -80,8 +80,8 @@ void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
   // BMA TODO: Check for null in case not yet built?!?
   String func_description = approxLabel.empty() ?
     "function " + std::to_string(fn_index+1) : approxLabel;
-  SharedSurfpackApproxData* shared_surf_data_rep
-    = (SharedSurfpackApproxData*)sharedDataRep;
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   StringArray diag_set = shared_surf_data_rep->diagnosticSet;
 
   // conditionally print default diagnostics
@@ -128,8 +128,8 @@ challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
 {
   String func_description = approxLabel.empty() ?
     "function " + std::to_string(fn_index+1) : approxLabel;
-  StringArray diag_set =
-    ((SharedSurfpackApproxData*)sharedDataRep)->diagnosticSet;
+  StringArray diag_set = std::static_pointer_cast<SharedSurfpackApproxData>
+    (sharedDataRep)->diagnosticSet;
 
   // conditionally print default diagnostics
   if (diag_set.empty() && sharedDataRep->outputLevel > NORMAL_OUTPUT)
@@ -182,7 +182,7 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
   RealArray x(num_v);
   Eigen::Map<VectorXd> x_eig(x.data(), num_v);
   for (size_t i=0; i<num_pts; ++i) {
-    ((SharedSurfpackApproxData*)sharedDataRep)->
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
       sdv_to_realarray(sdv_array[i], x);
     vars.row(i) = x_eig;
     resp(i,0) = sdr_array[i].response_function();
@@ -193,7 +193,8 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
 Real SurrogatesBaseApprox::value(const Variables& vars)
 {
   RealVector x_rv(sharedDataRep->numVars);
-  ((SharedSurfpackApproxData*)sharedDataRep)->vars_to_realarray(vars, x_rv);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_rv);
   return value(x_rv);
 }
 
@@ -201,7 +202,8 @@ Real SurrogatesBaseApprox::value(const Variables& vars)
 const RealVector& SurrogatesBaseApprox::gradient(const Variables& vars)
 {
   RealVector x_rv(sharedDataRep->numVars);
-  ((SharedSurfpackApproxData*)sharedDataRep)->vars_to_realarray(vars, x_rv);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_rv);
   return gradient(x_rv);
 }
 

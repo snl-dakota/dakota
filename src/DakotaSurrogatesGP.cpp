@@ -70,8 +70,8 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
       "sum_abs", "mean_abs", "max_abs",
       "sum_abs_percent", "mean_abs_percent", // APE, MAPE
       "rsquared" };
-  SharedSurfpackApproxData* shared_surf_data_rep
-    = (SharedSurfpackApproxData*)sharedDataRep;
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   shared_surf_data_rep->validate_metrics(allowed_metrics);
 }
 
