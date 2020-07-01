@@ -13,7 +13,7 @@
 #include "SharedSurfpackApproxData.hpp"
 
 // Headers from Surrogates module
-#include "PolynomialRegression.hpp"
+#include "SurrogatesPolynomialRegression.hpp"
  
 using dakota::MatrixXd;
 

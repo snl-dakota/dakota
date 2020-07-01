@@ -15,7 +15,7 @@
 #include "SharedSurfpackApproxData.hpp"
 
 // Headers from Surrogates module
-#include "Surrogate.hpp"
+#include "SurrogatesBase.hpp"
  
 
 using dakota::MatrixXd;

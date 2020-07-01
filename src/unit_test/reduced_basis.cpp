@@ -370,7 +370,7 @@ TEUCHOS_UNIT_TEST(reduced_basis, truncations)
 #ifdef HAVE_DAKOTA_SURROGATES
 
 #include "DakotaSurrogatesGP.hpp"
-#include "GaussianProcess.hpp"
+#include "SurrogatesGaussianProcess.hpp"
 
 
 // test construction and evaluation of a GP surrogate from data

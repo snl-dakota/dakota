@@ -7,8 +7,8 @@
     _______________________________________________________________________ */
 
 
-#include "GaussianProcess.hpp"
-#include "PolynomialRegression.hpp"
+#include "SurrogatesGaussianProcess.hpp"
+#include "SurrogatesPolynomialRegression.hpp"
 #include <Teuchos_UnitTestHarness.hpp>
 
 

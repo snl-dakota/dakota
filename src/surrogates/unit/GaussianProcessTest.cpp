@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "common_utils.hpp"
-#include "GaussianProcess.hpp"
+#include "util_common.hpp"
+#include "SurrogatesGaussianProcess.hpp"
 #include "surrogates_tools.hpp"
 #include "util_data_types.hpp"
 

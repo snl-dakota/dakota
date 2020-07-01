@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "GP_Objective.hpp"
+#include "SurrogatesGPObjective.hpp"
 
 namespace dakota {
 namespace surrogates {

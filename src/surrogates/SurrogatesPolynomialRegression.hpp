@@ -9,9 +9,9 @@
 #ifndef DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 #define DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 
-#include "DataScaler.hpp"
-#include "LinearSolvers.hpp"
-#include "Surrogate.hpp"
+#include "UtilDataScaler.hpp"
+#include "UtilLinearSolvers.hpp"
+#include "SurrogatesBase.hpp"
 #include "util_data_types.hpp"
 
 #include <boost/serialization/base_object.hpp>

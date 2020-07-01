@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "GaussianProcess.hpp"
-#include "GP_Objective.hpp"
+#include "SurrogatesGaussianProcess.hpp"
+#include "SurrogatesGPObjective.hpp"
 
 #include "ROL_Algorithm.hpp"
 #include "ROL_Bounds.hpp"

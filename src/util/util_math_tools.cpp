@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "common_utils.hpp"
+#include "util_common.hpp"
 #include "util_math_tools.hpp"
 
 #include <boost/random/mersenne_twister.hpp>

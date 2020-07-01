@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "PolynomialRegression.hpp"
+#include "SurrogatesPolynomialRegression.hpp"
 #include "surrogates_tools.hpp"
 
 #include "Teuchos_XMLParameterListCoreHelpers.hpp"

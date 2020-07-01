@@ -9,9 +9,9 @@
 #ifndef DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 #define DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 
-#include "DataScaler.hpp"
-#include "PolynomialRegression.hpp"
-#include "Surrogate.hpp"
+#include "UtilDataScaler.hpp"
+#include "SurrogatesPolynomialRegression.hpp"
+#include "SurrogatesBase.hpp"
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/vector.hpp>

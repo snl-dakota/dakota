@@ -9,7 +9,7 @@
 #ifndef DAKOTA_SURROGATES_TOOLS_HPP
 #define DAKOTA_SURROGATES_TOOLS_HPP
 
-#include "Surrogate.hpp"
+#include "SurrogatesBase.hpp"
 #include "util_data_types.hpp"
 
 namespace dakota {

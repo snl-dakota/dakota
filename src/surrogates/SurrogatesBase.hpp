@@ -6,10 +6,10 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DAKOTA_SURROGATES_SURROGATE_HPP
-#define DAKOTA_SURROGATES_SURROGATE_HPP
+#ifndef DAKOTA_SURROGATES_BASE_HPP
+#define DAKOTA_SURROGATES_BASE_HPP
 
-#include "DataScaler.hpp"
+#include "UtilDataScaler.hpp"
 #include "util_data_types.hpp"
 
 #include <boost/serialization/serialization.hpp>

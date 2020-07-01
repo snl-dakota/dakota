@@ -13,7 +13,7 @@
 #include "SharedSurfpackApproxData.hpp"
 
 // Headers from Surrogates module
-#include "GaussianProcess.hpp"
+#include "SurrogatesGaussianProcess.hpp"
  
 using dakota::VectorXd;
 using dakota::MatrixXd;

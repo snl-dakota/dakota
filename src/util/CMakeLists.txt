@@ -11,18 +11,18 @@
 #project(DakotaUtil LANGUAGES CXX)
 
 set(util_sources
-  common_utils.cpp
-  DataScaler.cpp
-  LinearSolvers.cpp
-  metrics.cpp
+  util_common.cpp
+  UtilDataScaler.cpp
+  UtilLinearSolvers.cpp
+  util_metrics.cpp
   util_math_tools.cpp
   )
 
 set(util_headers
-  common_utils.hpp
-  DataScaler.hpp
-  LinearSolvers.hpp
-  metrics.hpp
+  util_common.hpp
+  UtilDataScaler.hpp
+  UtilLinearSolvers.hpp
+  util_metrics.hpp
   util_data_types.hpp
   util_eigen_plugins.hpp
   util_math_tools.hpp
