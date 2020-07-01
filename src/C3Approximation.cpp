@@ -172,131 +172,184 @@ void C3Approximation::build()
   Approximation::build();
 
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  if (data_rep->adaptConstruct) {
-    Cerr << "Error: Adaptive construction not yet implemented in "
-	 << "C3Approximation." << std::endl;
-    abort_handler(APPROX_ERROR);
+  //if (data_rep->adaptConstruct) {
+  //  Cerr << "Error: Adaptive construction not yet implemented in "
+  //	   << "C3Approximation." << std::endl;
+  //  abort_handler(APPROX_ERROR);
+  //}
+
+  // -----------------------
+  // Set up C3 FT regression
+  // -----------------------
+
+  size_t i, j, num_v = sharedDataRep->numVars, kick_r = data_rep->kickRank,
+    max_r = data_rep->max_rank(), // bounds CV candidates for adapt_rank
+    start_r = std::min(data_rep->start_rank(), max_r);
+  SizetVector start_ranks(num_v+1);
+  start_ranks(0) = 1;     start_ranks(num_v) = 1;
+  for (i=1; i<num_v; ++i) start_ranks(i) = start_r;
+
+  struct FTRegress * ftr = ft_regress_alloc(num_v, data_rep->multiApproxOpts,
+					    start_ranks.values());
+
+  if (data_rep->regressType == FT_RLS2) {
+    ft_regress_set_alg_and_obj(ftr, AIO, FTLS_SPARSEL2);
+    // reg param is required (no reasonable default due to scaling)
+    ft_regress_set_regularization_weight(ftr, data_rep->regressRegParam);
   }
-  else {
-    size_t i, j, num_v = sharedDataRep->numVars, kick_r = data_rep->kickRank,
-      max_r = data_rep->max_rank(), // bounds CV candidates for adapt_rank
-      start_r = std::min(data_rep->start_rank(), max_r);
-    SizetVector start_ranks(num_v+1);
-    start_ranks(0) = 1;     start_ranks(num_v) = 1;
-    for (i=1; i<num_v; ++i) start_ranks(i) = start_r;
+  else // default
+    ft_regress_set_alg_and_obj(ftr, AIO, FTLS);
 
-    struct FTRegress * ftr = ft_regress_alloc(num_v, data_rep->multiApproxOpts,
-					      start_ranks.values());
+  size_t r_adapt = data_rep->adaptRank ? 1 : 0;
+  ft_regress_set_adapt(ftr, r_adapt);
+  if (r_adapt) {
+    ft_regress_set_kickrank(ftr, kick_r); // default is 1
 
-    if (data_rep->regressType == FT_RLS2) {
-      ft_regress_set_alg_and_obj(ftr, AIO, FTLS_SPARSEL2);
-      // reg param is required (no reasonable default due to scaling)
-      ft_regress_set_regularization_weight(ftr, data_rep->regressRegParam);
-    }
-    else // default
-      ft_regress_set_alg_and_obj(ftr, AIO, FTLS);
+    // if not user-specified, use internal C3 default (in src/lib_superlearn/
+    // regress.c, maxrank = 10 assigned in ft_regress_alloc())
+    // > default could become an issue for UNIFORM_START_RANK advancement
+    if (max_r != std::numeric_limits<size_t>::max())
+      ft_regress_set_maxrank(ftr, max_r);
 
-    size_t r_adapt = data_rep->adaptRank ? 1 : 0;
-    ft_regress_set_adapt(ftr, r_adapt);
-    if (r_adapt) {
-      ft_regress_set_kickrank(ftr, kick_r); // default is 1
+    ft_regress_set_kfold(ftr, 5);//kfold);//match Alex's Python (C3 default=3)
+  }
+  ft_regress_set_roundtol(ftr, data_rep->solverRoundingTol);
+  short output_lev = data_rep->outputLevel;
+  if (output_lev > NORMAL_OUTPUT)
+    ft_regress_set_verbose(ftr, 1); // helpful adapt_rank diagnostics
 
-      // if not user-specified, use internal C3 default (in src/lib_superlearn/
-      // regress.c, maxrank = 10 assigned in ft_regress_alloc())
-      // > default could become an issue for UNIFORM_START_RANK advancement
-      if (max_r != std::numeric_limits<size_t>::max())
-	ft_regress_set_maxrank(ftr, max_r);
+  // -------------------
+  // Set up C3 optimizer
+  // -------------------
 
-      ft_regress_set_kfold(ftr, 5);//kfold);//match Alex's Python (C3 default=3)
-    }
-    ft_regress_set_roundtol(ftr, data_rep->solverRoundingTol);
-    short output_lev = data_rep->outputLevel;
-    if (output_lev > NORMAL_OUTPUT)
-      ft_regress_set_verbose(ftr, 1); // helpful adapt_rank diagnostics
+  struct c3Opt* optimizer = c3opt_create(BFGS);
+  int max_solver_iter = data_rep->maxSolverIterations;
+  if (max_solver_iter >= 0) { // Dakota default is -1 -> leave at C3 default
+    c3opt_set_maxiter(   optimizer, max_solver_iter);
+    c3opt_ls_set_maxiter(optimizer, max_solver_iter); // line search
+  }
+  c3opt_set_gtol   (optimizer, data_rep->solverTol);
+  c3opt_set_relftol(optimizer, data_rep->solverTol);
+  double absxtol = 1e-30;//1e-10; // match Alex's Python
+  c3opt_set_absxtol(optimizer, absxtol);
+  if (output_lev >= DEBUG_OUTPUT)
+    c3opt_set_verbose(optimizer, 1); // per opt iter diagnostics (a bit much)
 
-    struct c3Opt* optimizer = c3opt_create(BFGS);
-    int max_solver_iter = data_rep->maxSolverIterations;
-    if (max_solver_iter >= 0) { // Dakota default is -1 -> leave at C3 default
-      c3opt_set_maxiter(   optimizer, max_solver_iter);
-      c3opt_ls_set_maxiter(optimizer, max_solver_iter); // line search
-    }
-    c3opt_set_gtol   (optimizer, data_rep->solverTol);
-    c3opt_set_relftol(optimizer, data_rep->solverTol);
-    double absxtol = 1e-30;//1e-10; // match Alex's Python
-    c3opt_set_absxtol(optimizer, absxtol);
-    if (output_lev >= DEBUG_OUTPUT)
-      c3opt_set_verbose(optimizer, 1); // per opt iter diagnostics (a bit much)
+  // free if previously built
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  ftp.free_all();
 
-    // free if previously built
-    C3FnTrainPtrs& ftp = levApproxIter->second;
-    ftp.free_all();
+  // ---------------------
+  // Pack FT training data
+  // ---------------------
 
-    if (data_rep->crossVal) // future capability for poly orders
-      Cerr << "Warning: CV is not yet implemented in C3Approximation.  "
-	   << "Ignoring CV request.\n";
+  const Pecos::SDVArray& sdv_array = approxData.variables_data();
+  const Pecos::SDRArray& sdr_array = approxData.response_data();
+  size_t ndata = approxData.points();
 
-    const Pecos::SDVArray& sdv_array = approxData.variables_data();
-    const Pecos::SDRArray& sdr_array = approxData.response_data();
-    size_t ndata = approxData.points();
-
-    // Training data for 1 QoI: transfer data from approxData to double* for C3
-    double* xtrain = (double*)calloc(num_v*ndata, sizeof(double)); // vars
-    double* ytrain = (double*)calloc(ndata,       sizeof(double)); // QoI
-    for (i=0; i<ndata; ++i) {
-      const RealVector& c_vars = sdv_array[i].continuous_variables();
-      for (j=0; j<num_v; j++)
-	xtrain[j + i*num_v] = c_vars[j];
-      ytrain[i] = sdr_array[i].response_function();
-    }
+  // Training data for 1 QoI: transfer data from approxData to double* for C3
+  double* xtrain = (double*)calloc(num_v*ndata, sizeof(double)); // vars
+  double* ytrain = (double*)calloc(ndata,       sizeof(double)); // QoI
+  for (i=0; i<ndata; ++i) {
+    const RealVector& c_vars = sdv_array[i].continuous_variables();
+    for (j=0; j<num_v; j++)
+      xtrain[j + i*num_v] = c_vars[j];
+    ytrain[i] = sdr_array[i].response_function();
+  }
 #ifdef DEBUG
-    RealMatrix  in(Teuchos::View, xtrain, num_v, num_v, ndata);
-    RealVector out(Teuchos::View, ytrain, ndata);
-    Cout << "C3 training data:\n" << in << out << std::endl;
+  RealMatrix  in(Teuchos::View, xtrain, num_v, num_v, ndata);
+  RealVector out(Teuchos::View, ytrain, ndata);
+  Cout << "C3 training data:\n" << in << out << std::endl;
 #endif // DEBUG
 
-    // Build FT model
-    ft_regress_set_seed(ftr, data_rep->randomSeed);
-    struct FunctionTrain * ft
-      = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
-    ftp.function_train(ft);
-    // Important distinction among derivative cases:
-    // > expansionCoeffGradFlag: expansions of derivs w.r.t. inactive/non-build/
-    //   non-random vars (not yet supported, but would be managed here)
-    // > derivative-enhanced regression (derivs w.r.t. active/build vars;
-    //   not yet supported, but would be managed here)
-    // > evaluation of derivs of expansions w.r.t. build variables: build a
-    //   separate FT expansion by differentiating the value-based expansion;
-    //   these new functions that can then be interrogated at particular points.
-    //   >> This _is_ currently supported, but rather than precomputing based
-    //      on flags / potential for future deriv evals, compute derivative
-    //      expansions on demand using helper fns within evaluators
-    //if (...supportDerivEvals...) {
-    //  struct FT1DArray * ftg = function_train_gradient(ft);
-    //  ftp.ft_gradient(ftg);
-    //  ftp.ft_hessian(ft1d_array_jacobian(ftg));
-    //}
-    if (data_rep->outputLevel > SILENT_OUTPUT) {
-      Cout << "\nFunction train build() results:\n  Ranks ";
-      if (data_rep->adaptRank)
-	Cout << "(adapted with start = " << start_r << " kick = " << kick_r
-	     << " max = " << max_r << "):\n";
-      else Cout << "(non-adapted):\n";
-      write_data(Cout, function_train_get_ranks(ft), num_v+1);
-      Cout << "  Polynomial order (non-adapted):\n";
-      std::vector<OneApproxOpts*> opts = data_rep->oneApproxOpts;
-      for (i=0; i<num_v; ++i)
-	Cout << "                     " << std::setw(write_precision+7)
-	     << one_approx_opts_get_nparams(opts[i]) - 1 << '\n';
-      Cout << "  C3 regression size:  " << function_train_get_nparams(ft)
-	   << std::endl;
-    }
+  // ---------------------------------------
+  // Configure outer loop CV for basis order
+  // ---------------------------------------
+  // > separate from adapt_rank inner loop: one/both/neither can be used
 
-    // free approximation stuff
-    free(xtrain);          xtrain    = NULL;
-    free(ytrain);          ytrain    = NULL;
-    ft_regress_free(ftr);  ftr       = NULL;
-    c3opt_free(optimizer); optimizer = NULL;
+  if (data_rep->adaptOrder) { // CV for basis orders, with/without adapt_rank
+
+    // initialize cross validation options
+    size_t kfold = ndata; //-1; // max number of folds for leave 1 out CV
+    int cvverbose = (output_lev >= DEBUG_OUTPUT) ? 1 : 0;  // verbosity
+    struct CrossValidate * cv
+      = cross_validate_init(ndata, num_v, xtrain, ytrain, kfold, cvverbose);
+
+    // example of a cross validation run with extractor error (don't need this
+    // if running over grid)
+    //double err = cross_validate_run(cv,ftr,optimizer);
+
+    // set up a grid over which to search for the best parameters
+    unsigned short kick_ord = data_rep->kickOrder,
+        max_ord = data_rep->max_order(),
+      start_ord = find_max(data_rep->start_orders()); // flatten dim_pref
+    size_t num_opts = 1 + (max_ord - start_ord) / kick_ord;
+    SizetArray np_opts(num_opts);
+    np_opts[0] = start_ord + 1; // offset by 1 for nparams
+    for (i=1; i<num_opts; ++i)
+      np_opts[i] = np_opts[i-1] + kick_ord;
+
+    struct CVOptGrid * cvgrid = cv_opt_grid_init(1); // CV over one parameter
+    cv_opt_grid_set_verbose(cvgrid, cvverbose);
+    // cross validate over "num_param", choose from options given in np_opts
+    String cv_target("num_param");
+    cv_opt_grid_add_param(cvgrid, &cv_target[0], num_opts, &np_opts[0]); 
+
+    // run cross validation with ftr setup
+    cross_validate_grid_opt(cv, cvgrid, ftr, optimizer);
+
+    // free the cross validation grid and cross validator
+    cv_opt_grid_free(cvgrid); cross_validate_free(cv);
   }
+
+  // -------------------------------------------
+  // Solve the regression problem to form the FT
+  // -------------------------------------------
+  // > if CV active above, this uses the final CV config with the full data set
+
+  // Build FT model (using full data set, as compared to best config identified
+  // using partial fold data in CV)
+  ft_regress_set_seed(ftr, data_rep->randomSeed);
+  struct FunctionTrain * ft
+    = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
+  ftp.function_train(ft);
+  // Important distinction among derivative cases:
+  // > expansionCoeffGradFlag: expansions of derivs w.r.t. inactive/non-build/
+  //   non-random vars (not yet supported, but would be managed here)
+  // > derivative-enhanced regression (derivs w.r.t. active/build vars;
+  //   not yet supported, but would be managed here)
+  // > evaluation of derivs of expansions w.r.t. build variables: build a
+  //   separate FT expansion by differentiating the value-based expansion;
+  //   these new functions that can then be interrogated at particular points.
+  //   >> This _is_ currently supported, but rather than precomputing based
+  //      on flags / potential for future deriv evals, compute derivative
+  //      expansions on demand using helper fns within evaluators
+  //if (...supportDerivEvals...) {
+  //  struct FT1DArray * ftg = function_train_gradient(ft);
+  //  ftp.ft_gradient(ftg);
+  //  ftp.ft_hessian(ft1d_array_jacobian(ftg));
+  //}
+  if (data_rep->outputLevel > SILENT_OUTPUT) {
+    Cout << "\nFunction train build() results:\n  Ranks ";
+    if (data_rep->adaptRank)
+      Cout << "(adapted with start = " << start_r << " kick = " << kick_r
+	   << " max = " << max_r << "):\n";
+    else Cout << "(non-adapted):\n";
+    write_data(Cout, function_train_get_ranks(ft), num_v+1);
+    Cout << "  Polynomial order (non-adapted):\n";
+    std::vector<OneApproxOpts*> opts = data_rep->oneApproxOpts;
+    for (i=0; i<num_v; ++i)
+      Cout << "                     " << std::setw(write_precision+7)
+	   << one_approx_opts_get_nparams(opts[i]) - 1 << '\n';
+    Cout << "  C3 regression size:  " << function_train_get_nparams(ft)
+	 << std::endl;
+  }
+
+  // free approximation stuff
+  free(xtrain);          xtrain    = NULL;
+  free(ytrain);          ytrain    = NULL;
+  ft_regress_free(ftr);  ftr       = NULL;
+  c3opt_free(optimizer); optimizer = NULL;
 }
 
 

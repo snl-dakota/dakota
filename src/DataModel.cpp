@@ -52,9 +52,10 @@ DataModelRep::DataModelRep():
   subspaceIdCVMethod(CV_ID_DEFAULT), regressionType(FT_LS),
   regressionL2Penalty(0.), maxSolverIterations(-1), maxCrossIterations(1),
   solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
-  tensorGridFlag(false), startOrder(2), maxOrder(USHRT_MAX),
-  startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
-  adaptRank(false), c3RefineType(NO_C3_REFINEMENT),
+  tensorGridFlag(false), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
+  adaptOrder(false), startRank(2), kickRank(1),
+  maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
+  c3RefineType(NO_C3_REFINEMENT),
   collocationPoints(std::numeric_limits<size_t>::max()), collocationRatio(0.),
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   autoRefine(false), maxFunctionEvals(1000),
@@ -98,7 +99,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << subspaceDimension << subspaceNormalization << numReplicates
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
-    << tensorGridFlag << startOrder << maxOrder
+    << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
     << startRank << kickRank << maxRank << adaptRank << c3RefineType
     << collocationPoints << collocationRatio
     << refinementType << refinementControl
@@ -145,7 +146,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> subspaceDimension >> subspaceNormalization >> numReplicates
     >> regressionType >> regressionL2Penalty >> maxSolverIterations
     >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
-    >> tensorGridFlag >> startOrder >> maxOrder
+    >> tensorGridFlag >> startOrder >> kickOrder >> maxOrder >> adaptOrder
     >> startRank >> kickRank >> maxRank >> adaptRank >> c3RefineType
     >> collocationPoints >> collocationRatio
     >> refinementType >> refinementControl
@@ -192,7 +193,7 @@ void DataModelRep::write(std::ostream& s) const
     << subspaceDimension << subspaceNormalization << numReplicates
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
-    << tensorGridFlag << startOrder << maxOrder
+    << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
     << startRank << kickRank << maxRank << adaptRank << c3RefineType
     << collocationPoints << collocationRatio
     << refinementType << refinementControl

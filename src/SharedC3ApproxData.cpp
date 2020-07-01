@@ -27,7 +27,9 @@ namespace Dakota {
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   SharedApproxData(BaseConstructor(), problem_db, num_vars),
+  kickOrder(problem_db.get_ushort("model.c3function_train.kick_order")),
   maxOrder(problem_db.get_ushort("model.c3function_train.max_order")),
+  adaptOrder(problem_db.get_bool("model.c3function_train.adapt_order")),
   startRank(problem_db.get_sizet("model.c3function_train.start_rank")),
   kickRank(problem_db.get_sizet("model.c3function_train.kick_rank")),
   maxRank(problem_db.get_sizet("model.c3function_train.max_rank")),
@@ -42,7 +44,8 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
-  adaptConstruct(false), crossVal(false), c3RefineType(NO_C3_REFINEMENT)
+  //adaptConstruct(false),
+  c3RefineType(NO_C3_REFINEMENT)
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
@@ -69,12 +72,13 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars, data_order,
 		   output_level),
   // default values overridden by set_parameter
-  startOrders(approx_order), maxOrder(USHRT_MAX), startRank(2), kickRank(1),
+  startOrders(approx_order), kickOrder(1), maxOrder(USHRT_MAX),
+  adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
-  crossMaxIter(5), maxSolverIterations(-1), adaptConstruct(false),
-  crossVal(false), c3RefineType(NO_C3_REFINEMENT)
+  maxSolverIterations(-1), crossMaxIter(5), //adaptConstruct(false),
+  c3RefineType(NO_C3_REFINEMENT)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)

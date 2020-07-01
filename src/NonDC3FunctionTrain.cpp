@@ -331,7 +331,7 @@ initialize_c3_start_orders(const UShortArray& start_orders)
   // These are passed in since they may be a scalar or part of a sequence:
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->set_parameter("start_poly_order", start_orders);
+  shared_data_rep->set_parameter("start_order", start_orders);
 }
 
 
@@ -345,6 +345,10 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
     uSpaceModel.shared_approximation().data_rep();
 
   // These are pulled from the DB as they are always scalars:
+  shared_data_rep->set_parameter("kick_order",
+    probDescDB.get_ushort("method.nond.c3function_train.kick_order"));
+  shared_data_rep->set_parameter("adapt_order",
+    probDescDB.get_bool("method.nond.c3function_train.adapt_order"));
   shared_data_rep->set_parameter("kick_rank",
     probDescDB.get_sizet("method.nond.c3function_train.kick_rank"));
   shared_data_rep->set_parameter("adapt_rank",
@@ -367,12 +371,30 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
   short comb_type = Pecos::ADD_COMBINE;// for now; pass short (enum = ambiguous)
   shared_data_rep->set_parameter("combine_type",     comb_type);
 
-  shared_data_rep->set_parameter("max_poly_order",   maxOrderSpec);
+  shared_data_rep->set_parameter("max_order",        maxOrderSpec);
   shared_data_rep->set_parameter("max_rank",         maxRankSpec);
   shared_data_rep->set_parameter("random_seed",      randomSeed);
   shared_data_rep->set_parameter("discrepancy_type", multilevDiscrepEmulation);
   shared_data_rep->set_parameter("alloc_control",    multilevAllocControl);
   shared_data_rep->set_parameter("refinement_type",  c3RefineType); 
+}
+
+
+void NonDC3FunctionTrain::push_c3_start_orders(const UShortArray& start_orders)
+{
+  // These are passed in since they may be a scalar or part of a sequence:
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->set_active_parameter("start_order", start_orders);
+}
+
+
+void NonDC3FunctionTrain::push_c3_max_order(unsigned short max_order)
+{
+  // rank is passed in since they may be a scalar or part of a sequence:
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->set_active_parameter("max_order", max_order);
 }
 
 
@@ -391,15 +413,6 @@ void NonDC3FunctionTrain::push_c3_max_rank(size_t max_rank)
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   shared_data_rep->set_active_parameter("max_rank", max_rank);
-}
-
-
-void NonDC3FunctionTrain::push_c3_start_orders(const UShortArray& start_orders)
-{
-  // These are passed in since they may be a scalar or part of a sequence:
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->set_active_parameter("start_poly_order", start_orders);
 }
 
 

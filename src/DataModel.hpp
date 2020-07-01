@@ -397,8 +397,12 @@ public:
   bool tensorGridFlag;
   /// starting polynomial order
   unsigned short startOrder;
+  /// polynomial order increment when adapting
+  unsigned short kickOrder;
   /// maximum order of basis polynomials
   unsigned short maxOrder;
+  /// whether or not to adapt order by cross validation
+  bool adaptOrder;
   /// starting rank
   size_t startRank;
   /// rank increase increment

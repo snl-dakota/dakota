@@ -106,6 +106,9 @@ protected:
   /// Publish configuration data for initial function train cores, prior to
   /// any adaptation
   void push_c3_start_orders(const UShortArray& start_orders);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_max_order(unsigned short max_order);
   /// Publish random seed for internal C3 use
   void push_c3_seed(int seed);
 

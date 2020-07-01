@@ -6855,6 +6855,7 @@ static unsigned short
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
         MP_(expansionOrder),
+        MP_(kickOrder),
         MP_(maxOrder),
         MP_(quadratureOrder),
 	MP_(softConvLimit),
@@ -6922,6 +6923,7 @@ static StringArray
 
 static bool
 	MP_(adaptExpDesign),
+        MP_(adaptOrder),
 	MP_(adaptPosteriorRefine),
         MP_(adaptRank),
 	MP_(backfillFlag),
@@ -7477,6 +7479,7 @@ static StringArray
         MP_(secondaryVarMaps);
 
 static bool
+        MP_(adaptOrder),
         MP_(adaptRank),
 	MP_(autoRefine),
 	MP_(crossValidateFlag),
@@ -7504,6 +7507,7 @@ static bool
 static unsigned short
 	MP_(adaptedBasisSparseGridLev),
 	MP_(adaptedBasisExpOrder),
+	MP_(kickOrder),
 	MP_(maxOrder),
 	MP_(startOrder);
 
