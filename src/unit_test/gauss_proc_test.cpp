@@ -309,7 +309,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp, reduced_quadratic)
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-9 );
+      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
     }
   }
 }
