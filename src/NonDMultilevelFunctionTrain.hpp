@@ -112,6 +112,10 @@ private:
   void push_c3_active(const UShortArray& orders);
   void push_c3_active();
 
+  /// return the regression size used for different refinement options;
+  /// the index identifies the point in the specification sequence 
+  size_t regression_size(size_t index);
+
   // scale sample profile to retain shape while enforcing an upper bound
   //void scale_profile(..., RealVector& new_N_l);
 

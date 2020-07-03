@@ -161,9 +161,9 @@ update_basis(const UShortArray& start_orders, unsigned short max_order)
   size_t np, max_np = max_order; ++max_np; // no overflow (default is USHRT_MAX)
   for (size_t v=0; v<numVars; ++v) {
     struct OneApproxOpts*& a_opts = oneApproxOpts[v];
-    np = std::min((size_t)start_orders[v] + 1, max_np);
-    one_approx_opts_set_nparams(a_opts, np);     // updated
-    one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
+    np = (size_t)std::min(start_orders[v], max_order) + 1;
+    one_approx_opts_set_nparams(a_opts, np);
+    one_approx_opts_set_maxnum( a_opts, max_np);
   }
 
   formUpdated[activeKey] = true;
@@ -174,11 +174,11 @@ void SharedC3ApproxData::
 update_basis(size_t v, unsigned short start_order, unsigned short max_order)
 {
   size_t max_np = max_order; ++max_np; // no overflow (default is USHRT_MAX)
-  size_t np = std::min((size_t)start_order + 1, max_np);
+  size_t np = (size_t)std::min(start_order, max_order) + 1;
 
   struct OneApproxOpts*& a_opts = oneApproxOpts[v];
-  one_approx_opts_set_nparams(a_opts, np);     // updated
-  one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
+  one_approx_opts_set_nparams(a_opts, np);
+  one_approx_opts_set_maxnum( a_opts, max_np);
 
   //formUpdated[activeKey] = true; // elevate to clients
 }
@@ -189,16 +189,17 @@ void SharedC3ApproxData::increment_order()
   switch (c3RefineType) {
   case UNIFORM_START_ORDER: {
     UShortArray& start_ord = start_orders();
-    unsigned short max_ord = max_order();
+    unsigned short max_ord = max_order(); // default is USHRT_MAX
     bool incremented = false;
     for (size_t v=0; v<numVars; ++v) {
-      unsigned short &s_ord = start_ord[v];
-      // unconditional increment (preserve symmetry/reproducibility w/decrement)
-      ++s_ord; //s_ord += kickOrder;
-      // default maxOrder is USHRT_MAX.  kickOrder not defined/used (other
-      // expansion order increments (i.e., regression PCE) advance by 1)
-      if (s_ord <= max_ord) // only communicate if in bounds
-	{ incremented = true; update_basis(v, s_ord, max_ord); }
+      unsigned short &s_ord = start_ord[v], prev_ord = s_ord;
+      // unconditional increment (preserve reproducibility w/decrement)
+      // Note: dim_pref ratios are not preserved
+      s_ord += kickOrder;
+      if (prev_ord < max_ord) { // increment occurs, but kick may be truncated
+	incremented = true;
+	update_basis(v, std::min(s_ord, max_ord), max_ord);
+      }
     }
     if (incremented)
       formUpdated[activeKey] = true;
@@ -211,12 +212,27 @@ void SharedC3ApproxData::increment_order()
   case UNIFORM_START_RANK: {
     // To ensure symmetry with decrement, don't saturate at maxRank
     // > Must bound start_ranks vector in C3Approximation::build()
-    size_t& start_r = start_rank();
-    start_r += kickRank;  formUpdated[activeKey] = true;  break;
+    // > build() truncates kick to max: start_ranks = std::min(start_r, max_r) 
+    size_t &start_r = start_rank();
+    if (start_r < max_rank()) // increment occurs but kick might be truncated
+      formUpdated[activeKey] = true;
+    start_r += kickRank; // invertible in decrement_order()
+    break;
   }
   case UNIFORM_MAX_RANK: {
-    size_t& max_r = max_rank();
-    max_r   += kickRank;  formUpdated[activeKey] = true;  break;
+    size_t& max_r = max_rank();     max_r += kickRank;
+    formUpdated[activeKey] = true;  break;
+  }
+  case UNIFORM_MAX_ORDER: {
+    unsigned short& max_o = max_order();  max_o += kickOrder;
+    update_basis(start_orders(), max_o);  formUpdated[activeKey] = true;  break;
+  }
+  case UNIFORM_MAX_RANK_ORDER: {
+    // prior to implementing a multi-index approach, advance both...
+    size_t&         max_r = max_rank();   max_r += kickRank;
+    unsigned short& max_o = max_order();  max_o += kickOrder;
+    update_basis(start_orders(), max_o);  formUpdated[activeKey] = true;
+    break;
   }
   }
 }
@@ -230,36 +246,53 @@ void SharedC3ApproxData::decrement_order()
     // always decrement and only update_basis() if within bounds
     // (preserve symmetry/reproducibility w/ increment)
     UShortArray& start_ord = start_orders();
-    unsigned short max_ord = max_order();
+    unsigned short max_ord = max_order(); // default is USHRT_MAX
     bool decremented = false;
     for (size_t v=0; v<numVars; ++v) {
       unsigned short &s_ord = start_ord[v];
-      if (s_ord) { // prevent underflow (for completeness; should not happen)
-	--s_ord; // preserve symmetry/reproducibility w/increment
+      if (s_ord >= kickOrder) { // for completeness (should not happen)
+	s_ord -= kickOrder; // preserve symmetry/reproducibility w/increment
 	if (s_ord < max_ord) // only communicate if in bounds
 	  { update_basis(v, s_ord, max_ord); decremented = true; }
       }
     }
-    if (decremented) formUpdated[activeKey] = true;
-    else             bad_range = true;
+    if (!decremented) bad_range = true;
     break;
   }
   case UNIFORM_START_RANK: {
     size_t& start_r = start_rank();
-    if (start_r) { start_r -= kickRank; formUpdated[activeKey] = true; }
-    else           bad_range = true;
+    if  (start_r  < kickRank)  bad_range = true;// underflow (should not happen)
+    else start_r -= kickRank;
     break;
   }
-  case UNIFORM_MAX_RANK:
+  case UNIFORM_MAX_RANK: {
     size_t& max_r = max_rank();
-    if (max_r)   { max_r   -= kickRank; formUpdated[activeKey] = true; }
-    else           bad_range = true;
+    if  (max_r  < kickRank)  bad_range = true;  // underflow (should not happen)
+    else max_r -= kickRank;
     break;
+  }
+  case UNIFORM_MAX_ORDER: {
+    unsigned short& max_o = max_order();
+    if    (max_o  < kickOrder)  bad_range = true;
+    else { max_o -= kickOrder;  update_basis(start_orders(), max_o); }
+    break;
+  }
+  case UNIFORM_MAX_RANK_ORDER: {
+    size_t& max_r = max_rank();  unsigned short& max_o = max_order();
+    if (max_r < kickRank || max_o < kickOrder) bad_range = true;
+    else {
+      max_r -= kickRank;
+      max_o -= kickOrder;  update_basis(start_orders(), max_o);
+    }
+    break;
+  }
   }
 
   if (bad_range)
     Cerr << "Warning: SharedC3ApproxData::decrement_order() outside of valid "
 	   << "range for key:\n" << activeKey << std::endl;
+  else
+    formUpdated[activeKey] = true;    
 }
 
 
@@ -280,25 +313,5 @@ void SharedC3ApproxData::pre_combine()
 
 //void SharedC3ApproxData::post_combine()
 //{ update_basis(); } // restore to active
-
-
-size_t SharedC3ApproxData::max_order_regression_size()
-{
-  unsigned short max_o = max_order();
-  UShortArray max_orders; RealVector dim_pref;// isotropic for now (no XML spec)
-  NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
-    dim_pref, numVars, max_orders);
-  return regression_size(numVars, start_rank(), max_rank(), max_orders, max_o);
-}
-
-
-size_t SharedC3ApproxData::max_regression_size()
-{
-  size_t max_r = max_rank();  unsigned short max_o = max_order();
-  UShortArray max_orders; RealVector dim_pref;// isotropic for now (no XML spec)
-  NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
-    dim_pref, numVars, max_orders);
-  return regression_size(numVars, max_r, max_r, max_orders, max_o);
-}
 
 } // namespace Dakota

@@ -137,6 +137,9 @@ private:
   //- Heading: Member function definitions
   //
 
+  /// return the regression size used for different refinement options
+  size_t regression_size();
+
   //static int qoi_eval(size_t num_samp,        // number of evaluations
   // 			const double* var_sets, // num_vars x num_evals
   // 			double* qoi_sets,       // num_fns x num_evals

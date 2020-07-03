@@ -60,16 +60,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Construct u_space_sampler
   // -------------------------
   Iterator u_space_sampler; // evaluates truth model
-  UShortArray orders;
-  // extract (initial) values from sequences
-  configure_expansion_orders(start_order(), dimPrefSpec, orders);
-  size_t regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
-    maxRankSpec : start_rank();
-  size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
-    regression_size(numContinuousVars, regress_rank, maxRankSpec, orders,
-		    maxOrderSpec);
-  if (!config_regression(colloc_pts, regress_size, random_seed(),
-			 u_space_sampler, g_u_model)) {
+  if (!config_regression(collocation_points(), regression_size(sequenceIndex),
+			 random_seed(), u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -82,6 +74,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  UShortArray start_orders;
+  configure_expansion_orders(start_order(), dimPrefSpec, start_orders);
   short corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
   if (!importBuildPointsFile.empty() && pt_reuse.empty())
@@ -92,7 +86,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet mlft_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    mlft_set, approx_type, orders, corr_type, corr_order, data_order,
+    mlft_set, approx_type, start_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, importBuildPointsFile,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
@@ -163,17 +157,9 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  Iterator u_space_sampler;
-  UShortArray orders;
-  // extract (initial) values from sequences
-  configure_expansion_orders(start_order(), dimPrefSpec, orders);
-  size_t regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
-    maxRankSpec : start_rank();
-  size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
-    regression_size(numContinuousVars, regress_rank, maxRankSpec, orders,
-                    maxOrderSpec);
-  if (!config_regression(colloc_pts, regress_size, random_seed(),
-                         u_space_sampler, g_u_model)){
+  Iterator u_space_sampler; // evaluates truth model
+  if (!config_regression(collocation_points(), regression_size(sequenceIndex),
+                         random_seed(), u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -186,6 +172,8 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  UShortArray start_orders;
+  configure_expansion_orders(start_order(), dimPrefSpec, start_orders);
   short corr_order = -1, corr_type = NO_CORRECTION;
   if (!import_build_pts_file.empty()) pt_reuse = "all";
   const ActiveSet& recast_set = g_u_model.current_response().active_set();
@@ -193,7 +181,7 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, orders, corr_type, corr_order, data_order,
+    pce_set, approx_type, start_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, import_build_pts_file, import_build_format,
     import_build_active_only), false);
   initialize_u_space_model();
@@ -208,6 +196,41 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 
 NonDMultilevelFunctionTrain::~NonDMultilevelFunctionTrain()
 { }
+
+
+/** This implementation differs from those in C3Approximation and
+    SharedC3ApproxData in that they are used for sample initialization
+    from specification sequences.  They utilize the most general
+    helper from SharedC3ApproxData. */
+size_t NonDMultilevelFunctionTrain::regression_size(size_t index)
+{
+  size_t regress_size;  UShortArray orders;
+  // compute initial regression size using a static helper
+  // (uSpaceModel.shared_approximation() is not yet available)
+  switch (c3RefineType) {
+  case UNIFORM_MAX_RANK:
+    configure_expansion_orders(start_order(index), dimPrefSpec, orders);
+    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
+      maxRankSpec, maxRankSpec, orders, maxOrderSpec);        break;
+  case UNIFORM_MAX_ORDER:
+    // order anisotropy not supported by adapt_order search:
+    //configure_expansion_orders(maxOrderSpec, dimPrefSpec, orders);
+    orders.assign(numContinuousVars, maxOrderSpec);
+    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
+      start_rank(index), maxRankSpec, orders, maxOrderSpec);    break;
+  case UNIFORM_MAX_RANK_ORDER:
+    // order anisotropy not supported by adapt_order search:
+    //configure_expansion_orders(maxOrderSpec, dimPrefSpec, orders);
+    orders.assign(numContinuousVars, maxOrderSpec);
+    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
+      maxRankSpec, maxRankSpec, orders, maxOrderSpec);          break;
+  default:
+    configure_expansion_orders(start_order(index), dimPrefSpec, orders);
+    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
+      start_rank(index), maxRankSpec, orders, maxOrderSpec);  break;
+  }
+  return regress_size;
+}
 
 
 void NonDMultilevelFunctionTrain::initialize_u_space_model()
@@ -322,19 +345,15 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   // prior to any refinement/adaptation (use local attributes, not the state
   // of SharedC3ApproxData,C3Approximation
 
-  UShortArray orders;
-  configure_expansion_orders(start_order(), dimPrefSpec, orders);
-  push_c3_active(orders); // push active start {orders,rank}, max rank, seed
+  UShortArray start_orders;
+  configure_expansion_orders(start_order(), dimPrefSpec, start_orders);
+  push_c3_active(start_orders); // push active {start,max}{order,rank}, seed
 
   size_t colloc_pts = collocation_points();
   if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined
-    if (collocRatio > 0.) {
-      size_t regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
-	maxRankSpec : start_rank();
-      size_t regress_size = SharedC3ApproxData::regression_size(
-	numContinuousVars, regress_rank, maxRankSpec, orders, maxOrderSpec);
-      numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
-    }
+    if (collocRatio > 0.)
+      numSamplesOnModel
+	= terms_ratio_to_samples(regression_size(sequenceIndex), collocRatio);
     else {
       Cerr << "Error: incomplete specification in NonDMultilevelFunctionTrain"
 	   << "::assign_specification_sequence()." << std::endl;
@@ -344,7 +363,7 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   else
     numSamplesOnModel = colloc_pts;
 
-  update_u_space_sampler(sequenceIndex, orders);
+  update_u_space_sampler(sequenceIndex, start_orders);
 }
 
 
@@ -387,16 +406,9 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 void NonDMultilevelFunctionTrain::
 infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
 {
-  size_t i, num_steps = pilot.size(), regress_i, regress_rank;
-  UShortArray so_i;
-  for (i=0; i<num_steps; ++i) {
-    configure_expansion_orders(start_order(i), dimPrefSpec, so_i);
-    regress_rank = (c3RefineType == UNIFORM_MAX_RANK) ?
-      maxRankSpec : start_rank(i);
-    regress_i = SharedC3ApproxData::regression_size(numContinuousVars,
-      regress_rank, maxRankSpec, so_i, maxOrderSpec);
-    pilot[i] = (size_t)std::floor(collocRatio * (Real)regress_i + .5);
-  }
+  size_t i, num_steps = pilot.size();
+  for (i=0; i<num_steps; ++i)
+    pilot[i] = (size_t)std::floor(collocRatio * (Real)regression_size(i) + .5);
 }
 
 

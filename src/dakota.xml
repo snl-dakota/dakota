@@ -268,9 +268,11 @@
              <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
 	       <keyword  id="uniform4" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
 		 <oneOf label="Uniform Refinement Approach">
-		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}" label="order" />
-		   <!-- <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mdm(type,c3RefineType_UNIFORM_START_RANK)}" label="rank" /> -->
-		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}" label="rank" />
+		   <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mdm(type,c3RefineType_UNIFORM_START_RANK)}" label="refinement by increment in start rank" />
+		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}" label="refinement by increment in start order" />
+		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}" label="refinement by increment in max rank" />
+		   <keyword  id="increment_max_order" name="increment_max_order" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_ORDER)}" label="refinement by increment in max order" />
+		   <keyword  id="increment_max_rank_order" name="increment_max_rank_order" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}" label="refinement by increment in max rank and max order" />
 		 </oneOf>
 	       </keyword>
 	     </keyword>
@@ -847,9 +849,11 @@
              <keyword  id="p_refinement" name="p_refinement" code="{N_mom(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
 	       <keyword  id="uniform4" name="uniform" code="{N_mom(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
 		 <oneOf label="Uniform Refinement Approach">
-		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mom(type,c3RefineType_UNIFORM_START_ORDER)}" label="order" />
-		   <!-- <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mom(type,c3RefineType_UNIFORM_START_RANK)}" label="rank" /> -->
-		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}" label="rank" />
+		   <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mom(type,c3RefineType_UNIFORM_START_RANK)}" label="refinement by increment in start rank" />
+		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mom(type,c3RefineType_UNIFORM_START_ORDER)}" label="refinement by increment in start order" />
+		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}" label="refinement by increment in max rank" />
+		   <keyword  id="increment_max_order" name="increment_max_order" code="{N_mom(type,c3RefineType_UNIFORM_MAX_ORDER)}" label="refinement by increment in max order" />
+		   <keyword  id="increment_max_rank_order" name="increment_max_rank_order" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}" label="refinement by increment in max rank and max order" />
 		 </oneOf>
 	       </keyword>
 	     </keyword>

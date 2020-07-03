@@ -57,20 +57,24 @@ public:
   //- Heading: Member functions
   //
 
+  // *** IMPORTANT NOTE: these regression_size() implementations utilize shared
+  // *** before-build input specification (subject to increment/decrement), not
+  // *** after-build per-QoI details (subject to CV adapt_rank/adapt_order)
+
   /// return number of FT unknowns given scalars: num vars, rank, order
   static size_t regression_size(size_t num_v, size_t rank, size_t max_rank,
 				const UShortArray& orders,
 				unsigned short max_order);
-  /// return number of FT unknowns using numVars, start_rank(), max_rank(),
+  /// return number of FT unknowns using start_rank(), max_rank(),
   /// start_orders(), max_order()
   size_t regression_size();
-  /// return number of FT unknowns using numVars, maximum rank,
-  /// start_orders(), max_order()
+  /// return number of FT unknowns using maximum rank, start_orders(),
+  /// max_order()
   size_t max_rank_regression_size();
-  /// return number of FT unknowns using numVars, start_rank(), max_rank(),
-  /// and maximum orders
+  /// return number of FT unknowns using start_rank(), max_rank(), and
+  /// maximum basis order
   size_t max_order_regression_size();
-  /// return number of FT unknowns using numVars and maximum rank and orders
+  /// return number of FT unknowns using maxima for rank and basis order
   size_t max_regression_size();
 
   /// set UShortArray attribute value based on identifier string
@@ -447,6 +451,36 @@ inline size_t SharedC3ApproxData::max_rank_regression_size()
 {
   size_t max_r = max_rank();
   return regression_size(numVars, max_r, max_r, start_orders(), max_order());
+}
+
+
+inline size_t SharedC3ApproxData::max_order_regression_size()
+{
+  //UShortArray max_orders; RealVector dim_pref;//isotropic for now: no XML spec
+  //NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
+  //  dim_pref, numVars, max_orders);
+
+  // the CV range for adapt_order is currently isotropic, so don't bother with
+  // dim_pref (for now)
+  unsigned short max_o = max_order();
+  UShortArray max_orders(numVars, max_o);
+
+  return regression_size(numVars, start_rank(), max_rank(), max_orders, max_o);
+}
+
+
+inline size_t SharedC3ApproxData::max_regression_size()
+{
+  //UShortArray max_orders; RealVector dim_pref;//isotropic for now: no XML spec
+  //NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
+  //  dim_pref, numVars, max_orders);
+
+  // the CV range for adapt_order is currently isotropic, so don't bother with
+  // dim_pref (for now)
+  size_t max_r = max_rank();  unsigned short max_o = max_order();
+  UShortArray max_orders(numVars, max_o);
+
+  return regression_size(numVars, max_r, max_r, max_orders, max_o);
 }
 
 

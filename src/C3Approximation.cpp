@@ -152,11 +152,23 @@ C3Approximation::~C3Approximation()
 { } // FT memory deallocations managed by C3FnTrainPtrs
 
 
-SizetVector C3Approximation::function_train_ranks()
+void C3Approximation::recover_function_train_ranks(SizetVector& ft_ranks)
 {
-  return SizetVector(Teuchos::View,
+  // returns the recovered ranks, reflecting the latest CV if adapt_rank
+  ft_ranks = SizetVector(Teuchos::View,
     function_train_get_ranks(levApproxIter->second.function_train()),
     sharedDataRep->numVars + 1);
+}
+
+
+/** returns the recovered orders, reflecting the latest CV if adapt_order */
+void C3Approximation::recover_function_train_orders(UShortArray& ft_orders)
+{
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  size_t v, num_v = data_rep->numVars;
+  ft_orders.resize(num_v);
+  for (v=0; v<num_v; ++v)
+    ft_orders[v] = one_approx_opts_get_nparams(data_rep->oneApproxOpts[v]);
 }
 
 
@@ -186,8 +198,8 @@ void C3Approximation::build()
     max_r = data_rep->max_rank(), // bounds CV candidates for adapt_rank
     start_r = std::min(data_rep->start_rank(), max_r);
   SizetVector start_ranks(num_v+1);
-  start_ranks(0) = 1;     start_ranks(num_v) = 1;
-  for (i=1; i<num_v; ++i) start_ranks(i) = start_r;
+  start_ranks[0] = start_ranks[num_v] = 1;
+  for (i=1; i<num_v; ++i) start_ranks[i] = start_r;
 
   struct FTRegress * ftr = ft_regress_alloc(num_v, data_rep->multiApproxOpts,
 					    start_ranks.values());
@@ -275,11 +287,14 @@ void C3Approximation::build()
     struct CrossValidate * cv
       = cross_validate_init(ndata, num_v, xtrain, ytrain, kfold, cvverbose);
 
-    // example of a cross validation run with extractor error (don't need this
-    // if running over grid)
+    // example of a cross validation run with extractor error
+    // (don't need this if running over grid)
     //double err = cross_validate_run(cv,ftr,optimizer);
 
-    // set up a grid over which to search for the best parameters
+    // Set up a grid over which to search for the best FT parameters
+    struct CVOptGrid * cvgrid = cv_opt_grid_init(1); // allocate a 1D grid
+    cv_opt_grid_set_verbose(cvgrid, cvverbose);
+    // define a scalar range of (isotropic) basis orders
     unsigned short kick_ord = data_rep->kickOrder,
         max_ord = data_rep->max_order(),
       start_ord = find_max(data_rep->start_orders()); // flatten dim_pref
@@ -288,9 +303,6 @@ void C3Approximation::build()
     np_opts[0] = start_ord + 1; // offset by 1 for nparams
     for (i=1; i<num_opts; ++i)
       np_opts[i] = np_opts[i-1] + kick_ord;
-
-    struct CVOptGrid * cvgrid = cv_opt_grid_init(1); // CV over one parameter
-    cv_opt_grid_set_verbose(cvgrid, cvverbose);
     // cross validate over "num_param", choose from options given in np_opts
     String cv_target("num_param");
     cv_opt_grid_add_param(cvgrid, &cv_target[0], num_opts, &np_opts[0]); 
@@ -993,21 +1005,48 @@ size_t C3Approximation::regression_size()
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
 
-  // Reflects most recent FT build; omits any order increments prior to build:
+  // Intent: capture latest ranks/orders recovered from most recent FT build
+  //   or from rank/order advancements.
+  // Usage:  this function is only currently used from NonDC3FunctionTrain::
+  //   sample_allocation_metric() for non-UNIFORM_MAX_* refinements.
+
+  // Simpler approach, but only includes most recent FT recovery:
   //return function_train_get_nparams(ftp.function_train());
 
-  // Capture most recent rank adaptation (from build with adapt_rank), if any,
-  // as well as any polynomial order increments (since last build)
-  struct FunctionTrain * ft = levApproxIter->second.function_train();
-  SizetVector ft_ranks(Teuchos::View, function_train_get_ranks(ft),
-		       data_rep->numVars+1);
-  return regression_size(ft_ranks,                 data_rep->max_rank(),
-			 data_rep->start_orders(), data_rep->max_order());
+  // Most current ranks:
+  SizetVector ft_ranks;
+  switch (data_rep->c3RefineType) {
+  // Capture most recent rank advancement, ignoring previous adaptations if any
+  case UNIFORM_START_RANK: {
+    size_t curr_rank = std::min(data_rep->start_rank(), data_rep->max_rank()),
+      i, num_v = data_rep->numVars;
+    ft_ranks.sizeUninitialized(data_rep->numVars + 1);
+    ft_ranks[0] = ft_ranks[num_v] = 1;
+    for (i=1; i<num_v; ++i) ft_ranks[i] = curr_rank;
+    break;
+  }
+  // Capture most recent rank adaptations (from build() w/ adapt_rank), if any
+  default:
+    recover_function_train_ranks(ft_ranks); break;
+  }
+
+  // Most current basis orders:
+  // Uses one_approx_opts_get_nparams() to capture updates both from recovery
+  // after an adapt_order build() and from SharedC3ApproxData::increment_order()
+  // > UNIFORM_MAX_* refinements: there are only max increments and we would use
+  //   recovered ranks/orders from build(), but this fn not used for that case
+  // > UNIFORM_START_* + adapt_*: increments for the former may overwrite
+  //   recovery for the latter; we use the latest state inside oneApproxOpts
+  UShortArray ft_orders; recover_function_train_orders(ft_orders);
+  //UShortArray& ft_orders = data_rep->start_orders();// impl before adapt_order
+
+  return regression_size(ft_ranks,  data_rep->max_rank(),
+			 ft_orders, data_rep->max_order());
 }
 
 
 /** compute the regression size (number of unknowns) for ranks per
-    dimension and (polynomial) orders per dimension */
+    dimension and (polynomial) basis orders per dimension */
 size_t C3Approximation::
 regression_size(const SizetVector& ranks,  size_t max_rank,
 		const UShortArray& orders, unsigned short max_order)
