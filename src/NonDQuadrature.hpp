@@ -63,6 +63,8 @@ public:
 		 const RealVector& dim_pref, short driver_mode,
 		 int num_sub_samples, int seed);
 
+  ~NonDQuadrature();                                       ///< destructor
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -102,7 +104,6 @@ protected:
   //
 
   NonDQuadrature(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDQuadrature();                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions

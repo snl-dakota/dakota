@@ -28,8 +28,6 @@
 #include "pecos_stat_util.hpp"
 #include "EvaluationStore.hpp"
 
-//#define REFCOUNT_DEBUG
-
 static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 
@@ -64,8 +62,7 @@ size_t Model::noSpecIdNum = 0;
     class selects this base class constructor in its initialization
     list (to avoid the recursion of the base class constructor calling
     get_model() again).  Since the letter IS the representation, its
-    representation pointer is set to NULL (an uninitialized pointer
-    causes problems in ~Model). */
+    representation pointer is set to NULL. */
 Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   currentVariables(problem_db.get_variables()),
   numDerivVars(currentVariables.cv()),
@@ -107,8 +104,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
   estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
-  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW),
-  modelRep(NULL), referenceCount(1)
+  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
 {
   // weights have length group if given; expand if fields present
   expand_for_fields_sdv(currentResponse.shared_data(),
@@ -215,11 +211,6 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
       fdHessByGradStepSize = fdHessByFnStepSize = fdhss[0];
   }
   */
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(BaseConstructor, ProblemDescDB&) called "
-       << "to build letter base class\n";
-#endif
 }
 
 
@@ -242,8 +233,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   modelId(no_spec_id()), // to be replaced by derived ctors
   modelEvalCntr(0), estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), prevDSIView(EMPTY_VIEW),
-  prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW), modelRep(NULL),
-  referenceCount(1)
+  prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
 {
   if (share_svd) {
     currentVariables       =   Variables(svd);
@@ -258,12 +248,6 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 
   currentResponse = (share_srd) ?
     Response(srd, set) : Response(srd.response_type(), set);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(NoDBBaseConstructor, ParallelLibrary&, "
-       << "SharedVariablesData&, ActiveSet&, short) called to build letter "
-       << "base class\n";
-#endif
 }
 
 
@@ -284,30 +268,18 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   modelId(no_spec_id()), // to be replaced by derived ctors
   modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
-  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW),
-  modelRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(LightWtBaseConstructor, ProblemDescDB&, "
-       << "ParallelLibrary&) called to build letter base class\n";
-#endif
-}
+  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
+{ /* empty ctor */ }
 
 
 /** The default constructor is used in vector<Model> instantiations
     and for initialization of Model objects contained in Iterator and
     derived Strategy classes.  modelRep is NULL in this case (a
     populated problem_db is needed to build a meaningful Model
-    object).  This makes it necessary to check for NULL in the copy
-    constructor, assignment operator, and destructor. */
+    object). */
 Model::Model():
-  modelRep(NULL), referenceCount(1), probDescDB(dummy_db),
-  parallelLib(dummy_lib), evaluationsDB(evaluation_store_db)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(), modelRep = NULL" << std::endl;
-#endif
-}
+  probDescDB(dummy_db), parallelLib(dummy_lib), evaluationsDB(evaluation_store_db)
+{ /* empty ctor */ }
 
 
 /** Used in model instantiations within strategy constructors.
@@ -316,14 +288,9 @@ Model::Model():
     builds the actual base class data for the derived models. */
 Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
   parallelLib(problem_db.parallel_library()),
-  evaluationsDB(evaluation_store_db), referenceCount(1)
+  evaluationsDB(evaluation_store_db),
+  modelRep(get_model(problem_db))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(ProblemDescDB&) called to instantiate envelope."
-       << std::endl;
-#endif
-
-  modelRep = get_model(problem_db);
   if ( !modelRep ) // bad type or insufficient memory
     abort_handler(MODEL_ERROR);
 }
@@ -331,155 +298,69 @@ Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
 
 /** Used only by the envelope constructor to initialize modelRep to the
     appropriate derived type, as given by the modelType attribute. */
-Model* Model::get_model(ProblemDescDB& problem_db)
+std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: Getting model " << modelType
-       << std::endl;
-#endif
-
   // These instantiations will NOT recurse on the Model(problem_db)
   // constructor due to the use of BaseConstructor.
 
   const String& model_type = problem_db.get_string("model.type");
   if ( model_type == "simulation" )
-    return new SimulationModel(problem_db);
+    return std::make_shared<SimulationModel>(problem_db);
   else if ( model_type == "nested")
-    return new NestedModel(problem_db);
+    return std::make_shared<NestedModel>(problem_db);
   else if ( model_type == "surrogate") {
     if (problem_db.get_string("model.surrogate.type") == "hierarchical")
-      return new HierarchSurrModel(problem_db); // hierarchical approx
+      return std::make_shared<HierarchSurrModel>(problem_db); // hierarchical approx
     else
-      return new DataFitSurrModel(problem_db);  // local/multipt/global approx
+      return std::make_shared<DataFitSurrModel>(problem_db);  // local/multipt/global approx
   }
   else if ( model_type == "active_subspace" )
-    return new ActiveSubspaceModel(problem_db);
+    return std::make_shared<ActiveSubspaceModel>(problem_db);
   else if ( model_type == "adapted_basis" )
-    return new AdaptedBasisModel(problem_db);
+    return std::make_shared<AdaptedBasisModel>(problem_db);
   else if ( model_type == "random_field" )
-    return new RandomFieldModel(problem_db);
-  else {
+    return std::make_shared<RandomFieldModel>(problem_db);
+  else
     Cerr << "Invalid model type: " << model_type << std::endl;
-    return NULL;
-  }
+
+  return std::shared_ptr<Model>();
 }
 
 
-/** Copy constructor manages sharing of modelRep and incrementing
-    of referenceCount. */
+/** Copy constructor manages sharing of modelRep. */
 Model::Model(const Model& model): probDescDB(model.problem_description_db()),
-  parallelLib(probDescDB.parallel_library()), evaluationsDB(evaluation_store_db)
-{
-  // Increment new (no old to decrement)
-  modelRep = model.modelRep;
-  if (modelRep) // Check for an assignment of NULL
-    ++modelRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(Model&)" << std::endl;
-  if (modelRep)
-    Cout << "modelRep referenceCount = " << modelRep->referenceCount
-	 << std::endl;
-#endif
-}
+  parallelLib(probDescDB.parallel_library()), evaluationsDB(evaluation_store_db),
+  modelRep(model.modelRep)
+{ /* empty ctor */ }
 
 
-/** Assignment operator decrements referenceCount for old modelRep, assigns
-    new modelRep, and increments referenceCount for new modelRep. */
 Model Model::operator=(const Model& model)
 {
-  if (modelRep != model.modelRep) { // normal case: old != new
-    // Decrement old
-    if (modelRep) // Check for NULL
-      if ( --modelRep->referenceCount == 0 )
-	delete modelRep;
-    // Assign and increment new
-    modelRep = model.modelRep;
-    if (modelRep) // Check for NULL
-      ++modelRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::operator=(Model&)" << std::endl;
-  if (modelRep)
-    Cout << "modelRep referenceCount = " << modelRep->referenceCount
-	 << std::endl;
-#endif
-
+  modelRep = model.modelRep;
   return *this;
 }
 
 
-/** Destructor decrements referenceCount and only deletes modelRep
-    when referenceCount reaches zero. */
 Model::~Model()
-{
-  if (modelRep) { // Check for NULL
-    --modelRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "modelRep referenceCount decremented to "
-         << modelRep->referenceCount << std::endl;
-#endif
-    if (modelRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting modelRep" << std::endl;
-#endif
-      delete modelRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 
-/** Similar to the assignment operator, the assign_rep() function
-    decrements referenceCount for the old modelRep and assigns the new
-    modelRep.  It is different in that it is used for publishing
-    derived class letters to existing envelopes, as opposed to sharing
+/** The assign_rep() function is used for publishing derived class
+    letters to existing envelopes, as opposed to sharing
     representations among multiple envelopes (in particular,
     assign_rep is passed a letter object and operator= is passed an
-    envelope object).  Letter assignment supports two models as
-    governed by ref_count_incr:
+    envelope object).
 
-    \li ref_count_incr = true (default): the incoming letter belongs to
-    another envelope.  In this case, increment the reference count in the
-    normal manner so that deallocation of the letter is handled properly.
+    Use case assumes the incoming letter is instantiated on the fly
+    and has no envelope.  This case is modeled after get_model(): a
+    letter is dynamically allocated and passed into assign_rep (its
+    memory management is passed over to the envelope).
 
-    \li ref_count_incr = false: the incoming letter is instantiated on the
-    fly and has no envelope.  This case is modeled after get_model():
-    a letter is dynamically allocated using new and passed into assign_rep,
-    the letter's reference count is not incremented, and the letter is not
-    remotely deleted (its memory management is passed over to the envelope). */
-void Model::assign_rep(Model* model_rep, bool ref_count_incr)
+    If the letter happens to be managed by another envelope, it will
+    persist as long as the last envelope referencing it. */
+void Model::assign_rep(std::shared_ptr<Model> model_rep)
 {
-  if (modelRep == model_rep) {
-    // if ref_count_incr = true (rep from another envelope), do nothing as
-    // referenceCount should already be correct (see also operator= logic).
-    // if ref_count_incr = false (rep from on the fly), then this is an error.
-    if (!ref_count_incr) {
-      Cerr << "Error: duplicated model_rep pointer assignment without "
-	   << "reference count increment in Model::assign_rep()." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-  }
-  else { // normal case: old != new
-    // Decrement old
-    if (modelRep) // Check for NULL
-      if ( --modelRep->referenceCount == 0 )
-	delete modelRep;
-    // Assign new
-    modelRep = model_rep;
-    // Increment new
-    if (modelRep && ref_count_incr) // Check for NULL and honor ref_count_incr
-      modelRep->referenceCount++;
-  }
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::assign_rep(Model*)" << std::endl;
-  if (modelRep)
-    Cout << "modelRep referenceCount = " << modelRep->referenceCount
-	 << std::endl;
-#endif
+  modelRep = model_rep;
 }
 
 
@@ -3247,13 +3128,14 @@ user_space_to_iterator_space(const Variables& user_vars,
 	Response  recast_resp = ml_rit->current_response();  // shallow copy
 	ActiveSet recast_set  = recast_resp.active_set();    // copy
 	// to propagate vars bottom up, inverse of std transform is reqd
-	RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
-	recast_model_rep->inverse_transform_variables(iter_vars, recast_vars);
-	recast_model_rep->
+	RecastModel& recast_model_rep =
+	  *std::static_pointer_cast<RecastModel>(ml_rit->model_rep());
+	recast_model_rep.inverse_transform_variables(iter_vars, recast_vars);
+	recast_model_rep.
 	  inverse_transform_set(iter_vars, iter_resp.active_set(), recast_set);
 	// to propagate response bottom up, std transform is used
 	recast_resp.active_set(recast_set);
-	recast_model_rep->
+	recast_model_rep.
 	  transform_response(recast_vars, iter_vars, iter_resp, recast_resp);
 	// update active in iter_vars
 	iter_vars.active_variables(recast_vars);
@@ -3290,14 +3172,15 @@ iterator_space_to_user_space(const Variables& iter_vars,
 	Response  recast_resp = ml_it->current_response();  // shallow copy
 	ActiveSet recast_set  = recast_resp.active_set();   // copy
 	// to propagate vars top down, forward transform is reqd
-	RecastModel* recast_model_rep = (RecastModel*)ml_it->model_rep();
-	recast_model_rep->transform_variables(user_vars, recast_vars);
-	recast_model_rep->
+	RecastModel& recast_model_rep =
+	  *std::static_pointer_cast<RecastModel>(ml_it->model_rep());
+	recast_model_rep.transform_variables(user_vars, recast_vars);
+	recast_model_rep.
 	  transform_set(user_vars, user_resp.active_set(), recast_set);
 	// to propagate response top down, inverse transform is used.  Note:
 	// derivatives are not currently exported --> a no-op for Nataf.
 	recast_resp.active_set(recast_set);
-	recast_model_rep->inverse_transform_response(recast_vars, user_vars,
+	recast_model_rep.inverse_transform_response(recast_vars, user_vars,
 						     user_resp, recast_resp);
 	// update active in iter_vars
 	user_vars.active_variables(recast_vars);

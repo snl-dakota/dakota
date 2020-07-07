@@ -23,10 +23,16 @@ AdaptedBasisModel* AdaptedBasisModel::abmInstance(NULL);
 
 AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
-  pcePilotExpansion(pcePilotExpRepPtr, false), numFullspaceVars(subModel.cv()),
+  numFullspaceVars(subModel.cv()),
   numFunctions(subModel.response_size()), adaptedBasisInitialized(false),
   reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
 {
+  // BMA: can't do this in get_sub_model as Iterator envelope hasn't
+  // been default constructed yet; for now we transfer ownership of
+  // this pointer into a shared pointer, as delete isn't being called
+  // in this class anyway.
+  pcePilotExpansion.assign_rep(std::shared_ptr<NonDPolynomialChaos>
+			       (pcePilotExpRepPtr));
   modelType = "adapted_basis";
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace

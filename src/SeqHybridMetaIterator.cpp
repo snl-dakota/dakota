@@ -111,9 +111,7 @@ SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 
 
 SeqHybridMetaIterator::~SeqHybridMetaIterator()
-{
-  // Virtual destructor handles referenceCount at Iterator level.
-}
+{ }
 
 
 void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)

@@ -48,8 +48,8 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
   surfData(NULL), model(NULL), factory(NULL)
   //sharedDataRep((SharedSurfpackApproxData*)shared_data.data_rep())
 {
-  SharedSurfpackApproxData* shared_surf_data_rep
-    = (SharedSurfpackApproxData*)sharedDataRep;
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
 
   ParamMap args;
 
@@ -285,8 +285,8 @@ SurfpackApproximation(const SharedApproxData& shared_data):
   surfData(NULL), model(NULL), factory(NULL)
   //sharedDataRep((SharedSurfpackApproxData*)shared_data.data_rep())
 {
-  SharedSurfpackApproxData* shared_surf_data_rep
-    = (SharedSurfpackApproxData*)sharedDataRep;
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
 
   ParamMap args;
   args["verbosity"] = toString<short>(sharedDataRep->outputLevel);
@@ -390,8 +390,8 @@ void SurfpackApproximation::build()
     abort_handler(-1);
   }
 
-  SharedSurfpackApproxData* shared_surf_data_rep
-    = (SharedSurfpackApproxData*)sharedDataRep;
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
 
   /// surfData will be deleted in dtor
   /// \todo Right now, we're completely deleting the old data and then
@@ -517,7 +517,8 @@ Real SurfpackApproximation::value(const Variables& vars)
   }
 
   RealArray x_array(sharedDataRep->numVars);
-  ((SharedSurfpackApproxData*)sharedDataRep)->vars_to_realarray(vars, x_array);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_array);
   return (*model)(x_array);
 }
 
@@ -527,8 +528,8 @@ const RealVector& SurfpackApproximation::gradient(const Variables& vars)
   approxGradient.sizeUninitialized(vars.cv());
   try {
     RealArray x_array(sharedDataRep->numVars);
-    ((SharedSurfpackApproxData*)sharedDataRep)
-      ->vars_to_realarray(vars, x_array);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      vars_to_realarray(vars, x_array);
     VecDbl local_grad = model->gradient(x_array);
     for (unsigned i = 0; i < surfData->xSize(); i++)
       approxGradient[i] = local_grad[i];
@@ -553,8 +554,8 @@ const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
       abort_handler(-1);
     }
     RealArray x_array(sharedDataRep->numVars);
-    ((SharedSurfpackApproxData*)sharedDataRep)
-      ->vars_to_realarray(vars, x_array);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      vars_to_realarray(vars, x_array);
     MtxDbl sm = model->hessian(x_array);
     ///\todo Make this acceptably efficient
     for (size_t i = 0; i < num_cv; i++)
@@ -574,8 +575,8 @@ Real SurfpackApproximation::prediction_variance(const Variables& vars)
 {
   try {
     RealArray x_array(sharedDataRep->numVars);
-    ((SharedSurfpackApproxData*)sharedDataRep)
-      ->vars_to_realarray(vars, x_array);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      vars_to_realarray(vars, x_array);
     return model->variance(x_array);
   }
   catch (...) {
@@ -702,8 +703,8 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
 {
   String func_description = approxLabel.empty() ?
     "function " + std::to_string(fn_index+1) : approxLabel;
-  SharedSurfpackApproxData* shared_surf_data_rep
-    = (SharedSurfpackApproxData*)sharedDataRep;
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   const StringArray& diag_set = shared_surf_data_rep->diagnosticSet;
   if (diag_set.empty()) {
     // conditionally print default diagnostics
@@ -771,8 +772,9 @@ challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
   
   String func_description = approxLabel.empty() ? 
     "function " + std::to_string(fn_index+1) : approxLabel;
-  StringArray diag_set = 
-    ((SharedSurfpackApproxData*)sharedDataRep)->diagnosticSet;
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+  StringArray diag_set = shared_surf_data_rep->diagnosticSet;
   // conditionally print default diagnostics
   if (diag_set.empty() && sharedDataRep->outputLevel > NORMAL_OUTPUT) {
     diag_set.push_back("root_mean_squared");
@@ -833,7 +835,8 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
     Cout << "Requested build data order is " << sharedDataRep->buildDataOrder
 	 << '\n';
 
-  SharedSurfpackApproxData* data_rep = (SharedSurfpackApproxData*)sharedDataRep;
+  std::shared_ptr<SharedSurfpackApproxData> data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   size_t i, num_data_pts = approxData.points();
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
   const Pecos::SDRArray& sdr_array = approxData.response_data();
@@ -887,8 +890,8 @@ add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
   SurfpackMatrix<Real> hessian;
 
   // Print out the anchor continuous variables
-  SharedSurfpackApproxData* data_rep
-    = (SharedSurfpackApproxData*)sharedDataRep;
+  std::shared_ptr<SharedSurfpackApproxData> data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   data_rep->sdv_to_realarray(anchor_vars, x);
   if (sharedDataRep->outputLevel > NORMAL_OUTPUT)
     Cout << "Anchor point vars\n" << x;

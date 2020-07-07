@@ -28,7 +28,7 @@ DataEnvironmentRep::DataEnvironmentRep():
   outputPrecision(0), 
   resultsOutputFlag(false), resultsOutputFile("dakota_results"),
   resultsOutputFormat(0), modelEvalsSelection(MODEL_EVAL_STORE_TOP_METHOD),
-  interfEvalsSelection(INTERF_EVAL_STORE_SIMULATION),  referenceCount(1)
+  interfEvalsSelection(INTERF_EVAL_STORE_SIMULATION)
 { }
 
 
@@ -75,71 +75,22 @@ void DataEnvironmentRep::write(std::ostream& s) const
 
 
 DataEnvironment::DataEnvironment(): dataEnvRep(new DataEnvironmentRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataEnvironment::DataEnvironment(), dataEnvRep referenceCount = "
-       << dataEnvRep->referenceCount << endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
-DataEnvironment::DataEnvironment(const DataEnvironment& data_env)
-{
-  // Increment new (no old to decrement)
-  dataEnvRep = data_env.dataEnvRep;
-  if (dataEnvRep) // Check for an assignment of NULL
-    ++dataEnvRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataEnvironment::DataEnvironment(DataEnvironment&)" << endl;
-  if (dataEnvRep)
-    Cout << "dataEnvRep referenceCount = " << dataEnvRep->referenceCount
-	 << endl;
-#endif
-}
+DataEnvironment::DataEnvironment(const DataEnvironment& data_env):
+  dataEnvRep(data_env.dataEnvRep)
+{ /* empty ctor */ }
 
 
 DataEnvironment& DataEnvironment::operator=(const DataEnvironment& data_env)
 {
-  if (dataEnvRep != data_env.dataEnvRep) { // normal case: old != new
-    // Decrement old
-    if (dataEnvRep) // Check for NULL
-      if ( --dataEnvRep->referenceCount == 0 ) 
-	delete dataEnvRep;
-    // Assign and increment new
-    dataEnvRep = data_env.dataEnvRep;
-    if (dataEnvRep) // Check for NULL
-      ++dataEnvRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataEnvironment::operator=(DataEnvironment&)" << endl;
-  if (dataEnvRep)
-    Cout << "dataEnvRep referenceCount = " << dataEnvRep->referenceCount
-	 << endl;
-#endif
-
+  dataEnvRep = data_env.dataEnvRep;
   return *this;
 }
 
 
 DataEnvironment::~DataEnvironment()
-{
-  if (dataEnvRep) { // Check for NULL
-    --dataEnvRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "dataEnvRep referenceCount decremented to "
-         << dataEnvRep->referenceCount << endl;
-#endif
-    if (dataEnvRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataEnvRep" << endl;
-#endif
-      delete dataEnvRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

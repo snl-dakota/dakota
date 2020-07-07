@@ -87,6 +87,8 @@ class DataVariablesRep
 //private:
 public:
 
+  ~DataVariablesRep(); ///< destructor
+
   //
   //- Heading: Data
   //
@@ -845,7 +847,6 @@ private:
   //
 
   DataVariablesRep();  ///< default constructor
-  ~DataVariablesRep(); ///< destructor
 
   /// write a DataVariablesRep object to an std::ostream
   void write(std::ostream& s) const;
@@ -859,8 +860,6 @@ private:
   //- Heading: Private data members
   //
 
-  /// number of handle objects sharing dataVarsRep
-  int referenceCount;
 };
 
 
@@ -919,7 +918,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataVarsRep
-  DataVariablesRep* data_rep();
+  std::shared_ptr<DataVariablesRep> data_rep();
 
   // Get Functions (composite variable counts only):
 
@@ -992,11 +991,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataVariablesRep* dataVarsRep;
+  std::shared_ptr<DataVariablesRep> dataVarsRep;
 };
 
 
-inline DataVariablesRep* DataVariables::data_rep()
+inline std::shared_ptr<DataVariablesRep> DataVariables::data_rep()
 {return dataVarsRep; }
 
 

@@ -107,7 +107,7 @@ private:
 
 
 inline ForkApplicInterface::~ForkApplicInterface() 
-{ /* Virtual destructor handles referenceCount at Interface level. */ }
+{ }
 
 
 inline pid_t ForkApplicInterface::wait_evaluation(bool block_flag)

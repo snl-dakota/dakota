@@ -131,8 +131,6 @@ void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 
 void SurrBasedMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 {
-  // Virtual destructor handles referenceCount at Strategy level.
-
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
 
   // iteratedModel is evaluated to add truth data (single evaluate())
@@ -145,8 +143,6 @@ void SurrBasedMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 
 void SurrBasedMinimizer::derived_free_communicators(ParLevLIter pl_iter)
 {
-  // Virtual destructor handles referenceCount at Strategy level.
-
   // free communicators for approxSubProbModel/iteratedModel
   approxSubProbMinimizer.free_communicators(pl_iter);
 

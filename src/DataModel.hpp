@@ -79,6 +79,8 @@ class DataModelRep
 
 public:
 
+  ~DataModelRep(); ///< destructor
+
   //
   //- Heading: Data
   //
@@ -464,7 +466,6 @@ private:
   //
 
   DataModelRep();  ///< constructor
-  ~DataModelRep(); ///< destructor
 
   //
   //- Heading: Member methods
@@ -482,8 +483,6 @@ private:
   //- Heading: Private convenience functions
   //
 
-  /// number of handle objects sharing this dataModelRep
-  int referenceCount;
 };
 
 
@@ -539,7 +538,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataModelRep
-  DataModelRep* data_rep();
+  std::shared_ptr<DataModelRep> data_rep();
 
 private:
 
@@ -548,11 +547,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataModelRep* dataModelRep;
+  std::shared_ptr<DataModelRep> dataModelRep;
 };
 
 
-inline DataModelRep* DataModel::data_rep()
+inline std::shared_ptr<DataModelRep> DataModel::data_rep()
 {return dataModelRep; }
 
 

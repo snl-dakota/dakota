@@ -125,16 +125,11 @@ inline SharedResponseDataRep::SharedResponseDataRep():
   //:responseType(BASE_RESPONSE)//, // overridden in derived class ctors
   primaryFnType(GENERIC_FNS)
   //responsesId("NO_SPECIFICATION"), numScalarResponses(0),
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseDataRep::SharedResponseDataRep() called to build "
-       << "empty body object." << std::endl;
-#endif
-}
+{ /* empty ctor */}
 
 
 inline SharedResponseDataRep::~SharedResponseDataRep()
-{ }
+{ /* empty dtor */ }
 
 
 /// Container class encapsulating variables data that can be shared
@@ -275,72 +270,37 @@ private:
 
 
 inline SharedResponseData::SharedResponseData()
-{ 
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseData::SRD(); default constructed handle.\n";
-  Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 inline SharedResponseData::SharedResponseData(const ProblemDescDB& problem_db):
   srdRep(new SharedResponseDataRep(problem_db))
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseData::SRD(PDB) problem DB constructed handle.\n";
-  Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 inline SharedResponseData::SharedResponseData(const ActiveSet& set):
   srdRep(new SharedResponseDataRep(set))
-{ 
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseData::SRD(AS) ActiveSet constructed handle.\n";
-  Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 inline SharedResponseData::SharedResponseData(const SharedResponseData& srd)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseData::SRD(SRD) copy constructor.\n";
-  Cout << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
-#endif
   // share the representation (body)
   srdRep = srd.srdRep;
-#ifdef REFCOUNT_DEBUG
-  Cout << "  srdRep use_count after  = " << srdRep.use_count() << std::endl;
-#endif
 }
 
 
 inline SharedResponseData& SharedResponseData::
 operator=(const SharedResponseData& srd)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseData::operator=.\n";
-  Cout << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
-#endif
   // share the inbound representation (body) by copying the pointer
   srdRep = srd.srdRep;
-#ifdef REFCOUNT_DEBUG
-  Cout << "  srdRep use_count after  = " << srdRep.use_count() << std::endl;
-#endif
   return *this;
 }
 
 
 inline SharedResponseData::~SharedResponseData()
-{ 
-  /* empty dtor in case we add virtual functions */
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseData::~SRD called.\n";
-  Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor in case we add virtual functions */ }
 
 
 inline size_t SharedResponseData::num_scalar_responses() const

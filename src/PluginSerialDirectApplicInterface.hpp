@@ -100,7 +100,7 @@ SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
 
 
 inline SerialDirectApplicInterface::~SerialDirectApplicInterface()
-{ /* Virtual destructor handles referenceCount at Interface level. */ }
+{ }
 
 
 inline void SerialDirectApplicInterface::

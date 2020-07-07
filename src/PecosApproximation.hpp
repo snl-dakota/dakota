@@ -337,6 +337,7 @@ private:
   /// the Pecos basis approximation, encompassing orthogonal and interpolation
   /// polynomial approximations
   Pecos::BasisApproximation pecosBasisApprox;
+  // BMA TODO: Consider updating this to shared_ptr once Pecos uses one
   /// convenience pointer to representation of Pecos polynomial approximation
   Pecos::PolynomialApproximation* polyApproxRep;
 
@@ -412,7 +413,8 @@ inline void PecosApproximation::allocate_arrays()
 
 inline void PecosApproximation::initialize_covariance(Approximation& approx_2)
 {
-  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  std::shared_ptr<PecosApproximation> pa_2 =
+    std::static_pointer_cast<PecosApproximation>(approx_2.approx_rep());
   polyApproxRep->initialize_covariance(pa_2->polyApproxRep);
 }
 
@@ -473,7 +475,8 @@ variance_gradient(const Pecos::RealVector& x, const Pecos::SizetArray& dvv)
 
 inline Real PecosApproximation::covariance(Approximation& approx_2)
 {
-  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  std::shared_ptr<PecosApproximation> pa_2 =
+    std::static_pointer_cast<PecosApproximation>(approx_2.approx_rep());
   return polyApproxRep->covariance(pa_2->polyApproxRep);
 }
 
@@ -481,14 +484,16 @@ inline Real PecosApproximation::covariance(Approximation& approx_2)
 inline Real PecosApproximation::
 covariance(const Pecos::RealVector& x, Approximation& approx_2)
 {
-  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  std::shared_ptr<PecosApproximation> pa_2 =
+    std::static_pointer_cast<PecosApproximation>(approx_2.approx_rep());
   return polyApproxRep->covariance(x, pa_2->polyApproxRep);
 }
 
 
 inline Real PecosApproximation::combined_covariance(Approximation& approx_2)
 {
-  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  std::shared_ptr<PecosApproximation> pa_2 =
+    std::static_pointer_cast<PecosApproximation>(approx_2.approx_rep());
   return polyApproxRep->combined_covariance(pa_2->polyApproxRep);
 }
 
@@ -496,7 +501,8 @@ inline Real PecosApproximation::combined_covariance(Approximation& approx_2)
 inline Real PecosApproximation::
 combined_covariance(const Pecos::RealVector& x, Approximation& approx_2)
 {
-  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  std::shared_ptr<PecosApproximation> pa_2 =
+    std::static_pointer_cast<PecosApproximation>(approx_2.approx_rep());
   return polyApproxRep->combined_covariance(x, pa_2->polyApproxRep);
 }
 
@@ -570,7 +576,8 @@ inline Real PecosApproximation::delta_combined_variance(const RealVector& x)
 
 inline Real PecosApproximation::delta_covariance(Approximation& approx_2)
 {
-  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  std::shared_ptr<PecosApproximation> pa_2 =
+    std::static_pointer_cast<PecosApproximation>(approx_2.approx_rep());
   return polyApproxRep->delta_covariance(pa_2->polyApproxRep);
 }
 
@@ -578,7 +585,8 @@ inline Real PecosApproximation::delta_covariance(Approximation& approx_2)
 inline Real PecosApproximation::
 delta_covariance(const Pecos::RealVector& x, Approximation& approx_2)
 {
-  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  std::shared_ptr<PecosApproximation> pa_2 =
+    std::static_pointer_cast<PecosApproximation>(approx_2.approx_rep());
   return polyApproxRep->delta_covariance(x, pa_2->polyApproxRep);
 }
 
@@ -586,7 +594,8 @@ delta_covariance(const Pecos::RealVector& x, Approximation& approx_2)
 inline Real PecosApproximation::
 delta_combined_covariance(Approximation& approx_2)
 {
-  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+std::shared_ptr<PecosApproximation> pa_2 =
+    std::static_pointer_cast<PecosApproximation>(approx_2.approx_rep());
   return polyApproxRep->delta_combined_covariance(pa_2->polyApproxRep);
 }
 
@@ -594,7 +603,8 @@ delta_combined_covariance(Approximation& approx_2)
 inline Real PecosApproximation::
 delta_combined_covariance(const Pecos::RealVector& x, Approximation& approx_2)
 {
-  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  std::shared_ptr<PecosApproximation> pa_2 =
+    std::static_pointer_cast<PecosApproximation>(approx_2.approx_rep());
   return polyApproxRep->delta_combined_covariance(x, pa_2->polyApproxRep);
 }
 

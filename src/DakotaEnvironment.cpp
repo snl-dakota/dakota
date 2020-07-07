@@ -27,8 +27,7 @@ namespace Dakota {
 
 /** This letter constructor initializes base class data for inherited
     environments that are default constructed.  Since the letter IS
-    the representation, its representation pointer is set to NULL (an
-    uninitialized pointer causes problems in ~Environment). 
+    the representation, its representation pointer is set to NULL.
 
     Use cases:
     * library with no options, no MPI comm
@@ -37,8 +36,7 @@ namespace Dakota {
 Environment::Environment(BaseConstructor):
   mpiManager(), programOptions(mpiManager.world_rank()), outputManager(),
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), usageTracker(mpiManager.world_rank()),
-  environmentRep(NULL), referenceCount(1)
+  probDescDB(parallelLib), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -46,11 +44,6 @@ Environment::Environment(BaseConstructor):
 
   // Initialize paths used by WorkdirHelper
   WorkdirHelper::initialize();
-
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(BaseConstructor) called to "
-       << "build letter base class." << std::endl;
-#endif
 }
 
 
@@ -58,7 +51,7 @@ Environment::Environment(BaseConstructor):
     environments: instantiate/initialize the environment, options,
     parallel library, and problem description database objects.  Since
     the letter IS the representation, its representation pointer is set
-    to NULL (an uninitialized pointer causes problems in ~Environment). 
+    to NULL.
     
     Use cases:
     * executable with command-line args
@@ -75,8 +68,7 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 		mpiManager.mpirun_flag()),
   // now instantiate the parallel library and problem description DB
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), usageTracker(mpiManager.world_rank()),
-  environmentRep(NULL), referenceCount(1)
+  probDescDB(parallelLib), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -86,18 +78,12 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 
   // these data were previously statically initialized, so perform first
   WorkdirHelper::initialize();
-
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(BaseConstructor, int, char*) called "
-       << "to build letter base class." << std::endl;
-#endif
 }
 
 
 /** This letter constructor initializes base class data for inherited
     environments.  Since the letter IS the representation, its
-    representation pointer is set to NULL (an uninitialized pointer
-    causes problems in ~Environment). 
+    representation pointer is set to NULL.
 
     Use cases: 
      * library with program options
@@ -109,8 +95,7 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
   outputManager(programOptions, mpiManager.world_rank(),
 		mpiManager.mpirun_flag()), 
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), usageTracker(mpiManager.world_rank()),
-  environmentRep(NULL), referenceCount(1)
+  probDescDB(parallelLib), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -118,38 +103,21 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
 
   // Initialize paths used by WorkdirHelper
   WorkdirHelper::initialize();
-
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(BaseConstructor, ProgramOptions&) called "
-       << "to build letter base class." << std::endl;
-#endif
 }
 
 
 /** Default envelope constructor.  environmentRep is NULL in this
-    case, which makes it necessary to check for NULL in the copy
-    constructor, assignment operator, and destructor. */
-Environment::Environment(): environmentRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment() called to build empty envelope base "
-       << "class object." << std::endl;
-#endif
-}
+    case. */
+Environment::Environment()
+{ /* empty ctor */ }
 
 
 /** Envelope constructor for ExecutableEnvironment.  Selection of
     derived type by get_environment() is not necessary in this case. */
 Environment::Environment(int argc, char* argv[]):
-  referenceCount(1) // not used since this is the envelope
-{
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(int, char*) called to instantiate "
-       << "envelope for executable letter." << std::endl;
-#endif
-
   // set the rep pointer to the appropriate environment type
-  environmentRep = new ExecutableEnvironment(argc, argv);
+  environmentRep(std::make_shared<ExecutableEnvironment>(argc, argv))
+{
   if ( !environmentRep ) // insufficient memory
     abort_handler(-1);
 }
@@ -159,15 +127,9 @@ Environment::Environment(int argc, char* argv[]):
     derived type by get_environment() is not necessary in this case. */
 Environment::
 Environment(ProgramOptions prog_opts): 
-  referenceCount(1) // not used since this is the envelope
-{
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(ProgramOptions&) called to instantiate "
-       << "envelope for library letter." << std::endl;
-#endif
-
   // set the rep pointer to the appropriate environment type
-  environmentRep = new LibraryEnvironment(prog_opts);
+  environmentRep(std::make_shared<LibraryEnvironment>(prog_opts))
+{
   if ( !environmentRep ) // insufficient memory
     abort_handler(-1);
 }
@@ -177,15 +139,9 @@ Environment(ProgramOptions prog_opts):
     derived type by get_environment() is not necessary in this case. */
 Environment::
 Environment(MPI_Comm dakota_mpi_comm, ProgramOptions prog_opts): 
-  referenceCount(1) // not used since this is the envelope
-{
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(MPI_Comm, ProgramOptions&) called to "
-       << "instantiate envelope for library letter." << std::endl;
-#endif
-
   // set the rep pointer to the appropriate environment type
-  environmentRep = new LibraryEnvironment(dakota_mpi_comm, prog_opts);
+  environmentRep(std::make_shared<LibraryEnvironment>(dakota_mpi_comm, prog_opts))
+{
   if ( !environmentRep ) // insufficient memory
     abort_handler(-1);
 }
@@ -197,15 +153,9 @@ Environment(MPI_Comm dakota_mpi_comm, ProgramOptions prog_opts):
     initialization list to avoid the recursion of a base class
     constructor calling get_environment() again. */
 Environment::Environment(const String& env_type): 
-  referenceCount(1) // not used since this is the envelope
-{
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(String&) called to instantiate envelope."
-       << std::endl;
-#endif
-
   // set the rep pointer to the appropriate environment type
-  environmentRep = get_environment(env_type);
+  environmentRep(get_environment(env_type))
+{
   if ( !environmentRep ) // bad name or insufficient memory
     abort_handler(-1);
 }
@@ -213,90 +163,35 @@ Environment::Environment(const String& env_type):
 
 /** Used only by the envelope constructor to initialize environmentRep to the 
     appropriate derived type, as given by the environmentName attribute. */
-Environment* Environment::get_environment(const String& env_type)
+std::shared_ptr<Environment> Environment::get_environment(const String& env_type)
 {
-#ifdef REFCOUNT_DEBUG
-  cout << "Envelope instantiating letter: Getting environment " << env_type
-       << std::endl;
-#endif
-
   if (env_type == "executable")
-    return new ExecutableEnvironment();
+    return std::make_shared<ExecutableEnvironment>();
   else if (env_type == "library")
-    return new LibraryEnvironment();
-  else {
+    return std::make_shared<LibraryEnvironment>();
+  else
     Cerr << "Invalid environment type: " << env_type << std::endl;
-    return NULL;
-  }
+
+  return std::shared_ptr<Environment>();
 }
 
 
-/** Copy constructor manages sharing of environmentRep and incrementing of
-    referenceCount. */
-Environment::Environment(const Environment& env)
-{
-  // Increment new (no old to decrement)
-  environmentRep = env.environmentRep;
-  if (environmentRep) // Check for an assignment of NULL
-    ++environmentRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::Environment(Environment&)" << std::endl;
-  if (environmentRep)
-    cout << "environmentRep referenceCount = " << environmentRep->referenceCount
-	 << std::endl;
-#endif
-}
+/** Copy constructor manages sharing of environmentRep. */
+Environment::Environment(const Environment& env):
+  environmentRep(env.environmentRep)
+{ /* empty ctor */ }
 
 
-/** Assignment operator decrements referenceCount for old environmentRep,
-    assigns new environmentRep, and increments referenceCount for new
-    environmentRep. */
 Environment Environment::operator=(const Environment& env)
 {
-  if (environmentRep != env.environmentRep) { // normal case: old != new
-    // Decrement old
-    if (environmentRep) // Check for NULL
-      if ( --environmentRep->referenceCount == 0 ) 
-	delete environmentRep;
-    // Assign and increment new
-    environmentRep = env.environmentRep;
-    if (environmentRep) // Check for NULL
-      ++environmentRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  cout << "Environment::operator=(Environment&)" << std::endl;
-  if (environmentRep)
-    cout << "environmentRep referenceCount = " << environmentRep->referenceCount
-	 << std::endl;
-#endif
-
+  environmentRep = env.environmentRep;
   return *this; // calls copy constructor since returned by value
 }
 
 
-/** Destructor decrements referenceCount and only deletes environmentRep
-    when referenceCount reaches zero. */
 Environment::~Environment()
 { 
-  // Check for NULL pointer 
-  if (environmentRep) { // envelope: manage ref count & delete environmentRep
-    --environmentRep->referenceCount;
-#ifdef REFCOUNT_DEBUG
-    cout << "environmentRep referenceCount decremented to " 
-	 << environmentRep->referenceCount << std::endl;
-#endif
-    if (environmentRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      cout << "deleting environmentRep" << std::endl;
-#endif
-      delete environmentRep;
-    }
-  }
-  else // letter: base class destruction
+  if (!environmentRep) // letter: base class destruction
     destruct();
 }
 

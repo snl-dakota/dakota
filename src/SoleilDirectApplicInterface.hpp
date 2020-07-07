@@ -100,7 +100,7 @@ SoleilDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
 
 
 inline SoleilDirectApplicInterface::~SoleilDirectApplicInterface()
-{ /* Virtual destructor handles referenceCount at Interface level. */ }
+{ }
 
 
 inline void SoleilDirectApplicInterface::

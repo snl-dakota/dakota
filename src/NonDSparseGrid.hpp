@@ -49,6 +49,8 @@ public:
 		 short refine_control = Pecos::NO_CONTROL,
 		 bool track_uniq_prod_wts = true);
 
+  ~NonDSparseGrid();                                       ///< destructor
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -112,7 +114,6 @@ protected:
   //
 
   NonDSparseGrid(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDSparseGrid();                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions

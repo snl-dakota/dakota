@@ -180,9 +180,7 @@ void DOTOptimizer::initialize()
 
 
 DOTOptimizer::~DOTOptimizer()
-{
-  // Virtual destructor handles referenceCount at Iterator level.
-}
+{ }
 
 
 void DOTOptimizer::allocate_constraints()

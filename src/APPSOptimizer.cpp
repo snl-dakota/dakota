@@ -395,10 +395,6 @@ void APPSOptimizer::initialize_variables_and_constraints()
 }
 
 AppsTraits::AppsTraits()
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "AppsTraits::AppsTraits() called to build letter object.\n";
-#endif
-}
+{ /* empty ctor */ }
 
 } // namespace Dakota

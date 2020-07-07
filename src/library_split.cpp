@@ -233,8 +233,8 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
     const Dakota::ParallelLevel& ea_level
       = ml_iter->parallel_configuration_iterator()->ea_parallel_level();
     const MPI_Comm& analysis_comm = ea_level.server_intra_communicator();
-    model_iface.assign_rep(new
-      SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
+    model_iface.assign_rep(std::make_shared<SIM::ParallelDirectApplicInterface>
+			   (problem_db, analysis_comm));
   }
 
   // Execute the Environment

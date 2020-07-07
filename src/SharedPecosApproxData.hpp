@@ -166,6 +166,7 @@ private:
 
   /// the Pecos shared approximation data
   Pecos::SharedBasisApproxData pecosSharedData;
+  // BMA TODO: Update data type below once Pecos uses shared_ptr
   /// convenience pointer to derived letter within pecosSharedData
   Pecos::SharedPolyApproxData* pecosSharedDataRep;
 };

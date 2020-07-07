@@ -252,8 +252,8 @@ construct_lhs(Iterator& u_space_sampler, Model& u_model,
   }
 
   // construct NonDLHSSampling with default sampling_vars_mode (ACTIVE)
-  u_space_sampler.assign_rep(new NonDLHSSampling(u_model, sample_type,
-    num_samples, seed, rng, vary_pattern, sampling_vars_mode), false);
+  u_space_sampler.assign_rep(std::make_shared<NonDLHSSampling>(u_model,
+    sample_type, num_samples, seed, rng, vary_pattern, sampling_vars_mode));
 }
 
 

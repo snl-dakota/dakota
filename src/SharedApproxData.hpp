@@ -189,7 +189,7 @@ public:
 
   /// returns dataRep for access to derived class member functions
   /// that are not mapped to the top SharedApproxData level
-  SharedApproxData* data_rep() const;
+  std::shared_ptr<SharedApproxData> data_rep() const;
 
 protected:
 
@@ -271,23 +271,21 @@ private:
 
   /// Used only by the standard envelope constructor to initialize
   /// dataRep to the appropriate derived type.
-  SharedApproxData* get_shared_data(ProblemDescDB& problem_db, size_t num_vars);
+  std::shared_ptr<SharedApproxData>
+  get_shared_data(ProblemDescDB& problem_db, size_t num_vars);
 
   /// Used only by the alternate envelope constructor to initialize
   /// dataRep to the appropriate derived type.
-  SharedApproxData* get_shared_data(const String& approx_type,
-				    const UShortArray& approx_order,
-				    size_t num_vars, short data_order,
-				    short output_level);
+  std::shared_ptr<SharedApproxData>
+  get_shared_data(const String& approx_type, const UShortArray& approx_order,
+		  size_t num_vars, short data_order, short output_level);
 
   //
   //- Heading: Data
   //
 
   /// pointer to the letter (initialized only for the envelope)
-  SharedApproxData* dataRep;
-  /// number of objects sharing dataRep
-  int referenceCount;
+  std::shared_ptr<SharedApproxData> dataRep;
 };
 
 
@@ -324,7 +322,7 @@ set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 }
 
 
-inline SharedApproxData* SharedApproxData::data_rep() const
+inline std::shared_ptr<SharedApproxData> SharedApproxData::data_rep() const
 { return dataRep; }
 
 } // namespace Dakota

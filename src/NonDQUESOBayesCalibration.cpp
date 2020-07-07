@@ -688,7 +688,8 @@ void NonDQUESOBayesCalibration::filter_chain_by_conditioning()
     Cout << "Filtering chain by matrix conditioning: extracting best "
 	 << batchSize << " from aggregate MCMC chain containing "
 	 << unique_samples.size() << " samples.\n";
-  NonDExpansion* nond_exp = (NonDExpansion*)stochExpIterator.iterator_rep();
+  std::shared_ptr<NonDExpansion> nond_exp =
+    std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
   nond_exp->select_refinement_points(unique_samples, batchSize, allSamples);
 }
 
@@ -734,13 +735,13 @@ void NonDQUESOBayesCalibration::update_model()
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    nondInstance = (NonD*)stochExpIterator.iterator_rep();
+    nondInstance = (NonD*)stochExpIterator.iterator_rep().get();
     evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
     nondInstance = this; // restore
     break;
   case GP_EMULATOR: case KRIGING_EMULATOR:
     if (standardizedSpace)
-      nondInstance = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+      nondInstance = (NonD*)mcmcModel.subordinate_iterator().iterator_rep().get();
     evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
     if (standardizedSpace)
       nondInstance = this; // restore
@@ -757,8 +758,8 @@ void NonDQUESOBayesCalibration::update_model()
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     // Adapt the expansion in sync with the dataset using a top-down design
     // (more explicit than embedded logic w/i mcmcModel.append_approximation).
-    NonDExpansion* se_iterator
-      = (NonDExpansion*)stochExpIterator.iterator_rep();
+    std::shared_ptr<NonDExpansion> se_iterator =
+      std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
     se_iterator->append_expansion(allSamples, allResponses);
     // TO DO: order increment places addtnl reqmts on emulator conv assessment
     break;

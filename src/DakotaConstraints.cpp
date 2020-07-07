@@ -27,8 +27,7 @@ namespace Dakota {
     class letter and the derived constructor selects this base class
     constructor in its initialization list (to avoid recursion in the
     base class constructor calling get_constraints() again).  Since
-    the letter IS the representation, its rep pointer is set to NULL
-    (an uninitialized pointer causes problems in ~Constraints). */
+    the letter IS the representation, its rep pointer is set to NULL. */
 Constraints::
 Constraints(BaseConstructor, const ProblemDescDB& problem_db,
 	    const SharedVariablesData& svd):
@@ -49,17 +48,11 @@ Constraints(BaseConstructor, const ProblemDescDB& problem_db,
   linearIneqConUpperBnds(
     problem_db.get_rv("variables.linear_inequality_upper_bounds")),
   linearEqConTargets(
-    problem_db.get_rv("variables.linear_equality_targets")),
-  constraintsRep(NULL), referenceCount(1)
+    problem_db.get_rv("variables.linear_equality_targets"))
 {
   shape(); // size all*{Lower,Upper}Bnds arrays
   build_views(); // construct active/inactive views of all arrays
   manage_linear_constraints(problem_db); // manage linear constraints
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(BaseConstructor) called to build base "
-       << "class data for letter object." << std::endl;
-#endif
 }
 
 
@@ -68,36 +61,23 @@ Constraints(BaseConstructor, const ProblemDescDB& problem_db,
     class letter and the derived constructor selects this base class
     constructor in its initialization list (to avoid recursion in the
     base class constructor calling get_constraints() again).  Since
-    the letter IS the representation, its rep pointer is set to NULL
-    (an uninitialized pointer causes problems in ~Constraints). */
+    the letter IS the representation, its rep pointer is set to NULL. */
 Constraints::
 Constraints(BaseConstructor, const SharedVariablesData& svd):
   sharedVarsData(svd), numNonlinearIneqCons(0), numNonlinearEqCons(0),
-  numLinearIneqCons(0), numLinearEqCons(0), constraintsRep(NULL),
-  referenceCount(1)
+  numLinearIneqCons(0), numLinearEqCons(0)
 {
   shape(); // size all*{Lower,Upper}Bnds arrays
   build_views(); // construct active/inactive views of all arrays
   // no linear constraints for this lightweight ctor
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(BaseConstructor) called to build base "
-       << "class data for letter object." << std::endl;
-#endif
 }
 
 
 /** The default constructor: constraintsRep is NULL in this case (a
     populated problem_db is needed to build a meaningful Constraints
-    object).  This makes it necessary to check for NULL in the copy
-    constructor, assignment operator, and destructor. */
-Constraints::Constraints(): constraintsRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints() called to build empty "
-       << "variable constraints object." << std::endl;
-#endif
-}
+    object). */
+Constraints::Constraints()
+{ /* empty ctor */ }
 
 
 /** The envelope constructor only needs to extract enough data to
@@ -106,15 +86,9 @@ Constraints::Constraints(): constraintsRep(NULL), referenceCount(1)
     inherited by the derived classes. */
 Constraints::
 Constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd):
-  referenceCount(1) // not used since this is the envelope, not the letter
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(ProblemDescDB&,cnst std:pair<short,short>&)"
-       << " called to instantiate envelope." << std::endl;
-#endif
-
   // Set the rep pointer to the appropriate variable constraints type
-  constraintsRep = get_constraints(problem_db, svd);
+  constraintsRep(get_constraints(problem_db, svd))
+{
   if (!constraintsRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -122,26 +96,24 @@ Constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd):
 
 /** Initializes constraintsRep to the appropriate derived type, as given
     by the variables view. */
-Constraints* Constraints::
+std::shared_ptr<Constraints> Constraints::
 get_constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_constraints(ProblemDescDB&)."
-       << std::endl;
-#endif
-
   short active_view = svd.view().first;
   switch (active_view) {
   case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
   case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
-    return new MixedVarConstraints(problem_db, svd);   break;
+    return std::make_shared<MixedVarConstraints>(problem_db, svd);
+    break;
   case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
   case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
-    return new RelaxedVarConstraints(problem_db, svd); break;
+    return std::make_shared<RelaxedVarConstraints>(problem_db, svd);
+    break;
   default:
     Cerr << "Constraints active view " << active_view << " not currently "
 	 << "supported in derived Constraints classes." << std::endl;
-    return NULL;                                       break;
+    return std::shared_ptr<Constraints>();
+    break;
   }
 }
 
@@ -151,15 +123,9 @@ get_constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd)
     default derived/base constructors, followed by a reshape() based
     on vars_comps. */
 Constraints::Constraints(const SharedVariablesData& svd):
-  referenceCount(1) // not used since this is the envelope, not the letter
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(const std::pair<short,short>&) called "
-       << "to instantiate envelope." << std::endl;
-#endif
-
   // Set the rep pointer to the appropriate variable constraints type
-  constraintsRep = get_constraints(svd);
+  constraintsRep(get_constraints(svd))
+{
   if (!constraintsRep)
     abort_handler(-1);
 }
@@ -167,95 +133,45 @@ Constraints::Constraints(const SharedVariablesData& svd):
 
 /** Initializes constraintsRep to the appropriate derived type, as given by
     the variables view. The default derived class constructors are invoked. */
-Constraints* Constraints::get_constraints(const SharedVariablesData& svd) const
+std::shared_ptr<Constraints>
+Constraints::get_constraints(const SharedVariablesData& svd) const
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_constraints(pair<short,short>&)"
-       << std::endl;
-#endif
-
   short active_view = svd.view().first;
   switch (active_view) {
   case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
   case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
-    return new MixedVarConstraints(svd);   break;
+    return std::make_shared<MixedVarConstraints>(svd);
+    break;
   case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
   case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
-    return new RelaxedVarConstraints(svd); break;
+    return std::make_shared<RelaxedVarConstraints>(svd);
+    break;
   default:
     Cerr << "Constraints active view " << active_view << " not currently "
 	 << "supported in derived Constraints classes." << std::endl;
-    return NULL;                           break;
+    return std::shared_ptr<Constraints>();
+    break;
   }
 }
 
 
-/** Copy constructor manages sharing of constraintsRep and incrementing
-    of referenceCount. */
+/** Copy constructor manages sharing of constraintsRep */
 Constraints::Constraints(const Constraints& con)
 {
-  // Increment new (no old to decrement)
   constraintsRep = con.constraintsRep;
-  if (constraintsRep) // Check for an assignment of NULL
-    ++constraintsRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::Constraints(Constraints&)" << std::endl;
-  if (constraintsRep)
-    Cout << "constraintsRep referenceCount = " << constraintsRep->referenceCount
-	 << std::endl;
-#endif
 }
 
 
-/** Assignment operator decrements referenceCount for old constraintsRep,
-    assigns new constraintsRep, and increments referenceCount for new
-    constraintsRep. */
+/** Assignment operator shares the constraintsRep with this envelope. */
 Constraints Constraints::operator=(const Constraints& con)
 {
-  if (constraintsRep != con.constraintsRep) { // normal case: old != new
-    // Decrement old
-    if (constraintsRep) // Check for NULL
-      if ( --constraintsRep->referenceCount == 0 ) 
-	delete constraintsRep;
-    // Assign and increment new
-    constraintsRep = con.constraintsRep;
-    if (constraintsRep) // Check for NULL
-      ++constraintsRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::operator=(Constraints&)" << std::endl;
-  if (constraintsRep)
-    Cout << "constraintsRep referenceCount = " << constraintsRep->referenceCount
-	 << std::endl;
-#endif
-
+  constraintsRep = con.constraintsRep;
   return *this; // calls copy constructor since returned by value
 }
 
 
-/** Destructor decrements referenceCount and only deletes constraintsRep
-    when referenceCount reaches zero. */
 Constraints::~Constraints()
-{ 
-  // Check for NULL pointer 
-  if (constraintsRep) {
-    --constraintsRep->referenceCount;
-#ifdef REFCOUNT_DEBUG
-    Cout << "constraintsRep referenceCount decremented to " 
-         << constraintsRep->referenceCount << std::endl;
-#endif
-    if (constraintsRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting constraintsRep" << std::endl;
-#endif
-      delete constraintsRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 
 void Constraints::build_active_views()
@@ -381,13 +297,7 @@ Constraints Constraints::copy() const
 {
   // the envelope class instantiates a new envelope and a new letter and copies
   // current attributes into the new objects.
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Constraints::copy() called to generate a deep copy with no "
-       << "representation sharing." << std::endl;
-#endif
-
-  Constraints con; // new envelope: referenceCount=1, constraintsRep=NULL
+  Constraints con; // new envelope: constraintsRep=NULL
 
   if (constraintsRep) {
     // new letter: allocate a constraintsRep
