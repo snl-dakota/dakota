@@ -518,8 +518,9 @@ initialize_distribution_types(short u_space_type,
     abort_handler(MODEL_ERROR);
   }
 
-  Pecos::MarginalsCorrDistribution* u_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)u_dist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> u_dist_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (u_dist.multivar_dist_rep());
   u_dist_rep->initialize_types(u_types, active_rv);
 }
 

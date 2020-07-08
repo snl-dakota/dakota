@@ -43,8 +43,7 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   modelExportPrefix(
     problem_db.get_string("model.surrogate.model_export_prefix")),
   modelExportFormat(
-    problem_db.get_ushort("model.surrogate.model_export_format")),
-  dataRep(NULL), referenceCount(1)
+    problem_db.get_ushort("model.surrogate.model_export_format"))
 {
   // increment the buildDataOrder based on derivative usage and response
   // gradient/Hessian specifications and approximation type support.  The
@@ -90,11 +89,6 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
 
   // initialize sequence of one empty key for Approximation::approxData
   approxDataKeys.resize(1);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(BaseConstructor) called to build "
-       << "base class for letter." << std::endl;
-#endif
 }
 
 
@@ -109,8 +103,7 @@ SharedApproxData::
 SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 		 size_t num_vars, short data_order, short output_level):
   numVars(num_vars), approxType(approx_type), outputLevel(output_level),
-  modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
-  dataRep(NULL), referenceCount(1)
+  modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix("")
 {
   bool global_approx = strbegins(approxType, "global_");
   buildDataOrder = 1;
@@ -139,42 +132,23 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 
   // initialize sequence of one empty key for first Approximation::approxData
   approxDataKeys.resize(1);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(NoDBBaseConstructor) called to "
-       << "build base class for letter." << std::endl;
-#endif
 }
 
 
-/** For the default constructor, dataRep is NULL.  This makes it
-    necessary to check for NULL in the copy constructor, assignment
-    operator, and destructor. */
-SharedApproxData::SharedApproxData():
+/** For the default constructor, dataRep is NULL. */
+SharedApproxData::SharedApproxData() //:
   //buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
   //modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
-  dataRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData() called to build empty "
-       << "approximation object." << std::endl;
-#endif
-}
+{ /* empty ctor */}
 
 
 /** Envelope constructor only needs to extract enough data to properly
     execute get_shared_data, since SharedApproxData(BaseConstructor, problem_db)
     builds the actual base class data for the derived approximations. */
 SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
-  referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(ProblemDescDB&) called to "
-       << "instantiate envelope." << std::endl;
-#endif
-
   // Set the rep pointer to the appropriate derived type
-  dataRep = get_shared_data(problem_db, num_vars);
+  dataRep(get_shared_data(problem_db, num_vars))
+{
   if ( !dataRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -182,14 +156,9 @@ SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
 
 /** Used only by the envelope constructor to initialize dataRep to the 
     appropriate derived type. */
-SharedApproxData* SharedApproxData::
+std::shared_ptr<SharedApproxData> SharedApproxData::
 get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_shared_data(ProblemDescDB&)."
-       << std::endl;
-#endif
-
   const String& approx_type = problem_db.get_string("model.surrogate.type");
   //if (approx_type == "local_taylor")
   //  return new SharedTaylorApproxData(problem_db, num_vars);
@@ -197,10 +166,10 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
   //  return new SharedTANA3ApproxData(problem_db, num_vars);
   if (strends(approx_type, "_orthogonal_polynomial") ||
       strends(approx_type, "_interpolation_polynomial"))
-    return new SharedPecosApproxData(problem_db, num_vars);
+    return std::make_shared<SharedPecosApproxData>(problem_db, num_vars);
 #ifdef HAVE_C3
   else if (approx_type == "global_function_train")
-    return new SharedC3ApproxData(problem_db, num_vars);
+    return std::make_shared<SharedC3ApproxData>(problem_db, num_vars);
 #endif
   //else if (approx_type == "global_gaussian")
   //  return new SharedGaussProcApproxData(problem_db, num_vars);
@@ -210,14 +179,18 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 	   approx_type == "global_neural_network" || // TO DO: Two ANN's ?
 	   approx_type == "global_radial_basis"   ||
 	   approx_type == "global_mars"           ||
-	   approx_type == "global_moving_least_squares")
-    return new SharedSurfpackApproxData(problem_db, num_vars);
+	   approx_type == "global_moving_least_squares" ||
+	   // Overloading use of SharedSurfpackApproxData for now:
+	   approx_type == "global_exp_gauss_proc" ||
+	   approx_type == "global_exp_poly")
+    return std::make_shared<SharedSurfpackApproxData>(problem_db, num_vars);
 #endif // HAVE_SURFPACK
   else {
     //Cerr << "Error: SharedApproxData type " << approx_type
     //     << " not available." << std::endl;
     //return NULL;
-    return new SharedApproxData(BaseConstructor(), problem_db, num_vars);
+    return std::shared_ptr<SharedApproxData>
+      (new SharedApproxData(BaseConstructor(), problem_db, num_vars));
   }
 }
 
@@ -228,16 +201,10 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 SharedApproxData::
 SharedApproxData(const String& approx_type, const UShortArray& approx_order,
 		 size_t num_vars, short data_order, short output_level):
-  referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(String&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   // Set the rep pointer to the appropriate derived type
-  dataRep = get_shared_data(approx_type, approx_order, num_vars,
-			    data_order, output_level);
+  dataRep(get_shared_data(approx_type, approx_order, num_vars,
+			  data_order, output_level))
+{
   if ( !dataRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -245,28 +212,22 @@ SharedApproxData(const String& approx_type, const UShortArray& approx_order,
 
 /** Used only by the envelope constructor to initialize dataRep to the 
     appropriate derived type. */
-SharedApproxData* SharedApproxData::
+std::shared_ptr<SharedApproxData> SharedApproxData::
 get_shared_data(const String& approx_type, const UShortArray& approx_order, 
 		size_t num_vars, short data_order, short output_level)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_shared_data(String&)."
-       << std::endl;
-#endif
-
-  SharedApproxData* approx;
   //if (approx_type == "local_taylor")
   //  approx = new SharedTaylorApproxData(num_vars, data_order, output_level);
   //else if (approx_type == "multipoint_tana")
   //  approx = new SharedTANA3ApproxData(num_vars, data_order, output_level);
   if (strends(approx_type, "_orthogonal_polynomial") ||
       strends(approx_type, "_interpolation_polynomial"))
-    approx = new SharedPecosApproxData(approx_type, approx_order, num_vars,
-				       data_order, output_level);
+    return std::make_shared<SharedPecosApproxData>
+      (approx_type, approx_order, num_vars, data_order, output_level);
 #ifdef HAVE_C3
   else if (approx_type == "global_function_train")
-    approx = new SharedC3ApproxData(approx_type, approx_order, num_vars,
-				    data_order, output_level);
+    return std::make_shared<SharedC3ApproxData>
+      (approx_type, approx_order, num_vars, data_order, output_level);
 #endif
   //else if (approx_type == "global_gaussian")
   //  approx = new SharedGaussProcApproxData(num_vars, data_order,output_level);
@@ -279,86 +240,37 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
 	   approx_type == "global_moving_least_squares" ||
        approx_type == "global_voronoi_surrogate"
            )
-    approx = new SharedSurfpackApproxData(approx_type, approx_order, num_vars,
-					  data_order, output_level);
+    return std::make_shared<SharedSurfpackApproxData>
+      (approx_type, approx_order, num_vars, data_order, output_level);
 #endif // HAVE_SURFPACK
   else {
     //Cerr << "Error: ApproxData type " << approx_type << " not available."
     //     << std::endl;
     //approx = NULL;
-    approx = new SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars,
-				  data_order, output_level);
+    return std::shared_ptr<SharedApproxData>
+      (new SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars,
+			    data_order, output_level));
   }
-  return approx;
+  return std::shared_ptr<SharedApproxData>();
 }
 
 
-/** Copy constructor manages sharing of dataRep and incrementing
-    of referenceCount. */
-SharedApproxData::SharedApproxData(const SharedApproxData& shared_data)
-{
-  // Increment new (no old to decrement)
-  dataRep = shared_data.dataRep;
-  if (dataRep) // Check for an assignment of NULL
-    ++dataRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::SharedApproxData(SharedApproxData&)" << std::endl;
-  if (dataRep)
-    Cout << "dataRep referenceCount = " << dataRep->referenceCount
-	 << std::endl;
-#endif
-}
+/** Copy constructor manages sharing of dataRep. */
+SharedApproxData::SharedApproxData(const SharedApproxData& shared_data):
+  dataRep(shared_data.dataRep)
+{ /* empty ctor */ }
 
 
-/** Assignment operator decrements referenceCount for old dataRep, assigns
-    new dataRep, and increments referenceCount for new dataRep. */
 SharedApproxData SharedApproxData::
 operator=(const SharedApproxData& shared_data)
 {
-  if (dataRep != shared_data.dataRep) { // normal case: old != new
-    // Decrement old
-    if (dataRep) // Check for NULL
-      if ( --dataRep->referenceCount == 0 ) 
-	delete dataRep;
-    // Assign and increment new
-    dataRep = shared_data.dataRep;
-    if (dataRep) // Check for NULL
-      ++dataRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedApproxData::operator=(SharedApproxData&)" << std::endl;
-  if (dataRep)
-    Cout << "dataRep referenceCount = " << dataRep->referenceCount
-	 << std::endl;
-#endif
-
+  dataRep = shared_data.dataRep;
   return *this; // calls copy constructor since returned by value
 }
 
 
-/** Destructor decrements referenceCount and only deletes dataRep
-    when referenceCount reaches zero. */
 SharedApproxData::~SharedApproxData()
-{ 
-  // Check for NULL pointer 
-  if (dataRep) {
-    --dataRep->referenceCount;
-#ifdef REFCOUNT_DEBUG
-    Cout << "dataRep referenceCount decremented to " 
-	 << dataRep->referenceCount << std::endl;
-#endif
-    if (dataRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataRep" << std::endl;
-#endif
-      delete dataRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 
 void SharedApproxData::active_model_key(const UShortArray& key)

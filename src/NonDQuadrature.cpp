@@ -41,7 +41,8 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
-  tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
+  tpqDriver = std::static_pointer_cast<Pecos::TensorProductDriver>
+    (numIntDriver.driver_rep());
 
   //check_variables(x_dist.random_variables());
   // TO DO: create a ProbabilityTransformModel, if needed
@@ -92,7 +93,8 @@ NonDQuadrature(Model& model, unsigned short quad_order,
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
-  tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
+  tpqDriver = std::static_pointer_cast<Pecos::TensorProductDriver>
+    (numIntDriver.driver_rep());
 
   tpqDriver->mode(driver_mode);
 
@@ -116,7 +118,8 @@ NonDQuadrature(Model& model, unsigned short quad_order,
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
-  tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
+  tpqDriver = std::static_pointer_cast<Pecos::TensorProductDriver>
+    (numIntDriver.driver_rep());
 
   tpqDriver->mode(driver_mode);
 
@@ -140,7 +143,8 @@ NonDQuadrature(Model& model, unsigned short quad_order,
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
-  tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
+  tpqDriver = std::static_pointer_cast<Pecos::TensorProductDriver>
+    (numIntDriver.driver_rep());
 
   tpqDriver->mode(driver_mode);
 

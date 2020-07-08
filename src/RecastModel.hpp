@@ -597,7 +597,7 @@ private:
 
 
 inline RecastModel::~RecastModel()
-{ } // Virtual destructor handles referenceCount at Strategy level.
+{ }
 
 
 inline bool RecastModel::nonlinear_variables_mapping() const

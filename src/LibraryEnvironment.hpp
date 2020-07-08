@@ -76,6 +76,7 @@ public:
   /// Check database contents, broadcast, and construct iterators
   void done_modifying_db();
 
+  /// DEPRECATED raw pointer version: transfers memory ownership to Dakota
   /// Plug-in the passed interface into any interface matching the
   /// specified (possibly empty) model, interface, and driver strings;
   /// returns true if a plugin was performed
@@ -83,6 +84,14 @@ public:
 			const String& interf_type,
 			const String& an_driver,
 			Interface* plugin_iface);
+
+  /// Plug-in the passed interface into any interface matching the
+  /// specified (possibly empty) model, interface, and driver strings;
+  /// returns true if a plugin was performed
+  bool plugin_interface(const String& model_type,
+			const String& interf_type,
+			const String& an_driver,
+			std::shared_ptr<Interface> plugin_iface);
 
   /// filter the available Interface instances based on matching interface
   /// type and analysis drivers (empty String matches any)

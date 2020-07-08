@@ -319,7 +319,7 @@ public:
 
   /// returns approxRep for access to derived class member functions
   /// that are not mapped to the top Approximation level
-  Approximation* approx_rep() const;
+  std::shared_ptr<Approximation> approx_rep() const;
 
 protected:
 
@@ -368,8 +368,9 @@ protected:
   /// label for approximation, if applicable
   String approxLabel;
 
+  // BMA: left this as pointer to rep even though could be to envelope
   /// contains the approximation data that is shared among the response set
-  SharedApproxData* sharedDataRep;
+  std::shared_ptr<SharedApproxData> sharedDataRep;
 
 private:
 
@@ -379,22 +380,20 @@ private:
 
   /// Used only by the standard envelope constructor to initialize
   /// approxRep to the appropriate derived type.
-  Approximation* get_approx(ProblemDescDB& problem_db,
-			    const SharedApproxData& shared_data,
-                            const String& approx_label);
+  std::shared_ptr<Approximation>
+  get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
+	     const String& approx_label);
 
   /// Used only by the alternate envelope constructor to initialize
   /// approxRep to the appropriate derived type.
-  Approximation* get_approx(const SharedApproxData& shared_data);
+  std::shared_ptr<Approximation> get_approx(const SharedApproxData& shared_data);
 
   //
   //- Heading: Data
   //
 
   /// pointer to the letter (initialized only for the envelope)
-  Approximation* approxRep;
-  /// number of objects sharing approxRep
-  int referenceCount;
+  std::shared_ptr<Approximation> approxRep;
 };
 
 
@@ -599,7 +598,7 @@ inline void Approximation::check_points(size_t num_build_pts)
 }
 
 
-inline Approximation* Approximation::approx_rep() const
+inline std::shared_ptr<Approximation> Approximation::approx_rep() const
 { return approxRep; }
 
 } // namespace Dakota

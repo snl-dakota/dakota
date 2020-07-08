@@ -105,8 +105,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     }
 
     if (basis_expansion) {
-      actualModel.assign_rep(new
-	ProbabilityTransformModel(problem_db.get_model(), u_space_type), false);
+      actualModel.assign_rep(std::make_shared<ProbabilityTransformModel>
+			     (problem_db.get_model(), u_space_type));
       // overwrite mvDist from Model ctor by copying transformed u-space dist
       // (keep them distinct to allow for different active views).
       // construct time augmented with run time pull_distribution_parameters().
@@ -169,8 +169,9 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   }
   // size approxInterface based on currentResponse, which is constructed from
   // DB response spec, since actualModel could contain response aggregations
-  approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
-    cache, am_interface_id, currentResponse.function_labels()), false);
+  approxInterface.assign_rep(std::make_shared<ApproximationInterface>
+			     (problem_db, vars, cache, am_interface_id,
+			      currentResponse.function_labels()));
 
   // initialize the basis, if needed
   if (basis_expansion)
@@ -260,9 +261,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // assign the ApproximationInterface instance which manages the
   // local/multipoint/global approximation.  By instantiating with assign_rep(),
   // Interface::get_interface() does not need special logic for approximations.
-  approxInterface.assign_rep(new ApproximationInterface(approx_type,
+  approxInterface.assign_rep(std::make_shared<ApproximationInterface>(approx_type,
     approx_order, actualModel.current_variables(), cache,
-    actualModel.interface_id(), numFns, data_order, outputLevel), false);
+    actualModel.interface_id(), numFns, data_order, outputLevel));
 
   if (!daceIterator.is_null()) // global DACE approximations
     daceIterator.sub_iterator_flag(true);

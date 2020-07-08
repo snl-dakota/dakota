@@ -23,10 +23,16 @@ AdaptedBasisModel* AdaptedBasisModel::abmInstance(NULL);
 
 AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
-  pcePilotExpansion(pcePilotExpRepPtr, false), numFullspaceVars(subModel.cv()),
+  numFullspaceVars(subModel.cv()),
   numFunctions(subModel.response_size()), adaptedBasisInitialized(false),
   reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
 {
+  // BMA: can't do this in get_sub_model as Iterator envelope hasn't
+  // been default constructed yet; for now we transfer ownership of
+  // this pointer into a shared pointer, as delete isn't being called
+  // in this class anyway.
+  pcePilotExpansion.assign_rep(std::shared_ptr<NonDPolynomialChaos>
+			       (pcePilotExpRepPtr));
   modelType = "adapted_basis";
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
@@ -649,8 +655,9 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nAdapted Basis Model: sd_y =\n" << sd_y;
 
-  Pecos::MarginalsCorrDistribution* reduced_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> reduced_dist_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_y);
   reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_y);
 

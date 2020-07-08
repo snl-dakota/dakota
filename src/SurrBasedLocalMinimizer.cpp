@@ -189,12 +189,12 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     // = (!optimizationFlag && approxSubProbObj == SINGLE_OBJECTIVE &&
     //    iteratedModel.hessian_type() == "none") ? gnewton_set_recast : NULL;
 
-    approxSubProbModel.assign_rep(new RecastModel(iteratedModel,
+    approxSubProbModel.assign_rep(std::make_shared<RecastModel>(iteratedModel,
       recast_vars_map, recast_vars_comps_total, all_relax_di, all_relax_dr,
-      false, NULL, set_recast, recast_primary_resp_map,
+      false, nullptr, set_recast, recast_primary_resp_map,
       recast_secondary_resp_map, recast_offset, recast_resp_order,
       nonlinear_resp_map, approx_subprob_objective_eval,
-      approx_subprob_constraint_eval), false);
+      approx_subprob_constraint_eval));
 
     // these formulations have converted multiple objectives or
     // calibration terms to a single objective
@@ -244,12 +244,14 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
 	constraintTol = aspm_constr_tol;
       else { // neither has spec: assign default and enforce consistency
 	constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
-	Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
+	std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
+	  (approxSubProbMinimizer.iterator_rep());
 	aspm->constraint_tolerance(constraintTol);
       }
     }
     else { // SBLM method spec takes precedence over approxSubProbMinimizer spec
-      Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
+      std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
+	(approxSubProbMinimizer.iterator_rep());
       aspm->constraint_tolerance(constraintTol);
     }
     probDescDB.set_db_method_node(method_index); // restore method only
@@ -260,7 +262,8 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
       = probDescDB.get_iterator(approx_method_name, approxSubProbModel);
     if (constraintTol <= 0.) // not specified in SBLM method spec
       constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
-    Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
+    std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
+      (approxSubProbMinimizer.iterator_rep());
     aspm->constraint_tolerance(constraintTol);
   }
 }
@@ -1359,11 +1362,11 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
     
     // setup optimization problem for updating tau
 #ifdef HAVE_NPSOL
-    tau_minimizer.assign_rep(new NPSOLOptimizer(tau_and_x_initial,
+    tau_minimizer.assign_rep(std::make_shared<NPSOLOptimizer>(tau_and_x_initial,
       tau_and_x_lower_bnds, tau_and_x_upper_bnds, lin_ineq_coeffs,
       lin_ineq_lower_bnds, lin_ineq_lower_bnds, lin_eq_coeffs, lin_eq_targets,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,
-      hom_objective_eval, hom_constraint_eval, deriv_level, conv_tol), false);
+      hom_objective_eval, hom_constraint_eval, deriv_level, conv_tol));
 #endif
 
     // find optimum tau by solving approximate subproblem

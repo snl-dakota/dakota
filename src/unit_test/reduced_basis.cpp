@@ -370,7 +370,7 @@ TEUCHOS_UNIT_TEST(reduced_basis, truncations)
 #ifdef HAVE_DAKOTA_SURROGATES
 
 #include "DakotaSurrogatesGP.hpp"
-#include "GaussianProcess.hpp"
+#include "SurrogatesGaussianProcess.hpp"
 
 
 // test construction and evaluation of a GP surrogate from data
@@ -414,7 +414,8 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module0)
   // construct the GP
   Approximation gp_approx(shared_approx_data);
   gp_approx.add_array(vars, resp);
-  SurrogatesGPApprox* gp_derived = static_cast<SurrogatesGPApprox*>(gp_approx.approx_rep());
+  auto gp_derived = 
+    std::static_pointer_cast<SurrogatesGPApprox>(gp_approx.approx_rep());
   auto& plist = gp_derived->getSurrogateOpts();
   plist.sublist("Nugget").set("fixed nugget", 1.0e-12);
   gp_approx.build();
@@ -523,8 +524,9 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module1)
   // construct the GP
   Approximation gp_approx(shared_approx_data);
   gp_approx.add_array(vars, resp);
-  SurrogatesGPApprox* gp_derived = static_cast<SurrogatesGPApprox*>(gp_approx.approx_rep());
-  auto& plist = gp_derived->getSurrogateOpts();
+  SurrogatesGPApprox& gp_derived =
+    *std::dynamic_pointer_cast<SurrogatesGPApprox>(gp_approx.approx_rep());
+  auto& plist = gp_derived.getSurrogateOpts();
   plist.sublist("Nugget").set("fixed nugget", 1.0e-10);
   plist.sublist("Trend").set("estimate trend", false);
   plist.set("gp seed", 42);

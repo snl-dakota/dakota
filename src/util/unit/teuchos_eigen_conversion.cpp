@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 
-#include "common_utils.hpp"
+#include "util_common.hpp"
 #include "util_data_types.hpp"
 
 #include "Teuchos_UnitTestHarness.hpp"

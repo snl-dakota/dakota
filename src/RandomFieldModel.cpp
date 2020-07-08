@@ -385,8 +385,9 @@ void RandomFieldModel::initialize_rf_coeffs()
     // get submodel normal parameters (could get from current object as well)
     const Pecos::MultivariateDistribution& sm_dist
       = subModel.multivariate_distribution();
-    Pecos::MarginalsCorrDistribution* sm_mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)sm_dist.multivar_dist_rep();
+    std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+      (sm_dist.multivar_dist_rep());
     RealVector normal_means, normal_stdev, normal_lb, normal_ub;
     sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
     sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
@@ -418,8 +419,9 @@ void RandomFieldModel::initialize_rf_coeffs()
         continuous_variable_label(sm_cv_labels[i], actualReducedRank + i);
 
     // update mvDist for the RandomFieldModel
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+    std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+      (mvDist.multivar_dist_rep());
     mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
     mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
     mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_LWR_BND, normal_lb);

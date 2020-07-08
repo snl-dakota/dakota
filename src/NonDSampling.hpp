@@ -45,6 +45,9 @@ public:
   /// for the provided set of samples
   NonDSampling(Model& model, const RealMatrix& sample_matrix);
 
+  /// destructor
+  ~NonDSampling();
+
   //
   //- Heading: Public member functions
   //
@@ -199,9 +202,6 @@ protected:
                const RealVector& std_devs, const RealVector& lower_bnds,
                const RealVector& upper_bnds, RealSymMatrix& correl);
   
-  /// destructor
-  ~NonDSampling();
-
   //
   //- Heading: Virtual function redefinitions
   //

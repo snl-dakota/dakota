@@ -143,12 +143,6 @@ RelaxedVariables(const ProblemDescDB& problem_db,
   for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
     if (all_relax_dr[ardr_cntr]) allContinuousVars[acv_offset++]    = dssrv[i];
     else                         allDiscreteRealVars[adrv_offset++] = dssrv[i];
-
-#ifdef REFCOUNT_DEBUG
-  const std::pair<short,short>& view = sharedVarsData.view();
-  Cout << "RelaxedVariables letter instantiated: view active = " 
-       << view.first << " inactive = " << view.second << std::endl;
-#endif
 }
 
 

@@ -7,9 +7,9 @@
     _______________________________________________________________________ */
 
 
-#include "common_utils.hpp"
-#include "LinearSolvers.hpp"
-#include "PolynomialRegression.hpp"
+#include "util_common.hpp"
+#include "UtilLinearSolvers.hpp"
+#include "SurrogatesPolynomialRegression.hpp"
 #include "surrogates_tools.hpp"
 
 #include "Teuchos_XMLParameterListCoreHelpers.hpp"

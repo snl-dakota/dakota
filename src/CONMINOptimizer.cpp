@@ -155,9 +155,7 @@ void CONMINOptimizer::initialize()
 
 
 CONMINOptimizer::~CONMINOptimizer()
-{
-  // Virtual destructor handles referenceCount at Iterator level
-}
+{ }
 
 
 void CONMINOptimizer::allocate_constraints()

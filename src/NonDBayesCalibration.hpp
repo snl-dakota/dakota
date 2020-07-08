@@ -693,8 +693,9 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? mcmcModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
-  const Pecos::MarginalsCorrDistribution* mv_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  const std::shared_ptr<Pecos::MarginalsCorrDistribution> mv_dist_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
   const SharedVariablesData& svd
     = iteratedModel.current_variables().shared_data();
   if (mv_dist_rep->correlation()) {

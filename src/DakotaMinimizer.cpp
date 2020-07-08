@@ -399,7 +399,7 @@ void Minimizer::data_transform_model()
   expData.load_data("Least Squares");
 
   iteratedModel.
-    assign_rep(new DataTransformModel(iteratedModel, expData), false);
+    assign_rep(std::make_shared<DataTransformModel>(iteratedModel, expData));
   ++myModelLayers;
   dataTransformModel = iteratedModel;
 
@@ -439,7 +439,7 @@ void Minimizer::data_transform_model()
 void Minimizer::scale_model()
 {
   // iteratedModel becomes the sub-model of a RecastModel:
-  iteratedModel.assign_rep(new ScalingModel(iteratedModel), false);
+  iteratedModel.assign_rep(std::make_shared<ScalingModel>(iteratedModel));
   scalingModel = iteratedModel;
   ++myModelLayers;
 
@@ -1078,7 +1078,9 @@ void Minimizer::archive_best_results() {
     archive_best_residuals();
     archive_best_variables();
   } else { //calibration with data
-    DataTransformModel* dt_model_rep = static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+    std::shared_ptr<DataTransformModel> dt_model_rep =
+      std::static_pointer_cast<DataTransformModel>
+      (dataTransformModel.model_rep());
     if(dt_model_rep->num_config_vars())
       archive_best_variables(true);
     else

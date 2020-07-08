@@ -15,7 +15,6 @@
 #include "dakota_data_io.hpp"
 #include "pecos_global_defs.hpp"
 
-
 namespace Dakota {
 
 DataModelRep::DataModelRep():
@@ -62,7 +61,7 @@ DataModelRep::DataModelRep():
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
-  analyticCovIdForm(NOCOVAR), referenceCount(1)
+  analyticCovIdForm(NOCOVAR)
 { }
 
 
@@ -208,71 +207,22 @@ void DataModelRep::write(std::ostream& s) const
 
 
 DataModel::DataModel(): dataModelRep(new DataModelRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataModel::DataModel(), dataModelRep referenceCount = "
-       << dataModelRep->referenceCount << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
-DataModel::DataModel(const DataModel& data_model)
-{
-  // Increment new (no old to decrement)
-  dataModelRep = data_model.dataModelRep;
-  if (dataModelRep) // Check for an assignment of NULL
-    ++dataModelRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataModel::DataModel(DataModel&)" << std::endl;
-  if (dataModelRep)
-    Cout << "dataModelRep referenceCount = " << dataModelRep->referenceCount
-	 << std::endl;
-#endif
-}
+DataModel::DataModel(const DataModel& data_model):
+  dataModelRep(data_model.dataModelRep)
+{ /* empty ctor */ }
 
 
 DataModel& DataModel::operator=(const DataModel& data_model)
 {
-  if (dataModelRep != data_model.dataModelRep) { // normal case: old != new
-    // Decrement old
-    if (dataModelRep) // Check for NULL
-      if ( --dataModelRep->referenceCount == 0 ) 
-	delete dataModelRep;
-    // Assign and increment new
-    dataModelRep = data_model.dataModelRep;
-    if (dataModelRep) // Check for NULL
-      ++dataModelRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataModel::operator=(DataModel&)" << std::endl;
-  if (dataModelRep)
-    Cout << "dataModelRep referenceCount = " << dataModelRep->referenceCount
-	 << std::endl;
-#endif
-
+  dataModelRep = data_model.dataModelRep;
   return *this;
 }
 
 
 DataModel::~DataModel()
-{
-  if (dataModelRep) { // Check for NULL
-    --dataModelRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "dataModelRep referenceCount decremented to "
-         << dataModelRep->referenceCount << std::endl;
-#endif
-    if (dataModelRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataModelRep" << std::endl;
-#endif
-      delete dataModelRep;
-    }
-  }
-}
+{ /* empty dtor*/ }
 
 } // namespace Dakota

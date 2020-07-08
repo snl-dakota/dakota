@@ -348,7 +348,8 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_reset)
   Dakota::Iterator & dak_iter = *iter_list.begin();
   //Cout << "The iterator is a : " << dak_iter.method_string() << endl;
   dak_iter.print_results(Cout);
-  Dakota::ROLOptimizer * rol_optimizer = dynamic_cast<Dakota::ROLOptimizer*>(dak_iter.iterator_rep());
+  Dakota::ROLOptimizer& rol_optimizer =
+    *std::dynamic_pointer_cast<Dakota::ROLOptimizer>(dak_iter.iterator_rep());
   //Cout << "The iterator is also a ROLOptimizer --> " << ((NULL != rol_optimizer) ? true : false) << endl;
 
   // retrieve the final parameter values
@@ -383,8 +384,8 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_reset)
   new_options.sublist("Status Test").set("Step Tolerance", 1.e-3);
 
   // Tis API is ROL-specific
-  rol_optimizer->reset_solver_options(new_options);
-  rol_optimizer->core_run();
+  rol_optimizer.reset_solver_options(new_options);
+  rol_optimizer.core_run();
 
   // convergence tests:
   double rel_err;

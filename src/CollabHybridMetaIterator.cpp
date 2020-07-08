@@ -109,9 +109,7 @@ CollabHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 
 
 CollabHybridMetaIterator::~CollabHybridMetaIterator()
-{
-  // Virtual destructor handles referenceCount at Iterator level.
-}
+{ }
 
 
 void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)

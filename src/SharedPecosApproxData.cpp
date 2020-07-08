@@ -41,8 +41,8 @@ SharedPecosApproxData(const String& approx_type,
   pecosSharedData =
     Pecos::SharedBasisApproxData(basis_type, approx_order, numVars,
 				 ec_options, bc_options, rc_options);
-  pecosSharedDataRep
-    = (Pecos::SharedPolyApproxData*)pecosSharedData.data_rep();
+  pecosSharedDataRep = std::static_pointer_cast<Pecos::SharedPolyApproxData>
+    (pecosSharedData.data_rep());
 }
 
 
@@ -67,8 +67,8 @@ SharedPecosApproxData(ProblemDescDB& problem_db, size_t num_vars):
   pecosSharedData =
     Pecos::SharedBasisApproxData(basis_type, approx_order, numVars,
 				 ec_options, bc_options, rc_options);
-  pecosSharedDataRep
-    = (Pecos::SharedPolyApproxData*)pecosSharedData.data_rep();
+  pecosSharedDataRep = std::static_pointer_cast<Pecos::SharedPolyApproxData>
+    (pecosSharedData.data_rep());
 }
 
 
@@ -105,7 +105,8 @@ approx_type_to_basis_type(const String& approx_type, short& basis_type)
 
 void SharedPecosApproxData::integration_iterator(const Iterator& iterator)
 {
-  NonDIntegration* integration_rep = (NonDIntegration*)iterator.iterator_rep();
+  std::shared_ptr<NonDIntegration> integration_rep =
+    std::static_pointer_cast<NonDIntegration>(iterator.iterator_rep());
   pecosSharedDataRep->integration_driver_rep(
     integration_rep->driver().driver_rep());
 }

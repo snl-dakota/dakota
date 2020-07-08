@@ -99,7 +99,7 @@ protected:
 
   /// Specialization of copy_rep; pulls base class data as well as
   /// derived specific data from the source rep into the this object.
-  void copy_rep(Response* source_resp_rep);
+  void copy_rep(std::shared_ptr<Response> source_resp_rep) override;
 
 private:
 

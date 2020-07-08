@@ -56,9 +56,9 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 3; // gradient-based quasi-Newton optimizers
-  minMaxModel.assign_rep(
-    new RecastModel(iteratedModel, recast_vars_comps_total, all_relax_di,
-		    all_relax_dr, 1, 0, 0, recast_resp_order), false);
+  minMaxModel.assign_rep(std::make_shared<RecastModel>
+			 (iteratedModel, recast_vars_comps_total, all_relax_di,
+			  all_relax_dr, 1, 0, 0, recast_resp_order));
 
   unsigned short opt_algorithm = probDescDB.get_ushort("method.sub_method");
   if (opt_algorithm == SUBMETHOD_SQP) {
@@ -99,14 +99,14 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
   if (npsolFlag) {
 #ifdef HAVE_NPSOL  
     int npsol_deriv_level = 3;
-    minMaxOptimizer.assign_rep(new 
-      NPSOLOptimizer(minMaxModel, npsol_deriv_level, convergenceTol), false);
+    minMaxOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
+			       (minMaxModel, npsol_deriv_level, convergenceTol));
 #endif // HAVE_NPSOL
   }
   else {
 #ifdef HAVE_OPTPP
-    minMaxOptimizer.assign_rep(new
-      SNLLOptimizer("optpp_q_newton", minMaxModel), false);
+    minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			       ("optpp_q_newton", minMaxModel));
 #endif // HAVE_OPTPP
   }
 
@@ -194,7 +194,8 @@ void NonDLocalInterval::core_run()
   BoolDequeArray nonlinear_resp_map(1);
   nonlinear_resp_map[0] = BoolDeque(numFunctions, false);
   BoolDeque max_sense(1);
-  RecastModel* model_rep = (RecastModel*)minMaxModel.model_rep();
+  std::shared_ptr<RecastModel> model_rep =
+    std::static_pointer_cast<RecastModel>(minMaxModel.model_rep());
 
   initialize(); // virtual fn for initializing loop controls
 
@@ -306,8 +307,8 @@ void NonDLocalInterval::method_recourse()
   if (npsolFlag) {
     // if NPSOL already assigned, then reassign; otherwise just set the flag.
 #ifdef HAVE_OPTPP
-    minMaxOptimizer.assign_rep(
-      new SNLLOptimizer("optpp_q_newton", minMaxModel), false);
+    minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			       ("optpp_q_newton", minMaxModel));
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalInterval "
 	 << "(OPT++ NIP unavailable).\n";

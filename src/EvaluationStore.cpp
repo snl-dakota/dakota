@@ -183,9 +183,11 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
   hdf5Stream->create_empty_dataset(eval_ids_scale, {0}, 
       ResultsOutputType::INTEGER, HDF5_CHUNK_SIZE);
   
-  Pecos::MarginalsCorrDistribution* mvd_rep
-        = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
-  allocate_variables(root_group, variables, mvd_rep);
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
+  // BMA: Left this a raw get() due to default of NULL
+  allocate_variables(root_group, variables, mvd_rep.get());
   allocate_response(root_group, response, default_set);
   allocate_metadata(root_group, variables, response, default_set);
   return EvaluationsDBState::ACTIVE;

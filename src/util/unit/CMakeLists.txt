@@ -28,6 +28,13 @@ dakota_add_unit_test(NAME MathToolsTest
 target_include_directories(MathToolsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_link_libraries(MathToolsTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
 
+dakota_add_unit_test(NAME MetricsTest
+  SOURCES util_test_driver.cpp MetricsTest.cpp
+  )
+
+target_include_directories(MetricsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
+target_link_libraries(MetricsTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
+
 
 dakota_add_unit_test(NAME TeuchosEigenConversionTest
   SOURCES util_test_driver.cpp teuchos_eigen_conversion.cpp

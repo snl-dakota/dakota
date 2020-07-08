@@ -11,12 +11,15 @@
 
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
+#include "DataMethod.hpp"
+#include "SharedSurfpackApproxData.hpp"
 
 // Headers from Surrogates module
-#include "Surrogate.hpp"
+#include "SurrogatesBase.hpp"
  
 
 using dakota::MatrixXd;
+using dakota::VectorXd;
 
 
 namespace Dakota {
@@ -36,6 +39,119 @@ SurrogatesBaseApprox::
 SurrogatesBaseApprox(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data)
 { }
+
+
+bool SurrogatesBaseApprox::diagnostics_available()
+{ return true; }
+
+
+Real SurrogatesBaseApprox::diagnostic(const String& metric_type)
+{
+  // BMA TODO: Check for null in case not yet built?!?
+  MatrixXd vars, resp;
+  convert_surrogate_data(vars,resp);
+
+  StringArray diag_set(1, metric_type);
+  auto metric_vals = model->evaluate_metrics(diag_set, vars, resp);
+
+  Cout << std::setw(20) << diag_set[0] << "  " << metric_vals[0] << '\n';
+
+  return metric_vals[0];
+}
+
+
+RealArray
+SurrogatesBaseApprox::cv_diagnostic(const StringArray& metric_types,
+				    unsigned num_folds)
+{
+  MatrixXd vars, resp;
+  convert_surrogate_data(vars,resp);
+
+  VectorXd cv_metrics_eigen =
+    model->cross_validate(vars, resp, metric_types, num_folds, 6716);
+
+  return RealArray(cv_metrics_eigen.data(),
+		   cv_metrics_eigen.data() + cv_metrics_eigen.size());
+}
+
+
+void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
+{
+  // BMA TODO: Check for null in case not yet built?!?
+  String func_description = approxLabel.empty() ?
+    "function " + std::to_string(fn_index+1) : approxLabel;
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+  StringArray diag_set = shared_surf_data_rep->diagnosticSet;
+
+  // conditionally print default diagnostics
+  if (diag_set.empty() && sharedDataRep->outputLevel > NORMAL_OUTPUT)
+    diag_set = {"root_mean_squared", "mean_abs", "rsquared"};
+
+  if (!diag_set.empty()) {
+
+    // making extra copy since may not be cached as Eigen
+    MatrixXd vars, resp;
+    convert_surrogate_data(vars,resp);
+
+    auto metric_vals = model->evaluate_metrics(diag_set, vars, resp);
+
+    Cout << "\nSurrogate quality metrics at build (training) points for "
+	 << func_description << ":\n";
+    for (size_t i=0; i<diag_set.size(); ++i)
+      Cout << std::setw(20) << diag_set[i] << "  " << metric_vals[i] << '\n';
+
+    if (shared_surf_data_rep->crossValidateFlag) {
+      size_t num_folds = shared_surf_data_rep->numFolds;
+      RealArray cv_metrics = cv_diagnostic(diag_set, num_folds);
+      Cout << "\nSurrogate quality metrics (" << num_folds << "-fold CV) for "
+           << func_description << ":\n";
+      for (size_t i=0; i<diag_set.size(); ++i)
+	Cout << std::setw(20) << diag_set[i] << "  " << cv_metrics[i] << '\n';
+    }
+
+    if (shared_surf_data_rep->pressFlag) {
+      RealArray cv_metrics = cv_diagnostic(diag_set, vars.rows());
+      Cout << "\nSurrogate quality metrics (PRESS/leave-one-out) for "
+           << func_description << ":\n";
+      for (size_t i=0; i<diag_set.size(); ++i)
+	Cout << std::setw(20) << diag_set[i] << "  " << cv_metrics[i] << '\n';
+    }
+
+  }
+}
+
+
+void SurrogatesBaseApprox::
+challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+		      const RealVector& challenge_responses)
+{
+  String func_description = approxLabel.empty() ?
+    "function " + std::to_string(fn_index+1) : approxLabel;
+  StringArray diag_set = std::static_pointer_cast<SharedSurfpackApproxData>
+    (sharedDataRep)->diagnosticSet;
+
+  // conditionally print default diagnostics
+  if (diag_set.empty() && sharedDataRep->outputLevel > NORMAL_OUTPUT)
+    diag_set = {"root_mean_squared", "mean_abs", "rsquared"};
+
+  if (!diag_set.empty()) {
+
+    // using Eigen Map to avoid reliance on Teuchos adapter
+    Eigen::Map<Eigen::MatrixXd> vars(challenge_points.values(),
+				     challenge_points.numRows(),
+				     challenge_points.numCols());
+    Eigen::Map<Eigen::MatrixXd> resp(challenge_responses.values(),
+				     challenge_responses.length(), 1);
+
+    auto metric_vals = model->evaluate_metrics(diag_set, vars, resp);
+
+    Cout << "\nSurrogate quality metrics at challenge (test) points for "
+	 << func_description << ":\n";
+    for (size_t i=0; i<diag_set.size(); ++i)
+      Cout << std::setw(20) << diag_set[i] << "  " << metric_vals[i] << '\n';
+  }
+}
 
 
 dakota::ParameterList& SurrogatesBaseApprox::getSurrogateOpts()
@@ -61,13 +177,14 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
   // num_samples x num_qoi
   resp.resize(num_pts, num_qoi);
 
-  // Need to use Teuchos-to-Eigen converters - RWH
-  for (size_t i=0; i<num_pts; ++i)
-  {
-    const RealVector& c_vars = sdv_array[i].continuous_variables();
-    for (size_t j=0; j<num_v; j++){
-      vars(i,j) = c_vars[j];
-    }
+  // gymnastics since underlying merge_data_partial is strongly typed
+  // and can't pass an Eigen type
+  RealArray x(num_v);
+  Eigen::Map<VectorXd> x_eig(x.data(), num_v);
+  for (size_t i=0; i<num_pts; ++i) {
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      sdv_to_realarray(sdv_array[i], x);
+    vars.row(i) = x_eig;
     resp(i,0) = sdr_array[i].response_function();
   }
 }
@@ -75,13 +192,19 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
 
 Real SurrogatesBaseApprox::value(const Variables& vars)
 {
-  return value(vars.continuous_variables());
+  RealVector x_rv(sharedDataRep->numVars);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_rv);
+  return value(x_rv);
 }
 
 
 const RealVector& SurrogatesBaseApprox::gradient(const Variables& vars)
 {
-  return gradient(vars.continuous_variables());
+  RealVector x_rv(sharedDataRep->numVars);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_rv);
+  return gradient(x_rv);
 }
 
 
@@ -98,15 +221,13 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
   const size_t num_vars = c_vars.length();
   const size_t num_qoi = 1;
 
-  // Need to use Teuchos-to-Eigen converters - RWH
-  MatrixXd eval_pts(num_evals, num_vars);
-  MatrixXd pred    (num_evals, num_qoi);
-  for (size_t j = 0; j < num_vars; j++)
-    eval_pts(0,j) = c_vars[j];
+  // Could instead use RowVectorXd
+  Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
+  MatrixXd pred(num_evals, num_qoi);
 
   model->value(eval_pts, pred);
 
-  return pred(0,0); // should only be one prediction using this particular call? - RWH 
+  return pred(0,0);
 }
     
 const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
@@ -114,13 +235,9 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   const size_t num_evals = 1;
   const size_t num_vars = c_vars.length();
 
-  // Need to use Teuchos-to-Eigen converters - RWH
-  MatrixXd eval_pts(num_evals, num_vars);
-  for (size_t j = 0; j < num_vars; j++)
-    eval_pts(0,j) = c_vars[j];
+  Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
 
-  // could avoid the temporary and copy by passing an Eigen view of
-  // approxGradient
+  // not sending Eigen view of approxGradient as model->gradient calls resize()
   const size_t qoi = 0; // only one response for now
   MatrixXd pred_grad(num_evals, num_vars);
   model->gradient(eval_pts, pred_grad, qoi);

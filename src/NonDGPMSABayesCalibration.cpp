@@ -172,8 +172,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   int samples = approxImportFile.empty() ? buildSamples : 0;
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
-  lhsIter.assign_rep(new NonDLHSSampling(mcmcModel, sample_type, samples, 
-					 randomSeed, rng), false);
+  lhsIter.assign_rep(std::make_shared<NonDLHSSampling>
+		     (mcmcModel, sample_type, samples, randomSeed, rng));
 }
 
 

@@ -155,7 +155,7 @@ private:
   /// return pecosSharedData
   Pecos::SharedBasisApproxData& pecos_shared_data();
   /// return pecosSharedDataRep
-  Pecos::SharedPolyApproxData* pecos_shared_data_rep();
+  std::shared_ptr<Pecos::SharedPolyApproxData> pecos_shared_data_rep();
   
   /// utility to convert Dakota type string to Pecos type enumeration
   void approx_type_to_basis_type(const String& approx_type, short& basis_type);
@@ -167,12 +167,11 @@ private:
   /// the Pecos shared approximation data
   Pecos::SharedBasisApproxData pecosSharedData;
   /// convenience pointer to derived letter within pecosSharedData
-  Pecos::SharedPolyApproxData* pecosSharedDataRep;
+  std::shared_ptr<Pecos::SharedPolyApproxData> pecosSharedDataRep;
 };
 
 
-inline SharedPecosApproxData::SharedPecosApproxData():
-  pecosSharedDataRep(NULL)
+inline SharedPecosApproxData::SharedPecosApproxData()
 { }
 
 
@@ -312,21 +311,22 @@ polynomial_basis()
 
 
 inline void SharedPecosApproxData::allocate(const UShort2DArray& mi)
-{ ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->allocate_data(mi); }
+{ std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>
+    (pecosSharedDataRep)->allocate_data(mi); }
 
 
 inline const UShort2DArray& SharedPecosApproxData::multi_index() const
 {
-  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    multi_index();
+  return std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>
+    (pecosSharedDataRep)->multi_index();
 }
 
 
 inline const std::map<UShortArray, UShort2DArray>& SharedPecosApproxData::
 multi_index_map() const
 {
-  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    multi_index_map();
+  return std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>
+    (pecosSharedDataRep)->multi_index_map();
 }
 
 
@@ -337,29 +337,30 @@ sobol_index_map() const
 
 inline void SharedPecosApproxData::coefficients_norms_flag(bool flag)
 {
-  ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    coefficients_norms_flag(flag);
+  std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>
+    (pecosSharedDataRep)->coefficients_norms_flag(flag);
 }
 
 
 inline size_t SharedPecosApproxData::expansion_terms() const
 {
-  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    expansion_terms();
+  return std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>
+    (pecosSharedDataRep)->expansion_terms();
 }
 
 
 inline const UShortArray& SharedPecosApproxData::expansion_order() const
 {
-  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    expansion_order();
+  return std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>
+    (pecosSharedDataRep)->expansion_order();
 }
 
 
 inline void SharedPecosApproxData::expansion_order(const UShortArray& order)
 {
-  Pecos::SharedOrthogPolyApproxData* data_rep
-    = (Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep;
+  std::shared_ptr<Pecos::SharedOrthogPolyApproxData> data_rep =
+    std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>
+    (pecosSharedDataRep);
   if (order != data_rep->expansion_order()) {
     data_rep->expansion_order(order);
     formUpdated[activeKey] = true;    
@@ -369,14 +370,16 @@ inline void SharedPecosApproxData::expansion_order(const UShortArray& order)
 
 inline void SharedPecosApproxData::increment_order()
 {
-  ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->increment_order();
+  std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>
+    (pecosSharedDataRep)->increment_order();
   formUpdated[activeKey] = true;
 }
 
 
 inline void SharedPecosApproxData::decrement_order()
 {
-  ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->decrement_order();
+  std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>
+    (pecosSharedDataRep)->decrement_order();
   formUpdated[activeKey] = true;
 }
 
@@ -394,8 +397,8 @@ configuration_options(const Pecos::BasisConfigOptions& bc_options)
 inline void SharedPecosApproxData::
 configuration_options(const Pecos::RegressionConfigOptions& rc_options)
 {
-  ((Pecos::SharedRegressOrthogPolyApproxData*)pecosSharedDataRep)->
-    configuration_options(rc_options);
+  std::static_pointer_cast<Pecos::SharedRegressOrthogPolyApproxData>
+    (pecosSharedDataRep)->configuration_options(rc_options);
 }
 
 
@@ -407,8 +410,8 @@ inline Pecos::SharedBasisApproxData& SharedPecosApproxData::pecos_shared_data()
 { return pecosSharedData; }
 
 
-inline Pecos::SharedPolyApproxData* SharedPecosApproxData::
-pecos_shared_data_rep()
+inline std::shared_ptr<Pecos::SharedPolyApproxData>
+SharedPecosApproxData::pecos_shared_data_rep()
 { return pecosSharedDataRep; }
 
 } // namespace Dakota

@@ -10,9 +10,10 @@
 
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
+#include "SharedSurfpackApproxData.hpp"
 
 // Headers from Surrogates module
-#include "GaussianProcess.hpp"
+#include "SurrogatesGaussianProcess.hpp"
  
 using dakota::VectorXd;
 using dakota::MatrixXd;
@@ -37,7 +38,12 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 1);
   else if (trend_string == "quadratic")
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
-  else
+  else if (trend_string == "reduced_quadratic")
+  {
+    surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
+    surrogateOpts.sublist("Trend").sublist("Options").set("reduced basis", true);
+  }
+  else if (trend_string == "none")
     surrogateOpts.sublist("Trend").set("estimate trend", false);
 
   // TODO: Surfpack find_nugget is an integer; likely want bool or
@@ -57,6 +63,16 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   // Number of optimization restarts
   int num_restarts = problem_db.get_int("model.surrogate.num_restarts");
   surrogateOpts.set("num restarts", num_restarts);
+
+  // validate supported metrics
+  std::set<std::string> allowed_metrics =
+    { "sum_squared", "mean_squared", "root_mean_squared",
+      "sum_abs", "mean_abs", "max_abs",
+      "sum_abs_percent", "mean_abs_percent", // APE, MAPE
+      "rsquared" };
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+  shared_surf_data_rep->validate_metrics(allowed_metrics);
 }
 
 

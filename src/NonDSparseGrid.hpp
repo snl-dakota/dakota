@@ -49,6 +49,8 @@ public:
 		 short refine_control = Pecos::NO_CONTROL,
 		 bool track_uniq_prod_wts = true);
 
+  ~NonDSparseGrid();                                       ///< destructor
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -112,7 +114,6 @@ protected:
   //
 
   NonDSparseGrid(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDSparseGrid();                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -141,7 +142,7 @@ private:
   /// type of sparse grid driver: combined, incremental, hierarchical, ...
   short ssgDriverType;
   /// convenience pointer to the numIntDriver representation
-  Pecos::SparseGridDriver* ssgDriver;
+  std::shared_ptr<Pecos::SparseGridDriver> ssgDriver;
 
   /// the user specification for the Smolyak sparse grid level, rendered
   /// anisotropic via dimPrefSpec

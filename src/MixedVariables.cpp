@@ -90,12 +90,6 @@ MixedVariables(const ProblemDescDB& problem_db,
   copy_data_partial(daurv, allDiscreteRealVars, start); start += daurv.length();
   copy_data_partial(deurv, allDiscreteRealVars, start); start += deurv.length();
   copy_data_partial(dssrv, allDiscreteRealVars, start);
-
-#ifdef REFCOUNT_DEBUG
-  const std::pair<short,short>& view = sharedVarsData.view();
-  Cout << "MixedVariables letter instantiated: view active = "
-       << view.first << " inactive = " << view.second << endl;
-#endif
 }
 
 

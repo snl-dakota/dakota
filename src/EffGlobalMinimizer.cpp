@@ -100,8 +100,8 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 
   Iterator dace_iterator;
   // The following uses on the fly derived ctor:
-  dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
+  dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, sample_type,
+    samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM));
   // only use derivatives if the user requested and they are available
   dace_iterator.active_set_request_values(dataOrder);
 
@@ -111,14 +111,15 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   //const Variables& curr_vars = iteratedModel.current_variables();
   ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-  fHatModel.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
-    gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
-    outputLevel, sample_reuse, import_pts_file,
-    probDescDB.get_ushort("method.import_build_format"),
-    probDescDB.get_bool("method.import_build_active_only"),
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")), false);
-
+  fHatModel.assign_rep(std::make_shared<DataFitSurrModel>
+    (dace_iterator, iteratedModel,
+     gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
+     outputLevel, sample_reuse, import_pts_file,
+     probDescDB.get_ushort("method.import_build_format"),
+     probDescDB.get_bool("method.import_build_active_only"),
+     probDescDB.get_string("method.export_approx_points_file"),
+     probDescDB.get_ushort("method.export_approx_format")));
+  
   // Following this ctor, IteratorScheduler::init_iterator() initializes the
   // parallel configuration for EffGlobalMinimizer + iteratedModel using
   // EffGlobalMinimizer's maxEvalConcurrency.  During fHatModel construction
@@ -138,15 +139,16 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total; // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 1; // nongradient-based optimizers
-  eifModel.assign_rep(new RecastModel(fHatModel, recast_vars_comps_total, all_relax_di,
-		    all_relax_dr, 1, 0, 0, recast_resp_order), false);
+  eifModel.assign_rep(std::make_shared<RecastModel>
+		      (fHatModel, recast_vars_comps_total, all_relax_di,
+		       all_relax_dr, 1, 0, 0, recast_resp_order));
 
   // must use alternate NoDB ctor chain
   int max_iterations = 10000, max_fn_evals = 50000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
   #ifdef HAVE_NCSU
-    approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations,
-      max_fn_evals, min_box_size, vol_box_size), false);
+  approxSubProbMinimizer.assign_rep(std::make_shared<NCSUOptimizer>(eifModel, max_iterations,
+      max_fn_evals, min_box_size, vol_box_size));
   #else
     Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
          << "Aborting process." << std::endl;
@@ -242,7 +244,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
             primary_resp_map[0].resize(numFunctions);
             for (size_t i=0; i<numFunctions; i++)
                 primary_resp_map[0][i] = i;
-            RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
+	    std::shared_ptr<RecastModel> eif_model_rep =
+	      std::static_pointer_cast<RecastModel>(eifModel.model_rep());
             eif_model_rep->init_maps(vars_map, false, NULL, NULL,
                                       primary_resp_map, secondary_resp_map, nonlinear_resp_map,
                                       EIF_objective_eval, NULL);
@@ -478,7 +481,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
         primary_resp_map[0].resize(numFunctions);
         for (size_t i=0; i<numFunctions; i++)
             primary_resp_map[0][i] = i;
-        RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
+	std::shared_ptr<RecastModel> eif_model_rep =
+	  std::static_pointer_cast<RecastModel>(eifModel.model_rep());
         eif_model_rep->init_maps(vars_map, false, NULL, NULL,
                                   primary_resp_map, secondary_resp_map, nonlinear_resp_map,
                                   EIF_objective_eval, NULL);

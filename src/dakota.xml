@@ -3641,11 +3641,10 @@
 		<keyword  id="experimental_gaussian_process" name="experimental_gaussian_process" code="{N_mom(lit,surrogateType_global_exp_gauss_proc)}" label="Experimental Gaussian Process" minOccurs="1" >
                   <keyword  id="trend1" name="trend" code="{0}" label="Specify Trend Function"  minOccurs="0" default="reduced_quadratic" >
                     <oneOf label="Trend Order">
+                      <keyword  id="none" name="none" code="{N_mom(lit,trendOrder_none)}" label="None"   />
                       <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant"   />
                       <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear"   />
-		      <!--
-                          <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic"   />
-		      -->
+                      <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic"   />
                       <keyword  id="quadratic" name="quadratic" code="{N_mom(lit,trendOrder_quadratic)}" label="Quadratic"   />
                     </oneOf>
                   </keyword>

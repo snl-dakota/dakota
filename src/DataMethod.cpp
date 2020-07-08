@@ -18,7 +18,6 @@
 #include "globals.h"
 #endif
 
-
 namespace Dakota {
 
 DataMethodRep::DataMethodRep():
@@ -185,8 +184,7 @@ DataMethodRep::DataMethodRep():
   importBuildFormat(TABULAR_ANNOTATED),   importBuildActive(false),
   importApproxFormat(TABULAR_ANNOTATED),  importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
-  exportSampleSeqFlag(false), exportSamplesFormat(TABULAR_ANNOTATED),
-  referenceCount(1)
+  exportSampleSeqFlag(false), exportSamplesFormat(TABULAR_ANNOTATED)
 { }
 
 
@@ -686,71 +684,22 @@ void DataMethodRep::write(std::ostream& s) const
 
 
 DataMethod::DataMethod(): dataMethodRep(new DataMethodRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::DataMethod(), dataMethodRep referenceCount = "
-       << dataMethodRep->referenceCount << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
-DataMethod::DataMethod(const DataMethod& data_method)
-{
-  // Increment new (no old to decrement)
-  dataMethodRep = data_method.dataMethodRep;
-  if (dataMethodRep) // Check for an assignment of NULL
-    ++dataMethodRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::DataMethod(DataMethod&)" << std::endl;
-  if (dataMethodRep)
-    Cout << "dataMethodRep referenceCount = " << dataMethodRep->referenceCount
-	 << std::endl;
-#endif
-}
+DataMethod::DataMethod(const DataMethod& data_method):
+  dataMethodRep(data_method.dataMethodRep)
+{ /* empty ctor */ }
 
 
 DataMethod& DataMethod::operator=(const DataMethod& data_method)
 {
-  if (dataMethodRep != data_method.dataMethodRep) { // normal case: old != new
-    // Decrement old
-    if (dataMethodRep) // Check for NULL
-      if ( --dataMethodRep->referenceCount == 0 )
-	delete dataMethodRep;
-    // Assign and increment new
-    dataMethodRep = data_method.dataMethodRep;
-    if (dataMethodRep) // Check for NULL
-      ++dataMethodRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::operator=(DataMethod&)" << std::endl;
-  if (dataMethodRep)
-    Cout << "dataMethodRep referenceCount = " << dataMethodRep->referenceCount
-	 << std::endl;
-#endif
-
+  dataMethodRep = data_method.dataMethodRep;
   return *this;
 }
 
 
 DataMethod::~DataMethod()
-{
-  if (dataMethodRep) { // Check for NULL
-    --dataMethodRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "dataMethodRep referenceCount decremented to "
-         << dataMethodRep->referenceCount << std::endl;
-#endif
-    if (dataMethodRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataMethodRep" << std::endl;
-#endif
-      delete dataMethodRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

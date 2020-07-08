@@ -44,7 +44,8 @@ model,
 	  polynomial quadratic			#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11
 #	  gaussian_process surfpack		#s14,#s15
 #	  experimental_gaussian_process		#s16
-#	    find_nugget	1		#s16
+#	    find_nugget	1                       #s16
+#	    trend none                          #s16
 # Emulate s2 with new surrogate poly:
 #         experimental_polynomial		#s17
 #           basis_order 2			#s17

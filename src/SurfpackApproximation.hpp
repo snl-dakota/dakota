@@ -161,7 +161,7 @@ private:
   SurfData* surfData;
 
   // convenience pointer to shared data representation
-  //SharedSurfpackApproxData* sharedSurfDataRep;
+  //std::shared_ptr<SharedSurfpackApproxData> sharedSurfDataRep;
 };
 
 

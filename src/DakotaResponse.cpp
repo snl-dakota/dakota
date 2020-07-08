@@ -10,8 +10,6 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-//#define REFCOUNT_DEBUG 1
-
 #include "DakotaResponse.hpp"
 #include "SimulationResponse.hpp"
 #include "ExperimentResponse.hpp"
@@ -39,12 +37,11 @@ namespace Dakota {
     and the derived constructor selects this base class constructor in its 
     initialization list (to avoid the recursion of the base class constructor
     calling get_response() again).  Since the letter IS the representation, 
-    its representation pointer is set to NULL (an uninitialized pointer causes
-    problems in ~Response). */
+    its representation pointer is set to NULL. */
 Response::
 Response(BaseConstructor, const Variables& vars,
 	 const ProblemDescDB& problem_db):
-  sharedRespData(problem_db), responseRep(NULL), referenceCount(1)
+  sharedRespData(problem_db)
 {
   // the derivative arrays must accomodate either active or inactive variables,
   // but the default is active variables.  Derivative arrays are resized if a
@@ -97,10 +94,6 @@ Response(BaseConstructor, const Variables& vars,
       }  
     }
   }
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response(BaseConstructor) called to build base class "
-       << "data for letter object." << std::endl;
-#endif
 }
 
 
@@ -113,15 +106,9 @@ Response(BaseConstructor, const Variables& vars,
     option to support I/O in bestResponseArray.front(). */
 Response::
 Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
-  sharedRespData(srd), responseActiveSet(set), responseRep(NULL),
-  referenceCount(1)
+  sharedRespData(srd), responseActiveSet(set)
 {
   shape_rep(set);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response(BaseConstructor) called to build base class "
-       << "data for letter object." << std::endl;
-#endif
 }
 
 
@@ -134,14 +121,9 @@ Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
     option to support I/O in bestResponseArray.front(). */
 Response::Response(BaseConstructor, const ActiveSet& set):
   sharedRespData(set), // minimal unshared definition
-  responseActiveSet(set), responseRep(NULL), referenceCount(1)
+  responseActiveSet(set)
 {
   shape_rep(set);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response(BaseConstructor) called to build base class "
-       << "data for letter object." << std::endl;
-#endif
 }
 
 
@@ -151,27 +133,14 @@ Response::Response(BaseConstructor, const ActiveSet& set):
     SharedResponseData. */
 Response::Response(BaseConstructor, const SharedResponseData& srd):
   sharedRespData(srd), functionValues(srd.num_functions()),
-  responseActiveSet(functionValues.length()), responseRep(NULL),
-  referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response(BaseConstructor) called to build base class "
-       << "data for letter object." << std::endl;
-#endif
-}
+  responseActiveSet(functionValues.length())
+{ /* empty ctor */ }
 
 
 /** The default constructor: responseRep is NULL in this case (a populated
-    problem_db is needed to build a meaningful Response object).  This
-    makes it necessary to check for NULL in the copy constructor, assignment
-    operator, and destructor. */
-Response::Response(): responseRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response() called to build empty response object."
-       << std::endl;
-#endif
-}
+    problem_db is needed to build a meaningful Response object). */
+Response::Response()
+{ /* empty ctor */ }
 
 
 /** This is the primary envelope constructor which uses problem_db to
@@ -181,15 +150,9 @@ Response::Response(): responseRep(NULL), referenceCount(1)
     actual base class data inherited by the derived classes. */
 Response::
 Response(short type, const Variables& vars, const ProblemDescDB& problem_db):
-  referenceCount(1) // not used since this is the envelope, not the letter
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response(short, Variables&, ProblemDescDB&) called to "
-       << "instantiate envelope." << std::endl;
-#endif
-
   // Set the rep pointer to the appropriate derived response class
-  responseRep = get_response(type, vars, problem_db);
+  responseRep(get_response(type, vars, problem_db))
+{
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -199,15 +162,9 @@ Response(short type, const Variables& vars, const ProblemDescDB& problem_db):
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
 Response::Response(const SharedResponseData& srd, const ActiveSet& set):
-  referenceCount(1) // not used since this is the envelope, not the letter
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response(SharedResponseData&, ActiveSet&) called to "
-       << "instantiate envelope." << std::endl;
-#endif
-
   // for responseRep, instantiate the appropriate derived response class
-  responseRep = get_response(srd, set);
+  responseRep(get_response(srd, set))
+{
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -217,15 +174,9 @@ Response::Response(const SharedResponseData& srd, const ActiveSet& set):
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
 Response::Response(short type, const ActiveSet& set):
-  referenceCount(1) // not used since this is the envelope, not the letter
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response(short, ActiveSet&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   // for responseRep, instantiate the appropriate derived response class
-  responseRep = get_response(type, set);
+  responseRep(get_response(type, set))
+{
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -235,205 +186,134 @@ Response::Response(short type, const ActiveSet& set):
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
 Response::Response(const SharedResponseData& srd):
-  referenceCount(1) // not used since this is the envelope, not the letter
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response(SharedResponseData&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   // for responseRep, instantiate the appropriate derived response class
-  responseRep = get_response(srd);
+  responseRep(get_response(srd))
+{
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
 }
 
 
-/** Copy constructor manages sharing of responseRep and incrementing
-    of referenceCount. */
-Response::Response(const Response& resp)
-{
-  responseRep = resp.responseRep;
-  // Increment new (no old to decrement)
-  if (responseRep) // Check for assignment of NULL
-    ++responseRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::Response(Response&)" << std::endl;
-  if (responseRep)
-    Cout << "responseRep referenceCount = " << responseRep->referenceCount
-	 << std::endl;
-#endif
-}
+/** Copy constructor manages sharing of responseRep. */
+Response::Response(const Response& resp):
+  responseRep(resp.responseRep)
+{ /* empty ctor */ }
 
 
-/** Assignment operator decrements referenceCount for old responseRep, assigns
-    new responseRep, and increments referenceCount for new responseRep. */
 Response Response::operator=(const Response& resp)
 {
-  if (responseRep != resp.responseRep) { // normal case: old != new
-    // Decrement old
-    if (responseRep) // Check for NULL
-      if ( --responseRep->referenceCount == 0 ) 
-	delete responseRep;
-    // Assign and increment new
-    responseRep = resp.responseRep;
-    if (responseRep) // Check for NULL
-      ++responseRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Response::operator=(Response&)" << std::endl;
-  if (responseRep)
-    Cout << "responseRep referenceCount = " << responseRep->referenceCount
-	 << std::endl;
-#endif
-
+  responseRep = resp.responseRep;
   return *this; // calls copy constructor since returned by value
 }
 
 
-/** Destructor decrements referenceCount and only deletes responseRep
-    when referenceCount reaches zero. */
 Response::~Response()
-{ 
-  if (responseRep) { // Check for NULL pointer
-    // envelope only: decrement letter reference count and delete if 0
-    --responseRep->referenceCount;
-#ifdef REFCOUNT_DEBUG
-    Cout << "responseRep referenceCount decremented to " 
-         << responseRep->referenceCount << std::endl;
-#endif
-    if (responseRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting responseRep" << std::endl;
-#endif
-      delete responseRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 
 /** Initializes responseRep to the appropriate derived type, as given
     by problem_db attributes.  The standard derived class constructors
     are invoked.  */
-Response* Response::
+std::shared_ptr<Response> Response::
 get_response(short type, const Variables& vars,
 	     const ProblemDescDB& problem_db) const
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_response(short, Variables&, "
-       << "ProblemDescDB&)." << std::endl;
-#endif
-
   // This get_response version invokes the standard constructor.
   switch (type) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(vars, problem_db); break;
+    return std::make_shared<SimulationResponse>(vars, problem_db); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(vars, problem_db); break;
+    return std::make_shared<ExperimentResponse>(vars, problem_db); break;
   case BASE_RESPONSE:
-    return new Response(BaseConstructor(), vars, problem_db); break;
+    return std::shared_ptr<Response>
+      (new Response(BaseConstructor(), vars, problem_db));
+    break;
   default:
     Cerr << "Response type " << type << " not currently supported in derived "
 	 << "Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
 
 /** Initializes responseRep to the appropriate derived type, as given
     by SharedResponseData::responseType. */
-Response* Response::
+std::shared_ptr<Response> Response::
 get_response(const SharedResponseData& srd, const ActiveSet& set) const
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_response()." << std::endl;
-#endif
-
   switch (srd.response_type()) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(srd, set); break;
+    return std::make_shared<SimulationResponse>(srd, set); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(srd, set); break;
+    return std::make_shared<ExperimentResponse>(srd, set); break;
   case BASE_RESPONSE:
-    return new Response(BaseConstructor(), srd, set); break;
+    return std::shared_ptr<Response>(new Response(BaseConstructor(), srd, set));
+    break;
   default:
     Cerr << "Response type " << srd.response_type() << " not currently "
 	 << "supported in derived Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
 
 /** Initializes responseRep to the appropriate derived class, as given
     by type. */
-Response* Response::get_response(short type, const ActiveSet& set) const
+std::shared_ptr<Response>
+Response::get_response(short type, const ActiveSet& set) const
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_response(short, ActiveSet&)."
-       << std::endl;
-#endif
-
   switch (type) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(set); break;
+    return std::make_shared<SimulationResponse>(set); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(set); break;
+    return std::make_shared<ExperimentResponse>(set); break;
   case BASE_RESPONSE:
-    return new Response(BaseConstructor(), set); break;
+    return std::shared_ptr<Response>(new Response(BaseConstructor(), set));
+    break;
   default:
     Cerr << "Response type " << type << " not currently supported in derived "
 	 << "Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
 
 /** Initializes responseRep to the appropriate derived type, as given
     by SharedResponseData::responseType. */
-Response* Response::get_response(const SharedResponseData& srd) const
+std::shared_ptr<Response>
+Response::get_response(const SharedResponseData& srd) const
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_response()." << std::endl;
-#endif
-
   switch (srd.response_type()) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(srd); break;
+    return std::make_shared<SimulationResponse>(srd); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(srd); break;
+    return std::make_shared<ExperimentResponse>(srd); break;
   case BASE_RESPONSE:
-    return new Response(BaseConstructor(), srd); break;
+    return std::shared_ptr<Response>(new Response(BaseConstructor(), srd));
+    break;
   default:
     Cerr << "Response type " << srd.response_type() << " not currently "
 	 << "supported in derived Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
 
 /** Initializes responseRep to the appropriate derived type, as given
     by type. */
-Response* Response::get_response(short type) const
+std::shared_ptr<Response> Response::get_response(short type) const
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_response()." << std::endl;
-#endif
-
   switch (type) {
   case SIMULATION_RESPONSE:
-    return new SimulationResponse(); break;
+    return std::make_shared<SimulationResponse>(); break;
   case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(); break;
+    return std::make_shared<ExperimentResponse>(); break;
   case BASE_RESPONSE:
-    return new Response();           break;
+    return std::make_shared<Response>();           break;
   default:
     Cerr << "Response type " << type << " not currently supported in "
 	 << "derived Response classes." << std::endl;
-    return NULL; break;
+    return std::shared_ptr<Response>(); break;
   }
 }
 
@@ -444,7 +324,7 @@ Response Response::copy(bool deep_srd) const
 
   if (responseRep) {
     // allocate a responseRep letter, copy data attributes, share the srd
-    response.responseRep = (deep_srd) ?
+    response.responseRep = deep_srd ?
       get_response(responseRep->sharedRespData.copy()) : // deep SRD copy
       get_response(responseRep->sharedRespData);      // shallow SRD copy
     // allow derived classes to specialize copy_rep if they augment
@@ -456,7 +336,7 @@ Response Response::copy(bool deep_srd) const
 }
 
 
-void Response::copy_rep(Response* source_resp_rep)
+void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
 {
   functionValues    = source_resp_rep->functionValues;
   fieldCoords       = source_resp_rep->fieldCoords;
@@ -933,13 +813,11 @@ void Response::read_annotated(std::istream& s)
 {
   short type;
   s >> type;
-  if (responseRep) { // should not occur in current usage
+
+  if (responseRep) { // allow reuse in loaded Response objects
     if (responseRep->sharedRespData.is_null() ||
-	type != responseRep->sharedRespData.response_type()) {
-      if (--responseRep->referenceCount == 0)
-	delete responseRep;
+	type != responseRep->sharedRespData.response_type())
       responseRep = get_response(type);
-    }
   }
   else // read into empty envelope: responseRep must be instantiated
     responseRep = get_response(type);
@@ -1113,13 +991,11 @@ void Response::read(MPIUnpackBuffer& s)
   if (has_rep) { // response is not an empty handle
     short type;
     s >> type;
-    if (responseRep) { // responseRep should not be defined in current usage
+
+    if (responseRep) {  // allow reuse in received Response objects
       if (responseRep->sharedRespData.is_null() ||
-	  type != responseRep->sharedRespData.response_type()) {
-	if (--responseRep->referenceCount == 0)
-	  delete responseRep;
+	  type != responseRep->sharedRespData.response_type())
 	responseRep = get_response(type);
-      }
     }
     else
       responseRep = get_response(type);
@@ -1127,11 +1003,8 @@ void Response::read(MPIUnpackBuffer& s)
     responseRep->read_rep(s); // fwd to rep
     responseRep->sharedRespData.response_type(type);
   }
-  else if (responseRep) {
-    if (--responseRep->referenceCount == 0)
-      delete responseRep;
-    responseRep = NULL;
-  }
+  else if (responseRep)
+    responseRep.reset();
 }
 
 
@@ -1646,13 +1519,13 @@ void Response::reset_inactive()
 /// equality operator for Response
 bool operator==(const Response& resp1, const Response& resp2)
 {
-  Response *rep1 = resp1.responseRep, *rep2 = resp2.responseRep;
-  if (rep1 != NULL && rep2 != NULL) // envelope
+  std::shared_ptr<Response> rep1 = resp1.responseRep, rep2 = resp2.responseRep;
+  if (rep1 && rep2) // both envelope; compare letter member data
     return (rep1->responseActiveSet == rep2->responseActiveSet &&
 	    rep1->functionValues    == rep2->functionValues    &&
 	    rep1->functionGradients == rep2->functionGradients &&
 	    rep1->functionHessians  == rep2->functionHessians);
-  else if (rep1 == NULL && rep2 == NULL) // letter
+  else if (!rep1 && !rep2) // both letters
     return (resp1.responseActiveSet == resp2.responseActiveSet &&
 	    resp1.functionValues    == resp2.functionValues    &&
 	    resp1.functionGradients == resp2.functionGradients &&
@@ -1832,13 +1705,12 @@ void Response::load(Archive& ar, const unsigned int version)
 {
   short type;
   ar & type;
+
   if (responseRep) { // should not occur in current usage
+    // BMA TODO: Leaving this logic as was required for MPIUnpackBuffer case
     if (responseRep->sharedRespData.is_null() ||
-	type != responseRep->sharedRespData.response_type()) {
-      if (--responseRep->referenceCount == 0)
-	delete responseRep;
+	type != responseRep->sharedRespData.response_type())
       responseRep = get_response(type);
-    }
   }
   else // read from restart: responseRep must be instantiated
     responseRep = get_response(type);

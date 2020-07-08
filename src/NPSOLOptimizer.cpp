@@ -270,8 +270,6 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
 
 NPSOLOptimizer::~NPSOLOptimizer()
 {
-  // Virtual destructor handles referenceCount at Iterator level.
-
   // invoke SOLBase deallocate function (shared with NLSSOLLeastSq)
   if (setUpType == "user_functions")
     deallocate_arrays();

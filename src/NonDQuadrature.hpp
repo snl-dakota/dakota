@@ -63,6 +63,8 @@ public:
 		 const RealVector& dim_pref, short driver_mode,
 		 int num_sub_samples, int seed);
 
+  ~NonDQuadrature();                                       ///< destructor
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -102,7 +104,6 @@ protected:
   //
 
   NonDQuadrature(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDQuadrature();                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -169,7 +170,7 @@ private:
   //
 
   /// convenience pointer to the numIntDriver representation
-  Pecos::TensorProductDriver* tpqDriver;
+  std::shared_ptr<Pecos::TensorProductDriver> tpqDriver;
 
   /// for studies involving refinement strategies, allow for use of nested
   /// quadrature rules such as Gauss-Patterson
