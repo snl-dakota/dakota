@@ -674,8 +674,9 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   }
 
   mv_dist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
   mvd_rep->initialize_types(rv_types, active_vars);
 }
 
@@ -688,8 +689,9 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
   //switch (mv_dist.type()) {
   //case Pecos::MARGINALS_CORRELATIONS: {
 
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+    std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+      (mv_dist.multivar_dist_rep());
     size_t start_rv = 0, num_rv = (active_only) ?
       currentVariables.cv()  + currentVariables.div() +
       currentVariables.dsv() + currentVariables.drv() :
@@ -1111,8 +1113,9 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
   if (ignoreBounds)
     { fd_lb = -dbl_inf;  fd_ub = dbl_inf; }
   else { // manage global/inferred vs. distribution bounds
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+    std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+      (mvDist.multivar_dist_rep());
     for (size_t j=0; j<num_deriv_vars; j++) {
       size_t cv_index = find_index(cv_ids, original_dvv[j]);
       switch (cv_types[cv_index]) {
@@ -4486,8 +4489,9 @@ void Model::
 assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 		   Variables& vars)
 {
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
   const SharedVariablesData& svd = vars.shared_data();
   StringSet ss; StringRealMap srm;
   size_t rv, start_rv, end_rv, adsv_index = 0,
@@ -4902,8 +4906,9 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
   // Note: any external update of DSI values should reset prevDSIView to 0
   if (active_view == prevDSIView) return activeDiscSetIntValues;
 
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
   case MIXED_DESIGN: {
@@ -5085,8 +5090,9 @@ const StringSetArray& Model::discrete_set_string_values(short active_view)
   // Note: any external update of DSS values should reset prevDSSView to 0
   if (active_view == prevDSSView) return activeDiscSetStringValues;
 
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
   case MIXED_DESIGN: case RELAXED_DESIGN: {
@@ -5198,8 +5204,9 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
   // Note: any external update of DSR values should reset prevDSRView to 0
   if (active_view == prevDSRView) return activeDiscSetRealValues;
 
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
   case MIXED_DESIGN: {

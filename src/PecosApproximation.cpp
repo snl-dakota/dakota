@@ -41,8 +41,8 @@ PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
   pecosBasisApprox.surrogate_data(approxData);
 
   // convenience pointer (we use PolynomialApproximation exclusively)
-  polyApproxRep
-    = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
+  polyApproxRep = std::static_pointer_cast<Pecos::PolynomialApproximation>
+    (pecosBasisApprox.approx_rep());
 }
 
 
@@ -69,8 +69,8 @@ PecosApproximation(ProblemDescDB& problem_db,
   pecosBasisApprox.surrogate_data(approxData);
 
   // convenience pointer (we use PolynomialApproximation exclusively)
-  polyApproxRep
-    = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
+  polyApproxRep = std::static_pointer_cast<Pecos::PolynomialApproximation>
+  (pecosBasisApprox.approx_rep());
 }
 
 

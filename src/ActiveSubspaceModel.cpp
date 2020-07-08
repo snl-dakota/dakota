@@ -1558,8 +1558,9 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
 {
   const Pecos::MultivariateDistribution& native_dist =
     subModel.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* native_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)native_dist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> native_dist_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (native_dist.multivar_dist_rep());
 
   // initialize distribution params for reduced model
   // This is necessary if subModel has been transformed
@@ -1628,8 +1629,9 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   for (int i=0; i<reducedRank; ++i)
     sd_y(i) = std::sqrt(V_y(i,i));
 
-  Pecos::MarginalsCorrDistribution* reduced_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> reduced_dist_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_y);
   reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_y);
 

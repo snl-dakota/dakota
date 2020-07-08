@@ -170,7 +170,7 @@ private:
   //
 
   /// convenience pointer to the numIntDriver representation
-  Pecos::TensorProductDriver* tpqDriver;
+  std::shared_ptr<Pecos::TensorProductDriver> tpqDriver;
 
   /// for studies involving refinement strategies, allow for use of nested
   /// quadrature rules such as Gauss-Patterson

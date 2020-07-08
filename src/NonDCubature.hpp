@@ -94,7 +94,7 @@ private:
   //
 
   /// convenience pointer to the numIntDriver representation
-  Pecos::CubatureDriver* cubDriver;
+  std::shared_ptr<Pecos::CubatureDriver> cubDriver;
 
   // the user specification for the number of Gauss points per dimension
   //UShortArray cubIntOrderSpec;

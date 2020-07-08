@@ -41,8 +41,8 @@ SharedPecosApproxData(const String& approx_type,
   pecosSharedData =
     Pecos::SharedBasisApproxData(basis_type, approx_order, numVars,
 				 ec_options, bc_options, rc_options);
-  pecosSharedDataRep
-    = (Pecos::SharedPolyApproxData*)pecosSharedData.data_rep();
+  pecosSharedDataRep = std::static_pointer_cast<Pecos::SharedPolyApproxData>
+    (pecosSharedData.data_rep());
 }
 
 
@@ -67,8 +67,8 @@ SharedPecosApproxData(ProblemDescDB& problem_db, size_t num_vars):
   pecosSharedData =
     Pecos::SharedBasisApproxData(basis_type, approx_order, numVars,
 				 ec_options, bc_options, rc_options);
-  pecosSharedDataRep
-    = (Pecos::SharedPolyApproxData*)pecosSharedData.data_rep();
+  pecosSharedDataRep = std::static_pointer_cast<Pecos::SharedPolyApproxData>
+    (pecosSharedData.data_rep());
 }
 
 

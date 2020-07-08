@@ -114,8 +114,9 @@ initialize_solution_control(const String& control, const RealVector& cost)
 
   // get size of corresponding set values
   size_t i, num_lev;
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
@@ -213,8 +214,9 @@ initialize_solution_control(const String& control, const RealVector& cost)
   std::advance(c_cit, lev_index);
   size_t val_index = c_cit->second;
 
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE: {
@@ -280,8 +282,9 @@ initialize_solution_control(const String& control, const RealVector& cost)
 unsigned short SimulationModel::solution_level_index() const
 {
   size_t val_index;
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE: {

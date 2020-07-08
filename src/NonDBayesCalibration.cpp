@@ -541,8 +541,9 @@ void NonDBayesCalibration::init_hyper_parameters()
       { alpha = invGammaAlphas[i]; beta = invGammaBetas[i]; }
     // BMA TODO: could store only one inverse gamma if all parameters the same
     invGammaDists[i] = Pecos::RandomVariable(Pecos::INV_GAMMA);
-    Pecos::InvGammaRandomVariable* rv_rep = 
-      (Pecos::InvGammaRandomVariable*)(invGammaDists[i].random_variable_rep());
+    std::shared_ptr<Pecos::InvGammaRandomVariable> rv_rep =
+      std::static_pointer_cast<Pecos::InvGammaRandomVariable>
+	     (invGammaDists[i].random_variable_rep());
     rv_rep->update(alpha, beta);
   }
 }

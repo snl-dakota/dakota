@@ -45,8 +45,8 @@ Pecos::MultivariateDistribution
 initialize_homogeneous_uniform_aleatory_dist_params( short utype, 
 						     int num_vars ){
   Pecos::MultivariateDistribution mvd(Pecos::MARGINALS_CORRELATIONS);
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
+  auto mvd_rep = std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvd.multivar_dist_rep());
 
   ShortArray rv_types(num_vars, utype);
   mvd_rep->initialize_types(rv_types); // default active_vars

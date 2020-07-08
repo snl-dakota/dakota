@@ -2197,9 +2197,9 @@ update_sub_model(const Variables& vars, const Constraints& cons)
   const SharedVariablesData& svd = vars.shared_data();
   const SharedVariablesData& sm_svd
     = subModel.current_variables().shared_data();
-  Pecos::MarginalsCorrDistribution* sm_mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)
-    subModel.multivariate_distribution().multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (subModel.multivariate_distribution().multivar_dist_rep());
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
   if (num_curr_cv) {
@@ -2514,8 +2514,9 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
     = subModel.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* sm_mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (sm_mvd.multivar_dist_rep());
 
   const SharedVariablesData& sm_svd
     = subModel.current_variables().shared_data();
@@ -2687,8 +2688,9 @@ integer_variable_mapping(int i_var, size_t av_index, short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
     = subModel.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* sm_mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (sm_mvd.multivar_dist_rep());
 
   const SharedVariablesData& sm_svd
     = subModel.current_variables().shared_data();
@@ -2725,8 +2727,9 @@ string_variable_mapping(const String& s_var, size_t av_index,
 {
   Pecos::MultivariateDistribution& sm_mvd
     = subModel.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* sm_mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (sm_mvd.multivar_dist_rep());
 
   const SharedVariablesData& sm_svd
     = subModel.current_variables().shared_data();

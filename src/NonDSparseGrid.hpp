@@ -142,7 +142,7 @@ private:
   /// type of sparse grid driver: combined, incremental, hierarchical, ...
   short ssgDriverType;
   /// convenience pointer to the numIntDriver representation
-  Pecos::SparseGridDriver* ssgDriver;
+  std::shared_ptr<Pecos::SparseGridDriver> ssgDriver;
 
   /// the user specification for the Smolyak sparse grid level, rendered
   /// anisotropic via dimPrefSpec
