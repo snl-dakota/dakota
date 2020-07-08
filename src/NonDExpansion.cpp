@@ -992,7 +992,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // if refinement opportunities have saturated (e.g., increments have reached
     // max{Order,Rank} or previous cross validation indicated better fit with
     // lower order), no candidates will be generated for this model key.
-    if (!advancement_available())
+    if (!/*uSpaceModel.*/advancement_available())
       { metric = 0.;  return std::numeric_limits<size_t>::max(); }
 
     RealVector stats_ref;

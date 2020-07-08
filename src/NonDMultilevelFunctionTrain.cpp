@@ -200,8 +200,8 @@ NonDMultilevelFunctionTrain::~NonDMultilevelFunctionTrain()
 
 /** This implementation differs from those in C3Approximation and
     SharedC3ApproxData in that they are used for sample initialization
-    from specification sequences.  They utilize the most general
-    helper from SharedC3ApproxData. */
+    from specification sequences, prior to any adaptation.  They pass 
+    current/max values to the general SharedC3ApproxData helper. */
 size_t NonDMultilevelFunctionTrain::regression_size(size_t index)
 {
   size_t regress_size;  UShortArray orders;

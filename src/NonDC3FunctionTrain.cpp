@@ -460,6 +460,50 @@ void NonDC3FunctionTrain::push_c3_seed(int seed)
 }
 
 
+bool NonDC3FunctionTrain::max_rank_advancement_available()
+{
+  bool refine = false;
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  size_t v, max_r = shared_data_rep->max_rank(); // adapted value
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  SizetVector ft_ranks;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    C3Approximation* poly_approx_q
+      = (C3Approximation*)poly_approxs[qoi].approx_rep();
+    // check adapted FT ranks against maxRank
+    poly_approx_q->recover_function_train_ranks(ft_ranks);
+    for (v=1; v<numContinuousVars; ++v) // ranks len = num_v+1 with 1's @ ends
+      if (ft_ranks[v] == max_r) // recovery potentially limited by bound
+	{ refine = true; break; }
+    if (refine) break;
+  }
+  return refine;
+}
+
+
+bool NonDC3FunctionTrain::max_order_advancement_available()
+{
+  bool refine = false;
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  size_t v, max_o = shared_data_rep->max_order(); // adapted value
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  UShortArray ft_ords;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    C3Approximation* poly_approx_q
+      = (C3Approximation*)poly_approxs[qoi].approx_rep();
+    // check adapted FT orders against maxOrder
+    poly_approx_q->recover_function_train_orders(ft_ords);
+    for (v=0; v<numContinuousVars; ++v) // ords len = num_v
+      if (ft_ords[v] == max_o) // recovery potentially limited by curr bnd
+	{ refine = true; break; }
+    if (refine) break;
+  }
+  return refine;
+}
+
+
 bool NonDC3FunctionTrain::advancement_available()
 {
   // if there are new samples, then exp coeff updates are always performed
@@ -468,6 +512,28 @@ bool NonDC3FunctionTrain::advancement_available()
   //if (numSamplesOnModel) // Note: this is updated total
   //  return true;
 
+
+  // *** Separate Iterator/Model refineType from c3UniformRefineType?
+  // *** Then use top-level logic to assign low-level below.
+
+
+  // *** TO DO: PUSH *advancement_available() LOGIC DOWN? ***
+  // *** IF ADVANCEMENT_AVAILABLE IS ACCESSIBLE FROM SHARED INCREMENT_ORDER,
+  // *** THEN CAN LEAVE REFINE MODE AS IS AND ADD LOGIC TO increment_order()
+  // *** TO ADVANCE ONLY THE INCREMENTS AVAILABLE.  PROBLEM IS ACCESS TO THE
+  // *** C3Approximation data...
+  // *** Model -> DFSModel -> ApproxInt -> loop over vector<Approximation>
+  // *** --> each approximation assesses its state versus shared bound data.
+  // *** this works from Iterator/Model, but still not from SharedC3ApproxData::increment_order()  --> may need to pass down a flag from calling sequence...?
+
+  // *** Consider making all of this local to a C3Approx instance.  SharedC3
+  // *** advances shared bounds, but C3Approx determines QoI saturation logic.
+  // *** With adapt-order, it seems ApproxOpts data can no longer be shared
+  // *** since this gets updated with per-QoI adapt results (see goroda email).
+  // *** -> treat starting points/bounds as shared but adapted results as per
+  // *** C3Approx and manage saturation logic there.
+
+  
   bool refine = false;
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
@@ -492,59 +558,22 @@ bool NonDC3FunctionTrain::advancement_available()
   // > logic must be augmented with an outer check on numSamples:
   //   refinement is possible for either a sample increment or an advanced
   //   bound that could admit a different adapted soln for fixed data
-  case UNIFORM_MAX_RANK: {
-    size_t v, max_r = shared_data_rep->max_rank(); // adapted value
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    SizetVector ft_ranks;
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      C3Approximation* poly_approx_q
-	= (C3Approximation*)poly_approxs[qoi].approx_rep();
-      // check adapted FT ranks against maxRank
-      poly_approx_q->recover_function_train_ranks(ft_ranks);
-      for (v=1; v<numContinuousVars; ++v) // ranks len = num_v+1 with 1's @ ends
-	if (ft_ranks[v] == max_r) // recovery potentially limited by bound
-	  { refine = true; break; }
-      if (refine) break;
-    }
-    break;
-  }
+  case UNIFORM_MAX_RANK:
+    return max_rank_advancement_available();  break;
   case UNIFORM_MAX_ORDER: {
-    size_t v, max_o = shared_data_rep->max_order(); // adapted value
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    UShortArray ft_ords;
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      C3Approximation* poly_approx_q
-	= (C3Approximation*)poly_approxs[qoi].approx_rep();
-      // check adapted FT orders against maxOrder
-      poly_approx_q->recover_function_train_orders(ft_ords);
-      for (v=0; v<numContinuousVars; ++v) // ords len = num_v
-	if (ft_ords[v] == max_o) // recovery potentially limited by curr bnd
-	  { refine = true; break; }
-      if (refine) break;
-    }
-    break;
+    return max_order_advancement_available();  break;
   }
   case UNIFORM_MAX_RANK_ORDER: {
-    size_t v, max_r = shared_data_rep->max_rank(),  // adapted value
-              max_o = shared_data_rep->max_order(); // adapted value
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    SizetVector ft_ranks;  UShortArray ft_ords;
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      C3Approximation* poly_approx_q
-	= (C3Approximation*)poly_approxs[qoi].approx_rep();
-      // check adapted FT ranks against maxRank
-      poly_approx_q->recover_function_train_ranks(ft_ranks);
-      for (v=1; v<numContinuousVars; ++v) // ranks len = num_v+1 with 1's @ ends
-	if (ft_ranks[v] == max_r) // recovery potentially limited by bound
-	  { refine = true; break; }
-      if (refine) break;
-      // check adapted FT orders against maxOrder
-      poly_approx_q->recover_function_train_orders(ft_ords);
-      for (v=0; v<numContinuousVars; ++v) // ords len = num_v
-	if (ft_ords[v] == max_o) // recovery potentially limited by bound
-	  { refine = true; break; }
-      if (refine) break;
-    }
+    // restrict the refinement search space (allow disconnect in c3RefineType at top vs. lower level)
+    bool r_refine =  max_rank_advancement_available(),
+         o_refine = max_order_advancement_available();
+    if (r_refine && o_refine)
+      { /* shared_data_rep->c3_refine_type(UNIFORM_MAX_RANK_ORDER); */ return true; }
+    else if (r_refine)
+      { /* shared_data_rep->c3_refine_type(UNIFORM_MAX_RANK); */       return true; }
+    else if (o_refine)
+      { /* shared_data_rep->c3_refine_type(UNIFORM_MAX_ORDER); */      return true; }
+    else return false;
     break;
   }
   }

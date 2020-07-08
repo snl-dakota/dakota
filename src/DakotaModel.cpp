@@ -3950,6 +3950,15 @@ void Model::clear_inactive()
 }
 
 
+/*
+bool Model::advancement_available()
+{
+  if (modelRep) return modelRep->advancement_available();
+  else          return false;
+}
+*/
+
+
 void Model::run_dace()
 {
   if (modelRep) // envelope fwd to letter

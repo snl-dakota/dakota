@@ -228,8 +228,16 @@ void SharedC3ApproxData::increment_order()
     update_basis(start_orders(), max_o);  formUpdated[activeKey] = true;  break;
   }
   case UNIFORM_MAX_RANK_ORDER: {
-    // prior to implementing a multi-index approach, advance both...
+    // Prior to implementing a multi-index approach, we use heuristics.
+    // *** TO DO: ***
+    // > unconditionally advancing both seems wasteful; should only advance
+    //   non-saturated dimensions
+    // > could also consider only advancing one when both bounds are active:
+    //   least saturated first with tie break to max rank (recovered ranks
+    //   are heterogeneous anyway)
+    //if (max_rank_advancement_available()) // ***
     size_t&         max_r = max_rank();   max_r += kickRank;
+    //if (max_order_advancement_available()) // ***
     unsigned short& max_o = max_order();  max_o += kickOrder;
     update_basis(start_orders(), max_o);  formUpdated[activeKey] = true;
     break;

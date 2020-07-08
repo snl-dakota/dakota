@@ -62,6 +62,8 @@ protected:
   // perform a forward uncertainty propagation using PCE/SC methods
   //void core_run();
 
+  bool max_rank_advancement_available();
+  bool max_order_advancement_available();
   bool advancement_available();
 
   void push_increment();
