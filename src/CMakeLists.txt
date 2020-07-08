@@ -218,30 +218,6 @@ if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
 endif(HAVE_PDB_H)
 
-
-if(DAKOTA_F90)
-  # A future version of CMake should set the Fortran FIXED_FLAG automagically
-  if(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
-    set(FIXED_FLAG "-fixed")
-  elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
-    set(FIXED_FLAG "-ffixed-form")
-  elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
-    set(FIXED_FLAG "-Mfixed")
-  elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "XL" OR
-         ${CMAKE_Fortran_COMPILER_ID} MATCHES "VisualAge")
-    set(FIXED_FLAG "-qfixed")
-  elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "SunPro")
-    set(FIXED_FLAG "-fixed")
-  endif()
-
-  add_definitions("-DDAKOTA_F90")
-  #include_directories(${Dakota_BINARY_DIR})
-
-  #list(APPEND CMAKE_Fortran_FLAGS ${FIXED_FLAG})
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${FIXED_FLAG}")
-endif(DAKOTA_F90)
-
-
 # WJB - ToDo: Improve logic to support WinDLL case
 option(DAKOTA_DL_SOLVER
   "Toggle DAKOTA DL Solvers, default is disabled." OFF
@@ -556,7 +532,10 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
 )
 set(Dakota_src_fortran lawson_hanson1.f)
 if(DAKOTA_F90)
+  add_definitions("-DDAKOTA_F90")
   list(APPEND Dakota_src_fortran lawson_hanson2.f90)
+  set_source_files_properties(lawson_hanson2.f90
+    PROPERTIES Fortran_FORMAT FIXED)
 endif(DAKOTA_F90)
 
 if(HAVE_ACRO)
