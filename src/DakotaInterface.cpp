@@ -1210,6 +1210,13 @@ void Interface::combined_to_active(bool clear_combined)
 }
 
 
+bool Interface::advancement_available()
+{
+  if (interfaceRep) return interfaceRep->advancement_available();
+  else              return true; // only a few cases throttle advancements
+}
+
+
 bool Interface::formulation_updated() const
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.

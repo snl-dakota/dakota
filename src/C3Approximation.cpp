@@ -164,7 +164,8 @@ void C3Approximation::recover_function_train_ranks(SizetVector& ft_ranks)
 /** returns the recovered orders, reflecting the latest CV if adapt_order */
 void C3Approximation::recover_function_train_orders(UShortArray& ft_orders)
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   size_t v, num_v = data_rep->numVars;
   ft_orders.resize(num_v);
   for (v=0; v<num_v; ++v)
@@ -183,7 +184,8 @@ void C3Approximation::build()
   // base class implementation checks data set against min required
   Approximation::build();
 
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   //if (data_rep->adaptConstruct) {
   //  Cerr << "Error: Adaptive construction not yet implemented in "
   //	   << "C3Approximation." << std::endl;
@@ -367,8 +369,7 @@ void C3Approximation::build()
 
 void C3Approximation::rebuild()
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  active_model_key(data_rep->activeKey);
+  active_model_key(sharedDataRep->activeKey);
 
   // for use in pop_coefficients()
   prevC3FTPtrs = levApproxIter->second.copy(); // deep copy
@@ -379,8 +380,7 @@ void C3Approximation::rebuild()
 
 void C3Approximation::pop_coefficients(bool save_data)
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  const UShortArray& key = data_rep->activeKey;
+  const UShortArray& key = sharedDataRep->activeKey;
 
   // likely overkill, but multilevel roll up after increment modifies and
   // then restores active key
@@ -401,7 +401,8 @@ void C3Approximation::pop_coefficients(bool save_data)
 
 void C3Approximation::push_coefficients()
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   const UShortArray& key = data_rep->activeKey;
 
   // synchronize expansionCoeff{s,Grads} and approxData
@@ -457,7 +458,8 @@ void C3Approximation::combine_coefficients()
   // tight for this context --> use arithmetic tol.  Memory overhead is strongly
   // correlated with this tolerance and 1.e-3 did not result in significant
   // accuracy gain in some numerical experiments (dakota_uq_heat_eq_mlft.in).
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   Real arith_tol = data_rep->statsRoundingTol;
   struct MultiApproxOpts * opts = data_rep->multiApproxOpts;
   for (; it!= levelApprox.end(); ++it)
@@ -485,8 +487,7 @@ void C3Approximation::combine_coefficients()
 
 void C3Approximation::combined_to_active_coefficients(bool clear_combined)
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  active_model_key(data_rep->activeKey);
+  active_model_key(sharedDataRep->activeKey);
 
   levApproxIter->second = combinedC3FTPtrs;//.copy();
   //if (clear_combined)
@@ -524,7 +525,8 @@ void C3Approximation::link_multilevel_surrogate_data()
   // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
   //   data to each approxData instance in turn.
 
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   switch (data_rep->discrepancyType) {
   case Pecos::DISTINCT_DISCREP:  case Pecos::RECURSIVE_DISCREP: {
     // push another SurrogateData instance for modSurrData
@@ -545,7 +547,8 @@ void C3Approximation::link_multilevel_surrogate_data()
 
 void C3Approximation::synchronize_surrogate_data()
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   const UShortArray& active_key = data_rep->activeKey;
   if (active_key != approxData.active_key()) {
     PCerr << "Error: active key mismatch in C3Approximation::"
@@ -688,7 +691,8 @@ void C3Approximation::compute_all_sobol_indices(size_t interaction_order)
 void C3Approximation::
 compute_derived_statistics(C3FnTrainPtrs& ftp, size_t num_mom, bool overwrite)
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   if (overwrite) {
     ftp.ft_derived_functions_free();
     ftp.ft_derived_functions_create(data_rep->multiApproxOpts, num_mom,
@@ -704,7 +708,8 @@ void C3Approximation::
 compute_derived_statistics_av(C3FnTrainPtrs& ftp, size_t num_mom,
 			      bool overwrite)
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   // no incremental update implemented for allVars case
   if (overwrite || ftp.derived_functions().allocated < num_mom) {
     ftp.ft_derived_functions_free();
@@ -864,7 +869,8 @@ Real C3Approximation::covariance(C3FnTrainPtrs& ftp1, C3FnTrainPtrs& ftp2)
   //  ftp2.function_train()) - mean1 * mean2;
   //Cout << "Alt covariance = " << alt_cov << std::endl;
 
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   struct MultiApproxOpts * opts = data_rep->multiApproxOpts;
   struct FunctionTrain * ft_tmp1
     = C3FnTrainPtrsRep::subtract_const(ftp1.function_train(), mean1, opts);
@@ -1003,7 +1009,8 @@ gradient(const Variables& vars, const UShortArray& key)
 
 size_t C3Approximation::regression_size()
 {
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  std::shared_ptr<SharedC3ApproxData> data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
 
   // Intent: capture latest ranks/orders recovered from most recent FT build
   //   or from rank/order advancements.

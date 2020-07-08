@@ -463,14 +463,16 @@ inline Real C3Approximation::combined_variance(const RealVector &x)
 
 inline Real C3Approximation::covariance(Approximation& approx_2)
 {
-  C3Approximation* c3_approx_rep_2 = (C3Approximation*)approx_2.approx_rep();
+  std::shared_ptr<C3Approximation> c3_approx_rep_2 =
+    std::static_pointer_cast<C3Approximation>(approx_2.approx_rep());
   return covariance(levApproxIter->second, c3_approx_rep_2->active_ftp());
 }
 
 
 inline Real C3Approximation::combined_covariance(Approximation& approx_2)
 {
-  C3Approximation* c3_approx_rep_2 = (C3Approximation*)approx_2.approx_rep();
+  std::shared_ptr<C3Approximation> c3_approx_rep_2 =
+    std::static_pointer_cast<C3Approximation>(approx_2.approx_rep());
   return covariance(combinedC3FTPtrs, c3_approx_rep_2->combined_ftp());
 }
 
@@ -478,7 +480,8 @@ inline Real C3Approximation::combined_covariance(Approximation& approx_2)
 inline Real C3Approximation::
 covariance(const RealVector &x, Approximation& approx_2)
 {
-  C3Approximation* c3_approx_rep_2 = (C3Approximation*)approx_2.approx_rep();
+  std::shared_ptr<C3Approximation> c3_approx_rep_2 =
+    std::static_pointer_cast<C3Approximation>(approx_2.approx_rep());
   return covariance(x, levApproxIter->second, c3_approx_rep_2->active_ftp());
 }
 
@@ -486,7 +489,8 @@ covariance(const RealVector &x, Approximation& approx_2)
 inline Real C3Approximation::
 combined_covariance(const RealVector &x, Approximation& approx_2)
 {
-  C3Approximation* c3_approx_rep_2 = (C3Approximation*)approx_2.approx_rep();
+  std::shared_ptr<C3Approximation> c3_approx_rep_2 =
+    std::static_pointer_cast<C3Approximation>(approx_2.approx_rep());
   return covariance(x, combinedC3FTPtrs, c3_approx_rep_2->combined_ftp());
 }
 

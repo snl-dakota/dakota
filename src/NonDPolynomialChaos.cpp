@@ -121,10 +121,9 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
-    (u_space_sampler, g_u_model,
-     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-     outputLevel, pt_reuse, importBuildPointsFile,
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+     g_u_model, pce_set, approx_type, exp_orders, corr_type, corr_order,
+     data_order, outputLevel, pt_reuse, importBuildPointsFile,
      problem_db.get_ushort("method.import_build_format"),
      problem_db.get_bool("method.import_build_active_only"),
      problem_db.get_string("method.export_approx_points_file"),
