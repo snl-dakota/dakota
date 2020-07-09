@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -104,8 +104,9 @@ public:
 
   virtual void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
 
-  /// returns true if current model key has no additional refinements available
-  virtual bool saturated() const;
+  /// returns false if refinement opportunities have been exhaused for the
+  /// current model (e.g., maximum order/level/rank has been reached)
+  virtual bool advancement_available();
 
   //
   //- Heading: Member functions
@@ -267,9 +268,11 @@ protected:
   void configure_sequence(unsigned short& num_steps,
 			  unsigned short& fixed_index,
 			  bool& multilevel, bool mf_precedence);
-  /// configure fidelity/level counts from model hierarchy
+  /// extract cost estimates from model hierarchy (forms or resolutions)
   void configure_cost(unsigned short num_steps, bool multilevel,
 		      RealVector& cost);
+  /// extract cost estimates from model hierarchy, if available
+  bool query_cost(unsigned short num_steps, bool multilevel, RealVector& cost);
   /// configure response mode and active/truth/surrogate model keys within a
   /// hierarchical model.  s_index is the sequence index that defines the
   /// active dimension for a model sequence.
@@ -687,8 +690,8 @@ inline int NonDExpansion::random_seed(size_t index) const
 }
 
 
-inline bool NonDExpansion::saturated() const
-{ return false; } // default overridden for fn train
+inline bool NonDExpansion::advancement_available()
+{ return true; } // default overridden for fn train
 
 
 inline int NonDExpansion::maximum_refinement_iterations() const
@@ -701,6 +704,18 @@ inline void NonDExpansion::maximum_refinement_iterations(int max_refine_iter)
 
 inline const Model& NonDExpansion::algorithm_space_model() const
 { return uSpaceModel; }
+
+
+inline void NonDExpansion::
+configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
+{
+  bool cost_defined = query_cost(num_steps, multilevel, cost);
+  if (!cost_defined) {
+    Cerr << "Error: missing required simulation cost data in NonDExpansion::"
+	 << "configure_cost()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
 
 
 inline size_t NonDExpansion::collocation_points() const

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -6773,7 +6773,6 @@ static Method_mp_ord
 
 static Real
 	MP_(absConvTol),
-	MP_(arithmeticTol),
 	MP_(centeringParam),
 	MP_(collocationRatio),
 	MP_(collocRatioTermsOrder),
@@ -6808,13 +6807,14 @@ static Real
         MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
-	MP_(roundingTol),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
         MP_(smoothFactor),
  	MP_(solnTarget),
+	MP_(solverRoundingTol),
 	MP_(solverTol),
+	MP_(statsRoundingTol),
 	MP_(stepLenToBoundary),
 	MP_(threshDelta),
 	MP_(threshStepLength),
@@ -6973,6 +6973,7 @@ static bool
 	MP_(wilksFlag);
 
 static short
+	MP_(c3RefineType),
         MP_(expansionType),
 	MP_(nestingOverride),
 	MP_(refinementType),
@@ -7036,8 +7037,11 @@ static size_t
   MP_(startRank);
 
 static Method_mp_type
-  MP2s(allocationTarget,TARGET_MEAN),
-  MP2s(allocationTarget,TARGET_VARIANCE),
+	MP2s(allocationTarget,TARGET_MEAN),
+	MP2s(allocationTarget,TARGET_VARIANCE),
+	MP2s(c3RefineType,UNIFORM_START_ORDER),
+	MP2s(c3RefineType,UNIFORM_START_RANK),
+	MP2s(c3RefineType,UNIFORM_MAX_RANK),
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
@@ -7085,8 +7089,8 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
-  MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
-  MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
+	MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
+	MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_SOBOL),      // Pecos
@@ -7181,7 +7185,7 @@ static Method_mp_utype
 	MP2s(integrationRefine,MMAIS),
 	MP2s(methodName,ASYNCH_PATTERN_SEARCH),
 	MP2s(methodName,BRANCH_AND_BOUND),
-    MP2s(methodName,C3_FUNCTION_TRAIN),
+	MP2s(methodName,C3_FUNCTION_TRAIN),
 	MP2s(methodName,COLINY_BETA),
 	MP2s(methodName,COLINY_COBYLA),
 	MP2s(methodName,COLINY_DIRECT),
@@ -7206,9 +7210,9 @@ static Method_mp_utype
 	MP2s(methodName,MESH_ADAPTIVE_SEARCH),
 	MP2s(methodName,MOGA),
 	MP2s(methodName,MULTI_START),
-  MP2s(methodName,NCSU_DIRECT),
-  MP2s(methodName,ROL),
-  MP2s(methodName,DEMO_TPL),
+	MP2s(methodName,NCSU_DIRECT),
+	MP2s(methodName,ROL),
+	MP2s(methodName,DEMO_TPL),
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),
@@ -7364,6 +7368,9 @@ static Model_mp_type
 	MP2s(approxCorrectionType,ADDITIVE_CORRECTION),
 	MP2s(approxCorrectionType,COMBINED_CORRECTION),
 	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
+	MP2s(c3RefineType,UNIFORM_START_ORDER),
+	MP2s(c3RefineType,UNIFORM_START_RANK),
+	MP2s(c3RefineType,UNIFORM_MAX_RANK),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
 	MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
@@ -7417,7 +7424,6 @@ static Model_mp_utype
 static Real
         MP_(adaptedBasisCollocRatio),
         MP_(annRange),
-	MP_(arithmeticTol),
 	MP_(collocationRatio),
 	MP_(convergenceTolerance),
 	MP_(decreaseTolerance),
@@ -7427,8 +7433,9 @@ static Real
 	MP_(percentFold),
 	MP_(regressionL2Penalty),
 	MP_(relTolerance),
-	MP_(roundingTol),
+	MP_(solverRoundingTol),
 	MP_(solverTol),
+	MP_(statsRoundingTol),
 	MP_(truncationTolerance);
 
 static RealVector
@@ -7503,6 +7510,7 @@ static unsigned short
 static short
 	MP_(annNodes),
 	MP_(annRandomWeight),
+	MP_(c3RefineType),
 	MP_(krigingFindNugget),
 	MP_(krigingMaxTrials),
 	MP_(marsMaxBases),

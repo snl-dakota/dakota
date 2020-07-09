@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -57,6 +57,15 @@ public:
 
   /**
    * \brief Constructor for the GaussianProcess that sets configOptions
+   *        but does not build the GP.
+   *
+   * \param[in] param_list_xml_filename A ParameterList file (relative to the location of the
+   * Dakota input file) that overrides entries in defaultConfigOptions.
+   */
+  GaussianProcess(const std::string &param_list_xml_filename);
+
+  /**
+   * \brief Constructor for the GaussianProcess that sets configOptions
    *        and builds the GP.
    * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
    * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
@@ -64,6 +73,19 @@ public:
    */
   GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
                   const Teuchos::ParameterList &param_list);
+
+  /**
+   * \brief Constructor for the GaussianProcess that sets configOptions
+   *        and builds the GP.
+   *
+   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
+   * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1;
+   *  only 1 response is supported currently).
+   * \param[in] param_list_xml_filename A ParameterList file (relative to the location of the
+   *  Dakota input file) that overrides entries in defaultConfigOptions.
+   */
+  GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
+                  const std::string &param_list_xml_filename);
 
   /// Default destructor
   ~GaussianProcess();

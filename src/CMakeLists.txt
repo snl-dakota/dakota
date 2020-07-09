@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014 Sandia Corporation.
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -505,7 +505,8 @@ endif(HAVE_SURFPACK)
 
 if(DAKOTA_MODULE_SURROGATES)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
-  list(APPEND interface_src DakotaSurrogatesGP.cpp DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
+  list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesGP.cpp
+    DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
   list(APPEND DAKOTA_INCDIRS 
     ${Dakota_SOURCE_DIR}/src/util
     ${Dakota_SOURCE_DIR}/src/surrogates

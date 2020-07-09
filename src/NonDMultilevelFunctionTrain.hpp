@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -14,6 +14,8 @@
 #define NOND_MULTILEVEL_FUNCTION_TRAIN_H
 
 #include "NonDC3FunctionTrain.hpp"
+#include "SharedC3ApproxData.hpp"
+
 
 namespace Dakota {
 
@@ -103,8 +105,12 @@ private:
 
   size_t start_rank(size_t index) const;
   size_t start_rank() const;
+
   unsigned short start_order(size_t index) const;
   unsigned short start_order() const;
+
+  void push_c3_active(const UShortArray& orders);
+  void push_c3_active();
 
   // scale sample profile to retain shape while enforcing an upper bound
   //void scale_profile(..., RealVector& new_N_l);
@@ -162,6 +168,28 @@ start_order(size_t index) const
 
 inline unsigned short NonDMultilevelFunctionTrain::start_order() const
 { return start_order(sequenceIndex); }
+
+
+inline void NonDMultilevelFunctionTrain::
+push_c3_active(const UShortArray& orders)
+{
+  push_c3_start_rank(start_rank());
+  push_c3_max_rank(maxRankSpec); // restore if adapted (no sequence)
+  push_c3_seed(random_seed());
+
+  push_c3_start_orders(orders);
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->update_basis(); // propagate order updates to oneApproxOpts
+}
+
+
+inline void NonDMultilevelFunctionTrain::push_c3_active()
+{
+  UShortArray orders;
+  configure_expansion_orders(start_order(), dimPrefSpec, orders);
+  push_c3_active(orders);
+}
 
 } // namespace Dakota
 

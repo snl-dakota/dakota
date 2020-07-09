@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -759,9 +759,9 @@ public:
   /// optimization tolerance for FT regression
   Real solverTol;
   /// Rounding tolerance for FT regression
-  Real roundingTol;
+  Real solverRoundingTol;
   /// arithmetic (rounding) tolerance for FT sums and products
-  Real arithmeticTol;
+  Real statsRoundingTol;
   /// starting polynomial order
   unsigned short startOrder;
   /// maximum order of basis polynomials
@@ -774,6 +774,9 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
+  /// quantity to increment (start order, start rank, max rank) for FT
+  /// uniform p-refinement
+  short c3RefineType;
   /// starting polynomial order
   UShortArray startOrderSeq;
   /// starting rank

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -153,6 +153,7 @@ extern "C"
   void c3opt_set_gtol(struct c3Opt *, double);
   void c3opt_set_verbose(struct c3Opt *, int);
   void c3opt_set_maxiter(struct c3Opt *, size_t);
+  void c3opt_ls_set_maxiter(struct c3Opt *, size_t);
   void c3opt_set_absxtol(struct c3Opt *, double);
   void c3opt_free(struct c3Opt *);
 
@@ -184,6 +185,8 @@ extern "C"
   double * ft_regress_get_params(struct FTRegress *, size_t *);
   void ft_regress_update_params(struct FTRegress *, const double *);
 
+  void ft_regress_set_seed(struct FTRegress *, unsigned int);
+
   struct FunctionTrain *
   ft_regress_run(struct FTRegress *,struct c3Opt *,size_t,const double* xdata, const double * ydata);
 }
@@ -204,8 +207,8 @@ struct FTDerivedFunctions
   //struct FunctionTrain * ft_constant_at_mean;
   struct FunctionTrain * ft_diff_from_mean;
   struct FunctionTrain * ft_diff_from_mean_squared;
-  struct FunctionTrain * ft_diff_from_mean_cubed;    
-  struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan
+  //struct FunctionTrain * ft_diff_from_mean_cubed;
+  //struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan
 
   //struct FunctionTrain * ft_diff_from_mean_normalized;
   //struct FunctionTrain * ft_diff_from_mean_normalized_squared;

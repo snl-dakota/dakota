@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -11,6 +11,7 @@
 //- Owner:        Mike Eldred
 
 #include "DataMethod.hpp"
+#include "DataModel.hpp" // for C3 FT enumerations
 #include "dakota_data_io.hpp"
 #include "pecos_global_defs.hpp"
 #ifdef HAVE_OPTPP
@@ -114,9 +115,10 @@ DataMethodRep::DataMethodRep():
   displayFormat("bbe obj"), vns(0.0), neighborOrder(1), showAllEval(false),
   useSurrogate("none"),
   // C3 FT
-  maxCrossIterations(1), solverTol(1.e-10), roundingTol(1.e-8),
-  arithmeticTol(1.e-2), startOrder(2), maxOrder(5),
-  startRank(2), kickRank(2), maxRank(10), adaptRank(false),
+  maxCrossIterations(1), solverTol(1.e-10), solverRoundingTol(1.e-10),
+  statsRoundingTol(1.e-10), startOrder(2), maxOrder(USHRT_MAX),
+  startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
+  adaptRank(false), c3RefineType(NO_C3_REFINEMENT),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -276,9 +278,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << neighborOrder << showAllEval << useSurrogate;
 
   // C3 FT
-  s << maxCrossIterations << solverTol << roundingTol << arithmeticTol
+  s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
-    << startOrderSeq << startRankSeq;
+    << c3RefineType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
@@ -439,9 +441,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> neighborOrder >> showAllEval >> useSurrogate;
 
   // C3 FT
-  s >> maxCrossIterations >> solverTol >> roundingTol >> arithmeticTol
+  s >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
     >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
-    >> startOrderSeq >> startRankSeq;
+    >> c3RefineType >> startOrderSeq >> startRankSeq;
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
@@ -602,9 +604,9 @@ void DataMethodRep::write(std::ostream& s) const
     << neighborOrder << showAllEval << useSurrogate;
 
   // C3 FT
-  s << maxCrossIterations << solverTol << roundingTol << arithmeticTol
+  s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
-    << startOrderSeq << startRankSeq;
+    << c3RefineType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag

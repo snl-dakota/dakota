@@ -1128,7 +1128,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( function_train {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+      ( uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        increment_start_order {N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}
+        |
+        increment_max_rank {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}
+       )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ regression_type {0}
@@ -1145,8 +1149,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
     collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
     |
     collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-    [ rounding_tolerance REAL {N_mdm(Real,roundingTol)} ]
-    [ arithmetic_tolerance REAL {N_mdm(Real,arithmeticTol)} ]
+    [ rounding_tolerance REAL {N_mdm(Real,solverRoundingTol)} ]
+    [ arithmetic_tolerance REAL {N_mdm(Real,statsRoundingTol)} ]
     [ start_order ALIAS order INTEGER >= 0 {N_mdm(ushint,startOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
@@ -1254,7 +1258,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( multifidelity_function_train {N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+      ( uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        increment_start_order {N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}
+        |
+        increment_max_rank {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}
+       )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ allocation_control {0}
@@ -1265,8 +1273,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
-    [ rounding_tolerance REAL {N_mdm(Real,roundingTol)} ]
-    [ arithmetic_tolerance REAL {N_mdm(Real,arithmeticTol)} ]
+    [ rounding_tolerance REAL {N_mdm(Real,solverRoundingTol)} ]
+    [ arithmetic_tolerance REAL {N_mdm(Real,statsRoundingTol)} ]
     [ regression_type {0}
       ls {N_mdm(type,regressionType_FT_LS)}
       |
@@ -1399,8 +1407,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
-    [ rounding_tolerance REAL {N_mdm(Real,roundingTol)} ]
-    [ arithmetic_tolerance REAL {N_mdm(Real,arithmeticTol)} ]
+    [ rounding_tolerance REAL {N_mdm(Real,solverRoundingTol)} ]
+    [ arithmetic_tolerance REAL {N_mdm(Real,statsRoundingTol)} ]
     [ regression_type {0}
       ls {N_mdm(type,regressionType_FT_LS)}
       |
@@ -5736,7 +5744,11 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       ( function_train {N_mom(lit,surrogateType_global_function_train)}
         [ p_refinement {N_mom(type,refinementType_P_REFINEMENT)}
-          uniform {N_mom(type,refinementControl_UNIFORM_CONTROL)}
+          ( uniform {N_mom(type,refinementControl_UNIFORM_CONTROL)}
+            increment_start_order {N_mom(type,c3RefineType_UNIFORM_START_ORDER)}
+            |
+            increment_max_rank {N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}
+           )
          ]
         [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
         [ regression_type {0}
@@ -5750,8 +5762,8 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ max_cross_iterations INTEGER >= 0 {N_mom(int,maxCrossIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTol)} ]
         [ tensor_grid {N_mom(true,tensorGridFlag)} ]
-        [ rounding_tolerance REAL {N_mom(Real,roundingTol)} ]
-        [ arithmetic_tolerance REAL {N_mom(Real,arithmeticTol)} ]
+        [ rounding_tolerance REAL {N_mom(Real,solverRoundingTol)} ]
+        [ arithmetic_tolerance REAL {N_mom(Real,statsRoundingTol)} ]
         [ start_order ALIAS order INTEGER >= 0 {N_mom(ushint,startOrder)}
           [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
          ]
