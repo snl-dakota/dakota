@@ -49,4 +49,12 @@ target_link_libraries(dakota_surrogates PUBLIC dakota_util Boost::serialization)
 install(FILES ${surrogates_headers} DESTINATION "include")
 install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
 
+if(DAKOTA_PYBIND11)
+  # TODO: Need to always compile libs PIC when using Python
+  pybind11_add_module(dakmod surrogatepy.cpp)
+  # TODO: transitive includes
+  target_include_directories(dakmod PRIVATE ${Teuchos_INCLUDE_DIRS})
+  target_link_libraries(dakmod PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
+endif()
+
 add_subdirectory(unit)
