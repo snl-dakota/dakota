@@ -88,14 +88,15 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY model_partial_surfpack_export_format '
+    <!-- Used for both surfpack and new surrogate models -->
+    <!ENTITY model_partial_surrogate_export_format '
 	     <keyword  id="export_model" name="export_model" minOccurs="0" maxOccurs="1" code="{N_mom(true,exportSurrogate)}" label="Export Surrogate Model"  complexity="1">
                <keyword  id="filename_prefix" name="filename_prefix" minOccurs="0" code="{N_mom(str,modelExportPrefix)}" label="Exported Surrogate Filename Prefix"  default="exported_surrogate" complexity="1">
 		 <param type="STRING" />
                </keyword>
                <keyword id="formats" name="formats" code="{0}" label="Formats" maxOccurs="1" group="Surrogate Export Formats" complexity="1">
-		 <keyword id="text_archive" name="text_archive" code="{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}" label="Text SPS" maxOccurs="1" minOccurs="0" />
-		 <keyword id="binary_archive" name="binary_archive" code="{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}" label="Binary SPS" maxOccurs="1" minOccurs="0"  />
+		 <keyword id="text_archive" name="text_archive" code="{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}" label="Text Output" maxOccurs="1" minOccurs="0" />
+		 <keyword id="binary_archive" name="binary_archive" code="{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}" label="Binary Output" maxOccurs="1" minOccurs="0"  />
                </keyword>
 	     </keyword>
 	     ' >
@@ -3657,6 +3658,7 @@
 		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		    <param type="INPUT_FILE" />
 		  </keyword>
+		  &model_partial_surrogate_export_format;
 		</keyword>
                 <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process"  >
                   <alias name="kriging"/>
@@ -3718,7 +3720,7 @@
                       <keyword  id="cubic" name="cubic" code="{N_mom(lit,marsInterpolation_cubic)}" label="Cubic"   />
                     </oneOf>
                   </keyword>
-		  &model_partial_surfpack_export_format;
+		  &model_partial_surrogate_export_format;
 	        </keyword>
 
                 <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving Least Squares"  >
@@ -3729,7 +3731,7 @@
                   <keyword  id="weight_function" name="weight_function" code="{N_mom(shint,mlsWeightFunction)}" label="Weight Function"  minOccurs="0" default="" >
                     <param type="INTEGER" />
                   </keyword>
-                  &model_partial_surfpack_export_format;
+                  &model_partial_surrogate_export_format;
                 </keyword>
 		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" group="Surrogate-based Methods">
 		  &ft_model_refinement;
@@ -3834,6 +3836,7 @@
 		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		    <param type="INPUT_FILE" />
 		  </keyword>
+		  &model_partial_surrogate_export_format;
 		</keyword>
               </oneOf>
               <keyword  id="domain_decomposition" name="domain_decomposition" code="{N_mom(true,domainDecomp)}" label="Domain Decomposition"  minOccurs="0" complexity="1">

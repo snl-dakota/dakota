@@ -5674,6 +5674,13 @@ KEYWORD model {N_mom3(start,0,stop)}
           find_nugget INTEGER {N_mom(shint,krigingFindNugget)}
          ]
         [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
+        [ export_model {N_mom(true,exportSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelExportPrefix)} ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
        )
       |
       ( gaussian_process ALIAS kriging {0}
@@ -5831,6 +5838,13 @@ KEYWORD model {N_mom3(start,0,stop)}
       ( experimental_polynomial {N_mom(lit,surrogateType_global_exp_poly)}
         basis_order INTEGER >= 0 {N_mom(shint,polynomialOrder)}
         [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
+        [ export_model {N_mom(true,exportSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelExportPrefix)} ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
        )
       [ domain_decomposition {N_mom(true,domainDecomp)}
         [ cell_type STRING {N_mom(str,decompCellType)} ]
