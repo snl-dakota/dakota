@@ -471,8 +471,8 @@ void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv,
       token2.clear();
       s >> token2;
     } else { // unrecognized format problem
-      throw ResultsFileError("Unexpected data found after reading " 
-          + boost::lexical_cast<String>(num_found) + " function value(s).");
+      throw ResultsFileError("Unexpected data found after reading " +
+			     std::to_string(num_found) + " function value(s).");
     }
   }
   s.seekg(pos1); //rewind to (potentially) before [
@@ -643,8 +643,8 @@ void Response::read_gradients(std::istream& s, const ShortArray &asv,
     s >> r_bracket;
     if(r_bracket != ']') {
       throw ResultsFileError("Closing bracket ']' not found in " 
-          "expected position for function gradient "
-          + boost::lexical_cast<std::string>(num_found) + ".");
+			     "expected position for function gradient " +
+			     std::to_string(num_found) + ".");
     }
     asv_idx++;
     l_bracket1 = '\0'; l_bracket2 = '\0';
@@ -660,8 +660,9 @@ void Response::read_gradients(std::istream& s, const ShortArray &asv,
   // fn val is handled by the fn val reading functions.
   if( ! ((l_bracket1 == '[' && l_bracket2 == '[') ||
          (l_bracket1 == '\0' && l_bracket2 == '\0') ) ) { 
-    throw ResultsFileError("Unexpected data found after reading "
-       + boost::lexical_cast<std::string>(num_found) + " function gradient(s).");
+    throw ResultsFileError("Unexpected data found after reading " +
+			   std::to_string(num_found) +
+			   " function gradient(s).");
   }
 
   // Report an error if needed
@@ -705,16 +706,16 @@ void Response::read_hessians(std::istream& s, const ShortArray &asv,
     s >> r_bracket[0] >> r_bracket[1];
     if( !(r_bracket[0] == ']' && r_bracket[1] == ']') ) {
       throw ResultsFileError("Closing brackets ']]' not found in expected "
-          "position for function Hessian "
-          + boost::lexical_cast<std::string>(num_found) + "." );
+			     "position for function Hessian "
+			     + std::to_string(num_found) + "." );
     }
     asv_idx++;
     l_bracket[0] = '\0'; l_bracket[1] = '\0';
     s >> l_bracket[0] >> l_bracket[1];
   }
   if(l_bracket[0] != '\0')
-    throw ResultsFileError("Unexpected data found after reading " 
-       + boost::lexical_cast<std::string>(num_found) + " function Hessian(s).");
+    throw ResultsFileError("Unexpected data found after reading " +
+			   std::to_string(num_found) + " function Hessian(s).");
 
   // Report an error if needed
   if(num_found != num_expected) {
@@ -933,8 +934,8 @@ void Response::read_tabular(std::istream& s)
       if (s)
 	{ s >> token; functionValues[i] = std::atof(token.c_str()); }
       else
-	throw TabularDataTruncated("At EOF: insufficient data for RealVector["
-				   + boost::lexical_cast<std::string>(i) + "]");
+	throw TabularDataTruncated("At EOF: insufficient data for RealVector[" +
+				   std::to_string(i) + "]");
   }
 }
 

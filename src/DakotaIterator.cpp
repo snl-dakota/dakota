@@ -135,7 +135,6 @@
 
 #include <boost/bimap.hpp>
 #include <boost/assign.hpp>
-#include <boost/lexical_cast.hpp>
 
 static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -1776,7 +1775,7 @@ void Iterator::eval_tag_prefix(const String& eval_id_str)
 String Iterator::user_auto_id()
 {
   // // increment and then use the current ID value
-  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  // return String("NO_ID_") + std::to_string(++userAutoIdNum);
   return String("NO_METHOD_ID");
 }
 
@@ -1788,7 +1787,7 @@ String Iterator::user_auto_id()
 String Iterator::no_spec_id()
 {
   // increment and then use the current ID value
-  return String("NOSPEC_METHOD_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+  return String("NOSPEC_METHOD_ID_") + std::to_string(++noSpecIdNum);
 }
 
 } // namespace Dakota

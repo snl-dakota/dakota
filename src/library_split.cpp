@@ -10,7 +10,6 @@
     \brief file containing a mock simulator main for testing DAKOTA in
     library mode on a split communicator */ 
 
-#include <boost/lexical_cast.hpp>
 #include "mpi.h"
 #include "LibraryEnvironment.hpp"
 #include "ParallelLibrary.hpp"
@@ -206,9 +205,9 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
   // BMA TODO: get right behavior across ranks here:
 
   // override output, error, and write restart files, but not read restart
-  std::string ofile("dakota.o." + boost::lexical_cast<std::string>(color));
-  std::string efile("dakota.e." + boost::lexical_cast<std::string>(color));
-  std::string wfile("dakota.rst." + boost::lexical_cast<std::string>(color));
+  std::string ofile("dakota.o." + std::to_string(color));
+  std::string efile("dakota.e." + std::to_string(color));
+  std::string wfile("dakota.rst." + std::to_string(color));
 
   Dakota::ProgramOptions prog_opts;
   prog_opts.input_string(input);

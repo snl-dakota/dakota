@@ -27,8 +27,6 @@
 #include <unistd.h> // for usleep()
 #endif
 
-#include <boost/lexical_cast.hpp>
-
 
 namespace Dakota {
 
@@ -252,8 +250,7 @@ system_call_file_test(const bfs::path& root_file)
     for (size_t i=0; i<num_programs; ++i) {
       // BMA TODO: rework with BFS utils
       bfs::path tagged_file = 
-	WorkdirHelper::concat_path(root_file, 
-				   "." + boost::lexical_cast<std::string>(i+1));
+	WorkdirHelper::concat_path(root_file, "." + std::to_string(i+1));
       if ( stat((char*)tagged_file.string().data(), &buf) == -1 )
         return false;
     }
@@ -262,9 +259,7 @@ system_call_file_test(const bfs::path& root_file)
     // Testing all files is usually overkill for sequential analyses.  It's only
     // really necessary to check the last tagged_file: root_file.[num_programs]
     bfs::path tagged_file = 
-      WorkdirHelper::concat_path(root_file, 
-				 "." + 
-				 boost::lexical_cast<std::string>(num_programs));
+      WorkdirHelper::concat_path(root_file, "." + std::to_string(num_programs));
     return ( stat((char*)tagged_file.string().data(), &buf) == -1 ) ? false : true;
 #endif // __SUNPRO_CC
   }
@@ -314,7 +309,7 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
     }
     
     std::string prog_num( (multipleParamsFiles || num_programs > 1) ?
-                          "." + boost::lexical_cast<std::string>(i+1) : "" );
+                          "." + std::to_string(i+1) : "" );
     String params_file(s1), results_file(s2);
     if(multipleParamsFiles)
       params_file += prog_num;

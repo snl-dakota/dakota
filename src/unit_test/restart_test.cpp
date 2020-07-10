@@ -99,8 +99,7 @@ TEUCHOS_UNIT_TEST(io, restart_allvar)
   for (size_t i=0; i<vars.adiv(); ++i)
     vars.all_discrete_int_variable(i, i);
   for (size_t i=0; i<vars.adsv(); ++i)
-    vars.all_discrete_string_variable(String("sv") +
-				      boost::lexical_cast<String>(i), i);
+    vars.all_discrete_string_variable(String("sv") + std::to_string(i), i);
   for (size_t i=0; i<vars.adrv(); ++i)
     vars.all_discrete_real_variable(100.0 + (Real) i, i);
 

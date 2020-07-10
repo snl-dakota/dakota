@@ -973,8 +973,7 @@ select_refinement_points(const RealVectorArray& candidate_samples,
     // write samples to file
     std::ofstream export_file_stream;
     std::string filename = "bayesian-adaptive-emulator-samples-";
-    filename += boost::lexical_cast<std::string>(best_samples.numCols() +
-						 num_surr_data_pts);
+    filename += std::to_string(best_samples.numCols() + num_surr_data_pts);
     filename += ".txt";
     TabularIO::open_file(export_file_stream, filename,
 			 "adaptive emulator samples");

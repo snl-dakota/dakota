@@ -18,7 +18,6 @@
 #include "PHXCppApi.h"
 #endif
 #include <boost/tokenizer.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/assign.hpp>
@@ -1906,7 +1905,7 @@ steady_state_diffusion_core(SpectralDiffusionModel& model,
   // defaults:
   for (int i=0; i<numFns; i++) {
     size_t coord_index
-      = find_index(xDRLabels, "coord_" + boost::lexical_cast<String>(i));
+      = find_index(xDRLabels, "coord_" + std::to_string(i));
     if ( coord_index != _NPOS )
       qoi_coords[i] = xDR[coord_index];
   }
@@ -5041,7 +5040,7 @@ int TestDriverInterface::aniso_quad_form()
             abort_handler(INTERFACE_ERROR);
           }
 
-          seed = boost::lexical_cast<size_t>(*tok);
+          seed = static_cast<size_t>(std::stoull(*tok));
 
           if(++tok != tokens.end())
           {
@@ -5057,8 +5056,7 @@ int TestDriverInterface::aniso_quad_form()
           ++tok;
           for(; tok != tokens.end(); ++tok)
           {
-            eigenvals.push_back(boost::lexical_cast<RealMatrix::scalarType>(
-              *tok));
+            eigenvals.push_back(stod(*tok));
           }
 
           if(eigenvals.size() == 0)

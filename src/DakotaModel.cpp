@@ -5624,7 +5624,7 @@ EvaluationsDBState Model::evaluations_db_state(const Model &model) {
 String Model::user_auto_id()
 {
   // // increment and then use the current ID value
-  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  // return String("NO_ID_") + std::to_string(++userAutoIdNum);
   return String("NO_MODEL_ID");
 }
 
@@ -5639,7 +5639,7 @@ String Model::user_auto_id()
 String Model::no_spec_id()
 {
   // increment and then use the current ID value
-  return String("NOSPEC_MODEL_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+  return String("NOSPEC_MODEL_ID_") + std::to_string(++noSpecIdNum);
 }
 
 // This is overridden by RecastModel so that it and its derived classes return 

@@ -249,7 +249,7 @@ void RandomFieldModel::identify_field_model()
       RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
       gpApproximations[i].add_array(rfBuildVars, factor_i);
       gpApproximations[i].build();
-      const String gp_string = boost::lexical_cast<String>(i);
+      const String gp_string = std::to_string(i);
       const String gp_prefix = "PCA_GP";
       gpApproximations[i].export_model(gp_string, gp_prefix, ALGEBRAIC_FILE);
     }
@@ -410,7 +410,7 @@ void RandomFieldModel::initialize_rf_coeffs()
       normal_stdev[num_sm_normal + i] = 1.0;
       normal_lb[num_sm_normal + i] = -std::numeric_limits<Real>::infinity();
       normal_ub[num_sm_normal + i] =  std::numeric_limits<Real>::infinity();
-      String xi_label = "xi_" + boost::lexical_cast<String>(i+1);
+      String xi_label = "xi_" + std::to_string(i+1);
       currentVariables.
         continuous_variable_label(xi_label, num_sm_normal + i);
     }
@@ -582,7 +582,7 @@ void RandomFieldModel::write_field(const RealVector& field_prediction)
   // TODO: write to file per eval, preferrably in work_directory
   // BMA TODO: something smarter than modelEvalCntr / eval ID
   if (outputLevel >= VERBOSE_OUTPUT) {
-    String pred_count(boost::lexical_cast<String>(evaluation_id() + 1));
+    String pred_count(std::to_string(evaluation_id() + 1));
     std::ofstream myfile;
     myfile.open(("field_prediction." + pred_count + ".txt").c_str());
     Cout << "Field prediction " << pred_count << "\n";

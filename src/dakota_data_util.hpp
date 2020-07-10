@@ -17,7 +17,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/functional/hash/hash.hpp>
 #include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <algorithm>
 #include "Teuchos_SerialDenseHelpers.hpp"
@@ -294,7 +293,7 @@ std::string::size_type longest_strlen(const std::vector<std::string>& vecstr);
 inline void build_label(String& label, const String& root_label, size_t tag, 
 			const String& separator = "")
 {
-  label = root_label + separator + boost::lexical_cast<std::string>(tag);
+  label = root_label + separator + std::to_string(tag);
 }
 
 /// create an array of labels by tagging root_label for each entry in

@@ -654,11 +654,11 @@ void repair_restart(StringArray pos_args, String identifier_type)
     }
     by_value = true;
     try {
-      remove_val = boost::lexical_cast<double>(pos_args[0]);
+      remove_val = std::stod(pos_args[0]);
     }
-    catch (const boost::bad_lexical_cast& blc_except) {
+    catch (const std::logic_error& le_except) {
       Cerr << "\nError invalid floating point response " << pos_args[0] 
-	   << " to remove." << std::endl;
+	   << " to remove.\n" << le_except.what() << std::endl;
       exit(-1);
     }
     read_restart_filename  = pos_args[1];
@@ -675,12 +675,12 @@ void repair_restart(StringArray pos_args, String identifier_type)
     read_restart_filename  = pos_args.back(); pos_args.pop_back();
     try {
       BOOST_FOREACH(const String& pa, pos_args) {
-	bad_ids.push_back(boost::lexical_cast<int>(pa));
+	bad_ids.push_back(std::stoi(pa));
       }
     }
-    catch (const boost::bad_lexical_cast& blc_except) {
+    catch (const std::logic_error& le_except) {
       Cerr << "\nError: invalid integer IDs " << pos_args 
-	   << " for command remove_ids" << std::endl;
+	   << " for command remove_ids.\n" << le_except.what() << std::endl;
       exit(-1);
     }
   }

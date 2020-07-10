@@ -27,7 +27,6 @@
 #include "pecos_data_types.hpp"
 #include "pecos_stat_util.hpp"
 #include "DakotaApproximation.hpp"
-#include <boost/lexical_cast.hpp>
 #include "FSUDesignCompExp.hpp"
 #include <sstream>
 #include <fstream>
@@ -1391,14 +1390,14 @@ Real NonDAdaptiveSampling::compute_rmspe()
 				String val(*db_it, distance(db_it->begin(), delim+1), distance(delim, db_it->end()));
 
 				if (opt == "candidate_size")
-					numEmulEval = boost::lexical_cast<int,const char*>(val.c_str());
+				  numEmulEval = std::stoi(val);
 				else if (opt == "batch_size") 
 				{
-					batchSize = boost::lexical_cast<int,const char*>(val.c_str());
-					Cout << "BATCH SIZE: " << batchSize << std::endl;
+				  batchSize = std::stoi(val);
+				  Cout << "BATCH SIZE: " << batchSize << std::endl;
 				}
 				else if (opt == "rounds")
-					numRounds = boost::lexical_cast<int,const char*>(val.c_str());
+				  numRounds = std::stoi(val);
 				else if (opt == "approx_type") 
 				{
 					approx_type = val;
@@ -1446,11 +1445,11 @@ Real NonDAdaptiveSampling::compute_rmspe()
 				}
 				else if(opt == "validation_data") 
 				{
-					outputValidationData =boost::lexical_cast<int,const char*>(val.c_str());
+				  outputValidationData = std::stoi(val);
 				}
 				else if(opt == "knn") 
 				{
-					numKneighbors = boost::lexical_cast<int,const char*>(val.c_str());
+				  numKneighbors = std::stoi(val);
 				}
 				else 
 				{

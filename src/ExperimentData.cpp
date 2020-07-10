@@ -1940,7 +1940,7 @@ hyperparam_labels(unsigned short multiplier_mode) const
   case CALIBRATE_PER_EXPER:
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) 
       hp_labels.
-	push_back(cm_prefix + "Exp" + boost::lexical_cast<String>(exp_ind+1));
+	push_back(cm_prefix + "Exp" + std::to_string(exp_ind+1));
     break;
 	
     // BMA TODO: Could use response labels here...
@@ -1949,7 +1949,7 @@ hyperparam_labels(unsigned short multiplier_mode) const
       simulationSRD.num_field_response_groups();
     for (size_t resp_ind=0; resp_ind < num_resp; ++resp_ind)
       hp_labels.
-	push_back(cm_prefix + "Resp" + boost::lexical_cast<String>(resp_ind+1));
+	push_back(cm_prefix + "Resp" + std::to_string(resp_ind+1));
     break;
   }
 
@@ -1959,8 +1959,8 @@ hyperparam_labels(unsigned short multiplier_mode) const
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind)
       for (size_t resp_ind=0; resp_ind < num_resp; ++resp_ind)
 	hp_labels.
-	  push_back(cm_prefix + "Exp" + boost::lexical_cast<String>(exp_ind+1) +
-		    "Resp" + boost::lexical_cast<String>(resp_ind+1));
+	  push_back(cm_prefix + "Exp" + std::to_string(exp_ind+1) +
+		    "Resp" + std::to_string(resp_ind+1));
     break;
   }
 

@@ -14,7 +14,6 @@
 #include "dakota_data_util.hpp"  // for strcontains
 #include "dakota_global_defs.hpp"
 #include <boost/array.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 #include <boost/version.hpp>

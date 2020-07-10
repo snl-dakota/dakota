@@ -19,7 +19,6 @@
 #include "dakota_system_defs.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaApproximation.hpp"
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -200,10 +199,9 @@ void SurrBasedGlobalMinimizer::core_run()
       // In here we want to write the truth values into a simple tab delimited
       // file so that we can easily compare them with the surrogate values of
       // the points returned by the iterator.
-      std::string ofname("finaldatatruth");
-      ofname += boost::lexical_cast<std::string>(globalIterCount);
-      ofname += ".dat";
-      std::ofstream ofile(ofname.c_str());
+      std::string ofname("finaldatatruth" + std::to_string(globalIterCount) +
+			 ".dat");
+      std::ofstream ofile(ofname);
       ofile.precision(12);
       IntRespMCIter it = truth_resp_results.begin();
       for (i=0; i<num_results; ++i, ++it) {

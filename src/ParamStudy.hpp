@@ -769,10 +769,10 @@ centered_header(const String& type, size_t var_index, int step,
   h_string += ">>>>> Centered parameter study evaluation for ";
   h_string += type; 
   h_string += "[";
-  h_string += boost::lexical_cast<std::string>(var_index+1); 
+  h_string += std::to_string(var_index+1); 
   h_string += "]";
-  if (step < 0) h_string += " - " + boost::lexical_cast<std::string>(-step);
-  else          h_string += " + " + boost::lexical_cast<std::string>( step);
+  if (step < 0) h_string += " - " + std::to_string(-step);
+  else          h_string += " + " + std::to_string( step);
   h_string += "delta:\n";
 }
 

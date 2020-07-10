@@ -785,7 +785,7 @@ String Interface::final_eval_id_tag(int iface_eval_id)
     return interfaceRep->final_eval_id_tag(iface_eval_id);
 
   if (appendIfaceId)
-    return evalTagPrefix + "." + boost::lexical_cast<std::string>(iface_eval_id);
+    return evalTagPrefix + "." + std::to_string(iface_eval_id);
   return evalTagPrefix;
 }
 
@@ -1408,7 +1408,7 @@ void Interface::file_cleanup() const
 String Interface::user_auto_id()
 {
   // // increment and then use the current ID value
-  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  // return String("NO_ID_") + std::to_string(++userAutoIdNum);
   return String("NO_ID");
 }
 
@@ -1420,6 +1420,6 @@ String Interface::user_auto_id()
 String Interface::no_spec_id()
 {
   // increment and then use the current ID value
-  return String("NOSPEC_INTERFACE_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+  return String("NOSPEC_INTERFACE_ID_") + std::to_string(++noSpecIdNum);
 }
 } // namespace Dakota
