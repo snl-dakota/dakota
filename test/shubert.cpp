@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
-//#include "unistd.h" // for sleep
+//#include <thread> // for sleep_for
 
 
 //KRD modified this starting from text_book.cpp
@@ -54,9 +54,10 @@ int main(int argc, char** argv)
   }
 
   //srand ( (unsigned int) (time(NULL)/x[0]) );
-  //sleep( (int)(3.0*((double)rand()/RAND_MAX)));
+  //std::this_thread::sleep_for
+  //  (std::chrono::seconds((int)(3.0*((double)rand()/RAND_MAX))));
 
-  //sleep(5);
+  //std::this_thread::sleep_for(std::chrono::seconds(5));
 
   // Compute the results and output them directly to argv[2] (the NO_FILTER
   // option is used).  Response tags are now optional; output them for ease

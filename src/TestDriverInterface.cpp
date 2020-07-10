@@ -13,7 +13,7 @@
 #include "TestDriverInterface.hpp"
 #include "ParallelLibrary.hpp"
 #include "DataMethod.hpp"  // for output levels
-//#include <unistd.h> // for sleep(int)
+//#include <thread> // for sleep_for
 #ifdef DAKOTA_MODELCENTER
 #include "PHXCppApi.h"
 #endif
@@ -3051,7 +3051,8 @@ int TestDriverInterface::text_book()
   //if (r < 10000) // RAND_MAX = 32767
   //  return 1; // failure
 
-  //sleep(5); // for faking a more expensive evaluation
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(5));
   return 0; // no failure
 }
 
@@ -3168,7 +3169,9 @@ int TestDriverInterface::text_book1()
     }
   }
 
-  //sleep(1);
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(1));
+
   return 0;
 }
 
@@ -3288,7 +3291,9 @@ int TestDriverInterface::text_book2()
     }
   }
 
-  //sleep(1);
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(1));
+
   return 0;
 }
 
@@ -3408,7 +3413,9 @@ int TestDriverInterface::text_book3()
     }
   }
 
-  //sleep(1);
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(1));
+
   return 0;
 }
 
@@ -3515,7 +3522,9 @@ int TestDriverInterface::text_book_ouu()
 	fnGrads[2][i] = 0.;                      break;
       }
 
-  //sleep(5); // for faking a more expensive evaluation
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(5));
+
   return 0; // no failure
 }
 
@@ -3605,7 +3614,9 @@ int TestDriverInterface::scalable_text_book()
     }
   }
 
-  //sleep(5); // for faking a more expensive evaluation
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(5));
+
   return 0; // no failure
 }
 

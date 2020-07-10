@@ -19,14 +19,7 @@
 #include <sys/types.h> // MAY REQUIRE ifndef(HPUX)
 #include <sys/stat.h>
 #include "WorkdirHelper.hpp"
-
-// eventually just use _WIN32 here
-#if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-#include "dakota_windows.h" // for Sleep()
-#elif defined(HAVE_UNISTD_H)
-#include <unistd.h> // for usleep()
-#endif
-
+#include <thread>
 
 namespace Dakota {
 
@@ -179,12 +172,8 @@ void SysCallApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
         }
         else
           failCountMap[fn_eval_id] = 1;
-	// Test for MinGW first, since there we have usleep as well
-#if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-	Sleep(1);     // 1 millisecond
-#elif defined(HAVE_USLEEP)
-        usleep(1000); // 1000 microseconds = 1 millisec
-#endif // SLEEP
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(1));
 #ifdef ASYNCH_DEBUG
         Cerr << "Warning: exception caught in reading response file "
              << file_to_test << "\nException = \"" << fr_except.what()
@@ -223,12 +212,7 @@ void SysCallApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 
   // reduce processor load from DAKOTA testing if jobs are not finishing
   if (completionSet.empty()) { // no jobs completed in pass through entire set
-    // Test for MinGW first, since there we have usleep as well
-#if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-    Sleep(1);     // 1 millisecond
-#elif defined(HAVE_USLEEP)
-    usleep(1000); // 1000 microseconds = 1 millisec
-#endif // SLEEP
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
   // remove completed jobs from sysCallSet
   for (ISCIter it = completionSet.begin(); it != completionSet.end(); ++it)

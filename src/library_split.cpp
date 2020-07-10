@@ -17,13 +17,7 @@
 #include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
 #include "PluginParallelDirectApplicInterface.hpp"
-
-// for Sleep or sleep
-#ifdef _WIN32
-#include "dakota_windows.h"
-#else
-#include <unistd.h>
-#endif
+#include <thread>
 
 /// Split MPI_COMM_WORLD, returning the comm and color
 void manage_mpi(MPI_Comm& my_comm, int& color);
@@ -59,11 +53,8 @@ int main(int argc, char* argv[])
   std::remove("dakota.e.1");
   std::remove("dakota.e.2");
   //remove("dakota.e");
-#ifdef _WIN32
-  Sleep(1000); // milliseconds
-#else
-  sleep(1);    // seconds
-#endif
+
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 
   // colors 1 and 2 run DAKOTA
   if (color != 0) {
@@ -246,11 +237,7 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
 void collect_results()
 {
   // avoid file race condition
-#ifdef _WIN32
-  Sleep(1000); // milliseconds
-#else
-  sleep(1);    // seconds
-#endif
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   // for dakota_test.perl benefit; no easy way to sequence output and error
   std::system("cat dakota.o.1");
   std::system("cat dakota.o.2");

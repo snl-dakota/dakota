@@ -208,11 +208,6 @@ if(HAVE_SYS_WAIT_H)
   add_definitions("-DHAVE_SYS_WAIT_H")
 endif(HAVE_SYS_WAIT_H)
 
-check_function_exists(usleep HAVE_USLEEP)
-if(HAVE_USLEEP)
-  add_definitions("-DHAVE_USLEEP")
-endif(HAVE_USLEEP)
-
 check_include_file(pdb.h HAVE_PDB_H)
 if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
