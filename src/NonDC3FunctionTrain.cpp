@@ -468,131 +468,6 @@ void NonDC3FunctionTrain::push_c3_seed(int seed)
 }
 
 
-bool NonDC3FunctionTrain::max_rank_advancement_available()
-{
-  bool refine = false;
-  std::shared_ptr<SharedC3ApproxData> shared_data_rep =
-    std::static_pointer_cast<SharedC3ApproxData>(
-    uSpaceModel.shared_approximation().data_rep());
-  size_t v, max_r = shared_data_rep->max_rank(); // adapted value
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  SizetVector ft_ranks;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    std::shared_ptr<C3Approximation> poly_approx_q =
-      std::static_pointer_cast<C3Approximation>(poly_approxs[qoi].approx_rep());
-    // check adapted FT ranks against maxRank
-    poly_approx_q->recover_function_train_ranks(ft_ranks);
-    for (v=1; v<numContinuousVars; ++v) // ranks len = num_v+1 with 1's @ ends
-      if (ft_ranks[v] == max_r) // recovery potentially limited by bound
-	{ refine = true; break; }
-    if (refine) break;
-  }
-  return refine;
-}
-
-
-bool NonDC3FunctionTrain::max_order_advancement_available()
-{
-  bool refine = false;
-  std::shared_ptr<SharedC3ApproxData> shared_data_rep =
-    std::static_pointer_cast<SharedC3ApproxData>(
-    uSpaceModel.shared_approximation().data_rep());
-  size_t v, max_o = shared_data_rep->max_order(); // adapted value
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  UShortArray ft_ords;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    std::shared_ptr<C3Approximation> poly_approx_q =
-      std::static_pointer_cast<C3Approximation>(poly_approxs[qoi].approx_rep());
-    // check adapted FT orders against maxOrder
-    poly_approx_q->recover_function_train_orders(ft_ords);
-    for (v=0; v<numContinuousVars; ++v) // ords len = num_v
-      if (ft_ords[v] == max_o) // recovery potentially limited by curr bnd
-	{ refine = true; break; }
-    if (refine) break;
-  }
-  return refine;
-}
-
-
-bool NonDC3FunctionTrain::advancement_available()
-{
-  // if there are new samples, then exp coeff updates are always performed
-  // > Need to query the DataFitSurrModel for increment computed by
-  //   rebuild_global(), or perhaps query the state of the approxData
-  //if (numSamplesOnModel) // Note: this is updated total
-  //  return true;
-
-
-  // *** Separate Iterator/Model refineType from c3UniformRefineType?
-  // *** Then use top-level logic to assign low-level below.
-
-
-  // *** TO DO: PUSH *advancement_available() LOGIC DOWN? ***
-  // *** IF ADVANCEMENT_AVAILABLE IS ACCESSIBLE FROM SHARED INCREMENT_ORDER,
-  // *** THEN CAN LEAVE REFINE MODE AS IS AND ADD LOGIC TO increment_order()
-  // *** TO ADVANCE ONLY THE INCREMENTS AVAILABLE.  PROBLEM IS ACCESS TO THE
-  // *** C3Approximation data...
-  // *** Model -> DFSModel -> ApproxInt -> loop over vector<Approximation>
-  // *** --> each approximation assesses its state versus shared bound data.
-  // *** this works from Iterator/Model, but still not from SharedC3ApproxData::increment_order()  --> may need to pass down a flag from calling sequence...?
-
-  // *** Consider making all of this local to a C3Approx instance.  SharedC3
-  // *** advances shared bounds, but C3Approx determines QoI saturation logic.
-  // *** With adapt-order, it seems ApproxOpts data can no longer be shared
-  // *** since this gets updated with per-QoI adapt results (see goroda email).
-  // *** -> treat starting points/bounds as shared but adapted results as per
-  // *** C3Approx and manage saturation logic there.
-
-  
-  bool refine = false;
-  std::shared_ptr<SharedC3ApproxData> shared_data_rep =
-    std::static_pointer_cast<SharedC3ApproxData>(
-    uSpaceModel.shared_approximation().data_rep());
-  switch (c3RefineType) {
-
-  // these two options only require the shared data config:
-  case UNIFORM_START_ORDER: {
-    const UShortArray& s_ord = shared_data_rep->start_orders();// adapted orders
-    size_t i, num_ord = s_ord.size();
-    for (size_t i=0; i<num_ord; ++i)
-      if (s_ord[i] < maxOrderSpec)
-	{ refine = true; break; }
-    break;
-  }
-  case UNIFORM_START_RANK:
-    if (shared_data_rep->start_rank() < maxRankSpec)
-      refine = true;
-    break;
-
-  // these options query recovered ranks/orders for each C3Approximation
-  // > logic is inverted when advancing the bound i/o the bounded quantity
-  // > logic must be augmented with an outer check on numSamples:
-  //   refinement is possible for either a sample increment or an advanced
-  //   bound that could admit a different adapted soln for fixed data
-  case UNIFORM_MAX_RANK:
-    return max_rank_advancement_available();  break;
-  case UNIFORM_MAX_ORDER: {
-    return max_order_advancement_available();  break;
-  }
-  case UNIFORM_MAX_RANK_ORDER: {
-    // restrict the refinement search space (allow disconnect in c3RefineType at top vs. lower level)
-    bool r_refine =  max_rank_advancement_available(),
-         o_refine = max_order_advancement_available();
-    if (r_refine && o_refine)
-      { /* shared_data_rep->c3_refine_type(UNIFORM_MAX_RANK_ORDER); */ return true; }
-    else if (r_refine)
-      { /* shared_data_rep->c3_refine_type(UNIFORM_MAX_RANK); */       return true; }
-    else if (o_refine)
-      { /* shared_data_rep->c3_refine_type(UNIFORM_MAX_ORDER); */      return true; }
-    else return false;
-    break;
-  }
-  }
-
-  return refine;
-}
-
-
 void NonDC3FunctionTrain::push_increment()
 {
   // Reverse order relative to NonDExpansion base implementation since
@@ -653,8 +528,8 @@ sample_allocation_metric(Real& regress_metric, Real power)
   // These 3 cases scale samples based on max rank and/or max order to avoid
   // challenges from sample and rank advancements not being synchronized.  This
   // simplification is consistent with corresponding advancement_available()
-  // logic: refinement candidates are generated when max rank and/or max order
-  // are active bounds.
+  // logic under Model/ApproximationInterface/Approximation: refinement
+  // candidates are generated when max rank and/or max order are active bounds.
   case UNIFORM_MAX_RANK: // includes refine{Type,Control},adaptRank dependencies
     regress_metric = shared_data_rep->max_rank_regression_size();   break;
   case UNIFORM_MAX_ORDER://includes refine{Type,Control},adaptOrder dependencies

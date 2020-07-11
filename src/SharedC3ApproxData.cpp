@@ -57,11 +57,6 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
     numVars, startOrders);
 
   multiApproxOpts = multi_approx_opts_alloc(num_vars);
-
-  //oneApproxOpts = (struct OneApproxOpts **)
-  //  malloc(num_vars * sizeof(struct OneApproxOpts *));
-  //for (size_t i=0; i<num_vars; ++i)
-  //  oneApproxOpts[i] = NULL;
   oneApproxOpts.assign(num_vars, NULL);
 }
 
@@ -84,25 +79,19 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)
 
   // short basis_type; approx_type_to_basis_type(approxType, basis_type);
-
+  
   multiApproxOpts = multi_approx_opts_alloc(num_vars);
-
-  //oneApproxOpts = (struct OneApproxOpts **)
-  //  malloc(num_vars * sizeof(struct OneApproxOpts *));
-  //for (size_t i=0; i<num_vars; ++i)
-  //  oneApproxOpts[i] = NULL;
   oneApproxOpts.assign(num_vars, NULL);
 }
 
 
 SharedC3ApproxData::~SharedC3ApproxData()
 {
-  multi_approx_opts_free(multiApproxOpts); multiApproxOpts = NULL;
+  multi_approx_opts_free(multiApproxOpts); //multiApproxOpts = NULL;
   for (size_t i=0; i<numVars; ++i) {
     struct OneApproxOpts*& a_opts = oneApproxOpts[i]; // ref to ptr
-    if (a_opts) { one_approx_opts_free_deep(&a_opts); a_opts = NULL; }
+    if (a_opts) one_approx_opts_free_deep(&a_opts); //a_opts = NULL;
   }
-  //free(oneApproxOpts); oneApproxOpts = NULL;
 }
 
 
@@ -180,7 +169,34 @@ update_basis(size_t v, unsigned short start_order, unsigned short max_order)
   one_approx_opts_set_nparams(a_opts, np);
   one_approx_opts_set_maxnum( a_opts, max_np);
 
-  //formUpdated[activeKey] = true; // elevate to clients
+  //formUpdated[activeKey] = true; // elevate to clients to avoid redundancy
+}
+
+
+bool SharedC3ApproxData::advancement_available()
+{
+  // These two cases are tested first. If false, then each C3Approx is tested.
+  // This distributes the c3RefineType cases.
+
+  switch (c3RefineType) {
+
+  // these two options only require the shared data config:
+  case UNIFORM_START_ORDER: {
+    const UShortArray& s_ord = start_orders();// adapted orders
+    unsigned short     m_ord = max_order();
+    size_t i, num_ord = s_ord.size();
+    for (size_t i=0; i<num_ord; ++i)
+      if (s_ord[i] < m_ord)
+	return true;
+    return false; break;
+  }
+  case UNIFORM_START_RANK:
+    return (start_rank() < max_rank());  break;
+  }
+
+  // returning false induces checks in C3Approximation::advancement_available()
+  // for other QoI-dependent c3RefineTypes
+  return false;
 }
 
 
@@ -198,7 +214,7 @@ void SharedC3ApproxData::increment_order()
       s_ord += kickOrder;
       if (prev_ord < max_ord) { // increment occurs, but kick may be truncated
 	incremented = true;
-	update_basis(v, std::min(s_ord, max_ord), max_ord);
+	//update_basis(v, s_ord, max_ord);
       }
     }
     if (incremented)
@@ -225,7 +241,8 @@ void SharedC3ApproxData::increment_order()
   }
   case UNIFORM_MAX_ORDER: {
     unsigned short& max_o = max_order();  max_o += kickOrder;
-    update_basis(start_orders(), max_o);  formUpdated[activeKey] = true;  break;
+    //update_basis(start_orders(), max_o);
+    formUpdated[activeKey] = true;  break;
   }
   case UNIFORM_MAX_RANK_ORDER: {
     // Prior to implementing a multi-index approach, we use heuristics.
@@ -239,8 +256,8 @@ void SharedC3ApproxData::increment_order()
     size_t&         max_r = max_rank();   max_r += kickRank;
     //if (max_order_advancement_available()) // ***
     unsigned short& max_o = max_order();  max_o += kickOrder;
-    update_basis(start_orders(), max_o);  formUpdated[activeKey] = true;
-    break;
+    //update_basis(start_orders(), max_o);
+    formUpdated[activeKey] = true;  break;
   }
   }
 }
@@ -261,7 +278,7 @@ void SharedC3ApproxData::decrement_order()
       if (s_ord >= kickOrder) { // for completeness (should not happen)
 	s_ord -= kickOrder; // preserve symmetry/reproducibility w/increment
 	if (s_ord < max_ord) // only communicate if in bounds
-	  { update_basis(v, s_ord, max_ord); decremented = true; }
+	  { /*update_basis(v, s_ord, max_ord);*/ decremented = true; }
       }
     }
     if (!decremented) bad_range = true;
@@ -282,7 +299,7 @@ void SharedC3ApproxData::decrement_order()
   case UNIFORM_MAX_ORDER: {
     unsigned short& max_o = max_order();
     if    (max_o  < kickOrder)  bad_range = true;
-    else { max_o -= kickOrder;  update_basis(start_orders(), max_o); }
+    else { max_o -= kickOrder;  /*update_basis(start_orders(), max_o);*/ }
     break;
   }
   case UNIFORM_MAX_RANK_ORDER: {
@@ -290,7 +307,7 @@ void SharedC3ApproxData::decrement_order()
     if (max_r < kickRank || max_o < kickOrder) bad_range = true;
     else {
       max_r -= kickRank;
-      max_o -= kickOrder;  update_basis(start_orders(), max_o);
+      max_o -= kickOrder;  //update_basis(start_orders(), max_o);
     }
     break;
   }

@@ -176,6 +176,10 @@ public:
   virtual const RealVector& total_sobol_indices() const;
   virtual ULongULongMap sparse_sobol_index_map() const;
 
+  /// check if resolution advancement (e.g., order, rank) is available
+  /// for this approximation instance
+  virtual bool advancement_available();
+
   /// check if diagnostics are available for this approximation type
   virtual bool diagnostics_available();
   /// retrieve a single diagnostic metric for the diagnostic type specified

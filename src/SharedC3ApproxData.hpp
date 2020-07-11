@@ -176,19 +176,21 @@ protected:
   void pre_combine();
   //void post_combine();
 
+  bool advancement_available();
+
   //
   //- Heading: Data
   //
 
-  // This data is shared per QoI _and_ per level
+  // While these containers are shared across the QoI, some data now varies per
+  // QoI (for adapt_order). Per QoI data is pushed/pulled in C3Approx::build().
   //
-  /// 1D approximation options (basis type, poly order, etc.)
-  std::vector<OneApproxOpts*> oneApproxOpts;//OneApproxOpts ** oneApproxOpts;
-  /// n-D approximation options, augmenting 1D options
+  // lower level basis options
+  //std::vector<OpeOpts*> polyBasisOpts;
+  /// one-D approximation options (basis type, poly order, etc.)
+  std::vector<OneApproxOpts*> oneApproxOpts;
+  /// n-D approximation options, augmenting one-D options
   MultiApproxOpts* multiApproxOpts;
-
-  // these are stored in oneApproxOpts, but currently need to be cached
-  // to persist between set_parameter() and construct_basis()
 
   /// starting user specification for polynomial orders (from start_order
   /// scalar plus anisotropic dimension preference)

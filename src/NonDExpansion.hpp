@@ -104,10 +104,6 @@ public:
 
   virtual void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
 
-  /// returns false if refinement opportunities have been exhaused for the
-  /// current model (e.g., maximum order/level/rank has been reached)
-  virtual bool advancement_available();
-
   //
   //- Heading: Member functions
   //
@@ -688,10 +684,6 @@ inline int NonDExpansion::random_seed(size_t index) const
     return randomSeedSeqSpec[index];
   else return 0; // seed sequence exhausted, do not update
 }
-
-
-inline bool NonDExpansion::advancement_available()
-{ return true; } // default overridden for fn train
 
 
 inline int NonDExpansion::maximum_refinement_iterations() const
