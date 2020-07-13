@@ -111,7 +111,7 @@ void TrackerHTTP::post_finish(unsigned runtime)
   std::string datatopost;
   build_default_data(datatopost, end_time, "FINISH");
   // add the elapsed time in the postrun case
-  std::string elapsed_time( std::to_string>(end_time - startTime) );
+  std::string elapsed_time( std::to_string(end_time - startTime) );
   url_add_field(datatopost, "elapsedseconds", elapsed_time);
 
   send_data_using_post(datatopost);
