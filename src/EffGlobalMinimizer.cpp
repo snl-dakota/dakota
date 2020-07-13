@@ -70,6 +70,8 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   String approx_type = "global_kriging";
   if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
     approx_type = "global_gaussian";
+  else if (probDescDB.get_short("method.nond.emulator") == EXPGP_EMULATOR)
+    approx_type = "global_exp_gauss_proc";
 
   String sample_reuse = "none"; // *** TO DO: allow reuse separate from import
   UShortArray approx_order; // empty

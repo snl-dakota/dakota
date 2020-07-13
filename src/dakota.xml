@@ -2562,6 +2562,7 @@
             <oneOf label="GP Implementation">
               <keyword  id="surfpack" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   />
               <keyword  id="dakota" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
+              <keyword  id="experimental" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="dakota"   />
             </oneOf>
           </keyword>
           <keyword  id="use_derivatives" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage"  minOccurs="0" default="use function values only"/>
