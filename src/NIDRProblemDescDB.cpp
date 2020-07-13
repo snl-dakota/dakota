@@ -7050,6 +7050,7 @@ static Method_mp_type
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
 	MP2s(distributionType,CUMULATIVE),
+	MP2s(emulatorType,EXPGP_EMULATOR),
 	MP2s(emulatorType,GP_EMULATOR),
 	MP2s(emulatorType,KRIGING_EMULATOR),
 	MP2s(emulatorType,MF_PCE_EMULATOR),
