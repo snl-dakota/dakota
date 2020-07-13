@@ -45,7 +45,8 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
   //adaptConstruct(false),
-  c3RefineType(NO_C3_REFINEMENT)
+  c3RefineType(NO_C3_REFINEMENT), c3MaxRankAdvance(false),
+  c3MaxOrderAdvance(false)
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
@@ -73,7 +74,8 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
   maxSolverIterations(-1), crossMaxIter(5), //adaptConstruct(false),
-  c3RefineType(NO_C3_REFINEMENT)
+  c3RefineType(NO_C3_REFINEMENT), c3MaxRankAdvance(false),
+  c3MaxOrderAdvance(false)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)
@@ -175,8 +177,9 @@ update_basis(size_t v, unsigned short start_order, unsigned short max_order)
 
 bool SharedC3ApproxData::advancement_available()
 {
-  // These two cases are tested first. If false, then each C3Approx is tested.
-  // This distributes the c3RefineType cases.
+  // UNIFORM_START_* cases are tested first. If false, then each C3Approx
+  // is tested for UNIFORM_MAX_* cases (see ApproximationInterface::
+  // advancement_available()).  This distributes the c3RefineType cases.
 
   switch (c3RefineType) {
 
@@ -188,15 +191,17 @@ bool SharedC3ApproxData::advancement_available()
     for (size_t i=0; i<num_ord; ++i)
       if (s_ord[i] < m_ord)
 	return true;
-    return false; break;
+    return false;  break;
   }
   case UNIFORM_START_RANK:
     return (start_rank() < max_rank());  break;
-  }
 
-  // returning false induces checks in C3Approximation::advancement_available()
-  // for other QoI-dependent c3RefineTypes
-  return false;
+  // UNIFORM_MAX_* refine types are QoI-dependent: shared false induces
+  // per-QoI checks (see ApproximationInterface::advancement_available()
+  default:
+    c3MaxRankAdvance = c3MaxOrderAdvance = false; // clear prior to accumulation
+    return false;  break;
+  }
 }
 
 
@@ -235,30 +240,20 @@ void SharedC3ApproxData::increment_order()
     start_r += kickRank; // invertible in decrement_order()
     break;
   }
-  case UNIFORM_MAX_RANK: {
-    size_t& max_r = max_rank();     max_r += kickRank;
-    formUpdated[activeKey] = true;  break;
-  }
-  case UNIFORM_MAX_ORDER: {
-    unsigned short& max_o = max_order();  max_o += kickOrder;
-    //update_basis(start_orders(), max_o);
-    formUpdated[activeKey] = true;  break;
-  }
-  case UNIFORM_MAX_RANK_ORDER: {
+  default:
     // Prior to implementing a multi-index approach, we use heuristics.
-    // *** TO DO: ***
-    // > unconditionally advancing both seems wasteful; should only advance
-    //   non-saturated dimensions
+    // > unconditionally advancing both is wasteful; only advance non-saturated
     // > could also consider only advancing one when both bounds are active:
-    //   least saturated first with tie break to max rank (recovered ranks
-    //   are heterogeneous anyway)
-    //if (max_rank_advancement_available()) // ***
-    size_t&         max_r = max_rank();   max_r += kickRank;
-    //if (max_order_advancement_available()) // ***
-    unsigned short& max_o = max_order();  max_o += kickOrder;
-    //update_basis(start_orders(), max_o);
-    formUpdated[activeKey] = true;  break;
-  }
+    //   least saturated first with tie break to max rank (recovered ranks are
+    //   heterogeneous anyway)
+    if (c3MaxRankAdvance)
+      { size_t& max_r = max_rank();  max_r += kickRank; }
+    if (c3MaxOrderAdvance) {
+      unsigned short& max_o = max_order();  max_o += kickOrder;
+      //update_basis(start_orders(), max_o);
+    }
+    if (c3MaxRankAdvance || c3MaxOrderAdvance) formUpdated[activeKey] = true;
+    break;
   }
 }
 
@@ -290,27 +285,18 @@ void SharedC3ApproxData::decrement_order()
     else start_r -= kickRank;
     break;
   }
-  case UNIFORM_MAX_RANK: {
-    size_t& max_r = max_rank();
-    if  (max_r  < kickRank)  bad_range = true;  // underflow (should not happen)
-    else max_r -= kickRank;
-    break;
-  }
-  case UNIFORM_MAX_ORDER: {
-    unsigned short& max_o = max_order();
-    if    (max_o  < kickOrder)  bad_range = true;
-    else { max_o -= kickOrder;  /*update_basis(start_orders(), max_o);*/ }
-    break;
-  }
-  case UNIFORM_MAX_RANK_ORDER: {
-    size_t& max_r = max_rank();  unsigned short& max_o = max_order();
-    if (max_r < kickRank || max_o < kickOrder) bad_range = true;
-    else {
-      max_r -= kickRank;
-      max_o -= kickOrder;  //update_basis(start_orders(), max_o);
+  default:
+    if (c3MaxRankAdvance) {
+      size_t& max_r = max_rank();
+      if  (max_r  < kickRank) bad_range = true;
+      else max_r -= kickRank;
+    }
+    if (c3MaxOrderAdvance) {
+      unsigned short& max_o = max_order();
+      if  (max_o  < kickOrder) bad_range = true;
+      else max_o -= kickOrder; //update_basis(start_orders(), max_o);
     }
     break;
-  }
   }
 
   if (bad_range)

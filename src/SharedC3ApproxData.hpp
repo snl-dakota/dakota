@@ -177,6 +177,8 @@ protected:
   //void post_combine();
 
   bool advancement_available();
+  void max_rank_advancement(bool r_advance);
+  void max_order_advancement(bool o_advance);
 
   //
   //- Heading: Data
@@ -268,6 +270,13 @@ protected:
   //short refineStatsType;
   /// type of (uniform) refinement: UNIFORM_{START_ORDER,START_RANK,MAX_RANK}
   short c3RefineType;
+
+  /// flag indicating availability of rank advancement (accumulated from
+  /// C3Approximation::advancement_available())
+  bool c3MaxRankAdvance;
+  /// flag indicating availability of order advancement (accumulated from
+  /// C3Approximation::advancement_available())
+  bool c3MaxOrderAdvance;
 
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
@@ -484,6 +493,14 @@ inline size_t SharedC3ApproxData::max_regression_size()
 
   return regression_size(numVars, max_r, max_r, max_orders, max_o);
 }
+
+
+inline void SharedC3ApproxData::max_rank_advancement(bool r_advance)
+{ c3MaxRankAdvance = r_advance; }
+
+
+inline void SharedC3ApproxData::max_order_advancement(bool o_advance)
+{ c3MaxOrderAdvance = o_advance; }
 
 
 inline void SharedC3ApproxData::

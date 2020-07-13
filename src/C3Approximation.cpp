@@ -45,6 +45,9 @@ C3Approximation::~C3Approximation()
 void C3Approximation::recover_function_train_ranks(SizetVector& ft_ranks)
 {
   // returns the recovered ranks, reflecting the latest CV if adapt_rank
+
+  // Note: this recovery uses active levApproxIter and can be used anytime
+
   ft_ranks = SizetVector(Teuchos::View,
     function_train_get_ranks(levApproxIter->second.function_train()),
     sharedDataRep->numVars + 1);
@@ -54,6 +57,12 @@ void C3Approximation::recover_function_train_ranks(SizetVector& ft_ranks)
 /** returns the recovered orders, reflecting the latest CV if adapt_order */
 void C3Approximation::recover_function_train_orders(UShortArray& ft_orders)
 {
+  // returns the recovered orders, reflecting the latest CV if adapt_order
+
+  // Note: this recovery is not keyed and must transfer results from
+  // one_approx_opts_get_nparams() to keyed C3FnTrainData::recoveredBasisOrders
+  // within build() immediately following the regression solve
+
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   size_t v, num_v = data_rep->numVars;
@@ -66,103 +75,58 @@ void C3Approximation::recover_function_train_orders(UShortArray& ft_orders)
 
 bool C3Approximation::advancement_available()
 {
-  // ***************************************************************************
-  // Consider making all of this local to a C3Approx instance.  SharedC3
-  // advances shared bounds, but each C3Approx assesses its state versus this
-  // bound data to determine QoI saturation.
-  // > this works from Iterator/Model, but still not from SharedC3ApproxData::
-  //   increment_order() -> may need to pass down a flag from calling sequence?
-  // > With adapt-order, it seems ApproxOpts data can no longer be shared since
-  //   this gets updated with per-QoI adapt results (see goroda email) -> treat
-  //   starting points/bounds as shared but adapted results as per C3Approx and
-  //   manage saturation logic there.
-  // > Problem: need available advancements in Shared increment_order() to
-  //   advance only the unsaturated bounds (CV remains active over both
-  //   rank/order but only one or both bounds may change), but SharedC3 cannot
-  //   C3Approx instances, only the other direction.
-  // ***************************************************************************
-
-  
-  bool refine = false;
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
 
+  bool r_advance = false, o_advance = false;
   switch (shared_data_rep->c3RefineType) {
 
   // these options query recovered ranks/orders for each C3Approximation
-  // > logic is inverted when advancing the bound i/o the bounded quantity
-  // > logic must be augmented with an outer check on numSamples:
-  //   refinement is possible for either a sample increment or an advanced
-  //   bound that could admit a different adapted soln for fixed data
   case UNIFORM_MAX_RANK: // check adapted FT ranks against maxRank
-    refine = max_rank_advancement_available();   break;
+    r_advance = max_rank_advancement_available();   break;
   case UNIFORM_MAX_ORDER:
-    refine = max_order_advancement_available();  break;
+    o_advance = max_order_advancement_available();  break;
   case UNIFORM_MAX_RANK_ORDER:
-    refine =  max_rank_advancement_available()
-          || max_order_advancement_available();  break;
+    r_advance = max_rank_advancement_available();
+    o_advance = max_order_advancement_available();  break;
   }
-  // Communicate available advancements to SharedC3 for increment_order() ?
-  //shared_data_rep->max_rank_refine(m_refine);
-  //shared_data_rep->max_order_refine(o_refine);
+  // Need available advancements in Shared increment_order() to advance only
+  // the unsaturated bounds (CV remains active over both rank/order but only
+  // one or both bounds may change).  Therefore, we accumulate the available
+  // advancement types in SharedC3, communicated back from C3Approx instances
+  // for use in {increment,decrement}_order().
+  if (r_advance) shared_data_rep->max_rank_advancement(r_advance);
+  if (o_advance) shared_data_rep->max_order_advancement(o_advance);
 
-
-  /*
-  case UNIFORM_MAX_RANK:
-    return max_rank_advancement_available();  break;
-  case UNIFORM_MAX_ORDER: {
-    return max_order_advancement_available();  break;
-  }
-  case UNIFORM_MAX_RANK_ORDER: {
-    // restrict the refinement search space (allows disconnect in refine type
-    // at top vs. lower level)
-    // *** PROBLEM: still want to include CV over rank + order, even if one or
-    //              the other is saturated / not advanced
-    bool r_refine =  max_rank_advancement_available(),
-         o_refine = max_order_advancement_available();
-    if (r_refine && o_refine)
-      { shared_data_rep->c3_refine_type(UNIFORM_MAX_RANK_ORDER); return true; }
-    else if (r_refine)
-      { shared_data_rep->c3_refine_type(UNIFORM_MAX_RANK);       return true; }
-    else if (o_refine)
-      { shared_data_rep->c3_refine_type(UNIFORM_MAX_ORDER);      return true; }
-    else return false;
-    break;
-  }
-  }
-  */
-
-  return refine;
+  return (r_advance || o_advance);
 }
 
 
 bool C3Approximation::max_rank_advancement_available()
 {
-  bool refine = false;
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  size_t v, num_v = shared_data_rep->numVars,
-    max_r = shared_data_rep->max_rank(); // adapted value
+  size_t max_r = shared_data_rep->max_rank(), // adapted value
+      v, num_v = shared_data_rep->numVars;
   SizetVector ft_ranks;  recover_function_train_ranks(ft_ranks);
   for (v=1; v<num_v; ++v) // ranks len = num_v+1 with 1's @ ends
     if (ft_ranks[v] == max_r) // recovery potentially limited by bound
-      { refine = true; break; }
-  return refine;
+      return true;
+  return false;
 }
 
 
 bool C3Approximation::max_order_advancement_available()
 {
-  bool refine = false;
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  size_t v, num_v = shared_data_rep->numVars,
-    max_o = shared_data_rep->max_order(); // adapted value
-  UShortArray ft_ords;  recover_function_train_orders(ft_ords);
+  unsigned short max_o = shared_data_rep->max_order(); // adapted value
+  const UShortArray& ft_ords = levApproxIter->second.ft_orders();
+  size_t v, num_v = shared_data_rep->numVars;
   for (v=0; v<num_v; ++v) // ords len = num_v
     if (ft_ords[v] == max_o) // recovery potentially limited by curr bnd
-      { refine = true; break; }
-  return refine;
+      return true;
+  return false;
 }
 
 
@@ -1020,40 +984,37 @@ size_t C3Approximation::regression_size()
   // Intent: capture latest ranks/orders recovered from most recent FT build
   //   or from rank/order advancements.
   // Usage:  this function is only currently used from NonDC3FunctionTrain::
-  //   sample_allocation_metric() for non-UNIFORM_MAX_* refinements.
+  //   sample_allocation_metric() for non-MAX uniform refinements.
+  // For UNIFORM_START_* + adapt_*: increments for the former may overwrite
+  //   recovery for the latter; in this case, we use the latest incremented/
+  //   decremented state from sharedDataRep.
 
-  // Simpler approach, but only includes most recent FT recovery:
-  //return function_train_get_nparams(ftd.function_train());
-
-  // Most current ranks:
-  SizetVector ft_ranks;
+  size_t         max_r = data_rep->max_rank();
+  unsigned short max_o = data_rep->max_order();
   switch (data_rep->c3RefineType) {
-  // Capture most recent rank advancement, ignoring previous adaptations if any
-  case UNIFORM_START_RANK: {
-    size_t curr_rank = std::min(data_rep->start_rank(), data_rep->max_rank()),
-      i, num_v = data_rep->numVars;
-    ft_ranks.sizeUninitialized(data_rep->numVars + 1);
-    ft_ranks[0] = ft_ranks[num_v] = 1;
-    for (i=1; i<num_v; ++i) ft_ranks[i] = curr_rank;
-    break;
+  case UNIFORM_START_RANK: { // use start ranks + recovered orders
+    size_t v, num_v = data_rep->numVars, start_r = data_rep->start_rank();
+    SizetVector start_ranks(num_v + 1, false);
+    start_ranks[0] = start_ranks[num_v] = 1;
+    for (v=1; v<num_v; ++v) start_ranks[v] = start_r;
+    const UShortArray& ft_orders = levApproxIter->second.ft_orders();
+    return regression_size(start_r, max_r, ft_orders, max_o);  break;
   }
-  // Capture most recent rank adaptations (from build() w/ adapt_rank), if any
-  default:
-    recover_function_train_ranks(ft_ranks); break;
+  case UNIFORM_START_ORDER: { // use start orders + recovered ranks
+    const UShortArray& start_o = data_rep->start_orders(); // anisotropic is OK
+    SizetVector ft_ranks; recover_function_train_ranks(ft_ranks);
+    return regression_size(ft_ranks, max_r, start_o, max_o);  break;
   }
+  default: { // use recovered orders + recovered ranks
 
-  // Most current basis orders:
-  // Uses one_approx_opts_get_nparams() to capture updates both from recovery
-  // after an adapt_order build() and from SharedC3ApproxData::increment_order()
-  // > UNIFORM_MAX_* refinements: there are only max increments and we would use
-  //   recovered ranks/orders from build(), but this fn not used for that case
-  // > UNIFORM_START_* + adapt_*: increments for the former may overwrite
-  //   recovery for the latter; we use the latest state inside oneApproxOpts
-  UShortArray ft_orders; recover_function_train_orders(ft_orders);
-  //UShortArray& ft_orders = data_rep->start_orders();// impl before adapt_order
+    // Simpler approach (not used to retain consistency with above)
+    //return function_train_get_nparams(ftd.function_train());
 
-  return regression_size(ft_ranks,  data_rep->max_rank(),
-			 ft_orders, data_rep->max_order());
+    SizetVector ft_ranks; recover_function_train_ranks(ft_ranks);
+    const UShortArray& ft_orders = levApproxIter->second.ft_orders();
+    return regression_size(ft_ranks, max_r, ft_orders, max_o);  break;
+  }
+  }
 }
 
 

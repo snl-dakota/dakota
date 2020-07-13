@@ -429,13 +429,20 @@ inline bool ApproximationInterface::formulation_updated() const
 
 inline bool ApproximationInterface::advancement_available()
 {
+  // this logic assesses whether there is headroom for rank/order advancement
+
+  // Note: once rank/order advanced by SharedApproxData::increment_order(),
+  // DataFitSurrModel::rebuild_global() rebuilds for either a numSamples
+  // increment or if approxInterface.formulation_updated() for fixed data
+  // (e.g., for an advanced bound that could admit a different adapted soln)
+
   if (sharedData.advancement_available()) return true; // check Shared first
   else {
+    bool refine = false;
     for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
       if (functionSurfaces[*it].advancement_available())
-	return true;
-    // *** could update availability type in shared data here ***
-    return false;
+	refine = true; // no break; accumulate advancements types across fns
+    return refine;
   }
 }
 
