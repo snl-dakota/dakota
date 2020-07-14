@@ -77,9 +77,9 @@ public:
     //- Heading: Virtual function redefinitions
     //
 
-    //void derived_init_communicators(ParLevLIter pl_iter);
-    //void derived_set_communicators(ParLevLIter pl_iter);
-    //void derived_free_communicators(ParLevLIter pl_iter);
+    void derived_init_communicators(ParLevLIter pl_iter);
+    void derived_set_communicators(ParLevLIter pl_iter);
+    void derived_free_communicators(ParLevLIter pl_iter);
 
     void core_run();
 
@@ -160,11 +160,11 @@ private:
     /// synchronous batch-sequential implementation: main function
     void batch_synchronous_ego();
     /// construct batch acquisition
-    void construct_batch_acquisition(int BatchSizeAcquisition, VariablesArray varsArrayBatchAcquisition);
+    void construct_batch_acquisition(VariablesArray varsArrayBatchAcquisition);
     /// delete liar responses
-    void delete_liar_responses(int BatchSizeAcquisition);
+    void delete_liar_responses();
     /// evaluate batch
-    void evaluate_batch(int BatchSizeAcquisition);
+    void evaluate_batch();
 
     /// convergence checkers
     /// check convergence if EGO has converged
@@ -195,10 +195,10 @@ private:
     /// GP model of response, one approximation per response function
     Model fHatModel;
     /// recast model which assimilates mean and variance to solve the
-    /// max(EIF) sub-problem
+    /// max(EIF) sub-problem, see ::EIF_objective_eval()
     Model eifModel;
     /// recast model which explores by maximizing variances to solve the
-    /// max(variances) sub-problem
+    /// max(variances) sub-problem, see ::Variances_objective_eval()
     Model varModel;
 
     /// minimum penalized response from among true function evaluations
@@ -213,15 +213,17 @@ private:
     short dataOrder;
 
     /// declare batch sizes
-    /// sampling point located at maximum acquisition function for BatchSizeAcquisition
-    int BatchSizeAcquisition;
-    /// sampling point located at maximum posterior variance for BatchSizeExploration
-    int BatchSizeExploration;
+    /// total batch sizes
+    int batchSize;
+    /// sampling point located at maximum acquisition function for batchSizeAcquisition
+    int batchSizeAcquisition;
+    /// sampling point located at maximum posterior variance for batchSizeExploration
+    int batchSizeExploration;
     /// number of points in the current GP
     size_t numDataPts;
 
     /// placeholder for batch input (before querying the batch)
-    VariablesArray varsArrayBatchAcquisition;
+    // VariablesArray varsArrayBatchAcquisition;
 
     /// liar response
     const IntResponsePair respStarLiar;

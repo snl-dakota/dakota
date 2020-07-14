@@ -43,10 +43,13 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 // This constructor accepts a Model
 EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
-  BatchSizeAcquisition(probDescDB.get_int("method.batch_size")),
-  BatchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
+  batchSize(probDescDB.get_int("method.batch_size")),
+  batchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
   setUpType("model"), dataOrder(1)
 {
+    // substract the total batchSize from batchSizeExploration
+    batchSizeAcquisition = batchSize - batchSizeExploration;
+
     // historical default convergence tolerances
     if (convergenceTol < 0.0) convergenceTol = 1.0e-12;
     distanceTol = probDescDB.get_real("method.x_conv_tol");
@@ -144,7 +147,6 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
     #ifdef HAVE_NCSU
         approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations, max_fn_evals, min_box_size, vol_box_size), false);
-        approxSubProbMinimizer.assign_rep(new NCSUOptimizer(varModel, max_iterations, max_fn_evals, min_box_size, vol_box_size), false);
     #else
       Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
            << "Aborting process." << std::endl;
@@ -467,19 +469,19 @@ Real EffGlobalMinimizer::get_augmented_lagrangian(const RealVector& mean, const 
 
 bool EffGlobalMinimizer::check_parallelism() {
     // Add safeguard: If model cannot run asynchronously
-    //                  then reset BatchSizeAcquisition = 1
+    //                  then reset batchSizeAcquisition = 1
     //                  and throw warnings on screens
     //                  and proceed with batchSize = 1
 
     bool parallelFlag = false; // default: run sequential by default
 
-    if (BatchSizeAcquisition > 1 || BatchSizeExploration > 1) {
+    if (batchSizeAcquisition > 1 || batchSizeExploration > 1) {
         if (iteratedModel.asynch_flag()) // change model.asynch_flag() to iteratedModel.asynch_flag()
             parallelFlag = true; // turn on parallelFlag if the requirements are satisfied
         else {
             Cerr << "Warning: concurrent operations not supported by model. Batch size request ignored." << std::endl;
-            BatchSizeAcquisition = 1; // reverse to the default sequential
-            BatchSizeExploration = 0; // reverse to the default sequential
+            batchSizeAcquisition = 1; // reverse to the default sequential
+            batchSizeExploration = 0; // reverse to the default sequential
         }
     }
     return parallelFlag;
@@ -556,7 +558,11 @@ void EffGlobalMinimizer::serial_ego() {
     // execute GLOBAL search and retrieve results
     Cout << "\n>>>>> Initiating global optimization\n";
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
+    // maximize the EI acquisition function
+    approxSubProbMinimizer.reset();
+    approxSubProbMinimizer.iterated_model(eifModel);
+    approxSubProbMinimizer.run(pl_iter);
+
     const Variables&  vars_star = approxSubProbMinimizer.variables_results();
     const RealVector& c_vars    = vars_star.continuous_variables();
     const Response&   resp_star = approxSubProbMinimizer.response_results();
@@ -646,7 +652,7 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
 
     // reset the convergence counters
     distConvergenceCntr = 0; // reset distance convergence counters
-    distConvergenceLimit = BatchSizeAcquisition; // reset convergence limit for parallel EGO
+    distConvergenceLimit = batchSizeAcquisition; // reset convergence limit for parallel EGO
 
     Cout << "\n>>>>> Initiating global optimization\n";
 
@@ -656,19 +662,27 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
     primary_resp_map[0].resize(numFunctions);
     for (size_t i=0; i<numFunctions; i++)
         primary_resp_map[0][i] = i;
+
+    // try to consolidate to 01 RecastModel and ->init.maps() before approxSubProbMinimizer is called
     RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
     RecastModel* var_model_rep = (RecastModel*)varModel.model_rep();
+
     eif_model_rep->init_maps(vars_map, false, NULL, NULL,
                               primary_resp_map, secondary_resp_map, nonlinear_resp_map,
                               EIF_objective_eval, NULL);
 
+    var_model_rep->init_maps(vars_map, false, NULL, NULL,
+                              primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+                              Variances_objective_eval, NULL);
+
     // initialize input array for batch construction
-    // VariablesArray varsArrayBatchAcquisition(BatchSizeAcquisition);
+    // VariablesArray varsArrayBatchAcquisition(batchSizeAcquisition);
+    VariablesArray varsArrayBatchAcquisition(batchSize);
 
     // Note: vars_star: input; resp_star: output (liar); resp_star_truth: output (true)
-    // construct the batch
-    // construct_batch_acquisition(BatchSizeAcquisition, varsArrayBatchAcquisition); // attempting consolidated
-    for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
+    // construct the acquisition batch
+    // construct_batch_acquisition(varsArrayBatchAcquisition); // attempting consolidated
+    for (int _i = 0; _i < batchSizeAcquisition; _i++) {
 
         // determine fnStar from among sample data
         get_best_sample();
@@ -677,7 +691,11 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
 
         // execute GLOBAL search and retrieve results
         ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-        approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
+        // maximize the EI acquisition function
+        approxSubProbMinimizer.reset();
+        approxSubProbMinimizer.iterated_model(eifModel);
+        approxSubProbMinimizer.run(pl_iter);
+
         const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
         const RealVector& c_vars          = vars_star.continuous_variables();
         const Response&   resp_star       = approxSubProbMinimizer.response_results();
@@ -706,10 +724,10 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
 
         // update GP
         numDataPts = fHatModel.approximation_data(0).points(); // debug
-        Cout << "\nParallel EGO: Adding liar response...\n"; // debug
+        Cout << "\nParallel EGO: Adding a liar response for the acquisition batch...\n"; // debug
 
         // append constant liar to fHatModel (aka heuristic liar)
-        fHatModel.append_approximation(vars_star, resp_star_liar, true);
+        fHatModel.append_approximation(vars_star, resp_star_liar, true); // BUG? replace resp_star_liar with mean of GP
 
         // update constraints based on the constant liar
         if (numNonlinearConstraints) {
@@ -720,13 +738,60 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
             else
                 update_penalty();
         }
-        Cout << "Parallel EGO: Finished adding liar responses!\n";
+
+        Cout << "Parallel EGO: Finished adding a liar response for the acquisition batch!\n";
+        // save a copy
         varsArrayBatchAcquisition[_i] = vars_star.copy();
     }
 
+    // construct the exploration batch
+    for (int _i = 0; _i < batchSizeExploration; _i++) {
+        // execute GLOBAL search and retrieve results
+        ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+        // maximize the posterior variance function
+        approxSubProbMinimizer.reset();
+        approxSubProbMinimizer.iterated_model(varModel);
+        approxSubProbMinimizer.run(pl_iter);
+
+        const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
+        const RealVector& c_vars          = vars_star.continuous_variables();
+        const Response&   resp_star       = approxSubProbMinimizer.response_results();
+
+        // get expected value for output
+        fHatModel.continuous_variables(c_vars);
+        fHatModel.evaluate();
+        const Response& approx_response = fHatModel.current_response();
+
+        // impose constant liar -- temporarily cast constant liar as observations
+        const IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + batchSizeAcquisition + _i + 1, approx_response); // implement a liar counter
+
+        // update GP
+        numDataPts = fHatModel.approximation_data(0).points(); // debug
+        Cout << "\nParallel EGO: Adding a liar response for the exploration batch...\n"; // debug
+
+        // append constant liar to fHatModel (aka heuristic liar)
+        fHatModel.append_approximation(vars_star, resp_star_liar, true); // BUG? replace resp_star_liar with mean of GP
+
+        // update constraints based on the constant liar
+        if (numNonlinearConstraints) {
+            const RealVector& fns_star_liar = resp_star_liar.second.function_values();
+            Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
+            if (norm_cv_star < etaSequence)
+                update_augmented_lagrange_multipliers(fns_star_liar);
+            else
+                update_penalty();
+        }
+
+        Cout << "Parallel EGO: Finished adding a liar response for the acquisition batch!\n";
+        // save a copy
+        varsArrayBatchAcquisition[batchSizeAcquisition + _i] = vars_star.copy();
+    }
+
+
     // delete liar responses
-    // delete_liar_responses(BatchSizeAcquisition); // attempting consolidated
-    for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
+    // delete_liar_responses(); // attempting consolidated
+    // for (int _i = 0; _i < batchSizeAcquisition; _i++) {
+    for (int _i = 0; _i < batchSize; _i++) {
         fHatModel.pop_approximation(false);
         numDataPts = fHatModel.approximation_data(0).points(); // debug
         Cout << "\nParallel EGO:  Deleting liar response...\n";
@@ -734,8 +799,8 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
     Cout << "\nParallel EGO:  Finished deleting liar responses!\n";
 
     // query the batch
-    // evaluate_batch(BatchSizeAcquisition); // attempting consolidated
-    for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
+    // evaluate_batch(batchSizeAcquisition); // attempting consolidated
+    for (int _i = 0; _i < batchSizeAcquisition; _i++) {
         fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
         iteratedModel.active_variables(varsArrayBatchAcquisition[_i]);
         ActiveSet set = iteratedModel.current_response().active_set();
@@ -754,7 +819,7 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
     numDataPts = fHatModel.approximation_data(0).points(); // debug
 
     // update constraints
-    for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
+    for (int _i = 0; _i < batchSizeAcquisition; _i++) {
         const Variables&  vars_star = approxSubProbMinimizer.variables_results();
         const RealVector& c_vars    = vars_star.continuous_variables();
         const Response&   resp_star = approxSubProbMinimizer.response_results();
@@ -812,70 +877,74 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
 
 
 
-void EffGlobalMinimizer::construct_batch_acquisition(int BatchSizeAcquisition, VariablesArray varsArrayBatchAcquisition) {
-    for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
+// void EffGlobalMinimizer::construct_batch_acquisition(VariablesArray varsArrayBatchAcquisition) {
+//     for (int _i = 0; _i < batchSizeAcquisition; _i++) {
+//
+//         // determine fnStar from among sample data
+//         get_best_sample();
+//         bestVariablesArray.front().continuous_variables(varStar); // debug
+//         bestResponseArray.front().function_values(truthFnStar); // debug
+//
+//         // execute GLOBAL search and retrieve results
+//         // Cout << "\n>>>>> Initiating global optimization\n";
+//         ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+//         // maximize the EI acquisition function
+//         approxSubProbMinimizer.reset();
+//         approxSubProbMinimizer.iterated_model(eifModel);
+//         approxSubProbMinimizer.run(pl_iter);
+//
+//         const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
+//         const RealVector& c_vars          = vars_star.continuous_variables();
+//         const Response&   resp_star       = approxSubProbMinimizer.response_results();
+//         const Real&       eif_star        = resp_star.function_value(0);
+//
+//         // Get expected value for output
+//         fHatModel.continuous_variables(c_vars);
+//         fHatModel.evaluate();
+//         const Response& approx_response = fHatModel.current_response();
+//
+//         Real aug_lag = augmented_lagrangian_merit(approx_response.function_values(),
+//                                           iteratedModel.primary_response_fn_sense(),
+//                                           iteratedModel.primary_response_fn_weights(),
+//                                           origNonlinIneqLowerBnds,
+//                                           origNonlinIneqUpperBnds,
+//                                           origNonlinEqTargets);
+//
+//         Cout << "\nResults of EGO iteration:\nFinal point =\n"
+//                 << c_vars << "Expected Improvement    =\n                     "
+//                 << std::setw(write_precision+7) << -eif_star
+//                 << "\n                     " << std::setw(write_precision+7)
+//                 << aug_lag << " [merit]\n";
+//
+//         // impose constant liar -- temporarily cast constant liar as observations
+//         const IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + _i + 1, approx_response); // implement a liar counter
+//
+//         // update GP
+//         numDataPts = fHatModel.approximation_data(0).points(); // debug
+//         Cout << "\nParallel EGO: Adding liar response...\n"; // debug
+//
+//         // append constant liar to fHatModel (aka heuristic liar)
+//         if (_i < batchSizeAcquisition - 1)
+//             fHatModel.append_approximation(vars_star, resp_star_liar, true);
+//
+//         // update constraints based on the constant liar
+//         if (numNonlinearConstraints) {
+//             const RealVector& fns_star_liar = resp_star_liar.second.function_values();
+//             Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
+//             if (norm_cv_star < etaSequence)
+//                 update_augmented_lagrange_multipliers(fns_star_liar);
+//             else
+//                 update_penalty();
+//         }
+//         Cout << "Parallel EGO: Finished adding liar responses!\n";
+//         varsArrayBatchAcquisition[_i] = vars_star.copy();
+//     }
+// }
 
-        // determine fnStar from among sample data
-        get_best_sample();
-        bestVariablesArray.front().continuous_variables(varStar); // debug
-        bestResponseArray.front().function_values(truthFnStar); // debug
-
-        // execute GLOBAL search and retrieve results
-        // Cout << "\n>>>>> Initiating global optimization\n";
-        ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-        approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
-        const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
-        const RealVector& c_vars          = vars_star.continuous_variables();
-        const Response&   resp_star       = approxSubProbMinimizer.response_results();
-        const Real&       eif_star        = resp_star.function_value(0);
-
-        // Get expected value for output
-        fHatModel.continuous_variables(c_vars);
-        fHatModel.evaluate();
-        const Response& approx_response = fHatModel.current_response();
-
-        Real aug_lag = augmented_lagrangian_merit(approx_response.function_values(),
-                                          iteratedModel.primary_response_fn_sense(),
-                                          iteratedModel.primary_response_fn_weights(),
-                                          origNonlinIneqLowerBnds,
-                                          origNonlinIneqUpperBnds,
-                                          origNonlinEqTargets);
-
-        Cout << "\nResults of EGO iteration:\nFinal point =\n"
-                << c_vars << "Expected Improvement    =\n                     "
-                << std::setw(write_precision+7) << -eif_star
-                << "\n                     " << std::setw(write_precision+7)
-                << aug_lag << " [merit]\n";
-
-        // impose constant liar -- temporarily cast constant liar as observations
-        const IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + _i + 1, approx_response); // implement a liar counter
-
-        // update GP
-        numDataPts = fHatModel.approximation_data(0).points(); // debug
-        Cout << "\nParallel EGO: Adding liar response...\n"; // debug
-
-        // append constant liar to fHatModel (aka heuristic liar)
-        if (_i < BatchSizeAcquisition - 1)
-            fHatModel.append_approximation(vars_star, resp_star_liar, true);
-
-        // update constraints based on the constant liar
-        if (numNonlinearConstraints) {
-            const RealVector& fns_star_liar = resp_star_liar.second.function_values();
-            Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
-            if (norm_cv_star < etaSequence)
-                update_augmented_lagrange_multipliers(fns_star_liar);
-            else
-                update_penalty();
-        }
-        Cout << "Parallel EGO: Finished adding liar responses!\n";
-        varsArrayBatchAcquisition[_i] = vars_star.copy();
-    }
-}
 
 
-
-void EffGlobalMinimizer::delete_liar_responses(int BatchSizeAcquisition) {
-    for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
+void EffGlobalMinimizer::delete_liar_responses() {
+    for (int _i = 0; _i < batchSizeAcquisition; _i++) {
         fHatModel.pop_approximation(false);
         numDataPts = fHatModel.approximation_data(0).points(); // debug
         Cout << "\nParallel EGO:  Deleting liar response...\n";
@@ -885,15 +954,15 @@ void EffGlobalMinimizer::delete_liar_responses(int BatchSizeAcquisition) {
 
 
 
-void EffGlobalMinimizer::evaluate_batch(int BatchSizeAcquisition) {
-    for (int _i = 0; _i < BatchSizeAcquisition; _i++) {
-        fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
-        iteratedModel.active_variables(varsArrayBatchAcquisition[_i]);
-        ActiveSet set = iteratedModel.current_response().active_set();
-        set.request_values(dataOrder);
-        iteratedModel.evaluate_nowait(set);
-    }
-}
+// void EffGlobalMinimizer::evaluate_batch() {
+//     for (int _i = 0; _i < batchSizeAcquisition; _i++) {
+//         fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
+//         iteratedModel.active_variables(varsArrayBatchAcquisition[_i]);
+//         ActiveSet set = iteratedModel.current_response().active_set();
+//         set.request_values(dataOrder);
+//         iteratedModel.evaluate_nowait(set);
+//     }
+// }
 
 
 
@@ -1124,6 +1193,26 @@ void EffGlobalMinimizer::debug_plots() {
     #endif //DEBUG_PLOTS
 }
 
+
+void EffGlobalMinimizer::derived_init_communicators(ParLevLIter pl_iter)
+{
+    varModel.init_communicators(pl_iter, maxEvalConcurrency);
+    SurrBasedMinimizer::derived_init_communicators(pl_iter);
+}
+
+
+void EffGlobalMinimizer::derived_set_communicators(ParLevLIter pl_iter)
+{
+    varModel.set_communicators(pl_iter, maxEvalConcurrency);
+    SurrBasedMinimizer::derived_set_communicators(pl_iter);
+}
+
+
+void EffGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
+{
+    SurrBasedMinimizer::derived_free_communicators(pl_iter);
+    varModel.free_communicators(pl_iter, maxEvalConcurrency);
+}
 
 
 } // namespace Dakota
