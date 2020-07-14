@@ -327,7 +327,7 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
 
 
 inline void SharedC3ApproxData::update_basis()
-{ update_basis(startOrdersMap[activeKey], maxOrderMap[activeKey]); }
+{ update_basis(start_orders(), max_order()); }
 
 
 inline short SharedC3ApproxData::discrepancy_type() const
