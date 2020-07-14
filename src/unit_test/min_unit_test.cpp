@@ -26,7 +26,6 @@ void my_test0()
 
 void rev_test()
 {
-  using boost::lexical_cast;
 
   try {
     // It is desirable to split-up dakota into packages of re-useable components
