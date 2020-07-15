@@ -48,9 +48,9 @@ protected:
   // DTS: I think you'll want to implement both Variables and
   // RealVector APIs to be safe. See pattern I used in value() for
   // same.
-  //Real prediction_variance(const Variables& vars) override;
+  Real prediction_variance(const Variables& vars) override;
 
-  //Real prediction_variance(const RealVector& c_vars) override;
+  Real prediction_variance(const RealVector& c_vars) override;
 
   virtual void
   derived_export_model(const String& filename, bool binary) override;

@@ -111,6 +111,13 @@ public:
   void value(const MatrixXd &samples, MatrixXd &approx_values) override;
 
   /**
+   *  \brief Evaluate the Gaussian Process at a single prediction point.
+   *  \param[in] samples Vector for prediction point - (num_features).
+   *  \returns[out] approx_values Mean of the Gaussian process at the prediction point.
+   */
+  double value(const RowVectorXd &sample) override;
+
+  /**
    *  \brief Evaluate the gradient of the Gaussian process at a set of prediction points.
    *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
@@ -127,6 +134,13 @@ public:
    *  \param[out] qoi Index of response/QOI for which to compute derivatives
    */
   void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
+
+  /**
+   *  \brief Evaluate the variance of the Gaussian Process at a single prediction point.
+   *  \param[in] samples Vector for prediction point - (num_features).
+   *  \returns[out] approx_values Variance of the Gaussian process at the prediction point.
+   */
+  double variance(const RowVectorXd &sample);
 
   /**
    *  \brief Evaluate the negative marginal loglikelihood and its 
@@ -306,6 +320,15 @@ private:
   /// Pivoted Cholesky factorization.
   Eigen::LDLT<MatrixXd> CholFact;
 
+  /// Flag for recomputation of the best Cholesky factorization.
+  bool hasBestCholFact;
+
+  /// Evaluation points for the previous value call
+  MatrixXd previousSamples;
+
+  /// GP mean at evaluation points for the previous value call
+  MatrixXd previousValues;
+
   /// Posterior covariance matrix for prediction points.
   MatrixXd posteriorCov;
 
@@ -367,6 +390,9 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version)
   if (Archive::is_loading::value)
     polyRegression.reset(new PolynomialRegression());
   archive & *polyRegression;
+  // DTS: Set false so that the Cholesky factorization is recomputed after load
+  hasBestCholFact = false;
+  archive & hasBestCholFact;
 }
 
 }  // namespace surrogates

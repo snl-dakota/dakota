@@ -110,6 +110,13 @@ public:
   void value(const MatrixXd &eval_points, MatrixXd &approx_values) override;
 
   /**
+   *  \brief Evaluate the polynomial surrogate at a single prediction point.
+   *  \param[in] eval_points Vector for prediction point - (num_features).
+   *  \returns Value of the polynomial surrogate at the prediction point.
+   */
+  double value(const RowVectorXd &eval_point) override;
+
+  /**
    *  \brief Evaluate the gradient of the polynomial surrogate at a set of prediction points.
    *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 

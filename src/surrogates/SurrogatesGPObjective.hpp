@@ -105,9 +105,6 @@ private:
   VectorXd grad_old;
   /// Previous value of the parameter vector.
   VectorXd pold;
-  /// Tolerance for l2 difference between parameter vectors. Should
-  /// smaller than ROL's stepnorm but bigger than machine epsilon.
-  double difftol = 1.0e-15;
 };
 
 }  // namespace surrogates

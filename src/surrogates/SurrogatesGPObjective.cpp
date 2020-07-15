@@ -72,7 +72,7 @@ bool GP_Objective::pdiff(const std::vector<double> &pnew) {
     pold(i) = pnew[i];
   }
   diffnorm = sqrt(diffnorm);
-  if (diffnorm < difftol)
+  if (diffnorm < near_zero)
     return false;
   else
     return true;
