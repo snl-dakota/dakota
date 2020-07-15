@@ -67,6 +67,7 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   numVariables = samples.cols();
   targetValues = response;
   eyeMatrix = MatrixXd::Identity(numSamples,numSamples);
+  hasBestCholFact = false;
 
   /* Optimization-related data*/
   VectorXd sigma_bounds = configOptions.get<VectorXd>("sigma bounds");
@@ -79,7 +80,7 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   VectorXd nugget_bounds;
 
   const int num_restarts = configOptions.get<int>("num restarts");
-  
+
   /* Scale the data and compute build squared distances */
   dataScaler = *(util::scaler_factory(
     util::DataScaler::scaler_type(configOptions.get<std::string>("scaler name")),
@@ -234,6 +235,11 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   if (estimateNugget)
     estimatedNuggetValue = bestEstimatedNuggetValue;
 
+  /* compute and store best Cholesky factorization */
+  compute_gram(cwiseDists2, true, false, GramMatrix);
+  CholFact.compute(GramMatrix);
+  hasBestCholFact = true;
+
   /* Useful info for debugging */
   /*
   std::cout << "\n";
@@ -251,6 +257,13 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
           " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
   }
 
+  if (previousSamples.rows() != 0 
+    && (samples - previousSamples).norm() < near_zero) {
+    approx_values = previousValues;
+    return;
+  }
+
+
   const int numPredictionPts = samples.rows();
   approx_values.resize(numPredictionPts,numVariables);
 
@@ -260,8 +273,10 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_gram(cwiseDists2, true, false, GramMatrix);
-  CholFact.compute(GramMatrix);
+  if (!hasBestCholFact) {
+    compute_gram(cwiseDists2, true, false, GramMatrix);
+    CholFact.compute(GramMatrix);
+  }
 
   MatrixXd resid, pred_basis_matrix, mixed_pred_gram;
   compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
@@ -295,7 +310,55 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   }
 
   posteriorStdDev = posteriorCov.diagonal().array().sqrt();
+  for (int i = 0; i < numPredictionPts; i++) {
+    if (std::isnan(posteriorStdDev(i))) {
+      posteriorStdDev(i) = 0.0;
+    }
+  }
+  previousSamples = samples;
+  previousValues = approx_values;
 }
+
+double GaussianProcess::value(const RowVectorXd &sample) {
+  if (sample.size() != numVariables) {
+    throw(std::runtime_error("Gaussian Process value inputs are not consistent."
+          " Dimension of the feature space for the evaluation point and Gaussian Process do not match"));
+  }
+
+  double approx_value;
+
+  /* scale the samples (prediction point) */
+  const RowVectorXd& scaled_pred_point = dataScaler.scale_sample(sample);
+  compute_pred_dists(scaled_pred_point);
+
+  /* compute the Gram matrix and its Cholesky factorization */
+  if (!hasBestCholFact) {
+    compute_gram(cwiseDists2, true, false, GramMatrix);
+    CholFact.compute(GramMatrix);
+  }
+
+  VectorXd resid, chol_solve_resid;
+  MatrixXd mixed_pred_gram, pred_basis_matrix;
+  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
+
+  if (estimateTrend) {
+    resid = targetValues - basisMatrix*betaValues;
+  }
+  else
+    resid = targetValues;
+
+
+  chol_solve_resid = CholFact.solve(resid);
+  approx_value = (mixed_pred_gram*chol_solve_resid)(0,0);
+
+  if (estimateTrend) {
+    polyRegression->compute_basis_matrix(scaled_pred_point, pred_basis_matrix);
+    MatrixXd z = CholFact.solve(basisMatrix);
+    approx_value += (pred_basis_matrix*betaValues)(0,0);
+  }
+  return approx_value;
+}
+
 
 void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
                                const int qoi) {
@@ -320,8 +383,10 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_gram(cwiseDists2, true, false, GramMatrix);
-  CholFact.compute(GramMatrix);
+  if (!hasBestCholFact) {
+    compute_gram(cwiseDists2, true, false, GramMatrix);
+    CholFact.compute(GramMatrix);
+  }
 
   MatrixXd mixed_pred_gram, chol_solve_resid, first_deriv_pred_gram,
            grad_components, resid;
@@ -366,8 +431,10 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
   compute_pred_dists(scaled_pred_point);
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_gram(cwiseDists2, true, false, GramMatrix);
-  CholFact.compute(GramMatrix);
+  if (!hasBestCholFact) {
+    compute_gram(cwiseDists2, true, false, GramMatrix);
+    CholFact.compute(GramMatrix);
+  }
 
   MatrixXd mixed_pred_gram, chol_solve_resid, second_deriv_pred_gram, resid;
   compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
@@ -393,14 +460,66 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
   }
 }
 
+double GaussianProcess::variance(const RowVectorXd &sample) {
+  if (sample.size() != numVariables) {
+    throw(std::runtime_error("Gaussian Process variance input has wrong dimension."
+          " Dimension of the feature space for the evaluation point and Gaussian Process do not match"));
+  }
+
+  double variance;
+  /* scale the samples (prediction points) */
+  const RowVectorXd& scaled_pred_point = dataScaler.scale_sample(sample);
+  compute_pred_dists(scaled_pred_point);
+
+  /* compute the Gram matrix and its Cholesky factorization */
+  if (!hasBestCholFact) {
+    compute_gram(cwiseDists2, true, false, GramMatrix);
+    CholFact.compute(GramMatrix);
+  }
+
+  VectorXd resid, chol_solve_pred_mat;
+  MatrixXd mixed_pred_gram, pred_basis_matrix;
+  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
+
+  if (estimateTrend) {
+    resid = targetValues - basisMatrix*betaValues;
+  }
+  else
+    resid = targetValues;
+
+
+  chol_solve_pred_mat = 
+    CholFact.solve(Eigen::Map<VectorXd>(mixed_pred_gram.data(), numSamples));
+
+  /* compute the covariance matrix and standard deviation */
+  MatrixXd pred_gram;
+  compute_gram(cwisePredDists2, true, false, pred_gram);
+  posteriorCov = pred_gram - mixed_pred_gram*chol_solve_pred_mat;
+
+  if (estimateTrend) {
+    MatrixXd chol_solve_resid = CholFact.solve(resid);
+    polyRegression->compute_basis_matrix(scaled_pred_point, pred_basis_matrix);
+    MatrixXd z = CholFact.solve(basisMatrix);
+    MatrixXd R_mat = pred_basis_matrix - mixed_pred_gram*(z);
+    MatrixXd h_mat = basisMatrix.transpose()*z;
+    posteriorCov += R_mat*(h_mat.ldlt().solve(R_mat.transpose()));
+  }
+
+  variance = posteriorCov(0,0);
+
+  if (variance < 0.0 || std::isnan(variance))
+    variance = 0.0;
+
+  return variance;
+}
+
 void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient) {
   double logSum;
-  VectorXd z;
-  MatrixXd Q, resid;
+  VectorXd z, resid;
+  MatrixXd Q;
 
   compute_gram(cwiseDists2, true, true, GramMatrix);
   CholFact.compute(GramMatrix);
-  VectorXd D(CholFact.vectorD());
 
   if (estimateTrend) {
     resid = targetValues - basisMatrix*betaValues;
@@ -413,7 +532,8 @@ void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, Vector
     z = CholFact.solve(resid);
   }
 
-  logSum = 0.5*log(D.array()).matrix().sum();
+  logSum = 0.5*log(CholFact.vectorD().array()).matrix().sum();
+  /* DTS: This Cholesky solve is much more expensive than the factorization! */
   Q = -0.5*(z*z.transpose() - CholFact.solve(eyeMatrix));
 
   obj_value = logSum + 0.5*(resid.transpose()*z)(0,0) + 
