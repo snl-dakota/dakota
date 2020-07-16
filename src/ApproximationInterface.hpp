@@ -441,7 +441,7 @@ inline bool ApproximationInterface::advancement_available()
     bool refine = false;
     for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
       if (functionSurfaces[*it].advancement_available())
-	refine = true; // no break; accumulate advancements types across fns
+	refine = true; // no break; accumulate advancement types across fns
     return refine;
   }
 }

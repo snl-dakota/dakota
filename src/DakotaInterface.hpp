@@ -187,7 +187,7 @@ public:
   virtual void clear_inactive();
 
   /// query for available advancements in approximation resolution controls
-  bool advancement_available();
+  virtual bool advancement_available();
   /// query for change in approximation formulation
   virtual bool formulation_updated() const;
 
