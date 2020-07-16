@@ -997,7 +997,8 @@ size_t C3Approximation::regression_size()
     SizetVector start_ranks(num_v + 1, false);
     start_ranks[0] = start_ranks[num_v] = 1;
     for (v=1; v<num_v; ++v) start_ranks[v] = start_r;
-    const UShortArray& ft_orders = levApproxIter->second.ft_orders();
+    const UShortArray& ft_orders = (data_rep->adaptOrder) ?
+      levApproxIter->second.ft_orders() : data_rep->start_orders();
     return regression_size(start_r, max_r, ft_orders, max_o);  break;
   }
   case UNIFORM_START_ORDER: { // use start orders + recovered ranks
@@ -1011,7 +1012,8 @@ size_t C3Approximation::regression_size()
     //return function_train_get_nparams(ftd.function_train());
 
     SizetVector ft_ranks; recover_function_train_ranks(ft_ranks);
-    const UShortArray& ft_orders = levApproxIter->second.ft_orders();
+    const UShortArray& ft_orders = (data_rep->adaptOrder) ?
+      levApproxIter->second.ft_orders() : data_rep->start_orders();
     return regression_size(ft_ranks, max_r, ft_orders, max_o);  break;
   }
   }
@@ -1031,13 +1033,21 @@ regression_size(const SizetVector& ranks,  size_t max_rank,
   // >  last core is a r_v x 1 col vector and contributes p_vm1 * r_vm1 terms
   // > middle v-2 cores are matrices that contribute r_i * r_{i+1} * p_i terms
   // > neighboring vec/mat dimensions must match, so there are v-1 unique ranks
-  size_t num_v = sharedDataRep->numVars;
-  if (ranks.length() != num_v + 1 || // both ends padded with 1's
-      orders.size()  != num_v) {     // no padding
-    Cerr << "Error: wrong ranks/orders array sizes in C3Approximation::"
-	 << "regression_size()." << std::endl;
-    abort_handler(APPROX_ERROR);
+  size_t num_v = sharedDataRep->numVars;  bool err_flag = false;
+  if (ranks.length() != num_v + 1) { // both ends padded with 1's
+    Cerr << "Error: wrong rank array size (" << ranks.length() << ", "
+	 << num_v+1 << " expected) in C3Approximation::regression_size()."
+	 << std::endl;
+    err_flag = true;
   }
+  if (orders.size() != num_v) {      // no padding
+    Cerr << "Error: wrong order array size (" << orders.size() << ", " << num_v
+	 << " expected) in C3Approximation::regression_size()." << std::endl;
+    err_flag = true;
+  }
+  if (err_flag)
+    abort_handler(APPROX_ERROR);
+
   unsigned short p;
   switch (num_v) {
   case 1:
