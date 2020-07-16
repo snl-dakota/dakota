@@ -118,7 +118,7 @@ bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
   // runtime operation to identify the random field approximation
   if (covarianceForm != NOCOVAR) { 
     rf_suite_identify_field_model();
-    expansionForm == RF_KARHUNEN_LOEVE;
+    expansionForm = RF_KARHUNEN_LOEVE;
   }
   else { 
     get_field_data();

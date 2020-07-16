@@ -92,7 +92,7 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
     }
     // NOTE: Classical D-optimal works with regular LHS by generating
     // candidate designs that are Latin and picking the best.
-    if (sampleType == SUBMETHOD_LHS && outputLevel > SILENT_OUTPUT)
+    if (sampleType == SUBMETHOD_LHS && outputLevel > SILENT_OUTPUT) {
       if (refineSamples.length())
         Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
              << " refined LHS \n         sampling" << std::endl;
@@ -100,6 +100,7 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
         Cout << "Warning: 'd_optimal', 'leja_oversample_ratio' specified with "
 	     << "LHS sampling;\n         candidate design will be Latin, but "
 	     << "final design will not." << std::endl;
+    }
   }
 }
 

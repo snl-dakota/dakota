@@ -804,7 +804,12 @@ void GaussProcApproximation::optimize_theta_multipoint()
   // bounds for non-log transformation - ie, no exp(theta)
   //RealVector theta_lbnds(num_v,1.e-5), theta_ubnds(num_v,150.);
   // bounds for log transformation of correlation parameters
-  RealVector theta_lbnds(num_v,-9.), theta_ubnds(num_v,5.);
+  // BMA: This is a bug and would have been initializing vectors all to 0
+  // May have to tackle in another pass
+  //RealVector theta_lbnds(num_v,-9.), theta_ubnds(num_v,5.);
+  RealVector theta_lbnds(num_v), theta_ubnds(num_v);
+  theta_lbnds = -9.;
+  theta_ubnds = 5.;
   RealMatrix lin_ineq_coeffs, lin_eq_coeffs;
   RealVector lin_ineq_lower_bnds, lin_ineq_upper_bnds, lin_eq_targets,
     nln_ineq_lower_bnds, nln_ineq_upper_bnds, nln_eq_targets; 

@@ -500,7 +500,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       read_field_values(field_base.string(), exp_index+1, exp_values[i]);
 
       // Optionally allow covariance data
-      if (!varianceTypes.empty())
+      if (!varianceTypes.empty()) {
 	if( varianceTypes[i] ) {
 	  read_covariance(field_base.string(), exp_index+1, working_cov_values);
 	  sigma_scalars[i] = working_cov_values(0,0);
@@ -510,6 +510,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 	  sigma_scalars[i] = 1.0;
 	  scalar_map_indices[i] = i;
 	}
+      }
     }
 
   }

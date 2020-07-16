@@ -640,7 +640,7 @@ template <typename ArrayT>
 inline void array_read(std::istream& s, ArrayT& v)
 {
   typename ArrayT::size_type len = v.size();
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s >> v[i];
 }
 
@@ -1241,7 +1241,7 @@ inline void array_write(std::ostream& s, const ArrayT& v)
 {
   s << std::scientific << std::setprecision(write_precision);
   typename ArrayT::size_type len = v.size();
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7)
       << v[i] << '\n';
 }
@@ -1259,7 +1259,7 @@ inline void array_write(std::ostream& s, const ArrayT& v,
 	 << "length of vector." << std::endl;
     abort_handler(-1);
   }
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7)
       << v[i] << ' ' << label_array[i] << '\n';
 }
@@ -1298,7 +1298,7 @@ inline void array_write_aprepro(std::ostream& s, const ArrayT& v,
 	 << "length of vector." << std::endl;
     abort_handler(-1);
   }
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s << "                    { "
       << std::setw(15) << std::setiosflags(std::ios::left)
       << label_array[i].c_str() << std::resetiosflags(std::ios::adjustfield)
@@ -1319,7 +1319,7 @@ inline void array_write_annotated(std::ostream& s, const ArrayT& v,
   typename ArrayT::size_type len = v.size();
   if (write_len)
     s << len << ' ';
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s << v[i] << ' ';
 }
 

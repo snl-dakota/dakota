@@ -960,11 +960,12 @@ void ScalingModel::response_modify_n2s(const Variables& native_vars,
     cdv = native_vars.all_continuous_variables(); // view OK
   }
 
-  if (outputLevel > NORMAL_OUTPUT)
+  if (outputLevel > NORMAL_OUTPUT) {
     if (start_offset < num_primary_fns())
       Cout << "Primary response after scaling transformation:\n";
     else
       Cout << "Secondary response after scaling transformation:\n";
+  }
 
   // scale functions and constraints
   // assumes Multipliers and Offsets are 1 and 0 when not in use
@@ -1071,7 +1072,7 @@ void ScalingModel::response_modify_n2s(const Variables& native_vars,
             recast_hess(xj_index,xk_index) *= cvScaleMultipliers[xk_index];
 
           // need gradient term only for diagonal entries
-          if (xj_index == xk_index && cvScaleTypes[xj_index] & SCALE_LOG)
+          if (xj_index == xk_index && cvScaleTypes[xj_index] & SCALE_LOG) {
             if (responseScaleTypes[i] & SCALE_LOG)
               recast_hess(xj_index,xk_index) += native_grads(xj_index,i)*
                 (cdv[xj_index] - cvScaleOffsets[xj_index]) *
@@ -1080,6 +1081,7 @@ void ScalingModel::response_modify_n2s(const Variables& native_vars,
               recast_hess(xj_index,xk_index) += native_grads(xj_index,i)*
                 (cdv[xj_index] - cvScaleOffsets[xj_index]) * SCALING_LN_LOGBASE
                 * SCALING_LN_LOGBASE / responseScaleMultipliers[i];
+	  }
 
         }
       }
@@ -1133,11 +1135,12 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
     cdv = native_vars.all_continuous_variables(); // view OK
   }
 
-  if (outputLevel > NORMAL_OUTPUT)
+  if (outputLevel > NORMAL_OUTPUT) {
     if (start_offset < num_primary_fns())
       Cout << "Primary response after unscaling transformation:\n";
     else
       Cout << "Secondary response after unscaling transformation:\n";
+  }
 
   // scale functions and constraints
   // assumes Multipliers and Offsets are 1 and 0 when not in use

@@ -1643,7 +1643,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     if ((kw = (KW<IntVector, DataMethodRep>*)Binsearch(IVdme, L)))
 	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
-  else if (L = Begins(entry_name, "model.")) {
+  else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
       Locked_db();
     #define P &DataModelRep::
@@ -1655,7 +1655,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     if ((kw = (KW<IntVector, DataModelRep>*)Binsearch(IVdr, L)))
       return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
-  else if (L = Begins(entry_name, "responses.")) {
+  else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
       Locked_db();
     #define P &DataResponsesRep::

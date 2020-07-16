@@ -303,7 +303,7 @@ inline void container_read(ContainerT& c, MPIUnpackBuffer& s)
   c.clear();
   typename ContainerT::size_type len;
   s >> len;
-  for (register typename ContainerT::size_type i=0; i<len; ++i) {
+  for (typename ContainerT::size_type i=0; i<len; ++i) {
     // fresh allocation needed in case T is ref-counted
     typename ContainerT::value_type data;
     s >> data;
