@@ -247,10 +247,11 @@ void C3Approximation::build()
   // ---------------------------------------
   // > separate from adapt_rank inner loop: one/both/neither can be used
 
+  unsigned short start_o, kick_o, max_o;
   if (data_rep->adaptOrder) { // CV for basis orders, with/without adapt_rank
 
     // initialize cross validation options
-    size_t kfold = ndata; //-1; // max number of folds for leave 1 out CV
+    size_t kfold = (ndata > 5) ? 5 : ndata; // ndata = max folds = leave-one-out
     int cvverbose = (output_lev >= DEBUG_OUTPUT) ? 1 : 0;  // verbosity
     struct CrossValidate * cv
       = cross_validate_init(ndata, num_v, xtrain, ytrain, kfold, cvverbose);
@@ -263,14 +264,13 @@ void C3Approximation::build()
     struct CVOptGrid * cvgrid = cv_opt_grid_init(1); // allocate a 1D grid
     cv_opt_grid_set_verbose(cvgrid, cvverbose);
     // define a scalar range of (isotropic) basis orders
-    unsigned short kick_ord = data_rep->kickOrder,
-        max_ord = data_rep->max_order(),
-      start_ord = find_max(data_rep->start_orders()); // flatten dim_pref
-    size_t num_opts = 1 + (max_ord - start_ord) / kick_ord;
+    start_o = find_max(data_rep->start_orders()); // flatten dim_pref
+    kick_o  = data_rep->kickOrder;  max_o = data_rep->max_order();
+    size_t num_opts = 1 + (max_o - start_o) / kick_o;
     SizetArray np_opts(num_opts);
-    np_opts[0] = start_ord + 1; // offset by 1 for nparams
+    np_opts[0] = start_o + 1; // offset by 1 for nparams
     for (i=1; i<num_opts; ++i)
-      np_opts[i] = np_opts[i-1] + kick_ord;
+      np_opts[i] = np_opts[i-1] + kick_o;
     // cross validate over "num_param", choose from options given in np_opts
     String cv_target("num_param");
     cv_opt_grid_add_param(cvgrid, &cv_target[0], num_opts, &np_opts[0]); 
@@ -323,7 +323,11 @@ void C3Approximation::build()
 	   << " max = " << max_r << "):\n";
     else Cout << "(non-adapted):\n";
     write_data(Cout, function_train_get_ranks(ft), num_v+1);
-    Cout << "  Polynomial order (non-adapted):\n";
+    Cout << "  Polynomial order ";
+    if (data_rep->adaptOrder)
+      Cout << "(adapted with start = " << start_o << " kick = " << kick_o
+	   << " max = " << max_o << "):\n";
+    else Cout << "(non-adapted):\n";
     std::vector<OneApproxOpts*>& a_opts = data_rep->oneApproxOpts;
     for (i=0; i<num_v; ++i)
       Cout << "                     " << std::setw(write_precision+7)
