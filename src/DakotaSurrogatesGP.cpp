@@ -109,4 +109,13 @@ SurrogatesGPApprox::build()
 }
 
 
+void
+SurrogatesGPApprox::derived_export_model(const String& filename, bool binary)
+{
+  dakota::surrogates::Surrogate::save
+    (*std::static_pointer_cast<dakota::surrogates::GaussianProcess>(model),
+     filename, binary);
+}
+
+
 } // namespace Dakota

@@ -1213,8 +1213,7 @@ void DataFitSurrModel::run_dace()
 
   // prepend hierarchical tag before running
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' + 
-      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     daceIterator.eval_tag_prefix(eval_tag);
   }
 
@@ -1457,8 +1456,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
   }
 
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' + 
-      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     if (actual_eval)
       actualModel.eval_tag_prefix(eval_tag);
   }
@@ -1611,8 +1609,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   }
 
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' + 
-      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     if (actual_eval)
       actualModel.eval_tag_prefix(eval_tag);
   }

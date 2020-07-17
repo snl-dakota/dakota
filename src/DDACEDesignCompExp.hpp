@@ -83,7 +83,7 @@ private:
   void compute_main_effects();
 
   /// create a DDACE sampler
-  boost::shared_ptr<DDaceSamplerBase> create_sampler(Model& model);
+  std::shared_ptr<DDaceSamplerBase> create_sampler(Model& model);
 
   /// convenience function for resolving number of samples and
   /// number of symbols from input.

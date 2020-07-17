@@ -24,7 +24,6 @@
 #include "pecos_data_types.hpp"
 #include "NormalRandomVariable.hpp"
 #include "DakotaApproximation.hpp"
-#include <boost/lexical_cast.hpp>
 
 static const char rcsId[]="@(#) $Id: NonDGPImpSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 

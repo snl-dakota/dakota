@@ -91,6 +91,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  /// initialize graphics customized for surrogate-based iteration
+  void initialize_graphics(int iterator_server_id = 1);
+
   /// Performs global surrogate-based optimization by repeatedly
   /// optimizing on and improving surrogates of the response functions.
   void core_run();

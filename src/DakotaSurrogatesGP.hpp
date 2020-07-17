@@ -45,6 +45,9 @@ protected:
   ///  Do the build
   void build() override;
 
+  virtual void
+  derived_export_model(const String& filename, bool binary) override;
+
 };
 
 } // namespace Dakota

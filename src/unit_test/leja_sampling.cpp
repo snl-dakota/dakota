@@ -16,9 +16,6 @@
 // Boost.Test
 #include <boost/test/minimal.hpp>
 
-//#include <boost/assign/std/vector.hpp>
-#include <boost/foreach.hpp>
-
 #include <cassert>
 #include <iostream>
 

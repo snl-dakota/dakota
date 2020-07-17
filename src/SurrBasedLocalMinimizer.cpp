@@ -292,6 +292,42 @@ void SurrBasedLocalMinimizer::initialize_multipliers()
 }
 
 
+/** Surrogate-based local (data-fit) specializes graphics to output
+    trust region centers. See add_datapoint in
+    DataFitSurrBasedLocalMinimizer. Other children don't do any output */
+void SurrBasedLocalMinimizer::initialize_graphics(int iterator_server_id)
+{
+  // may want to replace customized graphics w/ std graphics for use in
+  // Hybrid & Concurrent Strategies
+  //if (!strategyFlag) {
+
+  // BMA: Left this conditional to avoid breaking other derived classes
+  Model& truth_model = (methodName == SURROGATE_BASED_LOCAL) ?
+    iteratedModel.truth_model() : iteratedModel;
+  OutputManager& mgr = parallelLib.output_manager();
+  Graphics& dakota_graphics = mgr.graphics();
+  const Variables& vars = truth_model.current_variables();
+  const Response&  resp = truth_model.current_response();
+
+  // For graphics, limit (currently) to server id 1, for both ded master
+  // (parent partition rank 1) and peer partitions (parent partition rank 0)
+  if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
+    mgr.graphics_counter(0); // starting point is iteration 0
+    dakota_graphics.create_plots_2d(vars, resp);
+    dakota_graphics.set_x_labels2d("Surr-Based Iteration No.");
+  }
+
+  // For output/restart/tabular data, all Iterator masters stream output
+  if (mgr.tabularDataFlag) { // initialize data tabulation
+    mgr.graphics_counter(0); // starting point is iteration 0
+    mgr.tabular_counter_label("iter_no");
+    mgr.create_tabular_datastream(vars, resp);
+  }
+
+  //}
+}
+
+
 void SurrBasedLocalMinimizer::pre_run()
 {
   // reset convergence controls in case of multiple executions

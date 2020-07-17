@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
     write_data(argv[2], fnvals);
   }
   else {
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
 #ifdef TB_USE_MPI

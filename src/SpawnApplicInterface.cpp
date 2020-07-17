@@ -19,7 +19,7 @@
 #include "dakota_windows.h"
 #include <process.h>
 #include <algorithm>
-
+#include <thread>
 
 namespace Dakota {
 
@@ -145,7 +145,7 @@ void SpawnApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 
   // reduce processor load from DAKOTA testing if jobs are not finishing
   if (completionSet.empty())
-    Sleep(2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
 }
 
 

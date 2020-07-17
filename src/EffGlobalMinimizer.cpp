@@ -30,7 +30,6 @@
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NormalRandomVariable.hpp"
-#include <boost/lexical_cast.hpp>
 
 //#define DEBUG
 //#define DEBUG_PLOTS
@@ -899,7 +898,7 @@ void EffGlobalMinimizer::debug_plots() {
     //   and truth (if requested)
     for (size_t i=0; i<numFunctions; i++) {
       std::string samsfile("ego_sams");
-      std::string tag = "_" + boost::lexical_cast<std::string>(i+1) + ".out";
+      std::string tag = "_" + std::to_string(i+1) + ".out";
       samsfile += tag;
       std::ofstream samsOut(samsfile.c_str(),std::ios::out);
       samsOut << std::scientific;

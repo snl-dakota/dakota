@@ -43,6 +43,8 @@ class ResultsDBBase
 {
 
 public:
+  
+  virtual ~ResultsDBBase() { /* empty dtor */ }
 
   /// If supported, flush data to the database or disk
   virtual

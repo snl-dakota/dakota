@@ -251,5 +251,30 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   return approxGradient;
 }
 
+void SurrogatesBaseApprox::export_model(const String& fn_label,
+					const String& export_prefix,
+					const unsigned short export_format)
+{
+  String without_extension;
+  unsigned short formats;
+  if(export_format) {
+    without_extension = export_prefix + "." + fn_label;
+    formats = export_format;
+  }
+  else {
+    without_extension = sharedDataRep->modelExportPrefix + "." + approxLabel;
+    formats = sharedDataRep->modelExportFormat;
+  }
+  // Saving to text archive
+  if(formats & TEXT_ARCHIVE) {
+    String filename = without_extension + ".txt";
+    derived_export_model(filename, false);
+  }
+  // Saving to binary archive
+  if(formats & BINARY_ARCHIVE) {
+    String filename = without_extension + ".bin";
+    derived_export_model(filename, true);
+  }
+}
 
 } // namespace Dakota

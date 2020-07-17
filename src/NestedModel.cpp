@@ -1324,8 +1324,8 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
 	 << "-----------------------------------------\n";
     component_parallel_mode(INTERFACE_MODE);
     if (hierarchicalTagging) {
-      String eval_tag = evalTagPrefix + '.' + 
-	boost::lexical_cast<String>(nestedModelEvalCntr);
+      String eval_tag = evalTagPrefix + '.' +
+	std::to_string(nestedModelEvalCntr);
       // don't apply a redundant interface eval id
       bool append_iface_tag = false;
       optionalInterface.eval_tag_prefix(eval_tag, append_iface_tag);
@@ -1364,8 +1364,8 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
     update_sub_model(currentVariables, userDefinedConstraints);
     subIterator.response_results_active_set(sub_iterator_set);
     if (hierarchicalTagging) {
-      String eval_tag = evalTagPrefix + '.' + 
-	boost::lexical_cast<String>(nestedModelEvalCntr);
+      String eval_tag = evalTagPrefix + '.' +
+	std::to_string(nestedModelEvalCntr);
       subIterator.eval_tag_prefix(eval_tag);
     }
 

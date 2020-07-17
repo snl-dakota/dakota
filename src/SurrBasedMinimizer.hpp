@@ -48,8 +48,6 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  /// initialize graphics customized for surrogate-based iteration
-  void initialize_graphics(int iterator_server_id = 1);
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //

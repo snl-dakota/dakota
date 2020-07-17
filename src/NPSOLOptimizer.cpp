@@ -16,7 +16,6 @@
 #include "DakotaResponse.hpp"
 #include "NPSOLOptimizer.hpp"
 #include "ProblemDescDB.hpp"
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <sstream>
 
@@ -108,7 +107,7 @@ NPSOLOptimizer(Model& model, const int& derivative_level, const Real& conv_tol):
 
   // assign the derivative_level passed in
   std::string dlevel_s("Derivative Level            = ");
-  dlevel_s += boost::lexical_cast<std::string>(derivative_level);
+  dlevel_s += std::to_string(derivative_level);
   dlevel_s.resize(72, ' ');
   NPOPTN2_F77( dlevel_s.data() );
 
@@ -169,7 +168,7 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
   // vendor-numerical, ...
   std::string dlevel_s("Derivative Level            = ");
-  dlevel_s += boost::lexical_cast<std::string>(derivative_level);
+  dlevel_s += std::to_string(derivative_level);
   dlevel_s.resize(72, ' ');
   NPOPTN2_F77( dlevel_s.data() );
 
@@ -252,7 +251,7 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
   // vendor-numerical, ...
   std::string dlevel_s("Derivative Level            = ");
-  dlevel_s += boost::lexical_cast<std::string>(derivative_level);
+  dlevel_s += std::to_string(derivative_level);
   dlevel_s.resize(72, ' ');
   NPOPTN2_F77( dlevel_s.data() );
 

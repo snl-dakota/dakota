@@ -1327,7 +1327,7 @@ void ActiveSubspaceModel::update_var_labels()
 {
   StringMultiArray subspace_var_labels(boost::extents[reducedRank]);
   for (int i = 0; i < reducedRank; i++) {
-    subspace_var_labels[i] = "ssv_" + boost::lexical_cast<std::string>(i+1);
+    subspace_var_labels[i] = "ssv_" + std::to_string(i+1);
   }
 
   continuous_variable_labels(

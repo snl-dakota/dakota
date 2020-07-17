@@ -16,8 +16,6 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/functional/hash/hash.hpp>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <algorithm>
 #include "Teuchos_SerialDenseHelpers.hpp"
@@ -294,7 +292,7 @@ std::string::size_type longest_strlen(const std::vector<std::string>& vecstr);
 inline void build_label(String& label, const String& root_label, size_t tag, 
 			const String& separator = "")
 {
-  label = root_label + separator + boost::lexical_cast<std::string>(tag);
+  label = root_label + separator + std::to_string(tag);
 }
 
 /// create an array of labels by tagging root_label for each entry in
@@ -1280,7 +1278,7 @@ size_t find_index(const ContainerType& c,
 {
   // should be more efficient than find() + distance()
   size_t cntr = 0;
-  BOOST_FOREACH(const typename ContainerType::value_type& entry, c) {
+  for(const typename ContainerType::value_type& entry : c) {
     if (entry == search_data)
       return cntr;
     else
@@ -1353,7 +1351,7 @@ size_t find_index(const ListT& l, const typename ListT::value_type& val)
 {
   // should be more efficient than find() + distance()
   size_t cntr = 0;
-  BOOST_FOREACH(const typename ListT::value_type& entry, l) {
+  for(const typename ListT::value_type& entry : l) {
     if (entry == val)
       return cntr;
     else

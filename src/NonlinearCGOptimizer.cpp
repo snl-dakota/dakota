@@ -538,11 +538,12 @@ Real NonlinearCGOptimizer::brent_minimize(Real a, Real b, Real tol)
     fu = linesearch_eval(u);
 
     // update  a, b, v, w, and x
-    if (fx <= fu) 
+    if (fx <= fu) {
       if (u >= x)
 	b = u;
       else
 	a = u;
+    }
 
     if (fu <= fx) {
 

@@ -202,47 +202,47 @@ protected:
 
   // TODO: see if this can be a local withing init function
   /// options for setting up the QUESO Environment
-  boost::shared_ptr<QUESO::EnvOptionsValues> envOptionsValues;
+  std::shared_ptr<QUESO::EnvOptionsValues> envOptionsValues;
 
   /// top-level QUESO Environment
-  boost::shared_ptr<QUESO::FullEnvironment> quesoEnv;
+  std::shared_ptr<QUESO::FullEnvironment> quesoEnv;
   
   /// QUESO parameter space based on number of calibrated parameters
-  boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> > 
+  std::shared_ptr<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> > 
   paramSpace;
 
   /// QUESO parameter domain: hypercube based on min/max values
-  boost::shared_ptr<QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix> >
+  std::shared_ptr<QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix> >
   paramDomain;
 
   /// initial parameter values at which to start chain
-  boost::shared_ptr<QUESO::GslVector> paramInitials;
+  std::shared_ptr<QUESO::GslVector> paramInitials;
 
   /// random variable for the prior
-  boost::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
+  std::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
     priorRv;
 
   /// proposal covariance for DRAM
-  boost::shared_ptr<QUESO::GslMatrix> proposalCovMatrix;
+  std::shared_ptr<QUESO::GslMatrix> proposalCovMatrix;
 
   /// optional multiplier to scale prior-based proposal covariance 
   double priorPropCovMult;
 
   /// general inverse problem options
-  boost::shared_ptr<QUESO::SipOptionsValues> calIpOptionsValues;
+  std::shared_ptr<QUESO::SipOptionsValues> calIpOptionsValues;
 
   /// MH-specific inverse problem options
-  boost::shared_ptr<QUESO::MhOptionsValues> calIpMhOptionsValues;
+  std::shared_ptr<QUESO::MhOptionsValues> calIpMhOptionsValues;
 
-  boost::shared_ptr<QUESO::GenericScalarFunction<QUESO::GslVector,
+  std::shared_ptr<QUESO::GenericScalarFunction<QUESO::GslVector,
     QUESO::GslMatrix> > likelihoodFunctionObj;
 
   /// random variable for the posterior
-  boost::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
+  std::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
     postRv;
 
   /// QUESO inverse problem solver
-  boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
+  std::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
 
   /// advanced options file name (GPMSA only); settings from this file

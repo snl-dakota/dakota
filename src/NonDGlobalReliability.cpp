@@ -30,7 +30,6 @@
 #include "DakotaApproximation.hpp"
 #include "ProblemDescDB.hpp"
 #include "NormalRandomVariable.hpp"
-#include <boost/lexical_cast.hpp>
 
 //#define DEBUG
 //#define DEGUG_PLOTS
@@ -672,8 +671,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
     //   eff, and truth (if requested)
     if (num_levels) {  // can only plot if GP was built!
       std::string samsfile("egra_sams");
-      std::string tag = "_" + boost::lexical_cast<std::string>(respFnCount+1) +
-                        ".out";
+      std::string tag = "_" + std::to_string(respFnCount+1) + ".out";
       samsfile += tag;
       std::ofstream samsOut(samsfile.c_str(),std::ios::out);
       samsOut << std::scientific;

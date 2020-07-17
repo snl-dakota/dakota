@@ -19,7 +19,6 @@
 #include "dakota_system_defs.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaApproximation.hpp"
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -82,6 +81,36 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 
 SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer()
 { }
+
+
+/** This just specializes the Iterator implementation to perform
+    default tabulation on the truth model instead of surrogate
+    model. */
+void SurrBasedGlobalMinimizer::initialize_graphics(int iterator_server_id)
+{
+  Model& truth_model = iteratedModel.truth_model();
+  OutputManager& mgr = parallelLib.output_manager();
+  Graphics& dakota_graphics = mgr.graphics();
+  const Variables& vars = truth_model.current_variables();
+  const Response&  resp = truth_model.current_response();
+  bool auto_log = false;
+
+  // For graphics, limit (currently) to server id 1, for both ded master
+  // (parent partition rank 1) and peer partitions (parent partition rank 0)
+  if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
+    dakota_graphics.create_plots_2d(vars, resp);
+    auto_log = true;
+  }
+
+  // For output/restart/tabular data, all Iterator masters stream output
+  if (mgr.tabularDataFlag) { // initialize data tabulation
+    mgr.create_tabular_datastream(vars, resp);
+    auto_log = true;
+  }
+
+  if (auto_log)
+    truth_model.auto_graphics(true);
+}
 
 
 void SurrBasedGlobalMinimizer::core_run()
@@ -200,10 +229,9 @@ void SurrBasedGlobalMinimizer::core_run()
       // In here we want to write the truth values into a simple tab delimited
       // file so that we can easily compare them with the surrogate values of
       // the points returned by the iterator.
-      std::string ofname("finaldatatruth");
-      ofname += boost::lexical_cast<std::string>(globalIterCount);
-      ofname += ".dat";
-      std::ofstream ofile(ofname.c_str());
+      std::string ofname("finaldatatruth" + std::to_string(globalIterCount) +
+			 ".dat");
+      std::ofstream ofile(ofname);
       ofile.precision(12);
       IntRespMCIter it = truth_resp_results.begin();
       for (i=0; i<num_results; ++i, ++it) {

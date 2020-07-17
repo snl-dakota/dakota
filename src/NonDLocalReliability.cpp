@@ -515,6 +515,42 @@ void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDLocalReliability::initialize_graphics(int iterator_server_id)
+{
+  // Set up special graphics for CDF/CCDF visualization
+  if (totalLevelRequests) {
+
+    OutputManager& mgr = parallelLib.output_manager();
+    Graphics& dakota_graphics = mgr.graphics();
+
+    // For graphics, limit (currently) to server id 1, for both ded master
+    // (parent partition rank 1) and peer partitions (parent partition rank 0)
+    if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
+      dakota_graphics.create_plots_2d(iteratedModel.current_variables(),
+				      iteratedModel.current_response());
+      // Visualize mostProbPointX in the vars windows and CDF/CCDF
+      // probability/reliability-response level pairs in the response windows.
+      dakota_graphics.set_x_labels2d("Response Level");
+      size_t i;
+      for (i=0; i<numFunctions; i++)
+	dakota_graphics.set_y_label2d(i, "Probability");
+      for (i=0; i<numContinuousVars; i++)
+	dakota_graphics.set_y_label2d(i+numFunctions, "Most Prob Point");
+    }
+
+    /*
+    // For output/restart/tabular data, all Iterator masters stream output
+    if (mgr.tabularDataFlag) { // initialize the tabular data file
+      dakota_graphics.tabular_counter_label("z");
+      dakota_graphics.create_tabular_datastream(
+        iteratedModel.current_variables(), iteratedModel.current_response(),
+        );
+    }
+    */
+  }
+}
+
+
 void NonDLocalReliability::pre_run()
 {
   NonDReliability::pre_run();
