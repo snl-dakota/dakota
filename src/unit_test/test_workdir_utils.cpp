@@ -13,7 +13,6 @@
 // Boost.Test
 #include <boost/test/minimal.hpp>
 
-//#include <boost/assign/std/vector.hpp>
 #include <boost/foreach.hpp>
 
 #include <cassert>
@@ -140,7 +139,7 @@ void test_cp_template_files_into_wd(bfs::path& wd)
   // double-check contents of expected items in the wd
   bfs::directory_iterator it(wd), eod;
   size_t file_count = 0; size_t link_count = 0; size_t dir_count = 0;
-  BOOST_FOREACH( bfs::path const &p, std::make_pair(it, eod) ) { 
+  BOOST_FOREACH( bfs::path const &p, std::make_pair(it, eod) ) {
     if( is_regular_file(p) ) {
       ++file_count;
       //std::cout << "counting files poplated wdir.. currentFCount is: " << file_count << std::endl;

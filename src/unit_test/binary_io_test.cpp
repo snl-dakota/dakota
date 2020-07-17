@@ -6,18 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-/*  _______________________________________________________________________
-
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    2opyright (c) 2010, Sandia National Laboratories.
-    This software is distributed under the GNU Lesser General Public License.
-    For more information, see the README file in the top Dakota directory.
-    _______________________________________________________________________ */
-
 #include "BinaryIO_Helper.hpp"
-
-#include <boost/assign/std/vector.hpp>
-#include <boost/foreach.hpp>
 
 #include <cassert>
 #include <iostream>

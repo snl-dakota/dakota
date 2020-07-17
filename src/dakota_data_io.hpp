@@ -14,7 +14,6 @@
 #include "dakota_data_types.hpp"
 #include "ExperimentDataUtils.hpp"
 #include "MPIPackBuffer.hpp"
-#include <boost/foreach.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/split_free.hpp>
@@ -1643,9 +1642,8 @@ inline std::ostream& operator<<(std::ostream& s, const std::vector<T>& data)
 template <typename T>
 inline std::ostream& operator<<(std::ostream& s, const std::list<T>& data)
 {
-  BOOST_FOREACH(const typename std::list<T>::value_type& entry, data) {
+  for(const typename std::list<T>::value_type& entry : data)
     s << "                     " << entry << '\n';
-  }  
   return s;
 }
 

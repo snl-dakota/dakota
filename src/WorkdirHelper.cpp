@@ -15,7 +15,6 @@
 #include "dakota_global_defs.hpp"
 #include <boost/array.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/foreach.hpp>
 #include <boost/version.hpp>
 #include <cassert>
 
@@ -200,7 +199,7 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
 
 #if defined(DEBUG)
   Cout << "Search " << env_path << '\n';
-  BOOST_FOREACH(const std::string& d, dirs)
+  for (const std::string& d : dirs)
     Cout << "\tDir = " << d << '\n';
   Cout << std::endl;
 #endif
@@ -252,7 +251,7 @@ bfs::path WorkdirHelper::which(const std::string& driver_name)
   // always check these as a fallback
   extensions.push_back(".com"); extensions.push_back(".exe");
 
-  BOOST_FOREACH(const std::string& e, extensions) {
+  for(const std::string& e : extensions) {
 
     // check with extension as given (potentially mixed case), lower, and upper
     // don't bother checking all possible case variants
@@ -378,7 +377,7 @@ bfs::path WorkdirHelper::po_which(const std::string& driver_name)
     std::vector<std::string> search_dirs =
       tokenize_env_path(dakPreferredEnvPath);
 
-    BOOST_FOREACH(const std::string& d, search_dirs) {
+    for(const std::string& d : search_dirs) {
       boost::filesystem::path complete_path_to_driver;
       boost::filesystem::path search_dir_path(d);
 

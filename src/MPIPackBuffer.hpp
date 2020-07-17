@@ -12,7 +12,6 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
-#include <boost/foreach.hpp>
 
 
 namespace Dakota {
@@ -318,9 +317,8 @@ inline void container_write(const ContainerT& c, MPIPackBuffer& s)
 {
   typename ContainerT::size_type len = c.size();
   s << len;
-  BOOST_FOREACH(const typename ContainerT::value_type& entry, c) {
+  for(const typename ContainerT::value_type& entry : c)
     s << entry;
-  }
 }
 #endif
 
