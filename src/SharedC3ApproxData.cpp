@@ -45,8 +45,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
   //adaptConstruct(false),
-  c3RefineType(NO_C3_REFINEMENT), c3MaxRankAdvance(false),
-  c3MaxOrderAdvance(false)
+  c3RefineType(NO_C3_REFINEMENT)
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
@@ -74,8 +73,7 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
   maxSolverIterations(-1), crossMaxIter(5), //adaptConstruct(false),
-  c3RefineType(NO_C3_REFINEMENT), c3MaxRankAdvance(false),
-  c3MaxOrderAdvance(false)
+  c3RefineType(NO_C3_REFINEMENT)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)
@@ -199,7 +197,8 @@ bool SharedC3ApproxData::advancement_available()
   // UNIFORM_MAX_* refine types are QoI-dependent: shared false induces
   // per-QoI checks (see ApproximationInterface::advancement_available()
   default:
-    c3MaxRankAdvance = c3MaxOrderAdvance = false; // clear prior to accumulation
+    // clear state prior to accumulation across C3Approximations
+    c3MaxRankAdvance[activeKey] = c3MaxOrderAdvance[activeKey] = false;
     return false;  break;
   }
 }
@@ -217,10 +216,8 @@ void SharedC3ApproxData::increment_order()
       // unconditional increment (preserve reproducibility w/decrement)
       // Note: dim_pref ratios are not preserved
       s_ord += kickOrder;
-      if (prev_ord < max_ord) { // increment occurs, but kick may be truncated
+      if (prev_ord < max_ord) // increment occurs, but kick may be truncated
 	incremented = true;
-	//update_basis(v, s_ord, max_ord);
-      }
     }
     if (incremented)
       formUpdated[activeKey] = true;
@@ -240,20 +237,29 @@ void SharedC3ApproxData::increment_order()
     start_r += kickRank; // invertible in decrement_order()
     break;
   }
-  default:
+  case UNIFORM_MAX_RANK: {
+    size_t&         max_r = max_rank();   max_r += kickRank;
+    formUpdated[activeKey] = true;        break;
+  }
+  case UNIFORM_MAX_ORDER: {
+    unsigned short& max_o = max_order();  max_o += kickOrder;
+    formUpdated[activeKey] = true;        break;
+  }
+  case UNIFORM_MAX_RANK_ORDER: {
     // Prior to implementing a multi-index approach, we use heuristics.
     // > unconditionally advancing both is wasteful; only advance non-saturated
     // > could also consider only advancing one when both bounds are active:
     //   least saturated first with tie break to max rank (recovered ranks are
     //   heterogeneous anyway)
-    if (c3MaxRankAdvance)
-      { size_t& max_r = max_rank();  max_r += kickRank; }
-    if (c3MaxOrderAdvance) {
-      unsigned short& max_o = max_order();  max_o += kickOrder;
-      //update_basis(start_orders(), max_o);
-    }
-    if (c3MaxRankAdvance || c3MaxOrderAdvance) formUpdated[activeKey] = true;
+    bool r_advance = c3MaxRankAdvance[activeKey],
+         o_advance = c3MaxOrderAdvance[activeKey];
+    if (r_advance)
+      { size_t&         max_r = max_rank();   max_r += kickRank; }
+    if (o_advance)
+      { unsigned short& max_o = max_order();  max_o += kickOrder; }
+    if (r_advance || o_advance) formUpdated[activeKey] = true;
     break;
+  }
   }
 }
 
@@ -273,37 +279,52 @@ void SharedC3ApproxData::decrement_order()
       if (s_ord >= kickOrder) { // for completeness (should not happen)
 	s_ord -= kickOrder; // preserve symmetry/reproducibility w/increment
 	if (s_ord < max_ord) // only communicate if in bounds
-	  { /*update_basis(v, s_ord, max_ord);*/ decremented = true; }
+	  decremented = true;
       }
     }
-    if (!decremented) bad_range = true;
+    if (decremented)  formUpdated[activeKey] = true;
+    else              bad_range = true;
     break;
   }
   case UNIFORM_START_RANK: {
     size_t& start_r = start_rank();
-    if  (start_r  < kickRank)  bad_range = true;// underflow (should not happen)
-    else start_r -= kickRank;
+    if    (start_r  < kickRank)  bad_range = true;
+    else { start_r -= kickRank;  formUpdated[activeKey] = true; }
     break;
   }
-  default:
-    if (c3MaxRankAdvance) {
+  case UNIFORM_MAX_RANK: {
+    size_t& max_r = max_rank();
+    if    (max_r  < kickRank)  bad_range = true;
+    else { max_r -= kickRank;  formUpdated[activeKey] = true; }
+    break;
+  }
+  case UNIFORM_MAX_ORDER: {
+    unsigned short& max_o = max_order();
+    if    (max_o  < kickOrder)  bad_range = true;
+    else { max_o -= kickOrder;  formUpdated[activeKey] = true; }
+    break;
+  }
+  case UNIFORM_MAX_RANK_ORDER: {
+    bool r_advance = c3MaxRankAdvance[activeKey],
+         o_advance = c3MaxOrderAdvance[activeKey];
+    if (r_advance) {
       size_t& max_r = max_rank();
       if  (max_r  < kickRank) bad_range = true;
       else max_r -= kickRank;
     }
-    if (c3MaxOrderAdvance) {
+    if (o_advance) {
       unsigned short& max_o = max_order();
       if  (max_o  < kickOrder) bad_range = true;
-      else max_o -= kickOrder; //update_basis(start_orders(), max_o);
+      else max_o -= kickOrder;
     }
+    if (r_advance || o_advance) formUpdated[activeKey] = true;
     break;
+  }
   }
 
   if (bad_range)
     Cerr << "Warning: SharedC3ApproxData::decrement_order() outside of valid "
-	   << "range for key:\n" << activeKey << std::endl;
-  else
-    formUpdated[activeKey] = true;    
+	 << "range for key:\n" << activeKey << std::endl;
 }
 
 

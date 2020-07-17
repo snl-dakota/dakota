@@ -273,10 +273,10 @@ protected:
 
   /// flag indicating availability of rank advancement (accumulated from
   /// C3Approximation::advancement_available())
-  bool c3MaxRankAdvance;
+  std::map<UShortArray, bool> c3MaxRankAdvance;
   /// flag indicating availability of order advancement (accumulated from
   /// C3Approximation::advancement_available())
-  bool c3MaxOrderAdvance;
+  std::map<UShortArray, bool> c3MaxOrderAdvance;
 
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
@@ -496,11 +496,11 @@ inline size_t SharedC3ApproxData::max_regression_size()
 
 
 inline void SharedC3ApproxData::max_rank_advancement(bool r_advance)
-{ c3MaxRankAdvance = r_advance; }
+{ c3MaxRankAdvance[activeKey] = r_advance; }
 
 
 inline void SharedC3ApproxData::max_order_advancement(bool o_advance)
-{ c3MaxOrderAdvance = o_advance; }
+{ c3MaxOrderAdvance[activeKey] = o_advance; }
 
 
 inline void SharedC3ApproxData::

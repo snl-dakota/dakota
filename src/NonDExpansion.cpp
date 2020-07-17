@@ -1510,13 +1510,12 @@ void NonDExpansion::greedy_multifidelity_expansion()
       best_step_metric = 0.; // kick out of loop
     }
     else {
+      Cout << "selected refinement = sequence step " << best_step+1
+	   << " candidate " << best_step_candidate+1 << '\n';
       step = best_step; // also updates form | lev
       configure_indices(step, form, lev, seq_index);
       select_candidate(best_step_candidate);
       push_candidate(best_stats_star); // update stats from best (no recompute)
-
-      Cout << "selected refinement indices = sequence step " << best_step+1
-	   << " candidate " << best_step_candidate+1 << '\n';
       print_results(Cout, INTERMEDIATE_RESULTS);
     }
   }

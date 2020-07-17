@@ -279,7 +279,10 @@ void C3Approximation::build()
     cross_validate_grid_opt(cv, cvgrid, ftr, optimizer);
 
     // this is needed for advancement_available but does not persist to next
-    // build(), so store in C3FnTrainData (don't update SharedC3ApproxData)
+    // build(), so store in C3FnTrainData (don't update SharedC3ApproxData).
+    // > Note: making this update conditional on adaptOrder avoids a copy in
+    //   the non-adaptive case, but induces the need for conditionals when
+    //   there is need to retrieve basis order data.
     recover_function_train_orders(levApproxIter->second.ft_orders());
 
     // free the cross validation grid and cross validator
