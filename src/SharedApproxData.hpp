@@ -136,6 +136,9 @@ public:
   /// promote aggregated data sets to active state
   virtual void combined_to_active(bool clear_combined = true);
 
+  /// queries availability of advancing the approximation resolution
+  virtual bool advancement_available();
+
   /// increments polynomial expansion order (PCE, FT)
   virtual void increment_order();
   /// decrements polynomial expansion order (PCE, FT)

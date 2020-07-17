@@ -1129,9 +1129,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
   ( function_train {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
       ( uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        increment_start_rank {N_mdm(type,c3RefineType_UNIFORM_START_RANK)}
+        |
         increment_start_order {N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}
         |
         increment_max_rank {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}
+        |
+        increment_max_order {N_mdm(type,c3RefineType_UNIFORM_MAX_ORDER)}
+        |
+        increment_max_rank_order {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
@@ -1154,9 +1160,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ start_order ALIAS order INTEGER >= 0 {N_mdm(ushint,startOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ start_rank ALIAS rank INTEGER >= 0 {N_mdm(sizet,startRank)} ]
-    [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
+    [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
     [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
@@ -1259,9 +1267,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
   ( multifidelity_function_train {N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
       ( uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        increment_start_rank {N_mdm(type,c3RefineType_UNIFORM_START_RANK)}
+        |
         increment_start_order {N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}
         |
         increment_max_rank {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}
+        |
+        increment_max_order {N_mdm(type,c3RefineType_UNIFORM_MAX_ORDER)}
+        |
+        increment_max_rank_order {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
@@ -1291,9 +1305,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
-    [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
+    [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
     [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
@@ -1425,9 +1441,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
-    [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
+    [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
     [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
@@ -5756,9 +5774,15 @@ KEYWORD model {N_mom3(start,0,stop)}
       ( function_train {N_mom(lit,surrogateType_global_function_train)}
         [ p_refinement {N_mom(type,refinementType_P_REFINEMENT)}
           ( uniform {N_mom(type,refinementControl_UNIFORM_CONTROL)}
+            increment_start_rank {N_mom(type,c3RefineType_UNIFORM_START_RANK)}
+            |
             increment_start_order {N_mom(type,c3RefineType_UNIFORM_START_ORDER)}
             |
             increment_max_rank {N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}
+            |
+            increment_max_order {N_mom(type,c3RefineType_UNIFORM_MAX_ORDER)}
+            |
+            increment_max_rank_order {N_mom(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}
            )
          ]
         [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
@@ -5778,9 +5802,11 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ start_order ALIAS order INTEGER >= 0 {N_mom(ushint,startOrder)}
           [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
          ]
+        [ kick_order INTEGER > 0 {N_mom(ushint,kickOrder)} ]
         [ max_order INTEGER >= 0 {N_mom(ushint,maxOrder)} ]
+        [ adapt_order {N_mom(true,adaptOrder)} ]
         [ start_rank ALIAS rank INTEGER >= 0 {N_mom(sizet,startRank)} ]
-        [ kick_rank INTEGER >= 0 {N_mom(sizet,kickRank)} ]
+        [ kick_rank INTEGER > 0 {N_mom(sizet,kickRank)} ]
         [ max_rank INTEGER >= 0 {N_mom(sizet,maxRank)} ]
         [ adapt_rank {N_mom(true,adaptRank)} ]
        )

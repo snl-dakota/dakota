@@ -57,20 +57,24 @@ public:
   //- Heading: Member functions
   //
 
+  // *** IMPORTANT NOTE: these regression_size() implementations utilize shared
+  // *** before-build input specification (subject to increment/decrement), not
+  // *** after-build per-QoI details (subject to CV adapt_rank/adapt_order)
+
   /// return number of FT unknowns given scalars: num vars, rank, order
   static size_t regression_size(size_t num_v, size_t rank, size_t max_rank,
 				const UShortArray& orders,
 				unsigned short max_order);
-  /// return number of FT unknowns using numVars, start_rank(), max_rank(),
+  /// return number of FT unknowns using start_rank(), max_rank(),
   /// start_orders(), max_order()
   size_t regression_size();
-  /// return number of FT unknowns using numVars, maximum rank,
-  /// start_orders(), max_order()
+  /// return number of FT unknowns using maximum rank, start_orders(),
+  /// max_order()
   size_t max_rank_regression_size();
-  /// return number of FT unknowns using numVars, start_rank(), max_rank(),
-  /// and maximum orders
+  /// return number of FT unknowns using start_rank(), max_rank(), and
+  /// maximum basis order
   size_t max_order_regression_size();
-  /// return number of FT unknowns using numVars and maximum rank and orders
+  /// return number of FT unknowns using maxima for rank and basis order
   size_t max_regression_size();
 
   /// set UShortArray attribute value based on identifier string
@@ -90,6 +94,8 @@ public:
 
   /// set active UShortArray attribute value based on identifier string
   void set_active_parameter(String var, const UShortArray& val);
+  /// set active unsigned short attribute value based on identifier string
+  void set_active_parameter(String var, unsigned short val);
   /// set active size_t attribute value based on identifier string
   void set_active_parameter(String var, size_t val);
   /// set active int attribute value based on identifier string
@@ -117,9 +123,6 @@ public:
   size_t max_rank() const;
   /// return active maximum value for expansion rank (mutable)
   size_t& max_rank();
-
-  /// return adaptRank
-  bool adapt_rank() const;
 
   // return c3RefineType
   //short refinement_type() const;
@@ -173,19 +176,23 @@ protected:
   void pre_combine();
   //void post_combine();
 
+  bool advancement_available();
+  void max_rank_advancement(bool r_advance);
+  void max_order_advancement(bool o_advance);
+
   //
   //- Heading: Data
   //
 
-  // This data is shared per QoI _and_ per level
+  // While these containers are shared across the QoI, some data now varies per
+  // QoI (for adapt_order). Per QoI data is pushed/pulled in C3Approx::build().
   //
-  /// 1D approximation options (basis type, poly order, etc.)
-  std::vector<OneApproxOpts*> oneApproxOpts;//OneApproxOpts ** oneApproxOpts;
-  /// n-D approximation options, augmenting 1D options
+  // lower level basis options
+  //std::vector<OpeOpts*> polyBasisOpts;
+  /// one-D approximation options (basis type, poly order, etc.)
+  std::vector<OneApproxOpts*> oneApproxOpts;
+  /// n-D approximation options, augmenting one-D options
   MultiApproxOpts* multiApproxOpts;
-
-  // these are stored in oneApproxOpts, but currently need to be cached
-  // to persist between set_parameter() and construct_basis()
 
   /// starting user specification for polynomial orders (from start_order
   /// scalar plus anisotropic dimension preference)
@@ -193,10 +200,19 @@ protected:
   /// starting values for polynomial order (prior to adaptive refinement);
   /// for each model key, there is an array of polynomial orders per variable
   std::map<UShortArray, UShortArray> startOrdersMap;
-  /// polynomial basis order for combined expansion for each variable core
-  UShortArray combinedOrders;
+  /// user specification for increment in order used within adapt_order
+  unsigned short kickOrder;
   /// maximum value for polynomial order from user spec
   unsigned short maxOrder;
+  /// user specification for maximum order used within adapt_order;
+  /// usually a scalar specification but can be adapted per model key
+  /// for UNIFORM_MAX_{ORDER,RANK_ORDER} refine types
+  std::map<UShortArray, unsigned short> maxOrderMap;
+  /// C3 FT can support CV over polynomial order in addition to adapt_rank
+  bool adaptOrder;
+
+  /// polynomial basis order for combined expansion for each variable core
+  UShortArray combinedOrders;
 
   // the remaining data are separate as can be seen in C3Approximation::build()
 
@@ -214,7 +230,7 @@ protected:
   size_t maxRank;
   /// user specification for maximum rank used within adapt_rank;
   /// usually a scalar specification but can be adapted per model key
-  /// for UNIFORM_MAX_RANK refine type
+  /// for UNIFORM_MAX_{RANK,RANK_ORDER} refine types
   std::map<UShortArray, size_t> maxRankMap;
   /// internal C3 adaptation that identifies the best rank representation
   /// for a set of sample data based on cross validation
@@ -240,10 +256,8 @@ protected:
   /// C3 regression solver employs a random seed
   int randomSeed;
 
-  /// a more general adaptive construction option, distinct from adapt_rank
-  bool adaptConstruct; // inactive placeholder for now
-  /// C3 FT can support CV over polynomial order in addition to adapt_rank
-  bool crossVal;       // inactive placeholder for now
+  // a more general adaptive construction option, distinct from adapt_rank
+  //bool adaptConstruct; // inactive placeholder for now
 
   /// type of discrepancy calculation: additive, multiplicative, or both
   short combineType;
@@ -256,6 +270,13 @@ protected:
   //short refineStatsType;
   /// type of (uniform) refinement: UNIFORM_{START_ORDER,START_RANK,MAX_RANK}
   short c3RefineType;
+
+  /// flag indicating availability of rank advancement (accumulated from
+  /// C3Approximation::advancement_available())
+  std::map<UShortArray, bool> c3MaxRankAdvance;
+  /// flag indicating availability of order advancement (accumulated from
+  /// C3Approximation::advancement_available())
+  std::map<UShortArray, bool> c3MaxOrderAdvance;
 
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
@@ -295,8 +316,10 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
     { startOrdersMap[key]      =  startOrders;  form = true; }
   if (startRankMap.find(key)   == startRankMap.end()) 
     { startRankMap[key]        =  startRank;    form = true; }
+  if (maxOrderMap.find(key)    == maxOrderMap.end())
+    { maxOrderMap[key]         =  maxOrder;     if (adaptOrder) form = true; }
   if (maxRankMap.find(key)     == maxRankMap.end())
-    { maxRankMap[key]          =  maxRank;      if (adaptRank) form = true; }
+    { maxRankMap[key]          =  maxRank;      if (adaptRank)  form = true; }
 
   // ensure approximation rebuild, when needed, in absence of sample increment
   if (form) formUpdated[key] = true;
@@ -304,7 +327,7 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
 
 
 inline void SharedC3ApproxData::update_basis()
-{ update_basis(startOrdersMap[activeKey], maxOrder); }
+{ update_basis(start_orders(), max_order()); }
 
 
 inline short SharedC3ApproxData::discrepancy_type() const
@@ -328,11 +351,19 @@ inline UShortArray& SharedC3ApproxData::start_orders()
 
 
 inline unsigned short SharedC3ApproxData::max_order() const
-{ return maxOrder; }
+{
+  std::map<UShortArray, unsigned short>::const_iterator cit
+    = maxOrderMap.find(activeKey);
+  return (cit == maxOrderMap.end()) ? maxOrder : cit->second;
+}
 
 
 inline unsigned short& SharedC3ApproxData::max_order()
-{ return maxOrder; }
+{
+  std::map<UShortArray, unsigned short>::iterator it
+    = maxOrderMap.find(activeKey);
+  return (it == maxOrderMap.end()) ? maxOrder : it->second;
+}
 
 
 inline size_t SharedC3ApproxData::start_rank() const
@@ -363,10 +394,6 @@ inline size_t& SharedC3ApproxData::max_rank()
   std::map<UShortArray, size_t>::iterator it = maxRankMap.find(activeKey);
   return (it == maxRankMap.end()) ? maxRank : it->second;
 }
-
-
-inline bool SharedC3ApproxData::adapt_rank() const
-{ return adaptRank; }
 
 
 //inline short SharedC3ApproxData::refinement_type() const
@@ -438,17 +465,56 @@ inline size_t SharedC3ApproxData::max_rank_regression_size()
 }
 
 
+inline size_t SharedC3ApproxData::max_order_regression_size()
+{
+  //UShortArray max_orders; RealVector dim_pref;//isotropic for now: no XML spec
+  //NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
+  //  dim_pref, numVars, max_orders);
+
+  // the CV range for adapt_order is currently isotropic, so don't bother with
+  // dim_pref (for now)
+  unsigned short max_o = max_order();
+  UShortArray max_orders(numVars, max_o);
+
+  return regression_size(numVars, start_rank(), max_rank(), max_orders, max_o);
+}
+
+
+inline size_t SharedC3ApproxData::max_regression_size()
+{
+  //UShortArray max_orders; RealVector dim_pref;//isotropic for now: no XML spec
+  //NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
+  //  dim_pref, numVars, max_orders);
+
+  // the CV range for adapt_order is currently isotropic, so don't bother with
+  // dim_pref (for now)
+  size_t max_r = max_rank();  unsigned short max_o = max_order();
+  UShortArray max_orders(numVars, max_o);
+
+  return regression_size(numVars, max_r, max_r, max_orders, max_o);
+}
+
+
+inline void SharedC3ApproxData::max_rank_advancement(bool r_advance)
+{ c3MaxRankAdvance[activeKey] = r_advance; }
+
+
+inline void SharedC3ApproxData::max_order_advancement(bool o_advance)
+{ c3MaxOrderAdvance[activeKey] = o_advance; }
+
+
 inline void SharedC3ApproxData::
 set_parameter(String var, const UShortArray& val)
 {
-  if (var.compare("start_poly_order") == 0)    startOrders = val;
+  if (var.compare("start_order") == 0)         startOrders = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
 inline void SharedC3ApproxData::set_parameter(String var, unsigned short val)
 {
-  if (var.compare("max_poly_order")  == 0)        maxOrder = val;
+  if (var.compare("kick_order")     == 0)        kickOrder = val;
+  else if (var.compare("max_order") == 0)         maxOrder = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
@@ -464,7 +530,8 @@ inline void SharedC3ApproxData::set_parameter(String var, size_t val)
 
 inline void SharedC3ApproxData::set_parameter(String var, bool val)
 {
-  if (var.compare("adapt_rank") == 0)            adaptRank = val;
+  if (var.compare("adapt_rank") == 0)           adaptRank  = val;
+  else if (var.compare("adapt_order") == 0)     adaptOrder = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
@@ -502,8 +569,17 @@ inline void SharedC3ApproxData::set_parameter(String var, int val)
 inline void SharedC3ApproxData::
 set_active_parameter(String var, const UShortArray& val)
 {
-  if (var.compare("start_poly_order") == 0)
+  if (var.compare("start_order") == 0)
     { startOrdersMap[activeKey] = val; /*update_basis();*/ }
+  else Cerr << "Unrecognized C3 active parameter: " << var << std::endl;
+}
+
+
+inline void SharedC3ApproxData::
+set_active_parameter(String var, unsigned short val)
+{
+  if (var.compare("max_order") == 0)
+    { maxOrderMap[activeKey] = val; /*if (adaptOrder) update_basis();*/ }
   else Cerr << "Unrecognized C3 active parameter: " << var << std::endl;
 }
 

@@ -62,8 +62,6 @@ protected:
   // perform a forward uncertainty propagation using PCE/SC methods
   //void core_run();
 
-  bool advancement_available();
-
   void push_increment();
   void update_samples_from_order_increment();
   //void update_samples_from_order_decrement();
@@ -106,6 +104,9 @@ protected:
   /// Publish configuration data for initial function train cores, prior to
   /// any adaptation
   void push_c3_start_orders(const UShortArray& start_orders);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_max_order(unsigned short max_order);
   /// Publish random seed for internal C3 use
   void push_c3_seed(int seed);
 
@@ -133,6 +134,9 @@ private:
   //
   //- Heading: Member function definitions
   //
+
+  /// return the regression size used for different refinement options
+  size_t regression_size();
 
   //static int qoi_eval(size_t num_samp,        // number of evaluations
   // 			const double* var_sets, // num_vars x num_evals

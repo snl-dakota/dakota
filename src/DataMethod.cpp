@@ -115,9 +115,10 @@ DataMethodRep::DataMethodRep():
   useSurrogate("none"),
   // C3 FT
   maxCrossIterations(1), solverTol(1.e-10), solverRoundingTol(1.e-10),
-  statsRoundingTol(1.e-10), startOrder(2), maxOrder(USHRT_MAX),
-  startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
-  adaptRank(false), c3RefineType(NO_C3_REFINEMENT),
+  statsRoundingTol(1.e-10), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
+  adaptOrder(false), startRank(2), kickRank(1),
+  maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
+  c3RefineType(NO_C3_REFINEMENT),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -277,7 +278,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // C3 FT
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
-    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << startOrder << kickOrder << maxOrder << adaptOrder
+    << startRank  << kickRank  << maxRank  << adaptRank
     << c3RefineType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
@@ -325,7 +327,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
-    << importCandFormat << numCandidates << maxHifiEvals << batchSize << batchSizeExplore
+    << importCandFormat << numCandidates << maxHifiEvals
+    << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
     << dataDistType << dataDistCovInputType << dataDistMeans
@@ -440,7 +443,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // C3 FT
   s >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
-    >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
+    >> startOrder >> kickOrder >> maxOrder >> adaptOrder
+    >> startRank  >> kickRank  >> maxRank  >> adaptRank
     >> c3RefineType >> startOrderSeq >> startRankSeq;
 
   // NonD & DACE
@@ -488,7 +492,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> approxCorrectionOrder >> exportCorrModelFile >> exportCorrModelFormat
     >> exportCorrVarFile >> exportCorrVarFormat >> exportDiscrepFile
     >> exportDiscrepFormat >> adaptExpDesign >> importCandPtsFile
-    >> importCandFormat >> numCandidates >> maxHifiEvals >> batchSize >> batchSizeExplore
+    >> importCandFormat >> numCandidates >> maxHifiEvals
+    >> batchSize >> batchSizeExplore
     >> mutualInfoKSG2 >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> numPushforwardSamples
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
@@ -603,7 +608,8 @@ void DataMethodRep::write(std::ostream& s) const
 
   // C3 FT
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
-    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << startOrder << kickOrder << maxOrder << adaptOrder
+    << startRank  << kickRank  << maxRank  << adaptRank
     << c3RefineType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
@@ -651,7 +657,8 @@ void DataMethodRep::write(std::ostream& s) const
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
-    << importCandFormat << numCandidates << maxHifiEvals << batchSize << batchSizeExplore
+    << importCandFormat << numCandidates << maxHifiEvals
+    << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
     << dataDistType << dataDistCovInputType << dataDistMeans

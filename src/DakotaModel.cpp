@@ -3836,6 +3836,13 @@ void Model::clear_inactive()
 }
 
 
+bool Model::advancement_available()
+{
+  if (modelRep) return modelRep->advancement_available();
+  else          return true; // only a few cases throttle advancements
+}
+
+
 void Model::run_dace()
 {
   if (modelRep) // envelope fwd to letter

@@ -186,6 +186,8 @@ public:
   /// clear inactive approximation data
   virtual void clear_inactive();
 
+  /// query for available advancements in approximation resolution controls
+  virtual bool advancement_available();
   /// query for change in approximation formulation
   virtual bool formulation_updated() const;
 

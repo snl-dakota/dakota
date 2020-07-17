@@ -112,6 +112,10 @@ private:
   void push_c3_active(const UShortArray& orders);
   void push_c3_active();
 
+  /// return the regression size used for different refinement options;
+  /// the index identifies the point in the specification sequence 
+  size_t regression_size(size_t index);
+
   // scale sample profile to retain shape while enforcing an upper bound
   //void scale_profile(..., RealVector& new_N_l);
 
@@ -174,12 +178,15 @@ inline void NonDMultilevelFunctionTrain::
 push_c3_active(const UShortArray& orders)
 {
   push_c3_start_rank(start_rank());
-  push_c3_max_rank(maxRankSpec); // restore if adapted (no sequence)
+  push_c3_max_rank(maxRankSpec);    // restore if adapted (no sequence)
+
   push_c3_seed(random_seed());
 
   push_c3_start_orders(orders);
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
+  push_c3_max_order(maxOrderSpec); // restore if adapted (no sequence)
+  std::shared_ptr<SharedC3ApproxData> shared_data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(
+    uSpaceModel.shared_approximation().data_rep());
   shared_data_rep->update_basis(); // propagate order updates to oneApproxOpts
 }
 

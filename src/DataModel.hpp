@@ -56,8 +56,8 @@ enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS };
 // enums should not conflict
 enum { FT_LS, FT_RLS2 };//, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
 // define special values for c3RefineType
-enum { NO_C3_REFINEMENT=0, UNIFORM_START_ORDER, UNIFORM_START_RANK,
-       UNIFORM_MAX_RANK };
+enum { NO_C3_REFINEMENT=0, UNIFORM_START_RANK, UNIFORM_START_ORDER,
+       UNIFORM_MAX_RANK,   UNIFORM_MAX_ORDER,  UNIFORM_MAX_RANK_ORDER };
 
 
 /// Body class for model specification data.
@@ -399,8 +399,12 @@ public:
   bool tensorGridFlag;
   /// starting polynomial order
   unsigned short startOrder;
+  /// polynomial order increment when adapting
+  unsigned short kickOrder;
   /// maximum order of basis polynomials
   unsigned short maxOrder;
+  /// whether or not to adapt order by cross validation
+  bool adaptOrder;
   /// starting rank
   size_t startRank;
   /// rank increase increment

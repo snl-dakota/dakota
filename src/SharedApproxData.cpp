@@ -475,6 +475,13 @@ void SharedApproxData::combined_to_active(bool clear_combined)
 }
 
 
+bool SharedApproxData::advancement_available()
+{
+  if (dataRep) return dataRep->advancement_available();
+  else         return true; // only a few cases throttle advancements
+}
+
+
 void SharedApproxData::increment_order()
 {
   if (dataRep)

@@ -995,7 +995,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // if refinement opportunities have saturated (e.g., increments have reached
     // max{Order,Rank} or previous cross validation indicated better fit with
     // lower order), no candidates will be generated for this model key.
-    if (!advancement_available())
+    if (!uSpaceModel.advancement_available())
       { metric = 0.;  return std::numeric_limits<size_t>::max(); }
 
     RealVector stats_ref;
@@ -1510,13 +1510,12 @@ void NonDExpansion::greedy_multifidelity_expansion()
       best_step_metric = 0.; // kick out of loop
     }
     else {
+      Cout << "selected refinement = sequence step " << best_step+1
+	   << " candidate " << best_step_candidate+1 << '\n';
       step = best_step; // also updates form | lev
       configure_indices(step, form, lev, seq_index);
       select_candidate(best_step_candidate);
       push_candidate(best_stats_star); // update stats from best (no recompute)
-
-      Cout << "selected refinement indices = sequence step " << best_step+1
-	   << " candidate " << best_step_candidate+1 << '\n';
       print_results(Cout, INTERMEDIATE_RESULTS);
     }
   }

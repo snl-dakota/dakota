@@ -241,6 +241,9 @@ protected:
   /// clear inactive data stored in the approxInterface
   void clear_inactive();
 
+  /// query approxInterface for available advancements in order, rank, etc.
+  bool advancement_available();
+
   /// execute the DACE iterator to generate build data
   void run_dace();
 
@@ -705,6 +708,10 @@ inline bool DataFitSurrModel::push_available()
 
 inline void DataFitSurrModel::clear_inactive()
 { approxInterface.clear_inactive(); }
+
+
+inline bool DataFitSurrModel::advancement_available()
+{ return approxInterface.advancement_available(); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()

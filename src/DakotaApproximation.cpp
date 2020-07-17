@@ -800,6 +800,13 @@ Real Approximation::prediction_variance(const RealVector& c_vars)
 }
 
 
+bool Approximation::advancement_available()
+{
+  if (approxRep) return approxRep->advancement_available();
+  else           return true; // only a few cases throttle advancements
+}
+
+
 bool Approximation::diagnostics_available()
 {
   if (approxRep) // envelope fwd to letter

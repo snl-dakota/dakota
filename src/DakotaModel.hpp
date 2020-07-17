@@ -272,6 +272,10 @@ public:
   /// clear inactive approximations (finalization + combination completed)
   virtual void clear_inactive();
 
+  /// query the approximation for available advancement in resolution controls
+  /// (order, rank, etc.); an input to adaptive refinement strategies
+  virtual bool advancement_available();
+
   /// execute the DACE iterator (prior to building/appending the approximation)
   virtual void run_dace();
 

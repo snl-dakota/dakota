@@ -1110,8 +1110,7 @@ void Interface::export_approximation()
 }
 
 
-void Interface::
-rebuild_approximation(const BitArray& rebuild_fns)
+void Interface::rebuild_approximation(const BitArray& rebuild_fns)
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->rebuild_approximation(rebuild_fns);
@@ -1158,6 +1157,7 @@ bool Interface::push_available()
 	 << "support approximation data retrieval." << std::endl;
     abort_handler(-1);
   }
+
   return interfaceRep->push_available();
 }
 
@@ -1210,6 +1210,13 @@ void Interface::combined_to_active(bool clear_combined)
 }
 
 
+bool Interface::advancement_available()
+{
+  if (interfaceRep) return interfaceRep->advancement_available();
+  else              return true; // only a few cases throttle advancements
+}
+
+
 bool Interface::formulation_updated() const
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
@@ -1218,6 +1225,7 @@ bool Interface::formulation_updated() const
 	 << "formulations." << std::endl;
     abort_handler(-1);
   }
+
   return interfaceRep->formulation_updated();
 }
 
@@ -1225,28 +1233,28 @@ bool Interface::formulation_updated() const
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {
-  if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->cv_diagnostics(metric_types, num_folds);
-  else { // letter lacking redefinition of virtual fn.
+  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual cv_diagnostics()"
 	 << "function.\n       This interface does not "
 	 << "support cross-validation diagnostics." << std::endl;
     abort_handler(-1);
   }
+
+  return interfaceRep->cv_diagnostics(metric_types, num_folds);
 }
 
 
 RealArray Interface::challenge_diagnostics(const String& metric_type,
 					    const RealMatrix& challenge_pts)
 {
-  if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->challenge_diagnostics(metric_type, challenge_pts);
-  else { // letter lacking redefinition of virtual fn.
+  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual challenge_"
 	 << "diagnostics() function.\n       This interface does not "
 	 << "support challenge data diagnostics." << std::endl;
     abort_handler(-1);
   }
+
+  return interfaceRep->challenge_diagnostics(metric_type, challenge_pts);
 }
 
 

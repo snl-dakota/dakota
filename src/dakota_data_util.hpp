@@ -1241,6 +1241,32 @@ void x_y_pairs_to_x_set(
 // ---------------------------------
 // templated array utility functions
 // ---------------------------------
+
+
+template <typename ScalarType>
+inline ScalarType find_min(const std::vector<ScalarType>& vec)
+{
+  size_t i, len = vec.size();
+  ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
+  for (i=1; i<len; ++i)
+    if (vec[i] < min)
+      min = vec[i];
+  return min;
+}
+
+
+template <typename ScalarType>
+inline ScalarType find_max(const std::vector<ScalarType>& vec)
+{
+  size_t i, len = vec.size();
+  ScalarType max = (len) ? vec[0] : std::numeric_limits<ScalarType>::min();
+  for (i=1; i<len; ++i)
+    if (vec[i] > max)
+      max = vec[i];
+  return max;
+}
+
+
 #if defined(_MSC_VER)
 // MSE: this may be too generic and could hide special cases:
 //      can we rely on partial template specialization?

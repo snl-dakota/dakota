@@ -269,9 +269,11 @@
              <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
 	       <keyword  id="uniform4" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
 		 <oneOf label="Uniform Refinement Approach">
-		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}" label="order" />
-		   <!-- <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mdm(type,c3RefineType_UNIFORM_START_RANK)}" label="rank" /> -->
-		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}" label="rank" />
+		   <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mdm(type,c3RefineType_UNIFORM_START_RANK)}" label="refinement by increment in start rank" />
+		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}" label="refinement by increment in start order" />
+		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}" label="refinement by increment in max rank" />
+		   <keyword  id="increment_max_order" name="increment_max_order" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_ORDER)}" label="refinement by increment in max order" />
+		   <keyword  id="increment_max_rank_order" name="increment_max_rank_order" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}" label="refinement by increment in max rank and max order" />
 		 </oneOf>
 	       </keyword>
 	     </keyword>
@@ -781,10 +783,14 @@
 	     </oneOf>
 	     ' >
 
-    <!ENTITY ft_method_max_order '
-		  <keyword  id="max_order" name="max_order" code="{N_mdm(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
+    <!ENTITY ft_method_order_scalars '
+		  <keyword  id="kick_order" name="kick_order" code="{N_mdm(ushint,kickOrder)}" label="Increment when adapting polynomial basis order" help="" minOccurs="0" default="1">
+		    <param type="INTEGER" constraint="> 0" />
+		  </keyword>
+		  <keyword  id="max_order" name="max_order" code="{N_mdm(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="unsigned short max">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
+		  <keyword  id="adapt_order" name="adapt_order" code="{N_mdm(true,adaptOrder)}" label="Adapt polynomial basis order using cross validation" help="" minOccurs="0" default="false" />
 	     ' >
 
     <!ENTITY ft_method_order '
@@ -793,7 +799,7 @@
 		    <param type="INTEGER" constraint=">= 0" />
 		    &expansion_dim_pref;
 		  </keyword>
-		  &ft_method_max_order;
+		  &ft_method_order_scalars;
 	     ' >
 
     <!ENTITY mlft_method_order_sequence '
@@ -802,14 +808,14 @@
 		    <param type="INTEGERLIST" />
 		    &expansion_dim_pref;
 		  </keyword>
-		  &ft_method_max_order;
+		  &ft_method_order_scalars;
 	     ' >
 
-    <!ENTITY ft_method_adapt_rank '
-		  <keyword  id="kick_rank" name="kick_rank" code="{N_mdm(sizet,kickRank)}" label="Rank increase increment for adaptive schmes" help="" minOccurs="0" default="2">
-		    <param type="INTEGER" constraint=">= 0" />
+    <!ENTITY ft_method_rank_scalars '
+		  <keyword  id="kick_rank" name="kick_rank" code="{N_mdm(sizet,kickRank)}" label="Rank increment for adaptive schemes" help="" minOccurs="0" default="1">
+		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
-		  <keyword  id="max_rank" name="max_rank" code="{N_mdm(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
+		  <keyword  id="max_rank" name="max_rank" code="{N_mdm(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="size_t max">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mdm(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false" />
@@ -820,7 +826,7 @@
 		    <alias name="rank"/>
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  &ft_method_adapt_rank;
+		  &ft_method_rank_scalars;
 	     ' >
 
     <!ENTITY mlft_method_rank_sequence '
@@ -828,7 +834,7 @@
 		    <alias name="rank_sequence"/>
 		    <param type="INTEGERLIST" />
 		  </keyword>
-		  &ft_method_adapt_rank;
+		  &ft_method_rank_scalars;
 	     ' >
 
     <!ENTITY ft_method_tols '
@@ -844,9 +850,11 @@
              <keyword  id="p_refinement" name="p_refinement" code="{N_mom(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
 	       <keyword  id="uniform4" name="uniform" code="{N_mom(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
 		 <oneOf label="Uniform Refinement Approach">
-		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mom(type,c3RefineType_UNIFORM_START_ORDER)}" label="order" />
-		   <!-- <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mom(type,c3RefineType_UNIFORM_START_RANK)}" label="rank" /> -->
-		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}" label="rank" />
+		   <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mom(type,c3RefineType_UNIFORM_START_RANK)}" label="refinement by increment in start rank" />
+		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mom(type,c3RefineType_UNIFORM_START_ORDER)}" label="refinement by increment in start order" />
+		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}" label="refinement by increment in max rank" />
+		   <keyword  id="increment_max_order" name="increment_max_order" code="{N_mom(type,c3RefineType_UNIFORM_MAX_ORDER)}" label="refinement by increment in max order" />
+		   <keyword  id="increment_max_rank_order" name="increment_max_rank_order" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}" label="refinement by increment in max rank and max order" />
 		 </oneOf>
 	       </keyword>
 	     </keyword>
@@ -907,9 +915,13 @@
 		    <param type="INTEGER" constraint=">= 0" />
 		    &expansion_dim_pref;
 		  </keyword>
+		  <keyword  id="kick_order" name="kick_order" code="{N_mom(ushint,kickOrder)}" label="Increment when adapting polynomial basis order" help="" minOccurs="0" default="1">
+		    <param type="INTEGER" constraint="> 0" />
+		  </keyword>
 		  <keyword  id="max_order" name="max_order" code="{N_mom(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
+		  <keyword  id="adapt_order" name="adapt_order" code="{N_mom(true,adaptOrder)}" label="Adapt polynomial basis order using cross validation" help="" minOccurs="0" default="false" />
 	     ' >
 
     <!ENTITY ft_model_rank '
@@ -917,8 +929,8 @@
 		    <alias name="rank"/>
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="kick_rank" name="kick_rank" code="{N_mom(sizet,kickRank)}" label="Rank increase increment for adaptive schmes" help="" minOccurs="0" default="2">
-		    <param type="INTEGER" constraint=">= 0" />
+		  <keyword  id="kick_rank" name="kick_rank" code="{N_mom(sizet,kickRank)}" label="Rank increment for adaptive schemes" help="" minOccurs="0" default="2">
+		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="max_rank" name="max_rank" code="{N_mom(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
 		    <param type="INTEGER" constraint=">= 0" />
