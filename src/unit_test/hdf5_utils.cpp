@@ -15,7 +15,6 @@
 
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
-#include "BinaryIO_Helper.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp> 
 #include <Teuchos_SerialDenseHelpers.hpp>
