@@ -69,11 +69,32 @@ dakota::surrogates::PolynomialRegression gen_poly(const pybind11::dict& pydict)
 }
 
 
+/// explore idea of extension
 class PyPolyReg: public dakota::surrogates::PolynomialRegression
 {
+public:
+
+  PyPolyReg():
+    dakota::surrogates::PolynomialRegression()
+  { }
+
   PyPolyReg(const pybind11::dict& pydict):
     dakota::surrogates::PolynomialRegression(convert_options(pydict))
   { }
+
+  PyPolyReg(const Eigen::MatrixXd& samples,
+	    const Eigen::MatrixXd& response,
+	    const pybind11::dict& pydict):
+    dakota::surrogates::PolynomialRegression(samples, response,
+					     convert_options(pydict))
+  { }
+
+  Eigen::MatrixXd value(const Eigen::MatrixXd& eval_points)
+  {
+    Eigen::MatrixXd approx_values;
+    PolynomialRegression::value(eval_points, approx_values);
+    return approx_values;
+  }
 };
 
 
@@ -102,11 +123,14 @@ public:
   { }
 };
 
-// These both work, but won't work in the PYBIND11_MODULE
+// These both work for implicitly converting in C++,
+// but won't work in the PYBIND11_MODULE
 static ParameterList pl(pybind11::dict());
 static dakota::surrogates::PolynomialRegression pr(pybind11::dict());
 
 PYBIND11_MODULE(dakmod, m) {
+
+  // attempts to get implicit conversion working from the Python side
 
   py::class_<ParameterListExt>
     (m, "ParameterListExt")
@@ -118,6 +142,8 @@ PYBIND11_MODULE(dakmod, m) {
 
   //  py::implicitly_convertible<pybind11::dict, PyParameterList>();
   //  py::implicitly_convertible<pybind11::dict, ParameterListExt>();
+
+  // A direct wrapping of PolynomialRegression in which value doesn't work
 
   py::class_<dakota::surrogates::PolynomialRegression>
     (m, "PolynomialRegression")
@@ -149,9 +175,22 @@ PYBIND11_MODULE(dakmod, m) {
 //    .def(py::init<const Eigen::MatrixXd&, const Eigen::MatrixXd&,
 //	 const ParameterList&>())
     // can't return through arguments in Python like this
+    // or can we, just not create a new MatrixXd object?
     .def("value", &dakota::surrogates::PolynomialRegression::value);
     // workaround is like this (https://pybind11.readthedocs.io/en/stable/faq.html#limitations-involving-reference-arguments), but not sure how to apply to class
     //    [](int i) { int rv = foo(i); return std::make_tuple(rv, i); })
     //   .def("value", [](const Eigen::MatrixXd& samples) { Eigen::MatrixXd resp; dakota::surrogates::PolynomialRegression::value(samples, resp); return resp);
 
+
+  // Attempt to wrap an intermediate specialization
+
+  py::class_<PyPolyReg>
+    (m, "PyPolyReg")
+    //    m.doc() = "Dakota Surrogate class";
+    //    .def(py::init<const std::string &>())
+    .def(py::init<>())
+    .def(py::init<const pybind11::dict&>())
+    .def(py::init<const Eigen::MatrixXd&, const Eigen::MatrixXd&,
+	 const pybind11::dict&>())
+    .def("value", &PyPolyReg::value);
 }

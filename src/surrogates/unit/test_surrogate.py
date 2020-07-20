@@ -23,3 +23,10 @@ pr.value(eval_samples, eval_surr)
 
 print("Truth:\n{0}".format(eval_truth))
 print("Surrogate:\n{0}".format(eval_surr))
+
+
+pypr = dakmod.PyPolyReg(build_samples, build_response, {"max degree" : 2})
+eval_pypr = pypr.value(eval_samples)
+
+print("Truth:\n{0}".format(eval_truth))
+print("Surrogate PyPR:\n{0}".format(eval_pypr))
