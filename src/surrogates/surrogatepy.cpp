@@ -1,4 +1,16 @@
-//#include "Surrogate.hpp"
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+
+/** \file
+    Python module wrapping surrogates modules
+ */
+
 #include "SurrogatesPolynomialRegression.hpp"
 
 #include <pybind11/eigen.h> 
@@ -36,9 +48,10 @@ ParameterList convert_options(pybind11::dict pydict)
     // since Python list are allowed to be heterogeneous in general
     // could just support for homogeneous if important, and skip tuples.
 
-    // Can't do with ParameterList...    
-//    else if (pybind11::isinstance<pybind11::list>(value))
-//      pl.set(key, value.cast<std::vector<double>>());
+    // Can't do with ParameterList, perhaps as std::vector isn't serializable
+    //else if (pybind11::isinstance<pybind11::list>(value))
+    //  pl.set(key, value.cast<std::vector<double>>());
+
     // dict (recursive parameter list)
     else if (pybind11::isinstance<pybind11::dict>(value))
       pl.set(key, convert_options(value.cast<pybind11::dict>()));
@@ -51,25 +64,35 @@ ParameterList convert_options(pybind11::dict pydict)
 	std::runtime_error("dict2optslist: key '" + key + "' has unknown type: " +
 			   pybind11::str(value.get_type()).cast<std::string>());
 
-//    std::cout << "Key " << key << " ; type stored: "
-//	      << pl.get(key)->type().name() << std::endl;
+    // Can't guarantee all types are printable
+    //std::cout << "Key " << key << " ; type stored: "
+    //          << pl.get(key)->type().name() << std::endl;
   }
   return pl;
 }
 
 
 // BMA: Explored a number of approaches to avoid bleeding pybind11
-// code into the core surrogates modules. Attempting to maintain an
-// adapter model
+// datatypes and code into the core surrogates modules. Attempting to
+// maintain an adapter model for now.
 
-// Could have a free factory if we don't want to extend PR with a separate class
+
+/// A free factory that can be used in Python constructors to return a
+/// C++ surrogate model. This is one model that lets us avoid
+/// extending PolynomialRegression with a separate class or adding
+/// constructors that take pybind types.
 dakota::surrogates::PolynomialRegression gen_poly(const pybind11::dict& pydict)
 {
   return dakota::surrogates::PolynomialRegression(convert_options(pydict));
 }
 
 
-/// explore idea of extension
+/// Extend PolynomialRegression with a new type for Python
+/** Explore idea of extension as a way to specialize
+    constructors. Permits mapping datatypes for any member functions
+    or constructors that differ, while leaving most
+    untouched. Downside is requires new class for each surrogates
+    class. */
 class PyPolyReg: public dakota::surrogates::PolynomialRegression
 {
 public:
@@ -78,10 +101,12 @@ public:
     dakota::surrogates::PolynomialRegression()
   { }
 
+  /// ctor that accepts a dictionary
   PyPolyReg(const pybind11::dict& pydict):
     dakota::surrogates::PolynomialRegression(convert_options(pydict))
   { }
 
+  /// ctor that accepts a dictionary
   PyPolyReg(const Eigen::MatrixXd& samples,
 	    const Eigen::MatrixXd& response,
 	    const pybind11::dict& pydict):
@@ -89,6 +114,7 @@ public:
 					     convert_options(pydict))
   { }
 
+  /// Example workaround for default Eigen pass-by-copy semantics
   Eigen::MatrixXd value(const Eigen::MatrixXd& eval_points)
   {
     Eigen::MatrixXd approx_values;
@@ -98,23 +124,29 @@ public:
 };
 
 
-// Instead try simple conversion from dictionary to ParameterList
-// PolynomialRegression(ParameterList(PyParameterList(dict)))
+/// Induce conversion from dictionary to ParameterList
+/** Idea is to enable direct construction like this:
+    PolynomialRegression(pydict) via
+    PolynomialRegression(ParameterList(PyParameterList(pydict)))
+    which works in C++ as follows, but not in the PYBIND_MODULE
+*/
 class PyParameterList
 {
 public:
-  const pybind11::dict& pydict_;
   PyParameterList(const pybind11::dict& pydict):
     pydict_(pydict) {  }
   //  converts PyParameterList to ParameterList
   explicit operator ParameterList()
   { return ParameterList(convert_options(pydict_)); }
+private:
+  const pybind11::dict& pydict_;
 };
 
-// Attempt at specializing parameteter list with ParameterListExt
-// which can be constructed from dict and passes as parameter
-// list. Didn't add value as dictionary didn't get implicitly
-// converted through this type.
+
+/// Extend ParameterList with ParameterListExt
+/** This approach also allows construciton from pydict, but didn't add
+    value as dictionary didn't get implicitly converted through this
+    type in PYBIND11_MODULE constructors. */
 class ParameterListExt: public ParameterList
 {
 public:
@@ -123,15 +155,19 @@ public:
   { }
 };
 
-// These both work for implicitly converting in C++,
-// but won't work in the PYBIND11_MODULE
+
+// These both work for implicitly converting in C++, but won't work in
+// the PYBIND11_MODULE, even when I tried registering as implicit
+// converstions in Pybind11. It might be required (see docs and Github
+// issues) to publish all involved datatypes as Pybind11 types.
 static ParameterList pl(pybind11::dict());
 static dakota::surrogates::PolynomialRegression pr(pybind11::dict());
 
+
+/// Define a Python module called dakmod wrapping a few surrogates classes
 PYBIND11_MODULE(dakmod, m) {
 
   // attempts to get implicit conversion working from the Python side
-
   py::class_<ParameterListExt>
     (m, "ParameterListExt")
     .def(py::init<const pybind11::dict&>());
@@ -143,26 +179,30 @@ PYBIND11_MODULE(dakmod, m) {
   //  py::implicitly_convertible<pybind11::dict, PyParameterList>();
   //  py::implicitly_convertible<pybind11::dict, ParameterListExt>();
 
-  // A direct wrapping of PolynomialRegression in which value doesn't work
 
+  // A direct wrapping of PolynomialRegression in which value doesn't work
   py::class_<dakota::surrogates::PolynomialRegression>
     (m, "PolynomialRegression")
     //    m.doc() = "Dakota Surrogate class";
     //    .def(py::init<const std::string &>())
     .def(py::init<>())
-    // Try just options
+
+    // Try just options; doesn't compile due to no matching C++ ctor
     //.def(py::init<const pybind11::dict&>())
-    // Bind the factory function as a constructor:
+
+    // Bind the factory function as a constructor (works):
     //.def(py::init(&gen_poly))
+
     // Try direct init from dict
-//    .def(py::init<const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-//	 const pybind11::dict&>())
+    //.def(py::init<const Eigen::MatrixXd&, const Eigen::MatrixXd&,
+    //     const pybind11::dict&>())
 
-//    .def(py::init([](const pybind11::dict& d)
-//		  { return new dakota::surrogates::PolynomialRegression(d); }))
+    // Can put the factory in a lambda:
+    //.def(py::init([](const pybind11::dict& d)
+    //	   { return new dakota::surrogates::PolynomialRegression(d); }))
 
-    // WORKS!
-    //TODO: verify this is copy-constructible
+    // The following WORK!
+    //TODO: verify Surrogate classes are default copy-constructible
     .def(py::init([](const pybind11::dict& d)
 		  { return dakota::surrogates::
 		      PolynomialRegression(convert_options(d)); }))
@@ -172,17 +212,31 @@ PYBIND11_MODULE(dakmod, m) {
 		  { return dakota::surrogates::
 		      PolynomialRegression(samples, response,
 					   convert_options(d)); }))
-//    .def(py::init<const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-//	 const ParameterList&>())
-    // can't return through arguments in Python like this
-    // or can we, just not create a new MatrixXd object?
+    //.def(py::init<const Eigen::MatrixXd&, const Eigen::MatrixXd&,
+    //     const ParameterList&>())
+
+    // Initially thought we can't return through arguments in Python
+    // like this. Turns out just not for Eigen types which are default
+    // copied when passed by reference. Could workaround with a lambda
+    // for mapping to return by value.
     .def("value", &dakota::surrogates::PolynomialRegression::value);
-    // workaround is like this (https://pybind11.readthedocs.io/en/stable/faq.html#limitations-involving-reference-arguments), but not sure how to apply to class
-    //    [](int i) { int rv = foo(i); return std::make_tuple(rv, i); })
-    //   .def("value", [](const Eigen::MatrixXd& samples) { Eigen::MatrixXd resp; dakota::surrogates::PolynomialRegression::value(samples, resp); return resp);
+
+  // WORKAROUND (1) is like this (https://pybind11.readthedocs.io/en/stable/faq.html#limitations-involving-reference-arguments), but not sure how to apply to class
+  //    [](int i) { int rv = foo(i); return std::make_tuple(rv, i); })
+  //   .def("value", [](const Eigen::MatrixXd& samples) { Eigen::MatrixXd resp; dakota::surrogates::PolynomialRegression::value(samples, resp); return resp);
+
+  // WORKAROUND (2) requires changing API to accept reference, but requires care to get sizing and memory right:
+  // https://pybind11.readthedocs.io/en/stable/advanced/cast/eigen.html#pass-by-reference
+
+  // WORKAROUND (3) wouldn't use Eigen::Ref, but instead instruct Pybind11 to pass by reference. Long discussion in the pull request which enabled other ways: https://github.com/pybind/pybind11/pull/610 
 
 
-  // Attempt to wrap an intermediate specialization
+  // Alternate attempt to wrap an intermediate specialization (this WORKS)
+
+  // NOTE: May need to declare base classes both here and in above
+  //  pybind11::class_<Base> cl(m, "Base");
+  //  pybind11::class_<C> cl(m, "C", py::base<Base>());
+  // See: https://github.com/pybind/pybind11/issues/172
 
   py::class_<PyPolyReg>
     (m, "PyPolyReg")
@@ -192,5 +246,8 @@ PYBIND11_MODULE(dakmod, m) {
     .def(py::init<const pybind11::dict&>())
     .def(py::init<const Eigen::MatrixXd&, const Eigen::MatrixXd&,
 	 const pybind11::dict&>())
-    .def("value", &PyPolyReg::value);
+    .def("value", &PyPolyReg::value)//;
+    .def_static("load", static_cast<void (*)(const std::string&, const bool, PyPolyReg&)>(&dakota::surrogates::Surrogate::load));
+
+  // Load/save: TODO would probably want as a free static function?
 }
