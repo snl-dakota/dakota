@@ -55,9 +55,9 @@ enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS };
 // Note that C3 and Pecos are mutually exclusive: use of values from multiple
 // enums should not conflict
 enum { FT_LS, FT_RLS2 };//, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
-// define special values for c3RefineType
-enum { NO_C3_REFINEMENT=0, UNIFORM_START_RANK, UNIFORM_START_ORDER,
-       UNIFORM_MAX_RANK,   UNIFORM_MAX_ORDER,  UNIFORM_MAX_RANK_ORDER };
+// define special values for c3AdvanceType
+enum { NO_C3_ADVANCEMENT=0, START_RANK_ADVANCEMENT, START_ORDER_ADVANCEMENT,
+       MAX_RANK_ADVANCEMENT, MAX_ORDER_ADVANCEMENT, MAX_RANK_ORDER_ADVANCEMENT};
 
 
 /// Body class for model specification data.
@@ -413,9 +413,9 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
-  /// quantity to increment (start order, start rank, max rank) for FT
-  /// uniform p-refinement
-  short c3RefineType;
+  /// quantity to increment (start rank, start order, max rank, max order,
+  /// max rank + max order) for FT (uniform) p-refinement
+  short c3AdvanceType;
 
   /// number of data points used in FT construction by regression
   size_t collocationPoints;

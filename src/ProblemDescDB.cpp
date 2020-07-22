@@ -2677,7 +2677,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       // must be sorted by string (key)
 	{"iterator_scheduling", P iteratorScheduling},
 	{"nond.allocation_target", P allocationTarget},
-        {"nond.c3function_train.uniform_refinement_type", P c3RefineType},
+        {"nond.c3function_train.advancement_type", P c3AdvanceType},
 	{"nond.correction_order", P approxCorrectionOrder},
 	{"nond.covariance_control", P covarianceControl},
 	{"nond.distribution", P distributionType},
@@ -2716,9 +2716,9 @@ short ProblemDescDB::get_short(const String& entry_name) const
     #define P &DataModelRep::
     static KW<short, DataModelRep> Shdmo[] = {
       // must be sorted by string (key)
+        {"c3function_train.advancement_type", P c3AdvanceType},
 	{"c3function_train.refinement_control", P refinementControl},
 	{"c3function_train.refinement_type", P refinementType},
-        {"c3function_train.uniform_refinement_type", P c3RefineType},
 	{"nested.iterator_scheduling", P subMethodScheduling},
 	{"surrogate.correction_order", P approxCorrectionOrder},
 	{"surrogate.correction_type", P approxCorrectionType},

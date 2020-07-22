@@ -54,7 +54,7 @@ DataModelRep::DataModelRep():
   tensorGridFlag(false), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
   adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
-  c3RefineType(NO_C3_REFINEMENT),
+  c3AdvanceType(NO_C3_ADVANCEMENT),
   collocationPoints(std::numeric_limits<size_t>::max()), collocationRatio(0.),
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   autoRefine(false), maxFunctionEvals(1000),
@@ -99,7 +99,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank << kickRank << maxRank << adaptRank << c3RefineType
+    << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
     << collocationPoints << collocationRatio
     << refinementType << refinementControl
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
@@ -146,7 +146,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> regressionType >> regressionL2Penalty >> maxSolverIterations
     >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
     >> tensorGridFlag >> startOrder >> kickOrder >> maxOrder >> adaptOrder
-    >> startRank >> kickRank >> maxRank >> adaptRank >> c3RefineType
+    >> startRank >> kickRank >> maxRank >> adaptRank >> c3AdvanceType
     >> collocationPoints >> collocationRatio
     >> refinementType >> refinementControl
     >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
@@ -193,7 +193,7 @@ void DataModelRep::write(std::ostream& s) const
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank << kickRank << maxRank << adaptRank << c3RefineType
+    << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
     << collocationPoints << collocationRatio
     << refinementType << refinementControl
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds

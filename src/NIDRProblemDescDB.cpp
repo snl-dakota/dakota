@@ -6975,7 +6975,7 @@ static bool
 	MP_(wilksFlag);
 
 static short
-	MP_(c3RefineType),
+	MP_(c3AdvanceType),
         MP_(expansionType),
 	MP_(nestingOverride),
 	MP_(refinementType),
@@ -7041,11 +7041,11 @@ static size_t
 static Method_mp_type
 	MP2s(allocationTarget,TARGET_MEAN),
 	MP2s(allocationTarget,TARGET_VARIANCE),
-	MP2s(c3RefineType,UNIFORM_START_ORDER),
-	MP2s(c3RefineType,UNIFORM_START_RANK),
-	MP2s(c3RefineType,UNIFORM_MAX_ORDER),
-	MP2s(c3RefineType,UNIFORM_MAX_RANK),
-	MP2s(c3RefineType,UNIFORM_MAX_RANK_ORDER),
+	MP2s(c3AdvanceType,MAX_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,MAX_RANK_ADVANCEMENT),
+	MP2s(c3AdvanceType,MAX_RANK_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,START_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,START_RANK_ADVANCEMENT),
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
@@ -7373,11 +7373,11 @@ static Model_mp_type
 	MP2s(approxCorrectionType,ADDITIVE_CORRECTION),
 	MP2s(approxCorrectionType,COMBINED_CORRECTION),
 	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
-	MP2s(c3RefineType,UNIFORM_START_ORDER),
-	MP2s(c3RefineType,UNIFORM_START_RANK),
-	MP2s(c3RefineType,UNIFORM_MAX_ORDER),
-	MP2s(c3RefineType,UNIFORM_MAX_RANK),
-	MP2s(c3RefineType,UNIFORM_MAX_RANK_ORDER),
+	MP2s(c3AdvanceType,MAX_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,MAX_RANK_ADVANCEMENT),
+	MP2s(c3AdvanceType,MAX_RANK_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,START_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,START_RANK_ADVANCEMENT),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
 	MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
@@ -7519,7 +7519,7 @@ static unsigned short
 static short
 	MP_(annNodes),
 	MP_(annRandomWeight),
-	MP_(c3RefineType),
+	MP_(c3AdvanceType),
 	MP_(krigingFindNugget),
 	MP_(krigingMaxTrials),
 	MP_(marsMaxBases),

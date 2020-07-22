@@ -77,7 +77,8 @@ protected:
 
   /// check model definition (redirect function_train model to surr-based UQ)
   void check_surrogate();
-  /// assign c3RefineType based on refine{type,Control} and adapt_rank
+  /// assign c3AdvancementType based on user inputs for adapt_{rank,order}
+  /// (fine-grained augmentation to refine{Type,Control} = uniform p-refinement)
   void resolve_refinement();
 
   /// configure u_space_sampler and approx_type based on regression
@@ -126,8 +127,9 @@ protected:
   /// scalar specification for maximum basis order (bounds uniform refinement)
   unsigned short maxOrderSpec;
 
-  /// type of (uniform) refinement: UNIFORM_{START_ORDER,START_RANK,MAX_RANK}
-  short c3RefineType;
+  /// type of advancement used by (uniform) refinement: START_{RANK,ORDER} or
+  /// MAX_{RANK,ORDER,RANK_ORDER}
+  short c3AdvancementType;
 
 private:
 

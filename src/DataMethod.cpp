@@ -118,7 +118,7 @@ DataMethodRep::DataMethodRep():
   statsRoundingTol(1.e-10), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
   adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
-  c3RefineType(NO_C3_REFINEMENT),
+  c3AdvanceType(NO_C3_ADVANCEMENT),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -280,7 +280,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << startOrder << kickOrder << maxOrder << adaptOrder
     << startRank  << kickRank  << maxRank  << adaptRank
-    << c3RefineType << startOrderSeq << startRankSeq;
+    << c3AdvanceType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
@@ -445,7 +445,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
     >> startOrder >> kickOrder >> maxOrder >> adaptOrder
     >> startRank  >> kickRank  >> maxRank  >> adaptRank
-    >> c3RefineType >> startOrderSeq >> startRankSeq;
+    >> c3AdvanceType >> startOrderSeq >> startRankSeq;
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
@@ -610,7 +610,7 @@ void DataMethodRep::write(std::ostream& s) const
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << startOrder << kickOrder << maxOrder << adaptOrder
     << startRank  << kickRank  << maxRank  << adaptRank
-    << c3RefineType << startOrderSeq << startRankSeq;
+    << c3AdvanceType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
