@@ -11,6 +11,7 @@
     Python module wrapping surrogates modules
  */
 
+#include "SurrogatesGaussianProcess.hpp"
 #include "SurrogatesPolynomialRegression.hpp"
 
 #include <pybind11/eigen.h> 
@@ -185,8 +186,12 @@ PYBIND11_MODULE(dakmod, m) {
   //  py::implicitly_convertible<pybind11::dict, ParameterListExt>();
 
   /* This one works */
-  m.def("load_poly", 
+  m.def("load_poly",
     static_cast<void (*)(const std::string&, const bool, dakota::surrogates::PolynomialRegression&)>
+    (&dakota::surrogates::Surrogate::load));
+
+  m.def("load_gp",
+    static_cast<void (*)(const std::string&, const bool, dakota::surrogates::GaussianProcess&)>
     (&dakota::surrogates::Surrogate::load));
 
   /* Doesn't work with Surrogate (base class) *
@@ -225,7 +230,7 @@ PYBIND11_MODULE(dakmod, m) {
 		  { return dakota::surrogates::
 		      PolynomialRegression(convert_options(d)); }))
     .def(py::init([](const Eigen::MatrixXd& samples,
-		     const Eigen::MatrixXd& response, 
+		     const Eigen::MatrixXd& response,
 		     const pybind11::dict& d)
 		  { return dakota::surrogates::
 		      PolynomialRegression(samples, response,
@@ -238,15 +243,15 @@ PYBIND11_MODULE(dakmod, m) {
     // copied when passed by reference. Could workaround with a lambda
     // for mapping to return by value.
     // DTS: value call with single argument now returns a MatrixXd
-    .def("value", 
+    .def("value",
       py::detail::overload_cast_impl<const Eigen::MatrixXd&>()
       (&dakota::surrogates::PolynomialRegression::value))
 
-    .def("gradient", 
+    .def("gradient",
       py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
       (&dakota::surrogates::PolynomialRegression::gradient))
 
-    .def("hessian", 
+    .def("hessian",
       py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
       (&dakota::surrogates::PolynomialRegression::hessian));
 
@@ -277,6 +282,33 @@ PYBIND11_MODULE(dakmod, m) {
 	 const pybind11::dict&>())
     .def("value", &PyPolyReg::value)
     .def_static("load", static_cast<void (*)(const std::string&, const bool, PyPolyReg&)>(&dakota::surrogates::Surrogate::load));
-
   // Load/save: TODO would probably want as a free static function?
+
+  py::class_<dakota::surrogates::GaussianProcess>
+    (m, "GaussianProcess")
+
+    .def(py::init<>())
+
+    .def(py::init([](const pybind11::dict& d)
+		  { return dakota::surrogates::
+		      GaussianProcess(convert_options(d)); }))
+
+    .def(py::init([](const Eigen::MatrixXd& samples,
+		     const Eigen::MatrixXd& response,
+		     const pybind11::dict& d)
+		  { return dakota::surrogates::
+		      GaussianProcess(samples, response,
+					   convert_options(d)); }))
+
+    .def("value",
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&>()
+      (&dakota::surrogates::GaussianProcess::value))
+
+    .def("gradient",
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
+      (&dakota::surrogates::GaussianProcess::gradient))
+
+    .def("hessian",
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
+      (&dakota::surrogates::GaussianProcess::hessian));
 }

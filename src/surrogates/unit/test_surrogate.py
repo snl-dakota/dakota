@@ -54,3 +54,18 @@ dakmod.load_poly("exported_poly.response_fn_1.txt", False, pyprload)
 eval_loaded = pyprload.value(eval_samples)
 print("Truth:\n{0}".format(eval_truth))
 print("Loaded Surrogate:\n{0}".format(eval_loaded))
+
+# try the GP
+nugget_opts = {"estimate nugget" : True}
+config_opts = {"scaler name" : "none", "Nugget" : nugget_opts }
+gp = dakmod.GaussianProcess(build_samples, build_response, config_opts)
+
+gp_eval_surr = gp.value(eval_samples)
+print("Truth:\n{0}".format(eval_truth))
+print("GP value:\n{0}\n".format(gp_eval_surr))
+
+eval_grad = gp.gradient(dpoint,0)
+print("GP gradient:\n{0}\n".format(eval_grad))
+
+eval_hessian = gp.hessian(dpoint,0)
+print("GP Hessian:\n{0}\n".format(eval_hessian))
