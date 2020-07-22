@@ -28,7 +28,7 @@ ParameterList convert_options(pybind11::dict pydict)
   // this assumes di.first is convertible to string and di.second is
   // convertible to a C++ type
   // This isn't there yet, as the second will have type pybind11::handle
-  for (auto di : pydict) {
+  for (const auto &di : pydict) {
     auto key = di.first.cast<std::string>();
     auto value = di.second;
     
@@ -53,8 +53,11 @@ ParameterList convert_options(pybind11::dict pydict)
     //  pl.set(key, value.cast<std::vector<double>>());
 
     // dict (recursive parameter list)
-    else if (pybind11::isinstance<pybind11::dict>(value))
+    /* would this work? */
+    else if (pybind11::isinstance<pybind11::dict>(value)) {
       pl.set(key, convert_options(value.cast<pybind11::dict>()));
+      //pl.sublist(key).set(convert_options(value.cast<pybind11::dict>()));
+    }
     // NumPy array to Eigen MatrixXd
     // TODO: Other datatypes such as intmatrix would be easy
     else if (pybind11::isinstance<pybind11::array>(value))
@@ -117,9 +120,12 @@ public:
   /// Example workaround for default Eigen pass-by-copy semantics
   Eigen::MatrixXd value(const Eigen::MatrixXd& eval_points)
   {
+    /*
     Eigen::MatrixXd approx_values;
     PolynomialRegression::value(eval_points, approx_values);
     return approx_values;
+    */
+    return dakota::surrogates::PolynomialRegression::value(eval_points);
   }
 };
 
@@ -163,7 +169,6 @@ public:
 static ParameterList pl(pybind11::dict());
 static dakota::surrogates::PolynomialRegression pr(pybind11::dict());
 
-
 /// Define a Python module called dakmod wrapping a few surrogates classes
 PYBIND11_MODULE(dakmod, m) {
 
@@ -178,6 +183,19 @@ PYBIND11_MODULE(dakmod, m) {
 
   //  py::implicitly_convertible<pybind11::dict, PyParameterList>();
   //  py::implicitly_convertible<pybind11::dict, ParameterListExt>();
+
+  /* This one works */
+  m.def("load_poly", 
+    static_cast<void (*)(const std::string&, const bool, dakota::surrogates::PolynomialRegression&)>
+    (&dakota::surrogates::Surrogate::load));
+
+  /* Doesn't work with Surrogate (base class) *
+   * probably need to add some info about the relationship between classes */
+  /*
+  m.def("load", 
+    static_cast<void (*)(const std::string&, const bool, dakota::surrogates::Surrogate&)>
+    (&dakota::surrogates::Surrogate::load));
+   */
 
 
   // A direct wrapping of PolynomialRegression in which value doesn't work
@@ -219,7 +237,18 @@ PYBIND11_MODULE(dakmod, m) {
     // like this. Turns out just not for Eigen types which are default
     // copied when passed by reference. Could workaround with a lambda
     // for mapping to return by value.
-    .def("value", &dakota::surrogates::PolynomialRegression::value);
+    // DTS: value call with single argument now returns a MatrixXd
+    .def("value", 
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&>()
+      (&dakota::surrogates::PolynomialRegression::value))
+
+    .def("gradient", 
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
+      (&dakota::surrogates::PolynomialRegression::gradient))
+
+    .def("hessian", 
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
+      (&dakota::surrogates::PolynomialRegression::hessian));
 
   // WORKAROUND (1) is like this (https://pybind11.readthedocs.io/en/stable/faq.html#limitations-involving-reference-arguments), but not sure how to apply to class
   //    [](int i) { int rv = foo(i); return std::make_tuple(rv, i); })
@@ -246,7 +275,7 @@ PYBIND11_MODULE(dakmod, m) {
     .def(py::init<const pybind11::dict&>())
     .def(py::init<const Eigen::MatrixXd&, const Eigen::MatrixXd&,
 	 const pybind11::dict&>())
-    .def("value", &PyPolyReg::value)//;
+    .def("value", &PyPolyReg::value)
     .def_static("load", static_cast<void (*)(const std::string&, const bool, PyPolyReg&)>(&dakota::surrogates::Surrogate::load));
 
   // Load/save: TODO would probably want as a free static function?

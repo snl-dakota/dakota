@@ -37,9 +37,19 @@ void Surrogate::gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi) {
   throw(std::runtime_error("Surrogate does not implement gradient(...)"));
 }
 
+MatrixXd Surrogate::gradient(const MatrixXd &samples, int qoi) {
+  silence_unused_args(samples, qoi);
+  throw(std::runtime_error("Surrogate does not implement gradient(...)"));
+}
+
 /* returns num_vars by num_vars for a single sample and a given qoi */
 void Surrogate::hessian(const MatrixXd &samples, MatrixXd &hessian, int qoi) {
   silence_unused_args(samples, hessian, qoi);
+  throw(std::runtime_error("Surrogate does not implement hessian(...)"));
+}
+
+MatrixXd Surrogate::hessian(const MatrixXd &samples, int qoi) {
+  silence_unused_args(samples, qoi);
   throw(std::runtime_error("Surrogate does not implement hessian(...)"));
 }
 
