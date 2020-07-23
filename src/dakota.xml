@@ -1758,7 +1758,7 @@
                 <keyword  id="method_name_list1" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
                   <keyword  id="model_pointer_list1" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers"  minOccurs="0" >
-                    <param type="STRING" />
+                    <param type="STRINGLIST" />
                   </keyword>
                 </keyword>
                 <keyword  id="method_pointer_list1" name="method_pointer_list" code="{N_mdm(strL,hybridMethodPointers)}" label="List of method pointers"   >

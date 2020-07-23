@@ -135,7 +135,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     ( collaborative {N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}
       ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
-        [ model_pointer_list STRING {N_mdm(strL,hybridModelPointers)} ]
+        [ model_pointer_list STRINGLIST {N_mdm(strL,hybridModelPointers)} ]
        )
       |
       method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
