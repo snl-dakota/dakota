@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014 Sandia Corporation.
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -27,6 +27,13 @@ dakota_add_unit_test(NAME MathToolsTest
 
 target_include_directories(MathToolsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_link_libraries(MathToolsTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
+
+dakota_add_unit_test(NAME MetricsTest
+  SOURCES util_test_driver.cpp MetricsTest.cpp
+  )
+
+target_include_directories(MetricsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
+target_link_libraries(MetricsTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
 
 
 dakota_add_unit_test(NAME TeuchosEigenConversionTest

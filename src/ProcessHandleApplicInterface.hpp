@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -214,7 +214,7 @@ inline void ProcessHandleApplicInterface::ofilter_argument_list()
 
 inline void ProcessHandleApplicInterface::driver_argument_list(int analysis_id)
 {
-  std::string tag_str = "." + boost::lexical_cast<std::string>(analysis_id);
+  std::string tag_str = "." + std::to_string(analysis_id);
   argList[0] = programNames[analysis_id-1];
   argList[1] = (multipleParamsFiles) ? paramsFileName+tag_str : paramsFileName;
   argList[2] = (programNames.size() > 1) ? resultsFileName+tag_str :

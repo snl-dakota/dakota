@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -15,7 +15,6 @@
 #include "dakota_data_io.hpp"
 #include "pecos_global_defs.hpp"
 
-
 namespace Dakota {
 
 DataModelRep::DataModelRep():
@@ -27,7 +26,7 @@ DataModelRep::DataModelRep():
   importBuildFormat(TABULAR_ANNOTATED),  importUseVariableLabels(false),
   importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
-  exportApproxFormat(TABULAR_ANNOTATED), numRestarts(20),
+  exportApproxFormat(TABULAR_ANNOTATED), numRestarts(10),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
   krigingNugget(0.0), krigingFindNugget(0), mlsWeightFunction(0),
@@ -51,17 +50,18 @@ DataModelRep::DataModelRep():
   decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
   subspaceIdCVMethod(CV_ID_DEFAULT), regressionType(FT_LS),
   regressionL2Penalty(0.), maxSolverIterations(-1), maxCrossIterations(1),
-  solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-8),
-  tensorGridFlag(false), startOrder(2), maxOrder(USHRT_MAX),
-  startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
-  adaptRank(false), c3RefineType(NO_C3_REFINEMENT),
+  solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
+  tensorGridFlag(false), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
+  adaptOrder(false), startRank(2), kickRank(1),
+  maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
+  c3RefineType(NO_C3_REFINEMENT),
   collocationPoints(std::numeric_limits<size_t>::max()), collocationRatio(0.),
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
-  analyticCovIdForm(NOCOVAR), referenceCount(1)
+  analyticCovIdForm(NOCOVAR)
 { }
 
 
@@ -97,8 +97,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
     << regressionType << regressionL2Penalty << maxSolverIterations
-    << maxCrossIterations << solverTol << roundingTol << arithmeticTol
-    << tensorGridFlag << startOrder << maxOrder
+    << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
+    << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
     << startRank << kickRank << maxRank << adaptRank << c3RefineType
     << collocationPoints << collocationRatio
     << refinementType << refinementControl
@@ -144,8 +144,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> subspaceIdConstantine >> subspaceIdEnergy >> subspaceBuildSurrogate
     >> subspaceDimension >> subspaceNormalization >> numReplicates
     >> regressionType >> regressionL2Penalty >> maxSolverIterations
-    >> maxCrossIterations >> solverTol >> roundingTol >> arithmeticTol
-    >> tensorGridFlag >> startOrder >> maxOrder
+    >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
+    >> tensorGridFlag >> startOrder >> kickOrder >> maxOrder >> adaptOrder
     >> startRank >> kickRank >> maxRank >> adaptRank >> c3RefineType
     >> collocationPoints >> collocationRatio
     >> refinementType >> refinementControl
@@ -191,8 +191,8 @@ void DataModelRep::write(std::ostream& s) const
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
     << regressionType << regressionL2Penalty << maxSolverIterations
-    << maxCrossIterations << solverTol << roundingTol << arithmeticTol
-    << tensorGridFlag << startOrder << maxOrder
+    << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
+    << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
     << startRank << kickRank << maxRank << adaptRank << c3RefineType
     << collocationPoints << collocationRatio
     << refinementType << refinementControl
@@ -207,71 +207,22 @@ void DataModelRep::write(std::ostream& s) const
 
 
 DataModel::DataModel(): dataModelRep(new DataModelRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataModel::DataModel(), dataModelRep referenceCount = "
-       << dataModelRep->referenceCount << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
-DataModel::DataModel(const DataModel& data_model)
-{
-  // Increment new (no old to decrement)
-  dataModelRep = data_model.dataModelRep;
-  if (dataModelRep) // Check for an assignment of NULL
-    ++dataModelRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataModel::DataModel(DataModel&)" << std::endl;
-  if (dataModelRep)
-    Cout << "dataModelRep referenceCount = " << dataModelRep->referenceCount
-	 << std::endl;
-#endif
-}
+DataModel::DataModel(const DataModel& data_model):
+  dataModelRep(data_model.dataModelRep)
+{ /* empty ctor */ }
 
 
 DataModel& DataModel::operator=(const DataModel& data_model)
 {
-  if (dataModelRep != data_model.dataModelRep) { // normal case: old != new
-    // Decrement old
-    if (dataModelRep) // Check for NULL
-      if ( --dataModelRep->referenceCount == 0 ) 
-	delete dataModelRep;
-    // Assign and increment new
-    dataModelRep = data_model.dataModelRep;
-    if (dataModelRep) // Check for NULL
-      ++dataModelRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataModel::operator=(DataModel&)" << std::endl;
-  if (dataModelRep)
-    Cout << "dataModelRep referenceCount = " << dataModelRep->referenceCount
-	 << std::endl;
-#endif
-
+  dataModelRep = data_model.dataModelRep;
   return *this;
 }
 
 
 DataModel::~DataModel()
-{
-  if (dataModelRep) { // Check for NULL
-    --dataModelRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "dataModelRep referenceCount decremented to "
-         << dataModelRep->referenceCount << std::endl;
-#endif
-    if (dataModelRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataModelRep" << std::endl;
-#endif
-      delete dataModelRep;
-    }
-  }
-}
+{ /* empty dtor*/ }
 
 } // namespace Dakota

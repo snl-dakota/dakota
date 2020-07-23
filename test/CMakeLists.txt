@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014 Sandia Corporation.
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -206,11 +206,6 @@ include_directories(
 )
 
 remove_definitions("-DHAVE_CONFIG_H")
-
-check_include_file(unistd.h HAVE_UNISTD_H)
-if(HAVE_UNISTD_H)
-  add_definitions("-DHAVE_UNISTD_H")
-endif(HAVE_UNISTD_H)
 
 if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 

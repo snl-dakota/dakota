@@ -1,18 +1,23 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "common_utils.hpp"
-#include "GaussianProcess.hpp"
+#include "util_common.hpp"
+#include "SurrogatesGaussianProcess.hpp"
 #include "surrogates_tools.hpp"
 #include "util_data_types.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/filesystem.hpp>
 #include <fstream>
 
 // BMA TODO: Review with team for best practice
@@ -434,8 +439,11 @@ int test_gp(double atol){
 
   GaussianProcess gp_2D_quad(samples_list[0], responses_list[0], pl_2D_quad);
   gp_2D_quad.value(eval_pts_2D, pred_2D);
-  gp_2D.gradient(eval_point, gp_grad);
-  gp_2D.hessian(eval_point, gp_hessian);
+  // BMA/DTS TODO: Is this a bug, should be gp_2D_quad ?!?
+  // It might explain why my tests below failed with same gold
+  // (see bottom of file)
+  gp_2D_quad.gradient(eval_point, gp_grad);
+  gp_2D_quad.hessian(eval_point, gp_hessian);
 
   if (print_output) {
     std::cout << "\n2D trend gp gradient:\n";
@@ -457,25 +465,53 @@ int test_gp(double atol){
   }
 
   gold_value_2D << 0.77987534, 0.84715045, 0.74437935, 0.74654155;
-  gold_gp_grad << -0.312808, -0.25431;
-  gold_gp_hessian << 0.874524,  0.101448, 0.101448, -0.842713;
+  gold_gp_grad << -0.312998265, -0.25777615;
+  gold_gp_hessian << 0.86763171, 0.10209617, 0.10209617, -0.84260876;
 
-  if (!matrix_equals(pred_2D,gold_value_2D,atol)){
+  if (!matrix_equals(pred_2D, gold_value_2D, atol)){
     std::cout << "16\n";
     return 16;
   }
 
-  if (!matrix_equals(gp_grad,gold_gp_grad,atol)){
+  if (!matrix_equals(gp_grad, gold_gp_grad, atol)){
     std::cout << "17\n";
     return 17;
   }
 
-  if (!matrix_equals(gp_hessian,gold_gp_hessian,atol)){
+  if (!matrix_equals(gp_hessian, gold_gp_hessian, atol)){
     std::cout << "18\n";
     return 18;
   }
 
   std::cout << "\n\n";
+
+  return 0;
+}
+
+int test_gp_read_from_parameterlist() {
+  // Test reading from a ParameterList XML file.
+  std::string test_parameterlist_file = "gp_test_data/GP_test_parameterlist.xml";
+  GaussianProcess gp(test_parameterlist_file);
+
+  ParameterList plist;
+  gp.get_options(plist);
+
+  if ( plist.get<std::string>("scaler name") != "standardization" ) return 1;
+  if ( plist.get<int>("num restarts") != 10 )                       return 2;
+  if ( plist.get<int>("gp seed") != 42 )                            return 3;
+  
+  const ParameterList plist_nugget = plist.get<ParameterList>("Nugget");
+  if ( plist_nugget.get<double>("fixed nugget") - 9.99999999999999980e-13 > 1e-14 ) return 4;
+  if ( plist_nugget.get<bool>("estimate nugget") )                                  return 5;
+
+  const ParameterList plist_trend = plist.get<ParameterList>("Trend");
+  if ( plist_trend.get<bool>("estimate trend") ) return 6;
+
+  const ParameterList plist_options = plist_trend.get<ParameterList>("Options");
+  if ( plist_options.get<int>("max degree") != 2 )                         return 7;
+  if ( plist_options.get<double>("p-norm") - 1.0 > 1e-4 )                  return 8;
+  if ( plist_options.get<std::string>("scaler type") != "none" )           return 9;
+  if ( plist_options.get<std::string>("regression solver type") != "SVD" ) return 10;
 
   return 0;
 }
@@ -490,6 +526,116 @@ int test_gp(double atol){
 TEUCHOS_UNIT_TEST(surrogates, gaussian_process)
 {
   TEST_ASSERT(!test_gp(5e-7));
+
+  int result = test_gp_read_from_parameterlist();
+  // std::cout << "result: " << result << std::endl;
+  TEST_ASSERT(result == 0);
+}
+
+// Based on 2-D GP with trend and nugget estimation to verify more class members
+TEUCHOS_UNIT_TEST(surrogates, gaussian_process_saveload)
+{
+
+  // Build, serialize, then run tests
+
+  /* bounds */
+  /* 64 pts - herbie and smooth herbie */
+  VectorXd sigma_bounds(2);
+  sigma_bounds(0) = 1.0e-2;
+  sigma_bounds(1) = 1.0e+2;
+
+  MatrixXd length_scale_bounds(1,2);
+  length_scale_bounds.resize(2,2);
+  length_scale_bounds(0,0) = 1.0e-2;
+  length_scale_bounds(1,0) = 1.0e-2;
+  length_scale_bounds(0,1) = 1.0e+2;
+  length_scale_bounds(1,1) = 1.0e+2;
+
+  /* test a 2D gp with a quadratic trend and nugget estimation */
+  ParameterList pl_2D_quad("2D Quadratic GP with Nugget Estimation Test Parameters");
+  pl_2D_quad.set("scaler name","standardization");
+  pl_2D_quad.set("num restarts", 20);
+  pl_2D_quad.sublist("Nugget").set("fixed nugget", 0.0);
+  pl_2D_quad.set("gp seed", 42);
+  pl_2D_quad.set("sigma bounds", sigma_bounds);
+  pl_2D_quad.set("length-scale bounds", length_scale_bounds);
+  pl_2D_quad.sublist("Nugget").set("estimate nugget", true);
+  pl_2D_quad.sublist("Trend").set("estimate trend", true);
+  pl_2D_quad.sublist("Trend").sublist("Options").set("max degree", 2);
+
+  int num_qoi = 1; // only using 1 for now
+  int num_datasets = 1;
+  int num_vars = 2;
+  int num_samples = 64;
+
+  std::string samples_fname = "gp_test_data/lhs_data_64.txt";
+  std::vector<MatrixXd> samples_list;
+  populateMatricesFromFile(samples_fname,samples_list,num_datasets,num_vars,num_samples);
+
+  std::string responses_fname = "gp_test_data/smooth_herbie_64.txt";
+  std::vector<MatrixXd> responses_list;
+  populateMatricesFromFile(responses_fname,responses_list,num_datasets,num_qoi,num_samples);
+
+  GaussianProcess gp_2D_quad(samples_list[0], responses_list[0], pl_2D_quad);
+
+  // Initially modelling what save/load functions would do for binary/text
+  for (bool binary : {true, false} ) {
+
+    std::string filename("gp_test.surr");
+
+    boost::filesystem::remove(filename);
+    Surrogate::save(gp_2D_quad, filename, binary);
+
+    GaussianProcess gp_loaded;
+    Surrogate::load(filename, binary, gp_loaded);
+
+    // For now, just checking same as original test instead of diffing
+    // saved vs. loaded properties.
+    MatrixXd eval_pts_2D(4,2);
+    eval_pts_2D << 0.2, 0.45,
+                  -0.3, -0.7,
+                   0.4, -0.1,
+                  -0.25, 0.33;
+
+    MatrixXd value_save(4,1), value_load(4,1);
+    gp_2D_quad.value(eval_pts_2D, value_save);
+    gp_loaded.value(eval_pts_2D, value_load);
+
+    int eval_index = 1;
+    auto eval_point = eval_pts_2D.row(eval_index);
+
+    MatrixXd grad_save, grad_load;
+    gp_2D_quad.gradient(eval_point, grad_save);
+    gp_loaded.gradient(eval_point, grad_load);
+
+    MatrixXd hess_save, hess_load;
+    gp_2D_quad.hessian(eval_point, hess_save);
+    gp_loaded.hessian(eval_point, hess_load);
+
+    // Verify saved vs. loaded to tight tolerance
+    double tight_tol = 1.0e-16;
+    TEST_ASSERT(matrix_equals(value_save, value_load, tight_tol));
+    TEST_ASSERT(matrix_equals(grad_save, grad_load, tight_tol));
+    TEST_ASSERT(matrix_equals(hess_save, hess_load, tight_tol));
+
+    MatrixXd grad_fd_error;
+    fd_check_gradient(gp_loaded, eval_point, grad_fd_error);
+    MatrixXd hessian_fd_error;
+    fd_check_hessian(gp_loaded, eval_point, hessian_fd_error);
+
+    // Verify vs. original unit test
+    MatrixXd gold_value_2D(4,1);
+    gold_value_2D << 0.77987534, 0.84715045, 0.74437935, 0.74654155;
+    MatrixXd gold_gp_grad(1,2);
+    gold_gp_grad << -0.312998265, -0.25777615;
+    MatrixXd gold_gp_hessian(2,2);
+    gold_gp_hessian << 0.86763171, 0.10209617, 0.10209617, -0.84260876;
+
+    double atol = 5.0e-7;
+    TEST_ASSERT(matrix_equals(value_load, gold_value_2D, atol));
+    TEST_ASSERT(matrix_equals(grad_load, gold_gp_grad, atol));
+    TEST_ASSERT(matrix_equals(hess_load, gold_gp_hessian, atol));
+  }
 }
 
 }

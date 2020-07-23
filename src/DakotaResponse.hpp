@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -346,7 +346,7 @@ protected:
   /// Implementation of data copy for Response letters (specialized by
   /// some derived letter types); pulls base class data from
   /// source_resp_rep into the this object.  
-  virtual void copy_rep(Response* source_resp_rep);
+  virtual void copy_rep(std::shared_ptr<Response> source_resp_rep);
 
   //
   //- Heading: Protected data members
@@ -407,17 +407,17 @@ private:
 
 
   /// Used by standard envelope constructor to instantiate a new letter class
-  Response* get_response(short type, const Variables& vars,
-			 const ProblemDescDB& problem_db) const;
+  std::shared_ptr<Response>get_response(short type, const Variables& vars,
+					const ProblemDescDB& problem_db) const;
   /// Used by alternate envelope constructor to instantiate a new letter class
-  Response* get_response(const SharedResponseData& srd,
-			 const ActiveSet& set) const;
+  std::shared_ptr<Response> get_response(const SharedResponseData& srd,
+					 const ActiveSet& set) const;
   /// Used by alternate envelope constructor to instantiate a new letter class
-  Response* get_response(short type, const ActiveSet& set) const;
+  std::shared_ptr<Response> get_response(short type, const ActiveSet& set) const;
   /// Used by copy() to instantiate a new letter class
-  Response* get_response(const SharedResponseData& srd) const;
+  std::shared_ptr<Response> get_response(const SharedResponseData& srd) const;
   /// Used by read functions to instantiate a new letter class
-  Response* get_response(short type) const;
+  std::shared_ptr<Response> get_response(short type) const;
 
   /// read a letter object in annotated format from an std::istream
   void read_annotated_rep(std::istream& s);
@@ -468,9 +468,7 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  Response* responseRep;
-  /// number of handle objects sharing responseRep
-  int referenceCount;
+  std::shared_ptr<Response> responseRep;
 };
 
 

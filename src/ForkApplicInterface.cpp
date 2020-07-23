@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -17,9 +17,9 @@
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
 #include <sys/wait.h> // for wait and waitpid
-#include <unistd.h>   // for fork, execvp, setgpid, and usleep
+#include <unistd.h>   // for fork, execvp, setgpid
 #include <algorithm>
-
+#include <thread>
 
 namespace Dakota {
 
@@ -58,12 +58,9 @@ void ForkApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
   while ( !evalProcessIdMap.empty() && (pid=wait_evaluation(false)) > 0 )
     process_local_evaluation(prp_queue, pid);
 
-#ifdef HAVE_USLEEP
-  // HAVE_USLEEP should be defined due to dependence of fork on unistd.h
   // reduce processor load from DAKOTA testing if jobs are not finishing
   if (completionSet.empty())
-    usleep(1000); // 1000 microseconds = 1 millisec
-#endif // HAVE_UNISTD_H
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
 
@@ -235,10 +232,8 @@ wait(pid_t process_group_id, std::map<pid_t, int>& process_id_map,
 	  { done = true; break; }
       }
       if (block_flag) {
-#ifdef HAVE_USLEEP
 	if (!done)
-	  usleep(1000); // 1000 microseconds = 1 millisec
-#endif // HAVE_UNISTD_H
+	  std::this_thread::sleep_for(std::chrono::milliseconds(1));
       }
       else done = true;
     }

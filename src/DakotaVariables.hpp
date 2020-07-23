@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -604,10 +604,10 @@ private:
 
   /// Used by the standard envelope constructor to instantiate the
   /// correct letter class
-  Variables* get_variables(const ProblemDescDB& problem_db);
+  std::shared_ptr<Variables> get_variables(const ProblemDescDB& problem_db);
   /// Used by the alternate envelope constructors, by read functions,
   /// and by copy() to instantiate a new letter class
-  Variables* get_variables(const SharedVariablesData& svd) const;
+  std::shared_ptr<Variables> get_variables(const SharedVariablesData& svd) const;
 
   /// infer domain from method selection
   short method_map(short view_spec, bool relaxed) const;
@@ -637,9 +637,7 @@ private:
   //
 
   /// pointer to the letter (initialized only for the envelope)
-  Variables* variablesRep;
-  /// number of objects sharing variablesRep
-  int referenceCount;
+  std::shared_ptr<Variables> variablesRep;
 };
 
 

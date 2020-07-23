@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -12,7 +12,6 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
-#include <boost/foreach.hpp>
 
 
 namespace Dakota {
@@ -303,7 +302,7 @@ inline void container_read(ContainerT& c, MPIUnpackBuffer& s)
   c.clear();
   typename ContainerT::size_type len;
   s >> len;
-  for (register typename ContainerT::size_type i=0; i<len; ++i) {
+  for (typename ContainerT::size_type i=0; i<len; ++i) {
     // fresh allocation needed in case T is ref-counted
     typename ContainerT::value_type data;
     s >> data;
@@ -318,9 +317,8 @@ inline void container_write(const ContainerT& c, MPIPackBuffer& s)
 {
   typename ContainerT::size_type len = c.size();
   s << len;
-  BOOST_FOREACH(const typename ContainerT::value_type& entry, c) {
+  for(const typename ContainerT::value_type& entry : c)
     s << entry;
-  }
 }
 #endif
 

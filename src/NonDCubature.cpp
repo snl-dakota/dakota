@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -35,7 +35,8 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
 {
   // initialize the numerical integration driver
   numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);
-  cubDriver    = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
+  cubDriver    = std::static_pointer_cast<Pecos::CubatureDriver>
+    (numIntDriver.driver_rep());
 
   // additional initializations in NonDIntegration ctor
   Pecos::MultivariateDistribution& mv_dist = model.multivariate_distribution();
@@ -55,7 +56,8 @@ NonDCubature(Model& model, unsigned short cub_int_order):
 {
   // initialize the numerical integration driver
   numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);
-  cubDriver    = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
+  cubDriver    = std::static_pointer_cast<Pecos::CubatureDriver>
+    (numIntDriver.driver_rep());
   cubDriver->integrand_order(cubIntOrderRef);
 
   assign_rule(model.multivariate_distribution());

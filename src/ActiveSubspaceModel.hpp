@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -52,7 +52,13 @@ class ProblemDescDB;
 /** Specialization of a RecastModel that identifies an active
     subspace during build phase and creates a RecastModel in the
     reduced space */
-class ActiveSubspaceModel: public RecastModel
+class ActiveSubspaceModel:
+  public RecastModel,
+  // BMA: This needed due to circular design of this subspace model
+  // and data fit surrogate model. Need to redesign so that *this
+  // doesn't own construction of an Iterator that works on *this. See
+  // comment in ActiveSubspaceModel.cpp
+  public std::enable_shared_from_this<ActiveSubspaceModel>
 {
 public:
 

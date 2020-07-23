@@ -1,16 +1,19 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "common_utils.hpp"
-#include "DataScaler.hpp"
+#include "util_common.hpp"
+#include "UtilDataScaler.hpp"
 #include "util_data_types.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 using namespace dakota;
 using namespace dakota::util;
@@ -50,12 +53,13 @@ MatrixXd create_multiple_features_matrix()
 TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizationTrue)
 {
   const double norm_factor = 1.0;
-  NormalizationScaler ns(create_single_feature_matrix(), true, norm_factor);
+  MatrixXd unscaled_features = create_single_feature_matrix();
+  NormalizationScaler ns(unscaled_features, true, norm_factor);
 
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ns.get_scaled_features();
+  ns.scale_samples(unscaled_features, matrix_actual);
   matrix_expected << -0.5, -0.333333, -0.166667, 0.0, 0.166667, 0.333333, 0.5;
 
   //std::cout << matrix_expected << std::endl;
@@ -67,12 +71,13 @@ TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizat
 TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalse)
 {
   const double norm_factor = 1.0;
-  NormalizationScaler ns(create_single_feature_matrix(), false, norm_factor);
+  MatrixXd unscaled_features = create_single_feature_matrix();
+  NormalizationScaler ns(unscaled_features, false, norm_factor);
 
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ns.get_scaled_features();
+  ns.scale_samples(unscaled_features, matrix_actual);
   matrix_expected << 0, 0.166667, 0.333333, 0.5, 0.666667, 0.833333, 1;
 
   //std::cout << matrix_expected << std::endl;
@@ -84,12 +89,13 @@ TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizat
 TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalseWithMultipleSamples)
 {
   const double norm_factor = 1.0;
-  NormalizationScaler ns(create_multiple_features_matrix(), false, norm_factor);
+  MatrixXd unscaled_features = create_multiple_features_matrix();
+  NormalizationScaler ns(unscaled_features, false, norm_factor);
 
   MatrixXd matrix_actual(7, 3);
   MatrixXd matrix_expected(7, 3);
   
-  matrix_actual = ns.get_scaled_features();
+  ns.scale_samples(unscaled_features, matrix_actual);
 
   matrix_expected << 0, 0, 0,
                      9.00001e-06, 5.6e-06, 7.85715e-06,
@@ -110,12 +116,13 @@ TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizat
 TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestNormFactor)
 {
   const double norm_factor = 2.0;
-  NormalizationScaler ns(create_single_feature_matrix(), true, norm_factor);
+  MatrixXd unscaled_features = create_single_feature_matrix();
+  NormalizationScaler ns(unscaled_features, true, norm_factor);
 
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ns.get_scaled_features();
+  ns.scale_samples(unscaled_features, matrix_actual);
   matrix_expected << -1, -0.666667, -0.333333, 1.85037e-16, 0.333333, 0.666667, 1;
 
   //std::cout << matrix_expected << std::endl;
@@ -126,12 +133,13 @@ TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestNormFactor)
 
 TEUCHOS_UNIT_TEST(util, StandardizationScaler_getScaledFeatures_TestDefault)
 {
-  StandardizationScaler ss(create_single_feature_matrix());
+  MatrixXd unscaled_features = create_single_feature_matrix();
+  StandardizationScaler ss(unscaled_features);
 
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ss.get_scaled_features();
+  ss.scale_samples(unscaled_features, matrix_actual);
   matrix_expected << -1.5, -1, -0.5, 2.77556e-16, 0.5, 1, 1.5;
 
   //std::cout << matrix_expected << std::endl;
@@ -147,12 +155,13 @@ TEUCHOS_UNIT_TEST(util, StandardizationScaler_getScaledFeatures_TestDefault)
 
 TEUCHOS_UNIT_TEST(util, StandardizationScaler_getScaledFeatures_TestMultipleSamples)
 {
-  StandardizationScaler ss(create_multiple_features_matrix());
+  MatrixXd unscaled_features = create_multiple_features_matrix();
+  StandardizationScaler ss(unscaled_features);
 
   MatrixXd matrix_actual(7, 3);
   MatrixXd matrix_expected(7, 3);
   
-  matrix_actual = ss.get_scaled_features();
+  ss.scale_samples(unscaled_features, matrix_actual);
 
   matrix_expected << -0.45993, -0.439588, -0.441129,
                      -0.459904, -0.439572, -0.441107,
@@ -185,7 +194,7 @@ TEUCHOS_UNIT_TEST(util, StandardizationScaler_scaleSamples)
   MatrixXd matrix_actual_scaled(7, 3);
   MatrixXd matrix_expected(7, 3);
   
-  matrix_actual_scaled = *(ss.scale_samples(matrix_actual_unscaled));
+  ss.scale_samples(matrix_actual_unscaled, matrix_actual_scaled);
 
   matrix_expected << -0.45993, -0.439588, -0.441129,
                      -0.459904, -0.439572, -0.441107,
@@ -212,25 +221,28 @@ TEUCHOS_UNIT_TEST(util, StandardizationScaler_scaleSamples)
 
 TEUCHOS_UNIT_TEST(util, StandardizationScaler_scaleSamples_wrongSize)
 {
-  StandardizationScaler ss(create_multiple_features_matrix());
+  MatrixXd unscaled_features = create_multiple_features_matrix();
+  StandardizationScaler ss(unscaled_features);
 
   MatrixXd wrong_size_matrix(3, 7);
+  MatrixXd scaled_features;
 
   wrong_size_matrix << 0.1, 0.2, 0.5, 1, 3, 6, 10,
                        20, 50, 100, 300, 700, 1000, 3000,
                        8000, 10000, 30000, 40000, 100000, 500000, 700000;
   
-  TEST_THROW(ss.scale_samples(wrong_size_matrix), std::runtime_error);
+  TEST_THROW(ss.scale_samples(wrong_size_matrix, scaled_features), std::runtime_error);
 }
 
-TEUCHOS_UNIT_TEST(util, NoScaler_getScaledFeatures_TestDefault)
+TEUCHOS_UNIT_TEST(util, NoScaler_scale_samples_TestDefault)
 {
-  NoScaler ns(create_single_feature_matrix());
+  MatrixXd unscaled_features = create_single_feature_matrix();
+  NoScaler ns(unscaled_features);
 
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ns.get_scaled_features();
+  ns.scale_samples(unscaled_features, matrix_actual);
   matrix_expected = create_single_feature_matrix();
 
   //std::cout << matrix_expected << std::endl;
@@ -238,4 +250,30 @@ TEUCHOS_UNIT_TEST(util, NoScaler_getScaledFeatures_TestDefault)
 
   TEST_ASSERT(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
+
+
+TEUCHOS_UNIT_TEST(util, StandardizationScaler_serialize)
+{
+  // BMA TODO: This doesn't test serialization detection of the
+  // derived type and loading into pointer to DataScaler base
+
+  StandardizationScaler ss(create_multiple_features_matrix());
+  std::ostringstream scaler_osstream;
+  boost::archive::text_oarchive output_archive(scaler_osstream);
+  output_archive << ss;
+
+  StandardizationScaler loaded_ss;
+  std::istringstream scaler_istream(scaler_osstream.str());
+  boost::archive::text_iarchive input_archive(scaler_istream);
+  input_archive >> loaded_ss;
+
+  // These should be exact, so using a tight tol
+  TEST_ASSERT(matrix_equals(ss.get_scaler_features_offsets(),
+			    loaded_ss.get_scaler_features_offsets(),
+			    1.0e-12));
+  TEST_ASSERT(matrix_equals(ss.get_scaler_features_scale_factors(),
+			    loaded_ss.get_scaler_features_scale_factors(),
+			    1.0e-12));
+}
+
 }

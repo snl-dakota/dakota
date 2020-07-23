@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -142,14 +142,15 @@ Real ExperimentResponse::log_covariance_determinant() const
 { return expDataCovariance.log_determinant(); }
 
 
-void ExperimentResponse::copy_rep(Response* source_resp_rep)
+void ExperimentResponse::copy_rep(std::shared_ptr<Response> source_resp_rep)
 {
   // copy base class data
   Response::copy_rep(source_resp_rep);
   // specialization for experiment; assume the source and destination
   // rep are same derived type
-  ExperimentResponse * expt_resp_rep = static_cast<ExperimentResponse*>(source_resp_rep);
-  if(expt_resp_rep)
+  auto expt_resp_rep =
+    std::static_pointer_cast<ExperimentResponse>(source_resp_rep);
+  if (expt_resp_rep)
     expDataCovariance = expt_resp_rep->expDataCovariance;
   else
     throw std::runtime_error("Cast to ExperimentResponse failed.");

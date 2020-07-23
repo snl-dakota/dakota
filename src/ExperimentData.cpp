@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -500,7 +500,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       read_field_values(field_base.string(), exp_index+1, exp_values[i]);
 
       // Optionally allow covariance data
-      if (!varianceTypes.empty())
+      if (!varianceTypes.empty()) {
 	if( varianceTypes[i] ) {
 	  read_covariance(field_base.string(), exp_index+1, working_cov_values);
 	  sigma_scalars[i] = working_cov_values(0,0);
@@ -510,6 +510,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 	  sigma_scalars[i] = 1.0;
 	  scalar_map_indices[i] = i;
 	}
+      }
     }
 
   }
@@ -1940,7 +1941,7 @@ hyperparam_labels(unsigned short multiplier_mode) const
   case CALIBRATE_PER_EXPER:
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) 
       hp_labels.
-	push_back(cm_prefix + "Exp" + boost::lexical_cast<String>(exp_ind+1));
+	push_back(cm_prefix + "Exp" + std::to_string(exp_ind+1));
     break;
 	
     // BMA TODO: Could use response labels here...
@@ -1949,7 +1950,7 @@ hyperparam_labels(unsigned short multiplier_mode) const
       simulationSRD.num_field_response_groups();
     for (size_t resp_ind=0; resp_ind < num_resp; ++resp_ind)
       hp_labels.
-	push_back(cm_prefix + "Resp" + boost::lexical_cast<String>(resp_ind+1));
+	push_back(cm_prefix + "Resp" + std::to_string(resp_ind+1));
     break;
   }
 
@@ -1959,8 +1960,8 @@ hyperparam_labels(unsigned short multiplier_mode) const
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind)
       for (size_t resp_ind=0; resp_ind < num_resp; ++resp_ind)
 	hp_labels.
-	  push_back(cm_prefix + "Exp" + boost::lexical_cast<String>(exp_ind+1) +
-		    "Resp" + boost::lexical_cast<String>(resp_ind+1));
+	  push_back(cm_prefix + "Exp" + std::to_string(exp_ind+1) +
+		    "Resp" + std::to_string(resp_ind+1));
     break;
   }
 

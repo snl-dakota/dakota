@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -40,8 +40,8 @@ NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, Model& model):
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   bool vary_pattern = false; // for consistency across outer loop invocations
-  lhsSampler.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    numSamples, seedSpec, rngName, vary_pattern, ACTIVE), false);
+  lhsSampler.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
+    sample_type, numSamples, seedSpec, rngName, vary_pattern, ACTIVE));
 }
 
 

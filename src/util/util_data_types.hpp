@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -15,8 +15,11 @@
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "Teuchos_SerialDenseVector.hpp"
 
+// extend Eigen matrices with Boost serialization
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/array.hpp>
+#define EIGEN_MATRIX_PLUGIN "util_eigen_plugins.hpp"
 #include "Eigen/Dense"
-
 
 /// dakota (lowercase) namespace for new %Dakota modules
 namespace dakota {
@@ -55,6 +58,9 @@ using RealVector = Teuchos::SerialDenseVector<int, Real>;
 
 /// Teuchos ParameterList for options management in Dakota namespace
 using ParameterList = Teuchos::ParameterList;
+
+/// Array of strings
+using StringArray = std::vector<std::string>;
 
 }  // namespace dakota
 

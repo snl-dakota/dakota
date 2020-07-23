@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -398,20 +398,20 @@ private:
 
   /// Used only by the constructor to initialize constraintsRep to the 
   /// appropriate derived type.
-  Constraints* get_constraints(const ProblemDescDB& problem_db,
-			       const SharedVariablesData& svd);
+  std::shared_ptr<Constraints>
+  get_constraints(const ProblemDescDB& problem_db,
+		  const SharedVariablesData& svd);
   /// Used by copy() to initialize constraintsRep to the appropriate
   /// derived type.
-  Constraints* get_constraints(const SharedVariablesData& svd) const;
+  std::shared_ptr<Constraints>
+  get_constraints(const SharedVariablesData& svd) const;
 
   //
   //- Heading: Data
   //
 
   /// pointer to the letter (initialized only for the envelope)
-  Constraints* constraintsRep;
-  /// number of objects sharing constraintsRep
-  int referenceCount;
+  std::shared_ptr<Constraints> constraintsRep;
 };
 
 

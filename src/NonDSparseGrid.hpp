@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -48,6 +48,8 @@ public:
 		 //short refine_type  = Pecos::NO_REFINEMENT,
 		 short refine_control = Pecos::NO_CONTROL,
 		 bool track_uniq_prod_wts = true);
+
+  ~NonDSparseGrid();                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -112,7 +114,6 @@ protected:
   //
 
   NonDSparseGrid(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDSparseGrid();                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -141,7 +142,7 @@ private:
   /// type of sparse grid driver: combined, incremental, hierarchical, ...
   short ssgDriverType;
   /// convenience pointer to the numIntDriver representation
-  Pecos::SparseGridDriver* ssgDriver;
+  std::shared_ptr<Pecos::SparseGridDriver> ssgDriver;
 
   /// the user specification for the Smolyak sparse grid level, rendered
   /// anisotropic via dimPrefSpec

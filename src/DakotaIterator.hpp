@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -50,8 +50,9 @@ public:
 
   /// default constructor
   Iterator( std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()) );
+  // BMA: Disabled unused ctor when deploying shared_ptr for iteratorRep
   /// alternate envelope constructor that assigns a representation pointer
-  Iterator(Iterator* iterator_rep, bool ref_count_incr = true, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  //  Iterator(std::shared_ptr<Iterator> iterator_rep, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard envelope constructor, which constructs its own model(s)
   Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor which uses the ProblemDescDB but
@@ -248,7 +249,7 @@ public:
   void run();
 
   /// replaces existing letter with a new one
-  void assign_rep(Iterator* iterator_rep, bool ref_count_incr = true);
+  void assign_rep(std::shared_ptr<Iterator> iterator_rep);
 
   /// set the iteratedModel (iterators and meta-iterators using a single
   /// model instance)
@@ -332,7 +333,7 @@ public:
 
   /// returns iteratorRep for access to derived class member functions
   /// that are not mapped to the top Iterator level
-  Iterator* iterator_rep() const;
+  std::shared_ptr<Iterator> iterator_rep() const;
 
   /// set the hierarchical eval ID tag prefix
   virtual void eval_tag_prefix(const String& eval_id_str);
@@ -491,11 +492,14 @@ private:
   //
 
   /// Used by the envelope to instantiate the correct letter class
-  Iterator* get_iterator(ProblemDescDB& problem_db);
+  std::shared_ptr<Iterator>
+  get_iterator(ProblemDescDB& problem_db);
   /// Used by the envelope to instantiate the correct letter class
-  Iterator* get_iterator(ProblemDescDB& problem_db, Model& model);
+  std::shared_ptr<Iterator>
+  get_iterator(ProblemDescDB& problem_db, Model& model);
   /// Used by the envelope to instantiate the correct letter class
-  Iterator* get_iterator(const String& method_string, Model& model);
+  std::shared_ptr<Iterator>
+  get_iterator(const String& method_string, Model& model);
 
   /// return the next available method ID for no-ID user methods
   static String user_auto_id();
@@ -529,9 +533,7 @@ private:
   std::map<size_t, ParConfigLIter> methodPCIterMap;
 
   /// pointer to the letter (initialized only for the envelope)
-  Iterator* iteratorRep;
-  /// number of objects sharing iteratorRep
-  int referenceCount;
+  std::shared_ptr<Iterator> iteratorRep;
 
 };
 
@@ -694,7 +696,7 @@ inline bool Iterator::is_null() const
 { return (iteratorRep) ? false : true; }
 
 
-inline Iterator* Iterator::iterator_rep() const
+inline std::shared_ptr<Iterator> Iterator::iterator_rep() const
 { return iteratorRep; }
 
 

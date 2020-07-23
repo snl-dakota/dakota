@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -16,7 +16,6 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "PolynomialApproximation.hpp"
-#include <boost/lexical_cast.hpp>
 
 static const char rcsId[]="@(#) $Id: ParamStudy.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
@@ -481,7 +480,7 @@ void ParamStudy::vector_loop()
       if (numSteps == 0) // Allow numSteps == 0 case
 	h_string += ">>>>> Initial_point only (no steps)\n";
       h_string += ">>>>> Vector parameter study evaluation for ";
-      h_string += boost::lexical_cast<std::string>(i*100./numSteps);
+      h_string += std::to_string(i*100./numSteps);
       h_string += "% along vector\n";
     }
   }

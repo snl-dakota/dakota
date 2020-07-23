@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014 Sandia Corporation.
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -208,39 +208,10 @@ if(HAVE_SYS_WAIT_H)
   add_definitions("-DHAVE_SYS_WAIT_H")
 endif(HAVE_SYS_WAIT_H)
 
-check_function_exists(usleep HAVE_USLEEP)
-if(HAVE_USLEEP)
-  add_definitions("-DHAVE_USLEEP")
-endif(HAVE_USLEEP)
-
 check_include_file(pdb.h HAVE_PDB_H)
 if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
 endif(HAVE_PDB_H)
-
-
-if(DAKOTA_F90)
-  # A future version of CMake should set the Fortran FIXED_FLAG automagically
-  if(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
-    set(FIXED_FLAG "-fixed")
-  elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
-    set(FIXED_FLAG "-ffixed-form")
-  elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
-    set(FIXED_FLAG "-Mfixed")
-  elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "XL" OR
-         ${CMAKE_Fortran_COMPILER_ID} MATCHES "VisualAge")
-    set(FIXED_FLAG "-qfixed")
-  elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "SunPro")
-    set(FIXED_FLAG "-fixed")
-  endif()
-
-  add_definitions("-DDAKOTA_F90")
-  #include_directories(${Dakota_BINARY_DIR})
-
-  #list(APPEND CMAKE_Fortran_FLAGS ${FIXED_FLAG})
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${FIXED_FLAG}")
-endif(DAKOTA_F90)
-
 
 # WJB - ToDo: Improve logic to support WinDLL case
 option(DAKOTA_DL_SOLVER
@@ -505,7 +476,8 @@ endif(HAVE_SURFPACK)
 
 if(DAKOTA_MODULE_SURROGATES)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
-  list(APPEND interface_src DakotaSurrogatesGP.cpp DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
+  list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesGP.cpp
+    DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
   list(APPEND DAKOTA_INCDIRS 
     ${Dakota_SOURCE_DIR}/src/util
     ${Dakota_SOURCE_DIR}/src/surrogates
@@ -555,7 +527,10 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
 )
 set(Dakota_src_fortran lawson_hanson1.f)
 if(DAKOTA_F90)
+  add_definitions("-DDAKOTA_F90")
   list(APPEND Dakota_src_fortran lawson_hanson2.f90)
+  set_source_files_properties(lawson_hanson2.f90
+    PROPERTIES Fortran_FORMAT FIXED)
 endif(DAKOTA_F90)
 
 if(HAVE_ACRO)
@@ -633,7 +608,7 @@ endif()
 CheckPackage(C3)
 if(HAVE_C3)
   set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp NonDMultilevelFunctionTrain.cpp)
-  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp C3FnTrainPtrsRep.cpp)
+  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp C3FnTrainData.cpp)
   # BMA: disabled these includes as we aren't including c3.h
   ##list(APPEND DAKOTA_INCDIRS
   ##  ${C3_SOURCE_DIR}/include

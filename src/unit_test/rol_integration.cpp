@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -233,9 +233,10 @@ TEUCHOS_UNIT_TEST(rol, text_book_nln_ineq_const)
   Dakota::Iterator & dak_iter = *iter_list.begin();
   //Cout << "The iterator is a : " << dak_iter.method_string() << endl;
   dak_iter.print_results(Cout);
-  Dakota::ROLOptimizer * rol_optimizer = dynamic_cast<Dakota::ROLOptimizer*>(dak_iter.iterator_rep());
+  Dakota::ROLOptimizer& rol_optimizer =
+    *dynamic_pointer_cast<Dakota::ROLOptimizer>(dak_iter.iterator_rep());
 
-  ROL::OptimizationProblem<Real> & rol_problem = rol_optimizer->get_rol_problem();
+  ROL::OptimizationProblem<Real> & rol_problem = rol_optimizer.get_rol_problem();
 
   Teuchos::RCP<ROL::Vector<Real> > x, u, v, c, l;
   Teuchos::RCP<ROL::Vector<Real> > sol = rol_problem.getSolutionVector();

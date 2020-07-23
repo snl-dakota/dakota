@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -17,7 +17,6 @@
 #ifdef HAVE_OPTPP
 #include "globals.h"
 #endif
-
 
 namespace Dakota {
 
@@ -115,10 +114,11 @@ DataMethodRep::DataMethodRep():
   displayFormat("bbe obj"), vns(0.0), neighborOrder(1), showAllEval(false),
   useSurrogate("none"),
   // C3 FT
-  maxCrossIterations(1), solverTol(1.e-10), roundingTol(1.e-8),
-  arithmeticTol(1.e-8), startOrder(2), maxOrder(USHRT_MAX),
-  startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
-  adaptRank(false), c3RefineType(NO_C3_REFINEMENT),
+  maxCrossIterations(1), solverTol(1.e-10), solverRoundingTol(1.e-10),
+  statsRoundingTol(1.e-10), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
+  adaptOrder(false), startRank(2), kickRank(1),
+  maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
+  c3RefineType(NO_C3_REFINEMENT),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -184,8 +184,7 @@ DataMethodRep::DataMethodRep():
   importBuildFormat(TABULAR_ANNOTATED),   importBuildActive(false),
   importApproxFormat(TABULAR_ANNOTATED),  importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
-  exportSampleSeqFlag(false), exportSamplesFormat(TABULAR_ANNOTATED),
-  referenceCount(1)
+  exportSampleSeqFlag(false), exportSamplesFormat(TABULAR_ANNOTATED)
 { }
 
 
@@ -278,8 +277,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << neighborOrder << showAllEval << useSurrogate;
 
   // C3 FT
-  s << maxCrossIterations << solverTol << roundingTol << arithmeticTol
-    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
+  s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
+    << startOrder << kickOrder << maxOrder << adaptOrder
+    << startRank  << kickRank  << maxRank  << adaptRank
     << c3RefineType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
@@ -327,7 +327,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
-    << importCandFormat << numCandidates << maxHifiEvals << batchSize << batchSizeExplore
+    << importCandFormat << numCandidates << maxHifiEvals
+    << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
     << dataDistType << dataDistCovInputType << dataDistMeans
@@ -441,8 +442,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> neighborOrder >> showAllEval >> useSurrogate;
 
   // C3 FT
-  s >> maxCrossIterations >> solverTol >> roundingTol >> arithmeticTol
-    >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
+  s >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
+    >> startOrder >> kickOrder >> maxOrder >> adaptOrder
+    >> startRank  >> kickRank  >> maxRank  >> adaptRank
     >> c3RefineType >> startOrderSeq >> startRankSeq;
 
   // NonD & DACE
@@ -490,7 +492,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> approxCorrectionOrder >> exportCorrModelFile >> exportCorrModelFormat
     >> exportCorrVarFile >> exportCorrVarFormat >> exportDiscrepFile
     >> exportDiscrepFormat >> adaptExpDesign >> importCandPtsFile
-    >> importCandFormat >> numCandidates >> maxHifiEvals >> batchSize >> batchSizeExplore
+    >> importCandFormat >> numCandidates >> maxHifiEvals
+    >> batchSize >> batchSizeExplore
     >> mutualInfoKSG2 >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> numPushforwardSamples
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
@@ -604,8 +607,9 @@ void DataMethodRep::write(std::ostream& s) const
     << neighborOrder << showAllEval << useSurrogate;
 
   // C3 FT
-  s << maxCrossIterations << solverTol << roundingTol << arithmeticTol
-    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
+  s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
+    << startOrder << kickOrder << maxOrder << adaptOrder
+    << startRank  << kickRank  << maxRank  << adaptRank
     << c3RefineType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
@@ -653,7 +657,8 @@ void DataMethodRep::write(std::ostream& s) const
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
-    << importCandFormat << numCandidates << maxHifiEvals << batchSize << batchSizeExplore
+    << importCandFormat << numCandidates << maxHifiEvals
+    << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
     << dataDistType << dataDistCovInputType << dataDistMeans
@@ -679,71 +684,22 @@ void DataMethodRep::write(std::ostream& s) const
 
 
 DataMethod::DataMethod(): dataMethodRep(new DataMethodRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::DataMethod(), dataMethodRep referenceCount = "
-       << dataMethodRep->referenceCount << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
-DataMethod::DataMethod(const DataMethod& data_method)
-{
-  // Increment new (no old to decrement)
-  dataMethodRep = data_method.dataMethodRep;
-  if (dataMethodRep) // Check for an assignment of NULL
-    ++dataMethodRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::DataMethod(DataMethod&)" << std::endl;
-  if (dataMethodRep)
-    Cout << "dataMethodRep referenceCount = " << dataMethodRep->referenceCount
-	 << std::endl;
-#endif
-}
+DataMethod::DataMethod(const DataMethod& data_method):
+  dataMethodRep(data_method.dataMethodRep)
+{ /* empty ctor */ }
 
 
 DataMethod& DataMethod::operator=(const DataMethod& data_method)
 {
-  if (dataMethodRep != data_method.dataMethodRep) { // normal case: old != new
-    // Decrement old
-    if (dataMethodRep) // Check for NULL
-      if ( --dataMethodRep->referenceCount == 0 )
-	delete dataMethodRep;
-    // Assign and increment new
-    dataMethodRep = data_method.dataMethodRep;
-    if (dataMethodRep) // Check for NULL
-      ++dataMethodRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::operator=(DataMethod&)" << std::endl;
-  if (dataMethodRep)
-    Cout << "dataMethodRep referenceCount = " << dataMethodRep->referenceCount
-	 << std::endl;
-#endif
-
+  dataMethodRep = data_method.dataMethodRep;
   return *this;
 }
 
 
 DataMethod::~DataMethod()
-{
-  if (dataMethodRep) { // Check for NULL
-    --dataMethodRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "dataMethodRep referenceCount decremented to "
-         << dataMethodRep->referenceCount << std::endl;
-#endif
-    if (dataMethodRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataMethodRep" << std::endl;
-#endif
-      delete dataMethodRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -15,9 +15,6 @@
 #include "SharedOrthogPolyApproxData.hpp"
 // Boost.Test
 #include <boost/test/minimal.hpp>
-
-//#include <boost/assign/std/vector.hpp>
-#include <boost/foreach.hpp>
 
 #include <cassert>
 #include <iostream>
@@ -45,8 +42,8 @@ Pecos::MultivariateDistribution
 initialize_homogeneous_uniform_aleatory_dist_params( short utype, 
 						     int num_vars ){
   Pecos::MultivariateDistribution mvd(Pecos::MARGINALS_CORRELATIONS);
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
+  auto mvd_rep = std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvd.multivar_dist_rep());
 
   ShortArray rv_types(num_vars, utype);
   mvd_rep->initialize_types(rv_types); // default active_vars

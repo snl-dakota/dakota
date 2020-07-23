@@ -1,13 +1,15 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "PolynomialRegression.hpp"
+#include "SurrogatesPolynomialRegression.hpp"
 #include "surrogates_tools.hpp"
+
+#include "Teuchos_XMLParameterListCoreHelpers.hpp"
 
 namespace dakota {
 namespace surrogates {
@@ -26,11 +28,26 @@ PolynomialRegression::PolynomialRegression(const ParameterList &param_list) {
   configOptions = param_list;
 }
 
+PolynomialRegression::PolynomialRegression(const std::string &param_list_xml_filename) {
+  default_options();
+  auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
+  configOptions = *param_list;
+}
+
 PolynomialRegression::PolynomialRegression(const MatrixXd &samples,
                                            const MatrixXd &response,
                                            const ParameterList &param_list) {
   default_options();
   configOptions = param_list;
+  build(samples, response);
+}
+
+PolynomialRegression::PolynomialRegression(const MatrixXd &samples,
+                                           const MatrixXd &response,
+                                           const std::string &param_list_xml_filename) {
+  default_options();
+  auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
+  configOptions = *param_list;
   build(samples, response);
 }
 
@@ -81,8 +98,9 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
   /* Scale the basis matrix */
   SCALER_TYPE scalerType = util::DataScaler::scaler_type(
       configOptions.get<std::string>("scaler type"));
-  dataScaler = util::scaler_factory(scalerType, unscaled_basis_matrix);
-  const MatrixXd& scaled_basis_matrix = dataScaler->get_scaled_features();
+  dataScaler = *(util::scaler_factory(scalerType, unscaled_basis_matrix));
+  MatrixXd scaled_basis_matrix;
+  dataScaler.scale_samples(unscaled_basis_matrix, scaled_basis_matrix);
 
   /* Solve the for the polynomial coefficients */
   SOLVER_TYPE solverType = util::LinearSolverBase::solver_type(
@@ -99,14 +117,16 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
                                  MatrixXd &approx_values) {
 
   /* Construct the basis matrix for the eval points */
-  MatrixXd unscaled_basis_matrix;
-  compute_basis_matrix(eval_points, unscaled_basis_matrix);
+  MatrixXd unscaled_eval_pts_basis_matrix;
+  compute_basis_matrix(eval_points, unscaled_eval_pts_basis_matrix);
 
   /* Scale the sample points */
-  MatrixXd scaled_basis_matrix = *(dataScaler->scale_samples(unscaled_basis_matrix));
+  MatrixXd scaled_eval_pts_basis_matrix;
+  dataScaler.scale_samples(unscaled_eval_pts_basis_matrix,
+                           scaled_eval_pts_basis_matrix);
 
   /* Compute the prediction values*/
-  approx_values = scaled_basis_matrix*(polynomialCoeffs);
+  approx_values = scaled_eval_pts_basis_matrix*(polynomialCoeffs);
   approx_values = (approx_values.array() + polynomialIntercept).matrix();
 }
 
@@ -149,8 +169,8 @@ void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
   compute_basis_matrix(samples, unscaled_eval_pts_basis_matrix);
 
   /* Scale the basis matrix */
-  dataScaler->scale_samples(unscaled_eval_pts_basis_matrix,
-                        scaled_eval_pts_basis_matrix);
+  dataScaler.scale_samples(unscaled_eval_pts_basis_matrix,
+                           scaled_eval_pts_basis_matrix);
 
   /* Compute the gradient */
   gradient = scaled_eval_pts_basis_matrix*deriv_coeffs;
@@ -174,7 +194,7 @@ void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
   compute_basis_matrix(sample, unscaled_eval_pts_basis_matrix);
 
   /* Scale the (row) basis matrix */
-  dataScaler->scale_samples(unscaled_eval_pts_basis_matrix,
+  dataScaler.scale_samples(unscaled_eval_pts_basis_matrix,
                             scaled_eval_pts_basis_matrix);
 
   for (int i = 0; i < numVariables; i++) {

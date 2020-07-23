@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -10,7 +10,6 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-#include <boost/lexical_cast.hpp>
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "ProgramOptions.hpp"
@@ -94,7 +93,7 @@ void ParallelLibrary::init_mpi_comm()
 
   if (pl.serverCommSize > 1) {
     start_msg = "Running MPI Dakota executable in parallel on ";
-    start_msg += boost::lexical_cast<std::string>(pl.serverCommSize) + 
+    start_msg += std::to_string(pl.serverCommSize) + 
       " processors.";
   }
   else
@@ -1120,7 +1119,7 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   if (pl.numServers > 1 || pl.dedicatedMasterFlag) {
     // could change to numServers>0 since it would still be nice to organize
     // the output for 1 server in ConcurrentMetaIterator
-    ctr_tag += "." + boost::lexical_cast<std::string>(pl.serverId);
+    ctr_tag += "." + std::to_string(pl.serverId);
   }
 
   // Now that all iterator masters have the output filename settings and local

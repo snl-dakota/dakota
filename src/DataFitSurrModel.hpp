@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -241,6 +241,9 @@ protected:
   /// clear inactive data stored in the approxInterface
   void clear_inactive();
 
+  /// query approxInterface for available advancements in order, rank, etc.
+  bool advancement_available();
+
   /// execute the DACE iterator to generate build data
   void run_dace();
 
@@ -441,7 +444,6 @@ private:
 };
 
 
-/** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
 { if (!exportPointsFile.empty()) finalize_export(); }
 
@@ -706,6 +708,10 @@ inline bool DataFitSurrModel::push_available()
 
 inline void DataFitSurrModel::clear_inactive()
 { approxInterface.clear_inactive(); }
+
+
+inline bool DataFitSurrModel::advancement_available()
+{ return approxInterface.advancement_available(); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()

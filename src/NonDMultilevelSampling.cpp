@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -3285,9 +3285,9 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
   size_t i, num_samp = allSamples.numCols();
   if (iface_id.empty()) tabular_filename += "NO_ID_i";
   else                  tabular_filename += iface_id + "_i";
-  tabular_filename += boost::lexical_cast<std::string>(iter)     +  "_l"
-                   +  boost::lexical_cast<std::string>(lev)      +  '_'
-                   +  boost::lexical_cast<std::string>(num_samp) + ".dat";
+  tabular_filename += std::to_string(iter)     +  "_l"
+                   +  std::to_string(lev)      +  '_'
+                   +  std::to_string(num_samp) + ".dat";
   Variables vars(model.current_variables().copy());
 
   String context_message("NonDMultilevelSampling::export_all_samples");

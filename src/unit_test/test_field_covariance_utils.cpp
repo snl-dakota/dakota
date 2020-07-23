@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -14,9 +14,6 @@
 // Boost.Test
 #define BOOST_TEST_MODULE dakota_field_covariance_utils
 #include <boost/test/included/unit_test.hpp>
-
-//#include <boost/assign/std/vector.hpp>
-#include <boost/foreach.hpp>
 
 #include <cassert>
 #include <iostream>

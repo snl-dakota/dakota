@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -24,7 +24,6 @@
 #include "pecos_data_types.hpp"
 #include "NormalRandomVariable.hpp"
 #include "DakotaApproximation.hpp"
-#include <boost/lexical_cast.hpp>
 
 static const char rcsId[]="@(#) $Id: NonDGPImpSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -62,8 +61,8 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
-  gpBuild.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-     samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM), false);
+  gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, sample_type,
+     samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM));
   //distribution 1 which is the distribution that the initial set of samples
   //used to build the initial GP are drawn from this should "ALWAYS" be 
   //uniform in the input of the GP (even if the nominal distribution is not
@@ -72,13 +71,13 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
 
   ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-  gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel,
+  gpModel.assign_rep(std::make_shared<DataFitSurrModel>(gpBuild, iteratedModel,
     gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, sample_reuse, import_pts_file,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")), false);
+							probDescDB.get_ushort("method.export_approx_format")));
   vary_pattern = true; // allow seed to run among multiple approx sample sets
   // need to add to input spec
   numEmulEval = probDescDB.get_int("method.nond.samples_on_emulator");

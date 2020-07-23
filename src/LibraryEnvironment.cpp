@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -91,10 +91,21 @@ void LibraryEnvironment::done_modifying_db()
 }
 
 
+/** DEPRECATED raw pointer API; assumes memory ownership is
+    transferred to Dakota as API historically did. */
 bool LibraryEnvironment::plugin_interface(const String& model_type,
 					  const String& interf_type,
 					  const String& an_driver,
 					  Interface* plugin_iface)
+{
+  return plugin_interface(model_type, interf_type, an_driver,
+			  std::shared_ptr<Interface>(plugin_iface));
+}
+
+bool LibraryEnvironment::plugin_interface(const String& model_type,
+					  const String& interf_type,
+					  const String& an_driver,
+					  std::shared_ptr<Interface> plugin_iface)
 {
   bool plugged_in = false;
   ModelList filt_models
@@ -113,7 +124,7 @@ bool LibraryEnvironment::plugin_interface(const String& model_type,
     // plugin the Interface
     Interface& model_interface = ml_iter->derived_interface();
     // don't increment ref count since no other envelope shares this letter
-    model_interface.assign_rep(plugin_iface, false);
+    model_interface.assign_rep(plugin_iface);
     plugged_in = true;
   }
   probDescDB.set_db_model_nodes(model_index);          // restore

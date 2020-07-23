@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -56,8 +56,8 @@ enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS };
 // enums should not conflict
 enum { FT_LS, FT_RLS2 };//, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
 // define special values for c3RefineType
-enum { NO_C3_REFINEMENT=0, UNIFORM_START_ORDER, UNIFORM_START_RANK,
-       UNIFORM_MAX_RANK };
+enum { NO_C3_REFINEMENT=0, UNIFORM_START_RANK, UNIFORM_START_ORDER,
+       UNIFORM_MAX_RANK,   UNIFORM_MAX_ORDER,  UNIFORM_MAX_RANK_ORDER };
 
 
 /// Body class for model specification data.
@@ -78,6 +78,8 @@ class DataModelRep
   friend class DataModel;
 
 public:
+
+  ~DataModelRep(); ///< destructor
 
   //
   //- Heading: Data
@@ -390,15 +392,19 @@ public:
   /// optimization tolerance for FT regression
   Real solverTol;
   /// Rounding tolerance for FT regression
-  Real roundingTol;
+  Real solverRoundingTol;
   /// arithmetic (rounding) tolerance for FT sums and products
-  Real arithmeticTol;
+  Real statsRoundingTol;
   /// sub-sample a tensor grid for generating regression data
   bool tensorGridFlag;
   /// starting polynomial order
   unsigned short startOrder;
+  /// polynomial order increment when adapting
+  unsigned short kickOrder;
   /// maximum order of basis polynomials
   unsigned short maxOrder;
+  /// whether or not to adapt order by cross validation
+  bool adaptOrder;
   /// starting rank
   size_t startRank;
   /// rank increase increment
@@ -464,7 +470,6 @@ private:
   //
 
   DataModelRep();  ///< constructor
-  ~DataModelRep(); ///< destructor
 
   //
   //- Heading: Member methods
@@ -482,8 +487,6 @@ private:
   //- Heading: Private convenience functions
   //
 
-  /// number of handle objects sharing this dataModelRep
-  int referenceCount;
 };
 
 
@@ -539,7 +542,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataModelRep
-  DataModelRep* data_rep();
+  std::shared_ptr<DataModelRep> data_rep();
 
 private:
 
@@ -548,11 +551,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataModelRep* dataModelRep;
+  std::shared_ptr<DataModelRep> dataModelRep;
 };
 
 
-inline DataModelRep* DataModel::data_rep()
+inline std::shared_ptr<DataModelRep> DataModel::data_rep()
 {return dataModelRep; }
 
 

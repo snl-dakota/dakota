@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
     write_data(argv[2], fnvals);
   }
   else {
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
 #ifdef TB_USE_MPI

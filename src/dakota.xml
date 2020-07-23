@@ -88,14 +88,15 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY model_partial_surfpack_export_format '
+    <!-- Used for both surfpack and new surrogate models -->
+    <!ENTITY model_partial_surrogate_export_format '
 	     <keyword  id="export_model" name="export_model" minOccurs="0" maxOccurs="1" code="{N_mom(true,exportSurrogate)}" label="Export Surrogate Model"  complexity="1">
                <keyword  id="filename_prefix" name="filename_prefix" minOccurs="0" code="{N_mom(str,modelExportPrefix)}" label="Exported Surrogate Filename Prefix"  default="exported_surrogate" complexity="1">
 		 <param type="STRING" />
                </keyword>
                <keyword id="formats" name="formats" code="{0}" label="Formats" maxOccurs="1" group="Surrogate Export Formats" complexity="1">
-		 <keyword id="text_archive" name="text_archive" code="{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}" label="Text SPS" maxOccurs="1" minOccurs="0" />
-		 <keyword id="binary_archive" name="binary_archive" code="{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}" label="Binary SPS" maxOccurs="1" minOccurs="0"  />
+		 <keyword id="text_archive" name="text_archive" code="{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}" label="Text Output" maxOccurs="1" minOccurs="0" />
+		 <keyword id="binary_archive" name="binary_archive" code="{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}" label="Binary Output" maxOccurs="1" minOccurs="0"  />
                </keyword>
 	     </keyword>
 	     ' >
@@ -268,9 +269,11 @@
              <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
 	       <keyword  id="uniform4" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
 		 <oneOf label="Uniform Refinement Approach">
-		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}" label="order" />
-		   <!-- <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mdm(type,c3RefineType_UNIFORM_START_RANK)}" label="rank" /> -->
-		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}" label="rank" />
+		   <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mdm(type,c3RefineType_UNIFORM_START_RANK)}" label="refinement by increment in start rank" />
+		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}" label="refinement by increment in start order" />
+		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}" label="refinement by increment in max rank" />
+		   <keyword  id="increment_max_order" name="increment_max_order" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_ORDER)}" label="refinement by increment in max order" />
+		   <keyword  id="increment_max_rank_order" name="increment_max_rank_order" code="{N_mdm(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}" label="refinement by increment in max rank and max order" />
 		 </oneOf>
 	       </keyword>
 	     </keyword>
@@ -780,10 +783,14 @@
 	     </oneOf>
 	     ' >
 
-    <!ENTITY ft_method_max_order '
-		  <keyword  id="max_order" name="max_order" code="{N_mdm(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
+    <!ENTITY ft_method_order_scalars '
+		  <keyword  id="kick_order" name="kick_order" code="{N_mdm(ushint,kickOrder)}" label="Increment when adapting polynomial basis order" help="" minOccurs="0" default="1">
+		    <param type="INTEGER" constraint="> 0" />
+		  </keyword>
+		  <keyword  id="max_order" name="max_order" code="{N_mdm(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="unsigned short max">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
+		  <keyword  id="adapt_order" name="adapt_order" code="{N_mdm(true,adaptOrder)}" label="Adapt polynomial basis order using cross validation" help="" minOccurs="0" default="false" />
 	     ' >
 
     <!ENTITY ft_method_order '
@@ -792,7 +799,7 @@
 		    <param type="INTEGER" constraint=">= 0" />
 		    &expansion_dim_pref;
 		  </keyword>
-		  &ft_method_max_order;
+		  &ft_method_order_scalars;
 	     ' >
 
     <!ENTITY mlft_method_order_sequence '
@@ -801,14 +808,14 @@
 		    <param type="INTEGERLIST" />
 		    &expansion_dim_pref;
 		  </keyword>
-		  &ft_method_max_order;
+		  &ft_method_order_scalars;
 	     ' >
 
-    <!ENTITY ft_method_adapt_rank '
-		  <keyword  id="kick_rank" name="kick_rank" code="{N_mdm(sizet,kickRank)}" label="Rank increase increment for adaptive schmes" help="" minOccurs="0" default="2">
-		    <param type="INTEGER" constraint=">= 0" />
+    <!ENTITY ft_method_rank_scalars '
+		  <keyword  id="kick_rank" name="kick_rank" code="{N_mdm(sizet,kickRank)}" label="Rank increment for adaptive schemes" help="" minOccurs="0" default="1">
+		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
-		  <keyword  id="max_rank" name="max_rank" code="{N_mdm(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
+		  <keyword  id="max_rank" name="max_rank" code="{N_mdm(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="size_t max">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mdm(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false" />
@@ -819,7 +826,7 @@
 		    <alias name="rank"/>
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  &ft_method_adapt_rank;
+		  &ft_method_rank_scalars;
 	     ' >
 
     <!ENTITY mlft_method_rank_sequence '
@@ -827,14 +834,14 @@
 		    <alias name="rank_sequence"/>
 		    <param type="INTEGERLIST" />
 		  </keyword>
-		  &ft_method_adapt_rank;
+		  &ft_method_rank_scalars;
 	     ' >
 
     <!ENTITY ft_method_tols '
-		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mdm(Real,roundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-8" >
+		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mdm(Real,solverRoundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.e-10" >
 		    <param type="REAL" />
 		  </keyword>
-		  <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mdm(Real,arithmeticTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.0e-2" >
+		  <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mdm(Real,statsRoundingTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.e-10" >
 		    <param type="REAL" />
 		  </keyword>
 	     ' >
@@ -843,9 +850,11 @@
              <keyword  id="p_refinement" name="p_refinement" code="{N_mom(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
 	       <keyword  id="uniform4" name="uniform" code="{N_mom(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
 		 <oneOf label="Uniform Refinement Approach">
-		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mom(type,c3RefineType_UNIFORM_START_ORDER)}" label="order" />
-		   <!-- <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mom(type,c3RefineType_UNIFORM_START_RANK)}" label="rank" /> -->
-		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}" label="rank" />
+		   <keyword  id="increment_start_rank" name="increment_start_rank" code="{N_mom(type,c3RefineType_UNIFORM_START_RANK)}" label="refinement by increment in start rank" />
+		   <keyword  id="increment_start_order" name="increment_start_order" code="{N_mom(type,c3RefineType_UNIFORM_START_ORDER)}" label="refinement by increment in start order" />
+		   <keyword  id="increment_max_rank" name="increment_max_rank" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}" label="refinement by increment in max rank" />
+		   <keyword  id="increment_max_order" name="increment_max_order" code="{N_mom(type,c3RefineType_UNIFORM_MAX_ORDER)}" label="refinement by increment in max order" />
+		   <keyword  id="increment_max_rank_order" name="increment_max_rank_order" code="{N_mom(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}" label="refinement by increment in max rank and max order" />
 		 </oneOf>
 	       </keyword>
 	     </keyword>
@@ -892,10 +901,10 @@
 	     ' >
 
     <!ENTITY ft_model_tols '
-	     <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,roundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-8" >
+	     <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,solverRoundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.e-10" >
 	       <param type="REAL" />
 	     </keyword>
-	     <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mom(Real,arithmeticTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.0e-2" >
+	     <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mom(Real,statsRoundingTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.e-10" >
 	       <param type="REAL" />
 	     </keyword>
 	     ' >
@@ -906,9 +915,13 @@
 		    <param type="INTEGER" constraint=">= 0" />
 		    &expansion_dim_pref;
 		  </keyword>
+		  <keyword  id="kick_order" name="kick_order" code="{N_mom(ushint,kickOrder)}" label="Increment when adapting polynomial basis order" help="" minOccurs="0" default="1">
+		    <param type="INTEGER" constraint="> 0" />
+		  </keyword>
 		  <keyword  id="max_order" name="max_order" code="{N_mom(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
+		  <keyword  id="adapt_order" name="adapt_order" code="{N_mom(true,adaptOrder)}" label="Adapt polynomial basis order using cross validation" help="" minOccurs="0" default="false" />
 	     ' >
 
     <!ENTITY ft_model_rank '
@@ -916,8 +929,8 @@
 		    <alias name="rank"/>
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="kick_rank" name="kick_rank" code="{N_mom(sizet,kickRank)}" label="Rank increase increment for adaptive schmes" help="" minOccurs="0" default="2">
-		    <param type="INTEGER" constraint=">= 0" />
+		  <keyword  id="kick_rank" name="kick_rank" code="{N_mom(sizet,kickRank)}" label="Rank increment for adaptive schemes" help="" minOccurs="0" default="2">
+		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="max_rank" name="max_rank" code="{N_mom(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
 		    <param type="INTEGER" constraint=">= 0" />
@@ -1697,7 +1710,7 @@
                 <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
                   <keyword  id="model_pointer_list" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers"  minOccurs="0" >
-                    <param type="STRING" />
+                    <param type="STRINGLIST" />
                   </keyword>
                 </keyword>
                 <keyword  id="method_pointer_list" name="method_pointer_list" code="{N_mdm(strL,hybridMethodPointers)}" label="List of method pointers"   >
@@ -1745,7 +1758,7 @@
                 <keyword  id="method_name_list1" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
                   <keyword  id="model_pointer_list1" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers"  minOccurs="0" >
-                    <param type="STRING" />
+                    <param type="STRINGLIST" />
                   </keyword>
                 </keyword>
                 <keyword  id="method_pointer_list1" name="method_pointer_list" code="{N_mdm(strL,hybridMethodPointers)}" label="List of method pointers"   >
@@ -3629,11 +3642,10 @@
 		<keyword  id="experimental_gaussian_process" name="experimental_gaussian_process" code="{N_mom(lit,surrogateType_global_exp_gauss_proc)}" label="Experimental Gaussian Process" minOccurs="1" >
                   <keyword  id="trend1" name="trend" code="{0}" label="Specify Trend Function"  minOccurs="0" default="reduced_quadratic" >
                     <oneOf label="Trend Order">
+                      <keyword  id="none" name="none" code="{N_mom(lit,trendOrder_none)}" label="None"   />
                       <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant"   />
                       <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear"   />
-		      <!--
-                          <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic"   />
-		      -->
+                      <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic"   />
                       <keyword  id="quadratic" name="quadratic" code="{N_mom(lit,trendOrder_quadratic)}" label="Quadratic"   />
                     </oneOf>
                   </keyword>
@@ -3658,6 +3670,7 @@
 		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		    <param type="INPUT_FILE" />
 		  </keyword>
+		  &model_partial_surrogate_export_format;
 		</keyword>
                 <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process"  >
                   <alias name="kriging"/>
@@ -3719,7 +3732,7 @@
                       <keyword  id="cubic" name="cubic" code="{N_mom(lit,marsInterpolation_cubic)}" label="Cubic"   />
                     </oneOf>
                   </keyword>
-		  &model_partial_surfpack_export_format;
+		  &model_partial_surrogate_export_format;
 	        </keyword>
 
                 <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving Least Squares"  >
@@ -3730,7 +3743,7 @@
                   <keyword  id="weight_function" name="weight_function" code="{N_mom(shint,mlsWeightFunction)}" label="Weight Function"  minOccurs="0" default="" >
                     <param type="INTEGER" />
                   </keyword>
-                  &model_partial_surfpack_export_format;
+                  &model_partial_surrogate_export_format;
                 </keyword>
 		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" group="Surrogate-based Methods">
 		  &ft_model_refinement;
@@ -3835,6 +3848,7 @@
 		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		    <param type="INPUT_FILE" />
 		  </keyword>
+		  &model_partial_surrogate_export_format;
 		</keyword>
               </oneOf>
               <keyword  id="domain_decomposition" name="domain_decomposition" code="{N_mom(true,domainDecomp)}" label="Domain Decomposition"  minOccurs="0" complexity="1">

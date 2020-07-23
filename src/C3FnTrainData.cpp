@@ -1,19 +1,19 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "C3FnTrainPtrsRep.hpp"
-#include "dakota_data_types.hpp"
+#include "C3FnTrainData.hpp"
+//#include "dakota_data_types.hpp"
 #include <cmath>
 
 namespace Dakota {
 
 
-void C3FnTrainPtrsRep::ft_derived_functions_init_null()
+void C3FnTrainDataRep::ft_derived_functions_init_null()
 {
   ft_derived_fns.allocated = 0;
 
@@ -35,7 +35,7 @@ void C3FnTrainPtrsRep::ft_derived_functions_init_null()
 }
 
 
-void C3FnTrainPtrsRep::
+void C3FnTrainDataRep::
 ft_derived_functions_create_av(struct MultiApproxOpts * opts,
 			       const SizetArray& rand_indices, Real round_tol)
 {
@@ -59,7 +59,7 @@ ft_derived_functions_create_av(struct MultiApproxOpts * opts,
 }
 
 
-void C3FnTrainPtrsRep::
+void C3FnTrainDataRep::
 ft_derived_functions_create(struct MultiApproxOpts * opts, size_t num_mom,
 			    Real round_tol)
 {
@@ -182,7 +182,7 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, size_t num_mom,
 }
 
 
-void C3FnTrainPtrsRep::ft_derived_functions_free()
+void C3FnTrainDataRep::ft_derived_functions_free()
 {
   if (ft_derived_fns.ft_nonrand) {
     function_train_free(ft_derived_fns.ft_nonrand);
@@ -240,6 +240,50 @@ void C3FnTrainPtrsRep::ft_derived_functions_free()
   //}
 
   ft_derived_fns.allocated = 0;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+// Definitions for C3FnTrainData handle functions (in .cpp to isolate
+// the implementation details of the Rep, which require C3 APIs)
+
+C3FnTrainData::C3FnTrainData(): ftdRep(new C3FnTrainDataRep())
+{ } // body allocated with null FT pointers
+
+
+// TO DO: shallow copy would be better for this case, but requires ref counting
+C3FnTrainData::C3FnTrainData(const C3FnTrainData& ftd)
+{ ftdRep = ftd.ftdRep; }
+
+
+C3FnTrainData& C3FnTrainData::operator=(const C3FnTrainData& ftd)
+{ ftdRep = ftd.ftdRep; return *this; }
+
+
+C3FnTrainData::~C3FnTrainData()
+{ }
+
+
+// BMA: If we don't anticipate needing a full deep copy (with stats as
+// opposed to the partial deep copy implemented here, could make this
+// the copy ctor of the body and just use the default copy for the handle
+C3FnTrainData C3FnTrainData::copy() const
+{
+  C3FnTrainData ftd; // new envelope with ftdRep default allocated
+
+  ftd.ftdRep->ft          = (ftdRep->ft          == NULL) ? NULL :
+    function_train_copy(ftdRep->ft);
+  ftd.ftdRep->ft_gradient = (ftdRep->ft_gradient == NULL) ? NULL :
+    ft1d_array_copy(ftdRep->ft_gradient);
+  ftd.ftdRep->ft_hessian  = (ftdRep->ft_hessian  == NULL) ? NULL :
+    ft1d_array_copy(ftdRep->ft_hessian);
+
+  // ft_derived_fns,ft_sobol have been assigned NULL and can be allocated
+  // downsteam when needed for stats,indices
+
+  return ftd;
 }
 
 } // namespace

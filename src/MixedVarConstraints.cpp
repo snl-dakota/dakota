@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -135,12 +135,6 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
   copy_data_partial(dssrv_l_bnds, allDiscreteRealLowerBnds, start);
   copy_data_partial(dssrv_u_bnds, allDiscreteRealUpperBnds, start);
   //start += dssrv_l_bnds.length();
-
-#ifdef REFCOUNT_DEBUG
-  const std::pair<short,short>& view = sharedVarsData.view();
-  Cout << "MixedVarConstraints letter instantiated: view active = "
-       << view.first << " inactive = " << view.second << endl;
-#endif
 }
 
 

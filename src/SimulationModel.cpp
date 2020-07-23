@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -114,8 +114,9 @@ initialize_solution_control(const String& control, const RealVector& cost)
 
   // get size of corresponding set values
   size_t i, num_lev;
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
@@ -213,8 +214,9 @@ initialize_solution_control(const String& control, const RealVector& cost)
   std::advance(c_cit, lev_index);
   size_t val_index = c_cit->second;
 
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE: {
@@ -280,8 +282,9 @@ initialize_solution_control(const String& control, const RealVector& cost)
 unsigned short SimulationModel::solution_level_index() const
 {
   size_t val_index;
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE: {

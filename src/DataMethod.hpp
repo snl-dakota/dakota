@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -242,6 +242,8 @@ class DataMethodRep
   friend class DataMethod;
 
 public:
+
+  ~DataMethodRep();                            ///< destructor
 
   //
   //- Heading: Data
@@ -759,16 +761,20 @@ public:
   /// optimization tolerance for FT regression
   Real solverTol;
   /// Rounding tolerance for FT regression
-  Real roundingTol;
+  Real solverRoundingTol;
   /// arithmetic (rounding) tolerance for FT sums and products
-  Real arithmeticTol;
+  Real statsRoundingTol;
   /// starting polynomial order
   unsigned short startOrder;
+  /// polynomial order increment when adapting
+  unsigned short kickOrder;
   /// maximum order of basis polynomials
   unsigned short maxOrder;
+  /// whether or not to adapt order by cross validation
+  bool adaptOrder;
   /// starting rank
   size_t startRank;
-  /// rank increase increment
+  /// rank increment when adapting
   size_t kickRank;
   /// maximum rank
   size_t maxRank;
@@ -1222,7 +1228,6 @@ private:
   //
 
   DataMethodRep();                             ///< constructor
-  ~DataMethodRep();                            ///< destructor
 
   //
   //- Heading: Member methods
@@ -1240,8 +1245,6 @@ private:
   //- Heading: Private data members
   //
 
-  /// number of handle objects sharing this dataMethodRep
-  int referenceCount;
 };
 
 
@@ -1297,7 +1300,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataMethodRep
-  DataMethodRep* data_rep();
+  std::shared_ptr<DataMethodRep> data_rep();
 
 private:
 
@@ -1306,11 +1309,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataMethodRep* dataMethodRep;
+  std::shared_ptr<DataMethodRep> dataMethodRep;
 };
 
 
-inline DataMethodRep* DataMethod::data_rep()
+inline std::shared_ptr<DataMethodRep> DataMethod::data_rep()
 {return dataMethodRep; }
 
 

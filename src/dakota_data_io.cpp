@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -11,7 +11,6 @@
 #include "dakota_tabular_io.hpp"
 
 #include <boost/tokenizer.hpp>
-#include <boost/foreach.hpp>
 #include <boost/filesystem/operations.hpp>
 #include "boost/filesystem/path.hpp"
 
@@ -93,9 +92,8 @@ read_unsized_data(std::istream& s,
   boost::char_separator<char> sep(", \t"); // allow comma and tab delimited too
   boost::tokenizer< boost::char_separator<char> > tokens(first_line, sep);
   int num_tokens = 0;
-  BOOST_FOREACH (const std::string& t, tokens) {
+  for(const std::string& t : tokens)
     num_tokens++;
-  }
 
   // Rewind input stream 
   s.seekg(0);

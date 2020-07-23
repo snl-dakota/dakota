@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -604,7 +604,7 @@ iface_start(const char *keyname, Values *val, void **g, void *v)
   Botch:		botch("new failure in iface_start");
   if (!(ii->di_handle = new DataInterface))
     goto Botch;
-  ii->di = ii->di_handle->dataIfaceRep;
+  ii->di = ii->di_handle->dataIfaceRep.get();
   *g = (void*)ii;
 }
 
@@ -1282,7 +1282,7 @@ method_start(const char *keyname, Values *val, void **g, void *v)
   Botch:		botch("new failure in method_start");
   if (!(mi->dme0 = new DataMethod))
     goto Botch;
-  mi->dme = mi->dme0->dataMethodRep;
+  mi->dme = mi->dme0->dataMethodRep.get();
   *g = (void*)mi;
 }
 
@@ -1510,7 +1510,7 @@ model_start(const char *keyname, Values *val, void **g, void *v)
   Botch:		botch("new failure in model_start");
   if (!(mi->dmo0 = new DataModel))
     goto Botch;
-  dm = mi->dmo = mi->dmo0->dataModelRep;
+  dm = mi->dmo = mi->dmo0->dataModelRep.get();
   *g = (void*)mi;
 }
 
@@ -1632,7 +1632,7 @@ resp_start(const char *keyname, Values *val, void **g, void *v)
   Botch:		botch("new failure in resp_start");
   if (!(ri->dr0 = new DataResponses))
     goto Botch;
-  ri->dr = ri->dr0->dataRespRep;
+  ri->dr = ri->dr0->dataRespRep.get();
   *g = (void*)ri;
 }
 
@@ -1784,9 +1784,9 @@ check_responses(std::list<DataResponses>* drl)
   // explicitly set descriptors.
   std::list<DataResponses>::iterator It = drl->begin(), Ite = drl->end();
   for(; It != Ite; ++It) {
-    const DataResponsesRep* drr = It->data_rep();
-    check_descriptor_format(drr->responseLabels);
-    check_descriptors_for_repeats(drr->responseLabels);
+    const DataResponsesRep& drr = *It->data_rep();
+    check_descriptor_format(drr.responseLabels);
+    check_descriptors_for_repeats(drr.responseLabels);
   }
 }
 
@@ -1835,7 +1835,7 @@ make_response_defaults(std::list<DataResponses>* drl)
   std::list<DataResponses>::iterator It = drl->begin(), Ite = drl->end();
   for(; It != Ite; It++) {
 
-    DataResponsesRep *dr = It->dataRespRep;
+    DataResponsesRep *dr = It->dataRespRep.get();
 
     for(sc = Str_chk, i = 0; i < Numberof(Str_chk); ++sc, ++i)
       if ((n1 = dr->*sc->n) && (n = (dr->*sc->sa).size()) > 0
@@ -1995,7 +1995,7 @@ env_int(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 env_start(const char *keyname, Values *val, void **g, void *v)
 {
-  *g = (void*)pDDBInstance->environmentSpec.dataEnvRep;
+  *g = (void*)pDDBInstance->environmentSpec.dataEnvRep.get();
 }
 
 void NIDRProblemDescDB::
@@ -2282,7 +2282,7 @@ var_start(const char *keyname, Values *val, void **g, void *v)
   memset(vi, 0, sizeof(Var_Info));
   if (!(vi->dv_handle = new DataVariables))
     goto Botch;
-  vi->dv = vi->dv_handle->dataVarsRep;
+  vi->dv = vi->dv_handle->dataVarsRep.get();
   *g = (void*)vi;
 }
 
@@ -5399,7 +5399,7 @@ make_variable_defaults(std::list<DataVariables>* dvl)
   /// stored separately
   std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
   for(; It != Ite; ++It) {
-    dv = It->dataVarsRep;
+    dv = It->dataVarsRep.get();
     // size the aggregate labels, bounds, values arrays for
     // real-valued uncertain
     for(k = 0; k < NUM_UNC_REAL_CONT; ++k) {
@@ -6237,7 +6237,7 @@ check_variables(std::list<DataVariables>* dvl)
       vi = new Var_Info;
       memset(vi, 0, sizeof(Var_Info));
       vi->dv_handle = &*It;
-      vi->dv = dv = It->dataVarsRep;
+      vi->dv = dv = It->dataVarsRep.get();
 
       // flatten 2D {Real,Int}{Vector,Set}Arrays back into Var_Info 1D arrays
 
@@ -6403,44 +6403,44 @@ check_variables(std::list<DataVariables>* dvl)
   // explicitly set descriptors.
   std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
   for(; It != Ite; ++It) {
-    const DataVariablesRep* dvr = It->data_rep();
-    check_descriptor_format(dvr->continuousDesignLabels);
-    check_descriptor_format(dvr->discreteDesignRangeLabels);
-    check_descriptor_format(dvr->discreteDesignSetIntLabels);
-    check_descriptor_format(dvr->discreteDesignSetStrLabels);
-    check_descriptor_format(dvr->discreteDesignSetRealLabels);
-    check_descriptor_format(dvr->continuousStateLabels);
-    check_descriptor_format(dvr->discreteStateRangeLabels);
-    check_descriptor_format(dvr->discreteStateSetIntLabels);
-    check_descriptor_format(dvr->discreteStateSetStrLabels);
-    check_descriptor_format(dvr->discreteStateSetRealLabels);
-    check_descriptor_format(dvr->continuousAleatoryUncLabels);
-    check_descriptor_format(dvr->discreteIntAleatoryUncLabels);
-    check_descriptor_format(dvr->discreteStrAleatoryUncLabels);
-    check_descriptor_format(dvr->discreteRealAleatoryUncLabels);
-    check_descriptor_format(dvr->continuousEpistemicUncLabels);
-    check_descriptor_format(dvr->discreteIntEpistemicUncLabels);
-    check_descriptor_format(dvr->discreteStrEpistemicUncLabels);
-    check_descriptor_format(dvr->discreteRealEpistemicUncLabels);
+    const DataVariablesRep& dvr = *It->data_rep();
+    check_descriptor_format(dvr.continuousDesignLabels);
+    check_descriptor_format(dvr.discreteDesignRangeLabels);
+    check_descriptor_format(dvr.discreteDesignSetIntLabels);
+    check_descriptor_format(dvr.discreteDesignSetStrLabels);
+    check_descriptor_format(dvr.discreteDesignSetRealLabels);
+    check_descriptor_format(dvr.continuousStateLabels);
+    check_descriptor_format(dvr.discreteStateRangeLabels);
+    check_descriptor_format(dvr.discreteStateSetIntLabels);
+    check_descriptor_format(dvr.discreteStateSetStrLabels);
+    check_descriptor_format(dvr.discreteStateSetRealLabels);
+    check_descriptor_format(dvr.continuousAleatoryUncLabels);
+    check_descriptor_format(dvr.discreteIntAleatoryUncLabels);
+    check_descriptor_format(dvr.discreteStrAleatoryUncLabels);
+    check_descriptor_format(dvr.discreteRealAleatoryUncLabels);
+    check_descriptor_format(dvr.continuousEpistemicUncLabels);
+    check_descriptor_format(dvr.discreteIntEpistemicUncLabels);
+    check_descriptor_format(dvr.discreteStrEpistemicUncLabels);
+    check_descriptor_format(dvr.discreteRealEpistemicUncLabels);
 
-    check_descriptors_for_repeats(dvr->continuousDesignLabels,
-                                  dvr->discreteDesignRangeLabels,
-                                  dvr->discreteDesignSetIntLabels,
-                                  dvr->discreteDesignSetStrLabels,
-                                  dvr->discreteDesignSetRealLabels,
-                                  dvr->continuousStateLabels,
-                                  dvr->discreteStateRangeLabels,
-                                  dvr->discreteStateSetIntLabels,
-                                  dvr->discreteStateSetStrLabels,
-                                  dvr->discreteStateSetRealLabels,
-                                  dvr->continuousAleatoryUncLabels,
-                                  dvr->discreteIntAleatoryUncLabels,
-                                  dvr->discreteStrAleatoryUncLabels,
-                                  dvr->discreteRealAleatoryUncLabels,
-                                  dvr->continuousEpistemicUncLabels,
-                                  dvr->discreteIntEpistemicUncLabels,
-                                  dvr->discreteStrEpistemicUncLabels,
-                                  dvr->discreteRealEpistemicUncLabels);
+    check_descriptors_for_repeats(dvr.continuousDesignLabels,
+                                  dvr.discreteDesignRangeLabels,
+                                  dvr.discreteDesignSetIntLabels,
+                                  dvr.discreteDesignSetStrLabels,
+                                  dvr.discreteDesignSetRealLabels,
+                                  dvr.continuousStateLabels,
+                                  dvr.discreteStateRangeLabels,
+                                  dvr.discreteStateSetIntLabels,
+                                  dvr.discreteStateSetStrLabels,
+                                  dvr.discreteStateSetRealLabels,
+                                  dvr.continuousAleatoryUncLabels,
+                                  dvr.discreteIntAleatoryUncLabels,
+                                  dvr.discreteStrAleatoryUncLabels,
+                                  dvr.discreteRealAleatoryUncLabels,
+                                  dvr.continuousEpistemicUncLabels,
+                                  dvr.discreteIntEpistemicUncLabels,
+                                  dvr.discreteStrEpistemicUncLabels,
+                                  dvr.discreteRealEpistemicUncLabels);
   }
 }
 
@@ -6773,7 +6773,6 @@ static Method_mp_ord
 
 static Real
 	MP_(absConvTol),
-	MP_(arithmeticTol),
 	MP_(centeringParam),
 	MP_(collocationRatio),
 	MP_(collocRatioTermsOrder),
@@ -6808,13 +6807,14 @@ static Real
         MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
-	MP_(roundingTol),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
         MP_(smoothFactor),
  	MP_(solnTarget),
+	MP_(solverRoundingTol),
 	MP_(solverTol),
+	MP_(statsRoundingTol),
 	MP_(stepLenToBoundary),
 	MP_(threshDelta),
 	MP_(threshStepLength),
@@ -6855,6 +6855,7 @@ static unsigned short
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
         MP_(expansionOrder),
+        MP_(kickOrder),
         MP_(maxOrder),
         MP_(quadratureOrder),
 	MP_(softConvLimit),
@@ -6922,6 +6923,7 @@ static StringArray
 
 static bool
 	MP_(adaptExpDesign),
+        MP_(adaptOrder),
 	MP_(adaptPosteriorRefine),
         MP_(adaptRank),
 	MP_(backfillFlag),
@@ -7041,7 +7043,9 @@ static Method_mp_type
 	MP2s(allocationTarget,TARGET_VARIANCE),
 	MP2s(c3RefineType,UNIFORM_START_ORDER),
 	MP2s(c3RefineType,UNIFORM_START_RANK),
+	MP2s(c3RefineType,UNIFORM_MAX_ORDER),
 	MP2s(c3RefineType,UNIFORM_MAX_RANK),
+	MP2s(c3RefineType,UNIFORM_MAX_RANK_ORDER),
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
@@ -7351,6 +7355,7 @@ static Model_mp_lit
 	MP2(surrogateType,local_taylor),
         MP2(surrogateType,multipoint_qmea),
         MP2(surrogateType,multipoint_tana),
+        MP2(trendOrder,none),
         MP2(trendOrder,constant),
         MP2(trendOrder,linear),
         MP2(trendOrder,reduced_quadratic),
@@ -7370,7 +7375,9 @@ static Model_mp_type
 	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
 	MP2s(c3RefineType,UNIFORM_START_ORDER),
 	MP2s(c3RefineType,UNIFORM_START_RANK),
+	MP2s(c3RefineType,UNIFORM_MAX_ORDER),
 	MP2s(c3RefineType,UNIFORM_MAX_RANK),
+	MP2s(c3RefineType,UNIFORM_MAX_RANK_ORDER),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
 	MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
@@ -7424,7 +7431,6 @@ static Model_mp_utype
 static Real
         MP_(adaptedBasisCollocRatio),
         MP_(annRange),
-	MP_(arithmeticTol),
 	MP_(collocationRatio),
 	MP_(convergenceTolerance),
 	MP_(decreaseTolerance),
@@ -7434,8 +7440,9 @@ static Real
 	MP_(percentFold),
 	MP_(regressionL2Penalty),
 	MP_(relTolerance),
-	MP_(roundingTol),
+	MP_(solverRoundingTol),
 	MP_(solverTol),
+	MP_(statsRoundingTol),
 	MP_(truncationTolerance);
 
 static RealVector
@@ -7477,6 +7484,7 @@ static StringArray
         MP_(secondaryVarMaps);
 
 static bool
+        MP_(adaptOrder),
         MP_(adaptRank),
 	MP_(autoRefine),
 	MP_(crossValidateFlag),
@@ -7504,6 +7512,7 @@ static bool
 static unsigned short
 	MP_(adaptedBasisSparseGridLev),
 	MP_(adaptedBasisExpOrder),
+	MP_(kickOrder),
 	MP_(maxOrder),
 	MP_(startOrder);
 

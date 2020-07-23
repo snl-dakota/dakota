@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -16,8 +16,6 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/functional/hash/hash.hpp>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <algorithm>
 #include "Teuchos_SerialDenseHelpers.hpp"
@@ -294,7 +292,7 @@ std::string::size_type longest_strlen(const std::vector<std::string>& vecstr);
 inline void build_label(String& label, const String& root_label, size_t tag, 
 			const String& separator = "")
 {
-  label = root_label + separator + boost::lexical_cast<std::string>(tag);
+  label = root_label + separator + std::to_string(tag);
 }
 
 /// create an array of labels by tagging root_label for each entry in
@@ -1243,6 +1241,32 @@ void x_y_pairs_to_x_set(
 // ---------------------------------
 // templated array utility functions
 // ---------------------------------
+
+
+template <typename ScalarType>
+inline ScalarType find_min(const std::vector<ScalarType>& vec)
+{
+  size_t i, len = vec.size();
+  ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
+  for (i=1; i<len; ++i)
+    if (vec[i] < min)
+      min = vec[i];
+  return min;
+}
+
+
+template <typename ScalarType>
+inline ScalarType find_max(const std::vector<ScalarType>& vec)
+{
+  size_t i, len = vec.size();
+  ScalarType max = (len) ? vec[0] : std::numeric_limits<ScalarType>::min();
+  for (i=1; i<len; ++i)
+    if (vec[i] > max)
+      max = vec[i];
+  return max;
+}
+
+
 #if defined(_MSC_VER)
 // MSE: this may be too generic and could hide special cases:
 //      can we rely on partial template specialization?
@@ -1254,7 +1278,7 @@ size_t find_index(const ContainerType& c,
 {
   // should be more efficient than find() + distance()
   size_t cntr = 0;
-  BOOST_FOREACH(const typename ContainerType::value_type& entry, c) {
+  for(const typename ContainerType::value_type& entry : c) {
     if (entry == search_data)
       return cntr;
     else
@@ -1327,7 +1351,7 @@ size_t find_index(const ListT& l, const typename ListT::value_type& val)
 {
   // should be more efficient than find() + distance()
   size_t cntr = 0;
-  BOOST_FOREACH(const typename ListT::value_type& entry, l) {
+  for(const typename ListT::value_type& entry : l) {
     if (entry == val)
       return cntr;
     else

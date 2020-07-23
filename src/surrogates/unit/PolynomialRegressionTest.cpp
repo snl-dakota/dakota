@@ -1,17 +1,20 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
 
-#include "common_utils.hpp"
-#include "LinearSolvers.hpp"
-#include "PolynomialRegression.hpp"
+#include "util_common.hpp"
+#include "UtilLinearSolvers.hpp"
+#include "SurrogatesPolynomialRegression.hpp"
 #include "surrogates_tools.hpp"
 
+#include "Teuchos_XMLParameterListCoreHelpers.hpp"
+
+#include <boost/filesystem.hpp>
 #include <boost/random.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/test/minimal.hpp>
@@ -271,7 +274,7 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
   BOOST_CHECK(matrix_equals(gold_responses6, test_responses6, 1.0e-10));
 }
 
-void  PolynomialRegressionSurrogate_gradient_and_hessian() {
+void PolynomialRegressionSurrogate_gradient_and_hessian() {
 
   int num_vars    = 2,
       num_samples = 20,
@@ -301,6 +304,144 @@ void  PolynomialRegressionSurrogate_gradient_and_hessian() {
   BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
 }
 
+void save_free(const PolynomialRegression& surr_out, const std::string& outfile,
+	       bool binary)
+{
+  if (binary) {
+    std::ofstream model_ostream(outfile, std::ios::out|std::ios::binary);
+    if (!model_ostream.good())
+      throw std::runtime_error("Failure opening model file '" + outfile +
+			       "' for binary save.");
+
+    boost::archive::binary_oarchive output_archive(model_ostream);
+    output_archive << surr_out;
+    std::cout << "Model saved to binary file '" << outfile << "'."
+	      << std::endl;
+  }
+  else {
+    std::ofstream model_ostream(outfile, std::ios::out);
+    if (!model_ostream.good())
+      throw std::runtime_error("Failure opening model file '" + outfile +
+			       "' for save.");
+    boost::archive::text_oarchive output_archive(model_ostream);
+    output_archive << surr_out;
+    std::cout << "Model saved to text file '" << outfile << "'."
+	      << std::endl;
+  }
+}
+
+void load_free(const std::string& infile, bool binary,
+	       PolynomialRegression& pr4)
+{
+  if (binary) {
+    std::ifstream model_istream(infile, std::ios::in|std::ios::binary);
+    if (!model_istream.good())
+      throw std::string("Failure opening model file for load.");
+
+    boost::archive::binary_iarchive input_archive(model_istream);
+    input_archive >> pr4;
+    std::cout << "Model loaded from binary file '" << infile << "'."
+	      << std::endl;
+  }
+  else {
+    std::ifstream model_istream(infile, std::ios::in);
+    if (!model_istream.good())
+      throw std::string("Failure opening model file for load.");
+
+    boost::archive::text_iarchive input_archive(model_istream);
+    input_archive >> pr4;
+    std::cout << "Model loaded from text file." << std::endl;
+  }
+}
+
+void PolynomialRegressionSurrogate_parameter_list_import() {
+  int num_vars    = 2,
+      num_samples = 20,
+      degree      = 3;
+
+  MatrixXd samples, responses;
+  get_samples(num_vars, num_samples, samples);
+  cubic_bivariate_function(samples, responses);
+
+  PolynomialRegression pr(samples, responses, "pr_test_data/pr_parameter_list.xml");
+
+  MatrixXd gradient, hessian;
+  pr.gradient(samples.topRows(2), gradient);
+  pr.hessian(samples.topRows(1), hessian);
+
+  MatrixXd gold_gradient(2,2);
+  gold_gradient << 1.59711,  1.06684, 
+                   0.691654, 2.90352;
+
+  MatrixXd gold_hessian(2,2);
+  gold_hessian << -2.75852, 0.04462,
+                   0.04462, -1.83287;
+
+  BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
+}
+
+/// Create, evaluate, and save a basic polynomial; load and verify
+/// same evals (based on multivariate_regression_builder test)
+void PolynomialRegression_SaveLoad()
+{
+  int num_vars    = 2,
+      num_samples = 20,
+      degree      = 3;
+
+  /* Generate build data */
+  MatrixXd samples, responses;
+  get_samples(num_vars, num_samples, samples);
+  another_additive_quadratic_function(samples, responses);
+
+  /* Now try out some interpolants that should be exact */
+
+  /* Check correctness of computed polynomial coefficients against the one used to construct the model */
+  MatrixXd gold_coeffs(10,1);
+  /* Term exponents for f(x,y) = -1 + 4*x*x + 4*y*y
+     x:            0    1    0    2    0    1    3    0    2    1
+     y:            0    0    1    0    2    1    0    3    1    2 */
+  gold_coeffs << -1.0, 0.0, 0.0, 4.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+  MatrixXd eval_points, gold_responses, test_responses;
+  get_samples(num_vars, 7, eval_points);
+  another_additive_quadratic_function(eval_points, gold_responses);
+
+  /* Use the Surrogates API with partially user-defined input parameters */
+  Teuchos::ParameterList param_list_partial("Polynomial Test Parameters");
+  param_list_partial.set("max degree", degree);
+  param_list_partial.set("scaler type", "none");
+
+  PolynomialRegression pr3(samples, responses, param_list_partial);
+
+  // Initially modelling what save/load functions would do for binary/text
+  for (bool binary : {true, false} ) {
+
+    std::string filename("poly_test.surr");
+
+    boost::filesystem::remove(filename);
+    Surrogate::save(pr3, filename, binary);
+
+    PolynomialRegression pr4;
+    Surrogate::load(filename, binary, pr4);
+
+    BOOST_CHECK(pr3.get_num_terms() == pr4.get_num_terms());
+    BOOST_CHECK(pr3.get_polynomial_intercept() ==
+		pr4.get_polynomial_intercept());
+    BOOST_CHECK(pr3.get_polynomial_coeffs() ==
+		pr4.get_polynomial_coeffs());
+
+    // tests on the loaded surrogate based on original unit test
+    const MatrixXd& loaded_coeffs = pr4.get_polynomial_coeffs();
+    double loaded_intercept = pr4.get_polynomial_intercept();
+    MatrixXd test_responses;
+    pr4.value(eval_points, test_responses);
+
+    BOOST_CHECK(std::abs(loaded_intercept) < 1.0e-10 );
+    BOOST_CHECK(matrix_equals(gold_coeffs, loaded_coeffs, 1.0e-10));
+    BOOST_CHECK(matrix_equals(gold_responses, test_responses, 1.0e-10));
+
+  }
+}
+
 } // namespace
 
 // --------------------------------------------------------------------------------
@@ -315,6 +456,12 @@ int test_main(int argc, char* argv[]) // note the name!
   // Multivariate tests
   PolynomialRegressionSurrogate_multivariate_regression_builder();
   PolynomialRegressionSurrogate_gradient_and_hessian();
+
+  // ParameterList import test
+  PolynomialRegressionSurrogate_parameter_list_import();
+  
+  // Serialization tests
+  PolynomialRegression_SaveLoad();
 
   BOOST_CHECK(boost::exit_success == 0);
 
