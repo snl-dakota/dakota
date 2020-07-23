@@ -99,7 +99,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   ( hybrid {N_mdm(utype,methodName_HYBRID)}
     ( sequential ALIAS uncoupled {N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}
       ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
-        [ model_pointer_list STRING {N_mdm(strL,hybridModelPointers)} ]
+        [ model_pointer_list STRINGLIST {N_mdm(strL,hybridModelPointers)} ]
        )
       |
       method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
