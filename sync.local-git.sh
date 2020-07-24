@@ -6,7 +6,7 @@ if [ -d local ]; then
   git fetch origin
   cd ../
 else
-  git clone --recursive software-srn.sandia.gov:/git/dakota local
+  git clone software-srn.sandia.gov:/git/dakota local
 fi
 
 cd local
@@ -16,6 +16,11 @@ if [ $# == 1 ] && [ $1 == "-u" ]; then
   git log --pretty=format:"%H" -1 > ../external.local
 elif [ -f ../external.local ]; then
   git checkout `cat ../external.local`
-  git submodule update --init
+  if [ -d packages ]; then
+    rm -rf packages
+  fi
+  if [ -d .git/modules ]; then
+    rm -rf .git/modules
+  fi
 fi
 cd -
