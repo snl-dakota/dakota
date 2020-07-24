@@ -17,3 +17,12 @@
 	path = packages/surfpack
 	url = ../surfpack
 #>>>>>>> origin/devel
+[submodule "packages/local/DOT"]
+	path = packages/local/DOT
+	url = git@gitlab-ex.sandia.gov:dakota/SNL/DOT
+[submodule "packages/local/NPSOL"]
+	path = packages/local/NPSOL
+	url = git@gitlab-ex.sandia.gov:dakota/SNL/NPSOL
+[submodule "packages/local/NLPQL"]
+	path = packages/local/NLPQL
+	url = git@gitlab-ex.sandia.gov:dakota/SNL/NLPQL
