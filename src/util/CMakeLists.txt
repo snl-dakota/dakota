@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014 Sandia Corporation.
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -11,17 +11,21 @@
 #project(DakotaUtil LANGUAGES CXX)
 
 set(util_sources
-  common_utils.cpp
-  DataScaler.cpp
-  LinearSolvers.cpp
-  math_tools.cpp
+  util_common.cpp
+  UtilDataScaler.cpp
+  UtilLinearSolvers.cpp
+  util_metrics.cpp
+  util_math_tools.cpp
   )
 
 set(util_headers
-  common_utils.hpp
-  DataScaler.hpp
-  LinearSolvers.hpp
-  math_tools.hpp
+  util_common.hpp
+  UtilDataScaler.hpp
+  UtilLinearSolvers.hpp
+  util_metrics.hpp
+  util_data_types.hpp
+  util_eigen_plugins.hpp
+  util_math_tools.hpp
   )
 
 add_library(dakota_util ${util_sources} ${util_headers})
@@ -37,22 +41,26 @@ if(TARGET Eigen3::Eigen)
   ${EIGEN3_INCLUDE_DIR}")
 endif()
 
-target_link_libraries(dakota_util PRIVATE Boost::boost)
+target_link_libraries(dakota_util PRIVATE Boost::boost
+  PUBLIC Boost::serialization)
 
 target_include_directories(dakota_util PRIVATE
   ${Teuchos_INCLUDE_DIRS})
 
-target_include_directories(dakota_util INTERFACE
-  ${CMAKE_CURRENT_SOURCE_DIR})
-
+# BMA TODO: review with Tom how to handle correctly (PUBLIC vs INTERFACE)
+#target_include_directories(dakota_util INTERFACE
+target_include_directories(dakota_util PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include>
+)
 target_compile_definitions(dakota_util PUBLIC
-  "EIGEN_MPL2_ONLY")
+  "EIGEN_MPL2_ONLY"
+)
 
 dakota_strict_warnings(dakota_util)
 dakota_gcov_target(dakota_util)
 
-target_link_libraries(dakota_util PUBLIC
-  Eigen3::Eigen)
+target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)
 
 install(FILES ${util_headers} DESTINATION "include")
 install(TARGETS dakota_util EXPORT ${ExportTarget} DESTINATION lib)

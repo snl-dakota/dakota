@@ -1,3 +1,11 @@
+#  _______________________________________________________________________
+#
+#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  This software is distributed under the GNU Lesser General Public License.
+#  For more information, see the README file in the top Dakota directory.
+#  _______________________________________________________________________
+
 include(DakotaUnitTest)
 #include(FindBoost)
 
@@ -141,11 +149,16 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     opt_tpl_adapters.cpp
     opt_tpl_api.cpp
     opt_api_traits.cpp
-    rol_adapters.cpp
-    rol_integration.cpp
-    opt_tpl_rol_test_textbook.cpp
-    opt_tpl_rol_test_rol_pbs.cpp
     )
+  if (DAKOTA_HAVE_ROL)
+    list(APPEND 
+      rol_adapters.cpp
+      rol_integration.cpp
+      opt_tpl_rol_test_textbook.cpp
+      opt_tpl_rol_test_rol_pbs.cpp
+      )
+  endif(DAKOTA_HAVE_ROL)
+
   if (DAKOTA_HAVE_MPI)
     list(REMOVE_ITEM dakota_opt_unit_tests opt_tpl_api.cpp opt_tpl_test.cpp)
   endif(DAKOTA_HAVE_MPI)
@@ -154,11 +167,11 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     SOURCES teuchos_unit_test_driver.cpp ${dakota_utils_unit_tests}
     LINK_DAKOTA_LIBS
     )
-  dakota_add_unit_test(NAME surrogate_unit_tests
-    SOURCES teuchos_unit_test_driver.cpp ${dakota_surrogate_unit_tests}
-    LINK_DAKOTA_LIBS
-    )
   if (DAKOTA_MODULE_SURROGATES)
+    dakota_add_unit_test(NAME surrogate_unit_tests
+      SOURCES teuchos_unit_test_driver.cpp ${dakota_surrogate_unit_tests}
+      LINK_DAKOTA_LIBS
+      )
     target_link_libraries(surrogate_unit_tests
       dakota_surrogates)
     dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/gauss_proc_test_files"

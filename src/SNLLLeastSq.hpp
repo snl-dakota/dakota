@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -28,6 +28,41 @@ class OptDHNIPS;
 
 
 namespace Dakota {
+
+/**
+ * \brief A version of TraitsBase specialized for SNLLLeastSq
+ *
+ */
+ 
+class SNLLLeastSqTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  SNLLLeastSqTraits() { }
+
+  /// destructor
+  virtual ~SNLLLeastSqTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+};
+
 
 /// Wrapper class for the OPT++ optimization library.
 
@@ -58,43 +93,6 @@ namespace Dakota {
     gradient_based_line_search.  Refer to [Meza, J.C., 1994] and to
     the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
-
-
-/**
- * \brief A version of TraitsBase specialized for SNLLLeastSq
- *
- */
-
-  
-class SNLLLeastSqTraits: public TraitsBase
-{
-  public:
-
-  /// default constructor
-  SNLLLeastSqTraits() { }
-
-  /// destructor
-  virtual ~SNLLLeastSqTraits() { }
-
-  /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
-
-  /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
-
-  /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
-
-  /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
-
-  /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
-
-  /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
-};
-
 class SNLLLeastSq: public LeastSq, public SNLLBase
 {
 public:

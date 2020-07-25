@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -16,9 +16,7 @@
 #include <link.h>
 #include <sys/types.h> // MAY REQUIRE ifndef(HPUX)
 #include <sys/stat.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h> // for usleep()
-#endif
+#include <thread> // for sleep_for()
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
 #include "GridApplicInterface.hpp"
@@ -219,12 +217,10 @@ void GridApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 	}
 	else
 	  failCountMap[fn_eval_id] = 1;
-#ifdef HAVE_UNISTD_H
 	//
 	// Sleep for 1 millisecond
 	//
-	usleep(1000);
-#endif // HAVE_UNISTD_H
+	std::this_thread::sleep_for(std::chrono::milliseconds(1));
 #ifdef ASYNCH_DEBUG
 	Cerr << "Warning: exception caught in reading response file "
 	     << file_to_test << "\nException = \"" << fr_except.what()
@@ -255,11 +251,9 @@ void GridApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
     }
   }
 
-#ifdef HAVE_UNISTD_H
   // reduce processor load from DAKOTA testing if jobs are not finishing
   if (completionSet.empty()) // no jobs completed in pass through entire set
-    usleep(1000); // 1000 microseconds = 1 millisec
-#endif // HAVE_UNISTD_H
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   // Remove completed jobs from idSet
   for (ISIter it = completionSet.begin(); it != completionSet.end(); it++)
     idSet.erase(*it);

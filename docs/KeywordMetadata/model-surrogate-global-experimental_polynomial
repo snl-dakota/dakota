@@ -1,0 +1,13 @@
+Blurb::
+Use a deterministic polynomial surrogate
+
+Description::
+Compute a polynomial surrogate for a specified total order by 
+least-squares regression. This model is implemented in Dakota's
+surrogates module and is considered experimental.
+
+Topics::
+
+Theory::
+Faq::
+See_Also::

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -59,6 +59,7 @@ class SharedApproxData
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
   friend class SurrogatesGPApprox;
+  friend class SurrogatesBaseApprox;
   friend class SurrogatesPolyApprox;
 #endif // HAVE_DAKOTA_SURROGATES
 
@@ -135,6 +136,9 @@ public:
   /// promote aggregated data sets to active state
   virtual void combined_to_active(bool clear_combined = true);
 
+  /// queries availability of advancing the approximation resolution
+  virtual bool advancement_available();
+
   /// increments polynomial expansion order (PCE, FT)
   virtual void increment_order();
   /// decrements polynomial expansion order (PCE, FT)
@@ -188,7 +192,7 @@ public:
 
   /// returns dataRep for access to derived class member functions
   /// that are not mapped to the top SharedApproxData level
-  SharedApproxData* data_rep() const;
+  std::shared_ptr<SharedApproxData> data_rep() const;
 
 protected:
 
@@ -270,23 +274,21 @@ private:
 
   /// Used only by the standard envelope constructor to initialize
   /// dataRep to the appropriate derived type.
-  SharedApproxData* get_shared_data(ProblemDescDB& problem_db, size_t num_vars);
+  std::shared_ptr<SharedApproxData>
+  get_shared_data(ProblemDescDB& problem_db, size_t num_vars);
 
   /// Used only by the alternate envelope constructor to initialize
   /// dataRep to the appropriate derived type.
-  SharedApproxData* get_shared_data(const String& approx_type,
-				    const UShortArray& approx_order,
-				    size_t num_vars, short data_order,
-				    short output_level);
+  std::shared_ptr<SharedApproxData>
+  get_shared_data(const String& approx_type, const UShortArray& approx_order,
+		  size_t num_vars, short data_order, short output_level);
 
   //
   //- Heading: Data
   //
 
   /// pointer to the letter (initialized only for the envelope)
-  SharedApproxData* dataRep;
-  /// number of objects sharing dataRep
-  int referenceCount;
+  std::shared_ptr<SharedApproxData> dataRep;
 };
 
 
@@ -323,7 +325,7 @@ set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 }
 
 
-inline SharedApproxData* SharedApproxData::data_rep() const
+inline std::shared_ptr<SharedApproxData> SharedApproxData::data_rep() const
 { return dataRep; }
 
 } // namespace Dakota

@@ -1,0 +1,15 @@
+Blurb:: Employ a nodal sparse grid construction in stochastic collocation
+
+Description::
+
+Stochastic collocation with sparse grids can employ either a nodal or
+hierarchical formulation.  The nodal formulation does not require
+nested interpolation rules and is therefore more generally applicable.
+However, in the context of adaptive refinement, it can suffer from
+loss of precision due to subtractive cancellation.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -213,7 +213,7 @@ private:
   /// validate user run modes and set userModesFlag
   void validate_run_modes();
 
-  /// retrieve environment.<db_name> from the problem db and update
+  /// retrieve environment.db_name from the problem db and update
   /// data_member, warning if needed
   void set_option(const ProblemDescDB& problem_db, const String& db_name, 
 		  String& data_member);

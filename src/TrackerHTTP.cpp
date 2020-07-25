@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -111,8 +111,7 @@ void TrackerHTTP::post_finish(unsigned runtime)
   std::string datatopost;
   build_default_data(datatopost, end_time, "FINISH");
   // add the elapsed time in the postrun case
-  std::string elapsed_time( boost::lexical_cast<std::string>(end_time -
-                                                             startTime) );
+  std::string elapsed_time( std::to_string(end_time - startTime) );
   url_add_field(datatopost, "elapsedseconds", elapsed_time);
 
   send_data_using_post(datatopost);

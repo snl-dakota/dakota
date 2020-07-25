@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -19,7 +19,7 @@
 #include "dakota_windows.h"
 #include <process.h>
 #include <algorithm>
-
+#include <thread>
 
 namespace Dakota {
 
@@ -145,7 +145,7 @@ void SpawnApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 
   // reduce processor load from DAKOTA testing if jobs are not finishing
   if (completionSet.empty())
-    Sleep(2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
 }
 
 

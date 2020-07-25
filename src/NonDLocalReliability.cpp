@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -216,13 +216,14 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Model g_hat_x_model;  Iterator dace_iterator;
     ActiveSet dfs_set = iteratedModel.current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
-    g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
-      dfs_set, approx_type, approx_order, corr_type, corr_order, ai_data_order,
-      outputLevel, sample_reuse), false);
+    g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>
+			     (dace_iterator, iteratedModel,dfs_set, approx_type,
+			      approx_order, corr_type, corr_order, ai_data_order,
+			      outputLevel, sample_reuse));
 
     // transform g_hat_x_model from x-space to u-space; truncate distrib bnds
-    uSpaceModel.assign_rep(new
-      ProbabilityTransformModel(g_hat_x_model, STD_NORMAL_U, true), false);
+    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>
+			   (g_hat_x_model, STD_NORMAL_U, true));
     break;
   }
   case AMV_U: case AMV_PLUS_U: case TANA_U: case QMEA_U: {
@@ -230,8 +231,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // Recast g(x) to G(u); truncate distribution bounds
     Model g_u_model;
-    g_u_model.assign_rep(new
-      ProbabilityTransformModel(iteratedModel, STD_NORMAL_U, true), false);
+    g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+			 (iteratedModel, STD_NORMAL_U, true));
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
@@ -247,15 +248,16 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Iterator dace_iterator;
     ActiveSet dfs_set = g_u_model.current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
-    uSpaceModel.assign_rep(new DataFitSurrModel(dace_iterator, g_u_model,
-      dfs_set, approx_type, approx_order, corr_type, corr_order, ai_data_order,
-      outputLevel, sample_reuse), false);
+    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+			   (dace_iterator, g_u_model, dfs_set, approx_type,
+			    approx_order, corr_type, corr_order, ai_data_order,
+			    outputLevel, sample_reuse));
     break;
   }
   case NO_APPROX: { // Recast( iteratedModel )
     // Recast g(x) to G(u); truncate distribution bounds
-    uSpaceModel.assign_rep(new
-      ProbabilityTransformModel(iteratedModel, STD_NORMAL_U, true), false);
+    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>
+			   (iteratedModel, STD_NORMAL_U, true));
     // detect PMA2 condition and augment mppModel data requirements
     bool pma2_flag = false;
     if (integrationOrder == 2)
@@ -279,9 +281,9 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   if (mppSearchType) {
     SizetArray recast_vars_comps_total;  // default: empty; no change in size
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
-    mppModel.assign_rep(
-      new RecastModel(uSpaceModel, recast_vars_comps_total, all_relax_di,
-		      all_relax_dr, 1, 1, 0, recast_resp_order), false);
+    mppModel.assign_rep(std::make_shared<RecastModel>
+			(uSpaceModel, recast_vars_comps_total, all_relax_di,
+			 all_relax_dr, 1, 1, 0, recast_resp_order));
     RealVector nln_eq_targets(1, false); nln_eq_targets = 0.;
     mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
 
@@ -314,14 +316,14 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       Real conv_tol = -1.; // use NPSOL default
 
 #ifdef HAVE_NPSOL
-      mppOptimizer.assign_rep(new NPSOLOptimizer(mppModel, npsol_deriv_level,
-	conv_tol), false);
+      mppOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
+			      (mppModel, npsol_deriv_level, conv_tol));
 #endif
     }
 #ifdef HAVE_OPTPP
     else
-      mppOptimizer.assign_rep(new SNLLOptimizer("optpp_q_newton", mppModel),
-	false);
+      mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			      ("optpp_q_newton", mppModel));
 #endif
   }
 
@@ -372,30 +374,33 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // AIS is performed in u-space WITHOUT a surrogate: pass a truth u-space
     // model when available, construct one when not.
-    NonDAdaptImpSampling* import_sampler_rep = NULL;
+    std::shared_ptr<NonDAdaptImpSampling> import_sampler_rep;
     switch (mppSearchType) {
     case AMV_X: case AMV_PLUS_X: case TANA_X: case QMEA_X: {
       Model g_u_model;
-      g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-	STD_NORMAL_U), false); // original distribution bnds
-      import_sampler_rep = new NonDAdaptImpSampling(g_u_model, sample_type,
-	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	cdfFlag, x_model_flag, use_model_bounds, track_extreme);
+      g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+			   (iteratedModel, STD_NORMAL_U)); // original distribution bnds
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
+	(g_u_model, sample_type,
+	 refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
+	 cdfFlag, x_model_flag, use_model_bounds, track_extreme);
       break;
     }
     case AMV_U: case AMV_PLUS_U: case TANA_U: case QMEA_U:
-      import_sampler_rep = new NonDAdaptImpSampling(uSpaceModel.truth_model(),
-	sample_type, refine_samples, refine_seed, rng, vary_pattern,
-	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
-	track_extreme);
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
+	(uSpaceModel.truth_model(),
+	 sample_type, refine_samples, refine_seed, rng, vary_pattern,
+	 integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
+	 track_extreme);
       break;
     case NO_APPROX:
-      import_sampler_rep = new NonDAdaptImpSampling(uSpaceModel, sample_type,
-	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	cdfFlag, x_model_flag, use_model_bounds, track_extreme);
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>
+	(uSpaceModel, sample_type,
+	 refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
+	 cdfFlag, x_model_flag, use_model_bounds, track_extreme);
       break;
     }
-    importanceSampler.assign_rep(import_sampler_rep, false);
+    importanceSampler.assign_rep(import_sampler_rep);
   }
 
   // Size the output arrays, augmenting sizing in NonDReliability.  Relative to
@@ -510,6 +515,42 @@ void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDLocalReliability::initialize_graphics(int iterator_server_id)
+{
+  // Set up special graphics for CDF/CCDF visualization
+  if (totalLevelRequests) {
+
+    OutputManager& mgr = parallelLib.output_manager();
+    Graphics& dakota_graphics = mgr.graphics();
+
+    // For graphics, limit (currently) to server id 1, for both ded master
+    // (parent partition rank 1) and peer partitions (parent partition rank 0)
+    if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
+      dakota_graphics.create_plots_2d(iteratedModel.current_variables(),
+				      iteratedModel.current_response());
+      // Visualize mostProbPointX in the vars windows and CDF/CCDF
+      // probability/reliability-response level pairs in the response windows.
+      dakota_graphics.set_x_labels2d("Response Level");
+      size_t i;
+      for (i=0; i<numFunctions; i++)
+	dakota_graphics.set_y_label2d(i, "Probability");
+      for (i=0; i<numContinuousVars; i++)
+	dakota_graphics.set_y_label2d(i+numFunctions, "Most Prob Point");
+    }
+
+    /*
+    // For output/restart/tabular data, all Iterator masters stream output
+    if (mgr.tabularDataFlag) { // initialize the tabular data file
+      dakota_graphics.tabular_counter_label("z");
+      dakota_graphics.create_tabular_datastream(
+        iteratedModel.current_variables(), iteratedModel.current_response(),
+        );
+    }
+    */
+  }
+}
+
+
 void NonDLocalReliability::pre_run()
 {
   NonDReliability::pre_run();
@@ -546,8 +587,9 @@ void NonDLocalReliability::core_run()
   // post-process level mappings to define PDFs (using prob_refined and
   // all_levels_computed modes)
   if (pdfOutput && integrationRefinement) {
-    NonDAdaptImpSampling* import_sampler_rep
-      = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+    std::shared_ptr<NonDAdaptImpSampling> import_sampler_rep =
+      std::static_pointer_cast<NonDAdaptImpSampling>
+      (importanceSampler.iterator_rep());
     compute_densities(import_sampler_rep->extreme_values(), true, true);
   } // else no extreme values to define outer PDF bins
 }
@@ -924,7 +966,8 @@ void NonDLocalReliability::mpp_search()
 
 	Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
 	BoolDequeArray nonlinear_resp_map(2);
-	RecastModel* mpp_model_rep = (RecastModel*)mppModel.model_rep();
+	std::shared_ptr<RecastModel> mpp_model_rep =
+	  std::static_pointer_cast<RecastModel>(mppModel.model_rep());
 	if (ria_flag) { // RIA: g is in constraint
 	  primary_resp_map.resize(1);   // one objective, no contributors
 	  secondary_resp_map.resize(1); // one constraint, one contributor
@@ -1571,7 +1614,8 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       mode |= 4;
       // RecastModel::transform_set() normally handles this, but we are
       // bypassing the Recast and pulling iteratedModel data from data_pairs
-      RecastModel* pt_model_rep = (RecastModel*)uSpaceModel.model_rep();
+      std::shared_ptr<RecastModel> pt_model_rep =
+	std::static_pointer_cast<RecastModel>(uSpaceModel.model_rep());
       if (pt_model_rep->nonlinear_variables_mapping())
 	mode |= 2; // fnGradX needed to transform fnHessX to fnHessU
     }
@@ -2331,8 +2375,9 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
   if (integrationRefinement &&                                  // IS/AIS/MMAIS
       levelCount < requestedRespLevels[respFnCount].length()) { // RIA only
     // rep needed for access to functions not mapped to Iterator level
-    NonDAdaptImpSampling* import_sampler_rep
-      = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+    std::shared_ptr<NonDAdaptImpSampling> import_sampler_rep =
+      std::static_pointer_cast<NonDAdaptImpSampling>
+      (importanceSampler.iterator_rep());
     bool x_data_flag = false;
     import_sampler_rep->
       initialize(mpp_u, x_data_flag, respFnCount, p, requestedTargetLevel);
@@ -2818,8 +2863,8 @@ void NonDLocalReliability::method_recourse()
        << "detected method conflict.\n\n";
   if (mppSearchType && npsolFlag) {
 #ifdef HAVE_OPTPP
-    mppOptimizer.assign_rep(
-      new SNLLOptimizer("optpp_q_newton", mppModel), false);
+    mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			    ("optpp_q_newton", mppModel));
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalReliability "
 	 << "(OPT++ NIP unavailable).\n";

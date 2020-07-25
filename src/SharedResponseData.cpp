@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -10,7 +10,6 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-// #define REFCOUNT_DEBUG 1
 // #define SERIALIZE_DEBUG 1
 
 #include "SharedResponseData.hpp"
@@ -93,12 +92,12 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     numScalarPrimary = num_scalar_primary;
     numScalarResponses = num_scalar_responses;
 
-    // extract the fieldLabels from the functionLabels (one per field group)
+    // extract the priFieldLabels from the functionLabels (one per field group)
     copy_data_partial(functionLabels, numScalarResponses, num_field_responses,
-		      fieldLabels);
+		      priFieldLabels);
     // unroll field response groups to create individual function labels
-    fieldRespGroupLengths = problem_db.get_iv("responses.lengths");
-    if (num_field_responses != fieldRespGroupLengths.length()) {
+    priFieldLengths = problem_db.get_iv("responses.lengths");
+    if (num_field_responses != priFieldLengths.length()) {
       Cerr << "Error: For each field response, you must specify " 
            << "the length of that field.  The number of elements " 
            << "in the 'lengths' vector must " 
@@ -135,11 +134,6 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
          << "the total number of calibration terms." << std::endl;
     abort_handler(-1);
   }
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseDataRep::SharedResponseDataRep(problem_db) "
-       << "called to build body object." << std::endl;
-#endif
 }
 
 
@@ -155,11 +149,6 @@ SharedResponseDataRep::SharedResponseDataRep(const ActiveSet& set):
   // bestResponse by NPSOLOptimizer's user-defined functions option).
   functionLabels.resize(numScalarResponses);
   build_labels(functionLabels, "f");
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseDataRep::SharedResponseDataRep() called to build "
-       << "empty body object." << std::endl;
-#endif
 }
 
 
@@ -172,13 +161,13 @@ void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
   responsesId           = srd_rep->responsesId;
 
   functionLabels        = srd_rep->functionLabels;
-  fieldLabels           = srd_rep->fieldLabels;
+  priFieldLabels        = srd_rep->priFieldLabels;
 
   numScalarResponses    = srd_rep->numScalarResponses;
   numScalarPrimary      = srd_rep->numScalarPrimary;
-  fieldRespGroupLengths = srd_rep->fieldRespGroupLengths;
+  priFieldLengths       = srd_rep->priFieldLengths;
 
-  numCoordsPerField     = srd_rep->numCoordsPerField;
+  coordsPerPriField     = srd_rep->coordsPerPriField;
 
   simulationVariance 	= srd_rep->simulationVariance;
 }
@@ -192,18 +181,18 @@ void SharedResponseDataRep::serialize(Archive& ar, const unsigned int version)
   ar & responsesId;
   // TODO: archive unrolled minimal labels if possible
   ar & functionLabels;
-  ar & fieldLabels;
+  ar & priFieldLabels;
   ar & numScalarResponses;
   ar & numScalarPrimary;
-  ar & fieldRespGroupLengths;
-  ar & numCoordsPerField;
+  ar & priFieldLengths;
+  ar & coordsPerPriField;
 #ifdef SERIALIZE_DEBUG  
   Cout << "Serializing SharedResponseDataRep:\n"
        << responseType << '\n'
        << responsesId << '\n'
        << functionLabels
        << numScalarResponses
-       << fieldRespGroupLengths
+       << priFieldLengths
        << std::endl;
 #endif
 }
@@ -215,17 +204,17 @@ bool SharedResponseDataRep::operator==(const SharedResponseDataRep& other)
 	  primaryFnType == other.primaryFnType &&
 	  responsesId == other.responsesId &&
 	  functionLabels == other.functionLabels &&
-	  fieldLabels == other.fieldLabels &&
+	  priFieldLabels == other.priFieldLabels &&
 	  numScalarResponses == other.numScalarResponses &&
 	  numScalarPrimary == other.numScalarPrimary &&
-	  fieldRespGroupLengths == other.fieldRespGroupLengths &&
-	  numCoordsPerField == other.numCoordsPerField);
+	  priFieldLengths == other.priFieldLengths &&
+	  coordsPerPriField == other.coordsPerPriField);
 }
 
 
 void SharedResponseDataRep::build_field_labels()
 {
-  size_t unroll_fns = numScalarResponses + fieldRespGroupLengths.normOne();
+  size_t unroll_fns = numScalarResponses + priFieldLengths.normOne();
   if (functionLabels.size() != unroll_fns)
     functionLabels.resize(unroll_fns);  // unique label for each QoI
 
@@ -233,9 +222,9 @@ void SharedResponseDataRep::build_field_labels()
 
   // append _<field_entry_num> to the base label
   size_t unrolled_index = numScalarResponses;
-  for (size_t i=0; i<fieldRespGroupLengths.length(); ++i)
-    for (size_t j=0; j<fieldRespGroupLengths[i]; ++j)
-      build_label(functionLabels[unrolled_index++], fieldLabels[i], j+1, "_");
+  for (size_t i=0; i<priFieldLengths.length(); ++i)
+    for (size_t j=0; j<priFieldLengths[i]; ++j)
+      build_label(functionLabels[unrolled_index++], priFieldLabels[i], j+1, "_");
 }
 
 /** Deep copies are used when recasting changes the nature of a
@@ -244,24 +233,12 @@ SharedResponseData SharedResponseData::copy() const
 {
   // the handle class instantiates a new handle and a new body and copies
   // current attributes into the new body
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseData::copy() called to generate a deep copy with no "
-       << "representation sharing.\n";
-  Cout << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
-#endif
-
   SharedResponseData srd; // new handle: srdRep=NULL
   if (srdRep) {
     srd.srdRep.reset(new SharedResponseDataRep());
     srd.srdRep->copy_rep(srdRep.get());
   }
 
-#ifdef REFCOUNT_DEBUG
-  Cout << "  srdRep use_count after  = " << srdRep.use_count() << '\n';
-  Cout << "  new srd use_count after  = " << srd.srdRep.use_count() << std::endl;
-#endif
- 
   return srd;
 }
 
@@ -270,18 +247,10 @@ void SharedResponseData::reshape(size_t num_fns)
 {
   if (num_functions() != num_fns) {
     // separate sharing if needed
-    //if (srdRep->referenceCount > 1) { // shared rep: separate
-#ifdef REFCOUNT_DEBUG
-    Cout << "SharedResponseData::reshape() called.\n"
-	 << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
-#endif
+    //if (srdRep.use_count() > 1) { // shared rep: separate
     boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
     srdRep.reset(new SharedResponseDataRep()); // create new srdRep
     srdRep->copy_rep(old_rep.get());           // copy old data to new
-#ifdef REFCOUNT_DEBUG
-    Cout << "  srdRep use_count after  = " << srdRep.use_count() << '\n'
-	 << "  old_rep use_count after = " << old_rep.use_count() << std::endl;
-#endif
     //}
 
     // reshape function labels
@@ -335,16 +304,16 @@ void SharedResponseData::field_lengths(const IntVector& field_lens)
     srdRep->copy_rep(old_rep.get());            // copy old data to new
     
     // update the field lengths
-    srdRep->fieldRespGroupLengths = field_lens;
+    srdRep->priFieldLengths = field_lens;
 
     // reshape function labels, using updated num_functions()
     srdRep->functionLabels.resize(num_functions());
-    if (field_lens.length() != srdRep->fieldLabels.size()) {
+    if (field_lens.length() != srdRep->priFieldLabels.size()) {
       // can't use existing field labels (could happen in testing); use generic
       build_labels(srdRep->functionLabels, "f");
-      // update the fieldLabels
+      // update the priFieldLabels
       copy_data_partial(srdRep->functionLabels, num_scalar_responses(),
-			num_field_response_groups(), srdRep->fieldLabels);
+			num_field_response_groups(), srdRep->priFieldLabels);
     }
     else {
       // no change in number of fields; use existing labels for build
@@ -362,7 +331,7 @@ void SharedResponseData::field_group_labels(const StringArray& field_labels)
 	 << " fields." << std::endl;
     abort_handler(-1);
   }
-  srdRep->fieldLabels = field_labels;
+  srdRep->priFieldLabels = field_labels;
   // rebuild unrolled functionLabels for field values (no size change)
   srdRep->build_field_labels();
 }
@@ -392,16 +361,8 @@ bool SharedResponseData::operator==(const SharedResponseData& other)
 template<class Archive>
 void SharedResponseData::serialize(Archive& ar, const unsigned int version)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "SRD serializing with pointer " << srdRep.get() << '\n'
-       << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
-#endif
   // load will default construct and load through the pointer
   ar & srdRep;
-#ifdef REFCOUNT_DEBUG
-  Cout << "  srdRep pointer after  = " << srdRep.get() << std::endl;
-  Cout << "  srdRep use_count after  = " << srdRep.use_count() << std::endl;
-#endif
 }
 
 

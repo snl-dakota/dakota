@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -11,14 +11,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
-
-// eventually just use _WIN32 here
-#if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-#include <windows.h> // for Sleep()
-#elif defined(HAVE_UNISTD_H)
-#include <unistd.h> // for usleep()
-#endif
-
+#include <thread>
 
 int main(int argc, char** argv)
 {
@@ -55,11 +48,7 @@ int main(int argc, char** argv)
     fin.ignore(256, '\n');
   }
 
-#if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-  //Sleep(500); // 500 milliseconds = 0.5 seconds
-#elif defined(HAVE_UNISTD_H)
-  //sleep(1);
-#endif // SLEEP
+  //std::this_thread::sleep_for(std::chrono::seconds(1));
 
   // Compute the results and output them directly to argv[2] (the NO_FILTER
   // option is used).  Response tags are now optional; output them for ease

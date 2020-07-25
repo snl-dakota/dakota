@@ -1,3 +1,11 @@
+#  _______________________________________________________________________
+#
+#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  This software is distributed under the GNU Lesser General Public License.
+#  For more information, see the README file in the top Dakota directory.
+#  _______________________________________________________________________
+
 # Dakota itself requires this CMake version; some TPLs may require even newer
 cmake_minimum_required(VERSION 3.10)
 
@@ -34,18 +42,18 @@ include(DakotaOptions)
 # -----
 
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 11)
+set(Dakota_VERSION_MINOR 12)
 set(Dakota_VERSION_PATCH 0)
 
 # --- Release time toggles
 
 # Toggle this to append to the version number for stable
-#set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
+##set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
 set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # If empty, the build date will be used as the release date (could consider 
 # using the Git rev date); use format Mmm dd yyyy, as in asctime()
-#set(Dakota_RELEASE_DATE "Nov 15 2019")    # Versioned release date Mmm dd yyyy
+##set(Dakota_RELEASE_DATE "May 15 2020")    # Versioned release date Mmm dd yyyy
 set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
 
 # Define convenience variables used here and in subdirs, such as
@@ -220,6 +228,10 @@ dakota_gcov_init()
 if(DAKOTA_MODULE_UTIL)
   add_subdirectory(src/util)
 endif()
+if(BUILD_IN_TRILINOS)
+  set(DAKOTA_MODULE_SURROGATES OFF CACHE BOOL "DAKOTA SURROGATES MODULE is disabled for in-Trilinos builds" FORCE)
+endif(BUILD_IN_TRILINOS)
+
 if(DAKOTA_MODULE_SURROGATES)
   add_subdirectory(src/surrogates)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")

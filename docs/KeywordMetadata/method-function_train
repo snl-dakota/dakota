@@ -1,0 +1,38 @@
+Blurb::
+UQ method leveraging a functional tensor train surrogate model.
+ 
+Description::
+Tensor train decompositions are approximations that exploit low rank structure
+in an input-output mapping.  Refer to the \ref model-surrogate-global-function_train
+surrogate model for additional details.
+ 
+<b> Usage Tips </b>
+ 
+This method is a self-contained method alternative to the
+\ref model-surrogate-global-function_train surrogate model specification, similar
+to current method specifications for polynomial chaos and stochastic collocation.
+In particular, this \c function_train method specification directly couples with a
+simulation model (optionally identified with a \c model_pointer) and an additional
+\c function train surrogate model specification is not required as these options
+have been embedded within the method specification.
+ 
+Topics::
+ 
+Examples::
+\verbatim
+method,
+	function_train
+	  start_order = 2
+	  start_rank = 2  kick_rank = 2  max_rank = 10
+	  adapt_rank
+	  solver_tolerance    = 1e-12
+	  rounding_tolerance  = 1e-12
+	  convergence_tol     = 1e-6
+	  collocation_points  = 100
+	  samples_on_emulator = 100000
+	  seed = 531
+	  response_levels = .1 1. 50. 100. 500. 1000.
+	  variance_based_decomp
+\endverbatim
+ 
+See_Also:: model-surrogate-global-function_train, method-polynomial_chaos, method-stoch_collocation

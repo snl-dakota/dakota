@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -394,7 +394,7 @@ void OutputManager::init_results_db()
 {
   String file_tag;
   if (mpirunFlag)
-    file_tag = "." + boost::lexical_cast<String>(worldRank + 1);
+    file_tag = "." + std::to_string(worldRank + 1);
 
   String filename = resultsOutputFile+file_tag;
 

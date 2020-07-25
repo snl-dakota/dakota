@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -23,6 +23,7 @@
 //#include "DakotaInterface.hpp"
 #include "DakotaResponse.hpp"
 #include "MultivariateDistribution.hpp"
+#include "ScalingOptions.hpp"
 
 namespace Pecos { /* forward declarations */
 class SurrogateData;
@@ -43,32 +44,6 @@ class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
 class EvaluationStore;
-
-/// Simple container for user-provided scaling data, possibly expanded by replicates through the models
-class ScalingOptions {
-public:
-  /// default ctor: no scaling specified
-  ScalingOptions() { /* empty ctor */ };
-  /// standard ctor: scaling from problem DB
-  ScalingOptions(const ProblemDescDB& problem_db, const SharedResponseData& srd);
-  
-  // continuous variables scales
-  StringArray cvScaleTypes;
-  RealVector  cvScales;
-  // primary response scales
-  StringArray priScaleTypes;
-  RealVector  priScales;
-  // nonlinear constraint scales
-  StringArray nlnIneqScaleTypes;
-  RealVector  nlnIneqScales;
-  StringArray nlnEqScaleTypes;
-  RealVector  nlnEqScales;
-  // linear constraint scales
-  StringArray linIneqScaleTypes;
-  RealVector  linIneqScales;
-  StringArray linEqScaleTypes;
-  RealVector  linEqScales;               
-};
 
 
 /// Base class for the model class hierarchy.
@@ -296,6 +271,10 @@ public:
   virtual void combined_to_active(bool clear_combined = true);
   /// clear inactive approximations (finalization + combination completed)
   virtual void clear_inactive();
+
+  /// query the approximation for available advancement in resolution controls
+  /// (order, rank, etc.); an input to adaptive refinement strategies
+  virtual bool advancement_available();
 
   /// execute the DACE iterator (prior to building/appending the approximation)
   virtual void run_dace();
@@ -543,7 +522,7 @@ public:
   //
  
   /// replaces existing letter with a new one
-  void assign_rep(Model* model_rep, bool ref_count_incr = true);
+  void assign_rep(std::shared_ptr<Model> model_rep);
 
   // VARIABLES
 
@@ -1104,7 +1083,7 @@ public:
 
   /// returns modelRep for access to derived class member functions
   /// that are not mapped to the top Model level
-  Model* model_rep() const;
+  std::shared_ptr<Model> model_rep() const;
 
   /// set the specified configuration to the Model's inactive vars,
   /// converting from real to integer or through index to string value
@@ -1458,7 +1437,7 @@ private:
   //
 
   /// Used by the envelope to instantiate the correct letter class
-  Model* get_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
 
   /// evaluate numerical gradients using finite differences.  This
   /// routine is selected with "method_source dakota" (the default
@@ -1623,9 +1602,7 @@ private:
   BoolDeque recastFlags;
 
   /// pointer to the letter (initialized only for the envelope)
-  Model* modelRep;
-  /// number of objects sharing modelRep
-  int referenceCount;
+  std::shared_ptr<Model> modelRep;
 
   /// the last used model ID number for on-the-fly instantiations
   /// (increment before each use)
@@ -3651,7 +3628,7 @@ inline bool Model::is_null() const
 { return (modelRep) ? false : true; }
 
 
-inline Model* Model::model_rep() const
+inline std::shared_ptr<Model> Model::model_rep() const
 { return modelRep; }
 
 

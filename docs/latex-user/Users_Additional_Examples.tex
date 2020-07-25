@@ -695,7 +695,7 @@ design variables according to the following simple expressions:
 
 where the constants in Equation~\ref{additional:cylheadaltg} and
 Equation~\ref{additional:cylheadexp} assume the following values:
-$\sigma_{\mathtt{yield}}=3000$, $\mathtt{offset_{intake}}=3.25$,
+$\sigma_{\mathtt{yield}}=3000$,\\$\mathtt{offset_{intake}}=3.25$,
 $\mathtt{offset_{exhaust}}=1.34$, and $\mathtt{d_{exhaust}}=1.556$.
 
 \subsection{Constrained Gradient Based Optimization}
@@ -1675,7 +1675,7 @@ Dakota implementation of this example.
 
 \subsection{Bayes linear}\label{sec:bayes_linear}
 This is a simple model that is only available by using the {\tt direct} interface 
-with the {\tt analysis\_driver='bayes\_linear'}.  The model is discussed extensively in 
+with \dakotakw{analysis_driver} {\tt 'bayes\_linear'}.  The model is discussed extensively in 
 ~\cite{CASL2014} both on pages 93--102 and in Appendix A.  The model is simply the 
 sum of the d input parameters: 
 \begin{equation}

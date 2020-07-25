@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -214,7 +214,8 @@ void DakotaRunner::start()
       // set the DB nodes to that of the existing Model specification
       problem_db.set_db_model_nodes(ml_iter->model_id());
       // plug in the new derived Interface object
-      model_interface.assign_rep(new SIM::SerialDirectApplicInterface(problem_db), false);
+      model_interface.assign_rep(std::make_shared<SIM::SerialDirectApplicInterface>
+				 (problem_db));
     }
   }
   problem_db.set_db_model_nodes(model_index);            // restore

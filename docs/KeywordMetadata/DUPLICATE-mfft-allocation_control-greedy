@@ -1,0 +1,51 @@
+Blurb:: Sample allocation based on greedy refinement within multifidelity function train
+
+Description::
+
+Multifidelity function train supports greedy refinement strategies
+based on regression approaches for computing expansion coefficients.
+The key idea is that each level of the model hierarchy being
+approximated can generate one or more candidates for refinement.
+These candidates are competed against each other within a unified
+competition, and the candidate that induces the largest change in the
+statistical QoI (response covariance by default, or results of any
+\f$z/p/\beta/\beta^*\f$ level mappings when specified), normalized by
+relative cost of evaluating the candidate, is selected and then used
+to generate additional candidates for consideration at its model level.
+
+Topics::
+
+Examples::
+
+The following example of greedy multifidelity function train starts
+from a rank-two order-two reference expansion for each level, with
+twice as many samples as regression coefficients, and generates
+candidate refinements for each level that are competed in an
+integrated greedy competition.  The number of new samples for the
+incremented candidate is determined from the collocation ratio times
+the regression size (which may either be fixed or adapted in the case
+of adapt_rank).  In this example, the number of candidates for each
+level is limited to one uniform refinement of the current expansion,
+and uniform refinement currently involves an advancement in the basis
+order for all approximation cores in combination with a rank
+adaptation between two and ten, incrementing in steps of two.
+
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multifidelity_function_train
+	  allocation_control greedy
+	  p_refinement uniform
+	    start_rank_sequence  = 2 2 2 2 2
+	    adapt_rank  kick_rank = 2  max_rank  = 10
+	    start_order_sequence = 2 2 2 2 2  max_order = 10
+	    collocation_ratio = 2.  seed = 160415
+	    convergence_tolerance = 1.e-2
+	    max_refinement_iterations = 5
+\endverbatim
+
+
+Theory::
+
+Faq::
+See_Also::

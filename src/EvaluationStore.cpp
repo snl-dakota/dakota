@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -183,9 +183,11 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
   hdf5Stream->create_empty_dataset(eval_ids_scale, {0}, 
       ResultsOutputType::INTEGER, HDF5_CHUNK_SIZE);
   
-  Pecos::MarginalsCorrDistribution* mvd_rep
-        = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
-  allocate_variables(root_group, variables, mvd_rep);
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
+  // BMA: Left this a raw get() due to default of NULL
+  allocate_variables(root_group, variables, mvd_rep.get());
   allocate_response(root_group, response, default_set);
   allocate_metadata(root_group, variables, response, default_set);
   return EvaluationsDBState::ACTIVE;

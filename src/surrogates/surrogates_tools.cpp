@@ -1,12 +1,12 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "math_tools.hpp"
+#include "util_math_tools.hpp"
 #include "surrogates_tools.hpp"
 
 namespace dakota {
@@ -91,7 +91,7 @@ void compute_hyperbolic_subdim_level_indices(
       Eigen::Map<VectorXi> index(level_data.col(i).data(), num_active_dims);
       if (util::num_nonzeros(index) == num_active_dims)
       {
-        double pnorm = util::p_norm( index, p );
+        double pnorm = util::p_norm(index, p);
         if ((pnorm > level-1 + eps) && (pnorm < level + eps))
         {
           if (num_indices >= working_indices.cols())
@@ -196,6 +196,20 @@ void compute_hyperbolic_indices(int num_dims, int level, double p, MatrixXi &ind
   }
 }
 
+// ------------------------------------------------------------
+
+void compute_reduced_indices(int num_dims, int level, MatrixXi &indices)
+{
+  indices = MatrixXi::Zero(num_dims, 1);
+  for (int lev = 1; lev < level+1; ++lev)
+  {
+    MatrixXi level_indices = lev*MatrixXi::Identity(num_dims, num_dims);
+    util::append_columns(level_indices, indices);
+  }
+}
+
+// ------------------------------------------------------------
+
 void fd_check_gradient(Surrogate &surr, 
                        const MatrixXd &sample,
                        MatrixXd &fd_error, const int num_steps) {
@@ -210,7 +224,7 @@ void fd_check_gradient(Surrogate &surr,
   MatrixXd value_perturb_plus, value_perturb_minus;
   VectorXd ref_grad_repeated(num_steps);
   surr.gradient(sample, ref_grad, 0);
-  VectorXd scale_factors = surr.dataScaler->get_scaler_features_scale_factors();
+  VectorXd scale_factors = surr.dataScaler.get_scaler_features_scale_factors();
 
   /* create h array */
   VectorXd h(num_steps);
@@ -235,6 +249,8 @@ void fd_check_gradient(Surrogate &surr,
   }
 }
 
+// ------------------------------------------------------------
+
 void fd_check_hessian(Surrogate &surr, 
                       const MatrixXd &sample,
                       MatrixXd &fd_error, const int num_steps) {
@@ -258,7 +274,7 @@ void fd_check_hessian(Surrogate &surr,
   MatrixXd value_perturb_plus_both, value_perturb_minus_both;
   MatrixXd value_perturb_plus_minus, value_perturb_minus_plus;
   VectorXd ref_hessian_repeated(num_steps);
-  VectorXd scale_factors = surr.dataScaler->get_scaler_features_scale_factors();
+  VectorXd scale_factors = surr.dataScaler.get_scaler_features_scale_factors();
   MatrixXd ref_value;
   VectorXd ref_value_repeated(num_steps);
 
@@ -331,6 +347,8 @@ void fd_check_hessian(Surrogate &surr,
     }
   }
 }
+
+// ------------------------------------------------------------
 
 }  // namespace surrogates
 }  // namespace dakota

@@ -7,9 +7,13 @@ should be minimized or maximized.  The argument options are:
 \li \c "minimization" (can be abbreviated to "min")
 \li \c "maximization" (can be abbreviated to "max")
 
-The number of strings should either be equal to the number of
-objective functions, or one.  If a single string is specified it will
-apply to each objective function.
+If a single string is specified it will apply to each objective
+function.  Otherwise, the number of strings should either be equal to
+the number of objective functions (\ref
+responses-objective_functions). Thus, when scalar and/or field
+responses are specified, the number of \c sense strings must equal the
+number of scalars plus the number of fields, \e not the total elements
+in the fields.
 
 Topics::	
 Examples::

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -18,8 +18,6 @@
 
 #include <Teuchos_UnitTestHarness.hpp> 
 #include <Teuchos_SerialDenseHelpers.hpp>
-
-#include "DakotaSurrogatesGP.hpp"
 
 using namespace Dakota;
 
@@ -371,7 +369,9 @@ TEUCHOS_UNIT_TEST(reduced_basis, truncations)
 
 #ifdef HAVE_DAKOTA_SURROGATES
 
-#include "GaussianProcess.hpp"
+#include "DakotaSurrogatesGP.hpp"
+#include "SurrogatesGaussianProcess.hpp"
+
 
 // test construction and evaluation of a GP surrogate from data
 // matrices; one approximation per response
@@ -414,6 +414,10 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module0)
   // construct the GP
   Approximation gp_approx(shared_approx_data);
   gp_approx.add_array(vars, resp);
+  auto gp_derived = 
+    std::static_pointer_cast<SurrogatesGPApprox>(gp_approx.approx_rep());
+  auto& plist = gp_derived->getSurrogateOpts();
+  plist.sublist("Nugget").set("fixed nugget", 1.0e-12);
   gp_approx.build();
 
   // check the value of the surrogate
@@ -520,8 +524,9 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module1)
   // construct the GP
   Approximation gp_approx(shared_approx_data);
   gp_approx.add_array(vars, resp);
-  SurrogatesGPApprox* gp_derived = static_cast<SurrogatesGPApprox*>(gp_approx.approx_rep());
-  auto& plist = gp_derived->getSurrogateOpts();
+  SurrogatesGPApprox& gp_derived =
+    *std::dynamic_pointer_cast<SurrogatesGPApprox>(gp_approx.approx_rep());
+  auto& plist = gp_derived.getSurrogateOpts();
   plist.sublist("Nugget").set("fixed nugget", 1.0e-10);
   plist.sublist("Trend").set("estimate trend", false);
   plist.set("gp seed", 42);

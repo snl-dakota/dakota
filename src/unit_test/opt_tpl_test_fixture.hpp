@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -221,19 +221,19 @@ Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test_Fixture::create_default_env(un
   if (parallel_lib.world_rank() == 0) {
     // This version uses direct Data instance population.  Initial instantiation
     // populates all the defaults.  Default Environment and Model data are used.
-    Dakota::DataMethodRep*    dmr = dme.data_rep();
-    Dakota::DataVariablesRep* dvr =  dv.data_rep();
-    Dakota::DataInterfaceRep* dir =  di.data_rep();
-    Dakota::DataResponsesRep* drr =  dr.data_rep();
+    Dakota::DataMethodRep& dmr = *dme.data_rep();
+    Dakota::DataVariablesRep& dvr = *dv.data_rep();
+    Dakota::DataInterfaceRep& dir = *di.data_rep();
+    Dakota::DataResponsesRep& drr = *dr.data_rep();
     // Set any non-default values: mimic default_input
-    dmr->methodOutput = SILENT_OUTPUT;
-    dmr->methodName = method_name;
-    dvr->numContinuousDesVars = 2;
-    dir->interfaceType = Dakota::TEST_INTERFACE;
-    dir->analysisDrivers.push_back("simple_quad");
-    drr->numObjectiveFunctions = 1;
-    drr->gradientType = "analytic";
-    drr->hessianType  = "none";
+    dmr.methodOutput = SILENT_OUTPUT;
+    dmr.methodName = method_name;
+    dvr.numContinuousDesVars = 2;
+    dir.interfaceType = Dakota::TEST_INTERFACE;
+    dir.analysisDrivers.push_back("simple_quad");
+    drr.numObjectiveFunctions = 1;
+    drr.gradientType = "analytic";
+    drr.hessianType  = "none";
   }
   env.insert_nodes(dme, dmo, dv, di, dr);
 

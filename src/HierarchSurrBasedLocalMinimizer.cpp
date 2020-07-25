@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -431,7 +431,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   set_model_states(minimizeIndex);
 
   // set up recursive corrections across all model forms
-  ((HierarchSurrModel*)(iteratedModel.model_rep()))->
+  (std::static_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->
     correction_mode(FULL_MODEL_FORM_CORRECTION);
 
   // Set the trust region center and bounds for approxSubProbOptimizer
@@ -623,7 +623,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_truth(size_t tr_index)
   else {
     Cout << "\nRecursively correcting truth model response (form "
 	 << tr_data.truth_model_form() + 1;
-    if (tr_data.truth_model_level() != _NPOS)
+    if (tr_data.truth_model_level() != USHRT_MAX)
       Cout << ", level " << tr_data.truth_model_level() + 1;
     Cout << ") for trust region center.\n";
     Variables& center_vars = tr_data.vars_center();
@@ -647,7 +647,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
   else {
     Cout << "\nRecursively correcting truth model response (form "
 	 << tr_data.truth_model_form() + 1;
-    if (tr_data.truth_model_level() != _NPOS)
+    if (tr_data.truth_model_level() != USHRT_MAX)
       Cout << ", level " << tr_data.truth_model_level() + 1;
     Cout << ") for trust region candidate.\n";
     Variables& star_vars = tr_data.vars_star();
@@ -667,7 +667,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_approx(size_t tr_index)
   size_t j, num_tr = trustRegions.size();
   Cout << "\nRecursively correcting surrogate model response (form "
        << tr_data.approx_model_form() + 1;
-  if (tr_data.approx_model_level() != _NPOS)
+  if (tr_data.approx_model_level() != USHRT_MAX)
     Cout << ", level " << tr_data.approx_model_level() + 1;
   Cout << ") for trust region center.\n";
   // correct approximation across all levels above i
@@ -687,7 +687,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_approx(size_t tr_index)
   size_t j, num_tr = trustRegions.size();
   Cout << "\nRecursively correcting surrogate model response (form "
        << tr_data.approx_model_form() + 1;
-  if (tr_data.approx_model_level() != _NPOS)
+  if (tr_data.approx_model_level() != USHRT_MAX)
     Cout << ", level " << tr_data.approx_model_level() + 1;
   Cout << ") for trust region candidate.\n";
   // correct approximation across all levels above i
@@ -832,7 +832,7 @@ optimize(const RealVector &x, int max_iter, int index)
   set_model_states(index);
 
   // set up recursive corrections across all solution levels
-  ((HierarchSurrModel*)(iteratedModel.model_rep()))->
+  (std::static_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->
     correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
 
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);

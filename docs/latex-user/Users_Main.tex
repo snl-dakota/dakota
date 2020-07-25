@@ -20,6 +20,7 @@
 \usepackage{alltt}
 \usepackage{times}
 \usepackage{textcomp}
+\usepackage{tabulary}
 \usepackage{longtable}
 \usepackage{booktabs}
 \usepackage[utf8]{inputenc}
@@ -63,6 +64,12 @@
 %\setcounter{tocdepth}{1}
 \renewcommand\footrulewidth{0.4pt}
 
+% break long keywords across underscores
+\newcommand*\dakotakw[1]{\texttt{\expandafter\dodakotakw\detokenize{#1}\relax}}
+\newcommand*\dodakotakw[1]{\ifx\relax#1\else
+  \expandafter\ifx\string_#1\string_\allowbreak\else#1\fi
+  \expandafter\dodakotakw\fi}
+
 \begin{document}
 
 \begin{titlepage}
@@ -72,7 +79,7 @@
 {\large \DakotaSANDUsers}\\
 {\large Unlimited Release}\\
 {\large \DakotaSANDDate}\\
-{\large Updated \today}\\
+%{\large Updated \today}\\
 
 \vspace*{1.5cm}
 {\LARGE Dakota, A Multilevel Parallel Object-Oriented Framework for 
@@ -80,8 +87,9 @@ Design Optimization, Parameter Estimation, Uncertainty Quantification,
 and Sensitivity Analysis:\\Version \DakotaVersion\space User's Manual}\\
 \vspace*{1cm}
 
-\DakotaAuthorFormatted
-% \vspace*{0.5cm}
+\DakotaAuthorUsersSAND
+\\ \vspace*{0.5cm}
+\DakotaSNLAddress
 
 % SNL Creative Arts says abstract needs to begin on title page,
 % so may need to comment the following \newpage

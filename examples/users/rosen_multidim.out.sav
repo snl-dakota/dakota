@@ -1,17 +1,20 @@
+Dakota version 6.12 released May  6 2020.
+Repository revision c321b87 (2020-05-06) built May  6 2020 12:03:04.
 Running MPI Dakota executable in serial mode.
-Start time: Thu May  1 21:49:45 2014
+Start time: Wed May  6 13:41:01 2020
 
 -----------------------
 Begin DAKOTA input file
 rosen_multidim.in
 -----------------------
+
 # Dakota Input File: rosen_multidim.in
 # Usage:
 #   dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout
+
 environment
-  graphics
-  tabular_graphics_data
-    tabular_graphics_file = 'rosen_multidim.dat'
+  tabular_data
+    tabular_data_file = 'rosen_multidim.dat'
 
 method
   multidim_parameter_study
@@ -27,7 +30,7 @@ variables
     descriptors       'x1'     "x2"
 
 interface
-  analysis_driver = 'rosenbrock'
+  analysis_drivers = 'rosenbrock'
     direct
 
 responses
@@ -39,7 +42,7 @@ End DAKOTA input file
 ---------------------
 
 Using Dakota input file 'rosen_multidim.in'
-Writing new restart file dakota.rst
+Writing new restart file 'dakota.rst'.
 
 >>>>> Executing environment.
 
@@ -1279,17 +1282,17 @@ Partial Correlation Matrix between input and output:
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
           x1  1.00000e+00 
-          x2 -8.08943e-02  1.00000e+00 
-response_fn_1 -3.58401e-02 -4.96432e-01  1.00000e+00 
+          x2 -1.38778e-17  1.00000e+00 
+response_fn_1 -4.07034e-02 -5.01532e-01  1.00000e+00 
 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-          x1 -8.78362e-02 
-          x2 -5.01295e-01 
+          x1 -4.70484e-02 
+          x2 -5.01948e-01 
 
 
 <<<<< Iterator multidim_parameter_study completed.
 <<<<< Environment execution completed.
 DAKOTA execution time in seconds:
-  Total CPU        =       0.13 [parent =    0.13398, child =   -0.00398]
-  Total wall clock =   0.227721
+  Total CPU        =          0 [parent =   0.004185, child =  -0.004185]
+  Total wall clock = 0.00427198

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -14,13 +14,9 @@
 #include "dakota_data_types.hpp"
 #include "ExperimentDataUtils.hpp"
 #include "MPIPackBuffer.hpp"
-#include <boost/foreach.hpp>
-// including lexical_cast.hpp breaks a number of (mostly RBDO) tests...
-//#include <boost/lexical_cast.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/split_free.hpp>
-#include <boost/shared_ptr.hpp>
 
 namespace boost {
 namespace serialization {
@@ -134,41 +130,6 @@ BOOST_SERIALIZATION_SPLIT_FREE(Dakota::BitArray)
 /// Register separate load/save for StringMultiArray type
 BOOST_SERIALIZATION_SPLIT_FREE(Dakota::StringMultiArray)
 
-#if 0
-// WJB - ToDo:  double-check with Brian Adams.  Any value in leaving this
-// hack in the code base if not being used / tested?
-namespace {
-  template<class SharedPointer> struct Holder {
-    SharedPointer p;
-
-    Holder(const SharedPointer &p) : p(p) {}
-    Holder(const Holder &other) : p(other.p) {}
-    Holder(Holder &&other) : p(std::move(other.p)) {}
-
-    void operator () (...) { p.reset(); }
-  };
-}
-
-template<class T> std::shared_ptr<T> to_std_ptr(const boost::shared_ptr<T> &p) {
-  typedef Holder<std::shared_ptr<T>> H;
-  if(H *h = boost::get_deleter<H, T>(p)) {
-    return h->p;
-  }
-  else {
-    return std::shared_ptr<T>(p.get(), Holder<boost::shared_ptr<T>>(p));
-  }
-}
-
-template<class T> boost::shared_ptr<T> to_boost_ptr(const std::shared_ptr<T> &p){
-  typedef Holder<boost::shared_ptr<T>> H;
-  if(H * h = std::get_deleter<H, T>(p)) {
-    return h->p;
-  }
-   else {
-    return boost::shared_ptr<T>(p.get(), Holder<std::shared_ptr<T>>(p));
-  }
-}
-#endif
 
 namespace Dakota {
 
@@ -506,13 +467,9 @@ void read_data_tabular(std::istream& s,
       s >> std::ws;
     }
     else {
-      char err[80];
-      std::sprintf(err,
-	      "At EOF: insufficient tabular data for SerialDenseVector[%d]", i);
-      // TODO: enable this code once we can safely include lexical_cast.hpp
-      // std::string err;
-      // err += "At EOF: insufficient tabular data for SerialDenseVector[";
-      // err += boost::lexical_cast<std::string>(i) + "]";
+      std::string err = 
+	"At EOF: insufficient tabular data for SerialDenseVector[" +
+	std::to_string(i) + "]";
       throw TabularDataTruncated(err);
     }
   }
@@ -535,13 +492,9 @@ void read_data_partial_tabular(std::istream& s,
     if (s)
       s >> v[i];
     else {
-      char err[80];
-      std::sprintf(err,
-	      "At EOF: insufficient tabular data for SerialDenseVector[%zu]", i);
-      // TODO: enable this code once we can safely include lexical_cast.hpp
-      // std::string err;
-      // err += "At EOF: insufficient tabular data for SerialDenseVector[";
-      // err += boost::lexical_cast<std::string>(i) + "]";
+      std::string err =
+	"At EOF: insufficient tabular data for SerialDenseVector[" + 
+	std::to_string(i) + "]";
       throw TabularDataTruncated(err);
     }
   }
@@ -563,13 +516,9 @@ void read_data_partial_tabular(std::istream& s, OrdinalType start_index,
     if (s)
       s >> v[i];
     else {
-      char err[80];
-      std::sprintf(err,
-	      "At EOF: insufficient tabular data for StringMultiArray[%zu]", i);
-      // TODO: enable this code once we can safely include lexical_cast.hpp
-      // std::string err;
-      // err += "At EOF: insufficient tabular data for StringMultiArray[";
-      // err += boost::lexical_cast<std::string>(i) + "]";
+      std::string err = 
+	"At EOF: insufficient tabular data for StringMultiArray[" + 
+	std::to_string(i) + "]";
       throw TabularDataTruncated(err);
     }
   }
@@ -690,7 +639,7 @@ template <typename ArrayT>
 inline void array_read(std::istream& s, ArrayT& v)
 {
   typename ArrayT::size_type len = v.size();
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s >> v[i];
 }
 
@@ -1291,7 +1240,7 @@ inline void array_write(std::ostream& s, const ArrayT& v)
 {
   s << std::scientific << std::setprecision(write_precision);
   typename ArrayT::size_type len = v.size();
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7)
       << v[i] << '\n';
 }
@@ -1309,7 +1258,7 @@ inline void array_write(std::ostream& s, const ArrayT& v,
 	 << "length of vector." << std::endl;
     abort_handler(-1);
   }
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7)
       << v[i] << ' ' << label_array[i] << '\n';
 }
@@ -1348,7 +1297,7 @@ inline void array_write_aprepro(std::ostream& s, const ArrayT& v,
 	 << "length of vector." << std::endl;
     abort_handler(-1);
   }
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s << "                    { "
       << std::setw(15) << std::setiosflags(std::ios::left)
       << label_array[i].c_str() << std::resetiosflags(std::ios::adjustfield)
@@ -1369,7 +1318,7 @@ inline void array_write_annotated(std::ostream& s, const ArrayT& v,
   typename ArrayT::size_type len = v.size();
   if (write_len)
     s << len << ' ';
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
+  for (typename ArrayT::size_type i=0; i<len; ++i)
     s << v[i] << ' ';
 }
 
@@ -1693,9 +1642,8 @@ inline std::ostream& operator<<(std::ostream& s, const std::vector<T>& data)
 template <typename T>
 inline std::ostream& operator<<(std::ostream& s, const std::list<T>& data)
 {
-  BOOST_FOREACH(const typename std::list<T>::value_type& entry, data) {
+  for(const typename std::list<T>::value_type& entry : data)
     s << "                     " << entry << '\n';
-  }  
   return s;
 }
 

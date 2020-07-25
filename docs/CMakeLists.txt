@@ -1,3 +1,11 @@
+#  _______________________________________________________________________
+#
+#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  This software is distributed under the GNU Lesser General Public License.
+#  For more information, see the README file in the top Dakota directory.
+#  _______________________________________________________________________
+
 # TODO: make documentation build cross-platform
 # TODO: dep for latex_modify
 
@@ -194,8 +202,9 @@ function(pdf2sand manual sourcePDFname)
 
 endfunction(pdf2sand)
 
-pdf2sand(dev refman)
-pdf2sand(ref refman)
+# Developer, Reference manuals now part of code docs; not building SAND
+#pdf2sand(dev refman)
+#pdf2sand(ref refman)
 add_subdirectory(latex-theory)
 pdf2sand(theory Theory_Main)
 if(DAKOTA_ENABLE_TESTS)
@@ -222,7 +231,8 @@ endif()
 
 # Generate SAND versions of all
 add_custom_target(docs-sand)
-add_dependencies(docs-sand docs-sand-dev docs-sand-ref docs-sand-theory)
+#add_dependencies(docs-sand docs-sand-dev docs-sand-ref docs-sand-theory)
+add_dependencies(docs-sand docs-sand-theory)
 if(DAKOTA_ENABLE_TESTS)
   add_dependencies(docs-sand docs-sand-user)
 endif()

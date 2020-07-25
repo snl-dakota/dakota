@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -84,18 +84,18 @@ protected:
   /// checking
   void initialize_scaling(Model& sub_model);
   
-  /// check whether the passed scale strings include any active (!= none)
+  /// check whether the passed scale types include any active (!= none)
   /// scale types
-  static bool scaling_active(const StringArray& scale_types);
+  static bool scaling_active(const UShortArray& scale_types);
 
   /// general helper function for initializing scaling types and factors on a 
   /// vector of variables, functions, constraints, etc.
   void compute_scaling(int object_type, int auto_type, int num_vars,
                        RealVector& lbs, RealVector& ubs,
                        RealVector& targets,
-                       const StringArray& scale_strings, 
+                       const UShortArray& spec_types,
                        const RealVector& scales,
-                       IntArray& scale_types, RealVector& scale_mults,
+                       UShortArray& scale_types, RealVector& scale_mults,
                        RealVector& scale_offsets);
 
   /// general linear coefficients mapping from native to scaled space 
@@ -110,7 +110,7 @@ protected:
   bool compute_scale_factor(const Real target, Real *multiplier);
 
   /// print scaling information for a particular response type in tabular form
-  void print_scaling(const String& info, const IntArray& scale_types,
+  void print_scaling(const String& info, const UShortArray& scale_types,
 		     const RealVector& scale_mults,
 		     const RealVector& scale_offsets, 
 		     const StringArray& labels);
@@ -154,13 +154,13 @@ protected:
 
   /// general RealVector mapping from native to scaled variables vectors: 
   RealVector modify_n2s(const RealVector& native_vars,
-			     const IntArray& scale_types,
+			     const UShortArray& scale_types,
 			     const RealVector& multipliers,
 			     const RealVector& offsets) const;
 
   /// general RealVector mapping from scaled to native variables (and values) 
   RealVector modify_s2n(const RealVector& scaled_vars,
-			     const IntArray& scale_types,
+			     const UShortArray& scale_types,
 			     const RealVector& multipliers,
 			     const RealVector& offsets) const;
 
@@ -177,20 +177,20 @@ protected:
   bool       primaryRespScaleFlag;   ///< flag for primary response scaling
   bool       secondaryRespScaleFlag; ///< flag for secondary response scaling
 
-  IntArray   cvScaleTypes;           ///< scale flags for continuous vars.
+  UShortArray cvScaleTypes;           ///< scale flags for continuous vars.
   RealVector cvScaleMultipliers;     ///< scales for continuous variables
   RealVector cvScaleOffsets;         ///< offsets for continuous variables
 
-  IntArray   responseScaleTypes;         ///< scale flags for all responses
+  UShortArray responseScaleTypes;         ///< scale flags for all responses
   RealVector responseScaleMultipliers;   ///< scales for all responses
   RealVector responseScaleOffsets;       ///< offsets for all responses (zero
                                          ///< for functions, not for nonlin con)
 
-  IntArray   linearIneqScaleTypes;       ///< scale flags for linear ineq
+  UShortArray linearIneqScaleTypes;       ///< scale flags for linear ineq
   RealVector linearIneqScaleMultipliers; ///< scales for linear ineq constrs.
   RealVector linearIneqScaleOffsets;     ///< offsets for linear ineq constrs.
 
-  IntArray   linearEqScaleTypes;         ///< scale flags for linear eq.
+  UShortArray   linearEqScaleTypes;         ///< scale flags for linear eq.
   RealVector linearEqScaleMultipliers;   ///< scales for linear constraints
   RealVector linearEqScaleOffsets;       ///< offsets for linear constraints
 

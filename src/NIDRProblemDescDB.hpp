@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -130,6 +130,10 @@ public:
   //
   //- Heading: Keyword handlers called by nidr
   //
+
+  // Suppress Doxygen warnings for these known undocumented macros
+  // (would probably have to enable preprocessor in Doxygen)
+  /// /cond
 
 #define KWH(x) static void x(const char *keyname, Values *val, void **g, void *v)
 
@@ -263,6 +267,10 @@ public:
   KWH(var_type);
 
 #undef KWH
+
+  // Suppress Doxygen warnings for these known undocumented macros
+  // (would probably have to enable preprocessor in Doxygen)
+  /// /endcond
 };
 
 

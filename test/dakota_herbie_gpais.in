@@ -1,3 +1,4 @@
+#@ s0: TimeoutDelay=180
 # DAKOTA INPUT FILE - dakota_herbie_gpais.in
 # This file tests the Gaussian Process adaptive importance sampling (GPAIS)
 # capabilities.  The Herbie function is used because it is multi-modal. 

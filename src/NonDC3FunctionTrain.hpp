@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -75,20 +75,40 @@ protected:
   //- Heading: Member function definitions
   //
 
+  /// check model definition (redirect function_train model to surr-based UQ)
+  void check_surrogate();
+  /// assign c3RefineType based on refine{type,Control} and adapt_rank
+  void resolve_refinement();
+
   /// configure u_space_sampler and approx_type based on regression
   /// specification
   bool config_regression(size_t colloc_pts, size_t regress_size, int seed,
 			 Iterator& u_space_sampler, Model& g_u_model);
 
-  /// Publish configuration data for initial function train cores, prior to
-  /// any adaptation
-  void push_c3_core_rank(size_t start_rank);
-  /// Publish configuration data for initial function train cores, prior to
-  /// any adaptation
-  void push_c3_core_orders(const UShortArray& start_orders);
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)
-  void push_c3_db_options();
+  void initialize_c3_db_options();
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void initialize_c3_start_rank(size_t start_rank);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void initialize_c3_start_orders(const UShortArray& start_orders);
+
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_start_rank(size_t start_rank);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_max_rank(size_t max_rank);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_start_orders(const UShortArray& start_orders);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_max_order(unsigned short max_order);
+  /// Publish random seed for internal C3 use
+  void push_c3_seed(int seed);
 
   //
   //- Heading: Data
@@ -99,14 +119,24 @@ protected:
 
   /// scalar specification for initial rank (prior to adapt_rank)
   size_t startRankSpec;
+  /// scalar specification for maximum rank (bounds adapt_rank)
+  size_t maxRankSpec;
   /// scalar specification for initial basis order (prior to uniform refinement)
   unsigned short startOrderSpec;
+  /// scalar specification for maximum basis order (bounds uniform refinement)
+  unsigned short maxOrderSpec;
+
+  /// type of (uniform) refinement: UNIFORM_{START_ORDER,START_RANK,MAX_RANK}
+  short c3RefineType;
 
 private:
 
   //
   //- Heading: Member function definitions
   //
+
+  /// return the regression size used for different refinement options
+  size_t regression_size();
 
   //static int qoi_eval(size_t num_samp,        // number of evaluations
   // 			const double* var_sets, // num_vars x num_evals

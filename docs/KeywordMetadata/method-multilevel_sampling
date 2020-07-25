@@ -77,6 +77,17 @@ fidelity and discretization level.  The method does not support any
 level mappings (response, probability, reliability, generalized
 reliability) at this time.
 
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-sampling_moments (moments only, not confidence intervals)
+
+In addition, the execution group has the attribute \c equiv_hf_evals, which
+records the equivalent number of high-fidelity evaluations.
+
 <b> Usage Tips </b>
 
 The multilevel sampling method must be used in combination with a

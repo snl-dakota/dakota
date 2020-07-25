@@ -1,17 +1,22 @@
 Blurb::
-Specify how each linear equality constraint is scaled
-Description::
-\c linear_equality_scale_types provide strings specifying
-the scaling type for each linear equality constraint,
-in methods that support scaling.
+How to scale each linear equality constraint
 
-An entry may be selected for each constraint. The options are:
-\li <tt>'none'</tt> - no scaling
-\li <tt>'value'</tt> - characteristic value
-    if this is chosen, then \c linear_equality_scales must be specified
-\li <tt>'auto'</tt> - automatic scaling
-If a single string is
-specified it will apply to all constraints. 
+Description::
+Each string in \c linear_equality_scale_types indicates the scaling
+type for each linear equality constraint. They only have effect when
+the associated method specifies \c scaling.
+
+The options are:
+
+\li <tt>'value'</tt> - characteristic value. If this is chosen, then
+    \ref variables-linear_equality_scales must be specified; 'value'
+    is assumed if scales are given without a \c scale_types
+
+\li <tt>'auto'</tt> - automatic scaling.
+
+If a single string is specified it will apply to all linear equality
+constraints. Otherwise the number of strings specified should be equal
+to the number of linear equalities.
 
 Scaling for linear constraints is
 applied \e after any continuous variable scaling. 
@@ -28,6 +33,9 @@ appplied to this final transformed system, which accounts for
 continuous design variable scaling. When automatic scaling is in use
 for linear constraints they are linearly scaled by a computed
 characteristic value, but not affinely to [0,1].
+
+See the scaling information under specific methods, e.g.,
+\c method-*-scaling for details on how to use this keyword.
 
 Topics::	linear_constraints
 Examples::

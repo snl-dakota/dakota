@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -83,7 +83,7 @@ private:
   void compute_main_effects();
 
   /// create a DDACE sampler
-  boost::shared_ptr<DDaceSamplerBase> create_sampler(Model& model);
+  std::shared_ptr<DDaceSamplerBase> create_sampler(Model& model);
 
   /// convenience function for resolving number of samples and
   /// number of symbols from input.

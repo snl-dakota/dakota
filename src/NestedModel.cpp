@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -1324,8 +1324,8 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
 	 << "-----------------------------------------\n";
     component_parallel_mode(INTERFACE_MODE);
     if (hierarchicalTagging) {
-      String eval_tag = evalTagPrefix + '.' + 
-	boost::lexical_cast<String>(nestedModelEvalCntr);
+      String eval_tag = evalTagPrefix + '.' +
+	std::to_string(nestedModelEvalCntr);
       // don't apply a redundant interface eval id
       bool append_iface_tag = false;
       optionalInterface.eval_tag_prefix(eval_tag, append_iface_tag);
@@ -1364,8 +1364,8 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
     update_sub_model(currentVariables, userDefinedConstraints);
     subIterator.response_results_active_set(sub_iterator_set);
     if (hierarchicalTagging) {
-      String eval_tag = evalTagPrefix + '.' + 
-	boost::lexical_cast<String>(nestedModelEvalCntr);
+      String eval_tag = evalTagPrefix + '.' +
+	std::to_string(nestedModelEvalCntr);
       subIterator.eval_tag_prefix(eval_tag);
     }
 
@@ -2197,9 +2197,9 @@ update_sub_model(const Variables& vars, const Constraints& cons)
   const SharedVariablesData& svd = vars.shared_data();
   const SharedVariablesData& sm_svd
     = subModel.current_variables().shared_data();
-  Pecos::MarginalsCorrDistribution* sm_mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)
-    subModel.multivariate_distribution().multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (subModel.multivariate_distribution().multivar_dist_rep());
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
   if (num_curr_cv) {
@@ -2514,8 +2514,9 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
     = subModel.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* sm_mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (sm_mvd.multivar_dist_rep());
 
   const SharedVariablesData& sm_svd
     = subModel.current_variables().shared_data();
@@ -2687,8 +2688,9 @@ integer_variable_mapping(int i_var, size_t av_index, short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
     = subModel.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* sm_mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (sm_mvd.multivar_dist_rep());
 
   const SharedVariablesData& sm_svd
     = subModel.current_variables().shared_data();
@@ -2725,8 +2727,9 @@ string_variable_mapping(const String& s_var, size_t av_index,
 {
   Pecos::MultivariateDistribution& sm_mvd
     = subModel.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* sm_mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (sm_mvd.multivar_dist_rep());
 
   const SharedVariablesData& sm_svd
     = subModel.current_variables().shared_data();

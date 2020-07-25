@@ -211,7 +211,7 @@ parallelism) may still be available.
 \begin{itemize}
 \item Gradient-based optimizers: CONMIN, DOT, NLPQL, NPSOL, and OPT++
   can all exploit parallelism through the use of Dakota's native finite
-  differencing routine (selected with \texttt{method\_source dakota}
+  differencing routine (selected with \dakotakw{method_source} \dakotakw{dakota}
   in the responses specification), which will perform concurrent
   evaluations for each of the parameter offsets. For \texttt{n}
   variables, forward differences result in an $n+1$ concurrency and
@@ -235,14 +235,14 @@ parallelism) may still be available.
   evaluations; however, there are some limitations on the levels of
   concurrency and asynchrony that can be exploited.  These are detailed
   in the Dakota Reference Manual. Serial SCOLIB methods include
-  Solis-Wets (\texttt{coliny\_solis\_wets}) and certain
-  \texttt{exploratory\_moves} options (\texttt{adaptive\_pattern} and
-  \texttt{multi\_step}) in pattern search
-  (\texttt{coliny\_pattern\_search}).  OPT++ PDS (\texttt{optpp\_pds})
-  and NCSU DIRECT (\texttt{ncsu\_direct}) are also currently serial
+  Solis-Wets (\dakotakw{coliny_solis_wets}) and certain
+  \dakotakw{exploratory_moves} options (\dakotakw{adaptive_pattern} and
+  \dakotakw{multi_step}) in pattern search
+  (\dakotakw{coliny_pattern_search}).  OPT++ PDS (\dakotakw{optpp_pds})
+  and NCSU DIRECT (\dakotakw{ncsu_direct}) are also currently serial
   due to incompatibilities in Dakota and OPT++/NCSU parallelism
-  models.  Finally, \texttt{coliny\_pattern\_search} and
-  \texttt{asynch\_pattern\_search} support dynamic job queues managed
+  models.  Finally, \dakotakw{coliny_pattern_search} and
+  \dakotakw{asynch_pattern_search} support dynamic job queues managed
   with nonblocking synchronization.
 
 \item Least squares methods: in an identical manner to the
@@ -254,30 +254,30 @@ parallelism) may still be available.
   approach is superseded by NLSSOL's gradient-based line search in
   user-supplied derivative mode.
 
-\item Surrogate-based minimizers: \texttt{surrogate\_based\_local},
-  \texttt{surrogate\_based\_global}, and \texttt{efficient\_global}
+\item Surrogate-based minimizers: \dakotakw{surrogate_based_local},
+  \dakotakw{surrogate_based_global}, and\\ \dakotakw{efficient_global}
   all support parallelism in the initial surrogate construction, but
   subsequent concurrency varies.  In the case of
-  \texttt{efficient\_global}, only a single point is generated for
+  \dakotakw{efficient_global}, only a single point is generated for
   evaluation for each subsequent cycle and there is no derivatove
   concurrency for this point.  In the case of
-  \texttt{surrogate\_based\_local}, only a single point is generated
+  \dakotakw{surrogate_based_local}, only a single point is generated
   per subsequent cycle, but derivative concurrency for numerical
   gradient or Hessian evaluations may be available.  And in the case
-  of \texttt{surrogate\_based\_global}, multiple points may be
+  of \dakotakw{surrogate_based_global}, multiple points may be
   generated on each subsequent cycle, depending on the multipoint
   return capability of specific minimizers.
 
-\item Parameter studies: all parameter study methods (\texttt{vector},
-  \texttt{list}, \texttt{centered}, and \texttt{multidim}) support
+\item Parameter studies: all parameter study methods (\dakotakw{vector},
+  \dakotakw{list}, \dakotakw{centered}, and \dakotakw{multidim}) support
   parallelism. These methods avoid internal synchronization points, so
   all evaluations are available for concurrent execution.
 
-\item Design of experiments: all \texttt{dace} (\texttt{grid},
-  \texttt{random}, \texttt{oas}, \texttt{lhs}, \texttt{oa\_lhs},
-  \texttt{box\_behnken}, and \texttt{central\_composite}),
-  \texttt{fsu\_quasi\_mc} (\texttt{halton} and \texttt{hammersley}),
-  \texttt{fsu\_cvt}, and \texttt{psuade\_moat} methods support
+\item Design of experiments: all \dakotakw{dace} (\dakotakw{grid},
+  \dakotakw{random}, \dakotakw{oas}, \dakotakw{lhs}, \dakotakw{oa_lhs},
+  \dakotakw{box_behnken}, and \dakotakw{central_composite}),
+  \dakotakw{fsu_quasi_mc} (\dakotakw{halton} and \dakotakw{hammersley}),
+  \dakotakw{fsu_cvt}, and \dakotakw{psuade_moat} methods support
   parallelism.
 
 \item Uncertainty quantification: all nondeterministic methods
@@ -657,7 +657,7 @@ sequentially.
 For parallel execution using asynchronous local approaches, the Dakota
 execution syntax is unchanged as Dakota is still launched on a single
 processor.  However, the interface specification is augmented to
-include the \texttt{asynchronous} keyword with optional concurrency
+include the\\ \texttt{asynchronous} keyword with optional concurrency
 limiter to indicate that multiple \texttt{analysis\_driver} instances
 will be executed concurrently:
 \begin{small}
@@ -892,7 +892,7 @@ Dakota across multiple processors using syntax similar to the following:
 \end{small}
 
 Since the asynchronous local parallelism will not be used, the
-interface specification does not include the \texttt{asynchronous}
+interface specification does not include the\\ \texttt{asynchronous}
 keyword and would appear similar to:
 \begin{small}
 \begin{verbatim}
@@ -1595,10 +1595,10 @@ multi-processor Dakota executions.
 \subsection{The interface specification}\label{parallel:spec:interface}
 
 Specifying parallelism within an interface can involve the use of the
-\texttt{asynchronous}, \texttt{evaluation\_concurrency}, and
-\texttt{analysis\_concurrency} keywords to specify concurrency local
+\dakotakw{asynchronous},\\ \dakotakw{evaluation_concurrency}, and
+\dakotakw{analysis_concurrency} keywords to specify concurrency local
 to a processor (i.e., asynchronous local parallelism). This
-\texttt{asynchronous} specification has dual uses:
+\dakotakw{asynchronous} specification has dual uses:
 
 \begin{itemize}
 \item When running Dakota on a single-processor, the
@@ -1652,11 +1652,11 @@ in the Dakota Reference Manual~\cite{RefMan}.
 \subsection{The meta-iterator and nested model specifications}\label{parallel:spec:meta}
 
 To specify concurrency in sub-iterator executions within
-meta-iterators and nested models, the \texttt{iterator\_servers},
-\texttt{processors\_per\_iterator}, and \texttt{iterator\_scheduling}
+meta-iterators and nested models, the \dakotakw{iterator_servers},
+\dakotakw{processors_per_iterator}, and \dakotakw{iterator_scheduling}
 keywords are used to override the automatic parallelism configuration.
-For this level, the available scheduling options are \texttt{master}
-or \texttt{peer}, where the latter is static (no dynamic peer option
+For this level, the available scheduling options are \dakotakw{master}
+or \dakotakw{peer}, where the latter is static (no dynamic peer option
 supported).  See the method and model commands specification in the
 Dakota Reference Manual~\cite{RefMan} for additional details.
 
@@ -1759,7 +1759,7 @@ then an input specification similar to the following could be used:
 In this case, the default concurrency with just an
 \texttt{asynchronous} specification would be all 11 function
 evaluations and all 3 analyses, which can be limited by the
-\texttt{evaluation\_concurrency} and \texttt{analysis\_concurrency}
+\dakotakw{evaluation_concurrency} and \dakotakw{analysis_concurrency}
 specifications. The input file above limits the function evaluation
 concurrency, but not the analysis concurrency (a specification of 3 is
 the default in this case and could be omitted). Changing the input to
@@ -1812,7 +1812,7 @@ report from the Dakota output:
 In this case, a peer partition and dynamic scheduling algorithm are
 automatically selected for the concurrent evaluations. If a dedicated
 master is desired instead, then this logic could be overriden by adding
-\texttt{evaluation\_scheduling master}:
+\dakotakw{evaluation_scheduling} \dakotakw{master}:
 \begin{small}
 \begin{verbatim}
     interface,
@@ -2177,7 +2177,7 @@ be most appropriate.
   \end{tabular}
 \end{table}
 
-Relevant example files for each case are included in directories \path{
+Relevant example files for each case are included in directories\\ \path{
 dakota/share/dakota/examples/parallelism/} with the Dakota distribution.
 These typically include a PBS or SLURM job submission script to launch
 the Dakota study, a Dakota input file, and a driver script.
@@ -2350,7 +2350,7 @@ proposed.
 \subsubsection{Relative node scheduling}
 
 This Evaluation Tiling variant uses OpenMPI 1.3.3 or newer.  It
-leverages Dakota's \texttt{local\_evaluation\_scheduling static}
+leverages Dakota's \dakotakw{local_evaluation_scheduling} \dakotakw{static}
 option together with integer arithmetic to schedule each evaluation on
 the right subset of the processor allocation.  A Bash-based example is
 provided in \path{Case3-EvaluationTiling/OpenMPI}.  Similar approaches
@@ -2373,7 +2373,7 @@ released with Dakota 6.6. Interface scripts written in Python may benefit from u
 API directly. An example is located at 
 \path{Case3-EvaluationTiling/OpenMPI/text_book_di_dynamic.py}. The {\tt dakota}
 Python package is located in \path{dakota/share/dakota/Python/}, which users should add
-to the environment variable {\tt PYTHONPATH}.
+to the environment variable\\{\tt PYTHONPATH}.
 
 \subsubsection{Machinefile management}
 

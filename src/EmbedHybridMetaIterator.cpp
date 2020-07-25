@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -42,9 +42,7 @@ EmbedHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 
 
 EmbedHybridMetaIterator::~EmbedHybridMetaIterator()
-{
-  // Virtual destructor handles referenceCount at Iterator level.
-}
+{ }
 
 
 void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -20,8 +20,6 @@
 #include <boost/serialization/utility.hpp>  // for std::pair
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/shared_ptr.hpp>
-
-//#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: SharedVariablesData.cpp 6886 2010-08-02 19:13:01Z mseldre $";
 
@@ -53,11 +51,6 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
   initialize_all_labels(problem_db);
   initialize_all_types();
   initialize_all_ids();
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesDataRep::SharedVariablesDataRep(problem_db, view) "
-       << "called to build body object." << std::endl;
-#endif
 }
 
 
@@ -75,11 +68,6 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
   size_all_labels();    // lacking DB, can only size labels
   size_all_types();     // lacking detailed vars_comps, can only size types
   initialize_all_ids(); // vars_comps_totals sufficient for forming ids
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesDataRep::SharedVariablesDataRep(view, "
-       << "vars_comps_totals) called to build body object." << std::endl;
-#endif
 }
 
 
@@ -99,11 +87,6 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
   size_all_labels();      // lacking DB, can only size labels
   initialize_all_types(); // vars_comps required for defining types
   initialize_all_ids();   // vars_comps_totals sufficient for defining ids
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesDataRep::SharedVariablesDataRep(view, vars_comps) "
-       << "called to build body object." << std::endl;
-#endif
 }
 
 
@@ -2317,13 +2300,6 @@ SharedVariablesData SharedVariablesData::copy() const
 {
   // the handle class instantiates a new handle and a new body and copies
   // current attributes into the new body
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesData::copy() called to generate a deep copy with no "
-       << "representation sharing.\n";
-  Cout << "  svdRep use_count before = " << svdRep.use_count() << std::endl;
-#endif
-
   SharedVariablesData svd; // new handle: svdRep=NULL
 
   if (svdRep) {
@@ -2374,16 +2350,8 @@ void SharedVariablesDataRep::load(Archive& ar, const unsigned int version)
 template<class Archive>
 void SharedVariablesData::serialize(Archive& ar, const unsigned int version)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "SVD serializing with pointer " << svdRep.get() << '\n'
-       << "  svdRep use_count before = " << svdRep.use_count() << std::endl;
-#endif
   // load will default construct and load through the pointer
   ar & svdRep;
-#ifdef REFCOUNT_DEBUG
-  Cout << "  svdRep pointer after  = " << svdRep.get() << std::endl;
-  Cout << "  svdRep use_count after  = " << svdRep.use_count() << std::endl;
-#endif
 }
 
 

@@ -1,13 +1,13 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
 
-#include "common_utils.hpp"
+#include "util_common.hpp"
 #include "surrogates_tools.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
@@ -135,6 +135,31 @@ TEUCHOS_UNIT_TEST(util, hyperbolic_indices)
                   0, 0, 1, 0, 0, 2, 0, 1, 0, 1, 0, 3, 0, 1, 2, 0, 0, 2, 1, 1,  
                   0, 0, 0, 1, 0, 0, 2, 0, 1, 1, 0, 0, 3, 0, 0, 1, 2, 1, 2, 1 ; 
   compute_hyperbolic_indices(ndims, level, p, level_indices);
+  TEST_ASSERT( matrix_equals(level_indices, gold_indices) );
+}
+
+// ------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(util, reduced_indices)
+{
+  int ndims = 2, level = 3;
+
+  Eigen::MatrixXi level_indices;
+  Eigen::MatrixXi gold_indices;
+
+  gold_indices.resize(ndims,1+ndims*level);
+  gold_indices << 0, 1, 0, 2, 0, 3, 0,
+                  0, 0, 1, 0, 2, 0, 3 ;
+  compute_reduced_indices(ndims, level, level_indices);
+  TEST_ASSERT( matrix_equals(level_indices, gold_indices) );
+
+
+  ndims = 3, level = 3;
+  gold_indices.resize(ndims,1+ndims*level);
+  gold_indices << 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 
+                  0, 0, 1, 0, 0, 2, 0, 0, 3, 0,
+                  0, 0, 0, 1, 0, 0, 2, 0, 0, 3 ;
+  compute_reduced_indices(ndims, level, level_indices);
   TEST_ASSERT( matrix_equals(level_indices, gold_indices) );
 }
 

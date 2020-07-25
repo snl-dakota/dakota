@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -15,7 +15,6 @@
 #include "DakotaResponse.hpp"
 #include "DakotaMinimizer.hpp"
 #include "DataMethod.hpp"
-#include <boost/lexical_cast.hpp>
 #include <sstream>
 
 static const char rcsId[]="@(#) $Id: SOLBase.cpp 7004 2010-10-04 17:55:00Z wjbohnh $";
@@ -183,7 +182,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   // for compilers that have problems with ios formatting (e.g., janus, Linux).
   // NOTE: returned buffers from std::string::data() are NOT Null terminated!
   std::string verify_s("Verify Level                = ");
-  verify_s += boost::lexical_cast<std::string>(verify_lev);
+  verify_s += std::to_string(verify_lev);
   verify_s.resize(72, ' ');
   NPOPTN2_F77( verify_s.data() );
 
@@ -211,7 +210,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   NPOPTN2_F77( lstol_s.data() );
 
   std::string maxiter_s("Major Iteration Limit       = ");
-  maxiter_s += boost::lexical_cast<std::string>(max_iter);
+  maxiter_s += std::to_string(max_iter);
   maxiter_s.resize(72, ' ');
   NPOPTN2_F77( maxiter_s.data() );
 

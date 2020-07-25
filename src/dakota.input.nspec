@@ -99,7 +99,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
   ( hybrid {N_mdm(utype,methodName_HYBRID)}
     ( sequential ALIAS uncoupled {N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}
       ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
-        [ model_pointer_list STRING {N_mdm(strL,hybridModelPointers)} ]
+        [ model_pointer_list STRINGLIST {N_mdm(strL,hybridModelPointers)} ]
        )
       |
       method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
@@ -135,7 +135,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     ( collaborative {N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}
       ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
-        [ model_pointer_list STRING {N_mdm(strL,hybridModelPointers)} ]
+        [ model_pointer_list STRINGLIST {N_mdm(strL,hybridModelPointers)} ]
        )
       |
       method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
@@ -1128,7 +1128,17 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( function_train {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+      ( uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        increment_start_rank {N_mdm(type,c3RefineType_UNIFORM_START_RANK)}
+        |
+        increment_start_order {N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}
+        |
+        increment_max_rank {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}
+        |
+        increment_max_order {N_mdm(type,c3RefineType_UNIFORM_MAX_ORDER)}
+        |
+        increment_max_rank_order {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}
+       )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ regression_type {0}
@@ -1145,14 +1155,16 @@ KEYWORD method {N_mdm3(start,0,stop)}
     collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
     |
     collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-    [ rounding_tolerance REAL {N_mdm(Real,roundingTol)} ]
-    [ arithmetic_tolerance REAL {N_mdm(Real,arithmeticTol)} ]
+    [ rounding_tolerance REAL {N_mdm(Real,solverRoundingTol)} ]
+    [ arithmetic_tolerance REAL {N_mdm(Real,statsRoundingTol)} ]
     [ start_order ALIAS order INTEGER >= 0 {N_mdm(ushint,startOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ start_rank ALIAS rank INTEGER >= 0 {N_mdm(sizet,startRank)} ]
-    [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
+    [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
     [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
@@ -1254,7 +1266,17 @@ KEYWORD method {N_mdm3(start,0,stop)}
   |
   ( multifidelity_function_train {N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}
     [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+      ( uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        increment_start_rank {N_mdm(type,c3RefineType_UNIFORM_START_RANK)}
+        |
+        increment_start_order {N_mdm(type,c3RefineType_UNIFORM_START_ORDER)}
+        |
+        increment_max_rank {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK)}
+        |
+        increment_max_order {N_mdm(type,c3RefineType_UNIFORM_MAX_ORDER)}
+        |
+        increment_max_rank_order {N_mdm(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}
+       )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ allocation_control {0}
@@ -1265,8 +1287,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
-    [ rounding_tolerance REAL {N_mdm(Real,roundingTol)} ]
-    [ arithmetic_tolerance REAL {N_mdm(Real,arithmeticTol)} ]
+    [ rounding_tolerance REAL {N_mdm(Real,solverRoundingTol)} ]
+    [ arithmetic_tolerance REAL {N_mdm(Real,statsRoundingTol)} ]
     [ regression_type {0}
       ls {N_mdm(type,regressionType_FT_LS)}
       |
@@ -1283,9 +1305,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
-    [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
+    [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
     [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
@@ -1399,8 +1423,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
-    [ rounding_tolerance REAL {N_mdm(Real,roundingTol)} ]
-    [ arithmetic_tolerance REAL {N_mdm(Real,arithmeticTol)} ]
+    [ rounding_tolerance REAL {N_mdm(Real,solverRoundingTol)} ]
+    [ arithmetic_tolerance REAL {N_mdm(Real,statsRoundingTol)} ]
     [ regression_type {0}
       ls {N_mdm(type,regressionType_FT_LS)}
       |
@@ -1417,9 +1441,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
-    [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
+    [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
     [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
@@ -5649,9 +5675,13 @@ KEYWORD model {N_mom3(start,0,stop)}
     ( global {0}
       ( experimental_gaussian_process {N_mom(lit,surrogateType_global_exp_gauss_proc)}
         [ trend {0}
+          none {N_mom(lit,trendOrder_none)}
+          |
           constant {N_mom(lit,trendOrder_constant)}
           |
           linear {N_mom(lit,trendOrder_linear)}
+          |
+          reduced_quadratic {N_mom(lit,trendOrder_reduced_quadratic)}
           |
           quadratic {N_mom(lit,trendOrder_quadratic)}
          ]
@@ -5662,6 +5692,13 @@ KEYWORD model {N_mom3(start,0,stop)}
           find_nugget INTEGER {N_mom(shint,krigingFindNugget)}
          ]
         [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
+        [ export_model {N_mom(true,exportSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelExportPrefix)} ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
        )
       |
       ( gaussian_process ALIAS kriging {0}
@@ -5736,7 +5773,17 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       ( function_train {N_mom(lit,surrogateType_global_function_train)}
         [ p_refinement {N_mom(type,refinementType_P_REFINEMENT)}
-          uniform {N_mom(type,refinementControl_UNIFORM_CONTROL)}
+          ( uniform {N_mom(type,refinementControl_UNIFORM_CONTROL)}
+            increment_start_rank {N_mom(type,c3RefineType_UNIFORM_START_RANK)}
+            |
+            increment_start_order {N_mom(type,c3RefineType_UNIFORM_START_ORDER)}
+            |
+            increment_max_rank {N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}
+            |
+            increment_max_order {N_mom(type,c3RefineType_UNIFORM_MAX_ORDER)}
+            |
+            increment_max_rank_order {N_mom(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}
+           )
          ]
         [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
         [ regression_type {0}
@@ -5750,14 +5797,16 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ max_cross_iterations INTEGER >= 0 {N_mom(int,maxCrossIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTol)} ]
         [ tensor_grid {N_mom(true,tensorGridFlag)} ]
-        [ rounding_tolerance REAL {N_mom(Real,roundingTol)} ]
-        [ arithmetic_tolerance REAL {N_mom(Real,arithmeticTol)} ]
+        [ rounding_tolerance REAL {N_mom(Real,solverRoundingTol)} ]
+        [ arithmetic_tolerance REAL {N_mom(Real,statsRoundingTol)} ]
         [ start_order ALIAS order INTEGER >= 0 {N_mom(ushint,startOrder)}
           [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
          ]
+        [ kick_order INTEGER > 0 {N_mom(ushint,kickOrder)} ]
         [ max_order INTEGER >= 0 {N_mom(ushint,maxOrder)} ]
+        [ adapt_order {N_mom(true,adaptOrder)} ]
         [ start_rank ALIAS rank INTEGER >= 0 {N_mom(sizet,startRank)} ]
-        [ kick_rank INTEGER >= 0 {N_mom(sizet,kickRank)} ]
+        [ kick_rank INTEGER > 0 {N_mom(sizet,kickRank)} ]
         [ max_rank INTEGER >= 0 {N_mom(sizet,maxRank)} ]
         [ adapt_rank {N_mom(true,adaptRank)} ]
        )
@@ -5815,6 +5864,13 @@ KEYWORD model {N_mom3(start,0,stop)}
       ( experimental_polynomial {N_mom(lit,surrogateType_global_exp_poly)}
         basis_order INTEGER >= 0 {N_mom(shint,polynomialOrder)}
         [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
+        [ export_model {N_mom(true,exportSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelExportPrefix)} ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
        )
       [ domain_decomposition {N_mom(true,domainDecomp)}
         [ cell_type STRING {N_mom(str,decompCellType)} ]

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -432,7 +432,7 @@ private:
 
 
 inline NestedModel::~NestedModel()
-{ } // Virtual destructor handles referenceCount at Strategy level.
+{ }
 
 
 /*
@@ -753,8 +753,8 @@ initialize_iterator(const Variables& vars, const ActiveSet& set, int eval_id)
   update_sub_model(vars, userDefinedConstraints);
   subIterator.response_results_active_set(set);
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' +
-      boost::lexical_cast<String>(eval_id); // unique id from nested eval cntr
+    // unique id from nested eval cntr
+    String eval_tag = evalTagPrefix + '.' + std::to_string(eval_id);
     subIterator.eval_tag_prefix(eval_tag);
   }
 }

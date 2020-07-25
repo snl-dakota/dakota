@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -855,7 +855,6 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 
 inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
 {
-  using boost::math::isfinite;
   IntRespMCIter r_it = allResponses.begin();
   size_t qoi, num_samp, num_fns = r_it->second.num_functions();
   mu.sizeUninitialized(num_fns);
@@ -864,7 +863,7 @@ inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
     num_samp = 0; sum = 0.;
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       q_l = r_it->second.function_value(qoi);
-      if (isfinite(q_l)) // neither NaN nor +/-Inf
+      if (std::isfinite(q_l)) // neither NaN nor +/-Inf
 	{ sum += q_l; ++num_samp; }
     }
     mu[qoi] = sum / num_samp;

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -93,9 +93,6 @@ private:
     //- Heading: Convenience member functions
     //
 
-    /// called by minimize_surrogates for setUpType == "model"
-    void minimize_surrogates_on_model_deprecated();
-
     /// determine best solution from among the dataset
     void get_best_sample();
 
@@ -167,12 +164,12 @@ private:
     void evaluate_batch();
 
     /// convergence checkers
-    /// check convergence if EGO has converged
-    void check_convergence_deprecated(const Real& eif_star,
-                          const RealVector& c_vars,
-                          RealVector prev_cv_star,
-                          unsigned short eif_convergence_cntr,
-                          unsigned short dist_convergence_cntr);
+    // check convergence if EGO has converged
+    //void check_convergence_deprecated(const Real& eif_star,
+    //                       const RealVector& c_vars,
+    //                       RealVector prev_cv_star,
+    //                       unsigned short eif_convergence_cntr,
+    //                       unsigned short dist_convergence_cntr);
     /// check convergence if EGO has converged
     bool assess_convergence();
 

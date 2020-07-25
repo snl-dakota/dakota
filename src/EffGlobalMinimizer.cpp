@@ -14,7 +14,6 @@
 
 //- Edited by:   Anh Tran in 2020 for parallelization
 
-
 #include "EffGlobalMinimizer.hpp"
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
@@ -102,7 +101,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 
     Iterator dace_iterator;
     // The following uses on the fly derived ctor:
-    dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type, samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
+    dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, sample_type, samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM));
     // only use derivatives if the user requested and they are available
     dace_iterator.active_set_request_values(dataOrder);
 
@@ -112,13 +111,13 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     //const Variables& curr_vars = iteratedModel.current_variables();
     ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
     gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-    fHatModel.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
-        gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
-        outputLevel, sample_reuse, import_pts_file,
+    fHatModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+	iteratedModel, gp_set, approx_type, approx_order, corr_type, corr_order,
+	dataOrder, outputLevel, sample_reuse, import_pts_file,
         probDescDB.get_ushort("method.import_build_format"),
         probDescDB.get_bool("method.import_build_active_only"),
         probDescDB.get_string("method.export_approx_points_file"),
-        probDescDB.get_ushort("method.export_approx_format")), false);
+        probDescDB.get_ushort("method.export_approx_format")));
 
     // Following this ctor, IteratorScheduler::init_iterator() initializes the
     // parallel configuration for EffGlobalMinimizer + iteratedModel using
@@ -131,7 +130,8 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     // parallel config errors resulting from avail_procs > max_concurrency within
     // IteratorScheduler::init_iterator().  A max of the local derivative
     // concurrency and the DACE concurrency is used for this purpose.
-    maxEvalConcurrency = std::max(maxEvalConcurrency,	dace_iterator.maximum_evaluation_concurrency());
+    maxEvalConcurrency = std::max(maxEvalConcurrency,
+				  dace_iterator.maximum_evaluation_concurrency());
 
     // Configure a RecastModel with one objective and no constraints using the
     // alternate minimalist constructor: the recast fn pointers are reset for
@@ -139,96 +139,61 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     SizetArray recast_vars_comps_total; // default: empty; no change in size
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
     short recast_resp_order = 1; // nongradient-based optimizers
-    eifModel.assign_rep(new RecastModel(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order), false);
-    varModel.assign_rep(new RecastModel(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order), false);
+    eifModel.assign_rep(std::make_shared<RecastModel>(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order));
+    varModel.assign_rep(std::make_shared<RecastModel>(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order));
 
     // must use alternate NoDB ctor chain
     int max_iterations = 10000, max_fn_evals = 50000;
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-    #ifdef HAVE_NCSU
-        approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations, max_fn_evals, min_box_size, vol_box_size), false);
-    #else
-      Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
-           << "Aborting process." << std::endl;
-      abort_handler(METHOD_ERROR);
-    #endif //HAVE_NCSU
+#ifdef HAVE_NCSU
+    approxSubProbMinimizer.assign_rep(std::make_shared<NCSUOptimizer>(eifModel, max_iterations, max_fn_evals, min_box_size, vol_box_size));
+#else
+    Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
+	 << "Aborting process." << std::endl;
+    abort_handler(METHOD_ERROR);
+#endif //HAVE_NCSU
 }
-
 
 
 EffGlobalMinimizer::~EffGlobalMinimizer() {}
 
 
-void EffGlobalMinimizer::core_run() {
-    if (setUpType=="model") {
-        // minimize_surrogates_on_model_deprecated(); // DEPRECATED
-        EffGlobalMinimizer* prev_instance = effGlobalInstance;
-
-        // initialize convergence and flag variables
-        initialize_convergence_variables();
-
-        // build initial GP for all response functions: fHatModel.build_approximation()
-        build_gp();
-
-        // check if iterated model supports asynchronous parallelism
-        parallelFlag = check_parallelism();
-
-        // iterate until EGO converges
-        while (!approxConverged) {
-            if (parallelFlag) { // begin if parallelFlag = true -- then run in parallel
-                batch_synchronous_ego(); // batch-sequential parallelization
-            } // end if parallelFlag = true -- then run in parallel
-            else { // else begin parallelFlag = false -- then run sequentially
-                serial_ego();
-            } // end if parallelFlag = false -- then run sequentially
-        } // end approx convergence while loop
-
-        post_process();
-
-        // restore in case of recursion
-        effGlobalInstance = prev_instance;
-    }
-    else {
-        if (setUpType=="user_functions") {
-            Cerr << "Error: bad setUpType in EffGlobalMinimizer::core_run()." << std::endl;
-            abort_handler(METHOD_ERROR);
-        }
-        else {
-            Cerr << "Error: bad setUpType in EffGlobalMinimizer::core_run()." << std::endl;
-            abort_handler(METHOD_ERROR);
-        }
-    }
-}
-
-
-void EffGlobalMinimizer::minimize_surrogates_on_model_deprecated() {
+void EffGlobalMinimizer::core_run()
+{
+  if (setUpType=="model") {
 
     EffGlobalMinimizer* prev_instance = effGlobalInstance;
 
     // initialize convergence and flag variables
     initialize_convergence_variables();
 
-    // build initial GP once for all response functions: fHatModel.build_approximation()
+    // build initial GP for all response functions: fHatModel.build_approximation()
     build_gp();
+
+    // check if iterated model supports asynchronous parallelism
+    parallelFlag = check_parallelism();
 
     // iterate until EGO converges
     while (!approxConverged) {
-        parallelFlag = check_parallelism(); // check if iterated model supports asynchronous parallelism
-
-        if (parallelFlag) { // begin if parallelFlag = true -- then run in parallel
-            batch_synchronous_ego(); // batch-sequential parallelization
-        } // end if parallelFlag = true -- then run in parallel
-        else
-        { // else begin parallelFlag = false -- then run sequentially (reinstate old sequential implementation)
-            serial_ego();
-        } // end if parallelFlag = false -- then run sequentially
-    } // end approx convergence while loop
+      if (parallelFlag)
+	batch_synchronous_ego(); // batch-sequential parallelization
+      else
+	serial_ego();
+    }
 
     post_process();
 
     // restore in case of recursion
     effGlobalInstance = prev_instance;
-
+  }
+  else if (setUpType=="user_functions") {
+    Cerr << "Error: user_functions mode not implemented in EffGlobalMinimizer::core_run()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  else {
+    Cerr << "Error: bad setUpType in EffGlobalMinimizer::core_run()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 }
 
 
@@ -248,6 +213,7 @@ void EffGlobalMinimizer::EIF_objective_eval(const Variables& sub_model_vars,
     }
 }
 
+
 /** To maximize variances, the approxSubProbMinimizer will minimize -(variances). **/
 void EffGlobalMinimizer::Variances_objective_eval(const Variables& sub_model_vars,
 		   const Variables& recast_vars,
@@ -263,6 +229,7 @@ void EffGlobalMinimizer::Variances_objective_eval(const Variables& sub_model_var
         recast_response.function_value(neg_var, 0);
     }
 }
+
 
 /** Compute the EI acquisition function **/
 Real EffGlobalMinimizer::compute_expected_improvement(const RealVector& means, const RealVector& variances) {
@@ -310,6 +277,7 @@ Real EffGlobalMinimizer::compute_variances(const RealVector& variances) {
     Real real_variances = stdv;
     return real_variances;
 }
+
 
 /** Compute the expected violation for constraints **/
 RealVector EffGlobalMinimizer::expected_violation(const RealVector& means, const RealVector& variances) {
@@ -418,7 +386,6 @@ void EffGlobalMinimizer::get_best_sample() {
 }
 
 
-
 void EffGlobalMinimizer::update_penalty() {
     // Logic follows Conn, Gould, and Toint, section 14.4, step 3
     //   CGT use mu *= tau with tau = 0.01 ->   r_p *= 50
@@ -437,7 +404,6 @@ void EffGlobalMinimizer::update_penalty() {
 }
 
 
-
 void EffGlobalMinimizer::declare_sources() {
     // This override exists purely to prevent an optimizer/minimizer from declaring sources
     // when it's being used to evaluate a user-defined function (e.g. finding the correlation
@@ -447,7 +413,6 @@ void EffGlobalMinimizer::declare_sources() {
     else
         Iterator::declare_sources();
 }
-
 
 
 Real EffGlobalMinimizer::get_augmented_lagrangian(const RealVector& mean, const RealVector& c_vars, const Real& eif_star) {
@@ -464,7 +429,6 @@ Real EffGlobalMinimizer::get_augmented_lagrangian(const RealVector& mean, const 
      << aug_lag << " [merit]\n";
      return aug_lag;
 }
-
 
 
 bool EffGlobalMinimizer::check_parallelism() {
@@ -486,7 +450,6 @@ bool EffGlobalMinimizer::check_parallelism() {
     }
     return parallelFlag;
 }
-
 
 
 void EffGlobalMinimizer::build_gp() {
@@ -521,7 +484,6 @@ void EffGlobalMinimizer::build_gp() {
 }
 
 
-
 void EffGlobalMinimizer::initialize_convergence_variables() {
     eifConvergenceCntr = 0;
     distConvergenceCntr = 0;
@@ -532,8 +494,8 @@ void EffGlobalMinimizer::initialize_convergence_variables() {
 }
 
 
-
-void EffGlobalMinimizer::serial_ego() {
+void EffGlobalMinimizer::serial_ego()
+{
     ++globalIterCount;
 
     // Initialize EIF recast model
@@ -542,15 +504,16 @@ void EffGlobalMinimizer::serial_ego() {
     primary_resp_map[0].resize(numFunctions);
     for (size_t i=0; i<numFunctions; i++)
         primary_resp_map[0][i] = i;
-    RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
-    eif_model_rep->init_maps(vars_map, false, NULL, NULL,
-                              primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-                              EIF_objective_eval, NULL);
-
-    RecastModel* var_model_rep = (RecastModel*)varModel.model_rep();
-    var_model_rep->init_maps(vars_map, false, NULL, NULL,
-                                                        primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-                                                        EIF_objective_eval, NULL);
+    std::shared_ptr<RecastModel> eif_model_rep =
+      std::static_pointer_cast<RecastModel>(eifModel.model_rep());
+    std::shared_ptr<RecastModel> var_model_rep =
+      std::static_pointer_cast<RecastModel>(varModel.model_rep());
+    eif_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
+			     secondary_resp_map, nonlinear_resp_map,
+			     EIF_objective_eval, NULL);
+    var_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
+			     secondary_resp_map, nonlinear_resp_map,
+			     EIF_objective_eval, NULL);
 
     // determine fnStar from among sample data
     get_best_sample();
@@ -646,8 +609,8 @@ void EffGlobalMinimizer::serial_ego() {
 }
 
 
-
-void EffGlobalMinimizer::batch_synchronous_ego() {
+void EffGlobalMinimizer::batch_synchronous_ego()
+{
     ++globalIterCount;
 
     // reset the convergence counters
@@ -664,8 +627,10 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
         primary_resp_map[0][i] = i;
 
     // try to consolidate to 01 RecastModel and ->init.maps() before approxSubProbMinimizer is called
-    RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
-    RecastModel* var_model_rep = (RecastModel*)varModel.model_rep();
+    std::shared_ptr<RecastModel> eif_model_rep =
+      std::static_pointer_cast<RecastModel>(eifModel.model_rep());
+    std::shared_ptr<RecastModel> var_model_rep =
+      std::static_pointer_cast<RecastModel>(varModel.model_rep());
 
     eif_model_rep->init_maps(vars_map, false, NULL, NULL,
                               primary_resp_map, secondary_resp_map, nonlinear_resp_map,
@@ -872,9 +837,7 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
             update_penalty();
         }
     }
-
 }
-
 
 
 // void EffGlobalMinimizer::construct_batch_acquisition(VariablesArray varsArrayBatchAcquisition) {
@@ -942,7 +905,6 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
 // }
 
 
-
 void EffGlobalMinimizer::delete_liar_responses() {
     for (int _i = 0; _i < batchSizeAcquisition; _i++) {
         fHatModel.pop_approximation(false);
@@ -951,7 +913,6 @@ void EffGlobalMinimizer::delete_liar_responses() {
     }
     Cout << "\nParallel EGO:  Finished deleting liar responses!\n";
 }
-
 
 
 // void EffGlobalMinimizer::evaluate_batch() {
@@ -965,8 +926,8 @@ void EffGlobalMinimizer::delete_liar_responses() {
 // }
 
 
-
-bool EffGlobalMinimizer::assess_convergence() {
+bool EffGlobalMinimizer::assess_convergence()
+{
     if ( distConvergenceCntr >= distConvergenceLimit ||
          eifConvergenceCntr  >= eifConvergenceLimit ||
          globalIterCount       >= maxIterations ) {
@@ -1031,7 +992,7 @@ bool EffGlobalMinimizer::assess_convergence() {
 }
 
 
-
+/*
 void EffGlobalMinimizer::check_convergence_deprecated(const Real& eif_star,
                                           const RealVector& c_vars,
                                           RealVector prevCvStar,
@@ -1065,10 +1026,11 @@ void EffGlobalMinimizer::check_convergence_deprecated(const Real& eif_star,
 
     return;
 }
+*/
 
 
-
-void EffGlobalMinimizer::post_process() {
+void EffGlobalMinimizer::post_process()
+{
     // Set best variables and response for use by strategy level.
     // c_vars, fmin contain the optimal design
     get_best_sample(); // pull optimal result from sample data
@@ -1079,9 +1041,9 @@ void EffGlobalMinimizer::post_process() {
 }
 
 
-
-void EffGlobalMinimizer::debug_print_values() {
-    #ifdef DEBUG
+void EffGlobalMinimizer::debug_print_values()
+{
+#ifdef DEBUG
         RealVector variance = fHatModel.approximation_variances(vars_star);
         RealVector ev = expected_violation(mean,variance);
         RealVector stdv(numFunctions);
@@ -1090,27 +1052,25 @@ void EffGlobalMinimizer::debug_print_values() {
         Cout << "\nexpected values    =\n" << mean
              << "\nstandard deviation =\n" << stdv
              << "\nexpected violation =\n" << ev << std::endl;
-    #endif //DEBUG
+#endif //DEBUG
 }
 
 
-
-void EffGlobalMinimizer::debug_print_counter(unsigned short globalIterCount,
-                                             const Real& eif_star,
-                                             Real distCStar,
-                                             unsigned short distConvergenceCntr) {
-    #ifdef DEBUG
+void EffGlobalMinimizer::
+debug_print_counter(unsigned short globalIterCount, const Real& eif_star,
+		    Real distCStar, unsigned short distConvergenceCntr)
+{
+#ifdef DEBUG
         Cout << "EGO Iteration " << globalIterCount << "\neif_star " << eif_star
              << "\ndistCStar "  << distCStar      << "\ndistConvergenceCntr "
              << distConvergenceCntr << '\n';
-    #endif //DEBUG
+#endif //DEBUG
 }
 
 
-
-void EffGlobalMinimizer::debug_plots() {
-
-    #ifdef DEBUG_PLOTS
+void EffGlobalMinimizer::debug_plots()
+{
+#ifdef DEBUG_PLOTS
         // DEBUG - output set of samples used to build the GP
         // If problem is 2d, output a grid of points on the GP
         //   and truth (if requested)
@@ -1190,7 +1150,7 @@ void EffGlobalMinimizer::debug_plots() {
                 }
             }
         }
-    #endif //DEBUG_PLOTS
+#endif //DEBUG_PLOTS
 }
 
 
@@ -1213,6 +1173,5 @@ void EffGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
     SurrBasedMinimizer::derived_free_communicators(pl_iter);
     varModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
-
 
 } // namespace Dakota

@@ -279,9 +279,9 @@ objective function has been minimized and the equality constraint has
 been satisfied (driven to zero within the constraint tolerance).
 
 The Dakota results may be intermixed with iteration information from
-the NPSOL library. For example lines with the heading ``\texttt{Majr
-  Minr Step Fun Merit function Norm gZ Violtn nZ Penalty Conv}'' come
-from Fortran write statements within NPSOL. The output is mixed since
+the NPSOL library. For example lines with the heading\\
+\texttt{Majr Minr Step Fun Merit function Norm gZ Violtn nZ Penalty Conv}\\
+come from Fortran write statements within NPSOL. The output is mixed since
 both Dakota and NPSOL are writing to the same standard output
 stream. The relative locations of these output contributions can vary
 depending on the specifics of output buffering and flushing on a
@@ -298,15 +298,15 @@ written to the Fortran device 9 file (e.g., \texttt{fort.9} or
 In a number of contexts, Dakota can output information in a
 whitespace-separated columnar data file, a tabular data file.  The
 most common usage, to capture the iteration history in a tabular file,
-is enabled by including the keyword \texttt{tabular\_data} in the
-\texttt{environment} specification (see
+is enabled by including the keyword \dakotakw{tabular_data} in the
+\dakotakw{environment} specification (see
 Figure~\ref{output:incont}). This output format facilitates the
 transfer of Dakota's iteration history data to external mathematical
 analysis and/or graphics plotting packages (e.g., MATLAB, TECplot,
 Excel, S-plus, Minitab).
 
 The default file name for the top-level tabular output data is
-``\path{dakota_tabular.dat},'' though \texttt{tabular\_data\_file}
+``\path{dakota_tabular.dat},'' though \dakotakw{tabular_data_file}
 allows specification of an alternate name.  Example tabular output
 from the ``container'' optimization problem is shown in
 Figure~\ref{output:tabcont}. This annotated tabular format (see

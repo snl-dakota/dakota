@@ -1,20 +1,48 @@
 Blurb::
-Specify scaling for the variable.
+Characteristic values to scale continuous design variables
+
 Description::
-For continuous variables, the \c scale_types specification includes strings specifying the scaling type for each component of the continuous design variables vector in methods that support scaling, when scaling is enabled. 
-Each entry in \c scale_types may be selected from <tt>'none'</tt>, <tt>'value'</tt>, <tt>'auto'</tt>, or <tt>'log'</tt>, to select no, characteristic value, automatic, or logarithmic scaling, respectively. If a single string is specified it will apply to all components of the continuous design variables vector. 
-Each entry in \c scales may be a user-specified nonzero real characteristic value to be used in scaling each variable component. These values are ignored for scaling type <tt>'none'</tt>, required for <tt>'value'</tt>, and optional for <tt>'auto'</tt> and <tt>'log'</tt>. If a single real value is specified it will apply to all components of the continuous design variables vector.
+Each real value in \c scales is a nonzero characteristic value to be
+used in scaling each continuous design variable. They only have effect
+when the associated method specifies \c scaling.
+
+This keyword is required for \ref
+variables-continuous_design-scale_types of <tt>'value'</tt> and
+optional for <tt>'auto'</tt> and <tt>'log'</tt>. When specified in
+conjunction with log, scale values are applied prior to the logarithm,
+to permit log scaling of strictly negative design variables.
+
+If a single real value is specified it will apply to all continuous
+design variables. Otherwise, a scale value must be specified for each
+continuous design variable.
+
+<b>Usage Tips:</b>
+
+When \c scales are specified, but not \ref
+variables-continuous_design-scale_types, the scaling type is assumed
+to be 'value' for all continuous design variables.
+
+Use scale values of 1.0 to selectively avoid scaling a subset of
+the variables.
+
+Scaling for linear constraints is applied \e after any continuous
+variable scaling.
+
+See the scaling information under specific methods, e.g.,
+\c method-*-scaling for details on how to use this keyword.
+
 
 Topics::	
-Examples:: Two continuous design variables, both scaled by the characteristic value 4.0
+Examples:: 
+Two continuous design variables, one scaled by the characteristic value 4.0, the other log-scaled without additional value scaling
 \verbatim
   continuous_design = 2
     initial_point    -1.2      1.0
     lower_bounds     -200      0.001
     upper_bounds      200      2.0
     descriptors       'x1'     "x2"
-    scale_types = 'value' 'none'
-    scales = 10.0
+    scale_types = 'value' 'log'
+    scales = 4.0 1.0
 \endverbatim
 
 Theory::

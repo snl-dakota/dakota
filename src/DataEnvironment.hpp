@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -41,6 +41,8 @@ class DataEnvironmentRep
   friend class DataEnvironment;
 
 public:
+
+  ~DataEnvironmentRep(); ///< destructor (public for shared_ptr)
 
   //
   //- Heading: Data
@@ -110,7 +112,6 @@ private:
   //
 
   DataEnvironmentRep();  ///< constructor
-  ~DataEnvironmentRep(); ///< destructor
 
   //
   //- Heading: Member methods
@@ -128,8 +129,6 @@ private:
   //- Heading: Private data members
   //
 
-  /// number of handle objects sharing this dataEnvironmentRep
-  int referenceCount;
 };
 
 
@@ -180,7 +179,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataEnvRep
-  DataEnvironmentRep* data_rep();
+  std::shared_ptr<DataEnvironmentRep> data_rep();
 
 private:
 
@@ -189,11 +188,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataEnvironmentRep* dataEnvRep;
+  std::shared_ptr<DataEnvironmentRep> dataEnvRep;
 };
 
 
-inline DataEnvironmentRep* DataEnvironment::data_rep()
+inline std::shared_ptr<DataEnvironmentRep> DataEnvironment::data_rep()
 {return dataEnvRep; }
 
 

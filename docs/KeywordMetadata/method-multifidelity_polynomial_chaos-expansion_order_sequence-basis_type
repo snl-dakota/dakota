@@ -1,9 +1,1 @@
-Blurb::
-Specify the type of truncation to be used with a Polynomial Chaos Expansion.
-Description::
-Specify the type of truncation to be used with a Polynomial Chaos Expansion.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-basis_type

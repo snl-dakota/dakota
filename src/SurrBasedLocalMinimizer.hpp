@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -48,6 +48,9 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
+
+  /// initialize graphics customized for surrogate-based iteration
+  void initialize_graphics(int iterator_server_id = 1);
 
   void pre_run();
 

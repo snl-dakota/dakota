@@ -3059,35 +3059,35 @@ Test Number 29 succeeded
 <<<<< Best data captured at function evaluation 27
 dakota_cantilever_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 34 total (24 new, 10 duplicate)
+<<<<< Function evaluation summary: 34 total (25 new, 9 duplicate)
 <<<<< Best parameters          =
-                      2.3888098585e+00 w
-                      3.2770947292e+00 t
+                      2.4938864333e+00 w
+                      3.1728423287e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8283561964e+00
+                      7.9127084385e+00
 <<<<< Best constraint values   =
-                     -1.4242124268e-02
-                     -3.1151219249e-04
-<<<<< Best data captured at function evaluation 24
+                     -2.2461578362e-02
+                     -1.1495818155e-02
+<<<<< Best data captured at function evaluation 27
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 66 total (41 new, 25 duplicate)
+<<<<< Function evaluation summary: 30 total (22 new, 8 duplicate)
 <<<<< Best parameters          =
-                      2.3883808363e+00 w
-                      3.2773261754e+00 t
+                      3.1358109367e+00 w
+                      2.7927737980e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8275030316e+00
+                      8.7576106195e+00
 <<<<< Best constraint values   =
-                     -1.4103927176e-02
-                     -1.0871413207e-04
-<<<<< Best data captured at function evaluation 50
+                     -1.1360182196e-01
+                     -3.6021861116e-02
+<<<<< Best data captured at function evaluation 27
 dakota_cantilever_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
@@ -3233,51 +3233,51 @@ dakota_cantilever_queso_adapt.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 57 total (57 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.8548904600626047e+04 R
-                      3.1658260995960414e+07 E
-                      3.8643139118356237e+02 X
-                      6.8649098498309309e+02 Y
+                      3.8587819101240195e+04 R
+                      3.1743707436499655e+07 E
+                      3.8362770758586555e+02 X
+                      6.9057018528749745e+02 Y
 <<<<< Best misfit              =
-                      9.7358924807045888e+00
+                      9.7237300141531229e+00
 <<<<< Best log prior           =
-                     -1.1178714531101571e+01
+                     -1.1179735202011267e+01
 <<<<< Best log posterior       =
-                     -6.0372029540085244e+01
+                     -6.0360887744443474e+01
 Sample moment statistics for each posterior variable:
                                   Mean                 Std Dev                Skewness                Kurtosis
-             R  3.7452064209591554e+04  5.1949340378678971e+03 -3.6398792875563739e+00  1.2949378526276696e+01
-             E  3.1027387225031067e+07  3.1539491457051621e+06 -3.2994116972761813e+00  1.0745013749311692e+01
-             X  3.8919943019148911e+02  6.2350491428293779e+01  1.7447841509277398e-01  6.2577242344616646e-02
-             Y  6.6508707077381860e+02  8.6869250975621725e+01 -2.2548288640646295e+00  6.6758804239286933e+00
+             R  3.8632799263410518e+04  1.4670705707944855e+03  3.1362427152769289e-02  3.6373767170672938e-01
+             E  3.1874766723431639e+07  1.0783873713353737e+06  9.1818857565694828e-02  1.6764275523365985e-01
+             X  3.8398671543114966e+02  5.5952983792480545e+01 -2.1794065737540710e-01 -8.7713994779589022e-02
+             Y  6.9138681576973556e+02  4.7480549062477046e+01 -1.5956653727705186e-01 -8.3467736359714551e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
-        stress  3.0325374275419194e+03  1.9153768307457813e+03  5.5363773404176344e+00  3.0887063106857529e+01
-  displacement  3.1715305615927980e-01  1.2045996643178489e-01  6.2541830160021279e+00  4.4554806751748991e+01
-Information gained from prior to posterior = 7.4073685664794255e+01
+        stress  2.6615443347035048e+03  8.7398487111933449e+01 -7.3409585559503041e-02  2.0576762925144521e-01
+  displacement  2.9389214592584278e-01  9.8391864850537487e-03  2.7584007195422297e-02 -2.8606411538641730e-02
+Information gained from prior to posterior = 7.3813410287766260e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.9617101053542880e+04 R
-                      3.0999803899460346e+07 E
-                      3.0012414063378390e+02 X
-                      8.0000938037036883e+02 Y
+                      3.9576109478771585e+04 R
+                      3.1000000000000000e+07 E
+                      3.0000000000000000e+02 X
+                      8.0000000000000000e+02 Y
 <<<<< Best misfit              =
-                      4.0342244197438180e+02
+                      4.0276958954028089e+02
 <<<<< Best log prior           =
                      -2.7725887222397811e+00
 <<<<< Best log posterior       =
-                     -4.4565245322490068e+02
+                     -4.4499960079079978e+02
 Sample moment statistics for each posterior variable:
                                   Mean                 Std Dev                Skewness                Kurtosis
-             R  3.9499904039417233e+04  2.7340537068493046e+02 -5.0444813741837846e+00  3.2507669328714556e+01
-             E  3.0944796512783758e+07  3.2458075696242164e+05 -6.9591176261974965e+00  4.9279684208781298e+01
-             X  3.0224245429764875e+02  1.1494122465190699e+01  6.6592323946185417e+00  4.5154126083365213e+01
-             Y  8.0039047638624788e+02  1.8613017277650992e+00  1.0539886871241036e+01  1.3124772780503361e+02
+             R  3.9617298729155365e+04  7.2459737564629606e+01  3.8320856947048959e-01 -3.4028725751338036e-02
+             E  3.0994594394025739e+07  5.3272591884802750e+03 -1.8332827080742562e+00  4.5215924588789180e+00
+             X  3.0039048159037327e+02  3.5890660816315578e-01  1.5580038506610485e+00  3.1005667612228471e+00
+             Y  8.0014882406782442e+02  1.4196237940506609e-01  1.6260180851497181e+00  3.3473463991704864e+00
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
-        stress  2.8412004988438612e+03  7.1628793327518008e+02  6.0777950861838903e+00  3.8740965017115940e+01
-  displacement  5.7472310274875149e-01  5.2170423036930813e-02  6.7423585667059713e+00  4.5910967628576934e+01
-Information gained from prior to posterior = 1.1292683937429946e+02
+        stress  2.6434106081200257e+03  7.0892028361721174e+01 -3.4885452164431913e-01 -1.4910083215816350e-01
+  displacement  5.6643176323954025e-01  7.5317923763391177e-04  6.8472666387059700e-01  2.1735421174887590e-01
+Information gained from prior to posterior = 1.1284111288359374e+02
 dakota_coliny_p.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
@@ -4990,13 +4990,13 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 31
 dakota_rosenbrock_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 82 total (50 new, 32 duplicate)
+<<<<< Function evaluation summary: 78 total (70 new, 8 duplicate)
 <<<<< Best parameters          =
-                      1.0053119725e+00 x1
-                      1.0109795819e+00 x2
+                      9.8831165328e-01 x1
+                      9.7677070456e-01 x2
 <<<<< Best objective function  =
-                      3.8937424292e-05
-<<<<< Best data captured at function evaluation 44
+                      1.3662907093e-04
+<<<<< Best data captured at function evaluation 60
 dakota_rosenbrock_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -223,26 +223,6 @@ enum { PENALTY_MERIT,    ADAPTIVE_PENALTY_MERIT,
 // define special values for SBL iterate acceptance logic
 enum { FILTER, TR_RATIO };
 
-// ---------
-// Minimizer
-// ---------
-
-// minimum value allowed for a characteristic value when scaling; ten
-// orders of magnitude greater than DBL_MIN
-#define SCALING_MIN_SCALE 1.0e10*DBL_MIN
-// lower bound on domain of logarithm function when scaling
-#define SCALING_MIN_LOG SCALING_MIN_SCALE
-// logarithm base to be used when scaling
-#define SCALING_LOGBASE 10.0
-// ln(SCALING_LOGBASE); needed in transforming variables in several places
-#define SCALING_LN_LOGBASE log(SCALING_LOGBASE)
-// indicate type of scaling active for a component (bitwise)
-enum { SCALE_NONE, SCALE_VALUE, SCALE_LOG };
-// to indicate type of object being scaled
-enum { CDV, LINEAR, NONLIN, FN_LSQ };
-// to restrict type of auto scaling allowed
-enum { DISALLOW, TARGET, BOUNDS };
-
 
 /// Body class for method specification data.
 
@@ -262,6 +242,8 @@ class DataMethodRep
   friend class DataMethod;
 
 public:
+
+  ~DataMethodRep();                            ///< destructor
 
   //
   //- Heading: Data
@@ -779,21 +761,28 @@ public:
   /// optimization tolerance for FT regression
   Real solverTol;
   /// Rounding tolerance for FT regression
-  Real roundingTol;
+  Real solverRoundingTol;
   /// arithmetic (rounding) tolerance for FT sums and products
-  Real arithmeticTol;
+  Real statsRoundingTol;
   /// starting polynomial order
   unsigned short startOrder;
+  /// polynomial order increment when adapting
+  unsigned short kickOrder;
   /// maximum order of basis polynomials
   unsigned short maxOrder;
+  /// whether or not to adapt order by cross validation
+  bool adaptOrder;
   /// starting rank
   size_t startRank;
-  /// rank increase increment
+  /// rank increment when adapting
   size_t kickRank;
   /// maximum rank
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
+  /// quantity to increment (start order, start rank, max rank) for FT
+  /// uniform p-refinement
+  short c3RefineType;
   /// starting polynomial order
   UShortArray startOrderSeq;
   /// starting rank
@@ -1239,7 +1228,6 @@ private:
   //
 
   DataMethodRep();                             ///< constructor
-  ~DataMethodRep();                            ///< destructor
 
   //
   //- Heading: Member methods
@@ -1257,8 +1245,6 @@ private:
   //- Heading: Private data members
   //
 
-  /// number of handle objects sharing this dataMethodRep
-  int referenceCount;
 };
 
 
@@ -1314,7 +1300,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataMethodRep
-  DataMethodRep* data_rep();
+  std::shared_ptr<DataMethodRep> data_rep();
 
 private:
 
@@ -1323,11 +1309,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataMethodRep* dataMethodRep;
+  std::shared_ptr<DataMethodRep> dataMethodRep;
 };
 
 
-inline DataMethodRep* DataMethod::data_rep()
+inline std::shared_ptr<DataMethodRep> DataMethod::data_rep()
 {return dataMethodRep; }
 
 

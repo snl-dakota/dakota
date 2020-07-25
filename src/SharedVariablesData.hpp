@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -306,16 +306,11 @@ inline SharedVariablesDataRep::SharedVariablesDataRep():
   cvStart(0), divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
   idsvStart(0), idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0),
   numICV(0), numIDIV(0), numIDSV(0), numIDRV(0)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesDataRep::SharedVariablesDataRep() called to build "
-       << "empty body object." << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 inline SharedVariablesDataRep::~SharedVariablesDataRep()
-{ }
+{ /* empty dtor */ }
 
 
 inline size_t SharedVariablesDataRep::vc_lookup(unsigned short key) const
@@ -942,24 +937,14 @@ private:
 
 
 inline SharedVariablesData::SharedVariablesData()
-{ 
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesData::SVD(); default constructed handle.\n";
-  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 inline SharedVariablesData::
 SharedVariablesData(const ProblemDescDB& problem_db,
 		    const std::pair<short,short>& view):
   svdRep(new SharedVariablesDataRep(problem_db, view))
-{ 
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesData::SVD(PDB) problem DB constructed handle.\n";
-  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 inline SharedVariablesData::
@@ -968,12 +953,7 @@ SharedVariablesData(const std::pair<short,short>& view,
 		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
   svdRep(new SharedVariablesDataRep(view, vars_comps, all_relax_di,
 				    all_relax_dr))
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesData::SVD() vars_comps constructed handle.\n";
-  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 inline SharedVariablesData::
@@ -982,52 +962,27 @@ SharedVariablesData(const std::pair<short,short>& view,
 		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
   svdRep(new SharedVariablesDataRep(view, vars_comps_totals, all_relax_di,
 				    all_relax_dr))
-{ 
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesData::SVD() vars_comps_totals constructed handle.\n";
-  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
 inline SharedVariablesData::SharedVariablesData(const SharedVariablesData& svd)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesData::SVD(SVD) copy constructor.\n";
-  Cout << "  svdRep use_count before = " << svdRep.use_count() << std::endl;
-#endif
   // share the representation (body)
   svdRep = svd.svdRep;
-#ifdef REFCOUNT_DEBUG
-  Cout << "  svdRep use_count after  = " << svdRep.use_count() << std::endl;
-#endif
 }
 
 
 inline SharedVariablesData& SharedVariablesData::
 operator=(const SharedVariablesData& svd)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesData::operator=.\n";
-  Cout << "  svdRep use_count before = " << svdRep.use_count() << std::endl;
-#endif
   // share the inbound representation (body) by copying the pointer
   svdRep = svd.svdRep;
-#ifdef REFCOUNT_DEBUG
-  Cout << "  svdRep use_count after  = " << svdRep.use_count() << std::endl;
-#endif
   return *this;
 }
 
 
 inline SharedVariablesData::~SharedVariablesData()
-{
-  /* empty dtor in case we add virtual functions */
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesData::~SVD called.\n";
-  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
-#endif
-}
+{ /* empty dtor in case we add virtual functions */ }
 
 
 inline void SharedVariablesData::

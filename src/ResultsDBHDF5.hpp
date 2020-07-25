@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -174,7 +174,7 @@ public:
   }
 
   /// Flush HDF5 cache to disk
-  void flush() const;
+  void flush() const override;
 
   /// Pre-allocate a vector and (optionally) attach dimension scales and attributes. Insert
   /// elements using insert_into(...)
@@ -183,7 +183,7 @@ public:
               ResultsOutputType stored_type, 
               const int &len,
               const DimScaleMap &scales = DimScaleMap(),
-              const AttributeArray &attrs = AttributeArray());
+              const AttributeArray &attrs = AttributeArray()) override;
 
   /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
   /// rows or columns using insert_into(...)
@@ -192,14 +192,14 @@ public:
               ResultsOutputType stored_type, 
               const int &num_rows, const int &num_cols,
               const DimScaleMap &scales = DimScaleMap(),
-              const AttributeArray &attrs = AttributeArray());
+              const AttributeArray &attrs = AttributeArray()) override;
 
 
   /// Insert a row or column into a pre-allocated matrix 
   void insert_into(const StrStrSizet& iterator_id,
          const StringArray &location,
          const boost::any& data,
-         const int &index, const bool &row);
+         const int &index, const bool &row) override;
 
   /// insert an arbitrary type (eg RealMatrix) with scales
   void insert(const StrStrSizet& iterator_id,

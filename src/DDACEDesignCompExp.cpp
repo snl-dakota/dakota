@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -156,7 +156,7 @@ void DDACEDesignCompExp::post_run(std::ostream& s)
 	   << "requires user-specified seed.\n";
       abort_handler(-1);
     }
-    boost::shared_ptr<DDaceSamplerBase> ddace_sampler = 
+    std::shared_ptr<DDaceSamplerBase> ddace_sampler = 
       create_sampler(iteratedModel);
     symbolMapping = ddace_sampler->getP();
   }
@@ -223,7 +223,7 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model, const int num_samples,
   std::vector<DDaceSamplePoint> sample_points(num_samples);
 
   // in get_parameter_sets, generate the samples; could omit the symbolMapping
-  boost::shared_ptr<DDaceSamplerBase> ddace_sampler = 
+  std::shared_ptr<DDaceSamplerBase> ddace_sampler = 
     create_sampler(iteratedModel);
   ddace_sampler->getSamples(sample_points);
   if (mainEffectsFlag)
@@ -257,7 +257,7 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model, const int num_samples,
   }
 }
 
-boost::shared_ptr<DDaceSamplerBase>
+std::shared_ptr<DDaceSamplerBase>
 DDACEDesignCompExp::create_sampler(Model& model)
 {
   // Get bounded region and check that (1) the lengths of bounds arrays are 
@@ -293,45 +293,41 @@ DDACEDesignCompExp::create_sampler(Model& model)
   bool noise = true;
   switch (daceMethod) {
   case SUBMETHOD_OAS: {
-    return boost::shared_ptr<DDaceSamplerBase>
-      (new DDaceOASampler(numSamples, noise, ddace_distribution));
+    return std::make_shared<DDaceOASampler>
+      (numSamples, noise, ddace_distribution);
     break;
   }
   case SUBMETHOD_OA_LHS: {
     int strength = 2;
     bool randomize = true;
-    return boost::shared_ptr<DDaceSamplerBase>
-      (new DDaceOALHSampler(numSamples, numContinuousVars, strength, randomize,
-			    ddace_distribution));
+    return std::make_shared<DDaceOALHSampler>
+      (numSamples, numContinuousVars, strength, randomize, ddace_distribution);
     break;
   }
   case SUBMETHOD_LHS: {
     int replications = numSamples/numSymbols;
-    return boost::shared_ptr<DDaceSamplerBase>
-      (new DDaceLHSampler(numSamples, replications, noise, ddace_distribution));
+    return std::make_shared<DDaceLHSampler>
+      (numSamples, replications, noise, ddace_distribution);
     break;
   }
   case SUBMETHOD_RANDOM: {
-      return boost::shared_ptr<DDaceSamplerBase>
-	(new DDaceRandomSampler(numSamples, ddace_distribution));
+    return std::make_shared<DDaceRandomSampler>
+      (numSamples, ddace_distribution);
     break;
   }
   case SUBMETHOD_GRID: {
-    return boost::shared_ptr<DDaceSamplerBase>
-      (new DDaceFactorialSampler(numSamples, numSymbols, noise, 
-				 ddace_distribution));
+    return std::make_shared<DDaceFactorialSampler>
+      (numSamples, numSymbols, noise, ddace_distribution);
     break;
   }
   case SUBMETHOD_CENTRAL_COMPOSITE: {
-    return boost::shared_ptr<DDaceSamplerBase>
-      (new DDaceCentralCompositeSampler(numSamples, numContinuousVars,
-					ddace_distribution));
+    return std::make_shared<DDaceCentralCompositeSampler>
+      (numSamples, numContinuousVars, ddace_distribution);
     break;
   }
   case SUBMETHOD_BOX_BEHNKEN: {
-    return boost::shared_ptr<DDaceSamplerBase>
-      (new DDaceBoxBehnkenSampler(numSamples, numContinuousVars,
-				  ddace_distribution));
+    return std::make_shared<DDaceBoxBehnkenSampler>
+      (numSamples, numContinuousVars, ddace_distribution);
     break;
   }
   default:

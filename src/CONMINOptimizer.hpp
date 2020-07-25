@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -20,33 +20,10 @@
 
 namespace Dakota {
 
-/// Wrapper class for the CONMIN optimization library.
-
-/** The CONMINOptimizer class provides a wrapper for CONMIN, a
-    Public-domain Fortran 77 optimization library written by Gary
-    Vanderplaats under contract to NASA Ames Research Center. The
-    CONMIN User's Manual is contained in NASA Technical Memorandum
-    X-62282, 1978.  CONMIN uses a reverse communication mode, which
-    avoids the static member function issues that arise with function
-    pointer designs (see NPSOLOptimizer and SNLLOptimizer).
-
-    The user input mappings are as follows: \c max_iterations is
-    mapped into CONMIN's \c ITMAX parameter, \c
-    max_function_evaluations is implemented directly in the
-    core_run() loop since there is no CONMIN parameter equivalent,
-    \c convergence_tolerance is mapped into CONMIN's \c DELFUN and \c
-    DABFUN parameters, \c output verbosity is mapped into CONMIN's \c
-    IPRINT parameter (verbose: \c IPRINT = 4; quiet: \c IPRINT = 2),
-    gradient mode is mapped into CONMIN's \c NFDG parameter, and
-    finite difference step size is mapped into CONMIN's \c FDCH and \c
-    FDCHM parameters.  Refer to [Vanderplaats, 1978] for additional
-    information on CONMIN parameters. */
-
 /**
  * \brief A version of TraitsBase specialized for CONMIN optimizers
  *
  */
-
 class CONMINTraits: public TraitsBase
 {
   public:
@@ -85,6 +62,27 @@ class CONMINTraits: public TraitsBase
 };
 
 
+/// Wrapper class for the CONMIN optimization library.
+
+/** The CONMINOptimizer class provides a wrapper for CONMIN, a
+    Public-domain Fortran 77 optimization library written by Gary
+    Vanderplaats under contract to NASA Ames Research Center. The
+    CONMIN User's Manual is contained in NASA Technical Memorandum
+    X-62282, 1978.  CONMIN uses a reverse communication mode, which
+    avoids the static member function issues that arise with function
+    pointer designs (see NPSOLOptimizer and SNLLOptimizer).
+
+    The user input mappings are as follows: \c max_iterations is
+    mapped into CONMIN's \c ITMAX parameter, \c
+    max_function_evaluations is implemented directly in the
+    core_run() loop since there is no CONMIN parameter equivalent,
+    \c convergence_tolerance is mapped into CONMIN's \c DELFUN and \c
+    DABFUN parameters, \c output verbosity is mapped into CONMIN's \c
+    IPRINT parameter (verbose: \c IPRINT = 4; quiet: \c IPRINT = 2),
+    gradient mode is mapped into CONMIN's \c NFDG parameter, and
+    finite difference step size is mapped into CONMIN's \c FDCH and \c
+    FDCHM parameters.  Refer to [Vanderplaats, 1978] for additional
+    information on CONMIN parameters. */
 class CONMINOptimizer: public Optimizer
 {
 public:

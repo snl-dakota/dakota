@@ -1,0 +1,35 @@
+Blurb::
+Characteristic values to scale each nonlinear constraint
+
+Description::
+
+Each real value in \c scales is a nonzero characteristic value to be
+used in scaling each nonlinear inequality (equality) constraint. They
+only have effect when the associated method specifies \c scaling.
+
+This keyword is required for \c scale_types of <tt>'value'</tt> and
+optional for <tt>'log'</tt>. When specified in conjunction with log,
+scale values are applied prior to the logarithm, to permit log scaling
+of strictly negative response functions.
+
+If a single scale value is specified it will apply to all of the
+nonlinear inequality (equality) constraints. Otherwise a value must
+be specified for each nonlinear inequality (equality) constraint.
+
+<b>Usage Tips:</b>
+
+When \c scales are specified, but not \c scale_types, the scaling type
+is assumed to be 'value' for this set of nonlinear inequality
+(equality) constraints.
+
+Use scale values of 1.0 to selectively avoid scaling a subset of
+response functions.
+
+See the scaling information under specific methods, e.g.,
+method-*-scaling for details on how to use this keyword.
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

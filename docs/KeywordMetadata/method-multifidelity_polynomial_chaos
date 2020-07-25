@@ -104,6 +104,20 @@ NonDMultilevelPolynomialChaos class. Refer to the Stochastic Expansion
 Methods chapter of the Theory Manual \cite TheoMan for additional
 information on the Multifidelity PCE algorithm.
 
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-se_moments (expansion moments only)
+- \ref hdf5_results-pdf
+- \ref hdf5_results-level_mappings
+
+In addition, the execution group has the attribute \c equiv_hf_evals, which
+records the equivalent number of high-fidelity evaluations.
+
+
 Topics::
 
 Examples::
@@ -123,4 +137,4 @@ model,
 Theory::
 
 Faq::
-See_Also::	method-adaptive_sampling, method-gpais, method-local_reliability, method-global_reliability, method-sampling, method-importance_sampling, method-stoch_collocation
+See_Also::	method-polynomial_chaos, method-multifidelity_stoch_collocation, method-multifidelity_function_train

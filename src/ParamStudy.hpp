@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -769,10 +769,10 @@ centered_header(const String& type, size_t var_index, int step,
   h_string += ">>>>> Centered parameter study evaluation for ";
   h_string += type; 
   h_string += "[";
-  h_string += boost::lexical_cast<std::string>(var_index+1); 
+  h_string += std::to_string(var_index+1); 
   h_string += "]";
-  if (step < 0) h_string += " - " + boost::lexical_cast<std::string>(-step);
-  else          h_string += " + " + boost::lexical_cast<std::string>( step);
+  if (step < 0) h_string += " - " + std::to_string(-step);
+  else          h_string += " + " + std::to_string( step);
   h_string += "delta:\n";
 }
 

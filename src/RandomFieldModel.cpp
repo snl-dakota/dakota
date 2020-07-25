@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -118,7 +118,7 @@ bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
   // runtime operation to identify the random field approximation
   if (covarianceForm != NOCOVAR) { 
     rf_suite_identify_field_model();
-    expansionForm == RF_KARHUNEN_LOEVE;
+    expansionForm = RF_KARHUNEN_LOEVE;
   }
   else { 
     get_field_data();
@@ -249,7 +249,7 @@ void RandomFieldModel::identify_field_model()
       RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
       gpApproximations[i].add_array(rfBuildVars, factor_i);
       gpApproximations[i].build();
-      const String gp_string = boost::lexical_cast<String>(i);
+      const String gp_string = std::to_string(i);
       const String gp_prefix = "PCA_GP";
       gpApproximations[i].export_model(gp_string, gp_prefix, ALGEBRAIC_FILE);
     }
@@ -385,8 +385,9 @@ void RandomFieldModel::initialize_rf_coeffs()
     // get submodel normal parameters (could get from current object as well)
     const Pecos::MultivariateDistribution& sm_dist
       = subModel.multivariate_distribution();
-    Pecos::MarginalsCorrDistribution* sm_mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)sm_dist.multivar_dist_rep();
+    std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+      (sm_dist.multivar_dist_rep());
     RealVector normal_means, normal_stdev, normal_lb, normal_ub;
     sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
     sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
@@ -409,7 +410,7 @@ void RandomFieldModel::initialize_rf_coeffs()
       normal_stdev[num_sm_normal + i] = 1.0;
       normal_lb[num_sm_normal + i] = -std::numeric_limits<Real>::infinity();
       normal_ub[num_sm_normal + i] =  std::numeric_limits<Real>::infinity();
-      String xi_label = "xi_" + boost::lexical_cast<String>(i+1);
+      String xi_label = "xi_" + std::to_string(i+1);
       currentVariables.
         continuous_variable_label(xi_label, num_sm_normal + i);
     }
@@ -418,8 +419,9 @@ void RandomFieldModel::initialize_rf_coeffs()
         continuous_variable_label(sm_cv_labels[i], actualReducedRank + i);
 
     // update mvDist for the RandomFieldModel
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+    std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+      (mvDist.multivar_dist_rep());
     mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
     mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
     mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_LWR_BND, normal_lb);
@@ -580,7 +582,7 @@ void RandomFieldModel::write_field(const RealVector& field_prediction)
   // TODO: write to file per eval, preferrably in work_directory
   // BMA TODO: something smarter than modelEvalCntr / eval ID
   if (outputLevel >= VERBOSE_OUTPUT) {
-    String pred_count(boost::lexical_cast<String>(evaluation_id() + 1));
+    String pred_count(std::to_string(evaluation_id() + 1));
     std::ofstream myfile;
     myfile.open(("field_prediction." + pred_count + ".txt").c_str());
     Cout << "Field prediction " << pred_count << "\n";

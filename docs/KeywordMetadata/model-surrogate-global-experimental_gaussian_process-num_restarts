@@ -1,0 +1,16 @@
+Blurb::
+Number of optimization restarts for L-BFGS-B
+
+Description::
+Number of optimization runs at random initial guesses for maximum likelihood estimation.
+Multiple restarts are used to increase the chance of finding the global minimum with
+a gradient-based (i.e. local) optimization method.
+
+<b> Default Behavior </b>
+Default value of 20 restarts.
+
+Topics::
+
+Theory::
+Faq::
+See_Also::

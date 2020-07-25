@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <boost/filesystem/fstream.hpp>
 
-/** 
+/* 
     Work directory TODO
     
     * Doc: we will search for drivers in PATH, workdir (.), RUNDIR
@@ -596,7 +596,7 @@ write_parameters_files(const Variables& vars,    const ActiveSet& set,
   // provides the parameters for the 2nd analysis for the 20th fn eval.
   if (multipleParamsFiles) { // append prog counter
     for (size_t i=0; i<num_programs; ++i) {
-      std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
+      std::string prog_num("." + std::to_string(i+1));
       std::string tag_results_fname = resultsFileWritten + prog_num;
       std::string tag_params_fname  = paramsFileWritten  + prog_num;
       if (!allowExistingResults)
@@ -730,7 +730,7 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
     response.reset();
     Response partial_response = response.copy();
     for (size_t i=0; i<num_programs; ++i) {
-      const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
+      const std::string prog_num("." + std::to_string(i+1));
       bfs::path prog_tagged_results
 	= WorkdirHelper::concat_path(results_path, prog_num);
       read_results_file(partial_response, prog_tagged_results, id);
@@ -754,8 +754,7 @@ void ProcessApplicInterface::read_results_file(Response &response,
   bfs::ifstream recovery_stream(results_path);
   if (!recovery_stream) {
     Cerr << "\nError: cannot open results file " << results_path
-	 << " for evaluation " << boost::lexical_cast<std::string>(id)
-	 << std::endl;
+	 << " for evaluation " << std::to_string(id) << std::endl;
     abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
   }
   try {
@@ -764,7 +763,7 @@ void ProcessApplicInterface::read_results_file(Response &response,
   catch(const FileReadException& fr_except) {
     throw FileReadException("Error(s) encountered reading results file " +
         results_path.string() + " for Evaluation " + 
-        boost::lexical_cast<std::string>(id) + ":\n" + fr_except.what()); 
+        std::to_string(id) + ":\n" + fr_except.what()); 
   }
 }
 
@@ -795,7 +794,7 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
     }
     if (multipleParamsFiles) { // append program counters to old/new strings
       for (size_t i=0; i<num_programs; ++i) {
-	const std::string prog_num("."+boost::lexical_cast<std::string>(i+1));
+	const std::string prog_num("." + std::to_string(i+1));
 	const bfs::path prog_tagged_old = 
 	  WorkdirHelper::concat_path(params_path, prog_num);
 	const bfs::path eval_prog_tagged_new = 
@@ -821,7 +820,7 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
     }
     if (num_programs > 1) { // append program counters to old/new strings
       for (size_t i=0; i<num_programs; ++i) {
-	const std::string prog_num("."+boost::lexical_cast<std::string>(i+1));
+	const std::string prog_num("." + std::to_string(i+1));
 	const bfs::path prog_tagged_old = 
 	  WorkdirHelper::concat_path(results_path, prog_num);
 	const bfs::path eval_prog_tagged_new = 
@@ -863,7 +862,7 @@ remove_params_results_files(const bfs::path& params_path,
 
   if (multipleParamsFiles) {
     for (size_t i=0; i<num_programs; ++i) {
-      const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
+      const std::string prog_num("." + std::to_string(i+1));
       const bfs::path tagged_params = 
 	WorkdirHelper::concat_path(params_path, prog_num);
       WorkdirHelper::recursive_remove(tagged_params, FILEOP_WARN);
@@ -875,7 +874,7 @@ remove_params_results_files(const bfs::path& params_path,
 
   if (num_programs > 1)
     for (size_t i=0; i<num_programs; ++i) {
-      const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
+      const std::string prog_num("." + std::to_string(i+1));
       const bfs::path tagged_results = 
 	WorkdirHelper::concat_path(results_path, prog_num);
       WorkdirHelper::recursive_remove(tagged_results, FILEOP_WARN);
@@ -904,7 +903,7 @@ void ProcessApplicInterface::file_cleanup() const
       if (multipleParamsFiles) {
 	size_t i, num_programs = programNames.size();
 	for(i=1; i<=num_programs; ++i) {
-	  std::string prog_num("." + boost::lexical_cast<std::string>(i));
+	  std::string prog_num("." + std::to_string(i));
 	  bfs::path pname = WorkdirHelper::concat_path(parfile, prog_num);
 	  WorkdirHelper::recursive_remove(pname, FILEOP_SILENT);
 	  bfs::path rname = WorkdirHelper::concat_path(resfile, prog_num);

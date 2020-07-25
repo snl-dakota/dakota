@@ -11,7 +11,8 @@
 environment,
 	method_pointer = 'SBLO'
 	graphics
-	tabular_data 'dakota_matlab_Svanberg_tana.dat'
+	tabular_data 
+        tabular_data_file = 'dakota_matlab_Svanberg_tana.dat'
 
 variables,					
 	continuous_design = 5

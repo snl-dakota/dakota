@@ -1,13 +1,18 @@
-Blurb:: Sample allocation approach for multilevel polynomial chaos
+Blurb:: Sample allocation approach for multilevel expansions
 
 Description:: 
-Multilevel polynomial chaos requires a sample allocation strategy.  Three options are currently available:
+Multilevel expansions, including regression-based polynomial chaos expansion
+(PCE) and function train (FT) expansions, require a sample allocation strategy.
+Three options are currently available:
 
-- greedy refinement (sparse grids, tensor grids, regression)
-- allocation based on assuming a convergence rate for the estimator variance (for regression only)
-- restricted isometry property (RIP) (for compressed sensing only)
+- allocation based on assuming a convergence rate for the estimator variance (for regression PCE)
+- restricted isometry property (RIP) sampling (for regression PCE via compressed sensing)
+- rank sampling (for FT)
 
-The greedy approach is generally preferred over assuming a convergence rate for the estimator variance or allocating samples based on the restricted isometry property (RIP) for compressed sensing.
+<b> Default Behavior </b>
+
+Current defaults, when \c allocation_control is not specified, are
+estimator variance for PCE and rank sampling for FT.
 
 Topics::
 

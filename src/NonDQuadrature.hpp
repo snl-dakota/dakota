@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -63,6 +63,8 @@ public:
 		 const RealVector& dim_pref, short driver_mode,
 		 int num_sub_samples, int seed);
 
+  ~NonDQuadrature();                                       ///< destructor
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -102,7 +104,6 @@ protected:
   //
 
   NonDQuadrature(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDQuadrature();                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -169,7 +170,7 @@ private:
   //
 
   /// convenience pointer to the numIntDriver representation
-  Pecos::TensorProductDriver* tpqDriver;
+  std::shared_ptr<Pecos::TensorProductDriver> tpqDriver;
 
   /// for studies involving refinement strategies, allow for use of nested
   /// quadrature rules such as Gauss-Patterson

@@ -1,0 +1,19 @@
+Blurb:: A secondary rounding tolerance used for post-processing
+
+Description::
+After forming one or more function train approximations, this
+tolerance is used for rolling up final results, in particular,
+combining multilevel/multifidelity expansions and forming products for
+higher-order moment estimation.  It is generally intended as a looser
+tolerance than \c rounding_tolerance.
+
+<b> Default Behavior </b>
+
+If this tolerance is not specified, then we adopt the internal C3 default.
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also:: model-surrogate-global-function_train-rounding_tolerance

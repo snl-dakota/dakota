@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -789,8 +789,8 @@ void HDF5IOHelper::set_matrix(const String &dset_name, H5::DataSet &ds,
                              dset_name + " failed; requested index greater than 0th dimension " +
                              "of dataset.");
   }
-  if(transpose && !(f_dims[2] == num_rows && f_dims[1] == num_cols) ||
-    !transpose && !(f_dims[1] == num_rows && f_dims[2] == num_cols) ) {
+  if( (transpose && !(f_dims[2] == num_rows && f_dims[1] == num_cols)) ||
+      (!transpose && !(f_dims[1] == num_rows && f_dims[2] == num_cols)) ) {
     flush();
     throw std::runtime_error(String("Attempt to insert matrix into  ") + 
                              dset_name + " failed; matrix dimensions do not match " +
@@ -880,8 +880,8 @@ void HDF5IOHelper::set_vector_matrix(const String &dset_name, H5::DataSet &ds,
                              dset_name + " failed; requested index greater than 0th dimension " +
                              "of dataset.");
   }
-  if(transpose && !(f_dims[3] == num_rows && f_dims[2] == num_cols) ||
-    !transpose && !(f_dims[2] == num_rows && f_dims[3] == num_cols) ) {
+  if( (transpose && !(f_dims[3] == num_rows && f_dims[2] == num_cols)) ||
+      (!transpose && !(f_dims[2] == num_rows && f_dims[3] == num_cols)) ) {
     flush();
     throw std::runtime_error(String("Attempt to insert vector-matrix into  ") + 
                              dset_name + " failed; matrix dimensions do not match " +

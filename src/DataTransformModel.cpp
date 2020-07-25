@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -800,7 +800,7 @@ void DataTransformModel::init_continuous_vars()
   size_t sm_offset = 0;
   size_t dtm_offset = 0;
 
-  BOOST_FOREACH(const int& vci, continuous_vc_inds) {
+  for(const int& vci : continuous_vc_inds) {
     
     size_t num_cvars = sm_vc_totals[vci];
     for (size_t i=0; i<num_cvars; ++i) {

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -29,7 +29,7 @@ DataInterfaceRep::DataInterfaceRep():
   failAction("abort"), retryLimit(1), activeSetVectorFlag(true),
   evalCacheFlag(true), nearbyEvalCacheFlag(false),
   nearbyEvalCacheTol(DBL_EPSILON), // default relative tolerance is tight
-  restartFileFlag(true), referenceCount(1), useWorkdir(false), dirTag(false),
+  restartFileFlag(true), useWorkdir(false), dirTag(false),
   dirSave(false), templateReplace(false), numpyFlag(false)
   // asynchLocal{Eval,Analysis}Concurrency, procsPer{Eval,Analysis} and
   // {eval,analysis}Servers default to zero in order to allow detection of
@@ -89,71 +89,22 @@ void DataInterfaceRep::write(std::ostream& s) const
 
 
 DataInterface::DataInterface(): dataIfaceRep(new DataInterfaceRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataInterface::DataInterface(), dataIfaceRep referenceCount = "
-       << dataIfaceRep->referenceCount << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
-DataInterface::DataInterface(const DataInterface& data_resp)
-{
-  // Increment new (no old to decrement)
-  dataIfaceRep = data_resp.dataIfaceRep;
-  if (dataIfaceRep) // Check for an assignment of NULL
-    ++dataIfaceRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataInterface::DataInterface(DataInterface&)" << std::endl;
-  if (dataIfaceRep)
-    Cout << "dataIfaceRep referenceCount = " << dataIfaceRep->referenceCount
-	 << std::endl;
-#endif
-}
+DataInterface::DataInterface(const DataInterface& data_resp):
+  dataIfaceRep(data_resp.dataIfaceRep)
+{ /* empty ctor */ }
 
 
 DataInterface& DataInterface::operator=(const DataInterface& data_interface)
 {
-  if (dataIfaceRep != data_interface.dataIfaceRep) { // normal case: old != new
-    // Decrement old
-    if (dataIfaceRep) // Check for NULL
-      if ( --dataIfaceRep->referenceCount == 0 ) 
-	delete dataIfaceRep;
-    // Assign and increment new
-    dataIfaceRep = data_interface.dataIfaceRep;
-    if (dataIfaceRep) // Check for NULL
-      ++dataIfaceRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataInterface::operator=(DataInterface&)" << std::endl;
-  if (dataIfaceRep)
-    Cout << "dataIfaceRep referenceCount = " << dataIfaceRep->referenceCount
-	 << std::endl;
-#endif
-
+  dataIfaceRep = data_interface.dataIfaceRep;
   return *this;
 }
 
 
 DataInterface::~DataInterface()
-{
-  if (dataIfaceRep) { // Check for NULL
-    --dataIfaceRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "dataIfaceRep referenceCount decremented to "
-         << dataIfaceRep->referenceCount << std::endl;
-#endif
-    if (dataIfaceRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataIfaceRep" << std::endl;
-#endif
-      delete dataIfaceRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

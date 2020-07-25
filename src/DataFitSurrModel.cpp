@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -105,8 +105,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     }
 
     if (basis_expansion) {
-      actualModel.assign_rep(new
-	ProbabilityTransformModel(problem_db.get_model(), u_space_type), false);
+      actualModel.assign_rep(std::make_shared<ProbabilityTransformModel>
+			     (problem_db.get_model(), u_space_type));
       // overwrite mvDist from Model ctor by copying transformed u-space dist
       // (keep them distinct to allow for different active views).
       // construct time augmented with run time pull_distribution_parameters().
@@ -169,8 +169,9 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   }
   // size approxInterface based on currentResponse, which is constructed from
   // DB response spec, since actualModel could contain response aggregations
-  approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
-    cache, am_interface_id, currentResponse.function_labels()), false);
+  approxInterface.assign_rep(std::make_shared<ApproximationInterface>
+			     (problem_db, vars, cache, am_interface_id,
+			      currentResponse.function_labels()));
 
   // initialize the basis, if needed
   if (basis_expansion)
@@ -260,9 +261,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // assign the ApproximationInterface instance which manages the
   // local/multipoint/global approximation.  By instantiating with assign_rep(),
   // Interface::get_interface() does not need special logic for approximations.
-  approxInterface.assign_rep(new ApproximationInterface(approx_type,
+  approxInterface.assign_rep(std::make_shared<ApproximationInterface>(approx_type,
     approx_order, actualModel.current_variables(), cache,
-    actualModel.interface_id(), numFns, data_order, outputLevel), false);
+    actualModel.interface_id(), numFns, data_order, outputLevel));
 
   if (!daceIterator.is_null()) // global DACE approximations
     daceIterator.sub_iterator_flag(true);
@@ -1212,8 +1213,7 @@ void DataFitSurrModel::run_dace()
 
   // prepend hierarchical tag before running
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' + 
-      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     daceIterator.eval_tag_prefix(eval_tag);
   }
 
@@ -1456,8 +1456,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
   }
 
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' + 
-      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     if (actual_eval)
       actualModel.eval_tag_prefix(eval_tag);
   }
@@ -1610,8 +1609,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   }
 
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' + 
-      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     if (actual_eval)
       actualModel.eval_tag_prefix(eval_tag);
   }

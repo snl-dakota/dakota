@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -27,8 +27,6 @@
 #include "DakotaGraphics.hpp"
 #include "pecos_stat_util.hpp"
 #include "EvaluationStore.hpp"
-
-//#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -59,137 +57,12 @@ Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
 size_t Model::noSpecIdNum = 0;
 
 
-// TODO: consider managing in SRD
-/// expand primary response specs in SerialDenseVectors, e.g. scales, for fields
-/// no change on empty, expands 1 and num_groups, copies num_elements
-template<typename T>
-void expand_for_fields_sdv(const SharedResponseData& srd,
-			   const T& src_array,
-			   T& expanded_array)
-{
-  size_t src_size = src_array.length();
-  if (src_size == 0)
-    return;  // leave expanded_array empty
-
-  size_t resp_groups = srd.num_scalar_primary() + srd.num_field_response_groups();
-  size_t resp_elements = srd.num_scalar_primary() + srd.num_field_functions();
-
-  expanded_array.sizeUninitialized(resp_elements);
-  if (src_size == 1) {
-    // TODO: consider leaving as length 1
-    expanded_array = src_array[0];
-  }
-  else if (src_size == resp_groups) {
-    // expand on per-group basis
-    size_t src_ind = 0, elt_ind = 0;
-    for (size_t i=0; i<srd.num_scalar_primary(); ++i, ++src_ind, ++elt_ind)
-      expanded_array[i] = src_array[src_ind];
-    for (size_t fi=0; fi<srd.num_field_response_groups(); ++fi, ++src_ind) {
-      int fi_len = srd.field_lengths()[fi];
-      for (size_t j=0; j<fi_len; ++j, ++elt_ind)
-	expanded_array[elt_ind] = src_array[src_ind];
-    }
-  }
-  else if (src_size == resp_elements) {
-    expanded_array.assign(src_array);
-  }
-  else {
-    // TODO: improve error message
-    Cerr << "Scales must haves length 1, num_groups, or num_elements" << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-}
-
-// TODO: consider managing in SRD
-/// expand primary response specs in STL containers, e.g. scale types, for fields
-/// no change on empty, expands 1 and num_groups, copies num_elements
-template<typename T>
-void //ScalingOptions
-expand_for_fields_stl(const SharedResponseData& srd, const T& src_array,
-		      T& expanded_array)
-{
-  size_t src_size = src_array.size();
-  if (src_size == 0)
-    return;  // leave expanded_array empty
-
-  size_t resp_groups = srd.num_scalar_primary() + srd.num_field_response_groups();
-  size_t resp_elements = srd.num_scalar_primary() + srd.num_field_functions();
-
-  if (src_size == 1) {
-    // TODO: consider leaving as length 1
-    expanded_array.assign(resp_elements, src_array[0]);
-  }
-  else if (src_size == resp_groups) {
-    // expand on per-group basis
-    expanded_array.resize(resp_elements);
-    size_t src_ind = 0, elt_ind = 0;
-    for (size_t i=0; i<srd.num_scalar_primary(); ++i, ++src_ind, ++elt_ind)
-      expanded_array[i] = src_array[src_ind];
-    for (size_t fi=0; fi<srd.num_field_response_groups(); ++fi, ++src_ind) {
-      int fi_len = srd.field_lengths()[fi];
-      for (size_t j=0; j<fi_len; ++j, ++elt_ind)
-	expanded_array[elt_ind] = src_array[src_ind];
-    }
-  }
-  else if (src_size == resp_elements) {
-    expanded_array = src_array;
-  }
-  else {
-    // TODO: improve error message
-    Cerr << "Scales must haves length 1, num_groups, or num_elements" << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-}
-
-
-void default_scale_types(StringArray& scale_types, const RealVector& scales) 
-{
-  if (scale_types.empty() && scales.length() > 0)
-    scale_types.push_back("value");
-}
-
-
-ScalingOptions::ScalingOptions(const ProblemDescDB& pdb,
-			       const SharedResponseData& srd):
-  cvScaleTypes(pdb.get_sa("variables.continuous_design.scale_types")),
-  cvScales(pdb.get_rv("variables.continuous_design.scales")),
-  nlnIneqScaleTypes(pdb.get_sa("responses.nonlinear_inequality_scale_types")),
-  nlnIneqScales(pdb.get_rv("responses.nonlinear_inequality_scales")),
-  nlnEqScaleTypes(pdb.get_sa("responses.nonlinear_equality_scale_types")),
-  nlnEqScales(pdb.get_rv("responses.nonlinear_equality_scales")),
-  linIneqScaleTypes(pdb.get_sa("variables.linear_inequality_scale_types")),
-  linIneqScales(pdb.get_rv("variables.linear_inequality_scales")),
-  linEqScaleTypes(pdb.get_sa("variables.linear_equality_scale_types")),
-  linEqScales(pdb.get_rv("variables.linear_equality_scales"))
-{
-  // For downstream code, populate a single "value" if needed
-  default_scale_types(cvScaleTypes, cvScales);
-  default_scale_types(nlnIneqScaleTypes, nlnIneqScales);
-  default_scale_types(nlnEqScaleTypes, nlnEqScales);
-  default_scale_types(linIneqScaleTypes, linIneqScales);
-  default_scale_types(linEqScaleTypes, linEqScales);
-
-  // TODO: relax overly conservative expansion of primary weights, scales, sense
-
-  StringArray pri_st = pdb.get_sa("responses.primary_response_fn_scale_types");
-  const RealVector& pri_s = pdb.get_rv("responses.primary_response_fn_scales");
-
-  default_scale_types(pri_st, pri_s);
-
-  // TODO: should only allow 1 or num_groups
-  expand_for_fields_stl(srd, pri_st, priScaleTypes);
-  // allow 1, num_groups, num_elements
-  expand_for_fields_sdv(srd, pri_s, priScales);
-}
-
-
 /** This constructor builds the base class data for all inherited
     models.  get_model() instantiates a derived class and the derived
     class selects this base class constructor in its initialization
     list (to avoid the recursion of the base class constructor calling
     get_model() again).  Since the letter IS the representation, its
-    representation pointer is set to NULL (an uninitialized pointer
-    causes problems in ~Model). */
+    representation pointer is set to NULL. */
 Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   currentVariables(problem_db.get_variables()),
   numDerivVars(currentVariables.cv()),
@@ -231,13 +104,12 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
   estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
-  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW),
-  modelRep(NULL), referenceCount(1)
+  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
 {
   // weights have length group if given; expand if fields present
   expand_for_fields_sdv(currentResponse.shared_data(),
 			probDescDB.get_rv("responses.primary_response_fn_weights"),
-			primaryRespFnWts);
+			"primary response weights", false, primaryRespFnWts);
 
   initialize_distribution(mvDist);
   initialize_distribution_parameters(mvDist);
@@ -339,11 +211,6 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
       fdHessByGradStepSize = fdHessByFnStepSize = fdhss[0];
   }
   */
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(BaseConstructor, ProblemDescDB&) called "
-       << "to build letter base class\n";
-#endif
 }
 
 
@@ -366,8 +233,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   modelId(no_spec_id()), // to be replaced by derived ctors
   modelEvalCntr(0), estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), prevDSIView(EMPTY_VIEW),
-  prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW), modelRep(NULL),
-  referenceCount(1)
+  prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
 {
   if (share_svd) {
     currentVariables       =   Variables(svd);
@@ -382,12 +248,6 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 
   currentResponse = (share_srd) ?
     Response(srd, set) : Response(srd.response_type(), set);
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(NoDBBaseConstructor, ParallelLibrary&, "
-       << "SharedVariablesData&, ActiveSet&, short) called to build letter "
-       << "base class\n";
-#endif
 }
 
 
@@ -408,30 +268,18 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   modelId(no_spec_id()), // to be replaced by derived ctors
   modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
-  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW),
-  modelRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(LightWtBaseConstructor, ProblemDescDB&, "
-       << "ParallelLibrary&) called to build letter base class\n";
-#endif
-}
+  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW)
+{ /* empty ctor */ }
 
 
 /** The default constructor is used in vector<Model> instantiations
     and for initialization of Model objects contained in Iterator and
     derived Strategy classes.  modelRep is NULL in this case (a
     populated problem_db is needed to build a meaningful Model
-    object).  This makes it necessary to check for NULL in the copy
-    constructor, assignment operator, and destructor. */
+    object). */
 Model::Model():
-  modelRep(NULL), referenceCount(1), probDescDB(dummy_db),
-  parallelLib(dummy_lib), evaluationsDB(evaluation_store_db)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(), modelRep = NULL" << std::endl;
-#endif
-}
+  probDescDB(dummy_db), parallelLib(dummy_lib), evaluationsDB(evaluation_store_db)
+{ /* empty ctor */ }
 
 
 /** Used in model instantiations within strategy constructors.
@@ -440,14 +288,9 @@ Model::Model():
     builds the actual base class data for the derived models. */
 Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
   parallelLib(problem_db.parallel_library()),
-  evaluationsDB(evaluation_store_db), referenceCount(1)
+  evaluationsDB(evaluation_store_db),
+  modelRep(get_model(problem_db))
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(ProblemDescDB&) called to instantiate envelope."
-       << std::endl;
-#endif
-
-  modelRep = get_model(problem_db);
   if ( !modelRep ) // bad type or insufficient memory
     abort_handler(MODEL_ERROR);
 }
@@ -455,155 +298,69 @@ Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
 
 /** Used only by the envelope constructor to initialize modelRep to the
     appropriate derived type, as given by the modelType attribute. */
-Model* Model::get_model(ProblemDescDB& problem_db)
+std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: Getting model " << modelType
-       << std::endl;
-#endif
-
   // These instantiations will NOT recurse on the Model(problem_db)
   // constructor due to the use of BaseConstructor.
 
   const String& model_type = problem_db.get_string("model.type");
   if ( model_type == "simulation" )
-    return new SimulationModel(problem_db);
+    return std::make_shared<SimulationModel>(problem_db);
   else if ( model_type == "nested")
-    return new NestedModel(problem_db);
+    return std::make_shared<NestedModel>(problem_db);
   else if ( model_type == "surrogate") {
     if (problem_db.get_string("model.surrogate.type") == "hierarchical")
-      return new HierarchSurrModel(problem_db); // hierarchical approx
+      return std::make_shared<HierarchSurrModel>(problem_db); // hierarchical approx
     else
-      return new DataFitSurrModel(problem_db);  // local/multipt/global approx
+      return std::make_shared<DataFitSurrModel>(problem_db);  // local/multipt/global approx
   }
   else if ( model_type == "active_subspace" )
-    return new ActiveSubspaceModel(problem_db);
+    return std::make_shared<ActiveSubspaceModel>(problem_db);
   else if ( model_type == "adapted_basis" )
-    return new AdaptedBasisModel(problem_db);
+    return std::make_shared<AdaptedBasisModel>(problem_db);
   else if ( model_type == "random_field" )
-    return new RandomFieldModel(problem_db);
-  else {
+    return std::make_shared<RandomFieldModel>(problem_db);
+  else
     Cerr << "Invalid model type: " << model_type << std::endl;
-    return NULL;
-  }
+
+  return std::shared_ptr<Model>();
 }
 
 
-/** Copy constructor manages sharing of modelRep and incrementing
-    of referenceCount. */
+/** Copy constructor manages sharing of modelRep. */
 Model::Model(const Model& model): probDescDB(model.problem_description_db()),
-  parallelLib(probDescDB.parallel_library()), evaluationsDB(evaluation_store_db)
-{
-  // Increment new (no old to decrement)
-  modelRep = model.modelRep;
-  if (modelRep) // Check for an assignment of NULL
-    ++modelRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(Model&)" << std::endl;
-  if (modelRep)
-    Cout << "modelRep referenceCount = " << modelRep->referenceCount
-	 << std::endl;
-#endif
-}
+  parallelLib(probDescDB.parallel_library()), evaluationsDB(evaluation_store_db),
+  modelRep(model.modelRep)
+{ /* empty ctor */ }
 
 
-/** Assignment operator decrements referenceCount for old modelRep, assigns
-    new modelRep, and increments referenceCount for new modelRep. */
 Model Model::operator=(const Model& model)
 {
-  if (modelRep != model.modelRep) { // normal case: old != new
-    // Decrement old
-    if (modelRep) // Check for NULL
-      if ( --modelRep->referenceCount == 0 )
-	delete modelRep;
-    // Assign and increment new
-    modelRep = model.modelRep;
-    if (modelRep) // Check for NULL
-      ++modelRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::operator=(Model&)" << std::endl;
-  if (modelRep)
-    Cout << "modelRep referenceCount = " << modelRep->referenceCount
-	 << std::endl;
-#endif
-
+  modelRep = model.modelRep;
   return *this;
 }
 
 
-/** Destructor decrements referenceCount and only deletes modelRep
-    when referenceCount reaches zero. */
 Model::~Model()
-{
-  if (modelRep) { // Check for NULL
-    --modelRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "modelRep referenceCount decremented to "
-         << modelRep->referenceCount << std::endl;
-#endif
-    if (modelRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting modelRep" << std::endl;
-#endif
-      delete modelRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 
-/** Similar to the assignment operator, the assign_rep() function
-    decrements referenceCount for the old modelRep and assigns the new
-    modelRep.  It is different in that it is used for publishing
-    derived class letters to existing envelopes, as opposed to sharing
+/** The assign_rep() function is used for publishing derived class
+    letters to existing envelopes, as opposed to sharing
     representations among multiple envelopes (in particular,
     assign_rep is passed a letter object and operator= is passed an
-    envelope object).  Letter assignment supports two models as
-    governed by ref_count_incr:
+    envelope object).
 
-    \li ref_count_incr = true (default): the incoming letter belongs to
-    another envelope.  In this case, increment the reference count in the
-    normal manner so that deallocation of the letter is handled properly.
+    Use case assumes the incoming letter is instantiated on the fly
+    and has no envelope.  This case is modeled after get_model(): a
+    letter is dynamically allocated and passed into assign_rep (its
+    memory management is passed over to the envelope).
 
-    \li ref_count_incr = false: the incoming letter is instantiated on the
-    fly and has no envelope.  This case is modeled after get_model():
-    a letter is dynamically allocated using new and passed into assign_rep,
-    the letter's reference count is not incremented, and the letter is not
-    remotely deleted (its memory management is passed over to the envelope). */
-void Model::assign_rep(Model* model_rep, bool ref_count_incr)
+    If the letter happens to be managed by another envelope, it will
+    persist as long as the last envelope referencing it. */
+void Model::assign_rep(std::shared_ptr<Model> model_rep)
 {
-  if (modelRep == model_rep) {
-    // if ref_count_incr = true (rep from another envelope), do nothing as
-    // referenceCount should already be correct (see also operator= logic).
-    // if ref_count_incr = false (rep from on the fly), then this is an error.
-    if (!ref_count_incr) {
-      Cerr << "Error: duplicated model_rep pointer assignment without "
-	   << "reference count increment in Model::assign_rep()." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-  }
-  else { // normal case: old != new
-    // Decrement old
-    if (modelRep) // Check for NULL
-      if ( --modelRep->referenceCount == 0 )
-	delete modelRep;
-    // Assign new
-    modelRep = model_rep;
-    // Increment new
-    if (modelRep && ref_count_incr) // Check for NULL and honor ref_count_incr
-      modelRep->referenceCount++;
-  }
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Model::assign_rep(Model*)" << std::endl;
-  if (modelRep)
-    Cout << "modelRep referenceCount = " << modelRep->referenceCount
-	 << std::endl;
-#endif
+  modelRep = model_rep;
 }
 
 
@@ -917,8 +674,9 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   }
 
   mv_dist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
   mvd_rep->initialize_types(rv_types, active_vars);
 }
 
@@ -931,8 +689,9 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
   //switch (mv_dist.type()) {
   //case Pecos::MARGINALS_CORRELATIONS: {
 
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+    std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+      (mv_dist.multivar_dist_rep());
     size_t start_rv = 0, num_rv = (active_only) ?
       currentVariables.cv()  + currentVariables.div() +
       currentVariables.dsv() + currentVariables.drv() :
@@ -1354,8 +1113,9 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
   if (ignoreBounds)
     { fd_lb = -dbl_inf;  fd_ub = dbl_inf; }
   else { // manage global/inferred vs. distribution bounds
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+    std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+      (mvDist.multivar_dist_rep());
     for (size_t j=0; j<num_deriv_vars; j++) {
       size_t cv_index = find_index(cv_ids, original_dvv[j]);
       switch (cv_types[cv_index]) {
@@ -3371,13 +3131,14 @@ user_space_to_iterator_space(const Variables& user_vars,
 	Response  recast_resp = ml_rit->current_response();  // shallow copy
 	ActiveSet recast_set  = recast_resp.active_set();    // copy
 	// to propagate vars bottom up, inverse of std transform is reqd
-	RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
-	recast_model_rep->inverse_transform_variables(iter_vars, recast_vars);
-	recast_model_rep->
+	RecastModel& recast_model_rep =
+	  *std::static_pointer_cast<RecastModel>(ml_rit->model_rep());
+	recast_model_rep.inverse_transform_variables(iter_vars, recast_vars);
+	recast_model_rep.
 	  inverse_transform_set(iter_vars, iter_resp.active_set(), recast_set);
 	// to propagate response bottom up, std transform is used
 	recast_resp.active_set(recast_set);
-	recast_model_rep->
+	recast_model_rep.
 	  transform_response(recast_vars, iter_vars, iter_resp, recast_resp);
 	// update active in iter_vars
 	iter_vars.active_variables(recast_vars);
@@ -3414,14 +3175,15 @@ iterator_space_to_user_space(const Variables& iter_vars,
 	Response  recast_resp = ml_it->current_response();  // shallow copy
 	ActiveSet recast_set  = recast_resp.active_set();   // copy
 	// to propagate vars top down, forward transform is reqd
-	RecastModel* recast_model_rep = (RecastModel*)ml_it->model_rep();
-	recast_model_rep->transform_variables(user_vars, recast_vars);
-	recast_model_rep->
+	RecastModel& recast_model_rep =
+	  *std::static_pointer_cast<RecastModel>(ml_it->model_rep());
+	recast_model_rep.transform_variables(user_vars, recast_vars);
+	recast_model_rep.
 	  transform_set(user_vars, user_resp.active_set(), recast_set);
 	// to propagate response top down, inverse transform is used.  Note:
 	// derivatives are not currently exported --> a no-op for Nataf.
 	recast_resp.active_set(recast_set);
-	recast_model_rep->inverse_transform_response(recast_vars, user_vars,
+	recast_model_rep.inverse_transform_response(recast_vars, user_vars,
 						     user_resp, recast_resp);
 	// update active in iter_vars
 	user_vars.active_variables(recast_vars);
@@ -4071,6 +3833,13 @@ void Model::clear_inactive()
   if (modelRep) // envelope fwd to letter
     modelRep->clear_inactive();
   //else no op: no inactive data to clear
+}
+
+
+bool Model::advancement_available()
+{
+  if (modelRep) return modelRep->advancement_available();
+  else          return true; // only a few cases throttle advancements
 }
 
 
@@ -4727,8 +4496,9 @@ void Model::
 assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 		   Variables& vars)
 {
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
   const SharedVariablesData& svd = vars.shared_data();
   StringSet ss; StringRealMap srm;
   size_t rv, start_rv, end_rv, adsv_index = 0,
@@ -5143,8 +4913,9 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
   // Note: any external update of DSI values should reset prevDSIView to 0
   if (active_view == prevDSIView) return activeDiscSetIntValues;
 
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
   case MIXED_DESIGN: {
@@ -5326,8 +5097,9 @@ const StringSetArray& Model::discrete_set_string_values(short active_view)
   // Note: any external update of DSS values should reset prevDSSView to 0
   if (active_view == prevDSSView) return activeDiscSetStringValues;
 
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
   case MIXED_DESIGN: case RELAXED_DESIGN: {
@@ -5439,8 +5211,9 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
   // Note: any external update of DSR values should reset prevDSRView to 0
   if (active_view == prevDSRView) return activeDiscSetRealValues;
 
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvDist.multivar_dist_rep());
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
   case MIXED_DESIGN: {
@@ -5858,7 +5631,7 @@ EvaluationsDBState Model::evaluations_db_state(const Model &model) {
 String Model::user_auto_id()
 {
   // // increment and then use the current ID value
-  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  // return String("NO_ID_") + std::to_string(++userAutoIdNum);
   return String("NO_MODEL_ID");
 }
 
@@ -5873,7 +5646,7 @@ String Model::user_auto_id()
 String Model::no_spec_id()
 {
   // increment and then use the current ID value
-  return String("NOSPEC_MODEL_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+  return String("NOSPEC_MODEL_ID_") + std::to_string(++noSpecIdNum);
 }
 
 // This is overridden by RecastModel so that it and its derived classes return 

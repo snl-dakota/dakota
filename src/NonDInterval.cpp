@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -158,8 +158,9 @@ void NonDInterval::calculate_cells_and_bpas()
 {
   Pecos::MultivariateDistribution& mv_dist
     = iteratedModel.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* mvd_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution>mvd_dist_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
   RealRealPairRealMapArray ci_bpa;  IntIntPairRealMapArray di_bpa;
   IntRealMapArray dsi_vals_probs;   RealRealMapArray dsr_vals_probs;
   // TO DO: DISCRETE_UNCERTAIN_SET_STRING ...

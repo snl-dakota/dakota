@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -25,34 +25,10 @@ class COLINApplication;
 
 namespace Dakota {
 
-
-/// Wrapper class for optimizers defined using COLIN 
-
-/** The COLINOptimizer class wraps COLIN, a Sandia-developed C++
-    optimization interface library.  A variety of COLIN optimizers are
-    defined in COLIN and its associated libraries, including SCOLIB
-    which contains the optimization components from the old COLINY
-    (formerly SGOPT) library. COLIN contains optimizers such as
-    genetic algorithms, pattern search methods, and other
-    nongradient-based techniques. COLINOptimizer uses a
-    COLINApplication object to perform the function evaluations.
-
-    The user input mappings are as follows: \c max_iterations, \c
-    max_function_evaluations, \c convergence_tolerance, and \c
-    solution_accuracy are mapped into COLIN's \c max_iterations, \c
-    max_function_evaluations_this_trial, \c function_value_tolerance,
-    \c sufficient_objective_value properties.  An \c outputLevel is
-    mapped to COLIN's \c output_level property and a setting of \c
-    debug activates output of method initialization and sets the COLIN
-    \c debug attribute to 10000 for the DEBUG output level. Refer to
-    [Hart, W.E., 2006] for additional information on COLIN objects and
-    controls. */
-
 /**
  * \brief A version of TraitsBase specialized for COLIN optimizers
  *
  */
-
 class COLINTraits: public TraitsBase
 {
   public:
@@ -83,6 +59,28 @@ class COLINTraits: public TraitsBase
 
 };
 
+
+/// Wrapper class for optimizers defined using COLIN 
+
+/** The COLINOptimizer class wraps COLIN, a Sandia-developed C++
+    optimization interface library.  A variety of COLIN optimizers are
+    defined in COLIN and its associated libraries, including SCOLIB
+    which contains the optimization components from the old COLINY
+    (formerly SGOPT) library. COLIN contains optimizers such as
+    genetic algorithms, pattern search methods, and other
+    nongradient-based techniques. COLINOptimizer uses a
+    COLINApplication object to perform the function evaluations.
+
+    The user input mappings are as follows: \c max_iterations, \c
+    max_function_evaluations, \c convergence_tolerance, and \c
+    solution_accuracy are mapped into COLIN's \c max_iterations, \c
+    max_function_evaluations_this_trial, \c function_value_tolerance,
+    \c sufficient_objective_value properties.  An \c outputLevel is
+    mapped to COLIN's \c output_level property and a setting of \c
+    debug activates output of method initialization and sets the COLIN
+    \c debug attribute to 10000 for the DEBUG output level. Refer to
+    [Hart, W.E., 2006] for additional information on COLIN objects and
+    controls. */
 class COLINOptimizer : public Optimizer
 {
 public:

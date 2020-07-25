@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -13,12 +13,11 @@
 #include "TestDriverInterface.hpp"
 #include "ParallelLibrary.hpp"
 #include "DataMethod.hpp"  // for output levels
-//#include <unistd.h> // for sleep(int)
+//#include <thread> // for sleep_for
 #ifdef DAKOTA_MODELCENTER
 #include "PHXCppApi.h"
 #endif
 #include <boost/tokenizer.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/assign.hpp>
@@ -1906,7 +1905,7 @@ steady_state_diffusion_core(SpectralDiffusionModel& model,
   // defaults:
   for (int i=0; i<numFns; i++) {
     size_t coord_index
-      = find_index(xDRLabels, "coord_" + boost::lexical_cast<String>(i));
+      = find_index(xDRLabels, "coord_" + std::to_string(i));
     if ( coord_index != _NPOS )
       qoi_coords[i] = xDR[coord_index];
   }
@@ -3052,7 +3051,8 @@ int TestDriverInterface::text_book()
   //if (r < 10000) // RAND_MAX = 32767
   //  return 1; // failure
 
-  //sleep(5); // for faking a more expensive evaluation
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(5));
   return 0; // no failure
 }
 
@@ -3169,7 +3169,9 @@ int TestDriverInterface::text_book1()
     }
   }
 
-  //sleep(1);
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(1));
+
   return 0;
 }
 
@@ -3289,7 +3291,9 @@ int TestDriverInterface::text_book2()
     }
   }
 
-  //sleep(1);
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(1));
+
   return 0;
 }
 
@@ -3409,7 +3413,9 @@ int TestDriverInterface::text_book3()
     }
   }
 
-  //sleep(1);
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(1));
+
   return 0;
 }
 
@@ -3516,7 +3522,9 @@ int TestDriverInterface::text_book_ouu()
 	fnGrads[2][i] = 0.;                      break;
       }
 
-  //sleep(5); // for faking a more expensive evaluation
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(5));
+
   return 0; // no failure
 }
 
@@ -3606,7 +3614,9 @@ int TestDriverInterface::scalable_text_book()
     }
   }
 
-  //sleep(5); // for faking a more expensive evaluation
+  // for faking a more expensive evaluation:
+  //std::this_thread::sleep_for(std::chrono::seconds(5));
+
   return 0; // no failure
 }
 
@@ -5041,7 +5051,7 @@ int TestDriverInterface::aniso_quad_form()
             abort_handler(INTERFACE_ERROR);
           }
 
-          seed = boost::lexical_cast<size_t>(*tok);
+          seed = static_cast<size_t>(std::stoull(*tok));
 
           if(++tok != tokens.end())
           {
@@ -5057,8 +5067,7 @@ int TestDriverInterface::aniso_quad_form()
           ++tok;
           for(; tok != tokens.end(); ++tok)
           {
-            eigenvals.push_back(boost::lexical_cast<RealMatrix::scalarType>(
-              *tok));
+            eigenvals.push_back(stod(*tok));
           }
 
           if(eigenvals.size() == 0)

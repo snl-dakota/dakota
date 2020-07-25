@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -22,20 +22,10 @@ namespace Dakota {
 typedef void (*Vf)();
 
 
-/// Wrapper class for the NL2SOL nonlinear least squares library.
-
-/** The NL2SOLLeastSq class provides a wrapper for NL2SOL (TOMS Algorithm 573),
-    in the updated form of Port Library routines dn[fg][b ] from Bell Labs;
-    see http://www.netlib.org/port/readme.
-    The Fortran from Port has been turned into C by f2c.
-    NL2SOL uses a function pointer approach for which passed functions
-    must be either global functions or static member functions. */
-
 /**
  * \brief A version of TraitsBase specialized for NL2SOL nonlinear least squares library
  *
  */
-
 class NL2SOLLeastSqTraits: public TraitsBase
 {
   public:
@@ -53,6 +43,15 @@ class NL2SOLLeastSqTraits: public TraitsBase
   bool supports_continuous_variables() { return true; }
 };
 
+
+/// Wrapper class for the NL2SOL nonlinear least squares library.
+
+/** The NL2SOLLeastSq class provides a wrapper for NL2SOL (TOMS Algorithm 573),
+    in the updated form of Port Library routines dn[fg][b ] from Bell Labs;
+    see http://www.netlib.org/port/readme.
+    The Fortran from Port has been turned into C by f2c.
+    NL2SOL uses a function pointer approach for which passed functions
+    must be either global functions or static member functions. */
 class NL2SOLLeastSq: public LeastSq
 {
 public:
