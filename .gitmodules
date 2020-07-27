@@ -16,3 +16,7 @@
 [submodule "packages/local/NLPQL"]
 	path = packages/local/NLPQL
 	url = git@gitlab-ex.sandia.gov:dakota/SNL/NLPQL
+[submodule "local"]
+	path = local
+	url = git@cee-gitlab.sandia.gov:dakota/dakota
+	branch = devel
