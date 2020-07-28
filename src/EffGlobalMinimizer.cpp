@@ -157,6 +157,18 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 EffGlobalMinimizer::~EffGlobalMinimizer() {}
 
 
+void EffGlobalMinimizer::pre_run()
+{
+  //Minimizer::pre_run(); // invoke any base class definition (none defined)
+
+  if (!approxSubProbModel.mapping_initialized()) {
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    /*bool var_size_changed =*/ approxSubProbModel.initialize_mapping(pl_iter);
+    //if (var_size_changed) resize();
+  }
+}
+
+
 void EffGlobalMinimizer::core_run()
 {
   if (setUpType=="model") {
@@ -193,6 +205,15 @@ void EffGlobalMinimizer::core_run()
     Cerr << "Error: bad setUpType in EffGlobalMinimizer::core_run()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
+}
+
+
+void EffGlobalMinimizer::post_run(std::ostream& s)
+{
+  if (approxSubProbModel.mapping_initialized())
+    approxSubProbModel.finalize_mapping();
+
+  Minimizer::post_run(s);
 }
 
 

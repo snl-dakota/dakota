@@ -3580,7 +3580,6 @@ bool Model::initialize_mapping(ParLevLIter pl_iter)
     }
 
     mappingInitialized = true;
-
     return false; // size did not change
   }
 }

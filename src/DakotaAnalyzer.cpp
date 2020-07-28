@@ -194,13 +194,11 @@ void Analyzer::finalize_run()
   // Finalize an initialized mapping.  This will correspond to the first
   // finalize_run() with an uninitialized mapping, such as the inner-iterator
   // in a recursion.
-  if (iteratedModel.mapping_initialized()) {
+  if (!iteratedModel.is_null() && iteratedModel.mapping_initialized()) {
     bool var_size_changed = iteratedModel.finalize_mapping();
     if (var_size_changed)
       /*bool reinit_comms =*/ resize(); // Ignore return value
   }
-
-  Iterator::finalize_run(); // included for completeness
 }
 
 

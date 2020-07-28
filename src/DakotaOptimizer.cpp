@@ -627,6 +627,7 @@ void Optimizer::post_run(std::ostream& s)
       scale_model_rep->resp_scaled2native(best_vars, best_resp);
     }
   }
+
   Minimizer::post_run(s);
 }
 
