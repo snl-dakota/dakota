@@ -139,14 +139,13 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     SizetArray recast_vars_comps_total; // default: empty; no change in size
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
     short recast_resp_order = 1; // nongradient-based optimizers
-    /*eifModel*/approxSubProbModel.assign_rep(std::make_shared<RecastModel>(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order));
-  //varModel.assign_rep(std::make_shared<RecastModel>(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order));
+    approxSubProbModel.assign_rep(std::make_shared<RecastModel>(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order));
 
     // must use alternate NoDB ctor chain
     int max_iterations = 10000, max_fn_evals = 50000;
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU
-    approxSubProbMinimizer.assign_rep(std::make_shared<NCSUOptimizer>(/*eifModel*/approxSubProbModel, max_iterations, max_fn_evals, min_box_size, vol_box_size));
+    approxSubProbMinimizer.assign_rep(std::make_shared<NCSUOptimizer>(approxSubProbModel, max_iterations, max_fn_evals, min_box_size, vol_box_size));
 #else
     Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
 	 << "Aborting process." << std::endl;
@@ -460,31 +459,24 @@ void EffGlobalMinimizer::build_gp() {
     // now that variables/labels/bounds/targets have flowed down at run-time from
     // any higher level recursions, propagate them up the instantiate-on-the-fly
     // Model recursion so that they are correct when they propagate back down.
-    /*eifModel*/approxSubProbModel.update_from_subordinate_model(); // depth = max
-    //varModel.update_from_subordinate_model(); // depth = max
+    approxSubProbModel.update_from_subordinate_model(); // depth = max
 
-    // (We might want a more selective update from submodel, or make a
-    // new eifModel specialization of RecastModel.)  Always want to
-    // minimize the negative expected improvement as posed in the
-    // eifModel, which consumes min/max sense and weights, and recasts
-    // nonlinear constraints, so we don't let these propagate to the
-    // approxSubproblemMinimizer.
-    /*eifModel*/approxSubProbModel.primary_response_fn_sense(BoolDeque());
-    /*eifModel*/approxSubProbModel.primary_response_fn_weights(RealVector(), false); // no recursion
-    /*eifModel*/approxSubProbModel.reshape_constraints(0,0, /*eifModel*/approxSubProbModel.num_linear_ineq_constraints(), /*eifModel*/approxSubProbModel.num_linear_eq_constraints());
-
-    //varModel.primary_response_fn_sense(BoolDeque());
-    //varModel.primary_response_fn_weights(RealVector(), false); // no recursion
-    //varModel.reshape_constraints(0,0, varModel.num_linear_ineq_constraints(), varModel.num_linear_eq_constraints());
+    // (We might want a more selective update from submodel, or make a new
+    // specialization of RecastModel.)  Always want to minimize the negative
+    // expected improvement as posed in the EIF, which consumes min/max sense
+    // and weights, and recasts nonlinear constraints, so we don't let these
+    // propagate to the approxSubproblemMinimizer.
+    approxSubProbModel.primary_response_fn_sense(BoolDeque());
+    approxSubProbModel.primary_response_fn_weights(RealVector(), false); // no recursion
+    approxSubProbModel.reshape_constraints(0,0, approxSubProbModel.num_linear_ineq_constraints(), approxSubProbModel.num_linear_eq_constraints());
 
     // Build initial GP once for all response functions
     fHatModel.build_approximation();
-
-    return;
 }
 
 
-void EffGlobalMinimizer::initialize_convergence_variables() {
+void EffGlobalMinimizer::initialize_convergence_variables()
+{
     eifConvergenceCntr = 0;
     distConvergenceCntr = 0;
     eifConvergenceLimit = 2;
@@ -505,11 +497,10 @@ void EffGlobalMinimizer::serial_ego()
     for (size_t i=0; i<numFunctions; i++)
         primary_resp_map[0][i] = i;
     std::shared_ptr<RecastModel> asp_model_rep =
-      std::static_pointer_cast<RecastModel>(/*eifModel*/approxSubProbModel.model_rep());
+      std::static_pointer_cast<RecastModel>(approxSubProbModel.model_rep());
     asp_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
 			     secondary_resp_map, nonlinear_resp_map,
 			     EIF_objective_eval, NULL);
-    //approxSubProbMinimizer.iterated_model(eifModel);
 
     // determine fnStar from among sample data
     get_best_sample();
@@ -623,11 +614,10 @@ void EffGlobalMinimizer::batch_synchronous_ego()
 
     // try to consolidate to 01 RecastModel and ->init.maps() before approxSubProbMinimizer is called
     std::shared_ptr<RecastModel> asp_model_rep =
-      std::static_pointer_cast<RecastModel>(/*eifModel*/approxSubProbModel.model_rep());
+      std::static_pointer_cast<RecastModel>(approxSubProbModel.model_rep());
     asp_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
 			     secondary_resp_map, nonlinear_resp_map,
 			     EIF_objective_eval, NULL);
-    //approxSubProbMinimizer.iterated_model(eifModel);
 
     // initialize input array for batch construction
     // VariablesArray varsArrayBatchAcquisition(batchSizeAcquisition);
@@ -698,12 +688,6 @@ void EffGlobalMinimizer::batch_synchronous_ego()
     }
 
     // construct the exploration batch
-    //std::shared_ptr<RecastModel> var_model_rep =
-    //  std::static_pointer_cast<RecastModel>(varModel.model_rep());
-    //var_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
-    // 			       secondary_resp_map, nonlinear_resp_map,
-    // 			       Variances_objective_eval, NULL);
-    //approxSubProbMinimizer.iterated_model(varModel);
     asp_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
 			     secondary_resp_map, nonlinear_resp_map,
 			     Variances_objective_eval, NULL);
@@ -850,7 +834,6 @@ void EffGlobalMinimizer::construct_batch_acquisition(VariablesArray varsArrayBat
         ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
         // maximize the EI acquisition function
         approxSubProbMinimizer.reset();
-        //approxSubProbMinimizer.iterated_model(eifModel);
         approxSubProbMinimizer.run(pl_iter);
 
         const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
@@ -1155,14 +1138,14 @@ void EffGlobalMinimizer::debug_plots()
 /*
 void EffGlobalMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 {
-  //varModel.init_communicators(pl_iter, maxEvalConcurrency);
+  //approxSubProbModel.init_communicators(pl_iter, maxEvalConcurrency);
     SurrBasedMinimizer::derived_init_communicators(pl_iter);
 }
 
 
 void EffGlobalMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 {
-  //varModel.set_communicators(pl_iter, maxEvalConcurrency);
+  //approxSubProbModel.set_communicators(pl_iter, maxEvalConcurrency);
     SurrBasedMinimizer::derived_set_communicators(pl_iter);
 }
 
@@ -1170,7 +1153,7 @@ void EffGlobalMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 void EffGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
 {
     SurrBasedMinimizer::derived_free_communicators(pl_iter);
-  //varModel.free_communicators(pl_iter, maxEvalConcurrency);
+  //approxSubProbModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 */
 

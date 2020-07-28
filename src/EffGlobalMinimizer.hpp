@@ -194,20 +194,14 @@ private:
 
     /// recast model which assimilates either (a) mean and variance to solve
     /// the max(EIF) sub-problem (used by EIF_objective_eval()) or (b) variance
-  /// alone for pure exploration (used by Variances_objective_eval())
+    /// alone for pure exploration (used by Variances_objective_eval())
     Model approxSubProbModel;
-    /* Note: may want a separate model if want separate non-blocking job queues,
-       but may also prefer to maintain a single processing queue, which would
-       require additional bookkeeping in terms of which recasting to use when
-       post-processing different results sets (when they could be mixed due to
-       a non-blocking job queue). For blocking synchronization, this is not an
-       issue, so avoid the additional overhead for now. */
-    // recast model which assimilates mean and variance to solve the
-    // max(EIF) sub-problem, see ::EIF_objective_eval()
-    //Model eifModel;
-    // recast model which explores by maximizing variances to solve the
-    // max(variances) sub-problem, see ::Variances_objective_eval()
-    //Model varModel;
+    /* Note: don't need a separate model for EIF vs. exploration since the
+       underlying simulation model is the one that evaluates the truth data
+       and the recastings are only used for the approximate sub-problem solve.
+       So there is no need to segregate processing queues: the aggregate set
+       of available {variables,response} updates can be pushed to the GP
+       irregardless of acquisition type. */
 
     /// minimum penalized response from among true function evaluations
     Real meritFnStar;
