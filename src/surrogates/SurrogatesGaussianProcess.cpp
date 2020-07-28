@@ -297,13 +297,6 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   posteriorStdDev = posteriorCov.diagonal().array().sqrt();
 }
 
-/// For pybind11
-MatrixXd GaussianProcess::value(const MatrixXd &samples) {
-  MatrixXd approx_values;
-  value(samples, approx_values);
-  return approx_values;
-}
-
 
 void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
                                const int qoi) {
@@ -353,12 +346,6 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
   }
 }
 
-MatrixXd GaussianProcess::gradient(const MatrixXd &samples, const int qoi) {
-  MatrixXd approx_gradient;
-  gradient(samples, approx_gradient, qoi);
-  return approx_gradient;
-}
-
 void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
                               const int qoi) {
   silence_unused_args(qoi);
@@ -405,12 +392,6 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
     polyRegression->hessian(scaled_pred_point, poly_hessian_pred_pt);
     hessian += poly_hessian_pred_pt;
   }
-}
-
-MatrixXd GaussianProcess::hessian(const MatrixXd &sample, const int qoi) {
-  MatrixXd approx_hessian;
-  hessian(sample, approx_hessian, qoi);
-  return approx_hessian;
 }
 
 void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient) {

@@ -79,9 +79,8 @@ public:
    */
   virtual void value(const MatrixXd &samples, MatrixXd &value) = 0;
 
-  /* DTS: Should be able to make this non-virtual and keep in base class */
   /* Motivation for this call is pybind11 */
-  virtual MatrixXd value(const MatrixXd &samples) = 0;
+  virtual MatrixXd value(const MatrixXd &samples) ;
 
   /**
    *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.
@@ -94,23 +93,21 @@ public:
    */
   virtual void gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi);
 
-  /* DTS: Should be able to make this non-virtual and keep in base class */
   /* Motivation for this call is pybind11 */
   virtual MatrixXd gradient(const MatrixXd &samples, int qoi);
 
   /**
    *  \brief Evaluate the Hessian of the Surrogate at a single point.
-   *  \param[in] samples Coordinates of the prediction point - (num_samples by num_features).
+   *  \param[in] samples Coordinates of the prediction point - (1 by num_features).
    *  \param[out] hessian Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
    *  0 for scalar-valued surrogates.
    */
-  virtual void hessian(const MatrixXd &samples, MatrixXd &hessian, int qoi);
+  virtual void hessian(const MatrixXd &sample, MatrixXd &hessian, int qoi);
 
-  /* DTS: Should be able to make this non-virtual and keep in base class */
   /* Motivation for this call is pybind11 */
-  virtual MatrixXd hessian(const MatrixXd &samples, int qoi);
+  virtual MatrixXd hessian(const MatrixXd &sample, int qoi);
 
   /**
    *  \brief Set the Surrogate's configOptions.

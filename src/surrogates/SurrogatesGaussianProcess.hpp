@@ -110,8 +110,6 @@ public:
    */
   void value(const MatrixXd &samples, MatrixXd &approx_values) override;
 
-  MatrixXd value(const MatrixXd &samples) override;
-
   /**
    *  \brief Evaluate the gradient of the Gaussian process at a set of prediction points.
    *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
@@ -121,18 +119,14 @@ public:
    */
   void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi = 0) override;
 
-  MatrixXd gradient(const MatrixXd &samples, const int qoi = 0) override;
-
   /**
    *  \brief Evaluate the Hessian of the Gaussian process at a single point.
-   *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
+   *  \param[in] sample Coordinates of the prediction point - (1 by num_features).
    *  \param[out] hessian Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    *  \param[out] qoi Index of response/QOI for which to compute derivatives
    */
   void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
-
-  MatrixXd hessian(const MatrixXd &sample, const int qoi = 0) override;
 
   /**
    *  \brief Evaluate the negative marginal loglikelihood and its 

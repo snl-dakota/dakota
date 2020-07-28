@@ -130,12 +130,6 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
   approx_values = (approx_values.array() + polynomialIntercept).matrix();
 }
 
-MatrixXd PolynomialRegression::value(const MatrixXd &eval_points) {
-  MatrixXd approx_values;
-  value(eval_points, approx_values);
-  return approx_values;
-}
-
 void PolynomialRegression::default_options() {
   defaultConfigOptions.set("reduced basis", false, "Use reduced basis");
   defaultConfigOptions.set("max degree", 1, "Maximum polynomial order");
@@ -180,12 +174,6 @@ void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
   /* Compute the gradient */
   gradient = scaled_eval_pts_basis_matrix*deriv_coeffs;
-}
-
-MatrixXd PolynomialRegression::gradient(const MatrixXd &samples, const int qoi) {
-  MatrixXd approx_gradient;
-  PolynomialRegression::gradient(samples, approx_gradient, qoi);
-  return approx_gradient;
 }
 
 void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
@@ -237,12 +225,6 @@ void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
       }
     }
   }
-}
-
-MatrixXd PolynomialRegression::hessian(const MatrixXd &sample, const int qoi) {
-  MatrixXd approx_hessian;
-  hessian(sample, approx_hessian, qoi);
-  return approx_hessian;
 }
 
 const MatrixXd & PolynomialRegression::get_polynomial_coeffs() const { return polynomialCoeffs; }

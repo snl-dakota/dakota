@@ -31,6 +31,14 @@ Surrogate::Surrogate(const MatrixXd &samples,
 
 Surrogate::~Surrogate(){}
 
+
+MatrixXd Surrogate::value(const MatrixXd &eval_points) {
+  MatrixXd approx_values;
+  value(eval_points, approx_values);
+  return approx_values;
+}
+
+
 /* returns num_samples by num_vars for a given qoi */
 void Surrogate::gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi) {
   silence_unused_args(samples, gradient, qoi);
@@ -38,19 +46,22 @@ void Surrogate::gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi) {
 }
 
 MatrixXd Surrogate::gradient(const MatrixXd &samples, int qoi) {
-  silence_unused_args(samples, qoi);
-  throw(std::runtime_error("Surrogate does not implement gradient(...)"));
+  MatrixXd approx_gradient;
+  gradient(samples, approx_gradient, qoi);
+  return approx_gradient;
 }
+
 
 /* returns num_vars by num_vars for a single sample and a given qoi */
-void Surrogate::hessian(const MatrixXd &samples, MatrixXd &hessian, int qoi) {
-  silence_unused_args(samples, hessian, qoi);
+void Surrogate::hessian(const MatrixXd &sample, MatrixXd &hessian, int qoi) {
+  silence_unused_args(sample, hessian, qoi);
   throw(std::runtime_error("Surrogate does not implement hessian(...)"));
 }
 
-MatrixXd Surrogate::hessian(const MatrixXd &samples, int qoi) {
-  silence_unused_args(samples, qoi);
-  throw(std::runtime_error("Surrogate does not implement hessian(...)"));
+MatrixXd Surrogate::hessian(const MatrixXd &sample, int qoi) {
+  MatrixXd approx_hessian;
+  hessian(sample, approx_hessian, qoi);
+  return approx_hessian;
 }
 
 void Surrogate::set_options(const ParameterList &options) {

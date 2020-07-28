@@ -126,7 +126,7 @@ public:
     PolynomialRegression::value(eval_points, approx_values);
     return approx_values;
     */
-    return dakota::surrogates::PolynomialRegression::value(eval_points);
+    return dakota::surrogates::Surrogate::value(eval_points);
   }
 };
 
@@ -202,9 +202,27 @@ PYBIND11_MODULE(dakmod, m) {
     (&dakota::surrogates::Surrogate::load));
    */
 
+  py::class_<dakota::surrogates::Surrogate>
+    (m, "Surrogate")
+    // no init since this is a virtual base
+    .def("value",
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&>()
+      (&dakota::surrogates::Surrogate::value))
 
-  // A direct wrapping of PolynomialRegression in which value doesn't work
-  py::class_<dakota::surrogates::PolynomialRegression>
+    .def("gradient",
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
+      (&dakota::surrogates::Surrogate::gradient))
+
+    .def("hessian",
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
+      (&dakota::surrogates::Surrogate::hessian))
+
+    ; // Surrogate
+
+
+  py::class_<dakota::surrogates::PolynomialRegression,
+	     dakota::surrogates::Surrogate // base class
+	     >
     (m, "PolynomialRegression")
     //    m.doc() = "Dakota Surrogate class";
     //    .def(py::init<const std::string &>())
@@ -242,18 +260,8 @@ PYBIND11_MODULE(dakmod, m) {
     // like this. Turns out just not for Eigen types which are default
     // copied when passed by reference. Could workaround with a lambda
     // for mapping to return by value.
-    // DTS: value call with single argument now returns a MatrixXd
-    .def("value",
-      py::detail::overload_cast_impl<const Eigen::MatrixXd&>()
-      (&dakota::surrogates::PolynomialRegression::value))
 
-    .def("gradient",
-      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
-      (&dakota::surrogates::PolynomialRegression::gradient))
-
-    .def("hessian",
-      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
-      (&dakota::surrogates::PolynomialRegression::hessian));
+    ; // PolynomialRegression
 
   // WORKAROUND (1) is like this (https://pybind11.readthedocs.io/en/stable/faq.html#limitations-involving-reference-arguments), but not sure how to apply to class
   //    [](int i) { int rv = foo(i); return std::make_tuple(rv, i); })
@@ -267,11 +275,6 @@ PYBIND11_MODULE(dakmod, m) {
 
   // Alternate attempt to wrap an intermediate specialization (this WORKS)
 
-  // NOTE: May need to declare base classes both here and in above
-  //  pybind11::class_<Base> cl(m, "Base");
-  //  pybind11::class_<C> cl(m, "C", py::base<Base>());
-  // See: https://github.com/pybind/pybind11/issues/172
-
   py::class_<PyPolyReg>
     (m, "PyPolyReg")
     //    m.doc() = "Dakota Surrogate class";
@@ -284,7 +287,9 @@ PYBIND11_MODULE(dakmod, m) {
     .def_static("load", static_cast<void (*)(const std::string&, const bool, PyPolyReg&)>(&dakota::surrogates::Surrogate::load));
   // Load/save: TODO would probably want as a free static function?
 
-  py::class_<dakota::surrogates::GaussianProcess>
+  py::class_<dakota::surrogates::GaussianProcess,
+	     dakota::surrogates::Surrogate // base class
+	     >
     (m, "GaussianProcess")
 
     .def(py::init<>())
@@ -300,15 +305,6 @@ PYBIND11_MODULE(dakmod, m) {
 		      GaussianProcess(samples, response,
 					   convert_options(d)); }))
 
-    .def("value",
-      py::detail::overload_cast_impl<const Eigen::MatrixXd&>()
-      (&dakota::surrogates::GaussianProcess::value))
+    ; // GaussianProcess
 
-    .def("gradient",
-      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
-      (&dakota::surrogates::GaussianProcess::gradient))
-
-    .def("hessian",
-      py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
-      (&dakota::surrogates::GaussianProcess::hessian));
 }
