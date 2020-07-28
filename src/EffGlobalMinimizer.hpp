@@ -77,9 +77,9 @@ public:
     //- Heading: Virtual function redefinitions
     //
 
-    void derived_init_communicators(ParLevLIter pl_iter);
-    void derived_set_communicators(ParLevLIter pl_iter);
-    void derived_free_communicators(ParLevLIter pl_iter);
+    //void derived_init_communicators(ParLevLIter pl_iter);
+    //void derived_set_communicators(ParLevLIter pl_iter);
+    //void derived_free_communicators(ParLevLIter pl_iter);
 
     void core_run();
 
@@ -191,12 +191,23 @@ private:
 
     /// GP model of response, one approximation per response function
     Model fHatModel;
-    /// recast model which assimilates mean and variance to solve the
-    /// max(EIF) sub-problem, see ::EIF_objective_eval()
-    Model eifModel;
-    /// recast model which explores by maximizing variances to solve the
-    /// max(variances) sub-problem, see ::Variances_objective_eval()
-    Model varModel;
+
+    /// recast model which assimilates either (a) mean and variance to solve
+    /// the max(EIF) sub-problem (used by EIF_objective_eval()) or (b) variance
+  /// alone for pure exploration (used by Variances_objective_eval())
+    Model approxSubProbModel;
+    /* Note: may want a separate model if want separate non-blocking job queues,
+       but may also prefer to maintain a single processing queue, which would
+       require additional bookkeeping in terms of which recasting to use when
+       post-processing different results sets (when they could be mixed due to
+       a non-blocking job queue). For blocking synchronization, this is not an
+       issue, so avoid the additional overhead for now. */
+    // recast model which assimilates mean and variance to solve the
+    // max(EIF) sub-problem, see ::EIF_objective_eval()
+    //Model eifModel;
+    // recast model which explores by maximizing variances to solve the
+    // max(variances) sub-problem, see ::Variances_objective_eval()
+    //Model varModel;
 
     /// minimum penalized response from among true function evaluations
     Real meritFnStar;
@@ -250,8 +261,6 @@ private:
     bool approxConverged;
     /// previous best-so-far sample
     RealVector prevCvStar;
-
-
 };
 
 
