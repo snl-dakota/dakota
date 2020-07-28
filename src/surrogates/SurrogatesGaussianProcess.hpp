@@ -364,9 +364,13 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version)
   archive & basisMatrix;
   archive & betaValues;
   // BMA TODO: leaving this as shared_ptr pending discussion as it seems natural
-  if (Archive::is_loading::value)
-    polyRegression.reset(new PolynomialRegression());
-  archive & *polyRegression;
+  // BMA NOTE: If serializing through shared_ptr, wouldn't have to
+  // trap the nullptr case here...
+  if (estimateTrend) {
+    if (Archive::is_loading::value)
+      polyRegression.reset(new PolynomialRegression());
+    archive & *polyRegression;
+  }
 }
 
 }  // namespace surrogates
