@@ -135,7 +135,7 @@ public:
   /// serialize Surrogate (derived type only) from file
   template<typename DerivedSurr>
   static void load(const std::string& infile, const bool binary,
-		   DerivedSurr& pr4);
+		   DerivedSurr& surr_in);
 
   /// Evalute metrics at specified points (within surrogates)
   VectorXd evaluate_metrics(const StringArray &mnames,

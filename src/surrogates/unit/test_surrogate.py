@@ -69,3 +69,14 @@ print("GP gradient:\n{0}\n".format(eval_grad))
 
 eval_hessian = gp.hessian(dpoint,0)
 print("GP Hessian:\n{0}\n".format(eval_hessian))
+
+# Save GP to binary and then reload
+print("Saving GP")
+dakmod.save_gp(gp, "gp.bin", True)
+
+print("Loading GP")
+gpload = dakmod.GaussianProcess();
+dakmod.load_gp("gp.bin", True, gpload)
+gpload_value = gpload.value(eval_samples)
+
+assert(np.allclose(gpload_value, gp_eval_surr))

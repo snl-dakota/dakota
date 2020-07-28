@@ -185,14 +185,30 @@ PYBIND11_MODULE(dakmod, m) {
   //  py::implicitly_convertible<pybind11::dict, PyParameterList>();
   //  py::implicitly_convertible<pybind11::dict, ParameterListExt>();
 
-  /* This one works */
+  // BMA: Do we want load/save to be free or member? Tradeoff between
+  // load being able to load into base class, potentially... Perhaps
+  // most natural for save to be a member and load to be invoked from
+  // a ctor kwarg. For now modeling as free functions.
+
+  m.def("save_poly",
+	static_cast<void (*)(const dakota::surrogates::PolynomialRegression&,
+			     const std::string&, const bool)>
+	(&dakota::surrogates::Surrogate::save));
+
+  m.def("save_gp",
+	static_cast<void (*)(const dakota::surrogates::GaussianProcess&,
+			     const std::string&, const bool)>
+	(&dakota::surrogates::Surrogate::save));
+
   m.def("load_poly",
-    static_cast<void (*)(const std::string&, const bool, dakota::surrogates::PolynomialRegression&)>
-    (&dakota::surrogates::Surrogate::load));
+	static_cast<void (*)(const std::string&, const bool,
+			     dakota::surrogates::PolynomialRegression&)>
+	(&dakota::surrogates::Surrogate::load));
 
   m.def("load_gp",
-    static_cast<void (*)(const std::string&, const bool, dakota::surrogates::GaussianProcess&)>
-    (&dakota::surrogates::Surrogate::load));
+	static_cast<void (*)(const std::string&, const bool,
+			     dakota::surrogates::GaussianProcess&)>
+	(&dakota::surrogates::Surrogate::load));
 
   /* Doesn't work with Surrogate (base class) *
    * probably need to add some info about the relationship between classes */
