@@ -239,8 +239,6 @@ private:
     Real distanceTol;
     /// limit convergence (compared with tolerance) in input measured in L2
     Real distCStar;
-    /// tolerance convergence in objectives
-    Real convergenceTol;
     /// counter for convergence in EIF
     unsigned short eifConvergenceCntr;
     /// limit convergence (compared with counter) of EIF

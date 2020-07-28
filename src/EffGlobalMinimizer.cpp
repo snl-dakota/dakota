@@ -50,9 +50,9 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     batchSizeAcquisition = batchSize - batchSizeExploration;
 
     // historical default convergence tolerances
-    if (convergenceTol < 0.0) convergenceTol = 1.0e-12;
+    if (convergenceTol < 0.) convergenceTol = 1.e-12;
     distanceTol = probDescDB.get_real("method.x_conv_tol");
-    if (distanceTol < 0.0) distanceTol = 1.0e-8;
+    if (distanceTol < 0.) distanceTol = 1.e-8;
 
     bestVariablesArray.push_back(iteratedModel.current_variables().copy());
 
