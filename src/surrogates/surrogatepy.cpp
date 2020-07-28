@@ -272,6 +272,18 @@ PYBIND11_MODULE(dakmod, m) {
     //.def(py::init<const Eigen::MatrixXd&, const Eigen::MatrixXd&,
     //     const ParameterList&>())
 
+    // Demonstrates Python-only ctor that loads from a file. NOTE:
+    // This does NOT map to the string advanced XML file ctor on the
+    // C++ side for now.
+    .def(py::init([](const std::string& filename, bool binary)
+		  {
+		    dakota::surrogates::PolynomialRegression p;
+		    dakota::surrogates::Surrogate::load(filename, binary, p);
+		    return p;
+		  }),
+	 py::arg("filename"), py::arg("binary")
+	 )
+
     // Initially thought we can't return through arguments in Python
     // like this. Turns out just not for Eigen types which are default
     // copied when passed by reference. Could workaround with a lambda

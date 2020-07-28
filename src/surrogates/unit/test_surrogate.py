@@ -35,6 +35,18 @@ print("Surrogate gradient:\n{0}\n".format(eval_grad))
 eval_hessian = pr.hessian(dpoint,0)
 print("Surrogate Hessian:\n{0}\n".format(eval_hessian))
 
+
+# Save Poly to text and then reload
+print("Saving Polynomial")
+dakmod.save_poly(pr, "poly.txt", False)
+
+# Demonstrate potential more Pythonic way to construct from file
+print("Loading Polynomial")
+prload = dakmod.PolynomialRegression(filename = "poly.txt", binary = False)
+
+assert(np.allclose(pr.value(dpoint), prload.value(dpoint)))
+
+
 # This does work, and agrees
 pypr = dakmod.PyPolyReg(build_samples, build_response, {"max degree" : 2, "scaler type" : "none"})
 eval_pypr = pypr.value(eval_samples)
