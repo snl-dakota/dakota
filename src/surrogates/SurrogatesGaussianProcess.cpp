@@ -212,8 +212,8 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
     if (estimateNugget) {
       estimatedNuggetValue = (*x_ptr)[numVariables+1+numPolyTerms];
     }
-    /* get the final objective function value */
-    negative_marginal_log_likelihood(final_obj_value, final_obj_gradient);
+    /* get the final objective function value and gradient */
+    negative_marginal_log_likelihood(true, true, final_obj_value, final_obj_gradient);
     if (final_obj_value < bestObjFunValue) {
       bestObjFunValue = final_obj_value;
       bestThetaValues = thetaValues;
@@ -513,38 +513,38 @@ double GaussianProcess::variance(const RowVectorXd &sample) {
   return variance;
 }
 
-void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient) {
-  double logSum;
-  VectorXd z, resid;
-  MatrixXd Q;
+void GaussianProcess::negative_marginal_log_likelihood(bool compute_grad, bool form_gram,
+    double &obj_value, VectorXd &obj_gradient) {
 
-  compute_gram(cwiseDists2, true, true, GramMatrix);
-  CholFact.compute(GramMatrix);
-
-  if (estimateTrend) {
-    resid = targetValues - basisMatrix*betaValues;
-    z = CholFact.solve(resid);
-    obj_gradient.segment(numVariables+1, numPolyTerms) = 
-                         -basisMatrix.transpose()*z;
-  }
-  else {
-    resid = targetValues;
-    z = CholFact.solve(resid);
+  if (form_gram) {
+    compute_gram(cwiseDists2, true, true, GramMatrix);
+    CholFact.compute(GramMatrix);
+    trendTargetResidual = targetValues;
+    if (estimateTrend)
+      trendTargetResidual -= basisMatrix*betaValues;
+    GramResidualSolution = CholFact.solve(trendTargetResidual);
   }
 
-  logSum = 0.5*log(CholFact.vectorD().array()).matrix().sum();
-  /* DTS: This Cholesky solve is much more expensive than the factorization! */
-  Q = -0.5*(z*z.transpose() - CholFact.solve(eyeMatrix));
+  obj_value = 0.5*log(CholFact.vectorD().array()).matrix().sum()
+            + 0.5*(trendTargetResidual.transpose()*GramResidualSolution)(0,0)
+            + static_cast<double>(numSamples)/2.0*log(2.0*PI);
 
-  obj_value = logSum + 0.5*(resid.transpose()*z)(0,0) + 
-              static_cast<double>(numSamples)/2.0*log(2.0*PI);
+  if (compute_grad) {
+    /* DTS: This Cholesky solve is much more expensive than the factorization! */
+    MatrixXd Q = -0.5*(GramResidualSolution*GramResidualSolution.transpose()
+               - CholFact.solve(eyeMatrix));
+    if (estimateTrend) {
+      obj_gradient.segment(numVariables+1, numPolyTerms) =
+                           -basisMatrix.transpose()*GramResidualSolution;
+    }
 
-  for (int k = 0; k < numVariables+1; k++)
-    obj_gradient(k) = (GramMatrixDerivs[k].cwiseProduct(Q)).sum();
+    for (int k = 0; k < numVariables+1; k++)
+      obj_gradient(k) = (GramMatrixDerivs[k].cwiseProduct(Q)).sum();
 
-  if (estimateNugget) {
-    obj_gradient(numVariables+1+numPolyTerms) = 2.0*exp(2.0*estimatedNuggetValue)
-                                              * Q.trace();
+    if (estimateNugget) {
+      obj_gradient(numVariables+1+numPolyTerms) = 2.0*exp(2.0*estimatedNuggetValue)
+                                                * Q.trace();
+    }
   }
 }
 
@@ -758,34 +758,34 @@ void GaussianProcess::setup_default_optimization_params(
      Teuchos::RCP<ParameterList> rol_params) {
   /* Secant */
   rol_params->sublist("General").sublist("Secant").
-             set("Type","Limited-Memory BFGS");
+             set("Type", "Limited-Memory BFGS");
   rol_params->sublist("General").sublist("Secant").
-             set("Maximum Storage",25);
+             set("Maximum Storage", 20);
   /* Step */ 
   rol_params->sublist("General").sublist("Step").
-             sublist("Line Search").set("Function Evaluation Limit",20);
+             sublist("Line Search").set("Function Evaluation Limit", 3);
 
   rol_params->sublist("General").sublist("Step").
-             sublist("Line Search").set("Sufficient Decrease Tolerance",1.0e-4);
+             sublist("Line Search").set("Sufficient Decrease Tolerance", 1.0e-4);
 
   rol_params->sublist("General").sublist("Step").
-             sublist("Line Search").set("Initial Step Size",1.0);
-
-  rol_params->sublist("General").sublist("Step").
-             sublist("Line Search").sublist("Descent Method").
-             set("Type","Quasi-Newton");
+             sublist("Line Search").set("Initial Step Size", 1.0);
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Descent Method").
-             set("Nonlinear CG Type","Hestenes-Stiefel");
+             set("Type", "Quasi-Newton");
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Descent Method").
+             set("Nonlinear CG Type", "Hestenes-Stiefel");
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Curvature Condition").
-             set("Type","Strong Wolfe Conditions");
+             set("Type", "Strong Wolfe Conditions");
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Curvature Condition").
-             set("General Parameter",0.9);
+             set("General Parameter", 0.9);
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Curvature Condition").
@@ -793,25 +793,25 @@ void GaussianProcess::setup_default_optimization_params(
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Line-Search Method").
-             set("Type","Cubic Interpolation");
+             set("Type", "Cubic Interpolation");
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Line-Search Method").
-             set("Backtracking Rate",0.5);
+             set("Backtracking Rate", 0.5);
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Line-Search Method").
-             set("Bracketing Tolerance",1.0e-8);
+             set("Bracketing Tolerance", 1.0e-8);
 
   /* Status Test */
   rol_params->sublist("Status Test").
-             set("Gradient Tolerance",1.0e-6);
+             set("Gradient Tolerance", 1.0e-4);
 
   rol_params->sublist("Status Test").
-             set("Step Tolerance",1.0e-8);
+             set("Step Tolerance", 1.0e-8);
 
   rol_params->sublist("Status Test").
-             set("Iteration Limit",200);
+             set("Iteration Limit", 200);
 }
 
 }  // namespace surrogates

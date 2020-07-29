@@ -145,10 +145,12 @@ public:
   /**
    *  \brief Evaluate the negative marginal loglikelihood and its 
    *  gradient.
+   *  \param[in] compute_grad Flag for computation of gradient.
+   *  \param[in] compute_gram Flag for various Gram matrix calculations.
    *  \param[out] obj_value Value of the objection function.
    *  \param[out] obj_gradient Gradient of the objective function.
    */
-  void negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient);
+  void negative_marginal_log_likelihood(bool compute_grad, bool compute_gram, double &obj_value, VectorXd &obj_gradient);
 
   /* Get/set functions */
 
@@ -301,6 +303,12 @@ private:
 
   /// Gram matrix for the build points
   MatrixXd GramMatrix;
+
+  /// Difference between target values and trend predictions.
+  VectorXd trendTargetResidual;
+
+  /// Cholesky solve for Gram matrix with trendTargetResidual rhs.
+  VectorXd GramResidualSolution;
 
   /// Derivatives of the Gram matrix w.r.t. the hyperparameters.
   std::vector<MatrixXd> GramMatrixDerivs;
