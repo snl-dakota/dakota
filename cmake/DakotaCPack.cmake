@@ -27,40 +27,33 @@ endmacro()
 # DAKOTA_DISTRO and related variables
 macro(dakota_cpack_prune_distro)
 
-  # Always omit .git directories, local scripts, duplicate TPLs, and
-  # GPL packages FFTW and CDDLIB
-  set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.git/" ".*\\\\.git.*"
-    "^${Dakota_SOURCE_DIR}/sync.local-git.sh"
+  # Always omit .git directories, local scripts, SNL and duplicate
+  # TPLs, and GPL packages FFTW and CDDLIB
+  set(CPACK_SOURCE_IGNORE_FILES
+    ".*\\\\.git/" ".*\\\\.git.*"
     "^${Dakota_SOURCE_DIR}/packages/external/fftw/"
     "^${Dakota_SOURCE_DIR}/packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/"
     )
 
   # Only internal full (developer version) has these things
   if(DAKOTA_DISTRO LESS ${DAKOTA_InternalFull})
-    list(APPEND CPACK_SOURCE_IGNORE_FILES
-      "^${Dakota_SOURCE_DIR}/local/cmake/"
-      "^${Dakota_SOURCE_DIR}/local/examples/"
-      "^${Dakota_SOURCE_DIR}/local/scripts/"
-      "^${Dakota_SOURCE_DIR}/local/snl/"
-      )
+    list(APPEND CPACK_SOURCE_IGNORE_FILES "^${Dakota_SOURCE_DIR}/local/")
   endif()
 
   if(DAKOTA_DISTRO LESS ${DAKOTA_InternalSupervised})
     message(STATUS "Removing DOT for less than InternalSupervised build")
     # When building InternalWeb, don't want DOT in the binaries
     # Be aggressive and remove from source tree
-    file(REMOVE_RECURSE ${Dakota_SOURCE_DIR}/local/packages/DOT/)
+    file(REMOVE_RECURSE ${Dakota_SOURCE_DIR}/packages/local/DOT/)
   endif()
 
   if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
-    # Be aggressive and don't distribute any localfiles outside SNL
-    # External integrators may need to change this
-    list(APPEND CPACK_SOURCE_IGNORE_FILES "^${Dakota_SOURCE_DIR}/local")
-    message(STATUS "Removing NPSOL, NLPQL for less than InternalWeb build")
-    # When building InternalWeb, don't want NLPQL, NPSOL in the binaries
+    message(STATUS "Removing NLPQL, NPSOL for less than InternalWeb build")
+    # When building ExternalWeb, don't want NLPQL, NPSOL in the binaries
     # Be aggressive and remove from source tree
-    file(REMOVE_RECURSE "${Dakota_SOURCE_DIR}/local/packages/NLPQL"
-      "${Dakota_SOURCE_DIR}/local/packages/NPSOL")
+    file(REMOVE_RECURSE
+      "${Dakota_SOURCE_DIR}/packages/local/NLPQL"
+      "${Dakota_SOURCE_DIR}/packages/local/NPSOL")
   endif()
 
 endmacro()
