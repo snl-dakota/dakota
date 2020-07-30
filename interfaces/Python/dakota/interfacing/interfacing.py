@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 from io import open
-from itertools import zip_longest
 import collections
 import re
 import sys
@@ -14,6 +13,11 @@ __license__ = 'GNU Lesser General Public License'
 
 PYTHON3 = True if sys.version_info[0] == 3 else False 
 PYTHON2 = True if sys.version_info[0] == 2 else False
+
+if PYTHON3:
+    from itertools import zip_longest
+else:
+    from itertools import izip_longest as zip_longest
 
 #### Exceptions
 
