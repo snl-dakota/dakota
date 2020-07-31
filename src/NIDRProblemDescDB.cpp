@@ -2414,8 +2414,10 @@ static void Vgen_ContinuousDes(DataVariablesRep *dv, size_t offset)
     Set_rv(U, dbl_inf, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
-    for(i = 0; i < n; i++) { // init to 0, repairing to bounds if needed
-      if      ((*L)[i] > 0.) (*V)[i] = (*L)[i];
+    for(i = 0; i < n; i++) { // init to mean or 0, repairing to bounds if needed
+      if ( -dbl_inf < (*L)[i] && (*U)[i] < dbl_inf )
+	(*V)[i] = ( (*L)[i] + (*U)[i] ) / 2.0;
+      else if ((*L)[i] > 0.) (*V)[i] = (*L)[i];
       else if ((*U)[i] < 0.) (*V)[i] = (*U)[i];
       else                   (*V)[i] = 0;
     }
@@ -2436,8 +2438,12 @@ static void Vgen_DiscreteDesRange(DataVariablesRep *dv, size_t offset)
     Set_iv(U, INT_MAX, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
-    for(i = 0; i < n; ++i) { // init to 0, repairing to bounds if needed
-      if      ((*L)[i] > 0) (*V)[i] = (*L)[i];
+    for(i = 0; i < n; ++i) {
+      // init to mean, truncating to left if needed; otherwise init to
+      // 0, repairing to bounds if needed
+      if ( INT_MIN < (*L)[i] && (*U)[i] < INT_MAX )
+	(*V)[i] = (*L)[i] + ((*U)[i] - (*L)[i])/2;
+      else if ((*L)[i] > 0) (*V)[i] = (*L)[i];
       else if ((*U)[i] < 0) (*V)[i] = (*U)[i];
       else                  (*V)[i] = 0;
     }
@@ -2459,8 +2465,10 @@ static void Vgen_ContinuousState(DataVariablesRep *dv, size_t offset)
     Set_rv(U, dbl_inf, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
-    for(i = 0; i < n; i++) { // init to 0, repairing to bounds if needed
-      if      ((*L)[i] > 0.) (*V)[i] = (*L)[i];
+    for(i = 0; i < n; i++) { // init to mean or 0, repairing to bounds if needed
+      if ( -dbl_inf < (*L)[i] && (*U)[i] < dbl_inf )
+	(*V)[i] = ( (*L)[i] + (*U)[i] ) / 2.0;
+      else if ((*L)[i] > 0.) (*V)[i] = (*L)[i];
       else if ((*U)[i] < 0.) (*V)[i] = (*U)[i];
       else                   (*V)[i] = 0;
     }
@@ -2481,8 +2489,12 @@ static void Vgen_DiscreteStateRange(DataVariablesRep *dv, size_t offset)
     Set_iv(U, INT_MAX, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
-    for(i = 0; i < n; ++i) { // init to 0, repairing to bounds if needed
-      if      ((*L)[i] > 0) (*V)[i] = (*L)[i];
+    for(i = 0; i < n; ++i) {
+      // init to mean, truncating to left if needed; otherwise init to
+      // 0, repairing to bounds if needed
+      if ( INT_MIN < (*L)[i] && (*U)[i] < INT_MAX )
+	(*V)[i] = (*L)[i] + ((*U)[i] - (*L)[i])/2;
+      else if ((*L)[i] > 0) (*V)[i] = (*L)[i];
       else if ((*U)[i] < 0) (*V)[i] = (*U)[i];
       else                  (*V)[i] = 0;
     }
