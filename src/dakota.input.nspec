@@ -1095,7 +1095,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
@@ -1143,6 +1142,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_metric_scale {0}
+      relative {N_mdm(true,relativeConvMetric)}
+      |
+      absolute {N_mdm(false,relativeConvMetric)}
+     ]
     [ regression_type {0}
       ls {N_mdm(type,regressionType_FT_LS)}
       |
@@ -1233,7 +1238,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
@@ -1281,6 +1285,17 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_metric_scale {0}
+      relative {N_mdm(true,relativeConvMetric)}
+      |
+      absolute {N_mdm(false,relativeConvMetric)}
+     ]
+    [ convergence_statistics_type {0}
+      active {N_mdm(type,statsMetricType_ACTIVE_EXPANSION_STATS)}
+      |
+      combined {N_mdm(type,statsMetricType_COMBINED_EXPANSION_STATS)}
+     ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
@@ -1378,7 +1393,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
@@ -1419,6 +1433,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
       |
       rank_sampling {N_mdm(type,multilevAllocControl_RANK_SAMPLING)}
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_metric_scale {0}
+      relative {N_mdm(true,relativeConvMetric)}
+      |
+      absolute {N_mdm(false,relativeConvMetric)}
      ]
     [ discrepancy_emulation {0}
       distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
@@ -1514,7 +1534,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
@@ -1560,6 +1579,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_metric_scale {0}
+      relative {N_mdm(true,relativeConvMetric)}
+      |
+      absolute {N_mdm(false,relativeConvMetric)}
+     ]
     ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
       [ 
@@ -1786,7 +1811,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
@@ -1832,6 +1856,17 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_metric_scale {0}
+      relative {N_mdm(true,relativeConvMetric)}
+      |
+      absolute {N_mdm(false,relativeConvMetric)}
+     ]
+    [ convergence_statistics_type {0}
+      active {N_mdm(type,statsMetricType_ACTIVE_EXPANSION_STATS)}
+      |
+      combined {N_mdm(type,statsMetricType_COMBINED_EXPANSION_STATS)}
+     ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
@@ -2024,7 +2059,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
@@ -2065,6 +2099,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
       |
       rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_metric_scale {0}
+      relative {N_mdm(true,relativeConvMetric)}
+      |
+      absolute {N_mdm(false,relativeConvMetric)}
      ]
     [ discrepancy_emulation {0}
       distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
@@ -2232,7 +2272,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
@@ -2290,6 +2329,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_metric_scale {0}
+      relative {N_mdm(true,relativeConvMetric)}
+      |
+      absolute {N_mdm(false,relativeConvMetric)}
+     ]
     ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
       [ 
@@ -2389,7 +2434,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
@@ -2447,6 +2491,17 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_metric_scale {0}
+      relative {N_mdm(true,relativeConvMetric)}
+      |
+      absolute {N_mdm(false,relativeConvMetric)}
+     ]
+    [ convergence_statistics_type {0}
+      active {N_mdm(type,statsMetricType_ACTIVE_EXPANSION_STATS)}
+      |
+      combined {N_mdm(type,statsMetricType_COMBINED_EXPANSION_STATS)}
+     ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
@@ -2554,7 +2609,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
@@ -3810,6 +3864,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
             wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
            ]
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
        ]
       [ standardized_space {N_mdm(true,standardizedSpace)} ]
@@ -4548,6 +4607,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
             wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
            ]
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
        ]
       [ standardized_space {N_mdm(true,standardizedSpace)} ]
@@ -5185,6 +5249,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
             wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
            ]
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
        ]
       [ standardized_space {N_mdm(true,standardizedSpace)} ]
@@ -5774,20 +5843,6 @@ KEYWORD model {N_mom3(start,0,stop)}
        )
       |
       ( function_train {N_mom(lit,surrogateType_global_function_train)}
-        [ p_refinement {N_mom(type,refinementType_P_REFINEMENT)}
-          ( uniform {N_mom(type,refinementControl_UNIFORM_CONTROL)}
-            increment_start_rank {N_mom(type,c3RefineType_UNIFORM_START_RANK)}
-            |
-            increment_start_order {N_mom(type,c3RefineType_UNIFORM_START_ORDER)}
-            |
-            increment_max_rank {N_mom(type,c3RefineType_UNIFORM_MAX_RANK)}
-            |
-            increment_max_order {N_mom(type,c3RefineType_UNIFORM_MAX_ORDER)}
-            |
-            increment_max_rank_order {N_mom(type,c3RefineType_UNIFORM_MAX_RANK_ORDER)}
-           )
-         ]
-        [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
         [ regression_type {0}
           ls {N_mom(type,regressionType_FT_LS)}
           |

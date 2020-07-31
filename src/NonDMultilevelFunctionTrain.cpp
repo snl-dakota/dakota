@@ -238,7 +238,7 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
   //if (multilevAllocControl == GREEDY_REFINEMENT)
-  //  statsType = Pecos::COMBINED_EXPANSION_STATS;
+  //  statsMetricType = Pecos::COMBINED_EXPANSION_STATS;
 
   NonDExpansion::initialize_u_space_model();
 
