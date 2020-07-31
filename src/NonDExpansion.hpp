@@ -135,7 +135,7 @@ protected:
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
-  /// combine coefficients, promote to active, and update statsMetricType
+  /// combine coefficients, promote to active, and update statsMetricRollUp
   virtual void combined_to_active();
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
@@ -324,14 +324,14 @@ protected:
   void update_u_space_sampler(size_t sequence_index,
 			      const UShortArray& approx_orders);
 
-  /// update statsMetricType, here and in Pecos::ExpansionConfigOptions
-  void statistics_type(short stats_type, bool clear_bits = true);
+  /// update statsMetricRollUp, here and in Pecos::ExpansionConfigOptions
+  void refinement_statistics_mode(short stats_mode);//, bool clear_bits = true);
 
   /// Aggregate variance across the set of QoI for a particular model level
   void aggregate_variance(Real& agg_var_l);
 
   /// calculate the response covariance (diagonal or full matrix) for
-  /// the expansion indicated by statsMetricType
+  /// the expansion indicated by statsMetricRollUp
   void compute_covariance();
   /// calculate the response covariance of the active expansion
   void compute_active_covariance();
@@ -344,7 +344,7 @@ protected:
   void compute_combined_diagonal_variance();
 
   /// calculate off diagonal terms in respCovariance(i,j) for j<i for
-  /// the expansion indicated by statsMetricType
+  /// the expansion indicated by statsMetricRollUp
   void compute_off_diagonal_covariance();
   /// calculate off diagonal terms in respCovariance(i,j) for j<i
   /// using the active expansion coefficients
@@ -423,8 +423,8 @@ protected:
   /// Pecos::{TENSOR_PRODUCT,TOTAL_ORDER,ADAPTED}_BASIS for PCE regression
   short expansionBasisType;
 
-  /// type of statistical metric: {NO,ACTIVE,COMBINED}_EXPANSION_STATS
-  short statsMetricType;
+  /// type of statistical metric roll-up: {NO,ACTIVE,COMBINED}_EXPANSION_STATS
+  short statsMetricRollUp;
   /// flag indicating the use of relative scaling in refinement metrics
   bool relativeMetric;
 
@@ -756,7 +756,7 @@ inline void NonDExpansion::metric_roll_up()
   // greedy_multifidelity_expansion() assesses level candidates using combined
   // stat metrics, which by default require expansion combination (overridden
   // for hierarchical SC)
-  if (statsMetricType == Pecos::COMBINED_EXPANSION_STATS)
+  if (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS)
     uSpaceModel.combine_approximation();
 }
 
@@ -792,7 +792,7 @@ inline void NonDExpansion::compute_off_diagonal_covariance()
 
   // See also full_covar_stats logic in compute_analytic_statistics() ...
 
-  switch (statsMetricType) {
+  switch (statsMetricRollUp) {
   case Pecos::ACTIVE_EXPANSION_STATS:
     compute_active_off_diagonal_covariance();   break;
   case Pecos::COMBINED_EXPANSION_STATS:
@@ -803,7 +803,7 @@ inline void NonDExpansion::compute_off_diagonal_covariance()
 
 inline void NonDExpansion::compute_covariance()
 {
-  switch (statsMetricType) {
+  switch (statsMetricRollUp) {
   // multifidelity_expansion() is outer loop:
   // > use of refine_expansion(): refine individually based on level covariance
   // > after combine_approx(), combined_to_active() enables use of active covar

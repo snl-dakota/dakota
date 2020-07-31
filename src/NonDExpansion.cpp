@@ -41,7 +41,7 @@ namespace Dakota {
 NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
   expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
-  statsMetricType(
+  statsMetricRollUp(
     problem_db.get_short("method.nond.convergence_statistics_type")),
   relativeMetric(
     problem_db.get_bool("method.nond.relative_convergence_metric")),
@@ -98,7 +98,7 @@ NonDExpansion(unsigned short method_name, Model& model,
 	      bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
-  statsMetricType(Pecos::DEFAULT_EXPANSION_STATS), relativeMetric(true),
+  statsMetricRollUp(Pecos::DEFAULT_EXPANSION_STATS), relativeMetric(true),
   dimPrefSpec(dim_pref), collocRatio(colloc_ratio), termsOrder(1.),
   tensorRegression(false), randomSeed(seed), fixedSeed(false), mlmfIter(0),
   multilevAllocControl(DEFAULT_MLMF_CONTROL),
@@ -235,10 +235,9 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 {
   bool err_flag = false;
 
+  // Check for suitable distribution types.
   // Note: prefer warning in Analyzer (active discrete ignored), but
   // RandomVariable type mapping must be defined...
-  //
-  // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "\nError: active discrete variables are not currently supported "
 	 << "in NonDExpansion." << std::endl;
@@ -274,29 +273,29 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
   bool mf = (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS  ||
 	     methodName == MULTIFIDELITY_STOCH_COLLOCATION ||
 	     methodName == MULTIFIDELITY_FUNCTION_TRAIN    );
-  switch (statsMetricType) {
+  switch (statsMetricRollUp) {
   case Pecos::NO_EXPANSION_STATS:      // should not happen
-    Cerr << "Error: statsMetricType required in NonDExpansion::resolve_inputs()"
-	 << std::endl;
+    Cerr << "Error: statsMetricRollUp definition required in NonDExpansion::"
+	 << "resolve_inputs()" << std::endl;
     err_flag = true;  break;
 
-  case Pecos::DEFAULT_EXPANSION_STATS: // assign default
-    statsMetricType = (mf) ?
+  case Pecos::DEFAULT_EXPANSION_STATS:  // assign default
+    statsMetricRollUp = (mf) ?
       Pecos::COMBINED_EXPANSION_STATS : // individual || integrated MF
       Pecos::ACTIVE_EXPANSION_STATS;    // single fidelity || ML regression
+    // can't propagate: shared_data_rep not yet constructed (DataFitSurrModel)
     break;
 
-  case Pecos::ACTIVE_EXPANSION_STATS:   // ensure sanity
+  case Pecos::ACTIVE_EXPANSION_STATS:   // ensure sanity of user spec
     // Disallow ACTIVE with integrated MLMF (greedy mlmfAllocControl)
     if (mf && multilevAllocControl == GREEDY_REFINEMENT) {
       Cerr << "Error: combined expansion stats required for greedy integrated "
-	   << "multifidelity refinement."
-	   << std::endl;
+	   << "multifidelity refinement." << std::endl;
       err_flag = true;
     }
     break;
 
-  case Pecos::COMBINED_EXPANSION_STATS: // ensure sanity
+  case Pecos::COMBINED_EXPANSION_STATS: // ensure sanity of user spec
     if (!mf) {
       Cerr << "Error: combined expansion stats are only used for "
 	   << "multifidelity refinement." << std::endl;
@@ -306,8 +305,9 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
   }
   // if individual MLMF with COMBINED, reorder loop in multifidelity_expansion()
   // to get a better initial reference for individual adaptation
-  // > simpler (and more consistent with greedy) to always do this, but seems
-  //   less desirable to disconnect adaptations from reference builds
+  // > More consistent with greedy_mf to always do this, but seems less
+  //   desirable to disconnect adaptations from reference builds
+  // > Also requires clearing the starting expansions for recursive emulation
 
   if (err_flag)
     abort_handler(METHOD_ERROR);
@@ -326,7 +326,8 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
     abort_handler(METHOD_ERROR);
   }
 
-  u_space_sampler.assign_rep(std::make_shared<NonDCubature>(g_u_model, cub_int_order));
+  u_space_sampler.assign_rep(std::make_shared<NonDCubature>(g_u_model,
+			     cub_int_order));
 }
 
 
@@ -352,8 +353,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
-  u_space_sampler.assign_rep(std::make_shared<NonDQuadrature>
-			     (g_u_model, quad_order, dim_pref, driver_mode));
+  u_space_sampler.assign_rep(std::make_shared<NonDQuadrature>(g_u_model,
+			     quad_order, dim_pref, driver_mode));
 }
 
 
@@ -385,9 +386,9 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
-  u_space_sampler.assign_rep(std::make_shared<NonDQuadrature>
-			     (g_u_model, quad_order, dim_pref, driver_mode,
-			      filtered_samples));
+  u_space_sampler.assign_rep(std::make_shared<NonDQuadrature>(g_u_model,
+			     quad_order, dim_pref, driver_mode,
+			     filtered_samples));
 }
 
 
@@ -419,9 +420,9 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
-  u_space_sampler.assign_rep(std::make_shared<NonDQuadrature>
-			     (g_u_model, quad_order, dim_pref, driver_mode,
-			      sub_samples, seed));
+  u_space_sampler.assign_rep(std::make_shared<NonDQuadrature>(g_u_model,
+			     quad_order, dim_pref, driver_mode, sub_samples,
+			     seed));
 }
 
 
@@ -468,9 +469,10 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
-  u_space_sampler.assign_rep(std::make_shared< NonDSparseGrid>
-			     (g_u_model, ssg_level, dim_pref, expansionCoeffsApproach,
-			      driver_mode, growth_rate, refineControl, track_wts));
+  u_space_sampler.assign_rep(std::make_shared< NonDSparseGrid>(g_u_model,
+			     ssg_level, dim_pref, expansionCoeffsApproach,
+			     driver_mode, growth_rate, refineControl,
+			     track_wts));
 }
 
 
@@ -551,7 +553,7 @@ void NonDExpansion::configure_pecos_options()
   Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
     expansionBasisType, iteratedModel.correction_type(),
     multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,
-    refineControl, refineMetric, statsMetricType, maxRefineIterations,
+    refineControl, refineMetric, statsMetricRollUp, maxRefineIterations,
     maxSolverIterations, convergenceTol, softConvLimit);
   shared_data_rep->configuration_options(ec_options);
   Pecos::BasisConfigOptions
@@ -969,7 +971,7 @@ void NonDExpansion::refine_expansion()
 
   // post-process nominal expansion, updating reference stats for refinement
   if (!converged) {
-    metric_roll_up(); // for completeness (no-op for ACTIVE_EXPANSION_STATS)
+    metric_roll_up();
     compute_statistics(INTERMEDIATE_RESULTS);
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
@@ -1403,7 +1405,7 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
   // refinements track impact only with respect to the current level expansion
-  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
+  refinement_statistics_mode(statsMetricRollUp);//Pecos::ACTIVE_EXPANSION_STATS)
   // zero out iteration counter
   mlmfIter = 0;
 
@@ -1471,7 +1473,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // > suppress individual refinement
   multifidelity_expansion(Pecos::NO_REFINEMENT, false); // defer final roll up
   // refine based on metrics from combined expansions
-  statistics_type(Pecos::COMBINED_EXPANSION_STATS);
+  //refinement_statistics_mode(Pecos::COMBINED_EXPANSION_STATS);
   // combine expansions (unconditionally) for refinement reference
   uSpaceModel.combine_approximation();
   // compute/print combined reference stats
@@ -1703,7 +1705,7 @@ initialize_ml_regression(size_t num_steps, bool& import_pilot)
   uSpaceModel.clear_model_keys();
 
   // all stats are stats for the active sequence step (not combined)
-  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
+  refinement_statistics_mode(statsMetricRollUp);//Pecos::ACTIVE_EXPANSION_STATS)
 
   // Multilevel variance aggregation requires independent sample sets
   std::shared_ptr<Iterator> u_sub_iter =
@@ -1958,14 +1960,11 @@ update_u_space_sampler(size_t sequence_index, const UShortArray& approx_orders)
 }
 
 
-void NonDExpansion::statistics_type(short stats_type, bool clear_bits)
+void NonDExpansion::
+refinement_statistics_mode(short stats_mode)//, bool clear_bits)
 {
-  if (statsMetricType != stats_type) {
-    statsMetricType = stats_type;
-
-    std::shared_ptr<SharedApproxData> shared_data_rep
-      = uSpaceModel.shared_approximation().data_rep();
-    shared_data_rep->refinement_statistics_type(stats_type);
+  if (statsMetricRollUp != stats_mode) {
+    statsMetricRollUp = stats_mode;
 
     /*
     // if poly_approxs share computed* trackers between active and combined,
@@ -1976,7 +1975,7 @@ void NonDExpansion::statistics_type(short stats_type, bool clear_bits)
 	poly_approxs[i].clear_computed_bits();
     }
 
-    // Changing stats type does *not* invalidate prodType{1,2}Coeffs since it
+    // Changing stats rollup does *not* invalidate prodType{1,2}Coeffs since it
     // is defined only for expType{1,2}Coeffs (supporting delta_*() use cases),
     // but combined_to_active *does* for the active model index.
     // HIPA::combined_to_active() clears all prodType{1,2}Coeffs, such that
@@ -1992,6 +1991,11 @@ void NonDExpansion::statistics_type(short stats_type, bool clear_bits)
 	                         // existing to initialize_active_products()
     */
   }
+
+  // propagate to DataFitSurrModel, SharedApproxData, etc.
+  std::shared_ptr<SharedApproxData> shared_data_rep
+    = uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->refinement_statistics_mode(stats_mode);
 }
 
 
@@ -2006,7 +2010,7 @@ void NonDExpansion::combined_to_active()
   uSpaceModel.combined_to_active();
   // update approach for computing statistics; don't clear bits as
   // combined_to_active() can transfer bits from combined to active
-  statistics_type(Pecos::ACTIVE_EXPANSION_STATS, false);
+  refinement_statistics_mode(Pecos::ACTIVE_EXPANSION_STATS);//, false);
 }
 
 
@@ -2350,7 +2354,7 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
 void NonDExpansion::aggregate_variance(Real& agg_var_l)
 {
   // case ESTIMATOR_VARIANCE:
-  // statsMetricType remains as Pecos::ACTIVE_EXPANSION_STATS
+  // statsMetricRollUp remains as Pecos::ACTIVE_EXPANSION_STATS
 
   // control ML using aggregated variance across the vector of QoI
   // (alternate approach: target QoI with largest variance)
@@ -2431,7 +2435,7 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   }
 
   size_t i;
-  bool combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+  bool combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
     Approximation& approx_i = poly_approxs[i];
@@ -2691,7 +2695,7 @@ void NonDExpansion::compute_level_mappings()
   compute_numerical_level_mappings();
 
   // flags for limiting unneeded computation (matched in print_results())
-  bool combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS),
+  bool combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS),
        z_to_beta = (respLevelTarget == RELIABILITIES);
 
   // loop over response fns and compute/store analytic stats/stat grads
@@ -2846,7 +2850,7 @@ void NonDExpansion::compute_moments()
   // for use with incremental results states
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+  bool combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
   for (size_t i=0; i<numFunctions; ++i) {
     Approximation& approx_i = poly_approxs[i];
     if (approx_i.expansion_coefficient_flag()) {
@@ -2893,8 +2897,8 @@ void NonDExpansion::compute_analytic_statistics()
     moment_offset = (finalMomentsType) ? 2 : 0;
 
   // flags for limiting unneeded computation (matched in print_results())
-  bool   combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
-  bool local_grad_stats = (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT);
+  bool combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS),
+     local_grad_stats = (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT);
 
   if (local_grad_stats && expGradsMeanX.empty())
     expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
@@ -3296,7 +3300,7 @@ void NonDExpansion::pull_reference(RealVector& stats_ref)
     if (stats_ref.length() != vec_len) stats_ref.sizeUninitialized(vec_len);
 
     // pull means
-    if (statsMetricType == Pecos::COMBINED_EXPANSION_STATS)
+    if (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS)
       for (i=0; i<numFunctions; ++i)
 	stats_ref[i] = poly_approxs[i].combined_moment(0);
     else
@@ -3322,7 +3326,7 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
   case Pecos::COVARIANCE_METRIC: {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     bool  full_covar = (covarianceControl == FULL_COVARIANCE),
-      combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+      combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
 
     // push resp{V|Cov}ariance
     if (full_covar)
@@ -3762,7 +3766,7 @@ void NonDExpansion::print_moments(std::ostream& s)
   // Also handle numerical exception of negative variance in either exp or num
   size_t exp_mom, num_int_mom;
   bool exception = false, curr_exception, prev_exception = false,
-    combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+    combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
   RealVector std_exp_moments, std_num_int_moments, empty_moments;
   for (i=0; i<numFunctions; ++i) {
     Approximation& approx_i = poly_approxs[i];

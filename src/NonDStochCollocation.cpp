@@ -424,7 +424,7 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   bool   warn_flag = false,
-    combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+    combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
 
   if (deltaRespMean.empty()) deltaRespMean.sizeUninitialized(numFunctions);
   for (size_t i=0; i<numFunctions; ++i) {
@@ -471,7 +471,7 @@ compute_delta_variance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   bool   warn_flag = false,
-    combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+    combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
 
   if (deltaRespVariance.empty())
     deltaRespVariance.sizeUninitialized(numFunctions);
@@ -511,7 +511,7 @@ compute_delta_covariance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   bool   warn_flag = false,
-    combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+    combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
   size_t i, j;
 
   if (deltaRespCovariance.empty())
@@ -647,7 +647,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
       }
 
       bool warn_flag   = false,
-	combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+	combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
       Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
@@ -770,7 +770,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
     // response mappings passed down from an outer context, a more comprehensive
     // set of stats could be supported in the logic below.
     bool beta_map = false, numerical_map = false,
-      combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+      combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
     size_t i, j, cntr;
     for (i=0; i<numFunctions; ++i) {
       if (!requestedRelLevels[i].empty()) beta_map = true;
@@ -954,7 +954,7 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
       std::shared_ptr<PecosApproximation> poly_approx_rep;
       bool full_covar = (covarianceControl == FULL_COVARIANCE),
-        combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+        combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
       size_t vec_len = (full_covar) ?
 	(numFunctions*(numFunctions + 3))/2 : 2*numFunctions;
       if (stats_star.length() != vec_len) stats_star.sizeUninitialized(vec_len);
@@ -1003,7 +1003,7 @@ analytic_delta_level_mappings(const RealVector& level_maps_ref,
   size_t i, j, cntr, rl_len, pl_len, bl_len, gl_len, pl_bl_gl_len;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
-  bool combined_stats = (statsMetricType == Pecos::COMBINED_EXPANSION_STATS);
+  bool combined_stats = (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS);
   for (i=0, cntr=0; i<numFunctions; ++i) {
     rl_len = requestedRespLevels[i].length();
     pl_len = requestedProbLevels[i].length();

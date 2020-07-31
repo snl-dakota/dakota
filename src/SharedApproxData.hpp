@@ -165,8 +165,8 @@ public:
   /// treated as random for statistical purposes (e.g. expectation)
   virtual void random_variables_key(const BitArray& random_vars_key);
 
-  /// assign statistics mode: {ACTIVE,COMBINED}_EXPANSION_STATS
-  virtual void refinement_statistics_type(short stats_type);
+  /// assign mode for statistics roll-up: {ACTIVE,COMBINED}_EXPANSION_STATS
+  virtual void refinement_statistics_mode(short stats_mode);
 
   /// return set of Sobol indices that have been requested (e.g., as constrained
   /// by throttling) and are computable by a (sparse) expansion of limited order

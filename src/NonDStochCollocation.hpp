@@ -148,7 +148,7 @@ inline void NonDStochCollocation::metric_roll_up()
   // PCE and Nodal SC require combined expansion coefficients for computing
   // combined stat metrics, but Hierarchical SC can efficiently compute
   // deltas based only on active expansions (no combination required)
-  if (statsMetricType == Pecos::COMBINED_EXPANSION_STATS &&
+  if (statsMetricRollUp == Pecos::COMBINED_EXPANSION_STATS &&
       expansionBasisType == Pecos::NODAL_INTERPOLANT)
     uSpaceModel.combine_approximation();
   // TO DO: case of level mappings for numerical stats --> sampling on
