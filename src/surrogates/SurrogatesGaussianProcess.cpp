@@ -257,7 +257,7 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
           " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
   }
 
-  if (previousSamples.rows() != 0 
+  if (previousSamples.rows() == samples.rows()
     && (samples - previousSamples).norm() < near_zero) {
     approx_values = previousValues;
     return;
