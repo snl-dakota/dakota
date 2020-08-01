@@ -26,7 +26,7 @@ DataMethodRep::DataMethodRep():
   methodUseDerivsFlag(false),
   constraintTolerance(0.), methodScaling(false), numFinalSolutions(0),
   convergenceTolerance(-std::numeric_limits<double>::max()),
-  relativeConvMetric(true), statsMetricType(Pecos::DEFAULT_EXPANSION_STATS),
+  relativeConvMetric(true), statsMetricMode(Pecos::DEFAULT_EXPANSION_STATS),
   methodName(DEFAULT_METHOD), subMethod(SUBMETHOD_DEFAULT),
   // Meta-iterators
   iteratorServers(0), procsPerIterator(0), // 0 defaults to detect user spec
@@ -195,7 +195,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << maxIterations << maxRefineIterations << maxSolverIterations
     << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
     << constraintTolerance << methodScaling << numFinalSolutions
-    << convergenceTolerance << relativeConvMetric << statsMetricType
+    << convergenceTolerance << relativeConvMetric << statsMetricMode
     << methodName << subMethod << subMethodName << subModelPointer
     << subMethodPointer;
 
@@ -361,7 +361,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> maxIterations >> maxRefineIterations >> maxSolverIterations
     >> maxFunctionEvaluations >> speculativeFlag >> methodUseDerivsFlag
     >> constraintTolerance >> methodScaling >> numFinalSolutions
-    >> convergenceTolerance >> relativeConvMetric >> statsMetricType
+    >> convergenceTolerance >> relativeConvMetric >> statsMetricMode
     >> methodName >> subMethod >> subMethodName >> subModelPointer
     >> subMethodPointer;
 
@@ -527,7 +527,7 @@ void DataMethodRep::write(std::ostream& s) const
     << maxIterations << maxRefineIterations << maxSolverIterations
     << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
     << constraintTolerance << methodScaling << numFinalSolutions
-    << convergenceTolerance << relativeConvMetric << statsMetricType
+    << convergenceTolerance << relativeConvMetric << statsMetricMode
     << methodName << subMethod << subMethodName << subModelPointer
     << subMethodPointer;
 

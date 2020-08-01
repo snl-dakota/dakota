@@ -6975,7 +6975,7 @@ static bool
 	MP_(volQualityFlag),
 	MP_(wilksFlag);
 
-/* redundant with Method_mp_type:
+/* It seems these are redundant with Method_mp_type:
 static short
         MP_(c3RefineType),
         MP_(expansionType),
@@ -7121,8 +7121,8 @@ static Method_mp_type
 	MP2s(responseLevelTarget,RELIABILITIES),
 	MP2s(responseLevelTargetReduce,SYSTEM_PARALLEL),
 	MP2s(responseLevelTargetReduce,SYSTEM_SERIES),
-        MP2p(statsMetricType,ACTIVE_EXPANSION_STATS),   // Pecos
-        MP2p(statsMetricType,COMBINED_EXPANSION_STATS), // Pecos
+        MP2p(statsMetricMode,ACTIVE_EXPANSION_STATS),   // Pecos
+        MP2p(statsMetricMode,COMBINED_EXPANSION_STATS), // Pecos
 	MP2s(surrBasedLocalAcceptLogic,FILTER),
 	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
 	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),

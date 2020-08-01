@@ -123,20 +123,20 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY method_conv_metric_scale '
-	     <keyword  id="convergence_metric_scale" name="convergence_metric_scale" code="{0}" label="Convergence metric scale"  minOccurs="0" default="relative" >
-	       <oneOf label="scale of convergence metric">
-		 <keyword  id="relative" name="relative" code="{N_mdm(true,relativeConvMetric)}" label="relative convergence metric"   />
-                 <keyword  id="absolute" name="absolute" code="{N_mdm(false,relativeConvMetric)}" label="absolute convergence metric"   />
+    <!ENTITY method_refine_metric_scale '
+	     <keyword  id="metric_scale" name="metric_scale" code="{0}" label="Refinement metric scale"  minOccurs="0" default="relative" >
+	       <oneOf label="scale of refinement metric">
+		 <keyword  id="relative" name="relative" code="{N_mdm(true,relativeConvMetric)}" label="relative refinement metric"   />
+                 <keyword  id="absolute" name="absolute" code="{N_mdm(false,relativeConvMetric)}" label="absolute refinement metric"   />
 	       </oneOf>
              </keyword>
 	     ' >
 
-    <!ENTITY method_mf_conv_stats_type '
-	     <keyword  id="convergence_statistics_type" name="convergence_statistics_type" code="{0}" label="Convergence statistics type"  minOccurs="0" default="DEFAULT_EXPANSION_STATS" >
-	       <oneOf label="type of convergence metric">
-		 <keyword  id="active" name="active" code="{N_mdm(type,statsMetricType_ACTIVE_EXPANSION_STATS)}" label="convergence by active statistics"   />
-                 <keyword  id="combined" name="combined" code="{N_mdm(type,statsMetricType_COMBINED_EXPANSION_STATS)}" label="convergence by combined statistics"   />
+    <!ENTITY method_mf_refine_stats_mode '
+	     <keyword  id="statistics_mode" name="statistics_mode" code="{0}" label="Statistics mode for computing refinement metrics"  minOccurs="0" default="DEFAULT_EXPANSION_STATS" >
+	       <oneOf label="Statistics mode for refinement metric">
+		 <keyword  id="active" name="active" code="{N_mdm(type,statsMetricMode_ACTIVE_EXPANSION_STATS)}" label="refinement metric computed from active statistics"   />
+                 <keyword  id="combined" name="combined" code="{N_mdm(type,statsMetricMode_COMBINED_EXPANSION_STATS)}" label="refinement computed from combined statistics"   />
 	       </oneOf>
              </keyword>
 	     ' >
@@ -149,13 +149,13 @@
 
     <!ENTITY method_exp_convergence_tolerance '
 	     &method_convergence_tolerance;
-             &method_conv_metric_scale;
+             &method_refine_metric_scale;
 	     ' >
 
     <!ENTITY method_mf_exp_convergence_tolerance '
 	     &method_convergence_tolerance;
-             &method_conv_metric_scale;
-             &method_mf_conv_stats_type;
+             &method_refine_metric_scale;
+             &method_mf_refine_stats_mode;
 	     ' >
 
     <!ENTITY method_max_iterations '

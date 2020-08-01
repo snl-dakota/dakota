@@ -1143,7 +1143,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_metric_scale {0}
+    [ metric_scale {0}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
@@ -1286,15 +1286,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_metric_scale {0}
+    [ metric_scale {0}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
      ]
-    [ convergence_statistics_type {0}
-      active {N_mdm(type,statsMetricType_ACTIVE_EXPANSION_STATS)}
+    [ statistics_mode {0}
+      active {N_mdm(type,statsMetricMode_ACTIVE_EXPANSION_STATS)}
       |
-      combined {N_mdm(type,statsMetricType_COMBINED_EXPANSION_STATS)}
+      combined {N_mdm(type,statsMetricMode_COMBINED_EXPANSION_STATS)}
      ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
@@ -1435,7 +1435,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rank_sampling {N_mdm(type,multilevAllocControl_RANK_SAMPLING)}
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_metric_scale {0}
+    [ metric_scale {0}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
@@ -1580,7 +1580,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_metric_scale {0}
+    [ metric_scale {0}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
@@ -1857,15 +1857,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_metric_scale {0}
+    [ metric_scale {0}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
      ]
-    [ convergence_statistics_type {0}
-      active {N_mdm(type,statsMetricType_ACTIVE_EXPANSION_STATS)}
+    [ statistics_mode {0}
+      active {N_mdm(type,statsMetricMode_ACTIVE_EXPANSION_STATS)}
       |
-      combined {N_mdm(type,statsMetricType_COMBINED_EXPANSION_STATS)}
+      combined {N_mdm(type,statsMetricMode_COMBINED_EXPANSION_STATS)}
      ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
@@ -2101,7 +2101,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_metric_scale {0}
+    [ metric_scale {0}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
@@ -2330,7 +2330,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_metric_scale {0}
+    [ metric_scale {0}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
@@ -2492,15 +2492,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(int,maxRefineIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_metric_scale {0}
+    [ metric_scale {0}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
      ]
-    [ convergence_statistics_type {0}
-      active {N_mdm(type,statsMetricType_ACTIVE_EXPANSION_STATS)}
+    [ statistics_mode {0}
+      active {N_mdm(type,statsMetricMode_ACTIVE_EXPANSION_STATS)}
       |
-      combined {N_mdm(type,statsMetricType_COMBINED_EXPANSION_STATS)}
+      combined {N_mdm(type,statsMetricMode_COMBINED_EXPANSION_STATS)}
      ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}

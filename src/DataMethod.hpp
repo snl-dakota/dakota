@@ -302,9 +302,9 @@ public:
   /// controls use of convergence tolerance in a relative (true) or
   /// absolute (false) context
   bool relativeConvMetric;
-  /// type of statistics used for convergence assessment of multilevel/
-  /// multifidelity refinement processes: active or combined
-  short statsMetricType;
+  /// mode of computing statistics metrics used for convergence assessment
+  /// of multilevel/multifidelity refinement processes: active or combined
+  short statsMetricMode;
 
   /// the method selection: one of the optimizer, least squares, nond, dace,
   /// or parameter study methods
