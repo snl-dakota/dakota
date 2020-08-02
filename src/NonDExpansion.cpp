@@ -236,7 +236,8 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
   bool err_flag = false,
     mf = (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS  ||
 	  methodName == MULTIFIDELITY_STOCH_COLLOCATION ||
-	  methodName == MULTIFIDELITY_FUNCTION_TRAIN    );
+	  methodName == MULTIFIDELITY_FUNCTION_TRAIN    ),
+    mf_greedy = (mf && multilevAllocControl == GREEDY_REFINEMENT);
 
   // Check for suitable distribution types.
   // Note: prefer warning in Analyzer (active discrete ignored), but
@@ -273,7 +274,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
     }
     break;
   case Pecos::NO_REFINEMENT:
-    if (mf && multilevAllocControl == GREEDY_REFINEMENT) {
+    if (mf_greedy) {
       Cerr << "Error: greedy integrated refinement of multifidelity expansions "
 	   << "requires a refinement specification for candidate generation.\n";
       err_flag = true;
@@ -299,7 +300,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
   case Pecos::ACTIVE_EXPANSION_STATS:   // ensure sanity of user spec
     // Disallow ACTIVE with integrated MLMF (greedy mlmfAllocControl)
-    if (mf && multilevAllocControl == GREEDY_REFINEMENT) {
+    if (mf_greedy) {
       Cerr << "Error: combined expansion stats required for greedy integrated "
 	   << "multifidelity refinement." << std::endl;
       err_flag = true;
@@ -319,6 +320,14 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
   // > More consistent with greedy_mf to always do this, but seems less
   //   desirable to disconnect adaptations from reference builds
   // > Also requires clearing the starting expansions for recursive emulation
+
+  // Enforce current support for recursive emulation
+  if (multilevDiscrepEmulation == RECURSIVE_EMULATION && mf_greedy) {
+    Cerr << "Error: recursive emulation not currently supported for greedy "
+	 << "integrated refinement\n       due to recursive recomputation "
+	 << "requirements.\n";
+    err_flag = true;
+  }
 
   if (err_flag)
     abort_handler(METHOD_ERROR);
