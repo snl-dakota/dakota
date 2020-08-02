@@ -190,6 +190,8 @@ public:
   virtual bool advancement_available();
   /// query for change in approximation formulation
   virtual bool formulation_updated() const;
+  /// assign an updated status for approximation formulation to force rebuild
+  virtual void formulation_updated(bool update);
 
   /// approximation cross-validation quality metrics per response function
   virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 

@@ -506,23 +506,13 @@ void NonDMultilevelPolynomialChaos::core_run()
   switch (methodName) {
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     multifid_uq = true;
-    // general-purpose algorithms inherited from NonDExpansion:
-    switch (multilevAllocControl) {
-    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
-    default:                   multifidelity_expansion(refineType); break;
-    }
-    break;
+    multifidelity_expansion();    break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
-    // general-purpose algorithm inherited from NonDExpansion:
-    multilevel_regression();
-    // Projection-based approaches are precluded by the ML PCE spec.
-    // TO DO: assign a default ML alloc_control (don't default to MF)
-    break;
+    multilevel_regression();      break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
 	 << "core_run()" << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
+    abort_handler(METHOD_ERROR);  break;
   }
 
   // generate final results

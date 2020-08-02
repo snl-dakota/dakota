@@ -184,6 +184,8 @@ public:
 
   /// query whether the form of an approximation has been updated
   bool formulation_updated() const;
+  /// assign the status of approximation formulation updates
+  void formulation_updated(bool update);
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,

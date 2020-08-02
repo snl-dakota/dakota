@@ -541,6 +541,13 @@ bool SharedApproxData::formulation_updated() const
 }
 
 
+void SharedApproxData::formulation_updated(bool update)
+{
+  if (dataRep) dataRep->formulation_updated(update);
+  else         formUpdated[activeKey] = update;
+}
+
+
 void SharedApproxData::
 configuration_options(const Pecos::ExpansionConfigOptions& ec_options)
 {

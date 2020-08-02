@@ -272,22 +272,13 @@ void NonDMultilevelFunctionTrain::core_run()
   switch (methodName) {
   case MULTIFIDELITY_FUNCTION_TRAIN:
     multifid_uq = true;
-    // general-purpose algorithms inherited from NonDExpansion:
-    switch (multilevAllocControl) {
-    case GREEDY_REFINEMENT:  greedy_multifidelity_expansion();     break;
-    default:                 multifidelity_expansion(refineType);  break;
-    }
-    break;
+    multifidelity_expansion();    break;
   case MULTILEVEL_FUNCTION_TRAIN:
-    // general-purpose algorithm inherited from NonDExpansion:
-    multilevel_regression();
-    // TO DO: assign a default ML alloc_control = RANK_SAMPLING
-    break;
+    multilevel_regression();      break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelFunctionTrain::"
 	 << "core_run()" << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
+    abort_handler(METHOD_ERROR);  break;
   }
 
   // generate final results

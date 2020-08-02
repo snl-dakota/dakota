@@ -252,10 +252,7 @@ protected:
 
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
-  void multifidelity_expansion(short refine_type, bool to_active = true);
-  /// construct a multifidelity expansion, across model forms or
-  /// discretization levels
-  void greedy_multifidelity_expansion();
+  void multifidelity_expansion();
   /// allocate a multilevel expansion based on some approximation to an
   /// optimal resource allocation across model forms/discretization levels
   void multilevel_regression();
@@ -560,6 +557,14 @@ private:
   /// set response mode to BYPASS_SURROGATE and recur response size updates
   void bypass_surrogate_mode();
 
+  /// generate a set of reference expansions across a model hierarchy
+  void multifidelity_reference_expansion();
+  /// separately refine each of the multifidelity reference expansions
+  void multifidelity_individual_refinement();
+  /// refine each of the multifidelity reference expansions within an
+  /// integrated competition
+  void multifidelity_integrated_refinement();
+
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator
   void reduce_total_sobol_sets(RealVector& avg_sobol);
@@ -753,7 +758,7 @@ sequence_cost(unsigned short step, const RealVector& cost)
 
 inline void NonDExpansion::metric_roll_up()
 {
-  // greedy_multifidelity_expansion() assesses level candidates using combined
+  // if COMBINED_EXPANSIONS_STATS, assess refinement candidates using combined
   // stat metrics, which by default require expansion combination (overridden
   // for hierarchical SC)
   if (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS)
@@ -809,8 +814,8 @@ inline void NonDExpansion::compute_covariance()
   // > after combine_approx(), combined_to_active() enables use of active covar
   case Pecos::ACTIVE_EXPANSION_STATS:
     compute_active_covariance();   break;
-  // greedy_multifidelity_expansion() (multifidelity_expansion() on inner loop):
-  // > roll up effect of level candidate on combined multilevel covariance,
+  // if COMBINED_EXPANSIONS_STATS:
+  // > roll up effect of refinement candidate on combined multilevel covariance,
   //   avoiding combined_to_active() promotion until end
   // > limited stats support for combinedExpCoeffs: only compute_covariance()
   case Pecos::COMBINED_EXPANSION_STATS:
