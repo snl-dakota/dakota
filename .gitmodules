@@ -1,14 +1,5 @@
 [submodule "packages/external"]
 	path = packages/external
-#<<<<<<< HEAD
-#	url = https://software.sandia.gov/git/dakota-packages
-#[submodule "packages/pecos"]
-#	path = packages/pecos
-#	url = https://software.sandia.gov/git/pecos
-#[submodule "packages/surfpack"]
-#	path = packages/surfpack
-#	url = https://software.sandia.gov/git/surfpack
-#=======
 	url = ../dakota-packages
 [submodule "packages/pecos"]
 	path = packages/pecos
@@ -16,4 +7,16 @@
 [submodule "packages/surfpack"]
 	path = packages/surfpack
 	url = ../surfpack
-#>>>>>>> origin/devel
+[submodule "packages/local/DOT"]
+	path = packages/local/DOT
+	url = git@gitlab-ex.sandia.gov:dakota/SNL/DOT
+[submodule "packages/local/NPSOL"]
+	path = packages/local/NPSOL
+	url = git@gitlab-ex.sandia.gov:dakota/SNL/NPSOL
+[submodule "packages/local/NLPQL"]
+	path = packages/local/NLPQL
+	url = git@gitlab-ex.sandia.gov:dakota/SNL/NLPQL
+[submodule "local"]
+	path = local
+	url = git@cee-gitlab.sandia.gov:dakota/dakota
+	branch = devel
