@@ -348,6 +348,7 @@ int test_gp(double atol){
   //}
 
   std::cout << "\n";
+  param_list.set("num restarts", 15);
   GaussianProcess gp_2D(samples_list[0],responses_list[0], param_list);
   gp_2D.value(eval_pts_2D, pred_2D);
   VectorXd std_dev_2D = gp_2D.get_posterior_std_dev();
