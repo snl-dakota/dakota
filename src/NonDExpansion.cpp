@@ -1451,6 +1451,7 @@ void NonDExpansion::multifidelity_reference_expansion()
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
   // clearest to always use active stats for reference builds
+  short orig_stats_mode = statsMetricMode; // for restoration below
   refinement_statistics_mode(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
@@ -1489,9 +1490,9 @@ void NonDExpansion::multifidelity_reference_expansion()
 
   // now aggregate the ACTIVE_EXPANSION_STATS and report the
   // COMBINED_EXPANSION_STATS, when appropriate
-  if (refineType && statsMetricMode == Pecos::COMBINED_EXPANSION_STATS) {
+  if (refineType && orig_stats_mode == Pecos::COMBINED_EXPANSION_STATS) {
     // stats metrics can be combined || active
-    refinement_statistics_mode(statsMetricMode);
+    refinement_statistics_mode(orig_stats_mode); // restore
     // combine expansions (unconditionally) for refinement reference
     uSpaceModel.combine_approximation();
     // compute/print combined reference stats
@@ -1954,8 +1955,12 @@ void NonDExpansion::update_samples_from_order_decrement()
 
 void NonDExpansion::update_model_from_samples()
 {
+  // for updates/rebuilds, zero out the lower bound (arises from honoring
+  // an initial user spec alongside imports and min data requirements)
+  // > this now promoted to become part of DataFitSurrModel::rebuild_global()
+  //uSpaceModel.subordinate_iterator().sampling_reference(0);
+
   // enforce total pts (increment managed in DataFitSurrModel::rebuild_global())
-  uSpaceModel.subordinate_iterator().sampling_reference(0);
   std::shared_ptr<DataFitSurrModel> dfs_model = 
     std::static_pointer_cast<DataFitSurrModel>(uSpaceModel.model_rep());
   dfs_model->total_points(numSamplesOnModel);
