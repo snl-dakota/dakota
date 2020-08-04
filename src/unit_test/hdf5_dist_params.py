@@ -3,7 +3,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014 Sandia Corporation.
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -34,24 +34,24 @@ _TEST_NAME = "dist_params"
 # were consistent with the user input.
 
 baseline = {
-    "beta_uncertain": {
-        "alpha": [
-            0.6,
-            1.2
-        ],
-        "beta": [
-            0.1,
-            0.2
-        ],
-        "lower_bound": [
-            0.0,
-            0.1
-        ],
-        "upper_bound": [
-            4.0,
-            5.0
-        ]
-    },
+#    "beta_uncertain": {
+#        "alpha": [
+#            0.6,
+#            1.2
+#        ],
+#        "beta": [
+#            0.1,
+#            0.2
+#        ],
+#        "lower_bound": [
+#            0.0,
+#            0.1
+#        ],
+#        "upper_bound": [
+#            4.0,
+#            5.0
+#        ]
+#    },
     "binomial_uncertain": {
         "num_trials": [
             3,

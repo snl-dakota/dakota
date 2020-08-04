@@ -2,7 +2,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014 Sandia Corporation.
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -145,7 +145,10 @@ class LevelMappings(unittest.TestCase):
         # 3. Verify that the following rows match any probability, reliability, and gen. rel. results
         #    from the hdf5 file. These are easier because we know which columns to find the data and
         #    scales in.
+<<<<<<< HEAD
         print(console_mappings) 
+=======
+>>>>>>> devel
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             for i in range(expected_num_incr):
                 for r in expected_descriptors:

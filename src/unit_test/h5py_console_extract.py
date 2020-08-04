@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014 Sandia Corporation.
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -352,12 +352,12 @@ def extract_multi_start_results():
     num_best = 0
     best_labels = []
     for label in all_labels:
-        if label[-1] is '*':
+        if label[-1] == '*':
             break
         num_starts += 1
         start_labels.append(label)
     for label in all_labels[num_starts:]:
-        if label[-1] is not '*':
+        if label[-1] != '*':
             break
         num_best += 1
         best_labels.append(label[:-1]) # snip off *
