@@ -3,7 +3,7 @@
 
 # use rolling build to get latest updates
 FROM centos:7
-MAINTAINER Jon Wilson <jwilso@sandia.gov>
+MAINTAINER Brian M. Adams <briadam@sandia.gov>
 
 # RUN yum -y install applydeltarpm
 
@@ -12,9 +12,6 @@ MAINTAINER Jon Wilson <jwilso@sandia.gov>
 RUN yum -y update && yum -y install \
 blas.x86_64 \
 blas-devel.x86_64 \
-boost.x86_64 \
-boost-devel.x86_64 \
-cmake.x86_64 \
 gcc.x86_64 \
 gcc-c++.x86_64 \
 gcc-gfortran.x86_64 \
@@ -25,20 +22,31 @@ java-1.8.0-openjdk-devel.x86_64 \
 lapack.x86_64 \
 lapack-devel.x86_64 \
 make.x86_64 \
+numpy.x86_64 \
 openmpi.x86_64 \
 openmpi-devel.x86_64 \
 perl.x86_64 \
 python.x86_64 \
+python-devel.x86_64 \
 epel-release.noarch \
 ed \
 vim-enhanced
 
-# (EPEL needed for CMake 3.x)
+# (EPEL needed for CMake 3.x, Boost 1.69)
 # ed needed to fix HDF5
 # vim needed for developer sanity
 
 RUN yum -y update && yum -y install \
+boost169.x86_64 \
+boost169-devel.x86_64 \
 cmake3.x86_64
+
+# NOTE: Can coax CMake to find Boost 1.69 with
+# BOOST_INCLUDEDIR:PATH=/usr/include/boost169
+# BOOST_LIBRARYDIR:PATH=/usr/lib64/boost169
+#
+# Could instead force some symlinks so CMake can find Boost:
+##RUN for f in `ls /usr/lib64/libboost_*.so.1.69.0`; do sf=`echo $f | cut -f1 -d'.'`; ln -s $f ${sf}.so; done
 
 # Listing potential packages that may be added later
 

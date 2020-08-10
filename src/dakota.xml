@@ -1710,7 +1710,7 @@
                 <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
                   <keyword  id="model_pointer_list" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers"  minOccurs="0" >
-                    <param type="STRING" />
+                    <param type="STRINGLIST" />
                   </keyword>
                 </keyword>
                 <keyword  id="method_pointer_list" name="method_pointer_list" code="{N_mdm(strL,hybridMethodPointers)}" label="List of method pointers"   >
@@ -1758,7 +1758,7 @@
                 <keyword  id="method_name_list1" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
                   <keyword  id="model_pointer_list1" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers"  minOccurs="0" >
-                    <param type="STRING" />
+                    <param type="STRINGLIST" />
                   </keyword>
                 </keyword>
                 <keyword  id="method_pointer_list1" name="method_pointer_list" code="{N_mdm(strL,hybridMethodPointers)}" label="List of method pointers"   >
@@ -2562,6 +2562,7 @@
             <oneOf label="GP Implementation">
               <keyword  id="surfpack" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   />
               <keyword  id="dakota" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
+              <keyword  id="experimental" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="dakota"   />
             </oneOf>
           </keyword>
           <keyword  id="use_derivatives" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage"  minOccurs="0" default="use function values only"/>

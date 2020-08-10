@@ -83,6 +83,13 @@ public:
   virtual MatrixXd value(const MatrixXd &samples) ;
 
   /**
+   *  \brief Evaluate the Surrogate at a single prediction point.
+   *  \param[in] samples Vector of prediction points - (num_features).
+   *  \returns value Values of the Surrogate at the prediction point.
+   */
+  virtual double value(const RowVectorXd &sample) = 0;
+
+  /**
    *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.
    *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 

@@ -97,15 +97,60 @@ SurrogatesGPApprox::build()
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp);
 
-  // construct the surrogate
+  /* DTS: Should also consider the case when we want config options to change
+   * over the course of EG*-type algorithms */
+
   if (!advanced_options_file.empty()) {
     model.reset(new dakota::surrogates::GaussianProcess
-	        (vars, resp, advanced_options_file));
+          (vars, resp, advanced_options_file));
   }
   else {
     model.reset(new dakota::surrogates::GaussianProcess
-	        (vars, resp, surrogateOpts));
+          (vars, resp, surrogateOpts));
   }
+
+  /* DTS: This is not working as I thought it would ... */
+  /*
+  if (!model) {
+    // construct the surrogate
+    if (!advanced_options_file.empty()) {
+      model.reset(new dakota::surrogates::GaussianProcess
+            (vars, resp, advanced_options_file));
+    }
+    else {
+      model.reset(new dakota::surrogates::GaussianProcess
+            (vars, resp, surrogateOpts));
+    }
+  }
+  else {
+    model->build(vars, resp);
+  }
+  */
+}
+
+Real SurrogatesGPApprox::prediction_variance(const Variables& vars)
+{
+  RealVector x_rv(sharedDataRep->numVars);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_rv);
+  return prediction_variance(x_rv);
+}
+
+Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
+{
+  if (!model) {
+    Cerr << "Error: surface is null in SurrogatesBaseApprox::value()"
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  const int num_vars = c_vars.length();
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
+
+  auto gp_model =
+      std::static_pointer_cast<dakota::surrogates::GaussianProcess>(model);
+
+  return gp_model->variance(eval_point);
 }
 
 

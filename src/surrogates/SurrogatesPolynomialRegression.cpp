@@ -126,8 +126,26 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
                            scaled_eval_pts_basis_matrix);
 
   /* Compute the prediction values*/
-  approx_values = scaled_eval_pts_basis_matrix*(polynomialCoeffs);
+  approx_values = scaled_eval_pts_basis_matrix*polynomialCoeffs;
   approx_values = (approx_values.array() + polynomialIntercept).matrix();
+}
+
+double PolynomialRegression::value(const RowVectorXd &eval_point) {
+
+  double approx_value;
+  /* Construct the basis matrix for the eval points */
+  MatrixXd unscaled_eval_point_basis_matrix;
+  compute_basis_matrix(eval_point, unscaled_eval_point_basis_matrix);
+
+  /* Scale the sample points */
+  MatrixXd scaled_eval_point_basis_matrix;
+  dataScaler.scale_samples(unscaled_eval_point_basis_matrix,
+                           scaled_eval_point_basis_matrix);
+
+  /* Compute the prediction values*/
+  approx_value = (scaled_eval_point_basis_matrix*polynomialCoeffs)(0,0)
+               + polynomialIntercept;
+  return approx_value;
 }
 
 void PolynomialRegression::default_options() {
