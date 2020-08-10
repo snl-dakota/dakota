@@ -319,7 +319,7 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   previousValues = approx_values;
 }
 
-double GaussianProcess::value(const RowVectorXd &sample) {
+double GaussianProcess::value1(const RowVectorXd &sample) {
   if (sample.size() != numVariables) {
     throw(std::runtime_error("Gaussian Process value inputs are not consistent."
           " Dimension of the feature space for the evaluation point and Gaussian Process do not match"));

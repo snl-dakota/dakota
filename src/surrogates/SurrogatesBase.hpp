@@ -87,7 +87,7 @@ public:
    *  \param[in] samples Vector of prediction points - (num_features).
    *  \returns value Values of the Surrogate at the prediction point.
    */
-  virtual double value(const RowVectorXd &sample) = 0;
+  virtual double value1(const RowVectorXd &sample) = 0;
 
   /**
    *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.

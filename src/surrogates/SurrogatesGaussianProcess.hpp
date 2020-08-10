@@ -115,7 +115,7 @@ public:
    *  \param[in] samples Vector for prediction point - (num_features).
    *  \returns[out] approx_values Mean of the Gaussian process at the prediction point.
    */
-  double value(const RowVectorXd &sample) override;
+  double value1(const RowVectorXd &sample) override;
 
   /**
    *  \brief Evaluate the gradient of the Gaussian process at a set of prediction points.

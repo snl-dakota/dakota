@@ -130,7 +130,7 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
   approx_values = (approx_values.array() + polynomialIntercept).matrix();
 }
 
-double PolynomialRegression::value(const RowVectorXd &eval_point) {
+double PolynomialRegression::value1(const RowVectorXd &eval_point) {
 
   double approx_value;
   /* Construct the basis matrix for the eval points */

@@ -114,7 +114,7 @@ public:
    *  \param[in] eval_points Vector for prediction point - (num_features).
    *  \returns Value of the polynomial surrogate at the prediction point.
    */
-  double value(const RowVectorXd &eval_point) override;
+  double value1(const RowVectorXd &eval_point) override;
 
   /**
    *  \brief Evaluate the gradient of the polynomial surrogate at a set of prediction points.
