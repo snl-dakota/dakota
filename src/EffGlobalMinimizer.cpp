@@ -665,6 +665,8 @@ void EffGlobalMinimizer::batch_synchronous_ego()
         const Response&   resp_star       = approxSubProbMinimizer.response_results();
         const Real&       eif_star        = resp_star.function_value(0);
 
+        // Cout << "acquisition::vars_star" << vars_star; // debug
+
         // get expected value for output
         fHatModel.continuous_variables(c_vars);
         fHatModel.evaluate();
@@ -723,6 +725,8 @@ void EffGlobalMinimizer::batch_synchronous_ego()
         const RealVector& c_vars          = vars_star.continuous_variables();
         const Response&   resp_star       = approxSubProbMinimizer.response_results();
 
+        // Cout << "exploration::vars_star" << vars_star; // debug
+
         // get expected value for output
         fHatModel.continuous_variables(c_vars);
         fHatModel.evaluate();
@@ -764,9 +768,12 @@ void EffGlobalMinimizer::batch_synchronous_ego()
     }
     Cout << "\nParallel EGO:  Finished deleting liar responses!\n";
 
+    // Cout << "varsArrayBatchAcquisition" << varsArrayBatchAcquisition; // debug
+
     // query the batch
     // evaluate_batch(batchSizeAcquisition); // attempting consolidated
-    for (int _i = 0; _i < batchSizeAcquisition; _i++) {
+    // for (int _i = 0; _i < batchSizeAcquisition; _i++) {
+    for (int _i = 0; _i < batchSize; _i++) {
         fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
         iteratedModel.active_variables(varsArrayBatchAcquisition[_i]);
         ActiveSet set = iteratedModel.current_response().active_set();
