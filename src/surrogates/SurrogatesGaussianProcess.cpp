@@ -319,17 +319,23 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   previousValues = approx_values;
 }
 
-double GaussianProcess::value(const RowVectorXd &sample) {
-  if (sample.size() != numVariables) {
+VectorXd GaussianProcess::value(const MatrixXd &samples, const int qoi) {
+
+  silence_unused_args(qoi);
+
+  // Surrogate models don't yet support multiple responses
+  assert(qoi == 0);
+
+  if (samples.cols() != numVariables) {
     throw(std::runtime_error("Gaussian Process value inputs are not consistent."
           " Dimension of the feature space for the evaluation point and Gaussian Process do not match"));
   }
 
-  double approx_value;
+  VectorXd approx_values;
 
-  /* scale the samples (prediction point) */
-  const RowVectorXd& scaled_pred_point = dataScaler.scale_sample(sample);
-  compute_pred_dists(scaled_pred_point);
+  /* scale the samples (prediction points) */
+  const MatrixXd& scaled_pred_points = dataScaler.scale_sample(samples);
+  compute_pred_dists(scaled_pred_points);
 
   /* compute the Gram matrix and its Cholesky factorization */
   if (!hasBestCholFact) {
@@ -349,14 +355,14 @@ double GaussianProcess::value(const RowVectorXd &sample) {
 
 
   chol_solve_resid = CholFact.solve(resid);
-  approx_value = (mixed_pred_gram*chol_solve_resid)(0,0);
+  approx_values = (mixed_pred_gram*chol_solve_resid);
 
   if (estimateTrend) {
-    polyRegression->compute_basis_matrix(scaled_pred_point, pred_basis_matrix);
+    polyRegression->compute_basis_matrix(scaled_pred_points, pred_basis_matrix);
     MatrixXd z = CholFact.solve(basisMatrix);
-    approx_value += (pred_basis_matrix*betaValues)(0,0);
+    approx_values += (pred_basis_matrix*betaValues);
   }
-  return approx_value;
+  return approx_values;
 }
 
 
@@ -460,16 +466,22 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
   }
 }
 
-double GaussianProcess::variance(const RowVectorXd &sample) {
-  if (sample.size() != numVariables) {
+VectorXd GaussianProcess::variance(const MatrixXd &samples, const int qoi) {
+
+  silence_unused_args(qoi);
+
+  // Surrogate models don't yet support multiple responses
+  assert(qoi == 0);
+
+  if (samples.cols() != numVariables) {
     throw(std::runtime_error("Gaussian Process variance input has wrong dimension."
           " Dimension of the feature space for the evaluation point and Gaussian Process do not match"));
   }
 
-  double variance;
+  VectorXd variance;
   /* scale the samples (prediction points) */
-  const RowVectorXd& scaled_pred_point = dataScaler.scale_sample(sample);
-  compute_pred_dists(scaled_pred_point);
+  const MatrixXd& scaled_pred_points = dataScaler.scale_sample(samples);
+  compute_pred_dists(scaled_pred_points);
 
   /* compute the Gram matrix and its Cholesky factorization */
   if (!hasBestCholFact) {
@@ -487,28 +499,27 @@ double GaussianProcess::variance(const RowVectorXd &sample) {
   else
     resid = targetValues;
 
-
   chol_solve_pred_mat = 
     CholFact.solve(Eigen::Map<VectorXd>(mixed_pred_gram.data(), numSamples));
 
-  /* compute the covariance matrix and standard deviation */
   MatrixXd pred_gram;
   compute_gram(cwisePredDists2, true, false, pred_gram);
-  posteriorCov = pred_gram - mixed_pred_gram*chol_solve_pred_mat;
+  variance = (pred_gram - mixed_pred_gram*chol_solve_pred_mat).diagonal();
 
   if (estimateTrend) {
     MatrixXd chol_solve_resid = CholFact.solve(resid);
-    polyRegression->compute_basis_matrix(scaled_pred_point, pred_basis_matrix);
+    polyRegression->compute_basis_matrix(scaled_pred_points, pred_basis_matrix);
     MatrixXd z = CholFact.solve(basisMatrix);
     MatrixXd R_mat = pred_basis_matrix - mixed_pred_gram*(z);
     MatrixXd h_mat = basisMatrix.transpose()*z;
-    posteriorCov += R_mat*(h_mat.ldlt().solve(R_mat.transpose()));
+    variance += (R_mat*(h_mat.ldlt().solve(R_mat.transpose()))).diagonal();
   }
 
-  variance = posteriorCov(0,0);
-
-  if (variance < 0.0 || std::isnan(variance))
-    variance = 0.0;
+  for (int i = 0; i < variance.size(); i++) {
+    if (variance(i) < 0.0 || std::isnan(variance(i))) {
+      variance(i) = 0.0;
+    }
+  }
 
   return variance;
 }

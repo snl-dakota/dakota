@@ -220,7 +220,7 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
   const int num_vars = c_vars.length();
   Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
 
-  return model->value(eval_point);
+  return model->value(eval_point)(0);
 }
     
 const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
