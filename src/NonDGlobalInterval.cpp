@@ -86,9 +86,11 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
       numDiscSetIntUncVars + numDiscreteRealVars;
     if (!numSamples) // use a default of #terms in a quadratic polynomial
       numSamples = (num_uv+1)*(num_uv+2)/2;
-    String approx_type = 
-      (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR) ?
-      "global_gaussian" : "global_kriging";
+    String approx_type = "global_kriging";
+    if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
+      approx_type = "global_gaussian";
+    else if (probDescDB.get_short("method.nond.emulator") == EXPGP_EMULATOR)
+      approx_type = "global_exp_gauss_proc";
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     String sample_reuse = "none";
     if (probDescDB.get_bool("method.derivative_usage")) {

@@ -3117,6 +3117,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
           surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
           |
           dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+          |
+          experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
          ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -3153,6 +3155,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
           surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
           |
           dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+          |
+          experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
          ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -5530,6 +5534,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
       |
       dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+      |
+      experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
      ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
       [ 

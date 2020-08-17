@@ -1293,6 +1293,7 @@
 	       <oneOf label="GP Implementation">
 		 <keyword  id="surfpack2" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   />
 		 <keyword  id="dakota2" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
+		 <keyword  id="experimental2" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates"   />
 	       </oneOf>
 	     </keyword>
 	     <keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only" />
@@ -2562,7 +2563,7 @@
             <oneOf label="GP Implementation">
               <keyword  id="surfpack" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   />
               <keyword  id="dakota" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
-              <keyword  id="experimental" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="dakota"   />
+              <keyword  id="experimental" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates"   />
             </oneOf>
           </keyword>
           <keyword  id="use_derivatives" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage"  minOccurs="0" default="use function values only"/>
@@ -3491,6 +3492,7 @@
             <oneOf label="GP Implementation">
               <keyword  id="surfpack5" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   />
               <keyword  id="dakota5" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
+              <keyword  id="experimental5" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates"   />
             </oneOf>
           </optional>
 	  &import_build;
