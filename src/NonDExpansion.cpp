@@ -716,8 +716,14 @@ void NonDExpansion::core_run()
   initialize_expansion();
 
   compute_expansion();  // nominal iso/aniso expansion from input spec
-  if (refineType)
+  if (refineType) {//&& maxRefineIterations
+    // post-process nominal expansion, updating reference stats for refinement
+    //metric_roll_up(); // not relevant in single-fidelity context
+    compute_statistics(INTERMEDIATE_RESULTS);
+    print_results(Cout, INTERMEDIATE_RESULTS);
+
     refine_expansion(); // uniform/adaptive p-/h-refinement
+  }
 
   compute_statistics(FINAL_RESULTS);
   // Note: print_results() called by Analyzer::post_run()
@@ -988,13 +994,6 @@ void NonDExpansion::refine_expansion()
   size_t SZ_MAX = std::numeric_limits<size_t>::max(), candidate, iter = 1,
     max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   bool converged = (iter > max_refine_iter);  Real metric;
-
-  // post-process nominal expansion, updating reference stats for refinement
-  if (!converged) {
-    metric_roll_up();
-    compute_statistics(INTERMEDIATE_RESULTS);
-    print_results(Cout, INTERMEDIATE_RESULTS);
-  }
 
   pre_refinement();
 
@@ -1438,7 +1437,7 @@ void NonDExpansion::multifidelity_expansion()
 
   // promote combined expansion to active
   combined_to_active();
-  // Final annotated results are computed / printed in core_run()
+  // FINAL_RESULTS are computed / printed at end of virtual core_run()
 }
 
 
@@ -1451,7 +1450,7 @@ void NonDExpansion::multifidelity_reference_expansion()
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
   // clearest to always use active stats for reference builds
-  short orig_stats_mode = statsMetricMode; // for restoration below
+  short orig_stats_mode = statsMetricMode; // for restoration
   refinement_statistics_mode(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
@@ -1488,11 +1487,13 @@ void NonDExpansion::multifidelity_reference_expansion()
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
 
-  // now aggregate the ACTIVE_EXPANSION_STATS and report the
-  // COMBINED_EXPANSION_STATS, when appropriate
-  if (refineType && orig_stats_mode == Pecos::COMBINED_EXPANSION_STATS) {
+  // now aggregate expansions and report COMBINED_EXPANSION_STATS for cases
+  // where the run will continue (individual/integrated refinement).
+  // > If complete, then expansion combination + FINAL_RESULTS handled in
+  //   higher level finalization operations.
+  if (refineType) {//&& maxRefineIterations
     // stats metrics can be combined || active
-    refinement_statistics_mode(orig_stats_mode); // restore
+    refinement_statistics_mode(Pecos::COMBINED_EXPANSION_STATS);
     // combine expansions (unconditionally) for refinement reference
     uSpaceModel.combine_approximation();
     // compute/print combined reference stats
@@ -1502,6 +1503,8 @@ void NonDExpansion::multifidelity_reference_expansion()
     compute_statistics(INTERMEDIATE_RESULTS);
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
+
+  refinement_statistics_mode(orig_stats_mode); // restore
 }
 
 
@@ -1515,7 +1518,7 @@ void NonDExpansion::multifidelity_individual_refinement()
   if (multilev) { form = fixed_index;  seq_index = 2; }
   else          {  lev = fixed_index;  seq_index = 1; }
 
-  if (refineType) {
+  if (refineType) {//&& maxRefineIterations
     // refine expansion for lowest fidelity/coarsest discretization
     configure_indices(step, form, lev, seq_index);
     //assign_specification_sequence();
@@ -1537,7 +1540,9 @@ void NonDExpansion::multifidelity_individual_refinement()
       if (multilevDiscrepEmulation == RECURSIVE_EMULATION) {//&&prev_lev_updated
 	//update_expansion(); // no grid increment, no push
 
-	// no new sim data, form/use new synthetic data
+	// no new sim data, compute/use new synthetic data
+	Cout << "\nRecompute step " << step+1 << " reference expansion due to "
+	     << "dependence on step " << step << " emulator.\n";
 	uSpaceModel.formulation_updated(true);
 	uSpaceModel.rebuild_approximation();
       }
