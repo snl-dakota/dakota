@@ -149,7 +149,8 @@ find_package(Perl REQUIRED)
 # Python is optionally required by Dakota, Teuchos, and Acro; probe
 # for the interpreter here at top-level:
 
-find_package(PythonInterp "3.1")  # 3.1 is needed by h5py tests
+include(FindPythonInterp)
+#find_package(PythonInterp "3.1")  # 3.1 is needed by h5py tests
 #For the future, we should use the FindPython module for cmake 3.12 or greater
 #Because FindPythonInterp is deprecated
 #find_package(Python3 COMPONENTS Interpreter Development)
