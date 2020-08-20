@@ -145,10 +145,6 @@ class LevelMappings(unittest.TestCase):
         # 3. Verify that the following rows match any probability, reliability, and gen. rel. results
         #    from the hdf5 file. These are easier because we know which columns to find the data and
         #    scales in.
-<<<<<<< HEAD
-        print(console_mappings) 
-=======
->>>>>>> devel
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             for i in range(expected_num_incr):
                 for r in expected_descriptors:
