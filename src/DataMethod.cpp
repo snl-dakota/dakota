@@ -184,7 +184,9 @@ DataMethodRep::DataMethodRep():
   importBuildFormat(TABULAR_ANNOTATED),   importBuildActive(false),
   importApproxFormat(TABULAR_ANNOTATED),  importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
-  exportSampleSeqFlag(false), exportSamplesFormat(TABULAR_ANNOTATED)
+  exportSampleSeqFlag(false), exportSamplesFormat(TABULAR_ANNOTATED),
+  exportSurrogate(false), modelExportPrefix("exported_surrogate"),
+  modelExportFormat(NO_MODEL_FORMAT)
 { }
 
 

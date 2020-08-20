@@ -1222,6 +1222,18 @@ public:
   /// tabular format for the MCMC chain and MLMC sample sequence exports
   unsigned short exportSamplesFormat;
 
+  // options for archiving surrogates from EGO, EGRA, EGIE
+  // (could be unified with other kinds of surrogate exports)
+
+  /// Option to turn on surrogate model export (export_model)
+  bool exportSurrogate;
+
+  /// the filename prefix for export_model
+  String modelExportPrefix;
+
+  /// Format selection for export_model
+  unsigned short modelExportFormat;
+
 private:
 
   //

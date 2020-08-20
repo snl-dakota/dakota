@@ -993,11 +993,27 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ x_conv_tol REAL {N_mdm(Real,xConvTol)} ]
     [ gaussian_process ALIAS kriging {0}
-      surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+      ( surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+        [ export_model {N_mdm(true,exportSurrogate)}
+          [ filename_prefix STRING {N_mdm(str,modelExportPrefix)} ]
+          ( formats {0}
+            [ text_archive {N_mdm(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
+       )
       |
       dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
       |
-      experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
+      ( experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
+        [ export_model {N_mdm(true,exportSurrogate)}
+          [ filename_prefix STRING {N_mdm(str,modelExportPrefix)} ]
+          ( formats {0}
+            [ text_archive {N_mdm(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
+       )
      ]
     [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -5531,7 +5547,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     u_gaussian_process ALIAS u_kriging {N_mdm(utype,reliabilitySearchType_EGRA_U)}
     [ 
-      surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+      ( surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+        [ export_model {N_mdm(true,exportSurrogate)}
+          [ filename_prefix STRING {N_mdm(str,modelExportPrefix)} ]
+          ( formats {0}
+            [ text_archive {N_mdm(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
+       )
       |
       dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
       |
