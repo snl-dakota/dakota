@@ -16,11 +16,7 @@
 #define NOND_DREAM_BAYES_CALIBRATION_H
 
 #include "NonDBayesCalibration.hpp"
-// for uniform PDF
-#include <boost/math/distributions/uniform.hpp>
-// for uniform samples (uniform_real is deprecated)
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_real.hpp>
+#include "dakota_mersenne_twister.hpp"
 
 namespace Dakota {
 
@@ -116,11 +112,6 @@ protected:
 
   /// random number engine for sampling the prior
   boost::mt19937 rnumGenerator;
-
-  // uniform prior PDFs for each variable
-  //std::vector<boost::math::uniform> priorDistributions;
-  // samplers for the uniform prior PDFs for each variable
-  //std::vector<boost::uniform_real<double> > priorSamplers;
 
 private:
 

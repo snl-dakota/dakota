@@ -26,7 +26,7 @@
 #include "SNLLOptimizer.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "LHSDriver.hpp"
-#include "boost/random/mersenne_twister.hpp"
+#include "dakota_mersenne_twister.hpp"
 #include "boost/random.hpp"
 #include "boost/random/normal_distribution.hpp"
 #include "boost/random/variate_generator.hpp"

@@ -18,7 +18,7 @@
 #include "PHXCppApi.h"
 #endif
 #include <boost/tokenizer.hpp>
-#include <boost/random/mersenne_twister.hpp>
+#include "dakota_mersenne_twister.hpp"
 #include <boost/random/normal_distribution.hpp>
 #include <boost/assign.hpp>
 #include <vector>

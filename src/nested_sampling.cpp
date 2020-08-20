@@ -9,7 +9,7 @@
 #include "nested_sampling.hpp"
 #include "math_tools.hpp"
 
-#include <boost/random/mersenne_twister.hpp>
+#include "dakota_mersenne_twister.hpp"
 #include <boost/random/uniform_real.hpp>
 #include "OrthogPolyApproximation.hpp"
 
