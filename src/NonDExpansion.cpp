@@ -717,7 +717,7 @@ void NonDExpansion::core_run()
 
   compute_expansion();  // nominal iso/aniso expansion from input spec
   if (refineType) {//&& maxRefineIterations
-    // post-process nominal expansion, updating reference stats for refinement
+    // post-process nominal expansion, defining reference stats for refinement
     //metric_roll_up(); // not relevant in single-fidelity context
     compute_statistics(INTERMEDIATE_RESULTS);
     print_results(Cout, INTERMEDIATE_RESULTS);
@@ -1983,7 +1983,7 @@ void NonDExpansion::update_expansion()
 
   if (uSpaceModel.push_available()) { // defaults to false
     switch (expansionCoeffsApproach) {
-    case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+  //case Pecos::QUADRATURE:              case Pecos::CUBATURE:
     case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
       std::shared_ptr<NonDIntegration> nond_int =
 	std::static_pointer_cast<NonDIntegration>

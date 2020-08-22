@@ -204,13 +204,12 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 
 void NonDQuadrature::
 initialize_dimension_quadrature_order(unsigned short quad_order_spec,
-				      const RealVector& dim_pref_spec,
-				      UShortArray& dim_quad_order)
+				      const RealVector& dim_pref_spec)
 {
   // Update dim_quad_order from quad_order_spec and dim_pref_spec
+  UShortArray dim_quad_order;
   dimension_preference_to_anisotropic_order(quad_order_spec,   dim_pref_spec,
 					    numContinuousVars, dim_quad_order);
-  //dimPrefRef = dimPrefSpec; // not currently necessary
 
   // Update Pecos::TensorProductDriver::quadOrder from dim_quad_order
   if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
@@ -219,10 +218,9 @@ initialize_dimension_quadrature_order(unsigned short quad_order_spec,
 
 
 void NonDQuadrature::
-compute_minimum_quadrature_order(size_t min_samples, const RealVector& dim_pref,
-				 UShortArray& dim_quad_order)
+compute_minimum_quadrature_order(size_t min_samples, const RealVector& dim_pref)
 {
-  dim_quad_order.assign(numContinuousVars, 1);
+  UShortArray dim_quad_order(numContinuousVars, 1);
   // compute minimal order tensor grid with at least min_samples points
   if (dim_pref.empty()) // isotropic tensor grid
     while (tpqDriver->grid_size() < min_samples)
@@ -354,20 +352,12 @@ void NonDQuadrature::filter_parameter_sets()
 void NonDQuadrature::
 sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 {
-  // dimQuadOrderRef (possibly incremented from quadOrderSpec due to uniform/
-  // adaptive refinements) provides the current lower bound reference point.
-  // Pecos::TensorProductDriver::quadOrder may be increased ***or decreased***
-  // to provide at least min_samples subject to this lower bound.
-  // dimQuadOrderRef is ***not*** updated by min_samples.
-
-  // Use tpqDriver->quadrature_order() to track active keys.
-  // *** TO DO: update all dimQuadOrderRef logic ***
-  UShortArray dqo = tpqDriver->quadrature_order();//dimQuadOrderRef;
+  // tpqDriver->quadrature_order() tracks the active model key
+  UShortArray dqo = tpqDriver->quadrature_order();
   while (tpqDriver->grid_size() < min_samples) {
     if (dimPrefSpec.empty()) increment_grid(dqo);
     else                     increment_grid_preference(dimPrefSpec, dqo);
   }
-  // do not alter dimQuadOrderRef
 
   /* Old:
   if (tpqDriver->grid_size() < min_samples) {
@@ -407,23 +397,6 @@ void NonDQuadrature::increment_grid(UShortArray& dim_quad_order)
 
 
 void NonDQuadrature::
-increment_dimension_quadrature_order(UShortArray& dim_quad_order)
-{
-  // increment uniformly by 1 (no growth rule is currently enforced,
-  // but could be desirable for weak nesting of symmetric rules)
-  for (size_t i=0; i<numContinuousVars; ++i)
-    dim_quad_order[i] += 1;
-
-  if (nestedRules) {
-    tpqDriver->nested_quadrature_order(dim_quad_order);
-    dim_quad_order = tpqDriver->quadrature_order(); // update reference ?
-  }
-  else
-    tpqDriver->quadrature_order(dim_quad_order);
-}
-
-
-void NonDQuadrature::
 increment_grid_preference(const RealVector& dim_pref,
 			  UShortArray& dim_quad_order)
 {
@@ -446,6 +419,23 @@ increment_grid_preference(const RealVector& dim_pref,
 
 
 void NonDQuadrature::
+increment_dimension_quadrature_order(UShortArray& dim_quad_order)
+{
+  // increment uniformly by 1 (no growth rule is currently enforced,
+  // but could be desirable for weak nesting of symmetric rules)
+  for (size_t i=0; i<numContinuousVars; ++i)
+    dim_quad_order[i] += 1;
+
+  if (nestedRules) {
+    tpqDriver->nested_quadrature_order(dim_quad_order);
+    dim_quad_order = tpqDriver->quadrature_order();
+  }
+  else
+    tpqDriver->quadrature_order(dim_quad_order);
+}
+
+
+void NonDQuadrature::
 increment_dimension_quadrature_order(const RealVector& dim_pref,
 				     UShortArray& dim_quad_order)
 {
@@ -460,8 +450,12 @@ increment_dimension_quadrature_order(const RealVector& dim_pref,
   // previous resolution
   update_anisotropic_order(dim_pref, dim_quad_order);
 
-  if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
-  else             tpqDriver->quadrature_order(dim_quad_order);
+  if (nestedRules) {
+    tpqDriver->nested_quadrature_order(dim_quad_order);
+    dim_quad_order = tpqDriver->quadrature_order();
+  }
+  else
+    tpqDriver->quadrature_order(dim_quad_order);
 }
 
 
