@@ -378,6 +378,10 @@ void NonDGlobalInterval::core_run()
   }
   post_process_final_results(); // virtual fn: final post-processing
 
+  // (conditionally) export final surrogates
+  if (gpModelFlag)
+    export_final_surrogates(fHatModel);
+
   // restore in case of recursion
   nondGIInstance = prev_instance;
 }
