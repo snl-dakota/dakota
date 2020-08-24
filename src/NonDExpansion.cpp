@@ -1962,8 +1962,10 @@ void NonDExpansion::update_model_from_samples()
 {
   // for updates/rebuilds, zero out the lower bound (arises from honoring
   // an initial user spec alongside imports and min data requirements)
-  // > this now promoted to become part of DataFitSurrModel::rebuild_global()
-  //uSpaceModel.subordinate_iterator().sampling_reference(0);
+  // > now built in as part of of DataFitSurrModel::rebuild_global(), but
+  //   multifidelity_reference_expansion() -> compute_expansion() also needs
+  //   for sample updates (step > 0)  and resets (step = 0).
+  uSpaceModel.subordinate_iterator().sampling_reference(0);
 
   // enforce total pts (increment managed in DataFitSurrModel::rebuild_global())
   std::shared_ptr<DataFitSurrModel> dfs_model = 
