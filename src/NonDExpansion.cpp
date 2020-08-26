@@ -2526,7 +2526,6 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   }
 
   size_t i;
-  bool combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
     Approximation& approx_i = poly_approxs[i];
@@ -3382,20 +3381,34 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
 
 void NonDExpansion::pull_reference(RealVector& stats_ref)
 {
+  if (!refineMetric) {
+    Cerr << "Error: refineMetric definition required in NonDExpansion::"
+	 << "pull_reference()" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  size_t mom_len = 0, lev_len = 0;
+  bool full_covar = (covarianceControl == FULL_COVARIANCE);
+  if (refineMetric == Pecos::COVARIANCE_METRIC ||
+      refineMetric == Pecos::MIXED_STATS_METRIC)
+    mom_len = (full_covar) ? (numFunctions*(numFunctions + 3))/2
+                           : 2*numFunctions;
+  if (refineMetric == Pecos::LEVEL_STATS_METRIC ||
+      refineMetric == Pecos::MIXED_STATS_METRIC)
+    lev_len = totalLevelRequests;
+  size_t stats_len = mom_len + lev_len;
+  if (stats_ref.length() != stats_len) stats_ref.sizeUninitialized(stats_len);
+
   switch (refineMetric) {
-  case Pecos::COVARIANCE_METRIC: {
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    bool full_covar = (covarianceControl == FULL_COVARIANCE);
-    size_t i, vec_len = (full_covar) ?
-      (numFunctions*(numFunctions + 3))/2 : 2*numFunctions;
-    if (stats_ref.length() != vec_len) stats_ref.sizeUninitialized(vec_len);
+  case Pecos::COVARIANCE_METRIC:  case Pecos::MIXED_STATS_METRIC: {
 
     // pull means
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     if (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS)
-      for (i=0; i<numFunctions; ++i)
+      for (size_t i=0; i<numFunctions; ++i)
 	stats_ref[i] = poly_approxs[i].combined_moment(0);
     else
-      for (i=0; i<numFunctions; ++i)
+      for (size_t i=0; i<numFunctions; ++i)
 	stats_ref[i] = poly_approxs[i].moment(0);
 
     // pull resp{V,Cov}ariance (comb stats managed in compute_*_covariance())
@@ -3405,28 +3418,41 @@ void NonDExpansion::pull_reference(RealVector& stats_ref)
       copy_data_partial(respVariance, stats_ref, numFunctions);
     break;
   }
-  default:
+  }
+
+  switch (refineMetric) {
+  case Pecos::LEVEL_STATS_METRIC:
     pull_level_mappings(stats_ref);  break;
+  case Pecos::MIXED_STATS_METRIC: {
+    RealVector level_stats_ref(Teuchos::View, stats_ref.values() + mom_len,
+			       lev_len);
+    pull_level_mappings(level_stats_ref);  break;
+  }
   }
 }
 
 
 void NonDExpansion::push_reference(const RealVector& stats_ref)
 {
-  switch (refineMetric) {
-  case Pecos::COVARIANCE_METRIC: {
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    bool  full_covar = (covarianceControl == FULL_COVARIANCE),
-      combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
+  if (!refineMetric) {
+    Cerr << "Error: refineMetric definition required in NonDExpansion::"
+	 << "push_reference()" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
-    // push resp{V|Cov}ariance
+  bool full_covar = (covarianceControl == FULL_COVARIANCE);
+  switch (refineMetric) {
+  case Pecos::COVARIANCE_METRIC:  case Pecos::MIXED_STATS_METRIC: {
+
+    // push resp{V|Cov}ariance (extract first since reused below)
     if (full_covar)
       push_lower_triangle(stats_ref, respCovariance, numFunctions);
     else
       copy_data_partial(stats_ref, numFunctions, numFunctions, respVariance);
 
     // push Pecos::{expansion|numerical}Moments
-    if (combined_stats)
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    if (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS)
       for (size_t i=0; i<numFunctions; ++i) {
 	poly_approxs[i].combined_moment(stats_ref[i], 0); // mean values
 	if (full_covar) poly_approxs[i].combined_moment(respCovariance(i,i), 1);
@@ -3440,8 +3466,18 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
       }
     break;
   }
-  default:
+  }
+
+  switch (refineMetric) {
+  case Pecos::LEVEL_STATS_METRIC:
     push_level_mappings(stats_ref);  break;
+  case Pecos::MIXED_STATS_METRIC: {
+    size_t mom_len = (full_covar) ? (numFunctions*(numFunctions + 3))/2
+                                  : 2*numFunctions;
+    RealVector level_stats_ref(Teuchos::View, stats_ref.values() + mom_len,
+			       totalLevelRequests);
+    push_level_mappings(level_stats_ref);  break;
+  }
   }
 }
 
