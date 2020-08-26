@@ -828,8 +828,8 @@ inline void NonDExpansion::
 pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec, size_t offset)
 {
   size_t i, j, cntr = offset, nr = mat.numRows(),
-    sm_len = (nr*nr + nr)/2, vec_len = offset + sm_len;
-  if (vec.length() != vec_len) vec.resize(vec_len);
+    min_vec_len = offset + (nr*nr + nr)/2;
+  if (vec.length() < min_vec_len) vec.resize(min_vec_len);
   for (i=0; i<nr; ++i)
     for (j=0; j<=i; ++j, ++cntr)
       vec[cntr] = mat(i,j); // pull from lower triangle
@@ -839,9 +839,10 @@ pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec, size_t offset)
 inline void NonDExpansion::
 push_lower_triangle(const RealVector& vec, RealSymMatrix& mat, size_t offset)
 {
-  size_t i, j, cntr = offset, nr = mat.numRows();
-  if (vec.length() != offset + (nr*nr + nr)/2) {
-    Cerr << "Error: inconsistent vector length in NonDExpansion::"
+  size_t i, j, cntr = offset, nr = mat.numRows(),
+    min_vec_len = offset + (nr*nr + nr)/2;
+  if (vec.length() < min_vec_len) {
+    Cerr << "Error: insufficient vector length in NonDExpansion::"
 	 << "push_lower_triangle()" << std::endl;
     abort_handler(METHOD_ERROR);
   }

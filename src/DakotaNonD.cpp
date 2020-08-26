@@ -351,7 +351,8 @@ void NonD::initialize_final_statistics()
 
 void NonD::pull_level_mappings(RealVector& level_maps)
 {
-  level_maps.sizeUninitialized(totalLevelRequests);
+  if (level_maps.length() != totalLevelRequests)
+    level_maps.sizeUninitialized(totalLevelRequests);
 
   size_t i, j, num_lev, cntr = 0;
   for (i=0; i<numFunctions; ++i) {
