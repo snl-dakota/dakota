@@ -150,7 +150,7 @@ Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
   auto gp_model =
       std::static_pointer_cast<dakota::surrogates::GaussianProcess>(model);
 
-  return gp_model->variance(eval_point);
+  return gp_model->variance(eval_point)(0);
 }
 
 

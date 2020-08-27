@@ -405,6 +405,9 @@ protected:
 				 const ActiveSet& recast_set,
 				 ActiveSet& sub_model_set);
 
+  /// export final surrogates generated, e.g., GP in EGO and friends
+  void export_final_surrogates(Model& data_fit_surr_model);
+
   //
   //- Heading: Data
   //
@@ -484,6 +487,15 @@ protected:
 
   /// Whether this is the top level iterator
   bool topLevel;
+
+  /// whether to export final surrogates
+  bool exportSurrogate = false;
+
+  /// base filename for exported surrogates
+  String surrExportPrefix;
+
+  /// (bitwise) format(s) to export
+  unsigned short surrExportFormat = NO_MODEL_FORMAT;
 
 private:
 
