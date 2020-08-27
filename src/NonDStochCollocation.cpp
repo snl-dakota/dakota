@@ -633,12 +633,13 @@ compute_level_mappings_metric(bool revert, bool print_metric)
     }
     if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
 
+      size_t offset = 0;
       RealVector level_maps_ref, level_maps_new;
-      pull_level_mappings(level_maps_ref);
+      pull_level_mappings(level_maps_ref, offset);
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
 	//metric_roll_up(); // TO DO: support combined exp in numerical stats
 	compute_numerical_level_mappings();
-	pull_level_mappings(level_maps_new);// analytic mappings overlaid at end
+	pull_level_mappings(level_maps_new, offset);// analytic overlaid at end
 	deltaLevelMaps = level_maps_new;  deltaLevelMaps -= level_maps_ref;
       }
       else {
@@ -731,10 +732,10 @@ compute_level_mappings_metric(bool revert, bool print_metric)
       // Level mappings: promote to new or revert to previous (if required)
       if (!revert) { // retain updated values
         analytic_delta_level_mappings(level_maps_ref, level_maps_new);
-	push_level_mappings(level_maps_new);
+	push_level_mappings(level_maps_new, offset);
       }
       else if (numerical_map) // restore ref values that were overwritten
-	push_level_mappings(level_maps_ref); // restore reference
+	push_level_mappings(level_maps_ref, offset); // restore reference
       //else deltaLevelMaps does not impact existing level mappings
 
       // Metric scale is determined from reference stats, not updated stats,
@@ -961,7 +962,8 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
       // pull means
       for (size_t i=0; i<numFunctions; ++i) {
 	poly_approx_rep =
-	std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
+	std::static_pointer_cast<PecosApproximation>(
+	  poly_approxs[i].approx_rep());
 	stats_star[i] = (combined_stats) ?
 	  poly_approx_rep->combined_moment(0) + deltaRespMean[i] :
 	  poly_approx_rep->moment(0)          + deltaRespMean[i];
@@ -978,7 +980,8 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
       break;
     }
     default:
-      pull_level_mappings(stats_star); // pull updated numerical stats
+      // define an offset for MIXED_STATS_METRIC
+      pull_level_mappings(stats_star, offset); // pull updated numerical stats
       analytic_delta_level_mappings(stats_star, stats_star); // update analytic
                  // (stats_star provides ref and becomes new for these entries)
       break;
@@ -1011,7 +1014,8 @@ analytic_delta_level_mappings(const RealVector& level_maps_ref,
     gl_len = requestedGenRelLevels[i].length();
     pl_bl_gl_len = pl_len+bl_len+gl_len;
     std::shared_ptr<PecosApproximation> pa_rep_i =
-      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
+      std::static_pointer_cast<PecosApproximation>(
+	poly_approxs[i].approx_rep());
     if (respLevelTarget == RELIABILITIES)
       for (j=0; j<rl_len; ++j, ++cntr) {
 	// Note: this captures the more likely of the Pecos::

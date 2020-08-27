@@ -2285,12 +2285,13 @@ compute_level_mappings_metric(bool revert, bool print_metric)
   // of increments is not available
 
   // cache previous statistics
-  RealVector level_maps_ref;  pull_level_mappings(level_maps_ref);
+  size_t offset = 0;
+  RealVector level_maps_ref;  pull_level_mappings(level_maps_ref, offset);
 
   // compute/print new statistics
   compute_level_mappings();
   if (print_metric) print_level_mappings(Cout);
-  RealVector level_maps_new;  pull_level_mappings(level_maps_new);
+  RealVector level_maps_new;  pull_level_mappings(level_maps_new, offset);
 
 #ifdef DEBUG
   Cout << "level_maps_ref:\n" << level_maps_ref
@@ -2301,22 +2302,16 @@ compute_level_mappings_metric(bool revert, bool print_metric)
   // to scaling issues).  Note: if the level mappings are of mixed type, then
   // would need to scale with a target value or measure norm of relative change.
   Real sum_sq = 0., scale_sq = 0.;
-  size_t i, j, cntr = 0, num_lev_i;
-  for (i=0; i<numFunctions; ++i) {
-
+  size_t i, j, cntr = offset, num_lev_i;
+  for (i=0; i<totalLevelRequests; ++i, ++cntr) {
     // simple approach takes 2-norm of level mappings (no relative scaling),
     // which should be fine for mappings that are not of mixed type
-    num_lev_i = requestedRespLevels[i].length() +
-      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
-      requestedGenRelLevels[i].length();
-    for (j=0; j<num_lev_i; ++j, ++cntr) {
-      Real ref = level_maps_ref[cntr], delta = level_maps_new[cntr] - ref;
-      if (relativeMetric) scale_sq += ref * ref;
-      sum_sq += delta * delta;
-    }
+    Real ref = level_maps_ref[cntr], delta = level_maps_new[cntr] - ref;
+    if (relativeMetric) scale_sq += ref * ref;
+    sum_sq += delta * delta;
   }
 
-  if (revert) push_level_mappings(level_maps_ref);
+  if (revert) push_level_mappings(level_maps_ref, offset);
 
   // Risk of zero reference is reduced relative to covariance control, but not
   // eliminated. Trap this and also avoid possible bogus termination from using
@@ -3422,13 +3417,8 @@ void NonDExpansion::pull_reference(RealVector& stats_ref)
   }
 
   switch (refineMetric) {
-  case Pecos::LEVEL_STATS_METRIC:
-    pull_level_mappings(stats_ref);  break;
-  case Pecos::MIXED_STATS_METRIC: {
-    RealVector level_stats_ref(Teuchos::View, stats_ref.values() + mom_len,
-			       lev_len);
-    pull_level_mappings(level_stats_ref);  break;
-  }
+  case Pecos::LEVEL_STATS_METRIC:  case Pecos::MIXED_STATS_METRIC: 
+    pull_level_mappings(stats_ref, mom_len);  break;
   }
 }
 
@@ -3471,13 +3461,11 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
 
   switch (refineMetric) {
   case Pecos::LEVEL_STATS_METRIC:
-    push_level_mappings(stats_ref);  break;
+    push_level_mappings(stats_ref, 0);  break;
   case Pecos::MIXED_STATS_METRIC: {
-    size_t mom_len = (full_covar) ? (numFunctions*(numFunctions + 3))/2
-                                  : 2*numFunctions;
-    RealVector level_stats_ref(Teuchos::View, stats_ref.values() + mom_len,
-			       totalLevelRequests);
-    push_level_mappings(level_stats_ref);  break;
+    size_t offset = (full_covar) ? (numFunctions*(numFunctions + 3))/2
+                                 : 2*numFunctions;
+    push_level_mappings(stats_ref, offset);  break;
   }
   }
 }
