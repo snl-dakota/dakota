@@ -2551,9 +2551,10 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   for (i=0; i<numContinuousVars; ++i)
     if (std::abs(avg_sobol[i]) < pref_tol)
       avg_sobol[i] = 0.;
-#ifdef DEBUG
-  Cout << "avg_sobol truncated at " << pref_tol << ":\n" << avg_sobol;
-#endif // DEBUG
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nUpdating anisotropy from average of total Sobol indices:\n"
+	 << avg_sobol << std::endl;
 }
 
 
@@ -2572,8 +2573,8 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
   min_decay = poly_approx_rep->dimension_decay_rates();
   size_t i, j;
   for (i=1; i<numFunctions; ++i) {
-    poly_approx_rep =
-      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
+    poly_approx_rep = std::static_pointer_cast<PecosApproximation>(
+      poly_approxs[i].approx_rep());
     const RealVector& decay_i = poly_approx_rep->dimension_decay_rates();
     for (j=0; j<numContinuousVars; ++j)
       if (decay_i[j] < min_decay[j])
@@ -2585,9 +2586,9 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
     if (min_decay[j] < decay_tol)
       min_decay[j] = decay_tol;
 
-#ifdef DEBUG
-  Cout << "min_decay:\n" << min_decay;
-#endif // DEBUG
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nUpdating anisotropy from minimum decay rates:\n" << min_decay
+	 << std::endl;
 }
 
 
@@ -4124,6 +4125,53 @@ void NonDExpansion::print_local_sensitivity(std::ostream& s)
 }
 
 
+void NonDExpansion::print_refinement_diagnostics(std::ostream& s)
+{
+  // Output of the relevant refinement metrics occurs in
+  // compute_{covariance,level_mapping,final_statistics}_metric();
+  // additional refinement control diagnostics are output here:
+  switch (refineControl) {
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
+    if (outputLevel >= DEBUG_OUTPUT) {
+      // output fine-grained data on generalized index sets
+      std::shared_ptr<NonDSparseGrid> nond_sparse =
+	std::static_pointer_cast<NonDSparseGrid>
+	(uSpaceModel.subordinate_iterator().iterator_rep());
+      nond_sparse->print_smolyak_multi_index();
+    }
+    break;
+  /*
+  // These calls induce redundant solves (also performed in NonDExpansion::
+  // reduce_decay_rate_sets()), so, while these is no lag is in Sobol' case,
+  // suppress per-QoI diagnostics for now to avoid redundant computation.
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+    if (outputLevel >= NORMAL_OUTPUT) {
+      // output spectral data for ML-MF UQ (for finer grain data, activate
+      // DECAY_DEBUG in packages/pecos/src/OrthogPolyApproximation.cpp).
+      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      std::shared_ptr<PecosApproximation> poly_approx_rep;
+      for (size_t i=0; i<numFunctions; ++i) {
+	poly_approx_rep = std::static_pointer_cast<PecosApproximation>
+	  (poly_approxs[i].approx_rep());
+	s << "Variable decay rates for response function " << i+1 << ":\n"
+	  << poly_approx_rep->dimension_decay_rates();
+      }
+    }
+    break;
+  // Sobol indices are lagging an iteration since computing these indices is
+  // triggered by increment_grid_{preference,weights} on subsequent iter.
+  // Better to output them (as derived quantities) from reduce_*() once
+  // available downstream, rather than enforcing their compute/print as
+  // standard Sobol' output upstream.
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+    if (outputLevel >= NORMAL_OUTPUT)
+      print_sobol_indices(s); // from reduce_total_sobol_sets()
+    break;
+  */
+  }
+}
+
+
 void NonDExpansion::print_results(std::ostream& s, short results_state)
 {
   switch (results_state) {
@@ -4140,38 +4188,7 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
       }
     }
 
-    // Output of the relevant refinement metrics occurs in
-    // compute_{covariance,level_mapping,final_statistics}_metric();
-    // additional refinement control diagnostics are output here:
-    switch (refineControl) {
-    case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
-      if (outputLevel == DEBUG_OUTPUT) {
-	// output fine-grained data on generalized index sets
-	std::shared_ptr<NonDSparseGrid> nond_sparse =
-	  std::static_pointer_cast<NonDSparseGrid>
-	  (uSpaceModel.subordinate_iterator().iterator_rep());
-	nond_sparse->print_smolyak_multi_index();
-      }
-      break;
-    case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-      if (outputLevel >= NORMAL_OUTPUT) {
-	// output spectral data for ML-MF UQ (for finer grain data, activate
-	// DECAY_DEBUG in packages/pecos/src/OrthogPolyApproximation.cpp).
-	std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-	std::shared_ptr<PecosApproximation> poly_approx_rep;
-	for (size_t i=0; i<numFunctions; ++i) {
-	  poly_approx_rep = std::static_pointer_cast<PecosApproximation>
-	    (poly_approxs[i].approx_rep());
-	  s << "Variable decay rates for response function " << i+1 << ":\n"
-	    << poly_approx_rep->dimension_decay_rates();
-	}
-      }
-      break;
-    case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
-      if (outputLevel >= NORMAL_OUTPUT)
-	print_sobol_indices(s); // from reduce_total_sobol_sets()
-      break;
-    }
+    print_refinement_diagnostics(s);
     break;
   }
   case INTERMEDIATE_RESULTS: {
@@ -4185,6 +4202,8 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
     case Pecos::LEVEL_STATS_METRIC:
       print_level_mappings(s);                                           break;
     }
+
+    //print_refinement_diagnostics(s);
     break;
   }
   case FINAL_RESULTS: {

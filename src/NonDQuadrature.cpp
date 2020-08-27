@@ -393,6 +393,9 @@ void NonDQuadrature::increment_grid(UShortArray& dim_quad_order)
   }
   else
     increment_dimension_quadrature_order(dim_quad_order);
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Incremented dimension quadrature order:\n" << dim_quad_order;
 }
 
 
@@ -415,6 +418,9 @@ increment_grid_preference(const RealVector& dim_pref,
   }
   else
     increment_dimension_quadrature_order(dim_pref, dim_quad_order);
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Incremented dimension quadrature order:\n" << dim_quad_order;
 }
 
 

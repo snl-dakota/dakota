@@ -572,6 +572,9 @@ private:
   /// response set for use as an anisotropy indicator
   void reduce_decay_rate_sets(RealVector& min_decay);
 
+  /// print additional refinement diagnostics not covered by compute_*_metric()
+  void print_refinement_diagnostics(std::ostream& s);
+
   /// perform an adaptive refinement increment using generalized sparse grids
   size_t increment_sets(Real& delta_star, bool revert, bool print_metric);
   /// finalization of adaptive refinement using generalized sparse grids
