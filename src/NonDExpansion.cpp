@@ -592,12 +592,12 @@ void NonDExpansion::initialize_u_space_grid()
     // Note: not used by C3; Pecos restriction is appropriate (PCE/SC basis)
     //
     std::shared_ptr<SharedPecosApproxData> shared_data_rep =
-      std::static_pointer_cast<SharedPecosApproxData>
-      (uSpaceModel.shared_approximation().data_rep());
-
+      std::static_pointer_cast<SharedPecosApproxData>(
+	uSpaceModel.shared_approximation().data_rep());
     std::shared_ptr<NonDIntegration> u_space_sampler_rep =
-      std::static_pointer_cast<NonDIntegration>
-      (uSpaceModel.subordinate_iterator().iterator_rep());
+      std::static_pointer_cast<NonDIntegration>(
+	uSpaceModel.subordinate_iterator().iterator_rep());
+
     u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
 
     numSamplesOnModel = u_space_sampler_rep->maximum_evaluation_concurrency()

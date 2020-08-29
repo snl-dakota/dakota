@@ -130,12 +130,12 @@ private:
   //
 
   /// convenience function used to make increment_grid() more modular
-  void increment_grid(UShortArray& dim_quad_order);
+  void increment_grid(UShortArray& ref_quad_order);
   /// convenience function used to make increment_grid_preference() more modular
   void increment_grid_preference(const RealVector& dim_pref,
-				 UShortArray& dim_quad_order);
+				 UShortArray& ref_quad_order);
   /// convenience function used to make decrement_grid() more modular
-  void decrement_grid(UShortArray& dim_quad_order);
+  void decrement_grid(UShortArray& ref_quad_order);
 
   /// calculate smallest dimension quadrature order with at least min_samples
   /// and propagate to Pecos::TensorProductDriver
@@ -156,12 +156,12 @@ private:
   void initialize_dimension_quadrature_order(unsigned short quad_order_spec,
 					     const RealVector& dim_pref_spec);
 
-  /// increment each dim_quad_order entry by 1
-  void increment_dimension_quadrature_order(UShortArray& dim_quad_order);
-  /// increment the dim_quad_order entry with maximum preference by 1
+  /// increment each ref_quad_order entry by 1
+  void increment_reference_quadrature_order(UShortArray& ref_quad_order);
+  /// increment the ref_quad_order entry with maximum preference by 1
   /// and then rebalance
-  void increment_dimension_quadrature_order(const RealVector& dim_pref,
-					    UShortArray& dim_quad_order);
+  void increment_reference_quadrature_order(const RealVector& dim_pref,
+					    UShortArray& ref_quad_order);
 
   //
   //- Heading: Data
@@ -180,7 +180,7 @@ private:
   /// for restoration in decrement_grid() (increment must induce a change in
   /// grid size and this increment may not be reversible).  Since this data is
   /// not keyed, increment/decrement must occur together prior to a key change.
-  UShortArray dimQuadOrderPrev;
+  UShortArray refQuadOrderPrev;
 
   /// point generation mode: FULL_TENSOR, FILTERED_TENSOR, RANDOM_TENSOR
   short quadMode;
@@ -212,10 +212,7 @@ inline const Pecos::UShortArray& NonDQuadrature::quadrature_order() const
 
 inline void NonDQuadrature::
 quadrature_order(const Pecos::UShortArray& dim_quad_order)
-{
-  if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
-  else             tpqDriver->quadrature_order(dim_quad_order);
-}
+{ tpqDriver->reference_quadrature_order(dim_quad_order, nestedRules); }
 
 
 inline void NonDQuadrature::quadrature_order(unsigned short quad_order)
@@ -261,43 +258,39 @@ inline void NonDQuadrature::update()
 
 inline void NonDQuadrature::increment_grid()
 {
-  UShortArray dim_quad_order = tpqDriver->quadrature_order(); // copy
+  UShortArray ref_quad_order = tpqDriver->reference_quadrature_order(); // copy
 
-  // cache dimQuadOrderPrev for restoration in decrement_grid():
+  // cache refQuadOrderPrev for restoration in decrement_grid():
   // enforced sample size increment is not reversible
-  dimQuadOrderPrev = dim_quad_order;
+  refQuadOrderPrev = ref_quad_order;
 
-  increment_grid(dim_quad_order);
+  increment_grid(ref_quad_order);
 }
 
 
 inline void NonDQuadrature::decrement_grid()
 {
-  // restore using dimQuadOrderPrev from increment_grid() since the enforced
-  // grid size increment is not reversible.  nested_quadrature_order() is also
-  // not reversible based on its logic of requiring a rule that provides 2m-1
-  // accuracy (no nested rules provide this precision).
-  //if (nestedRules) tpqDriver->nested_quadrature_order(dimQuadOrderPrev);
-  //else
-    tpqDriver->quadrature_order(dimQuadOrderPrev);
+  // restore using refQuadOrderPrev from increment_grid() since the enforced
+  // grid size increment is not reversible.  nestedRules mapping is re-applied.
+  tpqDriver->reference_quadrature_order(refQuadOrderPrev, nestedRules);
 }
 
 
 inline void NonDQuadrature::
-increment_grid_preference(const RealVector& dim_pref)
+increment_grid_preference(const RealVector& dim_pref) // update dimension pref
 {
-  UShortArray dim_quad_order = tpqDriver->quadrature_order(); // copy
+  UShortArray ref_quad_order = tpqDriver->reference_quadrature_order(); // copy
 
-  // cache dimQuadOrderPrev for restoration in decrement_grid():
+  // cache refQuadOrderPrev for restoration in decrement_grid():
   // enforced sample size increment is not reversible
-  dimQuadOrderPrev = dim_quad_order;
+  refQuadOrderPrev = ref_quad_order;
 
-  increment_grid_preference(dim_pref, dim_quad_order);
+  increment_grid_preference(dim_pref, ref_quad_order);
 }
 
 
 inline void NonDQuadrature::increment_grid_preference()
-{ increment_grid_preference(dimPrefSpec); }
+{ increment_grid_preference(dimPrefSpec); } // no update to dimension preference
 
 
 inline void NonDQuadrature::evaluate_grid_increment()
@@ -317,6 +310,7 @@ inline void NonDQuadrature::evaluate_grid_increment()
   evaluate_parameter_sets(iteratedModel, true, false);
   ++numIntegrations;
 }
+
 
 inline int NonDQuadrature::num_samples() const
 {

@@ -412,7 +412,8 @@ void NonDStochCollocation::initialize_covariance()
   size_t i, j;
   for (i=0; i<numFunctions; ++i) {
     std::shared_ptr<PecosApproximation> pa_rep_i =
-      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
+      std::static_pointer_cast<PecosApproximation>(
+	poly_approxs[i].approx_rep());
     pa_rep_i->clear_covariance_pointers();
     for (j=0; j<=i; ++j)
       pa_rep_i->initialize_covariance(poly_approxs[j]);
@@ -429,7 +430,8 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
   if (deltaRespMean.empty()) deltaRespMean.sizeUninitialized(numFunctions);
   for (size_t i=0; i<numFunctions; ++i) {
     std::shared_ptr<PecosApproximation> pa_rep_i =
-      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
+      std::static_pointer_cast<PecosApproximation>(
+	poly_approxs[i].approx_rep());
     if (pa_rep_i->expansion_coefficient_flag()) {
       if (combined_stats)
 	// refinement assessed for impact on combined expansion from roll up
