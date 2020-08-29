@@ -261,7 +261,7 @@ inline void NonDQuadrature::increment_grid()
   UShortArray ref_quad_order = tpqDriver->reference_quadrature_order(); // copy
 
   // cache refQuadOrderPrev for restoration in decrement_grid():
-  // enforced sample size increment is not reversible
+  // update both refQuadOrder and quadOrder in TensorProductDriver
   refQuadOrderPrev = ref_quad_order;
 
   increment_grid(ref_quad_order);
@@ -271,7 +271,8 @@ inline void NonDQuadrature::increment_grid()
 inline void NonDQuadrature::decrement_grid()
 {
   // restore using refQuadOrderPrev from increment_grid() since the enforced
-  // grid size increment is not reversible.  nestedRules mapping is re-applied.
+  // grid size increment is not reversible.  Restores both refQuadOrder and
+  // quadOrder in TensorProductDriver, and nestedRules mapping is re-applied.
   tpqDriver->reference_quadrature_order(refQuadOrderPrev, nestedRules);
 }
 

@@ -720,7 +720,8 @@ void NonDExpansion::core_run()
     // post-process nominal expansion, defining reference stats for refinement
     //metric_roll_up(); // not relevant in single-fidelity context
     compute_statistics(INTERMEDIATE_RESULTS);
-    print_results(Cout, INTERMEDIATE_RESULTS);
+    if (outputLevel > SILENT_OUTPUT)
+      print_results(Cout, INTERMEDIATE_RESULTS);
 
     refine_expansion(); // uniform/adaptive p-/h-refinement
   }
@@ -993,14 +994,16 @@ void NonDExpansion::refine_expansion()
   // Assign a context-specific default in this case.
   size_t SZ_MAX = std::numeric_limits<size_t>::max(), candidate, iter = 1,
     max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
-  bool converged = (iter > max_refine_iter);  Real metric;
+  bool converged = (iter > max_refine_iter),
+    print_metric = (outputLevel > SILENT_OUTPUT);
+  Real metric;
 
   pre_refinement();
 
   while (!converged) {
 
     Cout << "\n>>>>> Begin refinement iteration " << iter << ":\n";
-    candidate = core_refinement(metric, false, true);// no revert, print metrics
+    candidate = core_refinement(metric, false, print_metric); // no revert
     if (candidate == SZ_MAX) {
       Cout <<"\n<<<<< Refinement has saturated with no candidates available.\n";
       converged = true;
@@ -1465,11 +1468,14 @@ void NonDExpansion::multifidelity_reference_expansion()
   configure_indices(step, form, lev, seq_index);
   assign_specification_sequence();
   compute_expansion();  // nominal LF expansion from input spec
-  Cout << "\n------------------------------------------------"
-       << "\nMultifidelity UQ: low fidelity reference results"
-       << "\n------------------------------------------------\n";
   compute_statistics(INTERMEDIATE_RESULTS);
-  print_results(Cout, INTERMEDIATE_RESULTS);
+  bool print = (outputLevel > SILENT_OUTPUT);
+  if (print) {
+    Cout << "\n------------------------------------------------"
+	 << "\nMultifidelity UQ: low fidelity reference results"
+	 << "\n------------------------------------------------\n";
+    print_results(Cout, INTERMEDIATE_RESULTS);
+  }
 
   // loop over each of the discrepancy levels
   for (step=1; step<num_steps; ++step) {
@@ -1480,11 +1486,13 @@ void NonDExpansion::multifidelity_reference_expansion()
 
     // form the expansion for level i
     compute_expansion();  // nominal discrepancy expansion from input spec
-    Cout << "\n-----------------------------------------------------"
-	 << "\nMultifidelity UQ: model discrepancy reference results"
-	 << "\n-----------------------------------------------------\n";
     compute_statistics(INTERMEDIATE_RESULTS);
-    print_results(Cout, INTERMEDIATE_RESULTS);
+    if (print) {
+      Cout << "\n-----------------------------------------------------"
+	   << "\nMultifidelity UQ: model discrepancy reference results"
+	   << "\n-----------------------------------------------------\n";
+      print_results(Cout, INTERMEDIATE_RESULTS);
+    }
   }
 
   // now aggregate expansions and report COMBINED_EXPANSION_STATS for cases
@@ -1497,11 +1505,13 @@ void NonDExpansion::multifidelity_reference_expansion()
     // combine expansions (unconditionally) for refinement reference
     uSpaceModel.combine_approximation();
     // compute/print combined reference stats
-    Cout << "\n----------------------------------------------------"
-	 << "\nMultifidelity UQ: statistics from combined expansion"
-	 << "\n----------------------------------------------------\n";
     compute_statistics(INTERMEDIATE_RESULTS);
-    print_results(Cout, INTERMEDIATE_RESULTS);
+    if (print) {
+      Cout << "\n----------------------------------------------------"
+	   << "\nMultifidelity UQ: statistics from combined expansion"
+	   << "\n----------------------------------------------------\n";
+      print_results(Cout, INTERMEDIATE_RESULTS);
+    }
   }
 
   refinement_statistics_mode(orig_stats_mode); // restore
@@ -1518,16 +1528,19 @@ void NonDExpansion::multifidelity_individual_refinement()
   if (multilev) { form = fixed_index;  seq_index = 2; }
   else          {  lev = fixed_index;  seq_index = 1; }
 
+  bool print = (outputLevel > SILENT_OUTPUT);
   if (refineType) {//&& maxRefineIterations
     // refine expansion for lowest fidelity/coarsest discretization
     configure_indices(step, form, lev, seq_index);
     //assign_specification_sequence();
     refine_expansion(); // uniform/adaptive refinement
-    Cout << "\n-------------------------------------------------"
-	 << "\nMultifidelity UQ: low fidelity refinement results"
-	 << "\n-------------------------------------------------\n";
     compute_statistics(INTERMEDIATE_RESULTS);
-    print_results(Cout, INTERMEDIATE_RESULTS);
+    if (print) {
+      Cout << "\n-------------------------------------------------"
+	   << "\nMultifidelity UQ: low fidelity refinement results"
+	   << "\n-------------------------------------------------\n";
+      print_results(Cout, INTERMEDIATE_RESULTS);
+    }
 
     // loop over each of the discrepancy levels
     for (step=1; step<num_steps; ++step) {
@@ -1549,11 +1562,13 @@ void NonDExpansion::multifidelity_individual_refinement()
     
       // refine the expansion for level i
       refine_expansion(); // uniform/adaptive refinement
-      Cout << "\n------------------------------------------------------"
-	   << "\nMultifidelity UQ: model discrepancy refinement results"
-	   << "\n------------------------------------------------------\n";
       compute_statistics(INTERMEDIATE_RESULTS);
-      print_results(Cout, INTERMEDIATE_RESULTS);
+      if (print) {
+	Cout << "\n------------------------------------------------------"
+	     << "\nMultifidelity UQ: model discrepancy refinement results"
+	     << "\n------------------------------------------------------\n";
+	print_results(Cout, INTERMEDIATE_RESULTS);
+      }
     }
   }
 
@@ -1600,6 +1615,7 @@ void NonDExpansion::multifidelity_integrated_refinement()
     max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   Real step_metric, best_step_metric = DBL_MAX;
   RealVector best_stats_star;
+  bool print_metric = (outputLevel > SILENT_OUTPUT);
   while ( best_step_metric > convergenceTol && mlmfIter < max_refine_iter ) {
 
     ++mlmfIter;
@@ -1617,7 +1633,7 @@ void NonDExpansion::multifidelity_integrated_refinement()
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> step_metric
-      step_candidate = core_refinement(step_metric, true, true);
+      step_candidate = core_refinement(step_metric, true, print_metric);
       if (step_candidate == SZ_MAX)
 	Cout << "\n<<<<< Sequence step " << step+1
 	     << " has saturated with no refinement candidates available.\n";
@@ -2041,7 +2057,7 @@ update_u_space_sampler(size_t sequence_index, const UShortArray& approx_orders)
       UShortArray dim_quad_order(numContinuousVars);
       for (size_t i=0; i<numContinuousVars; ++i)
 	dim_quad_order[i] = approx_orders[i] + 1;
-      nond_quad->quadrature_order(dim_quad_order);
+      nond_quad->quadrature_order(dim_quad_order); // update ref, enforce constr
     }
     nond_quad->update(); // sanity check on sizes, likely a no-op
   }
