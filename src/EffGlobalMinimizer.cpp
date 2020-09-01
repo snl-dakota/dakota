@@ -580,6 +580,9 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   } // end approx convergence while loop
 
 
+  // (conditionally) export final surrogates
+  export_final_surrogates(fHatModel);
+
   // Set best variables and response for use by strategy level.
   // c_vars, fmin contain the optimal design
   get_best_sample(); // pull optimal result from sample data

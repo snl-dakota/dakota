@@ -1,12 +1,12 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014 Sandia Corporation.
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
-from __future__ import print_function
+
 import os
 import subprocess
 import re
@@ -352,12 +352,12 @@ def extract_multi_start_results():
     num_best = 0
     best_labels = []
     for label in all_labels:
-        if label[-1] is '*':
+        if label[-1] == '*':
             break
         num_starts += 1
         start_labels.append(label)
     for label in all_labels[num_starts:]:
-        if label[-1] is not '*':
+        if label[-1] != '*':
             break
         num_best += 1
         best_labels.append(label[:-1]) # snip off *
@@ -372,7 +372,7 @@ def extract_multi_start_results():
             "functions":[]}
     
     while True:
-        value_line = lines_iter.next().strip()
+        value_line = next(lines_iter).strip()
         if not value_line:
             break
         values = []
@@ -428,7 +428,7 @@ def extract_pareto_set_results():
             "functions":[]}
     
     while True:
-        value_line = lines_iter.next().strip()
+        value_line = next(lines_iter).strip()
         if not value_line:
             break
         values = []
@@ -589,13 +589,13 @@ def read_restart_file(restart_file):
     data = {}
     var_r = restart_variables(file_data[0].split())
     data["variables"] = {}
-    for t, vs in var_r.items(): # iterate continuous, di, ds, dr
+    for t, vs in list(var_r.items()): # iterate continuous, di, ds, dr
         data["variables"][t] = OrderedDict()
-        for d, v in vs.items():
+        for d, v in list(vs.items()):
             data["variables"][t][d] = []
     resp_r = restart_response(file_data[1].split())
     data["response"] = OrderedDict()
-    for d, r in resp_r["response"].items():
+    for d, r in list(resp_r["response"].items()):
         data["response"][d] = []
     data["asv"] = []
     data["eval_id"] = []
@@ -607,10 +607,10 @@ def read_restart_file(restart_file):
         resp_row = file_data[i+1].split()
         var_r = restart_variables(var_row)
         resp_r = restart_response(resp_row)
-        for t, vs in var_r.items():
-            for d, v in vs.items():
+        for t, vs in list(var_r.items()):
+            for d, v in list(vs.items()):
                 data["variables"][t][d].append(v)
-        for d, r in resp_r["response"].items():
+        for d, r in list(resp_r["response"].items()):
             data["response"][d].append(copy.deepcopy(r))
         data["asv"].append(resp_r["asv"][:])
         data["eval_id"].append(resp_r["eval_id"])
@@ -629,7 +629,7 @@ def run_dakota(input_file):
     global __BIN_DIR
     dakota_path = os.path.join(__BIN_DIR,"dakota")
     output = subprocess.check_output([dakota_path,input_file], stderr=subprocess.STDOUT)
-    __OUTPUT = output.split('\n')
+    __OUTPUT = output.decode('utf-8').split('\n')
 
 def set_executable_dir(bindir):
     """Set the directory in the build tree that contains the executables"""

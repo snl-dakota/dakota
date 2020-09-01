@@ -101,6 +101,18 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY method_export_model '
+	     <keyword  id="export_model" name="export_model" minOccurs="0" maxOccurs="1" code="{N_mdm(true,exportSurrogate)}" label="Export Surrogate Model"  complexity="1">
+               <keyword  id="filename_prefix" name="filename_prefix" minOccurs="0" code="{N_mdm(str,modelExportPrefix)}" label="Exported Surrogate Filename Prefix"  default="exported_surrogate" complexity="1">
+		 <param type="STRING" />
+               </keyword>
+               <keyword id="formats" name="formats" code="{0}" label="Formats" maxOccurs="1" group="Surrogate Export Formats" complexity="1">
+		 <keyword id="text_archive" name="text_archive" code="{N_mdm(augment_utype,modelExportFormat_TEXT_ARCHIVE)}" label="Text Output" maxOccurs="1" minOccurs="0" />
+		 <keyword id="binary_archive" name="binary_archive" code="{N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)}" label="Binary Output" maxOccurs="1" minOccurs="0"  />
+               </keyword>
+	     </keyword>
+             ' >
+
     <!ENTITY method_gaussian_process '
  	     <keyword  id="gaussian_process1" name="gaussian_process" code="{0}" label="gaussian_process"  minOccurs="0" default="Surfpack Gaussian process" >
 	       <alias name="kriging"/>
@@ -1319,22 +1331,34 @@
 	     &default_scaling;
 	     ' >
 
-    <!ENTITY method_global_interval_surr_opts '
+
+    <!ENTITY method_gp_alternatives_no_export '
 	     <keyword  id="gaussian_process2" name="gaussian_process" code="{0}" label="gaussian_process"  minOccurs="0" default="Surfpack Gaussian process" >
 	       <alias name="kriging"/>
 	       <oneOf label="GP Implementation">
-		 <keyword  id="surfpack2" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   />
+		 <keyword  id="surfpack2" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   >
+                 </keyword>
 		 <keyword  id="dakota2" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
+		 <keyword  id="experimental2" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates"   >
+                 </keyword>
 	       </oneOf>
 	     </keyword>
-	     <keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only" />
-             &import_build;
-	     <keyword  id="export_approx_points_file6" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file"  minOccurs="0" default="no point export to a file" >
-	       <alias name="export_points_file"/>
-	       <param type="OUTPUT_FILE" />
-	       &method_export_approx_format;
+             ' >
+
+    <!ENTITY method_gp_alternatives_with_export '
+	     <keyword  id="gaussian_process2" name="gaussian_process" code="{0}" label="gaussian_process"  minOccurs="0" default="Surfpack Gaussian process" >
+	       <alias name="kriging"/>
+	       <oneOf label="GP Implementation">
+		 <keyword  id="surfpack2" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   >
+                 &method_export_model;
+                 </keyword>
+		 <keyword  id="dakota2" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
+		 <keyword  id="experimental2" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates"   >
+                 &method_export_model;
+                 </keyword>
+	       </oneOf>
 	     </keyword>
-	     ' >
+             ' >
 
     <!ENTITY distribution_cumul_compl '
 	     <keyword  id="distribution" name="distribution" code="{0}" label="distribution"  minOccurs="0" default="cumulative (CDF)" >
@@ -2589,14 +2613,7 @@
           <keyword  id="x_conv_tol" name="x_conv_tol" code="{N_mdm(Real,xConvTol)}" label="Convergence tolerance for change in parameter vector"  minOccurs="0" default="1.0e-8" >
             <param type="REAL" />
           </keyword>
-          <keyword  id="gaussian_process" name="gaussian_process" code="{0}" label="GP selection"  minOccurs="0" default="Surfpack Gaussian process" >
-            <alias name="kriging"/>
-            <oneOf label="GP Implementation">
-              <keyword  id="surfpack" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   />
-              <keyword  id="dakota" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
-              <keyword  id="experimental" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="dakota"   />
-            </oneOf>
-          </keyword>
+	  &method_gp_alternatives_with_export;
           <keyword  id="use_derivatives" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage"  minOccurs="0" default="use function values only"/>
           <keyword  id="import_build_points_file" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="File name for points to be imported as the basis for the initial GP"  minOccurs="0" default="no point import from a file" >
 	    <alias name="import_points_file"/>
@@ -3037,10 +3054,24 @@
 	  <optional>
 	    <oneOf label="Solution Approach">
 	      <keyword  id="sbo1" name="sbo" code="{N_mdm(utype,subMethod_SUBMETHOD_SBO)}" label="sbo"  >
-		&method_global_interval_surr_opts;
+		&method_gp_alternatives_no_export;
+		<keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only" />
+		&import_build;
+		<keyword  id="export_approx_points_file6" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file"  minOccurs="0" default="no point export to a file" >
+		  <alias name="export_points_file"/>
+		  <param type="OUTPUT_FILE" />
+		  &method_export_approx_format;
+		</keyword>
 	      </keyword>
 	      <keyword  id="ego1" name="ego" code="{N_mdm(utype,subMethod_SUBMETHOD_EGO)}" label="ego"  >
-		&method_global_interval_surr_opts;
+		&method_gp_alternatives_with_export;
+		<keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only" />
+		&import_build;
+		<keyword  id="export_approx_points_file6" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file"  minOccurs="0" default="no point export to a file" >
+		  <alias name="export_points_file"/>
+		  <param type="OUTPUT_FILE" />
+		  &method_export_approx_format;
+		</keyword>
 	      </keyword>
 	      <keyword  id="ea1" name="ea" code="{N_mdm(utype,subMethod_SUBMETHOD_EA)}" label="ea"   />
 	      <keyword  id="lhs4" name="lhs" code="{N_mdm(utype,subMethod_SUBMETHOD_LHS)}" label="lhs"   />
@@ -3529,8 +3560,13 @@
           </oneOf>
           <optional>
             <oneOf label="GP Implementation">
-              <keyword  id="surfpack5" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack"   />
+              <keyword  id="surfpack5" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack">
+		&method_export_model;
+	      </keyword>
               <keyword  id="dakota5" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
+              <keyword  id="experimental5" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates" >
+		&method_export_model;
+	      </keyword>
             </oneOf>
           </optional>
 	  &import_build;

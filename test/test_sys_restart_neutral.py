@@ -88,7 +88,7 @@ else:
 # Empty restart file
 open("empty.rst","w").close()
 err_msg =  "Error reading restart file 'empty.rst' (empty or corrupt file).\n" + \
-        "Details (Boost archive exception): invalid signature"
+        "Details (Boost archive exception)"
 # dakota
 dakota_cmd = dakota_exe + " -input " + dakota_input + ".in -read_restart empty.rst" 
 print("Running: " + dakota_cmd)

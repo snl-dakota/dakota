@@ -126,6 +126,8 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   String approx_type = "global_kriging";
   if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
     approx_type = "global_gaussian";
+  else if (probDescDB.get_short("method.nond.emulator") == EXPGP_EMULATOR)
+    approx_type = "global_exp_gauss_proc";
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   UShortArray approx_order; // not used for GP/kriging
@@ -664,6 +666,16 @@ void NonDGlobalReliability::optimize_gaussian_process()
     if (num_levels)
       Cout << "\n<<<<< GP model has converged for all requested levels of "
 	   << "response function " << respFnCount+1 << '\n';
+
+    // (conditionally) export final surrogates
+    // User might expect x-space, but will get u-space if they requested it
+    if (mppSearchType == EGRA_X) {
+      // uSpaceModel = Recast(DataFit(iteratedModel))
+      Model& dfs_model = uSpaceModel.subordinate_model();
+      export_final_surrogates(dfs_model);
+    }
+    else
+      export_final_surrogates(uSpaceModel);
 
 #ifdef DEBUG
     // DEBUG - output set of samples used to build the GP
