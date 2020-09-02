@@ -8,7 +8,7 @@ method,
 	  p_refinement dimension_adaptive generalized
 	    max_refinement_iterations 500
 	    convergence_tolerance = 1.e-8
-	output silent
+	output quiet
 	variance_based_decomp
 
 model,
