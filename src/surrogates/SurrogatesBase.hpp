@@ -79,15 +79,21 @@ public:
    */
   virtual void value(const MatrixXd &samples, MatrixXd &value) = 0;
 
-  /* Motivation for this call is pybind11 */
-  virtual MatrixXd value(const MatrixXd &samples) ;
+  /**
+   *  \brief Evaluate the Surrogate at a set of prediction points.
+   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
+   *  \param[in] qoi Index for surrogate QoI.
+   *  \returns value Values of the Surrogate at the prediction
+   *  points - (num_pts).
+   */
+  virtual VectorXd value(const MatrixXd &samples, const int qoi) = 0;
 
   /**
-   *  \brief Evaluate the Surrogate at a single prediction point.
+   *  \brief Evaluate the Surrogate at a set of prediction points for QoI index 0.
    *  \param[in] samples Vector of prediction points - (num_features).
-   *  \returns value Values of the Surrogate at the prediction point.
+   *  \returns VectorXd Values of the Surrogate at the prediction points.
    */
-  virtual double value1(const RowVectorXd &sample) = 0;
+  VectorXd value(const MatrixXd &samples) {return value(samples, 0);}
 
   /**
    *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.

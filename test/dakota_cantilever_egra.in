@@ -1,0 +1,36 @@
+#@ s1: TimeoutAbsolute=2400
+#@ s0: TimeoutAbsolute=2400
+#@ s0: TimeoutDelay=900
+#@ s1: TimeoutDelay=900
+
+# DAKOTA INPUT FILE : dakota_cantilever_egra.in
+# global_reliability for UQ at the nominal design
+# s1: s0 with experimental gaussian process
+
+method,
+    global_reliability x_gaussian_process   #s0
+#    global_reliability x_gaussian_process experimental   #s1
+      convergence_tolerance 0.001
+      num_response_levels = 0 2 2
+      response_levels = 0.2 0.6 0.2 0.6
+      seed = 123457
+
+variables,
+    continuous_design = 2
+     initial_point    2.5          2.5
+      upper_bounds    10.0         10.0
+      lower_bounds     1.0          1.0
+      descriptors     'w' 't'
+   normal_uncertain = 4
+     means             =  40000. 29.E+6 500. 1000.
+     std_deviations    =  2000. 1.45E+6 100. 100.
+     descriptors       =  'R' 'E' 'X' 'Y'
+
+interface,
+    direct
+      analysis_driver = 'cantilever'
+
+responses,
+    response_functions = 3
+    no_gradients
+    no_hessians

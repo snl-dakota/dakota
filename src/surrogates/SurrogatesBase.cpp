@@ -32,13 +32,6 @@ Surrogate::Surrogate(const MatrixXd &samples,
 Surrogate::~Surrogate(){}
 
 
-MatrixXd Surrogate::value(const MatrixXd &eval_points) {
-  MatrixXd approx_values;
-  value(eval_points, approx_values);
-  return approx_values;
-}
-
-
 /* returns num_samples by num_vars for a given qoi */
 void Surrogate::gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi) {
   silence_unused_args(samples, gradient, qoi);
