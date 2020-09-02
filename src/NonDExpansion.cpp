@@ -1666,7 +1666,7 @@ void NonDExpansion::multifidelity_integrated_refinement()
       configure_indices(step, form, lev, seq_index);
       select_candidate(best_step_candidate);
       push_candidate(best_stats_star); // update stats from best (no recompute)
-      print_results(Cout, INTERMEDIATE_RESULTS);
+      if (print_metric)	print_results(Cout, INTERMEDIATE_RESULTS);
     }
   }
 
