@@ -2192,6 +2192,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
   if (!revert) { // permanently apply best increment and update references
     select_index_set_candidate(cit_star); // invalidates cit_star
     push_candidate(statsStar);
+    if (print_metric) print_results(Cout, INTERMEDIATE_RESULTS);
   }
   return index_star;
 }
@@ -3436,6 +3437,10 @@ void NonDExpansion::pull_reference(RealVector& stats_ref)
   case Pecos::LEVEL_STATS_METRIC:  case Pecos::MIXED_STATS_METRIC: 
     pull_level_mappings(stats_ref, mom_len);  break;
   }
+
+#ifdef DEBUG
+  Cout << "Pulled stats:\n" << stats_ref;
+#endif // DEBUG
 }
 
 
@@ -3484,6 +3489,10 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
     push_level_mappings(stats_ref, offset);  break;
   }
   }
+
+#ifdef DEBUG
+  Cout << "Pushed stats:\n" << stats_ref;
+#endif // DEBUG
 }
 
 

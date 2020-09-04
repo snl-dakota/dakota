@@ -586,20 +586,18 @@ compute_covariance_metric(bool revert, bool print_metric)
     // as the scale and mitigate underflow of its norm.
     Real scale, delta_norm;
     switch (covarianceControl) {
-    case DIAGONAL_COVARIANCE: {
+    case DIAGONAL_COVARIANCE:
       if (relativeMetric) // norm of reference variance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
       compute_delta_variance(update_ref, print_metric);
       delta_norm = deltaRespVariance.normFrobenius();
       break;
-    }
-    case FULL_COVARIANCE: {
+    case FULL_COVARIANCE:
       if (relativeMetric) // norm of reference covariance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
       compute_delta_covariance(update_ref, print_metric);
       delta_norm = deltaRespCovariance.normFrobenius();
       break;
-    }
     }
 
     return (relativeMetric) ? delta_norm / scale : delta_norm;
@@ -618,6 +616,19 @@ compute_level_mappings_metric(bool revert, bool print_metric)
   // with default definition of delta-{p,beta*}
 
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
+
+    // ensure moment updates for mixed stats:
+    if (refineMetric == Pecos::MIXED_STATS_METRIC) {
+      bool update_ref = !revert;
+      compute_delta_mean(update_ref);
+      switch (covarianceControl) {
+      case DIAGONAL_COVARIANCE:
+	compute_delta_variance(update_ref,   false);  break;
+      case FULL_COVARIANCE:
+	compute_delta_covariance(update_ref, false);  break;
+      }
+    }
+
     // Note: it would be desirable to include support for all active statistics,
     // including delta_mean() and delta_std_deviation().  With access to nested
     // response mappings passed down from an outer context, a more comprehensive
