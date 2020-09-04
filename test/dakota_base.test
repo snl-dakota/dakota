@@ -25336,7 +25336,25 @@ Moment statistics for each response function:
  response_fn_1  1.6800000000e+02  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.8400000000e+02  1.1177119486e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.8400000000e+02  1.1198571337e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.8400000000e+02  1.1198571337e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.8400000000e+02  1.1198571337e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.9155555556e+02  1.4085863878e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.0222222222e+02  1.5797370531e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.0222222222e+02  1.5797370531e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.0222222222e+02  1.5797370531e+02
@@ -25450,7 +25468,25 @@ Moment statistics for each response function:
  response_fn_1  1.6800000000e+02  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.8400000000e+02  1.1177119486e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.8400000000e+02  1.1198571337e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.8400000000e+02  1.1198571337e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.8400000000e+02  1.1198571337e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.9155555556e+02  1.4085863878e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.0222222222e+02  1.5797370531e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.0222222222e+02  1.5797370531e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.0222222222e+02  1.5797370531e+02
@@ -26309,7 +26345,31 @@ Moment statistics for each response function:
  response_fn_1  1.0000000000e+00  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  3.6911320757e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  9.3244011068e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.4395156655e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0430752609e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
@@ -26418,7 +26478,31 @@ Moment statistics for each response function:
  response_fn_1  1.0000000000e+00  2.2204460493e-16
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  3.6911320757e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  9.3244011068e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.1588457788e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0430752609e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
@@ -27346,7 +27430,37 @@ Moment statistics for each response function:
  response_fn_1  1.0000000000e+00  2.2204460493e-16
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  3.7167814033e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  9.3345842971e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.1731817817e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9883564214e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9883564214e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.0000000000e+00  2.2204460493e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1000000000e+01  1.8721672005e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1000000000e+01  2.8815995496e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1000000000e+01  2.8407199776e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1000000000e+01  3.2357480303e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1000000000e+01  3.2355326074e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.0000000000e+00  2.2204460493e-16
