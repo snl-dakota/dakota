@@ -72,28 +72,29 @@ public:
   virtual void build(const MatrixXd &samples, const MatrixXd &response) = 0;
 
   /**
-   *  \brief Evaluate the Surrogate at a set of prediction points.
+   *  \brief Evaluate the Surrogate at a set of prediction points for all QoIs.
    *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
-   *  \param[out] value Values of the Surrogate at the prediction
-   *  points - (num_pts by num_qoi) 
+   *  \param[out] value Values of the Surrogate at the prediction pts for all QoIs
+   *  - (num_pts by num_qoi).
    */
   virtual void value(const MatrixXd &samples, MatrixXd &value) = 0;
 
   /**
-   *  \brief Evaluate the Surrogate at a set of prediction points.
+   *  \brief Evaluate the Surrogate at a set of prediction points for a single QoI.
    *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
    *  \param[in] qoi Index for surrogate QoI.
    *  \returns value Values of the Surrogate at the prediction
    *  points - (num_pts).
    */
-  virtual VectorXd value(const MatrixXd &samples, const int qoi) = 0;
+  virtual VectorXd value(const MatrixXd &samples, const int qoi);
 
   /**
    *  \brief Evaluate the Surrogate at a set of prediction points for QoI index 0.
    *  \param[in] samples Vector of prediction points - (num_features).
-   *  \returns VectorXd Values of the Surrogate at the prediction points.
+   *  \returns VectorXd Values of the Surrogate at the prediction points - (num_pts).
    */
   VectorXd value(const MatrixXd &samples) {return value(samples, 0);}
+  /* DTS - Default arguments are tricky with Pybind11, doing this^ instead */
 
   /**
    *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.
@@ -102,12 +103,28 @@ public:
    *  (num_pts by num_features).
    *  \param[in] qoi Index of the quantity of interest for gradient evaluation - 
    *  0 for scalar-valued surrogates.
-   *
    */
-  virtual void gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi);
+  virtual void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi);
 
-  /* Motivation for this call is pybind11 */
-  virtual MatrixXd gradient(const MatrixXd &samples, int qoi);
+  /**
+   *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.
+   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
+   *  \param[in] qoi Index of the quantity of interest for gradient evaluation - 
+   *  0 for scalar-valued surrogates.
+   *  \returns gradient Matrix of gradient vectors at the prediction points - 
+   *  (num_pts by num_features).
+   */
+  MatrixXd gradient(const MatrixXd &samples, const int qoi);
+
+  /**
+   *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.
+   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
+   *  \param[in] qoi Index of the quantity of interest for gradient evaluation - 
+   *  0 for scalar-valued surrogates.
+   *  \returns gradient Matrix of gradient vectors at the prediction points - 
+   *  (num_pts by num_features).
+   */
+  MatrixXd gradient(const MatrixXd &samples) {return gradient(samples, 0);}
 
   /**
    *  \brief Evaluate the Hessian of the Surrogate at a single point.
@@ -117,10 +134,27 @@ public:
    *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
    *  0 for scalar-valued surrogates.
    */
-  virtual void hessian(const MatrixXd &sample, MatrixXd &hessian, int qoi);
+  virtual void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi);
 
-  /* Motivation for this call is pybind11 */
-  virtual MatrixXd hessian(const MatrixXd &sample, int qoi);
+  /**
+   *  \brief Evaluate the Hessian of the Surrogate at a single point.
+   *  \param[in] samples Coordinates of the prediction point - (1 by num_features).
+   *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
+   *  0 for scalar-valued surrogates.
+   *  \returns hessian Hessian matrix at the prediction point - 
+   *  (num_features by num_features).
+   */
+  MatrixXd hessian(const MatrixXd &sample, const int qoi);
+
+  /**
+   *  \brief Evaluate the Hessian of the Surrogate at a single point.
+   *  \param[in] samples Coordinates of the prediction point - (1 by num_features).
+   *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
+   *  0 for scalar-valued surrogates.
+   *  \returns hessian Hessian matrix at the prediction point - 
+   *  (num_features by num_features).
+   */
+  MatrixXd hessian(const MatrixXd &samples) {return hessian(samples, 0);}
 
   /**
    *  \brief Set the Surrogate's configOptions.

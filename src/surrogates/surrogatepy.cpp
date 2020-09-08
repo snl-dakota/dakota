@@ -225,9 +225,19 @@ PYBIND11_MODULE(dakmod, m) {
       py::detail::overload_cast_impl<const Eigen::MatrixXd&>()
       (&dakota::surrogates::Surrogate::value))
 
+    // qoi index 0
+    .def("gradient",
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&>()
+      (&dakota::surrogates::Surrogate::gradient))
+
     .def("gradient",
       py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
       (&dakota::surrogates::Surrogate::gradient))
+
+    // qoi index 0
+    .def("hessian",
+      py::detail::overload_cast_impl<const Eigen::MatrixXd&>()
+      (&dakota::surrogates::Surrogate::hessian))
 
     .def("hessian",
       py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()

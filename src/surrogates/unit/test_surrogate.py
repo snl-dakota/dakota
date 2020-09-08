@@ -13,9 +13,6 @@ build_response = np.zeros(10)
 for i, x in enumerate(build_samples):
     build_response[i] = simple_func(x)
 
-# This doesn't work due to the way NumPy is passed to Eigen (by copy)
-# Working now with return value function
-
 
 pr = dakmod.PolynomialRegression(build_samples, build_response, {"max degree" : 2, "scaler type" : "none"})
 # JAS: keyword arguments would be more common than dict (and have to when providing defaults)
@@ -100,10 +97,10 @@ gp_eval_surr = gp.value(eval_samples)
 print("Truth:\n{0}".format(eval_truth))
 print("GP value:\n{0}\n".format(gp_eval_surr))
 
-eval_grad = gp.gradient(dpoint,0)
+eval_grad = gp.gradient(dpoint)
 print("GP gradient:\n{0}\n".format(eval_grad))
 
-eval_hessian = gp.hessian(dpoint,0)
+eval_hessian = gp.hessian(dpoint)
 print("GP Hessian:\n{0}\n".format(eval_hessian))
 
 # Save GP to binary and then reload

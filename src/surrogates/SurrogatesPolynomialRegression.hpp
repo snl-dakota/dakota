@@ -110,13 +110,6 @@ public:
   void value(const MatrixXd &eval_points, MatrixXd &approx_values) override;
 
   /**
-   *  \brief Evaluate the polynomial surrogate at a set of prediction points for QoI index 0.
-   *  \param[in] eval_points Matrix for the prediction points - (num_points by num_features).
-   *  \returns Values of the polynomial surrogate at the prediction points.
-   */
-  VectorXd value(const MatrixXd &eval_points, const int qoi) override;
-
-  /**
    *  \brief Evaluate the gradient of the polynomial surrogate at a set of prediction points.
    *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 

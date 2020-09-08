@@ -130,28 +130,6 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
   approx_values = (approx_values.array() + polynomialIntercept).matrix();
 }
 
-VectorXd PolynomialRegression::value(const MatrixXd &eval_points, const int qoi) {
-
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
-
-  VectorXd approx_values;
-  /* Construct the basis matrix for the eval points */
-  MatrixXd unscaled_eval_points_basis_matrix;
-  compute_basis_matrix(eval_points, unscaled_eval_points_basis_matrix);
-
-  /* Scale the sample points */
-  MatrixXd scaled_eval_points_basis_matrix;
-  dataScaler.scale_samples(unscaled_eval_points_basis_matrix,
-                           scaled_eval_points_basis_matrix);
-
-  /* Compute the prediction values*/
-  approx_values = scaled_eval_points_basis_matrix*polynomialCoeffs;
-  approx_values = (approx_values.array() + polynomialIntercept).matrix();
-  return approx_values;
-}
-
 void PolynomialRegression::default_options() {
   defaultConfigOptions.set("reduced basis", false, "Use reduced basis");
   defaultConfigOptions.set("max degree", 1, "Maximum polynomial order");
