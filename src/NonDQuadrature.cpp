@@ -360,6 +360,9 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
     else                     increment_grid_preference(dimPrefSpec, rqo);
   }
 
+  if (min_samples > numSamples)
+    numSamples = min_samples;
+
   /* Old:
   if (tpqDriver->grid_size() < min_samples) {
     UShortArray dqo_l_bnd; // isotropic or anisotropic based on dimPrefSpec

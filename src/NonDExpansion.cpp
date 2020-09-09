@@ -1935,8 +1935,9 @@ void NonDExpansion::increment_order_and_grid()
       nond_quad->increment_grid(); // increment dimension quad order
     nond_quad->update();
   }
-  else
-    update_model_from_samples();
+
+  // assign number of total points in DataFitSurrModel
+  update_model_from_samples();
 }
 
 
@@ -1956,8 +1957,9 @@ void NonDExpansion::decrement_order_and_grid()
     //  nond_quad->decrement_grid(); // decrement dimension quad order
     nond_quad->update();
   }
-  else
-    update_model_from_samples();
+
+  // assign number of total points in DataFitSurrModel
+  update_model_from_samples();
 }
 
 

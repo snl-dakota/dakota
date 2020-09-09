@@ -52774,6 +52774,9 @@ response_fn_1 Sobol' indices:
    0.0000000000e+00                      7.5080850560e-01
 dakota_uq_rosenbrock_adapt_pce_lls.in
 Test Number 0 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.0459713062e+01  0.0000000000e+00
 <<<<< Function evaluation summary: 42 total (42 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.0200000000e+02  He0  He0
@@ -52801,6 +52804,9 @@ Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 Test Number 1 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.0459713062e+01  0.0000000000e+00
 <<<<< Function evaluation summary: 42 total (42 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.0200000000e+02  He0  He0
@@ -52828,6 +52834,9 @@ Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 Test Number 2 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0833611607e+03  0.0000000000e+00
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.0200000000e+02  He0  He0
@@ -52855,6 +52864,9 @@ Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 Test Number 3 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0833611607e+03  0.0000000000e+00
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.0200000000e+02  He0  He0
@@ -52882,89 +52894,180 @@ Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 182 total (180 new, 2 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.0200000000e+02  0.0000000000e+00
+<<<<< Function evaluation summary: 72 total (72 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.0200000000e+02  He0  He0
-  -1.9999999994e+00  He1  He0
+  -1.9999999999e+00  He1  He0
    6.0100000000e+02  He2  He0
-  -2.4762414341e-11  He3  He0
+  -3.8339109665e-11  He3  He0
    1.0000000000e+02  He4  He0
-   2.7267077485e-13  He5  He0
+   4.7548631699e-12  He5  He0
   -2.0000000000e+02  He0  He1
-   2.1218138357e-10  He1  He1
+   1.3898215911e-11  He1  He1
   -2.0000000000e+02  He2  He1
-  -4.6668779952e-11  He3  He1
-  -5.5982996017e-12  He4  He1
-   1.9611534618e-12  He5  He1
+  -3.9146463848e-12  He3  He1
+   1.8527540613e-12  He4  He1
+   1.5539236564e-12  He5  He1
    1.0000000000e+02  He0  He2
-  -1.2167866714e-10  He1  He2
-   2.4202861937e-11  He2  He2
-   1.0919154469e-11  He3  He2
-  -1.9576007482e-12  He4  He2
-  -6.7554295491e-13  He5  He2
-  -1.0516609805e-10  He0  He3
-  -1.6044054973e-11  He1  He3
-   1.5619949778e-11  He2  He3
-   3.0641600368e-12  He3  He3
-   2.1383936288e-13  He4  He3
-  -1.1266682032e-13  He5  He3
-  -9.6900265589e-13  He0  He4
-   1.1834144775e-12  He1  He4
-  -2.3503421431e-12  He2  He4
-  -2.6761232119e-13  He3  He4
-   7.9495438010e-14  He4  He4
-   1.7420960507e-14  He5  He4
-   1.7448265055e-12  He0  He5
-   3.4152541906e-13  He1  He5
-  -2.2498669594e-13  He2  He5
-  -1.6579272677e-13  He3  He5
-   1.0137290313e-15  He4  He5
-  -7.5838911973e-14  He5  He5
+  -2.7036151096e-11  He1  He2
+  -1.1365131058e-11  He2  He2
+   8.0377926537e-12  He3  He2
+   1.1106671138e-12  He4  He2
+  -6.7358618683e-13  He5  He2
+  -5.0182080713e-12  He0  He3
+   3.7960745658e-12  He1  He3
+  -1.0007550344e-12  He2  He3
+   4.0989434069e-13  He3  He3
+   1.2817524819e-13  He4  He3
+  -2.0680679391e-13  He5  He3
+  -2.2315482795e-13  He0  He4
+  -1.6483481247e-12  He1  He4
+   9.8576702356e-13  He2  He4
+   1.4083179067e-13  He3  He4
+  -1.4728496200e-13  He4  He4
+  -2.9101287352e-14  He5  He4
+   4.8037962497e-14  He0  He5
+   3.3460734183e-13  He1  He5
+  -1.4267493437e-13  He2  He5
+  -1.5086543126e-13  He3  He5
+   1.9328288969e-14  He4  He5
+  -1.1102230246e-16  He5  He5
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 62 total (61 new, 1 duplicate)
-Coefficients of Polynomial Chaos Expansion for response_fn_1:
-   4.0200000000e+02  He0  He0
-  -2.0000000000e+00  He1  He0
-   6.0100000000e+02  He2  He0
-  -3.2658320492e-12  He3  He0
-   1.0000000000e+02  He4  He0
-   2.5829338668e-13  He5  He0
-  -2.0000000000e+02  He0  He1
-   2.7158719718e-11  He1  He1
-  -2.0000000000e+02  He2  He1
-  -4.0283332225e-12  He3  He1
-   8.5220719370e-13  He4  He1
-   7.2844508203e-13  He5  He1
-   1.0000000000e+02  He0  He2
-  -1.2629897128e-12  He1  He2
-   2.7471358521e-12  He2  He2
-  -1.4541701177e-12  He3  He2
-  -1.5437651157e-13  He4  He2
-   4.8502868388e-13  He5  He2
-  -2.6205704273e-12  He0  He3
-  -4.2164050029e-12  He1  He3
-  -2.1443957721e-13  He2  He3
-   3.9102054927e-13  He3  He3
-  -3.4543201632e-13  He4  He3
-  -6.2526372968e-14  He5  He3
-   3.2063240951e-12  He0  He4
-  -2.1121993043e-13  He1  He4
-  -9.6284091811e-13  He2  He4
-   1.4284406991e-13  He3  He4
-   3.4153235795e-14  He4  He4
-   1.1232334507e-14  He5  He4
-  -2.3173130081e-13  He0  He5
-   5.4634075042e-13  He1  He5
-   6.7003694260e-14  He2  He5
-  -9.2800767071e-14  He3  He5
-   7.4863943170e-14  He4  He5
-   1.1700883318e-13  He5  He5
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.0200000000e+02  1.0499552371e+03
+ response_fn_1  1.0000000000e+00  0.0000000000e+00
+<<<<< Function evaluation summary: 81 total (80 new, 1 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0199996741e+02  He0  He0
+  -2.0000539016e+00  He1  He0
+   6.0100004272e+02  He2  He0
+  -6.6888380949e-05  He3  He0
+   9.9999988461e+01  He4  He0
+   3.0277514657e-06  He5  He0
+  -3.3381297179e-06  He6  He0
+  -4.8592533241e-07  He7  He0
+   1.5340184753e-07  He8  He0
+  -4.3361396906e-08  He9  He0
+   1.7206518842e-08 He10  He0
+  -1.9999996169e+02  He0  He1
+  -2.9730622641e-04  He1  He1
+  -2.0000013307e+02  He2  He1
+   9.5937435237e-06  He3  He1
+  -4.6592756377e-05  He4  He1
+  -1.6424830986e-05  He5  He1
+  -2.0026608933e-06  He6  He1
+  -1.2467043390e-06  He7  He1
+  -1.9449950261e-07  He8  He1
+   7.6008538437e-08  He9  He1
+   6.4003840419e-09 He10  He1
+   9.9999740437e+01  He0  He2
+   1.6829810117e-04  He1  He2
+  -1.3802708736e-04  He2  He2
+  -9.0760442318e-05  He3  He2
+  -6.5419796122e-05  He4  He2
+  -1.4486174901e-05  He5  He2
+  -6.4286865220e-06  He6  He2
+  -3.0084300232e-06  He7  He2
+  -5.8968477457e-07  He8  He2
+  -5.8066062628e-08  He9  He2
+  -3.5492909229e-08 He10  He2
+   8.3492702466e-05  He0  He3
+  -1.6531152748e-04  He1  He3
+  -9.2845487990e-05  He2  He3
+  -4.8291457182e-06  He3  He3
+  -3.2066444045e-05  He4  He3
+  -1.5464038349e-05  He5  He3
+  -4.5485953434e-06  He6  He3
+  -1.1516762496e-06  He7  He3
+  -3.2115277595e-07  He8  He3
+  -6.5493263159e-08  He9  He3
+  -1.1201215267e-08 He10  He3
+  -7.5473486932e-05  He0  He4
+   5.6709375392e-05  He1  He4
+  -3.9550009460e-05  He2  He4
+  -3.3279327282e-06  He3  He4
+  -2.4160196963e-05  He4  He4
+  -5.0902911539e-06  He5  He4
+  -2.8023128773e-06  He6  He4
+  -1.2816580794e-06  He7  He4
+  -2.8207707332e-07  He8  He4
+  -7.3246474351e-08  He9  He4
+  -1.7011769781e-08 He10  He4
+  -4.8719426571e-06  He0  He5
+   7.4774938051e-06  He1  He5
+  -3.2330898838e-06  He2  He5
+   2.2746018837e-06  He3  He5
+  -4.7542811542e-06  He4  He5
+  -1.4860491895e-06  He5  He5
+  -1.1179334424e-06  He6  He5
+  -5.2381824308e-07  He7  He5
+  -1.3365030307e-07  He8  He5
+  -3.7848411953e-08  He9  He5
+  -9.3657163942e-09 He10  He5
+  -6.0199722734e-06  He0  He6
+   9.9098836042e-06  He1  He6
+  -1.4962727719e-05  He2  He6
+   1.1442258593e-05  He3  He6
+  -3.8477902477e-06  He4  He6
+   1.8538256713e-07  He5  He6
+  -1.2149005733e-07  He6  He6
+  -2.1995796260e-07  He7  He6
+  -2.1159462466e-08  He8  He6
+  -1.1949224530e-08  He9  He6
+  -5.9037363444e-09 He10  He6
+  -6.1342282531e-07  He0  He7
+   1.1801182640e-06  He1  He7
+  -5.5320384784e-07  He2  He7
+   1.0534993749e-06  He3  He7
+  -2.8602143909e-07  He4  He7
+   1.8903867555e-07  He5  He7
+  -2.9727559050e-08  He6  He7
+  -4.3234720574e-08  He7  He7
+  -5.8192096306e-09  He8  He7
+  -3.4916423258e-09  He9  He7
+  -1.5334493305e-09 He10  He7
+  -1.9378840994e-06  He0  He8
+   2.4333839888e-06  He1  He8
+  -2.5734615038e-06  He2  He8
+   1.3524823614e-06  He3  He8
+  -6.0542782036e-07  He4  He8
+   9.7514090314e-08  He5  He8
+   3.2653983134e-08  He6  He8
+  -1.7280809141e-08  He7  He8
+   2.2737124934e-09  He8  He8
+   2.4124722858e-10  He9  He8
+  -6.8386872752e-10 He10  He8
+   3.9555666633e-07  He0  He9
+  -2.3267189978e-07  He1  He9
+  -2.6088691530e-07  He2  He9
+   1.5317340237e-07  He3  He9
+  -4.6928215974e-08  He4  He9
+   7.5512216987e-09  He5  He9
+   6.3055577849e-09  He6  He9
+  -7.9890428784e-10  He7  He9
+   2.6693057595e-10  He8  He9
+   1.2128745625e-10  He9  He9
+  -1.1652513138e-10 He10  He9
+  -1.9711198340e-07  He0 He10
+   2.4941955420e-07  He1 He10
+  -1.8220619335e-07  He2 He10
+   7.9762420675e-08  He3 He10
+  -4.5085928199e-08  He4 He10
+   1.6119872491e-09  He5 He10
+   3.7074933228e-09  He6 He10
+  -9.2477466182e-10  He7 He10
+   5.7293803840e-11  He8 He10
+   8.5043105734e-11  He9 He10
+  -1.9715716881e-11 He10 He10
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0199996741e+02  1.0499552537e+03
 dakota_uq_rosenbrock_adapt_sc.in
 Test Number 0 succeeded
 Moment statistics for each response function:

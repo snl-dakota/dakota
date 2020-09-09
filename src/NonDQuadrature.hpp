@@ -114,9 +114,9 @@ protected:
   void get_parameter_sets(Model& model);
 
   void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
+  void sampling_reference(int samples_ref);
 
   void increment_grid_preference(const RealVector& dim_pref);
-
   void increment_grid_preference();
 
   int num_samples() const;
@@ -311,6 +311,10 @@ inline void NonDQuadrature::evaluate_grid_increment()
   evaluate_parameter_sets(iteratedModel, true, false);
   ++numIntegrations;
 }
+
+
+inline void NonDQuadrature::sampling_reference(int samples_ref)
+{ numSamples = samples_ref; }
 
 
 inline int NonDQuadrature::num_samples() const
