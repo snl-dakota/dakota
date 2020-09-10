@@ -541,6 +541,13 @@ bool SharedApproxData::formulation_updated() const
 }
 
 
+void SharedApproxData::formulation_updated(bool update)
+{
+  if (dataRep) dataRep->formulation_updated(update);
+  else         formUpdated[activeKey] = update;
+}
+
+
 void SharedApproxData::
 configuration_options(const Pecos::ExpansionConfigOptions& ec_options)
 {
@@ -576,10 +583,10 @@ void SharedApproxData::random_variables_key(const BitArray& random_vars_key)
 }
 
 
-void SharedApproxData::refinement_statistics_type(short stats_type)
+void SharedApproxData::refinement_statistics_mode(short stats_mode)
 {
   if (dataRep)
-    dataRep->refinement_statistics_type(stats_type);
+    dataRep->refinement_statistics_mode(stats_mode);
   //else no-op (derived implementation not required)
 }
 

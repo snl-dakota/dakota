@@ -135,24 +135,54 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY default_convergence_tolerance '
+    <!ENTITY method_refine_metric_scale '
+	     <keyword  id="metric_scale" name="metric_scale" code="{0}" label="Refinement metric scale"  minOccurs="0" default="relative" >
+	       <oneOf label="scale of refinement metric">
+		 <keyword  id="relative" name="relative" code="{N_mdm(true,relativeConvMetric)}" label="relative refinement metric"   />
+                 <keyword  id="absolute" name="absolute" code="{N_mdm(false,relativeConvMetric)}" label="absolute refinement metric"   />
+	       </oneOf>
+             </keyword>
+	     ' >
+
+    <!ENTITY method_mf_refine_stats_mode '
+	     <keyword  id="statistics_mode" name="statistics_mode" code="{0}" label="Statistics mode for computing refinement metrics"  minOccurs="0" default="DEFAULT_EXPANSION_STATS" >
+	       <oneOf label="Statistics mode for refinement metric">
+		 <keyword  id="active" name="active" code="{N_mdm(type,statsMetricMode_ACTIVE_EXPANSION_STATS)}" label="refinement metric computed from active statistics"   />
+                 <keyword  id="combined" name="combined" code="{N_mdm(type,statsMetricMode_COMBINED_EXPANSION_STATS)}" label="refinement computed from combined statistics"   />
+	       </oneOf>
+             </keyword>
+	     ' >
+
+    <!ENTITY method_convergence_tolerance '
 	     <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance"  minOccurs="0" default="1.e-4" >
                <param type="REAL" />
              </keyword>
 	     ' >
 
-    <!ENTITY default_max_iterations '<keyword  id="max_iterations" name="max_iterations" code="{N_mdm(int,maxIterations)}" label="Maximum iterations"  minOccurs="0" default="100 (exceptions: fsu_cvt , local_reliability: 25; global_{reliability , interval_est , evidence} / efficient_global: 25*n)" >
-             <param type="INTEGER" constraint=">= 0" />
-    </keyword>
-    ' >
+    <!ENTITY method_exp_convergence_tolerance '
+	     &method_convergence_tolerance;
+             &method_refine_metric_scale;
+	     ' >
 
-    <!ENTITY default_max_solver_iterations '
+    <!ENTITY method_mf_exp_convergence_tolerance '
+	     &method_convergence_tolerance;
+             &method_refine_metric_scale;
+             &method_mf_refine_stats_mode;
+	     ' >
+
+    <!ENTITY method_max_iterations '
+	     <keyword  id="max_iterations" name="max_iterations" code="{N_mdm(int,maxIterations)}" label="Maximum iterations"  minOccurs="0" default="100 (exceptions: fsu_cvt , local_reliability: 25; global_{reliability , interval_est , evidence} / efficient_global: 25*n)" >
+               <param type="INTEGER" constraint=">= 0" />
+	     </keyword>
+	     ' >
+
+    <!ENTITY method_max_solver_iterations '
 	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(int,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
 
-    <!ENTITY default_max_refinement_iterations '
+    <!ENTITY method_max_refinement_iterations '
 	     <keyword  id="max_refinement_iterations" name="max_refinement_iterations" code="{N_mdm(int,maxRefineIterations)}" label="Maximum refinement iterations"  minOccurs="0" default="100" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
@@ -164,7 +194,7 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY default_max_function_evaluations '
+    <!ENTITY method_max_function_evaluations '
 	     <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mdm(int,maxFunctionEvaluations)}" label="Maximum function evaluations"  minOccurs="0" default="1000" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
@@ -243,7 +273,7 @@
 		 </keyword>
 	       </oneOf>
 	     </keyword>
-	     &default_max_refinement_iterations;
+	     &method_max_refinement_iterations;
 	     ' >
 
     <!ENTITY sc_refinement '
@@ -274,7 +304,7 @@
 		 </keyword>
 	       </oneOf>
 	     </optional>
-	     &default_max_refinement_iterations;
+	     &method_max_refinement_iterations;
 	     ' >
 
     <!ENTITY ft_method_refinement '
@@ -289,7 +319,7 @@
 		 </oneOf>
 	       </keyword>
 	     </keyword>
-	     &default_max_refinement_iterations;
+	     &method_max_refinement_iterations;
 	     ' >
 
     <!ENTITY expansion_rule_nesting '
@@ -473,7 +503,7 @@
 	     <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points"  minOccurs="0" default="no sample reuse in coefficient estimation" >
 	       <alias name="reuse_samples"/>
 	     </keyword>
-	     &default_max_solver_iterations;
+	     &method_max_solver_iterations;
 	     '>
 
     <!ENTITY mc_pilot_samples '
@@ -709,7 +739,6 @@
 		 <keyword  id="full_covariance" name="full_covariance" code="{N_mdm(type,covarianceControl_FULL_COVARIANCE)}" label="full_covariance"   />
 	       </oneOf>
 	     </optional>
-	     &default_convergence_tolerance;
 	     <keyword  id="import_approx_points_file" name="import_approx_points_file" code="{N_mdm(str,importApproxPtsFile)}" label="File name for importing samples for evaluating the PCE"  minOccurs="0" default="no point import from a file" >
 	       <param type="INPUT_FILE" />
 	       &method_import_approx_format;
@@ -761,7 +790,7 @@
                  <!-- <keyword id="rls1" name="rls1" code="{N_mdm(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
 	       </oneOf>
 	     </keyword>
-	     &default_max_solver_iterations;
+	     &method_max_solver_iterations;
 	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mdm(int,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 	       <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
@@ -858,6 +887,7 @@
 		  </keyword>
 	     ' >
 
+    <!--
     <!ENTITY ft_model_refinement '
              <keyword  id="p_refinement" name="p_refinement" code="{N_mom(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
 	       <keyword  id="uniform4" name="uniform" code="{N_mom(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
@@ -870,8 +900,10 @@
 		 </oneOf>
 	       </keyword>
 	     </keyword>
-	     &default_max_refinement_iterations;
+	     &model_max_refinement_iterations;
+	     &model_exp_convergence_tolerance;
 	     ' >
+    -->
 
     <!ENTITY ft_model_regression_opts '
 	     <keyword id="regression_type" name="regression_type" code="{0}" label="Objective formulation for FT regression" minOccurs="0" default="">
@@ -1056,7 +1088,7 @@
 		 &sc_sparse_grid_sequence;
 	       </oneOf>
 	       &sc_options;
-	       <!-- &bayes_expansion_options; -->
+	       &bayes_expansion_options;
 	     </keyword>
 	     ' >
 
@@ -1116,22 +1148,22 @@
 	     ' >
 
     <!ENTITY method_conmin_common_opts '
-	     &default_max_iterations;
-             &default_convergence_tolerance;
+	     &method_max_iterations;
+             &method_convergence_tolerance;
              &default_constraint_tolerance;
              &default_speculative;
-             &default_max_function_evaluations;
+             &method_max_function_evaluations;
              &default_scaling;
              <!-- &default_linear_constraints; -->
 	     &method_optional_model_pointer;
 	     ' >
 
     <!ENTITY method_dot_common_opts '
-	     &default_max_iterations;
-             &default_convergence_tolerance;
+	     &method_max_iterations;
+             &method_convergence_tolerance;
              &default_constraint_tolerance;
              &default_speculative;
-             &default_max_function_evaluations;
+             &method_max_function_evaluations;
              &default_scaling;
              <!-- &default_linear_constraints; -->
 	     &method_optional_model_pointer;
@@ -1147,11 +1179,11 @@
              <keyword  id="linesearch_tolerance" name="linesearch_tolerance" code="{N_mdm(Real,lineSearchTolerance)}" label="linesearch_tolerance"  minOccurs="0" default="0.9 (inaccurate line search)" >
                <param type="REAL" />
              </keyword>
-             &default_convergence_tolerance;
-	     &default_max_iterations;
+             &method_convergence_tolerance;
+	     &method_max_iterations;
              &default_constraint_tolerance;
              &default_speculative;
-             &default_max_function_evaluations;
+             &method_max_function_evaluations;
              &default_scaling;
              <!-- &default_linear_constraints; -->
 	     &method_optional_model_pointer;
@@ -1188,10 +1220,10 @@
              <keyword  id="gradient_tolerance" name="gradient_tolerance" code="{N_mdm(Real,gradientTolerance)}" label="gradient_tolerance"  minOccurs="0" default="1.e-4" >
                <param type="REAL" />
              </keyword>
-             &default_max_iterations;
-             &default_convergence_tolerance;
+             &method_max_iterations;
+             &method_convergence_tolerance;
              &default_speculative;
-             &default_max_function_evaluations;
+             &method_max_function_evaluations;
              &default_scaling;
              <!-- &default_linear_constraints; -->
 	     &method_optional_model_pointer;
@@ -1267,7 +1299,7 @@
              <keyword  id="seed3" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
                <param type="INTEGER" constraint="> 0" />
              </keyword>
-             &default_convergence_tolerance;
+             &method_convergence_tolerance;
 	     &method_optional_model_pointer;
 	     ' >
 
@@ -1293,9 +1325,9 @@
 	     <keyword  id="misc_options" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options"  minOccurs="0" default="no misc options" >
                <param type="STRINGLIST" />
 	     </keyword>
-	     &default_max_iterations;
-	     &default_convergence_tolerance;
-	     &default_max_function_evaluations;
+	     &method_max_iterations;
+	     &method_convergence_tolerance;
+	     &method_max_function_evaluations;
 	     &default_scaling;
 	     ' >
 
@@ -1886,8 +1918,8 @@
             <alias name="approx_model_pointer"/>
             <param type="STRING" in_taglist="model" />
           </keyword>
-          &default_max_iterations;
-          &default_convergence_tolerance;
+          &method_max_iterations;
+          &method_convergence_tolerance;
           &default_constraint_tolerance;
         </keyword>
 	-->
@@ -1947,8 +1979,8 @@
             <keyword  id="homotopy" name="homotopy" code="{N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}" label="homotopy"   />
           </keyword>
 	  &default_trust_region;
-          &default_max_iterations;
-          &default_convergence_tolerance;
+          &method_max_iterations;
+          &method_convergence_tolerance;
           &default_constraint_tolerance;
           <!-- &default_linear_constraints; -->
         </keyword>
@@ -1969,7 +2001,7 @@
             <param type="STRING" in_taglist="model" />
           </keyword>
           <keyword  id="replace_points" name="replace_points" code="{N_mdm(true,surrBasedGlobalReplacePts)}" label="Replace points used in surrogate construction with best points from previous iteration"  minOccurs="0" default="Points appended, not replaced" />
-          &default_max_iterations;
+          &method_max_iterations;
         </keyword>
 
 
@@ -2002,7 +2034,7 @@
           <!-- store method name AND incoming STRING -->
           <param type="STRING" />
           <!-- &default_linear_constraints; -->
-          &default_max_function_evaluations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
@@ -2015,10 +2047,10 @@
 	</keyword>
 
         <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp"   group="Optimization: Local, Derivative-based" >
-          &default_max_iterations;
-          &default_convergence_tolerance;
+          &method_max_iterations;
+          &method_convergence_tolerance;
           <!-- &default_linear_constraints; -->
-          &default_max_function_evaluations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
@@ -2046,18 +2078,18 @@
           <keyword  id="search_scheme_size" name="search_scheme_size" code="{N_mdm(int,searchSchemeSize)}" label="search_scheme_size"  minOccurs="0" default="32" >
             <param type="INTEGER" />
           </keyword>
-          &default_max_iterations;
-          &default_convergence_tolerance;
-          &default_max_function_evaluations;
+          &method_max_iterations;
+          &method_convergence_tolerance;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
 
 
         <keyword  id="demo_tpl" name="demo_tpl" code="{N_mdm(utype,methodName_DEMO_TPL)}" label="demo_tpl" help="" group="Optimization: Local" >
-          &default_max_function_evaluations;
-	  &default_max_iterations;
-          &default_convergence_tolerance;
+          &method_max_function_evaluations;
+	  &method_max_iterations;
+          &method_convergence_tolerance;
           <keyword  id="variable_tolerance" name="variable_tolerance" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >
             <param type="REAL" />
           </keyword>
@@ -2072,7 +2104,7 @@
 
 
         <keyword  id="rol" name="rol" code="{N_mdm(utype,methodName_ROL)}" label="rol" help="" group="Optimization: Local, Derivative-based" >
-	  &default_max_iterations;
+	  &method_max_iterations;
           <keyword  id="variable_tolerance" name="variable_tolerance" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >
             <param type="REAL" />
           </keyword>
@@ -2128,7 +2160,7 @@
           </keyword>
           <!-- &default_linear_constraints; -->
           &default_constraint_tolerance;
-          &default_max_function_evaluations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
@@ -2167,16 +2199,16 @@
               </keyword>
             </oneOf>
           </keyword>
-          &default_max_iterations;
-          &default_max_function_evaluations;
+          &method_max_iterations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
 
         <keyword  id="nowpac" name="nowpac" code="{N_mdm(utype,methodName_MIT_NOWPAC)}" label="nowpac"  >
           &default_trust_region;
-          &default_max_iterations;
-          &default_max_function_evaluations;
+          &method_max_iterations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
@@ -2186,8 +2218,8 @@
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
           &default_trust_region;
-          &default_max_iterations;
-          &default_max_function_evaluations;
+          &method_max_iterations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
@@ -2244,9 +2276,9 @@
               <param type="REALLIST" />
             </keyword>
           </keyword>
-          &default_max_iterations;
+          &method_max_iterations;
           <!-- &default_linear_constraints; -->
-          &default_max_function_evaluations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_jega_common_opts;
         </keyword>
@@ -2285,9 +2317,9 @@
               </keyword>
             </oneOf>
           </keyword>
-          &default_max_iterations;
+          &method_max_iterations;
           <!-- &default_linear_constraints; -->
-          &default_max_function_evaluations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_jega_common_opts;
         </keyword>
@@ -2507,10 +2539,10 @@
             <param type="INTEGER" />
           </keyword>
           <keyword  id="regression_diagnostics" name="regression_diagnostics" code="{N_mdm(true,regressDiag)}" label="Regression diagnostics post-processing"  minOccurs="0" default="no regression diagnostics" />
-          &default_convergence_tolerance;
-          &default_max_iterations;
+          &method_convergence_tolerance;
+          &method_max_iterations;
           &default_speculative;
-          &default_max_function_evaluations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
@@ -2519,8 +2551,8 @@
           <keyword  id="misc_options1" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options"  minOccurs="0" default="no misc options" >
             <param type="STRINGLIST" />
           </keyword>
-          &default_convergence_tolerance;
-          &default_max_iterations;
+          &method_convergence_tolerance;
+          &method_max_iterations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
@@ -2536,9 +2568,9 @@
           <keyword  id="volume_boxsize_limit" name="volume_boxsize_limit" code="{N_mdm(Real,volBoxSize)}" label="Volume boxsize limit"  minOccurs="0" default="1.0e-6" >
             <param type="REAL" />
           </keyword>
-          &default_convergence_tolerance;
-          &default_max_iterations;
-          &default_max_function_evaluations;
+          &method_convergence_tolerance;
+          &method_max_iterations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
@@ -2547,7 +2579,7 @@
           <keyword  id="seed5" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
-          &default_max_function_evaluations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -2556,7 +2588,7 @@
 	  <keyword  id="seed5" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
-          &default_max_function_evaluations;
+          &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -2574,7 +2606,7 @@
   	      <param type="INTEGER" constraint=">= 0" />
     	    </keyword>
     	  </keyword>
-          &default_max_iterations;
+          &method_max_iterations;
 	  <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance"  minOccurs="0" default="1.e-12" >
             <param type="REAL" />
           </keyword>
@@ -2599,14 +2631,15 @@
 
         <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_SURROGATE_BASED_UQ)}" label="surrogate_based_uq" help="" group="Uncertainty Quantification" >
           <!-- Current target is Model-based PCE,SC,FT expansions: support expansion_options. -->
-	  &expansion_options;
-          &method_seed;
+	  &expansion_options; <!-- level mappings et al. -->
+          &method_seed;       <!-- for expansion sampler -->
           <!-- DFSModel spec defines approximation, DACE, data import, etc. -->
 	  &method_optional_model_pointer;
         </keyword>
 
         <keyword  id="function_train" name="function_train" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train" help="" group="Uncertainty Quantification" >
 	  &ft_method_refinement;
+	  &method_exp_convergence_tolerance;
 	  <!-- &import_build; Rely on DFSModel data import -->
 	  &ft_method_regression;
 	  &ft_method_tols;
@@ -2619,6 +2652,7 @@
 
         <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" group="Uncertainty Quantification" >
 	  &ft_method_refinement;
+	  &method_mf_exp_convergence_tolerance;
 	  &mf_alloc_control;
 	  &discrep_emulation;
 	  &ft_method_tols;
@@ -2631,8 +2665,9 @@
         </keyword>
 
         <keyword  id="multilevel_function_train" name="multilevel_function_train" code="{N_mdm(utype,methodName_MULTILEVEL_FUNCTION_TRAIN)}" label="multilevel_function_train" help="" group="Uncertainty Quantification" >
-	  &default_max_iterations;
+	  &method_max_iterations;
 	  &mlft_alloc_control;
+	  &method_exp_convergence_tolerance;
 	  &discrep_emulation;
 	  &ft_method_tols;
 	  &ft_method_regression_sequence;
@@ -2646,6 +2681,7 @@
 	<keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos" group="Uncertainty Quantification" >
 	  <alias name="nond_polynomial_chaos"/>
 	  &pce_refinement;
+	  &method_exp_convergence_tolerance;
 	  <oneOf label="Chaos coefficient estimation approach">
 	    &expansion_quadrature;
 	    &pce_sparse_grid;
@@ -2664,6 +2700,7 @@
 
 	<keyword  id="multifidelity_polynomial_chaos" name="multifidelity_polynomial_chaos" code="{N_mdm(utype,methodName_MULTIFIDELITY_POLYNOMIAL_CHAOS)}" label="multifidelity_polynomial_chaos" group="Uncertainty Quantification" >
 	  &pce_refinement;
+	  &method_mf_exp_convergence_tolerance;
 	  &mf_alloc_control;
 	  &discrep_emulation;
 	  <oneOf label="Chaos Coefficient Estimation Approach">
@@ -2683,8 +2720,9 @@
 	</keyword>
 
 	<keyword  id="multilevel_polynomial_chaos" name="multilevel_polynomial_chaos" code="{N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}" label="multilevel_polynomial_chaos" group="Uncertainty Quantification" >
-	  &default_max_iterations;
+	  &method_max_iterations;
 	  &mlpce_alloc_control;
+	  &method_exp_convergence_tolerance;
 	  &discrep_emulation;
 	  <!-- Note: there are some complex dependences here (e.g. RIP_SAMPLING requires compressed sensing) and unsupported cases when reusing general entities: enforce these in the C++ rather than overly specializing the XML -->
 	  <oneOf label="Coefficient Computation Approach">
@@ -2703,6 +2741,7 @@
 	<keyword  id="stoch_collocation" name="stoch_collocation" code="{N_mdm(utype,methodName_STOCH_COLLOCATION)}" label="stoch_collocation"  group="Uncertainty Quantification" >
 	  <alias name="nond_stoch_collocation"/>
 	  &sc_refinement;
+	  &method_exp_convergence_tolerance;
 	  <oneOf label="Interpolation Grid Type">
 	    &expansion_quadrature;
 	    &sc_sparse_grid;
@@ -2715,6 +2754,7 @@
 
 	<keyword  id="multifidelity_stoch_collocation" name="multifidelity_stoch_collocation" code="{N_mdm(utype,methodName_MULTIFIDELITY_STOCH_COLLOCATION)}" label="multifidelity_stoch_collocation"  group="Uncertainty Quantification" >
 	  &sc_refinement;
+	  &method_mf_exp_convergence_tolerance;
 	  &mf_alloc_control;
 	  &discrep_emulation;
 	  <oneOf label="Interpolation Grid Type">
@@ -2724,7 +2764,7 @@
 	  &sc_options;
 	  &expansion_options;
           &method_seed_sequence;
-	  <!-- &default_max_iterations; for future multilevel SC -->
+	  <!-- &method_max_iterations; for future multilevel SC -->
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2736,8 +2776,8 @@
 	  </keyword>
 	  &method_seed;
 	  <!-- BMA: May want to restore these if it's a helper iterator, e.g., for subspace methods
-	       &default_max_iterations;
-	       &default_convergence_tolerance;
+	       &method_max_iterations;
+	       &method_convergence_tolerance;
 	    -->
 	  <keyword  id="sample_type2" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="lhs" >
 	    <oneOf label="Sample Type">
@@ -2818,8 +2858,8 @@
 		<keyword  id="max" name="max" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}" label="max"   />
 		</oneOf>
 	   </keyword>
-	  &default_max_iterations;
-	  &default_convergence_tolerance;
+	  &method_max_iterations;
+	  &method_convergence_tolerance;
 	  &default_final_moments;
 	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
 	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
@@ -2845,8 +2885,8 @@
 	  <keyword  id="refinement_samples2" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="refinement_samples"  minOccurs="0" >
 	    <param type="INTEGERLIST" />
 	  </keyword>
-	  &default_max_iterations;
-	  &default_convergence_tolerance;
+	  &method_max_iterations;
+	  &method_convergence_tolerance;
 	  &level_mappings_no_rel;
 	  &rng_options;
 	  &method_optional_model_pointer;
@@ -2870,7 +2910,7 @@
 	    <param type="OUTPUT_FILE" />
 	    &method_export_approx_format;
 	  </keyword>
-	  &default_max_iterations;
+	  &method_max_iterations;
 	  &level_mappings_no_rel;
 	  &rng_options;
 	  &method_optional_model_pointer;
@@ -2915,7 +2955,7 @@
 	  <keyword  id="misc_options2" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options"  minOccurs="0" default="no misc options" >
 	    <param type="STRINGLIST" />
 	  </keyword>
-	  &default_max_iterations;
+	  &method_max_iterations;
 	  &level_mappings_no_rel;
 	  &rng_options;
 	  &method_optional_model_pointer;
@@ -3008,9 +3048,9 @@
 	  <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
-	  &default_max_iterations;
-	  &default_convergence_tolerance;
-	  &default_max_function_evaluations;
+	  &method_max_iterations;
+	  &method_convergence_tolerance;
+	  &method_max_function_evaluations;
 	  <optional>
 	    <oneOf label="Solution Approach">
 	      <keyword  id="sbo1" name="sbo" code="{N_mdm(utype,subMethod_SUBMETHOD_SBO)}" label="sbo"  >
@@ -3205,7 +3245,7 @@
 	      <alias name="samples" />
 	      <param type="INTEGER" />
 	    </keyword>
-	    <!--&default_max_function_evaluations;-->
+	    <!--&method_max_function_evaluations;-->
             <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates"  default="1" >
               <param type="INTEGER" constraint="> 0" />
             </keyword>
@@ -3351,8 +3391,8 @@
 	    <param type="INTEGER" />
 	  </keyword>
 	  &probability_levels;
-	  &default_convergence_tolerance;
-	  &default_max_iterations;
+	  &method_convergence_tolerance;
+	  &method_max_iterations;
 	  &method_optional_model_pointer;
 	  &default_scaling;
 	</keyword>
@@ -3408,7 +3448,7 @@
 	  <keyword  id="num_trials" name="num_trials" code="{N_mdm(int,numTrials)}" label="Number of trials  "  minOccurs="0" default="10000" >
 	    <param type="INTEGER" />
 	  </keyword>
-	  &default_max_iterations;
+	  &method_max_iterations;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -3445,7 +3485,7 @@
               <keyword  id="nip2" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip"   />
             </oneOf>
           </optional>
-          &default_convergence_tolerance;
+          &method_convergence_tolerance;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -3499,8 +3539,8 @@
             </keyword>
           </keyword>
 	  &level_mappings;
-          &default_max_iterations;
-          &default_convergence_tolerance;
+          &method_max_iterations;
+          &method_convergence_tolerance;
 	  &default_final_moments;
 	  &method_optional_model_pointer;
         </keyword>
@@ -3541,8 +3581,8 @@
           </keyword>
 	  &rng_options;
 	  &level_mappings_no_rel;
-          &default_max_iterations;
-          &default_convergence_tolerance;
+          &method_max_iterations;
+          &method_convergence_tolerance;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -3571,7 +3611,7 @@
           <keyword  id="prime_base" name="prime_base" code="{N_mdm(ivec,primeBase)}" label="Prime bases for sequences"  minOccurs="0" default="Vector of the first s primes for s-dimensions in Halton, First (s-1) primes for Hammersley" >
             <param type="INTEGERLIST" />
           </keyword>
-          &default_max_iterations;
+          &method_max_iterations;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -3643,8 +3683,8 @@
           <keyword  id="refinement_rate" name="refinement_rate" code="{N_mdm(Real,refinementRate)}" label="Refinement rate"  minOccurs="0" default="2." >
             <param type="REAL" />
           </keyword>
-          &default_convergence_tolerance;
-          &default_max_iterations;
+          &method_convergence_tolerance;
+          &method_max_iterations;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -3783,7 +3823,7 @@
                   &model_partial_surrogate_export_format;
                 </keyword>
 		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" group="Surrogate-based Methods">
-		  &ft_model_refinement;
+		  <!-- &ft_model_refinement; -->
 		  &ft_model_regression_opts; <!-- opts only: collocation points defined through dace_method_pointer -->
 		  &ft_model_tols;
 		  &ft_model_order;

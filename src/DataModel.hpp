@@ -413,18 +413,19 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
-  /// quantity to increment (start order, start rank, max rank) for FT
-  /// uniform p-refinement
-  short c3RefineType;
+
+  // type of adaptive refinement (p-, h-, hp-)
+  //short refinementType;
+  // type of control for adaptive refinement (uniform, anisotropic, ...)
+  //short refinementControl;
+  // quantity to increment (start order, start rank, max rank) for FT
+  // uniform p-refinement
+  //short c3RefineType;
 
   /// number of data points used in FT construction by regression
   size_t collocationPoints;
   /// ratio of number of points to nuber of unknowns
   Real collocationRatio;
-  /// type of adaptive refinement (p-, h-, hp-)
-  short refinementType;
-  /// type of control for adaptive refinement (uniform, anisotropic, ...)
-  short refinementControl;
 
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;

@@ -2694,6 +2694,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.qoi_aggregation", P qoiAggregation},
+	{"nond.refinement_statistics_mode", P statsMetricMode},
 	{"nond.regression_type", P regressionType},
 	{"nond.response_level_target", P responseLevelTarget},
 	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
@@ -2717,9 +2718,9 @@ short ProblemDescDB::get_short(const String& entry_name) const
     #define P &DataModelRep::
     static KW<short, DataModelRep> Shdmo[] = {
       // must be sorted by string (key)
-	{"c3function_train.refinement_control", P refinementControl},
-	{"c3function_train.refinement_type", P refinementType},
-        {"c3function_train.uniform_refinement_type", P c3RefineType},
+      //{"c3function_train.refinement_control", P refinementControl},
+      //{"c3function_train.refinement_type", P refinementType},
+      //{"c3function_train.uniform_refinement_type", P c3RefineType},
 	{"nested.iterator_scheduling", P subMethodScheduling},
 	{"surrogate.correction_order", P approxCorrectionOrder},
 	{"surrogate.correction_type", P approxCorrectionType},
@@ -3131,6 +3132,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.mutual_info_ksg2", P mutualInfoKSG2},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
+	{"nond.relative_convergence_metric", P relativeConvMetric},
 	{"nond.standardized_space", P standardizedSpace},
 	{"nond.tensor_grid", P tensorGridFlag},
 	{"posterior_stats.kde", P posteriorStatsKDE},

@@ -3843,6 +3843,21 @@ bool Model::advancement_available()
 }
 
 
+bool Model::formulation_updated() const
+{
+  if (modelRep) return modelRep->formulation_updated();
+  else          return false;
+}
+
+
+void Model::formulation_updated(bool update)
+{
+  if (modelRep)
+    modelRep->formulation_updated(update);
+  //else no op
+}
+
+
 void Model::run_dace()
 {
   if (modelRep) // envelope fwd to letter

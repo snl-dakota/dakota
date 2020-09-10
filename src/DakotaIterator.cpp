@@ -1535,12 +1535,7 @@ sampling_reference(int samples_ref)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_reference(samples_ref);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine sampling_reference() "
-	 << "virtual fn.\nThis iterator does not support sampling."
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  // else no-op: iterator does not employ a sampling reference (lower bound)
 }
 
 void Iterator::

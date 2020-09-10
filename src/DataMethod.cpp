@@ -24,8 +24,9 @@ DataMethodRep::DataMethodRep():
   methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxRefineIterations(-1),
   maxSolverIterations(-1), maxFunctionEvaluations(1000), speculativeFlag(false),
   methodUseDerivsFlag(false),
-  convergenceTolerance(-std::numeric_limits<double>::max()),
   constraintTolerance(0.), methodScaling(false), numFinalSolutions(0),
+  convergenceTolerance(-std::numeric_limits<double>::max()),
+  relativeConvMetric(true), statsMetricMode(Pecos::DEFAULT_EXPANSION_STATS),
   methodName(DEFAULT_METHOD), subMethod(SUBMETHOD_DEFAULT),
   // Meta-iterators
   iteratorServers(0), procsPerIterator(0), // 0 defaults to detect user spec
@@ -195,9 +196,10 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << idMethod << modelPointer << lowFidModelPointer << methodOutput
     << maxIterations << maxRefineIterations << maxSolverIterations
     << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
-    << convergenceTolerance << constraintTolerance << methodScaling
-    << numFinalSolutions << methodName << subMethod << subMethodName
-    << subModelPointer << subMethodPointer;
+    << constraintTolerance << methodScaling << numFinalSolutions
+    << convergenceTolerance << relativeConvMetric << statsMetricMode
+    << methodName << subMethod << subMethodName << subModelPointer
+    << subMethodPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling
@@ -360,9 +362,10 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> idMethod >> modelPointer >> lowFidModelPointer >> methodOutput
     >> maxIterations >> maxRefineIterations >> maxSolverIterations
     >> maxFunctionEvaluations >> speculativeFlag >> methodUseDerivsFlag
-    >> convergenceTolerance >> constraintTolerance >> methodScaling
-    >> numFinalSolutions >> methodName >> subMethod >> subMethodName
-    >> subModelPointer >> subMethodPointer;
+    >> constraintTolerance >> methodScaling >> numFinalSolutions
+    >> convergenceTolerance >> relativeConvMetric >> statsMetricMode
+    >> methodName >> subMethod >> subMethodName >> subModelPointer
+    >> subMethodPointer;
 
   // Meta-iterators
   s >> iteratorServers >> procsPerIterator >> iteratorScheduling
@@ -525,9 +528,10 @@ void DataMethodRep::write(std::ostream& s) const
   s << idMethod << modelPointer << lowFidModelPointer << methodOutput
     << maxIterations << maxRefineIterations << maxSolverIterations
     << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
-    << convergenceTolerance << constraintTolerance << methodScaling
-    << numFinalSolutions << methodName << subMethod << subMethodName
-    << subModelPointer << subMethodPointer;
+    << constraintTolerance << methodScaling << numFinalSolutions
+    << convergenceTolerance << relativeConvMetric << statsMetricMode
+    << methodName << subMethod << subMethodName << subModelPointer
+    << subMethodPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling

@@ -158,7 +158,7 @@ protected:
 
   void random_variables_key(const BitArray& random_vars_key);
 
-  //void refinement_statistics_type(short stats_type);
+  //void refinement_statistics_mode(short stats_mode);
 
   //const Pecos::BitArrayULongMap& SharedApproxData::sobol_index_map();
 
@@ -267,7 +267,7 @@ protected:
   /// RANK_SAMPLING, GREEDY
   short allocControl;
   // indicates refinement based on active or combined statistics
-  //short refineStatsType;
+  //short refineStatsMode;
   /// type of (uniform) refinement: UNIFORM_{START_ORDER,START_RANK,MAX_RANK}
   short c3RefineType;
 
@@ -623,8 +623,8 @@ random_variables_key(const BitArray& random_vars_key)
 }
 
 
-//inline void SharedC3ApproxData::refinement_statistics_type(short stats_type)
-//{ refineStatsType = stats_type; }
+//inline void SharedC3ApproxData::refinement_statistics_mode(short stats_mode)
+//{ refineStatsMode = stats_mode; }
 
 
 inline void SharedC3ApproxData::build()

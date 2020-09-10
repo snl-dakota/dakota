@@ -110,24 +110,18 @@ NonDSurrogateExpansion::~NonDSurrogateExpansion()
 { }
 
 
+/* Base class implementation is sufficient for single-level
 void NonDSurrogateExpansion::core_run()
 {
-  // Execute a generic UQ workflow:
-
-  initialize_expansion();
-
-  compute_expansion();  // invokes uSpaceModel.build_approximation()
-  if (refineType)
-    refine_expansion(); // uniform/adaptive p-/h-refinement
-
-  compute_statistics(FINAL_RESULTS);
-  // Note: print_results() called by Analyzer::post_run()
-
-  finalize_expansion();
-
-
   // TO DO: detect and execute a generic MLMF UQ workflow
+  if (detect_mf())
+    multifidelity_expansion();
+  else if (detect_ml_regress())
+    multilevel_regression();
+  else
+    NonDExpasion::core_run();
 }
+*/
 
 
 void NonDSurrogateExpansion::print_results(std::ostream& s)

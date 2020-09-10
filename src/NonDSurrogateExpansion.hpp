@@ -41,8 +41,8 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  /// perform a forward uncertainty propagation using PCE/SC methods
-  void core_run();
+  // perform a forward uncertainty propagation using PCE/SC/FT DataFitSurrModel
+  //void core_run();
 
 protected:
 

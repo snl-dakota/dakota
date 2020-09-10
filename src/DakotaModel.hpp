@@ -275,6 +275,11 @@ public:
   /// query the approximation for available advancement in resolution controls
   /// (order, rank, etc.); an input to adaptive refinement strategies
   virtual bool advancement_available();
+  /// query the approximation for updates in formulation, requiring a rebuild
+  /// even if no updates to the build data
+  virtual bool formulation_updated() const;
+  /// assign the status of approximation formulation updates
+  virtual void formulation_updated(bool update);
 
   /// execute the DACE iterator (prior to building/appending the approximation)
   virtual void run_dace();
