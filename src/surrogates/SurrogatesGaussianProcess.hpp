@@ -111,6 +111,13 @@ public:
   void value(const MatrixXd &samples, MatrixXd &approx_values) override;
 
   /**
+   *  \brief Evaluate the Gaussian Process at a set of prediction points for a single qoi.
+   *  \param[in] samples Matrix for prediction points - (num_points by num_features).
+   *  \returns Mean of the Gaussian process at the prediction points.
+   */
+  VectorXd value(const MatrixXd& sample, const int qoi) override;
+
+  /**
    *  \brief Evaluate the gradient of the Gaussian process at a set of prediction points.
    *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
@@ -129,12 +136,28 @@ public:
   void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
 
   /**
+   *  \brief Evaluate the variance of the Gaussian Process at a set of prediction points for a given QoI index.
+   *  \param[in] samples Matrix for the prediction points - (num_points by num_features).
+   *  \returns[out] Variance of the Gaussian process at the prediction points.
+   */
+  VectorXd variance(const MatrixXd &samples, const int qoi);
+
+  /**
+   *  \brief Evaluate the variance of the Gaussian Process at a set of prediction points for QoI index 0.
+   *  \param[in] samples Matrix for the prediction points - (num_points by num_features).
+   *  \returns[out] Variance of the Gaussian process at the prediction points.
+   */
+  VectorXd variance(const MatrixXd &samples) {return variance(samples, 0);}
+
+  /**
    *  \brief Evaluate the negative marginal loglikelihood and its 
    *  gradient.
+   *  \param[in] compute_grad Flag for computation of gradient.
+   *  \param[in] compute_gram Flag for various Gram matrix calculations.
    *  \param[out] obj_value Value of the objection function.
    *  \param[out] obj_gradient Gradient of the objective function.
    */
-  void negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient);
+  void negative_marginal_log_likelihood(bool compute_grad, bool compute_gram, double &obj_value, VectorXd &obj_gradient);
 
   /* Get/set functions */
 
@@ -288,6 +311,12 @@ private:
   /// Gram matrix for the build points
   MatrixXd GramMatrix;
 
+  /// Difference between target values and trend predictions.
+  VectorXd trendTargetResidual;
+
+  /// Cholesky solve for Gram matrix with trendTargetResidual rhs.
+  VectorXd GramResidualSolution;
+
   /// Derivatives of the Gram matrix w.r.t. the hyperparameters.
   std::vector<MatrixXd> GramMatrixDerivs;
 
@@ -305,6 +334,15 @@ private:
 
   /// Pivoted Cholesky factorization.
   Eigen::LDLT<MatrixXd> CholFact;
+
+  /// Flag for recomputation of the best Cholesky factorization.
+  bool hasBestCholFact;
+
+  /// Evaluation points for the previous value call
+  MatrixXd previousSamples;
+
+  /// GP mean at evaluation points for the previous value call
+  MatrixXd previousValues;
 
   /// Posterior covariance matrix for prediction points.
   MatrixXd posteriorCov;
@@ -364,9 +402,16 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version)
   archive & basisMatrix;
   archive & betaValues;
   // BMA TODO: leaving this as shared_ptr pending discussion as it seems natural
-  if (Archive::is_loading::value)
-    polyRegression.reset(new PolynomialRegression());
-  archive & *polyRegression;
+  // BMA NOTE: If serializing through shared_ptr, wouldn't have to
+  // trap the nullptr case here...
+  if (estimateTrend) {
+    if (Archive::is_loading::value)
+      polyRegression.reset(new PolynomialRegression());
+    archive & *polyRegression;
+  }
+  // DTS: Set false so that the Cholesky factorization is recomputed after load
+  hasBestCholFact = false;
+  archive & hasBestCholFact;
 }
 
 }  // namespace surrogates

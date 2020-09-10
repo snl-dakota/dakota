@@ -243,7 +243,11 @@ protected:
 
   /// query approxInterface for available advancements in order, rank, etc.
   bool advancement_available();
-
+  /// query approxInterface for updates in formulation (requiring a rebuild)
+  bool formulation_updated() const;
+  /// update the formulation status in approxInterface
+  void formulation_updated(bool update);
+  
   /// execute the DACE iterator to generate build data
   void run_dace();
 
@@ -712,6 +716,14 @@ inline void DataFitSurrModel::clear_inactive()
 
 inline bool DataFitSurrModel::advancement_available()
 { return approxInterface.advancement_available(); }
+
+
+inline bool DataFitSurrModel::formulation_updated() const
+{ return approxInterface.formulation_updated(); }
+
+
+inline void DataFitSurrModel::formulation_updated(bool update)
+{ approxInterface.formulation_updated(update); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()

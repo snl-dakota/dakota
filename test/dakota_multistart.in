@@ -18,7 +18,7 @@
 #@ p3: MPIProcs=4
 #@ p4: MPIProcs=3
 #@ p5: MPIProcs=4 CheckOutput='dakota.out.1'
-#@ p6: MPIProcs=3 CheckOutput='dakota.out.1'
+#@ p6: MPIProcs=3
 #@ s0: UserMan=qsf_multistart_strat
 #@ [taxonomy:start]
 #@ s0: [analysis:Optimization]

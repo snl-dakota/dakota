@@ -56,7 +56,6 @@ DataModelRep::DataModelRep():
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
   c3AdvanceType(NO_C3_ADVANCEMENT),
   collocationPoints(std::numeric_limits<size_t>::max()), collocationRatio(0.),
-  refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
@@ -101,7 +100,6 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
     << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
     << collocationPoints << collocationRatio
-    << refinementType << refinementControl
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
@@ -148,7 +146,6 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> tensorGridFlag >> startOrder >> kickOrder >> maxOrder >> adaptOrder
     >> startRank >> kickRank >> maxRank >> adaptRank >> c3AdvanceType
     >> collocationPoints >> collocationRatio
-    >> refinementType >> refinementControl
     >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
     >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
     >> adaptedBasisCollocRatio >> propagationModelPointer >> truncationTolerance
@@ -195,7 +192,6 @@ void DataModelRep::write(std::ostream& s) const
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
     << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
     << collocationPoints << collocationRatio
-    << refinementType << refinementControl
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance

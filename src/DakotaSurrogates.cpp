@@ -217,17 +217,10 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
     abort_handler(-1);
   }
 
-  const size_t num_evals = 1;
-  const size_t num_vars = c_vars.length();
-  const size_t num_qoi = 1;
+  const int num_vars = c_vars.length();
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
 
-  // Could instead use RowVectorXd
-  Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
-  MatrixXd pred(num_evals, num_qoi);
-
-  model->value(eval_pts, pred);
-
-  return pred(0,0);
+  return model->value(eval_point)(0);
 }
     
 const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)

@@ -106,7 +106,7 @@ public:
   void configuration_options(const Pecos::RegressionConfigOptions& rc_options);
 
   /// update ExpansionConfigOptions::refineStatsType
-  void refinement_statistics_type(short stats_type);
+  void refinement_statistics_mode(short stats_mode);
 
 protected:
 
@@ -402,8 +402,8 @@ configuration_options(const Pecos::RegressionConfigOptions& rc_options)
 }
 
 
-inline void SharedPecosApproxData::refinement_statistics_type(short stats_type)
-{ pecosSharedDataRep->refinement_statistics_type(stats_type); }
+inline void SharedPecosApproxData::refinement_statistics_mode(short stats_mode)
+{ pecosSharedDataRep->refinement_statistics_type(stats_mode); }
 
 
 inline Pecos::SharedBasisApproxData& SharedPecosApproxData::pecos_shared_data()

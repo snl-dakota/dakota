@@ -1230,6 +1230,19 @@ bool Interface::formulation_updated() const
 }
 
 
+void Interface::formulation_updated(bool update)
+{
+  if (interfaceRep)
+    interfaceRep->formulation_updated(update);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
+	 << "() function.\n       This interface does not define approximation "
+	 << "formulations." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {

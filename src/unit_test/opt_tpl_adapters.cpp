@@ -46,7 +46,7 @@ namespace {
    "    no_hessians                      ";
 
 
-  Dakota::Optimizer * 
+  std::shared_ptr<Dakota::Optimizer> 
     get_optimizer(std::shared_ptr<Dakota::LibraryEnvironment> p_env, bool verbose = false)
     {
       Dakota::ProblemDescDB & problem_db = p_env->problem_description_db();
@@ -57,7 +57,7 @@ namespace {
         Cout << "The iterator is a : " << dak_iter.method_string() << endl;
         dak_iter.print_results(Cout);
       }
-      Dakota::Optimizer * optimizer = dynamic_cast<Dakota::Optimizer*>(dak_iter.iterator_rep());
+      std::shared_ptr<Dakota::Optimizer> optimizer = std::static_pointer_cast<Dakota::Optimizer>(dak_iter.iterator_rep());
 
       return optimizer;
     }
@@ -83,7 +83,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
     p_env->execute();
   }
 
-  Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  std::shared_ptr<Dakota::DemoTPLOptimizer> demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   std::shared_ptr<TPLDataTransfer> data_xfer = demo_optimizer->get_data_transfer_helper();
   DemoOptTraits::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -102,7 +102,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
   p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
   p_env->execute();
 
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -122,7 +122,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
   p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
   p_env->execute();
 
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -144,7 +144,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
   p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
   p_env->execute();
 
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -174,7 +174,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_demo)
     p_env->execute();
   }
 
-  Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  std::shared_ptr<Dakota::DemoTPLOptimizer> demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
   
   std::shared_ptr<TPLDataTransfer> data_xfer = demo_optimizer->get_data_transfer_helper();
   DemoOptTraits::VecT nln_eqs(data_xfer->num_tpl_nonlin_eq_constraints());
@@ -193,7 +193,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_demo)
   p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
   p_env->execute();
 
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_eqs.resize(data_xfer->num_tpl_nonlin_eq_constraints());
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
@@ -223,7 +223,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
     p_env->execute();
   }
 
-  Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  std::shared_ptr<Dakota::DemoTPLOptimizer> demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   std::shared_ptr<TPLDataTransfer> data_xfer = demo_optimizer->get_data_transfer_helper();
   DemoOptTraits::VecT nln_eqs(data_xfer->num_tpl_nonlin_eq_constraints());
@@ -247,7 +247,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
   p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
   p_env->execute();
 
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_eqs.resize(data_xfer->num_tpl_nonlin_eq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -271,7 +271,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
   p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
   p_env->execute();
 
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_eqs.resize(data_xfer->num_tpl_nonlin_eq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -299,7 +299,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_demo)
   p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
   p_env->execute();
 
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_eqs.resize(data_xfer->num_tpl_nonlin_eq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -392,7 +392,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   }
 
   // The Demo optimizer is only needed to get the model and responses
-  Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  std::shared_ptr<Dakota::DemoTPLOptimizer> demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   using TRAITS_TYPE1 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER, NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY>;
   using TRAITS_TYPE2 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED,       NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY>;
@@ -435,7 +435,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   p_env->execute();
 
   // The Demo optimizer is only needed to get the model and responses
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
@@ -471,7 +471,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   p_env->execute();
 
   // The Demo optimizer is only needed to get the model and responses
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
@@ -509,7 +509,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   p_env->execute();
 
   // The Demo optimizer is only needed to get the model and responses
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
@@ -555,7 +555,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   }
 
   // The Demo optimizer is only needed to get the model and responses
-  Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  std::shared_ptr<Dakota::DemoTPLOptimizer> demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   using TRAITS_TYPE1 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER, NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY>;
   using TRAITS_TYPE2 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED,       NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY>;
@@ -607,7 +607,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   p_env->execute();
 
   // The Demo optimizer is only needed to get the model and responses
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
@@ -652,7 +652,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   p_env->execute();
 
   // The Demo optimizer is only needed to get the model and responses
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
@@ -699,7 +699,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   p_env->execute();
 
   // The Demo optimizer is only needed to get the model and responses
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
@@ -753,7 +753,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
   }
 
   // The Demo optimizer is only needed to get the model and responses
-  Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  std::shared_ptr<Dakota::DemoTPLOptimizer> demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
   
   using TRAITS_TYPE1 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER, NONLINEAR_EQUALITY_FORMAT::TWO_INEQUALITY>;
   using TRAITS_TYPE2 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER, NONLINEAR_EQUALITY_FORMAT::TWO_INEQUALITY>;
@@ -809,7 +809,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
   p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
   p_env->execute();
 
-  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  demo_optimizer = std::static_pointer_cast<Dakota::DemoTPLOptimizer>(get_optimizer(p_env));
 
   data_xfer1.reset(new TPLDataTransfer()); 
   data_xfer2.reset(new TPLDataTransfer()); 

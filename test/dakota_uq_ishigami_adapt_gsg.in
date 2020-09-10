@@ -17,7 +17,7 @@ method,
 #	  compute probabilities
 #	    samples_on_emulator = 100000 seed = 1237 fixed_seed
 #	  cumulative distribution			#s2,#s3,#s6,#s7
-#	  output silent
+#         output silent                                 #s2,#s3,#s6,#s7
 
 variables,
 	uniform_uncertain = 3

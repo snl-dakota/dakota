@@ -6905,6 +6905,7 @@ static String
 	MP_(importPredConfigs),
 	MP_(logFile),
 	MP_(lowFidModelPointer),
+	MP_(modelExportPrefix),
 	MP_(modelPointer),
         MP_(posteriorDensityExportFilename),
         MP_(posteriorSamplesExportFilename),
@@ -6913,7 +6914,7 @@ static String
 	MP_(pstudyFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
-    MP_(subModelPointer);
+        MP_(subModelPointer);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -6937,6 +6938,7 @@ static bool
         MP_(evaluatePosteriorDensity),
 	MP_(expansionFlag),
 	MP_(exportSampleSeqFlag),
+	MP_(exportSurrogate),
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
         MP_(generatePosteriorSamples),
@@ -6962,11 +6964,12 @@ static bool
 	MP_(pstudyFileActive),
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
+	MP_(relativeConvMetric),
 	MP_(showAllEval),
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
 	MP_(standardizedSpace),
-  MP_(useTargetVarianceOptimizationFlag),
+	MP_(useTargetVarianceOptimizationFlag),
 	MP_(tensorGridFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
@@ -6974,12 +6977,15 @@ static bool
 	MP_(volQualityFlag),
 	MP_(wilksFlag);
 
+/* It seems these are redundant with Method_mp_type:
 static short
 	MP_(c3AdvanceType),
         MP_(expansionType),
-	MP_(nestingOverride),
-	MP_(refinementType),
+        MP_(nestingOverride),
+        MP_(refinementControl),
+        MP_(refinementType),
 	MP_(wilksSidedInterval);
+*/
 
 static int
 	MP_(batchSize),
@@ -7050,6 +7056,7 @@ static Method_mp_type
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
 	MP2s(distributionType,CUMULATIVE),
+	MP2s(emulatorType,EXPGP_EMULATOR),
 	MP2s(emulatorType,GP_EMULATOR),
 	MP2s(emulatorType,KRIGING_EMULATOR),
 	MP2s(emulatorType,MF_PCE_EMULATOR),
@@ -7116,6 +7123,8 @@ static Method_mp_type
 	MP2s(responseLevelTarget,RELIABILITIES),
 	MP2s(responseLevelTargetReduce,SYSTEM_PARALLEL),
 	MP2s(responseLevelTargetReduce,SYSTEM_SERIES),
+        MP2p(statsMetricMode,ACTIVE_EXPANSION_STATS),   // Pecos
+        MP2p(statsMetricMode,COMBINED_EXPANSION_STATS), // Pecos
 	MP2s(surrBasedLocalAcceptLogic,FILTER),
 	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
 	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),
@@ -7264,6 +7273,8 @@ static Method_mp_utype
 	MP2s(methodName,LIST_PARAMETER_STUDY),
 	MP2s(methodName,CENTERED_PARAMETER_STUDY),
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
+        MP2s(modelExportFormat,TEXT_ARCHIVE),
+        MP2s(modelExportFormat,BINARY_ARCHIVE),
 	MP2s(preSolveMethod,SUBMETHOD_NIP),
 	MP2s(preSolveMethod,SUBMETHOD_NONE),
 	MP2s(preSolveMethod,SUBMETHOD_SQP),
@@ -7380,8 +7391,8 @@ static Model_mp_type
 	MP2s(c3AdvanceType,START_RANK_ADVANCEMENT),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
-	MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
-	MP2p(refinementType,P_REFINEMENT),        // Pecos
+      //MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
+      //MP2p(refinementType,P_REFINEMENT),        // Pecos
 	MP2s(regressionType,FT_LS),
 	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),

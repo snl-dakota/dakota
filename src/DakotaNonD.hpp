@@ -127,9 +127,9 @@ protected:
   //
 
   /// concatenate computed{Resp,Prob,Rel,GenRel}Levels into level_maps
-  void pull_level_mappings(RealVector& level_maps);
+  void pull_level_mappings(RealVector& level_maps, size_t offset);
   /// update computed{Resp,Prob,Rel,GenRel}Levels from level_maps
-  void push_level_mappings(const RealVector& level_maps);
+  void push_level_mappings(const RealVector& level_maps, size_t offset);
 
   /// distribute pilot sample specification across model levels
   void load_pilot_sample(const SizetArray& pilot_spec, SizetArray& delta_N_l);

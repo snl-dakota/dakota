@@ -4348,16 +4348,16 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.7200000000e+01   P1   P0
   -2.7200000000e+01   P0   P1
    2.5142857143e+01   P2   P0
-  -8.6065610366e-15   P1   P1
+  -3.1016097320e-14   P1   P1
    2.5142857143e+01   P0   P2
   -1.2800000000e+01   P3   P0
-  -7.8867220104e-14   P2   P1
-  -1.3019046776e-13   P1   P2
+  -8.2555537861e-14   P2   P1
+  -1.3202413632e-13   P1   P2
   -1.2800000000e+01   P0   P3
    3.6571428571e+00   P4   P0
-  -3.0263063844e-14   P3   P1
-  -5.8779004923e-14   P2   P2
-  -1.0820888380e-14   P1   P3
+  -4.3132283395e-14   P3   P1
+  -7.5759606345e-14   P2   P2
+  -1.7261893368e-14   P1   P3
    3.6571428571e+00   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.3333333333e+00   P0   P0
@@ -4403,16 +4403,16 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.7200000000e+01   P1   P0
   -2.7200000000e+01   P0   P1
    2.5142857143e+01   P2   P0
-  -8.6065610366e-15   P1   P1
+  -3.1016097320e-14   P1   P1
    2.5142857143e+01   P0   P2
   -1.2800000000e+01   P3   P0
-  -7.8867220104e-14   P2   P1
-  -1.3019046776e-13   P1   P2
+  -8.2555537861e-14   P2   P1
+  -1.3202413632e-13   P1   P2
   -1.2800000000e+01   P0   P3
    3.6571428571e+00   P4   P0
-  -3.0263063844e-14   P3   P1
-  -5.8779004923e-14   P2   P2
-  -1.0820888380e-14   P1   P3
+  -4.3132283395e-14   P3   P1
+  -7.5759606345e-14   P2   P2
+  -1.7261893368e-14   P1   P3
    3.6571428571e+00   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.3333333333e+00   P0   P0
@@ -4458,16 +4458,16 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.7200000000e+01   P1   P0
   -2.7200000000e+01   P0   P1
    2.5142857143e+01   P2   P0
-  -8.6065610366e-15   P1   P1
+  -3.1016097320e-14   P1   P1
    2.5142857143e+01   P0   P2
   -1.2800000000e+01   P3   P0
-  -7.8867220104e-14   P2   P1
-  -1.3019046776e-13   P1   P2
+  -8.2555537861e-14   P2   P1
+  -1.3202413632e-13   P1   P2
   -1.2800000000e+01   P0   P3
    3.6571428571e+00   P4   P0
-  -3.0263063844e-14   P3   P1
-  -5.8779004923e-14   P2   P2
-  -1.0820888380e-14   P1   P3
+  -4.3132283395e-14   P3   P1
+  -7.5759606345e-14   P2   P2
+  -1.7261893368e-14   P1   P3
    3.6571428571e+00   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.3333333333e+00   P0   P0
@@ -4513,16 +4513,16 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.7200000000e+01   P1   P0
   -2.7200000000e+01   P0   P1
    2.5142857143e+01   P2   P0
-  -8.6065610366e-15   P1   P1
+  -3.1016097320e-14   P1   P1
    2.5142857143e+01   P0   P2
   -1.2800000000e+01   P3   P0
-  -7.8867220104e-14   P2   P1
-  -1.3019046776e-13   P1   P2
+  -8.2555537861e-14   P2   P1
+  -1.3202413632e-13   P1   P2
   -1.2800000000e+01   P0   P3
    3.6571428571e+00   P4   P0
-  -3.0263063844e-14   P3   P1
-  -5.8779004923e-14   P2   P2
-  -1.0820888380e-14   P1   P3
+  -4.3132283395e-14   P3   P1
+  -7.5759606345e-14   P2   P2
+  -1.7261893368e-14   P1   P3
    3.6571428571e+00   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.3333333333e+00   P0   P0
@@ -4569,7 +4569,7 @@ Test Number 0 succeeded
                       1.0003666224e+00 x2
                       1.0003666224e+00 x3
 <<<<< Best objective function  =
-                      5.4199752248e-14
+                      5.4199752832e-14
 <<<<< Best data captured at function evaluation 55
 <<<<< Function evaluation summary: 24 total (24 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4588,7 +4588,7 @@ Test Number 1 succeeded
                       1.0003666224e+00 x2
                       1.0003666224e+00 x3
 <<<<< Best objective function  =
-                      5.4199752248e-14
+                      5.4199752832e-14
 <<<<< Best data captured at function evaluation 55
 <<<<< Function evaluation summary: 24 total (24 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4618,32 +4618,32 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 44
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.7709283115e-01 x1
-                     -7.0241174878e-01 x2
+                      1.7709371624e-01 x1
+                     -7.0241105246e-01 x2
 <<<<< Best objective function  =
-                      3.0302333980e-01
+                      3.0302333982e-01
 <<<<< Best data captured at function evaluation 61
 <<<<< Results summary:
    set_id             x1             x2            x1*            x2*         obj_fn 
         1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
-        2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
-        3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
+        2           -0.8            0.8             -1    0.177092822   0.2913715524 
+        3            0.8           -0.8    0.177092822             -1   0.2913715524 
         4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
         5              0              0  0.03572926375  0.03572926375  0.08730499239 
-        6  -0.5356872085    -0.18209903  -0.5509956192  -0.1074790789   0.3261816536 
-        7   0.1419702143  -0.7143527167   0.1770928312  -0.7024117488   0.3030233398 
-        8   0.5240928925   0.7939232343  0.03572923987    0.177092822  0.07377609349 
+        6  -0.5356872085    -0.18209903  -0.5509947154  -0.1074808541   0.3261816536 
+        7   0.1419702143  -0.7143527167   0.1770937162  -0.7024110525   0.3030233398 
+        8   0.5240928925   0.7939232343  0.03572734101   0.1770874415  0.07377609411 
 Test Number 1 succeeded
 <<<<< Results summary:
    set_id             x1             x2            x1*            x2*             f1 
         1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
-        2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
-        3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
+        2           -0.8            0.8             -1    0.177092822   0.2913715524 
+        3            0.8           -0.8    0.177092822             -1   0.2913715524 
         4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
         5              0              0  0.03572926375  0.03572926375  0.08730499239 
-        6  -0.5356872085    -0.18209903  -0.5509956192  -0.1074790789   0.3261816536 
-        7   0.1419702143  -0.7143527167   0.1770928312  -0.7024117488   0.3030233398 
-        8   0.5240928925   0.7939232343  0.03572923987    0.177092822  0.07377609349 
+        6  -0.5356872085    -0.18209903  -0.5509947154  -0.1074808541   0.3261816536 
+        7   0.1419702143  -0.7143527167   0.1770937162  -0.7024110525   0.3030233398 
+        8   0.5240928925   0.7939232343  0.03572734101   0.1770874415  0.07377609411 
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4661,43 +4661,43 @@ Test Number 2 succeeded
 <<<<< Best data captured at function evaluation 44
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.7709283115e-01 x1
-                     -7.0241174878e-01 x2
+                      1.7709371624e-01 x1
+                     -7.0241105246e-01 x2
 <<<<< Best objective function  =
-                      3.0302333980e-01
+                      3.0302333982e-01
 <<<<< Best data captured at function evaluation 61
 <<<<< Results summary:
    set_id             x1             x2            x1*            x2*         obj_fn 
         1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
-        2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
-        3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
+        2           -0.8            0.8             -1    0.177092822   0.2913715524 
+        3            0.8           -0.8    0.177092822             -1   0.2913715524 
         4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
         5              0              0  0.03572926375  0.03572926375  0.08730499239 
-        6  -0.5356872085    -0.18209903  -0.5509956192  -0.1074790789   0.3261816536 
-        7   0.1419702143  -0.7143527167   0.1770928312  -0.7024117488   0.3030233398 
-        8   0.5240928925   0.7939232343  0.03572923987    0.177092822  0.07377609349 
+        6  -0.5356872085    -0.18209903  -0.5509947154  -0.1074808541   0.3261816536 
+        7   0.1419702143  -0.7143527167   0.1770937162  -0.7024110525   0.3030233398 
+        8   0.5240928925   0.7939232343  0.03572734101   0.1770874415  0.07377609411 
 Test Number 3 succeeded
 <<<<< Results summary:
    set_id             x1             x2            x1*            x2*             f1 
         1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
-        2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
-        3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
+        2           -0.8            0.8             -1    0.177092822   0.2913715524 
+        3            0.8           -0.8    0.177092822             -1   0.2913715524 
         4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
         5              0              0  0.03572926375  0.03572926375  0.08730499239 
-        6  -0.5356872085    -0.18209903  -0.5509956192  -0.1074790789   0.3261816536 
-        7   0.1419702143  -0.7143527167   0.1770928312  -0.7024117488   0.3030233398 
-        8   0.5240928925   0.7939232343  0.03572923987    0.177092822  0.07377609349 
+        6  -0.5356872085    -0.18209903  -0.5509947154  -0.1074808541   0.3261816536 
+        7   0.1419702143  -0.7143527167   0.1770937162  -0.7024110525   0.3030233398 
+        8   0.5240928925   0.7939232343  0.03572734101   0.1770874415  0.07377609411 
 Test Number 4 succeeded
 <<<<< Results summary:
    set_id             x1             x2            x1*            x2*             f1 
         1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
-        2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
-        3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
+        2           -0.8            0.8             -1    0.177092822   0.2913715524 
+        3            0.8           -0.8    0.177092822             -1   0.2913715524 
         4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
         5              0              0  0.03572926375  0.03572926375  0.08730499239 
-        6  -0.5356872085    -0.18209903  -0.5509956192  -0.1074790789   0.3261816536 
-        7   0.1419702143  -0.7143527167   0.1770928312  -0.7024117488   0.3030233398 
-        8   0.5240928925   0.7939232343  0.03572923987    0.177092822  0.07377609349 
+        6  -0.5356872085    -0.18209903  -0.5509947154  -0.1074808541   0.3261816536 
+        7   0.1419702143  -0.7143527167   0.1770937162  -0.7024110525   0.3030233398 
+        8   0.5240928925   0.7939232343  0.03572734101   0.1770874415  0.07377609411 
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 7 total (4 new, 3 duplicate)
 <<<<< Best parameters          =
@@ -5391,13 +5391,13 @@ Test Number 19 succeeded
                      -1.9994596092e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  7.0466068954e-01  3.2430085938e-01 -6.4635365393e-01  9.5347812139e-02
-            x2  5.8637383385e-01  4.1760699038e-01  2.8814947264e-01 -8.2545885149e-01
+            x1  7.0466068954e-01  3.2430085938e-01 -6.4635365402e-01  9.5347812000e-02
+            x2  5.8637383384e-01  4.1760699040e-01  2.8814947243e-01 -8.2545885156e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1 -1.5291315395e-01  6.7355655104e-01  1.1324450761e-01  1.8036175085e-01
-            f2  2.9533931046e-01  3.2430085938e-01  6.4635365393e-01  9.5347812139e-02
-Information gained from prior to posterior = 4.7295217183e+00
+            f1 -1.5291315411e-01  6.7355655106e-01  1.1324450793e-01  1.8036175051e-01
+            f2  2.9533931046e-01  3.2430085938e-01  6.4635365402e-01  9.5347812000e-02
+Information gained from prior to posterior = 4.7295217161e+00
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -5411,13 +5411,13 @@ Test Number 20 succeeded
                      -1.9994520466e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  7.4812443168e-01  2.6944140644e-01 -5.8717380884e-01  2.8360985149e-02
-            x2  5.9983431426e-01  3.7238487178e-01  2.1733553850e-01 -5.9406587299e-01
+            x1  7.4812443168e-01  2.6944140645e-01 -5.8717380885e-01  2.8360985159e-02
+            x2  5.9983431426e-01  3.7238487178e-01  2.1733553849e-01 -5.9406587302e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1 -3.2418223190e-01  6.6387000393e-01  4.3410418482e-02 -3.4257299036e-02
-            f2  2.5187556832e-01  2.6944140644e-01  5.8717380884e-01  2.8360985149e-02
-Information gained from prior to posterior = 3.1010205735e+00
+            f1 -3.2418223192e-01  6.6387000392e-01  4.3410418461e-02 -3.4257298987e-02
+            f2  2.5187556832e-01  2.6944140645e-01  5.8717380885e-01  2.8360985159e-02
+Information gained from prior to posterior = 3.1010205737e+00
 Test Number 21 succeeded
 <<<<< Function evaluation summary: 3137 total (3136 new, 1 duplicate)
 <<<<< Best parameters          =
@@ -5574,7 +5574,7 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 21
 dakota_sbo_textbook.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 176 total (176 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 69 total (66 new, 3 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
@@ -6017,7 +6017,7 @@ dakota_uq_diffusion_cvmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 2912 total (2912 new, 0 duplicate)
 <<<<< Function evaluation summary: 2912 total (2912 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 81.4297
+<<<<< Equivalent number of high fidelity evaluations: 8.1429687500e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5638895038e-02  6.7797292002e-03  4.1932153614e-01 -2.7555448517e-01
@@ -6026,7 +6026,7 @@ Sample moment statistics for each response function:
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 21944 total (21944 new, 0 duplicate)
 <<<<< Function evaluation summary: 21944 total (21944 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 25.3525
+<<<<< Equivalent number of high fidelity evaluations: 2.5352539062e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5225571176e-02  6.5767003331e-03  7.6644079999e-01 -1.4075286846e-01
@@ -6035,7 +6035,7 @@ Sample moment statistics for each response function:
 Test Number 2 succeeded
 <<<<< Function evaluation summary (LF_INT): 21924 total (21924 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 20 total (20 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 25.3525
+<<<<< Equivalent number of high fidelity evaluations: 2.5352539062e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5225571176e-02  6.5767003331e-03  7.6644079999e-01 -1.4075286846e-01
@@ -6044,7 +6044,7 @@ Sample moment statistics for each response function:
 Test Number 3 succeeded
 <<<<< Function evaluation summary (LF_INT): 21924 total (21924 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 20 total (20 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 25.3525
+<<<<< Equivalent number of high fidelity evaluations: 2.5352539062e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.5225571176e-02  6.5767003331e-03  7.6644079999e-01 -1.4075286846e-01
@@ -6068,6 +6068,7 @@ Moment statistics for each response function:
  response_fn_2  4.5504402068e-06  8.2518722326e-05
  response_fn_3  7.9226314841e-08  3.1101554788e-06
 <<<<< Function evaluation summary: 1955 total (1737 new, 218 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.2825683594e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5273478517e-02  6.5975181292e-03
@@ -6093,6 +6094,7 @@ Moment statistics for each response function:
  response_fn_2  6.9950250425e-06  1.0093030907e-04
  response_fn_3  8.8576046192e-08  3.8689833463e-06
 <<<<< Function evaluation summary: 12875 total (11157 new, 1718 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.2851904297e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5273313435e-02  6.5968685886e-03
@@ -6142,14 +6144,14 @@ Test Number 0 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 2.7014218750e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.9644754662e+01  1.0724228282e+02  2.0671703910e+00  6.6350157276e+00
+ response_fn_1  3.9644754662e+01  1.0724228281e+02  2.0671703916e+00  6.6350157302e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 23925 total (23925 new, 0 duplicate)
 <<<<< Function evaluation summary: 23925 total (23925 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.7014218750e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.9644754662e+01  1.0724228282e+02  2.0671703910e+00  6.6350157276e+00
+ response_fn_1  3.9644754662e+01  1.0724228281e+02  2.0671703916e+00  6.6350157302e+00
 dakota_uq_short_column_ivp_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)

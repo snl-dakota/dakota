@@ -185,7 +185,9 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   evaluationsDB(evaluation_store_db),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   methodId(problem_db.get_string("method.id")), execNum(0),
-  methodTraits(traits)
+  methodTraits(traits), exportSurrogate(problem_db.get_bool("method.export_surrogate")),
+  surrExportPrefix(problem_db.get_string("method.model_export_prefix")),
+  surrExportFormat(problem_db.get_ushort("method.model_export_format"))
 {
   if (methodId.empty())
     methodId = user_auto_id();
@@ -1533,12 +1535,7 @@ sampling_reference(int samples_ref)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->sampling_reference(samples_ref);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine sampling_reference() "
-	 << "virtual fn.\nThis iterator does not support sampling."
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  // else no-op: iterator does not employ a sampling reference (lower bound)
 }
 
 void Iterator::
@@ -1788,6 +1785,22 @@ String Iterator::no_spec_id()
 {
   // increment and then use the current ID value
   return String("NOSPEC_METHOD_ID_") + std::to_string(++noSpecIdNum);
+}
+
+
+/** Protected function to only be called on letters */
+void Iterator::export_final_surrogates(Model& data_fit_surr_model)
+{
+  if (!exportSurrogate)
+    return;
+
+  const auto& labels = data_fit_surr_model.response_labels();
+  auto& approxs = data_fit_surr_model.approximations();
+  assert(labels.size() == approxs.size());
+  auto label_it = labels.begin();
+  auto approx_it = approxs.begin();
+  for ( ; approx_it != approxs.end(); ++label_it, ++approx_it)
+    approx_it->export_model(*label_it, surrExportPrefix, surrExportFormat);
 }
 
 } // namespace Dakota

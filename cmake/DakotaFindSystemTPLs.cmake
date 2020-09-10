@@ -7,14 +7,10 @@ macro(dakota_find_boost)
     set(Boost_USE_STATIC_LIBS TRUE)
   endif()
   # Dakota requires the specified compiled Boost library components
-  # Dakota requires Boost 1.49 or newer; enforce for all libs in the build
-   set(dakota_boost_min_version 1.49)
-   # MUQ requires Boost 1.58 or newer
-   if (HAVE_MUQ)
-     set(dakota_boost_min_version 1.58)
-   endif()
-   find_package(Boost ${dakota_boost_min_version} REQUIRED
-    COMPONENTS "filesystem;program_options;regex;serialization;system")
+  # Dakota requires Boost 1.58 or newer (1.69 recommended);
+  # enforce for all libs in the build
+   find_package(Boost 1.58 REQUIRED
+     COMPONENTS "filesystem;program_options;regex;serialization;system")
   # BMA TODO: relax this and verify Modern CMake behavior
   # This cache variable is used to package the Boost liraries on Darwin (see
   # cmake/InstallDarwinDylibs.cmake). The variable Boost_LIBRARY_DIRS is set

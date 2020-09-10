@@ -416,15 +416,15 @@ public:
   /// quantity to increment (start rank, start order, max rank, max order,
   /// max rank + max order) for FT (uniform) p-refinement
   short c3AdvanceType;
+  // refinement type for stochastic expansions: P_REFINEMENT, H_REFINEMENT
+  //short refinementType;
+  // refinement control for stochastic expansions: UNIFORM, DIMENSION_ADAPTIVE
+  //short refinementControl;
 
   /// number of data points used in FT construction by regression
   size_t collocationPoints;
   /// ratio of number of points to nuber of unknowns
   Real collocationRatio;
-  /// type of adaptive refinement (p-, h-, hp-)
-  short refinementType;
-  /// type of control for adaptive refinement (uniform, anisotropic, ...)
-  short refinementControl;
 
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;

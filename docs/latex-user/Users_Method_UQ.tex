@@ -2633,14 +2633,12 @@ Manual~\cite{RefMan} for more information.
 MUQ is the MIT Uncertainty Quantification library.  See
 \url{https://bitbucket.org/mituq/muq2/src/master/} and
 \url{https://mituq.bitbucket.io/index.html} for additional
-documentation.  Dakota currently exposes two types of MCMC approaches
-as supplied by MUQ: Metropolis-Hastings and Adaptive Metropolis.  The
-MUQ implementation in Dakota is a preliminary one, anticipated to grow
-in future releases of Dakotato to leverage components in MUQ that
-support Hamiltonian Monte Carlo and Langevin-based sampling
-strategies.  Note that the MUQ is an experimental capability within
-Dakota. Thus, the library is not exposed by default and must be
-enabled explicitely when compiling Dakota.
+documentation.  Dakota currently exposes two MCMC approaches from MUQ:
+Metropolis-Hastings and Adaptive Metropolis. Dakota's MUQ integration
+is preliminary, anticipated to extend to use MUQ components for
+Hamiltonian Monte Carlo and Langevin-based sampling.  MUQ is an
+experimental Dakota capability, and as such, it is not turned on by
+default, and must be explicitly enabled when compiling Dakota.
 
 \subsection{WASABI}
 WASABI differs from the other Bayesian approaches in that it is 
@@ -3491,3 +3489,5 @@ calibration capabilities.
 %methods, previously mentioned, is being assessed for possible
 %implementation in Dakota.
 \end{comment}
+
+%%  LocalWords:  MUQ MCMC Langevin

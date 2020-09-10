@@ -165,8 +165,8 @@ public:
   /// treated as random for statistical purposes (e.g. expectation)
   virtual void random_variables_key(const BitArray& random_vars_key);
 
-  /// assign statistics mode: {ACTIVE,COMBINED}_EXPANSION_STATS
-  virtual void refinement_statistics_type(short stats_type);
+  /// assign mode for statistics roll-up: {ACTIVE,COMBINED}_EXPANSION_STATS
+  virtual void refinement_statistics_mode(short stats_mode);
 
   /// return set of Sobol indices that have been requested (e.g., as constrained
   /// by throttling) and are computable by a (sparse) expansion of limited order
@@ -184,6 +184,8 @@ public:
 
   /// query whether the form of an approximation has been updated
   bool formulation_updated() const;
+  /// assign the status of approximation formulation updates
+  void formulation_updated(bool update);
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
