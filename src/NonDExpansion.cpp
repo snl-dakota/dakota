@@ -718,7 +718,7 @@ void NonDExpansion::core_run()
   compute_expansion();  // nominal iso/aniso expansion from input spec
   if (refineType) {//&& maxRefineIterations
     // post-process nominal expansion, defining reference stats for refinement
-    //metric_roll_up(); // not relevant in single-fidelity context
+    //metric_roll_up(INTERMEDIATE_RESULTS); // not relevant for single-fidelity
     compute_statistics(INTERMEDIATE_RESULTS);
     if (outputLevel > SILENT_OUTPUT)
       print_results(Cout, INTERMEDIATE_RESULTS);
@@ -1073,7 +1073,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // combine expansions if necessary for metric computation:
     // Note: Multilevel SC overrides this fn to remove roll-up for Hier SC
     //       (its delta metrics can be computed w/o exp combination)
-    metric_roll_up();
+    metric_roll_up(REFINEMENT_RESULTS);
 
     // assess increment by computing refinement metric:
     // defer revert (pass false) -> simplifies best candidate tracking to follow
@@ -1500,11 +1500,9 @@ void NonDExpansion::multifidelity_reference_expansion()
   // > If complete, then expansion combination + FINAL_RESULTS handled in
   //   higher level finalization operations.
   if (refineType) {//&& maxRefineIterations
-    // stats metrics can be combined || active
-    refinement_statistics_mode(Pecos::COMBINED_EXPANSION_STATS);
-    // combine expansions (unconditionally) for refinement reference
-    uSpaceModel.combine_approximation();
     // compute/print combined reference stats
+    refinement_statistics_mode(Pecos::COMBINED_EXPANSION_STATS);
+    metric_roll_up(INTERMEDIATE_RESULTS); // combines approximations
     compute_statistics(INTERMEDIATE_RESULTS);
     if (print) {
       Cout << "\n----------------------------------------------------"
@@ -1534,6 +1532,7 @@ void NonDExpansion::multifidelity_individual_refinement()
     configure_indices(step, form, lev, seq_index);
     //assign_specification_sequence();
     refine_expansion(); // uniform/adaptive refinement
+    metric_roll_up(INTERMEDIATE_RESULTS);
     compute_statistics(INTERMEDIATE_RESULTS);
     if (print) {
       Cout << "\n-------------------------------------------------"
@@ -1562,6 +1561,7 @@ void NonDExpansion::multifidelity_individual_refinement()
     
       // refine the expansion for level i
       refine_expansion(); // uniform/adaptive refinement
+      metric_roll_up(INTERMEDIATE_RESULTS);
       compute_statistics(INTERMEDIATE_RESULTS);
       if (print) {
 	Cout << "\n------------------------------------------------------"
@@ -2157,7 +2157,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     // combine expansions if necessary for metric computation:
     // Note: Multilevel SC overrides this fn to remove roll-up for Hier SC
     //       (its delta metrics can be computed w/o exp combination)
-    metric_roll_up();
+    metric_roll_up(REFINEMENT_RESULTS);
     // assess increment by computing refinement metric:
     // defer revert (pass false) -> simplifies best candidate tracking to follow
     switch (refineMetric) {

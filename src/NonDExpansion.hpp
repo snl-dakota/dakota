@@ -140,9 +140,6 @@ protected:
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
-  /// perform any required expansion roll-ups prior to metric computation
-  virtual void metric_roll_up();
-
   /// helper function to manage different push increment cases
   virtual void push_increment();
   /// helper function to manage different pop increment cases
@@ -323,6 +320,9 @@ protected:
 
   /// update statsMetricMode, here and in Pecos::ExpansionConfigOptions
   void refinement_statistics_mode(short stats_mode);//, bool clear_bits = true);
+
+  /// perform any required expansion roll-ups prior to metric computation
+  void metric_roll_up(short results_state = FINAL_RESULTS);
 
   /// Aggregate variance across the set of QoI for a particular model level
   void aggregate_variance(Real& agg_var_l);
@@ -759,13 +759,27 @@ sequence_cost(unsigned short step, const RealVector& cost)
 }
 
 
-inline void NonDExpansion::metric_roll_up()
+inline void NonDExpansion::metric_roll_up(short results_state)
 {
   // if COMBINED_EXPANSIONS_STATS, assess refinement candidates using combined
   // stat metrics, which by default require expansion combination (overridden
   // for hierarchical SC)
   if (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS)
-    uSpaceModel.combine_approximation();
+    switch (results_state) {
+    case REFINEMENT_RESULTS:
+      // PCE and Nodal SC require combined expansion coefficients for computing
+      // combined stat metrics, but Hierarchical SC can efficiently compute
+      // deltas based only on active expansions (no combination required)
+      if (expansionBasisType != Pecos::HIERARCHICAL_INTERPOLANT)
+	uSpaceModel.combine_approximation();
+      break;
+    case INTERMEDIATE_RESULTS:
+      uSpaceModel.combine_approximation(); break;
+    // FINAL_RESULTS should not occur: no roll up after combined_to_active()
+    }
+
+  // TO DO: case of level mappings for numerical stats --> sampling on
+  //        combined expansion
 }
 
 

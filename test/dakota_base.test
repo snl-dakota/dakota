@@ -10622,29 +10622,214 @@ least_sq_term_2  1.2500000000e-01  0.0000000000e+00
 least_sq_term_3  2.3750000000e-02  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5141354615e-02  6.1001036781e-03
-least_sq_term_2  1.2775084507e-01  1.9123334621e-02
-least_sq_term_3  2.5141354616e-02  6.1001036781e-03
+least_sq_term_1  2.5012486595e-02  5.7686765015e-03
+least_sq_term_2  1.2760505979e-01  1.8527734588e-02
+least_sq_term_3  2.5012486595e-02  5.7686765015e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5273727712e-02  6.5916873674e-03
-least_sq_term_2  1.2889229145e-01  1.3701684255e-02
-least_sq_term_3  2.5273727713e-02  6.5916873673e-03
+least_sq_term_1  2.5028136941e-02  5.7819799501e-03
+least_sq_term_2  1.2767793868e-01  1.8772336551e-02
+least_sq_term_3  2.5028136941e-02  5.7819799501e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5271482244e-02  6.5872763309e-03
-least_sq_term_2  1.2903431056e-01  1.3505526001e-02
-least_sq_term_3  2.5271482245e-02  6.5872763309e-03
+least_sq_term_1  2.5095470728e-02  5.8790125334e-03
+least_sq_term_2  1.2770827589e-01  1.8873133377e-02
+least_sq_term_3  2.5095470728e-02  5.8790125334e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5271886954e-02  6.5888492479e-03
-least_sq_term_2  1.2903703085e-01  1.3504831311e-02
-least_sq_term_3  2.5271886954e-02  6.5888492480e-03
+least_sq_term_1  2.5100297764e-02  5.8833102404e-03
+least_sq_term_2  1.2772797224e-01  1.8938273850e-02
+least_sq_term_3  2.5100297765e-02  5.8833102404e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5271930298e-02  6.5888535169e-03
-least_sq_term_2  1.2904087344e-01  1.3504583366e-02
-least_sq_term_3  2.5271930297e-02  6.5888535174e-03
+least_sq_term_1  2.5129111573e-02  6.0334606378e-03
+least_sq_term_2  1.2773198570e-01  1.8975779639e-02
+least_sq_term_3  2.5129111574e-02  6.0334606378e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5135035059e-02  6.0604941879e-03
+least_sq_term_2  1.2774163732e-01  1.9065801571e-02
+least_sq_term_3  2.5135035059e-02  6.0604941879e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5137689326e-02  6.0866907745e-03
+least_sq_term_2  1.2774233208e-01  1.9077618939e-02
+least_sq_term_3  2.5137689326e-02  6.0866907745e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5139542739e-02  6.0952091812e-03
+least_sq_term_2  1.2774493712e-01  1.9101820228e-02
+least_sq_term_3  2.5139542739e-02  6.0952091812e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5140455253e-02  6.0969638725e-03
+least_sq_term_2  1.2774769971e-01  1.9110857627e-02
+least_sq_term_3  2.5140455254e-02  6.0969638725e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5140994322e-02  6.0980137579e-03
+least_sq_term_2  1.2775047984e-01  1.9119948103e-02
+least_sq_term_3  2.5140994322e-02  6.0980137579e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5141354699e-02  6.1001047861e-03
+least_sq_term_2  1.2775084507e-01  1.9123334646e-02
+least_sq_term_3  2.5141354700e-02  6.1001047861e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5141555353e-02  6.1012984469e-03
+least_sq_term_2  1.2775121262e-01  1.9126742189e-02
+least_sq_term_3  2.5141555353e-02  6.1012984469e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5144505949e-02  6.1111561441e-03
+least_sq_term_2  1.2775215988e-01  1.9131617595e-02
+least_sq_term_3  2.5144505949e-02  6.1111561441e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5279524339e-02  6.5033857427e-03
+least_sq_term_2  1.2868958982e-01  1.4194370378e-02
+least_sq_term_3  2.5279524340e-02  6.5033857427e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5275057673e-02  6.5161375260e-03
+least_sq_term_2  1.2867952642e-01  1.3836936678e-02
+least_sq_term_3  2.5275057673e-02  6.5161375260e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5278889876e-02  6.5718798265e-03
+least_sq_term_2  1.2885065838e-01  1.3687603429e-02
+least_sq_term_3  2.5278889877e-02  6.5718798265e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5279394221e-02  6.5931793877e-03
+least_sq_term_2  1.2889673561e-01  1.3818739387e-02
+least_sq_term_3  2.5279394221e-02  6.5931793877e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5277253383e-02  6.5946603329e-03
+least_sq_term_2  1.2888664796e-01  1.3718676855e-02
+least_sq_term_3  2.5277253384e-02  6.5946603329e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5277508499e-02  6.5983858581e-03
+least_sq_term_2  1.2889089836e-01  1.3760622918e-02
+least_sq_term_3  2.5277508499e-02  6.5983858581e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5276256379e-02  6.5977332729e-03
+least_sq_term_2  1.2889181731e-01  1.3731283242e-02
+least_sq_term_3  2.5276256379e-02  6.5977332729e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5275877513e-02  6.5965315020e-03
+least_sq_term_2  1.2889024350e-01  1.3720633583e-02
+least_sq_term_3  2.5275877513e-02  6.5965315020e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5275278935e-02  6.5948278896e-03
+least_sq_term_2  1.2888906288e-01  1.3713161223e-02
+least_sq_term_3  2.5275278936e-02  6.5948278896e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5274564701e-02  6.5928024894e-03
+least_sq_term_2  1.2888850508e-01  1.3699520160e-02
+least_sq_term_3  2.5274564702e-02  6.5928024894e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5273727711e-02  6.5916873569e-03
+least_sq_term_2  1.2889229157e-01  1.3701686072e-02
+least_sq_term_3  2.5273727712e-02  6.5916873569e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5273504322e-02  6.5905613167e-03
+least_sq_term_2  1.2889208861e-01  1.3699095571e-02
+least_sq_term_3  2.5273504323e-02  6.5905613167e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272605044e-02  6.5877235661e-03
+least_sq_term_2  1.2889352871e-01  1.3701199713e-02
+least_sq_term_3  2.5272605044e-02  6.5877235661e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5267651813e-02  6.5862411574e-03
+least_sq_term_2  1.2904795664e-01  1.3577461619e-02
+least_sq_term_3  2.5267651814e-02  6.5862411574e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5268734069e-02  6.5856088013e-03
+least_sq_term_2  1.2902461110e-01  1.3550284070e-02
+least_sq_term_3  2.5268734069e-02  6.5856088013e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5269562038e-02  6.5832006175e-03
+least_sq_term_2  1.2903673238e-01  1.3554218356e-02
+least_sq_term_3  2.5269562038e-02  6.5832006175e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5270304537e-02  6.5848635777e-03
+least_sq_term_2  1.2902963621e-01  1.3525878735e-02
+least_sq_term_3  2.5270304537e-02  6.5848635777e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5270402007e-02  6.5851277897e-03
+least_sq_term_2  1.2903085528e-01  1.3519405704e-02
+least_sq_term_3  2.5270402008e-02  6.5851277897e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5270564399e-02  6.5854530940e-03
+least_sq_term_2  1.2903318910e-01  1.3517316198e-02
+least_sq_term_3  2.5270564399e-02  6.5854530940e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5270615929e-02  6.5855709951e-03
+least_sq_term_2  1.2903373884e-01  1.3514115965e-02
+least_sq_term_3  2.5270615929e-02  6.5855709951e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271003699e-02  6.5869174439e-03
+least_sq_term_2  1.2903093055e-01  1.3509486572e-02
+least_sq_term_3  2.5271003699e-02  6.5869174439e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271461148e-02  6.5872463636e-03
+least_sq_term_2  1.2903418451e-01  1.3509281643e-02
+least_sq_term_3  2.5271461148e-02  6.5872463636e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271482247e-02  6.5872763565e-03
+least_sq_term_2  1.2903431055e-01  1.3505525712e-02
+least_sq_term_3  2.5271482248e-02  6.5872763565e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271557239e-02  6.5874816310e-03
+least_sq_term_2  1.2903523048e-01  1.3506459522e-02
+least_sq_term_3  2.5271557239e-02  6.5874816310e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271849031e-02  6.5888847378e-03
+least_sq_term_2  1.2903645893e-01  1.3505769330e-02
+least_sq_term_3  2.5271849031e-02  6.5888847379e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271865457e-02  6.5888716019e-03
+least_sq_term_2  1.2903721147e-01  1.3504964096e-02
+least_sq_term_3  2.5271865457e-02  6.5888716021e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271930298e-02  6.5888535159e-03
+least_sq_term_2  1.2904087338e-01  1.3504583422e-02
+least_sq_term_3  2.5271930299e-02  6.5888535161e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271930093e-02  6.5888535583e-03
+least_sq_term_2  1.2904088780e-01  1.3504583194e-02
+least_sq_term_3  2.5271930093e-02  6.5888535585e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271928264e-02  6.5888535520e-03
+least_sq_term_2  1.2904100937e-01  1.3504583118e-02
+least_sq_term_3  2.5271928258e-02  6.5888535524e-03
 Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    2.5271928264e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -1.0643776735e-02   P1   P0   P0   P0   P0   P0   P0   P0   P0
@@ -10670,8 +10855,8 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
   -1.8827349835e-04   P2   P0   P0   P1   P0   P0   P0   P0   P0
   -1.0745469401e-05   P1   P0   P0   P2   P0   P0   P0   P0   P0
    5.8149632639e-06   P2   P0   P0   P2   P0   P0   P0   P0   P0
-  -1.6682780038e-04   P0   P0   P0   P0   P0   P1   P0   P0   P0
-   1.2476888513e-06   P0   P0   P0   P0   P0   P2   P0   P0   P0
+  -1.6682780061e-04   P0   P0   P0   P0   P0   P1   P0   P0   P0
+   1.2476907338e-06   P0   P0   P0   P0   P0   P2   P0   P0   P0
   -9.0802041502e-05   P0   P0   P0   P0   P0   P0   P1   P0   P0
    6.2526594154e-07   P0   P0   P0   P0   P0   P0   P2   P0   P0
    1.3906655598e-04   P1   P0   P0   P0   P0   P1   P0   P0   P0
@@ -10693,9 +10878,9 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
   -1.9221101861e-08   P0   P0   P0   P0   P0   P2   P1   P0   P0
   -1.3884475430e-08   P0   P0   P0   P0   P0   P1   P2   P0   P0
    1.8520311992e-10   P0   P0   P0   P0   P0   P2   P2   P0   P0
-  -4.9297978665e-09   P0   P0   P0   P0   P0   P3   P0   P0   P0
-   2.7965176753e-11   P0   P0   P0   P0   P0   P4   P0   P0   P0
-   2.1255519500e-13   P0   P0   P0   P0   P0   P5   P0   P0   P0
+  -5.3964959466e-09   P0   P0   P0   P0   P0   P3   P0   P0   P0
+   3.0472684871e-11   P0   P0   P0   P0   P0   P4   P0   P0   P0
+  -2.1486413670e-13   P0   P0   P0   P0   P0   P5   P0   P0   P0
   -2.3475597002e-04   P0   P0   P0   P0   P1   P0   P0   P0   P0
    1.5067759842e-06   P0   P0   P0   P0   P2   P0   P0   P0   P0
    3.7136265617e-06   P0   P0   P0   P1   P0   P0   P1   P0   P0
@@ -10825,8 +11010,8 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
   -3.0009493660e-06   P2   P0   P0   P1   P0   P0   P0   P0   P0
   -1.8953544670e-05   P1   P0   P0   P2   P0   P0   P0   P0   P0
    1.1453749711e-05   P2   P0   P0   P2   P0   P0   P0   P0   P0
-   1.0541451480e-05   P0   P0   P0   P0   P0   P1   P0   P0   P0
-   6.6567456174e-06   P0   P0   P0   P0   P0   P2   P0   P0   P0
+   1.0541451532e-05   P0   P0   P0   P0   P0   P1   P0   P0   P0
+   6.6567678540e-06   P0   P0   P0   P0   P0   P2   P0   P0   P0
   -1.5266831318e-05   P0   P0   P0   P0   P0   P0   P1   P0   P0
    3.4901868161e-06   P0   P0   P0   P0   P0   P0   P2   P0   P0
    4.2445293376e-05   P1   P0   P0   P0   P0   P1   P0   P0   P0
@@ -10848,9 +11033,9 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
   -6.6659079608e-10   P0   P0   P0   P0   P0   P2   P1   P0   P0
    4.2335034360e-09   P0   P0   P0   P0   P0   P1   P2   P0   P0
    1.0530540560e-09   P0   P0   P0   P0   P0   P2   P2   P0   P0
-   4.9962491462e-10   P0   P0   P0   P0   P0   P3   P0   P0   P0
-   1.4960674259e-10   P0   P0   P0   P0   P0   P4   P0   P0   P0
-   2.7964828753e-13   P0   P0   P0   P0   P0   P5   P0   P0   P0
+   7.8156010611e-09   P0   P0   P0   P0   P0   P3   P0   P0   P0
+   1.7925446643e-10   P0   P0   P0   P0   P0   P4   P0   P0   P0
+   3.7510284863e-13   P0   P0   P0   P0   P0   P5   P0   P0   P0
   -6.8957744097e-05   P0   P0   P0   P0   P1   P0   P0   P0   P0
    1.3621770446e-05   P0   P0   P0   P0   P2   P0   P0   P0   P0
   -8.3247814960e-06   P0   P0   P0   P1   P0   P0   P1   P0   P0
@@ -10980,8 +11165,8 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
   -1.8827349835e-04   P2   P0   P0   P1   P0   P0   P0   P0   P0
   -1.0745469389e-05   P1   P0   P0   P2   P0   P0   P0   P0   P0
    5.8149632193e-06   P2   P0   P0   P2   P0   P0   P0   P0   P0
-  -1.6682780047e-04   P0   P0   P0   P0   P0   P1   P0   P0   P0
-   1.2476881923e-06   P0   P0   P0   P0   P0   P2   P0   P0   P0
+  -1.6682780050e-04   P0   P0   P0   P0   P0   P1   P0   P0   P0
+   1.2476901713e-06   P0   P0   P0   P0   P0   P2   P0   P0   P0
   -9.0802045099e-05   P0   P0   P0   P0   P0   P0   P1   P0   P0
    6.2526262003e-07   P0   P0   P0   P0   P0   P0   P2   P0   P0
    1.3906655602e-04   P1   P0   P0   P0   P0   P1   P0   P0   P0
@@ -11003,9 +11188,9 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
   -1.9221136080e-08   P0   P0   P0   P0   P0   P2   P1   P0   P0
   -1.3884446351e-08   P0   P0   P0   P0   P0   P1   P2   P0   P0
    1.8526749183e-10   P0   P0   P0   P0   P0   P2   P2   P0   P0
-  -4.9299560293e-09   P0   P0   P0   P0   P0   P3   P0   P0   P0
-   2.7869395421e-11   P0   P0   P0   P0   P0   P4   P0   P0   P0
-  -1.4340420255e-13   P0   P0   P0   P0   P0   P5   P0   P0   P0
+  -5.3964969275e-09   P0   P0   P0   P0   P0   P3   P0   P0   P0
+   3.0507985104e-11   P0   P0   P0   P0   P0   P4   P0   P0   P0
+  -1.9175742730e-13   P0   P0   P0   P0   P0   P5   P0   P0   P0
   -2.3475596910e-04   P0   P0   P0   P0   P1   P0   P0   P0   P0
    1.5067756402e-06   P0   P0   P0   P0   P2   P0   P0   P0   P0
    3.7136265290e-06   P0   P0   P0   P1   P0   P0   P1   P0   P0
@@ -11110,48 +11295,48 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
    2.5489797827e-05   P2   P0   P0   P0   P1   P0   P0   P0   P0
    2.3220004429e-06   P1   P0   P0   P0   P2   P0   P0   P0   P0
   -1.1602753608e-06   P2   P0   P0   P0   P2   P0   P0   P0   P0
-<<<<< Equivalent number of high fidelity evaluations: 2.7727050781e+01
+<<<<< Equivalent number of high fidelity evaluations: 2.7164550781e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5271928264e-02  6.5888535520e-03
   integration:  2.5271928264e-02  6.5881442986e-03  7.6855434686e-01 -2.0770448061e-01
   expansion:    1.2904100937e-01  1.3504583118e-02
-  integration:  1.2904100937e-01  1.3503188170e-02  7.2992547005e-01 -5.7594692236e-01
+  integration:  1.2904100937e-01  1.3503188170e-02  7.2992547004e-01 -5.7594692236e-01
   expansion:    2.5271928258e-02  6.5888535524e-03
   integration:  2.5271928258e-02  6.5881442993e-03  7.6855434685e-01 -2.0770448056e-01
-<<<<< Function evaluation summary: 863 total (531 new, 332 duplicate)
+<<<<< Function evaluation summary: 855 total (527 new, 328 duplicate)
 <<<<< Best parameters          =
-                      1.7525240395e-02 uuv_1
-                     -4.2812644749e-01 uuv_2
-                     -5.3495702203e-01 uuv_3
-                      1.8487825221e-01 uuv_4
-                     -1.3760006701e-01 uuv_5
-                      8.7230248510e-01 uuv_6
-                     -9.4124675569e-01 uuv_7
-                      6.0677764173e-01 uuv_8
-                     -3.7629906798e-01 uuv_9
+                      1.7525241909e-02 uuv_1
+                     -4.2812645789e-01 uuv_2
+                     -5.3495702568e-01 uuv_3
+                      1.8487825012e-01 uuv_4
+                     -1.3760006810e-01 uuv_5
+                      8.7230272393e-01 uuv_6
+                     -9.4124675249e-01 uuv_7
+                      6.0677764147e-01 uuv_8
+                     -3.7629906808e-01 uuv_9
 <<<<< Best misfit              =
-                      3.6473690734e-10
+                      3.6475378273e-10
 <<<<< Best log prior           =
                      -6.2383246250e+00
 <<<<< Best log posterior       =
                      -7.9554194542e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1 -3.1863299066e-03  5.3209956007e-01  4.8285695364e-03 -1.0392902781e+00
-         uuv_2  7.1992258265e-03  5.3278570692e-01 -1.4009351745e-02 -1.0325664901e+00
-         uuv_3  4.3945957172e-03  5.3447988640e-01 -1.2599615669e-02 -1.0457035301e+00
-         uuv_4  4.3273236206e-04  5.3134523105e-01 -7.2450398962e-03 -1.0344882067e+00
-         uuv_5  6.0177180845e-03  5.3307927747e-01 -2.0205620115e-02 -1.0373363979e+00
-         uuv_6 -8.7868434330e-03  5.3259055779e-01  1.8483668116e-02 -1.0370420746e+00
-         uuv_7 -6.3159718041e-04  5.3359378186e-01 -1.0006270424e-02 -1.0410425507e+00
-         uuv_8 -3.6165286968e-03  5.3058247379e-01  4.7275401599e-03 -1.0255197824e+00
-         uuv_9 -2.4676784476e-03  5.3319926482e-01 -1.0116933009e-03 -1.0425032184e+00
+         uuv_1 -3.1863275152e-03  5.3209956006e-01  4.8285695226e-03 -1.0392902781e+00
+         uuv_2  7.1992156016e-03  5.3278570692e-01 -1.4009351752e-02 -1.0325664901e+00
+         uuv_3  4.3945921514e-03  5.3447988640e-01 -1.2599615672e-02 -1.0457035301e+00
+         uuv_4  4.3273029475e-04  5.3134523105e-01 -7.2450398974e-03 -1.0344882067e+00
+         uuv_5  6.0177170123e-03  5.3307927747e-01 -2.0205620116e-02 -1.0373363979e+00
+         uuv_6 -8.7865729602e-03  5.3259055758e-01  1.8483668438e-02 -1.0370420755e+00
+         uuv_7 -6.3159100569e-04  5.3359378187e-01 -1.0006270231e-02 -1.0410425509e+00
+         uuv_8 -3.6165290711e-03  5.3058247379e-01  4.7275401499e-03 -1.0255197824e+00
+         uuv_9 -2.4676785892e-03  5.3319926482e-01 -1.0116933021e-03 -1.0425032184e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5043463838e-02  6.0125063336e-03  8.1080950088e-01  7.6852702218e-02
-least_sq_term_2  1.2848024759e-01  1.2368698529e-02  8.0267653830e-01 -2.7343392856e-01
-least_sq_term_3  2.5043463833e-02  6.0125063340e-03  8.1080950035e-01  7.6852701248e-02
+least_sq_term_1  2.5043463798e-02  6.0125063154e-03  8.1080950008e-01  7.6852699845e-02
+least_sq_term_2  1.2848024756e-01  1.2368698495e-02  8.0267654105e-01 -2.7343392344e-01
+least_sq_term_3  2.5043463793e-02  6.0125063158e-03  8.1080949955e-01  7.6852698874e-02
 Test Number 6 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -11373,19 +11558,199 @@ least_sq_term_2  1.2500000000e-01  0.0000000000e+00
 least_sq_term_3  2.3750000000e-02  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5141555269e-02  6.1000207632e-03
-least_sq_term_2  1.2775121262e-01  1.9126296987e-02
-least_sq_term_3  2.5141555269e-02  6.1000207632e-03
+least_sq_term_1  2.5012486595e-02  5.7686765015e-03
+least_sq_term_2  1.2760505979e-01  1.8527734588e-02
+least_sq_term_3  2.5012486595e-02  5.7686765015e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5274566742e-02  6.5916284997e-03
-least_sq_term_2  1.2888850542e-01  1.3698610246e-02
-least_sq_term_3  2.5274566743e-02  6.5916284997e-03
+least_sq_term_1  2.5028136941e-02  5.7785617102e-03
+least_sq_term_2  1.2767793868e-01  1.8762220334e-02
+least_sq_term_3  2.5028136941e-02  5.7785617102e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5271948066e-02  6.5879000988e-03
-least_sq_term_2  1.2903484053e-01  1.3506188445e-02
-least_sq_term_3  2.5271948066e-02  6.5879000988e-03
+least_sq_term_1  2.5095470728e-02  5.8609852467e-03
+least_sq_term_2  1.2770827589e-01  1.8858763835e-02
+least_sq_term_3  2.5095470728e-02  5.8609852467e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5100297764e-02  5.8641887595e-03
+least_sq_term_2  1.2772797224e-01  1.8921134744e-02
+least_sq_term_3  2.5100297765e-02  5.8641887595e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5129111573e-02  6.0288351806e-03
+least_sq_term_2  1.2773198570e-01  1.8962822940e-02
+least_sq_term_3  2.5129111574e-02  6.0288351806e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5135035059e-02  6.0588739973e-03
+least_sq_term_2  1.2774163732e-01  1.9062812236e-02
+least_sq_term_3  2.5135035059e-02  6.0588739973e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5137689326e-02  6.0846069484e-03
+least_sq_term_2  1.2774233208e-01  1.9074589456e-02
+least_sq_term_3  2.5137689326e-02  6.0846069484e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5139542739e-02  6.0940022321e-03
+least_sq_term_2  1.2774493712e-01  1.9101431777e-02
+least_sq_term_3  2.5139542739e-02  6.0940022321e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5140455253e-02  6.0955492573e-03
+least_sq_term_2  1.2774769971e-01  1.9110072551e-02
+least_sq_term_3  2.5140455254e-02  6.0955492573e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5140994322e-02  6.0964764393e-03
+least_sq_term_2  1.2775047984e-01  1.9118763851e-02
+least_sq_term_3  2.5140994322e-02  6.0964764393e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5141354699e-02  6.0987313599e-03
+least_sq_term_2  1.2775084507e-01  1.9122518889e-02
+least_sq_term_3  2.5141354700e-02  6.0987313599e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5141555353e-02  6.1000224186e-03
+least_sq_term_2  1.2775121262e-01  1.9126297023e-02
+least_sq_term_3  2.5141555353e-02  6.1000224186e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5143245788e-02  6.1021577429e-03
+least_sq_term_2  1.2775134851e-01  1.9126721551e-02
+least_sq_term_3  2.5143245789e-02  6.1021577429e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5144507988e-02  6.1098270349e-03
+least_sq_term_2  1.2775216034e-01  1.9131258085e-02
+least_sq_term_3  2.5144507989e-02  6.1098270349e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5279526379e-02  6.5020847848e-03
+least_sq_term_2  1.2868959028e-01  1.4193824509e-02
+least_sq_term_3  2.5279526380e-02  6.5020847848e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5275059713e-02  6.5148623012e-03
+least_sq_term_2  1.2867952688e-01  1.3836382594e-02
+least_sq_term_3  2.5275059713e-02  6.5148623012e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5278891916e-02  6.5706092502e-03
+least_sq_term_2  1.2885065885e-01  1.3686870892e-02
+least_sq_term_3  2.5278891917e-02  6.5706092502e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5279396261e-02  6.5918902785e-03
+least_sq_term_2  1.2889673607e-01  1.3817523499e-02
+least_sq_term_3  2.5279396261e-02  6.5918902785e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5277255423e-02  6.5933840556e-03
+least_sq_term_2  1.2888664842e-01  1.3717497188e-02
+least_sq_term_3  2.5277255423e-02  6.5933840556e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5277510539e-02  6.5971106533e-03
+least_sq_term_2  1.2889089883e-01  1.3759448601e-02
+least_sq_term_3  2.5277510539e-02  6.5971106533e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5276258419e-02  6.5965153325e-03
+least_sq_term_2  1.2889181777e-01  1.3730280793e-02
+least_sq_term_3  2.5276258419e-02  6.5965153325e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5275879552e-02  6.5953142864e-03
+least_sq_term_2  1.2889024396e-01  1.3719637232e-02
+least_sq_term_3  2.5275879553e-02  6.5953142864e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5275280975e-02  6.5936138973e-03
+least_sq_term_2  1.2888906334e-01  1.3712169888e-02
+least_sq_term_3  2.5275280976e-02  6.5936138973e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5274566741e-02  6.5916285624e-03
+least_sq_term_2  1.2888850554e-01  1.3698612657e-02
+least_sq_term_3  2.5274566742e-02  6.5916285624e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5274343352e-02  6.5905182191e-03
+least_sq_term_2  1.2888830258e-01  1.3696038184e-02
+least_sq_term_3  2.5274343353e-02  6.5905182191e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272995873e-02  6.5879185014e-03
+least_sq_term_2  1.2889313875e-01  1.3698451546e-02
+least_sq_term_3  2.5272995874e-02  6.5879185014e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5268042643e-02  6.5864368488e-03
+least_sq_term_2  1.2904756668e-01  1.3574617243e-02
+least_sq_term_3  2.5268042644e-02  6.5864368488e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5269124898e-02  6.5857991639e-03
+least_sq_term_2  1.2902422115e-01  1.3547546305e-02
+least_sq_term_3  2.5269124899e-02  6.5857991638e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5269952867e-02  6.5833899094e-03
+least_sq_term_2  1.2903634243e-01  1.3551473015e-02
+least_sq_term_3  2.5269952868e-02  6.5833899093e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5270695367e-02  6.5850461038e-03
+least_sq_term_2  1.2902924626e-01  1.3523170689e-02
+least_sq_term_3  2.5270695367e-02  6.5850461038e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5270792837e-02  6.5853098131e-03
+least_sq_term_2  1.2903046533e-01  1.3516692103e-02
+least_sq_term_3  2.5270792837e-02  6.5853098131e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5270955228e-02  6.5856284605e-03
+least_sq_term_2  1.2903279914e-01  1.3513339388e-02
+least_sq_term_3  2.5270955229e-02  6.5856284605e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271006758e-02  6.5857463936e-03
+least_sq_term_2  1.2903334888e-01  1.3510135608e-02
+least_sq_term_3  2.5271006759e-02  6.5857463936e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271081750e-02  6.5862177518e-03
+least_sq_term_2  1.2903426881e-01  1.3514684573e-02
+least_sq_term_3  2.5271081751e-02  6.5862177518e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271539199e-02  6.5865441906e-03
+least_sq_term_2  1.2903752277e-01  1.3514464319e-02
+least_sq_term_3  2.5271539199e-02  6.5865441906e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271926969e-02  6.5878701344e-03
+least_sq_term_2  1.2903471448e-01  1.3509944638e-02
+least_sq_term_3  2.5271926969e-02  6.5878701344e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271948068e-02  6.5879001298e-03
+least_sq_term_2  1.2903484052e-01  1.3506188200e-02
+least_sq_term_3  2.5271948069e-02  6.5879001298e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271960520e-02  6.5879276250e-03
+least_sq_term_2  1.2903460795e-01  1.3505656763e-02
+least_sq_term_3  2.5271960521e-02  6.5879276250e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272240693e-02  6.5892863098e-03
+least_sq_term_2  1.2903607577e-01  1.3505813332e-02
+least_sq_term_3  2.5272240693e-02  6.5892863098e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  2.5272257119e-02  6.5892731718e-03
@@ -11393,9 +11758,19 @@ least_sq_term_2  1.2903682830e-01  1.3505007966e-02
 least_sq_term_3  2.5272257119e-02  6.5892731720e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5272321960e-02  6.5892570720e-03
-least_sq_term_2  1.2904049028e-01  1.3504562109e-02
-least_sq_term_3  2.5272321959e-02  6.5892570725e-03
+least_sq_term_1  2.5272321960e-02  6.5892570710e-03
+least_sq_term_2  1.2904049022e-01  1.3504562166e-02
+least_sq_term_3  2.5272321961e-02  6.5892570712e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272321755e-02  6.5892571608e-03
+least_sq_term_2  1.2904050464e-01  1.3504557625e-02
+least_sq_term_3  2.5272321755e-02  6.5892571611e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272319926e-02  6.5892577579e-03
+least_sq_term_2  1.2904062621e-01  1.3504557929e-02
+least_sq_term_3  2.5272319920e-02  6.5892577586e-03
 <<<<< Equivalent number of high fidelity evaluations: 2.7245605469e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -11634,19 +12009,9 @@ least_sq_term_2  1.2500000000e-01  0.0000000000e+00
 least_sq_term_3  2.3750000000e-02  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5144507989e-02  6.1098270349e-03
-least_sq_term_2  1.2775216034e-01  1.9131258085e-02
-least_sq_term_3  2.5144507989e-02  6.1098270349e-03
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  6.3768434977e-15  0.0000000000e+00
 least_sq_term_2  3.1363800446e-15  0.0000000000e+00
 least_sq_term_3  3.0184188482e-16  0.0000000000e+00
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  1.2792802844e-04  5.7278328049e-04
-least_sq_term_2  1.1417273067e-03  7.6541937974e-03
-least_sq_term_3  1.2792802842e-04  5.7278328050e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1 -8.9893370525e-15  0.0000000000e+00
@@ -11654,19 +12019,9 @@ least_sq_term_2 -5.1625370645e-15  0.0000000000e+00
 least_sq_term_3 -5.4470317146e-16  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1 -6.9860967582e-07  5.4994282668e-05
-least_sq_term_2  1.4306170967e-04  1.1183066031e-03
-least_sq_term_3 -6.9860977060e-07  5.4994282613e-05
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  1.3808398869e-15  0.0000000000e+00
 least_sq_term_2 -2.6090241079e-15  0.0000000000e+00
 least_sq_term_3 -6.5225602697e-16  0.0000000000e+00
-Moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  9.3857743288e-08  3.9211984232e-06
-least_sq_term_2  6.7834168389e-06  1.0137423088e-04
-least_sq_term_3  9.3857421242e-08  3.9211982463e-06
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1 -4.8897344507e-13  0.0000000000e+00
@@ -11674,51 +12029,266 @@ least_sq_term_2 -2.6588453661e-13  0.0000000000e+00
 least_sq_term_3 -2.7599450503e-14  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1 -2.0365364990e-09  3.5888995058e-08
-least_sq_term_2  1.3603630786e-07  1.3421211496e-06
-least_sq_term_3 -2.0380809737e-09  3.5888475070e-08
-<<<<< Equivalent number of high fidelity evaluations: 2.9303564453e+02
+least_sq_term_1  2.3750000000e-02  0.0000000000e+00
+least_sq_term_2  1.2500000000e-01  0.0000000000e+00
+least_sq_term_3  2.3750000000e-02  0.0000000000e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    2.5271829229e-02  6.5885608997e-03  7.7243190245e-01 -1.7354916130e-01
-  integration:  2.5271829229e-02  6.5885608997e-03  7.7243190245e-01 -1.7354916130e-01
-  expansion:    1.2904386881e-01  1.3502127819e-02  7.3277599097e-01 -5.6896998162e-01
-  integration:  1.2904386881e-01  1.3502127819e-02  7.3277599097e-01 -5.6896998162e-01
-  expansion:    2.5271829227e-02  6.5885608997e-03  7.7243190199e-01 -1.7354916219e-01
-  integration:  2.5271829227e-02  6.5885608997e-03  7.7243190199e-01 -1.7354916219e-01
-<<<<< Function evaluation summary: 2455 total (1719 new, 736 duplicate)
+least_sq_term_1  2.5012486595e-02  5.7686765016e-03
+least_sq_term_2  1.2760505979e-01  1.8527734588e-02
+least_sq_term_3  2.5012486595e-02  5.7686765015e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5028136941e-02  5.7785617103e-03
+least_sq_term_2  1.2767793868e-01  1.8762220334e-02
+least_sq_term_3  2.5028136941e-02  5.7785617102e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5095470728e-02  5.8609852468e-03
+least_sq_term_2  1.2770827589e-01  1.8858763835e-02
+least_sq_term_3  2.5095470728e-02  5.8609852467e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5100297764e-02  5.8641887596e-03
+least_sq_term_2  1.2772797224e-01  1.8921134744e-02
+least_sq_term_3  2.5100297765e-02  5.8641887595e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5129111573e-02  6.0288351807e-03
+least_sq_term_2  1.2773198570e-01  1.8962822940e-02
+least_sq_term_3  2.5129111574e-02  6.0288351806e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5135035059e-02  6.0588739974e-03
+least_sq_term_2  1.2774163732e-01  1.9062812236e-02
+least_sq_term_3  2.5135035059e-02  6.0588739973e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5137689326e-02  6.0846069485e-03
+least_sq_term_2  1.2774233208e-01  1.9074589456e-02
+least_sq_term_3  2.5137689326e-02  6.0846069484e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5139542739e-02  6.0940022322e-03
+least_sq_term_2  1.2774493712e-01  1.9101431777e-02
+least_sq_term_3  2.5139542739e-02  6.0940022321e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5140455253e-02  6.0955492574e-03
+least_sq_term_2  1.2774769971e-01  1.9110072551e-02
+least_sq_term_3  2.5140455254e-02  6.0955492573e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5140994322e-02  6.0964764394e-03
+least_sq_term_2  1.2775047984e-01  1.9118763851e-02
+least_sq_term_3  2.5140994322e-02  6.0964764393e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5141354699e-02  6.0987313600e-03
+least_sq_term_2  1.2775084507e-01  1.9122518889e-02
+least_sq_term_3  2.5141354700e-02  6.0987313599e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5141555353e-02  6.1000224187e-03
+least_sq_term_2  1.2775121262e-01  1.9126297023e-02
+least_sq_term_3  2.5141555353e-02  6.1000224186e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5143245788e-02  6.1021577430e-03
+least_sq_term_2  1.2775134851e-01  1.9126721551e-02
+least_sq_term_3  2.5143245789e-02  6.1021577429e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5144507988e-02  6.1098270349e-03
+least_sq_term_2  1.2775216034e-01  1.9131258085e-02
+least_sq_term_3  2.5144507989e-02  6.1098270349e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5279526379e-02  6.4917691681e-03
+least_sq_term_2  1.2868959028e-01  1.4206251078e-02
+least_sq_term_3  2.5279526380e-02  6.4917691681e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5275059713e-02  6.5033792621e-03
+least_sq_term_2  1.2867952688e-01  1.3906015793e-02
+least_sq_term_3  2.5275059713e-02  6.5033792621e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5278891916e-02  6.5495096693e-03
+least_sq_term_2  1.2885065885e-01  1.3727628183e-02
+least_sq_term_3  2.5278891917e-02  6.5495096692e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5279396261e-02  6.5865869783e-03
+least_sq_term_2  1.2889673607e-01  1.3883624439e-02
+least_sq_term_3  2.5279396261e-02  6.5865869783e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5277255423e-02  6.5882893024e-03
+least_sq_term_2  1.2888664842e-01  1.3797937018e-02
+least_sq_term_3  2.5277255423e-02  6.5882893023e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5276003303e-02  6.5901569514e-03
+least_sq_term_2  1.2888756737e-01  1.3705195780e-02
+least_sq_term_3  2.5276003304e-02  6.5901569514e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5276258419e-02  6.5954470153e-03
+least_sq_term_2  1.2889181777e-01  1.3746984740e-02
+least_sq_term_3  2.5276258419e-02  6.5954470153e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5275544185e-02  6.5937051287e-03
+least_sq_term_2  1.2889125997e-01  1.3718186226e-02
+least_sq_term_3  2.5275544185e-02  6.5937051287e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5275165318e-02  6.5928673121e-03
+least_sq_term_2  1.2888968616e-01  1.3708860401e-02
+least_sq_term_3  2.5275165319e-02  6.5928673121e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5274566741e-02  6.5916608630e-03
+least_sq_term_2  1.2888850554e-01  1.3702272974e-02
+least_sq_term_3  2.5274566742e-02  6.5916608629e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5274343352e-02  6.5901800182e-03
+least_sq_term_2  1.2888830258e-01  1.3698581878e-02
+least_sq_term_3  2.5274343353e-02  6.5901800181e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5274214636e-02  6.5892244902e-03
+least_sq_term_2  1.2888807342e-01  1.3694310174e-02
+least_sq_term_3  2.5274214636e-02  6.5892244902e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5274195369e-02  6.5897197976e-03
+least_sq_term_2  1.2888851339e-01  1.3699861504e-02
+least_sq_term_3  2.5274195369e-02  6.5897197976e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272992347e-02  6.5878840480e-03
+least_sq_term_2  1.2889313830e-01  1.3698437835e-02
+least_sq_term_3  2.5272992347e-02  6.5878840480e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5268039116e-02  6.5865680468e-03
+least_sq_term_2  1.2904756623e-01  1.3570651402e-02
+least_sq_term_3  2.5268039117e-02  6.5865680468e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5269121372e-02  6.5857910234e-03
+least_sq_term_2  1.2902422070e-01  1.3555845832e-02
+least_sq_term_3  2.5269121372e-02  6.5857910234e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5269949340e-02  6.5835892561e-03
+least_sq_term_2  1.2903634198e-01  1.3549566413e-02
+least_sq_term_3  2.5269949341e-02  6.5835892562e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5270691840e-02  6.5849301210e-03
+least_sq_term_2  1.2902924581e-01  1.3533818216e-02
+least_sq_term_3  2.5270691840e-02  6.5849301211e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271079610e-02  6.5863644349e-03
+least_sq_term_2  1.2902643752e-01  1.3518642766e-02
+least_sq_term_3  2.5271079610e-02  6.5863644349e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271177080e-02  6.5865656397e-03
+least_sq_term_2  1.2902765659e-01  1.3512632086e-02
+least_sq_term_3  2.5271177081e-02  6.5865656398e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271339472e-02  6.5868842169e-03
+least_sq_term_2  1.2902999040e-01  1.3509278848e-02
+least_sq_term_3  2.5271339472e-02  6.5868842169e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271391002e-02  6.5869736674e-03
+least_sq_term_2  1.2903054014e-01  1.3506171624e-02
+least_sq_term_3  2.5271391002e-02  6.5869736675e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271848451e-02  6.5871438028e-03
+least_sq_term_2  1.2903379410e-01  1.3504735492e-02
+least_sq_term_3  2.5271848451e-02  6.5871438029e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5271869550e-02  6.5871308967e-03
+least_sq_term_2  1.2903392015e-01  1.3501987865e-02
+least_sq_term_3  2.5271869550e-02  6.5871308969e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272218853e-02  6.5890835235e-03
+least_sq_term_2  1.2903613372e-01  1.3506560751e-02
+least_sq_term_3  2.5272218854e-02  6.5890835235e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272235280e-02  6.5890701125e-03
+least_sq_term_2  1.2903688625e-01  1.3505738637e-02
+least_sq_term_3  2.5272235280e-02  6.5890701127e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272300121e-02  6.5890542854e-03
+least_sq_term_2  1.2904054817e-01  1.3505309961e-02
+least_sq_term_3  2.5272300121e-02  6.5890542856e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272299438e-02  6.5890544402e-03
+least_sq_term_2  1.2904062946e-01  1.3505285696e-02
+least_sq_term_3  2.5272299438e-02  6.5890544413e-03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.5272298086e-02  6.5890549727e-03
+least_sq_term_2  1.2904068416e-01  1.3505305693e-02
+least_sq_term_3  2.5272298080e-02  6.5890549733e-03
+<<<<< Equivalent number of high fidelity evaluations: 2.6718261719e+01
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.5272298086e-02  6.5890549727e-03  7.6862805627e-01 -2.0916016205e-01
+  integration:  2.5272298086e-02  6.5890549727e-03  7.6862805627e-01 -2.0916016205e-01
+  expansion:    1.2904068416e-01  1.3505305693e-02  7.3052353808e-01 -5.7212724322e-01
+  integration:  1.2904068416e-01  1.3505305693e-02  7.3052353808e-01 -5.7212724322e-01
+  expansion:    2.5272298080e-02  6.5890549733e-03  7.6862805625e-01 -2.0916016207e-01
+  integration:  2.5272298080e-02  6.5890549733e-03  7.6862805625e-01 -2.0916016207e-01
+<<<<< Function evaluation summary: 791 total (499 new, 292 duplicate)
 <<<<< Best parameters          =
-                      4.7829737706e-03 uuv_1
-                     -4.7184659156e-01 uuv_2
-                      8.2721941990e-02 uuv_3
-                     -2.6756732299e-01 uuv_4
-                     -7.4960979041e-01 uuv_5
-                      1.6159721272e-01 uuv_6
-                     -1.0608948347e-02 uuv_7
-                      7.9209343320e-01 uuv_8
-                     -4.5626891790e-01 uuv_9
+                      6.3583388551e-03 uuv_1
+                     -5.5514562507e-01 uuv_2
+                      1.6608392648e-01 uuv_3
+                      1.1036430903e-01 uuv_4
+                     -6.0990032501e-01 uuv_5
+                     -6.2246212602e-01 uuv_6
+                      3.9525618250e-01 uuv_7
+                     -2.5286060906e-01 uuv_8
+                      9.2946632275e-01 uuv_9
 <<<<< Best misfit              =
-                      2.4264041887e-09
+                      1.0307668052e-09
 <<<<< Best log prior           =
                      -6.2383246250e+00
 <<<<< Best log posterior       =
-                     -7.9554194562e+00
+                     -7.9554194548e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1  3.5335396981e-03  5.3448797316e-01 -1.0328023392e-02 -1.0483445301e+00
-         uuv_2  8.4400114681e-04  5.3230949337e-01 -3.1541964726e-03 -1.0420844459e+00
-         uuv_3 -1.0863501682e-03  5.3270585455e-01  9.8936921996e-04 -1.0414693259e+00
-         uuv_4 -1.8628982949e-05  5.3422037900e-01  4.7279860703e-03 -1.0482846655e+00
-         uuv_5 -8.3949121542e-03  5.3704748712e-01  1.0639899571e-02 -1.0548458028e+00
-         uuv_6 -1.4235232473e-03  5.3172031029e-01  2.8744547938e-03 -1.0306644298e+00
-         uuv_7  2.4593099234e-03  5.3381218886e-01 -5.8745066838e-03 -1.0372815814e+00
-         uuv_8  2.2039732362e-03  5.3267859813e-01 -7.4458012339e-03 -1.0312445993e+00
-         uuv_9  8.4115258968e-04  5.3342474404e-01  4.3834633205e-03 -1.0440642781e+00
+         uuv_1  4.5242683052e-03  5.2804834100e-01 -9.9581829858e-03 -1.0187698115e+00
+         uuv_2  1.0275730313e-03  5.3360748399e-01 -4.2883374803e-03 -1.0467747672e+00
+         uuv_3 -3.4297456265e-03  5.3254812571e-01  1.5718209022e-03 -1.0281820370e+00
+         uuv_4  1.7745637490e-04  5.3217050758e-01  4.1968878565e-03 -1.0284418064e+00
+         uuv_5  8.4725630555e-03  5.3540116536e-01 -2.2852267368e-02 -1.0583979428e+00
+         uuv_6  1.5210759376e-02  5.3147333139e-01 -3.5886604663e-02 -1.0309896498e+00
+         uuv_7 -3.4277402371e-03  5.3123142628e-01  5.4877185306e-04 -1.0311936434e+00
+         uuv_8  3.1102068707e-03  5.3309736691e-01 -1.6773806420e-03 -1.0436167003e+00
+         uuv_9  3.0190133817e-04  5.3576047443e-01 -3.7438154582e-03 -1.0410880924e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5009678932e-02  6.0382385470e-03  8.2698091073e-01  9.2693812430e-02
-least_sq_term_2  1.2836437306e-01  1.2404070689e-02  8.1629245626e-01 -2.5652587392e-01
-least_sq_term_3  2.5009678932e-02  6.0382385469e-03  8.2698091031e-01  9.2693811714e-02
+least_sq_term_1  2.4960370733e-02  5.9451414297e-03  8.3139392146e-01  1.2083623851e-01
+least_sq_term_2  1.2826133594e-01  1.2229880893e-02  8.2699525358e-01 -2.1163327074e-01
+least_sq_term_3  2.4960370728e-02  5.9451414301e-03  8.3139392091e-01  1.2083623749e-01
 dakota_discrepancy.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 570 total (570 new, 0 duplicate)

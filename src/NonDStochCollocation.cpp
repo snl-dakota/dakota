@@ -479,7 +479,8 @@ compute_delta_variance(bool update_ref, bool print_metric)
     deltaRespVariance.sizeUninitialized(numFunctions);
   for (size_t i=0; i<numFunctions; ++i) {
     std::shared_ptr<PecosApproximation> pa_rep_i =
-      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
+      std::static_pointer_cast<PecosApproximation>
+      (poly_approxs[i].approx_rep());
     Real& delta = deltaRespVariance[i];
     if (pa_rep_i->expansion_coefficient_flag()) {
       if (combined_stats)
@@ -520,7 +521,8 @@ compute_delta_covariance(bool update_ref, bool print_metric)
     deltaRespCovariance.shapeUninitialized(numFunctions);
   for (i=0; i<numFunctions; ++i) {
     std::shared_ptr<PecosApproximation> pa_rep_i =
-      std::static_pointer_cast<PecosApproximation>(poly_approxs[i].approx_rep());
+      std::static_pointer_cast<PecosApproximation>
+      (poly_approxs[i].approx_rep());
     if (pa_rep_i->expansion_coefficient_flag()) {
       for (j=0; j<=i; ++j) {
 	Approximation& approx_j = poly_approxs[j];
@@ -650,7 +652,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
       RealVector level_maps_ref, level_maps_new;
       pull_level_mappings(level_maps_ref, offset);
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
-	//metric_roll_up(); // TO DO: support combined exp in numerical stats
+	//metric_roll_up(REFINEMENT_RESULTS); // TO DO: support combined exp in numerical stats
 	compute_numerical_level_mappings();
 	pull_level_mappings(level_maps_new, offset);// analytic overlaid at end
 	deltaLevelMaps = level_maps_new;  deltaLevelMaps -= level_maps_ref;
