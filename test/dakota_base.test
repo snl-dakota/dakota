@@ -28015,25 +28015,25 @@ Moment statistics for each response function:
  response_fn_1  3.6200000000e+02  9.9883564214e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.0000000000e+00  2.2204460493e-16
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.1000000000e+01  1.8721672005e+02
+ response_fn_1  4.0200000000e+02  1.0149357912e+03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.1000000000e+01  2.8815995496e+02
+ response_fn_1  4.0200000000e+02  1.0383066597e+03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.1000000000e+01  2.8407199776e+02
+ response_fn_1  4.0200000000e+02  1.0371795698e+03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.1000000000e+01  3.2357480303e+02
+ response_fn_1  4.0200000000e+02  1.0486873763e+03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.1000000000e+01  3.2355326074e+02
+ response_fn_1  4.0200000000e+02  1.0486807296e+03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.0000000000e+00  2.2204460493e-16
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
 <<<<< Function evaluation summary (LOFI_FN): 86 total (43 new, 43 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 43 total (43 new, 0 duplicate)
 Moment statistics for each response function:
