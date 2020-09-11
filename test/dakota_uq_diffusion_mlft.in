@@ -8,21 +8,21 @@
 method,
 	model_pointer = 'HIERARCH'
 	multilevel_function_train
-	  pilot_samples = 100 60 50 40 30		#s0,#s1
-#	  collocation_ratio = 1.75			#s2,#s3,#s4
-	  allocation_control rank_sampling		#s0,#s2,#s3,#s4
-#	  allocation_control estimator_variance		#s1
-#	  start_rank_sequence = 3 2 2 1 1		#s1,#s3
-	  start_rank_sequence = 2 2 2 2 2		#s0,#s2,#s4
-	  adapt_rank   kick_rank  = 1  max_rank  = 8	#s0,#s2,#s4
-#	  adapt_order  kick_order = 1  max_order = 5	#s3,#s4
+	  pilot_samples = 100 60 50 40 30			#s0,#s1
+#	  collocation_ratio = 1.75				#s2,#s3,#s4
+	  allocation_control rank_sampling			#s0,#s2,#s3,#s4
+#	  allocation_control estimator_variance			#s1
+#	  start_rank_sequence = 3 2 2 1 1			#s1,#s3
+	  start_rank_sequence = 2 2 2 2 2			#s0,#s2,#s4
+	  adapt_rank   kick_rank  = 1  max_rank  = 5		#s0,#s2,#s4
+#	  adapt_order  kick_order = 1  max_order = 4		#s3,#s4
 #
 	  start_order_sequence = 2 2 2 2 2
-	  convergence_tol  = 1e-5
+#	  convergence_tolerance = 1e-4				#s1
           solver_tolerance = 1e-10  rounding_tolerance = 1e-8
-	  seed = 1237	     	    		       	  #s0,#s1,#s2
-#	  seed_sequence = 12345 23456 34567 45678 56789   #s3,#s4
-	  output silent
+	  seed = 1237						#s0,#s1,#s2
+#	  seed_sequence = 12345 23456 34567 45678 56789   	#s3,#s4
+	  output quiet
 
 model,
 	id_model = 'HIERARCH'
