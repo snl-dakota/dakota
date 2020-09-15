@@ -2674,6 +2674,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       ( variance {N_mdm(type,allocationTarget_TARGET_VARIANCE)}
         [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
        )
+      |
+      ( standard_deviation {N_mdm(type,allocationTarget_TARGET_SIGMA)}
+        [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
+       )
      ]
     [ qoi_aggregation {0}
       sum {N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}

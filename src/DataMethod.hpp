@@ -196,7 +196,7 @@ enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 enum {QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM};
 
 // target variance for fitting sample allocation
-enum {TARGET_MEAN, TARGET_VARIANCE};
+enum {TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA};
 
 // define special values for computation of convergence tolerance, either absolute or relative 
 enum {CONVERGENCE_TOLERANCE_TYPE_RELATIVE, CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE};

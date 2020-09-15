@@ -7038,6 +7038,7 @@ static size_t
 
 static Method_mp_type
 	MP2s(allocationTarget,TARGET_MEAN),
+  MP2s(allocationTarget,TARGET_SIGMA),
 	MP2s(allocationTarget,TARGET_VARIANCE),
 	MP2s(c3RefineType,UNIFORM_START_ORDER),
 	MP2s(c3RefineType,UNIFORM_START_RANK),
