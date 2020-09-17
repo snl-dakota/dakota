@@ -243,6 +243,8 @@ private:
     /// liar response
     const IntResponsePair respStarLiar;
 
+    const IntResponseMap synchronous_resp_star_truth;
+
     /// check model parallelism
     /// bool flag if model supports asynchronous parallelism
     bool parallelFlag;

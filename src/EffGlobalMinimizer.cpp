@@ -186,10 +186,12 @@ void EffGlobalMinimizer::core_run()
 
     // iterate until EGO converges
     while (!approxConverged) {
-      if (parallelFlag)
-	batch_synchronous_ego(); // batch-sequential parallelization
-      else
-	serial_ego();
+      // deprecate serial_ego()
+      // if (parallelFlag)
+      //   	batch_synchronous_ego(); // batch-sequential parallelization
+      // else
+      //   	serial_ego();
+      batch_synchronous_ego(); // with safeguard implemented for batchSize if parallelism fails
     }
 
     post_process();
@@ -805,7 +807,6 @@ void EffGlobalMinimizer::batch_synchronous_ego()
 
     // delete liar responses
     // delete_liar_responses(); // attempting consolidated
-    // for (int _i = 0; _i < batchSizeAcquisition; _i++) {
     for (int _i = 0; _i < batchSize; _i++) {
         fHatModel.pop_approximation(false);
         numDataPts = fHatModel.approximation_data(0).points(); // debug
@@ -817,27 +818,48 @@ void EffGlobalMinimizer::batch_synchronous_ego()
 
     // query the batch
     // evaluate_batch(batchSizeAcquisition); // attempting consolidated
-    // for (int _i = 0; _i < batchSizeAcquisition; _i++) {
-    for (int _i = 0; _i < batchSize; _i++) {
+    if (parallelFlag) {
+        // parallel evaluation
+        for (int _i = 0; _i < batchSize; _i++) {
+            fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
+            iteratedModel.active_variables(varsArrayBatchAcquisition[_i]);
+            ActiveSet set = iteratedModel.current_response().active_set();
+            set.request_values(dataOrder);
+            iteratedModel.evaluate_nowait(set);
+        }
+
+        // get true responses resp_star_truth
+        // const IntResponseMap resp_star_truth = iteratedModel.synchronize();
+        const IntResponseMap synchronous_resp_star_truth = iteratedModel.synchronize();
+
+        // update the GP approximation with batch results
+        Cout << "\nParallel EGO: Adding true response...\n"; // debug
+        fHatModel.append_approximation(varsArrayBatchAcquisition, synchronous_resp_star_truth, true);
+        Cout << "\nParallel EGO: Finished adding true responses!\n"; // debug
+    }
+    else {
+        // serial evaluation
         fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
-        iteratedModel.active_variables(varsArrayBatchAcquisition[_i]);
+        // iteratedModel.continuous_variables(c_vars);
+        // ActiveSet set = iteratedModel.current_response().active_set();
+        const Variables&  vars_star = varsArrayBatchAcquisition[0];
+        iteratedModel.active_variables(varsArrayBatchAcquisition[0]);
         ActiveSet set = iteratedModel.current_response().active_set();
         set.request_values(dataOrder);
-        iteratedModel.evaluate_nowait(set);
+        iteratedModel.evaluate(set);
+        // IntResponsePair resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response());
+        IntResponsePair serial_resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response());
+        // resp_star_truth = iteratedModel.current_response();
+
+        // update the GP approximation
+        fHatModel.append_approximation(vars_star, serial_resp_star_truth, true); // vars_star -> varsArrayBatchAcquisition
+        // fHatModel.append_approximation(varsArrayBatchAcquisition, resp_star_truth, true);
     }
-
-    // get true responses resp_star_truth
-    const IntResponseMap resp_star_truth = iteratedModel.synchronize();
-
-    // update the GP approximation with batch results
-    Cout << "\nParallel EGO: Adding true response...\n"; // debug
-    fHatModel.append_approximation(varsArrayBatchAcquisition, resp_star_truth, true);
-    Cout << "\nParallel EGO: Finished adding true responses!\n"; // debug
 
     numDataPts = fHatModel.approximation_data(0).points(); // debug
 
     // update constraints
-    for (int _i = 0; _i < batchSizeAcquisition; _i++) {
+    for (int _i = 0; _i < batchSize; _i++) {
         const Variables&  vars_star = approxSubProbMinimizer.variables_results();
         const RealVector& c_vars    = vars_star.continuous_variables();
         const Response&   resp_star = approxSubProbMinimizer.response_results();
@@ -878,7 +900,7 @@ void EffGlobalMinimizer::batch_synchronous_ego()
     // update constraints
     if (numNonlinearConstraints) {
         IntRespMCIter batch_response_it; // IntRMMIter (iterator)? IntRMMCIter (const_iterator)?
-        for (batch_response_it = resp_star_truth.begin(); batch_response_it != resp_star_truth.end(); batch_response_it++) {
+        for (batch_response_it = synchronous_resp_star_truth.begin(); batch_response_it != synchronous_resp_star_truth.end(); batch_response_it++) {
           // update the merit function parameters
           // Logic follows Conn, Gould, and Toint, section 14.4:
           // const RealVector& fns_star_truth = resp_star_truth.second.function_values(); // old implementation
