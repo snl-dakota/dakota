@@ -180,6 +180,9 @@ void C3Approximation::build()
   else // default
     ft_regress_set_alg_and_obj(ftr, AIO, FTLS);
 
+  // this should precede any solves, including the cross-validation loop(s)
+  ft_regress_set_seed(ftr, data_rep->randomSeed);
+
   size_t r_adapt = data_rep->adaptRank ? 1 : 0;
   ft_regress_set_adapt(ftr, r_adapt);
   if (r_adapt) {
@@ -296,7 +299,6 @@ void C3Approximation::build()
 
   // Build FT model (using full data set, as compared to best config identified
   // using partial fold data in CV)
-  ft_regress_set_seed(ftr, data_rep->randomSeed);
   struct FunctionTrain * ft
     = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
   ftd.function_train(ft);
