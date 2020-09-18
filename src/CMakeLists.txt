@@ -39,9 +39,6 @@ list(APPEND DAKOTA_INCDIRS
   ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
   )
 
-list(APPEND EXT_TPL_INCDIRS
-  ${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-
 add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 
@@ -138,6 +135,8 @@ endif()
 
 # -----------------
 # Boost Adjustments
+
+# BMA TODO: Consider removing these, if possible
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "XL" OR
    ${CMAKE_CXX_COMPILER_ID} MATCHES "VisualAge")
@@ -599,11 +598,9 @@ if(HAVE_QUESO)
   endif()
 endif(HAVE_QUESO)
 
-# Boost is required, but have to protect against empty DIR list
-if(Boost_FOUND)
-  list(APPEND EXT_TPL_LIBDIRS ${Boost_LIBRARY_DIRS})
-  list(APPEND EXT_TPL_LIBS ${Boost_LIBRARIES})
-endif()
+# BMA TODO: Need to map imported targets to their actual files in
+# Makefile.export and DakotaConfig/Targets.cmake
+list(APPEND EXT_TPL_LIBS ${DAKOTA_BOOST_TARGETS})
 
 CheckPackage(C3)
 if(HAVE_C3)
@@ -893,7 +890,7 @@ set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
 list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
 add_library(dakota_src ${Dakota_src})
-target_link_libraries(dakota_src dakota_src_fortran)
+target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
 if(DAKOTA_MODULE_SURROGATES)
   target_link_libraries(dakota_src dakota_surrogates)
   #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)

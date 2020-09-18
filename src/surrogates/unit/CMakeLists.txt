@@ -10,9 +10,6 @@
 
 include(DakotaUnitTest)
 
-# --- Boost dependencies
-include_directories(${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-
 # List of test files to copy into this directory
 set(surrogates_unit_test_copied_files)
 
@@ -50,7 +47,7 @@ target_include_directories(EvalMetricsCrossValTest PRIVATE "${Teuchos_INCLUDE_DI
 target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates
   ${Teuchos_LIBRARIES} Boost::filesystem)
 target_link_libraries(PolynomialRegressionTest PRIVATE dakota_surrogates
-  ${Teuchos_LIBRARIES} Boost::filesystem)
+  ${Teuchos_LIBRARIES} Boost::filesystem Boost::boost)
 target_link_libraries(SurrogatesToolsTest PRIVATE dakota_surrogates
   ${Teuchos_LIBRARIES})
 target_link_libraries(EvalMetricsCrossValTest PRIVATE dakota_surrogates
