@@ -79,7 +79,29 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
 /// On-the-fly constructor
 SurrogatesGPApprox::
 SurrogatesGPApprox(const SharedApproxData& shared_data):
-  SurrogatesBaseApprox(shared_data) {}
+  SurrogatesBaseApprox(shared_data)
+{
+  // other GPs default to reduced_quadratic
+  //surrogateOpts.sublist("Trend").set("estimate trend", true);
+  //surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
+  //surrogateOpts.sublist("Trend").sublist("Options").set("reduced basis", true);
+
+  surrogateOpts.set("num restarts", 20);
+
+  // allow larger bounds for functions with high variability
+  VectorXd sig_bnds(2);
+  sig_bnds << 1.0e-2, 1.0e4;
+  surrogateOpts.set("sigma bounds", sig_bnds);
+
+  // By default, estimate the nugget
+  surrogateOpts.sublist("Nugget").set("estimate nugget", true);
+  surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
+
+  // nugget bounded by [1.0e-15, 1.0e-8]
+  VectorXd nugget_bounds(2);
+  nugget_bounds << 3.17e-8, 1.0e-4;
+  surrogateOpts.sublist("Nugget").set("nugget bounds", nugget_bounds);
+}
 
 int
 SurrogatesGPApprox::min_coefficients() const

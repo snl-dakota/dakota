@@ -5146,20 +5146,20 @@ Test Number 4 succeeded
                      -4.6894471731e-03
 <<<<< Best data captured at function evaluation 26
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 21 total (18 new, 3 duplicate)
+<<<<< Function evaluation summary: 39 total (30 new, 9 duplicate)
 <<<<< Best parameters          =
-                      2.0740768966e+00 w
-                      3.9416840251e+00 t
+                      2.1624498298e+00 w
+                      3.6853206659e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      8.1753557702e+00
+                      7.9693210467e+00
 <<<<< Best constraint values   =
-                     -9.2205062839e-02
-                     -5.2901084063e-03
-<<<<< Best data captured at function evaluation 14
+                     -5.4061113063e-02
+                     -2.9056496371e-03
+<<<<< Best data captured at function evaluation 16
 dakota_cantilever_egra.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 116 total (115 new, 1 duplicate)
@@ -5185,22 +5185,22 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary: 82 total (81 new, 1 duplicate)
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -5.7720496189e-01   2.0000000000e-01   6.8513643435e-02
+  -5.7720496092e-01   2.0000000000e-01   6.8513643520e-02
    2.0000000000e-01   6.0000000000e-01   1.9650000418e+00
-   6.0000000000e-01   1.3037501821e+00   2.2842031695e-01
+   6.0000000000e-01   1.3037501850e+00   2.2842031600e-01
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -3.1293377301e-01   2.0000000000e-01   8.7523696992e-04
-   2.0000000000e-01   6.0000000000e-01   4.5041461484e-01
-   6.0000000000e-01   1.8181933648e+00   6.7262327900e-01
+  -3.1335899292e-01   2.0000000000e-01   8.7431546660e-04
+   2.0000000000e-01   6.0000000000e-01   4.5041487012e-01
+   6.0000000000e-01   1.8181915437e+00   6.7262428350e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.0000000000e-01   5.3249143635e-02                      1.6141343537e+00
    6.0000000000e-01   8.3924916036e-01                     -9.9137668753e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-01   4.4893860127e-04                      3.3207132989e+00
-   6.0000000000e-01   1.8061478454e-01                      9.1302466576e-01
+   2.0000000000e-01   4.4883770743e-04                      3.3207760342e+00
+   6.0000000000e-01   1.8061478576e-01                      9.1302466113e-01
 dakota_cantilever_examples.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
@@ -40153,10 +40153,10 @@ weight:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
 stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
 displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 169 total (169 new, 0 duplicate)
+<<<<< Function evaluation summary: 98 total (98 new, 0 duplicate)
 weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
-stress:  Min = -9.7567091468e-01  Max = 2.0701699406e+01
-displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
+stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
+displ:  Min = -9.9315672724e-01  Max = 6.7426701571e+01
 dakota_uq_cantilever_ivp_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 294 total (294 new, 0 duplicate)
