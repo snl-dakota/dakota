@@ -17,7 +17,10 @@ method,
     efficient_global                        #s0,#s1,#s2,#s3,#s4,#s5,#p0,#p1,
       gaussian_process dakota               #s0,#s4,#p0,#p1
 #     gaussian_process surfpack             #s1
-#     gaussian_process experimental         #s5
+#     gaussian_process experimental		#s5
+#         export_model				#s5
+#           filename_prefix 'exp_gp.s5'		#s5
+#           formats binary_archive text_archive #s5
 #     convergence_tolerance 1.0e-3          #s3
 #     x_conv_tol 1.0e-2                     #s3
 #     historical default:
