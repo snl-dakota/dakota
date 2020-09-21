@@ -75,6 +75,88 @@ ParameterList convert_options(pybind11::dict pydict)
   return pl;
 }
 
+// DTS - non-tested and likely non-functional draft
+#if 0
+/// Convert ParameterList of options to Python dictionary
+//*
+pybind11::dict convert_options(ParameterList &pl)
+{
+  pybind11::dict pydict;
+  // this assumes di.first is convertible to string and di.second is
+  // convertible to a C++ type
+  // This isn't there yet, as the second will have type pybind11::handle
+  //ParameterList::ConstIterator itr;
+  //int i;
+  /*
+  for (itr = this->begin(), i = 0; itr != this->end(); ++itr, ++i)
+    const std::string &entryName = this->name(itr);
+    const ParameterEntry &theEntry = this->entry(ir);
+    */
+  for (const auto &pl_elem : pl) {
+    auto key = pl_elem.first;
+    auto value = pl_elem.second;
+    //ParameterList pl_value = value as ParameterList
+    //if (Teuchos::isParameterType<ParameterList>(value, key))
+    //  pydict[py::str(key)] = convert_options(value);
+    //else
+    //  pydict[py::str(key)] = value;
+    //
+    if (value.isList())
+      pydict[py::str(key)] = convert_options(Teuchos::getValue<ParameterList>(value));
+    else
+      pydict[py::str(key)] = value.getAny();
+
+    /*
+    try {
+      ParameterList &pl_value = dynamic_cast<ParameterList&>(value);
+      pydict[py::str(key)] = convert_options(pl_value);
+    }
+    catch(const std::bad_cast &e ) {
+      pydict[py::str(key)] = value;
+    }
+    */
+    
+    // basic data types
+    /*
+    if (pybind11::isinstance<pybind11::bool_>(value))
+      pl.set(key, value.cast<bool>());
+    else if (pybind11::isinstance<pybind11::int_>(value))
+      pl.set(key, value.cast<int>());
+    else if (pybind11::isinstance<pybind11::float_>(value))
+      pl.set(key, value.cast<double>());
+    else if (pybind11::isinstance<pybind11::str>(value))
+      pl.set(key, value.cast<std::string>());
+      */
+    // TODO: add general tuples, lists to std:: containers? May
+    // require directly registering additional converters for certain
+    // types.
+    // WARNING: only works for list<double>; this might be tricky
+    // since Python list are allowed to be heterogeneous in general
+    // could just support for homogeneous if important, and skip tuples.
+
+    // Can't do with ParameterList, perhaps as std::vector isn't serializable
+    //else if (pybind11::isinstance<pybind11::list>(value))
+    //  pl.set(key, value.cast<std::vector<double>>());
+
+    // dict (recursive parameter list)
+    /* would this work? */
+      /*
+    else if (pybind11::isinstance<pybind11::dict>(value)) {
+      pl.set(key, convert_options(value.cast<pybind11::dict>()));
+    }
+    else if (pybind11::isinstance<pybind11::array>(value))
+      pl.set(key, value.cast<Eigen::MatrixXd>());
+    else
+      throw
+	std::runtime_error("dict2optslist: key '" + key + "' has unknown type: " +
+			   pybind11::str(value.get_type()).cast<std::string>());
+               */
+
+  }
+  return pydict;
+}
+#endif
+
 
 // BMA: Explored a number of approaches to avoid bleeding pybind11
 // datatypes and code into the core surrogates modules. Attempting to
@@ -242,6 +324,9 @@ PYBIND11_MODULE(dakmod, m) {
     .def("hessian",
       py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
       (&dakota::surrogates::Surrogate::hessian))
+
+    .def("print_options", 
+        (&dakota::surrogates::Surrogate::print_options))
 
     ; // Surrogate
 

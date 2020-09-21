@@ -168,6 +168,9 @@ public:
    */
   void get_options(ParameterList &options);
 
+  /// Print the Surrogate's configOptions.
+  void print_options();
+
   /// Initialize the Surrogate's defaultConfigOptions.
   virtual void default_options() = 0;
 

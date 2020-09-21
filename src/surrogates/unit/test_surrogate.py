@@ -113,3 +113,4 @@ dakmod.load_gp("gp.bin", True, gpload)
 gpload_value = gpload.value(eval_samples)
 
 assert(np.allclose(gpload_value, gp_eval_surr))
+gp.print_options()

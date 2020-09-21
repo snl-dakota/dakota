@@ -72,6 +72,10 @@ void Surrogate::get_options(ParameterList &options) {
   options = configOptions;
 }
 
+void Surrogate::print_options() {
+  std::cout << configOptions << "\n";
+}
+
 /// Evalute metrics at specified points (within surrogates)
 VectorXd Surrogate::evaluate_metrics(const StringArray &mnames,
   const MatrixXd &points, const MatrixXd &ref_values) {
