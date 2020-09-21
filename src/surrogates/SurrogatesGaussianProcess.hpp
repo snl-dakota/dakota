@@ -122,7 +122,7 @@ public:
    *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
    *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
    *  (num_pts by num_features).
-   *  \param[out] qoi Index of response/QOI for which to compute derivatives
+   *  \param[in] qoi Index of response/QoI for which to compute derivatives
    */
   void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi = 0) override;
 
@@ -131,13 +131,14 @@ public:
    *  \param[in] sample Coordinates of the prediction point - (1 by num_features).
    *  \param[out] hessian Hessian matrix at the prediction point - 
    *  (num_features by num_features).
-   *  \param[out] qoi Index of response/QOI for which to compute derivatives
+   *  \param[in] qoi Index of response/QoI for which to compute derivatives
    */
   void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi = 0) override;
 
   /**
    *  \brief Evaluate the variance of the Gaussian Process at a set of prediction points for a given QoI index.
    *  \param[in] samples Matrix for the prediction points - (num_points by num_features).
+   *  \param[in] qoi Index of response/QoI for which to compute derivatives
    *  \returns[out] Variance of the Gaussian process at the prediction points.
    */
   VectorXd variance(const MatrixXd &samples, const int qoi);

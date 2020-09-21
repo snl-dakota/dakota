@@ -32,9 +32,10 @@ Surrogate::Surrogate(const MatrixXd &samples,
 Surrogate::~Surrogate(){}
 
 /* VectorXd is the appropriate return type for single qoi evaluation */
-VectorXd Surrogate::value(const MatrixXd &samples, const int qoi) {
+VectorXd Surrogate::value(const MatrixXd &samples, int qoi) {
+  silence_unused_args(qoi);
   MatrixXd approx_values;
-  gradient(samples, approx_values, qoi);
+  value(samples, approx_values);
   Eigen::Map<VectorXd> vec_map(approx_values.data(), samples.rows(), 1);
   return vec_map;
 }
