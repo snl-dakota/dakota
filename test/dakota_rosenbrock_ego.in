@@ -12,6 +12,7 @@ method
   efficient_global
     seed = 123456
 #   batch_size = 4				#s2,#p0
+    exploration = 0
 
 variables
   continuous_design = 2
