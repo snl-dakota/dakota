@@ -1,5 +1,11 @@
-import dakmod
 import numpy as np
+import sys
+
+# Optionally append a path to the python library, passed as argv[1]
+if len(sys.argv) > 1:
+    surr_lib_path = sys.argv[1]
+    sys.path.append(surr_lib_path)
+import dakmod
 
 np.random.seed(44)
 

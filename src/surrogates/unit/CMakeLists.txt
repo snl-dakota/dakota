@@ -41,6 +41,14 @@ dakota_add_unit_test(NAME EvalMetricsCrossValTest SOURCES
   empty.f90
 )
 
+if(DAKOTA_PYBIND11)
+  add_test(NAME surrogates_python
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate.py
+    $<TARGET_FILE_DIR:dakmod>
+    )
+  set_tests_properties(surrogates_python PROPERTIES LABELS UnitTest)
+endif()
+
 # BMA NOTE: I think we only need state the immediate deps? So no dakota_util
 target_include_directories(GaussianProcessTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(PolynomialRegressionTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
