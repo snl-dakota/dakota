@@ -6,55 +6,56 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       HierarchSurrModel
-//- Description: Implementation code for the HierarchSurrModel class
+//- Class:       NonHierarchSurrModel
+//- Description: Implementation code for the NonHierarchSurrModel class
 //- Owner:       Mike Eldred
 //- Checked by:
 
-#include "HierarchSurrModel.hpp"
+#include "NonHierarchSurrModel.hpp"
 #include "ProblemDescDB.hpp"
 
 static const char rcsId[]=
-  "@(#) $Id: HierarchSurrModel.cpp 6656 2010-02-26 05:20:48Z mseldre $";
+  "@(#) $Id: NonHierarchSurrModel.cpp 6656 2010-02-26 05:20:48Z mseldre $";
 
 namespace Dakota {
 
 extern Model dummy_model; // defined in DakotaModel.cpp
 
 
-HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db),
-  corrOrder(problem_db.get_short("model.surrogate.correction_order")),
-  correctionMode(SINGLE_CORRECTION)
+NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
+  SurrogateModel(problem_db)
+  //corrOrder(problem_db.get_short("model.surrogate.correction_order")),
+  //correctionMode(SINGLE_CORRECTION)
 {
-  // Hierarchical surrogate models pass through numerical derivatives
+  // NonHierarchical surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
   // initialize ignoreBounds even though it's irrelevant for pass through
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   // initialize centralHess even though it's irrelevant for pass through
   centralHess = problem_db.get_bool("responses.central_hess");
 
-  const StringArray& ordered_model_ptrs
-    = problem_db.get_sa("model.surrogate.ordered_model_pointers");
+  const String& truth_model_ptr
+    = problem_db.get_sa("model.surrogate.truth_model_pointer");
+  const StringArray& unordered_model_ptrs
+    = problem_db.get_sa("model.surrogate.unordered_model_pointers");
 
-  size_t i, num_models = ordered_model_ptrs.size(),
+  size_t i, num_approx_models = unordered_model_ptrs.size(),
            model_index = problem_db.get_db_model_node(); // for restoration
 
-  //const std::pair<short,short>& cv_view = currentVariables.view();
-  orderedModels.resize(num_models);
-  for (i=0; i<num_models; ++i) {
-    problem_db.set_db_model_nodes(ordered_model_ptrs[i]);
-    orderedModels[i] = problem_db.get_model();
-    check_submodel_compatibility(orderedModels[i]);
-    //if (cv_view != orderedModels[i].current_variables().view()) {
-    //  Cerr << "Error: variable views in hierarchical models must be "
-    //       << "identical." << std::endl;
-    //  abort_handler(-1);
-    //}
+  problem_db.set_db_model_nodes(truth_model_ptr);
+  truthModel = problem_db.get_model();
+  check_submodel_compatibility(truthModel);
+
+  unorderedModels.resize(num_approx_models);
+  for (i=0; i<num_approx_models; ++i) {
+    problem_db.set_db_model_nodes(unordered_model_ptrs[i]);
+    unorderedModels[i] = problem_db.get_model();
+    check_submodel_compatibility(unorderedModels[i]);
   }
 
   problem_db.set_db_model_nodes(model_index); // restore
 
+  /*
   // default index values, to be overridden at run time
   surrModelKey.assign(3, 0); truthModelKey.assign(3, 0);
   if (num_models == 1) // first and last solution level (1 model)
@@ -67,7 +68,7 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
     aggregate_keys(truthModelKey, surrModelKey, activeKey);
   check_model_interface_instance();
 
-  // Correction is required in HierarchSurrModel for some responseModes.
+  // Correction is required in NonHierarchSurrModel for some responseModes.
   // Enforcement of a correction type for these modes occurs in
   // surrogate_response_mode(short).
   switch (responseMode) {
@@ -78,26 +79,25 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
     break;
   }
   //truthResponseRef[truthModelKey] = currentResponse.copy();
+  */
 }
 
 
-void HierarchSurrModel::check_submodel_compatibility(const Model& sub_model)
+void NonHierarchSurrModel::check_submodel_compatibility(const Model& sub_model)
 {
   SurrogateModel::check_submodel_compatibility(sub_model);
   
   bool error_flag = false;
   // Check for compatible array sizing between sub_model and currentResponse.
-  // HierarchSurrModel creates aggregations and DataFitSurrModel consumes them.
-  // For now, allow either a factor of 2 or 1 from aggregation or not.  In the
-  // future, aggregations may span a broader model hierarchy (e.g., factor =
-  // orderedModels.size()).  In general, the fn count check needs to be
-  // specialized in the derived classes.
+  // NonHierarchSurrModel creates aggregations (and a DataFitSurrModel will
+  // consume them). Aggregations may span truthModel, unorderedModels, or both.
+  // For now, allow any aggregation factor.
   size_t sm_qoi = sub_model.qoi();//, aggregation = numFns / sm_qoi;
-  if ( numFns % sm_qoi ) { //|| aggregation < 1 || aggregation > 2 ) {
-    Cerr << "Error: incompatibility between approximate and actual model "
-	 << "response function sets\n       within HierarchSurrModel: "<< numFns
-	 << " approximate and " << sm_qoi << " actual functions.\n       "
-	 << "Check consistency of responses specifications." << std::endl;
+  if ( numFns % sm_qoi ) {
+    Cerr << "Error: incompatibility between subordinate and aggregate model "
+	 << "response function sets\n       within NonHierarchSurrModel: "
+	 << numFns << " aggregate and " << sm_qoi << " subordinate functions.\n"
+	 << "       Check consistency of responses specifications."<< std::endl;
     error_flag = true;
   }
 
@@ -112,11 +112,11 @@ void HierarchSurrModel::check_submodel_compatibility(const Model& sub_model)
     icv  = currentVariables.icv(),  idiv = currentVariables.idiv(),
     idsv = currentVariables.idsv(), idrv = currentVariables.idrv();
   if (sm_icv != icv || sm_idiv != idiv || sm_idsv != idsv || sm_idrv != idrv) {
-    Cerr << "Error: incompatibility between approximate and actual model "
-	 << "variable sets within\n       HierarchSurrModel: inactive "
-	 << "approximate = " << icv << " continuous, " << idiv
+    Cerr << "Error: incompatibility between subordinate and aggregate model "
+	 << "variable sets within\n       NonHierarchSurrModel: inactive "
+	 << "subordinate = " << icv << " continuous, " << idiv
 	 << " discrete int, " << idsv << " discrete string, and " << idrv
-	 << " discrete real and\n       inactive actual = " << sm_icv
+	 << " discrete real and\n       inactive aggregate = " << sm_icv
 	 << " continuous, " << sm_idiv << " discrete int, " << sm_idsv
 	 << " discrete string, and " << sm_idrv << " discrete real.  Check "
 	 << "consistency of variables specifications." << std::endl;
@@ -128,7 +128,7 @@ void HierarchSurrModel::check_submodel_compatibility(const Model& sub_model)
 }
 
 
-void HierarchSurrModel::
+void NonHierarchSurrModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                            bool recurse_flag)
 {
@@ -141,7 +141,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   if (recurse_flag) {
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
-              num_models = orderedModels.size();
+              num_approx_models = unorderedModels.size();
 
     // init and free must cover possible subset of active responseModes and
     // ordered model fidelities, but only 2 models at mpst will be active at
@@ -161,8 +161,8 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // responseMode == BYPASS_SURROGATE ||
     // responseMode == AUTO_CORRECTED_SURROGATE);
 
-    for (i=0; i<num_models; ++i) {
-      Model& model_i = orderedModels[i];
+    for (i=0; i<num_approx_models; ++i) {
+      Model& model_i = unorderedModels[i];
       // superset of possible init calls (two configurations for i > 0)
       probDescDB.set_db_model_nodes(model_i.model_id());
       model_i.init_communicators(pl_iter, max_eval_concurrency);
@@ -170,58 +170,24 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
         model_i.init_communicators(pl_iter, model_i.derivative_concurrency());
     }
 
-
-    /* This version inits only two models
-    Model& lf_model = surrogate_model();
-    Model& hf_model = truth_model();
-
-    // superset of possible init calls (two configurations for HF)
-    probDescDB.set_db_model_nodes(lf_model.model_id());
-    lf_model.init_communicators(pl_iter, max_eval_concurrency);
-
-    probDescDB.set_db_model_nodes(hf_model.model_id());
-    hf_model.init_communicators(pl_iter, hf_model.derivative_concurrency());
-    hf_model.init_communicators(pl_iter, max_eval_concurrency);
-    */
-
-
-    /* This version does not support runtime updating of responseMode
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE:
-      // LF are used in iterator evals
-      lf_model.init_communicators(pl_iter, max_eval_concurrency);
-      break;
-    case AUTO_CORRECTED_SURROGATE:
-      // LF are used in iterator evals
-      lf_model.init_communicators(pl_iter, max_eval_concurrency);
-      // HF evals are for correction and validation:
-      // concurrency = one eval at a time * derivative concurrency per eval
-      hf_model.init_communicators(pl_iter, hf_model.derivative_concurrency());
-      break;
-    case BYPASS_SURROGATE:
-      // HF are used in iterator evals
-      hf_model.init_communicators(pl_iter, max_eval_concurrency);
-      break;
-    case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-      // LF and HF are used in iterator evals
-      lf_model.init_communicators(pl_iter, max_eval_concurrency);
-      hf_model.init_communicators(pl_iter, max_eval_concurrency);
-      break;
-    }
-    */
+    probDescDB.set_db_model_nodes(truthModel.model_id());
+    truthModel.init_communicators(pl_iter, max_eval_concurrency);
+    if (extra_deriv_config) // && i) // mid and high fidelity only?
+      truthModel.init_communicators(pl_iter,
+				    truthModel.derivative_concurrency());
 
     probDescDB.set_db_model_nodes(model_index); // restore all model nodes
   }
 }
 
 
-void HierarchSurrModel::
+void NonHierarchSurrModel::
 derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                           bool recurse_flag)
 {
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
-  // HierarchSurrModels do not utilize default set_ie_asynchronous_mode() as
+  // NonHierarchSurrModels do not utilize default set_ie_asynchronous_mode() as
   // they do not define the ie_parallel_level
 
   // This aggressive logic is appropriate for invocations of the Model via
@@ -235,6 +201,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     //if (pl_iter->server_communicator_size() > 1)
     //  parallelLib.bcast(responseMode, *pl_iter);
 
+    /*
     switch (responseMode) {
 
     // CASES WITH A SINGLE ACTIVE MODEL:
@@ -288,101 +255,90 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS: {
-      size_t i, num_models = orderedModels.size(); int cap_i;
+    */
+      size_t i, num_approx_models = unorderedModels.size(); int cap_i;
       asynchEvalFlag = false; evaluationCapacity = 1;
-      for (i=0; i<num_models; ++i) {
-	Model& model_i = orderedModels[i];
+
+      for (i=0; i<num_approx_models; ++i) {
+	Model& model_i = unorderedModels[i];
 	model_i.set_communicators(pl_iter, max_eval_concurrency);
 	if (model_i.asynch_flag()) asynchEvalFlag = true;
 	cap_i = model_i.evaluation_capacity();
 	if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
       }
-      break;
-    }
-    }
+
+      truthModel.set_communicators(pl_iter, max_eval_concurrency);
+      if (truthModel.asynch_flag()) asynchEvalFlag = true;
+      cap_i = truthModel.evaluation_capacity();
+      if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
+
+      //break;
+    //}
+    //}
   }
 }
 
 
-void HierarchSurrModel::
+void NonHierarchSurrModel::
 derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                            bool recurse_flag)
 {
   if (recurse_flag) {
 
-    size_t i, num_models = orderedModels.size();
+    size_t i, num_approx_models = unorderedModels.size();
     bool extra_deriv_config = true;//(responseMode == UNCORRECTED_SURROGATE ||
-    // responseMode == BYPASS_SURROGATE ||
-    // responseMode == AUTO_CORRECTED_SURROGATE);
-    for (i=0; i<num_models; ++i) {
-      Model& model_i = orderedModels[i];
+                                   // responseMode == BYPASS_SURROGATE ||
+                                   // responseMode == AUTO_CORRECTED_SURROGATE);
+    for (i=0; i<num_approx_models; ++i) {
+      Model& model_i = unorderedModels[i];
       // superset of possible init calls (two configurations for i > 0)
       model_i.free_communicators(pl_iter, max_eval_concurrency);
       if (extra_deriv_config) // && i) // mid and high fidelity only?
         model_i.free_communicators(pl_iter, model_i.derivative_concurrency());
     }
 
-
-    /* This version frees only two models:
-    // superset of possible free calls (two configurations for HF)
-    surrogate_model().free_communicators(pl_iter, max_eval_concurrency);
-    Model& hf_model = truth_model();
-    hf_model.free_communicators(pl_iter, hf_model.derivative_concurrency());
-    hf_model.free_communicators(pl_iter, max_eval_concurrency);
-    */
-
-
-    /* This version does not support runtime updating of responseMode:
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE:
-      lf_model.free_communicators(pl_iter, max_eval_concurrency);
-      break;
-    case AUTO_CORRECTED_SURROGATE:
-      lf_model.free_communicators(pl_iter, max_eval_concurrency);
-      hf_model.free_communicators(pl_iter, hf_model.derivative_concurrency());
-      break;
-    case BYPASS_SURROGATE:
-      hf_model.free_communicators(pl_iter, max_eval_concurrency);
-      break;
-    case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-      lf_model.free_communicators(pl_iter, max_eval_concurrency);
-      hf_model.free_communicators(pl_iter, max_eval_concurrency);
-      break;
-    }
-    */
+    truthModel.free_communicators(pl_iter, max_eval_concurrency);
+    if (extra_deriv_config) // && i) // mid and high fidelity only?
+      truthModel.free_communicators(pl_iter,
+				    truthModel.derivative_concurrency());
   }
 }
 
 
-/** Inactive variables must be propagated when a HierarchSurrModel
+/** Inactive variables must be propagated when a NonHierarchSurrModel
     is employed by a sub-iterator (e.g., OUU with MLMC or MLPCE).
     In current use cases, this can occur once per sub-iterator
     execution within Model::initialize_mapping(). */
-bool HierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
+bool NonHierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
 {
   Model::initialize_mapping(pl_iter);
 
   // push inactive variable values/bounds from currentVariables and
   // userDefinedConstraints into orderedModels
-  size_t i, num_models = orderedModels.size();
-  for (i=0; i<num_models; ++i) {
-    orderedModels[i].initialize_mapping(pl_iter);
-    init_model(orderedModels[i]);
+  size_t i, num_approx_models = unorderedModels.size();
+  for (i=0; i<num_approx_models; ++i) {
+    unorderedModels[i].initialize_mapping(pl_iter);
+    init_model(unorderedModels[i]);
   }
+
+  truthModel.initialize_mapping(pl_iter);
+  init_model(truthModel);
 
   return false; // no change to problem size
 }
 
 
-/** Inactive variables must be propagated when a HierarchSurrModel
+/** Inactive variables must be propagated when a NonHierarchSurrModel
     is employed by a sub-iterator (e.g., OUU with MLMC or MLPCE).
     In current use cases, this can occur once per sub-iterator
     execution within Model::initialize_mapping(). */
-bool HierarchSurrModel::finalize_mapping()
+bool NonHierarchSurrModel::finalize_mapping()
 {
-  size_t i, num_models = orderedModels.size();
-  for (i=0; i<num_models; ++i)
-    orderedModels[i].finalize_mapping();
+  size_t i, num_approx_models = unorderedModels.size();
+  for (i=0; i<num_approx_models; ++i)
+    unorderedModels[i].finalize_mapping();
+
+  truthModel.finalize_mapping();
 
   Model::finalize_mapping();
 
@@ -390,7 +346,7 @@ bool HierarchSurrModel::finalize_mapping()
 }
 
 
-void HierarchSurrModel::build_approximation()
+void NonHierarchSurrModel::build_approximation()
 {
   Cout << "\n>>>>> Building hierarchical approximation.\n";
 
@@ -411,7 +367,7 @@ void HierarchSurrModel::build_approximation()
     hf_model.eval_tag_prefix(eval_tag);
   }
 
-  // set HierarchSurrModel parallelism mode to HF model
+  // set NonHierarchSurrModel parallelism mode to HF model
   component_parallel_mode(TRUTH_MODEL_MODE);
 
   // update HF model with current variable values/bounds/labels
@@ -450,13 +406,13 @@ void HierarchSurrModel::build_approximation()
   // particular, lo_fi_response involves find_center(), hard conv check, etc.
   //deltaCorr[activeKey].compute(..., truthResponseRef, lo_fi_response);
 
-  Cout << "\n<<<<< Hierarchical approximation build completed.\n";
+  Cout << "\n<<<<< NonHierarchical approximation build completed.\n";
   ++approxBuilds;
 }
 
 
 /*
-bool HierarchSurrModel::
+bool NonHierarchSurrModel::
 build_approximation(const RealVector& c_vars, const Response& response)
 {
   // NOTE: this fn not currently used by SBO, but it could be.
@@ -482,10 +438,10 @@ build_approximation(const RealVector& c_vars, const Response& response)
 
     truthResponseRef.update(response);
 
-    Cout << "\n<<<<< Hierarchical approximation update completed.\n";
+    Cout << "\n<<<<< NonHierarchical approximation update completed.\n";
   }
   else {
-    Cerr << "Warning: cannot use anchor point in HierarchSurrModel::"
+    Cerr << "Warning: cannot use anchor point in NonHierarchSurrModel::"
 	 << "build_approximation(RealVector&, Response&).\n";
     currentVariables.continuous_variables(c_vars);
     build_approximation();
@@ -499,7 +455,7 @@ build_approximation(const RealVector& c_vars, const Response& response)
     both (mixed case).  For the LF model portion, compute the high
     fidelity response if needed with build_approximation(), and, if
     correction is active, correct the low fidelity results. */
-void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
+void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
@@ -665,7 +621,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     fidelity response with build_approximation() (for correcting the
     low fidelity results in derived_synchronize() and
     derived_synchronize_nowait()) if not performed previously. */
-void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
+void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
@@ -732,7 +688,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     }
   }
 
-  // HierarchSurrModel's asynchEvalFlag is set if _either_ LF or HF is
+  // NonHierarchSurrModel's asynchEvalFlag is set if _either_ LF or HF is
   // asynchronous, resulting in use of derived_evaluate_nowait().
   // To manage general case of mixed asynch, launch nonblocking evals first,
   // followed by blocking evals.
@@ -746,7 +702,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     if (sameModelInstance)
       hf_model.solution_level_index(truth_level_index());
     hf_model.evaluate_nowait(hi_fi_set);
-    // store map from HF eval id to HierarchSurrModel id
+    // store map from HF eval id to NonHierarchSurrModel id
     truthIdMap[hf_model.evaluation_id()] = surrModelEvalCntr;
   }
   if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
@@ -754,7 +710,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     if (sameModelInstance)
       lf_model.solution_level_index(surrogate_level_index());
     lf_model.evaluate_nowait(lo_fi_set);
-    // store map from LF eval id to HierarchSurrModel id
+    // store map from LF eval id to NonHierarchSurrModel id
     surrIdMap[lf_model.evaluation_id()] = surrModelEvalCntr;
     // store variables set needed for correction
     if (responseMode == AUTO_CORRECTED_SURROGATE)
@@ -794,7 +750,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     derived_synchronize() is designed for the general case where
     derived_evaluate_nowait() may be inconsistent in its use of low
     fidelity evaluations, high fidelity evaluations, or both. */
-const IntResponseMap& HierarchSurrModel::derived_synchronize()
+const IntResponseMap& NonHierarchSurrModel::derived_synchronize()
 {
   surrResponseMap.clear();
 
@@ -818,7 +774,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
     derived_synchronize_nowait() is designed for the general case
     where derived_evaluate_nowait() may be inconsistent in its use of
     actual evals, approx evals, or both. */
-const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
+const IntResponseMap& NonHierarchSurrModel::derived_synchronize_nowait()
 {
   surrResponseMap.clear();
 
@@ -831,7 +787,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
 }
 
 
-void HierarchSurrModel::
+void NonHierarchSurrModel::
 derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
                                IntResponseMap& lf_resp_map_rekey, bool block)
 {
@@ -873,7 +829,7 @@ derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
 }
 
 
-void HierarchSurrModel::derived_synchronize_competing()
+void NonHierarchSurrModel::derived_synchronize_competing()
 {
   // in this case, we don't want to starve either LF or HF scheduling by
   // blocking on one or the other --> leverage derived_synchronize_nowait()
@@ -892,7 +848,7 @@ void HierarchSurrModel::derived_synchronize_competing()
 }
 
 
-void HierarchSurrModel::
+void NonHierarchSurrModel::
 derived_synchronize_combine(const IntResponseMap& hf_resp_map,
                             IntResponseMap& lf_resp_map,
                             IntResponseMap& combined_resp_map)
@@ -968,7 +924,7 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
 }
 
 
-void HierarchSurrModel::
+void NonHierarchSurrModel::
 derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
                                    IntResponseMap& lf_resp_map,
                                    IntResponseMap& combined_resp_map)
@@ -1070,7 +1026,7 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
 }
 
 
-void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
+void NonHierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
 {
   // Incoming we have a completed LF evaluation that may be used to compute a
   // correction and may be the target of application of a correction.
@@ -1119,7 +1075,7 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
 }
 
 
-void HierarchSurrModel::
+void NonHierarchSurrModel::
 single_apply(const Variables& vars, Response& resp,
 	     const UShortArray& paired_key)
 {
@@ -1139,7 +1095,8 @@ single_apply(const Variables& vars, Response& resp,
 }
 
 
-void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
+void NonHierarchSurrModel::
+recursive_apply(const Variables& vars, Response& resp)
 {
   switch (correctionMode) {
   case SINGLE_CORRECTION: case DEFAULT_CORRECTION:
@@ -1147,11 +1104,11 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
     break;
   case FULL_MODEL_FORM_CORRECTION: {
     // assume a consistent level index from surrModelKey
-    size_t i, num_models = orderedModels.size();  UShortArray paired_key;
+    size_t i, num_approx_models = orderedModels.size();  UShortArray paired_key;
     unsigned short lf_form = surrModelKey[1];
     Pecos::DiscrepancyCalculator::
       aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
-    for (i = lf_form; i < num_models - 1; ++i) {
+    for (i = lf_form; i < num_approx_models - 1; ++i) {
       paired_key[1] = i+1;  // update HF model form
       paired_key[3] = i;    // update LF model form
       single_apply(vars, resp, paired_key);
@@ -1185,7 +1142,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
 }
 
 
-void HierarchSurrModel::resize_response(bool use_virtual_counts)
+void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 {
   size_t num_surr, num_truth;
   if (use_virtual_counts) { // allow models to consume lower-level aggregations
@@ -1203,7 +1160,7 @@ void HierarchSurrModel::resize_response(bool use_virtual_counts)
   case MODEL_DISCREPANCY:
     if (num_surr != num_truth) {
       Cerr << "Error: mismatch in response sizes for MODEL_DISCREPANCY mode "
-	   << "in HierarchSurrModel::resize_response()." << std::endl;
+	   << "in NonHierarchSurrModel::resize_response()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
     numFns = num_truth;  break;
@@ -1225,7 +1182,7 @@ void HierarchSurrModel::resize_response(bool use_virtual_counts)
     //estimate_message_lengths();
     //
     // NOT NECESSARY: Model::synchronize() and Model::serve_run() delegate to
-    // HierarchSurrModel::{derived_synchronize,serve_run}() which delegate to
+    // NonHierarchSurrModel::{derived_synchronize,serve_run}() which delegate to
     // synchronize() and serve_run() by the LF or HF model.
     // --> Jobs are never returned using messages containing the expanded
     //     Response object.  Expansion by combination only happens on
@@ -1234,7 +1191,7 @@ void HierarchSurrModel::resize_response(bool use_virtual_counts)
 }
 
 
-void HierarchSurrModel::component_parallel_mode(short par_mode)
+void NonHierarchSurrModel::component_parallel_mode(short par_mode)
 {
   // mode may be correct, but can't guarantee active parallel config is in sync
   //if (componentParallelMode == mode)
@@ -1267,7 +1224,7 @@ void HierarchSurrModel::component_parallel_mode(short par_mode)
   }
 
   // -----------------------
-  // activate new serve mode (matches HierarchSurrModel::serve_run(pl_iter)).
+  // activate new serve mode (matches NonHierarchSurrModel::serve_run(pl_iter)).
   // -----------------------
   // These bcasts match the outer parallel context (pl_iter).
   if (restart && modelPCIter->mi_parallel_level_defined(miPLIndex)) {
@@ -1286,12 +1243,13 @@ void HierarchSurrModel::component_parallel_mode(short par_mode)
 }
 
 
-void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
+void NonHierarchSurrModel::
+serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   set_communicators(pl_iter, max_eval_concurrency, false); // don't recurse
 
   // manage LF model and HF model servers, matching communication from
-  // HierarchSurrModel::component_parallel_mode()
+  // NonHierarchSurrModel::component_parallel_mode()
   // Note: could consolidate logic by bcasting componentParallelKey,
   //       except for special handling of responseMode for TRUTH_MODEL_MODE.
   componentParallelMode = 1; // dummy value to be replaced inside loop
@@ -1302,7 +1260,7 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       UShortArray dummy_key(5, 0); // for size estimation (worst 2-model case)
       MPIPackBuffer send_buff;  send_buff << responseMode << dummy_key;
       int buffer_len = send_buff.size();
-      // receive model state from HierarchSurrModel::component_parallel_mode()
+      // receive model state from NonHierarchSurrModel::component_parallel_mode()
       MPIUnpackBuffer recv_buffer(buffer_len);
       parallelLib.bcast(recv_buffer, *pl_iter);
       recv_buffer >> responseMode >> activeKey;
@@ -1332,7 +1290,7 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 }
 
 
-void HierarchSurrModel::init_model(Model& model)
+void NonHierarchSurrModel::init_model(Model& model)
 {
   // Set the low/high fidelity model variable descriptors with the variable
   // descriptors from currentVariables (eliminates the need to replicate
@@ -1443,7 +1401,7 @@ void HierarchSurrModel::init_model(Model& model)
 }
 
 
-void HierarchSurrModel::update_model(Model& model)
+void NonHierarchSurrModel::update_model(Model& model)
 {
   // update model with currentVariables/userDefinedConstraints data.  In the
   // hierarchical case, the variables view in LF/HF models correspond to the
@@ -1481,7 +1439,7 @@ void HierarchSurrModel::update_model(Model& model)
 }
 
 
-void HierarchSurrModel::update_from_model(Model& model)
+void NonHierarchSurrModel::update_from_model(Model& model)
 {
   // update complement of active currentVariables using model data.
 
