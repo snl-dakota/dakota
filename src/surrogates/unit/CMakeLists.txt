@@ -41,7 +41,7 @@ dakota_add_unit_test(NAME EvalMetricsCrossValTest SOURCES
 if(DAKOTA_PYBIND11)
   add_test(NAME surrogates_python
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate.py
-    $<TARGET_FILE_DIR:dakmod>
+    $<TARGET_FILE_DIR:dakota_surrogatespy>
     )
   set_tests_properties(surrogates_python PROPERTIES LABELS UnitTest)
 endif()

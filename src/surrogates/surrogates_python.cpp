@@ -96,8 +96,8 @@ public:
 };
 #endif
 
-/// Define a Python module called dakmod that wraps a few surrogates classes
-PYBIND11_MODULE(dakmod, m) {
+/// Define a Python module that wraps a few surrogates classes
+PYBIND11_MODULE(dakota_surrogatespy, m) {
 
   m.def("save_poly",
 	static_cast<void (*)(const dakota::surrogates::PolynomialRegression&,

@@ -58,10 +58,12 @@ install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
 
 if(DAKOTA_PYBIND11)
   # TODO: Need to always compile libs PIC when using Python
-  pybind11_add_module(dakmod surrogatepy.cpp)
-  # TODO: transitive includes
-  target_include_directories(dakmod PRIVATE ${Teuchos_INCLUDE_DIRS})
-  target_link_libraries(dakmod PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
+  pybind11_add_module(dakota_surrogatespy surrogates_python.cpp)
+  # TODO: transitive includes when merging from devel
+  target_include_directories(dakota_surrogatespy PRIVATE ${Teuchos_INCLUDE_DIRS})
+  target_link_libraries(dakota_surrogatespy PRIVATE dakota_surrogates
+    ${Teuchos_LIBRARIES})
+  install(TARGETS dakota_surrogatespy EXPORT ${ExportTarget} DESTINATION lib)
 endif()
 
 add_subdirectory(unit)
