@@ -7,50 +7,22 @@
 
 method,
 	model_pointer = 'HIERARCH'
-### MULTIFIDELITY ###
-	multifidelity_function_train	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
-## No refinement:
-	  collocation_points_sequence = 1000 400 300 200 100	#s0,#s2
-#	  collocation_ratio = 1.75     	     	     	#s1,#s3
-	  start_rank_sequence = 3 2 2 1 1		#s0,#s1
-## C3 adapt_rank refinement (only):
-#	  start_rank_sequence = 2 2 2 2 2 adapt_rank	#s2,#s3
-#	  kick_rank = 1  max_rank = 8	  		#s2,#s3
-## Dakota refinement: (individual, integrated)
-# > FT can adapt along dimensions of both rank and order.  For now, we refine
-#   order and rely on C3 adapt_rank (optionally):
-# > spec supports start_{rank,order}_seq and colloc_pts_seq/plot_samples, which
-#   specify _initial_ resolutions per level, prior to refinement/adaptation
-# > Uniform refinement could support poly order (default) vs. rank (option)
-#	  collocation_ratio = 1.75     	     	     	#s4,#s5,#s6,#s7,#s8
-#	  p_refinement uniform increment_max_rank	#s5,#s7,#s8
-#	  p_refinement uniform increment_start_order	#s4,#s6
-#	  allocation_control greedy			#s6,#s7,#s8
-#	  start_rank_sequence = 3 2 2 1 1		#s4,#s6
-#	  max_order = 10 	    			#s4,#s6
-#	  start_rank_sequence = 2 2 2 2 2 adapt_rank	#s5,#s7,#s8
-#	  kick_rank = 1  max_rank = 3		   	#s5,#s7,#s8
-#	  max_refinement_iterations = 5			#s4,#s5
-#	  max_refinement_iterations = 25		#s6,#s7,#s8
-#	  convergence_tol = 1e-2   		        #s4
-#	  convergence_tol = 1e-5			#s5,#s6,#s7,#s8
-#
-### MULTILEVEL ###
-#	multilevel_function_train			#s9,#s10,#s11,#s12
-#	  pilot_samples = 100 60 50 40 30		#s9,#s10
-#	  collocation_ratio = 1.75			#s11,#s12
-#	  allocation_control rank_sampling		#s9,#s11,#s12
-#	  allocation_control estimator_variance		#s10
-#	  start_rank_sequence = 3 2 2 1 1		#s10
-#	  start_rank_sequence = 2 2 2 2 2 adapt_rank	#s9,#s11,#s12
-#	  kick_rank = 1  max_rank = 8	  		#s9,#s11,#s12
-#	  convergence_tol = 1e-5			#s9,#s10,#s11,#s12
+	multilevel_function_train
+	  pilot_samples = 100 60 50 40 30			#s0,#s1
+#	  collocation_ratio = 1.75				#s2,#s3,#s4
+	  allocation_control rank_sampling			#s0,#s2,#s3,#s4
+#	  allocation_control estimator_variance			#s1
+#	  start_rank_sequence = 3 2 2 1 1			#s1,#s3
+	  start_rank_sequence = 2 2 2 2 2			#s0,#s2,#s4
+	  adapt_rank   kick_rank  = 1  max_rank  = 5		#s0,#s2,#s4
+#	  adapt_order  kick_order = 1  max_order = 4		#s3,#s4
 #
 	  start_order_sequence = 2 2 2 2 2
+#	  convergence_tolerance = 1e-4				#s1
           solver_tolerance = 1e-10  rounding_tolerance = 1e-8
-	  seed = 1237		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
-#	  seed_sequence = 12345 23456 34567 45678 56789	#s8,#s12
-	  output silent
+	  seed = 1237						#s0,#s1,#s2
+#	  seed_sequence = 12345 23456 34567 45678 56789   	#s3,#s4
+	  output quiet
 
 model,
 	id_model = 'HIERARCH'

@@ -418,6 +418,8 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module0)
     std::static_pointer_cast<SurrogatesGPApprox>(gp_approx.approx_rep());
   auto& plist = gp_derived->getSurrogateOpts();
   plist.sublist("Nugget").set("fixed nugget", 1.0e-12);
+  // need to override lightweight ctor defaults to get historical behavior
+  plist.sublist("Nugget").set("estimate nugget", false);
   gp_approx.build();
 
   // check the value of the surrogate
@@ -528,6 +530,8 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module1)
     *std::dynamic_pointer_cast<SurrogatesGPApprox>(gp_approx.approx_rep());
   auto& plist = gp_derived.getSurrogateOpts();
   plist.sublist("Nugget").set("fixed nugget", 1.0e-10);
+  // need to override lightweight ctor defaults to get historical behavior
+  plist.sublist("Nugget").set("estimate nugget", false);
   plist.sublist("Trend").set("estimate trend", false);
   plist.set("gp seed", 42);
   gp_approx.build();

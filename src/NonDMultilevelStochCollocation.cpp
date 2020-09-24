@@ -194,7 +194,7 @@ void NonDMultilevelStochCollocation::initialize_u_space_model()
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
   //if (multilevAllocControl == GREEDY_REFINEMENT)
-  //  statsType = Pecos::COMBINED_EXPANSION_STATS;
+  //  statsMetricType = Pecos::COMBINED_EXPANSION_STATS;
 
   // initializes ExpansionConfigOptions, among other things
   NonDStochCollocation::initialize_u_space_model();
@@ -226,23 +226,14 @@ void NonDMultilevelStochCollocation::core_run()
   bool multifid_uq = true;
   switch (methodName) {
   case MULTIFIDELITY_STOCH_COLLOCATION:
-    // algorithms inherited from NonDExpansion:
-    switch (multilevAllocControl) {
-    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
-    default:                   multifidelity_expansion(refineType); break;
-    }
-    break;
-  // There is no regression / unstructured grid option for SC.
-  // ML SC would require rounding to closest SSG level/TPQ order.
+    multifidelity_expansion();    break;
   //case MULTILEVEL_STOCH_COLLOCATION:
   //  multifid_uq = false;
-  //  multilevel_sparse_grid();
-  //  break;
+  //  multilevel_sparse_grid();   break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelStochCollocation::"
 	 << "core_run()" << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
+    abort_handler(METHOD_ERROR);  break;
   }
 
   Cout << "\n----------------------------------------------------\n";

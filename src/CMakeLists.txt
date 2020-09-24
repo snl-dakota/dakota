@@ -39,9 +39,6 @@ list(APPEND DAKOTA_INCDIRS
   ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
   )
 
-list(APPEND EXT_TPL_INCDIRS
-  ${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-
 add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 
@@ -138,6 +135,8 @@ endif()
 
 # -----------------
 # Boost Adjustments
+
+# BMA TODO: Consider removing these, if possible
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "XL" OR
    ${CMAKE_CXX_COMPILER_ID} MATCHES "VisualAge")
@@ -599,12 +598,6 @@ if(HAVE_QUESO)
   endif()
 endif(HAVE_QUESO)
 
-# Boost is required, but have to protect against empty DIR list
-if(Boost_FOUND)
-  list(APPEND EXT_TPL_LIBDIRS ${Boost_LIBRARY_DIRS})
-  list(APPEND EXT_TPL_LIBS ${Boost_LIBRARIES})
-endif()
-
 CheckPackage(C3)
 if(HAVE_C3)
   set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp NonDMultilevelFunctionTrain.cpp)
@@ -893,7 +886,9 @@ set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
 list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
 add_library(dakota_src ${Dakota_src})
-target_link_libraries(dakota_src dakota_src_fortran)
+# When using Boost imported targets, we only link libraries using them,
+# then rely on transitive library linking from CMake
+target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
 if(DAKOTA_MODULE_SURROGATES)
   target_link_libraries(dakota_src dakota_surrogates)
   #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)
@@ -915,7 +910,9 @@ list (APPEND DAKOTA_LIBS dakota_src dakota_src_fortran)
 set(DAKOTA_ALL_LIBS ${DAKOTA_LIBS})
 list(APPEND DAKOTA_ALL_LIBS ${DAKOTA_PKG_LIBS})
 list(APPEND DAKOTA_ALL_LIBS ${DAKOTA_EXTPROJ_LIBS})
+# We do not put Boost targets in EXT_TPL_LIBS
 list(APPEND DAKOTA_ALL_LIBS ${EXT_TPL_LIBS})
+
 
 # --- Explicit dependencies for Dakota core libraries
 
@@ -1049,7 +1046,8 @@ set(Dakota_LIBRARIES ${DAKOTA_LIBS} ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS}
   CACHE INTERNAL "Dakota libraries") 
 
 # Libraries that will be on the system
-set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS}  
+# We add Boost libraries by path/name here for Makefile.export purposes
+set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS} ${Boost_LIBRARIES}
   CACHE INTERNAL "Dakota TPL libraries") 
  
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")

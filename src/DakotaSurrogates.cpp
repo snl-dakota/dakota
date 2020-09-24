@@ -248,6 +248,13 @@ void SurrogatesBaseApprox::export_model(const String& fn_label,
 					const String& export_prefix,
 					const unsigned short export_format)
 {
+  // Surrogates may not be built for some (or all) responses
+  if (!model) {
+    Cout << "Info: Surrogate for response '" << fn_label << "' not built; "
+        << "skipping export." << std::endl;
+    return;
+  }
+
   String without_extension;
   unsigned short formats;
   if(export_format) {

@@ -286,9 +286,6 @@ public:
   /// surrogate models (PCE/SC expansions, GP models for EGO/EGRA/EGIE)
   /// based on the \c use_derivatives specification
   bool methodUseDerivsFlag;
-  /// iteration convergence tolerance for the method (from the \c
-  /// convergence_tolerance specification in \ref MethodIndControl)
-  Real convergenceTolerance;
   /// tolerance for controlling the amount of infeasibility that is allowed
   /// before an active constraint is considered to be violated (from the \c
   /// constraint_tolerance specification in \ref MethodIndControl)
@@ -298,6 +295,16 @@ public:
   bool methodScaling;
   /// number of final solutions returned from the iterator
   size_t numFinalSolutions;
+
+  /// iteration convergence tolerance for the method (from the \c
+  /// convergence_tolerance specification in \ref MethodIndControl)
+  Real convergenceTolerance;
+  /// controls use of convergence tolerance in a relative (true) or
+  /// absolute (false) context
+  bool relativeConvMetric;
+  /// mode of computing statistics metrics used for convergence assessment
+  /// of multilevel/multifidelity refinement processes: active or combined
+  short statsMetricMode;
 
   /// the method selection: one of the optimizer, least squares, nond, dace,
   /// or parameter study methods
@@ -781,9 +788,9 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
-  /// quantity to increment (start order, start rank, max rank) for FT
-  /// uniform p-refinement
-  short c3RefineType;
+  /// quantity to increment (start rank, start order, max rank, max order,
+  /// max rank + max order) for FT (uniform) p-refinement
+  short c3AdvanceType;
   /// starting polynomial order
   UShortArray startOrderSeq;
   /// starting rank

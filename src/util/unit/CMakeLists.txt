@@ -17,6 +17,8 @@ dakota_add_unit_test(NAME DataScalerTest
   SOURCES util_test_driver.cpp DataScalerTest.cpp
   )
 
+# Rationale: These all include Teuchos headers and need to link to the
+# unit test system
 target_include_directories(DataScalerTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_link_libraries(DataScalerTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
 

@@ -200,8 +200,6 @@ endfunction()
 
 include_directories(
   ${Dakota_SOURCE_DIR}/src
-  ${Boost_INCLUDE_DIR}
-  ${Boost_INCLUDE_DIRS}
   ${Teuchos_INCLUDE_DIRS}
 )
 
@@ -437,6 +435,9 @@ foreach(dte ${dakota_test_executables})
   add_executable(${dte} ${dte}.cpp)
   ModifyTargetRpath(${dte} 3)
 endforeach()
+
+target_link_libraries(morris Boost::boost)
+target_link_libraries(trajectory_post Boost::boost)
 
 # nl2func has two source files
 list(APPEND dakota_test_executables nl2func)

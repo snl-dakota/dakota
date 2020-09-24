@@ -283,6 +283,9 @@ C3FnTrainData C3FnTrainData::copy() const
   // ft_derived_fns,ft_sobol have been assigned NULL and can be allocated
   // downsteam when needed for stats,indices
 
+  ftd.ftdRep->primaryMoments       = ftdRep->primaryMoments;
+  ftd.ftdRep->recoveredBasisOrders = ftdRep->recoveredBasisOrders;
+
   return ftd;
 }
 

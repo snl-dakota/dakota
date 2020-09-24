@@ -1167,32 +1167,34 @@ void DataFitSurrModel::rebuild_global()
     // set DataFitSurrModel parallelism mode to actualModel
     component_parallel_mode(TRUTH_MODEL_MODE);
 
-    // daceIterator must generate at least diff_points samples, should
-    // populate allData lists (allDataFlag = true), and should bypass
-    // statistics computation (statsFlag = false).
     int diff_points = std::max(0, required_points() - (int)curr_points);
-    daceIterator.sampling_reset(diff_points, true, false);// update s.t. lwr bnd
-    // The DACE iterator's samples{Spec,Ref} value provides a lower bound on
-    // the number of samples generated: new_points = max(diff_points,reference).
-    new_points = daceIterator.num_samples();
-
-    // only run the iterator if work to do
-    if (new_points) {
-      // generate new data points
+    if (diff_points) { // only run the iterator if work to do
+      // For a rebuild, we do not enforce a lower bound as in build_global():
+      // daceIterator's samples{Spec,Ref} is intended to overlay minimum user
+      // spec with imported/reqd data, by defining a lower bound on the number
+      // of generated samples, e.g. new_points = max(diff_points, samplesRef)
+      daceIterator.sampling_reference(0); // make new points = diff points
+      // daceIterator generates diff_points samples, populates allData arrays
+      // (allDataFlag = true), bypasses stats computation (statsFlag = false)
+      daceIterator.sampling_reset(diff_points, true, false);
       run_dace();
       // append new data sets, rebuild approximation, increment approxBuilds
       append_approximation(true);
     }
     else if (approxInterface.formulation_updated()) {
-      // rebuild new approximation form with existing data set
-      BitArray rebuild_fns; // empty: default rebuild of all fns
-      approxInterface.rebuild_approximation(rebuild_fns);
-      ++approxBuilds;
-    }
+      // Rebuild the approximation for updated formulation with existing data
 
+      // This approach currently assumes an increment to data and coeffs:
+      //BitArray rebuild_fns; // empty: default rebuild of all fns
+      //approxInterface.rebuild_approximation(rebuild_fns);
+
+      // Overwrite previous build without assumed increment to data/coeffs:
+      build_approx_interface();
+      ++approxBuilds; // Note: this is a replacement rather than an increment...
+    }
     else if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "DataFitSurrModel: No samples needed from DACE iterator."
-	   << std::endl;
+      Cout << "DataFitSurrModel: no rebuild as no new data and same surrogate "
+	   << "formulation." << std::endl;
   }
 }
 

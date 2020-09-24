@@ -210,13 +210,12 @@ void NomadOptimizer::core_run()
   // VNS = Variable Neighbor Search, it is used to escape local minima
   // if VNS >0.0, the NOMAD Parameter must be set with a Real number.
   if(vns>0.0) {
-    if (vns <= 1.0)
-      p.set_VNS_SEARCH( NOMAD::Double(vns) );
-    else {
+    if (vns > 1.0) {
       Cerr << "\nWarning: variable_neighborhood_search outside acceptable "
 	   << "range of (0,1].\nUsing default value of 0.75.\n\n";
-      p.set_VNS_SEARCH(0.75);
+      vns = 0.75;
     }
+    p.set_VNS_SEARCH(vns);
   }
      
   // Set the History File, which will contain all the evaluations history

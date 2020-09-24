@@ -15,7 +15,7 @@ method,
 #	    seed = 1237					#s1
 #	    orthogonal_matching_pursuit			#s1
 #	    convergence_tolerance = .001		#s1
-	output silent
+	output quiet
 
 model,
 	id_model = 'HIERARCH'

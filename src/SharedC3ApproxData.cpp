@@ -45,7 +45,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
   //adaptConstruct(false),
-  c3RefineType(NO_C3_REFINEMENT)
+  c3AdvancementType(NO_C3_ADVANCEMENT)
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
@@ -73,7 +73,7 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
   maxSolverIterations(-1), crossMaxIter(5), //adaptConstruct(false),
-  c3RefineType(NO_C3_REFINEMENT)
+  c3AdvancementType(NO_C3_ADVANCEMENT)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)
@@ -175,14 +175,14 @@ update_basis(size_t v, unsigned short start_order, unsigned short max_order)
 
 bool SharedC3ApproxData::advancement_available()
 {
-  // UNIFORM_START_* cases are tested first. If false, then each C3Approx
-  // is tested for UNIFORM_MAX_* cases (see ApproximationInterface::
-  // advancement_available()).  This distributes the c3RefineType cases.
+  // START_*_ADVANCEMENT cases are tested first. If false, then each C3Approx
+  // is tested for MAX_*_ADVANCEMENT cases (see ApproximationInterface::
+  // advancement_available()).  This distributes the c3AdvancementType cases.
 
-  switch (c3RefineType) {
+  switch (c3AdvancementType) {
 
   // these two options only require the shared data config:
-  case UNIFORM_START_ORDER: {
+  case START_ORDER_ADVANCEMENT: {
     const UShortArray& s_ord = start_orders();// adapted orders
     unsigned short     m_ord = max_order();
     size_t i, num_ord = s_ord.size();
@@ -191,10 +191,10 @@ bool SharedC3ApproxData::advancement_available()
 	return true;
     return false;  break;
   }
-  case UNIFORM_START_RANK:
+  case START_RANK_ADVANCEMENT:
     return (start_rank() < max_rank());  break;
 
-  // UNIFORM_MAX_* refine types are QoI-dependent: shared false induces
+  // MAX_*_ADVANCEMENT refine types are QoI-dependent: shared false induces
   // per-QoI checks (see ApproximationInterface::advancement_available()
   default:
     // clear state prior to accumulation across C3Approximations
@@ -206,8 +206,8 @@ bool SharedC3ApproxData::advancement_available()
 
 void SharedC3ApproxData::increment_order()
 {
-  switch (c3RefineType) {
-  case UNIFORM_START_ORDER: {
+  switch (c3AdvancementType) {
+  case START_ORDER_ADVANCEMENT: {
     UShortArray& start_ord = start_orders();
     unsigned short max_ord = max_order(); // default is USHRT_MAX
     bool incremented = false;
@@ -227,7 +227,7 @@ void SharedC3ApproxData::increment_order()
 	   << activeKey << std::endl;
     break;
   }
-  case UNIFORM_START_RANK: {
+  case START_RANK_ADVANCEMENT: {
     // To ensure symmetry with decrement, don't saturate at maxRank
     // > Must bound start_ranks vector in C3Approximation::build()
     // > build() truncates kick to max: start_ranks = std::min(start_r, max_r) 
@@ -237,15 +237,15 @@ void SharedC3ApproxData::increment_order()
     start_r += kickRank; // invertible in decrement_order()
     break;
   }
-  case UNIFORM_MAX_RANK: {
+  case MAX_RANK_ADVANCEMENT: {
     size_t&         max_r = max_rank();   max_r += kickRank;
     formUpdated[activeKey] = true;        break;
   }
-  case UNIFORM_MAX_ORDER: {
+  case MAX_ORDER_ADVANCEMENT: {
     unsigned short& max_o = max_order();  max_o += kickOrder;
     formUpdated[activeKey] = true;        break;
   }
-  case UNIFORM_MAX_RANK_ORDER: {
+  case MAX_RANK_ORDER_ADVANCEMENT: {
     // Prior to implementing a multi-index approach, we use heuristics.
     // > unconditionally advancing both is wasteful; only advance non-saturated
     // > could also consider only advancing one when both bounds are active:
@@ -267,8 +267,8 @@ void SharedC3ApproxData::increment_order()
 void SharedC3ApproxData::decrement_order()
 {
   bool bad_range = false;
-  switch (c3RefineType) {
-  case UNIFORM_START_ORDER: {
+  switch (c3AdvancementType) {
+  case START_ORDER_ADVANCEMENT: {
     // always decrement and only update_basis() if within bounds
     // (preserve symmetry/reproducibility w/ increment)
     UShortArray& start_ord = start_orders();
@@ -286,25 +286,25 @@ void SharedC3ApproxData::decrement_order()
     else              bad_range = true;
     break;
   }
-  case UNIFORM_START_RANK: {
+  case START_RANK_ADVANCEMENT: {
     size_t& start_r = start_rank();
     if    (start_r  < kickRank)  bad_range = true;
     else { start_r -= kickRank;  formUpdated[activeKey] = true; }
     break;
   }
-  case UNIFORM_MAX_RANK: {
+  case MAX_RANK_ADVANCEMENT: {
     size_t& max_r = max_rank();
     if    (max_r  < kickRank)  bad_range = true;
     else { max_r -= kickRank;  formUpdated[activeKey] = true; }
     break;
   }
-  case UNIFORM_MAX_ORDER: {
+  case MAX_ORDER_ADVANCEMENT: {
     unsigned short& max_o = max_order();
     if    (max_o  < kickOrder)  bad_range = true;
     else { max_o -= kickOrder;  formUpdated[activeKey] = true; }
     break;
   }
-  case UNIFORM_MAX_RANK_ORDER: {
+  case MAX_RANK_ORDER_ADVANCEMENT: {
     bool r_advance = c3MaxRankAdvance[activeKey],
          o_advance = c3MaxOrderAdvance[activeKey];
     if (r_advance) {

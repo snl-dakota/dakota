@@ -135,13 +135,10 @@ protected:
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
-  /// combine coefficients, promote to active, and update statsType
+  /// combine coefficients, promote to active, and update statsMetricMode
   virtual void combined_to_active();
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
-
-  /// perform any required expansion roll-ups prior to metric computation
-  virtual void metric_roll_up();
 
   /// helper function to manage different push increment cases
   virtual void push_increment();
@@ -252,10 +249,7 @@ protected:
 
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
-  void multifidelity_expansion(short refine_type, bool to_active = true);
-  /// construct a multifidelity expansion, across model forms or
-  /// discretization levels
-  void greedy_multifidelity_expansion();
+  void multifidelity_expansion();
   /// allocate a multilevel expansion based on some approximation to an
   /// optimal resource allocation across model forms/discretization levels
   void multilevel_regression();
@@ -324,14 +318,17 @@ protected:
   void update_u_space_sampler(size_t sequence_index,
 			      const UShortArray& approx_orders);
 
-  /// update statsType, here and in Pecos::ExpansionConfigOptions
-  void statistics_type(short stats_type, bool clear_bits = true);
+  /// update statsMetricMode, here and in Pecos::ExpansionConfigOptions
+  void refinement_statistics_mode(short stats_mode);//, bool clear_bits = true);
+
+  /// perform any required expansion roll-ups prior to metric computation
+  void metric_roll_up(short results_state = FINAL_RESULTS);
 
   /// Aggregate variance across the set of QoI for a particular model level
   void aggregate_variance(Real& agg_var_l);
 
   /// calculate the response covariance (diagonal or full matrix) for
-  /// the expansion indicated by statsType
+  /// the expansion indicated by statsMetricMode
   void compute_covariance();
   /// calculate the response covariance of the active expansion
   void compute_active_covariance();
@@ -344,7 +341,7 @@ protected:
   void compute_combined_diagonal_variance();
 
   /// calculate off diagonal terms in respCovariance(i,j) for j<i for
-  /// the expansion indicated by statsType
+  /// the expansion indicated by statsMetricMode
   void compute_off_diagonal_covariance();
   /// calculate off diagonal terms in respCovariance(i,j) for j<i
   /// using the active expansion coefficients
@@ -422,9 +419,11 @@ protected:
   /// Pecos::{NODAL,HIERARCHICAL}_INTERPOLANT for SC or
   /// Pecos::{TENSOR_PRODUCT,TOTAL_ORDER,ADAPTED}_BASIS for PCE regression
   short expansionBasisType;
-  /// type of statistical metric: NO_EXPANSION_STATS,
-  /// ACTIVE_EXPANSION_STATS, or COMBINED_EXPANSION_STATS
-  short statsType;
+
+  /// type of statistical metric roll-up: {NO,ACTIVE,COMBINED}_EXPANSION_STATS
+  short statsMetricMode;
+  /// flag indicating the use of relative scaling in refinement metrics
+  bool relativeMetric;
 
   /// user specification for dimension_preference
   RealVector dimPrefSpec;
@@ -484,9 +483,6 @@ protected:
   /// number of approximation samples performed on the polynomial
   /// expansion in order to estimate probabilities
   int numSamplesOnExpansion;
-
-  /// flag indicating the use of relative scaling in refinement metrics
-  bool relativeMetric;
 
   /// flag for indicating state of \c nested and \c non_nested overrides of
   /// default rule nesting, which depends on the type of integration driver;
@@ -561,12 +557,23 @@ private:
   /// set response mode to BYPASS_SURROGATE and recur response size updates
   void bypass_surrogate_mode();
 
+  /// generate a set of reference expansions across a model hierarchy
+  void multifidelity_reference_expansion();
+  /// separately refine each of the multifidelity reference expansions
+  void multifidelity_individual_refinement();
+  /// refine each of the multifidelity reference expansions within an
+  /// integrated competition
+  void multifidelity_integrated_refinement();
+
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator
   void reduce_total_sobol_sets(RealVector& avg_sobol);
   /// compute minimum of spectral coefficient decay rates across the
   /// response set for use as an anisotropy indicator
   void reduce_decay_rate_sets(RealVector& min_decay);
+
+  /// print additional refinement diagnostics not covered by compute_*_metric()
+  void print_refinement_diagnostics(std::ostream& s);
 
   /// perform an adaptive refinement increment using generalized sparse grids
   size_t increment_sets(Real& delta_star, bool revert, bool print_metric);
@@ -752,13 +759,27 @@ sequence_cost(unsigned short step, const RealVector& cost)
 }
 
 
-inline void NonDExpansion::metric_roll_up()
+inline void NonDExpansion::metric_roll_up(short results_state)
 {
-  // greedy_multifidelity_expansion() assesses level candidates using combined
+  // if COMBINED_EXPANSIONS_STATS, assess refinement candidates using combined
   // stat metrics, which by default require expansion combination (overridden
   // for hierarchical SC)
-  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-    uSpaceModel.combine_approximation();
+  if (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS)
+    switch (results_state) {
+    case REFINEMENT_RESULTS:
+      // PCE and Nodal SC require combined expansion coefficients for computing
+      // combined stat metrics, but Hierarchical SC can efficiently compute
+      // deltas based only on active expansions (no combination required)
+      if (expansionBasisType != Pecos::HIERARCHICAL_INTERPOLANT)
+	uSpaceModel.combine_approximation();
+      break;
+    case INTERMEDIATE_RESULTS:
+      uSpaceModel.combine_approximation(); break;
+    // FINAL_RESULTS should not occur: no roll up after combined_to_active()
+    }
+
+  // TO DO: case of level mappings for numerical stats --> sampling on
+  //        combined expansion
 }
 
 
@@ -793,7 +814,7 @@ inline void NonDExpansion::compute_off_diagonal_covariance()
 
   // See also full_covar_stats logic in compute_analytic_statistics() ...
 
-  switch (statsType) {
+  switch (statsMetricMode) {
   case Pecos::ACTIVE_EXPANSION_STATS:
     compute_active_off_diagonal_covariance();   break;
   case Pecos::COMBINED_EXPANSION_STATS:
@@ -804,14 +825,14 @@ inline void NonDExpansion::compute_off_diagonal_covariance()
 
 inline void NonDExpansion::compute_covariance()
 {
-  switch (statsType) {
+  switch (statsMetricMode) {
   // multifidelity_expansion() is outer loop:
   // > use of refine_expansion(): refine individually based on level covariance
   // > after combine_approx(), combined_to_active() enables use of active covar
   case Pecos::ACTIVE_EXPANSION_STATS:
     compute_active_covariance();   break;
-  // greedy_multifidelity_expansion() (multifidelity_expansion() on inner loop):
-  // > roll up effect of level candidate on combined multilevel covariance,
+  // if COMBINED_EXPANSIONS_STATS:
+  // > roll up effect of refinement candidate on combined multilevel covariance,
   //   avoiding combined_to_active() promotion until end
   // > limited stats support for combinedExpCoeffs: only compute_covariance()
   case Pecos::COMBINED_EXPANSION_STATS:
@@ -824,8 +845,8 @@ inline void NonDExpansion::
 pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec, size_t offset)
 {
   size_t i, j, cntr = offset, nr = mat.numRows(),
-    sm_len = (nr*nr + nr)/2, vec_len = offset + sm_len;
-  if (vec.length() != vec_len) vec.resize(vec_len);
+    min_vec_len = offset + (nr*nr + nr)/2;
+  if (vec.length() < min_vec_len) vec.resize(min_vec_len);
   for (i=0; i<nr; ++i)
     for (j=0; j<=i; ++j, ++cntr)
       vec[cntr] = mat(i,j); // pull from lower triangle
@@ -835,9 +856,10 @@ pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec, size_t offset)
 inline void NonDExpansion::
 push_lower_triangle(const RealVector& vec, RealSymMatrix& mat, size_t offset)
 {
-  size_t i, j, cntr = offset, nr = mat.numRows();
-  if (vec.length() != offset + (nr*nr + nr)/2) {
-    Cerr << "Error: inconsistent vector length in NonDExpansion::"
+  size_t i, j, cntr = offset, nr = mat.numRows(),
+    min_vec_len = offset + (nr*nr + nr)/2;
+  if (vec.length() < min_vec_len) {
+    Cerr << "Error: insufficient vector length in NonDExpansion::"
 	 << "push_lower_triangle()" << std::endl;
     abort_handler(METHOD_ERROR);
   }
