@@ -25,26 +25,33 @@ set(surrogates_headers
 
 add_library(dakota_surrogates ${surrogates_sources} ${surrogates_headers})
 
-# BMA TODO: CMake config at top-level per RWH example
-#set(EIGEN3_INCLUDE_DIRS
-#  "${Dakota_SOURCE_DIR}/packages/external/eigen3/include/eigen3")
-
-# BMA TODO: CMake best practice for PUBLIC?
-target_include_directories(dakota_surrogates INTERFACE
+target_include_directories(dakota_surrogates PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>
 )
+target_link_libraries(dakota_surrogates PUBLIC dakota_util)
+
+# Rationale: Teuchos is included in API headers, and ParameterList
+# library component is needed
+target_include_directories(dakota_surrogates PUBLIC
+  "$<BUILD_INTERFACE:${Teuchos_INCLUDE_DIRS}>"
+  $<INSTALL_INTERFACE:include>
+  )
+target_link_libraries(dakota_surrogates PUBLIC ${Teuchos_LIBRARIES})
+
+
 # BMA: Unless there's a better way, specify that ROL is a system
 # library to suppress warnings
 target_include_directories(dakota_surrogates SYSTEM PRIVATE
   "${ROL_INCLUDE_DIRS}"
 )
 
+# Rationale: Boost serialization is referenced in API headers
+target_link_libraries(dakota_surrogates PUBLIC Boost::serialization)
+
 # BMA TODO: Consider using a utility to add Dakota targets and do this
 dakota_strict_warnings(dakota_surrogates)
 dakota_gcov_target(dakota_surrogates)
-
-target_link_libraries(dakota_surrogates PUBLIC dakota_util Boost::serialization)
 
 install(FILES ${surrogates_headers} DESTINATION "include")
 install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
