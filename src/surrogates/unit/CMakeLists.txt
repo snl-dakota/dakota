@@ -38,16 +38,17 @@ dakota_add_unit_test(NAME EvalMetricsCrossValTest SOURCES
   empty.f90
 )
 
-# BMA NOTE: I think we only need state the immediate deps? So no dakota_util
+# Rationale: These all include Teuchos headers and need to link to the
+# unit test system or ParameterList components
 target_include_directories(GaussianProcessTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(PolynomialRegressionTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(SurrogatesToolsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(EvalMetricsCrossValTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 
 target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates
-  ${Teuchos_LIBRARIES} Boost::filesystem)
+  ${Teuchos_LIBRARIES} Boost::filesystem Boost::serialization)
 target_link_libraries(PolynomialRegressionTest PRIVATE dakota_surrogates
-  ${Teuchos_LIBRARIES} Boost::filesystem Boost::boost)
+  ${Teuchos_LIBRARIES} Boost::filesystem Boost::serialization Boost::boost)
 target_link_libraries(SurrogatesToolsTest PRIVATE dakota_surrogates
   ${Teuchos_LIBRARIES})
 target_link_libraries(EvalMetricsCrossValTest PRIVATE dakota_surrogates
