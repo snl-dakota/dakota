@@ -11,6 +11,11 @@ macro(dakota_find_python)
 
       if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	message(STATUS "Dakota enabling Python direct interface with NumPy")
+	if (CMAKE_VERSION VERSION_LESS 3.14)
+	  message(WARNING "Enabling Dakota's NumPy interface requires CMake "
+	    "3.14 or newer;\nsee option DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY")
+	endif()
+
 	list(APPEND dakota_python_components NumPy)
       endif()
 
