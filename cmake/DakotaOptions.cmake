@@ -56,12 +56,6 @@ if(ENABLE_SPEC_MAINT AND NOT UNIX)
     "DAKOTA specification maintenance mode only available on UNIX platforms")
 endif()
 
-option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
-if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
-  message(FATAL_ERROR 
-    "DAKOTA documentation build only available on UNIX platforms")
-endif()
-
 
 ## Python options
 
@@ -91,6 +85,17 @@ option(DAKOTA_PYTHON_SURROGATES
 # not relate to compiling or using Dakota's graphical user interface.
 option(DAKOTA_API_JAVA "Unsupported: Enable Dakota library Java API" OFF)
 mark_as_advanced(DAKOTA_API_JAVA)
+
+
+option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
+if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
+  message(FATAL_ERROR
+    "Dakota documentation build only available on UNIX platforms")
+endif()
+if(ENABLE_DAKOTA_DOCS AND NOT DAKOTA_PYTHON)
+  message(FATAL_ERROR
+    "Dakota documentation build only available with DAKOTA_PYTHON=ON")
+endif()
 
 option(DAKOTA_GCOV "GNU gcov for Dakota core" OFF)
 
