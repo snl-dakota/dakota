@@ -62,6 +62,29 @@ if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
     "DAKOTA documentation build only available on UNIX platforms")
 endif()
 
+
+## Python options
+
+# Scripts and tests based on interpreter
+# NOTE: Historically controlled linked/direct Python interface only
+option(DAKOTA_PYTHON "Dakota Python scripts (Interpreter); default ON" ON)
+
+# ??? Better name: LINKED_INTERFACE; other???
+option(DAKOTA_PYTHON_DIRECT_INTERFACE
+  "Dakota Python direct interface (Development); default OFF" OFF)
+# Formerly called DAKOTA_PYTHON_NUMPY
+option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
+  "Dakota Python direct interface uses NumPy; default ON)" ON)
+
+# DNE yet
+##option(DAKOTA_PYTHON_TOP_INTERFACE "Top-level Dakota interface (DNE)" OFF)
+
+# Requires Pybind11
+option(DAKOTA_PYTHON_SURROGATES
+  "Dakota Python interface to surrogates module; default ON when Python enabled"
+  ON
+  )
+
 # Option to build an unsupported Java wrapper for Dakota's library mode that 
 # has a Java callback for performing function evaluations.  This is a non-
 # functioning capability that should only be enabled by developers.  It does 
