@@ -32,6 +32,9 @@ eval_point = np.atleast_2d(np.array([0.1, 0.4]))
 pr = daksurr.PolynomialRegression(build_samples,
      build_response, {"max degree" : 2, "scaler type" : "none", "reduced basis" : False})
 
+# Set variable labels, leaving responses unlabeled
+pr.variable_labels(["x0", "x1"])
+
 # evaluate the surrogate's value, gradient, and hessian
 eval_surr = pr.value(eval_samples)
 print("Truth:\n{0}".format(eval_truth))
@@ -60,7 +63,8 @@ print("Loading Polynomial (free function)")
 gen_prload = daksurr.load("poly.txt", False)
 print("Loaded Poly is a: {0}".format(gen_prload.__class__.__name__))
 assert(np.allclose(pr.value(eval_point), gen_prload.value(eval_point)))
-
+assert(gen_prload.variable_labels() == ["x0", "x1"])
+assert(len(gen_prload.response_labels()) == 0)
 
 # GaussianProcess:
 # instantiate a Gaussian process surrogate using a
@@ -68,6 +72,9 @@ assert(np.allclose(pr.value(eval_point), gen_prload.value(eval_point)))
 nugget_opts = {"estimate nugget" : True}
 config_opts = {"scaler name" : "none", "Nugget" : nugget_opts }
 gp = daksurr.GaussianProcess(build_samples, build_response, config_opts)
+
+# Set response labels, leaving vars unlabeled
+gp.response_labels(["f"])
 
 # evaluate the surrogate's value, variance, gradient, and hessian
 gp_eval_surr = gp.value(eval_samples)
@@ -102,6 +109,9 @@ print("Loading GP (derived class constructor)")
 dctor_gpload = daksurr.GaussianProcess(filename = "gp.bin", binary = True)
 print("Loaded GP is a: {0}".format(dctor_gpload.__class__.__name__))
 assert(np.allclose(dctor_gpload.value(eval_samples), gp_eval_surr))
+
+assert(len(dctor_gpload.variable_labels()) == 0)
+assert(dctor_gpload.response_labels() == ["f"])
 
 # free function load
 print("Loading GP (free function)")

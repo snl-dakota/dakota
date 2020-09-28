@@ -16,11 +16,13 @@
 #include <boost/serialization/assume_abstract.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+
 #include <fstream>
 
 #include <boost/archive/codecvt_null.hpp>
@@ -133,6 +135,30 @@ public:
   MatrixXd hessian(const MatrixXd &eval_point) {return hessian(eval_point, 0);}
 
   /**
+      \brief Set the variable/feature names
+      \param[in] var_labels Vector of strings, one per input variable
+   */
+  void variable_labels(const std::vector<std::string>& var_labels);
+
+  /**
+      \brief Get the (possibly empty) variable/feature names
+      \returns Vector of strings, one per input variable; empty if not set
+   */
+  const std::vector<std::string>& variable_labels() const;
+
+  /**
+      \brief Set the response/QoI names
+      \param[in] resp_labels Vector of strings, one per surrogate response
+   */
+  void response_labels(const std::vector<std::string>& resp_labels);
+
+  /**
+      \brief Get the (possibly empty) response/QoI names
+      \returns Vector of strings, one per surrogate response; empty if not set
+   */
+  const std::vector<std::string>& response_labels() const;
+ 
+  /**
    *  \brief Set the Surrogate's configOptions.
    *  \param[in] options ParameterList of configuration options.
    */
@@ -192,11 +218,15 @@ protected:
   int numSamples;
   /// Number of features/variables in the Surrogate's build samples.
   int numVariables;
+  /// Names of the variables/features; need not be populated
+  std::vector<std::string> variableLabels;
   /**
    *  \brief Number of quantities of interest predicted by the surrogate. For 
-   *  scaler-valued surrogates numQOI = 1.
+   *  scalar-valued surrogates numQOI = 1.
    */
   int numQOI;
+  /// Names of the responses/QoIs; need not be populated
+  std::vector<std::string> responseLabels;
   /// Default Key/value options to configure the surrogate.
   ParameterList defaultConfigOptions;
   /// Key/value options to configure the surrogate - will override defaultConfigOptions.
@@ -300,6 +330,8 @@ void Surrogate::serialize(Archive& archive, const unsigned int version)
   archive & dataScaler;
   archive & numSamples;
   archive & numVariables;
+  archive & variableLabels;
+  archive & responseLabels;
   //archive & configOptions;
 }
 

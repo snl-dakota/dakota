@@ -41,6 +41,18 @@ MatrixXd Surrogate::hessian(const MatrixXd &eval_point, int qoi) {
   throw(std::runtime_error("Surrogate does not implement hessian(...)"));
 }
 
+void Surrogate::variable_labels(const std::vector<std::string>& var_labels)
+{ variableLabels = var_labels; }
+
+const std::vector<std::string>& Surrogate::variable_labels() const
+{ return variableLabels; }
+
+void Surrogate::response_labels(const std::vector<std::string>& resp_labels)
+{ responseLabels = resp_labels; }
+
+const std::vector<std::string>& Surrogate::response_labels() const
+{ return responseLabels; }
+
 void Surrogate::set_options(const ParameterList &options) {
   configOptions = options;
 }
