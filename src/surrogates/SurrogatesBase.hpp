@@ -53,9 +53,9 @@ public:
   /**
    * \brief Constructor for the Surrogate that sets configOptions
    *        and builds the GP.
-   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
+   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features).
    * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
-   * \param[in] param_list List that overrides entries in defaultConfigOptions
+   * \param[in] param_list List that overrides entries in defaultConfigOptions.
    */
   Surrogate(const MatrixXd &samples, const MatrixXd &response,
             const Teuchos::ParameterList &param_list);
@@ -66,95 +66,65 @@ public:
   /**
    * \brief Build the Surrogate using specified build data.
    *
-   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
-   * \param[in] response Vector of responses/targets for surrogate construction - (num_samples by num_qoi)
+   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features).
+   * \param[in] response Vector of responses/targets for surrogate construction - (num_samples by num_qoi = 1).
    */
   virtual void build(const MatrixXd &samples, const MatrixXd &response) = 0;
 
   /**
-   *  \brief Evaluate the Surrogate at a set of prediction points for all QoIs.
-   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
-   *  \param[out] value Values of the Surrogate at the prediction pts for all QoIs
-   *  - (num_pts by num_qoi).
-   */
-  virtual void value(const MatrixXd &samples, MatrixXd &value) = 0;
-
-  /**
    *  \brief Evaluate the Surrogate at a set of prediction points for a single QoI.
-   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
+   *  \param[in] eval_points Matrix of prediction points - (num_pts by num_features).
    *  \param[in] qoi Index for surrogate QoI.
-   *  \returns value Values of the Surrogate at the prediction
+   *  \returns Values of the Surrogate at the prediction
    *  points - (num_pts).
    */
-  virtual VectorXd value(const MatrixXd &samples, const int qoi);
+  virtual VectorXd value(const MatrixXd &eval_points, const int qoi) = 0;
 
   /**
    *  \brief Evaluate the Surrogate at a set of prediction points for QoI index 0.
-   *  \param[in] samples Vector of prediction points - (num_features).
-   *  \returns VectorXd Values of the Surrogate at the prediction points - (num_pts).
+   *  \param[in] eval_points Vector of prediction points - (num_features).
+   *  \returns Values of the Surrogate at the prediction points - (num_pts).
    */
-  VectorXd value(const MatrixXd &samples) {return value(samples, 0);}
-  /* DTS - Default arguments are tricky with Pybind11, doing this^ instead */
+  VectorXd value(const MatrixXd &eval_points) {return value(eval_points, 0);}
 
   /**
    *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.
-   *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
-   *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
-   *  (num_pts by num_features).
+   *  \param[in] eval_points Matrix of prediction points - (num_pts by num_features).
    *  \param[in] qoi Index of the quantity of interest for gradient evaluation - 
    *  0 for scalar-valued surrogates.
+   *  \returns Matrix of gradient vectors at the prediction points - 
+   *  (num_pts by num_features).
    */
-  virtual void gradient(const MatrixXd &samples, MatrixXd &gradient, const int qoi);
+  virtual MatrixXd gradient(const MatrixXd &eval_points, const int qoi);
 
   /**
-   *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.
-   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
-   *  \param[in] qoi Index of the quantity of interest for gradient evaluation - 
-   *  0 for scalar-valued surrogates.
-   *  \returns gradient Matrix of gradient vectors at the prediction points - 
+   *  \brief Evaluate the gradient of the Surrogate at a set of prediction points
+   *  for QoI index 0.
+   *  \param[in] eval_points Matrix of prediction points - (num_pts by num_features).
+   *  \returns Matrix of gradient vectors at the prediction points - 
    *  (num_pts by num_features).
    */
-  MatrixXd gradient(const MatrixXd &samples, const int qoi);
-
-  /**
-   *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.
-   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
-   *  \param[in] qoi Index of the quantity of interest for gradient evaluation - 
-   *  0 for scalar-valued surrogates.
-   *  \returns gradient Matrix of gradient vectors at the prediction points - 
-   *  (num_pts by num_features).
-   */
-  MatrixXd gradient(const MatrixXd &samples) {return gradient(samples, 0);}
+  MatrixXd gradient(const MatrixXd &eval_points) {return gradient(eval_points, 0);}
 
   /**
    *  \brief Evaluate the Hessian of the Surrogate at a single point.
-   *  \param[in] samples Coordinates of the prediction point - (1 by num_features).
-   *  \param[out] hessian Hessian matrix at the prediction point - 
-   *  (num_features by num_features).
+   *  \param[in] eval_point Coordinates of the prediction point - (1 by num_features).
    *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
    *  0 for scalar-valued surrogates.
+   *  \returns Hessian matrix at the prediction point - 
+   *  (num_features by num_features).
    */
-  virtual void hessian(const MatrixXd &sample, MatrixXd &hessian, const int qoi);
+  virtual MatrixXd hessian(const MatrixXd &eval_point, const int qoi);
 
   /**
-   *  \brief Evaluate the Hessian of the Surrogate at a single point.
-   *  \param[in] samples Coordinates of the prediction point - (1 by num_features).
+   *  \brief Evaluate the Hessian of the Surrogate at a single point for QoI index 0.
+   *  \param[in] eval_point Coordinates of the prediction point - (1 by num_features).
    *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
    *  0 for scalar-valued surrogates.
-   *  \returns hessian Hessian matrix at the prediction point - 
+   *  \returns Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    */
-  MatrixXd hessian(const MatrixXd &sample, const int qoi);
-
-  /**
-   *  \brief Evaluate the Hessian of the Surrogate at a single point.
-   *  \param[in] samples Coordinates of the prediction point - (1 by num_features).
-   *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
-   *  0 for scalar-valued surrogates.
-   *  \returns hessian Hessian matrix at the prediction point - 
-   *  (num_features by num_features).
-   */
-  MatrixXd hessian(const MatrixXd &samples) {return hessian(samples, 0);}
+  MatrixXd hessian(const MatrixXd &eval_point) {return hessian(eval_point, 0);}
 
   /**
    *  \brief Set the Surrogate's configOptions.
@@ -192,19 +162,9 @@ public:
                             const MatrixXd &points,
                             const MatrixXd &ref_values);
 
-  /// Evalute metrics at specified points (from Dakota)
-  RealMatrix evaluate_metrics(const StringArray &mnames,
-                              const RealMatrix &points,
-                              const RealMatrix &ref_values);
-
   /// Perform K-folds cross-validation (within surrogates)
   VectorXd cross_validate(const MatrixXd &samples,
     const MatrixXd &response, const StringArray &mnames,
-    const int num_folds = 5, const int seed = 20);
-
-  /// Perform K-folds cross-validation (from Dakota)
-  RealMatrix cross_validate(const RealMatrix &samples,
-    const RealMatrix &response, const StringArray &mnames,
     const int num_folds = 5, const int seed = 20);
 
 protected:

@@ -251,90 +251,21 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   */
 }
 
-void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
-  if (samples.cols() != numVariables) {
-    throw(std::runtime_error("Gaussian Process value inputs are not consistent."
-          " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
-  }
+VectorXd GaussianProcess::value(const MatrixXd &eval_points, const int qoi) {
 
-  if (previousSamples.rows() == samples.rows()
-    && (samples - previousSamples).norm() < near_zero) {
-    approx_values = previousValues;
-    return;
-  }
-
-
-  const int numPredictionPts = samples.rows();
-  approx_values.resize(numPredictionPts,numVariables);
-
-  /* scale the samples (prediction points) */
-  MatrixXd scaled_pred_pts;
-  dataScaler.scale_samples(samples, scaled_pred_pts);
-  compute_pred_dists(scaled_pred_pts);
-
-  /* compute the Gram matrix and its Cholesky factorization */
-  if (!hasBestCholFact) {
-    compute_gram(cwiseDists2, true, false, GramMatrix);
-    CholFact.compute(GramMatrix);
-  }
-
-  MatrixXd resid, pred_basis_matrix, mixed_pred_gram;
-  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
-
-  if (estimateTrend) {
-    resid = targetValues - basisMatrix*betaValues;
-  }
-  else
-    resid = targetValues;
-
-
-  MatrixXd chol_solve_resid, chol_solve_pred_mat;
-  chol_solve_resid = CholFact.solve(resid);
-  chol_solve_pred_mat = CholFact.solve(mixed_pred_gram.transpose());
-
-  /* value */
-  approx_values = mixed_pred_gram*chol_solve_resid;
-
-  /* compute the covariance matrix and standard deviation */
-  MatrixXd pred_gram;
-  compute_gram(cwisePredDists2, true, false, pred_gram);
-  posteriorCov = pred_gram - mixed_pred_gram*chol_solve_pred_mat;
-
-  if (estimateTrend) {
-    polyRegression->compute_basis_matrix(scaled_pred_pts, pred_basis_matrix);
-    MatrixXd z = CholFact.solve(basisMatrix);
-    MatrixXd R_mat = pred_basis_matrix - mixed_pred_gram*(z);
-    MatrixXd h_mat = basisMatrix.transpose()*z;
-    approx_values += pred_basis_matrix*betaValues;
-    posteriorCov += R_mat*(h_mat.ldlt().solve(R_mat.transpose()));
-  }
-
-  posteriorStdDev = posteriorCov.diagonal().array().sqrt();
-  for (int i = 0; i < numPredictionPts; i++) {
-    if (std::isnan(posteriorStdDev(i))) {
-      posteriorStdDev(i) = 0.0;
-    }
-  }
-  previousSamples = samples;
-  previousValues = approx_values;
-}
-
-VectorXd GaussianProcess::value(const MatrixXd &samples, const int qoi) {
-
+  /* Surrogate models don't yet support multiple responses */
   silence_unused_args(qoi);
-
-  // Surrogate models don't yet support multiple responses
   assert(qoi == 0);
 
-  if (samples.cols() != numVariables) {
+  if (eval_points.cols() != numVariables) {
     throw(std::runtime_error("Gaussian Process value inputs are not consistent."
           " Dimension of the feature space for the evaluation point and Gaussian Process do not match"));
   }
 
   VectorXd approx_values;
 
-  /* scale the samples (prediction points) */
-  const MatrixXd& scaled_pred_points = dataScaler.scale_samples(samples);
+  /* scale the eval_points (prediction points) */
+  const MatrixXd& scaled_pred_points = dataScaler.scale_samples(eval_points);
   compute_pred_dists(scaled_pred_points);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -366,26 +297,24 @@ VectorXd GaussianProcess::value(const MatrixXd &samples, const int qoi) {
 }
 
 
-void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
-                               const int qoi) {
-  silence_unused_args(qoi);
+MatrixXd GaussianProcess::gradient(const MatrixXd &eval_points, const int qoi) {
 
-  // Surrogate models don't yet support multiple responses
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
   assert(qoi == 0);
 
-  if (samples.cols() != numVariables) {
+  if (eval_points.cols() != numVariables) {
     throw(std::runtime_error("Gaussian Process gradient inputs are not consistent."
           " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
   }
 
-  const int numPredictionPts = samples.rows();
+  const int numPredictionPts = eval_points.rows();
 
-  /* resize the gradient */
-  gradient.resize(numPredictionPts, numVariables);
+  MatrixXd gradient(numPredictionPts, numVariables);
 
-  /* scale the samples (prediction points) */
+  /* scale the eval_points (prediction points) */
   MatrixXd scaled_pred_pts;
-  dataScaler.scale_samples(samples, scaled_pred_pts);
+  dataScaler.scale_samples(eval_points, scaled_pred_pts);
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -411,29 +340,27 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
   /* extra terms for GP with a trend */
   if (estimateTrend) {
     MatrixXd poly_grad_pred_pts;
-    polyRegression->gradient(scaled_pred_pts, poly_grad_pred_pts);
-    gradient += poly_grad_pred_pts;
+    gradient += polyRegression->gradient(scaled_pred_pts);
   }
+  return gradient;
 }
 
-void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
-                              const int qoi) {
-  silence_unused_args(qoi);
+MatrixXd GaussianProcess::hessian(const MatrixXd &eval_point, const int qoi) {
 
-  // Surrogate models don't yet support multiple responses
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
   assert(qoi == 0);
 
-  if (sample.rows() != 1) {
+  if (eval_point.rows() != 1) {
     throw(std::runtime_error("Gaussian Process Hessian evaluation is for a single point."
           "The input contains more than one sample."));
   }
 
-  /* resize the Hessian */
-  hessian.resize(numVariables, numVariables);
+  MatrixXd hessian(numVariables, numVariables);
 
-  /* scale the samples (prediction points) */
+  /* scale the eval_point (prediction points) */
   MatrixXd scaled_pred_point;
-  dataScaler.scale_samples(sample, scaled_pred_point);
+  dataScaler.scale_samples(eval_point, scaled_pred_point);
   compute_pred_dists(scaled_pred_point);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -461,26 +388,26 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
 
   if (estimateTrend) {
     MatrixXd poly_hessian_pred_pt;
-    polyRegression->hessian(scaled_pred_point, poly_hessian_pred_pt);
-    hessian += poly_hessian_pred_pt;
+    hessian += polyRegression->hessian(scaled_pred_point);
   }
+
+  return hessian;
 }
 
-VectorXd GaussianProcess::variance(const MatrixXd &samples, const int qoi) {
+MatrixXd GaussianProcess::covariance(const MatrixXd &eval_points, const int qoi) {
 
+  /* Surrogate models don't yet support multiple responses */
   silence_unused_args(qoi);
-
-  // Surrogate models don't yet support multiple responses
   assert(qoi == 0);
 
-  if (samples.cols() != numVariables) {
+  if (eval_points.cols() != numVariables) {
     throw(std::runtime_error("Gaussian Process variance input has wrong dimension."
           " Dimension of the feature space for the evaluation point and Gaussian Process do not match"));
   }
 
-  VectorXd variance;
-  /* scale the samples (prediction points) */
-  const MatrixXd& scaled_pred_points = dataScaler.scale_samples(samples);
+  MatrixXd covariance;
+  /* scale the eval_points (prediction points) */
+  const MatrixXd& scaled_pred_points = dataScaler.scale_samples(eval_points);
   compute_pred_dists(scaled_pred_points);
 
   /* compute the Gram matrix and its Cholesky factorization */
@@ -489,22 +416,20 @@ VectorXd GaussianProcess::variance(const MatrixXd &samples, const int qoi) {
     CholFact.compute(GramMatrix);
   }
 
-  VectorXd resid, chol_solve_pred_mat;
-  MatrixXd mixed_pred_gram, pred_basis_matrix;
+  VectorXd resid;
+  MatrixXd mixed_pred_gram, pred_basis_matrix, chol_solve_pred_mat;
   compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
 
-  if (estimateTrend) {
+  if (estimateTrend)
     resid = targetValues - basisMatrix*betaValues;
-  }
   else
     resid = targetValues;
 
-  chol_solve_pred_mat = 
-    CholFact.solve(Eigen::Map<VectorXd>(mixed_pred_gram.data(), numSamples));
+  chol_solve_pred_mat = CholFact.solve(mixed_pred_gram.transpose());
 
   MatrixXd pred_gram;
   compute_gram(cwisePredDists2, true, false, pred_gram);
-  variance = (pred_gram - mixed_pred_gram*chol_solve_pred_mat).diagonal();
+  covariance = (pred_gram - mixed_pred_gram*chol_solve_pred_mat);
 
   if (estimateTrend) {
     MatrixXd chol_solve_resid = CholFact.solve(resid);
@@ -512,8 +437,19 @@ VectorXd GaussianProcess::variance(const MatrixXd &samples, const int qoi) {
     MatrixXd z = CholFact.solve(basisMatrix);
     MatrixXd R_mat = pred_basis_matrix - mixed_pred_gram*(z);
     MatrixXd h_mat = basisMatrix.transpose()*z;
-    variance += (R_mat*(h_mat.ldlt().solve(R_mat.transpose()))).diagonal();
+    covariance += (R_mat*(h_mat.ldlt().solve(R_mat.transpose())));
   }
+
+  return covariance;
+}
+
+VectorXd GaussianProcess::variance(const MatrixXd &eval_points, const int qoi) {
+
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
+  assert(qoi == 0);
+
+  VectorXd variance = covariance(eval_points).diagonal();
 
   for (int i = 0; i < variance.size(); i++) {
     if (variance(i) < 0.0 || std::isnan(variance(i))) {
@@ -558,10 +494,6 @@ void GaussianProcess::negative_marginal_log_likelihood(bool compute_grad, bool f
     }
   }
 }
-
-const VectorXd& GaussianProcess::get_posterior_std_dev() const { return posteriorStdDev; }
-
-const MatrixXd& GaussianProcess::get_posterior_covariance() const { return posteriorCov; }
 
 int GaussianProcess::get_num_opt_variables() {
   return numVariables + 1 + numPolyTerms + numNuggetTerms;

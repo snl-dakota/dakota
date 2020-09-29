@@ -231,9 +231,7 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
 
   // not sending Eigen view of approxGradient as model->gradient calls resize()
-  const size_t qoi = 0; // only one response for now
-  MatrixXd pred_grad(num_evals, num_vars);
-  model->gradient(eval_pts, pred_grad, qoi);
+  MatrixXd pred_grad = model->gradient(eval_pts);
 
   approxGradient.sizeUninitialized(c_vars.length());
   for (size_t j = 0; j < num_vars; j++)
