@@ -80,9 +80,10 @@ dakota_add_unit_test(NAME leja_sampling
 target_link_libraries(leja_sampling Boost::boost)
 
 # Unit test: h5py_hdf5
-if(DAKOTA_HAVE_HDF5 AND PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GREATER 2.6)
-	execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import h5py" RESULT_VARIABLE missing_h5py
-	  OUTPUT_QUIET ERROR_QUIET)
+if(DAKOTA_HAVE_HDF5 AND Python_Interpreter_FOUND AND
+   Python_VERSION VERSION_GREATER 2.6)
+  execute_process(COMMAND ${Python_EXECUTABLE} -c "import h5py"
+    RESULT_VARIABLE missing_h5py OUTPUT_QUIET ERROR_QUIET)
   if(NOT missing_h5py)
     # Module to extract Dakota console output -- used by all h5py unit tests
     dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/h5py_console_extract.py

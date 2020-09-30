@@ -22,7 +22,7 @@
 #endif
 
 #ifdef DAKOTA_PYTHON_NUMPY
-#include <arrayobject.h>
+#include <numpy/arrayobject.h>
 #endif
 
 // Python 2/3 compatibility layer
