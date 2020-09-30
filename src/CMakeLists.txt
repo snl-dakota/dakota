@@ -706,13 +706,15 @@ endif(HAVE_NOMAD)
 if(HAVE_NOWPAC)
   add_definitions("-DHAVE_NOWPAC")
   if(NOT DAKOTA_NOWPAC_ROOT_DIR)
-    set(DAKOTA_NOWPAC_ROOT_DIR   "${Dakota_SOURCE_DIR}/packages/external/nowpac")
+    set(DAKOTA_NOWPAC_ROOT_DIR   "${Dakota_SOURCE_DIR}/packages/external/snowpac")
   endif(NOT DAKOTA_NOWPAC_ROOT_DIR)
   if( NOT DAKOTA_NOWPAC_NLOPT_ROOT)
-    set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/nlopt")
+    set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/snowpac/nowpac/external/nlopt")
   endif(NOT DAKOTA_NOWPAC_NLOPT_ROOT)
   if( NOT DAKOTA_NOWPAC_EIGEN_ROOT )
-    set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/eigen")
+    #set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_SOURCE_DIR}/packages/external/snowpac/nowpac/external/eigen")
+    set(DAKOTA_NOWPAC_EIGEN_ROOT
+      "${Dakota_SOURCE_DIR}/packages/external/eigen3")
   endif(NOT DAKOTA_NOWPAC_EIGEN_ROOT)
   message(STATUS "NOWPAC ROOT DIR ${DAKOTA_NOWPAC_ROOT_DIR}")
   message(STATUS "NOWPAC NLOPT DIR ${DAKOTA_NOWPAC_NLOPT_ROOT}")
@@ -924,9 +926,16 @@ if(HAVE_NOWPAC)
   # Require Eigen and NLOPT ExternalProjects to be downloaded, built,
   # and installed before building Dakota sources
   if(NOT HAVE_EXTERNAL_NOWPAC)
-  add_dependencies(dakota_src EIGEN NLOPT)
+    # Dakota always needs Eigen anyway so use Dakota's
+    #add_dependencies(dakota_src EIGEN NLOPT)
+    add_dependencies(dakota_src NLOPT)
   endif()
-  target_link_libraries(dakota_src ${DAKOTA_NOWPAC_ROOT_DIR}/lib/libnowpac.a)
+  # BMA: Why are we linking to something in a source dir?
+  #target_link_libraries(dakota_src ${DAKOTA_NOWPAC_ROOT_DIR}/snowpac/lib/libnowpac.a)
+  # This will only work for in-build NOWPACK for now:
+  target_link_libraries(dakota_src ${NOWPAC_BINARY_DIR}/nowpac/lib/libnowpac.a)
+  # Can't do following as not exported
+  #target_link_libraries(dakota_src nowpac)
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
