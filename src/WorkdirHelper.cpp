@@ -36,17 +36,6 @@
 
 #endif // _WIN32 or _WIN64
 
-// BMA TODO: Boost versions <= 1.49 do not include these mappings,
-// perhaps due to conflicts with v2?
-#if BOOST_VERSION / 100 % 1000 < 50
-namespace boost {
-  namespace filesystem {
-    using filesystem3::copy;
-    using filesystem3::copy_directory;
-  }
-}
-#endif
-
 
 namespace Dakota {
 
