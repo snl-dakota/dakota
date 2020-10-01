@@ -15,8 +15,17 @@
 #include "Teuchos_XMLParameterListCoreHelpers.hpp"
 
 #include <boost/filesystem.hpp>
+#include <boost/version.hpp>
+#if (BOOST_VERSION < 107000) && !defined(BOOST_ALLOW_DEPRECATED_HEADERS)
+//could alternately use: #define BOOST_PENDING_INTEGER_LOG2_HPP 1
+#define BOOST_ALLOW_DEPRECATED_HEADERS 1
 #include <boost/random.hpp>
 #include <boost/random/uniform_real.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
+#else
+#include <boost/random.hpp>
+#include <boost/random/uniform_real.hpp>
+#endif
 #include <boost/test/minimal.hpp>
 
 using namespace dakota;

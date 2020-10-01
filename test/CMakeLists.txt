@@ -457,10 +457,10 @@ add_dependencies(cantilever dakota)
 add_dependencies(morris dakota)
 add_dependencies(text_book dakota)
 
-if(DAKOTA_ENABLE_TESTS AND PYTHONINTERP_FOUND)
+if(DAKOTA_PYTHON)
   # Test restart translation capability.
   # (Example of system-level test that's not a Dakota study regression.)
-  add_test(NAME sys_restart_neutral COMMAND ${PYTHON_EXECUTABLE} 
+  add_test(NAME sys_restart_neutral COMMAND ${Python_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sys_restart_neutral.py 
     $<TARGET_FILE:dakota> $<TARGET_FILE:dakota_restart_util>
     )

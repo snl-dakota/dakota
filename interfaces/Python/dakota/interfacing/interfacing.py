@@ -379,7 +379,7 @@ class Results(object):
             if (v.asv.gradient or ignore_asv) and v.gradient is not None:
                 print("[ ",file=stream, end="")
                 for e in v.gradient:
-                    print("% 24.16E" % e,file=stream,end="")
+                    print(" %24.16E" % e,file=stream,end="")
                 print(" ]",file=stream)
         # Write Hessians
         for t, v in self._responses.items():
@@ -391,7 +391,7 @@ class Results(object):
                         print("\n  ",file=stream,end="")
                     first=False
                     for c in r:
-                        print("% 24.16E" % c,file=stream, end="")
+                        print(" %24.16E" % c,file=stream, end="")
                 print(" ]]",file=stream)
 
     def write(self, stream=None, ignore_asv=None):

@@ -308,42 +308,29 @@ if(DAKOTA_SCILAB)
   endif() # SCILAB_ROOT
 endif() #DAKOTA_SCILAB
 
-option(DAKOTA_PYTHON "Toggle Python interface, default is disabled" OFF)
-option(DAKOTA_PYTHON_NUMPY
-  "Attempt to link to Python NumPy interface? Default: yes." ON)
-if(DAKOTA_PYTHON)
-  include(FindPythonLibs)
+if(DAKOTA_PYTHON_DIRECT_INTERFACE)
 
-  if(PYTHONLIBS_FOUND)
-    # Have a valid Python.h and libraries
-    message(STATUS "Using Python headers in: ${PYTHON_INCLUDE_DIRS}")
-    message(STATUS "Using Python libraries in: ${PYTHON_LIBRARIES}")
-    list(APPEND EXT_TPL_INCDIRS ${PYTHON_INCLUDE_DIRS})
-    add_definitions("-DDAKOTA_PYTHON")
-    list(APPEND EXT_TPL_LIBS ${PYTHON_LIBRARIES})
+  message(STATUS "Dakota Python direct interface using:\n"
+    "     Include dirs: ${Python_INCLUDE_DIRS}\n"
+    "     Libraries:    ${Python_LIBRARIES}"
+    )
 
-    if(DAKOTA_PYTHON_NUMPY)
-      include(FindNUMARRAY)
-      if(PYTHON_NUMARRAY_FOUND)
-	# Have a valid arrayobject.h
-	message(STATUS "Using NumPy headers in: ${PYTHON_NUMARRAY_INCLUDE_DIR}")
-	list(APPEND EXT_TPL_INCDIRS ${PYTHON_NUMARRAY_INCLUDE_DIR})
-	add_definitions("-DDAKOTA_PYTHON_NUMPY")
-      else()
-	message("Python NumPy requested, but headers/libaries not found; "
-	  "disabling NumPy")
-      endif(PYTHON_NUMARRAY_FOUND)
-    else()
-      message(STATUS "Disabling NumPy interface due to DAKOTA_PYTHON_NUMPY = "
-	"${DAKOTA_PYTHON_NUMPY}")
-    endif()
-  else()
-    message(SEND_ERROR 
-      "Python requested via DAKOTA_PYTHON, but Python headers/libraries "
-      "associated with Python installed with ${PYTHON_EXECUTABLE} not found"
-      )
+  # TODO: Use imported targets for include/lib if we can figure them out
+  # TODO: Use target_definitions
+  # If not, use  Python_LIBRARY_DIRS
+
+  list(APPEND EXT_TPL_INCDIRS ${Python_INCLUDE_DIRS})
+  add_definitions("-DDAKOTA_PYTHON")
+  list(APPEND EXT_TPL_LIBS ${Python_LIBRARIES})
+
+  if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
+    message(STATUS "Dakota Python direct interface using NumPy:\n"
+      "     Include dirs: ${Python_NumPy_INCLUDE_DIRS}")
+    list(APPEND EXT_TPL_INCDIRS ${Python_NumPy_INCLUDE_DIRS})
+    add_definitions("-DDAKOTA_PYTHON_NUMPY")
   endif()
-endif(DAKOTA_PYTHON)
+
+endif()
 
 if(DAKOTA_MODELCENTER)
   add_definitions("-DDAKOTA_MODELCENTER")
@@ -488,7 +475,7 @@ if(DAKOTA_MATLAB)
   list(APPEND interface_src MatlabInterface.cpp)
 endif()
 
-if(DAKOTA_PYTHON)
+if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   list(APPEND interface_src PythonInterface.cpp)
 endif()
 

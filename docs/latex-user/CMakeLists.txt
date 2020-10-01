@@ -48,7 +48,7 @@ add_file_copy_command("${generic_path}/templatedir/ros.template"
 add_custom_command(
   OUTPUT  "${CMAKE_CURRENT_BINARY_DIR}/dprepro_usage"
   DEPENDS "${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro"
-  COMMAND "${PYTHON_EXECUTABLE}"
+  COMMAND "${Python_EXECUTABLE}"
   ARGS    "${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro" --help > "${CMAKE_CURRENT_BINARY_DIR}/dprepro_usage"
   )
 

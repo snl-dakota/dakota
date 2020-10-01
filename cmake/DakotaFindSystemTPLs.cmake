@@ -10,7 +10,7 @@ macro(dakota_find_boost)
   # Dakota requires Boost 1.58 or newer (1.69 recommended);
   # enforce for all libs in the build
   find_package(Boost 1.58 REQUIRED
-    COMPONENTS "filesystem;program_options;regex;serialization;system")
+    COMPONENTS filesystem program_options regex serialization system)
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
 
