@@ -25,6 +25,11 @@ option(DAKOTA_MODULE_SURROGATES "Enable Dakota module surrogates" ON)
 option(DAKOTA_MODULE_DAKOTA "Enable Dakota module for traditional all Dakota"
   ON)
 
+if(BUILD_IN_TRILINOS)
+  set(DAKOTA_MODULE_SURROGATES OFF CACHE BOOL
+    "Dakota surrogates module is disabled for in-Trilinos builds" FORCE)
+endif()
+
 # Testing options
 option(DAKOTA_ENABLE_TESTS "Enable Dakota-specific tests?" ON)
 # Option to turn off key DAKOTA TPL tests, default OFF
@@ -78,6 +83,18 @@ option(DAKOTA_PYTHON_SURROGATES
   "Dakota Python interface to surrogates module; default ON when Python enabled"
   ON
   )
+
+if(DAKOTA_PYTHON_SURROGATES)
+  if(DAKOTA_MODULE_SURROGATES)
+    set(DAKOTA_PYBIND11 ON CACHE BOOL
+      "Dakota using Pybind11 for surrogate wrappers.")
+  else()
+    message(STATUS "Disabling DAKOTA_PYTHON_SURROGATES as "
+      "DAKOTA_MODULE_SURROGATES=${DAKOTA_MODULE_SURROGATES}")
+    set(DAKOTA_PYTHON_SURROGATES OFF CACHE BOOL
+      "Python surrogate wrappers disabled as surrogate module is off.")
+  endif()
+endif()
 
 # Option to build an unsupported Java wrapper for Dakota's library mode that 
 # has a Java callback for performing function evaluations.  This is a non-

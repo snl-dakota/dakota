@@ -56,7 +56,7 @@ dakota_gcov_target(dakota_surrogates)
 install(FILES ${surrogates_headers} DESTINATION "include")
 install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
 
-if(DAKOTA_PYBIND11)
+if(DAKOTA_PYTHON_SURROGATES)
   # TODO: Need to always compile libs PIC when using Python
   pybind11_add_module(dakota_surrogatespy surrogates_python.cpp)
   # TODO: transitive includes when merging from devel
