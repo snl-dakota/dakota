@@ -269,12 +269,30 @@ private:
   // sequence of discrepancy corrections to apply in SEQUENCE_CORRECTION mode
   //std::vector<UShortArray> corrSequence;
 
-  /// Ordered sequence (low to high) of model fidelities.  Models are of
-  /// arbitrary type and supports recursions.
+  /// the single truth reference model
   Model truthModel;
-  /// Ordered sequence (low to high) of model fidelities.  Models are of
-  /// arbitrary type and supports recursions.
+  /// unordered set of model approximations
   ModelArray unorderedModels;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Potential mechanisms for identifying active models for a set of samples
+  ///
+  /// this is the simplest design: each model is on or off for a sample set
+  BitArray modelSubset;
+  /// This may limit concurrency if we have to break a composite sample set
+  ///   into pieces to support simple on/off
+  /// Seems more desirable to allow on for sample set portions, otherwise off
+  /// Heavyweight: a PRP | IntResponseMap mechanism that spans a response
+  ///   aggregation --> each queued job defines an ASV over the aggregate fns
+  ///   --> Rely on NonDACVSampling to define aggregate ASV requests that are
+  ///       unrolled by NonHierarchSurrModel ???
+  ///   --> use subsetter fn to extract set of samples to assign to each model
+  //////////////////////////////////////////////////////////////////////////////
+  /// W.r.t. active keys, also need to manage active resolutions for each
+  /// model instance.  As a first cut, just need to carry them along
+  /// (as tunable hyper-parameters rather than dimensions of the hierarchy).
+  //////////////////////////////////////////////////////////////////////////////
+
 
   /// flag indicating that the {low,high}FidelityKey correspond to the
   /// same model instance, requiring modifications to updating and evaluation
@@ -463,6 +481,16 @@ inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
     break;
   }
   */
+}
+
+
+bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
+{
+  size_t i, num_fns = asv.size();
+  for (i=0; i<num_fns; ++i)
+    if (asv[i])
+      return true;
+  return false;
 }
 
 

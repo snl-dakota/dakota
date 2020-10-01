@@ -500,6 +500,28 @@ asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
 
 
 void SurrogateModel::
+asv_split(const ShortArray& aggregate_asv, Short2DArray& indiv_asv)
+{
+  // This API only used for AGGREGATED_MODELS mode
+
+  size_t i, num_qoi = qoi();
+  if (aggregate_asv.size() % num_qoi) {
+    Cerr << "Error: size remainder for aggregated ASV in SurrogateModel::"
+	 << "asv_split()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  size_t num_models = aggregate_asv.size() / num_qoi, cntr = 0;
+  indiv_asv.resize(num_models);
+  for (i=0; i<num_models; ++i) {
+    ShortArray& asv_i = indiv_asv[i];
+    asv_i.resize(num_qoi);
+    for (j=0; j<num_qoi; ++j, ++cntr)
+      asv_i[j] = aggregate_asv[cntr];
+  }
+}
+
+
+void SurrogateModel::
 asv_combine(const ShortArray& actual_asv, const ShortArray& approx_asv,
 	    ShortArray& combined_asv)
 {

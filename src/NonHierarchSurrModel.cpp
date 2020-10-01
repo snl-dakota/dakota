@@ -346,6 +346,7 @@ bool NonHierarchSurrModel::finalize_mapping()
 }
 
 
+/*
 void NonHierarchSurrModel::build_approximation()
 {
   Cout << "\n>>>>> Building hierarchical approximation.\n";
@@ -409,45 +410,6 @@ void NonHierarchSurrModel::build_approximation()
   Cout << "\n<<<<< NonHierarchical approximation build completed.\n";
   ++approxBuilds;
 }
-
-
-/*
-bool NonHierarchSurrModel::
-build_approximation(const RealVector& c_vars, const Response& response)
-{
-  // NOTE: this fn not currently used by SBO, but it could be.
-
-  // Verify data content in incoming response
-  const ShortArray& asrv = response.active_set_request_vector();
-  bool data_complete = true; short corr_order = dataCorr.correction_order();
-  for (size_t i=0; i<numFns; i++)
-    if ( ( corr_order == 2 &&  (asrv[i] & 7) != 7 ) ||
-	 ( corr_order == 1 &&  (asrv[i] & 3) != 3 ) ||
-	 ( corr_order == 0 && !(asrv[i] & 1) ) )
-      data_complete = false;
-  if (data_complete) {
-    Cout << "\n>>>>> Updating hierarchical approximation.\n";
-
-    // are these updates necessary?
-    Model& hf_model = truth_model();
-    currentVariables.continuous_variables(c_vars);
-    update_model(hf_model);
-    const Variables& hf_vars = hf_model.current_variables();
-    copy_data(hf_vars.inactive_continuous_variables(), referenceICVars);
-    copy_data(hf_vars.inactive_discrete_variables(),   referenceIDVars);
-
-    truthResponseRef.update(response);
-
-    Cout << "\n<<<<< NonHierarchical approximation update completed.\n";
-  }
-  else {
-    Cerr << "Warning: cannot use anchor point in NonHierarchSurrModel::"
-	 << "build_approximation(RealVector&, Response&).\n";
-    currentVariables.continuous_variables(c_vars);
-    build_approximation();
-  }
-  return false; // correction is not embedded and must be computed (by SBO)
-}
 */
 
 
@@ -459,25 +421,15 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  // define LF/HF evaluation requirements
-  ShortArray hi_fi_asv, lo_fi_asv;
-  bool hi_fi_eval, lo_fi_eval, mixed_eval;
-  Response lo_fi_response, hi_fi_response; // don't use truthResponseRef
-  switch (responseMode) {
-  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-  case AGGREGATED_MODELS:
-    asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
-    hi_fi_eval = !hi_fi_asv.empty(); lo_fi_eval = !lo_fi_asv.empty();
-    mixed_eval = (hi_fi_eval && lo_fi_eval);            break;
-  case BYPASS_SURROGATE:
-    hi_fi_eval = true; lo_fi_eval = mixed_eval = false; break;
-  case MODEL_DISCREPANCY:
-    hi_fi_eval = lo_fi_eval = mixed_eval = true;        break;
-  }
+  // define eval reqmts, with unorderedModels followed by truthModel at end
+  Short2DArray indiv_asv;
+  asv_split(set.request_vector(), indiv_asv);
 
-  Model&   hf_model = (hi_fi_eval) ?     truth_model() : dummy_model;
-  Model&   lf_model = (lo_fi_eval) ? surrogate_model() : dummy_model;
-  Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
+  size_t  num_models = indiv_asv.size(),
+    num_unord_models = unorderedModels.size();
+  ResponseArray indiv_response(num_models);
+
+  /*
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     if (sameModelInstance)
@@ -487,130 +439,48 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
       if (lo_fi_eval) lf_model.eval_tag_prefix(eval_tag);
     }
   }
+  */
 
-  if (sameModelInstance) update_model(same_model);
-
-  // Notes on repetitive setting of model.solution_level_index():
-  // > when LF & HF are the same model, then setting the index for low or high
-  //   invalidates the other fidelity definition.
-  // > within a single derived_evaluate(), could protect these updates with
-  //   "if (sameModelInstance && mixed_eval)", but this does not guard against
-  //   changes in eval requirements from the previous evaluation.  Detecting
-  //   the current solution index state is currently as expensive as resetting
-  //   it, so just reset each time.
-
-  // ------------------------------
-  // Compute high fidelity response
-  // ------------------------------
-  if (hi_fi_eval) {
-    component_parallel_mode(TRUTH_MODEL_MODE); // TO DO: sameModelInstance
-    if (sameModelInstance)
-      hf_model.solution_level_index(truth_level_index());
-    else
-      update_model(hf_model);
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    case AGGREGATED_MODELS: {
-      ActiveSet hi_fi_set(hi_fi_asv, set.derivative_vector());
-      hf_model.evaluate(hi_fi_set);
-      if (mixed_eval)
-        hi_fi_response = (sameModelInstance) ? // deep copy or shared rep
-	  hf_model.current_response().copy() : hf_model.current_response();
-      else {
-        currentResponse.active_set(hi_fi_set);
-        currentResponse.update(hf_model.current_response());
-      }
-      break;
-    }
-    case BYPASS_SURROGATE:
-      hf_model.evaluate(set);
-      currentResponse.active_set(set);
-      currentResponse.update(hf_model.current_response());
-      break;
-    case MODEL_DISCREPANCY:
-      hf_model.evaluate(set);
-      hi_fi_response = (sameModelInstance) ? hf_model.current_response().copy()
-                       : hf_model.current_response(); // shared rep
-      break;
-    }
-  }
-
-  // -----------------------------
-  // Compute low fidelity response
-  // -----------------------------
-  if (lo_fi_eval) {
-    // pre-process
-    switch (responseMode) {
-    case AUTO_CORRECTED_SURROGATE:
-      // if build_approximation has not yet been called, call it now
-      if (!approxBuilds || force_rebuild())
-        build_approximation();
-      break;
-    }
-    // compute the LF response
-    component_parallel_mode(SURROGATE_MODEL_MODE); // TO DO: sameModelInstance
-    if (sameModelInstance)
-      lf_model.solution_level_index(surrogate_level_index());
-    else
-      update_model(lf_model);
-    ActiveSet lo_fi_set;
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    case AGGREGATED_MODELS:
-      lo_fi_set.request_vector(lo_fi_asv);
-      lo_fi_set.derivative_vector(set.derivative_vector());
-      lf_model.evaluate(lo_fi_set);
-      break;
-    case MODEL_DISCREPANCY:
-      lf_model.evaluate(set);
-      break;
-    }
-
-    // post-process
-    switch (responseMode) {
-    case AUTO_CORRECTED_SURROGATE: {
-      // LF resp should not be corrected directly (see derived_synchronize())
-      lo_fi_response = lf_model.current_response().copy();
-      recursive_apply(currentVariables, lo_fi_response);
-      if (!mixed_eval) {
-        currentResponse.active_set(lo_fi_set);
-        currentResponse.update(lo_fi_response);
-      }
-      break;
-    }
-    case UNCORRECTED_SURROGATE:
-      if (mixed_eval)
-        lo_fi_response = lf_model.current_response(); // shared rep
-      else {
-        currentResponse.active_set(lo_fi_set);
-        currentResponse.update(lf_model.current_response());
-      }
-      break;
-    }
-  }
-
-  // ------------------------------
-  // perform any LF/HF aggregations
-  // ------------------------------
   switch (responseMode) {
-  case MODEL_DISCREPANCY: {
-    // don't update surrogate data within deltaCorr[key]'s Approximations;
-    // just update currentResponse (managed as surrogate data at a higher level)
-    bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-    currentResponse.active_set(set);
-    deltaCorr[activeKey].compute(hi_fi_response, lf_model.current_response(),
-				 currentResponse, quiet_flag);
+  case AGGREGATED_MODELS: {
+    ActiveSet set_i(set); // copy DVV
+    for (size_t i=0; i<num_models; ++i) {
+      ShortArray& asv_i = indiv_asv[i];
+      if (test_asv(asv_i)) {
+	Model& model_i = (i < num_unord_models) ? unorderedModels[i]
+	               : truthModel;
+	/*
+	component_parallel_mode(i); // TO DO: size_t instead of enum
+	if (sameModelInstance)
+	  model_i.solution_level_index(model_level_index(i)); // TO DO
+	else
+	  update_model(model_i);
+	*/
+	set_i.request_vector(asv_i);
+	model_i.evaluate(set_i);
+	indiv_response[i] = (sameModelInstance) ? // deep copy or shared rep
+	  model_i.current_response().copy() : model_i.current_response();
+      }
+    }
+    aggregate_response(indiv_response, currentResponse);
     break;
   }
-  case AGGREGATED_MODELS:
-    aggregate_response(hi_fi_response, lf_model.current_response(),
-                       currentResponse);
-    break;
-  case UNCORRECTED_SURROGATE:   case AUTO_CORRECTED_SURROGATE:
-    if (mixed_eval) {
-      currentResponse.active_set(set);
-      response_combine(hi_fi_response, lo_fi_response, currentResponse);
+  case BYPASS_SURROGATE:
+    if (num_models > 1) {
+      Cerr << "Error: wrong aggregate ASV size for BYPASS_SURROGATE mode in "
+	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
+      abort_handler(MODEL_ERROR);
     }
+    /*
+    component_parallel_mode(num_unord_models); // TO DO: size_t instead of enum
+    if (sameModelInstance)
+      truthModel.solution_level_index(truth_level_index(i)); // TO DO
+    else
+      update_model(truthModel);
+    */
+    truthModel.evaluate(set);
+    currentResponse.active_set(set);
+    currentResponse.update(truthModel.current_response());
     break;
   }
 }
@@ -625,70 +495,13 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  ShortArray hi_fi_asv, lo_fi_asv;  bool hi_fi_eval, lo_fi_eval;
-  switch (responseMode) {
-  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-  case AGGREGATED_MODELS:
-    asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
-    hi_fi_eval = !hi_fi_asv.empty();  lo_fi_eval = !lo_fi_asv.empty();  break;
-  case BYPASS_SURROGATE:
-    hi_fi_eval = true;  lo_fi_eval = false;                             break;
-  case MODEL_DISCREPANCY:
-    hi_fi_eval = lo_fi_eval = true;                                     break;
-  }
+  // define eval reqmts, with unorderedModels followed by truthModel at end
+  Short2DArray indiv_asv;
+  asv_split(set.request_vector(), indiv_asv);
 
-  Model&   hf_model = (hi_fi_eval) ?     truth_model() : dummy_model;
-  Model&   lf_model = (lo_fi_eval) ? surrogate_model() : dummy_model;
-  Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
-  bool asynch_hi_fi = (hi_fi_eval) ? hf_model.asynch_flag() : false,
-       asynch_lo_fi = (lo_fi_eval) ? lf_model.asynch_flag() : false;
+  size_t  num_models = indiv_asv.size();
 
-  if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
-    if (sameModelInstance)
-      same_model.eval_tag_prefix(eval_tag);
-    else {
-      if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
-      if (lo_fi_eval) lf_model.eval_tag_prefix(eval_tag);
-    }
-  }
-
-  if (sameModelInstance) update_model(same_model);
-
-  // perform Model updates and define active sets for LF and HF evaluations
-  ActiveSet hi_fi_set, lo_fi_set;
-  if (hi_fi_eval) {
-    // update HF model
-    if (!sameModelInstance) update_model(hf_model);
-    // update hi_fi_set
-    hi_fi_set.derivative_vector(set.derivative_vector());
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    case AGGREGATED_MODELS:
-      hi_fi_set.request_vector(hi_fi_asv);             break;
-    case BYPASS_SURROGATE: case MODEL_DISCREPANCY:
-      hi_fi_set.request_vector(set.request_vector());  break;
-    }
-  }
-  if (lo_fi_eval) {
-    // if build_approximation has not yet been called, call it now
-    if ( responseMode == AUTO_CORRECTED_SURROGATE &&
-         ( !approxBuilds || force_rebuild() ) )
-      build_approximation();
-    // update LF model
-    if (!sameModelInstance) update_model(lf_model);
-    // update lo_fi_set
-    lo_fi_set.derivative_vector(set.derivative_vector());
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    case AGGREGATED_MODELS:
-      lo_fi_set.request_vector(lo_fi_asv);             break;
-    case MODEL_DISCREPANCY:
-      lo_fi_set.request_vector(set.request_vector());  break;
-    }
-  }
-
-  // NonHierarchSurrModel's asynchEvalFlag is set if _either_ LF or HF is
+  // NonHierarchSurrModel's asynchEvalFlag is set if any model supports
   // asynchronous, resulting in use of derived_evaluate_nowait().
   // To manage general case of mixed asynch, launch nonblocking evals first,
   // followed by blocking evals.
@@ -696,50 +509,62 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // For notes on repetitive setting of model.solution_level_index(), see
   // derived_evaluate() above.
 
-  // launch nonblocking evals before any blocking ones
-  if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously
-    // don't need to set component parallel mode since only queues the job
-    if (sameModelInstance)
-      hf_model.solution_level_index(truth_level_index());
-    hf_model.evaluate_nowait(hi_fi_set);
-    // store map from HF eval id to NonHierarchSurrModel id
-    truthIdMap[hf_model.evaluation_id()] = surrModelEvalCntr;
+  switch (responseMode) {
+  case AGGREGATED_MODELS: {
+    ActiveSet set_i(set); // copy DVV
+    size_t i, num_unord_models = unorderedModels.size();
+    // first pass for nonblocking models
+    for (i=0; i<num_models; ++i) {
+      ShortArray& asv_i = indiv_asv[i];
+      Model& model_i = (i < num_unord_models) ? unorderedModels[i]
+	             : truthModel;
+      if (model_i.asynch_flag() && test_asv(asv_i)) {
+	/*
+	if (sameModelInstance)
+	  model_i.solution_level_index(model_level_index(i)); // TO DO
+	else
+	  update_model(model_i);
+	*/
+	set_i.request_vector(asv_i);
+	model_i.evaluate_nowait(set_i);
+	modelIdMap[i][model_i.evaluation_id()] = surrModelEvalCntr;
+      }
+    }
+    // second pass for blocking models
+    for (i=0; i<num_models; ++i) {
+      ShortArray& asv_i = indiv_asv[i];
+      Model& model_i = (i < num_unord_models) ? unorderedModels[i]
+	             : truthModel;
+      if (!model_i.asynch_flag() && test_asv(asv_i)) {
+	/*
+	component_parallel_mode(i); // TO DO: size_t instead of enum
+	if (sameModelInstance)
+	  model_i.solution_level_index(model_level_index(i)); // TO DO
+	else
+	  update_model(model_i);
+	*/
+	set_i.request_vector(asv_i);
+	model_i.evaluate(set_i);
+	cachedRespMap[i][surrModelEvalCntr] = model_i.current_response().copy();
+      }
+    }
+    break;
   }
-  if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
-    // don't need to set component parallel mode since only queues the job
+  case BYPASS_SURROGATE:
+    if (num_models > 1) {
+      Cerr << "Error: wrong aggregate ASV size for BYPASS_SURROGATE mode in "
+	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    /*
     if (sameModelInstance)
-      lf_model.solution_level_index(surrogate_level_index());
-    lf_model.evaluate_nowait(lo_fi_set);
-    // store map from LF eval id to NonHierarchSurrModel id
-    surrIdMap[lf_model.evaluation_id()] = surrModelEvalCntr;
-    // store variables set needed for correction
-    if (responseMode == AUTO_CORRECTED_SURROGATE)
-      rawVarsMap[surrModelEvalCntr] = currentVariables.copy();
-  }
-
-  // now launch any blocking evals
-  if (hi_fi_eval && !asynch_hi_fi) { // execute HF synchronously & cache resp
-    component_parallel_mode(TRUTH_MODEL_MODE);
-    if (sameModelInstance)
-      hf_model.solution_level_index(truth_level_index());
-    hf_model.evaluate(hi_fi_set);
-    // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately
-    cachedTruthRespMap[surrModelEvalCntr] = hf_model.current_response().copy();
-  }
-  if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
-    component_parallel_mode(SURROGATE_MODEL_MODE);
-    if (sameModelInstance)
-      lf_model.solution_level_index(surrogate_level_index());
-    lf_model.evaluate(lo_fi_set);
-    Response lo_fi_response(lf_model.current_response().copy());
-    // correct LF response prior to caching
-    if (responseMode == AUTO_CORRECTED_SURROGATE)
-      // correct synch cases now (asynch cases get corrected in
-      // derived_synchronize_aggregate*)
-      recursive_apply(currentVariables, lo_fi_response);
-    // cache corrected LF response for retrieval during synchronization.
-    // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately.
-    cachedApproxRespMap[surrModelEvalCntr] = lo_fi_response;// deep copied above
+      truthModel.solution_level_index(truth_level_index(i)); // TO DO
+    else
+      update_model(truthModel);
+    */
+    truthModel.evaluate_nowait(set); // no need to test for blocking eval
+    modelIdMap[0][truthModel.evaluation_id()] = surrModelEvalCntr;
+    break;
   }
 }
 
