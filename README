@@ -111,6 +111,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   OPTPP		    GNU Lesser General Public License (LGPL) [SNL]
   pecos		    GNU Lesser General Public License (LGPL) [SNL]
   PSUADE	    GNU Lesser General Public License (LGPL)
+  pybind11	    BSD 3-clause
   pyprepro          MIT License [SNL]
     bottlepy/bottle MIT License (modern style with sublicense)
     pypi/six        MIT License (modern style with sublicense)
