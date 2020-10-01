@@ -15,7 +15,6 @@
 #include "dakota_global_defs.hpp"
 #include <boost/array.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/version.hpp>
 #include <cassert>
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -891,15 +890,15 @@ bool WorkdirHelper::find_file(const bfs::path& src_path,
   return false;
 }
 
-// TODO: Boost 1.50 and newer support concat (+=) on paths, remove
-// this function when we allow that version
+
+/** NOTE: Could remove this function and use += at call sites, but
+    seems convenient to keep (since path doesn't have operator+) */
 bfs::path WorkdirHelper::concat_path(const bfs::path& p_in, const String& tag)
 {
-  // explicit template argument to avoid conversion ambiguity
-  bfs::path::string_type p_in_str = p_in.generic_string<bfs::path::string_type>();
-  // may need to convert from string to wstring
-  bfs::path::string_type tag_str(tag.begin(), tag.end());
-  return (p_in_str + tag_str);
+  bfs::path p_out(p_in);
+  // TODO: review whether ever need to convert from string to wstring
+  p_out += tag;
+  return p_out;
 }
 
 
