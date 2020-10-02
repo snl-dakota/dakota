@@ -313,55 +313,6 @@ void PolynomialRegressionSurrogate_gradient_and_hessian() {
   BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
 }
 
-void save_free(const PolynomialRegression& surr_out, const std::string& outfile,
-	       bool binary)
-{
-  if (binary) {
-    std::ofstream model_ostream(outfile, std::ios::out|std::ios::binary);
-    if (!model_ostream.good())
-      throw std::runtime_error("Failure opening model file '" + outfile +
-			       "' for binary save.");
-
-    boost::archive::binary_oarchive output_archive(model_ostream);
-    output_archive << surr_out;
-    std::cout << "Model saved to binary file '" << outfile << "'."
-	      << std::endl;
-  }
-  else {
-    std::ofstream model_ostream(outfile, std::ios::out);
-    if (!model_ostream.good())
-      throw std::runtime_error("Failure opening model file '" + outfile +
-			       "' for save.");
-    boost::archive::text_oarchive output_archive(model_ostream);
-    output_archive << surr_out;
-    std::cout << "Model saved to text file '" << outfile << "'."
-	      << std::endl;
-  }
-}
-
-void load_free(const std::string& infile, bool binary,
-	       PolynomialRegression& pr4)
-{
-  if (binary) {
-    std::ifstream model_istream(infile, std::ios::in|std::ios::binary);
-    if (!model_istream.good())
-      throw std::string("Failure opening model file for load.");
-
-    boost::archive::binary_iarchive input_archive(model_istream);
-    input_archive >> pr4;
-    std::cout << "Model loaded from binary file '" << infile << "'."
-	      << std::endl;
-  }
-  else {
-    std::ifstream model_istream(infile, std::ios::in);
-    if (!model_istream.good())
-      throw std::string("Failure opening model file for load.");
-
-    boost::archive::text_iarchive input_archive(model_istream);
-    input_archive >> pr4;
-    std::cout << "Model loaded from text file." << std::endl;
-  }
-}
 
 void PolynomialRegressionSurrogate_parameter_list_import() {
   int num_vars    = 2,
@@ -419,7 +370,9 @@ void PolynomialRegression_SaveLoad()
   param_list_partial.set("max degree", degree);
   param_list_partial.set("scaler type", "none");
 
-  PolynomialRegression pr3(samples, responses, param_list_partial);
+  // test serialization through pointers
+  auto pr3 = std::make_shared<PolynomialRegression>
+    (samples, responses, param_list_partial);
 
   // Initially modelling what save/load functions would do for binary/text
   for (bool binary : {true, false} ) {
@@ -427,22 +380,23 @@ void PolynomialRegression_SaveLoad()
     std::string filename("poly_test.surr");
 
     boost::filesystem::remove(filename);
-    Surrogate::save(pr3, filename, binary);
+    Surrogate::save(std::dynamic_pointer_cast<Surrogate>(pr3), filename, binary);
 
-    PolynomialRegression pr4;
-    Surrogate::load(filename, binary, pr4);
+    std::shared_ptr<Surrogate> surr_in = Surrogate::load(filename, binary);
 
-    BOOST_CHECK(pr3.get_num_terms() == pr4.get_num_terms());
-    BOOST_CHECK(pr3.get_polynomial_intercept() ==
-		pr4.get_polynomial_intercept());
-    BOOST_CHECK(pr3.get_polynomial_coeffs() ==
-		pr4.get_polynomial_coeffs());
+    auto pr4 = std::dynamic_pointer_cast<PolynomialRegression>(surr_in);
+
+    BOOST_CHECK(pr3->get_num_terms() == pr4->get_num_terms());
+    BOOST_CHECK(pr3->get_polynomial_intercept() ==
+		pr4->get_polynomial_intercept());
+    BOOST_CHECK(pr3->get_polynomial_coeffs() ==
+		pr4->get_polynomial_coeffs());
 
     // tests on the loaded surrogate based on original unit test
-    const MatrixXd& loaded_coeffs = pr4.get_polynomial_coeffs();
-    double loaded_intercept = pr4.get_polynomial_intercept();
+    const MatrixXd& loaded_coeffs = pr4->get_polynomial_coeffs();
+    double loaded_intercept = pr4->get_polynomial_intercept();
     VectorXd test_responses;
-    test_responses = pr4.value(eval_points);
+    test_responses = pr4->value(eval_points);
 
     BOOST_CHECK(std::abs(loaded_intercept) < 1.0e-10 );
     BOOST_CHECK(matrix_equals(gold_coeffs, loaded_coeffs, 1.0e-10));

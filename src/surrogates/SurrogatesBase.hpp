@@ -161,6 +161,18 @@ public:
   static void load(const std::string& infile, const bool binary,
 		   SurrHandle& surr_in);
 
+  /// member variant of save to save as shared_ptr(*this)
+  /// could enable if desired, but might require shared_from_this?
+  // void save(const std::string& outfile, const bool binary);
+
+  /// serialize Surrogate from file through pointer to base class
+  /// (must have been saved via same data type)
+  static std::shared_ptr<Surrogate>
+  load(const std::string& infile, const bool binary);
+
+  /// also demo load via ctor
+  //  Surrogate(infile, binary)
+
   /// Evalute metrics at specified points (within surrogates)
   VectorXd evaluate_metrics(const StringArray &mnames,
                             const MatrixXd &points,
