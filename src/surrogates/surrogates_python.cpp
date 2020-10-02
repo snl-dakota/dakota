@@ -99,29 +99,31 @@ public:
 /// Define a Python module that wraps a few surrogates classes
 PYBIND11_MODULE(dakota_surrogatespy, m) {
 
-  m.def("save_poly",
-	static_cast<void (*)(const dakota::surrogates::PolynomialRegression&,
-			     const std::string&, const bool)>
+  // free functions in module to save and load through base pointer
+  m.def("save",
+	static_cast<void (*)
+	(const std::shared_ptr<dakota::surrogates::Surrogate>&,
+	 const std::string&, const bool)>
 	(&dakota::surrogates::Surrogate::save));
 
-  m.def("save_gp",
-	static_cast<void (*)(const dakota::surrogates::GaussianProcess&,
-			     const std::string&, const bool)>
-	(&dakota::surrogates::Surrogate::save));
-
-  m.def("load_poly",
-	static_cast<void (*)(const std::string&, const bool,
-			     dakota::surrogates::PolynomialRegression&)>
+  m.def("load",
+	static_cast<std::shared_ptr<dakota::surrogates::Surrogate> (*)
+	(const std::string&, const bool)>
 	(&dakota::surrogates::Surrogate::load));
 
-  m.def("load_gp",
-	static_cast<void (*)(const std::string&, const bool,
-			     dakota::surrogates::GaussianProcess&)>
-	(&dakota::surrogates::Surrogate::load));
 
-  py::class_<dakota::surrogates::Surrogate>
+  py::class_<dakota::surrogates::Surrogate,
+	     std::shared_ptr<dakota::surrogates::Surrogate>>
     (m, "Surrogate")
     // no init since this is a virtual base
+
+    // This works, but doesn't yield an object of derived type
+//    .def(py::init([](const std::string& filename, bool binary)
+//	  {
+//	    return dakota::surrogates::Surrogate::load(filename, binary);
+//	  }),
+//	  py::arg("filename"), py::arg("binary")
+//	)
 
     // qoi index 0 
     .def("value",
@@ -156,6 +158,7 @@ PYBIND11_MODULE(dakota_surrogatespy, m) {
     ; // Surrogate
 
   py::class_<dakota::surrogates::PolynomialRegression,
+	     std::shared_ptr<dakota::surrogates::PolynomialRegression>,
 	     dakota::surrogates::Surrogate
 	     >
     (m, "PolynomialRegression")
@@ -171,18 +174,19 @@ PYBIND11_MODULE(dakota_surrogatespy, m) {
 		      PolynomialRegression(samples, response,
 					   convert_options(d)); }))
 
-    .def(py::init([](const std::string& filename, bool binary)
-	  {
-	    dakota::surrogates::PolynomialRegression p;
-	    dakota::surrogates::Surrogate::load(filename, binary, p);
-	    return p;
-	  }),
-	  py::arg("filename"), py::arg("binary")
-	)
+    .def(py::init([](const std::string& filename, bool binary) {
+	  return std::dynamic_pointer_cast
+	    <dakota::surrogates::PolynomialRegression>
+	    (dakota::surrogates::Surrogate::load(filename, binary));
+	}),
+      py::arg("filename"), py::arg("binary")
+      )
+
     ; // PolynomialRegression
 
   py::class_<dakota::surrogates::GaussianProcess,
-	     dakota::surrogates::Surrogate // base class
+	     std::shared_ptr<dakota::surrogates::GaussianProcess>,
+	     dakota::surrogates::Surrogate
 	     >
     (m, "GaussianProcess")
 
@@ -199,14 +203,13 @@ PYBIND11_MODULE(dakota_surrogatespy, m) {
 		      GaussianProcess(samples, response,
 					   convert_options(d)); }))
 
-    .def(py::init([](const std::string& filename, bool binary)
-	  {
-	    dakota::surrogates::GaussianProcess gp;
-	    dakota::surrogates::Surrogate::load(filename, binary, gp);
-	    return gp;
-	  }),
-	  py::arg("filename"), py::arg("binary")
-	)
+    .def(py::init([](const std::string& filename, bool binary) {
+	  return std::dynamic_pointer_cast
+	    <dakota::surrogates::GaussianProcess>
+	    (dakota::surrogates::Surrogate::load(filename, binary));
+	}),
+      py::arg("filename"), py::arg("binary")
+      )
 
     // qoi index 0
     .def("variance",

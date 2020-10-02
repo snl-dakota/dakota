@@ -46,19 +46,21 @@ print("Surrogate Hessian:\n{0}\n".format(eval_hessian))
 
 # save polynomial surrogate to text
 print("Saving Polynomial")
-daksurr.save_poly(pr, "poly.txt", False)
+# Free function for generic save (serialize via shared pointer to base)
+daksurr.save(pr, "poly.txt", False)
 
 # load using derived class constructor
 print("Loading Polynomial (derived class constructor)")
 dctor_prload = daksurr.PolynomialRegression(filename = "poly.txt", binary = False)
+print("Loaded Poly is a: {0}".format(dctor_prload.__class__.__name__))
 assert(np.allclose(pr.value(eval_point), dctor_prload.value(eval_point)))
 
 # free function load
 print("Loading Polynomial (free function)")
-ff_prload = daksurr.PolynomialRegression();
-daksurr.load_poly("poly.txt", False, ff_prload)
+gen_prload = daksurr.load("poly.txt", False)
+print("Loaded Poly is a: {0}".format(gen_prload.__class__.__name__))
+assert(np.allclose(pr.value(eval_point), gen_prload.value(eval_point)))
 
-assert(np.allclose(pr.value(eval_point), ff_prload.value(eval_point)))
 
 # GaussianProcess:
 # instantiate a Gaussian process surrogate using a
@@ -83,15 +85,17 @@ print("GP Hessian:\n{0}\n".format(eval_hessian))
 
 # Save GP to binary and then reload
 print("Saving GP")
-daksurr.save_gp(gp, "gp.bin", True)
+# Free function for generic save (serialize via shared pointer to base)
+daksurr.save(gp, "gp.bin", True)
 
 # load using derived class constructor
 print("Loading GP (derived class constructor)")
 dctor_gpload = daksurr.GaussianProcess(filename = "gp.bin", binary = True)
+print("Loaded GP is a: {0}".format(dctor_gpload.__class__.__name__))
 assert(np.allclose(dctor_gpload.value(eval_samples), gp_eval_surr))
 
 # free function load
 print("Loading GP (free function)")
-ff_gpload = daksurr.GaussianProcess();
-daksurr.load_gp("gp.bin", True, ff_gpload)
-assert(np.allclose(ff_gpload.value(eval_samples), gp_eval_surr))
+gen_gpload = daksurr.load("gp_gen.bin", True)
+print("Loaded GP is a: {0}".format(gen_gpload.__class__.__name__))
+assert(np.allclose(gen_gpload.value(eval_samples), gp_eval_surr))
