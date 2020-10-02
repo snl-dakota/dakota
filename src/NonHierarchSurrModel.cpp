@@ -201,61 +201,16 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     //if (pl_iter->server_communicator_size() > 1)
     //  parallelLib.bcast(responseMode, *pl_iter);
 
-    /*
     switch (responseMode) {
 
-    // CASES WITH A SINGLE ACTIVE MODEL:
-
-    case UNCORRECTED_SURROGATE: {
-      Model& lf_model = surrogate_model();
-      lf_model.set_communicators(pl_iter, max_eval_concurrency);
-      asynchEvalFlag     = lf_model.asynch_flag();
-      evaluationCapacity = lf_model.evaluation_capacity();
-      break;
-    }
     case BYPASS_SURROGATE: {
-      Model& hf_model = truth_model();
-      hf_model.set_communicators(pl_iter, max_eval_concurrency);
-      asynchEvalFlag     = hf_model.asynch_flag();
-      evaluationCapacity = hf_model.evaluation_capacity();
+      truthModel.set_communicators(pl_iter, max_eval_concurrency);
+      asynchEvalFlag     = truthModel.asynch_flag();
+      evaluationCapacity = truthModel.evaluation_capacity();
       break;
     }
 
-    // CASES WHERE ANY/ALL MODELS COULD BE ACTIVE:
-
-    case AUTO_CORRECTED_SURROGATE: {
-      // Lowest fidelity model is interfaced with minimizer:
-      Model& model_0 = orderedModels[0];
-      model_0.set_communicators(pl_iter, max_eval_concurrency);
-      asynchEvalFlag     = model_0.asynch_flag();
-      evaluationCapacity = model_0.evaluation_capacity();
-
-      // TO DO: this will not be true for multigrid optimization:
-      bool use_deriv_conc = true; // only verifications/corrections
-      // Either need detection logic, a passed option, or to abandon the
-      // specialization and just generalize init/set/free to use the max
-      // of the two values...
-
-      // Loop over all higher fidelity models:
-      size_t i, num_models = orderedModels.size(); int cap_i;
-      for (i=1; i<num_models; ++i) {
-	Model& model_i = orderedModels[i];
-	if (use_deriv_conc) {
-	  int deriv_conc_i = model_i.derivative_concurrency();
-	  model_i.set_communicators(pl_iter, deriv_conc_i);
-	  if (deriv_conc_i > 1 && model_i.asynch_flag()) asynchEvalFlag = true;
-	}
-	else {
-	  model_i.set_communicators(pl_iter, max_eval_concurrency);
-	  if (model_i.asynch_flag()) asynchEvalFlag = true;
-	}
-	cap_i = model_i.evaluation_capacity();
-	if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
-      }
-      break;
-    }
-    case MODEL_DISCREPANCY: case AGGREGATED_MODELS: {
-    */
+    case AGGREGATED_MODELS: {
       size_t i, num_approx_models = unorderedModels.size(); int cap_i;
       asynchEvalFlag = false; evaluationCapacity = 1;
 
@@ -272,9 +227,9 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       cap_i = truthModel.evaluation_capacity();
       if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
 
-      //break;
-    //}
-    //}
+      break;
+    }
+    }
   }
 }
 
@@ -449,8 +404,8 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
       if (test_asv(asv_i)) {
 	Model& model_i = (i < num_unord_models) ? unorderedModels[i]
 	               : truthModel;
-	/*
 	component_parallel_mode(i); // TO DO: size_t instead of enum
+	/*
 	if (sameModelInstance)
 	  model_i.solution_level_index(model_level_index(i)); // TO DO
 	else
@@ -471,8 +426,8 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
 	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    /*
     component_parallel_mode(num_unord_models); // TO DO: size_t instead of enum
+    /*
     if (sameModelInstance)
       truthModel.solution_level_index(truth_level_index(i)); // TO DO
     else
@@ -536,8 +491,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       Model& model_i = (i < num_unord_models) ? unorderedModels[i]
 	             : truthModel;
       if (!model_i.asynch_flag() && test_asv(asv_i)) {
-	/*
 	component_parallel_mode(i); // TO DO: size_t instead of enum
+	/*
 	if (sameModelInstance)
 	  model_i.solution_level_index(model_level_index(i)); // TO DO
 	else
@@ -545,7 +500,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 	*/
 	set_i.request_vector(asv_i);
 	model_i.evaluate(set_i);
-	cachedRespMap[i][surrModelEvalCntr] = model_i.current_response().copy();
+	cachedRespMaps[i][surrModelEvalCntr]
+	  = model_i.current_response().copy();
       }
     }
     break;
@@ -579,12 +535,11 @@ const IntResponseMap& NonHierarchSurrModel::derived_synchronize()
 {
   surrResponseMap.clear();
 
-  if (sameModelInstance  || sameInterfaceInstance ||
-      truthIdMap.empty() || surrIdMap.empty()) { // 1 queue: blocking synch
-    IntResponseMap hf_resp_map_rekey, lf_resp_map_rekey;
-    derived_synchronize_sequential(hf_resp_map_rekey, lf_resp_map_rekey, true);
-    derived_synchronize_combine(hf_resp_map_rekey, lf_resp_map_rekey,
-                                surrResponseMap);
+  if (sameModelInstance || sameInterfaceInstance ||
+      count_id_maps(modelIdMap) <= 1) { // 1 queue: blocking synch
+    IntResponseMapArray model_resp_map_rekey(modelIdMap.size());
+    derived_synchronize_sequential(model_resp_map_rekey, true);
+    derived_synchronize_combine(model_resp_map_rekey, surrResponseMap);
   }
   else                               // competing queues: nonblocking synch
     derived_synchronize_competing();
@@ -603,54 +558,35 @@ const IntResponseMap& NonHierarchSurrModel::derived_synchronize_nowait()
 {
   surrResponseMap.clear();
 
-  IntResponseMap hf_resp_map_rekey, lf_resp_map_rekey;
-  derived_synchronize_sequential(hf_resp_map_rekey, lf_resp_map_rekey, false);
-  derived_synchronize_combine_nowait(hf_resp_map_rekey, lf_resp_map_rekey,
-                                     surrResponseMap);
+  IntResponseMapArray model_resp_map_rekey(modelIdMap.size());
+  derived_synchronize_sequential(model_resp_map_rekey, false);
+  derived_synchronize_combine_nowait(model_resp_map_rekey, surrResponseMap);
 
   return surrResponseMap;
 }
 
 
 void NonHierarchSurrModel::
-derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
-                               IntResponseMap& lf_resp_map_rekey, bool block)
+derived_synchronize_sequential(IntResponseMapArray& model_resp_map_rekey,
+			       bool block)
 {
-  // --------------------------
-  // synchronize HF model evals
-  // --------------------------
-  IntRespMCIter r_cit;
-  if (!truthIdMap.empty()) { // synchronize HF evals
-    component_parallel_mode(TRUTH_MODEL_MODE);
-    rekey_synch(truth_model(), block, truthIdMap, hf_resp_map_rekey);
+  size_t i, num_models = model_resp_map_rekey.size();
+  for (i=0; i<num_models; ++i) {
+    Model& model = (i < num_unord_models) ? unorderedModels[i] : truthModel;
+    IntIntMap& model_id_map = modelIdMap[i];
+    IntResponseMap& model_resp_map = model_resp_map_rekey[i];
+    if (!model_id_map.empty()) { // synchronize evals for i-th Model
+      component_parallel_mode(i); // TO DO
+      rekey_synch(model, block, model_id_map, model_resp_map);
+    }
+    // add cached evals from:
+    // (a) recovered asynch evals that could not be returned since other model
+    //     eval portions were still pending, or
+    // (b) synchronous model evals performed within evaluate_nowait()
+    IntResponseMap& cached_resp_map = cachedRespMaps[i];
+    model_resp_map.insert(cached_resp_map.begin(), cached_resp_map.end());
+    cached_resp_map.clear();
   }
-  // add cached truth evals from:
-  // (a) recovered HF asynch evals that could not be returned since LF
-  //     eval portions were still pending, or
-  // (b) synchronous HF evals performed within evaluate_nowait()
-  hf_resp_map_rekey.insert(cachedTruthRespMap.begin(),
-                           cachedTruthRespMap.end());
-  cachedTruthRespMap.clear();
-
-  // --------------------------
-  // synchronize LF model evals
-  // --------------------------
-  if (!surrIdMap.empty()) { // synchronize LF evals
-    component_parallel_mode(SURROGATE_MODEL_MODE);
-    // Interface::rawResponseMap should _not_ be corrected directly since
-    // rawResponseMap, beforeSynchCorePRPQueue, and data_pairs all share a
-    // responseRep -> modifying rawResponseMap affects data_pairs.
-    bool deep_copy = (responseMode == AUTO_CORRECTED_SURROGATE);
-    rekey_synch(surrogate_model(), block, surrIdMap, lf_resp_map_rekey,
-		deep_copy);
-  }
-  // add cached approx evals from:
-  // (a) recovered LF asynch evals that could not be returned since HF
-  //     eval portions were still pending, or
-  // (b) synchronous LF evals performed within evaluate_nowait()
-  lf_resp_map_rekey.insert(cachedApproxRespMap.begin(),
-                           cachedApproxRespMap.end());
-  cachedApproxRespMap.clear();
 }
 
 
@@ -659,7 +595,7 @@ void NonHierarchSurrModel::derived_synchronize_competing()
   // in this case, we don't want to starve either LF or HF scheduling by
   // blocking on one or the other --> leverage derived_synchronize_nowait()
   IntResponseMap aggregated_map; // accumulate surrResponseMap returns
-  while (!truthIdMap.empty() || !surrIdMap.empty()) {
+  while (test_id_map(modelIdMap)) {
     // partial_map is a reference to surrResponseMap, returned by _nowait()
     const IntResponseMap& partial_map = derived_synchronize_nowait();
     if (!partial_map.empty())
@@ -674,84 +610,38 @@ void NonHierarchSurrModel::derived_synchronize_competing()
 
 
 void NonHierarchSurrModel::
-derived_synchronize_combine(const IntResponseMap& hf_resp_map,
-                            IntResponseMap& lf_resp_map,
+derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
                             IntResponseMap& combined_resp_map)
 {
-  // ------------------------------
-  // perform any LF/HF aggregations
-  // ------------------------------
-  // {hf,lf}_resp_map may be partial sets (partial surrogateFnIndices
-  // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY,
-  // AGGREGATED_MODELS).
+  // -----------------------------------
+  // perform IntResponseMap aggregations
+  // -----------------------------------
 
   IntRespMCIter hf_cit = hf_resp_map.begin(), lf_cit = lf_resp_map.begin();
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   switch (responseMode) {
-  case MODEL_DISCREPANCY: {
-    DiscrepancyCorrection& delta_corr = deltaCorr[activeKey];
-    for (; hf_cit != hf_resp_map.end() && lf_cit != lf_resp_map.end();
-	 ++hf_cit, ++lf_cit) {
-      check_key(hf_cit->first, lf_cit->first);
-      delta_corr.compute(hf_cit->second, lf_cit->second,
-	combined_resp_map[hf_cit->first], quiet_flag);
-    }
-    break;
-  }
   case AGGREGATED_MODELS:
-    for (; hf_cit != hf_resp_map.end() && lf_cit != lf_resp_map.end();
-	 ++hf_cit, ++lf_cit) {
-      check_key(hf_cit->first, lf_cit->first);
-      aggregate_response(hf_cit->second, lf_cit->second,
-                         combined_resp_map[hf_cit->first]);
-    }
-    break;
-  default: { // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
-    if (lf_resp_map.empty()) {
-      combined_resp_map = hf_resp_map;  // can't swap w/ const
-      return;
-    }
-    if (responseMode == AUTO_CORRECTED_SURROGATE)
-      compute_apply_delta(lf_resp_map);
-    if (hf_resp_map.empty()) {
-      std::swap(combined_resp_map, lf_resp_map);
-      return;
-    }
-    // process combinations of HF and LF completions
-    Response empty_resp;
-    while (hf_cit != hf_resp_map.end() || lf_cit != lf_resp_map.end()) {
-      // these have been rekeyed already to top-level surrModelEvalCntr:
-      int hf_eval_id = (hf_cit == hf_resp_map.end()) ?
-                       INT_MAX : hf_cit->first;
-      int lf_eval_id = (lf_cit == lf_resp_map.end()) ?
-                       INT_MAX : lf_cit->first;
+    //Response2DArray resp_array(num_models);
+    // accumulate 2D array, then loop over one dim with aggregate()
 
-      if (hf_eval_id < lf_eval_id) { // only HF available
-        response_combine(hf_cit->second, empty_resp,
-                         combined_resp_map[hf_eval_id]);
-        ++hf_cit;
-      }
-      else if (lf_eval_id < hf_eval_id) { // only LF available
-        response_combine(empty_resp, lf_cit->second,
-                         combined_resp_map[lf_eval_id]);
-        ++lf_cit;
-      }
-      else { // both LF and HF available
-        response_combine(hf_cit->second, lf_cit->second,
-                         combined_resp_map[hf_eval_id]);
-        ++hf_cit;
-        ++lf_cit;
-      }
+    // instead of aggregating a 1D array, loop over MapArray and insert()
+    for (i=0; i<num_models; ++i) {
+      const IntResponseMap& resp_map_i = model_resp_maps[i];
+      for (IRMapIter cit=resp_map_i.begin(); cit!=resp_map_i.end(); ++cit)
+	insert_response(cit->second, i,
+			combined_resp_map[cit->first]);	// no rekey in this case
     }
     break;
-  }
+  default: // BYPASS_SURROGATE mode
+    combined_resp_map = model_resp_maps[0]; // can't swap w/ const
+    //std::swap(combined_resp_map, model_resp_maps[0]);
+    break;
   }
 }
 
 
 void NonHierarchSurrModel::
-derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
-                                   IntResponseMap& lf_resp_map,
+derived_synchronize_combine_nowait(const IntResponseMapArray& model_resp_maps,
                                    IntResponseMap& combined_resp_map)
 {
   // ------------------------------
@@ -763,12 +653,6 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   // Early return options avoid some overhead:
   if (lf_resp_map.empty() && surrIdMap.empty()) {// none completed, none pending
     combined_resp_map = hf_resp_map;  // can't swap w/ const
-    return;
-  }
-  if (responseMode == AUTO_CORRECTED_SURROGATE)
-    compute_apply_delta(lf_resp_map);
-  if (hf_resp_map.empty() && truthIdMap.empty()) {//none completed, none pending
-    std::swap(combined_resp_map, lf_resp_map);
     return;
   }
 
@@ -847,122 +731,6 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
       ++hf_cit;
       ++lf_it;
     }
-  }
-}
-
-
-void NonHierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
-{
-  // Incoming we have a completed LF evaluation that may be used to compute a
-  // correction and may be the target of application of a correction.
-
-  // First, test if a correction is previously available or can now be computed
-  DiscrepancyCorrection& delta_corr = deltaCorr[activeKey];
-  bool corr_comp = delta_corr.computed(), cache_for_pending_corr = false,
-      quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  if (!corr_comp) {
-    // compute a correction corresponding to the first entry in rawVarsMap
-    IntVarsMCIter v_corr_cit = rawVarsMap.begin();
-    if (v_corr_cit != rawVarsMap.end()) {
-      // if corresponding LF response is complete, compute the delta
-      IntRespMCIter lf_corr_cit = lf_resp_map.find(v_corr_cit->first);
-      if (lf_corr_cit != lf_resp_map.end()) {
-        delta_corr.compute(v_corr_cit->second, truthResponseRef[truthModelKey],
-			   lf_corr_cit->second, quiet_flag);
-        corr_comp = true;
-      }
-    }
-  }
-
-  // Next, apply the correction.  We cache an uncorrected eval when the
-  // components necessary for correction are still pending (returning
-  // corrected evals with the first available LF response would lead to
-  // nondeterministic results).
-  IntVarsMIter v_it; IntRespMIter lf_it; int lf_eval_id;
-  for (lf_it=lf_resp_map.begin(); lf_it!=lf_resp_map.end(); ++lf_it) {
-    lf_eval_id = lf_it->first;
-    v_it = rawVarsMap.find(lf_eval_id);
-    if (v_it != rawVarsMap.end()) {
-      if (corr_comp) { // apply the correction to the LF response
-	recursive_apply(v_it->second, lf_it->second);
-        rawVarsMap.erase(v_it);
-      }
-      else // no new corrections can be applied -> cache uncorrected
-        cachedApproxRespMap.insert(*lf_it);
-    }
-    // else correction already applied
-  }
-  // remove cached responses from lf_resp_map
-  if (!corr_comp)
-    for (lf_it =cachedApproxRespMap.begin();
-         lf_it!=cachedApproxRespMap.end(); ++lf_it)
-      lf_resp_map.erase(lf_it->first);
-}
-
-
-void NonHierarchSurrModel::
-single_apply(const Variables& vars, Response& resp,
-	     const UShortArray& paired_key)
-{
-  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  bool apply_corr = true;
-  DiscrepancyCorrection& delta_corr = deltaCorr[paired_key];
-  if (!delta_corr.computed()) {
-    UShortArray truth_key;
-    Pecos::DiscrepancyCalculator::extract_key(paired_key, truth_key, 0);
-    std::map<UShortArray, Response>::iterator it
-      = truthResponseRef.find(truth_key);
-    if (it == truthResponseRef.end()) apply_corr = false; // not found
-    else delta_corr.compute(vars, it->second, resp, quiet_flag);
-  }
-  if (apply_corr)
-    delta_corr.apply(vars, resp, quiet_flag);
-}
-
-
-void NonHierarchSurrModel::
-recursive_apply(const Variables& vars, Response& resp)
-{
-  switch (correctionMode) {
-  case SINGLE_CORRECTION: case DEFAULT_CORRECTION:
-    single_apply(vars, resp, activeKey);
-    break;
-  case FULL_MODEL_FORM_CORRECTION: {
-    // assume a consistent level index from surrModelKey
-    size_t i, num_approx_models = orderedModels.size();  UShortArray paired_key;
-    unsigned short lf_form = surrModelKey[1];
-    Pecos::DiscrepancyCalculator::
-      aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
-    for (i = lf_form; i < num_approx_models - 1; ++i) {
-      paired_key[1] = i+1;  // update HF model form
-      paired_key[3] = i;    // update LF model form
-      single_apply(vars, resp, paired_key);
-    }
-    break;
-  }
-  case FULL_SOLUTION_LEVEL_CORRECTION: {
-    // assume a consistent model index from surrModelKey
-    unsigned short lf_lev = surrModelKey[2];
-    if (lf_lev == USHRT_MAX) {
-      Cerr << "Error: FULL_SOLUTION_LEVEL_CORRECTION requires solution level "
-	   << "within model key." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-    size_t i, num_levels = surrogate_model().solution_levels();
-    UShortArray paired_key;
-    Pecos::DiscrepancyCalculator::
-      aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
-    for (i = lf_lev; i < num_levels - 1; ++i) {
-      paired_key[2] = i+1;  // update   fine solution level
-      paired_key[4] = i;    // update coarse solution level
-      single_apply(vars, resp, paired_key);
-    }
-    break;
-  }
-  //case SEQUENCE_CORRECTION: // apply sequence of discrepancy corrections
-  //  for (size_t i = 0; i < corrSequence.size(); ++i)
-  //    single_apply(vars, resp, corrSequence[i]);
-  //  break;
   }
 }
 

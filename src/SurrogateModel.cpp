@@ -599,7 +599,7 @@ aggregate_response(const Response& hf_resp, const Response& lf_resp,
 
   const ShortArray& lf_asv =  lf_resp.active_set_request_vector();
   const ShortArray& hf_asv =  hf_resp.active_set_request_vector();
-  ShortArray       agg_asv = agg_resp.active_set_request_vector();
+  ShortArray&      agg_asv = agg_resp.active_set_request_vector();
   size_t i, offset_i, num_lf_fns = lf_asv.size(), num_hf_fns = hf_asv.size();
   short asv_i;
 
@@ -623,8 +623,54 @@ aggregate_response(const Response& hf_resp, const Response& lf_resp,
     if (asv_i & 4)
       agg_resp.function_hessian(lf_resp.function_hessian(i), offset_i);
   }
+}
 
-  agg_resp.active_set_request_vector(agg_asv);
+
+void SurrogateModel::
+aggregate_response(const ResponseArray& resp_array, Response& agg_response)
+{
+  if (agg_resp.is_null())
+    agg_resp = currentResponse.copy(); // resize_response() -> aggregate size
+
+  size_t i, j, num_fns, cntr = 0;  short asv_j;
+  ShortArray& agg_asv = agg_resp.active_set_request_vector();
+  // append in order provided (any order customizations need to occur upstream
+  // in the definition of resp_array)
+  for (i=0; i<num_models; ++i) {
+    const Response& resp_i = resp_array[i];
+    const ShortArray&  asv = resp_i.active_set_request_vector();
+    num_fns = asv.size();
+    for (j=0; j<num_fns; ++j, ++cntr) {
+      agg_asv[cntr] = asv_j = asv[j];
+      if (asv_j & 1) agg_resp.function_value(resp_i.function_value(j), cntr);
+      if (asv_j & 2)
+	agg_resp.function_gradient(resp_i.function_gradient_view(j), cntr);
+      if (asv_j & 4)
+	agg_resp.function_hessian(resp_i.function_hessian(j), cntr);
+    }
+  }
+}
+
+
+void SurrogateModel::
+insert_response(const Response& response, size_t model,	Response& agg_response)
+{
+  if (agg_resp.is_null())
+    agg_resp = currentResponse.copy(); // resize_response() -> aggregate size
+
+  ShortArray& agg_asv = agg_resp.active_set_request_vector();
+  // append in order provided (any order customizations need to occur upstream
+  // in the definition of resp_array)
+  const ShortArray& asv = response.active_set_request_vector();
+  size_t fn, num_fns = asv.size(), cntr = model * num_fns;  short asv_fn;
+  for (fn=0; fn<num_fns; ++fn, ++cntr) {
+    agg_asv[cntr] = asv_fn = asv[fn];
+    if (asv_fn & 1) agg_resp.function_value(resp_i.function_value(fn), cntr);
+    if (asv_fn & 2)
+      agg_resp.function_gradient(resp_i.function_gradient_view(fn), cntr);
+    if (asv_fn & 4)
+      agg_resp.function_hessian(resp_i.function_hessian(fn), cntr);
+  }
 }
 
 } // namespace Dakota

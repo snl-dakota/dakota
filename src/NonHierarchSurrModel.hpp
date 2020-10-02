@@ -237,37 +237,13 @@ private:
   /// resize currentResponse based on responseMode
   void resize_response(bool use_virtual_counts = true);
 
-  /// helper function used in the AUTO_CORRECTED_SURROGATE responseMode
-  /// for computing a correction and applying it to lf_resp_map
-  void compute_apply_delta(IntResponseMap& lf_resp_map);
-
-  /// helper function for applying a single response correction corresponding
-  /// to deltaCorr[paired_key]
-  void single_apply(const Variables& vars, Response& resp,
-		    const UShortArray& paired_key);
-  /// helper function for applying a correction across a sequence of
-  /// model forms or discretization levels
-  void recursive_apply(const Variables& vars, Response& resp);
-
   /// stop the servers for the orderedModels instance identified by
   /// the passed index
-  void stop_model(size_t ordered_model_index);
+  void stop_model(size_t model_index);
 
   //
   //- Heading: Data members
   //
-
-  // manages construction and application of correction functions that
-  // are applied to a surrogate model (DataFitSurr or NonHierarchSurr) in
-  // order to reproduce high fidelity data.
-  //std::map<UShortArray, DiscrepancyCorrection> deltaCorr;
-  // order of correction: 0, 1, or 2
-  //short corrOrder;
-
-  //unsigned short correctionMode;
-
-  // sequence of discrepancy corrections to apply in SEQUENCE_CORRECTION mode
-  //std::vector<UShortArray> corrSequence;
 
   /// the single truth reference model
   Model truthModel;
@@ -275,24 +251,10 @@ private:
   ModelArray unorderedModels;
 
   //////////////////////////////////////////////////////////////////////////////
-  // Potential mechanisms for identifying active models for a set of samples
-  ///
-  /// this is the simplest design: each model is on or off for a sample set
-  BitArray modelSubset;
-  /// This may limit concurrency if we have to break a composite sample set
-  ///   into pieces to support simple on/off
-  /// Seems more desirable to allow on for sample set portions, otherwise off
-  /// Heavyweight: a PRP | IntResponseMap mechanism that spans a response
-  ///   aggregation --> each queued job defines an ASV over the aggregate fns
-  ///   --> Rely on NonDACVSampling to define aggregate ASV requests that are
-  ///       unrolled by NonHierarchSurrModel ???
-  ///   --> use subsetter fn to extract set of samples to assign to each model
-  //////////////////////////////////////////////////////////////////////////////
   /// W.r.t. active keys, also need to manage active resolutions for each
   /// model instance.  As a first cut, just need to carry them along
   /// (as tunable hyper-parameters rather than dimensions of the hierarchy).
   //////////////////////////////////////////////////////////////////////////////
-
 
   /// flag indicating that the {low,high}FidelityKey correspond to the
   /// same model instance, requiring modifications to updating and evaluation
@@ -306,13 +268,14 @@ private:
   /// store {LF,HF} model key that is active in component_parallel_mode()
   UShortArray componentParallelKey;
 
-  /// map of reference truth (high fidelity) responses computed in
-  /// build_approximation() and used for calculating corrections
-  std::map<UShortArray, Response> truthResponseRef;
+  // map of reference truth (high fidelity) responses computed in
+  // build_approximation() and used for calculating corrections
+  //std::map<UShortArray, Response> truthResponseRef;
+
   /// map of truth (high-fidelity) responses retrieved in
   /// derived_synchronize_nowait() that could not be returned since
   /// corresponding low-fidelity response portions were still pending
-  IntResponseMap cachedTruthRespMap;
+  IntResponseMapArray cachedRespMaps;
 };
 
 
@@ -494,6 +457,26 @@ bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
 }
 
 
+bool NonHierarchSurrModel::test_id_maps(const IntIntMapArray& id_maps)
+{
+  size_t i, num_map = id_maps.size();
+  for (i=0; i<num_map; ++i)
+    if (!id_maps[i].empty())
+      return true;
+  return false;
+}
+
+
+size_t NonHierarchSurrModel::count_id_maps(const IntIntMapArray& id_maps)
+{
+  size_t i, num_map = id_maps.size(), cntr = 0;
+  for (i=0; i<num_map; ++i)
+    if (!id_maps[i].empty())
+      ++cntr;
+  return cntr;
+}
+
+
 /*
 inline const unsigned short NonHierarchSurrModel::correction_mode() const
 { return correctionMode; }
@@ -522,38 +505,32 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 
 inline void NonHierarchSurrModel::resize_from_subordinate_model(size_t depth)
 {
-  /*
-  bool lf_resize = false, hf_resize = false;
+  bool approx_resize = false, truth_resize = false;
   switch (responseMode) {
-  case AGGREGATED_MODELS:     case MODEL_DISCREPANCY:
-    lf_resize = hf_resize = true; break;
-  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    lf_resize = true;             break;
-  case BYPASS_SURROGATE:      case NO_SURROGATE:
-    hf_resize = true;             break;
+  case AGGREGATED_MODELS:  approx_resize = truth_resize = true;  break;
+  case BYPASS_SURROGATE:                   truth_resize = true;  break;
   }
-  */
 
   // bottom-up data flow, so recurse first
-  //if (lf_resize) {
-  size_t i, num_approx_models = unorderedModels.size();
-  for (i=0; i<num_approx_models; ++i) {
-    Model& model_i = unorderedModels[i];
-    if (depth == std::numeric_limits<size_t>::max())
-      model_i.resize_from_subordinate_model(depth);//retain special value (inf)
-    else if (depth)
-      model_i.resize_from_subordinate_model(depth - 1);
+  if (approx_resize) {
+    size_t i, num_approx_models = unorderedModels.size();
+    for (i=0; i<num_approx_models; ++i) {
+      Model& model_i = unorderedModels[i];
+      if (depth == std::numeric_limits<size_t>::max())
+	model_i.resize_from_subordinate_model(depth);// retain special val (inf)
+      else if (depth)
+	model_i.resize_from_subordinate_model(depth - 1);
+    }
   }
-  //}
-  //if (hf_resize) {
-  if (depth == std::numeric_limits<size_t>::max())
-    truthModel.resize_from_subordinate_model(depth);// retain special value
-  else if (depth)
-    truthModel.resize_from_subordinate_model(depth - 1);
-  //}
-
-  //if (lf_resize || hf_resize)
-  resize_response();
+  if (truth_resize) {
+    if (depth == std::numeric_limits<size_t>::max())
+      truthModel.resize_from_subordinate_model(depth);// retain special value
+    else if (depth)
+      truthModel.resize_from_subordinate_model(depth - 1);
+  }
+  // now resize this Models' response
+  if (approx_resize || truth_resize)
+    resize_response();
 }
 
 

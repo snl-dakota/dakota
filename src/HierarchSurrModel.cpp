@@ -504,13 +504,13 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   ++surrModelEvalCntr;
 
   // define LF/HF evaluation requirements
-  Short2DArray indiv_asv;
-  //bool hi_fi_eval, lo_fi_eval, mixed_eval;
-  //Response lo_fi_response, hi_fi_response; // don't use truthResponseRef
+  ShortArray hi_fi_asv, lo_fi_asv;
+  bool hi_fi_eval, lo_fi_eval, mixed_eval;
+  Response lo_fi_response, hi_fi_response; // don't use truthResponseRef
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
   case AGGREGATED_MODELS:
-    asv_split(set.request_vector(), indiv_asv, false);
+    asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
     hi_fi_eval = !hi_fi_asv.empty(); lo_fi_eval = !lo_fi_asv.empty();
     mixed_eval = (hi_fi_eval && lo_fi_eval);            break;
   case BYPASS_SURROGATE:
@@ -838,7 +838,6 @@ derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
   // --------------------------
   // synchronize HF model evals
   // --------------------------
-  IntRespMCIter r_cit;
   if (!truthIdMap.empty()) { // synchronize HF evals
     component_parallel_mode(TRUTH_MODEL_MODE);
     rekey_synch(truth_model(), block, truthIdMap, hf_resp_map_rekey);
