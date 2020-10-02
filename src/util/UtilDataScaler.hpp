@@ -135,6 +135,8 @@ private:
 template<class Archive>
 void DataScaler::serialize(Archive& archive, const unsigned int version)
 {
+  silence_unused_args(version);
+
   archive & hasScaling;
   archive & scalerFeaturesOffsets;
   archive & scalerFeaturesScaleFactors;

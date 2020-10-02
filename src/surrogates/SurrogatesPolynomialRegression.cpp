@@ -241,3 +241,5 @@ void PolynomialRegression::set_polynomial_coeffs(const MatrixXd &coeffs) { polyn
 
 } // namespace surrogates
 } // namespace dakota
+
+BOOST_CLASS_EXPORT_IMPLEMENT(dakota::surrogates::PolynomialRegression)

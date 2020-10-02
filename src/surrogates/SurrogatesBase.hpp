@@ -14,6 +14,8 @@
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -147,15 +149,17 @@ public:
   /// DataScaler class for a Surrogate's build samples.
   util::DataScaler dataScaler;
 
-  /// serialize Surrogate (derived type only) to file
-  template<typename DerivedSurr>
-  static void save(const DerivedSurr& surr_out, const std::string& outfile,
+  /// serialize Surrogate to file (typically through
+  /// shared_ptr<Surrogate>, but Derived& or Derived* okay too)
+  template<typename SurrHandle>
+  static void save(const SurrHandle& surr_out, const std::string& outfile,
 		   const bool binary);
 
-  /// serialize Surrogate (derived type only) from file
-  template<typename DerivedSurr>
+  /// serialize Surrogate from file (typically through
+  /// shared_ptr<Surrogate>, but Derived& or Derived* okay too)
+  template<typename SurrHandle>
   static void load(const std::string& infile, const bool binary,
-		   DerivedSurr& surr_in);
+		   SurrHandle& surr_in);
 
   /// Evalute metrics at specified points (within surrogates)
   VectorXd evaluate_metrics(const StringArray &mnames,
@@ -255,6 +259,7 @@ void Surrogate::load(const std::string& infile, const bool binary,
 template<class Archive>
 void Surrogate::serialize(Archive& archive, const unsigned int version)
 {
+  silence_unused_args(version);
   // For future extension such as archiving final config options (will
   // require writing a serializer that maps to ParameterList
   // serialization)
@@ -268,6 +273,7 @@ void Surrogate::serialize(Archive& archive, const unsigned int version)
 } // namespace dakota
 
 
+BOOST_CLASS_EXPORT_KEY(dakota::surrogates::Surrogate)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(dakota::surrogates::Surrogate)
 
 #endif // include guard

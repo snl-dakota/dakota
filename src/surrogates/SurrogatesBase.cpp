@@ -137,3 +137,5 @@ VectorXd Surrogate::cross_validate(const MatrixXd &samples,
 
 } // namespace surrogates
 } // namespace dakota
+
+BOOST_CLASS_EXPORT_IMPLEMENT(dakota::surrogates::Surrogate)

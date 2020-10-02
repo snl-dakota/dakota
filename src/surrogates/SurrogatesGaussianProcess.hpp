@@ -398,6 +398,8 @@ private:
 template<class Archive>
 void GaussianProcess::serialize(Archive& archive, const unsigned int version)
 {
+  silence_unused_args(version);
+
   archive & boost::serialization::base_object<Surrogate>(*this);
 
   // BMA: Initial cut is aggressive, serializing most members
@@ -427,5 +429,7 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version)
 }  // namespace surrogates
 }  // namespace dakota
 
+
+BOOST_CLASS_EXPORT_KEY(dakota::surrogates::GaussianProcess)
 
 #endif  // include guard

@@ -760,3 +760,4 @@ void GaussianProcess::setup_default_optimization_params(
 }  // namespace surrogates
 }  // namespace dakota
 
+BOOST_CLASS_EXPORT_IMPLEMENT(dakota::surrogates::GaussianProcess)

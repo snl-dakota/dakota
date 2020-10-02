@@ -201,6 +201,8 @@ private:
 template<class Archive>
 void PolynomialRegression::serialize(Archive& archive, const unsigned int version)
 {
+  silence_unused_args(version);
+
   archive & boost::serialization::base_object<Surrogate>(*this);
   archive & numTerms;
   archive & basisIndices;
@@ -211,5 +213,7 @@ void PolynomialRegression::serialize(Archive& archive, const unsigned int versio
 
 } // namespace surrogates
 } // namespace dakota
+
+BOOST_CLASS_EXPORT_KEY(dakota::surrogates::PolynomialRegression)
 
 #endif

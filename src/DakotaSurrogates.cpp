@@ -266,12 +266,12 @@ void SurrogatesBaseApprox::export_model(const String& fn_label,
   // Saving to text archive
   if(formats & TEXT_ARCHIVE) {
     String filename = without_extension + ".txt";
-    derived_export_model(filename, false);
+    dakota::surrogates::Surrogate::save(model, filename, false);
   }
   // Saving to binary archive
   if(formats & BINARY_ARCHIVE) {
     String filename = without_extension + ".bin";
-    derived_export_model(filename, true);
+    dakota::surrogates::Surrogate::save(model, filename, false);
   }
 }
 
