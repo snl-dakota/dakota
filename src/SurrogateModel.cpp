@@ -653,7 +653,8 @@ aggregate_response(const ResponseArray& resp_array, Response& agg_response)
 
 
 void SurrogateModel::
-insert_response(const Response& response, size_t model,	Response& agg_response)
+insert_response(const Response& response, size_t position,
+		Response& agg_response)
 {
   if (agg_resp.is_null())
     agg_resp = currentResponse.copy(); // resize_response() -> aggregate size
@@ -662,7 +663,7 @@ insert_response(const Response& response, size_t model,	Response& agg_response)
   // append in order provided (any order customizations need to occur upstream
   // in the definition of resp_array)
   const ShortArray& asv = response.active_set_request_vector();
-  size_t fn, num_fns = asv.size(), cntr = model * num_fns;  short asv_fn;
+  size_t fn, num_fns = asv.size(), cntr = position * num_fns;  short asv_fn;
   for (fn=0; fn<num_fns; ++fn, ++cntr) {
     agg_asv[cntr] = asv_fn = asv[fn];
     if (asv_fn & 1) agg_resp.function_value(resp_i.function_value(fn), cntr);

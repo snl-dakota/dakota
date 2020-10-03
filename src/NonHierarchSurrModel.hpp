@@ -95,14 +95,14 @@ protected:
   const IntResponseMap& derived_synchronize();
   const IntResponseMap& derived_synchronize_nowait();
 
-  /// return the active low fidelity model
-  Model& surrogate_model();
-  /// return the active low fidelity model
-  const Model& surrogate_model() const;
+  // return the active low fidelity model
+  //Model& surrogate_model();
+  // return the active low fidelity model
+  //const Model& surrogate_model() const;
 
-  /// return the active high fidelity model
+  /// return the high fidelity model
   Model& truth_model();
-  /// return the active high fidelity model
+  /// return the high fidelity model
   const Model& truth_model() const;
 
   /// define the active model key and associated {truth,surr}ModelKey pairing
@@ -218,21 +218,14 @@ private:
   /// called from derived_synchronize() and derived_synchronize_nowait() to
   /// extract and rekey response maps using blocking or nonblocking
   /// synchronization on the LF and HF models
-  void derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
-                                      IntResponseMap& lf_resp_map_rekey,
-                                      bool block);
+  void derived_synchronize_sequential(
+    IntResponseMapArray& model_resp_maps_rekey, bool block);
   /// called from derived_synchronize() for case of distinct models/interfaces
   /// with competing LF/HF job queues
   void derived_synchronize_competing();
   /// combine the HF and LF response maps into a combined response map
-  void derived_synchronize_combine(const IntResponseMap& hf_resp_map,
-                                   IntResponseMap& lf_resp_map,
-                                   IntResponseMap& combined_resp_map);
-  /// combine the available components from HF and LF response maps
-  /// into a combined response map
-  void derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
-                                          IntResponseMap& lf_resp_map,
-                                          IntResponseMap& combined_resp_map);
+  void derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
+    IntResponseMap& combined_resp_map, bool block);
 
   /// resize currentResponse based on responseMode
   void resize_response(bool use_virtual_counts = true);

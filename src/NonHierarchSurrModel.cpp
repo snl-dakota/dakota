@@ -539,7 +539,7 @@ const IntResponseMap& NonHierarchSurrModel::derived_synchronize()
       count_id_maps(modelIdMap) <= 1) { // 1 queue: blocking synch
     IntResponseMapArray model_resp_map_rekey(modelIdMap.size());
     derived_synchronize_sequential(model_resp_map_rekey, true);
-    derived_synchronize_combine(model_resp_map_rekey, surrResponseMap);
+    derived_synchronize_combine(model_resp_map_rekey, surrResponseMap, true);
   }
   else                               // competing queues: nonblocking synch
     derived_synchronize_competing();
@@ -560,21 +560,21 @@ const IntResponseMap& NonHierarchSurrModel::derived_synchronize_nowait()
 
   IntResponseMapArray model_resp_map_rekey(modelIdMap.size());
   derived_synchronize_sequential(model_resp_map_rekey, false);
-  derived_synchronize_combine_nowait(model_resp_map_rekey, surrResponseMap);
+  derived_synchronize_combine(model_resp_map_rekey, surrResponseMap, false);
 
   return surrResponseMap;
 }
 
 
 void NonHierarchSurrModel::
-derived_synchronize_sequential(IntResponseMapArray& model_resp_map_rekey,
+derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
 			       bool block)
 {
-  size_t i, num_models = model_resp_map_rekey.size();
+  size_t i, num_models = model_resp_maps_rekey.size();
   for (i=0; i<num_models; ++i) {
     Model& model = (i < num_unord_models) ? unorderedModels[i] : truthModel;
     IntIntMap& model_id_map = modelIdMap[i];
-    IntResponseMap& model_resp_map = model_resp_map_rekey[i];
+    IntResponseMap& model_resp_map = model_resp_maps_rekey[i];
     if (!model_id_map.empty()) { // synchronize evals for i-th Model
       component_parallel_mode(i); // TO DO
       rekey_synch(model, block, model_id_map, model_resp_map);
@@ -585,7 +585,7 @@ derived_synchronize_sequential(IntResponseMapArray& model_resp_map_rekey,
     // (b) synchronous model evals performed within evaluate_nowait()
     IntResponseMap& cached_resp_map = cachedRespMaps[i];
     model_resp_map.insert(cached_resp_map.begin(), cached_resp_map.end());
-    cached_resp_map.clear();
+    cached_resp_map.clear(); // clear map but leave outer array
   }
 }
 
@@ -611,156 +611,95 @@ void NonHierarchSurrModel::derived_synchronize_competing()
 
 void NonHierarchSurrModel::
 derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
-                            IntResponseMap& combined_resp_map)
+                            IntResponseMap& combined_resp_map, bool block)
 {
   // -----------------------------------
   // perform IntResponseMap aggregations
   // -----------------------------------
 
-  IntRespMCIter hf_cit = hf_resp_map.begin(), lf_cit = lf_resp_map.begin();
-  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   switch (responseMode) {
-  case AGGREGATED_MODELS:
-    //Response2DArray resp_array(num_models);
-    // accumulate 2D array, then loop over one dim with aggregate()
+  case AGGREGATED_MODELS: {
+    // loop over model_resp_maps and insert() into offset position.  Notes:
+    // > cachedRespMaps have been inserted into model_resp_maps
+    // > rekey_synch() has migrated from indiv model ids to surrModelEvalCntr
 
-    // instead of aggregating a 1D array, loop over MapArray and insert()
-    for (i=0; i<num_models; ++i) {
-      const IntResponseMap& resp_map_i = model_resp_maps[i];
-      for (IRMapIter cit=resp_map_i.begin(); cit!=resp_map_i.end(); ++cit)
-	insert_response(cit->second, i,
-			combined_resp_map[cit->first]);	// no rekey in this case
+    size_t i, num_models = model_resp_maps.size();  IntRespMCIter r_cit;
+    if (block) { // all model evaluation contributions are available
+      for (i=0; i<num_models; ++i) {
+	const IntResponseMap& resp_map = model_resp_maps[i];
+	for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
+	  insert_response(cit->second, i,
+			  combined_resp_map[cit->first]); // already rekeyed
+      }
+    }
+    else { // manage partial results across set of models
+
+      // assemble set of aggregate ids which still have pending contributions
+      // (only pending jobs remain in modelIdMap after nonblocking synch)
+      IntSet pending_ids;  IntIntMCIter id_it;
+      for (i=0; i<num_models; ++i) {
+	const IntIntMap& id_map_i = modelIdMap[i];
+	for (id_it=id_map_i.begin(); id_it!=id_map_i.end(); ++id_it)
+	  pending_ids.insert(id_it->second); // duplicates ignored
+      }
+
+      // process completed job sets or reinsert partial results into cache
+      // Approach 1: repeated pending id lookups on innermost loop
+      //for (i=0; i<num_models; ++i) {
+      //  const IntResponseMap&        resp_map = model_resp_maps[i];
+      //  const IntResponseMap& cached_resp_map =  cachedRespMaps[i];
+      //  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
+      //    eval_id = r_cit->first; // already rekeyed to NonHier response id
+      //    // test for completion of each aggregate key
+      //    if (pending_ids.find(eval_id) == pending_ids.end()) // no pending
+      //      insert_response(r_cit->second, i, combined_resp_map[eval_id]);
+      //    else // return to i-th model cache
+      //      cached_map_i[eval_id] = r_cit->second;
+      //  }
+      //}
+      // Approach 2: one pending id traversal for each resp map traversal
+      int pending_id;  ISIter p_it;
+      for (i=0; i<num_models; ++i) {
+	const IntResponseMap&        resp_map = model_resp_maps[i];
+	const IntResponseMap& cached_resp_map =  cachedRespMaps[i];
+	p_it = pending_ids.begin();
+	pending_id = (p_it == pending_ids.end()) ? INT_MAX : *p_it;
+	for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
+	  eval_id = r_cit->first; // already rekeyed to NonHier response id
+	  while (eval_id > pending_id) {
+	    ++p_it;
+	    pending_id = (p_it == pending_ids.end()) ? INT_MAX : *p_it;
+	  }
+	  if (eval_id < pending_id)
+	    insert_response(r_cit->second, i, combined_resp_map[eval_id]);
+	  else // eval_id has pending contributions; return to i-th model cache
+	    cached_map_i[eval_id] = r_cit->second;
+	}
+      }
+      // Approach 3: use array of r_cit's to advance each resp map in
+      // coordination with single pending id advancement (overkill)
     }
     break;
-  default: // BYPASS_SURROGATE mode
-    combined_resp_map = model_resp_maps[0]; // can't swap w/ const
-    //std::swap(combined_resp_map, model_resp_maps[0]);
+  }
+  case BYPASS_SURROGATE:
+    combined_resp_map = model_resp_maps[0]; // one truth model
+    //std::swap(combined_resp_map, model_resp_maps[0]); // can't swap w/ const
     break;
-  }
-}
-
-
-void NonHierarchSurrModel::
-derived_synchronize_combine_nowait(const IntResponseMapArray& model_resp_maps,
-                                   IntResponseMap& combined_resp_map)
-{
-  // ------------------------------
-  // perform any LF/HF aggregations
-  // ------------------------------
-  // {hf,lf}_resp_map may be partial sets (partial surrogateFnIndices
-  // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY).
-
-  // Early return options avoid some overhead:
-  if (lf_resp_map.empty() && surrIdMap.empty()) {// none completed, none pending
-    combined_resp_map = hf_resp_map;  // can't swap w/ const
-    return;
-  }
-
-  // invert remaining entries (pending jobs) in truthIdMap and surrIdMap
-  IntIntMap remain_truth_ids, remain_surr_ids;
-  IntIntMCIter id_it;
-  for (id_it=truthIdMap.begin(); id_it!=truthIdMap.end(); ++id_it)
-    remain_truth_ids[id_it->second] = id_it->first;
-  for (id_it=surrIdMap.begin();  id_it!=surrIdMap.end();  ++id_it)
-    remain_surr_ids[id_it->second]  = id_it->first;
-
-  // process any combination of HF and LF completions
-  IntRespMCIter hf_cit = hf_resp_map.begin();
-  IntRespMIter  lf_it  = lf_resp_map.begin();
-  Response empty_resp;
-  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  std::map<UShortArray, DiscrepancyCorrection>::iterator dc_it;
-  if (responseMode == MODEL_DISCREPANCY)
-    dc_it = deltaCorr.find(activeKey);
-  while (hf_cit != hf_resp_map.end() || lf_it != lf_resp_map.end()) {
-    // these have been rekeyed already to top-level surrModelEvalCntr:
-    int hf_eval_id = (hf_cit == hf_resp_map.end()) ? INT_MAX : hf_cit->first;
-    int lf_eval_id = (lf_it  == lf_resp_map.end()) ? INT_MAX : lf_it->first;
-    // process LF/HF results or cache them for next pass
-    if (hf_eval_id < lf_eval_id) { // only HF available
-      switch (responseMode) {
-      case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-        // LF contribution is pending -> cache HF response
-        cachedTruthRespMap[hf_eval_id] = hf_cit->second;
-        break;
-      default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
-        if (remain_surr_ids.find(hf_eval_id) != remain_surr_ids.end())
-          // LF contribution is pending -> cache HF response
-          cachedTruthRespMap[hf_eval_id] = hf_cit->second;
-        else // no LF component is pending -> HF contribution is sufficient
-          response_combine(hf_cit->second, empty_resp,
-                           surrResponseMap[hf_eval_id]);
-        break;
-      }
-      ++hf_cit;
-    }
-    else if (lf_eval_id < hf_eval_id) { // only LF available
-      switch (responseMode) {
-      case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-        // HF contribution is pending -> cache LF response
-        cachedApproxRespMap[lf_eval_id] = lf_it->second;
-        break;
-      default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
-        if (remain_truth_ids.find(lf_eval_id) != remain_truth_ids.end())
-          // HF contribution is pending -> cache LF response
-          cachedApproxRespMap[lf_eval_id] = lf_it->second;
-        else // no HF component is pending -> LF contribution is sufficient
-          response_combine(empty_resp, lf_it->second,
-                           surrResponseMap[lf_eval_id]);
-        break;
-      }
-      ++lf_it;
-    }
-    else { // both LF and HF available
-      bool cache_for_pending_corr = false;
-      switch (responseMode) {
-      case MODEL_DISCREPANCY: {
-        dc_it->second.compute(hf_cit->second, lf_it->second,
-			      surrResponseMap[hf_eval_id], quiet_flag);
-        break;
-      }
-      case AGGREGATED_MODELS:
-        aggregate_response(hf_cit->second, lf_it->second,
-                           surrResponseMap[hf_eval_id]);
-        break;
-      default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
-        response_combine(hf_cit->second, lf_it->second,
-                         surrResponseMap[hf_eval_id]);
-        break;
-      }
-      ++hf_cit;
-      ++lf_it;
-    }
   }
 }
 
 
 void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 {
-  size_t num_surr, num_truth;
-  if (use_virtual_counts) { // allow models to consume lower-level aggregations
-    num_surr  = surrogate_model().qoi();
-    num_truth =     truth_model().qoi();
-  }
-  else { // raw counts align with currentResponse raw count
-    num_surr  = surrogate_model().response_size();
-    num_truth =     truth_model().response_size();
-  }
+  size_t num_truth = (use_virtual_counts) ?
+    truthModel.qoi() : // allow models to consume lower-level aggregations
+    truthModel.response_size(); // raw counts align w/ currentResponse raw count
 
   switch (responseMode) {
   case AGGREGATED_MODELS:
-    numFns = num_surr + num_truth;  break;
-  case MODEL_DISCREPANCY:
-    if (num_surr != num_truth) {
-      Cerr << "Error: mismatch in response sizes for MODEL_DISCREPANCY mode "
-	   << "in NonHierarchSurrModel::resize_response()." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
+    numFns = (unorderedModels.size() + 1) * num_truth;  break;
+  case BYPASS_SURROGATE:
     numFns = num_truth;  break;
-  case BYPASS_SURROGATE:       case NO_SURROGATE:
-    numFns = num_truth;  break;
-  case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:  default:
-    numFns = num_surr;   break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
@@ -784,7 +723,7 @@ void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 }
 
 
-void NonHierarchSurrModel::component_parallel_mode(short par_mode)
+void NonHierarchSurrModel::component_parallel_mode(size_t model_index)
 {
   // mode may be correct, but can't guarantee active parallel config is in sync
   //if (componentParallelMode == mode)
@@ -796,7 +735,8 @@ void NonHierarchSurrModel::component_parallel_mode(short par_mode)
   // TO DO: restarting servers for a change in soln control index w/o change
   // in model may be overkill (send of state vars in vars buffer sufficient?)
   bool restart = false;
-  if (componentParallelMode != par_mode || componentParallelKey != activeKey) {
+  if (componentParallelMode != model_index ||
+      componentParallelKey != activeKey) {
     UShortArray old_hf_key, old_lf_key;
     extract_model_keys(componentParallelKey, old_hf_key, old_lf_key);
     switch (componentParallelMode) {
