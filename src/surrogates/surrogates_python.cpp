@@ -97,7 +97,9 @@ public:
 #endif
 
 /// Define a Python module that wraps a few surrogates classes
-PYBIND11_MODULE(dakota_surrogatespy, m) {
+/// Module name is really generic due to overly simple Python
+///  packaging scheme we're using
+PYBIND11_MODULE(surrogates, m) {
 
   // free functions in module to save and load through base pointer
   m.def("save",

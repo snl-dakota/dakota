@@ -57,13 +57,25 @@ install(FILES ${surrogates_headers} DESTINATION "include")
 install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
 
 if(DAKOTA_PYTHON_SURROGATES)
+  # NOTE: Library name is really generic due to overly simple Python
+  # packaging scheme we're using
   # TODO: Need to always compile libs PIC when using Python
-  pybind11_add_module(dakota_surrogatespy surrogates_python.cpp)
+  # TODO: Consider -undefined dynamic_lookup link flag on Mac
+  pybind11_add_module(surrogates surrogates_python.cpp)
   # TODO: transitive includes when merging from devel
-  target_include_directories(dakota_surrogatespy PRIVATE ${Teuchos_INCLUDE_DIRS})
-  target_link_libraries(dakota_surrogatespy PRIVATE dakota_surrogates
+  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
+  target_link_libraries(surrogates PRIVATE dakota_surrogates
     ${Teuchos_LIBRARIES})
-  install(TARGETS dakota_surrogatespy EXPORT ${ExportTarget} DESTINATION lib)
+  if (APPLE)
+    set_target_properties(surrogates PROPERTIES INSTALL_RPATH
+      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
+  elseif (UNIX)
+    set_target_properties(surrogates PROPERTIES INSTALL_RPATH
+      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../bin")
+  endif()
+  install(TARGETS surrogates EXPORT ${ExportTarget}
+    DESTINATION share/dakota/Python/dakota/surrogates/)
+  install(FILES __init__.py DESTINATION share/dakota/Python/dakota/surrogates)
 endif()
 
 add_subdirectory(unit)
