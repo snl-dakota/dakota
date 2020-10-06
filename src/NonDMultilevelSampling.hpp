@@ -1414,7 +1414,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		      delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step));
 		    }else if (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA){
 		      delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*3, one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step)));
-		      /*delta_N_l_qoi(qoi, step) = delta_N_l_qoi(qoi, step) > 1 
+		      delta_N_l_qoi(qoi, step) = delta_N_l_qoi(qoi, step) > 1 
 		      														?  
 		      													 	delta_N_l_qoi(qoi, step)*underrelaxation_factor > 1 
 		      													 		?
@@ -1422,7 +1422,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		      													 		: 
 		      													 			1
 		      													 	:
-		      													 	delta_N_l_qoi(qoi, step);*/
+		      													 	delta_N_l_qoi(qoi, step);
 		    }else{
 		      Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: allocationTarget is not implemented.\n";
 		      abort_handler(INTERFACE_ERROR);
