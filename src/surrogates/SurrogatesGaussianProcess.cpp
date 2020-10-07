@@ -59,8 +59,19 @@ GaussianProcess::~GaussianProcess(){}
 void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
 {
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
-  std::cout << "\nBuilding GaussianProcess with configuration options\n"
-	  << configOptions << "\n";
+  verbosity = configOptions.get<int>("verbosity");
+
+  if (verbosity > 0) {
+    if (verbosity == 1) {
+      std::cout << "\nBuilding GaussianProcess\n\n";
+    }
+    else if (verbosity == 2) {
+      std::cout << "\nBuilding GaussianProcess with configuration options\n"
+                << configOptions << "\n";
+    }
+    else
+      throw(std::runtime_error("Invalid verbosity int for GaussianProcess surrogate"));
+  }
 
   numQOI = response.cols();
   numSamples = samples.rows();
@@ -536,12 +547,18 @@ void GaussianProcess::default_options()
   nugget_bounds(0) = 3.17e-8;
   nugget_bounds(1) = 1.0e-2;
 
+
   defaultConfigOptions.set("sigma bounds", sigma_bounds, "sigma [lb, ub]");
   // BMA: Do we want to allow 1 x 2 always as a fallback?
   defaultConfigOptions.set("length-scale bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
   defaultConfigOptions.set("scaler name", "standardization", "scaler for variables");
   defaultConfigOptions.set("num restarts", 10, "local optimizer number of initial iterates");
   defaultConfigOptions.set("gp seed", 42, "random seed for initial iterate generation");
+  /* Verbosity levels
+     2 - maximum level: print out config options and building notification
+     1 - minimum level: print out building notification
+     0 - no output */
+  defaultConfigOptions.set("verbosity", 1, "console output verbosity");
   /* Nugget */
   defaultConfigOptions.sublist("Nugget")
                       .set("fixed nugget", 0.0, "fixed nugget term");

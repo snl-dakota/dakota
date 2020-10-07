@@ -378,6 +378,9 @@ private:
   /// Bool for nugget estimation.
   bool estimateNugget;
 
+  /// Verbosity level.
+  int verbosity;
+
   /// Final objective function value.
   double bestObjFunValue = std::numeric_limits<double>::max();
 
@@ -413,6 +416,7 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version)
   archive & targetValues;
   archive & basisMatrix;
   archive & betaValues;
+  archive & verbosity;
   // BMA TODO: leaving this as shared_ptr pending discussion as it seems natural
   // BMA NOTE: If serializing through shared_ptr, wouldn't have to
   // trap the nullptr case here...

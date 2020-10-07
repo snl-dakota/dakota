@@ -189,6 +189,8 @@ private:
   MatrixXd polynomialCoeffs;
   /// Offset/intercept term for the polynomial surrogate.
   double polynomialIntercept;
+  /// Verbosity level.
+  int verbosity;
 
   /// Allow serializers access to private class data
   friend class boost::serialization::access;
@@ -208,6 +210,7 @@ void PolynomialRegression::serialize(Archive& archive, const unsigned int versio
   archive & basisIndices;
   archive & polynomialCoeffs;
   archive & polynomialIntercept;
+  archive & verbosity;
 }
 
 

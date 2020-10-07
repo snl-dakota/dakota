@@ -74,9 +74,19 @@ void PolynomialRegression::compute_basis_matrix(const MatrixXd &samples,
 void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &response) {
 
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
-  std::cout << "\nBuilding Polynomial with configuration options\n"
-	  << configOptions << "\n";
+  verbosity = configOptions.get<int>("verbosity");
 
+  if (verbosity > 0) {
+    if (verbosity == 1) {
+      std::cout << "\nBuilding Polynomial\n\n";
+    }
+    else if (verbosity == 2) {
+      std::cout << "\nBuilding Polynomial with configuration options\n"
+                << configOptions << "\n";
+    }
+    else
+      throw(std::runtime_error("Invalid verbosity int for Polynomial surrogate"));
+  }
 
   numQOI = response.cols();
   numSamples = samples.rows();
@@ -142,6 +152,11 @@ void PolynomialRegression::default_options() {
   defaultConfigOptions.set("p-norm", 1.0, "P-Norm in hyperbolic cross");
   defaultConfigOptions.set("scaler type", "none", "Type of data scaling");
   defaultConfigOptions.set("regression solver type", "SVD", "Type of regression solver");
+  /* Verbosity levels
+     2 - maximum level: print out config options and building notification
+     1 - minimum level: print out building notification
+     0 - no output */
+  defaultConfigOptions.set("verbosity", 1, "console output verbosity");
 }
 
 MatrixXd PolynomialRegression::gradient(const MatrixXd &eval_points, const int qoi) {
