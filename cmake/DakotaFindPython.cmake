@@ -22,18 +22,19 @@ macro(dakota_find_python)
     endif()
 
     find_package(Python REQUIRED ${dakota_python_components})
+
+    # pybind11, C3, Acro, etc., use older CMake FindPythonInterp, so we
+    # coerce it to use same as Dakota; more complex situations may
+    # require setting other variables
+    if(NOT PYTHON_EXECUTABLE)
+      set(PYTHON_EXECUTABLE "${Python_EXECUTABLE}" CACHE FILEPATH
+	"Dakota set legacy PYTHON_EXECUTABLE to match Python_EXECUTABLE")
+    endif()
     
     # TODO: fine-grained error messages
     # if(DAKOTA_PYTHON_DIRECT_INTERFACE and NOT Python_Development_FOUND)
 
     if(DAKOTA_PYTHON_SURROGATES)
-      # pybind11 uses older CMake FindPythonInterp, so we coerce it to
-      # use same as Dakota; more complex situations may require
-      # setting other variables
-      if(NOT PYTHON_EXECUTABLE)
-	set(PYTHON_EXECUTABLE "${Python_EXECUTABLE}" CACHE FILEPATH
-	  "Dakota set legacy PYTHON_EXECUTABLE to match Python_EXECUTABLE")
-      endif()
       # This add_subdirectory must be done at top-level so pybind11's
       # CMake functions are pulled in for src/ and below
       add_subdirectory(packages/external/pybind11)
