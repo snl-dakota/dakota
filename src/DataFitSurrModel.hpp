@@ -354,6 +354,10 @@ private:
 		     bool active_only);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
+
+  void export_at_import();
+
+
   /// finalize file stream for exporting surrogate evaluations
   void finalize_export();
   /// initialize file stream for exporting surrogate evaluations

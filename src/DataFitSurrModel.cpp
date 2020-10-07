@@ -2107,9 +2107,60 @@ void DataFitSurrModel::initialize_export()
 }
 
 
+void DataFitSurrModel::export_at_import()
+{
+  // Outstanding issues:
+  //  * variable/response transformations
+  //  * import_approx_points keyword: if import, export at import,
+  //    else export at all evals as previously done
+  //  * export_variance keyword on some models only
+  //  * TabularIO utilities
+  //  * restrict to supported models
+
+  String input_filename("import.dat"), context_message("Import approx pts");
+  unsigned short tabular_format = TABULAR_ANNOTATED;
+  std::ifstream data_stream;
+  TabularIO::open_file(data_stream, input_filename, context_message);
+
+  Cout << "Exporting at imported approx points!!!" << std::endl;
+
+  int eval_id = 1;  // number the evals starting from 1
+
+  // shouldn't need both good and eof checks
+  TabularIO::read_header_tabular(data_stream, tabular_format);
+  data_stream >> std::ws;
+  while (data_stream.good() && !data_stream.eof()) {
+    String iface_id;
+    bool active_only = false;
+    TabularIO::read_leading_columns(data_stream, tabular_format, eval_id, iface_id);
+    currentVariables.read_tabular(data_stream, (active_only ? ACTIVE_VARS : ALL_VARS) );
+    evaluate();
+
+    // How to restrict to supported models? 
+    // Maybe for now add export_variance KW to specific models and not fret
+
+    // Could further check against 
+    // global_exp_gauss_proc, global_gaussian, global_kriging, global_polynomial
+
+    // TODO: models can transform variables and responses... See mappings()
+    // Maybe transform to std deviation and allow map when present?
+
+    RealVector approx_var = approximation_variances(currentVariables);
+    Cout << approx_var << std::endl;
+
+    export_point(eval_id++, currentVariables, currentResponse);
+    // eval and export
+    data_stream >> std::ws;
+  }
+  Cout << "Export complete" << std::endl;
+}
+
+
 /** Constructor helper to export approximation-based evaluations to a file. */
 void DataFitSurrModel::finalize_export()
 {
+  // BMA TODO: conditional on import/export pairing and desired options
+  //export_at_import();
   TabularIO::close_file(exportFileStream, exportPointsFile,
 			"DataFitSurrModel export");
 }
