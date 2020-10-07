@@ -391,13 +391,6 @@ private:
   /// build the approxInterface surrogate, passing variable bounds
   void build_approx_interface();
 
-  /// update actualModel with data from constraints/labels/sets
-  void init_model(Model& model);
-  /// update actualModel with data from current variables/bounds
-  void update_model(Model& model);
-  /// update current variables/labels/bounds/targets with data from actualModel
-  void update_from_model(const Model& model);
-
   /// test if inactive state is consistent
   bool consistent(const Variables& vars) const;
   /// test if active vars are within [l_bnds, u_bnds]

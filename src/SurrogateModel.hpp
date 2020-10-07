@@ -104,6 +104,17 @@ protected:
   //- Heading: Member functions
   //
 
+  /// initialize model with data that could change once per set of evaluations
+  /// (e.g., an outer iterator execution), including active variable labels,
+  /// inactive variable values/bounds/labels, and linear/nonlinear constraint
+  /// coeffs/bounds
+  void init_model(Model& model);
+  /// update model with data that could change per function evaluation
+  /// (active variable values/bounds)
+  void update_model(Model& model);
+  /// update current variables/labels/bounds/targets with data from model
+  void update_from_model(const Model& model);
+
   /// define truth and surrogate keys from incoming active key
   void extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
 			  UShortArray& surr_key);
@@ -225,6 +236,15 @@ protected:
   RealVector referenceIDRVars;
 
 private:
+
+  //
+  //- Heading: convenience functions
+  //
+
+  /// update all current variables/bounds/labels with data from model
+  void update_all_variables_from_model(const Model& model);
+  /// update complement of active variables/bounds with data from model
+  void update_complement_variables_from_model(const Model& model);
 
   //
   //- Heading: Data

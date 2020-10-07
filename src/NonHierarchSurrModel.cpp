@@ -723,7 +723,7 @@ void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 }
 
 
-void NonHierarchSurrModel::component_parallel_mode(size_t model_index)
+void NonHierarchSurrModel::component_parallel_mode(short model_index)
 {
   // mode may be correct, but can't guarantee active parallel config is in sync
   //if (componentParallelMode == mode)
@@ -736,7 +736,7 @@ void NonHierarchSurrModel::component_parallel_mode(size_t model_index)
   // in model may be overkill (send of state vars in vars buffer sufficient?)
   bool restart = false;
   if (componentParallelMode != model_index ||
-      componentParallelKey != activeKey) {
+      componentParallelKey  != activeKey) {
     UShortArray old_hf_key, old_lf_key;
     extract_model_keys(componentParallelKey, old_hf_key, old_lf_key);
     switch (componentParallelMode) {
@@ -749,10 +749,10 @@ void NonHierarchSurrModel::component_parallel_mode(size_t model_index)
   // ------------------------------------------------------------
   // set ParallelConfiguration for new mode and retrieve new data
   // ------------------------------------------------------------
-  if (par_mode == TRUTH_MODEL_MODE) { // new mode
+  if (model_index == TRUTH_MODEL_MODE) { // new mode
     // activation delegated to HF model
   }
-  else if (par_mode == SURROGATE_MODEL_MODE) { // new mode
+  else if (model_index == SURROGATE_MODEL_MODE) { // new mode
     // activation delegated to LF model
   }
 
@@ -763,8 +763,8 @@ void NonHierarchSurrModel::component_parallel_mode(size_t model_index)
   if (restart && modelPCIter->mi_parallel_level_defined(miPLIndex)) {
     const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
     if (mi_pl.server_communicator_size() > 1) {
-      parallelLib.bcast(par_mode, mi_pl);
-      if (par_mode) { // send model index state corresponding to active mode
+      parallelLib.bcast(model_index, mi_pl);
+      if (model_index) { // send model index state corresponding to active mode
 	MPIPackBuffer send_buff;
 	send_buff << responseMode << activeKey;
  	parallelLib.bcast(send_buff, mi_pl);
@@ -772,7 +772,7 @@ void NonHierarchSurrModel::component_parallel_mode(size_t model_index)
     }
   }
 
-  componentParallelMode = par_mode;  componentParallelKey = activeKey;
+  componentParallelMode = model_index;  componentParallelKey = activeKey;
 }
 
 
@@ -818,274 +818,6 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 	  hf_model.serve_run(pl_iter, max_eval_concurrency);              break;
 	}
       }
-    }
-  }
-}
-
-
-void NonHierarchSurrModel::init_model(Model& model)
-{
-  // Set the low/high fidelity model variable descriptors with the variable
-  // descriptors from currentVariables (eliminates the need to replicate
-  // variable descriptors in the input file).  This only needs to be performed
-  // once (as opposed to the other updates above).  However, performing this set
-  // in the constructor does not propagate properly for multiple surrogates/
-  // nestings since the sub-model construction (and therefore any sub-sub-model
-  // constructions) must finish before calling any set functions on it.  That
-  // is, after-the-fact updating in constructors only propagates one level,
-  // whereas before-the-fact updating in compute/build functions propagates
-  // multiple levels.
-  if (!approxBuilds) {
-    size_t num_cv  = currentVariables.cv(),  num_div = currentVariables.div(),
-           num_drv = currentVariables.drv(), num_dsv = currentVariables.dsv();
-    if (num_cv && num_cv == model.cv())
-      model.continuous_variable_labels(
-	currentVariables.continuous_variable_labels());
-    if (num_div && num_div == model.div())
-      model.discrete_int_variable_labels(
-        currentVariables.discrete_int_variable_labels());
-    if (num_drv && num_drv == model.drv())
-      model.discrete_real_variable_labels(
-        currentVariables.discrete_real_variable_labels());
-    if (num_dsv && num_dsv == model.dsv())
-      model.discrete_string_variable_labels(
-        currentVariables.discrete_string_variable_labels());
-  }
-
-  // linear constraints
-  if ( ( userDefinedConstraints.num_linear_ineq_constraints() || 
-	 userDefinedConstraints.num_linear_eq_constraints() ) &&
-       currentVariables.cv()  == model.cv()  &&
-       currentVariables.div() == model.div() &&
-       currentVariables.drv() == model.drv() ) {
-    model.linear_ineq_constraint_coeffs(
-      userDefinedConstraints.linear_ineq_constraint_coeffs());
-    model.linear_ineq_constraint_lower_bounds(
-      userDefinedConstraints.linear_ineq_constraint_lower_bounds());
-    model.linear_ineq_constraint_upper_bounds(
-      userDefinedConstraints.linear_ineq_constraint_upper_bounds());
-
-    model.linear_eq_constraint_coeffs(
-      userDefinedConstraints.linear_eq_constraint_coeffs());
-    model.linear_eq_constraint_targets(
-      userDefinedConstraints.linear_eq_constraint_targets());
-  }
-
-  // nonlinear constraints
-  if (userDefinedConstraints.num_nonlinear_ineq_constraints()) {
-    model.nonlinear_ineq_constraint_lower_bounds(
-      userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds());
-    model.nonlinear_ineq_constraint_upper_bounds(
-      userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds());
-  }
-  if (userDefinedConstraints.num_nonlinear_eq_constraints())
-    model.nonlinear_eq_constraint_targets(
-      userDefinedConstraints.nonlinear_eq_constraint_targets());
-
-  short active_view = currentVariables.view().first;
-  if (active_view == RELAXED_ALL || active_view == MIXED_ALL)
-    return;
-
-  // update model with inactive currentVariables/userDefinedConstraints data.
-  // For efficiency, we avoid doing this on every evaluation, instead calling
-  // it from a pre-execution initialization context (initialize_mapping()).
-  size_t num_icv  = currentVariables.icv(),  num_idiv = currentVariables.idiv(),
-         num_idrv = currentVariables.idrv(), num_idsv = currentVariables.idsv();
-  if (num_icv && num_icv == model.icv()) {
-    model.inactive_continuous_variables(
-      currentVariables.inactive_continuous_variables());
-    model.inactive_continuous_lower_bounds(
-      userDefinedConstraints.inactive_continuous_lower_bounds());
-    model.inactive_continuous_upper_bounds(
-      userDefinedConstraints.inactive_continuous_upper_bounds());
-    if (!approxBuilds)
-      model.inactive_continuous_variable_labels(
-        currentVariables.inactive_continuous_variable_labels());
-  }
-  if (num_idiv && num_idiv == model.idiv()) {
-    model.inactive_discrete_int_variables(
-      currentVariables.inactive_discrete_int_variables());
-    model.inactive_discrete_int_lower_bounds(
-      userDefinedConstraints.inactive_discrete_int_lower_bounds());
-    model.inactive_discrete_int_upper_bounds(
-      userDefinedConstraints.inactive_discrete_int_upper_bounds());
-    if (!approxBuilds)
-      model.inactive_discrete_int_variable_labels(
-        currentVariables.inactive_discrete_int_variable_labels());
-  }
-  if (num_idrv && num_idrv == model.idrv()) {
-    model.inactive_discrete_real_variables(
-      currentVariables.inactive_discrete_real_variables());
-    model.inactive_discrete_real_lower_bounds(
-      userDefinedConstraints.inactive_discrete_real_lower_bounds());
-    model.inactive_discrete_real_upper_bounds(
-      userDefinedConstraints.inactive_discrete_real_upper_bounds());
-    if (!approxBuilds)
-      model.inactive_discrete_real_variable_labels(
-        currentVariables.inactive_discrete_real_variable_labels());
-  }
-  if (num_idsv && num_idsv == model.idsv()) {
-    model.inactive_discrete_string_variables(
-      currentVariables.inactive_discrete_string_variables());
-    if (!approxBuilds)
-      model.inactive_discrete_string_variable_labels(
-        currentVariables.inactive_discrete_string_variable_labels());
-  }
-}
-
-
-void NonHierarchSurrModel::update_model(Model& model)
-{
-  // update model with currentVariables/userDefinedConstraints data.  In the
-  // hierarchical case, the variables view in LF/HF models correspond to the
-  // currentVariables view.  Note: updating the bounds is not strictly necessary
-  // in common usage for the HF model (when a single model evaluated only at the
-  // TR center), but is needed for the LF model and could be relevant in cases
-  // where the HF model involves additional surrogates/nestings.
-
-  // active variable vals/bnds (active labels, inactive vals/bnds/labels, and
-  // linear/nonlinear constraint coeffs/bnds updated in init_model())
-  if (currentVariables.cv()) {
-    model.continuous_variables(currentVariables.continuous_variables());
-    model.continuous_lower_bounds(
-      userDefinedConstraints.continuous_lower_bounds());
-    model.continuous_upper_bounds(
-      userDefinedConstraints.continuous_upper_bounds());
-  }
-  if (currentVariables.div()) {
-    model.discrete_int_variables(currentVariables.discrete_int_variables());
-    model.discrete_int_lower_bounds(
-      userDefinedConstraints.discrete_int_lower_bounds());
-    model.discrete_int_upper_bounds(
-      userDefinedConstraints.discrete_int_upper_bounds());
-  }
-  if (currentVariables.drv()) {
-    model.discrete_real_variables(currentVariables.discrete_real_variables());
-    model.discrete_real_lower_bounds(
-      userDefinedConstraints.discrete_real_lower_bounds());
-    model.discrete_real_upper_bounds(
-      userDefinedConstraints.discrete_real_upper_bounds());
-  }
-  if (currentVariables.dsv())
-    model.discrete_string_variables(
-      currentVariables.discrete_string_variables());
-}
-
-
-void NonHierarchSurrModel::update_from_model(Model& model)
-{
-  // update complement of active currentVariables using model data.
-
-  // Note: this approach makes a strong assumption about non-active variable
-  // consistency, which is limiting.  Better to perform an individual variable
-  // mapping (e.g., solution control) when needed and allow for a different
-  // ADV position.
-
-  // active variable vals/bnds (active labels, inactive vals/bnds/labels, and
-  // linear/nonlinear constraint coeffs/bnds updated in init_model())
-
-  // *** TO DO: make this robust to differing inactive parameterizations using 
-  // tag lookups.  Omit mappings for failed lookups.
-
-  const Variables&   vars = model.current_variables();
-  const Constraints& cons = model.user_defined_constraints();
-
-  const RealVector& acv = vars.all_continuous_variables();
-  StringMultiArrayConstView acv_labels = vars.all_continuous_variable_labels();
-  const RealVector& acv_l_bnds = cons.all_continuous_lower_bounds();
-  const RealVector& acv_u_bnds = cons.all_continuous_upper_bounds();
-  StringMultiArrayConstView cv_acv_labels
-    = currentVariables.all_continuous_variable_labels();
-  size_t i, index, cv_begin = vars.cv_start(), num_cv = vars.cv(),
-    cv_end = cv_begin + num_cv, num_acv = vars.acv();
-  for (i=0; i<cv_begin; ++i) {
-    index = find_index(cv_acv_labels, acv_labels[i]);
-    if (index != _NPOS) {
-      currentVariables.all_continuous_variable(acv[i], index);
-      userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], index);
-      userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], index);
-    }
-  }
-  for (i=cv_end; i<num_acv; ++i) {
-    index = find_index(cv_acv_labels, acv_labels[i]);
-    if (index != _NPOS) {
-      currentVariables.all_continuous_variable(acv[i], index);
-      userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], index);
-      userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], index);
-    }
-  }
-
-  const IntVector& adiv = vars.all_discrete_int_variables();
-  StringMultiArrayConstView adiv_labels
-    = vars.all_discrete_int_variable_labels();
-  const IntVector& adiv_l_bnds = cons.all_discrete_int_lower_bounds();
-  const IntVector& adiv_u_bnds = cons.all_discrete_int_upper_bounds();
-  StringMultiArrayConstView cv_adiv_labels
-    = currentVariables.all_discrete_int_variable_labels();
-  size_t div_begin = vars.div_start(), num_div = vars.div(),
-    div_end = div_begin + num_div, num_adiv = vars.adiv();
-  for (i=0; i<div_begin; ++i) {
-    index = find_index(cv_adiv_labels, adiv_labels[i]);
-    if (index != _NPOS) {
-      currentVariables.all_discrete_int_variable(adiv[i], index);
-      userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i],index);
-      userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i],index);
-    }
-  }
-  for (i=div_end; i<num_adiv; ++i) {
-    index = find_index(cv_adiv_labels, adiv_labels[i]);
-    if (index != _NPOS) {
-      currentVariables.all_discrete_int_variable(adiv[i], index);
-      userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i],index);
-      userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i],index);
-    }
-  }
-
-  size_t dsv_begin = vars.dsv_start(), num_dsv = vars.dsv(),
-    dsv_end = dsv_begin + num_dsv, num_adsv = vars.adsv();
-  StringMultiArrayConstView adsv = vars.all_discrete_string_variables();
-  StringMultiArrayConstView adsv_labels
-    = vars.all_discrete_string_variable_labels();
-  StringMultiArrayConstView cv_adsv_labels
-    = currentVariables.all_discrete_string_variable_labels();
-  for (i=0; i<dsv_begin; ++i) {
-    index = find_index(cv_adsv_labels, adsv_labels[i]);
-    if (index != _NPOS)
-      currentVariables.all_discrete_string_variable(adsv[i], index);
-  }
-  for (i=dsv_end; i<num_adsv; ++i) {
-    index = find_index(cv_adsv_labels, adsv_labels[i]);
-    if (index != _NPOS)
-      currentVariables.all_discrete_string_variable(adsv[i], index);
-  }
-
-  const RealVector& adrv = vars.all_discrete_real_variables();
-  StringMultiArrayConstView adrv_labels
-    = vars.all_discrete_real_variable_labels();
-  const RealVector& adrv_l_bnds = cons.all_discrete_real_lower_bounds();
-  const RealVector& adrv_u_bnds = cons.all_discrete_real_upper_bounds();
-  StringMultiArrayConstView cv_adrv_labels
-    = currentVariables.all_discrete_real_variable_labels();
-  size_t drv_begin = vars.drv_start(), num_drv = vars.drv(),
-    drv_end = drv_begin + num_drv, num_adrv = vars.adrv();
-  for (i=0; i<drv_begin; ++i) {
-    index = find_index(cv_adrv_labels, adrv_labels[i]);
-    if (index != _NPOS) {
-      currentVariables.all_discrete_real_variable(adrv[i], index);
-      userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i],
-							   index);
-      userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i],
-							   index);
-    }
-  }
-  for (i=drv_end; i<num_adrv; ++i) {
-    index = find_index(cv_adrv_labels, adrv_labels[i]);
-    if (index != _NPOS) {
-      currentVariables.all_discrete_real_variable(adrv[i], index);
-      userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i],
-							   index);
-      userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i],
-							   index);
     }
   }
 }

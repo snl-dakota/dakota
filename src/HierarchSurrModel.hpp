@@ -203,18 +203,6 @@ private:
   /// identified by current {low,high}FidelityKey
   void check_model_interface_instance();
 
-  /// update the passed model (one of the ordered models) with data that could
-  /// change once per set of evaluations (e.g., an outer iterator execution),
-  /// including active variable labels, inactive variable values/bounds/labels,
-  /// and linear/nonlinear constraint coeffs/bounds
-  void init_model(Model& model);
-  /// update the passed model (one of the ordered models) with data that could
-  /// change per function evaluation (active variable values/bounds)
-  void update_model(Model& model);
-  /// update currentVariables using non-active data from the passed model
-  /// (one of the ordered models)
-  void update_from_model(Model& model);
-
   /// called from derived_synchronize() and derived_synchronize_nowait() to
   /// extract and rekey response maps using blocking or nonblocking
   /// synchronization on the LF and HF models
