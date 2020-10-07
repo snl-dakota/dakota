@@ -96,6 +96,6 @@ assert(np.allclose(dctor_gpload.value(eval_samples), gp_eval_surr))
 
 # free function load
 print("Loading GP (free function)")
-gen_gpload = daksurr.load("gp_gen.bin", True)
+gen_gpload = daksurr.load("gp.bin", True)
 print("Loaded GP is a: {0}".format(gen_gpload.__class__.__name__))
 assert(np.allclose(gen_gpload.value(eval_samples), gp_eval_surr))
