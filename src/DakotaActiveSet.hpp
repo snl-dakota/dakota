@@ -74,6 +74,8 @@ public:
 
   /// return the request vector
   const ShortArray& request_vector() const;
+  /// return the request vector
+  ShortArray& request_vector();
   /// set the request vector
   void request_vector(const ShortArray& rv);
   /// set all request vector values
@@ -85,6 +87,8 @@ public:
 
   /// return the derivative variables vector
   const SizetArray& derivative_vector() const;
+  /// return the derivative variables vector
+  SizetArray& derivative_vector();
   /// set the derivative variables vector from a SizetArray
   void derivative_vector(const SizetArray& dvv);
   /// set the derivative variables vector from a SizetMultiArrayConstView
@@ -190,6 +194,10 @@ inline const ShortArray& ActiveSet::request_vector() const
 { return requestVector; }
 
 
+inline ShortArray& ActiveSet::request_vector()
+{ return requestVector; }
+
+
 inline void ActiveSet::request_vector(const ShortArray& rv)
 { requestVector = rv; }
 
@@ -207,6 +215,10 @@ inline void ActiveSet::request_value(const short rv_val, const size_t index)
 
 
 inline const SizetArray& ActiveSet::derivative_vector() const
+{ return derivVarsVector; }
+
+
+inline SizetArray& ActiveSet::derivative_vector()
 { return derivVarsVector; }
 
 

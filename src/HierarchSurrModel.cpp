@@ -1293,7 +1293,7 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
   // HierarchSurrModel::component_parallel_mode()
   // Note: could consolidate logic by bcasting componentParallelKey,
   //       except for special handling of responseMode for TRUTH_MODEL_MODE.
-  componentParallelMode = 1; // dummy value to be replaced inside loop
+  componentParallelMode = 1; // dummy value to enter loop
   while (componentParallelMode) {
     parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
     if (componentParallelMode) {

@@ -475,9 +475,9 @@ void SurrogateModel::update_from_model(const Model& model)
   // vars/bounds/labels
 
   if (currentVariables.variables_id()==model.current_variables().variables_id())
-    update_all_variables_from_model();
+    update_all_variables_from_model(model);
   else // fine-grained update based on label lookups
-    update_complement_variables_from_model();
+    update_complement_variables_from_model(model);
 
   if (!approxBuilds)
     currentResponse.function_labels(model.response_labels());
@@ -1052,15 +1052,15 @@ asv_split(const ShortArray& aggregate_asv, Short2DArray& indiv_asv)
 {
   // This API only used for AGGREGATED_MODELS mode
 
-  size_t i, num_qoi = qoi();
+  size_t i, j, num_qoi = qoi();
   if (aggregate_asv.size() % num_qoi) {
     Cerr << "Error: size remainder for aggregated ASV in SurrogateModel::"
 	 << "asv_split()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  size_t num_models = aggregate_asv.size() / num_qoi, cntr = 0;
-  indiv_asv.resize(num_models);
-  for (i=0; i<num_models; ++i) {
+  size_t num_indiv = aggregate_asv.size() / num_qoi, cntr = 0;
+  indiv_asv.resize(num_indiv);
+  for (i=0; i<num_indiv; ++i) {
     ShortArray& asv_i = indiv_asv[i];
     asv_i.resize(num_qoi);
     for (j=0; j<num_qoi; ++j, ++cntr)
@@ -1177,24 +1177,25 @@ aggregate_response(const Response& hf_resp, const Response& lf_resp,
 void SurrogateModel::
 aggregate_response(const ResponseArray& resp_array, Response& agg_response)
 {
-  if (agg_resp.is_null())
-    agg_resp = currentResponse.copy(); // resize_response() -> aggregate size
+  if (agg_response.is_null())
+    agg_response = currentResponse.copy();// resize_response() -> aggregate size
 
-  size_t i, j, num_fns, cntr = 0;  short asv_j;
-  ShortArray& agg_asv = agg_resp.active_set_request_vector();
+  size_t i, j, num_resp = resp_array.size(), num_fns, cntr = 0;  short asv_j;
+  ShortArray& agg_asv = agg_response.active_set_request_vector();
   // append in order provided (any order customizations need to occur upstream
   // in the definition of resp_array)
-  for (i=0; i<num_models; ++i) {
+  for (i=0; i<num_resp; ++i) {
     const Response& resp_i = resp_array[i];
     const ShortArray&  asv = resp_i.active_set_request_vector();
     num_fns = asv.size();
     for (j=0; j<num_fns; ++j, ++cntr) {
       agg_asv[cntr] = asv_j = asv[j];
-      if (asv_j & 1) agg_resp.function_value(resp_i.function_value(j), cntr);
+      if (asv_j & 1)
+	agg_response.function_value(resp_i.function_value(j), cntr);
       if (asv_j & 2)
-	agg_resp.function_gradient(resp_i.function_gradient_view(j), cntr);
+	agg_response.function_gradient(resp_i.function_gradient_view(j), cntr);
       if (asv_j & 4)
-	agg_resp.function_hessian(resp_i.function_hessian(j), cntr);
+	agg_response.function_hessian(resp_i.function_hessian(j), cntr);
     }
   }
 }
@@ -1204,21 +1205,22 @@ void SurrogateModel::
 insert_response(const Response& response, size_t position,
 		Response& agg_response)
 {
-  if (agg_resp.is_null())
-    agg_resp = currentResponse.copy(); // resize_response() -> aggregate size
+  if (agg_response.is_null())
+    agg_response = currentResponse.copy();// resize_response() -> aggregate size
 
-  ShortArray& agg_asv = agg_resp.active_set_request_vector();
+  ShortArray& agg_asv = agg_response.active_set_request_vector();
   // append in order provided (any order customizations need to occur upstream
   // in the definition of resp_array)
   const ShortArray& asv = response.active_set_request_vector();
   size_t fn, num_fns = asv.size(), cntr = position * num_fns;  short asv_fn;
   for (fn=0; fn<num_fns; ++fn, ++cntr) {
     agg_asv[cntr] = asv_fn = asv[fn];
-    if (asv_fn & 1) agg_resp.function_value(resp_i.function_value(fn), cntr);
+    if (asv_fn & 1)
+      agg_response.function_value(response.function_value(fn), cntr);
     if (asv_fn & 2)
-      agg_resp.function_gradient(resp_i.function_gradient_view(fn), cntr);
+      agg_response.function_gradient(response.function_gradient_view(fn), cntr);
     if (asv_fn & 4)
-      agg_resp.function_hessian(resp_i.function_hessian(fn), cntr);
+      agg_response.function_hessian(response.function_hessian(fn), cntr);
   }
 }
 

@@ -20,6 +20,7 @@
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "HierarchSurrModel.hpp"
+#include "NonHierarchSurrModel.hpp"
 #include "ActiveSubspaceModel.hpp"
 #include "AdaptedBasisModel.hpp"
 #include "RandomFieldModel.hpp"
@@ -310,9 +311,11 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
     return std::make_shared<NestedModel>(problem_db);
   else if ( model_type == "surrogate") {
     if (problem_db.get_string("model.surrogate.type") == "hierarchical")
-      return std::make_shared<HierarchSurrModel>(problem_db); // hierarchical approx
-    else
-      return std::make_shared<DataFitSurrModel>(problem_db);  // local/multipt/global approx
+      return std::make_shared<HierarchSurrModel>(problem_db); // hierarchical
+    else if (problem_db.get_string("model.surrogate.type") == "non_hierarchical")
+      return std::make_shared<NonHierarchSurrModel>(problem_db);// non-hierarch
+    else  // local/multipt/global approx
+      return std::make_shared<DataFitSurrModel>(problem_db);
   }
   else if ( model_type == "active_subspace" )
     return std::make_shared<ActiveSubspaceModel>(problem_db);

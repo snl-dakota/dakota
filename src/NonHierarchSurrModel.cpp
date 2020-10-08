@@ -35,7 +35,7 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
   centralHess = problem_db.get_bool("responses.central_hess");
 
   const String& truth_model_ptr
-    = problem_db.get_sa("model.surrogate.truth_model_pointer");
+    = problem_db.get_string("model.surrogate.truth_model_pointer");
   const StringArray& unordered_model_ptrs
     = problem_db.get_sa("model.surrogate.unordered_model_pointers");
 
@@ -324,7 +324,7 @@ void NonHierarchSurrModel::build_approximation()
   }
 
   // set NonHierarchSurrModel parallelism mode to HF model
-  component_parallel_mode(TRUTH_MODEL_MODE);
+  component_parallel_mode(num_models);
 
   // update HF model with current variable values/bounds/labels
   update_model(hf_model);
@@ -404,7 +404,7 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
       if (test_asv(asv_i)) {
 	Model& model_i = (i < num_unord_models) ? unorderedModels[i]
 	               : truthModel;
-	component_parallel_mode(i); // TO DO: size_t instead of enum
+	component_parallel_mode(i+1); // model id (0 is reserved)
 	/*
 	if (sameModelInstance)
 	  model_i.solution_level_index(model_level_index(i)); // TO DO
@@ -426,7 +426,7 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
 	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    component_parallel_mode(num_unord_models); // TO DO: size_t instead of enum
+    component_parallel_mode(num_models); // model id (0 is reserved)
     /*
     if (sameModelInstance)
       truthModel.solution_level_index(truth_level_index(i)); // TO DO
@@ -491,7 +491,7 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       Model& model_i = (i < num_unord_models) ? unorderedModels[i]
 	             : truthModel;
       if (!model_i.asynch_flag() && test_asv(asv_i)) {
-	component_parallel_mode(i); // TO DO: size_t instead of enum
+	component_parallel_mode(i+1); // model id (0 is reserved)
 	/*
 	if (sameModelInstance)
 	  model_i.solution_level_index(model_level_index(i)); // TO DO
@@ -570,13 +570,14 @@ void NonHierarchSurrModel::
 derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
 			       bool block)
 {
-  size_t i, num_models = model_resp_maps_rekey.size();
+  size_t i, num_models = model_resp_maps_rekey.size(),
+      num_unord_models = unorderedModels.size();
   for (i=0; i<num_models; ++i) {
     Model& model = (i < num_unord_models) ? unorderedModels[i] : truthModel;
     IntIntMap& model_id_map = modelIdMap[i];
     IntResponseMap& model_resp_map = model_resp_maps_rekey[i];
     if (!model_id_map.empty()) { // synchronize evals for i-th Model
-      component_parallel_mode(i); // TO DO
+      component_parallel_mode(i+1); // model id (0 is reserved)
       rekey_synch(model, block, model_id_map, model_resp_map);
     }
     // add cached evals from:
@@ -595,7 +596,7 @@ void NonHierarchSurrModel::derived_synchronize_competing()
   // in this case, we don't want to starve either LF or HF scheduling by
   // blocking on one or the other --> leverage derived_synchronize_nowait()
   IntResponseMap aggregated_map; // accumulate surrResponseMap returns
-  while (test_id_map(modelIdMap)) {
+  while (test_id_maps(modelIdMap)) {
     // partial_map is a reference to surrResponseMap, returned by _nowait()
     const IntResponseMap& partial_map = derived_synchronize_nowait();
     if (!partial_map.empty())
@@ -628,8 +629,8 @@ derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
       for (i=0; i<num_models; ++i) {
 	const IntResponseMap& resp_map = model_resp_maps[i];
 	for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
-	  insert_response(cit->second, i,
-			  combined_resp_map[cit->first]); // already rekeyed
+	  insert_response(r_cit->second, i,
+			  combined_resp_map[r_cit->first]); // already rekeyed
       }
     }
     else { // manage partial results across set of models
@@ -658,10 +659,10 @@ derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
       //  }
       //}
       // Approach 2: one pending id traversal for each resp map traversal
-      int pending_id;  ISIter p_it;
+      int eval_id, pending_id;  ISIter p_it;
       for (i=0; i<num_models; ++i) {
-	const IntResponseMap&        resp_map = model_resp_maps[i];
-	const IntResponseMap& cached_resp_map =  cachedRespMaps[i];
+	const IntResponseMap&  resp_map = model_resp_maps[i];
+        IntResponseMap& cached_resp_map =  cachedRespMaps[i];
 	p_it = pending_ids.begin();
 	pending_id = (p_it == pending_ids.end()) ? INT_MAX : *p_it;
 	for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
@@ -673,7 +674,7 @@ derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
 	  if (eval_id < pending_id)
 	    insert_response(r_cit->second, i, combined_resp_map[eval_id]);
 	  else // eval_id has pending contributions; return to i-th model cache
-	    cached_map_i[eval_id] = r_cit->second;
+	    cached_resp_map[eval_id] = r_cit->second;
 	}
       }
       // Approach 3: use array of r_cit's to advance each resp map in
@@ -723,56 +724,53 @@ void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 }
 
 
-void NonHierarchSurrModel::component_parallel_mode(short model_index)
+void NonHierarchSurrModel::component_parallel_mode(short model_id)
 {
+  // This implemenation differs from others tha accept a mode enum.  Here we
+  // still support the virtual API of passing a short, but we reinterpret as
+  // model id (not model_index since 0 is reserved for use by stop_servers())
+
   // mode may be correct, but can't guarantee active parallel config is in sync
   //if (componentParallelMode == mode)
   //  return; // already in correct parallel mode
+
+  // componentParallelKey may not be necessary in the case where either all
+  // models are active for a set of samples (AGGREGATED_MODELS mode for which
+  // any drop outs are managed by ASV's) or only one model is active
+  // (BYPASS_SURROGATE mode)
 
   // -----------------------------
   // terminate previous serve mode (if active)
   // -----------------------------
   // TO DO: restarting servers for a change in soln control index w/o change
   // in model may be overkill (send of state vars in vars buffer sufficient?)
-  bool restart = false;
-  if (componentParallelMode != model_index ||
-      componentParallelKey  != activeKey) {
-    UShortArray old_hf_key, old_lf_key;
-    extract_model_keys(componentParallelKey, old_hf_key, old_lf_key);
-    switch (componentParallelMode) {
-    case SURROGATE_MODEL_MODE:  stop_model(old_lf_key[1]);  break;
-    case     TRUTH_MODEL_MODE:  stop_model(old_hf_key[1]);  break;
-    }
-    restart = true;
-  }
+  if (componentParallelMode != model_id || componentParallelKey != activeKey) {
+    //UShort2DArray old_keys;
+    //extract_model_keys(componentParallelKey, old_keys);
+    //switch (componentParallelMode) {
+    //case SURROGATE_MODEL_MODE:  stop_model(old_lf_key[1]);  break;
+    //case     TRUTH_MODEL_MODE:  stop_model(old_hf_key[1]);  break;
+    //}
+    stop_model(componentParallelMode);
 
-  // ------------------------------------------------------------
-  // set ParallelConfiguration for new mode and retrieve new data
-  // ------------------------------------------------------------
-  if (model_index == TRUTH_MODEL_MODE) { // new mode
-    // activation delegated to HF model
-  }
-  else if (model_index == SURROGATE_MODEL_MODE) { // new mode
-    // activation delegated to LF model
-  }
-
-  // -----------------------
-  // activate new serve mode (matches NonHierarchSurrModel::serve_run(pl_iter)).
-  // -----------------------
-  // These bcasts match the outer parallel context (pl_iter).
-  if (restart && modelPCIter->mi_parallel_level_defined(miPLIndex)) {
-    const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
-    if (mi_pl.server_communicator_size() > 1) {
-      parallelLib.bcast(model_index, mi_pl);
-      if (model_index) { // send model index state corresponding to active mode
-	MPIPackBuffer send_buff;
-	send_buff << responseMode << activeKey;
- 	parallelLib.bcast(send_buff, mi_pl);
+    // -----------------------
+    // activate new serve mode: matches NonHierarchSurrModel::serve_run(pl_iter)
+    // -----------------------
+    // These bcasts match the outer parallel context (pl_iter).
+    if (modelPCIter->mi_parallel_level_defined(miPLIndex)) {
+      const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
+      if (mi_pl.server_communicator_size() > 1) {
+	parallelLib.bcast(model_id, mi_pl);
+	if (model_id) { // send model index state corresponding to active mode
+	  MPIPackBuffer send_buff;
+	  send_buff << responseMode << activeKey;
+	  parallelLib.bcast(send_buff, mi_pl);
+	}
       }
     }
   }
 
-  componentParallelMode = model_index;  componentParallelKey = activeKey;
+  componentParallelMode = model_id;  componentParallelKey = activeKey;
 }
 
 
@@ -781,43 +779,27 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   set_communicators(pl_iter, max_eval_concurrency, false); // don't recurse
 
-  // manage LF model and HF model servers, matching communication from
-  // NonHierarchSurrModel::component_parallel_mode()
-  // Note: could consolidate logic by bcasting componentParallelKey,
-  //       except for special handling of responseMode for TRUTH_MODEL_MODE.
-  componentParallelMode = 1; // dummy value to be replaced inside loop
+  // match communication from NonHierarchSurrModel::component_parallel_mode()
+  componentParallelMode = 1; // dummy value for entering loop
   while (componentParallelMode) {
     parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
     if (componentParallelMode) {
+      // *** TO DO: aggregate keys required for tagging surrogate data ***
       // use a quick size estimation for recv buffer i/o size bcast
       UShortArray dummy_key(5, 0); // for size estimation (worst 2-model case)
       MPIPackBuffer send_buff;  send_buff << responseMode << dummy_key;
       int buffer_len = send_buff.size();
-      // receive model state from NonHierarchSurrModel::component_parallel_mode()
+
+      // receive model state from HierarchSurrModel::component_parallel_mode()
       MPIUnpackBuffer recv_buffer(buffer_len);
       parallelLib.bcast(recv_buffer, *pl_iter);
       recv_buffer >> responseMode >> activeKey;
 
-      active_model_key(activeKey); // updates {truth,surr}ModelKey
-      if (componentParallelMode == SURROGATE_MODEL_MODE) {
-	// serve active LF model:
-	surrogate_model().serve_run(pl_iter, max_eval_concurrency);
-	// Note: ignores erroneous BYPASS_SURROGATE
-      }
-      else if (componentParallelMode == TRUTH_MODEL_MODE) {
-	// serve active HF model, employing correct iterator concurrency:
-	Model& hf_model = truth_model();
-	switch (responseMode) {
-	case UNCORRECTED_SURROGATE:
-	  Cerr << "Error: cannot set parallel mode to TRUTH_MODEL_MODE for a "
-	       << "response mode of UNCORRECTED_SURROGATE." << std::endl;
-	  abort_handler(-1);                                              break;
-	case AUTO_CORRECTED_SURROGATE:
-	  hf_model.serve_run(pl_iter, hf_model.derivative_concurrency()); break;
-	case BYPASS_SURROGATE: case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-	  hf_model.serve_run(pl_iter, max_eval_concurrency);              break;
-	}
-      }
+      active_model_key(activeKey);
+      size_t index = componentParallelMode - 1; // id to index
+      Model& model = (index < unorderedModels.size()) ?
+	unorderedModels[index] : truthModel;
+      model.serve_run(pl_iter, max_eval_concurrency);
     }
   }
 }

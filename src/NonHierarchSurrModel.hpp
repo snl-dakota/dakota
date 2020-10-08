@@ -20,11 +20,7 @@
 #include "ParallelLibrary.hpp"
 #include "DataModel.hpp"
 
-
 namespace Dakota {
-
-//enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
-//       FULL_SOLUTION_LEVEL_CORRECTION, SEQUENCE_CORRECTION };
 
 
 /// Derived model class within the surrogate model branch for managing
@@ -52,15 +48,6 @@ public:
   NonHierarchSurrModel(ProblemDescDB& problem_db); ///< constructor
   ~NonHierarchSurrModel();                         ///< destructor
 
-  //
-  //- Heading: Member functions
-  //
-
-  /// return correctionMode
-  const unsigned short correction_mode() const;
-  /// set correctionMode
-  void correction_mode(unsigned short corr_mode);
-
 protected:
 
   //
@@ -68,10 +55,6 @@ protected:
   //
 
   size_t qoi() const;
-
-  DiscrepancyCorrection& discrepancy_correction();
-  short correction_type();
-  void  correction_type(short corr_type);
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
@@ -132,11 +115,9 @@ protected:
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   void surrogate_function_indices(const IntSet& surr_fn_indices);
 
-  /// use the high fidelity model to compute the truth values needed for
-  /// correction of the low fidelity model results
-  void build_approximation();
-  // Uses the c_vars/response anchor point to define highFidResponse
-  //bool build_approximation(const RealVector& c_vars,const Response& response);
+  // use the high fidelity model to compute the truth values needed for
+  // correction of approximate model results
+  //void build_approximation();
 
   /// update component parallel mode for supporting parallelism in
   /// the low ad high fidelity models
@@ -218,9 +199,15 @@ private:
   /// resize currentResponse based on responseMode
   void resize_response(bool use_virtual_counts = true);
 
-  /// stop the servers for the orderedModels instance identified by
-  /// the passed index
-  void stop_model(size_t model_index);
+  /// stop the servers for the model instance identified by the passed id
+  void stop_model(short model_id);
+
+  /// check whether incoming ASV has any active content
+  bool test_asv(const ShortArray& asv);
+  /// check whether there are any non-empty maps
+  bool test_id_maps(const IntIntMapArray& id_maps);
+  /// count number of non-empty maps
+  size_t count_id_maps(const IntIntMapArray& id_maps);
 
   //
   //- Heading: Data members
@@ -246,17 +233,19 @@ private:
   /// scheduling processes
   bool sameInterfaceInstance;
 
-  /// store {LF,HF} model key that is active in component_parallel_mode()
+  /// store aggregate model key that is active in component_parallel_mode()
   UShortArray componentParallelKey;
 
   // map of reference truth (high fidelity) responses computed in
   // build_approximation() and used for calculating corrections
   //std::map<UShortArray, Response> truthResponseRef;
 
-  /// map of truth (high-fidelity) responses retrieved in
-  /// derived_synchronize_nowait() that could not be returned since
-  /// corresponding low-fidelity response portions were still pending
-  IntResponseMapArray cachedRespMaps;
+  IntIntMapArray modelIdMap; // *** TO DO: demote base-class IdMaps or promote MapArray
+
+  /// maps of responses retrieved in derived_synchronize_nowait() that
+  /// could not be returned since corresponding response portions were
+  /// still pending, blocking response aggregation
+  IntResponseMapArray cachedRespMaps; // *** TO DO: demote base-class cache maps or promote MapArray
 };
 
 
@@ -329,22 +318,6 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
 }
 
 
-inline DiscrepancyCorrection& NonHierarchSurrModel::discrepancy_correction()
-{ return deltaCorr[activeKey]; }
-
-
-inline short NonHierarchSurrModel::correction_type()
-{ return discrepancy_correction().correction_type(); }
-
-
-inline void NonHierarchSurrModel::correction_type(short corr_type)
-{
-  std::map<UShortArray, DiscrepancyCorrection>::iterator it;
-  for (it=deltaCorr.begin(); it!=deltaCorr.end(); ++it)
-    it->second.correction_type(corr_type);
-}
-
-
 inline Model& NonHierarchSurrModel::surrogate_model()
 {
   unsigned short lf_form = (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[1];
@@ -391,7 +364,8 @@ inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
   // assign activeKey and extract {surr,truth}ModelKey
   SurrogateModel::active_model_key(key);
 
-  /*
+  /* *** TO DO: activate solution levels within truth/unordered models
+
   unsigned short hf_form = (truthModelKey.empty()) ? USHRT_MAX:truthModelKey[1],
                  lf_form =  (surrModelKey.empty()) ? USHRT_MAX: surrModelKey[1];
   if (hf_form != lf_form) { // distinct model forms
@@ -413,22 +387,11 @@ inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
 
   // assign same{Model,Interface}Instance
   check_model_interface_instance();
-
-  switch (responseMode) {
-  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
-    if (lf_form != USHRT_MAX) { // a LF model form is defined
-      DiscrepancyCorrection& delta_corr = deltaCorr[key]; // per data group
-      if (!delta_corr.initialized())
-	delta_corr.initialize(surrogate_model(), surrogateFnIndices, corrType,
-			      corrOrder);
-    }
-    break;
-  }
   */
 }
 
 
-bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
+inline bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
 {
   size_t i, num_fns = asv.size();
   for (i=0; i<num_fns; ++i)
@@ -438,7 +401,7 @@ bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
 }
 
 
-bool NonHierarchSurrModel::test_id_maps(const IntIntMapArray& id_maps)
+inline bool NonHierarchSurrModel::test_id_maps(const IntIntMapArray& id_maps)
 {
   size_t i, num_map = id_maps.size();
   for (i=0; i<num_map; ++i)
@@ -448,7 +411,7 @@ bool NonHierarchSurrModel::test_id_maps(const IntIntMapArray& id_maps)
 }
 
 
-size_t NonHierarchSurrModel::count_id_maps(const IntIntMapArray& id_maps)
+inline size_t NonHierarchSurrModel::count_id_maps(const IntIntMapArray& id_maps)
 {
   size_t i, num_map = id_maps.size(), cntr = 0;
   for (i=0; i<num_map; ++i)
@@ -456,16 +419,6 @@ size_t NonHierarchSurrModel::count_id_maps(const IntIntMapArray& id_maps)
       ++cntr;
   return cntr;
 }
-
-
-/*
-inline const unsigned short NonHierarchSurrModel::correction_mode() const
-{ return correctionMode; }
-
-
-inline void NonHierarchSurrModel::correction_mode(unsigned short corr_mode)
-{ correctionMode = corr_mode; }
-*/
 
 
 inline void NonHierarchSurrModel::
@@ -517,35 +470,6 @@ inline void NonHierarchSurrModel::resize_from_subordinate_model(size_t depth)
 
 inline void NonHierarchSurrModel::update_from_subordinate_model(size_t depth)
 {
-  /*
-  switch (responseMode) {
-  case UNCORRECTED_SURROGATE:      // LF only
-  case AUTO_CORRECTED_SURROGATE: { // LF is active
-    Model& lf_model = surrogate_model();
-    // bottom-up data flow, so recurse first
-    if (depth == std::numeric_limits<size_t>::max())
-      lf_model.update_from_subordinate_model(depth);//retain special value (inf)
-    else if (depth)
-      lf_model.update_from_subordinate_model(depth - 1);
-    // now pull updates from LF
-    update_from_model(lf_model);
-    break;
-  }
-  case BYPASS_SURROGATE:   case NO_SURROGATE:        // HF only
-  case AGGREGATED_MODELS:  case MODEL_DISCREPANCY: { // prefer truth model
-    Model& hf_model = truth_model();
-    // bottom-up data flow, so recurse first
-    if (depth == std::numeric_limits<size_t>::max())
-      hf_model.update_from_subordinate_model(depth);//retain special value (inf)
-    else if (depth)
-      hf_model.update_from_subordinate_model(depth - 1);
-    // now pull updates from HF
-    update_from_model(hf_model);
-    break;
-  }
-  }
-  */
-
   // bottom-up data flow, so recurse first
   if (depth == std::numeric_limits<size_t>::max())
     truthModel.update_from_subordinate_model(depth);//retain special value
@@ -573,25 +497,13 @@ inline void NonHierarchSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
 
-  // Trap the combination of no user correction specification with either
-  // AUTO_CORRECTED_SURROGATE (NO_CORRECTION defeats the point for HSModel) or
-  // MODEL_DISCREPANCY (which formulation for computing discrepancy?) modes.
-  if ( !corrType && ( mode == AUTO_CORRECTED_SURROGATE ||
-		      mode == MODEL_DISCREPANCY ) ) {
-    Cerr << "Error: activation of mode ";
-    if (mode == AUTO_CORRECTED_SURROGATE) Cerr << "AUTO_CORRECTED_SURROGATE";
-    else                                  Cerr << "MODEL_DISCREPANCY";
-    Cerr << " requires specification of a correction type." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
   // if necessary, resize the response for entering/exiting an aggregated mode.
   // Since parallel job scheduling only involves either the LF or HF model at
   // any given time, this call does not need to be matched on serve_run() procs.
   resize_response();
 
-  // don't pass to low fidelity model (in case it includes surrogates) since
-  // point of a surrogate bypass is to get a surrogate-free truth evaluation
+  // don't pass to approx models since point of a surrogate bypass is to get
+  // a surrogate-free truth evaluation
   if (mode == BYPASS_SURROGATE) // recurse in this case
     truthModel.surrogate_response_mode(mode);
 }
@@ -642,17 +554,17 @@ inline void NonHierarchSurrModel::stop_servers()
 { component_parallel_mode(0); }
 
 
-inline void NonHierarchSurrModel::stop_model(size_t ordered_model_index)
+inline void NonHierarchSurrModel::stop_model(short model_id)
 {
-  // *** TO DO: review calling context and consider stop_truth_model() +
-  // ***        stop_model(size_t unordered_model_index)
-
-  Model& model = unorderedModels[ordered_model_index];
-  ParConfigLIter pc_it = model.parallel_configuration_iterator();
-  size_t index = model.mi_parallel_level_index();
-  if (pc_it->mi_parallel_level_defined(index) &&
-      pc_it->mi_parallel_level(index).server_communicator_size() > 1)
-    model.stop_servers();
+  if (model_id) {
+    Model& model = (model_id <= unorderedModels.size()) ?
+      unorderedModels[model_id-1] : truthModel;
+    ParConfigLIter pc_it = model.parallel_configuration_iterator();
+    size_t index = model.mi_parallel_level_index();
+    if (pc_it->mi_parallel_level_defined(index) &&
+	pc_it->mi_parallel_level(index).server_communicator_size() > 1)
+      model.stop_servers();
+  }
 }
 
 

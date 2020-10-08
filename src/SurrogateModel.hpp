@@ -91,10 +91,6 @@ protected:
   //- Heading: New virtual functions
   //
 
-  /// distributes the incoming orig_asv among actual_asv and approx_asv
-  virtual void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
-			 ShortArray& approx_asv, bool build_flag);
-
   /// verify compatibility between SurrogateModel attributes and
   /// attributes of the submodel (DataFitSurrModel::actualModel or
   /// HierarchSurrModel::highFidelityModel)
@@ -103,6 +99,12 @@ protected:
   //
   //- Heading: Member functions
   //
+
+  /// distributes the incoming orig_asv among actual_asv and approx_asv
+  void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
+		 ShortArray& approx_asv, bool build_flag);
+  /// distributes the incoming orig_asv among actual_asv and approx_asv
+  void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
 
   /// initialize model with data that could change once per set of evaluations
   /// (e.g., an outer iterator execution), including active variable labels,
@@ -138,9 +140,16 @@ protected:
   void response_combine(const Response& actual_response,
                         const Response& approx_response,
                         Response& combined_response);
+
   /// aggregate {HF,LF} response data to create a new response with 2x size
   void aggregate_response(const Response& hf_resp, const Response& lf_resp,
 			  Response& agg_resp);
+  /// aggregate response array to create a new response with accumulated size
+  void aggregate_response(const ResponseArray& resp_array, Response& agg_resp);
+  /// insert a single response into an aggregated response in the
+  /// specified position
+  void insert_response(const Response& response, size_t position,
+		       Response& agg_response);
 
   //
   //- Heading: Data
