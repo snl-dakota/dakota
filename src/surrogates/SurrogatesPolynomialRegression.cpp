@@ -26,12 +26,14 @@ PolynomialRegression::PolynomialRegression() {
 PolynomialRegression::PolynomialRegression(const ParameterList &param_list) {
   default_options();
   configOptions = param_list;
+  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
 
 PolynomialRegression::PolynomialRegression(const std::string &param_list_xml_filename) {
   default_options();
   auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
   configOptions = *param_list;
+  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
 
 PolynomialRegression::PolynomialRegression(const MatrixXd &samples,

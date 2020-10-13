@@ -103,8 +103,16 @@ VectorXd Surrogate::cross_validate(const MatrixXd &samples,
 
   // clone the surrogate's configuration so CV doesn't invalidate *this
   std::shared_ptr<Surrogate> cv_surrogate = this->clone();
+  //ParameterList cv_surrogate_options;
+  //cv_surrogate->get_options(cv_surrogate_options);
+  //int verbosity_level = cv_surrogate_options.get<int>("verbosity");
+  int verbosity_level = configOptions.get<int>("verbosity");
 
   for (int i = 0; i < num_folds; i++) {
+    if (verbosity_level > 0) {
+      std::cout << "\nCross-validation fold " << i + 1
+                << "/" << num_folds << "\n\n";
+     }
     /* validation samples */
     fold_indices = cv_folds[i];
     num_val_samples = fold_indices.size();

@@ -32,13 +32,14 @@ SurrogatesBaseApprox(const ProblemDescDB& problem_db,
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
 {
   advanced_options_file = problem_db.get_string("model.advanced_options_file");
+  set_verbosity();
 }
 
 
 SurrogatesBaseApprox::
 SurrogatesBaseApprox(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data)
-{ }
+{ set_verbosity(); }
 
 
 bool SurrogatesBaseApprox::diagnostics_available()
@@ -273,6 +274,17 @@ void SurrogatesBaseApprox::export_model(const String& fn_label,
     String filename = without_extension + ".bin";
     dakota::surrogates::Surrogate::save(model, filename, false);
   }
+}
+
+void SurrogatesBaseApprox::set_verbosity()
+{
+  auto dak_verb = sharedDataRep->outputLevel;
+  if (dak_verb == SILENT_OUTPUT || dak_verb == QUIET_OUTPUT)
+    surrogateOpts.set("verbosity", 0);
+  else if (dak_verb == NORMAL_OUTPUT)
+    surrogateOpts.set("verbosity", 1);
+  else if (dak_verb == VERBOSE_OUTPUT || dak_verb == DEBUG_OUTPUT)
+    surrogateOpts.set("verbosity", 2);
 }
 
 } // namespace Dakota

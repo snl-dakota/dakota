@@ -79,6 +79,8 @@ protected:
   void
   export_model(const String& fn_label, const String& export_prefix = "",
 	       const unsigned short export_format = NO_MODEL_FORMAT) override;
+  /// set the surrogate's verbosity level according to Dakota's verbosity
+  void set_verbosity();
 
   /// Key/value config options for underlying surrogate
   dakota::ParameterList surrogateOpts;
