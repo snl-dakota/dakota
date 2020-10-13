@@ -7352,6 +7352,7 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,non_hierarchical),
 	MP2(surrogateType,global_exp_gauss_proc),
 	MP2(surrogateType,global_exp_poly),
 	MP2(surrogateType,global_function_train),
@@ -7490,7 +7491,7 @@ static String
 
 static StringArray
         MP_(diagMetrics),
-	MP_(orderedModelPointers),
+	MP_(ensembleModelPointers),
 	MP_(primaryVarMaps),
         MP_(secondaryVarMaps);
 

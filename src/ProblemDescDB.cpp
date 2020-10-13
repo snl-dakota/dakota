@@ -2114,7 +2114,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	{"metrics", P diagMetrics},
 	{"nested.primary_variable_mapping", P primaryVarMaps},
 	{"nested.secondary_variable_mapping", P secondaryVarMaps},
-	{"surrogate.ordered_model_pointers", P orderedModelPointers}};
+	{"surrogate.ensemble_model_pointers", P ensembleModelPointers}};
     #undef P
 
     KW<StringArray, DataModelRep> *kw;

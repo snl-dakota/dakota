@@ -3981,7 +3981,8 @@
 		      <!-- TODO: soft convergence limit / tolerance, challenge points -->
 		    </keyword>
 		  </keyword>
-			  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
+		  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
+                    <alias name="truth_model_pointer"/>
                     <param type="STRING" in_taglist="model" />
 		  </keyword>
 		</oneOf>
@@ -4100,33 +4101,27 @@
               </keyword>
             </keyword>
             <keyword  id="multipoint" name="multipoint" code="{0}" label="Multipoint Approximation"  complexity="1">
-            <oneOf label="Multipoint Surrogate" >
-              <keyword  id="tana" name="tana" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Two-point adaptive nonlinear approximation "   />
-              <keyword  id="qmea" name="qmea" code="{N_mom(lit,surrogateType_multipoint_qmea)}" label="Quadratic multipoint exponential approximation "   />
-            </oneOf>
-           	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
-              <param type="STRING" in_taglist="model" />
-            </keyword>
+              <oneOf label="Multipoint Surrogate" >
+                <keyword  id="tana" name="tana" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Two-point adaptive nonlinear approximation "   />
+                <keyword  id="qmea" name="qmea" code="{N_mom(lit,surrogateType_multipoint_qmea)}" label="Quadratic multipoint exponential approximation "   />
+              </oneOf>
+              <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
+                <alias name="truth_model_pointer"/>
+                <param type="STRING" in_taglist="model" />
+              </keyword>
             </keyword>
             <keyword  id="local" name="local" code="{N_mom(lit,surrogateType_local_taylor)}" label="Local Approximation"  complexity="1">
               <keyword  id="taylor_series" name="taylor_series" code="{0}" label="Taylor Series Local Approximation "   />
-        	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
-            	<param type="STRING" in_taglist="model" />
-          	  </keyword>
-            </keyword>
-            <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical Approximation "  >
-              <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,orderedModelPointers)}" label="Model Pointers (Ordered by Fidelity)"   >
-                <alias name="model_fidelity_sequence"/>
+        	<keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
+                  <alias name="truth_model_pointer"/>
+            	  <param type="STRING" in_taglist="model" />
+          	</keyword>
+              </keyword>
+            <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical Approximation"  >
+              <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (Ordered by Fidelity)"   >
+                <alias name="model_hierarchy"/>
                 <param type="STRINGLIST" in_taglist="model" />
               </keyword>
-	      <!--
-	      <keyword  id="low_fidelity_model_pointer" name="low_fidelity_model_pointer" code="{N_mom(str,lowFidelityModelPointer)}" label="Pointer to the low fidelity model specification"   >
-                <param type="STRING" in_taglist="model" />
-              </keyword>
-              <keyword  id="high_fidelity_model_pointer" name="high_fidelity_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Pointer to the high fidelity model specification"   >
-                <param type="STRING" in_taglist="model" />
-		</keyword>
-	      -->
               <keyword  id="correction1" name="correction" code="{0}" label="Surrogate Correction Approach"  minOccurs="0" default="no surrogate correction" >
                 <oneOf label="Correction Order">
                   <keyword  id="zeroth_order1" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="Zeroth Order"   />
@@ -4138,6 +4133,16 @@
                   <keyword  id="multiplicative1" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="Multiplicative"   />
                   <keyword  id="combined1" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="Combined"   />
                 </oneOf>
+              </keyword>
+            </keyword>
+            <keyword  id="non_hierarchical" name="non_hierarchical" code="{N_mom(lit,surrogateType_non_hierarchical)}" label="Nonhierarchical Approximation"  >
+              <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Truth Model Pointer"   >
+		<alias name="actual_model_pointer"/>
+            	<param type="STRING" in_taglist="model" />
+              </keyword>
+              <keyword  id="unordered_model_fidelities" name="unordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (unordered peer models)"   >
+                <alias name="peer_model_fidelities"/>
+                <param type="STRINGLIST" in_taglist="model" />
               </keyword>
             </keyword>
           </oneOf>

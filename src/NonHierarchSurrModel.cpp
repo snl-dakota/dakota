@@ -35,9 +35,9 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
   centralHess = problem_db.get_bool("responses.central_hess");
 
   const String& truth_model_ptr
-    = problem_db.get_string("model.surrogate.truth_model_pointer");
+    = problem_db.get_string("model.surrogate.actual_model_pointer");
   const StringArray& unordered_model_ptrs
-    = problem_db.get_sa("model.surrogate.unordered_model_pointers");
+    = problem_db.get_sa("model.surrogate.ensemble_model_pointers");
 
   size_t i, num_approx_models = unordered_model_ptrs.size(),
            model_index = problem_db.get_db_model_node(); // for restoration

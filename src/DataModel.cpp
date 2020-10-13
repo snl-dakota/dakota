@@ -69,7 +69,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << hierarchicalTags << subMethodPointer
     << solutionLevelControl << solutionLevelCost << surrogateFnIndices
-    << surrogateType << actualModelPointer << orderedModelPointers
+    << surrogateType << actualModelPointer << ensembleModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
     << modelExportPrefix << modelExportFormat << importUseVariableLabels
@@ -115,7 +115,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
     >> responsesPointer >> hierarchicalTags >> subMethodPointer
     >> solutionLevelControl >> solutionLevelCost >> surrogateFnIndices
-    >> surrogateType >> actualModelPointer >> orderedModelPointers
+    >> surrogateType >> actualModelPointer >> ensembleModelPointers
     >> pointsTotal >> pointsManagement >> approxPointReuse
     >> importBuildPtsFile >> importBuildFormat >> exportSurrogate
     >> modelExportPrefix >> modelExportFormat >> importUseVariableLabels
@@ -161,7 +161,7 @@ void DataModelRep::write(std::ostream& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << hierarchicalTags << subMethodPointer
     << solutionLevelControl << solutionLevelCost << surrogateFnIndices
-    << surrogateType << actualModelPointer << orderedModelPointers
+    << surrogateType << actualModelPointer << ensembleModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
     << modelExportPrefix << modelExportFormat << importUseVariableLabels
