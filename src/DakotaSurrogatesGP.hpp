@@ -52,9 +52,6 @@ protected:
 
   Real prediction_variance(const RealVector& c_vars) override;
 
-  virtual void
-  derived_export_model(const String& filename, bool binary) override;
-
 };
 
 } // namespace Dakota

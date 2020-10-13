@@ -25,6 +25,11 @@ option(DAKOTA_MODULE_SURROGATES "Enable Dakota module surrogates" ON)
 option(DAKOTA_MODULE_DAKOTA "Enable Dakota module for traditional all Dakota"
   ON)
 
+if(BUILD_IN_TRILINOS)
+  set(DAKOTA_MODULE_SURROGATES OFF CACHE BOOL
+    "Dakota surrogates module is disabled for in-Trilinos builds" FORCE)
+endif()
+
 # Testing options
 option(DAKOTA_ENABLE_TESTS "Enable Dakota-specific tests?" ON)
 # Option to turn off key DAKOTA TPL tests, default OFF
@@ -59,25 +64,46 @@ endif()
 
 ## Python options
 
+# NOTES/RATIONALE:
+#  * Dakota build should only require a Python interpreter by default
+#  * We do not default-enable components that have library
+#    dependencies due to distribution challenges. These include:
+#     - Python libs: DAKOTA_PYTHON_DIRECT_INTERFACE, DAKOTA_PYTHON_SURROGATES
+#     - Python numpy: DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
+#  * When h5py is present, unit tests using it will automatically be enabled
+
 # Scripts and tests based on interpreter
-# NOTE: Historically controlled linked/direct Python interface only
+# (Formerly, DAKOTA_PYTHON controlled linked/direct Python interface only)
 option(DAKOTA_PYTHON "Dakota Python scripts (Interpreter); default ON" ON)
 
-# ??? Better name: LINKED_INTERFACE; other???
+# Direct interface defaults OFF to avoid Python library dependencies
 option(DAKOTA_PYTHON_DIRECT_INTERFACE
   "Dakota Python direct interface (Development); default OFF" OFF)
-# Formerly called DAKOTA_PYTHON_NUMPY
+# Direct interface numpy is a dependent option; will only be enabled
+# if the direct interface is. (Formerly called DAKOTA_PYTHON_NUMPY)
 option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
-  "Dakota Python direct interface uses NumPy; default ON)" ON)
-
-# DNE yet
-##option(DAKOTA_PYTHON_TOP_INTERFACE "Top-level Dakota interface (DNE)" OFF)
-
-# Requires Pybind11
-option(DAKOTA_PYTHON_SURROGATES
-  "Dakota Python interface to surrogates module; default ON when Python enabled"
+  "Dakota Python direct interface uses NumPy (only has effect when DAKOTA_PYTHON_DIRECT_INTERFACE is ON)" 
   ON
   )
+
+# Does not yet exist and needs a better name:
+##option(DAKOTA_PYTHON_TOP_INTERFACE "Top-level Dakota Python interface" OFF)
+
+# Requires Pybind11; default OFF to avoid default library dependencies
+option(DAKOTA_PYTHON_SURROGATES
+  "Dakota Python interface to surrogates module; default OFF" OFF)
+
+if(DAKOTA_PYTHON_SURROGATES)
+  if(DAKOTA_MODULE_SURROGATES)
+    set(DAKOTA_PYBIND11 ON CACHE BOOL
+      "Dakota using Pybind11 for surrogate wrappers.")
+  else()
+    message(STATUS "Disabling DAKOTA_PYTHON_SURROGATES as "
+      "DAKOTA_MODULE_SURROGATES=${DAKOTA_MODULE_SURROGATES}")
+    set(DAKOTA_PYTHON_SURROGATES OFF CACHE BOOL
+      "Python surrogate wrappers disabled as surrogate module is off.")
+  endif()
+endif()
 
 # Option to build an unsupported Java wrapper for Dakota's library mode that 
 # has a Java callback for performing function evaluations.  This is a non-

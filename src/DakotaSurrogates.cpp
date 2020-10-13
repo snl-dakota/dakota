@@ -32,13 +32,14 @@ SurrogatesBaseApprox(const ProblemDescDB& problem_db,
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
 {
   advanced_options_file = problem_db.get_string("model.advanced_options_file");
+  set_verbosity();
 }
 
 
 SurrogatesBaseApprox::
 SurrogatesBaseApprox(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data)
-{ }
+{ set_verbosity(); }
 
 
 bool SurrogatesBaseApprox::diagnostics_available()
@@ -231,9 +232,7 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
 
   // not sending Eigen view of approxGradient as model->gradient calls resize()
-  const size_t qoi = 0; // only one response for now
-  MatrixXd pred_grad(num_evals, num_vars);
-  model->gradient(eval_pts, pred_grad, qoi);
+  MatrixXd pred_grad = model->gradient(eval_pts);
 
   approxGradient.sizeUninitialized(c_vars.length());
   for (size_t j = 0; j < num_vars; j++)
@@ -268,13 +267,24 @@ void SurrogatesBaseApprox::export_model(const String& fn_label,
   // Saving to text archive
   if(formats & TEXT_ARCHIVE) {
     String filename = without_extension + ".txt";
-    derived_export_model(filename, false);
+    dakota::surrogates::Surrogate::save(model, filename, false);
   }
   // Saving to binary archive
   if(formats & BINARY_ARCHIVE) {
     String filename = without_extension + ".bin";
-    derived_export_model(filename, true);
+    dakota::surrogates::Surrogate::save(model, filename, false);
   }
+}
+
+void SurrogatesBaseApprox::set_verbosity()
+{
+  auto dak_verb = sharedDataRep->outputLevel;
+  if (dak_verb == SILENT_OUTPUT || dak_verb == QUIET_OUTPUT)
+    surrogateOpts.set("verbosity", 0);
+  else if (dak_verb == NORMAL_OUTPUT)
+    surrogateOpts.set("verbosity", 1);
+  else if (dak_verb == VERBOSE_OUTPUT || dak_verb == DEBUG_OUTPUT)
+    surrogateOpts.set("verbosity", 2);
 }
 
 } // namespace Dakota

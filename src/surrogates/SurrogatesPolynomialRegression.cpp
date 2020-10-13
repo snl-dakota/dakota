@@ -26,12 +26,14 @@ PolynomialRegression::PolynomialRegression() {
 PolynomialRegression::PolynomialRegression(const ParameterList &param_list) {
   default_options();
   configOptions = param_list;
+  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
 
 PolynomialRegression::PolynomialRegression(const std::string &param_list_xml_filename) {
   default_options();
   auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
   configOptions = *param_list;
+  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
 
 PolynomialRegression::PolynomialRegression(const MatrixXd &samples,
@@ -74,9 +76,19 @@ void PolynomialRegression::compute_basis_matrix(const MatrixXd &samples,
 void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &response) {
 
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
-  std::cout << "\nBuilding Polynomial with configuration options\n"
-	  << configOptions << "\n";
+  verbosity = configOptions.get<int>("verbosity");
 
+  if (verbosity > 0) {
+    if (verbosity == 1) {
+      std::cout << "\nBuilding Polynomial\n\n";
+    }
+    else if (verbosity == 2) {
+      std::cout << "\nBuilding Polynomial with configuration options\n"
+                << configOptions << "\n";
+    }
+    else
+      throw(std::runtime_error("Invalid verbosity int for Polynomial surrogate"));
+  }
 
   numQOI = response.cols();
   numSamples = samples.rows();
@@ -113,8 +125,13 @@ void PolynomialRegression::build(const MatrixXd &samples, const MatrixXd &respon
                       - (scaled_basis_matrix*polynomialCoeffs).mean();
 }
 
-void PolynomialRegression::value(const MatrixXd &eval_points,
-                                 MatrixXd &approx_values) {
+VectorXd PolynomialRegression::value(const MatrixXd &eval_points, const int qoi) {
+
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
+  assert(qoi == 0);
+
+  VectorXd approx_values;
 
   /* Construct the basis matrix for the eval points */
   MatrixXd unscaled_eval_pts_basis_matrix;
@@ -128,27 +145,6 @@ void PolynomialRegression::value(const MatrixXd &eval_points,
   /* Compute the prediction values*/
   approx_values = scaled_eval_pts_basis_matrix*polynomialCoeffs;
   approx_values = (approx_values.array() + polynomialIntercept).matrix();
-}
-
-VectorXd PolynomialRegression::value(const MatrixXd &eval_points, const int qoi) {
-
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
-
-  VectorXd approx_values;
-  /* Construct the basis matrix for the eval points */
-  MatrixXd unscaled_eval_points_basis_matrix;
-  compute_basis_matrix(eval_points, unscaled_eval_points_basis_matrix);
-
-  /* Scale the sample points */
-  MatrixXd scaled_eval_points_basis_matrix;
-  dataScaler.scale_samples(unscaled_eval_points_basis_matrix,
-                           scaled_eval_points_basis_matrix);
-
-  /* Compute the prediction values*/
-  approx_values = scaled_eval_points_basis_matrix*polynomialCoeffs;
-  approx_values = (approx_values.array() + polynomialIntercept).matrix();
   return approx_values;
 }
 
@@ -158,10 +154,15 @@ void PolynomialRegression::default_options() {
   defaultConfigOptions.set("p-norm", 1.0, "P-Norm in hyperbolic cross");
   defaultConfigOptions.set("scaler type", "none", "Type of data scaling");
   defaultConfigOptions.set("regression solver type", "SVD", "Type of regression solver");
+  /* Verbosity levels
+     2 - maximum level: print out config options and building notification
+     1 - minimum level: print out building notification
+     0 - no output */
+  defaultConfigOptions.set("verbosity", 1, "console output verbosity");
 }
 
-void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
-                                    const int qoi) {
+MatrixXd PolynomialRegression::gradient(const MatrixXd &eval_points, const int qoi) {
+
   /* Surrogate models don't yet support multiple responses */
   silence_unused_args(qoi);
   assert(qoi == 0);
@@ -188,23 +189,23 @@ void PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient,
 
   /* Generate the basis matrix */
   MatrixXd unscaled_eval_pts_basis_matrix, scaled_eval_pts_basis_matrix;
-  compute_basis_matrix(samples, unscaled_eval_pts_basis_matrix);
+  compute_basis_matrix(eval_points, unscaled_eval_pts_basis_matrix);
 
   /* Scale the basis matrix */
   dataScaler.scale_samples(unscaled_eval_pts_basis_matrix,
                            scaled_eval_pts_basis_matrix);
 
   /* Compute the gradient */
-  gradient = scaled_eval_pts_basis_matrix*deriv_coeffs;
+  return scaled_eval_pts_basis_matrix*deriv_coeffs;
 }
 
-void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
-                                   const int qoi) {
+MatrixXd PolynomialRegression::hessian(const MatrixXd &eval_point, const int qoi) {
+
   /* Surrogate models don't yet support multiple responses */
   silence_unused_args(qoi);
   assert(qoi == 0);
 
-  hessian.resize(numVariables, numVariables);
+  MatrixXd hessian(numVariables, numVariables);
   MatrixXd basis_indices = basisIndices.cast<double>();
   basis_indices.transposeInPlace();
   MatrixXd deriv_coeffs = VectorXd::Zero(numTerms);
@@ -213,7 +214,7 @@ void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
 
   /* Generate the (row) basis matrix */
   MatrixXd unscaled_eval_pts_basis_matrix, scaled_eval_pts_basis_matrix;
-  compute_basis_matrix(sample, unscaled_eval_pts_basis_matrix);
+  compute_basis_matrix(eval_point, unscaled_eval_pts_basis_matrix);
 
   /* Scale the (row) basis matrix */
   dataScaler.scale_samples(unscaled_eval_pts_basis_matrix,
@@ -247,13 +248,15 @@ void PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian,
       }
     }
   }
+  return hessian;
 }
 
-const MatrixXd & PolynomialRegression::get_polynomial_coeffs() const { return polynomialCoeffs; }
+const MatrixXd& PolynomialRegression::get_polynomial_coeffs() const { return polynomialCoeffs; }
 double PolynomialRegression::get_polynomial_intercept() const { return polynomialIntercept; }
 int PolynomialRegression::get_num_terms() const { return numTerms; }
-
 void PolynomialRegression::set_polynomial_coeffs(const MatrixXd &coeffs) { polynomialCoeffs = coeffs; }
 
 } // namespace surrogates
 } // namespace dakota
+
+BOOST_CLASS_EXPORT_IMPLEMENT(dakota::surrogates::PolynomialRegression)

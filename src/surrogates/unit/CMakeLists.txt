@@ -38,6 +38,14 @@ dakota_add_unit_test(NAME EvalMetricsCrossValTest SOURCES
   empty.f90
 )
 
+if(DAKOTA_PYTHON_SURROGATES)
+  add_test(NAME surrogates_python
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate.py
+    $<TARGET_FILE_DIR:surrogates>
+    )
+  set_tests_properties(surrogates_python PROPERTIES LABELS UnitTest)
+endif()
+
 # Rationale: These all include Teuchos headers and need to link to the
 # unit test system or ParameterList components
 target_include_directories(GaussianProcessTest PRIVATE "${Teuchos_INCLUDE_DIRS}")

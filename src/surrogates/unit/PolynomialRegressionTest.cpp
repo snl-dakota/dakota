@@ -144,7 +144,7 @@ void PolynomialRegressionSurrogate_straight_line_fit(std::string scaler_type) {
   BOOST_CHECK(std::abs(expected_polynomial_intercept - polynomial_intercept) < 1.0e-4);
 
   VectorXd unscaled_eval_pts = VectorXd::LinSpaced(100,0,1);
-  MatrixXd expected_approx_values(100, 1);
+  VectorXd expected_approx_values(100);
   expected_approx_values <<
     2.0,     2.0101,  2.0202,  2.0303,  2.0404,  2.05051, 2.06061, 2.07071, 2.08081, 2.09091,
     2.10101, 2.11111, 2.12121, 2.13131, 2.14141, 2.15152, 2.16162, 2.17172, 2.18182, 2.19192,
@@ -157,8 +157,8 @@ void PolynomialRegressionSurrogate_straight_line_fit(std::string scaler_type) {
     2.80808, 2.81818, 2.82828, 2.83838, 2.84848, 2.85859, 2.86869, 2.87879, 2.88889, 2.89899,
     2.90909, 2.91919, 2.92929, 2.93939, 2.94949, 2.9596,  2.9697,  2.9798,  2.9899,  3.0;
 
-  MatrixXd actual_approx_values;
-  pr.value(unscaled_eval_pts, actual_approx_values); 
+  VectorXd actual_approx_values;
+  actual_approx_values = pr.value(unscaled_eval_pts);
 
   BOOST_CHECK(matrix_equals(actual_approx_values, expected_approx_values, 1.0e-5));
 }
@@ -183,12 +183,12 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
      x:            0    1    0    2    0    1    3    0    2    1
      y:            0    0    1    0    2    1    0    3    1    2 */
   gold_coeffs << -1.0, 0.0, 0.0, 4.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-  MatrixXd eval_points, gold_responses, test_responses;
+  MatrixXd eval_points, gold_responses;
   get_samples(num_vars, 7, eval_points);
   another_additive_quadratic_function(eval_points, gold_responses);
 
   /* Use the Surrogates API with partially user-defined input parameters */
-  MatrixXd test_responses3;
+  VectorXd test_responses3;
   Teuchos::ParameterList param_list_partial("Polynomial Test Parameters");
   param_list_partial.set("max degree", degree);
   param_list_partial.set("scaler type", "none");
@@ -200,7 +200,7 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
 
   const MatrixXd& polynomial_coeffs3 = pr3.get_polynomial_coeffs();
   double polynomial_intercept3 = pr3.get_polynomial_intercept();
-  pr3.value(eval_points, test_responses3);
+  test_responses3 = pr3.value(eval_points);
 
   BOOST_CHECK(std::abs(polynomial_intercept3) < 1.0e-10 );
   BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs3, 1.0e-10));
@@ -224,9 +224,9 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
 
   const MatrixXd& polynomial_coeffs4 = pr4.get_polynomial_coeffs();
   double polynomial_intercept4 = pr4.get_polynomial_intercept();
-  pr4.value(eval_points, test_responses4);
+  test_responses4 = pr4.value(eval_points);
 
-  BOOST_CHECK( std::abs(polynomial_intercept4) < 1.0e-10 );
+  BOOST_CHECK(std::abs(polynomial_intercept4) < 1.0e-10);
   BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs4, 1.0e-10));
   BOOST_CHECK(matrix_equals(gold_responses, test_responses4, 1.0e-10));
 
@@ -245,9 +245,9 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
 
   const MatrixXd& polynomial_coeffs5 = pr5.get_polynomial_coeffs();
   double polynomial_intercept5 = pr5.get_polynomial_intercept();
-  pr5.value(eval_points, test_responses5);
+  test_responses5 = pr5.value(eval_points);
 
-  BOOST_CHECK( std::abs(polynomial_intercept5) < 1.0e-10 );
+  BOOST_CHECK(std::abs(polynomial_intercept5) < 1.0e-10);
   BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs5, 1.0e-10));
   BOOST_CHECK(matrix_equals(gold_responses, test_responses5, 1.0e-10));
 
@@ -276,9 +276,9 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
 
   const MatrixXd& polynomial_coeffs6 = pr6.get_polynomial_coeffs();
   double polynomial_intercept6 = pr6.get_polynomial_intercept();
-  pr6.value(eval_points, test_responses6);
+  test_responses6 = pr6.value(eval_points);
 
-  BOOST_CHECK( std::abs(polynomial_intercept6) < 1.0e-10 );
+  BOOST_CHECK(std::abs(polynomial_intercept6) < 1.0e-10);
   BOOST_CHECK(matrix_equals(gold_coeffs6, polynomial_coeffs6, 1.0e-10));
   BOOST_CHECK(matrix_equals(gold_responses6, test_responses6, 1.0e-10));
 }
@@ -299,8 +299,8 @@ void PolynomialRegressionSurrogate_gradient_and_hessian() {
   PolynomialRegression pr(samples, responses, config_options);
 
   MatrixXd gradient, hessian;
-  pr.gradient(samples.topRows(2), gradient);
-  pr.hessian(samples.topRows(1), hessian);
+  gradient = pr.gradient(samples.topRows(2));
+  hessian = pr.hessian(samples.topRows(1));
 
   MatrixXd gold_gradient(2,2);
   gold_gradient << 1.59711,  1.06684, 
@@ -313,55 +313,6 @@ void PolynomialRegressionSurrogate_gradient_and_hessian() {
   BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-4));
 }
 
-void save_free(const PolynomialRegression& surr_out, const std::string& outfile,
-	       bool binary)
-{
-  if (binary) {
-    std::ofstream model_ostream(outfile, std::ios::out|std::ios::binary);
-    if (!model_ostream.good())
-      throw std::runtime_error("Failure opening model file '" + outfile +
-			       "' for binary save.");
-
-    boost::archive::binary_oarchive output_archive(model_ostream);
-    output_archive << surr_out;
-    std::cout << "Model saved to binary file '" << outfile << "'."
-	      << std::endl;
-  }
-  else {
-    std::ofstream model_ostream(outfile, std::ios::out);
-    if (!model_ostream.good())
-      throw std::runtime_error("Failure opening model file '" + outfile +
-			       "' for save.");
-    boost::archive::text_oarchive output_archive(model_ostream);
-    output_archive << surr_out;
-    std::cout << "Model saved to text file '" << outfile << "'."
-	      << std::endl;
-  }
-}
-
-void load_free(const std::string& infile, bool binary,
-	       PolynomialRegression& pr4)
-{
-  if (binary) {
-    std::ifstream model_istream(infile, std::ios::in|std::ios::binary);
-    if (!model_istream.good())
-      throw std::string("Failure opening model file for load.");
-
-    boost::archive::binary_iarchive input_archive(model_istream);
-    input_archive >> pr4;
-    std::cout << "Model loaded from binary file '" << infile << "'."
-	      << std::endl;
-  }
-  else {
-    std::ifstream model_istream(infile, std::ios::in);
-    if (!model_istream.good())
-      throw std::string("Failure opening model file for load.");
-
-    boost::archive::text_iarchive input_archive(model_istream);
-    input_archive >> pr4;
-    std::cout << "Model loaded from text file." << std::endl;
-  }
-}
 
 void PolynomialRegressionSurrogate_parameter_list_import() {
   int num_vars    = 2,
@@ -375,8 +326,8 @@ void PolynomialRegressionSurrogate_parameter_list_import() {
   PolynomialRegression pr(samples, responses, "pr_test_data/pr_parameter_list.xml");
 
   MatrixXd gradient, hessian;
-  pr.gradient(samples.topRows(2), gradient);
-  pr.hessian(samples.topRows(1), hessian);
+  gradient = pr.gradient(samples.topRows(2));
+  hessian = pr.hessian(samples.topRows(1));
 
   MatrixXd gold_gradient(2,2);
   gold_gradient << 1.59711,  1.06684, 
@@ -419,7 +370,9 @@ void PolynomialRegression_SaveLoad()
   param_list_partial.set("max degree", degree);
   param_list_partial.set("scaler type", "none");
 
-  PolynomialRegression pr3(samples, responses, param_list_partial);
+  // test serialization through pointers
+  auto pr3 = std::make_shared<PolynomialRegression>
+    (samples, responses, param_list_partial);
 
   // Initially modelling what save/load functions would do for binary/text
   for (bool binary : {true, false} ) {
@@ -427,22 +380,23 @@ void PolynomialRegression_SaveLoad()
     std::string filename("poly_test.surr");
 
     boost::filesystem::remove(filename);
-    Surrogate::save(pr3, filename, binary);
+    Surrogate::save(std::dynamic_pointer_cast<Surrogate>(pr3), filename, binary);
 
-    PolynomialRegression pr4;
-    Surrogate::load(filename, binary, pr4);
+    std::shared_ptr<Surrogate> surr_in = Surrogate::load(filename, binary);
 
-    BOOST_CHECK(pr3.get_num_terms() == pr4.get_num_terms());
-    BOOST_CHECK(pr3.get_polynomial_intercept() ==
-		pr4.get_polynomial_intercept());
-    BOOST_CHECK(pr3.get_polynomial_coeffs() ==
-		pr4.get_polynomial_coeffs());
+    auto pr4 = std::dynamic_pointer_cast<PolynomialRegression>(surr_in);
+
+    BOOST_CHECK(pr3->get_num_terms() == pr4->get_num_terms());
+    BOOST_CHECK(pr3->get_polynomial_intercept() ==
+		pr4->get_polynomial_intercept());
+    BOOST_CHECK(pr3->get_polynomial_coeffs() ==
+		pr4->get_polynomial_coeffs());
 
     // tests on the loaded surrogate based on original unit test
-    const MatrixXd& loaded_coeffs = pr4.get_polynomial_coeffs();
-    double loaded_intercept = pr4.get_polynomial_intercept();
-    MatrixXd test_responses;
-    pr4.value(eval_points, test_responses);
+    const MatrixXd& loaded_coeffs = pr4->get_polynomial_coeffs();
+    double loaded_intercept = pr4->get_polynomial_intercept();
+    VectorXd test_responses;
+    test_responses = pr4->value(eval_points);
 
     BOOST_CHECK(std::abs(loaded_intercept) < 1.0e-10 );
     BOOST_CHECK(matrix_equals(gold_coeffs, loaded_coeffs, 1.0e-10));
