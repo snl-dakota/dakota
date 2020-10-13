@@ -366,6 +366,9 @@ inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
 
   /* *** TO DO: activate solution levels within truth/unordered models
 
+  // update {truth,surr}ModelKey
+  extract_model_keys(key, truthModelKey, surrModelKey);
+
   unsigned short hf_form = (truthModelKey.empty()) ? USHRT_MAX:truthModelKey[1],
                  lf_form =  (surrModelKey.empty()) ? USHRT_MAX: surrModelKey[1];
   if (hf_form != lf_form) { // distinct model forms
