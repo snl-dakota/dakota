@@ -64,25 +64,34 @@ endif()
 
 ## Python options
 
+# NOTES/RATIONALE:
+#  * Dakota build should only require a Python interpreter by default
+#  * We do not default-enable components that have library
+#    dependencies due to distribution challenges. These include:
+#     - Python libs: DAKOTA_PYTHON_DIRECT_INTERFACE, DAKOTA_PYTHON_SURROGATES
+#     - Python numpy: DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
+#  * When h5py is present, unit tests using it will automatically be enabled
+
 # Scripts and tests based on interpreter
-# NOTE: Historically controlled linked/direct Python interface only
+# (Formerly, DAKOTA_PYTHON controlled linked/direct Python interface only)
 option(DAKOTA_PYTHON "Dakota Python scripts (Interpreter); default ON" ON)
 
-# ??? Better name: LINKED_INTERFACE; other???
+# Direct interface defaults OFF to avoid Python library dependencies
 option(DAKOTA_PYTHON_DIRECT_INTERFACE
   "Dakota Python direct interface (Development); default OFF" OFF)
-# Formerly called DAKOTA_PYTHON_NUMPY
+# Direct interface numpy is a dependent option; will only be enabled
+# if the direct interface is. (Formerly called DAKOTA_PYTHON_NUMPY)
 option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
-  "Dakota Python direct interface uses NumPy; default ON)" ON)
-
-# DNE yet
-##option(DAKOTA_PYTHON_TOP_INTERFACE "Top-level Dakota interface (DNE)" OFF)
-
-# Requires Pybind11
-option(DAKOTA_PYTHON_SURROGATES
-  "Dakota Python interface to surrogates module; default ON when Python enabled"
+  "Dakota Python direct interface uses NumPy (only has effect when DAKOTA_PYTHON_DIRECT_INTERFACE is ON)" 
   ON
   )
+
+# Does not yet exist and needs a better name:
+##option(DAKOTA_PYTHON_TOP_INTERFACE "Top-level Dakota Python interface" OFF)
+
+# Requires Pybind11; default OFF to avoid default library dependencies
+option(DAKOTA_PYTHON_SURROGATES
+  "Dakota Python interface to surrogates module; default OFF" OFF)
 
 if(DAKOTA_PYTHON_SURROGATES)
   if(DAKOTA_MODULE_SURROGATES)

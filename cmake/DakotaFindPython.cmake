@@ -42,7 +42,7 @@ macro(dakota_find_python)
 
   else()
 
-    # Disable some components that default ON
+    # Disable some components that definitely won't work
     message(STATUS
       "DAKOTA_PYTHON = ${DAKOTA_PYTHON}; disabling all Python components")
     set(DAKOTA_PYTHON_DIRECT_INTERFACE OFF CACHE BOOL
