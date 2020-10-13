@@ -408,6 +408,23 @@ private:
   /// order to reproduce high fidelity data.
   DiscrepancyCorrection deltaCorr;
 
+  /// map from actualModel/highFidelityModel evaluation ids to
+  /// DataFitSurrModel/HierarchSurrModel ids
+  IntIntMap truthIdMap;
+  /// map from approxInterface/lowFidelityModel evaluation ids to
+  /// DataFitSurrModel/HierarchSurrModel ids
+  IntIntMap surrIdMap;
+
+  /// map of approximate responses retrieved in derived_synchronize_nowait()
+  /// that could not be returned since corresponding truth model response
+  /// portions were still pending.
+  IntResponseMap cachedApproxRespMap;
+
+  /// map of raw continuous variables used by apply_correction().
+  /// Model::varsList cannot be used for this purpose since it does
+  /// not contain lower level variables sets from finite differencing.
+  IntVariablesMap rawVarsMap;
+
   /// total points the user specified to construct the surrogate
   int pointsTotal;
   /// configuration for points management in build_global()
@@ -548,7 +565,7 @@ inline Iterator& DataFitSurrModel::subordinate_iterator()
 
 inline void DataFitSurrModel::active_model_key(const UShortArray& key)
 {
-  // assign activeKey and extract {surr,truth}ModelKey
+  // assign activeKey
   SurrogateModel::active_model_key(key);
 
   // recur both components: (actualModel could be hierarchical)

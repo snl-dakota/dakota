@@ -121,11 +121,6 @@ protected:
   void extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
 			  UShortArray& surr_key);
 
-  /// return the level index from active low fidelity model key
-  unsigned short surrogate_level_index() const;
-  /// return the level index from active high fidelity model key
-  unsigned short truth_level_index() const;
-
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;
 
@@ -167,22 +162,9 @@ protected:
 
   /// array of indices that identify the currently active model key
   UShortArray activeKey;
-  /// array of indices that identify the surrogate (e.g., low fidelity) model
-  /// (trailing portion of activeKey, if aggregated models)
-  UShortArray surrModelKey;
-  /// array of indices that identify the truth (e.g., high fidelity) model
-  /// (leading portion of activeKey, if aggregated models)
-  UShortArray truthModelKey;
 
   /// type of correction: additive, multiplicative, or combined
   short corrType;
-
-  /// map from actualModel/highFidelityModel evaluation ids to
-  /// DataFitSurrModel/HierarchSurrModel ids
-  IntIntMap truthIdMap;
-  /// map from approxInterface/lowFidelityModel evaluation ids to
-  /// DataFitSurrModel/HierarchSurrModel ids
-  IntIntMap surrIdMap;
 
   /// counter for calls to derived_evaluate()/derived_evaluate_nowait();
   /// used to key response maps from SurrogateModels
@@ -190,14 +172,6 @@ protected:
   /// map of surrogate responses returned by derived_synchronize() and
   /// derived_synchronize_nowait()
   IntResponseMap surrResponseMap;
-  /// map of approximate responses retrieved in derived_synchronize_nowait()
-  /// that could not be returned since corresponding truth model response
-  /// portions were still pending.
-  IntResponseMap cachedApproxRespMap;
-  /// map of raw continuous variables used by apply_correction().
-  /// Model::varsList cannot be used for this purpose since it does
-  /// not contain lower level variables sets from finite differencing.
-  IntVariablesMap rawVarsMap;
 
   /// number of calls to build_approximation()
   /** used as a flag to automatically build the approximation if one of the
@@ -314,14 +288,6 @@ inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 
-inline unsigned short SurrogateModel::surrogate_level_index() const
-{ return (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[2]; }
-
-
-inline unsigned short SurrogateModel::truth_level_index() const
-{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
-
-
 inline void SurrogateModel::
 extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
 		   UShortArray& surr_key)
@@ -341,11 +307,7 @@ extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
 inline void SurrogateModel::active_model_key(const UShortArray& key)
 {
   // base implementation (augmented in derived SurrogateModels)
-
-  // update activeKey
   activeKey = key;
-  // update {truth,surr}ModelKey
-  extract_model_keys(key, truthModelKey, surrModelKey);
 }
 
 

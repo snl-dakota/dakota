@@ -237,6 +237,11 @@ private:
   /// model forms or discretization levels
   void recursive_apply(const Variables& vars, Response& resp);
 
+  /// return the level index from active low fidelity model key
+  unsigned short surrogate_level_index() const;
+  /// return the level index from active high fidelity model key
+  unsigned short truth_level_index() const;
+
   /// stop the servers for the orderedModels instance identified by
   /// the passed index
   void stop_model(size_t ordered_model_index);
@@ -272,13 +277,37 @@ private:
   /// store {LF,HF} model key that is active in component_parallel_mode()
   UShortArray componentParallelKey;
 
-  /// map of reference truth (high fidelity) responses computed in
-  /// build_approximation() and used for calculating corrections
-  std::map<UShortArray, Response> truthResponseRef;
+  /// array of indices that identify the truth (e.g., high fidelity) model
+  /// (leading portion of activeKey, if aggregated models)
+  UShortArray truthModelKey;
+  /// array of indices that identify the surrogate (e.g., low fidelity) model
+  /// (trailing portion of activeKey, if aggregated models)
+  UShortArray surrModelKey;
+
+  /// map from actualModel/highFidelityModel evaluation ids to
+  /// DataFitSurrModel/HierarchSurrModel ids
+  IntIntMap truthIdMap;
+  /// map from approxInterface/lowFidelityModel evaluation ids to
+  /// DataFitSurrModel/HierarchSurrModel ids
+  IntIntMap surrIdMap;
+
+  /// map of approximate responses retrieved in derived_synchronize_nowait()
+  /// that could not be returned since corresponding truth model response
+  /// portions were still pending.
+  IntResponseMap cachedApproxRespMap;
   /// map of truth (high-fidelity) responses retrieved in
   /// derived_synchronize_nowait() that could not be returned since
   /// corresponding low-fidelity response portions were still pending
   IntResponseMap cachedTruthRespMap;
+
+  /// map of raw continuous variables used by apply_correction().
+  /// Model::varsList cannot be used for this purpose since it does
+  /// not contain lower level variables sets from finite differencing.
+  IntVariablesMap rawVarsMap;
+
+  /// map of reference truth (high fidelity) responses computed in
+  /// build_approximation() and used for calculating corrections
+  std::map<UShortArray, Response> truthResponseRef;
 };
 
 
@@ -432,6 +461,9 @@ inline void HierarchSurrModel::active_model_key(const UShortArray& key)
 {
   // assign activeKey and extract {surr,truth}ModelKey
   SurrogateModel::active_model_key(key);
+
+  // update {truth,surr}ModelKey
+  extract_model_keys(key, truthModelKey, surrModelKey);
 
   unsigned short hf_form = (truthModelKey.empty()) ? USHRT_MAX:truthModelKey[1],
                  lf_form =  (surrModelKey.empty()) ? USHRT_MAX: surrModelKey[1];
@@ -624,6 +656,14 @@ inline void HierarchSurrModel::derived_init_serial()
   for (i=0; i<num_models; ++i)
     orderedModels[i].init_serial();
 }
+
+
+inline unsigned short HierarchSurrModel::surrogate_level_index() const
+{ return (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[2]; }
+
+
+inline unsigned short HierarchSurrModel::truth_level_index() const
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
 
 
 inline void HierarchSurrModel::stop_servers()

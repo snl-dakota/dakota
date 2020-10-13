@@ -88,7 +88,7 @@ protected:
   /// return the high fidelity model
   const Model& truth_model() const;
 
-  /// define the active model key and associated {truth,surr}ModelKey pairing
+  /// define the active model key
   void active_model_key(const UShortArray& key);
 
   /// return orderedModels and, optionally, their sub-model recursions
@@ -361,7 +361,7 @@ inline const Model& NonHierarchSurrModel::truth_model() const
 
 inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
 {
-  // assign activeKey and extract {surr,truth}ModelKey
+  // assign activeKey
   SurrogateModel::active_model_key(key);
 
   /* *** TO DO: activate solution levels within truth/unordered models
