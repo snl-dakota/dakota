@@ -580,6 +580,8 @@ void GaussianProcess::default_options()
                       .set("scaler type", "none", "Type of data scaling");
   defaultConfigOptions.sublist("Trend").sublist("Options")
                       .set("regression solver type", "SVD", "Type of regression solver");
+  defaultConfigOptions.sublist("Trend").sublist("Options")
+                      .set("verbosity", 1, "console output verbosity");
 }
 
 void GaussianProcess::compute_build_dists() {

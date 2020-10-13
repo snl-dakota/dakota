@@ -45,6 +45,8 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   }
   else if (trend_string == "none")
     surrogateOpts.sublist("Trend").set("estimate trend", false);
+  surrogateOpts.sublist("Trend").sublist("Options").set("verbosity",
+      surrogateOpts.get<int>("verbosity"));
 
   // TODO: Surfpack find_nugget is an integer; likely want bool or
   // different semantics
@@ -93,7 +95,11 @@ SurrogatesGPApprox(const SharedApproxData& shared_data):
   sig_bnds << 1.0e-2, 1.0e4;
   surrogateOpts.set("sigma bounds", sig_bnds);
 
-  // By default, estimate the nugget
+  // use same verbosity level for polynomial trend
+  surrogateOpts.sublist("Trend").sublist("Options").set("verbosity",
+      surrogateOpts.get<int>("verbosity"));
+
+  // by default, estimate the nugget
   surrogateOpts.sublist("Nugget").set("estimate nugget", true);
   surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
 
