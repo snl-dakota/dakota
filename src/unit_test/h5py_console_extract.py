@@ -126,7 +126,7 @@ def extract_level_mapping_row(line):
     """
     tokens = line.split(None, 1)
     tlen = len(tokens[0])
-    precision = tlen - 7 if tokens[0] is '-' else tlen - 6
+    precision = tlen - 7 if tokens[0] == '-' else tlen - 6
     width = precision + 7
 
     result = 4*[None]
