@@ -115,7 +115,9 @@ public:
    *  \param[in] eval_points Matrix for prediction points - (num_points by num_features).
    *  \returns Mean of the Gaussian process at the prediction points.
    */
-  VectorXd value(const MatrixXd &eval_points) {return value(eval_points, 0); }
+  VectorXd value(const MatrixXd &eval_points) {
+    return Surrogate::value(eval_points);
+  }
 
   /**
    *  \brief Evaluate the gradient of the Gaussian process at a set of prediction points
@@ -135,7 +137,9 @@ public:
    *  \returns Matrix of gradient vectors at the prediction points - 
    *  (num_pts by num_features).
    */
-  MatrixXd gradient(const MatrixXd &eval_points) { return gradient(eval_points, 0); }
+  MatrixXd gradient(const MatrixXd &eval_points) {
+    return Surrogate::gradient(eval_points);
+  }
 
   /**
    *  \brief Evaluate the Hessian of the Gaussian process at a single point for a single QoI.
@@ -153,7 +157,9 @@ public:
    *  \returns Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    */
-  MatrixXd hessian(const MatrixXd &eval_point) { return hessian(eval_point, 0); }
+  MatrixXd hessian(const MatrixXd &eval_point) {
+    return Surrogate::hessian(eval_point);
+  }
 
   /**
    *  \brief Evaluate the covariance matrix for the Gaussian Process at a set of prediction points for a single QoI index.

@@ -114,7 +114,9 @@ public:
    *  \param[in] qoi Index for surrogate QoI.
    *  \returns Values of the polynomial surrogate at the prediction points - (num_pts)
    */
-  VectorXd value(const MatrixXd &eval_points) { return value(eval_points, 0); }
+  VectorXd value(const MatrixXd &eval_points) {
+    return Surrogate::value(eval_points);
+  }
 
   /**
    *  \brief Evaluate the gradient of the polynomial surrogate at a set of prediction points
@@ -134,7 +136,9 @@ public:
    *  \returns Matrix of gradient vectors at the prediction points - 
    *  (num_pts by num_features).
    */
-  MatrixXd gradient(const MatrixXd &eval_points) { return gradient(eval_points, 0); }
+  MatrixXd gradient(const MatrixXd &eval_points) {
+    return Surrogate::gradient(eval_points);
+  }
 
   /**
    *  \brief Evaluate the Hessian of the polynomial surrogate at a single point
@@ -154,7 +158,9 @@ public:
    *  \returns Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    */
-  MatrixXd hessian(const MatrixXd &eval_point) { return hessian(eval_point, 0); }
+  MatrixXd hessian(const MatrixXd &eval_point) {
+    return Surrogate::hessian(eval_point);
+  }
 
   /* Getters */
 
