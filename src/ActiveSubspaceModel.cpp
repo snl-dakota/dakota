@@ -1568,12 +1568,28 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   //mvDist.pull_distribution_parameters(native_dist); // deep copy
 
   // native space characterization
-  RealVector mu_x, sd_x;
-  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_x);
-  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_x);
-  const RealSymMatrix& correl_x = native_dist.correlation_matrix();
+  const ShortArray& native_rv_types = native_dist.random_variable_types();
+  const RealSymMatrix&     correl_x = native_dist.correlation_matrix();
+  size_t i, num_rv = native_rv_types.size();
+  RealVector mu_x(num_rv), sd_x(num_rv);
+  for (i=0; i<num_rv; ++i)
+    switch (native_rv_types[i]) {
+    case Pecos::STD_NORMAL: // ActiveSubspace(ProbabilityTransform(Simulation))
+      mu_x[i] = 0.;  sd_x[i] = 1.;  break;
+    case     Pecos::NORMAL: // ActiveSubspace(Simulation))
+      native_dist_rep->pull_parameter(i, Pecos::N_MEAN,    mu_x[i]);
+      native_dist_rep->pull_parameter(i, Pecos::N_STD_DEV, sd_x[i]);
+      break;
+    default:
+      Cerr << "Error: unsupported native distribution type ("
+	   << native_rv_types[i] << ")." << std::endl;
+      abort_handler(MODEL_ERROR);  break;
+    }
+
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nSubspace Model: correl_x = \n" << correl_x;
+    Cout << "\nSubspace Model: mu_x = \n" << mu_x
+	 << "\nSubspace Model: sd_x = \n" << sd_x
+	 << "\nSubspace Model: correl_x = \n" << correl_x;
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
@@ -1612,7 +1628,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSubspace Model: activeBasis = \n" << activeBasis
-	 << "\nSubspace Model: V_x =\n"          << V_x;
+	 << "\nSubspace Model: V_x =\n" << V_x;
 
   // compute V_y = U^T * V_x * U
   alpha = 1.0;  beta = 0.0;
@@ -1628,6 +1644,10 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   // compute the standard deviations in reduced space
   for (int i=0; i<reducedRank; ++i)
     sd_y(i) = std::sqrt(V_y(i,i));
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nSubspace Model: mu_y = \n" << mu_y
+	 << "\nSubspace Model: sd_y = \n" << sd_y;
 
   std::shared_ptr<Pecos::MarginalsCorrDistribution> reduced_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
