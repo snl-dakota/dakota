@@ -149,7 +149,7 @@ protected:
 
   /// sample the model's gradient, computed the SVD, and form the active
   /// subspace rotation matrix.
-  void build_subspace();
+  void compute_subspace();
 
   /// helper for shared code between lightweight ctor and initialize_mapping()
   void initialize_subspace();
@@ -166,7 +166,7 @@ protected:
   void compute_svd();
 
   /// use the truncation methods to identify the size of an active subspace
-  void identify_subspace();
+  void truncate_subspace();
 
   /// compute Bing Li's criterion to identify the active subspace
   unsigned int computeBingLiCriterion(RealVector& singular_values);
@@ -209,11 +209,11 @@ protected:
   // ---
 
   /// Initialize the base class RecastModel with reduced space variable sizes
-  void initialize_recast();
+  void initialize_base_recast();
 
   /// Create a variables components totals array with the reduced space
   /// size for continuous variables
-  SizetArray variables_resize();
+  SizetArray resize_variable_totals();
 
   /// translate the characterization of uncertain variables in the
   /// native_model to the reduced space of the transformed model
