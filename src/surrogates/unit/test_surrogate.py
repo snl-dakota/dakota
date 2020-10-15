@@ -83,6 +83,15 @@ print("GP gradient:\n{0}\n".format(eval_grad))
 eval_hessian = gp.hessian(eval_point)
 print("GP Hessian:\n{0}\n".format(eval_hessian))
 
+obj_fun_values = gp.objective_function_history()
+print("GP MLE objective function value history:\n{0}\n".format(obj_fun_values))
+
+obj_grad_values = gp.objective_gradient_history()
+print("GP MLE objective gradient history:\n{0}\n".format(obj_grad_values))
+
+theta_values = gp.theta_history()
+print("GP MLE hyperparameter (theta) history:\n{0}\n".format(theta_values))
+
 # Save GP to binary and then reload
 print("Saving GP")
 # Free function for generic save (serialize via shared pointer to base)
@@ -99,3 +108,8 @@ print("Loading GP (free function)")
 gen_gpload = daksurr.load("gp.bin", True)
 print("Loaded GP is a: {0}".format(gen_gpload.__class__.__name__))
 assert(np.allclose(gen_gpload.value(eval_samples), gp_eval_surr))
+
+# check that serialized MLE history matrices match original values
+assert np.allclose(gen_gpload.objective_function_history(), obj_fun_values)
+assert np.allclose(gen_gpload.objective_gradient_history(), obj_grad_values)
+assert np.allclose(gen_gpload.theta_history(), theta_values)

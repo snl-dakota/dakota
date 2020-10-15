@@ -216,6 +216,26 @@ public:
   int get_num_variables() const;
 
   /**
+   *  \brief Get the history of objective function values from MLE with restarts.
+   *  \returns objectiveFunctionHistory Vector of final objective function values.
+   */
+  VectorXd get_objective_function_history() { return objectiveFunctionHistory; }
+
+  /**
+   *  \brief Get the history of objective function gradients from MLE with restarts.
+   *  \returns objectiveGradientHistory Matrix of final objective funciton values
+   *  - (num_restarts, num_hyperparameters).
+   */
+  MatrixXd get_objective_gradient_history() { return objectiveGradientHistory; }
+
+  /**
+   *  \brief Get the history of hyperparameter values from MLE with restarts.
+   *  \returns thetaHistory Vector of final hyperparameter (theta) values
+   *  - (num_restarts, num_hyperparameters).
+   */
+  MatrixXd get_theta_history() { return thetaHistory; }
+
+  /**
    *  \brief Update the vector of optimization parameters.
    *  \param[in] opt_params Vector of optimization parameter values.
    */
@@ -336,6 +356,12 @@ private:
   /// Final objective function values for each optimization run.
   VectorXd objectiveFunctionHistory;
 
+  /// Final objective function gradients for each optimization run.
+  MatrixXd objectiveGradientHistory;
+
+  /// Final hyperparameter values for each optimization run.
+  MatrixXd thetaHistory;
+
   /// Gram matrix for the build points
   MatrixXd GramMatrix;
 
@@ -423,6 +449,9 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version)
   archive & basisMatrix;
   archive & betaValues;
   archive & verbosity;
+  archive & objectiveFunctionHistory;
+  archive & objectiveGradientHistory;
+  archive & thetaHistory;
   // BMA TODO: leaving this as shared_ptr pending discussion as it seems natural
   // BMA NOTE: If serializing through shared_ptr, wouldn't have to
   // trap the nullptr case here...

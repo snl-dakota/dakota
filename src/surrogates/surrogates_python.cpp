@@ -222,5 +222,14 @@ PYBIND11_MODULE(surrogates, m) {
       py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
       (&dakota::surrogates::GaussianProcess::variance))
 
+    .def("objective_function_history",
+      (&dakota::surrogates::GaussianProcess::get_objective_function_history))
+
+    .def("objective_gradient_history",
+      (&dakota::surrogates::GaussianProcess::get_objective_gradient_history))
+
+    .def("theta_history",
+      (&dakota::surrogates::GaussianProcess::get_theta_history))
+
     ; // GaussianProcess
 }
