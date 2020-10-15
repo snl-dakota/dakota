@@ -23,6 +23,7 @@ include(ModifyTargetRpath)
 set(dakota_test_configured_inputs
   dakota_batch
   dakota_workdir
+  dakota_workdir_windows
   )
 
 # Macro: dakota_get_test_properties; macro so can set in parent context.
