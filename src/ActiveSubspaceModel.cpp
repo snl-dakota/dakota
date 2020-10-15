@@ -456,15 +456,21 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
     start_reduction = svd.cv_index_to_all_index(0),
     end_reduction   = start_reduction + reducedRank;
   ShortArray  reduced_rv_types(num_reduced_rv);
-  BitArray reduced_active_vars(num_reduced_rv); // init to false
-  for (i=0; i<start_reduction; ++i)
+  BitArray reduced_active_vars(num_reduced_rv), // init to false
+           reduced_active_corr(num_reduced_rv); // init to false
+  for (i=0; i<start_reduction; ++i)              // same as native
     reduced_rv_types[i] = native_rv_types[i];
-  for (i=start_reduction; i<end_reduction; ++i)
-    { reduced_rv_types[i] = Pecos::NORMAL; reduced_active_vars[i] = true; }
-  for (i=end_reduction; i<num_reduced_rv; ++i)
+  for (i=start_reduction; i<end_reduction; ++i) {// reduced space of NORMAL vars
+    reduced_rv_types[i] = Pecos::NORMAL;
+    reduced_active_vars[i] = reduced_active_corr[i] = true;
+  }
+  // For now, correl_x limited to numFullspaceVars (active cv) below
+  //for (i=0; i<num_dauv; ++i)                   // include dauv for active corr
+  //  reduced_active_corr[end_reduction+i] = true;
+  for (i=end_reduction; i<num_reduced_rv; ++i)   // same as native
     reduced_rv_types[i] = native_rv_types[i+cv_diff];
   reduced_dist_rep->initialize_types(reduced_rv_types, reduced_active_vars);
-  
+
   // -----------------------
   // Extract full space data
   // -----------------------
@@ -561,7 +567,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSubspace Model: correl_y = \n" << correl_y;
-  reduced_dist_rep->initialize_correlations(correl_y);//, reduced_active_corr); *** TO DO
+  reduced_dist_rep->initialize_correlations(correl_y, reduced_active_corr);
 
   // Set inactive subspace variables
   // mu_z = inactiveBasis^T * mu_x
@@ -625,8 +631,7 @@ void ActiveSubspaceModel::populate_matrices(unsigned int diff_samples)
   varsMatrix.reshape(numFullspaceVars, totalSamples);
 
   unsigned int diff_sample_ind = 0;
-  IntRespMCIter resp_it = all_responses.begin();
-  IntRespMCIter resp_end = all_responses.end();
+  IntRespMCIter resp_it = all_responses.begin(), resp_end = all_responses.end();
 
   // Compute gradient scaling factors if more than 1 response function
   if(numFns > 1) {
