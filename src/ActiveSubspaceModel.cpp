@@ -441,7 +441,13 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mvDist.multivar_dist_rep());
   const ShortArray& native_rv_types = native_dist_rep->random_variable_types();
+  const BitArray&   active_vars     = native_dist_rep->active_variables();
   size_t i, num_rv = native_rv_types.size();
+  if (numFullspaceVars != active_vars.count()) {
+    Cerr << "Error: mismatch in active full-space variables in "
+	 << "ActiveSubspaceModel::uncertain_vars_to_subspace()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 
   // -------------
   // Resize mvDist
@@ -475,19 +481,22 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   // Extract full space data
   // -----------------------
   // native space characterization
-  RealVector mu_x(num_rv), sd_x(num_rv);
+  RealVector mu_x(numFullspaceVars), sd_x(numFullspaceVars);  size_t cntr = 0;
   for (i=0; i<num_rv; ++i)
-    switch (native_rv_types[i]) {
-    case Pecos::STD_NORMAL: // ActiveSubspace(ProbabilityTransform(Simulation))
-      mu_x[i] = 0.;  sd_x[i] = 1.;  break;
-    case     Pecos::NORMAL: // ActiveSubspace(Simulation))
-      native_dist_rep->pull_parameter(i, Pecos::N_MEAN,    mu_x[i]);
-      native_dist_rep->pull_parameter(i, Pecos::N_STD_DEV, sd_x[i]);
-      break;
-    default:
-      Cerr << "Error: unsupported native distribution type ("
-	   << native_rv_types[i] << ")." << std::endl;
-      abort_handler(MODEL_ERROR);  break;
+    if (active_vars[i]) {
+      switch (native_rv_types[i]) {
+      case Pecos::STD_NORMAL:// ActiveSubspace(ProbabilityTransform(Simulation))
+	mu_x[cntr] = 0.;  sd_x[cntr] = 1.;  break;
+      case     Pecos::NORMAL:// ActiveSubspace(Simulation))
+	native_dist_rep->pull_parameter(i, Pecos::N_MEAN,    mu_x[cntr]);
+	native_dist_rep->pull_parameter(i, Pecos::N_STD_DEV, sd_x[cntr]);
+	break;
+      default:
+	Cerr << "Error: unsupported native distribution type ("
+	     << native_rv_types[i] << ")." << std::endl;
+	abort_handler(MODEL_ERROR);  break;
+      }
+      ++cntr;
     }
 
   const RealSymMatrix& correl_x = native_dist_rep->correlation_matrix();
@@ -604,11 +613,19 @@ void ActiveSubspaceModel::generate_fullspace_samples(unsigned int diff_samples)
   // with sampling_reference() since the number of samples may go down
   // from intialSamples to batchSamples
   fullspaceSampler.sampling_reference(diff_samples);
-  fullspaceSampler.sampling_reset(diff_samples, true, false);
+  fullspaceSampler.sampling_reset(diff_samples, true, false); // all_data, stats
 
   // and generate the additional samples
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
   fullspaceSampler.run(pl_iter);
+
+  //if (outputLevel >= DEBUG_OUTPUT) {
+  //  std::shared_ptr<NonDLHSSampling> lhs_sampler_rep =
+  //    std::static_pointer_cast<NonDLHSSampling>(
+  //    fullspaceSampler.iterator_rep());
+  //  lhs_sampler_rep->compute_moments(fullspaceSampler.all_responses());
+  //  lhs_sampler_rep->print_moments(Cout);
+  //}
 }
 
 
