@@ -295,7 +295,7 @@ private:
 
 
 inline HierarchSurrModel::~HierarchSurrModel()
-{ } // Virtual destructor handles referenceCount at Strategy level.
+{ }
 
 
 inline void HierarchSurrModel::

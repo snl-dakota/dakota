@@ -58,8 +58,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-    uSpaceType), false); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -102,13 +102,14 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, importBuildPointsFile,
-    probDescDB.get_ushort("method.import_build_format"),
-    probDescDB.get_bool("method.import_build_active_only"),
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")), false);
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+    (u_space_sampler, g_u_model,
+     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+     outputLevel, pt_reuse, importBuildPointsFile,
+     probDescDB.get_ushort("method.import_build_format"),
+     probDescDB.get_bool("method.import_build_active_only"),
+     probDescDB.get_string("method.export_approx_points_file"),
+     probDescDB.get_ushort("method.export_approx_format")));
   initialize_u_space_model();
 
   // -------------------------------------
@@ -160,8 +161,8 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-    uSpaceType), false); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -200,9 +201,10 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse), false);
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+    (u_space_sampler, g_u_model,
+     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+     outputLevel, pt_reuse));
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -248,8 +250,8 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-    uSpaceType), false); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
+		       (iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -282,10 +284,11 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, import_build_pts_file, import_build_format,
-    import_build_active_only), false);
+  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
+    (u_space_sampler, g_u_model,
+     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+     outputLevel, pt_reuse, import_build_pts_file, import_build_format,
+     import_build_active_only));
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -302,7 +305,7 @@ void NonDMultilevelPolynomialChaos::initialize_u_space_model()
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
   //if (multilevAllocControl == GREEDY_REFINEMENT)
-  //  statsType = Pecos::COMBINED_EXPANSION_STATS;
+  //  statsMetricType = Pecos::COMBINED_EXPANSION_STATS;
 
   // initializes ExpansionConfigOptions, among other things
   NonDPolynomialChaos::initialize_u_space_model();
@@ -447,15 +450,16 @@ bool NonDMultilevelPolynomialChaos::resize()
   // -----------------------------------------
   // Rather than caching these settings in the class, just preserve them
   // from the previously constructed expansionSampler:
-  NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep();
+  std::shared_ptr<NonDSampling> exp_sampler_rep =
+    std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
   unsigned short sample_type(SUBMETHOD_DEFAULT); String rng;
   if (exp_sampler_rep) {
     sample_type = exp_sampler_rep->sampling_scheme();
     rng         = exp_sampler_rep->random_number_generator();
   }
-  NonDAdaptImpSampling* imp_sampler_rep
-    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+  std::shared_ptr<NonDAdaptImpSampling> imp_sampler_rep =
+    std::static_pointer_cast<NonDAdaptImpSampling>
+    (importanceSampler.iterator_rep());
   unsigned short int_refine(NO_INT_REFINE); IntVector refine_samples;
   if (imp_sampler_rep) {
     int_refine = imp_sampler_rep->sampling_scheme();
@@ -502,23 +506,13 @@ void NonDMultilevelPolynomialChaos::core_run()
   switch (methodName) {
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     multifid_uq = true;
-    // general-purpose algorithms inherited from NonDExpansion:
-    switch (multilevAllocControl) {
-    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
-    default:                   multifidelity_expansion(refineType); break;
-    }
-    break;
+    multifidelity_expansion();    break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
-    // general-purpose algorithm inherited from NonDExpansion:
-    multilevel_regression();
-    // Projection-based approaches are precluded by the ML PCE spec.
-    // TO DO: assign a default ML alloc_control (don't default to MF)
-    break;
+    multilevel_regression();      break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
 	 << "core_run()" << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
+    abort_handler(METHOD_ERROR);  break;
   }
 
   // generate final results
@@ -583,8 +577,9 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
   bool update_exp = false, update_sampler = false, update_from_ratio = false;
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    std::shared_ptr<NonDQuadrature> nond_quad =
+      std::static_pointer_cast<NonDQuadrature>
+      (uSpaceModel.subordinate_iterator().iterator_rep());
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -593,8 +588,9 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    std::shared_ptr<NonDSparseGrid> nond_sparse =
+      std::static_pointer_cast<NonDSparseGrid>
+      (uSpaceModel.subordinate_iterator().iterator_rep());
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -650,8 +646,9 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
   bool update_exp = false, update_sampler = false, update_from_ratio = false;
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    std::shared_ptr<NonDQuadrature> nond_quad =
+      std::static_pointer_cast<NonDQuadrature>
+      (uSpaceModel.subordinate_iterator().iterator_rep());
     if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
@@ -662,8 +659,9 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    std::shared_ptr<NonDSparseGrid> nond_sparse =
+      std::static_pointer_cast<NonDSparseGrid>
+      (uSpaceModel.subordinate_iterator().iterator_rep());
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
@@ -723,8 +721,9 @@ void NonDMultilevelPolynomialChaos::
 update_from_specification(bool update_exp, bool update_sampler,
 			  bool update_from_ratio)
 {
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
+  std::shared_ptr<SharedPecosApproxData> shared_data_rep =
+    std::static_pointer_cast<SharedPecosApproxData>
+    (uSpaceModel.shared_approximation().data_rep());
   if (update_exp) {
     // update expansion order within Pecos::SharedOrthogPolyApproxData
     UShortArray exp_orders;
@@ -793,8 +792,10 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
     abort_handler(METHOD_ERROR);
   }
 
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
+
+  std::shared_ptr<SharedPecosApproxData> shared_data_rep =
+    std::static_pointer_cast<SharedPecosApproxData>
+    (uSpaceModel.shared_approximation().data_rep());
   if (update_exp) {
     //increment_order_from_grid(total_samp); // not sufficient in this context
 
@@ -842,8 +843,9 @@ compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
   // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
   // update targets based on sparsity estimates
-  SharedPecosApproxData* data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
+  std::shared_ptr<SharedPecosApproxData> data_rep =
+    std::static_pointer_cast<SharedPecosApproxData>
+    (uSpaceModel.shared_approximation().data_rep());
   const std::map<UShortArray, UShort2DArray>& mi_map
     = data_rep->multi_index_map();
   std::map<UShortArray, UShort2DArray>::const_iterator cit;

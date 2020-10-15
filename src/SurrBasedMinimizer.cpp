@@ -13,7 +13,6 @@
 
 #include "SurrBasedMinimizer.hpp"
 #include "SurrBasedLevelData.hpp"
-#include "DakotaGraphics.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
@@ -131,8 +130,6 @@ void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 
 void SurrBasedMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 {
-  // Virtual destructor handles referenceCount at Strategy level.
-
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
 
   // iteratedModel is evaluated to add truth data (single evaluate())
@@ -145,46 +142,11 @@ void SurrBasedMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 
 void SurrBasedMinimizer::derived_free_communicators(ParLevLIter pl_iter)
 {
-  // Virtual destructor handles referenceCount at Strategy level.
-
   // free communicators for approxSubProbModel/iteratedModel
   approxSubProbMinimizer.free_communicators(pl_iter);
 
   // iteratedModel is evaluated to add truth data (single evaluate())
   iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
-}
-
-
-void SurrBasedMinimizer::initialize_graphics(int iterator_server_id)
-{
-  // may want to replace customized graphics w/ std graphics for use in
-  // Hybrid & Concurrent Strategies
-  //if (!strategyFlag) {
-
-  Model& truth_model = (methodName == SURROGATE_BASED_LOCAL ||
-                        methodName == SURROGATE_BASED_GLOBAL) ?
-    iteratedModel.truth_model() : iteratedModel;
-  OutputManager& mgr = parallelLib.output_manager();
-  Graphics& dakota_graphics = mgr.graphics();
-  const Variables& vars = truth_model.current_variables();
-  const Response&  resp = truth_model.current_response();
-
-  // For graphics, limit (currently) to server id 1, for both ded master
-  // (parent partition rank 1) and peer partitions (parent partition rank 0)
-  if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
-    mgr.graphics_counter(0); // starting point is iteration 0
-    dakota_graphics.create_plots_2d(vars, resp);
-    dakota_graphics.set_x_labels2d("Surr-Based Iteration No.");
-  }
-
-  // For output/restart/tabular data, all Iterator masters stream output
-  if (mgr.tabularDataFlag) { // initialize data tabulation
-    mgr.graphics_counter(0); // starting point is iteration 0
-    mgr.tabular_counter_label("iter_no");
-    mgr.create_tabular_datastream(vars, resp);
-  }
-
-  //}
 }
 
 

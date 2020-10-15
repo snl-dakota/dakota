@@ -407,8 +407,7 @@ void HierarchSurrModel::build_approximation()
 
   Model& hf_model = truth_model();
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' +
-                      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     hf_model.eval_tag_prefix(eval_tag);
   }
 
@@ -524,8 +523,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   Model&   lf_model = (lo_fi_eval) ? surrogate_model() : dummy_model;
   Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' +
-                      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     if (sameModelInstance)
       same_model.eval_tag_prefix(eval_tag);
     else {
@@ -690,8 +688,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
        asynch_lo_fi = (lo_fi_eval) ? lf_model.asynch_flag() : false;
 
   if (hierarchicalTagging) {
-    String eval_tag = evalTagPrefix + '.' +
-                      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
     if (sameModelInstance)
       same_model.eval_tag_prefix(eval_tag);
     else {

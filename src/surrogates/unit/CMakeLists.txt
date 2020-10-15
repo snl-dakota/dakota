@@ -10,9 +10,6 @@
 
 include(DakotaUnitTest)
 
-# --- Boost dependencies
-include_directories(${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-
 # List of test files to copy into this directory
 set(surrogates_unit_test_copied_files)
 
@@ -36,18 +33,30 @@ dakota_add_unit_test(NAME SurrogatesToolsTest SOURCES
 dakota_add_unit_test(NAME EvalMetricsCrossValTest SOURCES
   teuchos_unit_test_driver.cpp
   EvalMetricsCrossValTest.cpp
+  # To force linking against fortran runtime needed to teuchosnumerics
+  # dependence on BLAS/LAPACK (TODO: root cause the link chain)
+  empty.f90
 )
 
-# BMA NOTE: I think we only need state the immediate deps? So no dakota_util
+if(DAKOTA_PYTHON_SURROGATES)
+  add_test(NAME surrogates_python
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate.py
+    $<TARGET_FILE_DIR:surrogates>
+    )
+  set_tests_properties(surrogates_python PROPERTIES LABELS UnitTest)
+endif()
+
+# Rationale: These all include Teuchos headers and need to link to the
+# unit test system or ParameterList components
 target_include_directories(GaussianProcessTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(PolynomialRegressionTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(SurrogatesToolsTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(EvalMetricsCrossValTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 
 target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates
-  ${Teuchos_LIBRARIES} Boost::filesystem)
+  ${Teuchos_LIBRARIES} Boost::filesystem Boost::serialization)
 target_link_libraries(PolynomialRegressionTest PRIVATE dakota_surrogates
-  ${Teuchos_LIBRARIES} Boost::filesystem)
+  ${Teuchos_LIBRARIES} Boost::filesystem Boost::serialization Boost::boost)
 target_link_libraries(SurrogatesToolsTest PRIVATE dakota_surrogates
   ${Teuchos_LIBRARIES})
 target_link_libraries(EvalMetricsCrossValTest PRIVATE dakota_surrogates

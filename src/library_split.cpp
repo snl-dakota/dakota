@@ -10,7 +10,6 @@
     \brief file containing a mock simulator main for testing DAKOTA in
     library mode on a split communicator */ 
 
-#include <boost/lexical_cast.hpp>
 #include "mpi.h"
 #include "LibraryEnvironment.hpp"
 #include "ParallelLibrary.hpp"
@@ -18,13 +17,7 @@
 #include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
 #include "PluginParallelDirectApplicInterface.hpp"
-
-// for Sleep or sleep
-#ifdef _WIN32
-#include "dakota_windows.h"
-#else
-#include <unistd.h>
-#endif
+#include <thread>
 
 /// Split MPI_COMM_WORLD, returning the comm and color
 void manage_mpi(MPI_Comm& my_comm, int& color);
@@ -60,11 +53,8 @@ int main(int argc, char* argv[])
   std::remove("dakota.e.1");
   std::remove("dakota.e.2");
   //remove("dakota.e");
-#ifdef _WIN32
-  Sleep(1000); // milliseconds
-#else
-  sleep(1);    // seconds
-#endif
+
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 
   // colors 1 and 2 run DAKOTA
   if (color != 0) {
@@ -206,9 +196,9 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
   // BMA TODO: get right behavior across ranks here:
 
   // override output, error, and write restart files, but not read restart
-  std::string ofile("dakota.o." + boost::lexical_cast<std::string>(color));
-  std::string efile("dakota.e." + boost::lexical_cast<std::string>(color));
-  std::string wfile("dakota.rst." + boost::lexical_cast<std::string>(color));
+  std::string ofile("dakota.o." + std::to_string(color));
+  std::string efile("dakota.e." + std::to_string(color));
+  std::string wfile("dakota.rst." + std::to_string(color));
 
   Dakota::ProgramOptions prog_opts;
   prog_opts.input_string(input);
@@ -233,8 +223,8 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
     const Dakota::ParallelLevel& ea_level
       = ml_iter->parallel_configuration_iterator()->ea_parallel_level();
     const MPI_Comm& analysis_comm = ea_level.server_intra_communicator();
-    model_iface.assign_rep(new
-      SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
+    model_iface.assign_rep(std::make_shared<SIM::ParallelDirectApplicInterface>
+			   (problem_db, analysis_comm));
   }
 
   // Execute the Environment
@@ -247,11 +237,7 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
 void collect_results()
 {
   // avoid file race condition
-#ifdef _WIN32
-  Sleep(1000); // milliseconds
-#else
-  sleep(1);    // seconds
-#endif
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   // for dakota_test.perl benefit; no easy way to sequence output and error
   std::system("cat dakota.o.1");
   std::system("cat dakota.o.2");

@@ -49,6 +49,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  /// initialize graphics customized for surrogate-based iteration
+  void initialize_graphics(int iterator_server_id = 1);
+
   void pre_run();
 
   /// Performs local surrogate-based minimization by minimizing local,

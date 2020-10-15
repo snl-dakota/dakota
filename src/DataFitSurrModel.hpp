@@ -241,6 +241,13 @@ protected:
   /// clear inactive data stored in the approxInterface
   void clear_inactive();
 
+  /// query approxInterface for available advancements in order, rank, etc.
+  bool advancement_available();
+  /// query approxInterface for updates in formulation (requiring a rebuild)
+  bool formulation_updated() const;
+  /// update the formulation status in approxInterface
+  void formulation_updated(bool update);
+  
   /// execute the DACE iterator to generate build data
   void run_dace();
 
@@ -441,7 +448,6 @@ private:
 };
 
 
-/** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
 { if (!exportPointsFile.empty()) finalize_export(); }
 
@@ -706,6 +712,18 @@ inline bool DataFitSurrModel::push_available()
 
 inline void DataFitSurrModel::clear_inactive()
 { approxInterface.clear_inactive(); }
+
+
+inline bool DataFitSurrModel::advancement_available()
+{ return approxInterface.advancement_available(); }
+
+
+inline bool DataFitSurrModel::formulation_updated() const
+{ return approxInterface.formulation_updated(); }
+
+
+inline void DataFitSurrModel::formulation_updated(bool update)
+{ approxInterface.formulation_updated(update); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()

@@ -10,7 +10,6 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-// #define REFCOUNT_DEBUG 1
 // #define SERIALIZE_DEBUG 1
 
 #include "SharedResponseData.hpp"
@@ -135,11 +134,6 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
          << "the total number of calibration terms." << std::endl;
     abort_handler(-1);
   }
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseDataRep::SharedResponseDataRep(problem_db) "
-       << "called to build body object." << std::endl;
-#endif
 }
 
 
@@ -155,11 +149,6 @@ SharedResponseDataRep::SharedResponseDataRep(const ActiveSet& set):
   // bestResponse by NPSOLOptimizer's user-defined functions option).
   functionLabels.resize(numScalarResponses);
   build_labels(functionLabels, "f");
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseDataRep::SharedResponseDataRep() called to build "
-       << "empty body object." << std::endl;
-#endif
 }
 
 
@@ -244,24 +233,12 @@ SharedResponseData SharedResponseData::copy() const
 {
   // the handle class instantiates a new handle and a new body and copies
   // current attributes into the new body
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "SharedResponseData::copy() called to generate a deep copy with no "
-       << "representation sharing.\n";
-  Cout << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
-#endif
-
   SharedResponseData srd; // new handle: srdRep=NULL
   if (srdRep) {
     srd.srdRep.reset(new SharedResponseDataRep());
     srd.srdRep->copy_rep(srdRep.get());
   }
 
-#ifdef REFCOUNT_DEBUG
-  Cout << "  srdRep use_count after  = " << srdRep.use_count() << '\n';
-  Cout << "  new srd use_count after  = " << srd.srdRep.use_count() << std::endl;
-#endif
- 
   return srd;
 }
 
@@ -270,18 +247,10 @@ void SharedResponseData::reshape(size_t num_fns)
 {
   if (num_functions() != num_fns) {
     // separate sharing if needed
-    //if (srdRep->referenceCount > 1) { // shared rep: separate
-#ifdef REFCOUNT_DEBUG
-    Cout << "SharedResponseData::reshape() called.\n"
-	 << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
-#endif
+    //if (srdRep.use_count() > 1) { // shared rep: separate
     boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
     srdRep.reset(new SharedResponseDataRep()); // create new srdRep
     srdRep->copy_rep(old_rep.get());           // copy old data to new
-#ifdef REFCOUNT_DEBUG
-    Cout << "  srdRep use_count after  = " << srdRep.use_count() << '\n'
-	 << "  old_rep use_count after = " << old_rep.use_count() << std::endl;
-#endif
     //}
 
     // reshape function labels
@@ -392,16 +361,8 @@ bool SharedResponseData::operator==(const SharedResponseData& other)
 template<class Archive>
 void SharedResponseData::serialize(Archive& ar, const unsigned int version)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "SRD serializing with pointer " << srdRep.get() << '\n'
-       << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
-#endif
   // load will default construct and load through the pointer
   ar & srdRep;
-#ifdef REFCOUNT_DEBUG
-  Cout << "  srdRep pointer after  = " << srdRep.get() << std::endl;
-  Cout << "  srdRep use_count after  = " << srdRep.use_count() << std::endl;
-#endif
 }
 
 

@@ -183,9 +183,11 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
   hdf5Stream->create_empty_dataset(eval_ids_scale, {0}, 
       ResultsOutputType::INTEGER, HDF5_CHUNK_SIZE);
   
-  Pecos::MarginalsCorrDistribution* mvd_rep
-        = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
-  allocate_variables(root_group, variables, mvd_rep);
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
+  // BMA: Left this a raw get() due to default of NULL
+  allocate_variables(root_group, variables, mvd_rep.get());
   allocate_response(root_group, response, default_set);
   allocate_metadata(root_group, variables, response, default_set);
   return EvaluationsDBState::ACTIVE;
@@ -1611,18 +1613,21 @@ void EvaluationStore::store_parameters_for_domain(const String &root_group,
   String scale_root = create_scale_root(root_group); // root_group already has
                                                      // variable_parameters
   // The loop below chunks up the set of variables by Dakota type (e.g. normal_uncertain)
-  UShortArray to_find = {types[0]};
   auto first_it = types.begin(); // iterator to first variable of this type
-  // Find iterator to last variable of this type
-  auto last_it = std::find_end(first_it, types.end(), to_find.begin(), to_find.end());
-  size_t first_idx = 0, last_idx = 0; // Indexes to first and last variable of this type
-  while(last_it != types.end()) { // iterate until all variables have been processed
+  size_t first_idx, last_idx; // Indexes to first and last variable of this type.
+  while(first_it != types.end()) { // iterate until all variables have been processed
+    // Find iterator to last variable of this type
+    UShortArray to_find = {*first_it};
+    auto last_it = std::find_end(first_it, types.end(), to_find.begin(), to_find.end());
+    first_idx = std::distance(types.begin(), first_it);
     last_idx = std::distance(first_it, last_it) + first_idx;
     const unsigned short &this_type = *first_it;
-    size_t start_rv = ids[first_idx] - 1;
+    // parameters are obtained from the mvd_rep object by starting index and number of steps 
+    size_t start_rv = ids[first_idx] - 1; 
     size_t num_rv = last_idx - first_idx + 1;
     bool store_scales = true; // it's safe to store scales; will be set to
-                              // false if no datasets are created.
+                              // false if no datasets are created, which can happen
+                              // if there's a unhandled type of variable
     String location = root_group, scale_location = scale_root;
 #define CALL_STORE_PARAMETERS_FOR(vtype)                               \
     location += #vtype;                                                \
@@ -1719,11 +1724,8 @@ void EvaluationStore::store_parameters_for_domain(const String &root_group,
       hdf5Stream->store_vector(ids_location, these_ids);
       hdf5Stream->attach_scale(location, ids_location, "ids", 0);
     }
-    first_it = last_it;
-    first_it++;
-    to_find[0] = *first_it;
-    first_idx = last_idx + 1;
-    last_it = std::find_end(first_it, types.end(), to_find.begin(), to_find.end());
+    // Increment to the next type
+    first_it = ++last_it;
   }
 #else
   return;

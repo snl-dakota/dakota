@@ -27,7 +27,6 @@
 #include "pecos_data_types.hpp"
 #include "pecos_stat_util.hpp"
 #include "DakotaApproximation.hpp"
-#include <boost/lexical_cast.hpp>
 #include "FSUDesignCompExp.hpp"
 #include <sstream>
 #include <fstream>
@@ -125,9 +124,9 @@ namespace Dakota
                 //**NOTE:  We are hardcoding the sample type to LHS and the approximation type to kriging for now
 		//if (sampleDesign == RANDOM_SAMPLING)
 		//{
-		gpBuild.assign_rep(new NonDLHSSampling(iteratedModel, SUBMETHOD_DEFAULT,
-							   samples, randomSeed, rngName,
-							   varyPattern, ACTIVE_UNIFORM), false);
+		gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, SUBMETHOD_DEFAULT,
+								     samples, randomSeed, rngName,
+								     varyPattern, ACTIVE_UNIFORM));
 		//}
 		//else
 		//{
@@ -137,13 +136,14 @@ namespace Dakota
                 approx_type = "global_kriging";
 		ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
 		gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-		gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel,
-						  gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-						  outputLevel, sample_reuse, import_pts_file,
-						  probDescDB.get_ushort("method.import_build_format"),
-						  probDescDB.get_bool("method.import_build_active_only"),
-						  probDescDB.get_string("method.export_approx_points_file"),
-						  probDescDB.get_ushort("method.export_approx_format")), false);
+		gpModel.assign_rep(std::make_shared<DataFitSurrModel>
+				   (gpBuild, iteratedModel,
+				    gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
+				    outputLevel, sample_reuse, import_pts_file,
+				    probDescDB.get_ushort("method.import_build_format"),
+				    probDescDB.get_bool("method.import_build_active_only"),
+				    probDescDB.get_string("method.export_approx_points_file"),
+				    probDescDB.get_ushort("method.export_approx_format")));
 
 		vary_pattern = true; // allow seed to run among multiple approx sample sets
 							 // need to add to input spec
@@ -1390,14 +1390,14 @@ Real NonDAdaptiveSampling::compute_rmspe()
 				String val(*db_it, distance(db_it->begin(), delim+1), distance(delim, db_it->end()));
 
 				if (opt == "candidate_size")
-					numEmulEval = boost::lexical_cast<int,const char*>(val.c_str());
+				  numEmulEval = std::stoi(val);
 				else if (opt == "batch_size") 
 				{
-					batchSize = boost::lexical_cast<int,const char*>(val.c_str());
-					Cout << "BATCH SIZE: " << batchSize << std::endl;
+				  batchSize = std::stoi(val);
+				  Cout << "BATCH SIZE: " << batchSize << std::endl;
 				}
 				else if (opt == "rounds")
-					numRounds = boost::lexical_cast<int,const char*>(val.c_str());
+				  numRounds = std::stoi(val);
 				else if (opt == "approx_type") 
 				{
 					approx_type = val;
@@ -1445,11 +1445,11 @@ Real NonDAdaptiveSampling::compute_rmspe()
 				}
 				else if(opt == "validation_data") 
 				{
-					outputValidationData =boost::lexical_cast<int,const char*>(val.c_str());
+				  outputValidationData = std::stoi(val);
 				}
 				else if(opt == "knn") 
 				{
-					numKneighbors = boost::lexical_cast<int,const char*>(val.c_str());
+				  numKneighbors = std::stoi(val);
 				}
 				else 
 				{
@@ -1782,8 +1782,8 @@ construct_fsu_sampler(Iterator& u_space_sampler, Model& u_model,
     abort_handler(-1);
   }
 
-  u_space_sampler.assign_rep(new FSUDesignCompExp(u_model, num_samples, seed, 
-						  sample_type), false);
+  u_space_sampler.assign_rep(std::make_shared<FSUDesignCompExp>
+			     (u_model, num_samples, seed, sample_type));
 }
 
 // Mohamed and Laura

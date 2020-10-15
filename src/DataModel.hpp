@@ -55,9 +55,9 @@ enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS };
 // Note that C3 and Pecos are mutually exclusive: use of values from multiple
 // enums should not conflict
 enum { FT_LS, FT_RLS2 };//, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
-// define special values for c3RefineType
-enum { NO_C3_REFINEMENT=0, UNIFORM_START_ORDER, UNIFORM_START_RANK,
-       UNIFORM_MAX_RANK };
+// define special values for c3AdvanceType
+enum { NO_C3_ADVANCEMENT=0, START_RANK_ADVANCEMENT, START_ORDER_ADVANCEMENT,
+       MAX_RANK_ADVANCEMENT, MAX_ORDER_ADVANCEMENT, MAX_RANK_ORDER_ADVANCEMENT};
 
 
 /// Body class for model specification data.
@@ -78,6 +78,8 @@ class DataModelRep
   friend class DataModel;
 
 public:
+
+  ~DataModelRep(); ///< destructor
 
   //
   //- Heading: Data
@@ -397,8 +399,12 @@ public:
   bool tensorGridFlag;
   /// starting polynomial order
   unsigned short startOrder;
+  /// polynomial order increment when adapting
+  unsigned short kickOrder;
   /// maximum order of basis polynomials
   unsigned short maxOrder;
+  /// whether or not to adapt order by cross validation
+  bool adaptOrder;
   /// starting rank
   size_t startRank;
   /// rank increase increment
@@ -407,18 +413,18 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
-  /// quantity to increment (start order, start rank, max rank) for FT
-  /// uniform p-refinement
-  short c3RefineType;
+  /// quantity to increment (start rank, start order, max rank, max order,
+  /// max rank + max order) for FT (uniform) p-refinement
+  short c3AdvanceType;
+  // refinement type for stochastic expansions: P_REFINEMENT, H_REFINEMENT
+  //short refinementType;
+  // refinement control for stochastic expansions: UNIFORM, DIMENSION_ADAPTIVE
+  //short refinementControl;
 
   /// number of data points used in FT construction by regression
   size_t collocationPoints;
   /// ratio of number of points to nuber of unknowns
   Real collocationRatio;
-  /// type of adaptive refinement (p-, h-, hp-)
-  short refinementType;
-  /// type of control for adaptive refinement (uniform, anisotropic, ...)
-  short refinementControl;
 
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;
@@ -464,7 +470,6 @@ private:
   //
 
   DataModelRep();  ///< constructor
-  ~DataModelRep(); ///< destructor
 
   //
   //- Heading: Member methods
@@ -482,8 +487,6 @@ private:
   //- Heading: Private convenience functions
   //
 
-  /// number of handle objects sharing this dataModelRep
-  int referenceCount;
 };
 
 
@@ -539,7 +542,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataModelRep
-  DataModelRep* data_rep();
+  std::shared_ptr<DataModelRep> data_rep();
 
 private:
 
@@ -548,11 +551,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataModelRep* dataModelRep;
+  std::shared_ptr<DataModelRep> dataModelRep;
 };
 
 
-inline DataModelRep* DataModel::data_rep()
+inline std::shared_ptr<DataModelRep> DataModel::data_rep()
 {return dataModelRep; }
 
 

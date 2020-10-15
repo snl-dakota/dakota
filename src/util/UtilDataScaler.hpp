@@ -52,11 +52,29 @@ class DataScaler {
     virtual ~DataScaler();
 
     /**
+     *  \brief Apply scaling to a single point.
+     *  \param[in] unscaled_sample Unscaled sample vector.
+     *  \returns VectorXd scaled_sample Scaled sample vector.
+     */
+    const RowVectorXd& scale_sample(const RowVectorXd &unscaled_sample);
+
+    /**
      *  \brief Apply scaling to a set of unscaled samples
      *  \param[in] unscaled_samples Unscaled matrix of samples
      *  \param[out] scaled_samples Scaled matrix of samples
      */
     void scale_samples(const MatrixXd &unscaled_samples, MatrixXd &scaled_samples);
+
+    /**
+     *  \brief Apply scaling to a set of unscaled samples
+     *  \param[in] unscaled_samples Unscaled matrix of samples
+     *  \returns MatrixXd scaled_samples Scaled matrix of samples
+     */
+    MatrixXd scale_samples(const MatrixXd &unscaled_samples) {
+      MatrixXd scaled_samples;
+      scale_samples(unscaled_samples, scaled_samples);
+      return scaled_samples;
+    }
 
     /**
      *  \brief Get the vector of offsets
@@ -94,6 +112,9 @@ class DataScaler {
      */
     bool hasScaling;
 
+    /// Vector for a single scaled sample - (num_features); avoids resize memory allocs
+    RowVectorXd scaledSample;
+
     /// Vector of offsets - (num_features)
     VectorXd scalerFeaturesOffsets;
 
@@ -114,6 +135,8 @@ private:
 template<class Archive>
 void DataScaler::serialize(Archive& archive, const unsigned int version)
 {
+  silence_unused_args(version);
+
   archive & hasScaling;
   archive & scalerFeaturesOffsets;
   archive & scalerFeaturesScaleFactors;

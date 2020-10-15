@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DAKOTA_UTIL_COMMON_UTILS_HPP
-#define DAKOTA_UTIL_COMMON_UTILS_HPP
+#ifndef DAKOTA_UTIL_COMMON_HPP
+#define DAKOTA_UTIL_COMMON_HPP
 
 #include "util_data_types.hpp"
 

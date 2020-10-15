@@ -18,15 +18,15 @@
 #include "globals.h"
 #endif
 
-
 namespace Dakota {
 
 DataMethodRep::DataMethodRep():
   methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxRefineIterations(-1),
   maxSolverIterations(-1), maxFunctionEvaluations(1000), speculativeFlag(false),
   methodUseDerivsFlag(false),
-  convergenceTolerance(-std::numeric_limits<double>::max()),
   constraintTolerance(0.), methodScaling(false), numFinalSolutions(0),
+  convergenceTolerance(-std::numeric_limits<double>::max()),
+  relativeConvMetric(true), statsMetricMode(Pecos::DEFAULT_EXPANSION_STATS),
   methodName(DEFAULT_METHOD), subMethod(SUBMETHOD_DEFAULT),
   // Meta-iterators
   iteratorServers(0), procsPerIterator(0), // 0 defaults to detect user spec
@@ -116,9 +116,10 @@ DataMethodRep::DataMethodRep():
   useSurrogate("none"),
   // C3 FT
   maxCrossIterations(1), solverTol(1.e-10), solverRoundingTol(1.e-10),
-  statsRoundingTol(1.e-10), startOrder(2), maxOrder(USHRT_MAX),
-  startRank(2), kickRank(1), maxRank(std::numeric_limits<size_t>::max()),
-  adaptRank(false), c3RefineType(NO_C3_REFINEMENT),
+  statsRoundingTol(1.e-10), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
+  adaptOrder(false), startRank(2), kickRank(1),
+  maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
+  c3AdvanceType(NO_C3_ADVANCEMENT),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -185,7 +186,8 @@ DataMethodRep::DataMethodRep():
   importApproxFormat(TABULAR_ANNOTATED),  importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
   exportSampleSeqFlag(false), exportSamplesFormat(TABULAR_ANNOTATED),
-  referenceCount(1)
+  exportSurrogate(false), modelExportPrefix("exported_surrogate"),
+  modelExportFormat(NO_MODEL_FORMAT)
 { }
 
 
@@ -194,9 +196,10 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << idMethod << modelPointer << lowFidModelPointer << methodOutput
     << maxIterations << maxRefineIterations << maxSolverIterations
     << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
-    << convergenceTolerance << constraintTolerance << methodScaling
-    << numFinalSolutions << methodName << subMethod << subMethodName
-    << subModelPointer << subMethodPointer;
+    << constraintTolerance << methodScaling << numFinalSolutions
+    << convergenceTolerance << relativeConvMetric << statsMetricMode
+    << methodName << subMethod << subMethodName << subModelPointer
+    << subMethodPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling
@@ -279,8 +282,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // C3 FT
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
-    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
-    << c3RefineType << startOrderSeq << startRankSeq;
+    << startOrder << kickOrder << maxOrder << adaptOrder
+    << startRank  << kickRank  << maxRank  << adaptRank
+    << c3AdvanceType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
@@ -327,7 +331,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
-    << importCandFormat << numCandidates << maxHifiEvals << batchSize << batchSizeExplore
+    << importCandFormat << numCandidates << maxHifiEvals
+    << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
     << dataDistType << dataDistCovInputType << dataDistMeans
@@ -357,9 +362,10 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> idMethod >> modelPointer >> lowFidModelPointer >> methodOutput
     >> maxIterations >> maxRefineIterations >> maxSolverIterations
     >> maxFunctionEvaluations >> speculativeFlag >> methodUseDerivsFlag
-    >> convergenceTolerance >> constraintTolerance >> methodScaling
-    >> numFinalSolutions >> methodName >> subMethod >> subMethodName
-    >> subModelPointer >> subMethodPointer;
+    >> constraintTolerance >> methodScaling >> numFinalSolutions
+    >> convergenceTolerance >> relativeConvMetric >> statsMetricMode
+    >> methodName >> subMethod >> subMethodName >> subModelPointer
+    >> subMethodPointer;
 
   // Meta-iterators
   s >> iteratorServers >> procsPerIterator >> iteratorScheduling
@@ -442,8 +448,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // C3 FT
   s >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
-    >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
-    >> c3RefineType >> startOrderSeq >> startRankSeq;
+    >> startOrder >> kickOrder >> maxOrder >> adaptOrder
+    >> startRank  >> kickRank  >> maxRank  >> adaptRank
+    >> c3AdvanceType >> startOrderSeq >> startRankSeq;
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
@@ -490,7 +497,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> approxCorrectionOrder >> exportCorrModelFile >> exportCorrModelFormat
     >> exportCorrVarFile >> exportCorrVarFormat >> exportDiscrepFile
     >> exportDiscrepFormat >> adaptExpDesign >> importCandPtsFile
-    >> importCandFormat >> numCandidates >> maxHifiEvals >> batchSize >> batchSizeExplore
+    >> importCandFormat >> numCandidates >> maxHifiEvals
+    >> batchSize >> batchSizeExplore
     >> mutualInfoKSG2 >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> numPushforwardSamples
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
@@ -520,9 +528,10 @@ void DataMethodRep::write(std::ostream& s) const
   s << idMethod << modelPointer << lowFidModelPointer << methodOutput
     << maxIterations << maxRefineIterations << maxSolverIterations
     << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
-    << convergenceTolerance << constraintTolerance << methodScaling
-    << numFinalSolutions << methodName << subMethod << subMethodName
-    << subModelPointer << subMethodPointer;
+    << constraintTolerance << methodScaling << numFinalSolutions
+    << convergenceTolerance << relativeConvMetric << statsMetricMode
+    << methodName << subMethod << subMethodName << subModelPointer
+    << subMethodPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling
@@ -605,8 +614,9 @@ void DataMethodRep::write(std::ostream& s) const
 
   // C3 FT
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
-    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
-    << c3RefineType << startOrderSeq << startRankSeq;
+    << startOrder << kickOrder << maxOrder << adaptOrder
+    << startRank  << kickRank  << maxRank  << adaptRank
+    << c3AdvanceType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
@@ -653,7 +663,8 @@ void DataMethodRep::write(std::ostream& s) const
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
-    << importCandFormat << numCandidates << maxHifiEvals << batchSize << batchSizeExplore
+    << importCandFormat << numCandidates << maxHifiEvals
+    << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
     << dataDistType << dataDistCovInputType << dataDistMeans
@@ -679,71 +690,22 @@ void DataMethodRep::write(std::ostream& s) const
 
 
 DataMethod::DataMethod(): dataMethodRep(new DataMethodRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::DataMethod(), dataMethodRep referenceCount = "
-       << dataMethodRep->referenceCount << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
-DataMethod::DataMethod(const DataMethod& data_method)
-{
-  // Increment new (no old to decrement)
-  dataMethodRep = data_method.dataMethodRep;
-  if (dataMethodRep) // Check for an assignment of NULL
-    ++dataMethodRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::DataMethod(DataMethod&)" << std::endl;
-  if (dataMethodRep)
-    Cout << "dataMethodRep referenceCount = " << dataMethodRep->referenceCount
-	 << std::endl;
-#endif
-}
+DataMethod::DataMethod(const DataMethod& data_method):
+  dataMethodRep(data_method.dataMethodRep)
+{ /* empty ctor */ }
 
 
 DataMethod& DataMethod::operator=(const DataMethod& data_method)
 {
-  if (dataMethodRep != data_method.dataMethodRep) { // normal case: old != new
-    // Decrement old
-    if (dataMethodRep) // Check for NULL
-      if ( --dataMethodRep->referenceCount == 0 )
-	delete dataMethodRep;
-    // Assign and increment new
-    dataMethodRep = data_method.dataMethodRep;
-    if (dataMethodRep) // Check for NULL
-      ++dataMethodRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataMethod::operator=(DataMethod&)" << std::endl;
-  if (dataMethodRep)
-    Cout << "dataMethodRep referenceCount = " << dataMethodRep->referenceCount
-	 << std::endl;
-#endif
-
+  dataMethodRep = data_method.dataMethodRep;
   return *this;
 }
 
 
 DataMethod::~DataMethod()
-{
-  if (dataMethodRep) { // Check for NULL
-    --dataMethodRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "dataMethodRep referenceCount decremented to "
-         << dataMethodRep->referenceCount << std::endl;
-#endif
-    if (dataMethodRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataMethodRep" << std::endl;
-#endif
-      delete dataMethodRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

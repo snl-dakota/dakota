@@ -200,17 +200,10 @@ endfunction()
 
 include_directories(
   ${Dakota_SOURCE_DIR}/src
-  ${Boost_INCLUDE_DIR}
-  ${Boost_INCLUDE_DIRS}
   ${Teuchos_INCLUDE_DIRS}
 )
 
 remove_definitions("-DHAVE_CONFIG_H")
-
-check_include_file(unistd.h HAVE_UNISTD_H)
-if(HAVE_UNISTD_H)
-  add_definitions("-DHAVE_UNISTD_H")
-endif(HAVE_UNISTD_H)
 
 if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
@@ -443,6 +436,9 @@ foreach(dte ${dakota_test_executables})
   ModifyTargetRpath(${dte} 3)
 endforeach()
 
+target_link_libraries(morris Boost::boost)
+target_link_libraries(trajectory_post Boost::boost)
+
 # nl2func has two source files
 list(APPEND dakota_test_executables nl2func)
 add_executable(nl2func nl2func.cpp nl2test.cpp)
@@ -461,10 +457,10 @@ add_dependencies(cantilever dakota)
 add_dependencies(morris dakota)
 add_dependencies(text_book dakota)
 
-if(DAKOTA_ENABLE_TESTS AND PYTHONINTERP_FOUND)
+if(DAKOTA_PYTHON)
   # Test restart translation capability.
   # (Example of system-level test that's not a Dakota study regression.)
-  add_test(NAME sys_restart_neutral COMMAND ${PYTHON_EXECUTABLE} 
+  add_test(NAME sys_restart_neutral COMMAND ${Python_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sys_restart_neutral.py 
     $<TARGET_FILE:dakota> $<TARGET_FILE:dakota_restart_util>
     )

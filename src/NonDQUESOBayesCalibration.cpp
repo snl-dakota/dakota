@@ -267,7 +267,7 @@ void NonDQUESOBayesCalibration::init_queso_environment()
 
   // Construct with default options
   // TODO: see if this can be a local, or if the env retains a pointer
-  envOptionsValues.reset(new QUESO::EnvOptionsValues());
+  envOptionsValues = std::make_shared<QUESO::EnvOptionsValues>();
 
   // C++ API options may override defaults
   envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
@@ -294,24 +294,25 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
   if (parallelLib.mpirun_flag()) {
     if (mcmcType == "multilevel")
-      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
+      quesoEnv = std::make_shared<QUESO::FullEnvironment>
+	(MPI_COMM_SELF, "ml.inp", "", nullptr);
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF, aof_cstr, "",
-						envOptionsValues.get()));
+      quesoEnv = std::make_shared<QUESO::FullEnvironment>
+	(MPI_COMM_SELF, aof_cstr, "", envOptionsValues.get());
   }
   else {
     if (mcmcType == "multilevel")
-      quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
+      quesoEnv = std::make_shared<QUESO::FullEnvironment>("ml.inp", "", nullptr);
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment(aof_cstr, "",
-						envOptionsValues.get()));
+      quesoEnv = std::make_shared<QUESO::FullEnvironment>
+	(aof_cstr, "", envOptionsValues.get());
   }
 #else
   if (mcmcType == "multilevel")
-    quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
+    quesoEnv = std::make_shared<QUESO::FullEnvironment>("ml.inp", "", nullptr);
   else // dram, dr, am, or mh
-    quesoEnv.reset(new QUESO::FullEnvironment(aof_cstr, "",
-					      envOptionsValues.get()));
+    quesoEnv = std::make_shared<QUESO::FullEnvironment>
+      (aof_cstr, "", envOptionsValues.get());
 #endif
 }
 
@@ -342,14 +343,15 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
 void NonDQUESOBayesCalibration::init_queso_solver()
 {
   // Instantiate the likelihood function object that computes [ln(function)]
-  likelihoodFunctionObj.reset(new
-    QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>("like_",
-    *paramDomain, &dakotaLogLikelihood, (void *)NULL, true));
+  likelihoodFunctionObj = std::make_shared
+    <QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>>
+    ("like_", *paramDomain, &dakotaLogLikelihood, (void *)nullptr, true);
 
   // Instantiate the inverse problem
 
-  postRv.reset(new QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>
-	       ("post_", *paramSpace));
+  postRv =
+    std::make_shared<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>>
+    ("post_", *paramSpace);
   // Q: are Prior/posterior RVs copied by StatInvProblem, such that these
   //    instances can be local and allowed to go out of scope?
 
@@ -358,9 +360,9 @@ void NonDQUESOBayesCalibration::init_queso_solver()
   // set options specific to MH algorithm
   set_mh_options();
   // Inverse problem: instantiate it (posterior rv is instantiated internally)
-  inverseProb.reset(new
-    QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>("",
-    calIpOptionsValues.get(), *priorRv, *likelihoodFunctionObj, *postRv));
+  inverseProb = std::make_shared
+    <QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>>
+    ("", calIpOptionsValues.get(), *priorRv, *likelihoodFunctionObj, *postRv);
 }
 
 
@@ -431,7 +433,8 @@ void NonDQUESOBayesCalibration::precondition_proposal(unsigned int chain_index)
   // pack GSL proposalCovMatrix
   int i, j, nv = log_hess.numRows();
   if (!proposalCovMatrix) {
-    proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
+    proposalCovMatrix = std::make_shared<QUESO::GslMatrix>
+      (paramSpace->zeroVector());
     if (paramSpace->dimGlobal() != nv || 
 	paramSpace->dimGlobal() != nv+numFunctions) {
       Cerr << "Error: Queso vector space is not consistent with proposal "
@@ -688,7 +691,8 @@ void NonDQUESOBayesCalibration::filter_chain_by_conditioning()
     Cout << "Filtering chain by matrix conditioning: extracting best "
 	 << batchSize << " from aggregate MCMC chain containing "
 	 << unique_samples.size() << " samples.\n";
-  NonDExpansion* nond_exp = (NonDExpansion*)stochExpIterator.iterator_rep();
+  std::shared_ptr<NonDExpansion> nond_exp =
+    std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
   nond_exp->select_refinement_points(unique_samples, batchSize, allSamples);
 }
 
@@ -734,13 +738,13 @@ void NonDQUESOBayesCalibration::update_model()
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    nondInstance = (NonD*)stochExpIterator.iterator_rep();
+    nondInstance = (NonD*)stochExpIterator.iterator_rep().get();
     evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
     nondInstance = this; // restore
     break;
   case GP_EMULATOR: case KRIGING_EMULATOR:
     if (standardizedSpace)
-      nondInstance = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+      nondInstance = (NonD*)mcmcModel.subordinate_iterator().iterator_rep().get();
     evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
     if (standardizedSpace)
       nondInstance = this; // restore
@@ -757,8 +761,8 @@ void NonDQUESOBayesCalibration::update_model()
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     // Adapt the expansion in sync with the dataset using a top-down design
     // (more explicit than embedded logic w/i mcmcModel.append_approximation).
-    NonDExpansion* se_iterator
-      = (NonDExpansion*)stochExpIterator.iterator_rep();
+    std::shared_ptr<NonDExpansion> se_iterator =
+      std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
     se_iterator->append_expansion(allSamples, allResponses);
     // TO DO: order increment places addtnl reqmts on emulator conv assessment
     break;
@@ -859,9 +863,9 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 {
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
-  paramSpace.reset(new 
-    QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>(*quesoEnv,
-    "param_", numContinuousVars + numHyperparams, NULL));
+  paramSpace = std::make_shared
+    <QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>>
+    (*quesoEnv, "param_", numContinuousVars + numHyperparams, nullptr);
 
   QUESO::GslVector paramMins(paramSpace->zeroVector()),
                    paramMaxs(paramSpace->zeroVector());
@@ -881,10 +885,11 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     paramMins[numContinuousVars + i] = 1.0e-100;
     paramMaxs[numContinuousVars + i] = std::numeric_limits<Real>::infinity();
   }
-  paramDomain.reset(new QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>
-		    ("param_", *paramSpace, paramMins, paramMaxs));
+  paramDomain = std::make_shared
+    <QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>>
+     ("param_", *paramSpace, paramMins, paramMaxs);
 
-  paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
+  paramInitials = std::make_shared<QUESO::GslVector>(paramSpace->zeroVector());
   // paramInitials started from mapSoln, which encompasses either:
   // > most recent solution from map_pre_solve(), if used, or
   // > initial guess (user-specified or default initial values)
@@ -896,8 +901,8 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 	 << ":\nparamMins " << paramMins << "\nparamMaxs " << paramMaxs << '\n';
 
   // new approach supports arbitrary priors:
-  priorRv.reset(new QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
-   		("prior_", *paramDomain, nonDQUESOInstance));
+  priorRv = std::make_shared<QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix>> 
+  ("prior_", *paramDomain, nonDQUESOInstance);
 
 }
 
@@ -906,7 +911,8 @@ void NonDQUESOBayesCalibration::init_proposal_covariance()
 {
   // Size our Queso covariance matrix and initialize trailing diagonal if
   // calibrating error hyperparams
-  proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
+  proposalCovMatrix =
+    std::make_shared<QUESO::GslMatrix>(paramSpace->zeroVector());
   if (numHyperparams > 0) {
     // all hyperparams utilize inverse gamma priors, which may not
     // have finite variance; use std_dev = 0.05 * mode
@@ -1102,7 +1108,7 @@ void NonDQUESOBayesCalibration::validate_proposal()
 void NonDQUESOBayesCalibration::set_ip_options() 
 {
   // Construct with default options
-  calIpOptionsValues.reset(new QUESO::SipOptionsValues());
+  calIpOptionsValues = std::make_shared<QUESO::SipOptionsValues>();
 
   // C++ API options may override defaults
   //definitely want to retain computeSolution
@@ -1123,7 +1129,7 @@ void NonDQUESOBayesCalibration::set_ip_options()
 void NonDQUESOBayesCalibration::set_mh_options() 
 {
   // Construct with default options
-  calIpMhOptionsValues.reset(new QUESO::MhOptionsValues());
+  calIpMhOptionsValues = std::make_shared<QUESO::MhOptionsValues>();
 
   // C++ API options may override defaults
   calIpMhOptionsValues->m_dataOutputFileName = "QuesoDiagnostics/mh_output";

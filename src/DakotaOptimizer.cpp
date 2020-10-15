@@ -202,8 +202,6 @@ void Optimizer::print_results(std::ostream& s, short results_state)
     abort_handler(-1); 
   } 
 
-  DataTransformModel* dt_model_rep;
-    
   // must search in the inbound Model's space (and even that may not
   // suffice if there are additional recastings underlying this
   // Optimizer's Model) to find the function evaluation ID number
@@ -246,7 +244,9 @@ void Optimizer::print_results(std::ostream& s, short results_state)
       if (calibrationDataFlag) {
         // TODO: approximate models with interpolation of field data may
         // not have recovered the correct best residuals
-        dt_model_rep = static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+	std::shared_ptr<DataTransformModel> dt_model_rep =
+	  std::static_pointer_cast<DataTransformModel>
+	  (dataTransformModel.model_rep());
         dt_model_rep->print_best_responses(s, best_vars, bestResponseArray[i],
                                            num_best, i);
       }
@@ -378,13 +378,13 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   if (!orig_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (require_hessians)                        recast_resp_order |= 4;
 
-  iteratedModel.assign_rep(new
-    RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
-		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
-		set_recast, primary_resp_map_indices,
-		secondary_resp_map_indices, recast_secondary_offset,
-		recast_resp_order, nonlinear_resp_map, pri_resp_recast,
-		sec_resp_recast), false);
+  iteratedModel.assign_rep(std::make_shared<RecastModel>
+    (iteratedModel, var_map_indices, recast_vars_comps_total,
+     all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
+     set_recast, primary_resp_map_indices,
+     secondary_resp_map_indices, recast_secondary_offset,
+     recast_resp_order, nonlinear_resp_map, pri_resp_recast,
+     sec_resp_recast));
   ++myModelLayers;
 
 
@@ -590,8 +590,8 @@ void Optimizer::post_run(std::ostream& s)
     // transform variables back to user space (for local obj recast or scaling)
     // must do before lookup in retrieve, which is in user space
     if (scaleFlag) {
-      ScalingModel* scale_model_rep = 
-        static_cast<ScalingModel*>(scalingModel.model_rep());
+      std::shared_ptr<ScalingModel> scale_model_rep =
+        std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
       best_vars.continuous_variables
         (scale_model_rep->cv_scaled2native(best_vars.continuous_variables()));
     }
@@ -622,8 +622,8 @@ void Optimizer::post_run(std::ostream& s)
     // just unscale if needed
     else if (scaleFlag) {
       // ScalingModel manages which transformations are needed
-      ScalingModel* scale_model_rep = 
-        static_cast<ScalingModel*>(scalingModel.model_rep());
+      std::shared_ptr<ScalingModel> scale_model_rep =
+        std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
       scale_model_rep->resp_scaled2native(best_vars, best_resp);
     }
   }

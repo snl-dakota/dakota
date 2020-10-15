@@ -440,12 +440,12 @@ void ProgramOptions::manage_run_modes(const CommandLineHandler& clh)
   // If filenames empty, do not define defaults; user might not want.
   
   // populate the filenames as necessary
-  if ( preRunFlag = (clh.retrieve("pre_run") != NULL))
+  if ( (preRunFlag = (clh.retrieve("pre_run")) != NULL))
     split_filenames(clh.retrieve("pre_run"), preRunInput, 
 		    preRunOutput);      
-  if ( runFlag = (clh.retrieve("run") != NULL))
+  if ( (runFlag = (clh.retrieve("run")) != NULL))
     split_filenames(clh.retrieve("run"), runInput, runOutput);
-  if ( postRunFlag = (clh.retrieve("post_run") != NULL))
+  if ( (postRunFlag = (clh.retrieve("post_run")) != NULL))
     split_filenames(clh.retrieve("post_run"), postRunInput, 
 		    postRunOutput);
 

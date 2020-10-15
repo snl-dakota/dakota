@@ -91,7 +91,7 @@ private:
 
 
 inline ParallelDirectApplicInterface::~ParallelDirectApplicInterface()
-{ /* Virtual destructor handles referenceCount at Interface level. */ }
+{ }
 
 
 inline void ParallelDirectApplicInterface::

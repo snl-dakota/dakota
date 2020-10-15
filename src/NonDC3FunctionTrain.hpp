@@ -62,8 +62,6 @@ protected:
   // perform a forward uncertainty propagation using PCE/SC methods
   //void core_run();
 
-  bool advancement_available();
-
   void push_increment();
   void update_samples_from_order_increment();
   //void update_samples_from_order_decrement();
@@ -79,7 +77,8 @@ protected:
 
   /// check model definition (redirect function_train model to surr-based UQ)
   void check_surrogate();
-  /// assign c3RefineType based on refine{type,Control} and adapt_rank
+  /// assign c3AdvancementType based on user inputs for adapt_{rank,order}
+  /// (fine-grained augmentation to refine{Type,Control} = uniform p-refinement)
   void resolve_refinement();
 
   /// configure u_space_sampler and approx_type based on regression
@@ -106,6 +105,9 @@ protected:
   /// Publish configuration data for initial function train cores, prior to
   /// any adaptation
   void push_c3_start_orders(const UShortArray& start_orders);
+  /// Publish configuration data for initial function train cores, prior to
+  /// any adaptation
+  void push_c3_max_order(unsigned short max_order);
   /// Publish random seed for internal C3 use
   void push_c3_seed(int seed);
 
@@ -125,14 +127,18 @@ protected:
   /// scalar specification for maximum basis order (bounds uniform refinement)
   unsigned short maxOrderSpec;
 
-  /// type of (uniform) refinement: UNIFORM_{START_ORDER,START_RANK,MAX_RANK}
-  short c3RefineType;
+  /// type of advancement used by (uniform) refinement: START_{RANK,ORDER} or
+  /// MAX_{RANK,ORDER,RANK_ORDER}
+  short c3AdvancementType;
 
 private:
 
   //
   //- Heading: Member function definitions
   //
+
+  /// return the regression size used for different refinement options
+  size_t regression_size();
 
   //static int qoi_eval(size_t num_samp,        // number of evaluations
   // 			const double* var_sets, // num_vars x num_evals

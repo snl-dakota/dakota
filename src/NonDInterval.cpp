@@ -158,8 +158,9 @@ void NonDInterval::calculate_cells_and_bpas()
 {
   Pecos::MultivariateDistribution& mv_dist
     = iteratedModel.multivariate_distribution();
-  Pecos::MarginalsCorrDistribution* mvd_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  std::shared_ptr<Pecos::MarginalsCorrDistribution>mvd_dist_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mv_dist.multivar_dist_rep());
   RealRealPairRealMapArray ci_bpa;  IntIntPairRealMapArray di_bpa;
   IntRealMapArray dsi_vals_probs;   RealRealMapArray dsr_vals_probs;
   // TO DO: DISCRETE_UNCERTAIN_SET_STRING ...

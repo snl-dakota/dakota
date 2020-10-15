@@ -18,7 +18,8 @@ method,
 #	    sparse_grid_level_sequence = 0 unrestricted		#s1,#s3
 #	    convergence_tolerance 1.e-3				#s1,#s3
 #	    max_refinement_iterations 100
-	output silent
+#	output quiet						#s1,#s3
+	output silent						#s0,#s2
 	variance_based_decomp					#s0,#s2
 
 model,

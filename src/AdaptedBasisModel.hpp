@@ -20,6 +20,7 @@ namespace Dakota {
 #define ONLINE_PHASE 2
 
 /// forward declarations
+class NonDPolynomialChaos;
 class ProblemDescDB;
 
 /// Adapted basis model for input (variable space) reduction
@@ -148,9 +149,16 @@ protected:
   // Member data
   // ---
 
+  /// BMA TODO: The initialization order of this Model, base
+  /// RecastModel, and interdependence with PCE and its sub-model need
+  /// fixing. Cannot make this a shared_ptr as it'll get default
+  /// constructed and cleared after get_sub_model is called. Leaving
+  /// as Iterator* for now, but we're just getting lucky with
+  /// initialization (would probably break in a DEBUG build.
+
   /// PCE representation pointer that is initialized in get_sub_model() and
   /// then assigned into pcePilotExpansion in the constructor initializer list
-  Iterator* pcePilotExpRepPtr;
+  NonDPolynomialChaos* pcePilotExpRepPtr;
   /// low-order (linear or quadratic) PCE generator for computing rotation
   /// matrices A_i for each of the QoI; this is low-order and potentially
   /// high-dimension whereas a client PCE could be high-order in the

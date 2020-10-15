@@ -58,9 +58,6 @@ protected:
   //void pre_run();
   void post_run(std::ostream& s);
 
-  /// initialize graphics customized for reliability methods
-  void initialize_graphics(int iterator_server_id = 1);
-
   const Model& algorithm_space_model() const;
 
   //

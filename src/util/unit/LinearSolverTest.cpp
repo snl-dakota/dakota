@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "common_utils.hpp"
-#include "LinearSolvers.hpp"
+#include "util_common.hpp"
+#include "UtilLinearSolvers.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
 

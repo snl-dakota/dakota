@@ -65,31 +65,31 @@ public:
   /// destructor
   ~ExperimentResponse();
 
-  void set_scalar_covariance(RealVector& scalars);
+  void set_scalar_covariance(RealVector& scalars) override;
 
-  const ExperimentCovariance& experiment_covariance() const;
+  const ExperimentCovariance& experiment_covariance() const override;
 
   void set_full_covariance(std::vector<RealMatrix> &matrices,
                            std::vector<RealVector> &diagonals,
                            RealVector &scalars,
                            IntVector matrix_map_indices,
                            IntVector diagonal_map_indices,
-                           IntVector scalar_map_indices );
+                           IntVector scalar_map_indices ) override;
   
-  Real apply_covariance(const RealVector &residual) const;
+  Real apply_covariance(const RealVector &residual) const override;
   void apply_covariance_inv_sqrt(const RealVector& residuals, 
-				 RealVector& weighted_residuals) const;
+				 RealVector& weighted_residuals) const override;
   void apply_covariance_inv_sqrt(const RealMatrix& gradients, 
-				 RealMatrix& weighted_gradients) const;
+				 RealMatrix& weighted_gradients) const override;
   void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
-				 RealSymMatrixArray& weighted_hessians) const;
-  void get_covariance_diagonal( RealVector &diagonal ) const;
+				 RealSymMatrixArray& weighted_hessians) const override;
+  void get_covariance_diagonal( RealVector &diagonal ) const override;
 
   /// covariance determinant for this experiment (default 1.0)
-  Real covariance_determinant() const;
+  Real covariance_determinant() const override;
 
   /// log covariance determinant for this experiment (default 0.0)
-  Real log_covariance_determinant() const;
+  Real log_covariance_determinant() const override;
 
 protected:
 
@@ -99,7 +99,7 @@ protected:
 
   /// Specialization of copy_rep; pulls base class data as well as
   /// derived specific data from the source rep into the this object.
-  void copy_rep(Response* source_resp_rep);
+  void copy_rep(std::shared_ptr<Response> source_resp_rep) override;
 
 private:
 

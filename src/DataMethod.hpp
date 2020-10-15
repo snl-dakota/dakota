@@ -157,7 +157,8 @@ enum { DEFAULT_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 // --------------------
 // define special values for emulatorType
 enum { NO_EMULATOR, PCE_EMULATOR, ML_PCE_EMULATOR, MF_PCE_EMULATOR, SC_EMULATOR,
-       MF_SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR, VPS_EMULATOR };
+       MF_SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR, EXPGP_EMULATOR,
+       VPS_EMULATOR };
 // modes for calibrating multipliers on observational error
 enum { CALIBRATE_NONE = 0, CALIBRATE_ONE, CALIBRATE_PER_EXPER,
        CALIBRATE_PER_RESP, CALIBRATE_BOTH};
@@ -246,6 +247,8 @@ class DataMethodRep
 
 public:
 
+  ~DataMethodRep();                            ///< destructor
+
   //
   //- Heading: Data
   //
@@ -286,9 +289,6 @@ public:
   /// surrogate models (PCE/SC expansions, GP models for EGO/EGRA/EGIE)
   /// based on the \c use_derivatives specification
   bool methodUseDerivsFlag;
-  /// iteration convergence tolerance for the method (from the \c
-  /// convergence_tolerance specification in \ref MethodIndControl)
-  Real convergenceTolerance;
   /// tolerance for controlling the amount of infeasibility that is allowed
   /// before an active constraint is considered to be violated (from the \c
   /// constraint_tolerance specification in \ref MethodIndControl)
@@ -298,6 +298,16 @@ public:
   bool methodScaling;
   /// number of final solutions returned from the iterator
   size_t numFinalSolutions;
+
+  /// iteration convergence tolerance for the method (from the \c
+  /// convergence_tolerance specification in \ref MethodIndControl)
+  Real convergenceTolerance;
+  /// controls use of convergence tolerance in a relative (true) or
+  /// absolute (false) context
+  bool relativeConvMetric;
+  /// mode of computing statistics metrics used for convergence assessment
+  /// of multilevel/multifidelity refinement processes: active or combined
+  short statsMetricMode;
 
   /// the method selection: one of the optimizer, least squares, nond, dace,
   /// or parameter study methods
@@ -767,19 +777,23 @@ public:
   Real statsRoundingTol;
   /// starting polynomial order
   unsigned short startOrder;
+  /// polynomial order increment when adapting
+  unsigned short kickOrder;
   /// maximum order of basis polynomials
   unsigned short maxOrder;
+  /// whether or not to adapt order by cross validation
+  bool adaptOrder;
   /// starting rank
   size_t startRank;
-  /// rank increase increment
+  /// rank increment when adapting
   size_t kickRank;
   /// maximum rank
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
-  /// quantity to increment (start order, start rank, max rank) for FT
-  /// uniform p-refinement
-  short c3RefineType;
+  /// quantity to increment (start rank, start order, max rank, max order,
+  /// max rank + max order) for FT (uniform) p-refinement
+  short c3AdvanceType;
   /// starting polynomial order
   UShortArray startOrderSeq;
   /// starting rank
@@ -1220,6 +1234,18 @@ public:
   /// tabular format for the MCMC chain and MLMC sample sequence exports
   unsigned short exportSamplesFormat;
 
+  // options for archiving surrogates from EGO, EGRA, EGIE
+  // (could be unified with other kinds of surrogate exports)
+
+  /// Option to turn on surrogate model export (export_model)
+  bool exportSurrogate;
+
+  /// the filename prefix for export_model
+  String modelExportPrefix;
+
+  /// Format selection for export_model
+  unsigned short modelExportFormat;
+
 private:
 
   //
@@ -1227,7 +1253,6 @@ private:
   //
 
   DataMethodRep();                             ///< constructor
-  ~DataMethodRep();                            ///< destructor
 
   //
   //- Heading: Member methods
@@ -1245,8 +1270,6 @@ private:
   //- Heading: Private data members
   //
 
-  /// number of handle objects sharing this dataMethodRep
-  int referenceCount;
 };
 
 
@@ -1302,7 +1325,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataMethodRep
-  DataMethodRep* data_rep();
+  std::shared_ptr<DataMethodRep> data_rep();
 
 private:
 
@@ -1311,11 +1334,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataMethodRep* dataMethodRep;
+  std::shared_ptr<DataMethodRep> dataMethodRep;
 };
 
 
-inline DataMethodRep* DataMethod::data_rep()
+inline std::shared_ptr<DataMethodRep> DataMethod::data_rep()
 {return dataMethodRep; }
 
 

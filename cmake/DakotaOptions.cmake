@@ -25,6 +25,11 @@ option(DAKOTA_MODULE_SURROGATES "Enable Dakota module surrogates" ON)
 option(DAKOTA_MODULE_DAKOTA "Enable Dakota module for traditional all Dakota"
   ON)
 
+if(BUILD_IN_TRILINOS)
+  set(DAKOTA_MODULE_SURROGATES OFF CACHE BOOL
+    "Dakota surrogates module is disabled for in-Trilinos builds" FORCE)
+endif()
+
 # Testing options
 option(DAKOTA_ENABLE_TESTS "Enable Dakota-specific tests?" ON)
 # Option to turn off key DAKOTA TPL tests, default OFF
@@ -56,10 +61,48 @@ if(ENABLE_SPEC_MAINT AND NOT UNIX)
     "DAKOTA specification maintenance mode only available on UNIX platforms")
 endif()
 
-option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
-if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
-  message(FATAL_ERROR 
-    "DAKOTA documentation build only available on UNIX platforms")
+
+## Python options
+
+# NOTES/RATIONALE:
+#  * Dakota build should only require a Python interpreter by default
+#  * We do not default-enable components that have library
+#    dependencies due to distribution challenges. These include:
+#     - Python libs: DAKOTA_PYTHON_DIRECT_INTERFACE, DAKOTA_PYTHON_SURROGATES
+#     - Python numpy: DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
+#  * When h5py is present, unit tests using it will automatically be enabled
+
+# Scripts and tests based on interpreter
+# (Formerly, DAKOTA_PYTHON controlled linked/direct Python interface only)
+option(DAKOTA_PYTHON "Dakota Python scripts (Interpreter); default ON" ON)
+
+# Direct interface defaults OFF to avoid Python library dependencies
+option(DAKOTA_PYTHON_DIRECT_INTERFACE
+  "Dakota Python direct interface (Development); default OFF" OFF)
+# Direct interface numpy is a dependent option; will only be enabled
+# if the direct interface is. (Formerly called DAKOTA_PYTHON_NUMPY)
+option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
+  "Dakota Python direct interface uses NumPy (only has effect when DAKOTA_PYTHON_DIRECT_INTERFACE is ON)" 
+  ON
+  )
+
+# Does not yet exist and needs a better name:
+##option(DAKOTA_PYTHON_TOP_INTERFACE "Top-level Dakota Python interface" OFF)
+
+# Requires Pybind11; default OFF to avoid default library dependencies
+option(DAKOTA_PYTHON_SURROGATES
+  "Dakota Python interface to surrogates module; default OFF" OFF)
+
+if(DAKOTA_PYTHON_SURROGATES)
+  if(DAKOTA_MODULE_SURROGATES)
+    set(DAKOTA_PYBIND11 ON CACHE BOOL
+      "Dakota using Pybind11 for surrogate wrappers.")
+  else()
+    message(STATUS "Disabling DAKOTA_PYTHON_SURROGATES as "
+      "DAKOTA_MODULE_SURROGATES=${DAKOTA_MODULE_SURROGATES}")
+    set(DAKOTA_PYTHON_SURROGATES OFF CACHE BOOL
+      "Python surrogate wrappers disabled as surrogate module is off.")
+  endif()
 endif()
 
 # Option to build an unsupported Java wrapper for Dakota's library mode that 
@@ -68,6 +111,17 @@ endif()
 # not relate to compiling or using Dakota's graphical user interface.
 option(DAKOTA_API_JAVA "Unsupported: Enable Dakota library Java API" OFF)
 mark_as_advanced(DAKOTA_API_JAVA)
+
+
+option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
+if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
+  message(FATAL_ERROR
+    "Dakota documentation build only available on UNIX platforms")
+endif()
+if(ENABLE_DAKOTA_DOCS AND NOT DAKOTA_PYTHON)
+  message(FATAL_ERROR
+    "Dakota documentation build only available with DAKOTA_PYTHON=ON")
+endif()
 
 option(DAKOTA_GCOV "GNU gcov for Dakota core" OFF)
 
@@ -129,7 +183,7 @@ option(HAVE_NCSUOPT "Build the NCSUOPT package." ON)
 option(HAVE_NL2SOL "Build the NL2SOL package." ON)
 option(HAVE_NLPQL "Build the NLPQL package." ON)
 option(HAVE_NOMAD "Build the NOMAD package." ON)
-option(HAVE_NOWPAC "Build the NOWPAC package (experimental)." OFF)
+option(HAVE_NOWPAC "Build the SNOWPAC package (experimental)." OFF)
 option(HAVE_NPSOL "Build the NPSOL package." ON)
 option(HAVE_OPTPP "Build the OPTPP package." ON)
 option(HAVE_PECOS "Build the Pecos package." ON)

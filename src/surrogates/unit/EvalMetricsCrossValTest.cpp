@@ -7,8 +7,8 @@
     _______________________________________________________________________ */
 
 
-#include "GaussianProcess.hpp"
-#include "PolynomialRegression.hpp"
+#include "SurrogatesGaussianProcess.hpp"
+#include "SurrogatesPolynomialRegression.hpp"
 #include <Teuchos_UnitTestHarness.hpp>
 
 
@@ -50,8 +50,8 @@ TEUCHOS_UNIT_TEST(surrogates, eval_metrics_and_cross_validation)
   ParameterList poly_param_list("Polynomial Test Parameters");
   poly_param_list.set("max degree", 3);
   PolynomialRegression poly(xs_u, response, poly_param_list);
-  MatrixXd pred_vals_poly;
-  poly.value(eval_pts, pred_vals_poly);
+  VectorXd pred_vals_poly;
+  pred_vals_poly = poly.value(eval_pts);
 
   /* Evaluate metrics */
   StringArray metrics_names = {"sum_squared", "mean_squared",

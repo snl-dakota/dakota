@@ -172,8 +172,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   int samples = approxImportFile.empty() ? buildSamples : 0;
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
-  lhsIter.assign_rep(new NonDLHSSampling(mcmcModel, sample_type, samples, 
-					 randomSeed, rng), false);
+  lhsIter.assign_rep(std::make_shared<NonDLHSSampling>
+		     (mcmcModel, sample_type, samples, randomSeed, rng));
 }
 
 
@@ -229,28 +229,28 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // GPMSA scenario space = configuration space. GPMSA requires at least 1
   // configuration variable, set to 0.5 for all scenarios if needed
-  configSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
-		    (*quesoEnv, "scenario_", gpmsaConfigVars, NULL));
+  configSpace = std::make_shared<QUESO::VectorSpace<GslVector, GslMatrix>>
+    (*quesoEnv, "scenario_", gpmsaConfigVars, nullptr);
 
   // GPMSA output space.  TODO: The simulation output space eta won't
   // always have same size as experiment space.  Moreover, each
   // experiment might have different size. Generalize this to
   // multi-experiment of varying size, and fields.
   unsigned int num_eta = numFunctions;
-  nEtaSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
-                  (*quesoEnv, "output_", num_eta, NULL));
+  nEtaSpace = std::make_shared<QUESO::VectorSpace<GslVector, GslMatrix>>
+    (*quesoEnv, "output_", num_eta, nullptr);
 
   // BMA TODO: manage experiment size (each experiment need not have
   // the same size and one sim may inform multiple experiments through
   // DataTransform...)
   unsigned int experiment_size = expData.all_data(0).length();
-  experimentSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
-                        (*quesoEnv,"experimentspace_", experiment_size, NULL));
+  experimentSpace = std::make_shared<QUESO::VectorSpace<GslVector, GslMatrix>>
+    (*quesoEnv,"experimentspace_", experiment_size, nullptr);
 
   // Construct with default options
   // default constructed options will have recommended settings, then
   // we can override via C++ API or input file (parse)
-  gpmsaOptions.reset(new QUESO::GPMSAOptions());
+  gpmsaOptions = std::make_shared<QUESO::GPMSAOptions>();
 
   // C++ API options may override defaults
   // insert Dakota parameters here: gpmsaOptions.m_emulatorPrecisionShape
@@ -275,10 +275,10 @@ void NonDGPMSABayesCalibration::calibrate()
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nGPMSA Final Options:" << *gpmsaOptions << std::endl;
 
-  gpmsaFactory.reset(new QUESO::GPMSAFactory<GslVector, GslMatrix>
-                     (*quesoEnv, gpmsaOptions.get(), *priorRv, *configSpace,
-                      *paramSpace, *nEtaSpace, buildSamples,
-                      expData.num_experiments()));
+  gpmsaFactory = std::make_shared<QUESO::GPMSAFactory<GslVector, GslMatrix>>
+    (*quesoEnv, gpmsaOptions.get(), *priorRv, *configSpace,
+     *paramSpace, *nEtaSpace, buildSamples,
+     expData.num_experiments());
 
   // Populate simulation build data and experiment data
   fill_simulation_data();
@@ -341,15 +341,16 @@ void NonDGPMSABayesCalibration::calibrate()
 void NonDGPMSABayesCalibration::init_queso_solver() 
 {
   // Note: The postRv includes GP-associated hyper-parameters
-  postRv.reset(new QUESO::GenericVectorRV<GslVector, GslMatrix>
-               ("post_", gpmsaFactory->prior().imageSet().vectorSpace()));
+  postRv = std::make_shared<QUESO::GenericVectorRV<GslVector, GslMatrix>>
+    ("post_", gpmsaFactory->prior().imageSet().vectorSpace());
 
   // TODO: consider what options are relevant for GPMSA vs. QUESO
   set_ip_options();
   set_mh_options();
 
-  inverseProb.reset(new QUESO::StatisticalInverseProblem<GslVector, GslMatrix>
-                    ("", calIpOptionsValues.get(), *gpmsaFactory, *postRv));
+  inverseProb = 
+    std::make_shared<QUESO::StatisticalInverseProblem<GslVector, GslMatrix>>
+    ("", calIpOptionsValues.get(), *gpmsaFactory, *postRv);
 }
 
 
@@ -513,9 +514,9 @@ void NonDGPMSABayesCalibration::fill_simulation_data()
 
   // Instantiate each of the simulation points/outputs
   for (unsigned int i = 0; i < buildSamples; i++) {
-    sim_scenarios[i].reset(new GslVector(configSpace->zeroVector()));
-    sim_params[i].reset(new GslVector(paramSpace->zeroVector()));
-    sim_outputs[i].reset(new GslVector(nEtaSpace->zeroVector())); // eta
+    sim_scenarios[i] = std::make_shared<GslVector>(configSpace->zeroVector());
+    sim_params[i] = std::make_shared<GslVector>(paramSpace->zeroVector());
+    sim_outputs[i] = std::make_shared<GslVector>(nEtaSpace->zeroVector()); // eta
   }
 
   /// simulation data, one row per simulation build sample, columns
@@ -562,8 +563,8 @@ void NonDGPMSABayesCalibration::fill_experiment_data()
   const RealVectorArray& exp_config_vars = expData.config_vars();
   for (unsigned int i = 0; i < num_experiments; i++) {
 
-    exp_scenarios[i].reset(new GslVector(configSpace->zeroVector()));
-    exp_outputs[i].reset(new GslVector(experimentSpace->zeroVector()));
+    exp_scenarios[i] = std::make_shared<GslVector>(configSpace->zeroVector());
+    exp_outputs[i] = std::make_shared<GslVector>(experimentSpace->zeroVector());
 
     // NOTE: copy_gsl will resize the target objects rather than erroring.
     if (userConfigVars > 0)
@@ -579,7 +580,7 @@ void NonDGPMSABayesCalibration::fill_experiment_data()
   // Experimental observation error covariance (default = I)
   QUESO::VectorSpace<GslVector, GslMatrix> 
     total_exp_space(*quesoEnv, "experimentspace_", 
-                    num_experiments * experiment_size, NULL);
+                    num_experiments * experiment_size, nullptr);
   QUESO::SharedPtr<GslMatrix>::Type exp_covariance
     (new GslMatrix(total_exp_space.zeroVector(), 1.0));
 

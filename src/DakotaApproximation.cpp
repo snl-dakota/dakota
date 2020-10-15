@@ -44,19 +44,13 @@ namespace Dakota {
     class letter and the derived constructor selects this base class
     constructor in its initialization list (to avoid recursion in the
     base class constructor calling get_approx() again).  Since the
-    letter IS the representation, its rep pointer is set to NULL (an
-    uninitialized pointer causes problems in ~Approximation). */
+    letter IS the representation, its rep pointer is set to NULL. */
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 			     const SharedApproxData& shared_data,
                              const String& approx_label):
   approxData(true), approxLabel(approx_label),
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(BaseConstructor) called to build base "
-       << "class for letter." << std::endl;
-#endif
-}
+  sharedDataRep(shared_data.data_rep())
+{ /* empty ctor */ }
 
 
 /** This constructor is the one which must build the base class data
@@ -64,33 +58,18 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     class letter and the derived constructor selects this base class
     constructor in its initialization list (to avoid recursion in the
     base class constructor calling get_approx() again).  Since the
-    letter IS the representation, its rep pointer is set to NULL (an
-    uninitialized pointer causes problems in ~Approximation). */
+    letter IS the representation, its rep pointer is set to NULL. */
 Approximation::
 Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
-  approxData(true), sharedDataRep(shared_data.data_rep()),
-  approxRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
-       << "base class for letter." << std::endl;
-#endif
-}
+  approxData(true), sharedDataRep(shared_data.data_rep())
+{ /* empty ctor */ }
 
 
 /** The default constructor is used in Array<Approximation> instantiations
     and by the alternate envelope constructor.  approxRep is NULL in this
-    case (problem_db is needed to build a meaningful Approximation object).
-    This makes it necessary to check for NULL in the copy constructor,
-    assignment operator, and destructor. */
-Approximation::Approximation():
-  sharedDataRep(NULL), approxRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation() called to build empty approximation "
-       << "object." << std::endl;
-#endif
-}
+    case (problem_db is needed to build a meaningful Approximation object). */
+Approximation::Approximation()
+{ /* empty ctor */ }
 
 
 /** Envelope constructor only needs to extract enough data to properly
@@ -99,15 +78,9 @@ Approximation::Approximation():
 Approximation::
 Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
               const String& approx_label):
-  sharedDataRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(ProblemDescDB&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   // Set the rep pointer to the appropriate derived type
-  approxRep = get_approx(problem_db, shared_data, approx_label);
+  approxRep(get_approx(problem_db, shared_data, approx_label))
+{
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -115,35 +88,37 @@ Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 
 /** Used only by the envelope constructor to initialize approxRep to the 
     appropriate derived type. */
-Approximation* Approximation::
+std::shared_ptr<Approximation> Approximation::
 get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
            const String& approx_label)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_approx(ProblemDescDB&)."
-       << std::endl;
-#endif
-
   bool pw_decomp = problem_db.get_bool("model.surrogate.domain_decomp");
   if (pw_decomp) {
-    return new VPSApproximation(problem_db, shared_data, approx_label);
+    return std::make_shared<VPSApproximation>
+      (problem_db, shared_data, approx_label);
   }
   else {
     const String& approx_type = shared_data.data_rep()->approxType;
     if (approx_type == "local_taylor")
-      return new TaylorApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<TaylorApproximation>
+	(problem_db, shared_data, approx_label);
     else if (approx_type == "multipoint_tana")
-      return new TANA3Approximation(problem_db, shared_data, approx_label);
+      return std::make_shared<TANA3Approximation>
+	(problem_db, shared_data, approx_label);
     else if (approx_type == "multipoint_qmea")
-      return new QMEApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<QMEApproximation>
+	(problem_db, shared_data, approx_label);
     else if (strends(approx_type, "_orthogonal_polynomial") ||
 	     strends(approx_type, "_interpolation_polynomial"))
-      return new PecosApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<PecosApproximation>
+	(problem_db, shared_data, approx_label);
     else if (approx_type == "global_gaussian")
-      return new GaussProcApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<GaussProcApproximation>
+	(problem_db, shared_data, approx_label);
 #ifdef HAVE_C3
     else if (approx_type == "global_function_train")
-      return new C3Approximation(problem_db, shared_data, approx_label);
+      return std::make_shared<C3Approximation>
+	(problem_db, shared_data, approx_label);
 #endif
 #ifdef HAVE_SURFPACK
     else if (approx_type == "global_polynomial"     ||
@@ -152,20 +127,23 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 	     approx_type == "global_radial_basis"   ||
 	     approx_type == "global_mars"           ||
 	     approx_type == "global_moving_least_squares")
-      return new SurfpackApproximation(problem_db, shared_data, approx_label);
+      return std::make_shared<SurfpackApproximation>
+	(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
     else if (approx_type == "global_exp_gauss_proc")
-      return new SurrogatesGPApprox(problem_db, shared_data, approx_label);
+      return std::make_shared<SurrogatesGPApprox>
+	(problem_db, shared_data, approx_label);
     else if (approx_type == "global_exp_poly")
-      return new SurrogatesPolyApprox(problem_db, shared_data, approx_label);
+      return std::make_shared<SurrogatesPolyApprox>
+	(problem_db, shared_data, approx_label);
 #endif // HAVE_DAKOTA_SURROGATES
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."
 	   << std::endl;
-      return NULL;
     }
   }
+  return std::shared_ptr<Approximation>();
 }
 
 
@@ -173,15 +151,9 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
     the fly.  Since it does not have access to problem_db, it utilizes
     the NoDBBaseConstructor constructor chain. */
 Approximation::Approximation(const SharedApproxData& shared_data):
-  sharedDataRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(String&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   // Set the rep pointer to the appropriate derived type
-  approxRep = get_approx(shared_data);
+  approxRep(get_approx(shared_data))
+{
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(APPROX_ERROR);
 }
@@ -189,31 +161,27 @@ Approximation::Approximation(const SharedApproxData& shared_data):
 
 /** Used only by the envelope constructor to initialize approxRep to the 
     appropriate derived type. */
-Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
+std::shared_ptr<Approximation>
+Approximation::get_approx(const SharedApproxData& shared_data)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_approx(String&)." << std::endl;
-#endif
-
-  Approximation* approx;
   const String&  approx_type = shared_data.data_rep()->approxType;
   if (approx_type == "local_taylor")
-    approx = new TaylorApproximation(shared_data);
+    return std::make_shared<TaylorApproximation>(shared_data);
   else if (approx_type == "multipoint_tana")
-    approx = new TANA3Approximation(shared_data);
+    return std::make_shared<TANA3Approximation>(shared_data);
   else if (approx_type == "multipoint_qmea")
-    approx = new QMEApproximation(shared_data);
+    return std::make_shared<QMEApproximation>(shared_data);
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
-    approx = new PecosApproximation(shared_data);
+    return std::make_shared<PecosApproximation>(shared_data);
 #ifdef HAVE_C3
   else if (approx_type == "global_function_train")
-    approx = new C3Approximation(shared_data);
+    return std::make_shared<C3Approximation>(shared_data);
 #endif
   else if (approx_type == "global_gaussian")
-    approx = new GaussProcApproximation(shared_data);
+    return std::make_shared<GaussProcApproximation>(shared_data);
   else if (approx_type == "global_voronoi_surrogate")
-    approx = new VPSApproximation(shared_data);
+    return std::make_shared<VPSApproximation>(shared_data);
 #ifdef HAVE_SURFPACK
   else if (approx_type == "global_polynomial"     ||
 	   approx_type == "global_kriging"        ||
@@ -221,88 +189,37 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 	   approx_type == "global_radial_basis"   ||
 	   approx_type == "global_mars"           ||
 	   approx_type == "global_moving_least_squares")
-    approx = new SurfpackApproximation(shared_data);
+    return std::make_shared<SurfpackApproximation>(shared_data);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-    else if (approx_type == "global_exp_gauss_proc")
-      return new SurrogatesGPApprox(shared_data);
-    else if (approx_type == "global_exp_poly")
-      return new SurrogatesPolyApprox(shared_data);
+  else if (approx_type == "global_exp_gauss_proc")
+    return std::make_shared<SurrogatesGPApprox>(shared_data);
+  else if (approx_type == "global_exp_poly")
+    return std::make_shared<SurrogatesPolyApprox>(shared_data);
 #endif // HAVE_DAKOTA_SURROGATES
-  else {
+  else
     Cerr << "Error: Approximation type " << approx_type << " not available."
 	 << std::endl;
-    approx = NULL;
-  }
-  return approx;
+
+  return std::shared_ptr<Approximation>();
 }
 
 
-/** Copy constructor manages sharing of approxRep and incrementing
-    of referenceCount. */
-Approximation::Approximation(const Approximation& approx)
-{
-  // Increment new (no old to decrement)
-  approxRep = approx.approxRep;
-  if (approxRep) // Check for an assignment of NULL
-    ++approxRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(Approximation&)" << std::endl;
-  if (approxRep)
-    Cout << "approxRep referenceCount = " << approxRep->referenceCount
-	 << std::endl;
-#endif
-}
+/** Copy constructor manages sharing of approxRep. */
+Approximation::Approximation(const Approximation& approx):
+  approxRep(approx.approxRep)
+{ /* empty ctor */ }
 
 
-/** Assignment operator decrements referenceCount for old approxRep, assigns
-    new approxRep, and increments referenceCount for new approxRep. */
 Approximation Approximation::operator=(const Approximation& approx)
 {
-  if (approxRep != approx.approxRep) { // normal case: old != new
-    // Decrement old
-    if (approxRep) // Check for NULL
-      if ( --approxRep->referenceCount == 0 ) 
-	delete approxRep;
-    // Assign and increment new
-    approxRep = approx.approxRep;
-    if (approxRep) // Check for NULL
-      ++approxRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::operator=(Approximation&)" << std::endl;
-  if (approxRep)
-    Cout << "approxRep referenceCount = " << approxRep->referenceCount
-	 << std::endl;
-#endif
-
+  approxRep = approx.approxRep;
   return *this; // calls copy constructor since returned by value
 }
 
 
-/** Destructor decrements referenceCount and only deletes approxRep
-    when referenceCount reaches zero. */
 Approximation::~Approximation()
-{ 
-  // Check for NULL pointer 
-  if (approxRep) {
-    --approxRep->referenceCount;
-#ifdef REFCOUNT_DEBUG
-    Cout << "approxRep referenceCount decremented to " 
-	 << approxRep->referenceCount << std::endl;
-#endif
-    if (approxRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting approxRep" << std::endl;
-#endif
-      delete approxRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 
 /** This is the common base class portion of the virtual fn and is
@@ -880,6 +797,13 @@ Real Approximation::prediction_variance(const RealVector& c_vars)
   }
         
   return approxRep->prediction_variance(c_vars);
+}
+
+
+bool Approximation::advancement_available()
+{
+  if (approxRep) return approxRep->advancement_available();
+  else           return true; // only a few cases throttle advancements
 }
 
 

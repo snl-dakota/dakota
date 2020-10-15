@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "common_utils.hpp"
-#include "metrics.hpp"
+#include "util_common.hpp"
+#include "util_metrics.hpp"
 #include "util_data_types.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>

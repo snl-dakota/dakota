@@ -88,11 +88,11 @@ else:
 # Empty restart file
 open("empty.rst","w").close()
 err_msg =  "Error reading restart file 'empty.rst' (empty or corrupt file).\n" + \
-        "Details (Boost archive exception): invalid signature"
+        "Details (Boost archive exception)"
 # dakota
 dakota_cmd = dakota_exe + " -input " + dakota_input + ".in -read_restart empty.rst" 
 print("Running: " + dakota_cmd)
-pobj = subprocess.Popen(dakota_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+pobj = subprocess.Popen(dakota_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 stdout, stderr = pobj.communicate()
 if err_msg in stderr:
     print("INFO: Dakota reports error and aborts when reading empty restart file")
@@ -103,7 +103,7 @@ else:
 # restart util
 empty_rst_cmd = dakota_rst + " to_tabular empty.rst empty.dat"
 print("Running: " + empty_rst_cmd)
-pobj = subprocess.Popen(empty_rst_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+pobj = subprocess.Popen(empty_rst_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 stdout, stderr = pobj.communicate()
 if err_msg in stderr:
     print("INFO: Restart util reports error and aborts when reading empty restart file")
@@ -120,7 +120,7 @@ except OSError:
 err_msg = "Error: could not open restart file 'nonexistent.rst' for reading."
 dakota_cmd = dakota_exe + " -input " + dakota_input + ".in -read_restart nonexistent.rst"
 print("Running: " + dakota_cmd)
-pobj = subprocess.Popen(dakota_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+pobj = subprocess.Popen(dakota_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 stdout, stderr = pobj.communicate()
 if err_msg in stderr:
     print("INFO: Dakota reports error and aborts when reading nonexistent restart file")
@@ -131,7 +131,7 @@ else:
 # restart util
 non_rst_cmd = dakota_rst + " to_tabular nonexistent.rst empty.dat"
 print("Running: " + empty_rst_cmd)
-pobj = subprocess.Popen(non_rst_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+pobj = subprocess.Popen(non_rst_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 stdout, stderr = pobj.communicate()
 if err_msg in stderr:
     print("INFO: Restart util reports error and aborts when reading nonexistent restart file")
@@ -153,7 +153,7 @@ err_msg = "Error reading restart file 'corrupted.rst'.\n" + \
         "Details (boost::archive exception): input stream error"
 dakota_cmd = dakota_exe + " -input " + dakota_input + ".in -read_restart corrupted.rst"
 print( "Running: " + dakota_cmd)
-pobj = subprocess.Popen(dakota_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+pobj = subprocess.Popen(dakota_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 stdout, stderr = pobj.communicate()
 if err_msg in stderr:
     print( "INFO: Dakota reports error and aborts when reading corrupted restart file")
@@ -165,7 +165,7 @@ else:
 err_msg = "Error reading restart file 'corrupted.rst'.\nDetails (boost::archive exception):      input stream error"
 corr_rst_cmd = dakota_rst + " to_tabular corrupted.rst empty.dat"
 print( "Running: " + corr_rst_cmd)
-pobj = subprocess.Popen(corr_rst_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+pobj = subprocess.Popen(corr_rst_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 stdout, stderr = pobj.communicate()
 if err_msg in stderr:
     print( "INFO: Restart util reports error and aborts when reading corrupted restart file")

@@ -196,7 +196,7 @@ private:
 
 
 inline SimulationModel::~SimulationModel()
-{ } // Virtual destructor handles referenceCount at Strategy level.
+{ }
 
 
 inline Interface& SimulationModel::derived_interface()

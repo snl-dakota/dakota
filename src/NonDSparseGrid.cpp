@@ -52,7 +52,8 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
 
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(ssgDriverType);
-  ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
+  ssgDriver = std::static_pointer_cast<Pecos::SparseGridDriver>
+    (numIntDriver.driver_rep());
 
   //check_variables(x_dist.random_variables());
   // TO DO: create a ProbabilityTransformModel, if needed
@@ -108,21 +109,21 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   switch (ssgDriverType) {
   case Pecos::COMBINED_SPARSE_GRID: {
     bool track_colloc = false, track_uniq_prod_wts = false; // defaults
-    ((Pecos::CombinedSparseGridDriver*)ssgDriver)->
+    std::static_pointer_cast<Pecos::CombinedSparseGridDriver>(ssgDriver)->
       initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
 		      growth_rate, track_colloc, track_uniq_prod_wts);
     break;
   }
   case Pecos::INCREMENTAL_SPARSE_GRID: {
     bool track_uniq_prod_wts = false; // default
-    ((Pecos::IncrementalSparseGridDriver*)ssgDriver)->
+    std::static_pointer_cast<Pecos::IncrementalSparseGridDriver>(ssgDriver)->
       initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
 		      growth_rate, track_uniq_prod_wts);
     break;
   }
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     bool track_colloc = false; // non-default
-    ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
+    std::static_pointer_cast<Pecos::HierarchSparseGridDriver>(ssgDriver)->
       initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
 		      growth_rate, track_colloc);
     break;
@@ -150,7 +151,8 @@ NonDSparseGrid(Model& model, unsigned short ssg_level,
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(ssgDriverType);
-  ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
+  ssgDriver = std::static_pointer_cast<Pecos::SparseGridDriver>
+    (numIntDriver.driver_rep());
 
   // propagate general settings (not inferrable from the basis of polynomials)
   // prior to initialize_grid()
@@ -161,19 +163,19 @@ NonDSparseGrid(Model& model, unsigned short ssg_level,
   ssgDriver->refinement_control(refine_control);
   switch (ssgDriverType) {
   case Pecos::COMBINED_SPARSE_GRID: {
-    Pecos::CombinedSparseGridDriver* csg_driver
-      = (Pecos::CombinedSparseGridDriver*)ssgDriver;
+    std::shared_ptr<Pecos::CombinedSparseGridDriver> csg_driver =
+      std::static_pointer_cast<Pecos::CombinedSparseGridDriver>(ssgDriver);
     csg_driver->track_collocation_details(true); // SC & sparse-grid PCE (SPAM)
     csg_driver->track_unique_product_weights(track_uniq_prod_wts);
     break;
   }
   case Pecos::INCREMENTAL_SPARSE_GRID:
-    ((Pecos::IncrementalSparseGridDriver*)ssgDriver)->
+    std::static_pointer_cast<Pecos::IncrementalSparseGridDriver>(ssgDriver)->
       track_unique_product_weights(track_uniq_prod_wts);
     break;
   case Pecos::HIERARCHICAL_SPARSE_GRID:
     if (refine_control == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
-      ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
+      std::static_pointer_cast<Pecos::HierarchSparseGridDriver>(ssgDriver)->
 	track_collocation_indices(true);
     break;
   }

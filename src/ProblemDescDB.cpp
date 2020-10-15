@@ -29,7 +29,6 @@
 
 //#define DEBUG
 //#define MPI_DEBUG
-//#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: ProblemDescDB.cpp 7007 2010-10-06 15:54:39Z wjbohnh $";
 
@@ -45,31 +44,19 @@ extern ProblemDescDB *Dak_pddb;	  // defined in dakota_global_defs.cpp
     derived constructor selects this base class constructor in its
     initialization list (to avoid the recursion of the base class constructor
     calling get_db() again).  Since the letter IS the representation, its
-    representation pointer is set to NULL (an uninitialized pointer causes
-    problems in ~ProblemDescDB). */
+    representation pointer is set to NULL. */
 ProblemDescDB::ProblemDescDB(BaseConstructor, ParallelLibrary& parallel_lib):
   parallelLib(parallel_lib), environmentCntr(0), methodDBLocked(true),
   modelDBLocked(true), variablesDBLocked(true), interfaceDBLocked(true),
-  responsesDBLocked(true), dbRep(NULL), referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::ProblemDescDB(BaseConstructor) called to build base "
-       << "class data for letter object." << std::endl;
-#endif
-}
+  responsesDBLocked(true)
+{ /* empty ctor */ }
 
 
 /** The default constructor: dbRep is NULL in this case.  This makes
     it necessary to check for NULL in the copy constructor, assignment
     operator, and destructor. */
-ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib), dbRep(NULL),
-  referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::ProblemDescDB() called to build empty db object."
-       << std::endl;
-#endif
-}
+ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib)
+{ /* empty ctor */ }
 
 
 /** This is the envelope constructor which uses problem_db to build a
@@ -79,15 +66,10 @@ ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib), dbRep(NULL),
     inherited by the derived classes. */
 ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
   parallelLib(parallel_lib),
-  referenceCount(1) // not used since this is the envelope, not the letter
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::ProblemDescDB(ParallelLibrary&) called to "
-       << "instantiate envelope." << std::endl;
-#endif
-
   // Set the rep pointer to the appropriate db type
-  dbRep = get_db(parallel_lib);
+  dbRep(get_db(parallel_lib))
+
+{
   if (!dbRep) // bad settings or insufficient memory
     abort_handler(-1);
 }
@@ -95,87 +77,38 @@ ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
 
 /** Initializes dbRep to the appropriate derived type.  The standard
     derived class constructors are invoked.  */
-ProblemDescDB* ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
+std::shared_ptr<ProblemDescDB>
+ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_db(ParallelLibrary&)."
-       << std::endl;
-#endif
-
-   Dak_pddb = this;	// for use in abort_handler()
+  Dak_pddb = this;	// for use in abort_handler()
 
   //if (xml_flag)
   //  return new XMLProblemDescDB(parallel_lib);
   //else
-    return new NIDRProblemDescDB(parallel_lib);
+  return std::make_shared<NIDRProblemDescDB>(parallel_lib);
 }
 
 
-/** Copy constructor manages sharing of dbRep and incrementing of
-    referenceCount. */
+/** Copy constructor manages sharing of dbRep */
 ProblemDescDB::ProblemDescDB(const ProblemDescDB& db):
-  parallelLib(db.parallel_library())
-{
-  // Increment new (no old to decrement)
-  dbRep = db.dbRep;
-  if (dbRep) // Check for an assignment of NULL
-    dbRep->referenceCount++;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::ProblemDescDB(ProblemDescDB&)" << std::endl;
-  if (dbRep)
-    Cout << "dbRep referenceCount = " << dbRep->referenceCount << std::endl;
-#endif
-}
+  parallelLib(db.parallel_library()),
+  dbRep(db.dbRep)
+{ /* empty ctor */ }
 
 
-/** Assignment operator decrements referenceCount for old dbRep, assigns
-    new dbRep, and increments referenceCount for new dbRep. */
+/** Assignment operator shares the dbRep. */
 ProblemDescDB ProblemDescDB::operator=(const ProblemDescDB& db)
 {
-  if (dbRep != db.dbRep) { // normal case: old != new
-    // Decrement old
-    if (dbRep) // Check for NULL
-      if ( --dbRep->referenceCount == 0 )
-	delete dbRep;
-    // Assign and increment new
-    dbRep = db.dbRep;
-    if (dbRep) // Check for NULL
-      dbRep->referenceCount++;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "ProblemDescDB::operator=(ProblemDescDB&)" << std::endl;
-  if (dbRep)
-    Cout << "dbRep referenceCount = " << dbRep->referenceCount << std::endl;
-#endif
-
+  dbRep = db.dbRep;
   return *this; // calls copy constructor since returned by value
 }
 
 
-/** Destructor decrements referenceCount and only deletes dbRep
-    when referenceCount reaches zero. */
+/** dbRep only deleted when its reference count reaches zero. */
 ProblemDescDB::~ProblemDescDB()
 {
   if (this == Dak_pddb)
-	Dak_pddb = 0;
-  // Check for NULL pointer
-  if (dbRep) {
-    --dbRep->referenceCount;
-#ifdef REFCOUNT_DEBUG
-    Cout << "dbRep referenceCount decremented to " << dbRep->referenceCount
-	 << std::endl;
-#endif
-    if (dbRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dbRep" << std::endl;
-#endif
-      delete dbRep;
-    }
-  }
+    Dak_pddb = NULL;
 }
 
 
@@ -721,13 +654,13 @@ void ProblemDescDB::set_db_model_nodes(size_t model_index)
       modelDBLocked = variablesDBLocked = interfaceDBLocked = responsesDBLocked
 	= true;
     else {
-      DataModelRep *MoRep = dataModelIter->dataModelRep;
-      set_db_variables_node(MoRep->variablesPointer);
+      const DataModelRep& MoRep = *dataModelIter->dataModelRep;
+      set_db_variables_node(MoRep.variablesPointer);
       if (model_has_interface(MoRep))
-	set_db_interface_node(MoRep->interfacePointer);
+	set_db_interface_node(MoRep.interfacePointer);
       else
 	interfaceDBLocked = true;
-      set_db_responses_node(MoRep->responsesPointer);
+      set_db_responses_node(MoRep.responsesPointer);
     }
   }
 }
@@ -795,13 +728,13 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
     if (modelDBLocked)
       variablesDBLocked = interfaceDBLocked = responsesDBLocked	= true;
     else {
-      DataModelRep *MoRep = dataModelIter->dataModelRep;
-      set_db_variables_node(MoRep->variablesPointer);
+      const DataModelRep& MoRep = *dataModelIter->dataModelRep;
+      set_db_variables_node(MoRep.variablesPointer);
       if (model_has_interface(MoRep))
-	set_db_interface_node(MoRep->interfacePointer);
+	set_db_interface_node(MoRep.interfacePointer);
       else
 	interfaceDBLocked = true;
-      set_db_responses_node(MoRep->responsesPointer);
+      set_db_responses_node(MoRep.responsesPointer);
     }
   }
 }
@@ -876,7 +809,7 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
   // that previous specification remains active (NO_SPECIFICATION
   // instances within a recursion do not alter list node sequencing).
   else if (!strbegins(interface_tag, "NOSPEC_INTERFACE_ID_")) {
-    DataModelRep *MoRep = dataModelIter->dataModelRep;
+    const DataModelRep& MoRep = *dataModelIter->dataModelRep;
     // set dataInterfaceIter from interface_tag
     if (interface_tag.empty() || interface_tag == "NO_ID") { // no pointer specification
       if (dataInterfaceList.size() == 1) // no ambiguity if only one spec
@@ -893,13 +826,13 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	// interface (rather than the presence of an unidentified interface).
 	if (dataInterfaceIter == dataInterfaceList.end()) {
 	  if (parallelLib.world_rank() == 0 &&
-	      MoRep->modelType == "simulation")
+	      MoRep.modelType == "simulation")
 	    Cerr << "\nWarning: empty interface id string not found.\n         "
 		 << "Last interface specification parsed will be used.\n";
 	  --dataInterfaceIter; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
-		 MoRep->modelType == "simulation"  &&
+		 MoRep.modelType == "simulation"  &&
 		 std::count_if(dataInterfaceList.begin(),
 			       dataInterfaceList.end(),
 			       boost::bind(DataInterface::id_compare, _1,
@@ -1452,7 +1385,7 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
     #undef P
     KW<RealMatrixArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealMatrixArray, DataVariablesRep>*)Binsearch(RMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rma");
   return abort_handler_t<const RealMatrixArray&>(PARSE_ERROR);
@@ -1491,7 +1424,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
     KW<RealVector, DataMethodRep> *kw;
     if ((kw = (KW<RealVector, DataMethodRep>*)Binsearch(RVdme, L)))
-    	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+      return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->methodDBLocked)
@@ -1510,7 +1443,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
     KW<RealVector, DataModelRep> *kw;
     if ((kw = (KW<RealVector, DataModelRep>*)Binsearch(RVdmo, L)))
-	return dbRep->dataModelIter->dataModelRep->*kw->p;
+	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "variables."))) {
 
@@ -1605,7 +1538,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
     KW<RealVector, DataVariablesRep> *kw;
     if ((kw = (KW<RealVector, DataVariablesRep>*)Binsearch(RVdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if (strbegins(entry_name, "interface.")) {
     if (dbRep->interfaceDBLocked)
@@ -1637,7 +1570,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
     KW<RealVector, DataResponsesRep> *kw;
     if ((kw = (KW<RealVector, DataResponsesRep>*)Binsearch(RVdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rv");
   return abort_handler_t<const RealVector&>(PARSE_ERROR);
@@ -1692,7 +1625,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 
     KW<IntVector, DataVariablesRep> *kw;
     if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
 	if (dbRep->methodDBLocked)
@@ -1708,9 +1641,9 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     #undef P
     KW<IntVector, DataMethodRep> *kw;
     if ((kw = (KW<IntVector, DataMethodRep>*)Binsearch(IVdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
-  else if (L = Begins(entry_name, "model.")) {
+  else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
       Locked_db();
     #define P &DataModelRep::
@@ -1720,9 +1653,9 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     #undef P
     KW<IntVector, DataModelRep> *kw;
     if ((kw = (KW<IntVector, DataModelRep>*)Binsearch(IVdr, L)))
-      return dbRep->dataModelIter->dataModelRep->*kw->p;
+      return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
-  else if (L = Begins(entry_name, "responses.")) {
+  else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
       Locked_db();
     #define P &DataResponsesRep::
@@ -1733,7 +1666,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     #undef P
     KW<IntVector, DataResponsesRep> *kw;
     if ((kw = (KW<IntVector, DataResponsesRep>*)Binsearch(IVdr, L)))
-      return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+      return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_iv");
   return abort_handler_t<const IntVector&>(PARSE_ERROR);
@@ -1774,7 +1707,7 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 
     KW<BitArray, DataVariablesRep> *kw;
     if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
 
   Bad_name(entry_name, "get_ba");
@@ -1803,7 +1736,7 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 
     KW<SizetArray, DataMethodRep> *kw;
     if ((kw = (KW<SizetArray, DataMethodRep>*)Binsearch(SZAdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
 
   Bad_name(entry_name, "get_sza");
@@ -1833,7 +1766,7 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 
     KW<UShortArray, DataMethodRep> *kw;
     if ((kw = (KW<UShortArray, DataMethodRep>*)Binsearch(USAdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
 
   Bad_name(entry_name, "get_usa");
@@ -1876,7 +1809,7 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 
     KW<RealVectorArray, DataMethodRep> *kw;
     if ((kw = (KW<RealVectorArray, DataMethodRep>*)Binsearch(RVAdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
 
   Bad_name(entry_name, "get_rva");
@@ -1923,7 +1856,7 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 
     KW<IntSet, DataResponsesRep> *kw;
     if ((kw = (KW<IntSet, DataResponsesRep>*)Binsearch(ISdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_is");
   return abort_handler_t<const IntSet&>(PARSE_ERROR);
@@ -1948,7 +1881,7 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 
     KW<IntSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntSetArray, DataVariablesRep>*)Binsearch(ISAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_isa");
   return abort_handler_t<const IntSetArray&>(PARSE_ERROR);
@@ -1972,7 +1905,7 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 
     KW<StringSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringSetArray, DataVariablesRep>*)Binsearch(SSAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_ssa");
   return abort_handler_t<const StringSetArray&>(PARSE_ERROR);
@@ -1997,7 +1930,7 @@ const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 
     KW<RealSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealSetArray, DataVariablesRep>*)Binsearch(RSAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rsa");
   return abort_handler_t<const RealSetArray&>(PARSE_ERROR);
@@ -2023,7 +1956,7 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 
     KW<IntRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntRealMapArray, DataVariablesRep>*)Binsearch(IRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_irma");
   return abort_handler_t<const IntRealMapArray&>(PARSE_ERROR);
@@ -2048,7 +1981,7 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
 
     KW<StringRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringRealMapArray, DataVariablesRep>*)Binsearch(SRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_srma");
   return abort_handler_t<const StringRealMapArray&>(PARSE_ERROR);
@@ -2075,7 +2008,7 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 
     KW<RealRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealRealMapArray, DataVariablesRep>*)Binsearch(RRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rrma");
   return abort_handler_t<const RealRealMapArray&>(PARSE_ERROR);
@@ -2103,7 +2036,7 @@ get_rrrma(const String& entry_name) const
     KW<RealRealPairRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealRealPairRealMapArray, DataVariablesRep>*)
 	 Binsearch(RRRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_rrrma");
   return abort_handler_t<const RealRealPairRealMapArray&>(PARSE_ERROR);
@@ -2131,7 +2064,7 @@ get_iirma(const String& entry_name) const
     KW<IntIntPairRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntIntPairRealMapArray, DataVariablesRep>*)
 	 Binsearch(IIRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_iirma");
   return abort_handler_t<const IntIntPairRealMapArray&>(PARSE_ERROR);
@@ -2153,7 +2086,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
   //   KW<StringArray, DataEnvironmentRep> *kw;
   //   if ((kw = (KW<StringArray, DataEnvironmentRep>*)Binsearch(SAenv, L)))
-  // 	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+  // 	return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   // }
   // else
   if ((L = Begins(entry_name, "method."))) {
@@ -2170,7 +2103,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
     KW<StringArray, DataMethodRep> *kw;
     if ((kw = (KW<StringArray, DataMethodRep>*)Binsearch(SAds, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2186,7 +2119,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
     KW<StringArray, DataModelRep> *kw;
     if ((kw = (KW<StringArray, DataModelRep>*)Binsearch(SAdmo, L)))
-	return dbRep->dataModelIter->dataModelRep->*kw->p;
+	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "variables."))) {
     if (dbRep->variablesDBLocked)
@@ -2245,7 +2178,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
     KW<StringArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringArray, DataVariablesRep>*)Binsearch(SAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
@@ -2260,7 +2193,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
     KW<StringArray, DataInterfaceRep> *kw;
     if ((kw = (KW<StringArray, DataInterfaceRep>*)Binsearch(SAdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
@@ -2278,7 +2211,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
     KW<StringArray, DataResponsesRep> *kw;
     if ((kw = (KW<StringArray, DataResponsesRep>*)Binsearch(SAdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_sa");
   return abort_handler_t<const StringArray&>(PARSE_ERROR);
@@ -2327,7 +2260,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
     KW<String, DataEnvironmentRep> *kw;
     if ((kw = (KW<String, DataEnvironmentRep>*)Binsearch(Sde, L)))
-	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
@@ -2369,6 +2302,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"mesh_adaptive_search.display_format", P displayFormat},
 	{"mesh_adaptive_search.history_file", P historyFile},
 	{"mesh_adaptive_search.use_surrogate", P useSurrogate},
+	{"model_export_prefix", P modelExportPrefix},
 	{"model_pointer", P modelPointer},
 	{"mutation_type", P mutationType},
 	{"nond.data_dist_cov_type", P dataDistCovInputType},
@@ -2404,7 +2338,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
     KW<String, DataMethodRep> *kw;
     if ((kw = (KW<String, DataMethodRep>*)Binsearch(Sdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2438,7 +2372,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
     KW<String, DataModelRep> *kw;
     if ((kw = (KW<String, DataModelRep>*)Binsearch(Sdmo, L)))
-	return dbRep->dataModelIter->dataModelRep->*kw->p;
+	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
   else if (strbegins(entry_name, "variables.")) {
     if (dbRep->variablesDBLocked)
@@ -2464,7 +2398,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
     KW<String, DataInterfaceRep> *kw;
     if ((kw = (KW<String, DataInterfaceRep>*)Binsearch(Sdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
@@ -2485,7 +2419,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
     KW<String, DataResponsesRep> *kw;
     if ((kw = (KW<String, DataResponsesRep>*)Binsearch(Sdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
 
   }
   Bad_name(entry_name, "get_string");
@@ -2567,7 +2501,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 
     KW<Real, DataMethodRep> *kw;
     if ((kw = (KW<Real, DataMethodRep>*)Binsearch(Rdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2596,7 +2530,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 
     KW<Real, DataModelRep> *kw;
     if ((kw = (KW<Real, DataModelRep>*)Binsearch(Rdmo, L)))
-	return dbRep->dataModelIter->dataModelRep->*kw->p;
+	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
   else if (strbegins(entry_name, "interface.")) {
     if (strends(entry_name, "nearby_evaluation_cache_tolerance"))
@@ -2623,7 +2557,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 
     KW<int, DataEnvironmentRep> *kw;
     if ((kw = (KW<int, DataEnvironmentRep>*)Binsearch(Ide, L)))
-	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
@@ -2675,7 +2609,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 
     KW<int, DataMethodRep> *kw;
     if ((kw = (KW<int, DataMethodRep>*)Binsearch(Idme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2704,7 +2638,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 
     KW<int, DataModelRep> *kw;
     if ((kw = (KW<int, DataModelRep>*)Binsearch(Idmo, L)))
-	return dbRep->dataModelIter->dataModelRep->*kw->p;
+	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
@@ -2723,7 +2657,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 
     KW<int, DataInterfaceRep> *kw;
     if ((kw = (KW<int, DataInterfaceRep>*)Binsearch(Idi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_int");
   return abort_handler_t<int>(PARSE_ERROR);
@@ -2744,7 +2678,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       // must be sorted by string (key)
 	{"iterator_scheduling", P iteratorScheduling},
 	{"nond.allocation_target", P allocationTarget},
-        {"nond.c3function_train.uniform_refinement_type", P c3RefineType},
+  {"nond.c3function_train.advancement_type", P c3AdvanceType},
   {"nond.convergence_tolerance_type", P convergenceToleranceType},
 	{"nond.correction_order", P approxCorrectionOrder},
 	{"nond.covariance_control", P covarianceControl},
@@ -2761,6 +2695,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.qoi_aggregation", P qoiAggregation},
+	{"nond.refinement_statistics_mode", P statsMetricMode},
 	{"nond.regression_type", P regressionType},
 	{"nond.response_level_target", P responseLevelTarget},
 	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
@@ -2776,7 +2711,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
     KW<short, DataMethodRep> *kw;
     if ((kw = (KW<short, DataMethodRep>*)Binsearch(Shdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2784,9 +2719,9 @@ short ProblemDescDB::get_short(const String& entry_name) const
     #define P &DataModelRep::
     static KW<short, DataModelRep> Shdmo[] = {
       // must be sorted by string (key)
-	{"c3function_train.refinement_control", P refinementControl},
-	{"c3function_train.refinement_type", P refinementType},
-        {"c3function_train.uniform_refinement_type", P c3RefineType},
+        {"c3function_train.advancement_type", P c3AdvanceType},
+      //{"c3function_train.refinement_control", P refinementControl},
+      //{"c3function_train.refinement_type", P refinementType},
 	{"nested.iterator_scheduling", P subMethodScheduling},
 	{"surrogate.correction_order", P approxCorrectionOrder},
 	{"surrogate.correction_type", P approxCorrectionType},
@@ -2808,7 +2743,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
     KW<short, DataModelRep> *kw;
     if ((kw = (KW<short, DataModelRep>*)Binsearch(Shdmo, L)))
-	return dbRep->dataModelIter->dataModelRep->*kw->p;
+	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "variables."))) {
     if (dbRep->variablesDBLocked)
@@ -2822,7 +2757,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
     KW<short, DataVariablesRep> *kw;
     if ((kw = (KW<short, DataVariablesRep>*)Binsearch(Shdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
@@ -2837,7 +2772,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
     KW<short, DataInterfaceRep> *kw;
     if ((kw = (KW<short, DataInterfaceRep>*)Binsearch(Shdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_short");
   return abort_handler_t<short>(PARSE_ERROR);
@@ -2864,7 +2799,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
     KW<unsigned short, DataEnvironmentRep> *kw;
     if ((kw = (KW<unsigned short, DataEnvironmentRep>*)Binsearch(UShde, L)))
-	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
@@ -2878,8 +2813,10 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"import_build_format", P importBuildFormat},
 	{"import_candidate_format", P importCandFormat},
 	{"import_prediction_configs_format", P importPredConfigFormat},
+	{"model_export_format", P modelExportFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
+        {"nond.c3function_train.kick_order", P kickOrder},
         {"nond.c3function_train.max_order", P maxOrder},
         {"nond.c3function_train.start_order", P startOrder},
 	{"nond.calibrate_error_mode", P calibrateErrorMode},
@@ -2904,7 +2841,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
     KW<unsigned short, DataMethodRep> *kw;
     if ((kw = (KW<unsigned short, DataMethodRep>*)Binsearch(UShdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -2917,6 +2854,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"active_subspace.sample_type", P subspaceSampleType},
 	{"adapted_basis.expansion_order", P adaptedBasisExpOrder},
 	{"adapted_basis.sparse_grid_level", P adaptedBasisSparseGridLev},
+        {"c3function_train.kick_order", P kickOrder},
         {"c3function_train.max_order", P maxOrder},
         {"c3function_train.start_order", P startOrder},
 	{"rf.analytic_covariance", P analyticCovIdForm},
@@ -2929,7 +2867,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
     KW<unsigned short, DataModelRep> *kw;
     if ((kw = (KW<unsigned short, DataModelRep>*)Binsearch(UShdmo, L)))
-	return dbRep->dataModelIter->dataModelRep->*kw->p;
+	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
@@ -2943,7 +2881,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
     KW<unsigned short, DataInterfaceRep> *kw;
     if ((kw = (KW<unsigned short, DataInterfaceRep>*)Binsearch(UShdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
@@ -2956,7 +2894,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
     KW<unsigned short, DataResponsesRep> *kw;
     if ((kw = (KW<unsigned short, DataResponsesRep>*)Binsearch(UShdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_ushort");
   return abort_handler_t<unsigned short>(PARSE_ERROR);
@@ -2994,7 +2932,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
     KW<size_t, DataMethodRep> *kw;
     if ((kw = (KW<size_t, DataMethodRep>*)Binsearch(Szdmo, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -3013,13 +2951,13 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
     KW<size_t, DataModelRep> *kw;
     if ((kw = (KW<size_t, DataModelRep>*)Binsearch(Szmo, L)))
-	return dbRep->dataModelIter->dataModelRep->*kw->p;
+	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "variables."))) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
     std::list<DataVariables>::iterator v_iter = dbRep->dataVariablesIter;
-    DataVariablesRep* VRep = v_iter->dataVarsRep;
+    DataVariablesRep* VRep = v_iter->dataVarsRep.get();
 
     // DataVariables helper functions
     struct HelperFcn { const char *name; int no; };
@@ -3122,7 +3060,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
     KW<size_t, DataResponsesRep> *kw;
     if ((kw = (KW<size_t, DataResponsesRep>*)Binsearch(Szdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_sizet");
   return abort_handler_t<size_t>(PARSE_ERROR);
@@ -3149,7 +3087,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataEnvironmentRep> *kw;
     if ((kw = (KW<bool, DataEnvironmentRep>*)Binsearch(Bde, L)))
-	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
@@ -3165,6 +3103,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"coliny.randomize", P randomizeOrderFlag},
 	{"coliny.show_misc_options", P showMiscOptions},
 	{"derivative_usage", P methodUseDerivsFlag},
+	{"export_surrogate", P exportSurrogate},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"import_approx_active_only", P importApproxActive},
@@ -3179,8 +3118,9 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.adapt_exp_design", P adaptExpDesign},
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
-  {"nond.allocation_target.variance.optimization", P useTargetVarianceOptimizationFlag},
-  {"nond.c3function_train.adapt_rank", P adaptRank},
+	{"nond.allocation_target.variance.optimization", P useTargetVarianceOptimizationFlag},
+	{"nond.c3function_train.adapt_order", P adaptOrder},
+	{"nond.c3function_train.adapt_rank", P adaptRank},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.cross_validation.noise_only", P crossValidNoiseOnly},
 	{"nond.d_optimal", P dOptimal},
@@ -3193,6 +3133,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.mutual_info_ksg2", P mutualInfoKSG2},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
+	{"nond.relative_convergence_metric", P relativeConvMetric},
 	{"nond.standardized_space", P standardizedSpace},
 	{"nond.tensor_grid", P tensorGridFlag},
 	{"posterior_stats.kde", P posteriorStatsKDE},
@@ -3212,7 +3153,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataMethodRep> *kw;
     if ((kw = (KW<bool, DataMethodRep>*)Binsearch(Bdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
@@ -3226,6 +3167,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"active_subspace.truncation_method.constantine", P subspaceIdConstantine},
 	{"active_subspace.truncation_method.cv", P subspaceIdCV},
 	{"active_subspace.truncation_method.energy", P subspaceIdEnergy},
+        {"c3function_train.adapt_order", P adaptOrder},
         {"c3function_train.adapt_rank", P adaptRank},
 	{"c3function_train.tensor_grid", P tensorGridFlag},
 	{"hierarchical_tags", P hierarchicalTags},
@@ -3246,7 +3188,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataModelRep> *kw;
     if ((kw = (KW<bool, DataModelRep>*)Binsearch(Bdmo, L)))
-	return dbRep->dataModelIter->dataModelRep->*kw->p;
+	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "variables."))) {
     if (dbRep->variablesDBLocked)
@@ -3259,7 +3201,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataVariablesRep> *kw;
     if ((kw = (KW<bool, DataVariablesRep>*)Binsearch(Bdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
@@ -3287,7 +3229,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataInterfaceRep> *kw;
     if ((kw = (KW<bool, DataInterfaceRep>*)Binsearch(Bdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
   }
   else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
@@ -3304,7 +3246,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 
     KW<bool, DataResponsesRep> *kw;
     if ((kw = (KW<bool, DataResponsesRep>*)Binsearch(Bdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
   }
   Bad_name(entry_name, "get_bool");
   return abort_handler_t<bool>(PARSE_ERROR);
@@ -3338,7 +3280,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 
     KW<RealVector, DataModelRep> *kw;
     if ((kw = (KW<RealVector, DataModelRep>*)Binsearch(RVdmo, L))) {
-	dbRep->dataModelIter->dataModelRep->*kw->p = rv;
+	dbRep->dataModelIter->dataModelRep.get()->*kw->p = rv;
 	return;
 	}
   }
@@ -3432,7 +3374,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 
     KW<RealVector, DataVariablesRep> *kw;
     if ((kw = (KW<RealVector, DataVariablesRep>*)Binsearch(RVdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep->*kw->p = rv;
+	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rv;
 	return;
 	}
   }
@@ -3453,7 +3395,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 
     KW<RealVector, DataResponsesRep> *kw;
     if ((kw = (KW<RealVector, DataResponsesRep>*)Binsearch(RVdr, L))) {
-	dbRep->dataResponsesIter->dataRespRep->*kw->p = rv;
+	dbRep->dataResponsesIter->dataRespRep.get()->*kw->p = rv;
 	return;
 	}
   }
@@ -3502,7 +3444,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 
     KW<IntVector, DataVariablesRep> *kw;
     if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep->*kw->p = iv;
+	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = iv;
 	return;
 	}
   }
@@ -3543,7 +3485,7 @@ void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 
     KW<BitArray, DataVariablesRep> *kw;
     if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep->*kw->p = ba;
+	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = ba;
 	return;
 	}
   }
@@ -3586,7 +3528,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 
     KW<RealVectorArray, DataMethodRep> *kw;
     if ((kw = (KW<RealVectorArray, DataMethodRep>*)Binsearch(RVAdme, L))) {
-      dbRep->dataMethodIter->dataMethodRep->*kw->p = rva;
+      dbRep->dataMethodIter->dataMethodRep.get()->*kw->p = rva;
       return;
     }
   }
@@ -3621,7 +3563,7 @@ void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 
     KW<IntSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntSetArray, DataVariablesRep>*)Binsearch(ISAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = isa;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = isa;
       return;
     }
   }
@@ -3646,7 +3588,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 
     KW<RealSetArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealSetArray, DataVariablesRep>*)Binsearch(RSAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = rsa;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rsa;
       return;
     }
   }
@@ -3672,7 +3614,7 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 
     KW<IntRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntRealMapArray, DataVariablesRep>*)Binsearch(IRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = irma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = irma;
       return;
     }
   }
@@ -3696,7 +3638,7 @@ void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma
 
     KW<StringRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringRealMapArray, DataVariablesRep>*)Binsearch(SRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = srma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = srma;
       return;
     }
   }
@@ -3721,7 +3663,7 @@ void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 
     KW<RealRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealRealMapArray, DataVariablesRep>*)Binsearch(RRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = rrma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rrma;
       return;
     }
   }
@@ -3746,7 +3688,7 @@ set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 
     KW<RealRealPairRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<RealRealPairRealMapArray, DataVariablesRep>*)Binsearch(RRRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = rrrma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rrrma;
       return;
     }
   }
@@ -3771,7 +3713,7 @@ set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 
     KW<IntIntPairRealMapArray, DataVariablesRep> *kw;
     if ((kw = (KW<IntIntPairRealMapArray, DataVariablesRep>*)Binsearch(IIRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = iirma;
+      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = iirma;
       return;
     }
   }
@@ -3797,7 +3739,7 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 
     KW<StringArray, DataModelRep> *kw;
     if ((kw = (KW<StringArray, DataModelRep>*)Binsearch(SAdmo, L))) {
-	dbRep->dataModelIter->dataModelRep->*kw->p = sa;
+	dbRep->dataModelIter->dataModelRep.get()->*kw->p = sa;
 	return;
 	}
   }
@@ -3834,7 +3776,7 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 
     KW<StringArray, DataVariablesRep> *kw;
     if ((kw = (KW<StringArray, DataVariablesRep>*)Binsearch(SAdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep->*kw->p = sa;
+	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = sa;
 	return;
 	}
   }
@@ -3852,7 +3794,7 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 
     KW<StringArray, DataResponsesRep> *kw;
     if ((kw = (KW<StringArray, DataResponsesRep>*)Binsearch(SAdr, L))) {
-	dbRep->dataResponsesIter->dataRespRep->*kw->p = sa;
+	dbRep->dataResponsesIter->dataRespRep.get()->*kw->p = sa;
 	return;
 	}
   }

@@ -127,6 +127,9 @@ protected:
   const RealVector& approximation_variances(const Variables& vars);
 
   bool formulation_updated() const;
+  void formulation_updated(bool update);
+
+  bool advancement_available();
 
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
   Real2DArray challenge_diagnostics(const StringArray& metric_types,
@@ -424,6 +427,30 @@ inline void ApproximationInterface::clear_active_data()
 
 inline bool ApproximationInterface::formulation_updated() const
 { return sharedData.formulation_updated(); }
+
+
+inline void ApproximationInterface::formulation_updated(bool update)
+{ return sharedData.formulation_updated(update); }
+
+
+inline bool ApproximationInterface::advancement_available()
+{
+  // this logic assesses whether there is headroom for rank/order advancement
+
+  // Note: once rank/order advanced by SharedApproxData::increment_order(),
+  // DataFitSurrModel::rebuild_global() rebuilds for either a numSamples
+  // increment or if approxInterface.formulation_updated() for fixed data
+  // (e.g., for an advanced bound that could admit a different adapted soln)
+
+  if (sharedData.advancement_available()) return true; // check Shared first
+  else {
+    bool refine = false;
+    for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
+      if (functionSurfaces[*it].advancement_available())
+	refine = true; // no break; accumulate advancement types across fns
+    return refine;
+  }
+}
 
 
 inline SharedApproxData& ApproximationInterface::shared_approximation()

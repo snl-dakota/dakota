@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <vector>
-#include <boost/random/mersenne_twister.hpp>
+#include "dakota_mersenne_twister.hpp"
 #include <boost/random/uniform_int_distribution.hpp>
 #include "Teuchos_SerialDenseVector.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"

@@ -16,19 +16,8 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "CommandShell.hpp"
-#include <sys/types.h> // MAY REQUIRE ifndef(HPUX)
-#include <sys/stat.h>
 #include "WorkdirHelper.hpp"
-
-// eventually just use _WIN32 here
-#if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-#include "dakota_windows.h" // for Sleep()
-#elif defined(HAVE_UNISTD_H)
-#include <unistd.h> // for usleep()
-#endif
-
-#include <boost/lexical_cast.hpp>
-
+#include <thread>
 
 namespace Dakota {
 
@@ -181,12 +170,8 @@ void SysCallApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
         }
         else
           failCountMap[fn_eval_id] = 1;
-	// Test for MinGW first, since there we have usleep as well
-#if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-	Sleep(1);     // 1 millisecond
-#elif defined(HAVE_USLEEP)
-        usleep(1000); // 1000 microseconds = 1 millisec
-#endif // SLEEP
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(1));
 #ifdef ASYNCH_DEBUG
         Cerr << "Warning: exception caught in reading response file "
              << file_to_test << "\nException = \"" << fr_except.what()
@@ -225,12 +210,7 @@ void SysCallApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 
   // reduce processor load from DAKOTA testing if jobs are not finishing
   if (completionSet.empty()) { // no jobs completed in pass through entire set
-    // Test for MinGW first, since there we have usleep as well
-#if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-    Sleep(1);     // 1 millisecond
-#elif defined(HAVE_USLEEP)
-    usleep(1000); // 1000 microseconds = 1 millisec
-#endif // SLEEP
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
   // remove completed jobs from sysCallSet
   for (ISCIter it = completionSet.begin(); it != completionSet.end(); ++it)
@@ -238,38 +218,30 @@ void SysCallApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 }
 
 
-bool SysCallApplicInterface::
-system_call_file_test(const bfs::path& root_file)
+bool SysCallApplicInterface::system_call_file_test(const bfs::path& root_file)
 {
-  // Unix stat utility returns 0 if successful in gathering file statistics,
-  // -1 if there's an error (e.g., the file does not exist).
-  struct stat buf; // see man pages for info available from buf (not used here)
   size_t num_programs = programNames.size();
   if ( num_programs > 1 && oFilterName.empty() ) {
 #ifdef __SUNPRO_CC
     // Sun Solaris has been observed to have problems with the final results
     // file existing before previous results files exist (I/O threading?)
     for (size_t i=0; i<num_programs; ++i) {
-      // BMA TODO: rework with BFS utils
       bfs::path tagged_file = 
-	WorkdirHelper::concat_path(root_file, 
-				   "." + boost::lexical_cast<std::string>(i+1));
-      if ( stat((char*)tagged_file.string().data(), &buf) == -1 )
-        return false;
+	WorkdirHelper::concat_path(root_file, "." + std::to_string(i+1));
+      if (!bfs::exists(tagged_file))
+	return false;
     }
     return true;
 #else
     // Testing all files is usually overkill for sequential analyses.  It's only
     // really necessary to check the last tagged_file: root_file.[num_programs]
     bfs::path tagged_file = 
-      WorkdirHelper::concat_path(root_file, 
-				 "." + 
-				 boost::lexical_cast<std::string>(num_programs));
-    return ( stat((char*)tagged_file.string().data(), &buf) == -1 ) ? false : true;
+      WorkdirHelper::concat_path(root_file, "." + std::to_string(num_programs));
+    return bfs::exists(tagged_file);
 #endif // __SUNPRO_CC
   }
   else
-    return ( stat((char*)root_file.string().data(), &buf) == -1 ) ? false : true;
+    return bfs::exists(root_file);
 }
 
 
@@ -314,7 +286,7 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
     }
     
     std::string prog_num( (multipleParamsFiles || num_programs > 1) ?
-                          "." + boost::lexical_cast<std::string>(i+1) : "" );
+                          "." + std::to_string(i+1) : "" );
     String params_file(s1), results_file(s2);
     if(multipleParamsFiles)
       params_file += prog_num;

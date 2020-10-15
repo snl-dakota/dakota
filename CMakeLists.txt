@@ -7,7 +7,8 @@
 #  _______________________________________________________________________
 
 # Dakota itself requires this CMake version; some TPLs may require even newer
-cmake_minimum_required(VERSION 3.10)
+# For Dakota to find Python NumPy component, need 3.14 or newer
+cmake_minimum_required(VERSION 3.12)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
@@ -147,8 +148,9 @@ endif()
 find_package(Perl REQUIRED)
 
 # Python is optionally required by Dakota, Teuchos, and Acro; probe
-# for the interpreter here at top-level:
-include(FindPythonInterp)
+# for components here at top-level:
+include(DakotaFindPython)
+dakota_find_python()
 
 # Conditionally find Java JDK needed for input spec, docs, Java API
 include(DakotaFindJava)
@@ -228,6 +230,7 @@ dakota_gcov_init()
 if(DAKOTA_MODULE_UTIL)
   add_subdirectory(src/util)
 endif()
+
 if(DAKOTA_MODULE_SURROGATES)
   add_subdirectory(src/surrogates)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")

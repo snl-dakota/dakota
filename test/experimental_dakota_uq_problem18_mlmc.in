@@ -1,0 +1,87 @@
+#@ s*: Label=FastTest
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=1200
+
+environment,
+#	graphics
+	tabular_data
+		tabular_data_file = 'dakota_tabular_mlmc.dat'
+	method_pointer = 'UQ'
+
+##########################
+# begin UQ specification #
+##########################
+method,
+	id_method = 'UQ'
+	model_pointer = 'HIERARCH'
+      multilevel_sampling
+	  pilot_samples = 100 10  #s0,#s1,#s2 #119 16
+#	  pilot_samples = 100 50  #s3,#s4,#s5,#s6 #119 16
+	  #final_moments standard
+	  max_iterations = 10 #s0,#s1,#s2
+#	  max_iterations = 110 #s3,#s4,#s5,#s6
+	  seed = 12347 
+	  #sample_type random # use MC error estimates
+	  fixed_seed
+	  allocation_target = mean #s0,#s1,#s2
+#	  allocation_target = variance #s3,#s4,#s5,#s6
+#         optimization #s5,#s6
+	  qoi_aggregation = max
+     convergence_tolerance = 1                   	#s0
+#     convergence_tolerance = 0.1                   #s1
+#     convergence_tolerance = 0.01                   #s2,#s3,#s5
+#     convergence_tolerance = 0.001                   #s4,#s6
+#     convergence_tolerance = 1.389824213484928e-7   #for later use
+#	  	convergence_tolerance_type = absolute 		 #for later use
+	  final_moments central
+	  output debug
+
+model,
+	id_model = 'HIERARCH'
+	variables_pointer = 'UQ_V'
+	responses_pointer = 'UQ_R'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'MLModel'
+
+model, 
+	id_model = 'MLModel'
+	variables_pointer = 'UQ_V'
+	interface_pointer = 'UQ_I'
+	responses_pointer = 'UQ_R'
+	simulation
+		solution_level_control = 'Ac' #multilevel controlled by stochastic c
+	  	solution_level_cost = 0.1 1.0 # relative cost of 2DCoarse, 2DFine
+
+variables,
+	id_variables = 'UQ_V'
+		continuous_design = 1
+		  initial_point     = 2.0 #deterministic f
+		  descriptors       = 'x'
+		  #scale_types 	    = 'none'
+		  #scales	   		= 0.1
+        #continuous_state = 1
+        #  initial_state     = 0.0 #deterministic f
+        #  descriptors       = 'Ac'
+          #scale_types     = 'none'
+          #scales          = 0.1
+        uniform_uncertain = 1
+          lower_bounds      =  -0.5
+          upper_bounds      =  0.5
+          descriptors       =   'xi'
+        discrete_state_set real = 2
+            num_set_values = 2 1
+            initial_state = -4 0.0 #stochastic c
+            set_values = -4 1.0
+                         0.0
+            descriptors = 'Ac' 'Af'
+
+interface,
+	id_interface = 'UQ_I'
+	direct
+		analysis_driver = 'problem18'
+
+responses,
+	id_responses = 'UQ_R'
+	response_functions = 2
+	no_gradients
+	no_hessians

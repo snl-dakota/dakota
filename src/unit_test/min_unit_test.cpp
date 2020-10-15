@@ -11,7 +11,6 @@
 
 #include "DakotaBuildInfo.hpp"
 
-#include <boost/lexical_cast.hpp>
 #include <exception>
 
 
@@ -27,7 +26,6 @@ void my_test0()
 
 void rev_test()
 {
-  using boost::lexical_cast;
 
   try {
     // It is desirable to split-up dakota into packages of re-useable components
@@ -35,10 +33,13 @@ void rev_test()
     // link with the whole dakota library (for now)
 
     std::string rev_str = Dakota::DakotaBuildInfo::get_rev_number();
-    short rev = lexical_cast<short>(rev_str);
+    // BMA: This check is from Subversion I'd guess and is somewhat
+    // meaningless, but the short SHA1 should always satisfy this test
+    // if converted as hexadecimal
+    auto rev = std::stoll(rev_str, 0, 16);
     BOOST_CHECK(rev > 2452);
   }
-  catch (const boost::bad_lexical_cast& e) {
+  catch (const std::logic_error& e) {
     std::cerr << '\n' << e.what() << std::endl;
   }
 }

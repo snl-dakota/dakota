@@ -131,9 +131,7 @@ void NLPQLPOptimizer::initialize()
 
 
 NLPQLPOptimizer::~NLPQLPOptimizer()
-{
-  // Virtual destructor handles referenceCount at Iterator level
-}
+{ }
 
 
 void NLPQLPOptimizer::allocate_constraints()

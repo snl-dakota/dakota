@@ -16,18 +16,31 @@
 // Boost.Test
 #include <boost/test/minimal.hpp>
 
-//#include <boost/assign/std/vector.hpp>
-#include <boost/foreach.hpp>
-
 #include <cassert>
 #include <iostream>
 
+// Portability for deprecated Boost integer_log2.hpp header used in
+// Boost 1.69 random library. To be removed once we migrate to std
+// library RNG.
+#include <boost/version.hpp>
+#if (BOOST_VERSION < 107000) && !defined(BOOST_ALLOW_DEPRECATED_HEADERS)
+//could alternately use: #define BOOST_PENDING_INTEGER_LOG2_HPP 1
+#define BOOST_ALLOW_DEPRECATED_HEADERS 1
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 #include <boost/random/poisson_distribution.hpp>
 #include <boost/random/binomial_distribution.hpp>
 #include <boost/random/negative_binomial_distribution.hpp>
+#undef BOOST_ALLOW_DEPRECATED_HEADERS
+#else
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/random/poisson_distribution.hpp>
+#include <boost/random/binomial_distribution.hpp>
+#include <boost/random/negative_binomial_distribution.hpp>
+#endif
 
 
 namespace Dakota {
@@ -45,8 +58,8 @@ Pecos::MultivariateDistribution
 initialize_homogeneous_uniform_aleatory_dist_params( short utype, 
 						     int num_vars ){
   Pecos::MultivariateDistribution mvd(Pecos::MARGINALS_CORRELATIONS);
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
+  auto mvd_rep = std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+    (mvd.multivar_dist_rep());
 
   ShortArray rv_types(num_vars, utype);
   mvd_rep->initialize_types(rv_types); // default active_vars

@@ -214,7 +214,7 @@ inline void ProcessHandleApplicInterface::ofilter_argument_list()
 
 inline void ProcessHandleApplicInterface::driver_argument_list(int analysis_id)
 {
-  std::string tag_str = "." + boost::lexical_cast<std::string>(analysis_id);
+  std::string tag_str = "." + std::to_string(analysis_id);
   argList[0] = programNames[analysis_id-1];
   argList[1] = (multipleParamsFiles) ? paramsFileName+tag_str : paramsFileName;
   argList[2] = (programNames.size() > 1) ? resultsFileName+tag_str :

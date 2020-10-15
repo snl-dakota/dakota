@@ -13,7 +13,6 @@
 #include "DataVariables.hpp"
 #include "dakota_data_io.hpp"
 
-
 namespace Dakota {
 
 // Default constructor:
@@ -32,7 +31,7 @@ DataVariablesRep::DataVariablesRep():
   numDiscreteIntervalUncVars(0), numDiscreteUncSetIntVars(0), numDiscreteUncSetStrVars(0),
   numDiscreteUncSetRealVars(0), numContinuousStateVars(0),
   numDiscreteStateRangeVars(0), numDiscreteStateSetIntVars(0), numDiscreteStateSetStrVars(0),
-  numDiscreteStateSetRealVars(0), referenceCount(1)
+  numDiscreteStateSetRealVars(0)
 { }
 
 
@@ -336,71 +335,22 @@ void DataVariablesRep::write(std::ostream& s) const
 
 
 DataVariables::DataVariables(): dataVarsRep(new DataVariablesRep())
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataVariables::DataVariables(), dataVarsRep referenceCount = "
-       << dataVarsRep->referenceCount << std::endl;
-#endif
-}
+{ /* empty ctor */ }
 
 
-DataVariables::DataVariables(const DataVariables& data_vars)
-{
-  // Increment new (no old to decrement)
-  dataVarsRep = data_vars.dataVarsRep;
-  if (dataVarsRep) // Check for an assignment of NULL
-    ++dataVarsRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataVariables::DataVariables(DataVariables&)" << std::endl;
-  if (dataVarsRep)
-    Cout << "dataVarsRep referenceCount = " << dataVarsRep->referenceCount
-	 << std::endl;
-#endif
-}
+DataVariables::DataVariables(const DataVariables& data_vars):
+  dataVarsRep(data_vars.dataVarsRep)
+{ /* empty ctor */ }
 
 
 DataVariables DataVariables::operator=(const DataVariables& data_vars)
 {
-  if (dataVarsRep != data_vars.dataVarsRep) { // normal case: old != new
-    // Decrement old
-    if (dataVarsRep) // Check for NULL
-      if ( --dataVarsRep->referenceCount == 0 ) 
-	delete dataVarsRep;
-    // Assign and increment new
-    dataVarsRep = data_vars.dataVarsRep;
-    if (dataVarsRep) // Check for NULL
-      ++dataVarsRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "DataVariables::operator=(DataVariables&)" << std::endl;
-  if (dataVarsRep)
-    Cout << "dataVarsRep referenceCount = " << dataVarsRep->referenceCount
-	 << std::endl;
-#endif
-
+  dataVarsRep = data_vars.dataVarsRep;
   return *this;
 }
 
 
 DataVariables::~DataVariables()
-{
-  if (dataVarsRep) { // Check for NULL
-    --dataVarsRep->referenceCount; // decrement
-#ifdef REFCOUNT_DEBUG
-    Cout << "dataVarsRep referenceCount decremented to "
-         << dataVarsRep->referenceCount << std::endl;
-#endif
-    if (dataVarsRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting dataVarsRep" << std::endl;
-#endif
-      delete dataVarsRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 } // namespace Dakota

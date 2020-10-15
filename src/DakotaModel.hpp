@@ -272,6 +272,15 @@ public:
   /// clear inactive approximations (finalization + combination completed)
   virtual void clear_inactive();
 
+  /// query the approximation for available advancement in resolution controls
+  /// (order, rank, etc.); an input to adaptive refinement strategies
+  virtual bool advancement_available();
+  /// query the approximation for updates in formulation, requiring a rebuild
+  /// even if no updates to the build data
+  virtual bool formulation_updated() const;
+  /// assign the status of approximation formulation updates
+  virtual void formulation_updated(bool update);
+
   /// execute the DACE iterator (prior to building/appending the approximation)
   virtual void run_dace();
 
@@ -518,7 +527,7 @@ public:
   //
  
   /// replaces existing letter with a new one
-  void assign_rep(Model* model_rep, bool ref_count_incr = true);
+  void assign_rep(std::shared_ptr<Model> model_rep);
 
   // VARIABLES
 
@@ -1079,7 +1088,7 @@ public:
 
   /// returns modelRep for access to derived class member functions
   /// that are not mapped to the top Model level
-  Model* model_rep() const;
+  std::shared_ptr<Model> model_rep() const;
 
   /// set the specified configuration to the Model's inactive vars,
   /// converting from real to integer or through index to string value
@@ -1433,7 +1442,7 @@ private:
   //
 
   /// Used by the envelope to instantiate the correct letter class
-  Model* get_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
 
   /// evaluate numerical gradients using finite differences.  This
   /// routine is selected with "method_source dakota" (the default
@@ -1598,9 +1607,7 @@ private:
   BoolDeque recastFlags;
 
   /// pointer to the letter (initialized only for the envelope)
-  Model* modelRep;
-  /// number of objects sharing modelRep
-  int referenceCount;
+  std::shared_ptr<Model> modelRep;
 
   /// the last used model ID number for on-the-fly instantiations
   /// (increment before each use)
@@ -3626,7 +3633,7 @@ inline bool Model::is_null() const
 { return (modelRep) ? false : true; }
 
 
-inline Model* Model::model_rep() const
+inline std::shared_ptr<Model> Model::model_rep() const
 { return modelRep; }
 
 

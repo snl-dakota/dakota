@@ -67,7 +67,7 @@ private:
   //
 
   /// detect completion of a function evaluation through existence of
-  /// the necessary results file(s)
+  /// the necessary results file(s); return true if results files found
   bool system_call_file_test(const bfs::path& root_file);
 
   /// spawn a complete function evaluation
@@ -93,7 +93,7 @@ private:
 
 
 inline SysCallApplicInterface::~SysCallApplicInterface() 
-{ /* Virtual destructor handles referenceCount at Interface level. */ }
+{ }
 
 
 /** Check for completion of active asynch jobs (tracked with sysCallSet).

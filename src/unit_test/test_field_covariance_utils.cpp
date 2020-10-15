@@ -15,9 +15,6 @@
 #define BOOST_TEST_MODULE dakota_field_covariance_utils
 #include <boost/test/included/unit_test.hpp>
 
-//#include <boost/assign/std/vector.hpp>
-#include <boost/foreach.hpp>
-
 #include <cassert>
 #include <iostream>
 

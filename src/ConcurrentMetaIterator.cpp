@@ -149,7 +149,7 @@ void ConcurrentMetaIterator::declare_sources() {
 }
 
 ConcurrentMetaIterator::~ConcurrentMetaIterator()
-{ } // Virtual destructor handles referenceCount at Iterator level
+{ }
 
 
 void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)

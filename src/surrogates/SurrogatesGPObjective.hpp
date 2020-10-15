@@ -9,7 +9,7 @@
 #ifndef DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
 #define DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
 
-#include "GaussianProcess.hpp"
+#include "SurrogatesGaussianProcess.hpp"
 #include "util_data_types.hpp"
 
 #include <ROL_Objective.hpp>
@@ -105,9 +105,6 @@ private:
   VectorXd grad_old;
   /// Previous value of the parameter vector.
   VectorXd pold;
-  /// Tolerance for l2 difference between parameter vectors. Should
-  /// smaller than ROL's stepnorm but bigger than machine epsilon.
-  double difftol = 1.0e-15;
 };
 
 }  // namespace surrogates

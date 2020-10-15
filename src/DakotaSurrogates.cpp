@@ -15,7 +15,7 @@
 #include "SharedSurfpackApproxData.hpp"
 
 // Headers from Surrogates module
-#include "Surrogate.hpp"
+#include "SurrogatesBase.hpp"
  
 
 using dakota::MatrixXd;
@@ -32,13 +32,14 @@ SurrogatesBaseApprox(const ProblemDescDB& problem_db,
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
 {
   advanced_options_file = problem_db.get_string("model.advanced_options_file");
+  set_verbosity();
 }
 
 
 SurrogatesBaseApprox::
 SurrogatesBaseApprox(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data)
-{ }
+{ set_verbosity(); }
 
 
 bool SurrogatesBaseApprox::diagnostics_available()
@@ -80,8 +81,8 @@ void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
   // BMA TODO: Check for null in case not yet built?!?
   String func_description = approxLabel.empty() ?
     "function " + std::to_string(fn_index+1) : approxLabel;
-  SharedSurfpackApproxData* shared_surf_data_rep
-    = (SharedSurfpackApproxData*)sharedDataRep;
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   StringArray diag_set = shared_surf_data_rep->diagnosticSet;
 
   // conditionally print default diagnostics
@@ -128,8 +129,8 @@ challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
 {
   String func_description = approxLabel.empty() ?
     "function " + std::to_string(fn_index+1) : approxLabel;
-  StringArray diag_set =
-    ((SharedSurfpackApproxData*)sharedDataRep)->diagnosticSet;
+  StringArray diag_set = std::static_pointer_cast<SharedSurfpackApproxData>
+    (sharedDataRep)->diagnosticSet;
 
   // conditionally print default diagnostics
   if (diag_set.empty() && sharedDataRep->outputLevel > NORMAL_OUTPUT)
@@ -182,7 +183,7 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
   RealArray x(num_v);
   Eigen::Map<VectorXd> x_eig(x.data(), num_v);
   for (size_t i=0; i<num_pts; ++i) {
-    ((SharedSurfpackApproxData*)sharedDataRep)->
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
       sdv_to_realarray(sdv_array[i], x);
     vars.row(i) = x_eig;
     resp(i,0) = sdr_array[i].response_function();
@@ -193,7 +194,8 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
 Real SurrogatesBaseApprox::value(const Variables& vars)
 {
   RealVector x_rv(sharedDataRep->numVars);
-  ((SharedSurfpackApproxData*)sharedDataRep)->vars_to_realarray(vars, x_rv);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_rv);
   return value(x_rv);
 }
 
@@ -201,7 +203,8 @@ Real SurrogatesBaseApprox::value(const Variables& vars)
 const RealVector& SurrogatesBaseApprox::gradient(const Variables& vars)
 {
   RealVector x_rv(sharedDataRep->numVars);
-  ((SharedSurfpackApproxData*)sharedDataRep)->vars_to_realarray(vars, x_rv);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_rv);
   return gradient(x_rv);
 }
 
@@ -215,17 +218,10 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
     abort_handler(-1);
   }
 
-  const size_t num_evals = 1;
-  const size_t num_vars = c_vars.length();
-  const size_t num_qoi = 1;
+  const int num_vars = c_vars.length();
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
 
-  // Could instead use RowVectorXd
-  Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
-  MatrixXd pred(num_evals, num_qoi);
-
-  model->value(eval_pts, pred);
-
-  return pred(0,0);
+  return model->value(eval_point)(0);
 }
     
 const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
@@ -236,9 +232,7 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
 
   // not sending Eigen view of approxGradient as model->gradient calls resize()
-  const size_t qoi = 0; // only one response for now
-  MatrixXd pred_grad(num_evals, num_vars);
-  model->gradient(eval_pts, pred_grad, qoi);
+  MatrixXd pred_grad = model->gradient(eval_pts);
 
   approxGradient.sizeUninitialized(c_vars.length());
   for (size_t j = 0; j < num_vars; j++)
@@ -249,5 +243,48 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   return approxGradient;
 }
 
+void SurrogatesBaseApprox::export_model(const String& fn_label,
+					const String& export_prefix,
+					const unsigned short export_format)
+{
+  // Surrogates may not be built for some (or all) responses
+  if (!model) {
+    Cout << "Info: Surrogate for response '" << fn_label << "' not built; "
+        << "skipping export." << std::endl;
+    return;
+  }
+
+  String without_extension;
+  unsigned short formats;
+  if(export_format) {
+    without_extension = export_prefix + "." + fn_label;
+    formats = export_format;
+  }
+  else {
+    without_extension = sharedDataRep->modelExportPrefix + "." + approxLabel;
+    formats = sharedDataRep->modelExportFormat;
+  }
+  // Saving to text archive
+  if(formats & TEXT_ARCHIVE) {
+    String filename = without_extension + ".txt";
+    dakota::surrogates::Surrogate::save(model, filename, false);
+  }
+  // Saving to binary archive
+  if(formats & BINARY_ARCHIVE) {
+    String filename = without_extension + ".bin";
+    dakota::surrogates::Surrogate::save(model, filename, false);
+  }
+}
+
+void SurrogatesBaseApprox::set_verbosity()
+{
+  auto dak_verb = sharedDataRep->outputLevel;
+  if (dak_verb == SILENT_OUTPUT || dak_verb == QUIET_OUTPUT)
+    surrogateOpts.set("verbosity", 0);
+  else if (dak_verb == NORMAL_OUTPUT)
+    surrogateOpts.set("verbosity", 1);
+  else if (dak_verb == VERBOSE_OUTPUT || dak_verb == DEBUG_OUTPUT)
+    surrogateOpts.set("verbosity", 2);
+}
 
 } // namespace Dakota

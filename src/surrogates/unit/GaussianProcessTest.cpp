@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "common_utils.hpp"
-#include "GaussianProcess.hpp"
+#include "util_common.hpp"
+#include "SurrogatesGaussianProcess.hpp"
 #include "surrogates_tools.hpp"
 #include "util_data_types.hpp"
 
@@ -40,8 +40,8 @@ int test_gp(double atol){
   MatrixXd response(7,1);
   /* num_eval_pts x num_features */
   MatrixXd eval_pts(6,1);
-  /* num_eval_pts x num_qoi */
-  MatrixXd pred(6,1);
+  /* num_eval_pts x 1 */
+  VectorXd pred(6);
 
   /* samples */
   xs_u << 0.05536604, 0.28730518, 0.30391231, 0.40768703,
@@ -76,9 +76,9 @@ int test_gp(double atol){
    * at once */
   GaussianProcess gp(xs_u, response, param_list);
 
-  gp.value(eval_pts, pred);
-  VectorXd std_dev = gp.get_posterior_std_dev();
-  MatrixXd cov = gp.get_posterior_covariance();
+  pred = gp.value(eval_pts);
+  VectorXd std_dev = gp.variance(eval_pts).array().sqrt();
+  MatrixXd cov = gp.covariance(eval_pts);
 
   /* gold values */
   MatrixXd gold_value(6,1);
@@ -123,9 +123,9 @@ int test_gp(double atol){
    * and build steps */
   GaussianProcess gp2(param_list);
   gp2.build(xs_u, response);
-  gp2.value(eval_pts, pred);
-  std_dev = gp2.get_posterior_std_dev();
-  cov = gp2.get_posterior_covariance();
+  pred = gp2.value(eval_pts);
+  std_dev = gp2.variance(eval_pts).array().sqrt();
+  cov = gp2.covariance(eval_pts);
 
   if (!matrix_equals(pred,gold_value,atol)){
     std::cout << "7\n";
@@ -154,9 +154,9 @@ int test_gp(double atol){
   gp3.set_options(current_opts);
   gp3.build(xs_u, response);
 
-  gp3.value(eval_pts, pred);
-  std_dev = gp3.get_posterior_std_dev();
-  cov = gp3.get_posterior_covariance();
+  pred = gp3.value(eval_pts);
+  std_dev = gp3.variance(eval_pts).array().sqrt();
+  cov = gp3.covariance(eval_pts);
 
   if (!matrix_equals(pred,gold_value,atol)){
     std::cout << "10\n";
@@ -205,9 +205,9 @@ int test_gp(double atol){
   gp4.set_options(current_opts4);
   gp4.build(xs_u, response);
 
-  gp4.value(eval_pts, pred);
-  std_dev = gp4.get_posterior_std_dev();
-  cov = gp4.get_posterior_covariance();
+  pred = gp4.value(eval_pts);
+  std_dev = gp4.variance(eval_pts).array().sqrt();
+  cov = gp4.covariance(eval_pts);
 
   if (print_output) {
     std::cout << "\ngp4 value:\n";
@@ -238,8 +238,8 @@ int test_gp(double atol){
   /* compute derivatives of GP with trend and check */
   MatrixXd gp4_gradient, gp4_hessian;
 
-  gp4.gradient(eval_pts.row(0), gp4_gradient);
-  gp4.hessian(eval_pts.row(0), gp4_hessian);
+  gp4_gradient = gp4.gradient(eval_pts.row(0));
+  gp4_hessian = gp4.hessian(eval_pts.row(0));
 
 
   MatrixXd grad_fd_error_trend;
@@ -331,7 +331,7 @@ int test_gp(double atol){
                  0.4, -0.1,
                 -0.25, 0.33;
 
-  MatrixXd gold_value_2D(4,1);
+  VectorXd gold_value_2D(4);
   VectorXd gold_std_2D(4);
   MatrixXd gold_cov_2D(4,4);
 
@@ -348,10 +348,11 @@ int test_gp(double atol){
   //}
 
   std::cout << "\n";
+  param_list.set("num restarts", 15);
   GaussianProcess gp_2D(samples_list[0],responses_list[0], param_list);
-  gp_2D.value(eval_pts_2D, pred_2D);
-  VectorXd std_dev_2D = gp_2D.get_posterior_std_dev();
-  MatrixXd cov_2D = gp_2D.get_posterior_covariance();
+  pred_2D = gp_2D.value(eval_pts_2D);
+  VectorXd std_dev_2D = gp_2D.variance(eval_pts_2D).array().sqrt();
+  MatrixXd cov_2D = gp_2D.covariance(eval_pts_2D);
 
   if (!matrix_equals(pred_2D,gold_value_2D,atol)){
     std::cout << "4\n";
@@ -384,7 +385,7 @@ int test_gp(double atol){
   MatrixXd gp_grad;
   MatrixXd gold_gp_grad(1,2);
   gold_gp_grad << -0.31280824, -0.25430975;
-  gp_2D.gradient(eval_point, gp_grad);
+  gp_grad = gp_2D.gradient(eval_point);
 
   
   if (print_output) {
@@ -399,7 +400,7 @@ int test_gp(double atol){
   MatrixXd gp_hessian;
   MatrixXd gold_gp_hessian(2,2);
   gold_gp_hessian << 0.87452373, 0.1014484, 0.1014484, -0.84271328;
-  gp_2D.hessian(eval_point, gp_hessian);
+  gp_hessian = gp_2D.hessian(eval_point);
 
   if (print_output) {
     std::cout << "\nGP Hessian value at evaluation point:\n" << gp_hessian << "\n";
@@ -438,12 +439,9 @@ int test_gp(double atol){
   pl_2D_quad.sublist("Trend").sublist("Options").set("max degree", 2);
 
   GaussianProcess gp_2D_quad(samples_list[0], responses_list[0], pl_2D_quad);
-  gp_2D_quad.value(eval_pts_2D, pred_2D);
-  // BMA/DTS TODO: Is this a bug, should be gp_2D_quad ?!?
-  // It might explain why my tests below failed with same gold
-  // (see bottom of file)
-  gp_2D_quad.gradient(eval_point, gp_grad);
-  gp_2D_quad.hessian(eval_point, gp_hessian);
+  pred_2D = gp_2D_quad.value(eval_pts_2D);
+  gp_grad = gp_2D_quad.gradient(eval_point);
+  gp_hessian = gp_2D_quad.hessian(eval_point);
 
   if (print_output) {
     std::cout << "\n2D trend gp gradient:\n";
@@ -597,20 +595,20 @@ TEUCHOS_UNIT_TEST(surrogates, gaussian_process_saveload)
                    0.4, -0.1,
                   -0.25, 0.33;
 
-    MatrixXd value_save(4,1), value_load(4,1);
-    gp_2D_quad.value(eval_pts_2D, value_save);
-    gp_loaded.value(eval_pts_2D, value_load);
+    VectorXd value_save(4), value_load(4);
+    value_save = gp_2D_quad.value(eval_pts_2D);
+    value_load = gp_loaded.value(eval_pts_2D);
 
     int eval_index = 1;
     auto eval_point = eval_pts_2D.row(eval_index);
 
     MatrixXd grad_save, grad_load;
-    gp_2D_quad.gradient(eval_point, grad_save);
-    gp_loaded.gradient(eval_point, grad_load);
+    grad_save = gp_2D_quad.gradient(eval_point);
+    grad_load = gp_loaded.gradient(eval_point);
 
     MatrixXd hess_save, hess_load;
-    gp_2D_quad.hessian(eval_point, hess_save);
-    gp_loaded.hessian(eval_point, hess_load);
+    hess_save = gp_2D_quad.hessian(eval_point);
+    hess_load = gp_loaded.hessian(eval_point);
 
     // Verify saved vs. loaded to tight tolerance
     double tight_tol = 1.0e-16;
@@ -624,7 +622,7 @@ TEUCHOS_UNIT_TEST(surrogates, gaussian_process_saveload)
     fd_check_hessian(gp_loaded, eval_point, hessian_fd_error);
 
     // Verify vs. original unit test
-    MatrixXd gold_value_2D(4,1);
+    VectorXd gold_value_2D(4);
     gold_value_2D << 0.77987534, 0.84715045, 0.74437935, 0.74654155;
     MatrixXd gold_gp_grad(1,2);
     gold_gp_grad << -0.312998265, -0.25777615;

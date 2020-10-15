@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "LinearSolvers.hpp"
+#include "UtilLinearSolvers.hpp"
 
 #include <boost/assign.hpp>
 #include <boost/bimap.hpp>

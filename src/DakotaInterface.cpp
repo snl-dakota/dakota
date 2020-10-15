@@ -45,7 +45,6 @@
 #endif // HAVE_AMPL
 
 //#define DEBUG
-//#define REFCOUNT_DEBUG
 
 namespace Dakota {
 
@@ -58,8 +57,7 @@ size_t Interface::noSpecIdNum = 0;
     and the derived constructor selects this base class constructor in its 
     initialization list (to avoid the recursion of the base class constructor
     calling get_interface() again).  Since this is the letter and the letter 
-    IS the representation, interfaceRep is set to NULL (an uninitialized 
-    pointer causes problems in ~Interface). */
+    IS the representation, interfaceRep is set to NULL. */
 Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db): 
   interfaceType(problem_db.get_ushort("interface.type")),
   interfaceId(problem_db.get_string("interface.id")), 
@@ -72,7 +70,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
   multiProcEvalFlag(false), ieDedMasterFlag(false),
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  Interfaces support the full granularity in verbosity.
-  appendIfaceId(true), interfaceRep(NULL), referenceCount(1), asl(NULL)
+  appendIfaceId(true), asl(NULL)
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
@@ -164,11 +162,6 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
     abort_handler(-1);
 #endif // HAVE_AMPL
   }
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::Interface(BaseConstructor, ProblemDescDB&) called to "
-       << "build base class data for letter object." << std::endl;
-#endif
 }
 
 
@@ -177,22 +170,16 @@ Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
   outputLevel(output_level), currEvalId(0), 
   fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT), evalIdCntr(0), 
   newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
-  ieDedMasterFlag(false), appendIfaceId(true), interfaceRep(NULL),
-  referenceCount(1)
+  ieDedMasterFlag(false), appendIfaceId(true)
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
 #endif // DEBUG
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::Interface(NoDBBaseConstructor) called to build base "
-       << "class data for letter object." << std::endl;
-#endif
 }
 
 
 /** used in Model envelope class instantiations */
-Interface::Interface(): interfaceRep(NULL), referenceCount(1)
+Interface::Interface()
 { }
 
 
@@ -200,15 +187,10 @@ Interface::Interface(): interfaceRep(NULL), referenceCount(1)
     only needs to extract enough data to properly execute get_interface, since
     Interface::Interface(BaseConstructor, problem_db) builds the 
     actual base class data inherited by the derived interfaces. */
-Interface::Interface(ProblemDescDB& problem_db): referenceCount(1)
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::Interface(ProblemDescDB&) called to instantiate envelope."
-       << std::endl;
-#endif
-
+Interface::Interface(ProblemDescDB& problem_db):
   // Set the rep pointer to the appropriate interface type
-  interfaceRep = get_interface(problem_db);
+  interfaceRep(get_interface(problem_db))
+{
   if (!interfaceRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -216,13 +198,9 @@ Interface::Interface(ProblemDescDB& problem_db): referenceCount(1)
 
 /** used only by the envelope constructor to initialize interfaceRep
     to the appropriate derived type. */
-Interface* Interface::get_interface(ProblemDescDB& problem_db)
+std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
 {
   const unsigned short interface_type = problem_db.get_ushort("interface.type");
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: Getting interface "
-       << interface_enum_to_string(interface_type) << std::endl;
-#endif
 
   // In the case where a derived interface type has been selected for managing
   // analysis_drivers, then this determines the letter instantiation and any 
@@ -230,65 +208,64 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   const String& algebraic_map_file
     = problem_db.get_string("interface.algebraic_mappings");
   if (interface_type == SYSTEM_INTERFACE)
-    return new SysCallApplicInterface(problem_db);
-
+    return std::make_shared<SysCallApplicInterface>(problem_db);
   else if (interface_type == FORK_INTERFACE) {
 #if defined(HAVE_SYS_WAIT_H) && defined(HAVE_UNISTD_H) // includes CYGWIN/MINGW
-    return new ForkApplicInterface(problem_db);
+    return std::make_shared<ForkApplicInterface>(problem_db);
 #elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
-    return new SpawnApplicInterface(problem_db);
+    return std::make_shared<SpawnApplicInterface>(problem_db);
 #else
     Cerr << "Fork interface requested, but not enabled in this DAKOTA "
 	 << "executable." << std::endl;
-    return NULL;
+    return std::shared_ptr<Interface>();
 #endif
   }
 
   else if (interface_type == TEST_INTERFACE)
-    return new TestDriverInterface(problem_db);
+    return std::make_shared<TestDriverInterface>(problem_db);
   // Note: in the case of a plug-in direct interface, this object gets replaced
   // using Interface::assign_rep().  Error checking in DirectApplicInterface::
   // derived_map_ac() should catch if this replacement fails to occur properly.
 
 #ifdef DAKOTA_GRID
   else if (interface_type == GRID_INTERFACE)
-    return new GridApplicInterface(problem_db);
+    return std::make_shared<GridApplicInterface>(problem_db);
 #endif
 
   else if (interface_type == MATLAB_INTERFACE) {
 #ifdef DAKOTA_MATLAB
-    return new MatlabInterface(problem_db);
+    return std::make_shared<MatlabInterface>(problem_db);
 #else
     Cerr << "Direct Matlab interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
-      return NULL;
+    return std::shared_ptr<Interface>();
 #endif
   }
 
   else if (interface_type == PYTHON_INTERFACE) {
 #ifdef DAKOTA_PYTHON
-    return new PythonInterface(problem_db);
+    return std::make_shared<PythonInterface>(problem_db);
 #else
     Cerr << "Direct Python interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
-    return NULL;
+    return std::shared_ptr<Interface>();
 #endif
   }
 
   else if (interface_type == SCILAB_INTERFACE) {
 #ifdef DAKOTA_SCILAB
-    return new ScilabInterface(problem_db);
+    return std::make_shared<ScilabInterface>(problem_db);
 #else
     Cerr << "Direct Scilab interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
-    return NULL;
+    return std::shared_ptr<Interface>();
 #endif
   }
 
   // Should not be needed since ApproximationInterface is plugged-in from
   // DataFitSurrModel using Interface::assign_rep().
   //else if (interface_type == APPROX_INTERFACE)
-  //  return new ApproximationInterface(problem_db, num_acv, num_fns);
+  //  return std::make_shared<ApproximationInterface>(problem_db, num_acv, num_fns);
 
   // In the case where only algebraic mappings are used, then no derived map
   // functionality is needed and ApplicationInterface is used for the letter.
@@ -297,7 +274,7 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
     Cout << ">>>>> new ApplicationInterface: " << algebraic_map_file
 	 << std::endl;
 #endif // DEBUG
-    return new ApplicationInterface(problem_db);
+    return std::make_shared<ApplicationInterface>(problem_db);
   }
 
   // If the interface type is empty (e.g., from default DataInterface creation
@@ -305,133 +282,80 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   else if (interface_type == DEFAULT_INTERFACE) {
     Cerr << "Warning: empty interface type in Interface::get_interface()."
 	 << std::endl;
-    return new ApplicationInterface(problem_db);
+    return std::make_shared<ApplicationInterface>(problem_db);
   }
 
   else {
     Cerr << "Invalid interface: " << interface_enum_to_string(interface_type) 
 	 << std::endl;
-    return NULL;
   }
+
+  return std::shared_ptr<Interface>();
 }
 
 
-/** Copy constructor manages sharing of interfaceRep and incrementing
-    of referenceCount. */
-Interface::Interface(const Interface& interface_in)
-{
-  // Increment new (no old to decrement)
-  interfaceRep = interface_in.interfaceRep;
-  if (interfaceRep) // Check for an assignment of NULL
-    ++interfaceRep->referenceCount;
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::Interface(Interface&)" << std::endl;
-  if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep->referenceCount
-	 << std::endl;
-#endif
-}
+/** Copy constructor manages sharing of interfaceRep */
+Interface::Interface(const Interface& interface_in):
+  interfaceRep(interface_in.interfaceRep)
+{ /* empty ctor */ }
 
 
-/** Assignment operator decrements referenceCount for old interfaceRep, assigns
-    new interfaceRep, and increments referenceCount for new interfaceRep. */
 Interface Interface::operator=(const Interface& interface_in)
 {
-  if (interfaceRep != interface_in.interfaceRep) { // normal case: old != new
-    // Decrement old
-    if (interfaceRep) // Check for NULL
-      if ( --interfaceRep->referenceCount == 0 ) 
-	delete interfaceRep;
-    // Assign and increment new
-    interfaceRep = interface_in.interfaceRep;
-    if (interfaceRep) // Check for NULL
-      ++interfaceRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::operator=(Interface&)" << std::endl;
-  if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep->referenceCount
-	 << std::endl;
-#endif
-
+  interfaceRep = interface_in.interfaceRep;
   return *this; // calls copy constructor since returned by value
 }
 
 
-/** Destructor decrements referenceCount and only deletes interfaceRep
-    if referenceCount is zero. */
 Interface::~Interface()
-{ 
-  // Check for NULL pointer 
-  if (interfaceRep) {
-    --interfaceRep->referenceCount;
-#ifdef REFCOUNT_DEBUG
-    Cout << "interfaceRep referenceCount decremented to " 
-         << interfaceRep->referenceCount << std::endl;
-#endif
-    if (interfaceRep->referenceCount == 0) {
-#ifdef REFCOUNT_DEBUG
-      Cout << "deleting interfaceRep" << std::endl;
-#endif
-      delete interfaceRep;
-    }
-  }
-}
+{ /* empty dtor */ }
 
 
-/** Similar to the assignment operator, the assign_rep() function
+/** DEPRECATED but temporarily left for library mode clients needing to
+    MIGRATE TO shared_ptr API
+
+    Similar to the assignment operator, the assign_rep() function
     decrements referenceCount for the old interfaceRep and assigns the
     new interfaceRep.  It is different in that it is used for
     publishing derived class letters to existing envelopes, as opposed
-    to sharing representations among multiple envelopes (in particular,
-    assign_rep is passed a letter object and operator= is passed an 
-    envelope object).  Letter assignment supports two models as 
-    governed by ref_count_incr:
+    to sharing representations among multiple envelopes (in
+    particular, assign_rep is passed a letter object and operator= is
+    passed an envelope object).  Letter assignment historically
+    supported two models as governed by ref_count_incr:
 
-    \li ref_count_incr = true (default): the incoming letter belongs to 
-    another envelope.  In this case, increment the reference count in the 
-    normal manner so that deallocation of the letter is handled properly.
+    \li ref_count_incr = true (removed): the incoming letter belongs
+    to another envelope.  In this case, increment the reference count
+    in the normal manner so that deallocation of the letter is handled
+    properly.
 
-    \li ref_count_incr = false: the incoming letter is instantiated on the
-    fly and has no envelope.  This case is modeled after get_interface():
-    a letter is dynamically allocated using new and passed into assign_rep,
-    the letter's reference count is not incremented, and the letter is not
-    remotely deleted (its memory management is passed over to the envelope). */
+    \li ref_count_incr = false (always): the incoming letter is
+    instantiated on the fly and has no envelope.  This case is modeled
+    after get_interface(): a letter is dynamically allocated using new
+    and passed into assign_rep, the letter's reference count is not
+    incremented, and the letter is not remotely deleted (its memory
+    management is passed over to the envelope). */
 void Interface::assign_rep(Interface* interface_rep, bool ref_count_incr)
 {
-  if (interfaceRep == interface_rep) {
-    // if ref_count_incr = true (rep from another envelope), do nothing as
-    // referenceCount should already be correct (see also operator= logic).
-    // if ref_count_incr = false (rep from on the fly), then this is an error.
-    if (!ref_count_incr) {
-      Cerr << "Error: duplicated interface_rep pointer assignment without "
-	   << "reference count increment in Interface::assign_rep()."
-	   << std::endl;
-      abort_handler(-1);
-    }
-  }
-  else { // normal case: old != new
-    // Decrement old
-    if (interfaceRep) // Check for NULL
-      if ( --interfaceRep->referenceCount == 0 ) 
-	delete interfaceRep;
-    // Assign new
-    interfaceRep = interface_rep;
-    // Increment new
-    if (interfaceRep && ref_count_incr) // Check for NULL & honor ref_count_incr
-      interfaceRep->referenceCount++;
-  }
+  interfaceRep.reset(interface_rep);
+}
 
-#ifdef REFCOUNT_DEBUG
-  Cout << "Interface::assign_rep(Interface*)" << std::endl;
-  if (interfaceRep)
-    Cout << "interfaceRep referenceCount = " << interfaceRep->referenceCount
-	 << std::endl;
-#endif
+
+/** The assign_rep() function is used for publishing derived class
+    letters to existing envelopes, as opposed to sharing
+    representations among multiple envelopes (in particular,
+    assign_rep is passed a letter object and operator= is passed an
+    envelope object).
+
+    Use case assumes the incoming letter is instantiated on the fly
+    and has no envelope.  This case is modeled after get_interface(): a
+    letter is dynamically allocated and passed into assign_rep (its
+    memory management is passed over to the envelope).
+
+    If the letter happens to be managed by another envelope, it will
+    persist as long as the last envelope referencing it. */
+void Interface::assign_rep(std::shared_ptr<Interface> interface_rep)
+{
+  interfaceRep = interface_rep;
 }
 
 
@@ -861,7 +785,7 @@ String Interface::final_eval_id_tag(int iface_eval_id)
     return interfaceRep->final_eval_id_tag(iface_eval_id);
 
   if (appendIfaceId)
-    return evalTagPrefix + "." + boost::lexical_cast<std::string>(iface_eval_id);
+    return evalTagPrefix + "." + std::to_string(iface_eval_id);
   return evalTagPrefix;
 }
 
@@ -1186,8 +1110,7 @@ void Interface::export_approximation()
 }
 
 
-void Interface::
-rebuild_approximation(const BitArray& rebuild_fns)
+void Interface::rebuild_approximation(const BitArray& rebuild_fns)
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->rebuild_approximation(rebuild_fns);
@@ -1234,6 +1157,7 @@ bool Interface::push_available()
 	 << "support approximation data retrieval." << std::endl;
     abort_handler(-1);
   }
+
   return interfaceRep->push_available();
 }
 
@@ -1286,6 +1210,13 @@ void Interface::combined_to_active(bool clear_combined)
 }
 
 
+bool Interface::advancement_available()
+{
+  if (interfaceRep) return interfaceRep->advancement_available();
+  else              return true; // only a few cases throttle advancements
+}
+
+
 bool Interface::formulation_updated() const
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
@@ -1294,35 +1225,49 @@ bool Interface::formulation_updated() const
 	 << "formulations." << std::endl;
     abort_handler(-1);
   }
+
   return interfaceRep->formulation_updated();
+}
+
+
+void Interface::formulation_updated(bool update)
+{
+  if (interfaceRep)
+    interfaceRep->formulation_updated(update);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
+	 << "() function.\n       This interface does not define approximation "
+	 << "formulations." << std::endl;
+    abort_handler(-1);
+  }
 }
 
 
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {
-  if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->cv_diagnostics(metric_types, num_folds);
-  else { // letter lacking redefinition of virtual fn.
+  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual cv_diagnostics()"
 	 << "function.\n       This interface does not "
 	 << "support cross-validation diagnostics." << std::endl;
     abort_handler(-1);
   }
+
+  return interfaceRep->cv_diagnostics(metric_types, num_folds);
 }
 
 
 RealArray Interface::challenge_diagnostics(const String& metric_type,
 					    const RealMatrix& challenge_pts)
 {
-  if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->challenge_diagnostics(metric_type, challenge_pts);
-  else { // letter lacking redefinition of virtual fn.
+  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual challenge_"
 	 << "diagnostics() function.\n       This interface does not "
 	 << "support challenge data diagnostics." << std::endl;
     abort_handler(-1);
   }
+
+  return interfaceRep->challenge_diagnostics(metric_type, challenge_pts);
 }
 
 
@@ -1484,7 +1429,7 @@ void Interface::file_cleanup() const
 String Interface::user_auto_id()
 {
   // // increment and then use the current ID value
-  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  // return String("NO_ID_") + std::to_string(++userAutoIdNum);
   return String("NO_ID");
 }
 
@@ -1496,6 +1441,6 @@ String Interface::user_auto_id()
 String Interface::no_spec_id()
 {
   // increment and then use the current ID value
-  return String("NOSPEC_INTERFACE_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+  return String("NOSPEC_INTERFACE_ID_") + std::to_string(++noSpecIdNum);
 }
 } // namespace Dakota

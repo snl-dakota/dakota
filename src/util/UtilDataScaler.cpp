@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "DataScaler.hpp"
+#include "UtilDataScaler.hpp"
 
 #include <boost/assign.hpp>
 #include <boost/bimap.hpp>
@@ -46,6 +46,23 @@ DataScaler::DataScaler() :
 DataScaler::~DataScaler()
 { }
 
+const RowVectorXd& DataScaler::scale_sample(const RowVectorXd &unscaled_sample) {
+
+  const int num_features = unscaled_sample.size();
+  if (num_features != scaledSample.size()) {
+    throw(std::runtime_error("scaleSample input is not consistent."
+          "Number of features does not match."));
+  }
+
+  for (int i = 0; i < num_features; i++) {
+    if (check_for_zero_scaler_factor(i))
+      scaledSample(i) = unscaled_sample(i)  - scalerFeaturesOffsets(i);
+    else
+      scaledSample(i) = (unscaled_sample(i) - scalerFeaturesOffsets(i))/scalerFeaturesScaleFactors(i);
+  }
+  return scaledSample;
+}
+
 void DataScaler::scale_samples(const MatrixXd &unscaled_samples,
                                MatrixXd &scaled_samples) {
   const int num_features = unscaled_samples.cols();
@@ -78,6 +95,7 @@ NormalizationScaler::NormalizationScaler(const MatrixXd &features,
 
   const int num_features = features.cols();
 
+  scaledSample.resize(num_features);
   scalerFeaturesOffsets.resize(num_features);
   scalerFeaturesScaleFactors.resize(num_features);
 
@@ -103,6 +121,7 @@ StandardizationScaler::StandardizationScaler(const MatrixXd &features,
 
   const int num_features = features.cols();
 
+  scaledSample.resize(num_features);
   scalerFeaturesOffsets.resize(num_features);
   scalerFeaturesScaleFactors.resize(num_features);
 
@@ -124,6 +143,8 @@ NoScaler::~NoScaler(){}
 NoScaler::NoScaler(const MatrixXd &features) {
 
   const int num_features = features.cols();
+
+  scaledSample.resize(num_features);
   scalerFeaturesOffsets = VectorXd::Zero(num_features);
   scalerFeaturesScaleFactors = VectorXd::Ones(num_features);
 
@@ -131,9 +152,7 @@ NoScaler::NoScaler(const MatrixXd &features) {
 }
 
 bool DataScaler::check_for_zero_scaler_factor(int index) {
-  double value     = std::abs(scalerFeaturesScaleFactors(index));
-  double near_zero = std::abs(100.0*std::numeric_limits<double>::min());
-  return value < near_zero;
+  return std::abs(scalerFeaturesScaleFactors(index)) < near_zero;
 }
 
 std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd &unscaled_matrix) {

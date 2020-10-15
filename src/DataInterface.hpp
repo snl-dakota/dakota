@@ -90,6 +90,8 @@ class DataInterfaceRep
 
 public:
 
+  ~DataInterfaceRep(); ///< destructor
+
   //
   //- Heading: Data
   //
@@ -239,7 +241,6 @@ private:
   //
 
   DataInterfaceRep();  ///< constructor
-  ~DataInterfaceRep(); ///< destructor
 
   //
   //- Heading: Member methods
@@ -257,8 +258,6 @@ private:
   //- Heading: Private data members
   //
 
-  /// number of handle objects sharing this dataInterfaceRep
-  int referenceCount;
 };
 
 
@@ -316,7 +315,7 @@ public:
   void write(MPIPackBuffer& s) const;
 
   /// return dataIfaceRep
-  DataInterfaceRep* data_rep();
+  std::shared_ptr<DataInterfaceRep> data_rep();
 
 private:
 
@@ -325,11 +324,11 @@ private:
   //
 
   /// pointer to the body (handle-body idiom)
-  DataInterfaceRep* dataIfaceRep;
+  std::shared_ptr<DataInterfaceRep> dataIfaceRep;
 };
 
 
-inline DataInterfaceRep* DataInterface::data_rep()
+inline std::shared_ptr<DataInterfaceRep> DataInterface::data_rep()
 {return dataIfaceRep; }
 
 

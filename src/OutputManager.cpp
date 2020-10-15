@@ -394,7 +394,7 @@ void OutputManager::init_results_db()
 {
   String file_tag;
   if (mpirunFlag)
-    file_tag = "." + boost::lexical_cast<String>(worldRank + 1);
+    file_tag = "." + std::to_string(worldRank + 1);
 
   String filename = resultsOutputFile+file_tag;
 

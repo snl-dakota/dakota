@@ -132,7 +132,7 @@ void LeastSq::weight_model()
     }
 
   // TODO: pass sqrt to WeightingModel
-  iteratedModel.assign_rep(new WeightingModel(iteratedModel), false);
+  iteratedModel.assign_rep(std::make_shared<WeightingModel>(iteratedModel));
   ++myModelLayers;
 }
 
@@ -187,8 +187,9 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     // per-config) and the full set of data-transformed residuals,
     // possibly scaled by sigma^-1/2.  This should be correct in
     // interpolation cases as well.
-    DataTransformModel* dt_model_rep =
-      static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+    std::shared_ptr<DataTransformModel> dt_model_rep =
+      std::static_pointer_cast<DataTransformModel>
+      (dataTransformModel.model_rep());
     dt_model_rep->print_best_responses(s, best_vars, 
                                        bestResponseArray.front(), num_best, best_ind);
   }
@@ -357,8 +358,8 @@ void LeastSq::post_run(std::ostream& s)
 
   // Transform variables back to inbound model, before any potential lookup
   if (scaleFlag) {
-    ScalingModel* scale_model_rep = 
-      static_cast<ScalingModel*>(scalingModel.model_rep());
+    std::shared_ptr<ScalingModel> scale_model_rep =
+      std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
     best_vars.continuous_variables
       (scale_model_rep->cv_scaled2native(iter_vars.continuous_variables()));
   }
@@ -532,8 +533,8 @@ void LeastSq::post_run(std::ostream& s)
   // in-place if needed
   // BMA TODO: constrained LSQ with scaling test
   if (scaleFlag && numNonlinearConstraints > 0) {
-    ScalingModel* scale_model_rep =
-      static_cast<ScalingModel*>(scalingModel.model_rep());
+    std::shared_ptr<ScalingModel> scale_model_rep =
+      std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
     RealVector best_fns = best_resp.function_values_view();
     // only requesting scaling of constraints, so no need for variable Jacobian
     activeSet.request_values(1);
@@ -620,8 +621,8 @@ void LeastSq::get_confidence_intervals(const Variables& native_vars,
   // envelope to hold the either unscaled or iterator response
   Response ultimate_resp = scaleFlag ? iter_resp.copy() : iter_resp; 
   if (scaleFlag) {
-    ScalingModel* scale_model_rep =
-      static_cast<ScalingModel*>(scalingModel.model_rep());
+    std::shared_ptr<ScalingModel> scale_model_rep =
+      std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
     bool unscale_resp = false;
     scale_model_rep->response_modify_s2n(native_vars, iter_resp,
 					 ultimate_resp, 0, numLeastSqTerms,
