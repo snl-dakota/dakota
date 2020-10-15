@@ -57,6 +57,7 @@ function(add_application_test _test_name)
     WORKING_DIRECTORY)
   set(_multi_value_keyword_args
     FILE_DEPENDENCIES
+    CONFIGURE_FILES
     PREPROCESS
     APPLICATION 
     POSTPROCESS
@@ -110,6 +111,13 @@ function(add_application_test _test_name)
 	${_application_test_WORKING_DIRECTORY}/${_file})
     endif()
 
+  endforeach() # file in dependencies
+
+  # Configure any test dependencies to the working directory at configure.
+  foreach(_file ${_application_test_CONFIGURE_FILES})
+    get_filename_component(_filename ${_file} NAME)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${_file}
+      ${_application_test_WORKING_DIRECTORY}/${_file} @ONLY)
   endforeach() # file in dependencies
 
   # Parse each of the PREPROCESS, APPLICATION, POSTPROCESS argument lists.

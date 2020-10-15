@@ -16,6 +16,15 @@ include(DakotaCopyTarget)
 include(ListFilterEmacsBackups)
 include(ModifyTargetRpath)
 
+# Configured input files: These files will be configured into the
+# build tree instead of being copied. Macro is currently limited to
+# input files themselves since it meets current use cases. NOTE: leave
+# .in extension off the names here:
+set(dakota_test_configured_inputs
+  dakota_batch
+  dakota_workdir
+  )
+
 # Macro: dakota_get_test_properties; macro so can set in parent context.
 #
 # Input: 
@@ -109,7 +118,7 @@ endmacro()
 function(dakota_app_test _test_name _last_subtest)
   # Parse options
   set(_option_args PARALLEL)
-  set(_multi_value_keyword_args FILE_DEPENDENCIES LABELS)
+  set(_multi_value_keyword_args FILE_DEPENDENCIES CONFIGURE_FILES LABELS)
   cmake_parse_arguments(
     _dat
     "${_option_args}"
@@ -144,6 +153,7 @@ function(dakota_app_test _test_name _last_subtest)
       ${_test_name}
       SUBTEST 0
       FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
+      CONFIGURE_FILES "${_dat_CONFIGURE_FILES}"
       PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
       APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
@@ -183,13 +193,14 @@ function(dakota_app_test _test_name _last_subtest)
     add_application_test(
       ${_test_name}
       FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
+      CONFIGURE_FILES "${_dat_CONFIGURE_FILES}"
       PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
       APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
           --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
           --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
           ${binext}
-          ${_test_input_file}
+          ./${_test_input_file}
       UNIQUE_DIRECTORY
       NO_TARGET
       LABELS ${_dat_LABELS}
@@ -262,6 +273,19 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*" "${test_name}-*"
       )
     list_filter_emacs_backups(test_all_files)
+    # All files associated with the test, less the input file itself
+    set(test_aux_files ${test_all_files})
+    list(REMOVE_ITEM test_aux_files ${test_input_file})
+
+    # Copy (or configure) ALL test-associated files into test/ to
+    # support direct testing with Perl
+    if(${test_name} IN_LIST dakota_test_configured_inputs)
+      set(test_copied_files ${test_aux_files})
+      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${test_input_file}
+	${CMAKE_CURRENT_BINARY_DIR}/${test_input_file} @ONLY)
+    else()
+      set(test_copied_files ${test_all_files})
+    endif()
 
     # TODO: apply properties on on a per-subtest basis
 
@@ -276,25 +300,27 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     if (add_this_test)
 
       # Add either one test with all, or the 0-th test, followed by all sub-tests
-      dakota_app_test(${test_name} ${last_subtest}
-	FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
-	LABELS ${test_labels})
+      if(${test_name} IN_LIST dakota_test_configured_inputs)
+	dakota_app_test(${test_name} ${last_subtest}
+	  FILE_DEPENDENCIES "${test_aux_files}" "${test_req_files}"
+	  CONFIGURE_FILES ${test_name}.in
+	  LABELS ${test_labels}
+	  )
+      else()
+	dakota_app_test(${test_name} ${last_subtest}
+	  FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
+	  LABELS ${test_labels}
+	  )
+      endif()
 
       # the test add makes a copy command without target, now track all
       # the copied files for later addition to a custom target
-      foreach(file ${test_all_files} ${test_req_files})
+      foreach(file ${test_copied_files} ${test_req_files})
 	set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/${test_name}/${file}")
 	list(APPEND copied_test_files_abs "${copied_file}")
       endforeach()
 
-      # Also copy the aux files into test/ to support direct testing with Perl
-      set(test_aux_files ${test_all_files})
-      list(REMOVE_ITEM test_aux_files ${test_input_file})
-      foreach(file ${test_aux_files} ${test_req_files})
-	add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
-	  ${CMAKE_CURRENT_BINARY_DIR}/${file})
-	list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
-      endforeach()
+      set(test_req_files_serial ${test_req_files})
 
     endif()  # add_this_test
 
@@ -310,31 +336,41 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_get_test_properties("${test_name}" "parallel" "${test_props}")
 
       if (add_this_test)
-	dakota_app_test(${test_name} ${last_subtest} PARALLEL 
-	  FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
-	  LABELS ${test_labels}
-	  )
+	if(${test_name} IN_LIST dakota_test_configured_inputs)
+	  dakota_app_test(${test_name} ${last_subtest} PARALLEL
+	    FILE_DEPENDENCIES "${test_aux_files}" "${test_req_files}"
+	    CONFIGURE_FILES ${test_name}.in
+	    LABELS ${test_labels}
+	    )
+	else()
+	  dakota_app_test(${test_name} ${last_subtest} PARALLEL
+	    FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
+	    LABELS ${test_labels}
+	    )
+	endif()
 
-	# track all the copied files for later addition to a custom target
-	foreach(file ${test_all_files} ${test_req_files})
+	# the test add makes a copy command without target, now track all
+	# the copied files for later addition to a custom target
+	foreach(file ${test_copied_files} ${test_req_files})
 	  set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/p${test_name}/${file}")
 	  list(APPEND copied_test_files_abs "${copied_file}")
 	endforeach()
+	set(test_req_files_parallel ${test_req_files})
 
-	# This is necessary if files needed by a parallel test aren't
-	# called out for a serial test, or the serial test is omitted
-	# above.  However generates the same output from two copies;
-	# revisit if causes problems.
-	set(test_aux_files ${test_all_files})
-	list(REMOVE_ITEM test_aux_files ${test_input_file})
-	foreach(file ${test_aux_files} ${test_req_files})
-	  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
-	    ${CMAKE_CURRENT_BINARY_DIR}/${file})
-	  list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
-	endforeach()
       endif()
 
     endif() # MPI enabled
+
+    # Copy (or configure) ALL test-associated files into test/ to
+    # support direct testing with Perl
+    list(APPEND test_copied_files
+      ${test_req_files_serial} ${test_req_files_parallel})
+    list(REMOVE_DUPLICATES test_copied_files)
+    foreach(file ${test_copied_files})
+      add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file}
+	${CMAKE_CURRENT_BINARY_DIR}/${file})
+      list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
+    endforeach()
 
     # TODO: The following regex needs to be based on output of dakota_diff.perl
     #       and account for consistency with baseline
