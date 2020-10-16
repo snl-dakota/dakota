@@ -1,6 +1,7 @@
 #@ s*: Label=FastTest
 #@ s*: TimeoutAbsolute=3600
 #@ s*: TimeoutDelay=1200
+#@ *: DakotaConfig=HAVE_NOWPAC
 
 environment,
 #	graphics
@@ -16,21 +17,21 @@ method,
 	model_pointer = 'HIERARCH'
       multilevel_sampling
 	  pilot_samples = 100 10  #s0,#s1,#s2 #119 16
-#	  pilot_samples = 100 50  #s3,#s4,#s5,#s6 #119 16
+#	  pilot_samples = 100 50  #s3,#s4 #119 16
 	  #final_moments standard
 	  max_iterations = 10 #s0,#s1,#s2
-#	  max_iterations = 110 #s3,#s4,#s5,#s6
+#	  max_iterations = 110 #s3,#s4
 	  seed = 12347 
 	  #sample_type random # use MC error estimates
 	  fixed_seed
 	  allocation_target = mean #s0,#s1,#s2
-#	  allocation_target = variance #s3,#s4,#s5,#s6
-#         optimization #s5,#s6
+#	  allocation_target = variance #s3,#s4
+#         optimization 
 	  qoi_aggregation = max
      convergence_tolerance = 1                   	#s0
 #     convergence_tolerance = 0.1                   #s1
-#     convergence_tolerance = 0.01                   #s2,#s3,#s5
-#     convergence_tolerance = 0.001                   #s4,#s6
+#     convergence_tolerance = 0.01                   #s2,#s3
+#     convergence_tolerance = 0.001                   #s4
 #     convergence_tolerance = 1.389824213484928e-7   #for later use
 #	  	convergence_tolerance_type = absolute 		 #for later use
 	  final_moments central
