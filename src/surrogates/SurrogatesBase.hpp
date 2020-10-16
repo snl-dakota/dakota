@@ -23,6 +23,10 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <fstream>
 
+#include <boost/archive/codecvt_null.hpp>
+#include <boost/math/special_functions/nonfinite_num_facets.hpp>
+
+#include <locale>
 
 namespace dakota {
 namespace surrogates {
@@ -234,7 +238,17 @@ void Surrogate::save(const DerivedSurr& surr_out, const std::string& outfile,
     if (!model_ostream.good())
       throw std::runtime_error("Failure opening model file '" + outfile +
 			       "' for save.");
-    boost::archive::text_oarchive output_archive(model_ostream);
+
+    // enable portable write/read of nan/inf, per
+    // https://www.boost.org/doc/libs/1_58_0/libs/math/example/nonfinite_serialization_archives.cpp
+    std::locale default_locale(std::locale::classic(),
+			       new boost::archive::codecvt_null<char>);
+    std::locale nonfinite_locale(default_locale,
+				 new boost::math::nonfinite_num_put<char>);
+    model_ostream.imbue(nonfinite_locale);
+    boost::archive::text_oarchive output_archive(model_ostream,
+						 boost::archive::no_codecvt);
+
     output_archive << surr_out;
     std::cout << "Model saved to text file '" << outfile << "'."
 	      << std::endl;
@@ -261,7 +275,15 @@ void Surrogate::load(const std::string& infile, const bool binary,
     if (!model_istream.good())
       throw std::string("Failure opening model file for load.");
 
-    boost::archive::text_iarchive input_archive(model_istream);
+    // enable portable write/read of nan/inf, per
+    // https://www.boost.org/doc/libs/1_58_0/libs/math/example/nonfinite_serialization_archives.cpp
+    std::locale default_locale(std::locale::classic(),
+			       new boost::archive::codecvt_null<char>);
+    std::locale nonfinite_locale(default_locale,
+				 new boost::math::nonfinite_num_get<char>);
+    model_istream.imbue(nonfinite_locale);
+    boost::archive::text_iarchive input_archive(model_istream,
+						boost::archive::no_codecvt);
     input_archive >> surr_in;
     std::cout << "Model loaded from text file." << std::endl;
   }
