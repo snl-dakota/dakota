@@ -101,6 +101,23 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY model_variance_export '
+          <keyword  id="export_approx_variance_file" name="export_approx_variance_file" code="{N_mom(str,exportApproxVarianceFile)}" label="File Export of Global Approximation Variance"  minOccurs="0" default="no variance export to a file" >
+	    <param type="OUTPUT_FILE" />
+	    <optional>
+	      <oneOf label="Tabular Format" >
+		<keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,exportApproxVarianceFormat_TABULAR_NONE)}" label="Custom Annotated"  >
+		  <keyword  id="header" name="header" code="{N_mom(augment_utype,exportApproxVarianceFormat_TABULAR_HEADER)}" label="Header"  minOccurs="0" />
+		  <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,exportApproxVarianceFormat_TABULAR_EVAL_ID)}" label="Eval ID"  minOccurs="0" />
+		  <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,exportApproxVarianceFormat_TABULAR_IFACE_ID)}" label="Interface ID"  minOccurs="0" />
+		</keyword>
+		<keyword  id="annotated" name="annotated" code="{N_mom(utype,exportApproxVarianceFormat_TABULAR_ANNOTATED)}" label="Annotated"   default="annotated" />
+		<keyword  id="freeform" name="freeform" code="{N_mom(utype,exportApproxVarianceFormat_TABULAR_NONE)}" label="Freeform"  default="annotated" />
+	      </oneOf>
+	    </optional>
+          </keyword>
+	     ' >
+
     <!ENTITY method_export_model '
 	     <keyword  id="export_model" name="export_model" minOccurs="0" maxOccurs="1" code="{N_mdm(true,exportSurrogate)}" label="Export Surrogate Model"  complexity="1">
                <keyword  id="filename_prefix" name="filename_prefix" minOccurs="0" code="{N_mdm(str,modelExportPrefix)}" label="Exported Surrogate Filename Prefix"  default="exported_surrogate" complexity="1">
@@ -3747,6 +3764,7 @@
 		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		    <param type="INPUT_FILE" />
 		  </keyword>
+		  &model_variance_export;
 		  &model_partial_surrogate_export_format;
 		</keyword>
                 <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process"  >
@@ -3797,6 +3815,7 @@
                     &model_full_surfpack_export_format;
 		    </keyword>
                   </oneOf>
+		  &model_variance_export;
                 </keyword>
 
                 <keyword  id="mars" name="mars" code="{N_mom(lit,surrogateType_global_mars)}" label="Multivariate Adaptive Regression Spline (MARS)"  >

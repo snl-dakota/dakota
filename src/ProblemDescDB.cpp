@@ -2359,6 +2359,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"surrogate.challenge_points_file", P importChallengePtsFile},
 	{"surrogate.decomp_cell_type", P decompCellType},
 	{"surrogate.export_approx_points_file", P exportApproxPtsFile},
+	{"surrogate.export_approx_variance_file", P exportApproxVarianceFile},
 	{"surrogate.import_build_points_file", P importBuildPtsFile},
 	{"surrogate.kriging_opt_method", P krigingOptMethod},
 	{"surrogate.mars_interpolation", P marsInterpolation},
@@ -2860,6 +2861,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"rf.expansion_form", P randomFieldIdForm},
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
 	{"surrogate.export_approx_format", P exportApproxFormat},
+	{"surrogate.export_approx_variance_format", P exportApproxVarianceFormat},
 	{"surrogate.import_build_format", P importBuildFormat},
 	{"surrogate.model_export_format", P modelExportFormat}};
     #undef P
