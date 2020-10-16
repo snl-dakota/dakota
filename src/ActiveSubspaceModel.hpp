@@ -52,8 +52,7 @@ class ProblemDescDB;
 /** Specialization of a RecastModel that identifies an active
     subspace during build phase and creates a RecastModel in the
     reduced space */
-class ActiveSubspaceModel:
-  public RecastModel,
+class ActiveSubspaceModel: public RecastModel,
   // BMA: This needed due to circular design of this subspace model
   // and data fit surrogate model. Need to redesign so that *this
   // doesn't own construction of an Iterator that works on *this. See
@@ -169,18 +168,18 @@ protected:
   void truncate_subspace();
 
   /// compute Bing Li's criterion to identify the active subspace
-  unsigned int computeBingLiCriterion(RealVector& singular_values);
+  unsigned int compute_bing_li_criterion(RealVector& singular_values);
 
   /// compute Constantine's metric to identify the active subspace
-  unsigned int computeConstantineMetric(RealVector& singular_values);
+  unsigned int compute_constantine_metric(RealVector& singular_values);
 
   /// Compute active subspace size based on eigenvalue energy. Compatible with
   /// other truncation methods.
-  unsigned int computeEnergyCriterion(RealVector& singular_values);
+  unsigned int compute_energy_criterion(RealVector& singular_values);
 
   /// Use cross validation of a moving least squares surrogate to identify the
   /// size of an active subspace that meets an error tolerance
-  unsigned int computeCrossValidationMetric();
+  unsigned int compute_cross_validation_metric();
 
   /// Build moving least squares surrogate over candidate active subspace
   Real build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
@@ -386,6 +385,47 @@ inline bool ActiveSubspaceModel::resize_pending() const
 
 inline void ActiveSubspaceModel::assign_instance()
 { asmInstance = this; }
+
+
+inline unsigned int ActiveSubspaceModel::
+min_index(const std::vector<Real> &cv_error)
+{
+  if (cv_error.empty()) // Return full rank since this shouldn't be empty
+    return numFullspaceVars-1;
+
+  Real min_val = cv_error[0];
+  unsigned int ii, min_ind = 0;
+  for (ii = 1; ii < cv_error.size(); ii++)
+    if (cv_error[ii] < min_val)
+      { min_val = cv_error[ii]; min_ind = ii; }
+
+  return min_ind;
+}
+
+
+inline unsigned int ActiveSubspaceModel::
+tolerance_met_index(const std::vector<Real> &cv_error, Real tolerance,
+                    bool &tol_met)
+{
+  tol_met = false;
+  for (unsigned int ii = 0; ii < cv_error.size(); ii++)
+    if (cv_error[ii] < tolerance)
+      { tol_met = true; return ii; }
+
+  // Return full rank since tolerance is not met
+  return numFullspaceVars-1;
+}
+
+
+inline std::vector<Real> ActiveSubspaceModel::
+negative_diff(const std::vector<Real> &cv_error)
+{
+  std::vector<Real> neg_diff(cv_error.size()-1);
+  for (unsigned int ii = 0; ii < neg_diff.size(); ii++)
+    neg_diff[ii] = cv_error[ii] - cv_error[ii+1];
+
+  return neg_diff;
+}
 
 } // namespace Dakota
 

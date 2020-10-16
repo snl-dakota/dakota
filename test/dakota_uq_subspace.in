@@ -31,8 +31,11 @@
 # Contains regression tests for using model subspace
 # with several methods
 
-## BMA, 20170920: Tests e12, p13, p14 hang in MPI on RHEL7 with no graceful termination
-## For now, marked with fNUM and shifted other test numbers down
+## BMA, 20170920: Tests p12, p13, p14 hang in MPI on RHEL7 with no graceful
+## termination. For now, marked with fNUM and shifted other test numbers down.
+##
+## MSE, 10/15/2020: previously removed tests f12,13,14 now running and promoted
+## to p10,11,12, partially replacing new failures demoted to e10,11,12,15,16
 
 environment
   output_precision = 16
