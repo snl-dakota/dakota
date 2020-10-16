@@ -475,7 +475,6 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   //  reduced_active_corr[end_reduction+i] = true;
   for (i=end_reduction; i<num_reduced_rv; ++i)   // same as native
     reduced_rv_types[i] = native_rv_types[i+cv_diff];
-  Cout << "Reduced rank = " << reducedRank << "Reduced rv types:\n" << reduced_rv_types << std::endl;
   reduced_dist_rep->initialize_types(reduced_rv_types, reduced_active_vars);
 
   // -----------------------
