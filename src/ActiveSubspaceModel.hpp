@@ -9,16 +9,11 @@
 #ifndef ACTIVE_SUBSPACE_MODEL_H
 #define ACTIVE_SUBSPACE_MODEL_H
 
-#include "RecastModel.hpp"
+#include "SubspaceModel.hpp"
 #include "DakotaIterator.hpp"
 
 namespace Dakota
 {
-
-// define special values for componentParallelMode
-#define CONFIG_PHASE 0
-#define OFFLINE_PHASE 1
-#define ONLINE_PHASE 2
 
 /// forward declarations
 class ProblemDescDB;
@@ -52,7 +47,7 @@ class ProblemDescDB;
 /** Specialization of a RecastModel that identifies an active
     subspace during build phase and creates a RecastModel in the
     reduced space */
-class ActiveSubspaceModel: public RecastModel,
+class ActiveSubspaceModel: public SubspaceModel,
   // BMA: This needed due to circular design of this subspace model
   // and data fit surrogate model. Need to redesign so that *this
   // doesn't own construction of an Iterator that works on *this. See
@@ -79,17 +74,12 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  bool initialize_mapping(ParLevLIter pl_iter);
+  //bool initialize_mapping(ParLevLIter pl_iter);
   //bool finalize_mapping();
-  bool resize_pending() const;
+  //bool resize_pending() const;
 
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
-  /// terminate serve_init_mapping() on other iteratorComm processors
-  void stop_init_mapping(ParLevLIter pl_iter);
-
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
-  /// to balance resize() calls on iteratorComm rank 0
-  int serve_init_mapping(ParLevLIter pl_iter);
+  //void stop_init_mapping(ParLevLIter pl_iter);
+  //int serve_init_mapping(ParLevLIter pl_iter);
 
 protected:
 
@@ -106,6 +96,7 @@ protected:
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                   bool recurse_flag);
 
+  /*
   void derived_evaluate(const ActiveSet& set);
 
   void derived_evaluate_nowait(const ActiveSet& set);
@@ -125,6 +116,7 @@ protected:
   /// Executed by the master to terminate the offline and online phase
   /// server operations when iteration on the ActiveSubspaceModel is complete
   void stop_servers();
+  */
 
   void assign_instance();
 
@@ -137,9 +129,6 @@ protected:
 
   /// initialize the native problem space Monte Carlo sampler
   void init_fullspace_sampler(unsigned short sample_type);
-
-  /// validate the build controls and set defaults
-  void validate_inputs();
 
 
   // ---
@@ -207,9 +196,6 @@ protected:
   // Problem transformation functions
   // ---
 
-  /// Initialize the base class RecastModel with reduced space variable sizes
-  void initialize_base_recast();
-
   /// Create a variables components totals array with the reduced space
   /// size for continuous variables
   SizetArray resize_variable_totals();
@@ -217,14 +203,6 @@ protected:
   /// translate the characterization of uncertain variables in the
   /// native_model to the reduced space of the transformed model
   void uncertain_vars_to_subspace();
-
-  /// transform the original bounded domain (and any existing linear
-  /// constraints) into linear constraints in the reduced space
-  void update_linear_constraints();
-
-  /// update variable labels
-  void update_var_labels();
-
 
   // ---
   // Callback functions that perform data transform during the Recast operations
@@ -235,25 +213,9 @@ protected:
   static void vars_mapping(const Variables& recast_xi_vars,
                            Variables& sub_model_x_vars);
 
-  /// map the inbound ActiveSet to the sub-model (map derivative variables)
-  static void set_mapping(const Variables& recast_vars,
-                          const ActiveSet& recast_set,
-                          ActiveSet& sub_model_set);
-
-  /// map responses from the sub-model to the recast model
-  static void response_mapping(const Variables& recast_y_vars,
-                               const Variables& sub_model_x_vars,
-                               const Response& sub_model_resp,
-                               Response& recast_resp);
-
-
   // ---
   // Member data
   // ---
-
-  /// seed controlling all samplers
-  int randomSeed;
-
 
   // Build phase controls
 
@@ -266,15 +228,12 @@ protected:
   /// Boolean flag signaling use of Bing Li criterion to identify active
   /// subspace dimension
   bool subspaceIdBingLi;
-
   /// Boolean flag signaling use of Constantine criterion to identify active
   /// subspace dimension
   bool subspaceIdConstantine;
-
   /// Boolean flag signaling use of eigenvalue energy criterion to identify
   /// active subspace dimension
   bool subspaceIdEnergy;
-
   /// Boolean flag signaling use of cross validationto identify active
   /// subspace dimension
   bool subspaceIdCV;
@@ -286,9 +245,6 @@ protected:
   /// before active subspace initialization
   bool transformVars;
 
-  /// Number of fullspace active continuous variables
-  size_t numFullspaceVars;
-
   /// total construction samples evaluated so far
   unsigned int totalSamples;
 
@@ -297,12 +253,6 @@ protected:
 
 
   // Data for numerical representation
-
-  /// current approximation of system rank
-  unsigned int reducedRank;
-
-  /// basis for the reduced subspace
-  RealMatrix activeBasis;
 
   /// basis for the inactive subspace
   RealMatrix inactiveBasis;
@@ -363,15 +313,6 @@ protected:
   /// static pointer to this class for use in static callbacks
   static ActiveSubspaceModel* asmInstance;
 
-  /// the index of the active metaiterator-iterator parallelism level
-  /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
-  size_t miPLIndex;
-
-  /// Concurrency to use once subspace has been built.
-  int onlineEvalConcurrency;
-  /// Concurrency to use when building subspace.
-  int offlineEvalConcurrency;
-
   /// map of responses returned in buildSurrogate mode
   IntResponseMap surrResponseMap;
   /// map from surrogateModel evaluation ids to RecastModel ids
@@ -379,12 +320,8 @@ protected:
 };
 
 
-inline bool ActiveSubspaceModel::resize_pending() const
-{ return !mappingInitialized; }
-
-
 inline void ActiveSubspaceModel::assign_instance()
-{ asmInstance = this; }
+{ ssmInstance = asmInstance = this; }
 
 
 inline unsigned int ActiveSubspaceModel::
