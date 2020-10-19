@@ -20,6 +20,7 @@ my $DTP_DEBUG = 0;  # set to 1 to debug
 
 # set default options (global to this script)
 my $baseline_filename = "";  # default is dakota_[p]base.test.new
+my $baseline_indir ="";      # default reference baseline is in pwd
 my $bin_dir = "";            # default binary location is pwd (none)
 my $bin_ext = "";            # default extension is empty
 my @dakota_config = ();      # CMake/#define configuration of Dakota itself
@@ -388,12 +389,12 @@ foreach my $file (@test_inputs) {
     # diff the test output against the base output and save to a file
     my $perlexe = $Config{perlpath};
     if ($parallelism eq "parallel") {
-      system("${perlexe} ${diff_script} $base_filename $input_dir" . 
+      system("${perlexe} ${diff_script} $base_filename $baseline_indir" . 
 	     "dakota_pbase.test $test >> $output_dir" . 
 	     "dakota_pdiffs.out");
     }
     else {
-      system("${perlexe} ${diff_script} $base_filename $input_dir" . 
+      system("${perlexe} ${diff_script} $base_filename $baseline_indir" . 
 	     "dakota_base.test $test >> $output_dir" .
 	     "dakota_diffs.out");
     }
@@ -444,10 +445,10 @@ sub process_command_line {
   # Was Cmake used to substitute the source directory name? Can't just use
   # the literal as it will be replaced.  Allow user override by long opt.
   my $cmake_source_dir = "@CMAKE_CURRENT_SOURCE_DIR@";
-  if ($cmake_source_dir !~ /^@/ && 
+  if ($cmake_source_dir !~ /^@/ &&
       $cmake_source_dir !~ /CMAKE_CURRENT_SOURCE_DIR@$/) {
-    $input_dir = ${cmake_source_dir};
-  } 
+    $baseline_indir = ${cmake_source_dir};
+  }
 
   my $opt_base = 0;
   my $opt_extract = 0;
@@ -459,6 +460,7 @@ sub process_command_line {
 
   # Process long options
   GetOptions('base'           => \$opt_base,
+  	     'baseline-indir=s' => \$baseline_indir,
   	     'bin-dir=s'      => \$bin_dir,
 	     'bin-ext=s'      => \$bin_ext,
   	     'extract'        => \$opt_extract,
@@ -518,6 +520,9 @@ sub process_command_line {
 
   # directory options
   # (only append a slash if using an alternate path, so local tests still work)
+  if ($baseline_indir) {
+    $baseline_indir .= "/";
+  }
   if ($bin_dir) {
     $bin_dir .= "/";
   }
@@ -1568,7 +1573,11 @@ directory containing executables such as dakota
 
 =item B<--input-dir=filepath>
 
-directory containing test inputs and baselines
+directory containing test input files
+
+=item B<--baseline-indir=filepath>
+
+directory containing test reference baselines
 
 =item B<--output-dir=filepath>
 
