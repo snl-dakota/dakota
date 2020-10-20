@@ -18,6 +18,7 @@ namespace Dakota {
 class NonDPolynomialChaos;
 class ProblemDescDB;
 
+
 /// Adapted basis model for input (variable space) reduction
 
 /** Specialization of a RecastModel that creates an adapted basis model
@@ -50,8 +51,6 @@ protected:
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                   bool recurse_flag);
 
-  void assign_instance();
-
   // ---
   // Construct time convenience functions
   // ---
@@ -82,20 +81,8 @@ protected:
 
   /// map the active continuous recast variables to the active
   /// submodel variables (linear transformation)
-  static void vars_mapping(const Variables& recast_xi_vars,
-                           Variables& sub_model_x_vars);
-
-  /// map the inbound ActiveSet to the sub-model (map derivative variables)
-  static void set_mapping(const Variables& recast_vars,
-                          const ActiveSet& recast_set,
-                          ActiveSet& sub_model_set);
-
-  /// map responses from the sub-model to the recast model
-  static void response_mapping(const Variables& recast_y_vars,
-                               const Variables& sub_model_x_vars,
-                               const Response& sub_model_resp,
-                               Response& recast_resp);
-
+  static void variables_mapping(const Variables& recast_xi_vars,
+				Variables& sub_model_x_vars);
 
   // ---
   // Member data
@@ -117,10 +104,6 @@ protected:
   /// reduced dimension
   Iterator pcePilotExpansion;
 };
-
-
-inline void AdaptedBasisModel::assign_instance()
-{ SubspaceModel::ssmInstance = this; }
 
 } // namespace Dakota
 

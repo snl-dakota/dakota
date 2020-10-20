@@ -12,11 +12,11 @@
 #include "SubspaceModel.hpp"
 #include "DakotaIterator.hpp"
 
-namespace Dakota
-{
+namespace Dakota {
 
 /// forward declarations
 class ProblemDescDB;
+
 
 //---
 // BMA: Wishlist / notes:
@@ -44,9 +44,9 @@ class ProblemDescDB;
 
 /// Active subspace model for input (variable space) reduction
 
-/** Specialization of a RecastModel that identifies an active
-    subspace during build phase and creates a RecastModel in the
-    reduced space */
+/** Specialization of a RecastModel that identifies an active subspace
+    during build phase and creates a RecastModel in the reduced space */
+
 class ActiveSubspaceModel: public SubspaceModel,
   // BMA: This needed due to circular design of this subspace model
   // and data fit surrogate model. Need to redesign so that *this
@@ -207,8 +207,8 @@ protected:
 
   /// map the active continuous recast variables to the active
   /// submodel variables (linear transformation)
-  static void vars_mapping(const Variables& recast_xi_vars,
-                           Variables& sub_model_x_vars);
+  static void variables_mapping(const Variables& recast_xi_vars,
+				Variables& sub_model_x_vars);
 
   // ---
   // Member data
@@ -315,7 +315,7 @@ protected:
 
 
 inline void ActiveSubspaceModel::assign_instance()
-{ asmInstance = this; SubspaceModel::ssmInstance = this; }
+{ asmInstance = this; SubspaceModel::assign_instance(); }
 
 
 inline unsigned int ActiveSubspaceModel::

@@ -10,18 +10,17 @@
 #define SUBSPACE_MODEL_H
 
 #include "RecastModel.hpp"
-#include "DakotaIterator.hpp"
 
-namespace Dakota
-{
+namespace Dakota {
 
 // define special values for componentParallelMode
-#define CONFIG_PHASE 0
+#define CONFIG_PHASE  0
 #define OFFLINE_PHASE 1
-#define ONLINE_PHASE 2
+#define ONLINE_PHASE  2
 
 /// forward declarations
 class ProblemDescDB;
+
 
 /// Subspace model for input (variable space) reduction
 
@@ -91,6 +90,8 @@ protected:
   /// server operations when iteration on the SubspaceModel is complete
   void stop_servers();
 
+  void assign_instance();
+
   // ---
   // New virtual functions
   // ---
@@ -119,7 +120,16 @@ protected:
   // ---
 
   /// Initialize the base class RecastModel with reduced space variable sizes
-  void initialize_base_recast();
+  void initialize_base_recast(
+    void (*variables_map)      (const Variables& recast_vars,
+				Variables& sub_model_vars),
+    void (*set_map)            (const Variables& recast_vars,
+				const ActiveSet& recast_set,
+				ActiveSet& sub_model_set),
+    void (*primary_resp_map)   (const Variables& sub_model_vars,
+				const Variables& recast_vars,
+				const Response& sub_model_response,
+				Response& recast_response));
 
   /// Create a variables components totals array with the reduced space
   /// size for continuous variables
@@ -173,8 +183,12 @@ protected:
   int offlineEvalConcurrency;
 
   /// static pointer to this class for use in static member fn callbacks
-  static SubspaceModel* ssmInstance;
+  static SubspaceModel* smInstance;
 };
+
+
+inline void SubspaceModel::assign_instance()
+{ smInstance = this; }
 
 
 inline bool SubspaceModel::resize_pending() const

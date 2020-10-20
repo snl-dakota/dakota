@@ -10,7 +10,6 @@
 #include "ProbabilityTransformModel.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
-#include "DataFitSurrModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "NonDPolynomialChaos.hpp"
 #define N 2
@@ -376,6 +375,12 @@ void AdaptedBasisModel::compute_subspace()
     basis model. */
 void AdaptedBasisModel::uncertain_vars_to_subspace()
 {
+  // ----------------------------------
+  // initialization of base RecastModel
+  // ----------------------------------
+  initialize_base_recast(variables_mapping, SubspaceModel::set_mapping,
+			 SubspaceModel::response_mapping);
+
   // -------------
   // Resize mvDist
   // -------------
@@ -427,12 +432,12 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
     variables \eta to original model \xi variables via linear
     transformation.  Maps only continuous variables. */
 void AdaptedBasisModel::
-vars_mapping(const Variables& reduced_vars, Variables& full_vars)
+variables_mapping(const Variables& reduced_vars, Variables& full_vars)
 {
   const RealVector& eta = reduced_vars.continuous_variables();
   RealVector&        xi =    full_vars.continuous_variables_view();
 
-  const RealMatrix& A = ssmInstance->reduced_basis();
+  const RealMatrix& A = smInstance->reduced_basis();
   int m = A.numRows(), n = A.numCols(), incx = 1, incy = 1;
   Real alpha = 1.0, beta = 0.0;
   // expand \eta with zeros
@@ -445,8 +450,8 @@ vars_mapping(const Variables& reduced_vars, Variables& full_vars)
   teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, A.values(), m,
                     eta_ex.values(), incy, beta, xi.values(), incx);
 
-  if (ssmInstance->output_level() >= DEBUG_OUTPUT)
-    Cout <<   "\nAdapted Basis Model: Subspace vars are\n" << reduced_vars
+  if (smInstance->output_level() >= DEBUG_OUTPUT)
+    Cout <<   "\nAdapted Basis Model: Subspace vars are\n"  << reduced_vars
 	 << "\n\nAdapted Basis Model: Fullspace vars are\n" << full_vars
 	 << std::endl;
 }

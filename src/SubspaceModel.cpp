@@ -7,21 +7,14 @@
     _______________________________________________________________________ */
 
 #include "SubspaceModel.hpp"
-#include "ProbabilityTransformModel.hpp"
-#include "NonDLHSSampling.hpp"
-#include "BootstrapSampler.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
-#include "DataFitSurrModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
-#include "dakota_mersenne_twister.hpp"
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/variate_generator.hpp>
 
 namespace Dakota {
 
 /// initialization of static needed by RecastModel callbacks
-SubspaceModel* SubspaceModel::ssmInstance(NULL);
+SubspaceModel* SubspaceModel::smInstance(NULL);
 
 
 SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, const Model& sub_model):
@@ -94,9 +87,6 @@ bool SubspaceModel::initialize_mapping(ParLevLIter pl_iter)
 
 void SubspaceModel::initialize_subspace()
 {
-  // complete initialization of the base RecastModel
-  initialize_base_recast();
-
   // convert subModel normal distributions to the reduced space
   // TODO: generalize to other distribution types
   uncertain_vars_to_subspace();
@@ -114,7 +104,17 @@ void SubspaceModel::initialize_subspace()
 /** Initialize the recast model based on the reduced space, with no
     response function mapping (for now).  TODO: use a surrogate model
     over the inactive dimension. */
-void SubspaceModel::initialize_base_recast()
+void SubspaceModel::
+initialize_base_recast(
+  void (*variables_map)    (const Variables& recast_vars,
+			    Variables& sub_model_vars),
+  void (*set_map)          (const Variables& recast_vars,
+			    const ActiveSet& recast_set,
+			    ActiveSet& sub_model_set),
+  void (*primary_resp_map) (const Variables& sub_model_vars,
+			    const Variables& recast_vars,
+			    const Response& sub_model_response,
+			    Response& recast_response) )
 {
   // For now, we assume the subspace is over all functions, without
   // distinguishing primary from secondary
@@ -184,9 +184,9 @@ void SubspaceModel::initialize_base_recast()
              num_secondary, recast_secondary_offset, recast_resp_order);
 
   RecastModel::
-  init_maps(vars_map_indices, nonlinear_vars_mapping, vars_mapping,
-            set_mapping, primary_resp_map_indices, secondary_resp_map_indices,
-            nonlinear_resp_mapping, response_mapping, NULL);
+  init_maps(vars_map_indices, nonlinear_vars_mapping, variables_map,
+            set_map, primary_resp_map_indices, secondary_resp_map_indices,
+            nonlinear_resp_mapping, primary_resp_map, NULL);
 }
 
 
@@ -477,7 +477,7 @@ set_mapping(const Variables& reduced_vars, const ActiveSet& reduced_set,
   SizetArray full_dvv;
   size_t reduced_cv = reduced_vars.cv();
   const SizetArray& reduced_dvv = reduced_set.derivative_vector();
-  size_t max_sm_id = ssmInstance->numFullspaceVars;
+  size_t max_sm_id = smInstance->numFullspaceVars;
   for (size_t i=0; i<reduced_dvv.size(); ++i)
     if (1 <= reduced_dvv[i] && reduced_dvv[i] <= reduced_cv) {
       for (size_t j=1; j<=max_sm_id; ++j)
@@ -492,7 +492,7 @@ set_mapping(const Variables& reduced_vars, const ActiveSet& reduced_set,
 /**
   Perform the response mapping from submodel to recast response
 */
-void ActiveSubspaceModel::
+void SubspaceModel::
 response_mapping(const Variables& reduced_vars, const Variables& full_vars,
                  const Response& full_resp, Response& reduced_resp)
 {
@@ -501,7 +501,7 @@ response_mapping(const Variables& reduced_vars, const Variables& full_vars,
   // Function values are the same for both recast and sub_model:
   reduced_resp.function_values(full_resp.function_values());
 
-  const RealMatrix& W1 = ssmInstance->reduced_basis();
+  const RealMatrix& W1 = smInstance->reducedBasis;
 
   // Transform the gradients:
   const RealMatrix& dg_dx = full_resp.function_gradients();

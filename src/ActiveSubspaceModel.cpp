@@ -18,8 +18,7 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
 
-namespace Dakota
-{
+namespace Dakota {
 
 /// initialization of static needed by RecastModel callbacks
 ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
@@ -239,6 +238,12 @@ void ActiveSubspaceModel::initialize_subspace()
 */
 void ActiveSubspaceModel::uncertain_vars_to_subspace()
 {
+  // ----------------------------------
+  // initialization of base RecastModel
+  // ----------------------------------
+  initialize_base_recast(variables_mapping, SubspaceModel::set_mapping,
+			 SubspaceModel::response_mapping);
+
   // -------------
   // Resize mvDist
   // -------------
@@ -1422,29 +1427,23 @@ void ActiveSubspaceModel::init_fullspace_sampler(unsigned short sample_type)
 }
 
 
-/**
-  Perform the variables mapping from recast reduced dimension
-  variables y to original model x variables via linear transformation.
-  Maps only continuous variables.
-*/
+/** Perform the variables mapping from recast reduced dimension
+    variables y to original model x variables via linear transformation.
+    Maps only continuous variables. */
 void ActiveSubspaceModel::
-vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
+variables_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
 {
-  Teuchos::BLAS<int, Real> teuchos_blas;
-
-  const RealVector& y = recast_y_vars.continuous_variables();
-  // TODO: does this yield a view or a copy?
-  //RealVector x = sub_model_x_vars.continuous_variables();
-  RealVector x;
-  copy_data(sub_model_x_vars.continuous_variables(), x);
+  const RealVector& y =    recast_y_vars.continuous_variables();  
+  RealVector&       x = sub_model_x_vars.continuous_variables_view();
 
   //  Calculate x = reducedBasis*y + inactiveBasis*inactiveVars via matvec
   //  directly into x cv in submodel
-  const RealMatrix& W1 = asmInstance->reducedBasis;
-  int m = W1.numRows(), n = W1.numCols();
-  Real alpha = 1.0,     beta = 0.0;
-  int  incx  = 1,       incy = 1;
 
+  Teuchos::BLAS<int, Real> teuchos_blas;
+
+  const RealMatrix& W1 = asmInstance->reducedBasis;
+  int m = W1.numRows(), n = W1.numCols(), incx = 1, incy = 1, incz = 1;
+  Real alpha = 1., beta = 0.;
   teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W1.values(), m,
                     y.values(), incy, beta, x.values(), incx);
 
@@ -1452,13 +1451,9 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
   const RealMatrix& W2 = asmInstance->inactiveBasis;
   const RealVector&  z = asmInstance->inactiveVars;
   m = W2.numRows();  n = W2.numCols();
-
-  alpha = 1.0;  beta = 1.0;
-  int incz = 1;
+  alpha = beta = 1.;
   teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W2.values(), m,
                     z.values(), incz, beta, x.values(), incx);
-
-  sub_model_x_vars.continuous_variables(x);
 
   if (asmInstance->output_level() >= DEBUG_OUTPUT)
     Cout <<   "\nSubspace Model: Subspace vars are\n"  << recast_y_vars
