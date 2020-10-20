@@ -276,6 +276,7 @@ void AdaptedBasisModel::compute_subspace()
   
   reducedBasis = A_q;
   Cout << "\n Rotation Matrix \n" << reducedBasis << std::endl;
+  //reducedRank = 1; // for testing
 
   // TO DO
 

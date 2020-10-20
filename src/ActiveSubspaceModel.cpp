@@ -1103,26 +1103,24 @@ determine_rank_cv(const std::vector<Real> &cv_error)
 }
 
 
-/**
-  Build surrogate over active subspace
-*/
+/** Build surrogate over active subspace: initialize surrogateModel. */
 void ActiveSubspaceModel::build_surrogate()
 {
-  // Initialize surrogateModel here, switch it out with subModel after subspace
-  // is built.
-
-  // BMA TODO: This needs to be redesigned. The DataFitSurrModel
-  // should probably wrap the envelope of this ActiveSubspaceModel,
-  // but we only have access to the letter (modelRep) via
-  // *this. Doesn't really make sense to instantiate an Iterator that
-  // wraps *this Model.
-
+  // Prior to the use of std::shared_ptr, this used *this within assign_rep().
+  // Rather than using std::enable_shared_from_this<ActiveSubspaceModel> to
+  // allow std::shared_ptr, we resort to creating a new ActiveSubspaceModel
+  // instance, reusing the lightweight ctor developed for cross-validating
+  // different reduced ranks.
+  // > Note: A potential concern with this approach is the loss of config
+  //   information stemming from the difference in ctor initializations,
+  //   but this seems unimportant following final subspace creation (and
+  //   additional data could be added to the lightweight ctor if/when needed).
   Model asm_model;
-  asm_model.assign_rep(shared_from_this());
+  asm_model.assign_rep(std::make_shared<ActiveSubspaceModel>(subModel,
+    reducedRank, leftSingularVectors, QUIET_OUTPUT)); // partitioned to W1,W2
 
   String sample_reuse = "", approx_type = "global_moving_least_squares";
   ActiveSet surr_set = current_response().active_set(); // copy
-
   int poly_degree = 2; // quadratic bases
   UShortArray approx_order(reducedRank, poly_degree);
   short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
@@ -1139,8 +1137,7 @@ void ActiveSubspaceModel::build_surrogate()
 
   //  Project fullspace samples onto active directions
   //  Calculate y = W1^T*x
-  Real alpha = 1.0;
-  Real beta = 0.0;
+  Real alpha = 1., beta = 0.;
 
   RealMatrix all_vars_y(reducedRank, all_vars_x.numCols());
 
@@ -1290,7 +1287,8 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 
     currentResponse.active_set(set);
     currentResponse.update(surrogateModel.current_response());
-  } else
+  }
+  else
     RecastModel::derived_evaluate(set);
 }
 
@@ -1313,7 +1311,8 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 
     // store map from surrogateModel eval id to ActiveSubspaceModel id
     surrIdMap[surrogateModel.evaluation_id()] = recastModelEvalCntr;
-  } else
+  }
+  else
     RecastModel::derived_evaluate_nowait(set);
 }
 
@@ -1332,7 +1331,8 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
     surrResponseMap.clear();
     rekey_synch(surrogateModel, true, surrIdMap, surrResponseMap);
     return surrResponseMap;
-  } else
+  }
+  else
     return RecastModel::derived_synchronize();
 }
 
@@ -1351,7 +1351,8 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
     surrResponseMap.clear();
     rekey_synch(surrogateModel, false, surrIdMap, surrResponseMap);
     return surrResponseMap;
-  } else
+  }
+  else
     return RecastModel::derived_synchronize_nowait();
 }
 
