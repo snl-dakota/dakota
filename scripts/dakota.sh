@@ -17,10 +17,10 @@ script_name=`basename ${0}`
 # assume DAKOTA lives in same directory
 
 if [ $(uname) == 'Darwin' ]; then
-  execpath=`dirname ${0}`
+  execpath=$( dirname $( readlink "${0}" ) )  
 else
   # readlink reliably takes care of the case when dakota.sh is called via a
-  # symlink, but doesn't work on Darwin.
+  # symlink, but doesn't work on Darwin with the -f option.
   execpath=$( dirname $( readlink -f "${0}" ) )  
 fi
 
