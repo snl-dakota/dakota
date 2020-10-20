@@ -1109,10 +1109,8 @@ public:
 
   /// Return the model ID of the "innermost" model. 
   /// For all derived Models except RecastModels, return modelId.
-  /// The RecastModel override returns the root_model_id() of the
-  /// subModel.
+  /// The RecastModel override returns the root_model_id() of the subModel.
   virtual String root_model_id();
-
 
   virtual ActiveSet default_active_set();
 
@@ -1150,11 +1148,10 @@ protected:
   EvaluationsDBState modelEvaluationsDBState;
   /// Whether to write interface evals to the evaluations DB
   EvaluationsDBState interfEvaluationsDBState;
+
   //
   //- Heading: Virtual functions
   //
-
-
 
   /// portion of evaluate() specific to derived model classes
   virtual void derived_evaluate(const ActiveSet& set);

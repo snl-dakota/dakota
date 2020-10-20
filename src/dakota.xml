@@ -3956,25 +3956,25 @@
                 </oneOf>
               </optional>
 	      <optional>
-			<oneOf label="Build Data Source">
-			  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer"  default="no design of experiments data" >
+		<oneOf label="Build Data Source">
+		  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer"  default="no design of experiments data" >
                     <param type="STRING" in_taglist="method" />
-			    <keyword  id="auto_refinement" name="auto_refinement" code="{N_mom(true,autoRefine)}" label="Automatically Refine Surrogate"  minOccurs="0" default="no refinement" complexity="1">
-			      <keyword  id="max_iterations" name="max_iterations" code="{N_mom(int,maxIterations)}" label="Max Build Iterations"  minOccurs="0" default="100">
+		    <keyword  id="auto_refinement" name="auto_refinement" code="{N_mom(true,autoRefine)}" label="Automatically Refine Surrogate"  minOccurs="0" default="no refinement" complexity="1">
+		      <keyword  id="max_iterations" name="max_iterations" code="{N_mom(int,maxIterations)}" label="Max Build Iterations"  minOccurs="0" default="100">
 			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
-			      <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mom(int,maxFunctionEvals)}" label="Max Build Evaluations"  minOccurs="0" default="1000">
+		      <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mom(int,maxFunctionEvals)}" label="Max Build Evaluations"  minOccurs="0" default="1000">
 			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
-			      <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mom(Real,convergenceTolerance)}" label="Convergence Tolerance"  minOccurs="0" default="1.0e-4" >
+		      <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mom(Real,convergenceTolerance)}" label="Convergence Tolerance"  minOccurs="0" default="1.0e-4" >
 			<param type="REAL" />
 		      </keyword>
-			      <keyword  id="soft_convergence_limit" name="soft_convergence_limit" code="{N_mom(int,softConvergenceLimit)}" label="Soft Convergence Limit"  minOccurs="0" default="0" >
+		      <keyword  id="soft_convergence_limit" name="soft_convergence_limit" code="{N_mom(int,softConvergenceLimit)}" label="Soft Convergence Limit"  minOccurs="0" default="0" >
 		        <param type="INTEGER" constraint=">= 0" />
 		      </keyword>
-			      <keyword  id="cross_validation_metric" name="cross_validation_metric" code="{N_mom(str,refineCVMetric)}" label="Cross-Validation Metric Type"  minOccurs="0" default="root-mean-squared error" >
+		      <keyword  id="cross_validation_metric" name="cross_validation_metric" code="{N_mom(str,refineCVMetric)}" label="Cross-Validation Metric Type"  minOccurs="0" default="root-mean-squared error" >
 			<param type="STRING" />
-				    <keyword  id="folds" name="folds" code="{N_mom(int,refineCVFolds)}" label="CV Folds"  minOccurs="0" default="10">
+			<keyword  id="folds" name="folds" code="{N_mom(int,refineCVFolds)}" label="CV Folds"  minOccurs="0" default="10">
 			  <param type="INTEGER" constraint="> 0" />
 			</keyword>
 		      </keyword>

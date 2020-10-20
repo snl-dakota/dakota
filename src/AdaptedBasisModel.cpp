@@ -17,10 +17,10 @@
 
 namespace Dakota {
 
+
 AdaptedBasisModel::
 AdaptedBasisModel(ProblemDescDB& problem_db):
-  RecastModel(problem_db, get_sub_model(problem_db)),
-  //reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
+  SubspaceModel(problem_db, get_sub_model(problem_db))
 {
   // BMA: can't do this in get_sub_model as Iterator envelope hasn't
   // been default constructed yet; for now we transfer ownership of
@@ -31,6 +31,8 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   modelType = "adapted_basis";
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
+
+  validate_inputs();
 
   offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
 }
@@ -273,8 +275,8 @@ void AdaptedBasisModel::compute_subspace()
 	      A_q(row_cntr,k) = A_i_trans(k,j);
   }
   
-  rotationMatrix = A_q;
-  Cout << "\n Rotation Matrix \n" << rotationMatrix << std::endl;
+  reducedBasis = A_q;
+  Cout << "\n Rotation Matrix \n" << reducedBasis << std::endl;
 
   // TO DO
 
@@ -336,7 +338,7 @@ void AdaptedBasisModel::compute_subspace()
   //   \xi (full dimension d) = 1/n A' \Phi \Lambda \mu (reduced dimension)
 
   // Pre-compute 1/n A' \Phi \Lambda:
-  //// rotationMatrix.shapeUninitialized(numFullspaceVars, reducedRank);
+  //// reducedBasis.shapeUninitialized(numFullspaceVars, reducedRank);
   //// for (i=0; i<numFullspaceVars; ++i) {
   ////   const Real* A_col = A_q[i]; // row of A'
   ////  for (j=0; j<reducedRank; ++j) {
@@ -344,24 +346,24 @@ void AdaptedBasisModel::compute_subspace()
   ////    Real sum_prod = 0.;
   ////    for (k=0; k<numFullspaceVars*numFns; ++k)
   ////	      sum_prod += A_col[k] * U_col[k];
-  ////    rotationMatrix(i,j) = sum_prod * /*truncated_*/singular_values[j];
+  ////    reducedBasis(i,j) = sum_prod * /*truncated_*/singular_values[j];
   ////  }
   ////}
-  ////rotationMatrix.scale(1./numFns);
-  ////Cout << "\nRotation matrix\n" << rotationMatrix << std::endl;
+  ////reducedBasis.scale(1./numFns);
+  ////Cout << "\nRotation matrix\n" << reducedBasis << std::endl;
 
 
   //////////////////////////////////////////////////////////////////////////////
 
   /*
-  // TO DO: do we need to transpose or invert rotationMatrix to be consistent
+  // TO DO: do we need to transpose or invert reducedBasis to be consistent
   //        with A definition used by ActiveSubspaceModel ???
 
   A = RealMatrix(reducedRank, numFullspaceVars);
   */
 
   //// if (outputLevel >= DEBUG_OUTPUT)
-  ////   Cout << "\nAdapted Basis Model: rotation matrix is:\n" << rotationMatrix;
+  ////   Cout << "\nAdapted Basis Model: rotation matrix is:\n" << reducedBasis;
   //// Cout << "\n****************************************************************"
   ////      << "**********\nAdapted Basis Model: Build Statistics"
   ////      << "\nsubspace size: " << reducedRank << "\n**************************"
@@ -430,7 +432,7 @@ vars_mapping(const Variables& reduced_vars, Variables& full_vars)
   const RealVector& eta = reduced_vars.continuous_variables();
   RealVector&        xi =    full_vars.continuous_variables_view();
 
-  const RealMatrix& A = ssmInstance->reducedBasis;
+  const RealMatrix& A = ssmInstance->reduced_basis();
   int m = A.numRows(), n = A.numCols(), incx = 1, incy = 1;
   Real alpha = 1.0, beta = 0.0;
   // expand \eta with zeros
@@ -443,7 +445,7 @@ vars_mapping(const Variables& reduced_vars, Variables& full_vars)
   teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, A.values(), m,
                     eta_ex.values(), incy, beta, xi.values(), incx);
 
-  if (ssmInstance->outputLevel >= DEBUG_OUTPUT)
+  if (ssmInstance->output_level() >= DEBUG_OUTPUT)
     Cout <<   "\nAdapted Basis Model: Subspace vars are\n" << reduced_vars
 	 << "\n\nAdapted Basis Model: Fullspace vars are\n" << full_vars
 	 << std::endl;

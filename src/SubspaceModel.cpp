@@ -18,47 +18,30 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
 
-namespace Dakota
-{
+namespace Dakota {
 
-/// initialization of static needed by RecastModel
+/// initialization of static needed by RecastModel callbacks
 SubspaceModel* SubspaceModel::ssmInstance(NULL);
 
 
-// BMA TODO: Consider whether a DACE Iterator is justified; don't need
-// the modularity yet, but a lot of the build controls better belong
-// in a helper iterator specification.
-
 SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, const Model& sub_model):
   RecastModel(problem_db, sub_model), randomSeed(24620),
-  initialSamples(problem_db.get_int("model.initial_samples")),
-  maxFunctionEvals(std::numeric_limits<int>::max()),
-  numFullspaceVars(subModel.cv())
+  numFullspaceVars(subModel.cv()),
+  //reducedRank(problem_db.get_int("model.subspace.dimension"))
+  offlineEvalConcurrency(1), onlineEvalConcurrency(1)
 {
   componentParallelMode = CONFIG_PHASE;
-
-  // Will be overwritten with correct value in derived_init_communicators():
-  onlineEvalConcurrency = 1; 
-
-  validate_inputs();
 }
 
 
-/** An SubspaceModel will be built over all functions, without
-    differentiating primary vs. secondary constraints.  However the
-    associated RecastModel has to differentiate. Currently identifies
-    subspace for continuous variables only, but carries other active
-    variables along for the ride. */
 SubspaceModel::
-SubspaceModel(const Model& sub_model, short output_level) :
-  RecastModel(sub_model, output_level), numFullspaceVars(sub_model.cv())
+SubspaceModel(const Model& sub_model, unsigned int dimension,
+	      short output_level) :
+  RecastModel(sub_model), numFullspaceVars(sub_model.cv()),
+  reducedRank(dimension), offlineEvalConcurrency(1), onlineEvalConcurrency(1)
 {
   outputLevel = output_level;
-
   componentParallelMode = CONFIG_PHASE;
-  offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
-  // Will be overwritten with correct value in derived_init_communicators():
-  onlineEvalConcurrency = 1; 
 }
 
 
@@ -306,6 +289,7 @@ void SubspaceModel::uncertain_vars_to_subspace()
   for (i=end_reduction; i<num_reduced_rv; ++i)   // same as native
     reduced_rv_types[i] = native_rv_types[i+cv_diff];
   reduced_dist_rep->initialize_types(reduced_rv_types, reduced_active_vars);
+  reduced_dist_rep->active_correlations(reduced_active_corr);
 }
 
 
@@ -469,6 +453,13 @@ int SubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
 }
 
 
+void SubspaceModel::stop_init_mapping(ParLevLIter pl_iter)
+{
+  short term_code = 0;
+  parallelLib.bcast(term_code, *pl_iter);
+}
+
+
 /** Simplified derivative variables mapping where all continuous
     depend on all others.  TODO: Could instead rely on a richer
     default in RecastModel based on varsMapIndices. */
@@ -510,31 +501,31 @@ response_mapping(const Variables& reduced_vars, const Variables& full_vars,
   // Function values are the same for both recast and sub_model:
   reduced_resp.function_values(full_resp.function_values());
 
-  // Gradients and Hessians must be transformed though:
+  const RealMatrix& W1 = ssmInstance->reduced_basis();
+
+  // Transform the gradients:
   const RealMatrix& dg_dx = full_resp.function_gradients();
   if(!dg_dx.empty()) {
     RealMatrix dg_dy = reduced_resp.function_gradients();
 
     //  Performs the matrix-matrix operation:
     // dg_dy <- alpha*W1^T*dg_dx + beta*dg_dy
-    const RealMatrix& W1 = ssmInstance->activeBasis;
     int m = W1.numCols(), k = W1.numRows(), n = dg_dx.numCols();
-    Real alpha = 1.0, beta = 0.0;
+    Real alpha = 1., beta = 0.;
     teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, m, n, k, alpha,
                       W1.values(), k, dg_dx.values(), k, beta,dg_dy.values(),m);
 
     reduced_resp.function_gradients(dg_dy);
   }
 
-  // Now transform the Hessians:
+  // Transform the Hessians:
   const RealSymMatrixArray& H_x_all = full_resp.function_hessians();
   if(!H_x_all.empty()) {
     RealSymMatrixArray H_y_all(H_x_all.size());
     for (int i = 0; i < H_x_all.size(); i++) {
       // compute H_y = W1^T * H_x * W1
-      const RealMatrix& W1 = asmInstance->activeBasis;
       int m = W1.numRows(), n = W1.numCols();
-      Real alpha = 1.0;
+      Real alpha = 1.;
       RealSymMatrix H_y(n, false);
       Teuchos::symMatTripleProduct<int,Real>(Teuchos::TRANS, alpha,
                                              H_x_all[i], W1, H_y);

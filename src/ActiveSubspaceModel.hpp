@@ -89,22 +89,17 @@ protected:
 
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                   bool recurse_flag);
-
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                  bool recurse_flag);
-
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                   bool recurse_flag);
 
-  /*
   void derived_evaluate(const ActiveSet& set);
-
   void derived_evaluate_nowait(const ActiveSet& set);
-
   const IntResponseMap& derived_synchronize();
-
   const IntResponseMap& derived_synchronize_nowait();
 
+  /*
   /// update component parallel mode for supporting parallelism in
   /// the offline and online phases
   void component_parallel_mode(short mode);
@@ -117,6 +112,8 @@ protected:
   /// server operations when iteration on the ActiveSubspaceModel is complete
   void stop_servers();
   */
+
+  void validate_inputs();
 
   void assign_instance();
 
@@ -222,9 +219,6 @@ protected:
   /// initial number of samples at which to query the truth model
   int initialSamples;
 
-  /// maximum number of build evaluations
-  int maxFunctionEvals;
-
   /// Boolean flag signaling use of Bing Li criterion to identify active
   /// subspace dimension
   bool subspaceIdBingLi;
@@ -321,7 +315,7 @@ protected:
 
 
 inline void ActiveSubspaceModel::assign_instance()
-{ ssmInstance = asmInstance = this; }
+{ asmInstance = this; SubspaceModel::ssmInstance = this; }
 
 
 inline unsigned int ActiveSubspaceModel::

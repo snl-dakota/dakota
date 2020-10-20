@@ -21,7 +21,7 @@
 namespace Dakota
 {
 
-/// initialization of static needed by RecastModel
+/// initialization of static needed by RecastModel callbacks
 ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
 
 // BMA TODO: Consider whether a DACE Iterator is justified; don't need
@@ -30,6 +30,7 @@ ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
 
 ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   SubspaceModel(problem_db, get_sub_model(problem_db)),
+  initialSamples(problem_db.get_int("model.initial_samples")),
   subspaceIdBingLi(
     probDescDB.get_bool("model.active_subspace.truncation_method.bing_li")),
   subspaceIdConstantine(
@@ -39,8 +40,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   subspaceIdCV(
     probDescDB.get_bool("model.active_subspace.truncation_method.cv")),
   numReplicates(problem_db.get_int("model.active_subspace.bootstrap_samples")),
-  numFullspaceVars(subModel.cv()), totalSamples(0),
-  gradientScaleFactors(RealArray(numFns, 1.0)),
+  totalSamples(0), gradientScaleFactors(RealArray(numFns, 1.)),
   truncationTolerance(probDescDB.get_real(
     "model.active_subspace.truncation_method.energy.truncation_tolerance")),
   buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
@@ -62,6 +62,8 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   // Set seed of bootstrap sampler:
   BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
 
+  validate_inputs();
+  
   offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
 
   // initialize the fullspace derivative sampler; this
@@ -89,18 +91,17 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 ActiveSubspaceModel::
 ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
                     const RealMatrix &rotation_matrix, short output_level) :
-  SubspaceModel(sub_model, output_level), numFullspaceVars(sub_model.cv()),
-  gradientScaleFactors(RealArray(numFns, 1.0)), buildSurrogate(false),
+  SubspaceModel(sub_model, dimension, output_level),
+  gradientScaleFactors(RealArray(numFns, 1.)), buildSurrogate(false),
   refinementSamples(0), subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
   modelType = "active_subspace";
   modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
 
-  offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
-  // Will be overwritten with correct value in derived_init_communicators():
-  onlineEvalConcurrency = 1; 
+  SubspaceModel::validate_inputs();
 
-  reducedRank = dimension;
+  //offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
+
   RealMatrix reduced_basis_W1(Teuchos::View, rotation_matrix,
                               numFullspaceVars, reducedRank);
   reducedBasis = reduced_basis_W1;
@@ -153,12 +154,6 @@ void ActiveSubspaceModel::validate_inputs()
     Cout << "\nWarning (subspace model): resetting samples to minimum "
          << "allowed = " << initialSamples << ". Note that the accuracy of the "
          << "subspace may be poor with this few samples.\n" << std::endl;
-  }
-
-  if (initialSamples > maxFunctionEvals) {
-    error_flag = true;
-    Cerr << "\nError (subspace model): build samples exceeds function "
-         << "evaluation budget.\n" << std::endl;
   }
 
   // validate response data
@@ -302,7 +297,8 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
              mu_z(inactiveBasis.numCols());
 
   // mu_y = reducedBasis^T * mu_x
-  int  m = reducedBasis.numRows(), n = reducedBasis.numCols(), incx = 1, incy = 1;
+  int  m = reducedBasis.numRows(), n = reducedBasis.numCols(),
+    incx = 1, incy = 1;
   Real alpha = 1., beta = 0.;
 
   // y <-- alpha*A*x + beta*y
@@ -362,7 +358,8 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSubspace Model: correl_y = \n" << correl_y;
-  reduced_dist_rep->initialize_correlations(correl_y, reduced_active_corr);
+  reduced_dist_rep->correlation_matrix(correl_y);
+  reduced_dist_rep->initialize_correlations();
 
   // Set inactive subspace variables
   // mu_z = inactiveBasis^T * mu_x
@@ -1463,7 +1460,7 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
 
   sub_model_x_vars.continuous_variables(x);
 
-  if (asmInstance->outputLevel >= DEBUG_OUTPUT)
+  if (asmInstance->output_level() >= DEBUG_OUTPUT)
     Cout <<   "\nSubspace Model: Subspace vars are\n"  << recast_y_vars
 	 << "\n\nSubspace Model: Fullspace vars are\n" << sub_model_x_vars
 	 << std::endl;

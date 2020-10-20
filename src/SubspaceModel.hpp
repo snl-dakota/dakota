@@ -36,11 +36,11 @@ public:
   //
 
   /// Problem database constructor
-  SubspaceModel(ProblemDescDB& problem_db);
+  SubspaceModel(ProblemDescDB& problem_db, const Model& sub_model);
 
   /// lightweight constructor
   SubspaceModel(const Model& sub_model, unsigned int dimension,
-		const RealMatrix &rotation_matrix, short output_level);
+		short output_level);
 
   /// destructor
   ~SubspaceModel();
@@ -61,6 +61,13 @@ public:
   /// to balance resize() calls on iteratorComm rank 0
   int serve_init_mapping(ParLevLIter pl_iter);
 
+  //
+  //- Heading: accessors
+  //
+
+  /// return reducedBasis
+  const RealMatrix& reduced_basis() const;
+
 protected:
 
   //
@@ -68,11 +75,8 @@ protected:
   //
 
   void derived_evaluate(const ActiveSet& set);
-
   void derived_evaluate_nowait(const ActiveSet& set);
-
   const IntResponseMap& derived_synchronize();
-
   const IntResponseMap& derived_synchronize_nowait();
 
   /// update component parallel mode for supporting parallelism in
@@ -88,11 +92,11 @@ protected:
   void stop_servers();
 
   // ---
-  // Construct time convenience functions
+  // New virtual functions
   // ---
 
   /// validate the build controls and set defaults
-  void validate_inputs();
+  virtual void validate_inputs();
 
 
   // ---
@@ -167,6 +171,9 @@ protected:
   int onlineEvalConcurrency;
   /// Concurrency to use when building subspace.
   int offlineEvalConcurrency;
+
+  /// static pointer to this class for use in static member fn callbacks
+  static SubspaceModel* ssmInstance;
 };
 
 
@@ -174,15 +181,12 @@ inline bool SubspaceModel::resize_pending() const
 { return !mappingInitialized; }
 
 
+inline const RealMatrix& SubspaceModel::reduced_basis() const
+{ return reducedBasis; }
+
+
 inline void SubspaceModel::stop_servers()
 { component_parallel_mode(CONFIG_PHASE); }
-
-
-inline void SubspaceModel::stop_init_mapping(ParLevLIter pl_iter)
-{
-  short term_code = 0;
-  parallelLib.bcast(term_code, *pl_iter);
-}
 
 } // namespace Dakota
 

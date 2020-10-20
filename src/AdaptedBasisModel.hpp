@@ -50,11 +50,6 @@ protected:
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                   bool recurse_flag);
 
-  void derived_evaluate(const ActiveSet& set);
-  void derived_evaluate_nowait(const ActiveSet& set);
-  const IntResponseMap& derived_synchronize();
-  const IntResponseMap& derived_synchronize_nowait();
-
   void assign_instance();
 
   // ---
@@ -125,7 +120,7 @@ protected:
 
 
 inline void AdaptedBasisModel::assign_instance()
-{ ssmInstance = this; }
+{ SubspaceModel::ssmInstance = this; }
 
 } // namespace Dakota
 
