@@ -80,7 +80,8 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   }
   else if (exp_order) { // regression PCE: LeastSq/CS (exp_order,colloc_ratio)
     short exp_coeffs_approach = Pecos::DEFAULT_REGRESSION;
-    String import_file;  size_t colloc_pts;  int seed = 12347;
+    String import_file; int seed = 12347;
+    size_t colloc_pts = std::numeric_limits<size_t>::max();
     pcePilotExpRepPtr = new NonDPolynomialChaos(actual_model,
       exp_coeffs_approach, exp_order, dim_pref, colloc_pts, colloc_ratio, seed,
       EXTENDED_U, refine_type, refine_cntl, cov_cntl, //rule_nest, rule_growth,
