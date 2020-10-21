@@ -7,7 +7,12 @@ model
   id_model = 'SUBSPACE'
   adapted_basis
     actual_model_pointer = 'FULLSPACE'
-    sparse_grid_level = 1
+    sparse_grid_level = 1	#s0,#s1,#s2,#s3
+#   expansion_order = 1		#s4
+#   collocation_ratio = 2.	#s4
+#   dimension = 1		#s1,#s4
+#   dimension = 2		#s2
+#   dimension = 3		#s3
 
 model
   single

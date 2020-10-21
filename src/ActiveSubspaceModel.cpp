@@ -54,8 +54,6 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
     probDescDB.get_real("model.active_subspace.cv.decrease_tolerance")),
   cvMaxRank(problem_db.get_int("model.active_subspace.cv.max_rank"))
 {
-  reducedRank = problem_db.get_int("model.active_subspace.dimension");
-
   modelType = "active_subspace";
   modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
   // Set seed of bootstrap sampler:

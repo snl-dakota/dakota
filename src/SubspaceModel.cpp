@@ -20,7 +20,9 @@ SubspaceModel* SubspaceModel::smInstance(NULL);
 SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, const Model& sub_model):
   RecastModel(problem_db, sub_model), randomSeed(24620),
   numFullspaceVars(subModel.cv()),
-  //reducedRank(problem_db.get_int("model.subspace.dimension"))
+  // default is 0 for no user override, but only used for AdaptedBasis at
+  // this time (ActiveSubspace overwrites with basis truncation procedure):
+  reducedRank(problem_db.get_int("model.subspace.dimension")),
   offlineEvalConcurrency(1), onlineEvalConcurrency(1)
 {
   componentParallelMode = CONFIG_PHASE;

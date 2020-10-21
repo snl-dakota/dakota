@@ -31,6 +31,9 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
 
+  if (!reducedRank)  // no user spec
+    reducedRank = 1; // subspace-specific default
+
   validate_inputs();
 
   offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
@@ -276,7 +279,6 @@ void AdaptedBasisModel::compute_subspace()
   
   reducedBasis = A_q;
   Cout << "\n Rotation Matrix \n" << reducedBasis << std::endl;
-  //reducedRank = 1; // for testing
 
   // TO DO
 

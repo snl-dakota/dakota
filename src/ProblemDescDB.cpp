@@ -2619,7 +2619,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
       // must be sorted by string (key)
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
-        {"active_subspace.dimension", P subspaceDimension},
         {"c3function_train.max_cross_iterations", P maxCrossIterations},
         {"initial_samples", P initialSamples},
         {"max_function_evals", P maxFunctionEvals},
@@ -2629,6 +2628,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
         {"soft_convergence_limit", P softConvergenceLimit},
+        {"subspace.dimension", P subspaceDimension},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
         {"surrogate.num_restarts", P numRestarts},
