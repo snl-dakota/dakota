@@ -6193,6 +6193,7 @@ KEYWORD model {N_mom3(start,0,stop)}
     ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}
       collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
      )
+    [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}

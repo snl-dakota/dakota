@@ -3956,25 +3956,25 @@
                 </oneOf>
               </optional>
 	      <optional>
-			<oneOf label="Build Data Source">
-			  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer"  default="no design of experiments data" >
+		<oneOf label="Build Data Source">
+		  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer"  default="no design of experiments data" >
                     <param type="STRING" in_taglist="method" />
-			    <keyword  id="auto_refinement" name="auto_refinement" code="{N_mom(true,autoRefine)}" label="Automatically Refine Surrogate"  minOccurs="0" default="no refinement" complexity="1">
-			      <keyword  id="max_iterations" name="max_iterations" code="{N_mom(int,maxIterations)}" label="Max Build Iterations"  minOccurs="0" default="100">
+		    <keyword  id="auto_refinement" name="auto_refinement" code="{N_mom(true,autoRefine)}" label="Automatically Refine Surrogate"  minOccurs="0" default="no refinement" complexity="1">
+		      <keyword  id="max_iterations" name="max_iterations" code="{N_mom(int,maxIterations)}" label="Max Build Iterations"  minOccurs="0" default="100">
 			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
-			      <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mom(int,maxFunctionEvals)}" label="Max Build Evaluations"  minOccurs="0" default="1000">
+		      <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mom(int,maxFunctionEvals)}" label="Max Build Evaluations"  minOccurs="0" default="1000">
 			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
-			      <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mom(Real,convergenceTolerance)}" label="Convergence Tolerance"  minOccurs="0" default="1.0e-4" >
+		      <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mom(Real,convergenceTolerance)}" label="Convergence Tolerance"  minOccurs="0" default="1.0e-4" >
 			<param type="REAL" />
 		      </keyword>
-			      <keyword  id="soft_convergence_limit" name="soft_convergence_limit" code="{N_mom(int,softConvergenceLimit)}" label="Soft Convergence Limit"  minOccurs="0" default="0" >
+		      <keyword  id="soft_convergence_limit" name="soft_convergence_limit" code="{N_mom(int,softConvergenceLimit)}" label="Soft Convergence Limit"  minOccurs="0" default="0" >
 		        <param type="INTEGER" constraint=">= 0" />
 		      </keyword>
-			      <keyword  id="cross_validation_metric" name="cross_validation_metric" code="{N_mom(str,refineCVMetric)}" label="Cross-Validation Metric Type"  minOccurs="0" default="root-mean-squared error" >
+		      <keyword  id="cross_validation_metric" name="cross_validation_metric" code="{N_mom(str,refineCVMetric)}" label="Cross-Validation Metric Type"  minOccurs="0" default="root-mean-squared error" >
 			<param type="STRING" />
-				    <keyword  id="folds" name="folds" code="{N_mom(int,refineCVFolds)}" label="CV Folds"  minOccurs="0" default="10">
+			<keyword  id="folds" name="folds" code="{N_mom(int,refineCVFolds)}" label="CV Folds"  minOccurs="0" default="10">
 			  <param type="INTEGER" constraint="> 0" />
 			</keyword>
 		      </keyword>
@@ -4186,7 +4186,7 @@
         <keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="Active Subspace"  complexity="1">
           <alias name="subspace"/>
 
-	      <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
+	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
 	  <keyword  id="initial_samples" name="initial_samples" code="{N_mom(int,initialSamples)}" label="Initial Samples"  minOccurs="0" default="model-dependent">
@@ -4207,21 +4207,21 @@
 	      </keyword>
 	    </keyword>
 	    <keyword id="cross_validation" name="cross_validation" label="Cross Validation" code="{N_mom(true,subspaceIdCV)}" minOccurs="0" default="relative" >
-        <optional>
-          <oneOf label="CV Selection Criterion">
-            <keyword id="minimum" name="minimum" label="Minimum" code="{N_mom(utype,subspaceIdCVMethod_MINIMUM_METRIC)}" />
-            <keyword id="relative" name="relative" label="Relative" code="{N_mom(utype,subspaceIdCVMethod_RELATIVE_TOLERANCE)}" />
-            <keyword id="decrease" name="decrease" label="Decrease" code="{N_mom(utype,subspaceIdCVMethod_DECREASE_TOLERANCE)}" />
-          </oneOf>
-        </optional>
-        <keyword  id="relative_tolerance" name="relative_tolerance" code="{N_mom(Real,relTolerance)}" label="Relative Tolerance"  minOccurs="0" default="1.0e-6" >
-          <param type="REAL" />
-        </keyword>
-        <keyword  id="decrease_tolerance" name="decrease_tolerance" code="{N_mom(Real,decreaseTolerance)}" label="Decrease Tolerance"  minOccurs="0" default="1.0e-6">
-          <param type="REAL" />
-        </keyword>
-        <keyword  id="max_rank" name="max_rank" label="Max Rank" code="{N_mom(int,subspaceCVMaxRank)}" minOccurs="0" default="number fullspace vars">
-          <param type="INTEGER" />
+              <optional>
+		<oneOf label="CV Selection Criterion">
+		  <keyword id="minimum" name="minimum" label="Minimum" code="{N_mom(utype,subspaceIdCVMethod_MINIMUM_METRIC)}" />
+		  <keyword id="relative" name="relative" label="Relative" code="{N_mom(utype,subspaceIdCVMethod_RELATIVE_TOLERANCE)}" />
+		  <keyword id="decrease" name="decrease" label="Decrease" code="{N_mom(utype,subspaceIdCVMethod_DECREASE_TOLERANCE)}" />
+		</oneOf>
+              </optional>
+              <keyword  id="relative_tolerance" name="relative_tolerance" code="{N_mom(Real,relTolerance)}" label="Relative Tolerance"  minOccurs="0" default="1.0e-6" >
+		<param type="REAL" />
+              </keyword>
+              <keyword  id="decrease_tolerance" name="decrease_tolerance" code="{N_mom(Real,decreaseTolerance)}" label="Decrease Tolerance"  minOccurs="0" default="1.0e-6">
+		<param type="REAL" />
+              </keyword>
+              <keyword  id="max_rank" name="max_rank" label="Max Rank" code="{N_mom(int,subspaceCVMaxRank)}" minOccurs="0" default="number fullspace vars">
+		<param type="INTEGER" />
 	      </keyword>
 	      <keyword id="exhaustive" name="exhaustive" label="Exhaustive" code="{N_mom(false,subspaceCVIncremental)}" minOccurs="0" default="on" />
 	    </keyword>
@@ -4238,11 +4238,11 @@
             </keyword>
 	  </keyword>
 	  <keyword id="normalization" name="normalization" label="Normalization" code="{0}" minOccurs="0">
-      <oneOf label="Normalize By...">
-        <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" />
-        <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" />
-        <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" />
-      </oneOf>
+	    <oneOf label="Normalize By...">
+              <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" />
+              <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" />
+              <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" />
+	    </oneOf>
 	  </keyword>
 	</keyword>
 	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="Adapted Basis"  >
@@ -4261,9 +4261,12 @@
 	    </keyword>
 	  </oneOf>
 	  <!-- TO DO: adaptation specification for testing higher-order and interaction terms for adapted basis. -->
+	  <keyword  id="dimension" name="dimension" label="Dimension" code="{N_mom(int,subspaceDimension)}" minOccurs="0">
+            <param type="INTEGER" />
+	  </keyword>
 	</keyword>
-	    <keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random Field"  complexity="1">
-	      <keyword id="build_source" name="build_source" code="{0}" label="Build Source" minOccurs="0">
+	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random Field"  complexity="1">
+	  <keyword id="build_source" name="build_source" code="{0}" label="Build Source" minOccurs="0">
 	    <oneOf label="Build Data Source">
 	          <keyword  id="rf_data_file" name="rf_data_file" code="{N_mom(str,rfDataFileName)}" label="Random Field Data File Name" default="none">
 		<param type="STRING" />
