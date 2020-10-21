@@ -631,15 +631,15 @@ void EffGlobalMinimizer::batch_synchronous_ego()
         // append constant liar to fHatModel (aka heuristic liar)
         fHatModel.append_approximation(vars_star, resp_star_liar, true); // BUG? replace resp_star_liar with mean of GP
 
-        // update constraints based on the constant liar
-        if (numNonlinearConstraints) {
-            const RealVector& fns_star_liar = resp_star_liar.second.function_values();
-            Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
-            if (norm_cv_star < etaSequence)
-                update_augmented_lagrange_multipliers(fns_star_liar);
-            else
-                update_penalty();
-        }
+        // // update constraints based on the constant liar
+        // if (numNonlinearConstraints) {
+        //     const RealVector& fns_star_liar = resp_star_liar.second.function_values();
+        //     Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
+        //     if (norm_cv_star < etaSequence)
+        //         update_augmented_lagrange_multipliers(fns_star_liar);
+        //     else
+        //         update_penalty();
+        // }
 
         Cout << "Parallel EGO: Finished adding a liar response for the acquisition batch!\n";
         // save a copy
@@ -678,15 +678,15 @@ void EffGlobalMinimizer::batch_synchronous_ego()
         // append constant liar to fHatModel (aka heuristic liar)
         fHatModel.append_approximation(vars_star, resp_star_liar, true); // BUG? replace resp_star_liar with mean of GP
 
-        // update constraints based on the constant liar
-        if (numNonlinearConstraints) {
-            const RealVector& fns_star_liar = resp_star_liar.second.function_values();
-            Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
-            if (norm_cv_star < etaSequence)
-                update_augmented_lagrange_multipliers(fns_star_liar);
-            else
-                update_penalty();
-        }
+        // // update constraints based on the constant liar
+        // if (numNonlinearConstraints) {
+        //     const RealVector& fns_star_liar = resp_star_liar.second.function_values();
+        //     Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
+        //     if (norm_cv_star < etaSequence)
+        //         update_augmented_lagrange_multipliers(fns_star_liar);
+        //     else
+        //         update_penalty();
+        // }
 
         Cout << "Parallel EGO: Finished adding a liar response for the acquisition batch!\n";
         // save a copy
