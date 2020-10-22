@@ -645,6 +645,9 @@ void EffGlobalMinimizer::batch_synchronous_ego()
         Cout << "Parallel EGO: Finished adding a liar response for the acquisition batch!\n";
         // save a copy
         varsArrayBatchAcquisition[_i] = vars_star.copy();
+
+        // advance counters
+        ++globalIterCount;
     }
 
     // construct the exploration batch
@@ -690,8 +693,12 @@ void EffGlobalMinimizer::batch_synchronous_ego()
         }
 
         Cout << "Parallel EGO: Finished adding a liar response for the acquisition batch!\n";
+
         // save a copy
         varsArrayBatchAcquisition[batchSizeAcquisition + _i] = vars_star.copy();
+
+        // advance counters
+        ++globalIterCount;
     }
 
 
