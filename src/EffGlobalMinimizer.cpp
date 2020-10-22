@@ -557,7 +557,8 @@ void EffGlobalMinimizer::batch_synchronous_ego()
     if (parallelFlag) {
         // reset the convergence counters
         distConvergenceCntr = 0; // reset distance convergence counters
-        distConvergenceLimit = std::max(batchSizeAcquisition, batchSizeExploration);// batchSize; // batchSizeAcquisition; // reset convergence limit for parallel EGO
+        // distConvergenceLimit = std::max(batchSizeAcquisition, batchSizeExploration); // reset convergence limit for parallel EGO
+        distConvergenceLimit = batchSize; // reset convergence limit for parallel EGO
     }
 
     Cout << "\n>>>>> Initiating global optimization\n";
