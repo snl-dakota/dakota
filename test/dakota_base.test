@@ -17433,18 +17433,18 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 40
 dakota_nowpac.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 138 total (138 new, 0 duplicate)
+<<<<< Function evaluation summary: 134 total (134 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9999989584e-01 x1
-                      9.9999979159e-01 x2
+                      9.9999997826e-01 x1
+                      9.9999995655e-01 x2
 <<<<< Best objective function  =
-                      1.0849504299e-14
-<<<<< Best data captured at function evaluation 137
+                      4.7246178267e-16
+<<<<< Best data captured at function evaluation 134
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 38 total (38 new, 0 duplicate)
+<<<<< Function evaluation summary: 48 total (48 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3520340806e+00 w
-                      3.3262784734e+00 t
+                      2.3520344441e+00 w
+                      3.3262779595e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -17452,34 +17452,34 @@ Test Number 1 succeeded
 <<<<< Best objective function  =
                       7.8235203311e+00
 <<<<< Best constraint values   =
-                     -1.6009003571e-02
-                     -2.2204460493e-16
-<<<<< Best data captured at function evaluation 38
+                     -1.6008977484e-02
+                     -7.8748119137e-13
+<<<<< Best data captured at function evaluation 48
 Test Number 2 failed with exit code 255
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 37 total (37 new, 0 duplicate)
+<<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.9526287824e+01 x1
-                      1.9622825485e+01 x2
+                      4.9526288307e+01 x1
+                      1.9622825868e+01 x2
 <<<<< Best objective function  =
                      -3.1636810417e+01
 <<<<< Best constraint values   =
-                      3.8835100412e-01
-                      8.8817841970e-16
-                      3.8005651696e-01
-<<<<< Best data captured at function evaluation 37
+                      3.8835104478e-01
+                      4.4408920985e-16
+                      3.8005650668e-01
+<<<<< Best data captured at function evaluation 34
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 41 total (41 new, 0 duplicate)
+<<<<< Function evaluation summary: 42 total (42 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.9526288349e+01 x1
-                      1.9622825901e+01 x2
+                      4.9526287687e+01 x1
+                      1.9622825376e+01 x2
 <<<<< Best objective function  =
                      -3.1636810417e+01
 <<<<< Best constraint values   =
-                      3.8835104830e-01
-                      2.1262991368e-12
-                      3.8005650579e-01
-<<<<< Best data captured at function evaluation 32
+                      3.8835099257e-01
+                      4.4408920985e-16
+                      3.8005651988e-01
+<<<<< Best data captured at function evaluation 42
 dakota_optdarts.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
