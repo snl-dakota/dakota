@@ -84,7 +84,7 @@ model
     id_model = 'SUBSPACE'
     actual_model_pointer = 'FULLSPACE'
     initial_samples  100 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#e10,#e11,#p10,#p11,#p12,#e12,#p13,#p14,#s19,#e15,#s20,#e16,#s21,#s22,#p15,#s23,#p16,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
-#   initial_samples  10               #s24,#p17,#s25,#p18
+#   initial_samples  30               #s24,#p17,#s25,#p18
 #   sample_type lhs                   #s25,#p18
 #   truncation_method bing_li         #s1,#p1
 #   truncation_method constantine     #s2,#s11,#s12,#s13,#s14,#s15,#s16,#s18,#p2,#e11,#p10,#p11,#p12,#e12,#p14,#s20,#e16,#s21,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18
