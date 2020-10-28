@@ -23,8 +23,6 @@
 #include "ResultsManager.hpp"
 #include "EvaluationStore.hpp"
 
-#include <fenv.h>
-
 // Toggle for MPI debug hold
 //#define MPI_DEBUG
 
@@ -153,8 +151,6 @@ void register_signal_handlers()
 #endif
   std::signal(SIGTERM,  Dakota::abort_handler);
   std::signal(SIGINT,   Dakota::abort_handler);
-
-  fedisableexcept(FE_ALL_EXCEPT);
 }
 
 
