@@ -36470,6 +36470,22 @@ Test Number 0 succeeded
                       9.8294426124e-01
                       1.0079924835e-02
 <<<<< Best data captured at function evaluation 189
+dakota_surrogate_export.in
+Test Number 0 succeeded
+Surrogate quality metrics at build (training) points for obj_fn:
+   root_mean_squared  8.3578393789e-17
+Surrogate quality metrics (5-fold CV) for obj_fn:
+   root_mean_squared  1.3859004487e-01
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 10 total (10 new, 0 duplicate)
+<<<<< Function evaluation summary (I1): 200 total (200 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0054666200e+00 x1
+                      3.7812606000e-01 x2
+                      1.3847788200e+00 x3
+                     -3.5509361000e-01 x4
+<<<<< Best objective function  =
+                     -7.2346849574e-01
+<<<<< Best data captured at function evaluation 4
 dakota_surrogate_import.in
 Test Number 0 succeeded
 Surrogate quality metrics at build (training) points for response_fn_1:
