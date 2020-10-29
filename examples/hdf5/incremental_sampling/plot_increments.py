@@ -38,7 +38,7 @@ import matplotlib.pyplot as plt
 with h5py.File("dakota_results.h5","r") as h:
     # Create the results group object for convenience. Note that we specified 'my_sampling'
     # as the id_method of our method in our Dakota input file.
-    results = h["/methods/my_sampling/execution:1"]
+    results = h["/methods/my_sampling/results/execution:1"]
     # Get the number of increments
     num_increments = len(results.keys())
     num_samples = np.empty((num_increments,),int)  # store the number of samples in each increment
@@ -97,7 +97,7 @@ plt.show()
 with h5py.File("dakota_results.h5","r") as h:
     # Create the results group object for convenience. Note that we specified 'my_sampling'
     # as the id_method of our method in our Dakota input file.
-    results = h["/methods/my_sampling/execution:1"]
+    results = h["/methods/my_sampling/results/execution:1"]
     # Get the number of increments
     num_increments = len(results.keys())
     num_samples = np.empty((num_increments,),int)  # store the number of samples in each increment
