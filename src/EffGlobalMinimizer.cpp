@@ -214,6 +214,24 @@ void EffGlobalMinimizer::post_run(std::ostream& s)
 }
 
 
+/** To maximize expected improvement (PI), the approxSubProbMinimizer will minimize -(compute_probability_improvement). **/
+// Implementation of PI acquisition function
+void EffGlobalMinimizer::PIF_objective_eval(const Variables& sub_model_vars,
+		   const Variables& recast_vars,
+		   const Response& sub_model_response,
+		   Response& recast_response) {
+    // Means are passed in, but must retrieve variance from the GP
+    const RealVector& means = sub_model_response.function_values();
+    const RealVector& variances = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
+    const ShortArray& recast_asv = recast_response.active_set_request_vector();
+
+    if (recast_asv[0] & 1) { // return -EI since we are maximizing
+        Real neg_pi = - effGlobalInstance->compute_probability_improvement(means, variances);
+        recast_response.function_value(neg_pi, 0);
+    }
+}
+
+
 /** To maximize expected improvement (EI), the approxSubProbMinimizer will minimize -(compute_expected_improvement). **/
 // Implementation of EI acquisition function
 void EffGlobalMinimizer::EIF_objective_eval(const Variables& sub_model_vars,
@@ -265,6 +283,40 @@ void EffGlobalMinimizer::Variances_objective_eval(const Variables& sub_model_var
         Real neg_var = - effGlobalInstance->compute_variances(variances);
         recast_response.function_value(neg_var, 0);
     }
+}
+
+
+/** Compute the PI acquisition function **/
+Real EffGlobalMinimizer::compute_probability_improvement(const RealVector& means, const RealVector& variances) {
+    // Objective calculation will incorporate any sense changes or
+    // weights, such that this is an objective to minimize.
+    Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
+  			                  iteratedModel.primary_response_fn_weights()), stdv;
+    if ( numNonlinearConstraints ) {
+        // mean_M = mean_f + lambda*EV + r_p*EV*EV
+        // stdv_M = stdv_f
+        const RealVector& ev = expected_violation(means, variances);
+        for (size_t i=0; i<numNonlinearConstraints; ++i)
+          mean += augLagrangeMult[i]*ev[i] + penaltyParameter*ev[i]*ev[i];
+        stdv = std::sqrt(variances[0]); // ***
+    }
+    else { // extend for NLS/MOO ***
+        // mean_M = M(mu_f)
+        // stdv_M = sqrt(var_f)
+        stdv = std::sqrt(variances[0]); // *** sqrt(sum(variances(1:nUsrPrimaryFns))
+    }
+    // Calculate the probability improvement
+    Real cdf;
+    Real snv = (meritFnStar - mean); // standard normal variate
+    if(std::fabs(snv) >= std::fabs(stdv)*50.0) {
+        // this will trap the denominator=0.0 case even if numerator=0.0
+        cdf=(snv>0.0)?1.0:0.0;
+    }
+    else{
+        cdf = Pecos::NormalRandomVariable::std_cdf(snv/stdv);
+    }
+    Real real_pi = cdf;
+    return real_pi;
 }
 
 

@@ -122,11 +122,14 @@ private:
     // If problem is 2d, output a grid of points on the GP and truth (if requested)
     void debug_plots();
 
+    /// probability improvement (PI) function for the EGO
+    /// PI acquisition function implementation
+    Real compute_probability_improvement(const RealVector& means, const RealVector& variances);
     /// expected improvement (EI) function for the EGO
-    /// EI acquisition implementation
+    /// EI acquisition function implementation
     Real compute_expected_improvement(const RealVector& means, const RealVector& variances);
     /// lower confidence bound (LCB) function for the EGO
-    /// LCB acquisition implementation
+    /// LCB acquisition function implementation
     Real compute_lower_confidence_bound(const RealVector& means, const RealVector& variances);
     /// variance function for the EGO
     /// MSE acquisition implementation
@@ -143,6 +146,13 @@ private:
     //- Heading: Objective/constraint evaluators passed to RecastModel
     //
 
+
+    /// static function used as the objective function in the
+    /// Expected Improvement (EIF) problem formulation for EGO
+    static void PIF_objective_eval(const Variables& sub_model_vars,
+  				                        const Variables& recast_vars,
+                                  const Response& sub_model_response,
+                                  Response& recast_response);
     /// static function used as the objective function in the
     /// Expected Improvement (EIF) problem formulation for EGO
     static void EIF_objective_eval(const Variables& sub_model_vars,
@@ -238,7 +248,7 @@ private:
     size_t numDataPts;
 
     /// placeholder for batch input (before querying the batch)
-    // VariablesArray varsArrayBatchAcquisition;
+    VariablesArray varsArrayBatchAcquisition;
 
     /// liar response
     const IntResponsePair respStarLiar;
