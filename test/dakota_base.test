@@ -4398,125 +4398,125 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 153
 dakota_calib_field_transforms.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
-   oscB_scalar1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+   oscB_scalar1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      3.0000000026e-01 x1
-                      2.0000000000e-01 x2
+                      2.9999998715e-01 x1
+                      1.9999999925e-01 x2
 <<<<< Best model responses =
-                      4.1049160390e-01
-                     -1.7343827817e-02
-                     -2.4559253097e-01
-                      1.1096681697e-02
-                     -5.4913571420e-02
-                      1.6649056510e-01
-                     -1.1245429600e-01
+                      4.1049160372e-01
+                     -1.7343831827e-02
+                     -2.4559254262e-01
+                      1.1096681088e-02
+                     -5.4913566802e-02
+                      1.6649057101e-01
+                     -1.1245429715e-01
 <<<<< Best residual terms =
-                      2.1720014676e-11
-                      1.0814785525e-10
-                      2.3414545303e-10
-                     -9.0173927353e-12
-                     -1.0512227200e-10
-                     -1.1111012110e-10
-                      3.9877753877e-11
+                     -1.5896162164e-10
+                     -3.9016742476e-09
+                     -1.1420191598e-08
+                     -6.1848928236e-10
+                      4.5129533791e-09
+                      5.8022790461e-09
+                     -1.1145922935e-09
 <<<<< Best residual terms =
-                      2.1720014676e-11
-                      1.0814785525e-10
-                      2.3414545303e-10
-                     -9.0173927353e-12
-                     -1.0512227200e-10
-                     -1.1111012110e-10
-                      3.9877753877e-11
-<<<<< Best data captured at function evaluation 19
+                     -1.5896162164e-10
+                     -3.9016742476e-09
+                     -1.1420191598e-08
+                     -6.1848928236e-10
+                      4.5129533791e-09
+                      5.8022790461e-09
+                     -1.1145922935e-09
+<<<<< Best data captured at function evaluation 16
 Confidence Intervals on Calibrated Parameters:
-            x1: [ 2.9999999992e-01, 3.0000000060e-01 ]
-            x2: [ 1.9999999989e-01, 2.0000000012e-01 ]
+            x1: [ 2.9999997138e-01, 3.0000000291e-01 ]
+            x2: [ 1.9999999391e-01, 2.0000000460e-01 ]
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 30 total (28 new, 2 duplicate)
-   oscB_scalar1: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar2: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_1: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_2: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_3: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_4: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_5: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 24 total (22 new, 2 duplicate)
+   oscB_scalar1: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_1: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_2: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_3: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_4: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_5: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      3.0000000213e-01 x1
-                      2.0000000012e-01 x2
+                      2.9999999977e-01 x1
+                      1.9999999995e-01 x2
 <<<<< Best model responses =
-                      4.1049160391e-01
-                     -1.7343827278e-02
-                     -2.4559252931e-01
-                      1.1096681808e-02
-                     -5.4913572064e-02
-                      1.6649056425e-01
-                     -1.1245429585e-01
+                      4.1049160393e-01
+                     -1.7343827912e-02
+                     -2.4559253139e-01
+                      1.1096681635e-02
+                     -5.4913571273e-02
+                      1.6649056533e-01
+                     -1.1245429602e-01
 <<<<< Best residual terms =
-                      2.9195812434e-11
-                      6.4727682242e-10
-                      1.8930162438e-09
-                      1.0173307162e-10
-                     -7.4878391682e-10
-                     -9.5838473269e-10
-                      1.9042431521e-10
+                      4.5460191167e-11
+                      1.3437358864e-11
+                     -1.9421109165e-10
+                     -7.1386488734e-11
+                      4.1846331955e-11
+                      1.1550826962e-10
+                      2.0394380629e-11
 <<<<< Best residual terms =
-                      2.9195812434e-11
-                      6.4727682242e-10
-                      1.8930162438e-09
-                      1.0173307162e-10
-                     -7.4878391682e-10
-                     -9.5838473269e-10
-                      1.9042431521e-10
-<<<<< Best data captured at function evaluation 26
+                      4.5460191167e-11
+                      1.3437358864e-11
+                     -1.9421109165e-10
+                     -7.1386488734e-11
+                      4.1846331955e-11
+                      1.1550826962e-10
+                      2.0394380629e-11
+<<<<< Best data captured at function evaluation 20
 Confidence Intervals on Calibrated Parameters:
-            x1: [ 2.9999999960e-01, 3.0000000467e-01 ]
-            x2: [ 1.9999999889e-01, 2.0000000135e-01 ]
+            x1: [ 2.9999999950e-01, 3.0000000004e-01 ]
+            x2: [ 1.9999999982e-01, 2.0000000008e-01 ]
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 30 total (28 new, 2 duplicate)
-   oscB_scalar1: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar2: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_1: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_2: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_3: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_4: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_5: 30 val (28 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 24 total (22 new, 2 duplicate)
+   oscB_scalar1: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_1: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_2: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_3: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_4: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_5: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      3.0000000213e-01 x1
-                      2.0000000012e-01 x2
+                      2.9999999977e-01 x1
+                      1.9999999995e-01 x2
 <<<<< Best model responses =
-                      4.1049160391e-01
-                     -1.7343827278e-02
-                     -2.4559252931e-01
-                      1.1096681808e-02
-                     -5.4913572064e-02
-                      1.6649056425e-01
-                     -1.1245429585e-01
+                      4.1049160393e-01
+                     -1.7343827912e-02
+                     -2.4559253139e-01
+                      1.1096681635e-02
+                     -5.4913571273e-02
+                      1.6649056533e-01
+                     -1.1245429602e-01
 <<<<< Best residual terms =
-                      2.9195812434e-11
-                      6.4727682242e-10
-                      1.8930162438e-09
-                      1.0173307162e-10
-                     -7.4878391682e-10
-                     -9.5838473269e-10
-                      1.9042431521e-10
+                      4.5460191167e-11
+                      1.3437358864e-11
+                     -1.9421109165e-10
+                     -7.1386488734e-11
+                      4.1846331955e-11
+                      1.1550826962e-10
+                      2.0394380629e-11
 <<<<< Best residual terms =
-                      2.9195812434e-11
-                      6.4727682242e-10
-                      1.8930162438e-09
-                      1.0173307162e-10
-                     -7.4878391682e-10
-                     -9.5838473269e-10
-                      1.9042431521e-10
-<<<<< Best data captured at function evaluation 26
+                      4.5460191167e-11
+                      1.3437358864e-11
+                     -1.9421109165e-10
+                     -7.1386488734e-11
+                      4.1846331955e-11
+                      1.1550826962e-10
+                      2.0394380629e-11
+<<<<< Best data captured at function evaluation 20
 Confidence Intervals on Calibrated Parameters:
-            x1: [ 2.9999999960e-01, 3.0000000467e-01 ]
-            x2: [ 1.9999999889e-01, 2.0000000135e-01 ]
+            x1: [ 2.9999999950e-01, 3.0000000004e-01 ]
+            x2: [ 1.9999999982e-01, 2.0000000008e-01 ]
 dakota_calibration_cis.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 116 total (116 new, 0 duplicate)
@@ -6563,16 +6563,16 @@ Test Number 31 succeeded
 Test Number 32 succeeded
 <<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.2452599161e+00 x1
-                      3.0834091935e+00 x2
-                      2.8583147576e+00 x3
+                      2.2330397192e+00 x1
+                      6.9855994112e-01 x2
+                      6.9693036876e-01 x3
                                      4 z1
                                      8 z2
-                      2.3000000000e+00 y1
+                      1.2000000000e+00 y1
                       1.2000000000e+00 y2
 <<<<< Best objective function  =
-                      2.5410375867e+03
-<<<<< Best data captured at function evaluation 693
+                      2.4843314698e+03
+<<<<< Best data captured at function evaluation 855
 Test Number 33 succeeded
 <<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -12552,6 +12552,38 @@ Test Number 6 succeeded
 <<<<< Best data captured at function evaluation 82
 dakota_experiment_read.in
 Test Number 0 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+least_sq_term_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999999904e-01 x1
+                      1.9999999991e-01 x2
+<<<<< Best model responses =
+                      3.2274897440e-01
+                     -2.9210752395e-01
+                     -1.6244810308e-02
+                      1.3309207686e-01
+                     -1.1245429608e-01
+<<<<< Best residual terms =
+                      2.2937818311e-11
+                     -8.0486622922e-10
+                      6.1228900422e-11
+                      3.8669956126e-10
+                     -4.4476949901e-11
+<<<<< Best residual terms =
+                      2.2937818311e-11
+                     -8.0486622922e-10
+                      6.1228900422e-11
+                      3.8669956126e-10
+                     -4.4476949901e-11
+<<<<< Best data captured at function evaluation 16
+Confidence Intervals on Calibrated Parameters:
+            x1: [ -7.0489662453e-01, 1.3048966226e+00 ]
+            x2: [ -1.6244142761e-01, 5.6244142743e-01 ]
+Test Number 1 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
 least_sq_term_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 least_sq_term_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -12559,126 +12591,94 @@ least_sq_term_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 least_sq_term_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 least_sq_term_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      3.0000000030e-01 x1
-                      2.0000000000e-01 x2
+                      3.0000000000e-01 x1
+                      2.0000000001e-01 x2
 <<<<< Best model responses =
-                      3.2274897441e-01
-                     -2.9210752288e-01
-                     -1.6244810428e-02
-                      1.3309207635e-01
-                     -1.1245429600e-01
+                      3.2274897436e-01
+                     -2.9210752315e-01
+                     -1.6244810360e-02
+                      1.3309207647e-01
+                     -1.1245429604e-01
 <<<<< Best residual terms =
-                      3.2928160199e-11
-                      2.7098584487e-10
-                     -5.8867428293e-11
-                     -1.2479600686e-10
-                      4.3313658216e-11
+                     -2.2102191541e-11
+                     -4.3655458765e-12
+                      1.7244708891e-11
+                      7.5095416869e-12
+                     -3.0295859709e-12
 <<<<< Best residual terms =
-                      3.2928160199e-11
-                      2.7098584487e-10
-                     -5.8867428293e-11
-                     -1.2479600686e-10
-                      4.3313658216e-11
+                     -2.2102191541e-11
+                     -4.3655458765e-12
+                      1.7244708891e-11
+                      7.5095416869e-12
+                     -3.0295859709e-12
 <<<<< Best data captured at function evaluation 19
 Confidence Intervals on Calibrated Parameters:
-            x1: [ -7.0489662815e-01, 1.3048966287e+00 ]
-            x2: [ -1.6244142938e-01, 5.6244142939e-01 ]
-Test Number 1 succeeded
-<<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
-least_sq_term_1: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_2: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_3: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_4: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_5: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Best parameters          =
-                      2.9999999984e-01 x1
-                      1.9999999997e-01 x2
-<<<<< Best model responses =
-                      3.2274897442e-01
-                     -2.9210752326e-01
-                     -1.6244810391e-02
-                      1.3309207653e-01
-                     -1.1245429602e-01
-<<<<< Best residual terms =
-                      5.1039309573e-11
-                     -1.7695013205e-10
-                     -3.9503236761e-11
-                      1.2865888408e-10
-                      4.8290548881e-11
-<<<<< Best residual terms =
-                      5.1039309573e-11
-                     -1.7695013205e-10
-                     -3.9503236761e-11
-                      1.2865888408e-10
-                      4.8290548881e-11
-<<<<< Best data captured at function evaluation 22
-Confidence Intervals on Calibrated Parameters:
-            x1: [ -2.8515476541e-01, 8.8515476510e-01 ]
-            x2: [ 9.8334029195e-04, 3.9901665964e-01 ]
+            x1: [ -2.8515476568e-01, 8.8515476569e-01 ]
+            x2: [ 9.8334011115e-04, 3.9901665990e-01 ]
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
-   oscillator_1: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_2: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_3: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_4: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_5: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Best parameters          =
-                      2.9999999984e-01 x1
-                      1.9999999997e-01 x2
-<<<<< Best model responses =
-                      3.2274897442e-01
-                     -2.9210752326e-01
-                     -1.6244810391e-02
-                      1.3309207653e-01
-                     -1.1245429602e-01
-<<<<< Best residual terms =
-                      5.1039309573e-11
-                     -1.7695013205e-10
-                     -3.9503236761e-11
-                      1.2865888408e-10
-                      4.8290548881e-11
-<<<<< Best residual terms =
-                      5.1039309573e-11
-                     -1.7695013205e-10
-                     -3.9503236761e-11
-                      1.2865888408e-10
-                      4.8290548881e-11
-<<<<< Best data captured at function evaluation 22
-Confidence Intervals on Calibrated Parameters:
-            x1: [ -2.8515476541e-01, 8.8515476510e-01 ]
-            x2: [ 9.8334029195e-04, 3.9901665964e-01 ]
-Test Number 3 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
-  oscillatorA_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0000000000e-01 x1
-                      1.9999999999e-01 x2
+                      2.0000000001e-01 x2
 <<<<< Best model responses =
-                      3.2274897439e-01
-                     -2.9210752314e-01
-                     -1.6244810381e-02
+                      3.2274897436e-01
+                     -2.9210752315e-01
+                     -1.6244810360e-02
                       1.3309207647e-01
-                     -1.1245429603e-01
+                     -1.1245429604e-01
 <<<<< Best residual terms =
-                      9.8903107926e-12
-                     -2.1411514274e-12
-                     -2.8633657569e-11
-                     -4.4148139591e-13
-                      1.8203406947e-11
+                     -2.2102191541e-11
+                     -4.3655458765e-12
+                      1.7244708891e-11
+                      7.5095416869e-12
+                     -3.0295859709e-12
 <<<<< Best residual terms =
-                      9.8903107926e-12
-                     -2.1411514274e-12
-                     -2.8633657569e-11
-                     -4.4148139591e-13
-                      1.8203406947e-11
+                     -2.2102191541e-11
+                     -4.3655458765e-12
+                      1.7244708891e-11
+                      7.5095416869e-12
+                     -3.0295859709e-12
 <<<<< Best data captured at function evaluation 19
 Confidence Intervals on Calibrated Parameters:
-            x1: [ -2.5268721913e-01, 8.5268721913e-01 ]
-            x2: [ -1.3625415241e-03, 4.0136254151e-01 ]
+            x1: [ -2.8515476568e-01, 8.8515476569e-01 ]
+            x2: [ 9.8334011115e-04, 3.9901665990e-01 ]
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+  oscillatorA_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999999901e-01 x1
+                      1.9999999991e-01 x2
+<<<<< Best model responses =
+                      3.2274897439e-01
+                     -2.9210752398e-01
+                     -1.6244810296e-02
+                      1.3309207687e-01
+                     -1.1245429609e-01
+<<<<< Best residual terms =
+                      1.2785328352e-11
+                     -1.1804981447e-09
+                      6.3120890650e-10
+                      9.9364836675e-10
+                      4.4740178609e-11
+<<<<< Best residual terms =
+                      1.2785328352e-11
+                     -1.1804981447e-09
+                      6.3120890650e-10
+                      9.9364836675e-10
+                      4.4740178609e-11
+<<<<< Best data captured at function evaluation 16
+Confidence Intervals on Calibrated Parameters:
+            x1: [ -2.5268721799e-01, 8.5268721600e-01 ]
+            x2: [ -1.3625407894e-03, 4.0136254061e-01 ]
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
   oscillatorA_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -12750,75 +12750,75 @@ Test Number 5 succeeded
  oscillatorB_49: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
  oscillatorB_50: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      3.0306964388e-01 x1
-                      2.0341048946e-01 x2
+                      3.0306909304e-01 x1
+                      2.0341011157e-01 x2
 <<<<< Best model responses =
-                      4.9322876144e-01
-                      4.7798351121e-01
-                      4.6054678769e-01
-                      4.4486492488e-01
-                      4.3219475217e-01
-                      4.2121785438e-01
-                      4.0858989171e-01
-                      3.8982457331e-01
-                      3.6036015304e-01
-                      3.1662886670e-01
-                      2.5695081919e-01
-                      1.8210321633e-01
-                      9.5468816579e-02
-                      2.7356281400e-03
-                     -8.8807613421e-02
-                     -1.7127027518e-01
-                     -2.3729516638e-01
-                     -2.8114978151e-01
-                     -2.9959873160e-01
-                     -2.9241631982e-01
-                     -2.6245435683e-01
-                     -2.1525005463e-01
-                     -1.5823116413e-01
-                     -9.9639001268e-02
-                     -4.7334598365e-02
-                     -7.6718634349e-03
-                      1.5388637096e-02
-                      2.0789238233e-02
-                      1.0431031143e-02
-                     -1.1229933675e-02
-                     -3.7980028599e-02
-                     -6.2911375317e-02
-                     -7.9582040296e-02
-                     -8.3089256927e-02
-                     -7.0886049893e-02
-                     -4.3212585395e-02
-                     -3.0747764829e-03
-                      4.4225531963e-02
-                      9.1933426695e-02
-                      1.3292238363e-01
-                      1.6084207361e-01
-                      1.7114973299e-01
-                      1.6186069078e-01
-                      1.3389802454e-01
-                      9.0984689979e-02
-                      3.9093820956e-02
-                     -1.4457202200e-02
-                     -6.2126911659e-02
-                     -9.7308134209e-02
-                     -1.1534237448e-01
+                      4.9322877539e-01
+                      4.7798356262e-01
+                      4.6054689437e-01
+                      4.4486509993e-01
+                      4.3219500479e-01
+                      4.2121819013e-01
+                      4.0859031237e-01
+                      3.8982507631e-01
+                      3.6036073073e-01
+                      3.1662950573e-01
+                      2.5695150016e-01
+                      1.8210391413e-01
+                      9.5469501389e-02
+                      2.7362671606e-03
+                     -8.8807053587e-02
+                     -1.7126982577e-01
+                     -2.3729485367e-01
+                     -2.8114962424e-01
+                     -2.9959873913e-01
+                     -2.9241649109e-01
+                     -2.6245468043e-01
+                     -2.1525050993e-01
+                     -1.5823172339e-01
+                     -9.9639632361e-02
+                     -4.7335267866e-02
+                     -7.6725396349e-03
+                      1.5387981634e-02
+                      2.0788624873e-02
+                      1.0430474329e-02
+                     -1.1230426281e-02
+                     -3.7980455083e-02
+                     -6.2911737817e-02
+                     -7.9582342969e-02
+                     -8.3089503940e-02
+                     -7.0886243779e-02
+                     -4.3212726046e-02
+                     -3.0748609345e-03
+                      4.4225508930e-02
+                      9.1933471268e-02
+                      1.3292250123e-01
+                      1.6084226700e-01
+                      1.7115000065e-01
+                      1.6186102575e-01
+                      1.3389841405e-01
+                      9.0985115957e-02
+                      3.9094261369e-02
+                     -1.4456771327e-02
+                     -6.2126513817e-02
+                     -9.7307789924e-02
+                     -1.1534209915e-01
 <<<<< Best residual terms =
-                     -2.8052478271e-03
-                      8.7860164540e-03
-                     -4.2224739431e-03
-                      4.6654016346e-03
-                      3.7532921933e-03
+                     -2.8049952088e-03
+                      8.7867077608e-03
+                     -4.2222389573e-03
+                      4.6647321339e-03
+                      3.7529596069e-03
 <<<<< Best residual terms =
-                     -2.8052478271e-03
-                      8.7860164540e-03
-                     -4.2224739431e-03
-                      4.6654016346e-03
-                      3.7532921933e-03
+                     -2.8049952088e-03
+                      8.7867077608e-03
+                     -4.2222389573e-03
+                      4.6647321339e-03
+                      3.7529596069e-03
 <<<<< Best data not found in evaluation cache
 Confidence Intervals on Calibrated Parameters:
-            x1: [ 2.7753763192e-01, 3.2860165584e-01 ]
-            x2: [ 1.9568423900e-01, 2.1113673991e-01 ]
+            x1: [ 2.7753712927e-01, 3.2860105682e-01 ]
+            x2: [ 1.9568388811e-01, 2.1113633503e-01 ]
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
   oscillatorB_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -12872,153 +12872,153 @@ Test Number 6 succeeded
  oscillatorB_49: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
  oscillatorB_50: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      3.0161285108e-01 x1
-                      2.0141903737e-01 x2
+                      3.0161281314e-01 x1
+                      2.0141900483e-01 x2
 <<<<< Best model responses =
-                      4.9330358107e-01
-                      4.7826338516e-01
-                      4.6113372658e-01
-                      4.4583494845e-01
-                      4.3360042182e-01
-                      4.2309013746e-01
-                      4.1093880543e-01
-                      3.9263853169e-01
-                      3.6360439247e-01
-                      3.2024367641e-01
-                      2.6085049258e-01
-                      1.8617663677e-01
-                      9.9582397124e-02
-                      6.7389727684e-03
-                     -8.5073410395e-02
-                     -1.6796224758e-01
-                     -2.3455698295e-01
-                     -2.7910039484e-01
-                     -2.9832252441e-01
-                     -2.9195599962e-01
-                     -2.6280755137e-01
-                     -2.1637010727e-01
-                     -1.6003208859e-01
-                     -1.0200400816e-01
-                     -5.0127136172e-02
-                     -1.0747794948e-02
-                      1.2169225833e-02
-                      1.7552006305e-02
-                      7.2802428658e-03
-                     -1.4214994989e-02
-                     -4.0744970935e-02
-                     -6.5423353975e-02
-                     -8.1824046213e-02
-                     -8.5053239214e-02
-                     -7.2566193386e-02
-                     -4.4599970652e-02
-                     -4.1543615554e-03
-                      4.3475103381e-02
-                      9.1537196571e-02
-                      1.3290413973e-01
-                      1.6121802347e-01
-                      1.7192197756e-01
-                      1.6301174774e-01
-                      1.3538750831e-01
-                      9.2748927700e-02
-                      4.1048723635e-02
-                     -1.2410213665e-02
-                     -6.0092621493e-02
-                     -9.5387976463e-02
-                     -1.1362492249e-01
+                      4.9330358228e-01
+                      4.7826338965e-01
+                      4.6113373594e-01
+                      4.4583496387e-01
+                      4.3360044413e-01
+                      4.2309016716e-01
+                      4.1093884270e-01
+                      3.9263857633e-01
+                      3.6360444387e-01
+                      3.2024373350e-01
+                      2.6085055381e-01
+                      1.8617670012e-01
+                      9.9582460187e-02
+                      6.7390328554e-03
+                     -8.5073356061e-02
+                     -1.6796220166e-01
+                     -2.3455694777e-01
+                     -2.7910037218e-01
+                     -2.9832251534e-01
+                     -2.9195600441e-01
+                     -2.6280756945e-01
+                     -2.1637013731e-01
+                     -1.6003212864e-01
+                     -1.0200405581e-01
+                     -5.0127188831e-02
+                     -1.0747850044e-02
+                      1.2169170634e-02
+                      1.7551952937e-02
+                      7.2801927737e-03
+                     -1.4215040865e-02
+                     -4.0745012108e-02
+                     -6.5423390306e-02
+                     -8.1824077769e-02
+                     -8.5053266119e-02
+                     -7.2566215698e-02
+                     -4.4599988271e-02
+                     -4.1543741991e-03
+                      4.3475096151e-02
+                      9.1537195265e-02
+                      1.3290414481e-01
+                      1.6121803520e-01
+                      1.7192199589e-01
+                      1.6301177221e-01
+                      1.3538753800e-01
+                      9.2748961271e-02
+                      4.1048759391e-02
+                     -1.2410177616e-02
+                     -6.0092587065e-02
+                     -9.5387945403e-02
+                     -1.1362489620e-01
 <<<<< Best residual terms =
-                     -1.3995781820e-03
-                      1.2879516945e-02
-                     -1.8286888973e-03
-                      1.8728638282e-03
-                      1.3762999060e-03
-                     -7.1204830551e-03
-                     -9.5599962382e-04
-                      2.5606160694e-03
+                     -1.3995558730e-03
+                      1.2879580154e-02
+                     -1.8286599774e-03
+                      1.8728111692e-03
+                      1.3762659625e-03
+                     -7.1204198460e-03
+                     -9.5600441249e-04
+                      2.5605617852e-03
 <<<<< Best residual terms =
-                     -1.3995781820e-03
-                      1.2879516945e-02
-                     -1.8286888973e-03
-                      1.8728638282e-03
-                      1.3762999060e-03
-                     -7.1204830551e-03
-                     -9.5599962382e-04
-                      2.5606160694e-03
+                     -1.3995558730e-03
+                      1.2879580154e-02
+                     -1.8286599774e-03
+                      1.8728111692e-03
+                      1.3762659625e-03
+                     -7.1204198460e-03
+                     -9.5600441249e-04
+                      2.5605617852e-03
 <<<<< Best data not found in evaluation cache
 Confidence Intervals on Calibrated Parameters:
-            x1: [ 2.8890159121e-01, 3.1432411096e-01 ]
-            x2: [ 1.9742875201e-01, 2.0540932273e-01 ]
+            x1: [ 2.8890155508e-01, 3.1432407121e-01 ]
+            x2: [ 1.9742872047e-01, 2.0540928919e-01 ]
 Test Number 7 succeeded
-<<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
-   oscB_scalar1: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar2: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar3: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar4: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar5: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Best parameters          =
-                      2.9999999958e-01 x1
-                      1.9999999983e-01 x2
-<<<<< Best model responses =
-                      3.2274897464e-01
-                     -2.9210752337e-01
-                     -1.6244810565e-02
-                      1.3309207659e-01
-                     -1.1245429593e-01
-<<<<< Best residual terms =
-                      3.7169560269e-10
-                     -2.2178486825e-10
-                     -1.9624570372e-10
-                      2.6753252731e-10
-                      3.6325031578e-10
-<<<<< Best residual terms =
-                      3.7169560269e-10
-                     -2.2178486825e-10
-                     -1.9624570372e-10
-                      2.6753252731e-10
-                      3.6325031578e-10
-<<<<< Best data captured at function evaluation 22
-Confidence Intervals on Calibrated Parameters:
-            x1: [ -4.4713038410e-01, 1.0471303833e+00 ]
-            x2: [ -3.0119848282e-02, 4.3011984794e-01 ]
-Test Number 8 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
    oscB_scalar1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
    oscB_scalar2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      3.0000000026e-01 x1
-                      2.0000000000e-01 x2
+                      2.9999999999e-01 x1
+                      2.0000000001e-01 x2
 <<<<< Best model responses =
-                      4.1049160390e-01
-                     -1.7343827817e-02
-                     -2.4559253097e-01
-                      1.1096681697e-02
-                     -5.4913571420e-02
-                      1.6649056510e-01
-                     -1.1245429600e-01
+                      3.2274897436e-01
+                     -2.9210752316e-01
+                     -1.6244810355e-02
+                      1.3309207648e-01
+                     -1.1245429604e-01
 <<<<< Best residual terms =
-                      2.1720181209e-11
-                      1.0814797322e-10
-                      2.3414545303e-10
-                     -9.0174898798e-12
-                     -1.0512227894e-10
-                     -1.1111012110e-10
-                      3.9877823266e-11
+                     -2.7422763856e-11
+                     -1.3484047212e-11
+                      1.3647506736e-11
+                      1.8554646451e-11
+                     -1.1317434998e-11
 <<<<< Best residual terms =
-                      2.1720181209e-11
-                      1.0814797322e-10
-                      2.3414545303e-10
-                     -9.0174898798e-12
-                     -1.0512227894e-10
-                     -1.1111012110e-10
-                      3.9877823266e-11
+                     -2.7422763856e-11
+                     -1.3484047212e-11
+                      1.3647506736e-11
+                      1.8554646451e-11
+                     -1.1317434998e-11
 <<<<< Best data captured at function evaluation 19
 Confidence Intervals on Calibrated Parameters:
-            x1: [ -2.8008060730e-01, 8.8008060782e-01 ]
-            x2: [ 3.1911742237e-03, 3.9680882578e-01 ]
+            x1: [ -4.4713038537e-01, 1.0471303854e+00 ]
+            x2: [ -3.0119848898e-02, 4.3011984891e-01 ]
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+   oscB_scalar1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999998715e-01 x1
+                      1.9999999925e-01 x2
+<<<<< Best model responses =
+                      4.1049160372e-01
+                     -1.7343831827e-02
+                     -2.4559254262e-01
+                      1.1096681088e-02
+                     -5.4913566802e-02
+                      1.6649057101e-01
+                     -1.1245429715e-01
+<<<<< Best residual terms =
+                     -1.5896162164e-10
+                     -3.9016742476e-09
+                     -1.1420191598e-08
+                     -6.1848928236e-10
+                      4.5129533791e-09
+                      5.8022790461e-09
+                     -1.1145922935e-09
+<<<<< Best residual terms =
+                     -1.5896162164e-10
+                     -3.9016742476e-09
+                     -1.1420191598e-08
+                     -6.1848928236e-10
+                      4.5129533791e-09
+                      5.8022790461e-09
+                     -1.1145922935e-09
+<<<<< Best data captured at function evaluation 16
+Confidence Intervals on Calibrated Parameters:
+            x1: [ -2.8008058831e-01, 8.8008056261e-01 ]
+            x2: [ 3.1911835732e-03, 3.9680881494e-01 ]
 dakota_field.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
@@ -17352,31 +17352,31 @@ Test Number 2 succeeded
                      -6.2500000000e-02
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 587 total (587 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 373 total (373 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.6093750000e-01 x1
-                      4.4531250000e-01 x2
-                      8.5156250000e-01 x3
-                                     4 y1
-                                     9 y2
-                                     7 z1
-                                     9 z2
-                      7.7000000000e+00 y3
-                      7.7000000000e+00 y4
+                      6.7382812500e-02 x1
+                      1.4062500000e-01 x2
+                      1.4140625000e+00 x3
+                                     1 y1
+                                     1 y2
+                                     4 z1
+                                     8 z2
+                      1.2000000000e+00 y3
+                      1.2000000000e+00 y4
 <<<<< Best objective function  =
-                     -7.7198139912e+03
+                     -2.2223061102e+04
 <<<<< Best constraint values   =
-                     -1.0192871094e-02
-                     -3.2165527344e-02
+                     -6.5772056581e-02
+                     -1.3916015626e-02
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 8984 total (8984 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 716 total (716 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 6792 total (6792 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 527 total (527 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0004005432e+00 x1
-                      1.0002021790e+00 x2
-                      9.9995708466e-01 x3
+                      1.0010261536e+00 x1
+                      9.9923706055e-01 x2
+                      9.9929714203e-01 x3
                                      1 y1
                                      1 y2
                                      4 z1
@@ -24409,14 +24409,14 @@ Partial Rank Correlation Matrix between input and output:
 dakota_sbgouu_short_column_discrete.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 126250 total (126250 new, 0 duplicate)
-<<<<< Function evaluation summary (ALEAT_I): 2695 total (1486 new, 1209 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 2695 total (1001 new, 1694 duplicate)
 <<<<< Best parameters          =
-                      4.0041083032e+02 P_mean
-                      2.0120630901e+03 M_mean
-                      5.9774221182e+00 Y_mean
+                      4.0199942403e+02 P_mean
+                      1.7607990271e+03 M_mean
+                      5.9969907245e+00 Y_mean
                                      2 ddsi_ModelForm
 <<<<< Best objective function  =
-                     -3.6671042144e+00
+                     -3.6680411469e+00
 <<<<< Best data not found in evaluation cache
 dakota_sbnls_rosen.in
 Test Number 0 succeeded
