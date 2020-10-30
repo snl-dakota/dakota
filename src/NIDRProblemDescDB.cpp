@@ -4481,9 +4481,7 @@ Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
 	   IntVector& V, bool aggregate_LUV = false, size_t offset = 0)
 {
   ISCIter ie, it;
-  Real avg_val, r_val;
-  int i, i_val, i_left, i_right;
-  size_t num_set_i;
+  size_t i, num_set_i;
 
   bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
 
@@ -4498,29 +4496,10 @@ Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
       L[offset] = *it;     // lower bound is first value
       U[offset] = *(--ie); // upper bound is final value
       if (init_V) {
-	// TODO: Update to select middle or next lower value
-	// select the initial value to be closest set value to avg_val
-	for(avg_val = 0., ++ie; it != ie; ++it)
-	  avg_val += *it;
-	avg_val /= num_set_i;
-	// bracket avg_val between [i_left,i_right]
-	i_left = L[offset]; i_right = U[offset];
-	for(it = set_i.begin(); it != ie; ++it) {
-	  r_val = i_val = *it;
-	  if (r_val > avg_val) {      // update nearest neighbor to right
-	    if (i_val < i_right)
-	      i_right = i_val;
-	  }
-	  else if (r_val < avg_val) { // update nearest neighbor to left
-	    if (i_val > i_left)
-	      i_left = i_val;
-	  }
-	  else { // r_val equals avg_val
-	    i_left = i_right = i_val;
-	    break;
-	  }
-	}
-	V[offset] = (i_right - avg_val < avg_val - i_left) ? i_right : i_left;
+	// OLD: Select the initial value to be closest set value to mean value
+	// NEW: Select value from middle or next lower index
+	std::advance(it, mid_or_next_lower_index(num_set_i));
+	V[offset] = *it;
       }
     }
   }
@@ -4562,8 +4541,6 @@ Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs, IntVector& IP,
 	   bool aggregate_LUV = false, size_t offset = 0)
 {
   IRMCIter ite, it;
-  Real avg_val, r_val;
-  int i_val, i_left, i_right;
   size_t i, j, num_vp_j, num_IP = IP.length();
 
   bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
@@ -4584,29 +4561,10 @@ Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs, IntVector& IP,
       U[i] = (--ite)->first; // upper bound is final value
       if (num_IP) V[i] = IP[j]; // presence of value w/i set already checked
       else if (init_V) {
-	// TODO: Update to select middle or next lower value
-	// select the initial value to be closest set value to avg_val
-	for(avg_val = 0., ++ite; it != ite; ++it)
-	  avg_val += it->first;
-	avg_val /= num_vp_j;
-	// bracket avg_val between [i_left,i_right]
-	i_left = L[offset]; i_right = U[offset];
-	for(it = vp_j.begin(); it != ite; ++it) {
-	  r_val = i_val = it->first;
-	  if (r_val > avg_val) {      // update nearest neighbor to right
-	    if (i_val < i_right)
-	      i_right = i_val;
-	  }
-	  else if (r_val < avg_val) { // update nearest neighbor to left
-	    if (i_val > i_left)
-	      i_left = i_val;
-	  }
-	  else { // r_val equals avg_val
-	    i_left = i_right = i_val;
-	    break;
-	  }
-	}
-	V[i] = (i_right - avg_val < avg_val - i_left) ? i_right : i_left;
+	// OLD: Select the initial value to be closest set value to mean value
+	// NEW: Select value from middle or next lower index
+	std::advance(it, mid_or_next_lower_index(num_vp_j));
+	V[i] = it->first;
       }
     }
   }
@@ -4616,10 +4574,8 @@ static void
 Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
 	   RealVector& V, bool aggregate_LUV = false, size_t offset = 0)
 {
-  Real avg_val, set_val, s_left, s_right;
   RSCIter ie, it;
-  int i;
-  size_t num_set_i;
+  size_t i, num_set_i;
 
   bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
 
@@ -4634,29 +4590,10 @@ Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
       L[offset] = *it;     // lower bound is first value
       U[offset] = *(--ie); // upper bound is final value
       if (init_V) {
-	// TODO: Update to select middle or next lower value
-	// select the initial value to be closest set value to avg_val
-	for(avg_val = 0., ++ie; it != ie; ++it)
-	  avg_val += *it;
-	avg_val /= num_set_i;
-	// bracket avg_val between [s_left,s_right]
-	s_left = L[offset]; s_right = U[offset];
-	for(it = set_i.begin(); it != ie; ++it) {
-	  set_val = *it;
-	  if (set_val > avg_val) {      // update nearest neighbor to right
-	    if (set_val < s_right)
-	      s_right = set_val;
-	  }
-	  else if (set_val < avg_val) { // update nearest neighbor to left
-	    if (set_val > s_left)
-	      s_left = set_val;
-	  }
-	  else { // set_val equals avg_val
-	    s_left = s_right = set_val;
-	    break;
-	  }
-	}
-	V[offset] = (s_right - avg_val < avg_val - s_left) ? s_right : s_left;
+	// OLD: Select the initial value to be closest set value to mean value
+	// NEW: Select value from middle or next lower index
+	std::advance(it, mid_or_next_lower_index(num_set_i));
+	V[offset] = *it;
       }
     }
   }
@@ -4667,7 +4604,6 @@ Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs, RealVector& IP,
 	   RealVector& L, RealVector& U, RealVector& V,
 	   bool aggregate_LUV = false, size_t offset = 0)
 {
-  Real avg_val, set_val, s_left, s_right;
   RRMCIter ite, it;
   size_t i, j, num_vp_j, num_IP = IP.length();
 
@@ -4689,29 +4625,10 @@ Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs, RealVector& IP,
       U[i] = (--ite)->first; // upper bound is final value
       if (num_IP) V[i] = IP[j];
       else if (init_V) {
-	// TODO: Update to select middle or next lower value
-	// select the initial value to be closest set value to avg_val
-	for(avg_val = 0., ++ite; it != ite; ++it)
-	  avg_val += it->first;
-	avg_val /= num_vp_j;
-	// bracket avg_val between [s_left,s_right]
-	s_left = L[i]; s_right = U[i];
-	for(it = vp_j.begin(); it != ite; ++it) {
-	  set_val = it->first;
-	  if (set_val > avg_val) {      // update nearest neighbor to right
-	    if (set_val < s_right)
-	      s_right = set_val;
-	  }
-	  else if (set_val < avg_val) { // update nearest neighbor to left
-	    if (set_val > s_left)
-	      s_left = set_val;
-	  }
-	  else { // set_val equals avg_val
-	    s_left = s_right = set_val;
-	    break;
-	  }
-	}
-	V[i] = (s_right - avg_val < avg_val - s_left) ? s_right : s_left;
+	// OLD: Select the initial value to be closest set value to mean value
+	// NEW: Select value from middle or next lower index
+	std::advance(it, mid_or_next_lower_index(num_vp_j));
+	V[i] = it->first;
       }
     }
   }

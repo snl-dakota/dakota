@@ -1,8 +1,9 @@
 #@ s*: Label=FastTest
 # DAKOTA INPUT FILE - dakota_pstudy_allvars.in
 
-# This sample Dakota input file tests inferred bounds and inferred 
-# initial points in the parameter study.
+# This sample Dakota input file tests inferred bounds (with partitions
+# = 1, 2) and inferred initial points (with partitions = 0) in the
+# parameter study.
 
 environment,				
 	  tabular_data		
