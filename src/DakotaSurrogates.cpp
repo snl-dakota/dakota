@@ -243,9 +243,27 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   return approxGradient;
 }
 
-void SurrogatesBaseApprox::export_model(const String& fn_label,
-					const String& export_prefix,
-					const unsigned short export_format)
+
+void SurrogatesBaseApprox::
+export_model(const Variables& vars, const String& fn_label,
+	     const String& export_prefix, const unsigned short export_format)
+{
+  // order the variable labels the way the surrogate inputs are ordered
+  StringArray var_labels(vars.continuous_variable_labels().begin(),
+			 vars.continuous_variable_labels().end());
+  var_labels.insert(var_labels.end(),
+		    vars.discrete_int_variable_labels().begin(),
+		    vars.discrete_int_variable_labels().end());
+  var_labels.insert(var_labels.end(),
+		    vars.discrete_real_variable_labels().begin(),
+		    vars.discrete_real_variable_labels().end());
+  export_model(var_labels, fn_label, export_prefix, export_format);
+}
+
+
+void SurrogatesBaseApprox::
+export_model(const StringArray& var_labels, const String& fn_label,
+	     const String& export_prefix, const unsigned short export_format)
 {
   // Surrogates may not be built for some (or all) responses
   if (!model) {
@@ -254,16 +272,23 @@ void SurrogatesBaseApprox::export_model(const String& fn_label,
     return;
   }
 
+  model->variable_labels(var_labels);
+
+  // This block uses prefix, label, maybe formats
   String without_extension;
   unsigned short formats;
   if(export_format) {
+    model->response_labels(StringArray(1, fn_label));
     without_extension = export_prefix + "." + fn_label;
     formats = export_format;
   }
   else {
+    model->response_labels(StringArray(1, approxLabel));
     without_extension = sharedDataRep->modelExportPrefix + "." + approxLabel;
     formats = sharedDataRep->modelExportFormat;
   }
+
+  // This block without_extension, formats
   // Saving to text archive
   if(formats & TEXT_ARCHIVE) {
     String filename = without_extension + ".txt";

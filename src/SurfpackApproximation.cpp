@@ -459,10 +459,23 @@ void SurfpackApproximation::build()
 }
 
 
-void SurfpackApproximation::export_model(const String& fn_label,
- 					 const String& export_prefix, 
-                                         const unsigned short export_format)
+void SurfpackApproximation::
+export_model(const Variables& vars, const String& fn_label,
+	     const String& export_prefix,
+	     const unsigned short export_format)
 {
+  // Surfpack doesn't do anything with the variable labels
+  // (Could make this a base class default forward?)
+  export_model(StringArray(), fn_label, export_prefix, export_format);
+}
+
+
+void SurfpackApproximation::
+export_model(const StringArray& var_labels, const String& fn_label,
+	     const String& export_prefix, const unsigned short export_format)
+{
+  // TODO: This needs protection against empty model too (maybe)
+
   String without_extension;
   unsigned short formats;
   if(export_format) {

@@ -944,8 +944,15 @@ void DataFitSurrModel::build_approx_interface()
       actualModel.discrete_real_lower_bounds(),
       actualModel.discrete_real_upper_bounds());
   }
-  if (exportSurrogate)
-    approxInterface.export_approximation();
+  if (exportSurrogate) {
+    // skip the ApproximationInterface layer and go directly to Approximations
+    // this could pass in the response name too, presumably, but needs
+    // to handle whether comes from shared data vs. Model...
+    auto& approxs = approximations();
+    auto approx_it = approxs.begin();
+    for ( ; approx_it != approxs.end(); ++approx_it)
+      approx_it->export_model(currentVariables);
+  }
 }
 
 

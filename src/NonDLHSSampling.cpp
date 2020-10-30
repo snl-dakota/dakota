@@ -849,7 +849,8 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
     ss << i;
     std::string GPstring = ss.str();
     const String GPPrefix = "PCA_GP";
-    gpApproximations[i].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
+    gpApproximations[i].export_model(StringArray(), GPstring, GPPrefix,
+				     ALGEBRAIC_FILE);
   }
 
   // Now form predictions based on new input points
