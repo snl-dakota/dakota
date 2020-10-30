@@ -56,17 +56,17 @@ public:
    * \brief Constructor that sets configOptions but does not build.
    * \param[in] param_list List that overrides entries in defaultConfigOptions.
    */
-  Surrogate(const Teuchos::ParameterList& param_list);
+  Surrogate(const ParameterList& param_list);
 
   /**
    * \brief Constructor for the Surrogate that sets configOptions
-   *        and builds the GP.
+   *  and builds the surrogate (does nothing in the base class).
    * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features).
    * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
    * \param[in] param_list List that overrides entries in defaultConfigOptions.
    */
   Surrogate(const MatrixXd &samples, const MatrixXd &response,
-            const Teuchos::ParameterList &param_list);
+            const ParameterList &param_list);
 
   /// Default destructor.
   virtual ~Surrogate();
@@ -127,8 +127,6 @@ public:
   /**
    *  \brief Evaluate the Hessian of the Surrogate at a single point for QoI index 0.
    *  \param[in] eval_point Coordinates of the prediction point - (1 by num_features).
-   *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
-   *  0 for scalar-valued surrogates.
    *  \returns Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    */
@@ -191,8 +189,8 @@ public:
   static void load(const std::string& infile, const bool binary,
 		   SurrHandle& surr_in);
 
-  /// member variant of save to save as shared_ptr(*this)
-  /// could enable if desired, but might require shared_from_this?
+  // member variant of save to save as shared_ptr(*this)
+  // could enable if desired, but might require shared_from_this?
   // void save(const std::string& outfile, const bool binary);
 
   /// serialize Surrogate from file through pointer to base class
@@ -200,7 +198,7 @@ public:
   static std::shared_ptr<Surrogate>
   load(const std::string& infile, const bool binary);
 
-  /// also demo load via ctor
+  // also demo load via ctor
   //  Surrogate(infile, binary)
 
   /// Evalute metrics at specified points (within surrogates)
@@ -247,7 +245,12 @@ private:
 
 };
 
-
+/**
+* \brief Serialize a derived (i.e. non-base) surrogate model.
+* \param[in] surr_out Surrogate to seralize.
+* \param[in] outfile Name of the output text or binary file.
+* \param[in] binary Flag for binary or text format.
+*/
 template<typename DerivedSurr>
 void Surrogate::save(const DerivedSurr& surr_out, const std::string& outfile,
 		     const bool binary)
@@ -286,6 +289,12 @@ void Surrogate::save(const DerivedSurr& surr_out, const std::string& outfile,
 }
 
 
+/**
+* \brief Load a derived (i.e. non-base) surrogate model.
+* \param[in] infile Filename for serialized surrogate.
+* \param[in] binary Flag for binary or text format.
+* \param[in] surr_in Derived surrogate class to be populated with serialized data.
+*/
 template<typename DerivedSurr>
 void Surrogate::load(const std::string& infile, const bool binary,
 		     DerivedSurr& surr_in)

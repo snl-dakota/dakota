@@ -57,26 +57,26 @@ class LinearSolverBase
     /**
      * \brief Perform the matrix factorization for the linear solver matrix.
      *
-     * \param[in] mat The incoming matrix to factorize.
+     * \param[in] A The incoming matrix to factorize.
      */
-    virtual void factorize(const MatrixXd &mat);
+    virtual void factorize(const MatrixXd &A);
 
     /**
      * \brief Find a solution to linear problem.
      *
-     * \param[in] lhs The linear system left-hand-side matrix.
-     * \param[in] rhs The linear system right-hand-side (multi-)vector.
+     * \param[in] A The linear system left-hand-side matrix.
+     * \param[in] b The linear system right-hand-side (multi-)vector.
      * \param[in] x   The linear system solution (multi-)vector.
      */
-    virtual void solve(const MatrixXd &lhs, const MatrixXd &rhs, MatrixXd &x);
+    virtual void solve(const MatrixXd &A, const MatrixXd &b, MatrixXd &x);
 
     /**
      * \brief Find a solution to linear problem where the LHS is already factorized.
      *
-     * \param[in] rhs The linear system right-hand-side (multi-)vector.
+     * \param[in] b The linear system right-hand-side (multi-)vector.
      * \param[in] x   The linear system solution (multi-)vector.
      */
-    virtual void solve(const MatrixXd &rhs, MatrixXd &x);
+    virtual void solve(const MatrixXd &b, MatrixXd &x);
 };
 
 /**
@@ -89,6 +89,10 @@ std::shared_ptr<LinearSolverBase> solver_factory(LinearSolverBase::SOLVER_TYPE t
 
 // --------------------------------------------------------------------------------
 
+/**
+ * \brief The LUSolver class is used to solve linear systems with the
+ * LU decomposition.
+ */
 class LUSolver : public LinearSolverBase
 {
   public:
@@ -135,6 +139,10 @@ class LUSolver : public LinearSolverBase
 
 // --------------------------------------------------------------------------------
 
+/**
+ * \brief The SVDSolver class is used to solve linear systems with the
+ * singular value decomposition.
+ */
 class SVDSolver : public LinearSolverBase
 {
   public:
@@ -181,6 +189,10 @@ class SVDSolver : public LinearSolverBase
 
 // --------------------------------------------------------------------------------
 
+/**
+ * \brief The QRSolver class solves the linear least squares problem with a
+ * QR decomposition.
+ */
 class QRSolver : public LinearSolverBase
 {
   public:
@@ -199,7 +211,7 @@ class QRSolver : public LinearSolverBase
     /**
      * \brief Perform the matrix factorization for the linear solver matrix.
      *
-     * \param[in] mat The incoming matrix to factorize.
+     * \param[in] A The incoming matrix to factorize.
      */
     void factorize(const MatrixXd &A) override;
 
@@ -215,7 +227,7 @@ class QRSolver : public LinearSolverBase
     /**
      * \brief Find a solution to (A^T*A)x = A^T*b when A is already factorized.
      *
-     * \param[in] rhs The linear system right-hand-side (multi-)vector.
+     * \param[in] b The linear system right-hand-side (multi-)vector.
      * \param[in] x   The linear system solution (multi-)vector.
      */
     void solve(const MatrixXd &b, MatrixXd &x) override;
@@ -229,8 +241,8 @@ class QRSolver : public LinearSolverBase
 // --------------------------------------------------------------------------------
 
 /**
- * \brief The CholeskySolver class can be used to solve Ax = b,
- * provided that A is a symmetric matrix.
+ * \brief The CholeskySolver class is used to solve linear systems with a
+ * symmetric matrix with a pivoted Cholesky decomposition.
  */
 class CholeskySolver : public LinearSolverBase
 {

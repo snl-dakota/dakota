@@ -52,13 +52,6 @@ class DataScaler {
     virtual ~DataScaler();
 
     /**
-     *  \brief Apply scaling to a single point.
-     *  \param[in] unscaled_sample Unscaled sample vector.
-     *  \returns VectorXd scaled_sample Scaled sample vector.
-     */
-    const RowVectorXd& scale_sample(const RowVectorXd &unscaled_sample);
-
-    /**
      *  \brief Apply scaling to a set of unscaled samples
      *  \param[in] unscaled_samples Unscaled matrix of samples
      *  \param[out] scaled_samples Scaled matrix of samples
