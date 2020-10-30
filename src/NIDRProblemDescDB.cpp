@@ -4456,6 +4456,26 @@ check_LUV_size(size_t num_v, RealVector& L, RealVector& U, RealVector& V,
   return init_V;
 }
 
+
+/// Compute the midpoint of floating-point or integer range [a, b] (a <= b),
+/// possibly indices, rounding toward a if needed. (Eventually replace
+/// with C++20 midpoint, which is more general.)
+template<typename T>
+T midpoint(T a, T b)
+{
+  // avoid overflow and possibly integer truncate the middle value
+  // (b-a)/2 toward 0:
+  return a + (b-a)/2;
+}
+
+
+/// get the middle or left-of-middle index among indices [0,num_inds-1]
+static size_t mid_or_next_lower_index(const size_t num_inds)
+{
+  return midpoint((size_t)0, num_inds-1);
+}
+
+
 static void
 Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
 	   IntVector& V, bool aggregate_LUV = false, size_t offset = 0)
@@ -4478,6 +4498,7 @@ Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
       L[offset] = *it;     // lower bound is first value
       U[offset] = *(--ie); // upper bound is final value
       if (init_V) {
+	// TODO: Update to select middle or next lower value
 	// select the initial value to be closest set value to avg_val
 	for(avg_val = 0., ++ie; it != ie; ++it)
 	  avg_val += *it;
@@ -4528,14 +4549,7 @@ Vgen_DSset(size_t num_v, StringSetArray& sets, StringArray& L, StringArray& U,
       L[offset] = *it;     // lower bound is first value
       U[offset] = *(--ie); // upper bound is final value
       if (init_V) {
-	size_t mid_index = 0;
-	// initial value is at middle index or the one directly below
-	if ( (num_set_i % 2 == 0) )
-	  // initial value is to the left of middle
-	  mid_index = num_set_i / 2 - 1;
-	else
-	  mid_index = (num_set_i + 1) / 2 - 1;
-	std::advance(it, mid_index);
+	std::advance(it, mid_or_next_lower_index(num_set_i));
 	V[offset] = *it;
       }
     }
@@ -4570,6 +4584,7 @@ Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs, IntVector& IP,
       U[i] = (--ite)->first; // upper bound is final value
       if (num_IP) V[i] = IP[j]; // presence of value w/i set already checked
       else if (init_V) {
+	// TODO: Update to select middle or next lower value
 	// select the initial value to be closest set value to avg_val
 	for(avg_val = 0., ++ite; it != ite; ++it)
 	  avg_val += it->first;
@@ -4619,6 +4634,7 @@ Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
       L[offset] = *it;     // lower bound is first value
       U[offset] = *(--ie); // upper bound is final value
       if (init_V) {
+	// TODO: Update to select middle or next lower value
 	// select the initial value to be closest set value to avg_val
 	for(avg_val = 0., ++ie; it != ie; ++it)
 	  avg_val += *it;
@@ -4673,6 +4689,7 @@ Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs, RealVector& IP,
       U[i] = (--ite)->first; // upper bound is final value
       if (num_IP) V[i] = IP[j];
       else if (init_V) {
+	// TODO: Update to select middle or next lower value
 	// select the initial value to be closest set value to avg_val
 	for(avg_val = 0., ++ite; it != ite; ++it)
 	  avg_val += it->first;
@@ -4727,14 +4744,7 @@ Vgen_DSset(size_t num_v, StringRealMapArray& vals_probs, StringArray& IP,
       U[i] = (--ite)->first; // upper bound is final value
       if (num_IP) V[i] = IP[j];
       else if (init_V) {
-	size_t mid_index = 0;
-	// initial value is at middle index or the one directly below
-	if ( (num_vp_j % 2 == 0) )
-	  // initial value is to the left of middle
-	  mid_index = num_vp_j / 2 - 1;
-	else
-	  mid_index = (num_vp_j + 1) / 2 - 1;
-	std::advance(it, mid_index);
+	std::advance(it, mid_or_next_lower_index(num_vp_j));
 	V[i] = it->first;
       }
     }
