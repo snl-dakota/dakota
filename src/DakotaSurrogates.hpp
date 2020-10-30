@@ -89,10 +89,6 @@ protected:
 	       const String& export_prefix,
 	       const unsigned short export_format) override;
 
-  /// Derived implementation of model export since only derived
-  /// classes can serialize.
-  virtual void derived_export_model(const String& filename, bool binary) = 0;
-
   /// Key/value config options for underlying surrogate
   dakota::ParameterList surrogateOpts;
 
