@@ -27,7 +27,7 @@ namespace Dakota {
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   userDefinedInterface(problem_db.get_interface()),
-  solnCntlVarType(EMPTY_TYPE), solnCntlADVIndex(0), solnCntlRVIndex(0),
+  solnCntlVarType(EMPTY_TYPE), solnCntlADVIndex(0), solnCntlAVIndex(0),
   simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE_MODE;
@@ -69,6 +69,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   solnCntlADVIndex = find_index(
     currentVariables.all_discrete_int_variable_labels(), control);
   if (solnCntlADVIndex != _NPOS) {
+    solnCntlAVIndex = svd.adiv_index_to_all_index(solnCntlADVIndex);
     solnCntlVarType = currentVariables.
       all_discrete_int_variable_types()[solnCntlADVIndex];
     if (find_index(currentVariables.discrete_int_variable_labels(), control)
@@ -82,6 +83,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
     solnCntlADVIndex = find_index(
       currentVariables.all_discrete_string_variable_labels(), control);
     if (solnCntlADVIndex != _NPOS) {
+      solnCntlAVIndex = svd.adsv_index_to_all_index(solnCntlADVIndex);
       solnCntlVarType = currentVariables.
 	all_discrete_string_variable_types()[solnCntlADVIndex];
       if (find_index(currentVariables.discrete_string_variable_labels(),
@@ -95,6 +97,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
       solnCntlADVIndex = find_index(
 	currentVariables.all_discrete_real_variable_labels(), control);
       if (solnCntlADVIndex != _NPOS) {
+	solnCntlAVIndex = svd.adrv_index_to_all_index(solnCntlADVIndex);
 	solnCntlVarType = currentVariables.
 	  all_discrete_real_variable_types()[solnCntlADVIndex];
 	if (find_index(currentVariables.discrete_real_variable_labels(),
@@ -121,42 +124,33 @@ initialize_solution_control(const String& control, const RealVector& cost)
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE:
-    //solnCntlRVIndex = svd.adiv_index_to_all_index(solnCntlADVIndex);
     num_lev =
       userDefinedConstraints.all_discrete_int_upper_bounds()[solnCntlADVIndex] -
       userDefinedConstraints.all_discrete_int_lower_bounds()[solnCntlADVIndex];
     break;
   case DISCRETE_DESIGN_SET_INT: case DISCRETE_STATE_SET_INT:
-    solnCntlRVIndex = svd.adiv_index_to_all_index(solnCntlADVIndex);
     num_lev = mvd_rep->
-      pull_parameter_size<IntSet>(solnCntlRVIndex, Pecos::DSI_VALUES);
+      pull_parameter_size<IntSet>(solnCntlAVIndex, Pecos::DSI_VALUES);
     break;
   case DISCRETE_DESIGN_SET_STRING: case DISCRETE_STATE_SET_STRING:
-    solnCntlRVIndex = svd.adsv_index_to_all_index(solnCntlADVIndex);
     num_lev = mvd_rep->
-      pull_parameter_size<StringSet>(solnCntlRVIndex, Pecos::DSS_VALUES);
+      pull_parameter_size<StringSet>(solnCntlAVIndex, Pecos::DSS_VALUES);
     break;
   case DISCRETE_DESIGN_SET_REAL: case DISCRETE_STATE_SET_REAL:
-    solnCntlRVIndex = svd.adrv_index_to_all_index(solnCntlADVIndex);
     num_lev = mvd_rep->
-      pull_parameter_size<RealSet>(solnCntlRVIndex, Pecos::DSR_VALUES);
+      pull_parameter_size<RealSet>(solnCntlAVIndex, Pecos::DSR_VALUES);
     break;
   case DISCRETE_UNCERTAIN_SET_INT:
-    solnCntlRVIndex = svd.adiv_index_to_all_index(solnCntlADVIndex);
-    num_lev = mvd_rep->
-      pull_parameter_size<IntRealMap>(solnCntlRVIndex,Pecos::DUSI_VALUES_PROBS);
+    num_lev = mvd_rep->pull_parameter_size<IntRealMap>
+      (solnCntlAVIndex, Pecos::DUSI_VALUES_PROBS);
     break;
   case DISCRETE_UNCERTAIN_SET_STRING:
-    solnCntlRVIndex = svd.adsv_index_to_all_index(solnCntlADVIndex);
-    num_lev = mvd_rep->
-      pull_parameter_size<StringRealMap>(solnCntlRVIndex,
-					 Pecos::DUSS_VALUES_PROBS);
+    num_lev = mvd_rep->pull_parameter_size<StringRealMap>
+      (solnCntlAVIndex, Pecos::DUSS_VALUES_PROBS);
     break;
   case DISCRETE_UNCERTAIN_SET_REAL:
-    solnCntlRVIndex = svd.adrv_index_to_all_index(solnCntlADVIndex);
-    num_lev = mvd_rep->
-      pull_parameter_size<RealRealMap>(solnCntlRVIndex,
-				       Pecos::DUSR_VALUES_PROBS);
+    num_lev = mvd_rep->pull_parameter_size<RealRealMap>
+      (solnCntlAVIndex, Pecos::DUSR_VALUES_PROBS);
     break;
   default:
     Cerr << "Error: unsupported variable type in SimulationModel::"
@@ -197,21 +191,24 @@ initialize_solution_control(const String& control, const RealVector& cost)
 }
 
 
-/* Real */void SimulationModel::solution_level_index(unsigned short lev_index)
+/* Real */void SimulationModel::
+solution_level_cost_index(unsigned short cost_index)
 {
   // incoming soln level index is an index into the ordered solnCntlCostMap,
   // not to be confused with the value in the key-value pair that corresponds
   // to the discrete variable value index (val_index below).
-  if (lev_index == USHRT_MAX) { // just return quietly to simplify calling code
+  // Most often, these two indices will be the same, but we always order with
+  // increasing cost in case the discrete values are not monotonic.
+  if (cost_index == USHRT_MAX) { // just return quietly to simplify calling code
     return;                     // (rather than always checking index validity)
 
     //Cerr << "Error: USHRT_MAX passed to SimulationModel::"
-    //     << "solution_level_index()." << std::endl;
+    //     << "solution_level_cost_index()." << std::endl;
     //abort_handler(MODEL_ERROR);
   }
 
   std::map<Real, size_t>::const_iterator c_cit = solnCntlCostMap.begin();
-  std::advance(c_cit, lev_index);
+  std::advance(c_cit, cost_index);
   size_t val_index = c_cit->second;
 
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
@@ -228,21 +225,21 @@ initialize_solution_control(const String& control, const RealVector& cost)
   //////////////////////////////
   case DISCRETE_DESIGN_SET_INT: case DISCRETE_STATE_SET_INT: {
     IntSet is;
-    mvd_rep->pull_parameter<IntSet>(solnCntlRVIndex, Pecos::DSI_VALUES, is);
+    mvd_rep->pull_parameter<IntSet>(solnCntlAVIndex, Pecos::DSI_VALUES, is);
     ISIter is_it = is.begin();  std::advance(is_it, val_index);
     currentVariables.all_discrete_int_variable(*is_it, solnCntlADVIndex);
     break;
   }
   case DISCRETE_DESIGN_SET_STRING: case DISCRETE_STATE_SET_STRING: {
     StringSet ss;
-    mvd_rep->pull_parameter<StringSet>(solnCntlRVIndex, Pecos::DSS_VALUES, ss);
+    mvd_rep->pull_parameter<StringSet>(solnCntlAVIndex, Pecos::DSS_VALUES, ss);
     SSCIter ss_it = ss.begin();  std::advance(ss_it, val_index);
     currentVariables.all_discrete_string_variable(*ss_it, solnCntlADVIndex);
     break;
   }
   case DISCRETE_DESIGN_SET_REAL: case DISCRETE_STATE_SET_REAL: {
     RealSet rs;
-    mvd_rep->pull_parameter<RealSet>(solnCntlRVIndex, Pecos::DSR_VALUES, rs);
+    mvd_rep->pull_parameter<RealSet>(solnCntlAVIndex, Pecos::DSR_VALUES, rs);
     RSIter rs_it = rs.begin();  std::advance(rs_it, val_index);
     currentVariables.all_discrete_real_variable(*rs_it, solnCntlADVIndex);
     break;
@@ -250,7 +247,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   //////////////////////////////
   case DISCRETE_UNCERTAIN_SET_INT: {
     IntRealMap irm;
-    mvd_rep->pull_parameter<IntRealMap>(solnCntlRVIndex,
+    mvd_rep->pull_parameter<IntRealMap>(solnCntlAVIndex,
 					Pecos::DUSI_VALUES_PROBS, irm);
     IRMIter ir_it = irm.begin();  std::advance(ir_it, val_index);
     currentVariables.all_discrete_int_variable(ir_it->first, solnCntlADVIndex);
@@ -258,7 +255,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   }
   case DISCRETE_UNCERTAIN_SET_STRING: {
     StringRealMap srm;
-    mvd_rep->pull_parameter<StringRealMap>(solnCntlRVIndex,
+    mvd_rep->pull_parameter<StringRealMap>(solnCntlAVIndex,
 					   Pecos::DUSS_VALUES_PROBS, srm);
     SRMIter sr_it = srm.begin();  std::advance(sr_it, val_index);
     currentVariables.all_discrete_string_variable(sr_it->first,
@@ -267,7 +264,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   }
   case DISCRETE_UNCERTAIN_SET_REAL: {
     RealRealMap rrm;
-    mvd_rep->pull_parameter<RealRealMap>(solnCntlRVIndex,
+    mvd_rep->pull_parameter<RealRealMap>(solnCntlAVIndex,
 					 Pecos::DUSR_VALUES_PROBS, rrm);
     RRMIter rr_it = rrm.begin();  std::advance(rr_it, val_index);
     currentVariables.all_discrete_real_variable(rr_it->first, solnCntlADVIndex);
@@ -279,7 +276,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
 }
 
 
-unsigned short SimulationModel::solution_level_index() const
+unsigned short SimulationModel::solution_level_cost_index() const
 {
   size_t val_index;
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
@@ -297,21 +294,21 @@ unsigned short SimulationModel::solution_level_index() const
   //////////////////////////////
   case DISCRETE_DESIGN_SET_INT: case DISCRETE_STATE_SET_INT: {
     IntSet is;
-    mvd_rep->pull_parameter<IntSet>(solnCntlRVIndex, Pecos::DSI_VALUES, is);
+    mvd_rep->pull_parameter<IntSet>(solnCntlAVIndex, Pecos::DSI_VALUES, is);
     val_index = set_value_to_index(
       currentVariables.all_discrete_int_variables()[solnCntlADVIndex], is);
     break;
   }
   case DISCRETE_DESIGN_SET_STRING: case DISCRETE_STATE_SET_STRING: {
     StringSet ss;
-    mvd_rep->pull_parameter<StringSet>(solnCntlRVIndex, Pecos::DSS_VALUES, ss);
+    mvd_rep->pull_parameter<StringSet>(solnCntlAVIndex, Pecos::DSS_VALUES, ss);
     val_index = set_value_to_index(
       currentVariables.all_discrete_string_variables()[solnCntlADVIndex], ss);
     break;
   }
   case DISCRETE_DESIGN_SET_REAL: case DISCRETE_STATE_SET_REAL: {
     RealSet rs;
-    mvd_rep->pull_parameter<RealSet>(solnCntlRVIndex, Pecos::DSR_VALUES, rs);
+    mvd_rep->pull_parameter<RealSet>(solnCntlAVIndex, Pecos::DSR_VALUES, rs);
     val_index = set_value_to_index(
       currentVariables.all_discrete_real_variables()[solnCntlADVIndex], rs);
     break;
@@ -319,7 +316,7 @@ unsigned short SimulationModel::solution_level_index() const
   //////////////////////////////
   case DISCRETE_UNCERTAIN_SET_INT: {
     IntRealMap irm;
-    mvd_rep->pull_parameter<IntRealMap>(solnCntlRVIndex,
+    mvd_rep->pull_parameter<IntRealMap>(solnCntlAVIndex,
 					Pecos::DUSI_VALUES_PROBS, irm);
     val_index = map_key_to_index(
       currentVariables.all_discrete_int_variables()[solnCntlADVIndex], irm);
@@ -327,7 +324,7 @@ unsigned short SimulationModel::solution_level_index() const
   }
   case DISCRETE_UNCERTAIN_SET_STRING: {
     StringRealMap srm;
-    mvd_rep->pull_parameter<StringRealMap>(solnCntlRVIndex,
+    mvd_rep->pull_parameter<StringRealMap>(solnCntlAVIndex,
 					   Pecos::DUSS_VALUES_PROBS, srm);
     val_index = map_key_to_index(
       currentVariables.all_discrete_string_variables()[solnCntlADVIndex], srm);
@@ -335,7 +332,7 @@ unsigned short SimulationModel::solution_level_index() const
   }
   case DISCRETE_UNCERTAIN_SET_REAL: {
     RealRealMap rrm;
-    mvd_rep->pull_parameter<RealRealMap>(solnCntlRVIndex,
+    mvd_rep->pull_parameter<RealRealMap>(solnCntlAVIndex,
 					 Pecos::DUSR_VALUES_PROBS, rrm);
     val_index = map_key_to_index(
       currentVariables.all_discrete_real_variables()[solnCntlADVIndex], rrm);
@@ -346,9 +343,49 @@ unsigned short SimulationModel::solution_level_index() const
     return USHRT_MAX; break;
   }
 
-  // convert val_index to lev_index and return
-  size_t lev_index = map_value_to_index(val_index, solnCntlCostMap);
-  return (lev_index == _NPOS) ? USHRT_MAX : (unsigned short)lev_index;
+  // convert val_index to cost_index and return
+  size_t cost_index = map_value_to_index(val_index, solnCntlCostMap);
+  return (cost_index == _NPOS) ? USHRT_MAX : (unsigned short)cost_index;
+}
+
+
+int SimulationModel::solution_level_int_value() const
+{
+  switch (solnCntlVarType) {
+  case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
+  case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:
+  case DISCRETE_STATE_RANGE:        case DISCRETE_STATE_SET_INT:
+    return currentVariables.all_discrete_int_variables()[solnCntlADVIndex];
+    break;
+  default: // inconsistent or empty type
+    return INT_MAX; break;
+  }
+}
+
+
+String SimulationModel::solution_level_string_value() const
+{
+  switch (solnCntlVarType) {
+  case DISCRETE_DESIGN_SET_STRING:  case DISCRETE_UNCERTAIN_SET_STRING:
+  case DISCRETE_STATE_SET_STRING:
+    return currentVariables.all_discrete_string_variables()[solnCntlADVIndex];
+    break;
+  default: // inconsistent or empty type
+    return ""; break;
+  }
+}
+
+
+Real SimulationModel::solution_level_real_value() const
+{
+  switch (solnCntlVarType) {
+  case DISCRETE_DESIGN_SET_REAL:  case DISCRETE_UNCERTAIN_SET_REAL:
+  case DISCRETE_STATE_SET_REAL:
+    return currentVariables.all_discrete_real_variables()[solnCntlADVIndex];
+    break;
+  default: // inconsistent or empty type
+    return DBL_MAX; break;
+  }
 }
 
 
@@ -367,9 +404,9 @@ Real SimulationModel::solution_level_cost() const
   std::map<Real, size_t>::const_iterator cit = solnCntlCostMap.begin();
   if (cit == solnCntlCostMap.end()) return 0.;
   else {
-    unsigned short lev_index = solution_level_index();
-    if (lev_index != USHRT_MAX)
-      std::advance(cit, lev_index);
+    unsigned short cost_index = solution_level_cost_index();
+    if (cost_index != USHRT_MAX)
+      std::advance(cit, cost_index);
     return cit->first;
   }
 }
@@ -398,15 +435,20 @@ void SimulationModel::eval_tag_prefix(const String& eval_id_str)
   userDefinedInterface.eval_tag_prefix(eval_id_str, append_iface_id);
 }
 
-/*ActiveSet SimulationModel::default_active_set() {
+
+/*
+ActiveSet SimulationModel::default_active_set()
+{
   ActiveSet set(numFns, numDerivVars);
   ShortArray asv(numFns, 1);
  
-  if(gradientType != "none" && (gradientType == "analytic" || supportsEstimDerivs))
+  if( gradientType != "none" &&
+      ( gradientType == "analytic" || supportsEstimDerivs ) )
       for(auto &a : asv)
         a |=  2;
 
-  if(hessianType != "none" && (hessianType == "analytic" || supportsEstimDerivs))
+  if ( hessianType != "none" &&
+       ( hessianType == "analytic" || supportsEstimDerivs ) )
       for(auto &a : asv)
         a |=  4;
 
@@ -414,7 +456,10 @@ void SimulationModel::eval_tag_prefix(const String& eval_id_str)
   return set;
 }
 */
-ActiveSet SimulationModel::default_interface_active_set() {
+
+
+ActiveSet SimulationModel::default_interface_active_set()
+{
   // compute the default active set for the user-defined interface
   ActiveSet set;
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
@@ -441,7 +486,10 @@ ActiveSet SimulationModel::default_interface_active_set() {
   return set;
 }
 
-void SimulationModel::declare_sources() {
+
+void SimulationModel::declare_sources()
+{
   evaluationsDB.declare_source(modelId, modelType, interface_id(), "interface");
 }
+
 } // namespace Dakota

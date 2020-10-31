@@ -1497,7 +1497,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       currentResponse.active_set(set);
       currentResponse.update(actualModel.current_response());
       // TODO: Add to surrogate build data
-      //      add_datapoint(....)
+      //      add_tabular_data(....)
       break;
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       actualModel.evaluate(set);

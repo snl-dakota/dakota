@@ -401,7 +401,7 @@ void HierarchSurrModel::build_approximation()
   //ActiveSet temp_set = lf_model.current_response().active_set();
   //temp_set.request_values(1);
   //if (sameModelInstance)
-  //  lf_model.solution_level_index(surrogate_level_index());
+  //  lf_model.solution_level_cost_index(surrogate_level_index());
   //lf_model.evaluate(temp_set);
   //const Response& lo_fi_response = lf_model.current_response();
 
@@ -441,7 +441,7 @@ void HierarchSurrModel::build_approximation()
   ActiveSet hf_set = currentResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
   if (sameModelInstance)
-    hf_model.solution_level_index(truth_level_index());
+    hf_model.solution_level_cost_index(truth_level_index());
   hf_model.evaluate(hf_set);
   truthResponseRef[truthModelKey].update(hf_model.current_response());
 
@@ -534,7 +534,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
 
   if (sameModelInstance) update_model(same_model);
 
-  // Notes on repetitive setting of model.solution_level_index():
+  // Notes on repetitive setting of model.solution_level_cost_index():
   // > when LF & HF are the same model, then setting the index for low or high
   //   invalidates the other fidelity definition.
   // > within a single derived_evaluate(), could protect these updates with
@@ -549,7 +549,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   if (hi_fi_eval) {
     component_parallel_mode(TRUTH_MODEL_MODE); // TO DO: sameModelInstance
     if (sameModelInstance)
-      hf_model.solution_level_index(truth_level_index());
+      hf_model.solution_level_cost_index(truth_level_index());
     else
       update_model(hf_model);
     switch (responseMode) {
@@ -594,7 +594,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     // compute the LF response
     component_parallel_mode(SURROGATE_MODEL_MODE); // TO DO: sameModelInstance
     if (sameModelInstance)
-      lf_model.solution_level_index(surrogate_level_index());
+      lf_model.solution_level_cost_index(surrogate_level_index());
     else
       update_model(lf_model);
     ActiveSet lo_fi_set;
@@ -737,14 +737,14 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // To manage general case of mixed asynch, launch nonblocking evals first,
   // followed by blocking evals.
 
-  // For notes on repetitive setting of model.solution_level_index(), see
+  // For notes on repetitive setting of model.solution_level_cost_index(), see
   // derived_evaluate() above.
 
   // launch nonblocking evals before any blocking ones
   if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
     if (sameModelInstance)
-      hf_model.solution_level_index(truth_level_index());
+      hf_model.solution_level_cost_index(truth_level_index());
     hf_model.evaluate_nowait(hi_fi_set);
     // store map from HF eval id to HierarchSurrModel id
     truthIdMap[hf_model.evaluation_id()] = surrModelEvalCntr;
@@ -752,7 +752,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
     if (sameModelInstance)
-      lf_model.solution_level_index(surrogate_level_index());
+      lf_model.solution_level_cost_index(surrogate_level_index());
     lf_model.evaluate_nowait(lo_fi_set);
     // store map from LF eval id to HierarchSurrModel id
     surrIdMap[lf_model.evaluation_id()] = surrModelEvalCntr;
@@ -765,7 +765,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   if (hi_fi_eval && !asynch_hi_fi) { // execute HF synchronously & cache resp
     component_parallel_mode(TRUTH_MODEL_MODE);
     if (sameModelInstance)
-      hf_model.solution_level_index(truth_level_index());
+      hf_model.solution_level_cost_index(truth_level_index());
     hf_model.evaluate(hi_fi_set);
     // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately
     cachedTruthRespMap[surrModelEvalCntr] = hf_model.current_response().copy();
@@ -773,7 +773,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
     component_parallel_mode(SURROGATE_MODEL_MODE);
     if (sameModelInstance)
-      lf_model.solution_level_index(surrogate_level_index());
+      lf_model.solution_level_cost_index(surrogate_level_index());
     lf_model.evaluate(lo_fi_set);
     Response lo_fi_response(lf_model.current_response().copy());
     // correct LF response prior to caching
@@ -1066,6 +1066,86 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
       ++hf_cit;
       ++lf_it;
     }
+  }
+}
+
+
+void HierarchSurrModel::
+derived_model_auto_graphics(const Variables& vars, const Response& resp)
+{
+  //parallelLib.output_manager().add_tabular_data(vars, interface_id(), resp);
+
+  // manage interface id(s) and resolution control
+  Model &lf_model = surrogate_model(), &hf_model = truth_model();
+  OutputManager& output_mgr = parallelLib.output_manager();
+
+  switch (responseMode) {
+  case AGGREGATED_MODELS: {
+    // TO DO: if one key is empty, flatten to single data set approach
+
+    // output interface ids, potentially paired
+    StringArray iface_ids;
+    if (sameInterfaceInstance)
+      iface_ids.push_back(hf_model.interface_id());
+    else {
+      if (!truthModelKey.empty()) iface_ids.push_back(hf_model.interface_id());
+      if (! surrModelKey.empty()) iface_ids.push_back(lf_model.interface_id());
+    }
+    output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
+    /* Could condolidate around scalar utility, but still need graphics cntr.
+    if (sameInterfaceInstance)
+      output_mgr.add_tabular_scalar(hf_model.interface_id());
+    else {
+      if (!truthModelKey.empty())
+	output_mgr.add_tabular_scalar(hf_model.interface_id());
+      if (! surrModelKey.empty())
+	output_mgr.add_tabular_scalar(lf_model.interface_id());
+    }
+    */
+
+    // identify solution level control variable(s)
+    size_t av_index = hf_model.solution_level_variable_index(),
+      num_av = vars.tv();
+    output_mgr.add_tabular_data(vars, 0, av_index); // leading set in spec order
+
+    // output paired solution control values
+    if (!truthModelKey.empty()) add_tabular_solution_level_value(hf_model);
+    if (! surrModelKey.empty()) add_tabular_solution_level_value(lf_model);
+
+    ++av_index;
+    output_mgr.add_tabular_data(vars, av_index, num_av - av_index);// trailing
+    output_mgr.add_tabular_data(resp);
+    break;
+  }
+  case MODEL_DISCREPANCY:     case BYPASS_SURROGATE:  case NO_SURROGATE:
+    output_mgr.add_tabular_data(hf_model.current_variables(),
+				hf_model.interface_id(), resp);
+    break;
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    output_mgr.add_tabular_data(lf_model.current_variables(),
+				lf_model.interface_id(), resp);
+    break;
+  }
+
+  // export the single/aggregate/discrepancy response, as sized by
+  // HierarchSurrModel::currentResponse
+  output_mgr.add_tabular_data(resp);
+}
+
+
+void HierarchSurrModel::add_tabular_solution_level_value(Model& model)
+{
+  switch (model.solution_control_variable_type()) {
+  case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
+  case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:
+  case DISCRETE_STATE_RANGE:        case DISCRETE_STATE_SET_INT:
+    output_mgr.add_tabular_scalar(model.solution_level_int_value());    break;
+  case DISCRETE_DESIGN_SET_STRING:  case DISCRETE_UNCERTAIN_SET_STRING:
+  case DISCRETE_STATE_SET_STRING:
+    output_mgr.add_tabular_scalar(model.solution_level_string_value()); break;
+  case DISCRETE_DESIGN_SET_REAL:  case DISCRETE_UNCERTAIN_SET_REAL:
+  case DISCRETE_STATE_SET_REAL:
+    output_mgr.add_tabular_scalar(model.solution_level_real_value());   break;
   }
 }
 

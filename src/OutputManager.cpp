@@ -334,22 +334,19 @@ create_tabular_datastream(const Variables& vars, const Response& response)
     graphicsCntr is used for the x axis in the graphics and the first
     column in the tabular data.  */
 void OutputManager::
-add_datapoint(const Variables& vars, const String& iface,
-	      const Response& response)
+add_tabular_data(const Variables& vars, const String& iface,
+		 const Response& response)
 {
   // If the response data only contains derivative info, then there are no
   // response function values to record in either the graphics window or the
   // tabular data file.
-  bool plot_data = false;
   const ShortArray& asv = response.active_set_request_vector();
-  int i, num_fns = asv.size();
-  for (i=0; i<num_fns; ++i) {
-    if (asv[i] & 1) {
-      plot_data = true;
-      break;
-    }
-  }
-  if (!plot_data)
+  bool active_fns = false;
+  size_t i, num_fns = asv.size();
+  for (i=0; i<num_fns; ++i)
+    if (asv[i] & 1) // require values for plots / tabulation
+      { active_fns = true; break; }
+  if (!active_fns)
     return;
   
   // post to the X graphics plots (active variables only)
@@ -375,6 +372,84 @@ add_datapoint(const Variables& vars, const String& iface,
   // Only increment the graphics counter if posting data (incrementing on every
   // call regardless of data posting causes skipping in the response plots).
   ++graphicsCntr;
+}
+
+
+void OutputManager::add_tabular_data(const StringArray& iface_ids)
+{
+  // In the more finely-grained case, forego the check on ASV fns
+  // --> always generate a row, even if no active response fns
+
+  if (tabularDataFStream.is_open())
+    TabularIO::write_leading_columns(tabularDataFStream, graphicsCntr,
+				     iface_ids, tabularFormat);
+}
+
+
+void OutputManager::add_tabular_data(const Variables& vars)
+{
+  // In the more finely-grained case, forego the check on ASV fns
+  // --> always generate a row, even if no active response fns
+
+  // post to the X graphics plots (active variables only)
+  dakotaGraphics.add_datapoint(graphicsCntr, vars);
+  
+  // whether the file is open, not whether the user asked
+  if (tabularDataFStream.is_open())
+    TabularIO::write_data_tabular(tabularDataFStream, vars);
+}
+
+
+void OutputManager::
+add_tabular_data(const Variables& vars, size_t start_index, size_t num_items)
+{
+  // In the more finely-grained case, forego the check on ASV fns
+  // --> always generate a row, even if no active response fns
+
+  // post to the X graphics plots
+  //dakotaGraphics.add_datapoint(graphicsCntr, vars, start_index, num_items); // TO DO: partial update
+
+  // whether the file is open, not whether the user asked
+  if (tabularDataFStream.is_open())
+    TabularIO::write_data_tabular(tabularDataFStream, vars, start_index,
+				  num_items);
+}
+
+
+void OutputManager::add_tabular_data(const Response& response)
+{
+  // In the more finely-grained case, forego the check on ASV fns
+  // --> always generate a row, even if no active response fns
+
+  // post to the X graphics plots (active variables only)
+  dakotaGraphics.add_datapoint(graphicsCntr, response);
+  
+  // whether the file is open, not whether the user asked
+  if (tabularDataFStream.is_open())
+    TabularIO::write_data_tabular(tabularDataFStream, response);
+
+  ++graphicsCntr;
+}
+
+
+template<class T> 
+void OutputManager::add_tabular_scalar(T val)
+{
+  // post to the X graphics plots (active variables only)
+  //dakotaGraphics.add_datapoint(graphicsCntr, val);
+  
+  // whether the file is open, not whether the user asked
+  if (tabularDataFStream.is_open())
+    TabularIO::write_scalar_tabular(tabularDataFStream, val);
+}
+
+
+void OutputManager::close_tabular_datastream()
+{
+  if (tabularDataFStream.is_open()) {
+    tabularDataFStream.close();
+    //TabularIO::close_file(tabularDataFStream, ...);
+  }
 }
 
 

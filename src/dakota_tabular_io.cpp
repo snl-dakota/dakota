@@ -181,26 +181,71 @@ void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
 }
 
 
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id)
+{
+  // align left to make eval_id consistent w/ whitespace-delimited header row
+  std::ios_base::fmtflags before_left_align = tabular_ostream.flags();
+  tabular_ostream << std::setw(8) << std::left << eval_id << ' ';
+  tabular_ostream.flags(before_left_align);
+}
+
+
+void write_leading_columns(std::ostream& tabular_ostream,
+			   const String& iface_id)
+{
+  // write the interface ID string, NO_ID for empty
+  // (Dakota 6.1 used EMPTY for missing ID)
+  if (iface_id.empty()) tabular_ostream << std::setw(9) << "NO_ID"  << ' ';
+  else                  tabular_ostream << std::setw(9) << iface_id << ' ';
+}
+
+
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
 			   const String& iface_id,
 			   unsigned short tabular_format)
 {
   // conditionally write evaluation ID and/or interface ID
-  if (tabular_format & TABULAR_EVAL_ID) {
-    // align left to make eval_id consistent w/ whitespace-delimited header row
-    std::ios_base::fmtflags before_left_align = tabular_ostream.flags();
-    tabular_ostream << std::setw(8) << std::left << eval_id << ' ';
-    tabular_ostream.flags(before_left_align);
-  }
+  if (tabular_format & TABULAR_EVAL_ID)
+    write_leading_columns(tabular_ostream, eval_id);
+  if (tabular_format & TABULAR_IFACE_ID)
+    write_leading_columns(tabular_ostream, iface_id);
+}
+
+
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
+			   const StringArray& iface_ids,
+			   unsigned short tabular_format)
+{
+  if (tabular_format & TABULAR_EVAL_ID)
+    write_leading_columns(tabular_ostream, eval_id);
   if (tabular_format & TABULAR_IFACE_ID) {
-    // write the interface ID string, NO_ID for empty
-    // (Dakota 6.1 used EMPTY for missing ID)
-    if (iface_id.empty())
-      tabular_ostream << std::setw(9) << "NO_ID" << ' ';
-    else 
-      tabular_ostream << std::setw(9) << iface_id << ' ';
+    size_t i, num_ids = iface_ids.size();
+    for (i=0; i<num_ids; ++i)
+      write_leading_columns(tabular_ostream, iface_ids[i]);
   }
 }
+
+
+template<class T>
+void write_scalar_tabular(std::ostream& tabular_ostream, T val)
+{
+  tabular_ostream << std::setprecision(write_precision) 
+		  << std::resetiosflags(std::ios::floatfield)
+		  << std::setw(write_precision+4) << val << ' '; // no EOL
+}
+
+
+void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars)
+{ vars.write_tabular(tabular_ostream); } // no EOL
+
+
+void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
+			size_t start_index, size_t num_items)
+{ vars.write_tabular_partial(tabular_ostream, start_index, num_items); }
+
+
+void write_data_tabular(std::ostream& tabular_ostream, const Response& response)
+{ response.write_tabular(tabular_ostream); } // includes EOL
 
 
 void write_data_tabular(std::ostream& tabular_ostream, 

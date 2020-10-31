@@ -293,7 +293,7 @@ void SurrBasedLocalMinimizer::initialize_multipliers()
 
 
 /** Surrogate-based local (data-fit) specializes graphics to output
-    trust region centers. See add_datapoint in
+    trust region centers. See OutputManager::add_tabular_data in
     DataFitSurrBasedLocalMinimizer. Other children don't do any output */
 void SurrBasedLocalMinimizer::initialize_graphics(int iterator_server_id)
 {

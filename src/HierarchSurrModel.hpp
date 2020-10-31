@@ -452,9 +452,9 @@ inline void HierarchSurrModel::active_model_key(const UShortArray& key)
     // If model forms are distinct (multifidelity), can activate soln level
     // index now; else (multilevel) must defer until run-time.
     if (hf_form != USHRT_MAX)
-      orderedModels[hf_form].solution_level_index(truthModelKey[2]);
+      orderedModels[hf_form].solution_level_cost_index(truthModelKey[2]);
     if (lf_form != USHRT_MAX)
-      orderedModels[lf_form].solution_level_index(surrModelKey[2]);
+      orderedModels[lf_form].solution_level_cost_index(surrModelKey[2]);
 
     // Pull inactive variable change up into top-level currentVariables,
     // so that data flows correctly within Model recursions?  No, current

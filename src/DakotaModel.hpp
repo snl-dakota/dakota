@@ -136,11 +136,11 @@ public:
   /// number of discrete levels within solution control (SimulationModel)
   virtual size_t solution_levels(bool lwr_bnd = true) const;
   /// activate a particular level within the solution level control
-  /// and return the cost estimate (SimulationModel)
-  virtual void solution_level_index(unsigned short index);
+  /// (SimulationModel)
+  virtual void solution_level_cost_index(unsigned short index);
   /// return currently active level within the solution level control
   /// (SimulationModel)
-  virtual unsigned short solution_level_index() const;
+  virtual unsigned short solution_level_cost_index() const;
   /// return ordered cost estimates across solution levels (SimulationModel)
   virtual RealVector solution_level_costs() const;
   /// return currently active cost estimate from solution level

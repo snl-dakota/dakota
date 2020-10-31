@@ -1042,8 +1042,8 @@ control_variate_mc(const UShortArray& active_key)
   Model& surr_model  = iteratedModel.surrogate_model();
 
   // retrieve active index
-  //unsigned short lf_lev_index =  surr_model.solution_level_index(),
-  //               hf_lev_index = truth_model.solution_level_index();
+  //unsigned short lf_lev_index =  surr_model.solution_level_cost_index(),
+  //               hf_lev_index = truth_model.solution_level_cost_index();
   // retrieve cost estimates across model forms for a particular soln level
   Real lf_cost =  surr_model.solution_level_cost(),
        hf_cost = truth_model.solution_level_cost(),

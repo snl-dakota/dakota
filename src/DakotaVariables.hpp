@@ -177,11 +177,16 @@ public:
   /// optionally specifying which partition (all/active/inactive)
   virtual void read_tabular(std::istream& s,
 			    unsigned short vars_part = ALL_VARS);
+
   /// write a variables object in tabular format to an std::ostream,
   /// optionally specifying which partition (all/active/inactive)
   virtual void write_tabular(std::ostream& s,
 			     unsigned short vars_part = ALL_VARS) const;
-
+  /// write a variables object in tabular format to an std::ostream,
+  /// optionally specifying which partition (all/active/inactive)
+  virtual void write_tabular_partial(std::ostream& s, size_t start_index,
+				     size_t num_items) const;
+                                   //unsigned short vars_part = ALL_VARS) const;
   /// write the labels in input spec order to a std::ostream,
   /// optionally specifying which partition (all/active/inactive)
   virtual void write_tabular_labels(std::ostream& s,

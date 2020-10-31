@@ -239,16 +239,32 @@ public:
   // Graphics and tabular output
   // -----
 
-  /// adds data to each window in the 2d graphics and adds a row to
-  /// the tabular data file based on the results of a model evaluation
-  void add_datapoint(const Variables& vars, const String& iface, 
-		     const Response& response);
-  
   /// initialize the tabular datastream on iterator leaders
   void create_tabular_datastream(const Variables& vars, const Response& resp);
 
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for the evaluation variables/response
+  void add_tabular_data(const Variables& vars, const String& iface, 
+			const Response& response);
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for the evaluation variables
+  void add_tabular_data(const Variables& vars);
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for a portion of the evaluation variables
+  void add_tabular_data(const Variables& vars, size_t start_index,
+			size_t num_items);
+  // adds data to each window in the 2d graphics and adds a row to
+  // the tabular data file for the evaluation interface id
+  //void add_tabular_data(const String& iface);
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for the evaluation response
+  void add_tabular_data(const Response& response);
+  /// augments the data set for a row in the tabular data file
+  template<class T> 
+  void add_tabular_scalar(T val);
+  
   /// close tabular datastream
-  void close_tabular();
+  void close_tabular_datastream();
 
   /// set graphicsCntr equal to cntr
   void graphics_counter(int cntr);
@@ -279,7 +295,7 @@ public:
   bool tabularDataFlag;   ///< whether user requested tabular data file
   bool resultsOutputFlag; ///< whether user requested results data output
 
-   // // For items from the environment spec, can use DataEnvironment defaults
+   // For items from the environment spec, can use DataEnvironment defaults
    //  tabular_filename       = outputManager.tabularDataFile;
    //  results_filename       = outputManager.resultsOutputFile;
 

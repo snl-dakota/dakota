@@ -120,6 +120,115 @@ write_tabular(std::ostream& s, unsigned short vars_part) const
 { write_core(s, TabularWriter(), vars_part); }
 
 
+// TO DO: no templates yet for partial tabular
+
+
+void MixedVariables::
+write_tabular_partial(std::ostream& s, size_t start_index,
+		      size_t num_items) const//, unsigned short vars_part) const
+{
+  // assume ALL_VARS and don't bother with vars_part for now
+
+  //write_core(s, TabularWriter(), vars_part);
+
+  SizetArray& vc_totals = sharedVarsData.components_totals(); // ALL_VARS
+  size_t end_index = start_index + num_items, av_cntr = 0,
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+
+  if (write_tabular_partial(s, start_index, end_index, acv_offset, adiv_offset,
+			    adsv_offset, adrv_offset, av_cntr,
+			    vc_totals[TOTAL_CDV],  vc_totals[TOTAL_DDIV],
+			    vc_totals[TOTAL_DDSV], vc_totals[TOTAL_DDRV]))
+    return;
+  if (write_tabular_partial(s, start_index, end_index, acv_offset, adiv_offset,
+			    adsv_offset, adrv_offset, av_cntr,
+			    vc_totals[TOTAL_CAUV],  vc_totals[TOTAL_DAUIV],
+			    vc_totals[TOTAL_DAUSV], vc_totals[TOTAL_DAURV]))
+    return;
+  if (write_tabular_partial(s, start_index, end_index, acv_offset, adiv_offset,
+			    adsv_offset, adrv_offset, av_cntr,
+			    vc_totals[TOTAL_CEUV],  vc_totals[TOTAL_DUEIV],
+			    vc_totals[TOTAL_DEUSV], vc_totals[TOTAL_DEURV]))
+    return;
+  if (write_tabular_partial(s, start_index, end_index, acv_offset, adiv_offset,
+			    adsv_offset, adrv_offset, av_cntr,
+			    vc_totals[TOTAL_CSV],  vc_totals[TOTAL_DSIV],
+			    vc_totals[TOTAL_DSSV], vc_totals[TOTAL_DSRV]))
+    return;
+}
+
+
+bool MixedVariables::
+write_tabular_partial(std::ostream& s, size_t start_index, size_t end_index,
+		      size_t& acv_offset, size_t& adiv_offset,
+		      size_t& adsv_offset, size_t& adrv_offset,
+		      size_t& av_cntr, size_t num_cv, size_t num_div,
+		      size_t num_dsv, size_t num_drv) const
+{
+  // write design variables
+  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
+  if (start_index <= av_cntr && end_index >= av_cntr+num_cv) // full set
+    TabularWriter(s, acv_offset, num_cv, allContinuousVars, acv_labels);
+  else if (start_index < av_cntr + num_cv) { // manage truncation on either end
+    size_t part_start = acv_offset, part_num = num_cv;
+    if (start_index > av_cntr) // then advance part_start by offset
+      part_start += start_index - av_cntr;
+    if (end_index < av_cntr + num_cv) // then make them equal
+      { part_num = end_index - av_cntr; rtn = true; }
+    if (part_num)
+      TabularWriter(s, part_start, part_num, allContinuousVars, acv_labels);
+    if (rtn) return true;
+  }
+  acv_offset += num_cv;  av_cntr += num_cv;
+
+  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
+  if (start_index <= av_cntr && end_index >= av_cntr+num_div) // full set
+    TabularWriter(s, adiv_offset, num_div, allDiscreteIntVars, adiv_labels);
+  else if (start_index < av_cntr + num_div) {
+    size_t part_start = adiv_offset, part_num = num_div;
+    if (start_index > av_cntr) // then advance part_start by offset
+      part_start += start_index - av_cntr;
+    if (end_index < av_cntr + num_div) // then make them equal
+      { part_num = end_index - av_cntr; rtn = true; }
+    if (part_num)
+      TabularWriter(s, part_start, part_num, allDiscreteIntVars, adiv_labels);
+    if (rtn) return true;
+  }
+  adiv_offset += num_div;  av_cntr += num_div;
+
+  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
+  if (start_index <= av_cntr && end_index >= av_cntr+num_dsv) // full set
+    TabularWriter(s, adsv_offset, num_dsv, allDiscreteStringVars, adsv_labels);
+  else if (start_index < av_cntr + num_dsv) {
+    size_t part_start = adsv_offset, part_num = num_dsv;
+    if (start_index > av_cntr) // then advance part_start by offset
+      part_start += start_index - av_cntr;
+    if (end_index < av_cntr + num_dsv) // then make them equal
+      { part_num = end_index - av_cntr; rtn = true; }
+    if (part_num)
+      TabularWriter(s, part_start, part_num, allDiscreteStringVars,adsv_labels);
+    if (rtn) return true;
+  }
+  adsv_offset += num_dsv;  av_cntr += num_dsv;
+
+  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
+  if (start_index <= av_cntr && end_index >= av_cntr+num_drv) // full set
+    TabularWriter(s, adrv_offset, num_drv, allDiscreteRealVars, adrv_labels);
+  else if (start_index < av_cntr + num_drv) {
+    size_t part_start = adrv_offset, part_num = num_drv;
+    if (start_index > av_cntr) // then advance part_start by offset
+      part_start += start_index - av_cntr;
+    if (end_index < av_cntr + num_drv) // then make them equal
+      { part_num = end_index - av_cntr; rtn = true; }
+    if (part_num)
+      TabularWriter(s, part_start, part_num, allDiscreteRealVars, adrv_labels);
+    if (rtn) return true;
+  }
+  adrv_offset += num_drv;  av_cntr += num_drv;
+  return false;
+}
+
+
 void MixedVariables::
 write_tabular_labels(std::ostream& s, unsigned short vars_part) const
 { write_core(s, LabelsWriter(), vars_part); }
@@ -206,31 +315,29 @@ void MixedVariables::write_core(std::ostream& s, Writer write_handler,
   SizetArray vc_totals;
   size_t acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
   if (vars_part == ACTIVE_VARS) {
-    vc_totals = sharedVarsData.active_components_totals();
-    acv_offset = sharedVarsData.cv_start();
+    vc_totals   = sharedVarsData.active_components_totals();
+    acv_offset  = sharedVarsData.cv_start();
     adiv_offset = sharedVarsData.div_start();
     adsv_offset = sharedVarsData.dsv_start();
     adrv_offset = sharedVarsData.drv_start();
   }
   else if (vars_part == INACTIVE_VARS) {
-    vc_totals = sharedVarsData.inactive_components_totals();
-    acv_offset = sharedVarsData.icv_start();
+    vc_totals   = sharedVarsData.inactive_components_totals();
+    acv_offset  = sharedVarsData.icv_start();
     adiv_offset = sharedVarsData.idiv_start();
     adsv_offset = sharedVarsData.idsv_start();
     adrv_offset = sharedVarsData.idrv_start();  }
-  else {
-    // default: ALL_VARS, offsets start at 0;
+  else // default: ALL_VARS, offsets start at 0
     vc_totals = sharedVarsData.components_totals();
-  }
 
-  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
-    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
-    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
-    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
-    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
-    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
-    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV];
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv  = vc_totals[TOTAL_DDIV],
+    num_ddsv  = vc_totals[TOTAL_DDSV],   num_ddrv  = vc_totals[TOTAL_DDRV],
+    num_cauv  = vc_totals[TOTAL_CAUV],   num_dauiv = vc_totals[TOTAL_DAUIV],
+    num_dausv = vc_totals[TOTAL_DAUSV],  num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],   num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deusv = vc_totals[TOTAL_DEUSV],  num_deurv = vc_totals[TOTAL_DEURV],
+    num_csv   = vc_totals[TOTAL_CSV],    num_dsiv  = vc_totals[TOTAL_DSIV],
+    num_dssv  = vc_totals[TOTAL_DSSV],   num_dsrv  = vc_totals[TOTAL_DSRV];
 
   StringMultiArrayView  acv_labels = all_continuous_variable_labels();
   StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
