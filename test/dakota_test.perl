@@ -976,7 +976,7 @@ sub check_dakota_config {
   }
   # current install layout assuming dakota/share/dakota/test/
   elsif (-f "../../../include/Makefile.export.Dakota") {
-    $makefile_export = "../include/Makefile.export.Dakota";
+    $makefile_export = "../../../include/Makefile.export.Dakota";
   }
   return if (! ${makefile_export});
   
