@@ -1,10 +1,9 @@
-Blurb::
-Output file for evaluations of a surrogate model
+Blurb:: Output file for surrogate model value evaluations
 
 Description::
-The \c export_approx_points_file keyword allows the user to specify a
-file in which the points (input variable values) at which the
-surrogate model is evaluated and corresponding response values
+
+Specifies a file in which the points (input variable values) at which
+the surrogate model is evaluated and corresponding response values
 computed by the surrogate model will be written.  The response values
 are the surrogate's predicted approximation to the truth model
 responses at those points.
