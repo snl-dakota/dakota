@@ -1,21 +1,26 @@
 Blurb::
 Aleatory uncertain variable - uniform
+
 Description::
-Within the uniform uncertain optional group specification,
-the number of uniform uncertain variables and the distribution lower and upper
-bounds are required specifications, and variable descriptors is an optional specification. 
+The number of uniform uncertain variables and their distribution lower and upper
+bounds are required specifications, while variable descriptors is an optional specification. 
 The uniform distribution has the density function:
-\f[f(x) = \frac{1}{U_U-L_U}\f]
+\f[f(x) = \frac{1}{U-L}\f]
 where 
-\f$U_U\f$ and \f$L_U\f$ 
+\f$U\f$ and \f$L\f$ 
 are the upper and lower bounds of the uniform distribution, respectively. The mean of the uniform distribution is 
-\f$\frac{U_U+L_U}{2}\f$
+\f$\frac{U+L}{2}\f$
  and the variance is 
-\f$\frac{(U_U-L_U)^2}{12}\f$.
+\f$\frac{(U-L)^2}{12}\f$.
 
 Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
-Note that this distribution is a special case of the more general beta distribution.
+This distribution is a special case of the more general beta distribution.
+
+For some methods, including vector and centered parameter studies, an
+initial point is needed for the uncertain variables. When not given
+explicitly, these variables are initialized to their means.
+
 Faq::
 See_Also::	
