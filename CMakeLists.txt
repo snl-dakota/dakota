@@ -43,7 +43,7 @@ include(DakotaOptions)
 # -----
 
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 12)
+set(Dakota_VERSION_MINOR 13)
 set(Dakota_VERSION_PATCH 0)
 
 # --- Release time toggles
