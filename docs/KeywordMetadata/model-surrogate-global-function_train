@@ -83,4 +83,4 @@ model,
 	dace_method_pointer = 'SAMPLING'
 \endverbatim
 
-See_Also::	method-function_train, method-multilevel-function_train, method-multifidelity-function_train 
+See_Also::	method-function_train, method-multilevel_function_train, method-multifidelity_function_train 
