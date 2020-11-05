@@ -5,51 +5,71 @@
 
 % --- Dakota Manuals ---
 
-@string{DakotaAuthorCitation =  
-"Adams, B.~M. and Bohnhoff, W.~J. and Dalbey, K.~R. and Ebeida, M.~S. and
-Eddy, J.~P. and Eldred, M.~S. and Geraci, G. and Hooper, R.~W. and
-Hough, P.~D. and Hu, K.~T. and Jakeman, J.~D. and Khalil, M. and
-Maupin, K.~A. and Monschke, J.~A. and Ridgway, E.~M. and Rushdi, A.~A. and 
-Stephens, J.~A. and Swiler, L.~P. and Vigil, D.~M. and Wildey, T.~M. and
-Winokur, J.~G."
+% NOTE: The citations lag by one Dakota version due to R&A
+% TODO: Add Coomber, W.~P. when updating to Dakota 6.13
+
+@string{DakotaAuthorsCode =
+"Adams, B.~M. and Bohnhoff, W.~J. and Canfield, R.~A. and Dalbey, K.~R. and
+Ebeida, M.~S. and Eddy, J.~P. and Eldred, M.~S. and Geraci, G. and
+Hooper, R.~W. and Hough, P.~D. and Hu, K.~T. and Jakeman, J.~D. and
+Carson, K. and Khalil, M. and Maupin, K.~A. and Monschke, J.~A. and
+Ridgway, E.~M. and Rushdi, A.~A. and Seidl, D.~T. and  Stephens, J.~A. and
+Swiler, L.~P. and Tran, A. and Vigil, D.~M. and Wildey, T.~M. and
+Winokur, J.~G. and {(with Menhorn, F. and Zeng, X.)}"
 }
 
-@TechReport{DevMan,
-  author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.11 Developers Manual},
-  institution =  {Sandia National Laboratories},
-  number =       {SAND2014-5014},
-  year = 	 {Updated November 2019},
+@string{DakotaAuthorsUsers =
+"Adams, B.~M. and Bohnhoff, W.~J. and Dalbey, K.~R. and Ebeida, M.~S. and
+Eddy, J.~P. and Eldred, M.~S. and Hooper, R.~W. and
+Hough, P.~D. and Hu, K.~T. and Jakeman, J.~D. and Khalil, M. and
+Maupin, K.~A. and Monschke, J.~A. and Ridgway, E.~M. and Rushdi, A.~A. and 
+Seidl, D.~T. and Stephens, J.~A. and Swiler, L.~P. and Winokur, J.~G."
+}
+
+@string{DakotaAuthorsTheory =
+"Dalbey, K.~R. and Eldred, M.~S. and Geraci, G. Jakeman, J.~D. and
+Maupin, K.~A. and Monschke, J.~A. and Seidl, D.~T.  and Swiler, L.~P. and
+Tran, A. and {(with Menhorn, F. and Zeng, X.)}"
+}
+
+@manual{DevMan,
+  author = 	 DakotaAuthorsCode,
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.12 Developers Manual},
+  organization =  {Sandia National Laboratories},
+  month =        {May},
+  year = 	 2020,
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
-@TechReport{RefMan,
-  author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.11 Reference Manual},
-  institution =  {Sandia National Laboratories},
-  number =       {SAND2014-5015},
-  year = 	 {Updated November 2019},
+@manual{RefMan,
+  author = 	 DakotaAuthorsCode,
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.12 Reference Manual},
+  organization =  {Sandia National Laboratories},
+  month =        {May},
+  year = 	 2020,
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
 @TechReport{TheoMan,
-  author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.11 Theory Manual},
+  author = 	 DakotaAuthorsTheory,
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.12 Theory Manual},
   institution =  {Sandia National Laboratories},
-  number =       {SAND2014-4253},
-  year = 	 {Updated November 2019},
+  number =       {SAND2020-4987},
+  month =        {May},
+  year = 	 2020,
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
 @TechReport{UsersMan,
-  author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.11 Users Manual},
+  author = 	 DakotaAuthorsUsers,
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.12 Users Manual},
   institution =  {Sandia National Laboratories},
-  number =       {SAND2014-4633},
-  year = 	 {Updated November 2019},
+  number =       {SAND2020-5001},
+  month =        {May},
+  year = 	 2020,
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
@@ -2857,6 +2877,7 @@ year = {2005},
 @TechReport{CASL2014,
   author = 	 {Adams, B. M. and Hooper, R. W. and Lewis, A. and McMahan, J. A. and Smith, R. C. and Swiler, L. P. and Williams, B. J.},
   title = 	 {User Guidelines and Best Practices for CASL VUQ Analysis using Dakota},
+  institution =  {Consortium for the Advanced Simulation of LWRs},
   number =       {CASL-U-2014-0038-000},
   year = 	 2014,
 }
