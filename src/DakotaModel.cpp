@@ -3484,6 +3484,71 @@ Real Model::solution_level_cost() const
 }
 
 
+short Model::solution_control_variable_type() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
+	 << "variable_type() function.\n       solution_control_variable_"
+	 << "type() is not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_control_variable_type(); // envelope fwd to letter
+}
+
+
+size_t Model::solution_control_variable_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
+	 << "variable_index() function.\n       solution_control_variable_"
+	 << "index() is not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_control_variable_index(); // envelope fwd to letter
+}
+
+
+int Model::solution_level_int_value() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "int_value() function.\n       solution_level_int_value is not "
+	 << "supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_int_value(); // envelope fwd to letter
+}
+
+
+String Model::solution_level_string_value() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "string_value() function.\n       solution_level_string_value is "
+	 << "not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_string_value(); // envelope fwd to letter
+}
+
+
+Real Model::solution_level_real_value() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "real_value() function.\n       solution_level_real_value is not "
+	 << "supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_real_value(); // envelope fwd to letter
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */

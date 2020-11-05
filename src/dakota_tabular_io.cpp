@@ -226,15 +226,6 @@ void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id,
 }
 
 
-template<class T>
-void write_scalar_tabular(std::ostream& tabular_ostream, T val)
-{
-  tabular_ostream << std::setprecision(write_precision) 
-		  << std::resetiosflags(std::ios::floatfield)
-		  << std::setw(write_precision+4) << val << ' '; // no EOL
-}
-
-
 void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars)
 { vars.write_tabular(tabular_ostream); } // no EOL
 

@@ -37,7 +37,6 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   initialize_solution_control(
     problem_db.get_string("model.simulation.solution_level_control"),
     problem_db.get_rv("model.simulation.solution_level_cost"));
-
 }
 
 
@@ -66,6 +65,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   // of levels is finite; however, the discrete values may be int, string, or
   // real.  It should not be an active variable, but may not be an inactive
   // variable (inactive view assigned from a higher level context).
+  const SharedVariablesData& svd = currentVariables.shared_data();
   solnCntlADVIndex = find_index(
     currentVariables.all_discrete_int_variable_labels(), control);
   if (solnCntlADVIndex != _NPOS) {
@@ -120,7 +120,6 @@ initialize_solution_control(const String& control, const RealVector& cost)
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mvDist.multivar_dist_rep());
-  const SharedVariablesData& svd = currentVariables.shared_data();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE:

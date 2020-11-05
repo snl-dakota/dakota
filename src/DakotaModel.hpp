@@ -147,6 +147,18 @@ public:
   /// control (SimulationModel)
   virtual Real solution_level_cost() const;
 
+  /// return type of solution control variable
+  virtual short solution_control_variable_type() const;
+  /// return index of solution control variable within all variables
+  virtual size_t solution_control_variable_index() const;
+
+  /// return the active (integer) value of the solution control
+  virtual int    solution_level_int_value() const;
+  /// return the active (string) value of the solution control
+  virtual String solution_level_string_value() const;
+  /// return the active (real) value of the solution control
+  virtual Real   solution_level_real_value() const;
+
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
   virtual void primary_response_fn_weights(const RealVector& wts, 
@@ -383,6 +395,10 @@ public:
   /// in synchronous evaluate functions to prevent the error
   /// of trying to run a multiprocessor job on the master.
   virtual bool derived_master_overload() const;
+
+  /// Update tabular/graphics data with latest variables/response data
+  virtual void derived_model_auto_graphics(const Variables& vars,
+					   const Response& resp);
 
   /// update the Model's inactive view based on higher level (nested) context
   virtual void inactive_view(short view, bool recurse_flag = true);

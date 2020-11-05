@@ -1104,7 +1104,7 @@ derived_model_auto_graphics(const Variables& vars, const Response& resp)
     */
 
     // identify solution level control variable(s)
-    size_t av_index = hf_model.solution_level_variable_index(),
+    size_t av_index = hf_model.solution_control_variable_index(),
       num_av = vars.tv();
     output_mgr.add_tabular_data(vars, 0, av_index); // leading set in spec order
 
@@ -1135,6 +1135,7 @@ derived_model_auto_graphics(const Variables& vars, const Response& resp)
 
 void HierarchSurrModel::add_tabular_solution_level_value(Model& model)
 {
+  OutputManager& output_mgr = parallelLib.output_manager();
   switch (model.solution_control_variable_type()) {
   case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
   case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:

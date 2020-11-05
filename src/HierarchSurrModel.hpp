@@ -95,6 +95,8 @@ protected:
   const IntResponseMap& derived_synchronize();
   const IntResponseMap& derived_synchronize_nowait();
 
+  void derived_model_auto_graphics(const Variables& vars, const Response& resp);
+
   /// return the active low fidelity model
   Model& surrogate_model();
   /// return the active low fidelity model
@@ -195,6 +197,10 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  /// Helper to select among Model::solution_level_{int,string,real}_value()
+  /// for exporting a scalar solution level value
+  void add_tabular_solution_level_value(Model& model);
 
   /// utility for propagating new key values
   void key_updates(unsigned short model_index, unsigned short soln_lev_index);

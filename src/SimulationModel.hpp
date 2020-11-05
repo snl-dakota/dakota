@@ -69,11 +69,18 @@ protected:
   unsigned short solution_level_cost_index() const;
 
   /// return solnCntlVarType
-  short solution_level_variable_type() const;
+  short solution_control_variable_type() const;
   /// return solnCntlAVIndex
-  size_t solution_level_variable_index() const;
+  size_t solution_control_variable_index() const;
   /// return solnCntlADVIndex
-  size_t solution_level_discrete_variable_index() const;
+  size_t solution_control_discrete_variable_index() const;
+
+  /// return a discrete int variable value corresponding to solnCntlADVIndex
+  int    solution_level_int_value() const;
+  /// return a discrete string variable value corresponding to solnCntlADVIndex
+  String solution_level_string_value() const;
+  /// return a discrete real variable value corresponding to solnCntlADVIndex
+  Real   solution_level_real_value() const;
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs userDefinedInterface.map()/
@@ -220,15 +227,15 @@ inline size_t SimulationModel::solution_levels(bool lwr_bnd) const
 }
 
 
-inline short SimulationModel::solution_level_variable_type() const
+inline short SimulationModel::solution_control_variable_type() const
 { return solnCntlVarType; }
 
 
-inline size_t SimulationModel::solution_level_variable_index() const
+inline size_t SimulationModel::solution_control_variable_index() const
 { return solnCntlAVIndex; }
 
 
-inline size_t SimulationModel::solution_level_discrete_variable_index() const
+inline size_t SimulationModel::solution_control_discrete_variable_index() const
 { return solnCntlADVIndex; }
 
 

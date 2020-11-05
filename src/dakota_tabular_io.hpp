@@ -140,12 +140,21 @@ void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id,
 
 /// Output a scalar as part of a row of tabular data
 template<class T>
-void write_scalar_tabular(std::ostream& tabular_ostream, T val);
+void write_scalar_tabular(std::ostream& tabular_ostream, T val)
+{
+  tabular_ostream << std::setprecision(write_precision) 
+		  << std::resetiosflags(std::ios::floatfield)
+		  << std::setw(write_precision+4) << val << ' '; // no EOL
+}
 
 /// Output a row of tabular data from a variables object.  All active/inactive
 /// variables written in input spec order.
 void write_data_tabular(std::ostream& tabular_ostream, 
 			const Variables& vars);
+/// Output a row of tabular data from a variables object.  All active/inactive
+/// variables written in input spec order.
+void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
+			size_t start_index, size_t num_items);
 
 /// Output a row of tabular data from a response object
 void write_data_tabular(std::ostream& tabular_ostream, 

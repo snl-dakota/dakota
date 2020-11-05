@@ -791,7 +791,7 @@ inline size_t RecastModel::solution_levels() const
 
 
 inline void RecastModel::solution_level_cost_index(unsigned short cost_index)
-{ subModel.solution_level_cost_index(lev_index); }
+{ subModel.solution_level_cost_index(cost_index); }
 
 
 inline unsigned short RecastModel::solution_level_cost_index() const

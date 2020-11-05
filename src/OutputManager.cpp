@@ -392,7 +392,7 @@ void OutputManager::add_tabular_data(const Variables& vars)
   // --> always generate a row, even if no active response fns
 
   // post to the X graphics plots (active variables only)
-  dakotaGraphics.add_datapoint(graphicsCntr, vars);
+  //dakotaGraphics.add_datapoint(graphicsCntr, vars);
   
   // whether the file is open, not whether the user asked
   if (tabularDataFStream.is_open())
@@ -407,7 +407,7 @@ add_tabular_data(const Variables& vars, size_t start_index, size_t num_items)
   // --> always generate a row, even if no active response fns
 
   // post to the X graphics plots
-  //dakotaGraphics.add_datapoint(graphicsCntr, vars, start_index, num_items); // TO DO: partial update
+  //dakotaGraphics.add_datapoint(graphicsCntr, vars, start_index, num_items);
 
   // whether the file is open, not whether the user asked
   if (tabularDataFStream.is_open())
@@ -422,25 +422,13 @@ void OutputManager::add_tabular_data(const Response& response)
   // --> always generate a row, even if no active response fns
 
   // post to the X graphics plots (active variables only)
-  dakotaGraphics.add_datapoint(graphicsCntr, response);
+  //dakotaGraphics.add_datapoint(graphicsCntr, response);
   
   // whether the file is open, not whether the user asked
   if (tabularDataFStream.is_open())
     TabularIO::write_data_tabular(tabularDataFStream, response);
 
   ++graphicsCntr;
-}
-
-
-template<class T> 
-void OutputManager::add_tabular_scalar(T val)
-{
-  // post to the X graphics plots (active variables only)
-  //dakotaGraphics.add_datapoint(graphicsCntr, val);
-  
-  // whether the file is open, not whether the user asked
-  if (tabularDataFStream.is_open())
-    TabularIO::write_scalar_tabular(tabularDataFStream, val);
 }
 
 
