@@ -95,7 +95,8 @@ protected:
   const IntResponseMap& derived_synchronize();
   const IntResponseMap& derived_synchronize_nowait();
 
-  void derived_model_auto_graphics(const Variables& vars, const Response& resp);
+  void create_tabular_datastream();
+  void derived_auto_graphics(const Variables& vars, const Response& resp);
 
   /// return the active low fidelity model
   Model& surrogate_model();
@@ -198,7 +199,15 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// Helper to select among Model::solution_level_{int,string,real}_value()
+  /// synchonize the HF model's solution level control with truthModelKey
+  void assign_truth_key();
+  /// synchonize the LF model's solution level control with surrModelKey
+  void assign_surrogate_key();
+
+  /// helper to select among Variables::all_discrete_{int,string,real}_
+  /// variable_labels() for exporting a solution control variable label
+  const String& solution_control_label();
+  /// helper to select among Model::solution_level_{int,string,real}_value()
   /// for exporting a scalar solution level value
   void add_tabular_solution_level_value(Model& model);
 
@@ -353,7 +362,7 @@ inline void HierarchSurrModel::check_model_interface_instance()
     hf_form = (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1];
 
   if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
-    sameModelInstance = sameInterfaceInstance = false; // including both undef
+    sameModelInstance = sameInterfaceInstance = true; // including both undef
   else {
     sameModelInstance = (lf_form == hf_form);
     if (sameModelInstance) sameInterfaceInstance = true;
@@ -446,21 +455,41 @@ inline const Model& HierarchSurrModel::truth_model() const
 }
 
 
+inline void HierarchSurrModel::assign_truth_key()
+{
+  if (truthModelKey.empty())
+    return;
+
+  unsigned short hf_form = truthModelKey[1];
+  if (hf_form != USHRT_MAX)
+    orderedModels[hf_form].solution_level_cost_index(truthModelKey[2]);
+}
+
+
+inline void HierarchSurrModel::assign_surrogate_key()
+{
+  if (surrModelKey.empty())
+    return;
+
+  unsigned short lf_form = surrModelKey[1];
+  if (lf_form != USHRT_MAX)
+    orderedModels[lf_form].solution_level_cost_index(surrModelKey[2]);
+}
+
+
 inline void HierarchSurrModel::active_model_key(const UShortArray& key)
 {
   // assign activeKey and extract {surr,truth}ModelKey
   SurrogateModel::active_model_key(key);
 
-  unsigned short hf_form = (truthModelKey.empty()) ? USHRT_MAX:truthModelKey[1],
-                 lf_form =  (surrModelKey.empty()) ? USHRT_MAX: surrModelKey[1];
-  if (hf_form != lf_form) { // distinct model forms
+  // assign same{Model,Interface}Instance
+  check_model_interface_instance();
 
-    // If model forms are distinct (multifidelity), can activate soln level
-    // index now; else (multilevel) must defer until run-time.
-    if (hf_form != USHRT_MAX)
-      orderedModels[hf_form].solution_level_cost_index(truthModelKey[2]);
-    if (lf_form != USHRT_MAX)
-      orderedModels[lf_form].solution_level_cost_index(surrModelKey[2]);
+  // If model forms are distinct (multifidelity), can activate soln level
+  // index now; else (multilevel) must defer until run-time.
+  if (!sameModelInstance) {
+    assign_truth_key();
+    assign_surrogate_key();
 
     // Pull inactive variable change up into top-level currentVariables,
     // so that data flows correctly within Model recursions?  No, current
@@ -470,18 +499,16 @@ inline void HierarchSurrModel::active_model_key(const UShortArray& key)
     //update_from_model(orderedModels[hf_form]);
   }
 
-  // assign same{Model,Interface}Instance
-  check_model_interface_instance();
-
   switch (responseMode) {
-  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
-    if (lf_form != USHRT_MAX) { // a LF model form is defined
+  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE: {
+    if (!surrModelKey.empty() && surrModelKey[1] != USHRT_MAX) {// LF form def'd
       DiscrepancyCorrection& delta_corr = deltaCorr[key]; // per data group
       if (!delta_corr.initialized())
-	delta_corr.initialize(surrogate_model(), surrogateFnIndices, corrType,
-			      corrOrder);
+	delta_corr.initialize(surrogate_model(), surrogateFnIndices,
+			      corrType, corrOrder);
     }
     break;
+  }
   }
 }
 

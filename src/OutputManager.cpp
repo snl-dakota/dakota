@@ -52,7 +52,8 @@ OutputManager::OutputManager():
   coutRedirector(dakota_cout, &std::cout), 
   cerrRedirector(dakota_cerr, &std::cerr),
   tabularFormat(TABULAR_ANNOTATED),
-  graphicsCntr(1), tabularCntrLabel("eval_id"), outputLevel(NORMAL_OUTPUT)
+  graphicsCntr(1), tabularCntrLabel("eval_id"),
+  tabularInterfLabel("interface"), outputLevel(NORMAL_OUTPUT)
 {  /* empty ctor */  }
 
 
@@ -65,7 +66,8 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
   worldRank(dakota_world_rank), mpirunFlag(dakota_mpirun_flag), 
   coutRedirector(dakota_cout, &std::cout), 
   cerrRedirector(dakota_cerr, &std::cerr),
-  graphicsCntr(1), tabularCntrLabel("eval_id"), outputLevel(NORMAL_OUTPUT)
+  graphicsCntr(1), tabularCntrLabel("eval_id"),
+  tabularInterfLabel("interface"), outputLevel(NORMAL_OUTPUT)
 {
   // This call will redirect based on command-line options
   initial_redirects(prog_opts);
@@ -306,8 +308,7 @@ void OutputManager::append_restart(const ParamResponsePair& prp)
     function, using the variable and response function labels. This
     tabular data is used for post-processing of DAKOTA results in
     Matlab, Tecplot, etc. */
-void OutputManager::
-create_tabular_datastream(const Variables& vars, const Response& response)
+void OutputManager::open_tabular_datastream()
 {
   // For output/restart/tabular data, all Iterator masters stream
   // output so tabular graphics files need to be tagged
@@ -321,11 +322,56 @@ create_tabular_datastream(const Variables& vars, const Response& response)
     TabularIO::open_file(tabularDataFStream, tabularDataFile + file_tag, 
 			 "DakotaGraphics");
   }
+}
 
+
+/** Opens the tabular data file stream and prints headings, one for
+    each active continuous and discrete variable and one for each response
+    function, using the variable and response function labels. This
+    tabular data is used for post-processing of DAKOTA results in
+    Matlab, Tecplot, etc. */
+void OutputManager::
+create_tabular_header(const Variables& vars, const Response& response)
+{
   // tabular graphics data only supports annotated format, active AND inactive
   // TODO: only write header if newly opened?
-  TabularIO::write_header_tabular(tabularDataFStream, vars, response, "eval_id",
+  TabularIO::write_header_tabular(tabularDataFStream, vars, response,
+				  tabularCntrLabel, tabularInterfLabel,
 				  tabularFormat);
+}
+
+
+void OutputManager::
+create_tabular_header(const StringArray& iface_ids)
+{
+  TabularIO::write_header_tabular(tabularDataFStream, tabularCntrLabel,
+				  iface_ids, tabularFormat);
+}
+
+
+void OutputManager::
+append_tabular_header(const Variables& vars)
+{ TabularIO::append_header_tabular(tabularDataFStream, vars, tabularFormat); }
+
+
+void OutputManager::
+append_tabular_header(const Variables& vars, size_t start_index,
+		      size_t num_items)
+{
+  TabularIO::append_header_tabular(tabularDataFStream, vars, start_index,
+				   num_items, tabularFormat);
+}
+
+
+void OutputManager::
+append_tabular_header(const StringArray& labels)
+{ TabularIO::append_header_tabular(tabularDataFStream, labels, tabularFormat); }
+
+
+void OutputManager::
+append_tabular_header(const Response& response)
+{
+  TabularIO::append_header_tabular(tabularDataFStream, response, tabularFormat);
 }
 
 

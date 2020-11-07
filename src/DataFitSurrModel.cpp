@@ -2115,7 +2115,8 @@ void DataFitSurrModel::initialize_export()
     TabularIO::open_file(exportFileStream, exportPointsFile,
 			 "DataFitSurrModel export");
     TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				    currentResponse, "eval_id", exportFormat);
+				    currentResponse, "eval_id", "interface",
+				    exportFormat);
   }
   if (!exportVarianceFile.empty()) {
     StringArray variance_labels;
@@ -2124,7 +2125,7 @@ void DataFitSurrModel::initialize_export()
     TabularIO::open_file(exportVarianceFileStream, exportVarianceFile,
 			 "DataFitSurrModel variance export");
     TabularIO::write_header_tabular(exportVarianceFileStream, currentVariables,
-				    variance_labels, "eval_id",
+				    variance_labels, "eval_id", "interface",
 				    exportVarianceFormat);
   }
 }

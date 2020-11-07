@@ -1194,7 +1194,7 @@ void Model::evaluate()
       derived_evaluate(temp_set);
 
     if (modelAutoGraphicsFlag)
-      derived_model_auto_graphics(currentVariables, currentResponse);
+      derived_auto_graphics(currentVariables, currentResponse);
 
     if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr,
@@ -1253,7 +1253,7 @@ void Model::evaluate(const ActiveSet& set)
       derived_evaluate(set);
 
     if (modelAutoGraphicsFlag)
-      derived_model_auto_graphics(currentVariables, currentResponse);
+      derived_auto_graphics(currentVariables, currentResponse);
 
     if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr,
@@ -1432,7 +1432,7 @@ const IntResponseMap& Model::synchronize()
     if (modelAutoGraphicsFlag) {
       for (r_cit = responseMap.begin(); r_cit != responseMap.end(); ++r_cit) {
 	v_it = varsMap.find(r_cit->first);
-	derived_model_auto_graphics(v_it->second, r_cit->second);
+	derived_auto_graphics(v_it->second, r_cit->second);
 	varsMap.erase(v_it);
       }
     }
@@ -1513,7 +1513,7 @@ const IntResponseMap& Model::synchronize_nowait()
 	  found = false;
 	else {
 	  IntVarsMIter v_it = varsMap.find(graphics_cntr);
-	  derived_model_auto_graphics(v_it->second, g_it->second);
+	  derived_auto_graphics(v_it->second, g_it->second);
 	  varsMap.erase(v_it); graphicsRespMap.erase(g_it);
 	}
       }
@@ -3259,11 +3259,33 @@ bool Model::derived_master_overload() const
 }
 
 
-void Model::
-derived_model_auto_graphics(const Variables& vars, const Response& resp)
+void Model::create_2d_plots()
 {
   if (modelRep) // should not occur: protected fn only used by the letter
-    modelRep->derived_model_auto_graphics(vars, resp); // fwd to letter
+    modelRep->create_2d_plots(); // fwd to letter
+  else // default implementation (overridden by hierarch/nonhierarch surr)
+    parallelLib.output_manager().graphics().create_plots_2d(currentVariables,
+							    currentResponse);
+}
+
+
+void Model::create_tabular_datastream()
+{
+  if (modelRep) // should not occur: protected fn only used by the letter
+    modelRep->create_tabular_datastream(); // fwd to letter
+  else { // default implementation (overridden by hierarch/nonhierarch surr)
+    OutputManager& mgr = parallelLib.output_manager();
+    mgr.open_tabular_datastream();
+    mgr.create_tabular_header(currentVariables, currentResponse);
+  }
+}
+
+
+void Model::
+derived_auto_graphics(const Variables& vars, const Response& resp)
+{
+  if (modelRep) // should not occur: protected fn only used by the letter
+    modelRep->derived_auto_graphics(vars, resp); // fwd to letter
   else // default implementation (overridden by hierarch/nonhierarch surr)
     parallelLib.output_manager().add_tabular_data(vars, interface_id(), resp);
 }
@@ -3507,6 +3529,20 @@ size_t Model::solution_control_variable_index() const
   }
 
   return modelRep->solution_control_variable_index(); // envelope fwd to letter
+}
+
+
+size_t Model::solution_control_discrete_variable_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
+	 << "discrete_variable_index() function.\n       solution_control_"
+	 << "discrete_variable_index() is not supported by this Model class."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_control_discrete_variable_index(); // envelope fwd
 }
 
 

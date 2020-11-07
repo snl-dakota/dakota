@@ -683,6 +683,21 @@ write_tabular_labels(std::ostream& s, unsigned short vars_part) const
 }
 
 
+void Variables::
+write_tabular_partial_labels(std::ostream& s, size_t start_index,
+			     size_t num_items) const
+{
+  if (variablesRep)
+    variablesRep->write_tabular_partial_labels(s, start_index, num_items);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: Letter lacking redefinition of virtual write_tabular_"
+	 << "partial_labels function.\nNo default defined at base class."
+	 << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 void Variables::read(MPIUnpackBuffer& s)
 {
   // MPI buffer version: allow passing of an empty envelope.

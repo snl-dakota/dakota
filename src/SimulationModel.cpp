@@ -26,9 +26,8 @@ namespace Dakota {
 
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
-  userDefinedInterface(problem_db.get_interface()),
-  solnCntlVarType(EMPTY_TYPE), solnCntlADVIndex(0), solnCntlAVIndex(0),
-  simModelEvalCntr(0)
+  userDefinedInterface(problem_db.get_interface()), solnCntlVarType(EMPTY_TYPE),
+  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE_MODE;
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");

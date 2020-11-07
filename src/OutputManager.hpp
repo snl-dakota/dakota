@@ -240,8 +240,22 @@ public:
   // Graphics and tabular output
   // -----
 
-  /// initialize the tabular datastream on iterator leaders
-  void create_tabular_datastream(const Variables& vars, const Response& resp);
+  /// open the tabular datastream on iterator leaders
+  void open_tabular_datastream();
+  /// output a complete header to the tabular datastream
+  void create_tabular_header(const Variables& vars, const Response& resp);
+  /// initiate the header for the tabular datastream with the leading fields
+  void create_tabular_header(const StringArray& iface_ids);
+
+  /// append variables labels to the tabular header
+  void append_tabular_header(const Variables& vars);
+  /// append a range of variables labels to the tabular header
+  void append_tabular_header(const Variables& vars, size_t start_index,
+			     size_t num_items);
+  /// append an array of labels to the tabular header
+  void append_tabular_header(const StringArray& labels);
+  /// append response labels to the tabular header
+  void append_tabular_header(const Response& response);
 
   // all tabular data at once:
 
@@ -378,6 +392,8 @@ private:
 
   /// label for counter used in first line comment w/i the tabular data file
   std::string tabularCntrLabel;
+  /// label for interface used in first line comment w/i the tabular data file
+  std::string tabularInterfLabel;
 
   /// output level (for debugging only; not passed in)
   short outputLevel;

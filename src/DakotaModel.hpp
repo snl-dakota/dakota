@@ -151,6 +151,8 @@ public:
   virtual short solution_control_variable_type() const;
   /// return index of solution control variable within all variables
   virtual size_t solution_control_variable_index() const;
+  /// return index of solution control variable within all discrete variables
+  virtual size_t solution_control_discrete_variable_index() const;
 
   /// return the active (integer) value of the solution control
   virtual int    solution_level_int_value() const;
@@ -396,9 +398,14 @@ public:
   /// of trying to run a multiprocessor job on the master.
   virtual bool derived_master_overload() const;
 
+  /// create 2D graphics plots for automatic logging of vars/response data
+  virtual void create_2d_plots();
+  /// create a tabular output stream for automatic logging of vars/response data
+  virtual void create_tabular_datastream();
+
   /// Update tabular/graphics data with latest variables/response data
-  virtual void derived_model_auto_graphics(const Variables& vars,
-					   const Response& resp);
+  virtual void derived_auto_graphics(const Variables& vars,
+				     const Response& resp);
 
   /// update the Model's inactive view based on higher level (nested) context
   virtual void inactive_view(short view, bool recurse_flag = true);

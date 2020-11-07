@@ -1474,23 +1474,16 @@ void Iterator::initialize_graphics(int iterator_server_id)
     iteratorRep->initialize_graphics(iterator_server_id);
   else { // no redefinition of virtual fn., use default initialization
     OutputManager& mgr = parallelLib.output_manager();
-    Graphics& dakota_graphics = mgr.graphics();
-    const Variables& vars = iteratedModel.current_variables();
-    const Response&  resp = iteratedModel.current_response();
     bool auto_log = false;
 
     // For graphics, limit (currently) to server id 1, for both ded master
     // (parent partition rank 1) and peer partitions (parent partition rank 0)
-    if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
-      dakota_graphics.create_plots_2d(vars, resp);
-      auto_log = true;
-    }
+    if (mgr.graph2DFlag && iterator_server_id == 1) // initialize the 2D plots
+      { iteratedModel.create_2d_plots();           auto_log = true; }
 
     // initialize the tabular data file on all iterator masters
-    if (mgr.tabularDataFlag) {
-      mgr.create_tabular_datastream(vars, resp);
-      auto_log = true;
-    }
+    if (mgr.tabularDataFlag)
+      { iteratedModel.create_tabular_datastream(); auto_log = true; }
 
     if (auto_log) // turn out automatic graphics logging
       iteratedModel.auto_graphics(true);

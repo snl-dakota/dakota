@@ -102,13 +102,24 @@ void close_file(std::ofstream& data_file, const std::string& output_filename,
 //- Utilities for tabular write
 //
 
+/// Write the leading fields for the tabular header
+void write_header_tabular(std::ostream& tabular_ostream, 
+			  const std::string& eval_label,
+			  const std::string& iface_label,
+			  unsigned short tabular_format);
+/// Write the leading fields for the tabular header
+void write_header_tabular(std::ostream& tabular_ostream, 
+			  const std::string& eval_label,
+			  const StringArray& iface_labels,
+			  unsigned short tabular_format);
 /// Output the header row (labels) for a tabular data file for
 /// variables and responses, with variables in input spec order.
 /// Conditionally include interface ID.  Primary uses: environment
 /// tabular data, pre-run output, surrogate approx evals
 void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
 			  const Response& response,
-			  const std::string& counter_label,
+			  const std::string& eval_label,
+			  const std::string& interface_label,
 			  unsigned short tabular_format);
 /// Output the header row (labels) for a tabular data file for
 /// variables and additional labels not tied to a response.  Variables
@@ -116,8 +127,26 @@ void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
 /// Primary uses: MCMC chain export, including calibration sigmas.
 void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
 			  const StringArray& addtnl_labels,
-			  const std::string& counter_label,
+			  const std::string& eval_label,
+			  const std::string& interface_label,
 			  unsigned short tabular_format);
+
+/// append variable labels to the tabular header
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const Variables& vars,
+			   unsigned short tabular_format);
+/// append range of variable labels to the tabular header
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const Variables& vars, size_t start_index,
+			   size_t num_items, unsigned short tabular_format);
+/// append an additional set of labels to the tabular header
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const StringArray& labels,
+			   unsigned short tabular_format);
+/// append response labels to the tabular header
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const Response& response,
+			   unsigned short tabular_format);
 
 /// lower level helper for writing an evaluation id
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id);
