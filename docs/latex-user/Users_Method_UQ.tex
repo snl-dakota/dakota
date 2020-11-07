@@ -285,30 +285,31 @@ observational data.
 
 \subsection{Variables and Responses for UQ}\label{uq:overview:varsresp}
 
-All the UQ methods perform a forward uncertainty propagation in which
-probability or interval information for input parameters is mapped to
-probability or interval information for output response functions. The
-$m$ functions in the Dakota response data set are interpreted as $m$
-general response functions by the Dakota methods (with no specific
-interpretation of the functions as for optimization and least
-squares).
+Most of the UQ methods perform a forward uncertainty propagation in
+which probability or interval information for input parameters is
+mapped to probability or interval information for output response
+functions. The $m$ functions in the Dakota response data set are
+interpreted as $m$ general response functions by the Dakota methods
+(with no specific interpretation of the functions as for optimization
+and least squares).
 
 Within the variables specification, uncertain variable descriptions
 are employed to define the parameter probability distributions (see
-Section~\ref{variables:uncertain}). The continuous aleatory
-distribution types include: normal (Gaussian), lognormal, uniform,
-loguniform, triangular, exponential, beta, gamma, gumbel, frechet,
-weibull, and histogram bin. The discrete aleatory distribution types
-include: poisson, binomial, negative binomial, geometric,
-hypergeometric, and histogram point. The epistemic distribution type
-is interval for continuous variables. For epistemic discrete
-variables, there are three types: integer range, integer set, and real
-set.  When gradient and/or Hessian information is used in an
-uncertainty assessment, derivative components are normally computed
-with respect to the active continuous variables, which could be
-aleatory uncertain, epistemic uncertain, aleatory and epistemic
-uncertain, or all continuous variables, depending on the active view
-(see Section~\ref{variables:mixed}).
+Section~\ref{variables:uncertain}). For Bayesian inference methods,
+these uncertain variable properties characterize the prior
+distribution. The continuous aleatory distribution types include:
+normal (Gaussian), lognormal, uniform, loguniform, triangular,
+exponential, beta, gamma, gumbel, frechet, weibull, and histogram
+bin. The discrete aleatory distribution types include: poisson,
+binomial, negative binomial, geometric, hypergeometric, and histogram
+point. The epistemic distribution type is interval for continuous
+variables. For epistemic discrete variables, there are three types:
+integer range, integer set, and real set.  When gradient and/or
+Hessian information is used in an uncertainty assessment, derivative
+components are normally computed with respect to the active continuous
+variables, which could be aleatory uncertain, epistemic uncertain,
+aleatory and epistemic uncertain, or all continuous variables,
+depending on the active view (see Section~\ref{variables:mixed}).
 
 \section{Sampling Methods}\label{uq:sampling}
 
@@ -2380,6 +2381,13 @@ function that describes knowledge before the incorporation of data is
 called the prior, $f_{\boldsymbol{\Theta}}\left( \boldsymbol{\theta}
 \right)$.
  
+Note: In Dakota, the prior distribution is characterized by the
+properties of the active uncertain variables. Correlated priors are
+only supported for unbounded normal, untruncated lognormal, uniform,
+exponential, gumbel, frechet, and weibull distributions and require a
+probability transformation by specifying
+\dakotakw{standardized_space}.
+
 When data are available, the likelihood function describes how well
 each parameter value is supported by the data. Bayes
 Theorem~\cite{Jaynes}, shown in Equation~\ref{eq:BayesThm}, is used

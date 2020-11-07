@@ -58,6 +58,13 @@ stage, the QUESO methods in %Dakota are the most advanced and robust,
 followed by DREAM, followed by GPMSA and WASABI which are not yet
 ready for production use.
 
+The prior distribution is characterized by the properties of the
+uncertain variables. Correlated priors are only supported for
+unbounded normal, untruncated lognormal, uniform, exponential, gumbel,
+frechet, and weibull distributions and require specification of \c
+standardized_space, for example, for QUESO \ref
+method-bayes_calibration-queso-standardized_space
+
 Note that as of Dakota 6.2, the field responses and associated field
 data may be used with QUESO and DREAM.  That is, the user can specify
 field simulation data and field experiment data, and Dakota will
