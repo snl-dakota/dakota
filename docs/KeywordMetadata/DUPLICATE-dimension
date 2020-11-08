@@ -1,0 +1,24 @@
+Blurb::
+Explicitly specify the desired subspace size
+
+Description::
+This control explicitly indicates the number of basis vectors to
+retain.  The subspace model will include exactly \c dimension
+variables.
+
+<b> Default Behavior </b>
+
+Not active; the number of basis vectors will be chosen by one of the truncation
+methods.
+
+<b> Usage Tips </b>
+
+This control can be helpful when \a a \a priori studies give insight to the appropriate
+subspace size.
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also::
