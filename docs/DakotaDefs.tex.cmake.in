@@ -44,17 +44,18 @@ Justin~G.~Winokur
 }
 
 
-% Updated for Dakota 6.12; manual line breaks as needed to keep names together
+% Updated for Dakota 6.13; manual line breaks as needed to keep names together
 \newcommand{\DakotaAuthorUsersSAND}{
-Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey,\\
+Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey,
 Mohamed~S.~Ebeida, John~P.~Eddy, Michael~S.~Eldred, Russell~W.~Hooper,
-Patricia~D.~Hough, Kenneth~T.~Hu, John~D.~Jakeman, Mohammad~Khalil,
-Kathryn~A.~Maupin, Jason~A.~Monschke, Elliott~M.~Ridgway,\\
-Ahmad~A.~Rushdi, D.~Thomas~Seidl, J.~Adam~Stephens, Laura~P.~Swiler,
-and Justin~G.~Winokur
+Patricia~D.~Hough, Kenneth~T.~Hu,\\
+John~D.~Jakeman, Mohammad~Khalil, Kathryn~A.~Maupin,
+Jason~A.~Monschke,\\
+Elliott~M.~Ridgway, Ahmad~A.~Rushdi, D.~Thomas~Seidl,
+J.~Adam~Stephens, Laura~P.~Swiler, and Justin~G.~Winokur
 }
 
-% Updated for Dakota 6.12
+% Updated for Dakota 6.13
 \newcommand{\DakotaAuthorTheorySAND}{
 Keith~R.~Dalbey, Michael~S.~Eldred, Gianluca~Geraci, John~D.~Jakeman,
 Kathryn~A.~Maupin, Jason~A.~Monschke, D.~Thomas~Seidl,
