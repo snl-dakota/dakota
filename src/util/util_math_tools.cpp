@@ -9,6 +9,8 @@
 #include "util_common.hpp"
 #include "util_math_tools.hpp"
 
+#include <random>
+
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
@@ -80,7 +82,7 @@ void create_cv_folds(const int num_folds, const int num_pts,
   start_ind = 0;
   
   for (int k = 1; k <= num_folds; k++) {
-    if ( k != num_folds)
+    if (k != num_folds)
       end_ind = start_ind + max_fold_size;
     else
       end_ind = num_pts;
@@ -88,6 +90,32 @@ void create_cv_folds(const int num_folds, const int num_pts,
     fold_indices[k-1] = permutation_indices.segment(start_ind, fold_size);
     start_ind = end_ind;
   }
+}
+
+MatrixXd create_uniform_random_double_matrix(const int num_rows,
+    const int num_cols, const unsigned int seed,
+    bool transform, const double low, const double high) {
+
+  if (num_rows < 1 || num_cols < 1)
+    throw std::runtime_error("Number of rows and columns must > 1.");
+
+  MatrixXd random_matrix(num_rows, num_cols);
+  std::mt19937 rng(seed);
+
+  for (int i = 0; i < num_rows; ++i)
+    for (int j = 0; j < num_cols; ++j)
+      random_matrix(i,j) = rng();
+
+  random_matrix /= static_cast<double>(rng.max()); // now in (0, 1)
+
+  if (transform) {
+    if (low > high)
+      throw std::runtime_error("Lower limit > upper limit for random array.");
+    random_matrix *= high - low; // now in (0, 1)
+    random_matrix.array() += low;
+  }
+
+  return random_matrix;
 }
 
 } // namespace util
