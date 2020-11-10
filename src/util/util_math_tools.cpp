@@ -111,7 +111,7 @@ MatrixXd create_uniform_random_double_matrix(const int num_rows,
   if (transform) {
     if (low > high)
       throw std::runtime_error("Lower limit > upper limit for random array.");
-    random_matrix *= high - low; // now in (0, 1)
+    random_matrix *= high - low;
     random_matrix.array() += low;
   }
 

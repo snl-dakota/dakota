@@ -7,8 +7,9 @@
     _______________________________________________________________________ */
 
 #include "util_common.hpp"
-#include "util_metrics.hpp"
 #include "util_data_types.hpp"
+#include "util_metrics.hpp"
+#include "util_math_tools.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
 
@@ -19,8 +20,8 @@ namespace {
 
 TEUCHOS_UNIT_TEST(util, metrics_verification) {
   const int N = 10;
-  VectorXd p = VectorXd::Random(N);
-  VectorXd d = VectorXd::Random(N);
+  VectorXd p = create_uniform_random_double_matrix(N, 1, 44);
+  VectorXd d = create_uniform_random_double_matrix(N, 1, 15);
   MatrixXd diff = p - d;
   double metric, mval;
   const double atol = 1.0e-14;

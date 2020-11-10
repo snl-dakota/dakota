@@ -301,12 +301,14 @@ private:
    *  \param[in] length_scale_bounds Bounds for the length scales for each feature (l).
    *  \param[in] nugget_bounds Bounds for the nugget term.
    *  \param[in] num_restarts Number of restarts for the optimizer.
+   *  \param[in] seed Seed for the random number generator.
    *  \param[out] initial_guesses Matrix of initial guesses.
   */
   void generate_initial_guesses(const VectorXd &sigma_bounds,
                                 const MatrixXd &length_scale_bounds,
                                 const VectorXd &nugget_bounds,
                                 const int num_restarts,
+                                const int seed,
                                 MatrixXd &initial_guesses);
 
   /**
