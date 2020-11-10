@@ -1465,6 +1465,26 @@ gnewton_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
 }
 
 
+/** This is a helper function that provides modularity on incoming Model. */
+void Iterator::initialize_model_graphics(Model& model, int iterator_server_id)
+{
+  OutputManager& mgr = parallelLib.output_manager();
+  bool auto_log = false;
+
+  // For graphics, limit (currently) to server id 1, for both ded master
+  // (parent partition rank 1) and peer partitions (parent partition rank 0)
+  if (mgr.graph2DFlag && iterator_server_id == 1) // initialize the 2D plots
+    { model.create_2d_plots();           auto_log = true; }
+
+  // initialize the tabular data file on all iterator masters
+  if (mgr.tabularDataFlag)
+    { model.create_tabular_datastream(); auto_log = true; }
+
+  if (auto_log) // turn out automatic graphics logging
+    model.auto_graphics(true);
+}
+
+
 /** This is a convenience function for encapsulating graphics
     initialization operations. It is overridden by derived classes
     that specialize the graphics display. */
@@ -1472,22 +1492,8 @@ void Iterator::initialize_graphics(int iterator_server_id)
 {
   if (iteratorRep)
     iteratorRep->initialize_graphics(iterator_server_id);
-  else { // no redefinition of virtual fn., use default initialization
-    OutputManager& mgr = parallelLib.output_manager();
-    bool auto_log = false;
-
-    // For graphics, limit (currently) to server id 1, for both ded master
-    // (parent partition rank 1) and peer partitions (parent partition rank 0)
-    if (mgr.graph2DFlag && iterator_server_id == 1) // initialize the 2D plots
-      { iteratedModel.create_2d_plots();           auto_log = true; }
-
-    // initialize the tabular data file on all iterator masters
-    if (mgr.tabularDataFlag)
-      { iteratedModel.create_tabular_datastream(); auto_log = true; }
-
-    if (auto_log) // turn out automatic graphics logging
-      iteratedModel.auto_graphics(true);
-  }
+  else
+    initialize_model_graphics(iteratedModel, iterator_server_id);
 }
 
 

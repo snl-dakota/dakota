@@ -405,6 +405,10 @@ protected:
 				 const ActiveSet& recast_set,
 				 ActiveSet& sub_model_set);
 
+  /// helper function that encapsulates initialization operations,
+  /// modular on incoming Model instance
+  void initialize_model_graphics(Model& model, int iterator_server_id);
+
   /// export final surrogates generated, e.g., GP in EGO and friends
   void export_final_surrogates(Model& data_fit_surr_model);
 
