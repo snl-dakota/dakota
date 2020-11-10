@@ -145,7 +145,7 @@ Method of Feasible Directions, i.e. \texttt{dot\_mmfd} (see
 Section~\ref{opt:methods:gradient:constrained} for more
 details). However, DOT is licensed software that may not be available
 on a particular system. If it is installed on your system and Dakota
-has been compiled without the \texttt{--without-dot} flag, you may use
+has been configured and compiled with \texttt{HAVE\_DOT:BOOL=ON} flag, you may use
 it by commenting out the line with \texttt{conmin\_mfd} and
 uncommenting the line with \texttt{dot\_mmfd}.
 

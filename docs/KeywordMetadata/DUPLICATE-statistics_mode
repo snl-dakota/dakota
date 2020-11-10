@@ -1,0 +1,26 @@
+Blurb:: type of statistical metric roll-up for multifidelity UQ methods
+
+Description:: When performing adaptive refinement in multifidelity UQ
+methods, one can adapt the expansion for a model level/fidelity based
+on its local statistics (\c active) or based on the statistics for the
+aggregate expansion (\c combined).  The latter case may incur
+additional computational overhead, but ensures that the refinement
+occurs in the aggregate multifidelity context.
+
+<b> Default Behavior </b>
+
+Default for multifidelity methods is \c combined statistics.
+
+<b> Expected Output </b>
+
+<b> Usage Tips </b>
+
+<b> Additional Discussion </b>
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

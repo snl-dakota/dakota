@@ -4,7 +4,7 @@ Description::
 The exponential distribution is often used for modeling failure rates. 
 
 The density function for the exponential distribution is given by: 
-\f[f(x) = \frac{1}{\beta} e^{\frac{-x}{\beta}}\f] 
+\f[f(x) = \frac{1}{\beta} \exp \left( \frac{-x}{\beta} \right)\f] 
 where 
 \f$\mu_{E} = \beta\f$ and \f$\sigma^2_{E} = \beta^2\f$. 
 
@@ -15,14 +15,14 @@ this distribution is a special case of the more general gamma distribution.
 Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
-When used with design of experiments and multidimensional parameter
-studies, distribution bounds are inferred.
-These bounds are [0, \f$\mu + 3 \sigma\f$].
 
-For vector and centered parameter studies, an inferred initial
-starting point is needed for the uncertain variables.
-These variables are initialized to their means for these studies.
+When used with some methods such as design of experiments and
+multidimensional parameter studies, distribution bounds are inferred
+to be [0, \f$\mu + 3 \sigma\f$].
 
+For some methods, including vector and centered parameter studies, an
+initial point is needed for the uncertain variables. When not given
+explicitly, these variables are initialized to their means
 
 Faq::
 See_Also::	

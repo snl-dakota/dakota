@@ -953,19 +953,20 @@ Extending the piecewise decomposition option to other global surrogate models is
 \subsubsection{Surrogate Diagnostic Metrics}\label{models:surf:diagnostics}
 
 The surrogate models provided by Dakota's Surfpack package
-(polynomial, Kriging, ANN, MARS, RBF, and MLS) include the ability to
-compute diagnostic metrics on the basis of (1) simple prediction error
-with respect to the training data, (2) prediction error estimated by
-cross-validation (iteratively omitting subsets of the training data),
-and (3) prediction error with respect to user-supplied hold-out or
-challenge data.  All diagnostics are based on differences between
-$o(x_i)$ the observed value, and $p(x_i)$, the surrogate model
-prediction for training (or omitted or challenge) data point $x_i$.
-In the simple error metric case, the points $x_i$ are those used to
-train the model, for cross validation they are points selectively
-omitted from the build, and for challenge data, they are supplementary
-points provided by the user.  The basic metrics are specified via the
-{\tt metrics} keyword, followed by one or more of:
+(polynomial, Kriging, ANN, MARS, RBF, and MLS) as well as the
+experimental surrogates include the ability to compute diagnostic
+metrics on the basis of (1) simple prediction error with respect to
+the training data, (2) prediction error estimated by cross-validation
+(iteratively omitting subsets of the training data), and (3)
+prediction error with respect to user-supplied hold-out or challenge
+data.  All diagnostics are based on differences between $o(x_i)$ the
+observed value, and $p(x_i)$, the surrogate model prediction for
+training (or omitted or challenge) data point $x_i$.  In the simple
+error metric case, the points $x_i$ are those used to train the model,
+for cross validation they are points selectively omitted from the
+build, and for challenge data, they are supplementary points provided
+by the user.  The basic metrics are specified via the {\tt metrics}
+keyword, followed by one or more of:
 
 \begin{itemize}
 \item {\tt sum\_squared}: $\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}$

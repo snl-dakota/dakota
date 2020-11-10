@@ -1,15 +1,21 @@
 Blurb::
 Aleatory uncertain variable - triangular
+
 Description::
-The triangular distribution is often used when one does not have much data or information, but does have an estimate of the most likely value and the lower and upper bounds. Within the triangular uncertain optional group specification, the number of triangular uncertain variables, the modes, and the distribution lower and upper bounds are required specifications, and variable descriptors is an optional specification.
+The triangular distribution is often used when one does not have much
+data or information, but does have an estimate of the most likely
+value and the lower and upper bounds. The number of triangular uncertain
+variables, the modes, and the distribution lower and upper bounds are
+required specifications, whilevariable descriptors is an optional
+specification.
 
 The density function for the triangular distribution is: 
-\f[f(x) = \frac{2(x-L_T)}{(U_T-L_T)(M_T-L_T)}\f]
-if \f$L_T\leq x \leq M_T\f$, and 
-\f[f(x) = \frac{2(U_T-x)}{(U_T-L_T)(U_T-M_T)}\f]
-if \f$M_T\leq x \leq U_T\f$, and 0 elsewhere. In these equations, 
-\f$L_T\f$ is the lower bound, \f$U_T\f$ is the upper bound, 
-and \f$M_T\f$ is the mode of the triangular distribution. 
+\f[f(x) = \frac{2(x-L)}{(U-L)(M-L)}\f]
+if \f$L\leq x \leq M\f$, and 
+\f[f(x) = \frac{2(U-x)}{(U-L)(U-M)}\f]
+if \f$M\leq x \leq U\f$, and 0 elsewhere. In these equations, 
+\f$L\f$ is the lower bound, \f$U\f$ is the upper bound, 
+and \f$M\f$ is the mode of the triangular distribution. 
 
 Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::

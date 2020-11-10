@@ -18,7 +18,7 @@ in the fields.
 <b>Default Behavior</b> If weights are not specified, then each
 response is given equal weighting: \f[f = \sum_{i=1}^{n}
 \frac{f_i}{n}\f] where, in both of these cases, a "minimization" \ref
-responses-objectve-functions_sense will retain a positive weighting
+responses-objective_functions-sense will retain a positive weighting
 for a minimizer and a "maximization" sense will apply a negative
 weighting.
 

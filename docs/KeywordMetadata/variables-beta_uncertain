@@ -1,10 +1,10 @@
 Blurb::
 Aleatory uncertain variable - beta
 Description::
-Within the beta uncertain optional group specification, the number of beta uncertain variables, the alpha and beta parameters, and the distribution upper and lower bounds are required specifications, and the variable descriptors is an optional specification. 
+The number of beta uncertain variables, the alpha and beta parameters, and the distribution upper and lower bounds are required specifications, while the variable descriptors is an optional specification. 
 The beta distribution can be helpful when the actual distribution of an uncertain variable is unknown, but the user has a good idea of the bounds, the mean, and the standard deviation of the uncertain variable. 
 The density function for the beta distribution is 
-\f[f(x)= \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}\frac{(x-L_B)^{\alpha-1}(U_B-x)^{\beta-1}}{(U_B-L_B)^{\alpha+\beta-1}}\f]
+\f[f(x)= \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}\frac{(x-L)^{\alpha-1}(U-x)^{\beta-1}}{(U-L)^{\alpha+\beta-1}}\f]
  where 
 \f$\Gamma(\alpha)\f$ 
 is the gamma function and 
@@ -12,19 +12,22 @@ is the gamma function and
 is the beta function. 
 To calculate the mean and standard deviation from the alpha, beta, upper bound, and lower bound parameters of the beta distribution, the following expressions may be used. 
 
-\f[\mu_B = L_B+\frac{\alpha}{\alpha+\beta}(U_B-L_B)\f]
+\f[\mu = L+\frac{\alpha}{\alpha+\beta}(U-L)\f]
 
-\f[\sigma_B^2 =\frac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}(U_B-L_B)^2\f]
+\f[\sigma^2 =\frac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}(U-L)^2\f]
 Solving these for \f$\alpha\f$ and \f$\beta\f$ gives:
-\f[\alpha = (\mu_B-L_B)\frac{(\mu_B-L_B)(U_B-\mu_B)-\sigma_B^2}{\sigma_B^2(U_B-L_B)}\f]
-\f[\beta = (U_B-\mu_B)\frac{(\mu_B-L_B)(U_B-\mu_B)-\sigma_B^2}{\sigma_B^2(U_B-L_B)}\f]
+\f[\alpha = (\mu-L)\frac{(\mu-L)(U-\mu)-\sigma^2}{\sigma^2(U-L)}\f]
+\f[\beta = (U-\mu)\frac{(\mu-L)(U-\mu)-\sigma^2}{\sigma^2(U-L)}\f]
 Note that the uniform distribution is a special case of this distribution for parameters \f$\alpha = \beta = 1\f$.
+
 Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
+
 Theory::
-For vector and centered parameter studies, an inferred initial
-starting point is needed for the uncertain variables.
-These variables are initialized to their means for these studies.
+For some methods, including vector and centered parameter studies, an
+initial point is needed for the uncertain variables. When not given
+explicitly, these variables are initialized to their means.
+
 
 Faq::
 See_Also::	

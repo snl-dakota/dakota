@@ -1,12 +1,21 @@
 Blurb::
 Aleatory uncertain variable - normal (Gaussian)
+
 Description::
-Within the normal uncertain optional group specification, the number of normal uncertain variables, the means, and standard deviations are required specifications, and the distribution lower and upper bounds and variable descriptors are optional specifications. The normal distribution is widely used to model uncertain variables such as population characteristics. It is also used to model the mean of a sample: as the sample size becomes very large, the Central Limit Theorem states that the distribution of the mean becomes approximately normal, regardless of the distribution of the original variables.
+The number of normal uncertain variables, their means, and standard
+deviations are required specifications, while the distribution lower and
+upper bounds and variable descriptors are optional specifications. The
+normal distribution is widely used to model uncertain variables such
+as population characteristics. It is also used to model the mean of a
+sample: as the sample size becomes very large, the Central Limit
+Theorem states that the distribution of the mean becomes approximately
+normal, regardless of the distribution of the original variables.
 
 The density function for the normal distribution is:  
-\f[f(x) = \frac{1}{\sqrt{2\pi}\sigma_N} e^{-\frac{1}{2}\left(\frac{x-\mu_N}{\sigma_N}\right)^2}\f]
+\f[ f(x) = \frac{1}{\sqrt{2\pi}\sigma}
+           \exp \left(-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2 \right) \f]
 where 
-\f$\mu_N\f$ and \f$\sigma_N\f$ 
+\f$\mu\f$ and \f$\sigma\f$ 
 are the mean and standard deviation of the normal distribution, respectively. 
 
 Note that if you specify bounds for a normal distribution, the sampling occurs from the underlying distribution with the given mean and standard deviation, but samples are not taken outside the bounds (see "bounded normal" distribution type in  \cite Wyss1998).  This can result in the  mean and the standard deviation of the sample data being different from the mean and standard deviation of the underlying distribution. For example, if you are sampling from a normal distribution with a mean of 5 and a standard deviation of 3, but you specify bounds of 1 and 7, the resulting mean of the samples will be around 4.3 and the resulting standard deviation will be around 1.6.  This is because you have bounded the original distribution significantly, and asymetrically, since 7 is closer to the original mean than 1.
@@ -14,14 +23,14 @@ Note that if you specify bounds for a normal distribution, the sampling occurs f
 Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
-When used with design of experiments and multidimensional parameter
-studies, distribution bounds are inferred.
-These bounds are [\f$\mu - 3 \sigma\f$, \f$\mu + 3 \sigma\f$]
+When used with some methods such as design of experiments and
+multidimensional parameter studies, distribution bounds are inferred
+to be [\f$\mu - 3 \sigma\f$, \f$\mu + 3 \sigma\f$]
 
-For vector and centered parameter studies, an inferred initial
-starting point is needed for the uncertain variables.
-These variables are initialized to their means for these studies.
-
+For some methods, including vector and centered parameter studies, an
+initial point is needed for the uncertain variables. When not given
+explicitly, these variables are initialized to their means, correcting
+to bounds if needed.
 
 Faq::
 See_Also::	

@@ -20,6 +20,7 @@ Sandia National Laboratories
 Brian M. Adams
 William J. Bohnhoff
 Robert A. Canfield
+Wesley P. Coomber
 Keith R. Dalbey
 Mohamed S. Ebeida
 John P. Eddy
@@ -199,6 +200,7 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
+6.13	    	   11/16/20 (refer to git submodules for TPL SHA1s)
 6.12               05/15/20 (refer to git submodules for TPL SHA1s)
 6.11               11/15/19 (refer to git submodules for TPL SHA1s)
 6.10               05/15/19 (refer to git submodules for TPL SHA1s)
