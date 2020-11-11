@@ -2768,6 +2768,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       ( standard_deviation {N_mdm(type,allocationTarget_TARGET_SIGMA)}
         [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
        )
+      |
+      ( scalarization {N_mdm(type,allocationTarget_TARGET_SCALARIZATION)}
+        [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
+       )
      ]
     [ qoi_aggregation {0}
       sum {N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}
