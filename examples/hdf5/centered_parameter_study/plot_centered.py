@@ -49,7 +49,7 @@ import matplotlib.pyplot as plt
 with h5py.File("dakota_results.h5","r") as h:
     # For convenience, create a Group object
     # that refers to the results we are interested in.
-    results = h["/methods/NO_ID/execution:1/"]
+    results = h["/methods/NO_METHOD_ID/results/execution:1/"]
     ### iterate over the response labels ##
     # We need the response descriptors. We could get them from the dimension scale on 
     # variable_slices/<some variable>/responses, but they are also available from 

@@ -205,6 +205,8 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   std::vector<std::string> output;
 
   objectiveFunctionHistory.resize(num_restarts);
+  objectiveGradientHistory.resize(num_restarts, dim);
+  thetaHistory.resize(num_restarts, dim);
 
   double final_obj_value;
   VectorXd final_obj_gradient(dim);
@@ -236,6 +238,12 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
         bestEstimatedNuggetValue = estimatedNuggetValue;
     }
     objectiveFunctionHistory(i) = final_obj_value;
+    objectiveGradientHistory.row(i) = final_obj_gradient;
+    thetaHistory.row(i).head(numVariables+1) = thetaValues;
+    if (estimateTrend)
+      thetaHistory.row(i).segment(numVariables+1, numPolyTerms) = betaValues;
+    if (estimateNugget)
+      thetaHistory.row(i).tail(1)(0) = estimatedNuggetValue;
     algo.reset();
   }
 
@@ -656,7 +664,6 @@ void GaussianProcess::compute_first_deriv_pred_gram(const MatrixXd &pred_gram, c
   first_deriv_pred_gram = -pred_gram.cwiseProduct(cwiseMixedDists[index])
                         * exp(-2.0*thetaValues[index+1]);
 }
-
 void GaussianProcess::compute_second_deriv_pred_gram(const MatrixXd &pred_gram,
                                                      const int index_i, const int index_j,
                                                      MatrixXd &second_deriv_pred_gram) {

@@ -1,0 +1,22 @@
+Blurb:: use statistics for the active expansion within multifidelity refinement
+
+Description:: When performing adaptive refinement in multifidelity UQ
+methods, this option adapts based on the statistics for the active
+model level/fidelity.  This approach avoids some computational overhead in some
+cases by avoiding expansion roll-up.
+
+<b> Default Behavior </b>
+
+<b> Expected Output </b>
+
+<b> Usage Tips </b>
+
+<b> Additional Discussion </b>
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

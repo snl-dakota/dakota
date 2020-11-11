@@ -9,7 +9,7 @@ for file in `ls *.in`;
 do
   echo "Generating output for ${file}"
   name=`basename $file .in`
-  dakota -input ${file} -output ${name}.out 1> ${name}.stdout
+  dakota.sh -input ${file} -output ${name}.out 1> ${name}.stdout
   cp ${name}.out  ${name}.out.sav
   cp ${name}.stdout  ${name}.stdout.sav
   if [ -f ${name}.dat ]; then

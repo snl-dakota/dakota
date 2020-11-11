@@ -1,5 +1,4 @@
 #@ s*: Label=FastTest
-#@ s0: UserMan=muq_uq
 #@ *: DakotaConfig=HAVE_MUQ
 #@ *: ReqFiles=dakota_bayes_linear.1.dat,dakota_cantilever_queso.withsigma.dat
 # s0-s3: using bayes_linear driver

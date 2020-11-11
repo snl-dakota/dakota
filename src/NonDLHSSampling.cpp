@@ -849,7 +849,8 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
     ss << i;
     std::string GPstring = ss.str();
     const String GPPrefix = "PCA_GP";
-    gpApproximations[i].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
+    gpApproximations[i].export_model(StringArray(), GPstring, GPPrefix,
+				     ALGEBRAIC_FILE);
   }
 
   // Now form predictions based on new input points
@@ -941,8 +942,8 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
         int inc_size = samples_vec[i];
         size_t inc_id = i + 1;
         running_total += inc_size;
-        RealMatrix inc_samples(Teuchos::View, allSamples, // block of samples for
-            allSamples.numRows(), running_total);         // this increment
+        RealMatrix inc_samples(Teuchos::View, allSamples,// block of samples for
+            allSamples.numRows(), running_total);        // this increment
         IntResponseMap::iterator end_resp = allResponses.find(running_total + 
             start_id);
         // Response copy ctor just copies a pointer, so this insert should be

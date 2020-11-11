@@ -251,7 +251,8 @@ void RandomFieldModel::identify_field_model()
       gpApproximations[i].build();
       const String gp_string = std::to_string(i);
       const String gp_prefix = "PCA_GP";
-      gpApproximations[i].export_model(gp_string, gp_prefix, ALGEBRAIC_FILE);
+      gpApproximations[i].export_model(StringArray(), gp_string, gp_prefix,
+				       ALGEBRAIC_FILE);
     }
     break;
   }

@@ -16,6 +16,7 @@
 
 #include <pybind11/eigen.h> 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -154,6 +155,22 @@ PYBIND11_MODULE(surrogates, m) {
       py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
       (&dakota::surrogates::Surrogate::hessian))
 
+    .def("variable_labels",
+	 py::detail::overload_cast_impl<>()
+	 (&dakota::surrogates::Surrogate::variable_labels, py::const_))
+
+    .def("variable_labels",
+	 py::detail::overload_cast_impl<const std::vector<std::string>&>()
+	 (&dakota::surrogates::Surrogate::variable_labels))
+
+    .def("response_labels",
+	 py::detail::overload_cast_impl<>()
+	 (&dakota::surrogates::Surrogate::response_labels, py::const_))
+
+    .def("response_labels",
+	 py::detail::overload_cast_impl<const std::vector<std::string>&>()
+	 (&dakota::surrogates::Surrogate::response_labels))
+
     .def("print_options", 
         (&dakota::surrogates::Surrogate::print_options))
 
@@ -221,6 +238,15 @@ PYBIND11_MODULE(surrogates, m) {
     .def("variance",
       py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()
       (&dakota::surrogates::GaussianProcess::variance))
+
+    .def("objective_function_history",
+      (&dakota::surrogates::GaussianProcess::get_objective_function_history))
+
+    .def("objective_gradient_history",
+      (&dakota::surrogates::GaussianProcess::get_objective_gradient_history))
+
+    .def("theta_history",
+      (&dakota::surrogates::GaussianProcess::get_theta_history))
 
     ; // GaussianProcess
 }

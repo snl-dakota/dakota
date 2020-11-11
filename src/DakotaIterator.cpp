@@ -1794,13 +1794,25 @@ void Iterator::export_final_surrogates(Model& data_fit_surr_model)
   if (!exportSurrogate)
     return;
 
-  const auto& labels = data_fit_surr_model.response_labels();
+  // BMA: Seems might be better encapsulated in a DataFitSurrModel
+  // Also, dynamic cast the contained model and bail if wrong?
+
+  const auto& resp_labels = data_fit_surr_model.response_labels();
   auto& approxs = data_fit_surr_model.approximations();
-  assert(labels.size() == approxs.size());
-  auto label_it = labels.begin();
+  if (resp_labels.size() != approxs.size()) {
+    Cerr << "\nError: Method cannot export_model(s) due to improperly sized "
+	 << "response\n       descriptors. Found " << approxs.size()
+	 << " surrogates and " << resp_labels.size() << " descriptors."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  auto rlabel_it = resp_labels.begin();
   auto approx_it = approxs.begin();
-  for ( ; approx_it != approxs.end(); ++label_it, ++approx_it)
-    approx_it->export_model(*label_it, surrExportPrefix, surrExportFormat);
+  for ( ; approx_it != approxs.end(); ++rlabel_it, ++approx_it) {
+    const Variables& vars = data_fit_surr_model.current_variables();
+    approx_it->export_model(vars, *rlabel_it, surrExportPrefix, surrExportFormat);
+  }
 }
 
 } // namespace Dakota

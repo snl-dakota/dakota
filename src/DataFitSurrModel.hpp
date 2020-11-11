@@ -425,12 +425,20 @@ private:
   String pointReuse;
   /// file name from \c import_build_points_file specification
   String importPointsFile;
+
   /// file name from \c export_approx_points_file specification
   String exportPointsFile;
   /// file export format for variables and approximate responses
   unsigned short exportFormat;
   /// output file stream for \c export_approx_points_file specification
   std::ofstream exportFileStream;
+
+  /// file name from \c export_approx_variance_file specification
+  String exportVarianceFile;
+  /// file export format for variables and approximate response variance
+  unsigned short exportVarianceFormat;
+  /// output file stream for \c export_approx_variance_file specification
+  std::ofstream exportVarianceFileStream;
 
   /// manages the building and subsequent evaluation of the approximations
   /// (required for both global and local)

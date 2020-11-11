@@ -39,7 +39,7 @@ namespace surrogates {
  *  algorithm may be run from multiple random initial guesses
  *  to increase the chance of finding the global minimum.
  *
- *  Once the GP is constructed its mean, standard deviation,
+ *  Once the GP is constructed its mean, variance,
  *  and covariance matrix can be computed for a set of prediction
  *  points. Gradients and Hessians are available.
  */
@@ -56,7 +56,7 @@ public:
    * \brief Constructor that sets configOptions but does not build.
    * \param[in] param_list List that overrides entries in defaultConfigOptions.
    */
-  GaussianProcess(const Teuchos::ParameterList& param_list);
+  GaussianProcess(const ParameterList& param_list);
 
   /**
    * \brief Constructor for the GaussianProcess that sets configOptions
@@ -75,7 +75,7 @@ public:
    * \param[in] param_list List that overrides entries in defaultConfigOptions
    */
   GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
-                  const Teuchos::ParameterList &param_list);
+                  const ParameterList &param_list);
 
   /**
    * \brief Constructor for the GaussianProcess that sets configOptions
@@ -133,7 +133,6 @@ public:
    *  \brief Evaluate the gradient of the Gaussian process at a set of prediction points
    *  for QoI index 0.
    *  \param[in] eval_points Coordinates of the prediction points - (num_pts by num_features).
-   *  \param[in] qoi Index of response/QoI for which to compute derivatives.
    *  \returns Matrix of gradient vectors at the prediction points - 
    *  (num_pts by num_features).
    */
@@ -153,7 +152,6 @@ public:
   /**
    *  \brief Evaluate the Hessian of the Gaussian process at a single point for QoI index 0.
    *  \param[in] eval_point Coordinates of the prediction point - (1 by num_features).
-   *  \param[in] qoi Index of response/QoI for which to compute derivatives
    *  \returns Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    */
@@ -167,7 +165,7 @@ public:
    *  \param[in] qoi Index of response/QoI for which to compute derivatives
    *  \returns[out] Covariance matrix for the Gaussian process at the prediction points.
    */
-  MatrixXd covariance(const MatrixXd &eval_point, const int qoi);
+  MatrixXd covariance(const MatrixXd &eval_points, const int qoi);
 
   /**
    *  \brief Evaluate the covariance matrix for the Gaussian Process at a set of prediction points for QoI index 0.
@@ -214,6 +212,26 @@ public:
    *  \returns numVariables The dimension of the feature space.
    */
   int get_num_variables() const;
+
+  /**
+   *  \brief Get the history of objective function values from MLE with restarts.
+   *  \returns objectiveFunctionHistory Vector of final objective function values.
+   */
+  VectorXd get_objective_function_history() { return objectiveFunctionHistory; }
+
+  /**
+   *  \brief Get the history of objective function gradients from MLE with restarts.
+   *  \returns objectiveGradientHistory Matrix of final objective funciton values
+   *  - (num_restarts, num_hyperparameters).
+   */
+  MatrixXd get_objective_gradient_history() { return objectiveGradientHistory; }
+
+  /**
+   *  \brief Get the history of hyperparameter values from MLE with restarts.
+   *  \returns thetaHistory Vector of final hyperparameter (theta) values
+   *  - (num_restarts, num_hyperparameters).
+   */
+  MatrixXd get_theta_history() { return thetaHistory; }
 
   /**
    *  \brief Update the vector of optimization parameters.
@@ -296,7 +314,7 @@ private:
    *  estimation.
    *  \param[in] rol_params RCP to a Teuchos::ParameterList of ROL's options.
    */
-  void setup_default_optimization_params(Teuchos::RCP<Teuchos::ParameterList> rol_params);
+  void setup_default_optimization_params(Teuchos::RCP<ParameterList> rol_params);
 
   /* Private member variables */
 
@@ -335,6 +353,12 @@ private:
 
   /// Final objective function values for each optimization run.
   VectorXd objectiveFunctionHistory;
+
+  /// Final objective function gradients for each optimization run.
+  MatrixXd objectiveGradientHistory;
+
+  /// Final hyperparameter values for each optimization run.
+  MatrixXd thetaHistory;
 
   /// Gram matrix for the build points
   MatrixXd GramMatrix;
@@ -423,6 +447,9 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version)
   archive & basisMatrix;
   archive & betaValues;
   archive & verbosity;
+  archive & objectiveFunctionHistory;
+  archive & objectiveGradientHistory;
+  archive & thetaHistory;
   // BMA TODO: leaving this as shared_ptr pending discussion as it seems natural
   // BMA NOTE: If serializing through shared_ptr, wouldn't have to
   // trap the nullptr case here...

@@ -481,6 +481,16 @@ int test_gp(double atol){
     return 18;
   }
 
+  if (print_output) {
+    std::cout << "\n2D GP MLE objective function values history:\n";
+    std::cout << gp_2D_quad.get_objective_function_history() << "\n";
+    std::cout << "\n2D GP MLE objective function gradient history:\n";
+    std::cout << gp_2D_quad.get_objective_gradient_history() << "\n";
+    std::cout << "\n2D GP MLE hyperparameter history:\n";
+    std::cout << gp_2D_quad.get_theta_history() << "\n";
+    std::cout << "\n";
+  }
+
   std::cout << "\n\n";
 
   return 0;

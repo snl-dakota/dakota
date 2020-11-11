@@ -227,7 +227,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
-  evaluationCapacity(1), outputLevel(output_level), hierarchicalTagging(false),
+  evaluationCapacity(1), outputLevel(output_level),
+  mvDist(Pecos::MARGINALS_CORRELATIONS), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), // to be replaced by derived ctors
@@ -262,7 +263,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   evaluationsDB(evaluation_store_db),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
-  evaluationCapacity(1), outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
+  evaluationCapacity(1), outputLevel(NORMAL_OUTPUT),
+  mvDist(Pecos::MARGINALS_CORRELATIONS), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), // to be replaced by derived ctors
@@ -278,18 +280,18 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
     populated problem_db is needed to build a meaningful Model
     object). */
 Model::Model():
-  probDescDB(dummy_db), parallelLib(dummy_lib), evaluationsDB(evaluation_store_db)
+  probDescDB(dummy_db), parallelLib(dummy_lib),
+  evaluationsDB(evaluation_store_db)
 { /* empty ctor */ }
 
 
-/** Used in model instantiations within strategy constructors.
+/** Used for envelope instantiations within strategy constructors.
     Envelope constructor only needs to extract enough data to properly
     execute get_model, since Model(BaseConstructor, problem_db)
     builds the actual base class data for the derived models. */
-Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
-  parallelLib(problem_db.parallel_library()),
-  evaluationsDB(evaluation_store_db),
-  modelRep(get_model(problem_db))
+Model::Model(ProblemDescDB& problem_db):
+  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+  evaluationsDB(evaluation_store_db), modelRep(get_model(problem_db))
 {
   if ( !modelRep ) // bad type or insufficient memory
     abort_handler(MODEL_ERROR);
@@ -329,8 +331,8 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
 
 /** Copy constructor manages sharing of modelRep. */
 Model::Model(const Model& model): probDescDB(model.problem_description_db()),
-  parallelLib(probDescDB.parallel_library()), evaluationsDB(evaluation_store_db),
-  modelRep(model.modelRep)
+  parallelLib(probDescDB.parallel_library()),
+  evaluationsDB(evaluation_store_db), modelRep(model.modelRep)
 { /* empty ctor */ }
 
 

@@ -1,13 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#  _______________________________________________________________________
-#
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
-#  This software is distributed under the GNU Lesser General Public License.
-#  For more information, see the README file in the top Dakota directory.
-#  _______________________________________________________________________
-
 from __future__ import division, print_function, unicode_literals, absolute_import
 import os
 import re
@@ -32,7 +24,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = '20181203'
+__version__ = '20200619.0'
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -48,6 +40,13 @@ Fallback Flags
 -----------------
 Will also accept `--(left/right)-delimiter` as an alias to the 
 respective parts of `--inline`. 
+
+Include Ordering
+----------------
+All include files are read and set as Immutable immediately. They are read
+in the following order: include files, json-include, python-include.
+Therefore, if a variable is, for example, set in the include file and the 
+python-include, the original value will hold.
 
 Sources:
 --------
@@ -81,8 +80,13 @@ CLI_MODE = False # Reset in the if __name__ == '__main__'
 ###########################################################################
 ############################## Main Functions #############################
 ###########################################################################
-def pyprepro(tpl,include_files=None,json_include=None,env=None,fmt='%0.10g',
-    code='%',code_block='{% %}',inline='{ }'):
+def pyprepro(tpl,include_files=None,
+             json_include=None,
+             python_include=None,
+             dakota_include=None,
+             env=None,immutable_env=None,fmt='%0.10g',
+             code='%',code_block='{% %}',inline='{ }',
+             warn=True,output=None):
     """
     Main pyprepro function.
     
@@ -96,16 +100,32 @@ def pyprepro(tpl,include_files=None,json_include=None,env=None,fmt='%0.10g',
     --------
     include_files: (filename string or list of filenames)
         Files to be read *first* and take precendance (i.e. set as immutable). 
-        No output from these are printed!
+        No output from these are printed! See include order below
     
     json_include: (filename string or list of filenames)
         JSON files of variables to be read that take precendance 
-        (i.e. set as immutable). These are read after include_files
+        (i.e. set as immutable). See include order below
+    
+    python_include: (filename string or list of filenames)
+        python files to be evaluated as pure python where indentation
+        matters and blocks should *not* have an `end` statement (contrary 
+        to the modified python language in a template code block). All 
+        variables take precedence (i.e. set as immutable). See include 
+        order below. 
+    
+    dakota_include (filename string or list of filenames)
+        Input files that are formatted as Dakota paramater files.
+        All variables are immutable. See include 
+        order below. 
     
     env: (dictionary)
         A dictionary of additional settings. If passed as an ImmutableValDict,
         immutability of the params will be maintained
     
+    immutable_env: (dictionary)
+        Like `env` but will automatically set every element as immutable. Just 
+        for convenience 
+        
     fmt:
         String formatting code for numerical output. Can be overidden inline
         with (for example) `{ "%5.2e" % var }`, Can specify with '%' or '{}' 
@@ -123,9 +143,24 @@ def pyprepro(tpl,include_files=None,json_include=None,env=None,fmt='%0.10g',
         Specify the open and closing strings to specify an inline expression.
         Use a space to separate the start and the end.
     
+    warn [True]
+        Whether to allow warnings on changed param names (likely from 
+        Dakota)
+    
+    output [None]
+        Convenience option to write the output string.
+    
     Returns:
     ---------
     resulting string from the template
+    
+    Include Order:
+    --------------
+    All methods of including parameters set them as Immutable before
+    reading the final template file. However, they also have a specific
+    ordering aa follows: include_files, json_include,python_include
+    Therefore, if a parameter is set in the include_file and also set in a
+    json_include, the original value will hold!
     
     """
     # (re)set some globals from this function call.
@@ -143,11 +178,19 @@ def pyprepro(tpl,include_files=None,json_include=None,env=None,fmt='%0.10g',
         include_files = []
     if json_include is None:
         json_include = []
+    if python_include is None:
+        python_include = []
+    if dakota_include is None:
+        dakota_include = []
     
     if isinstance(include_files,(str,unicode)):
         include_files = [include_files]
     if isinstance(json_include,(str,unicode)):
         json_include = [json_include]
+    if isinstance(python_include,(str,unicode)):
+        python_include = [python_include]
+    if isinstance(dakota_include,(str,unicode)):
+        dakota_include = [dakota_include]
     
     # The broken_bottle code is designed (modified) such that when an 
     # environment is passed in, that environment is modified and not copied
@@ -161,6 +204,10 @@ def pyprepro(tpl,include_files=None,json_include=None,env=None,fmt='%0.10g',
         # IMPORTANT: pass the incoming env as an arg and not kw 
         #            to ensure immutability is maintained.
         env = ImmutableValDict(env)
+    
+    if immutable_env is not None:
+        for key,val in immutable_env.items():
+            env[key] = Immutable(val)
     
     # Parse all include files. Do not send in the environment since we will
     # reserve that for later.
@@ -180,16 +227,38 @@ def pyprepro(tpl,include_files=None,json_include=None,env=None,fmt='%0.10g',
             subenv = json.loads(_touni(F.read()))
         for key,val in subenv.items():
             env[key] = Immutable(val)
-        
-        
     
+    for python_file in python_include:
+        subenv = dict()
+        with open(python_file,'rb') as F:
+            exec_(F.read(),subenv)
+        for key,val in subenv.items():
+            env[key] = Immutable(val)
+    
+    for dakota_file in dakota_include:
+        subenv = convert_dakota(dakota_file)
+        for key,val in subenv.items():
+            param0 = key
+            param = _fix_param_name(param0,warn=warn)
+            if param0 != param and warn:
+                txt = """         Or, may be accessed via "DakotaParams['{0}']"\n""".format(param0)
+                if sys.version_info < (2,7):
+                    txt = txt.encode('utf8')
+                sys.stderr.write(txt)
+            env[param] = Immutable(val)
+        env['DakotaParams'] = subenv
+            
     # perform the final evaluation. Note that we do *NOT* pass `**env` since that
     # would create a copy.
-    output = _template(tpl,env=env)     
+    txtout = _template(tpl,env=env)     
 
-    return output
+    if output:
+        with open(output,'wt') as out:
+            out.write(txtout)
 
-def _parse_cli(argv,positional_include=False):
+    return txtout
+
+def _parse_cli(argv,dprepro=False):
     """
     Handle command line input.
     
@@ -198,11 +267,13 @@ def _parse_cli(argv,positional_include=False):
         argv: The command line argumnets. Ex: sys.argv[1:]
     
     Options:
-        positional_include [False]
+        dprepo [False]
             If True, will expect a *single* include file as the first 
             positional argument. Otherwise, will allow for any number
             of includes via --include (this toggle is to change behavior
             for dprepro)
+            
+            Also adds a --simple-parser mode
     """
     
     parser = argparse.ArgumentParser(\
@@ -219,26 +290,41 @@ def _parse_cli(argv,positional_include=False):
         help=('["%(default)s"] Specify the open and close of inline '
               'code/variables to print')) # out of order but makes more sense
               
-#     parser.add_argument('--dakota-params',action='store_true',
-#         help=('Tells %(prog)s that command-line include files are Dakota ' 
-#               'parameter files. Note: does *NOT* affect the `include()` '
-#               'function inside templates. All ":" in variables names are converted to "_".'))
-    
-    if positional_include:
+    if dprepro:
+        parser.add_argument('--simple-parser',action='store_true',
+            help='Always use the simple parser in %(prog)s rather than dakota.interfacing')
         parser.add_argument('include', help='Include (parameter) file.')
     else:
         parser.add_argument('-I','--include',metavar='FILE',action='append',default=[],
             help=('Specify a file to read before parsing input. '
+                  "Should be formatted with the same '--inline','--code', and/or '--code-block' "
+                  "as the 'infile' template. "
                   'Note: All variables read from the --include will be take precedence '
                   '(i.e. be immutable). You later make them mutable if necessary. '
                   'Can specify more than one and they will be read in order. '
                 ))
+        parser.add_argument('--dakota-include',metavar='FILE',action='append',
+            help=('Specify Dakota formatted files to load variables '
+                 'directly. As with `--include`, all variables will '
+                 'be immutable and can specify this flag multiple times. '
+                 'See include ordering. ' 
+                 'All ":" in variables names are converted to "_".'))
             
-    parser.add_argument('--json-include',metavar='FILE',
-                        help=('Specify a JSON formatted file to load variables '
+    parser.add_argument('--json-include',metavar='FILE',action='append',
+                        help=('Specify JSON formatted files to load variables '
                               'directly. As with `--include`, all variables will '
-                              'be immutable. These will be read *after* other included '
-                              'files'))
+                              'be immutable. Can specify multiple. '
+                              'See include ordering'))
+    parser.add_argument('--python-include',metavar='FILE',action='append',
+                        help=('Specify a python formatted file to read and use '
+                              'the resulting environment. NOTE: the file '
+                              'is read a regular python where indentation '
+                              'matters and blocks should *not* have an `end` '
+                              'statement (unlike in coode blocks). ' 
+                              'As with `--include`, all variables will '
+                              'be immutable and can specify this flag multiple times. ' 
+                              'See include ordering'))
+    
     
     parser.add_argument('--no-warn',action='store_false',default=True,dest='warn',
         help = ('Silence warning messages.'))
@@ -272,8 +358,21 @@ def _parse_cli(argv,positional_include=False):
     # Hidden debug
     parser.add_argument('--debug',action='store_true',help=argparse.SUPPRESS)
     
-    args = parser.parse_args(argv)
+    # This sorts the optional arguments or each parser.
+    # It is a bit of a hack. The biggest issue is that this happens on every 
+    # call but it takes about 10 microseconds
+    # Inspired by https://stackoverflow.com/a/12269358/3633154
+    for action_group in parser._action_groups:
+        # Make sure it is the **OPTIONAL** ones
+        if not all(len(action.option_strings) > 0 for action in action_group._group_actions):
+            continue
+        action_group._group_actions.sort(key=lambda action: # lower of the longest key
+                                                    sorted(action.option_strings,
+                                                           key=lambda a:-len(a))[0].lower())
     
+    
+    args = parser.parse_args(argv)
+
     if args.debug:
         global DEBUGCLI
         DEBUGCLI = True
@@ -316,7 +415,6 @@ def _parse_cli(argv,positional_include=False):
         print('ERROR: `infile` must be a file or `-` to read from stdin',file=sys.stderr)
         sys.exit(1)
     
-    
     return args,env
 
 def _pyprepro_cli(argv):
@@ -329,13 +427,16 @@ def _pyprepro_cli(argv):
         output = pyprepro(args.infile,
                      include_files=args.include,
                      json_include=args.json_include,
+                     python_include=args.python_include,
+                     dakota_include=args.dakota_include,
                      env=env,
                      fmt=args.fmt,
                      code=args.code,
                      code_block=args.code_block,
                      inline=args.inline,
+                     warn=args.warn,
                 )
-    except (NameError,BlockCharacterError) as E:
+    except (NameError,BlockCharacterError,IncludeSyntaxError) as E:
         if DEBUGCLI:
             raise
         sys.stderr.write(_error_msg(E))        
@@ -350,6 +451,9 @@ def _pyprepro_cli(argv):
 ###########################################################################
 ############################# Helper Functions ############################
 ###########################################################################
+
+class IncludeSyntaxError(Exception):
+    pass
 
 class BlockCharacterError(Exception):
     pass
@@ -389,6 +493,20 @@ def _formatter(*obj):
         obj = obj[0] 
     else:
         return '(' + ','.join(_formatter(o) for o in obj) + ')'
+
+    # This is to catch a user error if the include is called wrong. It should be
+    # (with default syntax)
+    #   {% include('file') %}
+    # and NOT
+    #   {include('file')}
+    try:
+        if obj['__includesentinel']:
+            msg = ['Incorrect include syntax. Use "code-block" syntax, not "inline"']
+            msg.append("  e.g.: BLOCK_START include('include_file.inp') BLOCK_CLOSE")
+            msg = _mult_replace('\n'.join(msg),BLOCK_START=BLOCK_START,BLOCK_CLOSE=BLOCK_CLOSE)
+            raise IncludeSyntaxError(msg)
+    except (KeyError,AttributeError,TypeError):
+        pass
         
     if obj is None:
         return ''     
@@ -1014,15 +1132,15 @@ def _dprepro_cli(argv):
     except ImportError:
         di = None
     
-    args,env = _parse_cli(argv,positional_include=True)
+    args,env = _parse_cli(argv,dprepro=True)
 
     params = None
     results = None
     # Convert Dakota
-    if di is None:
-        if args.warn:
+    if di is None or args.simple_parser:
+        if args.warn and not args.simple_parser:
             sys.stderr.write(diwarning + '\n') # print the error message
-        env2 = convert_dakota(args.include) # ToDo: Check with Adam on how this should be passed
+        env2 = convert_dakota(args.include)
         env.update(env2)
     else:
         try:
@@ -1046,6 +1164,7 @@ def _dprepro_cli(argv):
                     code_block=args.code_block,
                     inline=args.inline,
                     json_include=args.json_include,
+                    python_include=args.python_include,
                     warn=args.warn
                     )
     except Exception as E:
@@ -1080,10 +1199,14 @@ def dprepro(include=None, template=None, output=None, fmt='%0.10g', code='%',
         inline(str): Delimiters for inline substitution. Default: '{ }'
         warn(bool): Whether or not to warn the user of invalid parameter names
 
+        All additional parameters are passed to pyprepro (e.g. json_include,
+        python_include)
     Returns:
         If no output is specified, returns a string containing the substituted
             template.
     """
+    # Process the Dakota input file and then call pyprepro
+    
     # Construct the env from parameters, results, and include
     env = ImmutableValDict()
     
@@ -1104,7 +1227,7 @@ def dprepro(include=None, template=None, output=None, fmt='%0.10g', code='%',
     if hasattr(template,"read"):
         use_template = template.read()
 
-    # Call the template engine
+    # Call pyprepro engine
     output_string = pyprepro(tpl=use_template, 
                              env=env, 
                              fmt=fmt, 
@@ -1120,10 +1243,6 @@ def dprepro(include=None, template=None, output=None, fmt='%0.10g', code='%',
     else:
         with open(output,"wt") as f:
             f.write(output_string)
-
-
-
-
 
 ###########################################################################
 ####################### BottlePy Extracted Functions ######################
@@ -1346,9 +1465,11 @@ class _SimpleTemplate(_BaseTemplate):
         env.update(kwargs)
         if _name not in self.cache:
             self.cache[_name] = self.__class__(name=_name, lookup=self.lookup, syntax=self.syntax)
-    
-        return self.cache[_name].execute(env['_stdout'], env)
-
+        
+        r = self.cache[_name].execute(env['_stdout'], env)
+        r['__includesentinel'] = True # This is to make sure the return of include
+                                      # is not trying to be displayed
+        return r
 
     def execute(self, _stdout, kwargs):
         env = kwargs # Use the same namespace/environment rather than a copy
@@ -1719,7 +1840,7 @@ def main():
     CLI_MODE = True 
     cmdname = sys.argv[0].lower()
     path, execname = os.path.split(cmdname)
-    if execname.rstrip(".py") == 'dprepro':
+    if execname.startswith('dprepro'):
         sys.exit(_dprepro_cli(sys.argv[1:]))
     sys.exit(_pyprepro_cli(sys.argv[1:]))
 

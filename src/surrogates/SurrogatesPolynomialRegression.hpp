@@ -111,7 +111,6 @@ public:
   /**
    *  \brief Evaluate the polynomial surrogate at a set of prediction points for QoI index 0.
    *  \param[in] eval_points Matrix of prediction points - (num_pts by num_features).
-   *  \param[in] qoi Index for surrogate QoI.
    *  \returns Values of the polynomial surrogate at the prediction points - (num_pts)
    */
   VectorXd value(const MatrixXd &eval_points) {
@@ -121,7 +120,7 @@ public:
   /**
    *  \brief Evaluate the gradient of the polynomial surrogate at a set of prediction points
    *  for a single QoI.
-   *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
+   *  \param[in] eval_points Coordinates of the prediction points - (num_pts by num_features).
    *  \param[in] qoi Index of response/QOI for which to compute derivatives.
    *  \returns Matrix of gradient vectors at the prediction points - 
    *  (num_pts by num_features).
@@ -132,7 +131,6 @@ public:
    *  \brief Evaluate the gradient of the polynomial surrogate at a set of prediction points
    *  for QoI index 0.
    *  \param[in] eval_points Coordinates of the prediction points - (num_pts by num_features).
-   *  \param[in] qoi Index of response/QOI for which to compute derivatives.
    *  \returns Matrix of gradient vectors at the prediction points - 
    *  (num_pts by num_features).
    */
@@ -154,7 +152,6 @@ public:
    *  \brief Evaluate the Hessian of the polynomial surrogate at a single point
    *  for QoI index 0.
    *  \param[in] eval_point Coordinates of the prediction point - (1 by num_features).
-   *  \param[in] qoi Index of response/QOI for which to compute derivatives.
    *  \returns Hessian matrix at the prediction point - 
    *  (num_features by num_features).
    */

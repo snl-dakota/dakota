@@ -2359,6 +2359,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"surrogate.challenge_points_file", P importChallengePtsFile},
 	{"surrogate.decomp_cell_type", P decompCellType},
 	{"surrogate.export_approx_points_file", P exportApproxPtsFile},
+	{"surrogate.export_approx_variance_file", P exportApproxVarianceFile},
 	{"surrogate.import_build_points_file", P importBuildPtsFile},
 	{"surrogate.kriging_opt_method", P krigingOptMethod},
 	{"surrogate.mars_interpolation", P marsInterpolation},
@@ -2619,7 +2620,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
       // must be sorted by string (key)
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
-        {"active_subspace.dimension", P subspaceDimension},
         {"c3function_train.max_cross_iterations", P maxCrossIterations},
         {"initial_samples", P initialSamples},
         {"max_function_evals", P maxFunctionEvals},
@@ -2629,6 +2629,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
         {"soft_convergence_limit", P softConvergenceLimit},
+        {"subspace.dimension", P subspaceDimension},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
         {"surrogate.num_restarts", P numRestarts},
@@ -2861,6 +2862,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"rf.expansion_form", P randomFieldIdForm},
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
 	{"surrogate.export_approx_format", P exportApproxFormat},
+	{"surrogate.export_approx_variance_format", P exportApproxVarianceFormat},
 	{"surrogate.import_build_format", P importBuildFormat},
 	{"surrogate.model_export_format", P modelExportFormat}};
     #undef P

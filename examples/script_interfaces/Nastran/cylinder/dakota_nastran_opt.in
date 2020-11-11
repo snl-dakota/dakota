@@ -16,7 +16,7 @@ interface,
 	  analysis_driver = 'nastran_script'
 	  parameters_file = 'params.in'
 	  results_file = 'results.out'
-	  file_tag file_save aprepro
+          file_tag file_save aprepro
 
 responses,
 	objective_functions = 1
@@ -26,5 +26,5 @@ responses,
 	numerical_gradients
 	  method_source dakota
 	  interval_type central
-	  fd_grad_step_size = .005
+	  fd_gradient_step_size = .005
 	no_hessians

@@ -31,15 +31,27 @@ Surrogate::Surrogate(const MatrixXd &samples,
 
 Surrogate::~Surrogate(){}
 
-MatrixXd Surrogate::gradient(const MatrixXd &eval_points, int qoi) {
+MatrixXd Surrogate::gradient(const MatrixXd &eval_points, const int qoi) {
   silence_unused_args(eval_points, qoi);
   throw(std::runtime_error("Surrogate does not implement gradient(...)"));
 }
 
-MatrixXd Surrogate::hessian(const MatrixXd &eval_point, int qoi) {
+MatrixXd Surrogate::hessian(const MatrixXd &eval_point, const int qoi) {
   silence_unused_args(eval_point, qoi);
   throw(std::runtime_error("Surrogate does not implement hessian(...)"));
 }
+
+void Surrogate::variable_labels(const std::vector<std::string>& var_labels)
+{ variableLabels = var_labels; }
+
+const std::vector<std::string>& Surrogate::variable_labels() const
+{ return variableLabels; }
+
+void Surrogate::response_labels(const std::vector<std::string>& resp_labels)
+{ responseLabels = resp_labels; }
+
+const std::vector<std::string>& Surrogate::response_labels() const
+{ return responseLabels; }
 
 void Surrogate::set_options(const ParameterList &options) {
   configOptions = options;
@@ -63,7 +75,6 @@ Surrogate::load(const std::string& infile, const bool binary)
 }
 
 
-/// Evalute metrics at specified points (within surrogates)
 VectorXd Surrogate::evaluate_metrics(const StringArray &mnames,
   const MatrixXd &points, const MatrixXd &ref_values) {
 
@@ -80,7 +91,6 @@ VectorXd Surrogate::evaluate_metrics(const StringArray &mnames,
   return metrics;
 }
 
-/// K-folds cross validation (within surrogates)
 VectorXd Surrogate::cross_validate(const MatrixXd &samples,
     const MatrixXd &response, const StringArray &mnames,
     const int num_folds, const int seed) {
