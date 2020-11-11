@@ -2853,6 +2853,9 @@
 		<keyword  id="standard_deviation" name="standard_deviation" code="{N_mdm(type,allocationTarget_TARGET_SIGMA)}" label="standard_deviation">
 		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
 		</keyword>
+		<keyword  id="scalarization" name="scalarization" code="{N_mdm(type,allocationTarget_TARGET_SCALARIZATION)}" label="scalarization">
+		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
+		</keyword>
 		</oneOf>
 	   </keyword>
       <keyword  id="qoi_aggregation" name="qoi_aggregation" code="{0}" label="Rule of aggregating the variance and computing the sample allocation over qoi"  minOccurs="0" default="sum" >

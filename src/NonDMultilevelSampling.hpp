@@ -453,6 +453,11 @@ private:
  									IntIntPairRealMatrixMap sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
 
+  /// wrapper for var_of_scalarization_ml
+  Real aggregate_variance_scalarization_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+ 									IntIntPairRealMatrixMap sum_QlQlm1, 
+									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
+
   /// sum up Monte Carlo estimates for mean squared error (MSE) across
   /// QoI using discrepancy variances
   Real aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l);
@@ -567,13 +572,25 @@ private:
   static void target_sigma_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                                RealMatrix& grad_g, int& result_mode);
 
+  static void target_scalarization_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
+  static void target_scalarization_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
+                                         RealMatrix& grad_g, int& result_mode);
+  static void target_scalarization_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
+                                               RealMatrix& grad_g, int& result_mode);
+
   /// NPSOL definition (Wrapper using OPTPP implementation above under the hood)
   static void target_var_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
   static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+
   static void target_sigma_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
   static void target_sigma_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_sigma_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+
+  static void target_scalarization_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_scalarization_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+  static void target_scalarization_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
 
   void assign_static_member(Real &conv_tol, size_t &qoi, size_t &qoi_aggregation, size_t &num_functions, RealVector &level_cost_vec, IntRealMatrixMap &sum_Ql,
                             IntRealMatrixMap &sum_Qlm1, IntIntPairRealMatrixMap &sum_QlQlm1,
@@ -897,11 +914,12 @@ aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm
 			agg_var_qoi(qoi, step) = aggregate_variance_variance_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
 		} else if (allocationTarget == TARGET_SIGMA) {
 			agg_var_qoi(qoi, step) = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
-		}else{
+		} else if (allocationTarget == TARGET_SCALARIZATION){
+			agg_var_qoi(qoi, step) = aggregate_variance_scalarization_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
+	  }else{
 		    Cout << "NonDMultilevelSampling::aggregate_variance_target_Qsum: allocationTarget is not known.\n";
 		    abort_handler(INTERFACE_ERROR);
 		}
-
 		check_negative(agg_var_qoi(qoi, step));
 	}
 }
@@ -987,6 +1005,32 @@ inline Real NonDMultilevelSampling::aggregate_variance_sigma_Qsum(IntRealMatrixM
                   sum_QlQlm1[pr11][step][qoi], sum_Qlm1[2][step][qoi], N_l[step][qoi]);
 
 	return 1./(4. * var_l) * agg_var_l * N_l[step][qoi]; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile
+}
+
+inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
+ 									IntIntPairRealMatrixMap sum_QlQlm1, 
+									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
+{
+	Real cov_of_mean_sigma = 0;
+	Real var_of_mean_l = 0.;
+	Real var_of_sigma_l = 0;
+	Real var_of_scalarization_l = 0;
+	size_t numFormulations = 2;
+	RealMatrix alpha_mean_scalarization(numFormulations, numFunctions);
+	RealMatrix alpha_sigma_scalarization(numFormulations, numFunctions);
+
+	var_of_mean_l = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
+	var_of_sigma_l = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
+  cov_of_mean_sigma = 0; //TODO
+
+  //var_of_scalarization_l = alpha_mean_scalarization[step][qoi]*alpha_mean_scalarization[step][qoi]*var_of_mean_l 
+  //												+ alpha_sigma_scalarization[step][qoi]*alpha_sigma_scalarization[step][qoi]*var_of_sigma_l 
+  //												+ 2.0 * alpha_mean_scalarization[step][qoi] * alpha_sigma_scalarization[step][qoi] * cov_of_mean_sigma;
+  var_of_scalarization_l = 1. * 1. * var_of_mean_l 
+  												+ 3. * 3. * var_of_sigma_l 
+  												+ 2.0 * 1. * 3. * cov_of_mean_sigma;
+
+	return var_of_scalarization_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile is already done in submethods
 }
 
 
@@ -1222,7 +1266,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		#ifdef HAVE_OPTPP
 		    have_optpp = true;
 		#endif
-		if( (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA) && (have_npsol || have_optpp) && useTargetVarianceOptimizationFlag){
+		if( (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA || allocationTarget == TARGET_SCALARIZATION) && (have_npsol || have_optpp) && useTargetVarianceOptimizationFlag){
 			size_t qoi_copy = qoi;
 			size_t qoiAggregation_copy = qoiAggregation;
 			size_t numFunctions_copy = numFunctions;
@@ -1291,6 +1335,18 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			                             3, 1e-15) //derivative_level = 3 means user_supplied gradients
 			                             );
 				}
+				if(allocationTarget==TARGET_SCALARIZATION){
+					optimizer.reset(new NPSOLOptimizer(initial_point,
+			                             var_lower_bnds, var_upper_bnds,
+			                             lin_ineq_coeffs, lin_ineq_lower_bnds,
+			                             lin_ineq_upper_bnds, lin_eq_coeffs,
+			                             lin_eq_targets, nonlin_ineq_lower_bnds,
+			                             nonlin_ineq_upper_bnds, nonlin_eq_targets,
+			                             &target_var_objective_eval_npsol,
+			                             &target_scalarization_constraint_eval_npsol,
+			                             3, 1e-15) //derivative_level = 3 means user_supplied gradients
+			                             );
+				}
 			#elif HAVE_OPTPP
 				if(allocationTarget==TARGET_VARIANCE){
 					optimizer.reset(new SNLLOptimizer(initial_point,
@@ -1314,6 +1370,19 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			                            nonlin_ineq_upper_bnds, nonlin_eq_targets,
 			                            &target_var_objective_eval_optpp,
 			                            &target_sigma_constraint_eval_optpp,
+			                            100000, 100000, 1.e-14,
+			                            1.e-14, 100000)
+			                            );
+				}
+				if(allocationTarget==TARGET_SIGMA){
+					optimizer.reset(new SNLLOptimizer(initial_point,
+			                            var_lower_bnds, var_upper_bnds,
+			                            lin_ineq_coeffs, lin_ineq_lower_bnds,
+			                            lin_ineq_upper_bnds, lin_eq_coeffs,
+			                            lin_eq_targets,nonlin_ineq_lower_bnds,
+			                            nonlin_ineq_upper_bnds, nonlin_eq_targets,
+			                            &target_var_objective_eval_optpp,
+			                            &target_scalarization_constraint_eval_optpp,
 			                            100000, 100000, 1.e-14,
 			                            1.e-14, 100000)
 			                            );
@@ -1368,6 +1437,18 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 				                               3, 1e-15)
 				                               ); //derivative_level = 3 means user_supplied gradients
 			  }
+			  if(allocationTarget==TARGET_SIGMA){
+			  	optimizer.reset(new NPSOLOptimizer(initial_point,
+				                               var_lower_bnds, var_upper_bnds,
+				                               lin_ineq_coeffs, lin_ineq_lower_bnds,
+				                               lin_ineq_upper_bnds, lin_eq_coeffs,
+				                               lin_eq_targets, nonlin_ineq_lower_bnds,
+				                               nonlin_ineq_upper_bnds, nonlin_eq_targets,
+				                               &target_var_objective_eval_npsol,
+				                               &target_scalarization_constraint_eval_logscale_npsol,
+				                               3, 1e-15)
+				                               ); //derivative_level = 3 means user_supplied gradients
+			  }
 				#elif HAVE_OPTPP
 				if(allocationTarget==TARGET_VARIANCE){
 					optimizer.reset(new SNLLOptimizer(initial_point,
@@ -1390,6 +1471,18 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 					            nonlin_ineq_upper_bnds, nonlin_eq_targets,
 					            &target_var_objective_eval_optpp,
 					            &target_sigma_constraint_eval_logscale_optpp,
+					            100000, 100000, 1.e-14,
+					            1.e-14, 100000));
+			  }
+			  if(allocationTarget==TARGET_SIGMA){
+			  	optimizer.reset(new SNLLOptimizer(initial_point,
+					            var_lower_bnds,      var_upper_bnds,
+					            lin_ineq_coeffs, lin_ineq_lower_bnds,
+					            lin_ineq_upper_bnds, lin_eq_coeffs,
+					            lin_eq_targets,     nonlin_ineq_lower_bnds,
+					            nonlin_ineq_upper_bnds, nonlin_eq_targets,
+					            &target_var_objective_eval_optpp,
+					            &target_scalarization_constraint_eval_logscale_optpp,
 					            100000, 100000, 1.e-14,
 					            1.e-14, 100000));
 			  }
