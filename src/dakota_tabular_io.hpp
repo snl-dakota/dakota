@@ -102,13 +102,24 @@ void close_file(std::ofstream& data_file, const std::string& output_filename,
 //- Utilities for tabular write
 //
 
+/// Write the leading fields for the tabular header
+void write_header_tabular(std::ostream& tabular_ostream, 
+			  const std::string& eval_label,
+			  const std::string& iface_label,
+			  unsigned short tabular_format);
+/// Write the leading fields for the tabular header
+void write_header_tabular(std::ostream& tabular_ostream, 
+			  const std::string& eval_label,
+			  const StringArray& iface_labels,
+			  unsigned short tabular_format);
 /// Output the header row (labels) for a tabular data file for
 /// variables and responses, with variables in input spec order.
 /// Conditionally include interface ID.  Primary uses: environment
 /// tabular data, pre-run output, surrogate approx evals
 void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
 			  const Response& response,
-			  const std::string& counter_label,
+			  const std::string& eval_label,
+			  const std::string& interface_label,
 			  unsigned short tabular_format);
 /// Output the header row (labels) for a tabular data file for
 /// variables and additional labels not tied to a response.  Variables
@@ -116,13 +127,67 @@ void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
 /// Primary uses: MCMC chain export, including calibration sigmas.
 void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
 			  const StringArray& addtnl_labels,
-			  const std::string& counter_label,
+			  const std::string& eval_label,
+			  const std::string& interface_label,
 			  unsigned short tabular_format);
 
-/// Write the leading column with eval ID and conditionally, the interface ID
+/// append variable labels to the tabular header
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const Variables& vars,
+			   unsigned short tabular_format);
+/// append range of variable labels to the tabular header
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const Variables& vars, size_t start_index,
+			   size_t num_items, unsigned short tabular_format);
+/// append an additional set of labels to the tabular header
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const StringArray& labels,
+			   unsigned short tabular_format);
+/// append response labels to the tabular header
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const Response& response,
+			   unsigned short tabular_format);
+
+/// lower level helper for writing an evaluation id
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id);
+
+/// lower level helper for writing an interface id
+void write_leading_columns(std::ostream& tabular_ostream,
+			   const String& iface_id);
+
+/// Write the leading columns with an evaluation identifier and an
+/// interface identifier, as indicated by format bits
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
 			   const String& iface_id, 
 			   unsigned short tabular_format);
+
+/// Write the leading columns with an evaluation identifier and one or
+/// more interface identifiers, as controlled by format bits
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
+			   const StringArray& iface_ids, 
+			   unsigned short tabular_format);
+
+/// Output a scalar as part of a row of tabular data
+template<class T>
+void write_scalar_tabular(std::ostream& tabular_ostream, T val)
+{
+  tabular_ostream << std::setprecision(write_precision) 
+		  << std::resetiosflags(std::ios::floatfield)
+		  << std::setw(write_precision+4) << val << ' '; // no EOL
+}
+
+/// Output a row of tabular data from a variables object.  All active/inactive
+/// variables written in input spec order.
+void write_data_tabular(std::ostream& tabular_ostream, 
+			const Variables& vars);
+/// Output a row of tabular data from a variables object.  All active/inactive
+/// variables written in input spec order.
+void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
+			size_t start_index, size_t num_items);
+
+/// Output a row of tabular data from a response object
+void write_data_tabular(std::ostream& tabular_ostream, 
+			const Response& response);
 
 /// Output a row of tabular data from a variables object.  All active/inactive
 /// variables written in input spec order.  Conditionally include interface ID.
@@ -147,7 +212,6 @@ void write_data_tabular(const std::string& output_filename,
 			const std::string& context_message,
 			const RealVectorArray& output_coeffs, 
 			const UShort2DArray& output_indices);
-
 
 //
 //- Utilities for tabular read

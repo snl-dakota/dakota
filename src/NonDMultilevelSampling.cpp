@@ -1042,8 +1042,8 @@ control_variate_mc(const UShortArray& active_key)
   Model& surr_model  = iteratedModel.surrogate_model();
 
   // retrieve active index
-  //unsigned short lf_lev_index =  surr_model.solution_level_index(),
-  //               hf_lev_index = truth_model.solution_level_index();
+  //unsigned short lf_lev_index =  surr_model.solution_level_cost_index(),
+  //               hf_lev_index = truth_model.solution_level_cost_index();
   // retrieve cost estimates across model forms for a particular soln level
   Real lf_cost =  surr_model.solution_level_cost(),
        hf_cost = truth_model.solution_level_cost(),
@@ -3291,7 +3291,8 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
   Variables vars(model.current_variables().copy());
 
   String context_message("NonDMultilevelSampling::export_all_samples");
-  StringArray no_resp_labels; String cntr_label("sample_id");
+  StringArray no_resp_labels;
+  String cntr_label("sample_id"), interf_label("interface");
 
   // Rather than hard override, rely on output_precision user spec
   //int save_wp = write_precision;
@@ -3299,7 +3300,7 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
   std::ofstream tabular_stream;
   TabularIO::open_file(tabular_stream, tabular_filename, context_message);
   TabularIO::write_header_tabular(tabular_stream, vars, no_resp_labels,
-				  cntr_label, exportSamplesFormat);
+				  cntr_label, interf_label,exportSamplesFormat);
   for (i=0; i<num_samp; ++i) {
     sample_to_variables(allSamples[i], vars); // NonDSampling version
     TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1,

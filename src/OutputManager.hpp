@@ -18,6 +18,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
+#include "dakota_tabular_io.hpp"
 #include "DakotaGraphics.hpp"
 #include <memory>
 
@@ -239,16 +240,53 @@ public:
   // Graphics and tabular output
   // -----
 
-  /// adds data to each window in the 2d graphics and adds a row to
-  /// the tabular data file based on the results of a model evaluation
-  void add_datapoint(const Variables& vars, const String& iface, 
-		     const Response& response);
-  
-  /// initialize the tabular datastream on iterator leaders
-  void create_tabular_datastream(const Variables& vars, const Response& resp);
+  /// open the tabular datastream on iterator leaders
+  void open_tabular_datastream();
+  /// output a complete header to the tabular datastream
+  void create_tabular_header(const Variables& vars, const Response& resp);
+  /// initiate the header for the tabular datastream with the leading fields
+  void create_tabular_header(const StringArray& iface_ids);
 
+  /// append variables labels to the tabular header
+  void append_tabular_header(const Variables& vars);
+  /// append a range of variables labels to the tabular header
+  void append_tabular_header(const Variables& vars, size_t start_index,
+			     size_t num_items);
+  /// append an array of labels to the tabular header
+  void append_tabular_header(const StringArray& labels, bool rtn = false);
+  /// append response labels to the tabular header
+  void append_tabular_header(const Response& response);
+
+  // all tabular data at once:
+
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for the evaluation variables/response
+  void add_tabular_data(const Variables& vars, const String& iface, 
+			const Response& response);
+
+  // fine-grained options:
+
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for the evaluation variables
+  void add_tabular_data(const Variables& vars);
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for a portion of the evaluation variables
+  void add_tabular_data(const Variables& vars, size_t start_index,
+			size_t num_items);
+  /// adds data to a row of the tabular data file for the interface id
+  void add_tabular_data(const StringArray& iface_ids);
+  // adds data to each window in the 2d graphics and adds a row to
+  // the tabular data file for the evaluation interface id
+  //void add_tabular_data(const String& iface);
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file for the evaluation response
+  void add_tabular_data(const Response& response);
+  /// augments the data set for a row in the tabular data file
+  template<class T> 
+  void add_tabular_scalar(T val);
+  
   /// close tabular datastream
-  void close_tabular();
+  void close_tabular_datastream();
 
   /// set graphicsCntr equal to cntr
   void graphics_counter(int cntr);
@@ -279,7 +317,7 @@ public:
   bool tabularDataFlag;   ///< whether user requested tabular data file
   bool resultsOutputFlag; ///< whether user requested results data output
 
-   // // For items from the environment spec, can use DataEnvironment defaults
+   // For items from the environment spec, can use DataEnvironment defaults
    //  tabular_filename       = outputManager.tabularDataFile;
    //  results_filename       = outputManager.resultsOutputFile;
 
@@ -354,6 +392,8 @@ private:
 
   /// label for counter used in first line comment w/i the tabular data file
   std::string tabularCntrLabel;
+  /// label for interface used in first line comment w/i the tabular data file
+  std::string tabularInterfLabel;
 
   /// output level (for debugging only; not passed in)
   short outputLevel;
@@ -361,6 +401,18 @@ private:
   /// Output results  format
   unsigned short resultsOutputFormat;
 };
+
+
+template<class T> 
+void OutputManager::add_tabular_scalar(T val)
+{
+  // post to the X graphics plots (active variables only)
+  //dakotaGraphics.add_datapoint(graphicsCntr, val);
+  
+  // whether the file is open, not whether the user asked
+  if (tabularDataFStream.is_open())
+    TabularIO::write_scalar_tabular(tabularDataFStream, val);
+}
 
 } //namespace Dakota
 

@@ -136,16 +136,30 @@ public:
   /// number of discrete levels within solution control (SimulationModel)
   virtual size_t solution_levels(bool lwr_bnd = true) const;
   /// activate a particular level within the solution level control
-  /// and return the cost estimate (SimulationModel)
-  virtual void solution_level_index(unsigned short index);
+  /// (SimulationModel)
+  virtual void solution_level_cost_index(unsigned short index);
   /// return currently active level within the solution level control
   /// (SimulationModel)
-  virtual unsigned short solution_level_index() const;
+  virtual unsigned short solution_level_cost_index() const;
   /// return ordered cost estimates across solution levels (SimulationModel)
   virtual RealVector solution_level_costs() const;
   /// return currently active cost estimate from solution level
   /// control (SimulationModel)
   virtual Real solution_level_cost() const;
+
+  /// return type of solution control variable
+  virtual short solution_control_variable_type() const;
+  /// return index of solution control variable within all variables
+  virtual size_t solution_control_variable_index() const;
+  /// return index of solution control variable within all discrete variables
+  virtual size_t solution_control_discrete_variable_index() const;
+
+  /// return the active (integer) value of the solution control
+  virtual int    solution_level_int_value() const;
+  /// return the active (string) value of the solution control
+  virtual String solution_level_string_value() const;
+  /// return the active (real) value of the solution control
+  virtual Real   solution_level_real_value() const;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
@@ -383,6 +397,15 @@ public:
   /// in synchronous evaluate functions to prevent the error
   /// of trying to run a multiprocessor job on the master.
   virtual bool derived_master_overload() const;
+
+  /// create 2D graphics plots for automatic logging of vars/response data
+  virtual void create_2d_plots();
+  /// create a tabular output stream for automatic logging of vars/response data
+  virtual void create_tabular_datastream();
+
+  /// Update tabular/graphics data with latest variables/response data
+  virtual void derived_auto_graphics(const Variables& vars,
+				     const Response& resp);
 
   /// update the Model's inactive view based on higher level (nested) context
   virtual void inactive_view(short view, bool recurse_flag = true);

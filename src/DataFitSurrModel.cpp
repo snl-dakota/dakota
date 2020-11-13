@@ -1497,7 +1497,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       currentResponse.active_set(set);
       currentResponse.update(actualModel.current_response());
       // TODO: Add to surrogate build data
-      //      add_datapoint(....)
+      //      add_tabular_data(....)
       break;
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       actualModel.evaluate(set);
@@ -2115,7 +2115,8 @@ void DataFitSurrModel::initialize_export()
     TabularIO::open_file(exportFileStream, exportPointsFile,
 			 "DataFitSurrModel export");
     TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				    currentResponse, "eval_id", exportFormat);
+				    currentResponse, "eval_id", "interface",
+				    exportFormat);
   }
   if (!exportVarianceFile.empty()) {
     StringArray variance_labels;
@@ -2124,7 +2125,7 @@ void DataFitSurrModel::initialize_export()
     TabularIO::open_file(exportVarianceFileStream, exportVarianceFile,
 			 "DataFitSurrModel variance export");
     TabularIO::write_header_tabular(exportVarianceFileStream, currentVariables,
-				    variance_labels, "eval_id",
+				    variance_labels, "eval_id", "interface",
 				    exportVarianceFormat);
   }
 }
