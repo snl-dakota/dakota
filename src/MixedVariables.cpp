@@ -121,6 +121,11 @@ write_tabular(std::ostream& s, unsigned short vars_part) const
 
 
 void MixedVariables::
+write_tabular_labels(std::ostream& s, unsigned short vars_part) const
+{ write_core(s, LabelsWriter(), vars_part); }
+
+
+void MixedVariables::
 write_tabular_partial(std::ostream& s, size_t start_index,
 		      size_t num_items) const//, unsigned short vars_part) const
 {
@@ -151,11 +156,6 @@ write_tabular_partial(std::ostream& s, size_t start_index,
 			 vc_totals[TOTAL_DSSV], vc_totals[TOTAL_DSRV]))
     return;
 }
-
-
-void MixedVariables::
-write_tabular_labels(std::ostream& s, unsigned short vars_part) const
-{ write_core(s, LabelsWriter(), vars_part); }
 
 
 void MixedVariables::
@@ -343,66 +343,35 @@ write_partial_core(std::ostream& s, Writer write_handler, size_t start_index,
 		   size_t num_cv, size_t num_div, size_t num_dsv,
 		   size_t num_drv) const
 {
-  // write design variables
-  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
-  if (start_index <= av_cntr && end_index >= av_cntr+num_cv) // full set
-    write_handler(s, acv_offset, num_cv, allContinuousVars, acv_labels);
-  else if (start_index < av_cntr + num_cv) { // manage truncation on either end
-    size_t part_start = acv_offset, part_num = num_cv;  bool rtn = false;
-    if (start_index > av_cntr) // then advance part_start by offset
-      part_start += start_index - av_cntr;
-    if (end_index < av_cntr + num_cv) // then make them equal
-      { part_num = end_index - av_cntr; rtn = true; }
-    if (part_num)
-      write_handler(s, part_start, part_num, allContinuousVars, acv_labels);
-    if (rtn) return true;
-  }
-  acv_offset += num_cv;  av_cntr += num_cv;
+  size_t i;
+  StringMultiArrayView acv_labels = all_continuous_variable_labels();
+  for (i=0; i<num_cv; ++i, ++av_cntr, ++acv_offset)
+    if (av_cntr >= start_index && av_cntr < end_index)
+      write_handler(s, acv_offset, 1, allContinuousVars, acv_labels);
+    else if (av_cntr >= end_index)
+      return true;
 
   StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
-  if (start_index <= av_cntr && end_index >= av_cntr+num_div) // full set
-    write_handler(s, adiv_offset, num_div, allDiscreteIntVars, adiv_labels);
-  else if (start_index < av_cntr + num_div) {
-    size_t part_start = adiv_offset, part_num = num_div;  bool rtn = false;
-    if (start_index > av_cntr) // then advance part_start by offset
-      part_start += start_index - av_cntr;
-    if (end_index < av_cntr + num_div) // then make them equal
-      { part_num = end_index - av_cntr; rtn = true; }
-    if (part_num)
-      write_handler(s, part_start, part_num, allDiscreteIntVars, adiv_labels);
-    if (rtn) return true;
-  }
-  adiv_offset += num_div;  av_cntr += num_div;
+  for (i=0; i<num_div; ++i, ++av_cntr, ++adiv_offset)
+    if (av_cntr >= start_index && av_cntr < end_index)
+      write_handler(s, adiv_offset, 1, allDiscreteIntVars, adiv_labels);
+    else if (av_cntr >= end_index)
+      return true;
 
   StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
-  if (start_index <= av_cntr && end_index >= av_cntr+num_dsv) // full set
-    write_handler(s, adsv_offset, num_dsv, allDiscreteStringVars, adsv_labels);
-  else if (start_index < av_cntr + num_dsv) {
-    size_t part_start = adsv_offset, part_num = num_dsv;  bool rtn = false;
-    if (start_index > av_cntr) // then advance part_start by offset
-      part_start += start_index - av_cntr;
-    if (end_index < av_cntr + num_dsv) // then make them equal
-      { part_num = end_index - av_cntr; rtn = true; }
-    if (part_num)
-      write_handler(s, part_start, part_num, allDiscreteStringVars,adsv_labels);
-    if (rtn) return true;
-  }
-  adsv_offset += num_dsv;  av_cntr += num_dsv;
+  for (i=0; i<num_dsv; ++i, ++av_cntr, ++adsv_offset)
+    if (av_cntr >= start_index && av_cntr < end_index)
+      write_handler(s, adsv_offset, 1, allDiscreteStringVars, adsv_labels);
+    else if (av_cntr >= end_index)
+      return true;
 
   StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
-  if (start_index <= av_cntr && end_index >= av_cntr+num_drv) // full set
-    write_handler(s, adrv_offset, num_drv, allDiscreteRealVars, adrv_labels);
-  else if (start_index < av_cntr + num_drv) {
-    size_t part_start = adrv_offset, part_num = num_drv;  bool rtn = false;
-    if (start_index > av_cntr) // then advance part_start by offset
-      part_start += start_index - av_cntr;
-    if (end_index < av_cntr + num_drv) // then make them equal
-      { part_num = end_index - av_cntr; rtn = true; }
-    if (part_num)
-      write_handler(s, part_start, part_num, allDiscreteRealVars, adrv_labels);
-    if (rtn) return true;
-  }
-  adrv_offset += num_drv;  av_cntr += num_drv;
+  for (i=0; i<num_drv; ++i, ++av_cntr, ++adrv_offset)
+    if (av_cntr >= start_index && av_cntr < end_index)
+      write_handler(s, adrv_offset, 1, allDiscreteRealVars, adrv_labels);
+    else if (av_cntr >= end_index)
+      return true;
+
   return false;
 }
 

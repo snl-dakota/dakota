@@ -253,7 +253,7 @@ public:
   void append_tabular_header(const Variables& vars, size_t start_index,
 			     size_t num_items);
   /// append an array of labels to the tabular header
-  void append_tabular_header(const StringArray& labels);
+  void append_tabular_header(const StringArray& labels, bool rtn = false);
   /// append response labels to the tabular header
   void append_tabular_header(const Response& response);
 

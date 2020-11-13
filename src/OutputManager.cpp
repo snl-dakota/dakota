@@ -364,8 +364,11 @@ append_tabular_header(const Variables& vars, size_t start_index,
 
 
 void OutputManager::
-append_tabular_header(const StringArray& labels)
-{ TabularIO::append_header_tabular(tabularDataFStream, labels, tabularFormat); }
+append_tabular_header(const StringArray& labels, bool rtn)
+{
+  TabularIO::append_header_tabular(tabularDataFStream, labels, tabularFormat);
+  if (rtn) tabularDataFStream << std::endl;
+}
 
 
 void OutputManager::

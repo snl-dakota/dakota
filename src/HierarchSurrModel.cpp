@@ -1107,7 +1107,20 @@ void HierarchSurrModel::create_tabular_datastream()
 				currentVariables.tv() - av_index);
     }
 
-    mgr.append_tabular_header(currentResponse);
+    //mgr.append_tabular_header(currentResponse);
+    // Add HF/LF/Del prepends
+    StringArray labels = currentResponse.function_labels(); // copy
+    size_t q, num_qoi = qoi(), num_labels = labels.size();
+    if (responseMode == MODEL_DISCREPANCY)
+      for (q=0; q<num_qoi; ++q)
+	labels[q].insert(0, "Del_");
+    else {
+      for (q=0; q<num_qoi; ++q)
+	labels[q].insert(0, "HF_");
+      for (q=num_qoi; q<num_labels; ++q)
+	labels[q].insert(0, "LF_");
+    }
+    mgr.append_tabular_header(labels, true); // with endl
     break;
   }
   case NO_SURROGATE:
@@ -1202,10 +1215,6 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 				lf_model.interface_id(), resp);
     break;
   }
-
-  // export the single/aggregate/discrepancy response, as sized by
-  // HierarchSurrModel::currentResponse
-  output_mgr.add_tabular_data(resp);
 }
 
 
