@@ -120,6 +120,21 @@ public:
   /// return the active truth sub-model in surrogate models
   virtual const Model& truth_model() const;
 
+  /// identify if hierarchy is across model forms
+  virtual bool multifidelity() const;
+  /// identify if hierarchy is across resolution levels
+  virtual bool multilevel() const;
+  /// identify if hierarchy is across both model forms and resolution levels
+  virtual bool multilevel_multifidelity() const;
+
+  /// return precedence for hierarchy definition, model forms or
+  /// resolution levels
+  virtual bool multifidelity_precedence() const;
+  /// assign precedence for hierarchy definition (model forms or
+  /// resolution levels) as determined from algorithm context
+  virtual void multifidelity_precedence(bool mf_prec,
+					bool update_default = false);
+
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// resize vars/resp if needed from the bottom up
