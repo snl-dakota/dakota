@@ -1243,7 +1243,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 	}
 
   for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
-  	Real fact_qoi = sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
+  	Real fact_qoi = sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi]; ///TODO: targeting Cost
 		if (outputLevel == DEBUG_OUTPUT)
 			Cout << "\n\tN_target for Qoi: " << qoi << ", with lagrange: " << fact_qoi << std::endl;
 
@@ -1310,83 +1310,62 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			assign_static_member(nonlin_eq_targets[0], qoi_copy, qoiAggregation_copy, numFunctions_copy, level_cost_vec, sum_Ql, sum_Qlm1, sum_QlQlm1, pilot_samples);
 
 			std::unique_ptr<Iterator> optimizer;
+
+			void (*objective_function_npsol_ptr) (int&, int&, double*, double&, double*, int&) = nullptr;
+			void (*constraint_function_npsol_ptr) (int&, int&, int&, int&, int*, double*, double*, double*, int&) = nullptr;
+			void (*objective_function_optpp_ptr) (int, int, const RealVector&, double&, RealVector&, int&) = nullptr;
+			void (*constraint_function_optpp_ptr) (int, int, const RealVector&, RealVector&, RealMatrix&, int&) = nullptr;
 			#ifdef HAVE_NPSOL
-				if(allocationTarget==TARGET_VARIANCE){
-					optimizer.reset(new NPSOLOptimizer(initial_point,
-			                             var_lower_bnds, var_upper_bnds,
-			                             lin_ineq_coeffs, lin_ineq_lower_bnds,
-			                             lin_ineq_upper_bnds, lin_eq_coeffs,
-			                             lin_eq_targets, nonlin_ineq_lower_bnds,
-			                             nonlin_ineq_upper_bnds, nonlin_eq_targets,
-			                             &target_var_objective_eval_npsol,
-			                             &target_var_constraint_eval_npsol,
-			                             3, 1e-15) //derivative_level = 3 means user_supplied gradients
-			                             );
+				objective_function_npsol_ptr = &target_var_objective_eval_npsol;
+				switch(allocationTarget){
+					case TARGET_VARIANCE:
+						constraint_function_npsol_ptr = &target_var_constraint_eval_npsol;
+						break;
+					case TARGET_SIGMA:
+						constraint_funcconstraint_function_npsol_ptrtion_ptr = &target_sigma_constraint_eval_npsol;
+						break;
+					case TARGET_SCALARIZATION:
+						constraint_function_npsol_ptr = &target_scalarization_constraint_eval_npsol;
+						break;
+					default:
+						 break;
 				}
-				if(allocationTarget==TARGET_SIGMA){
-					optimizer.reset(new NPSOLOptimizer(initial_point,
-			                             var_lower_bnds, var_upper_bnds,
-			                             lin_ineq_coeffs, lin_ineq_lower_bnds,
-			                             lin_ineq_upper_bnds, lin_eq_coeffs,
-			                             lin_eq_targets, nonlin_ineq_lower_bnds,
-			                             nonlin_ineq_upper_bnds, nonlin_eq_targets,
-			                             &target_var_objective_eval_npsol,
-			                             &target_sigma_constraint_eval_npsol,
-			                             3, 1e-15) //derivative_level = 3 means user_supplied gradients
-			                             );
-				}
-				if(allocationTarget==TARGET_SCALARIZATION){
-					optimizer.reset(new NPSOLOptimizer(initial_point,
-			                             var_lower_bnds, var_upper_bnds,
-			                             lin_ineq_coeffs, lin_ineq_lower_bnds,
-			                             lin_ineq_upper_bnds, lin_eq_coeffs,
-			                             lin_eq_targets, nonlin_ineq_lower_bnds,
-			                             nonlin_ineq_upper_bnds, nonlin_eq_targets,
-			                             &target_var_objective_eval_npsol,
-			                             &target_scalarization_constraint_eval_npsol,
-			                             3, 1e-15) //derivative_level = 3 means user_supplied gradients
-			                             );
-				}
+				optimizer.reset(new NPSOLOptimizer(initial_point,
+		                             var_lower_bnds, var_upper_bnds,
+		                             lin_ineq_coeffs, lin_ineq_lower_bnds,
+		                             lin_ineq_upper_bnds, lin_eq_coeffs,
+		                             lin_eq_targets, nonlin_ineq_lower_bnds,
+		                             nonlin_ineq_upper_bnds, nonlin_eq_targets,
+		                             objective_function_npsol_ptr,
+		                             constraint_function_npsol_ptr,
+		                             3, 1e-15) //derivative_level = 3 means user_supplied gradients
+		                             );
 			#elif HAVE_OPTPP
-				if(allocationTarget==TARGET_VARIANCE){
-					optimizer.reset(new SNLLOptimizer(initial_point,
-			                            var_lower_bnds, var_upper_bnds,
-			                            lin_ineq_coeffs, lin_ineq_lower_bnds,
-			                            lin_ineq_upper_bnds, lin_eq_coeffs,
-			                            lin_eq_targets,nonlin_ineq_lower_bnds,
-			                            nonlin_ineq_upper_bnds, nonlin_eq_targets,
-			                            &target_var_objective_eval_optpp,
-			                            &target_var_constraint_eval_optpp,
-			                            100000, 100000, 1.e-14,
-			                            1.e-14, 100000)
-			                            );
+				objective_function_optpp_ptr = &target_var_objective_eval_optpp;
+				switch(allocationTarget){
+					case TARGET_VARIANCE:
+						constraint_function_optpp_ptr = &target_var_constraint_eval_optpp;
+						break;
+					case TARGET_SIGMA:
+						constraint_function_optpp_ptr = &target_sigma_constraint_eval_optpp;
+						break;
+					case TARGET_SCALARIZATION:
+						constraint_function_optpp_ptr = &target_scalarization_constraint_eval_optpp;
+						break;
+					default:
+						 break;
 				}
-				if(allocationTarget==TARGET_SIGMA){
-					optimizer.reset(new SNLLOptimizer(initial_point,
-			                            var_lower_bnds, var_upper_bnds,
-			                            lin_ineq_coeffs, lin_ineq_lower_bnds,
-			                            lin_ineq_upper_bnds, lin_eq_coeffs,
-			                            lin_eq_targets,nonlin_ineq_lower_bnds,
-			                            nonlin_ineq_upper_bnds, nonlin_eq_targets,
-			                            &target_var_objective_eval_optpp,
-			                            &target_sigma_constraint_eval_optpp,
-			                            100000, 100000, 1.e-14,
-			                            1.e-14, 100000)
-			                            );
-				}
-				if(allocationTarget==TARGET_SIGMA){
-					optimizer.reset(new SNLLOptimizer(initial_point,
-			                            var_lower_bnds, var_upper_bnds,
-			                            lin_ineq_coeffs, lin_ineq_lower_bnds,
-			                            lin_ineq_upper_bnds, lin_eq_coeffs,
-			                            lin_eq_targets,nonlin_ineq_lower_bnds,
-			                            nonlin_ineq_upper_bnds, nonlin_eq_targets,
-			                            &target_var_objective_eval_optpp,
-			                            &target_scalarization_constraint_eval_optpp,
-			                            100000, 100000, 1.e-14,
-			                            1.e-14, 100000)
-			                            );
-				}
+				optimizer.reset(new SNLLOptimizer(initial_point,
+		                            var_lower_bnds, var_upper_bnds,
+		                            lin_ineq_coeffs, lin_ineq_lower_bnds,
+		                            lin_ineq_upper_bnds, lin_eq_coeffs,
+		                            lin_eq_targets,nonlin_ineq_lower_bnds,
+		                            nonlin_ineq_upper_bnds, nonlin_eq_targets,
+		                            objective_function_optpp_ptr,
+		                            constraint_function_optpp_ptr,
+		                            100000, 100000, 1.e-14,
+		                            1.e-14, 100000)
+		                            );
 			#endif
 			optimizer->output_level(DEBUG_OUTPUT);
 			optimizer->run();
@@ -1413,79 +1392,55 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 				}
 				nonlin_eq_targets[0] = std::log(eps_sq_div_2[qoi]); //std::log(convergenceTol);
 				#ifdef HAVE_NPSOL
-				if(allocationTarget==TARGET_VARIANCE){
+				objective_function_npsol_ptr = &target_var_objective_eval_npsol;
+				switch(allocationTarget){
+					case TARGET_VARIANCE:
+						constraint_function_npsol_ptr = &target_var_constraint_eval_logscale_npsol;
+						break;
+					case TARGET_SIGMA:
+						constraint_function_npsol_ptr = &target_sigma_constraint_eval_logscale_npsol;
+						break;
+					case TARGET_SCALARIZATION:
+						constraint_function_npsol_ptr = &target_scalarization_constraint_eval_logscale_npsol;
+						break;
+					default:
+						 break;
+				}
 				optimizer.reset(new NPSOLOptimizer(initial_point,
 				                               var_lower_bnds, var_upper_bnds,
 				                               lin_ineq_coeffs, lin_ineq_lower_bnds,
 				                               lin_ineq_upper_bnds, lin_eq_coeffs,
 				                               lin_eq_targets, nonlin_ineq_lower_bnds,
 				                               nonlin_ineq_upper_bnds, nonlin_eq_targets,
-				                               &target_var_objective_eval_npsol,
-				                               &target_var_constraint_eval_logscale_npsol,
+				                               objective_function_npsol_ptr,
+				                               constraint_function_npsol_ptr,
 				                               3, 1e-15)
 				                               ); //derivative_level = 3 means user_supplied gradients
-			  }
-			  if(allocationTarget==TARGET_SIGMA){
-			  	optimizer.reset(new NPSOLOptimizer(initial_point,
-				                               var_lower_bnds, var_upper_bnds,
-				                               lin_ineq_coeffs, lin_ineq_lower_bnds,
-				                               lin_ineq_upper_bnds, lin_eq_coeffs,
-				                               lin_eq_targets, nonlin_ineq_lower_bnds,
-				                               nonlin_ineq_upper_bnds, nonlin_eq_targets,
-				                               &target_var_objective_eval_npsol,
-				                               &target_sigma_constraint_eval_logscale_npsol,
-				                               3, 1e-15)
-				                               ); //derivative_level = 3 means user_supplied gradients
-			  }
-			  if(allocationTarget==TARGET_SIGMA){
-			  	optimizer.reset(new NPSOLOptimizer(initial_point,
-				                               var_lower_bnds, var_upper_bnds,
-				                               lin_ineq_coeffs, lin_ineq_lower_bnds,
-				                               lin_ineq_upper_bnds, lin_eq_coeffs,
-				                               lin_eq_targets, nonlin_ineq_lower_bnds,
-				                               nonlin_ineq_upper_bnds, nonlin_eq_targets,
-				                               &target_var_objective_eval_npsol,
-				                               &target_scalarization_constraint_eval_logscale_npsol,
-				                               3, 1e-15)
-				                               ); //derivative_level = 3 means user_supplied gradients
-			  }
 				#elif HAVE_OPTPP
-				if(allocationTarget==TARGET_VARIANCE){
-					optimizer.reset(new SNLLOptimizer(initial_point,
-					            var_lower_bnds,      var_upper_bnds,
-					            lin_ineq_coeffs, lin_ineq_lower_bnds,
-					            lin_ineq_upper_bnds, lin_eq_coeffs,
-					            lin_eq_targets,     nonlin_ineq_lower_bnds,
-					            nonlin_ineq_upper_bnds, nonlin_eq_targets,
-					            &target_var_objective_eval_optpp,
-					            &target_var_constraint_eval_logscale_optpp,
-					            100000, 100000, 1.e-14,
-					            1.e-14, 100000));
+				objective_function_optpp_ptr = &target_var_objective_eval_optpp;
+				switch(allocationTarget){
+					case TARGET_VARIANCE:
+						constraint_function_optpp_ptr = &target_var_constraint_eval_logscale_optpp;
+						break;
+					case TARGET_SIGMA:
+						constraint_function_optpp_ptr = &target_sigma_constraint_eval_logscale_optpp;
+						break;
+					case TARGET_SCALARIZATION:
+						constraint_function_optpp_ptr = &target_scalarization_constraint_eval_logscale_optpp;
+						break;
+					default:
+						 break;
 				}
-			  if(allocationTarget==TARGET_SIGMA){
-			  	optimizer.reset(new SNLLOptimizer(initial_point,
-					            var_lower_bnds,      var_upper_bnds,
-					            lin_ineq_coeffs, lin_ineq_lower_bnds,
-					            lin_ineq_upper_bnds, lin_eq_coeffs,
-					            lin_eq_targets,     nonlin_ineq_lower_bnds,
-					            nonlin_ineq_upper_bnds, nonlin_eq_targets,
-					            &target_var_objective_eval_optpp,
-					            &target_sigma_constraint_eval_logscale_optpp,
-					            100000, 100000, 1.e-14,
-					            1.e-14, 100000));
-			  }
-			  if(allocationTarget==TARGET_SIGMA){
-			  	optimizer.reset(new SNLLOptimizer(initial_point,
-					            var_lower_bnds,      var_upper_bnds,
-					            lin_ineq_coeffs, lin_ineq_lower_bnds,
-					            lin_ineq_upper_bnds, lin_eq_coeffs,
-					            lin_eq_targets,     nonlin_ineq_lower_bnds,
-					            nonlin_ineq_upper_bnds, nonlin_eq_targets,
-					            &target_var_objective_eval_optpp,
-					            &target_scalarization_constraint_eval_logscale_optpp,
-					            100000, 100000, 1.e-14,
-					            1.e-14, 100000));
-			  }
+				optimizer.reset(new SNLLOptimizer(initial_point,
+				            var_lower_bnds,      var_upper_bnds,
+				            lin_ineq_coeffs, lin_ineq_lower_bnds,
+				            lin_ineq_upper_bnds, lin_eq_coeffs,
+				            lin_eq_targets,     nonlin_ineq_lower_bnds,
+				            nonlin_ineq_upper_bnds, nonlin_eq_targets,
+				            objective_function_optpp_ptr,
+				            constraint_function_optpp_ptr,
+				            100000, 100000, 1.e-14,
+				            1.e-14, 100000));
 				#endif
 				optimizer->run();
 			}
