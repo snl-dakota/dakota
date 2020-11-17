@@ -63,11 +63,15 @@ variables,
 #         real = 2						#s2,#s4,#s5,#s6,#s7
 #           elements_per_variable = 4 5				#s2,#s4,#s5,#s6,#s7
 #           elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#s2,#s4,#s5,#s6,#s7
+#           # reproduce historical default values:
+#	    initial_point 3.4  4.4     	       	       		#s2,#s4,#s5,#s6,#s7
 #           descriptors      'y3'   'y4' 	       	       	#s2,#s4,#s5,#s6,#s7
 #       discrete_design_set					#s11,#s12,#s13,#s14,#s15,#s16,#s18
 #         real = 2						#s11,#s13,#s14,#s15,#s16,#s18
 #           elements_per_variable = 4 5				#s11,#s13,#s14,#s15,#s16,#s18
 #           elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#s11,#s13,#s14,#s15,#s16,#s18
+#           # reproduce historical default values:
+#	    initial_point 3.4  4.4     	       	       		#s11,#s13,#s14,#s15,#s16,#s18
 #           descriptors      'y3'   'y4' 	       	       	#s11,#s13,#s14,#s15,#s16,#s18
 #	    categorical 'yes' 'yes' 				#s6,#s7,#s15,#s16,#s18
 #	    adjacency_matrix 1 1 0 0				#s6,#s7,#s15,#s16,#s18

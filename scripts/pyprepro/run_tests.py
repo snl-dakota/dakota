@@ -319,6 +319,27 @@ class Immutables(unittest.TestCase):
         output = pyprepro.pyprepro(input)
         self.assert_(compare_lines(output,gold)   )
 
+    def test_mutable_overset(self):
+        """
+        Test that setting an immutable as immutable *still* does not overwrite
+        """
+        input = """\
+        {param = Immutable(0)}  0
+        {param = 1}  0
+        {param = Mutable(2)}  2
+        {param = 3}  3
+        {param = Immutable(4)}  4
+        {param = 5}  4
+        {param = Immutable(Mutable(6))}  4
+        {param = 7}  4
+        {param = Mutable(Immutable(8))}  8
+        {param = 9}  8
+        {param}  8"""
+        output = pyprepro.pyprepro(input)
+        for line in output.strip().split('\n'):
+            a,b = line.split()
+            self.assert_(a == b)
+
     def test_include_statements(self):
         """
         test include statements from here
@@ -361,6 +382,18 @@ Define parameters here
             read('test_output/include_test2_0.out'),
             read('test_gold/include_test2.gold')
         ))
+    
+    def test_bad_include_statement(self):
+        """
+        Tests when using the incorrect syntax
+        """
+        input = """
+        {I = Immutable(1)}
+        {M = 3}
+        {include('test_files/inline_include.inp')}
+        """
+        self.assertRaises(pyprepro.IncludeSyntaxError,pyprepro.pyprepro,input)
+
 
 
 class unicode_and_encoding(unittest.TestCase):
@@ -488,21 +521,111 @@ class invocation_and_options(unittest.TestCase):
                 read('test_output/new_delim_right.out'),
                 read('test_gold/new_delim_right.gold')))
 
-    def test_json(self):
+    def test_json_python(self):
         """
-        Tests the --json-include of CLI for dprepro and pyprepro plus
-        the pyprepro function call
+        Tests the --json-include and --python-include of CLI for dprepro and pyprepro plus
+        the pyprepro function call. Also test with multiple JSONs to address a prior bug
         """ 
         GOLD = read('test_gold/json_include.gold')
     
-        cmd = '--json-include test_files/json_include_params.json test_files/json_include.inp test_output/json_include0.inp'
+        cmd = ('--json-include test_files/json_include_params.json '
+               '--python-include test_files/python_include_params.py '
+               '--json-include test_files/json_include_params2.json '
+               'test_files/json_include.inp test_output/json_include0.inp')
         pyprepro._pyprepro_cli(shsplit(cmd))
+        
+        # CLI
         self.assert_(compare_lines(GOLD,read('test_output/json_include0.inp')))
-        self.assert_(compare_lines(GOLD,pyprepro.pyprepro('test_files/json_include.inp',json_include='test_files/json_include_params.json')))
+        
+        # Function
+        self.assert_(compare_lines(GOLD,pyprepro.pyprepro('test_files/json_include.inp',
+                                                          json_include=['test_files/json_include_params.json',
+                                                                        'test_files/json_include_params2.json'],
+                                                          python_include='test_files/python_include_params.py')))
     
-        cmd = '--no-warn --json-include test_files/json_include_params.json test_files/dakota_aprepro.1 test_files/json_include.inp test_output/json_include1.inp'
+        cmd = ('--no-warn '
+               '--json-include test_files/json_include_params.json '
+               '--python-include test_files/python_include_params.py '
+               '--json-include test_files/json_include_params2.json '
+               'test_files/dakota_aprepro.1 ' # Needs something. This doesn't matter
+               'test_files/json_include.inp '
+               'test_output/json_include1.inp')
         pyprepro._dprepro_cli(shsplit(cmd))
         self.assert_(compare_lines(GOLD,read('test_output/json_include1.inp')))
+
+
+    def test_dakota_include(self):
+        """
+        Tests the new --dakota-include syntax even when *NOT* using the
+        default stylings (of aprepro)
+        """
+        tpl = """
+        x = [[x = 5]]
+        {{%
+            i1x_y = 99
+            tester = True
+        %}}
+        Tester: [[tester]]
+        1x:y: [[i1x_y]]
+        """
+        gold = """
+        x = 0.08889860404
+        Tester: True
+        1x:y: 3.046260756
+        """
+    
+        res1 = pyprepro.pyprepro(tpl,dakota_include='test_files/dakota_aprepro.1',
+                                 code_block='{{% %}}',inline='[[ ]]',warn=False)
+        res2 = pyprepro.pyprepro(tpl,dakota_include='test_files/dakota_default.1',
+                                 code_block='{{% %}}',inline='[[ ]]',warn=False)
+        self.assert_(res1 == res2)
+        self.assert_(compare_lines(res1,gold))
+        
+        with open('test_output/tmp.tpl','wt') as F:
+            F.write(tpl)
+        
+        cmd = ['--no-warn',
+               '--code-block','{{% %}}',
+               '--inline','[[ ]]',
+               '--dakota-include','test_files/dakota_aprepro.1',
+               'test_output/tmp.tpl','test_output/dakota_include.out']
+        pyprepro._pyprepro_cli(cmd)
+        compare_lines(gold,read('test_output/dakota_include.out'))
+        
+        cmd = ['--no-warn',
+               '--code-block','{{% %}}',
+               '--inline','[[ ]]',
+               '--dakota-include','test_files/dakota_default.1',
+               'test_output/tmp.tpl','test_output/dakota_include.out']
+        pyprepro._pyprepro_cli(cmd)
+        compare_lines(gold,read('test_output/dakota_include.out'))
+        
+    def test_function_env_immutable_env(self):
+        tpl = """
+        {a = 1}
+        {b = 2}
+        """
+        env = {'a':Immutable(5),'b':100}
+        
+        res = pyprepro.pyprepro(tpl)
+        res = [r.strip() for r in res.split('\n') if r.strip()]
+        self.assert_(res == ['1','2'])
+        
+        res = pyprepro.pyprepro(tpl,env=env)
+        res = [r.strip() for r in res.split('\n') if r.strip()]
+        self.assert_(res == ['5','2'])
+        
+        res = pyprepro.pyprepro(tpl,immutable_env=env)
+        res = [r.strip() for r in res.split('\n') if r.strip()]
+        self.assert_(res == ['5','100'])
+        
+        pyprepro.pyprepro(tpl,immutable_env=env,output='test_output/funout.inp')
+        
+        with open('test_output/funout.inp') as f:
+            res = f.read()
+        res = [r.strip() for r in res.split('\n') if r.strip()]
+        self.assert_(res == ['5','100'])
+    
 
 class preparser_edge_cases(unittest.TestCase):
     def test_escaping(self):
@@ -782,11 +905,11 @@ class dakota_dprepro(unittest.TestCase):
         """
         gold = read('test_gold/read_from_dakota.gold')
     
-       ## A note on this test. Inside the template file is "{várïåbłę}". If run
-       ## with python2, that variable name will be fixed via the dprepro parser
-       ## BUT there is no easy way to fix it within the "read_from_dakota.inp"
-       ## template. Therefore, we instead make a modify the template
-       ## ahead of time and store it in the output when using python2
+        # A note on this test. Inside the template file is "{várïåbłę}". If run
+        # with python2, that variable name will be fixed via the dprepro parser
+        # BUT there is no easy way to fix it within the "read_from_dakota.inp"
+        # template. Therefore, we instead make a modify the template
+        # ahead of time and store it in the output when using python2
       
         templatepath = 'test_files/read_from_dakota.inp'
         if sys.version_info[0] == 2:
@@ -807,6 +930,33 @@ class dakota_dprepro(unittest.TestCase):
         cmd = '--no-warn test_files/dakota_aprepro.1 {0} test_output/dakota.2'.format(templatepath)
         pyprepro._dprepro_cli(shsplit(cmd))
         self.assert_(compare_lines(read('test_output/dakota.2'),gold))
+
+    def test_malformed_dakota_and_simple(self):
+        """
+        Test using the --simple-parser
+        """
+        gold = read('test_gold/read_from_dakota.gold')
+    
+        # see note above
+        templatepath = 'test_files/read_from_dakota.inp'
+        if sys.version_info[0] == 2:
+            with open(templatepath,'rt',encoding='utf8') as F:
+                temp = F.read().replace(u'{várïåbłę}','{variabe}')
+            templatepath = 'test_output/read_from_dakota.inp'
+            with open(templatepath,'wt',encoding='utf8') as F:
+                F.write(temp)
+        
+        # dakota style using a file that would break the non dakota.interfacing parser
+        
+        cmd = ' --no-warn --simple-parser test_files/dakota_malformed_default.1 {0} test_output/dakota.3'.format(templatepath)
+        pyprepro._dprepro_cli(shsplit(cmd))
+        self.assert_(compare_lines(read('test_output/dakota.3'),gold))
+    
+        # aprepo style with 3 inputs. NOTE: call dprepro
+        cmd = '--no-warn --simple-parser test_files/dakota_malformed_aprepro.1 {0} test_output/dakota.4'.format(templatepath)
+        pyprepro._dprepro_cli(shsplit(cmd))
+        self.assert_(compare_lines(read('test_output/dakota.4'),gold))
+        
 
     def test_dakota_interfacing(self):
         """Test dakota.interfacing capabilities when it is present"""

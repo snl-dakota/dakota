@@ -28,10 +28,10 @@ class ScilabInterface: public DirectApplicInterface
 {
 public:
 
-  /// Constructor: start Matlab engine
+  /// Constructor: start Scilab engine
   ScilabInterface(const ProblemDescDB& problem_db);
 
-  /// Destructor: close Matlab engine
+  /// Destructor: close Scilab engine
   ~ScilabInterface();
 
 protected:

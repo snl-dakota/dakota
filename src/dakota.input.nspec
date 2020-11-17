@@ -5817,6 +5817,19 @@ KEYWORD model {N_mom3(start,0,stop)}
           find_nugget INTEGER {N_mom(shint,krigingFindNugget)}
          ]
         [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
+        [ export_approx_variance_file STRING {N_mom(str,exportApproxVarianceFile)}
+          [ 
+            ( custom_annotated {N_mom(utype,exportApproxVarianceFormat_TABULAR_NONE)}
+              [ header {N_mom(augment_utype,exportApproxVarianceFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mom(augment_utype,exportApproxVarianceFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mom(augment_utype,exportApproxVarianceFormat_TABULAR_IFACE_ID)} ]
+             )
+            |
+            annotated {N_mom(utype,exportApproxVarianceFormat_TABULAR_ANNOTATED)}
+            |
+            freeform {N_mom(utype,exportApproxVarianceFormat_TABULAR_NONE)}
+           ]
+         ]
         [ export_model {N_mom(true,exportSurrogate)}
           [ filename_prefix STRING {N_mom(str,modelExportPrefix)} ]
           ( formats {0}
@@ -5866,6 +5879,19 @@ KEYWORD model {N_mom3(start,0,stop)}
              )
            ]
          )
+        [ export_approx_variance_file STRING {N_mom(str,exportApproxVarianceFile)}
+          [ 
+            ( custom_annotated {N_mom(utype,exportApproxVarianceFormat_TABULAR_NONE)}
+              [ header {N_mom(augment_utype,exportApproxVarianceFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mom(augment_utype,exportApproxVarianceFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mom(augment_utype,exportApproxVarianceFormat_TABULAR_IFACE_ID)} ]
+             )
+            |
+            annotated {N_mom(utype,exportApproxVarianceFormat_TABULAR_ANNOTATED)}
+            |
+            freeform {N_mom(utype,exportApproxVarianceFormat_TABULAR_NONE)}
+           ]
+         ]
        )
       |
       ( mars {N_mom(lit,surrogateType_global_mars)}
@@ -6198,6 +6224,7 @@ KEYWORD model {N_mom3(start,0,stop)}
     ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}
       collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
      )
+    [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}

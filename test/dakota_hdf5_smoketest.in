@@ -15,6 +15,7 @@ variables,
   active design
   continuous_design = 2
   upper_bounds  1.0 10.0
+  initial_point 0.0 0.1
   lower_bounds 0.0 0.1
   descriptors 'E' 'w'
 

@@ -120,6 +120,21 @@ public:
   /// return the active truth sub-model in surrogate models
   virtual const Model& truth_model() const;
 
+  /// identify if hierarchy is across model forms
+  virtual bool multifidelity() const;
+  /// identify if hierarchy is across resolution levels
+  virtual bool multilevel() const;
+  /// identify if hierarchy is across both model forms and resolution levels
+  virtual bool multilevel_multifidelity() const;
+
+  /// return precedence for hierarchy definition, model forms or
+  /// resolution levels
+  virtual bool multifidelity_precedence() const;
+  /// assign precedence for hierarchy definition (model forms or
+  /// resolution levels) as determined from algorithm context
+  virtual void multifidelity_precedence(bool mf_prec,
+					bool update_default = false);
+
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// resize vars/resp if needed from the bottom up
@@ -136,16 +151,30 @@ public:
   /// number of discrete levels within solution control (SimulationModel)
   virtual size_t solution_levels(bool lwr_bnd = true) const;
   /// activate a particular level within the solution level control
-  /// and return the cost estimate (SimulationModel)
-  virtual void solution_level_index(unsigned short index);
+  /// (SimulationModel)
+  virtual void solution_level_cost_index(unsigned short index);
   /// return currently active level within the solution level control
   /// (SimulationModel)
-  virtual unsigned short solution_level_index() const;
+  virtual unsigned short solution_level_cost_index() const;
   /// return ordered cost estimates across solution levels (SimulationModel)
   virtual RealVector solution_level_costs() const;
   /// return currently active cost estimate from solution level
   /// control (SimulationModel)
   virtual Real solution_level_cost() const;
+
+  /// return type of solution control variable
+  virtual short solution_control_variable_type() const;
+  /// return index of solution control variable within all variables
+  virtual size_t solution_control_variable_index() const;
+  /// return index of solution control variable within all discrete variables
+  virtual size_t solution_control_discrete_variable_index() const;
+
+  /// return the active (integer) value of the solution control
+  virtual int    solution_level_int_value() const;
+  /// return the active (string) value of the solution control
+  virtual String solution_level_string_value() const;
+  /// return the active (real) value of the solution control
+  virtual Real   solution_level_real_value() const;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
@@ -383,6 +412,15 @@ public:
   /// in synchronous evaluate functions to prevent the error
   /// of trying to run a multiprocessor job on the master.
   virtual bool derived_master_overload() const;
+
+  /// create 2D graphics plots for automatic logging of vars/response data
+  virtual void create_2d_plots();
+  /// create a tabular output stream for automatic logging of vars/response data
+  virtual void create_tabular_datastream();
+
+  /// Update tabular/graphics data with latest variables/response data
+  virtual void derived_auto_graphics(const Variables& vars,
+				     const Response& resp);
 
   /// update the Model's inactive view based on higher level (nested) context
   virtual void inactive_view(short view, bool recurse_flag = true);
@@ -1109,10 +1147,8 @@ public:
 
   /// Return the model ID of the "innermost" model. 
   /// For all derived Models except RecastModels, return modelId.
-  /// The RecastModel override returns the root_model_id() of the
-  /// subModel.
+  /// The RecastModel override returns the root_model_id() of the subModel.
   virtual String root_model_id();
-
 
   virtual ActiveSet default_active_set();
 
@@ -1150,11 +1186,10 @@ protected:
   EvaluationsDBState modelEvaluationsDBState;
   /// Whether to write interface evals to the evaluations DB
   EvaluationsDBState interfEvaluationsDBState;
+
   //
   //- Heading: Virtual functions
   //
-
-
 
   /// portion of evaluate() specific to derived model classes
   virtual void derived_evaluate(const ActiveSet& set);

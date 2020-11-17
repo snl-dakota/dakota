@@ -1,0 +1,177 @@
+#@ *: Label=Experimental
+#@ p0: MPIProcs=3
+#@ p1: MPIProcs=3
+#@ p2: MPIProcs=3
+#@ p3: MPIProcs=3
+#@ p4: MPIProcs=3
+#@ p5: MPIProcs=3
+#@ p6: MPIProcs=3
+#@ p7: MPIProcs=3
+#@ p8: MPIProcs=3
+#@ p9: MPIProcs=3
+#@ p10: MPIProcs=1
+#@ p11: MPIProcs=1
+#@ p12: MPIProcs=1
+#@ e10: MPIProcs=3
+#@ e11: MPIProcs=3
+#@ e12: MPIProcs=3
+#@ p13: MPIProcs=3
+#@ p14: MPIProcs=3
+#@ e15: MPIProcs=3
+#@ e16: MPIProcs=3
+#@ p15: MPIProcs=3
+#@ p16: MPIProcs=2
+#@ p17: MPIProcs=2
+#@ p18: MPIProcs=2
+#@ p19: MPIProcs=2
+#@ p20: MPIProcs=2
+#@ p21: MPIProcs=2
+#@ p22: MPIProcs=2
+# DAKOTA INPUT FILE - dakota_uq_subspace.in
+# Contains regression tests for using model subspace
+# with several methods
+
+## BMA, 20170920: Tests p12, p13, p14 hang in MPI on RHEL7 with no graceful
+## termination. For now, marked with fNUM and shifted other test numbers down.
+##
+## MSE, 10/15/2020: previously removed tests f12,13,14 now running and promoted
+## to p10,11,12, partially replacing new failures demoted to e10,11,12,15,16
+
+environment
+  output_precision = 16
+  method_pointer = 'ID_METHOD'
+
+method,
+  id_method = 'ID_METHOD'
+  sampling                          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p13,#p14,#s21,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+    model_pointer = 'SUBSPACE'      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p13,#p14,#s21,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+    seed = 24620                    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p13,#p14,#s21,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+    samples = 100                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p13,#p14,#s21,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+    sample_type random              #s0,#s1,#s2,#s3,#s4,#s8,#s9,#s17,#p0,#p1,#p2,#p3,#p4,#p8,#p9,#p13,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+#   sample_type lhs                 #s5,#s6,#s7,#s18,#p5,#p6,#p7,#p14
+#     refinement_samples = 100      #s6,#s8,#p6,#p8
+#     refinement_samples = 100 200  #s7,#s9,#p7,#p9
+# polynomial_chaos                  #s10,#s11,#s12,#s13,#s14,#s15,#e10,#e11,#p10,#p11,#p12,#e12,#s19,#e15
+# polynomial_chaos askey            #s20,#e16
+#   model_pointer = 'SUBSPACE'      #s10,#s11,#s12,#s13,#s14,#s15,#e10,#e11,#p10,#p11,#p12,#e12,#s19,#e15,#s20,#e16
+#   sparse_grid_level = 3           #s13,#p11
+#   quadrature_order = 2            #s14,#p12
+#   expansion_order   = 6           #s10,#s11,#s12,#e10,#e11,#p10,#s19,#e15
+#   orthogonal_least_interpolation  #s15,#e12
+#   collocation_ratio = 0.5         #s12,#p10,#s19,#e15
+#   collocation_points = 100        #s10,#s11,#s15,#e10,#e11,#e12
+#   omp                             #s10,#s11,#s12,#e10,#e11,#p10,#s19,#e15
+#   basis_type                      #s10,#s11,#s12,#e10,#e11,#p10,#s19,#e15
+#     adapted                       #s10,#s11,#s12,#e10,#e11,#p10,#s19,#e15
+#   seed = 1234567                  #s10,#s11,#s12,#s13,#s14,#s15,#e10,#e11,#p10,#p11,#p12,#e12,#s19,#e15
+# local_reliability                 #s16
+#   model_pointer = 'SUBSPACE'      #s16
+
+#	  expansion_order = 5                     #s20,#e16
+#   collocation_points = 120                #s20,#e16
+#   omp                                     #s20,#e16
+#   samples_on_emulator = 10000             #s20,#e16
+#   seed = 12347                            #s20,#e16
+#                                  #s20,#e16
+#   sample_type lhs                         #s20,#e16
+#   response_levels = .4 .5 .55 .6 .65 .7                         #s20,#e16
+#                     .75 .8 .85 .9 1. 1.05 1.15 1.2 1.25 1.3     #s20,#e16
+#                     1.35 1.4 1.5 1.55 1.6 1.65 1.7 1.75         #s20,#e16
+#   variance_based_decomp                   #s20,#e16
+
+model                             
+  active_subspace
+    id_model = 'SUBSPACE'
+    actual_model_pointer = 'FULLSPACE'
+    initial_samples  100 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#e10,#e11,#p10,#p11,#p12,#e12,#p13,#p14,#s19,#e15,#s20,#e16,#s21,#s22,#p15,#s23,#p16,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+#   initial_samples  30               #s24,#p17,#s25,#p18
+#   sample_type lhs                   #s25,#p18
+#   truncation_method bing_li         #s1,#p1
+#   truncation_method constantine     #s2,#s11,#s12,#s13,#s14,#s15,#s16,#s18,#p2,#e11,#p10,#p11,#p12,#e12,#p14,#s20,#e16,#s21,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18
+#   truncation_method                 #s17,#p13
+#     energy                          #s17,#p13
+#       truncation_tolerance 1e-6     #s17,#p13
+#   dimension 5                       #s3,#p3,#s19,#e15
+#   bootstrap_samples 150             #s4,#p4
+#   dimension 6                       #s10,#e10
+#   build_surrogate                   #s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18
+#     refinement_samples 10           #s23,#p16
+#   normalization mean_value          #s28,#p21
+#   normalization mean_gradient       #s27,#p20
+#   normalization local_gradient      #s29,#p22
+
+model 
+  single
+  id_model = 'FULLSPACE'
+    variables_pointer = 'ID_V'  
+    interface_pointer = 'ID_I'  
+    responses_pointer = 'ID_R'  
+
+variables,
+  id_variables = 'ID_V'
+  normal_uncertain = 100              #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#e11
+    means = 100*0.5                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#e11
+    std_deviations = 100*0.2          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#e11
+# normal_uncertain = 10               #s12,#s13,#s14,#s15,#s16,#s17,#p10,#p11,#p12,#e12,#p13,#s20,#e16,#s22,#p15,#s23,#p16,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+#   means = 10*0.5                    #s12,#s13,#s14,#s15,#s16,#s17,#p10,#p11,#p12,#e12,#p13,#s20,#e16,#s22,#p15,#s23,#p16,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+#   std_deviations = 10*0.2           #s12,#s13,#s14,#s15,#s16,#s17,#p10,#p11,#p12,#e12,#p13,#s20,#e16,#s22,#p15,#s23,#p16,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+# normal_uncertain = 7                #s24,#p17,#s25,#p18
+#   means = 7*0.5                     #s24,#p17,#s25,#p18
+#   std_deviations = 7*0.2            #s24,#p17,#s25,#p18
+# normal_uncertain = 15               #s10,#e10
+#   means = 15*0.                     #s10,#e10
+#   std_deviations = 15*1.            #s10,#e10
+# discrete_state_set                  #s10,#e10
+#   integer = 1                       #s10,#e10
+#     initial_state = 20              #s10,#e10
+#     set_values = 20                 #s10,#e10
+#     descriptors = 'mesh_size'       #s10,#e10
+#   real = 4                          #s10,#e10
+#     elements_per_variable = 2 2 1 1                                           #s10,#e10
+#     set_values = 0.1 1                                                        #s10,#e10
+#                  0.5 4                                                        #s10,#e10
+#                  1                                                            #s10,#e10
+#                  0.2                                                          #s10,#e10
+#     descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length' #s10,#e10
+#     initial_state = 0.1 0.5 1 0.2                                             #s10,#e10
+#   string = 2                                                                  #s10,#e10
+#     elements_per_variable = 2 2                                               #s10,#e10
+#     initial_state = 'exponential' 'on'                                        #s10,#e10
+#     set_values = 'cosine' 'exponential'                                       #s10,#e10
+#                  'off' 'on'                                                   #s10,#e10
+#     descriptors = 'kernel_type' 'positivity'                                  #s10,#e10
+# uniform_uncertain = 100             #s18,#p14
+#   lower_bounds = 100*0.2            #s18,#p14
+#   upper_bounds = 100*0.7            #s18,#p14
+# normal_uncertain = 5                #s19,#e15
+#   means = 5*0.5                     #s19,#e15
+#   std_deviations = 5*0.2            #s19,#e15
+#   uncertain_correlation_matrix =    #s19,#e15
+#     1.00 0.00 0.00 0.00 0.00        #s19,#e15
+#     0.00 1.00 0.50 0.24 0.78        #s19,#e15
+#     0.00 0.50 1.00 0.00 0.20        #s19,#e15
+#     0.00 0.24 0.00 1.00 0.49        #s19,#e15
+#     0.00 0.78 0.20 0.49 1.0         #s19,#e15
+# uniform_uncertain = 2               #s21
+#   lower_bounds = 2*-1               #s21
+#   upper_bounds = 2*1                #s21
+# normal_uncertain = 5                #s21
+#   means = 5*0.5                     #s21
+#   std_deviations = 5*0.2            #s21
+
+interface,
+  id_interface = 'ID_I'
+  direct
+    analysis_driver = 'aniso_quad_form'                                         #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#e11,#p10,#p11,#p12,#e12,#p13,#p14,#s19,#e15,#s20,#e16,#s21,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18
+    analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#e11,#p10,#p11,#p12,#e12,#p13,#p14,#s19,#e15,#s20,#e16,#s21,#s24,#p17,#s25,#p18
+#   analysis_components = 'seed:61043' 'eigenvals: 100e2 90e2 80e2 10e1 5e1 3e1 1e1 5e0 3e0 1e0' #s22,#p15,#s23,#p16
+#   analysis_driver = 'steady_state_diffusion_1d'  	  #s10,#e10
+#   analysis_driver = 'text_book'       #s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+
+responses,
+  id_responses = 'ID_R'
+  num_response_functions = 1  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#e11,#p10,#p11,#p12,#e12,#p13,#p14,#s19,#e15,#s20,#e16,#s21,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18,#s10,#e10
+# num_response_functions = 3  #s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+  analytic_gradients          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#e11,#p10,#p11,#p12,#e12,#p13,#p14,#s19,#e15,#s20,#e16,#s21,#s22,#p15,#s23,#p16,#s24,#p17,#s25,#p18,#s26,#s27,#s28,#p19,#p20,#p21,#s29,#p22
+# numerical_gradients         #s10,#e10
+  no_hessians

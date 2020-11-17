@@ -239,6 +239,10 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 	  methodName == MULTIFIDELITY_FUNCTION_TRAIN    ),
     mf_greedy = (mf && multilevAllocControl == GREEDY_REFINEMENT);
 
+  // define tie breaker for hierarchy of model forms versus resolution levels
+  if (iteratedModel.surrogate_type() == "hierarchical")
+    iteratedModel.multifidelity_precedence(mf, true); // update default keys
+
   // Check for suitable distribution types.
   // Note: prefer warning in Analyzer (active discrete ignored), but
   // RandomVariable type mapping must be defined...
@@ -1257,22 +1261,22 @@ void NonDExpansion::merge_grid()
 
 void NonDExpansion::
 configure_sequence(unsigned short& num_steps, unsigned short& fixed_index,
-		   bool& multilevel,          bool mf_precedence)
+		   bool& multilevel)
 {
   // Allow either model forms or discretization levels, but not both
-  // (precedence determined by ...)
+  // (precedence determined by ML/MF calling algorithm)
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   ModelLIter m_iter = --ordered_models.end(); // HF model
   size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
 
-  multilevel = ( num_hf_lev > 1 && ( num_mf <= 1 || !mf_precedence ) );
+  multilevel = iteratedModel.multilevel();
   if (multilevel) {
     num_steps = num_hf_lev;  fixed_index = num_mf - 1;
     if (num_mf > 1)
       Cerr << "Warning: multiple model forms will be ignored in "
 	   << "NonDExpansion::configure_sequence().\n";
   }
-  else if ( num_mf > 1 && ( num_hf_lev <= 1 || mf_precedence ) ) {
+  else if (iteratedModel.multifidelity()) {
     num_steps = num_mf;  fixed_index = USHRT_MAX; // sync w/ active soln index
     if (num_hf_lev > 1)
       Cerr << "Warning: solution control levels will be ignored in "
@@ -1458,7 +1462,7 @@ void NonDExpansion::multifidelity_reference_expansion()
 
   // Allow either model forms or discretization levels, but not both
   unsigned short num_steps, fixed_index, form, lev, seq_index;  bool multilev;
-  configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
+  configure_sequence(num_steps, fixed_index, multilev);
   // either lev varies and form is fixed, or vice versa:
   unsigned short& step = (multilev) ? lev : form;  step = 0;
   if (multilev) { form = fixed_index;  seq_index = 2; }
@@ -1520,7 +1524,7 @@ void NonDExpansion::multifidelity_individual_refinement()
 {
   // Allow either model forms or discretization levels, but not both
   unsigned short num_steps, fixed_index, form, lev, seq_index;  bool multilev;
-  configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
+  configure_sequence(num_steps, fixed_index, multilev);
   // either lev varies and form is fixed, or vice versa:
   unsigned short& step = (multilev) ? lev : form;  step = 0;
   if (multilev) { form = fixed_index;  seq_index = 2; }
@@ -1591,7 +1595,7 @@ void NonDExpansion::multifidelity_integrated_refinement()
        << "\n-----------------------------------------------\n";
   // Initialize again (or must propagate settings from mf_expansion())
   unsigned short num_steps, fixed_index, form, lev, seq_index;  bool multilev;
-  configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
+  configure_sequence(num_steps, fixed_index, multilev);
   // either lev varies and form is fixed, or vice versa:
   unsigned short& step = (multilev) ? lev : form; // step is an alias
   if (multilev) { form = fixed_index;  seq_index = 2; }
@@ -1690,7 +1694,7 @@ void NonDExpansion::multilevel_regression()
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
 
   // Allow either model forms or discretization levels, but not both
-  configure_sequence(num_steps, fixed_index, multilev, false); // ML precedence
+  configure_sequence(num_steps, fixed_index, multilev);
   // either lev varies and form is fixed, or vice versa:
   unsigned short& step = (multilev) ? lev : form; // step is an alias
   if (multilev) { form = fixed_index;  seq_index = 2; }

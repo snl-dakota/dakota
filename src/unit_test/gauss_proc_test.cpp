@@ -254,6 +254,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp, reduced_quadratic)
     "method \n"
     "  id_method 'EvalSurrogate' \n"
     "  model_pointer 'SurrogateModel' \n"
+    "  output verbose \n"
     "  list_parameter_study \n"
     "    import_points_file 'gauss_proc_test_files/gauss_proc_eval_points.dat' \n"
     "      annotated \n"

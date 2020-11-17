@@ -1,0 +1,16 @@
+Blurb:: Use the experimental Gaussian Process surrogate
+
+Description::
+
+The experimental GP surrogate is an emerging capability intended to
+supersede the \c dakota and \c surfpack GP implementations by unifying
+the best features of both. It also includes additional features such
+as the ability to export the model and then use it from Python.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also:: model-surrogate-global-experimental_gaussian_process

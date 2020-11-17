@@ -9,19 +9,14 @@
 #ifndef ACTIVE_SUBSPACE_MODEL_H
 #define ACTIVE_SUBSPACE_MODEL_H
 
-#include "RecastModel.hpp"
+#include "SubspaceModel.hpp"
 #include "DakotaIterator.hpp"
 
-namespace Dakota
-{
-
-// define special values for componentParallelMode
-#define CONFIG_PHASE 0
-#define OFFLINE_PHASE 1
-#define ONLINE_PHASE 2
+namespace Dakota {
 
 /// forward declarations
 class ProblemDescDB;
+
 
 //---
 // BMA: Wishlist / notes:
@@ -49,16 +44,10 @@ class ProblemDescDB;
 
 /// Active subspace model for input (variable space) reduction
 
-/** Specialization of a RecastModel that identifies an active
-    subspace during build phase and creates a RecastModel in the
-    reduced space */
-class ActiveSubspaceModel:
-  public RecastModel,
-  // BMA: This needed due to circular design of this subspace model
-  // and data fit surrogate model. Need to redesign so that *this
-  // doesn't own construction of an Iterator that works on *this. See
-  // comment in ActiveSubspaceModel.cpp
-  public std::enable_shared_from_this<ActiveSubspaceModel>
+/** Specialization of a RecastModel that identifies an active subspace
+    during build phase and creates a RecastModel in the reduced space */
+
+class ActiveSubspaceModel: public SubspaceModel
 {
 public:
 
@@ -80,17 +69,12 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  bool initialize_mapping(ParLevLIter pl_iter);
+  //bool initialize_mapping(ParLevLIter pl_iter);
   //bool finalize_mapping();
-  bool resize_pending() const;
+  //bool resize_pending() const;
 
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
-  /// terminate serve_init_mapping() on other iteratorComm processors
-  void stop_init_mapping(ParLevLIter pl_iter);
-
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
-  /// to balance resize() calls on iteratorComm rank 0
-  int serve_init_mapping(ParLevLIter pl_iter);
+  //void stop_init_mapping(ParLevLIter pl_iter);
+  //int serve_init_mapping(ParLevLIter pl_iter);
 
 protected:
 
@@ -100,21 +84,17 @@ protected:
 
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                   bool recurse_flag);
-
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                  bool recurse_flag);
-
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                   bool recurse_flag);
 
   void derived_evaluate(const ActiveSet& set);
-
   void derived_evaluate_nowait(const ActiveSet& set);
-
   const IntResponseMap& derived_synchronize();
-
   const IntResponseMap& derived_synchronize_nowait();
 
+  /*
   /// update component parallel mode for supporting parallelism in
   /// the offline and online phases
   void component_parallel_mode(short mode);
@@ -126,6 +106,9 @@ protected:
   /// Executed by the master to terminate the offline and online phase
   /// server operations when iteration on the ActiveSubspaceModel is complete
   void stop_servers();
+  */
+
+  void validate_inputs();
 
   void assign_instance();
 
@@ -139,9 +122,6 @@ protected:
   /// initialize the native problem space Monte Carlo sampler
   void init_fullspace_sampler(unsigned short sample_type);
 
-  /// validate the build controls and set defaults
-  void validate_inputs();
-
 
   // ---
   // Subspace identification functions: rank-revealing build phase
@@ -149,7 +129,7 @@ protected:
 
   /// sample the model's gradient, computed the SVD, and form the active
   /// subspace rotation matrix.
-  void build_subspace();
+  void compute_subspace();
 
   /// helper for shared code between lightweight ctor and initialize_mapping()
   void initialize_subspace();
@@ -166,21 +146,21 @@ protected:
   void compute_svd();
 
   /// use the truncation methods to identify the size of an active subspace
-  void identify_subspace();
+  void truncate_subspace();
 
   /// compute Bing Li's criterion to identify the active subspace
-  unsigned int computeBingLiCriterion(RealVector& singular_values);
+  unsigned int compute_bing_li_criterion(RealVector& singular_values);
 
   /// compute Constantine's metric to identify the active subspace
-  unsigned int computeConstantineMetric(RealVector& singular_values);
+  unsigned int compute_constantine_metric(RealVector& singular_values);
 
   /// Compute active subspace size based on eigenvalue energy. Compatible with
   /// other truncation methods.
-  unsigned int computeEnergyCriterion(RealVector& singular_values);
+  unsigned int compute_energy_criterion(RealVector& singular_values);
 
   /// Use cross validation of a moving least squares surrogate to identify the
   /// size of an active subspace that meets an error tolerance
-  unsigned int computeCrossValidationMetric();
+  unsigned int compute_cross_validation_metric();
 
   /// Build moving least squares surrogate over candidate active subspace
   Real build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
@@ -208,24 +188,13 @@ protected:
   // Problem transformation functions
   // ---
 
-  /// Initialize the base class RecastModel with reduced space variable sizes
-  void initialize_recast();
-
   /// Create a variables components totals array with the reduced space
   /// size for continuous variables
-  SizetArray variables_resize();
+  SizetArray resize_variable_totals();
 
   /// translate the characterization of uncertain variables in the
   /// native_model to the reduced space of the transformed model
   void uncertain_vars_to_subspace();
-
-  /// transform the original bounded domain (and any existing linear
-  /// constraints) into linear constraints in the reduced space
-  void update_linear_constraints();
-
-  /// update variable labels
-  void update_var_labels();
-
 
   // ---
   // Callback functions that perform data transform during the Recast operations
@@ -233,49 +202,27 @@ protected:
 
   /// map the active continuous recast variables to the active
   /// submodel variables (linear transformation)
-  static void vars_mapping(const Variables& recast_xi_vars,
-                           Variables& sub_model_x_vars);
-
-  /// map the inbound ActiveSet to the sub-model (map derivative variables)
-  static void set_mapping(const Variables& recast_vars,
-                          const ActiveSet& recast_set,
-                          ActiveSet& sub_model_set);
-
-  /// map responses from the sub-model to the recast model
-  static void response_mapping(const Variables& recast_y_vars,
-                               const Variables& sub_model_x_vars,
-                               const Response& sub_model_resp,
-                               Response& recast_resp);
-
+  static void variables_mapping(const Variables& recast_xi_vars,
+				Variables& sub_model_x_vars);
 
   // ---
   // Member data
   // ---
-
-  /// seed controlling all samplers
-  int randomSeed;
-
 
   // Build phase controls
 
   /// initial number of samples at which to query the truth model
   int initialSamples;
 
-  /// maximum number of build evaluations
-  int maxFunctionEvals;
-
   /// Boolean flag signaling use of Bing Li criterion to identify active
   /// subspace dimension
   bool subspaceIdBingLi;
-
   /// Boolean flag signaling use of Constantine criterion to identify active
   /// subspace dimension
   bool subspaceIdConstantine;
-
   /// Boolean flag signaling use of eigenvalue energy criterion to identify
   /// active subspace dimension
   bool subspaceIdEnergy;
-
   /// Boolean flag signaling use of cross validationto identify active
   /// subspace dimension
   bool subspaceIdCV;
@@ -287,9 +234,6 @@ protected:
   /// before active subspace initialization
   bool transformVars;
 
-  /// Number of fullspace active continuous variables
-  size_t numFullspaceVars;
-
   /// total construction samples evaluated so far
   unsigned int totalSamples;
 
@@ -298,12 +242,6 @@ protected:
 
 
   // Data for numerical representation
-
-  /// current approximation of system rank
-  unsigned int reducedRank;
-
-  /// basis for the reduced subspace
-  RealMatrix activeBasis;
 
   /// basis for the inactive subspace
   RealMatrix inactiveBasis;
@@ -364,15 +302,6 @@ protected:
   /// static pointer to this class for use in static callbacks
   static ActiveSubspaceModel* asmInstance;
 
-  /// the index of the active metaiterator-iterator parallelism level
-  /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
-  size_t miPLIndex;
-
-  /// Concurrency to use once subspace has been built.
-  int onlineEvalConcurrency;
-  /// Concurrency to use when building subspace.
-  int offlineEvalConcurrency;
-
   /// map of responses returned in buildSurrogate mode
   IntResponseMap surrResponseMap;
   /// map from surrogateModel evaluation ids to RecastModel ids
@@ -380,12 +309,49 @@ protected:
 };
 
 
-inline bool ActiveSubspaceModel::resize_pending() const
-{ return !mappingInitialized; }
-
-
 inline void ActiveSubspaceModel::assign_instance()
-{ asmInstance = this; }
+{ asmInstance = this; SubspaceModel::assign_instance(); }
+
+
+inline unsigned int ActiveSubspaceModel::
+min_index(const std::vector<Real> &cv_error)
+{
+  if (cv_error.empty()) // Return full rank since this shouldn't be empty
+    return numFullspaceVars-1;
+
+  Real min_val = cv_error[0];
+  unsigned int ii, min_ind = 0;
+  for (ii = 1; ii < cv_error.size(); ii++)
+    if (cv_error[ii] < min_val)
+      { min_val = cv_error[ii]; min_ind = ii; }
+
+  return min_ind;
+}
+
+
+inline unsigned int ActiveSubspaceModel::
+tolerance_met_index(const std::vector<Real> &cv_error, Real tolerance,
+                    bool &tol_met)
+{
+  tol_met = false;
+  for (unsigned int ii = 0; ii < cv_error.size(); ii++)
+    if (cv_error[ii] < tolerance)
+      { tol_met = true; return ii; }
+
+  // Return full rank since tolerance is not met
+  return numFullspaceVars-1;
+}
+
+
+inline std::vector<Real> ActiveSubspaceModel::
+negative_diff(const std::vector<Real> &cv_error)
+{
+  std::vector<Real> neg_diff(cv_error.size()-1);
+  for (unsigned int ii = 0; ii < neg_diff.size(); ii++)
+    neg_diff[ii] = cv_error[ii] - cv_error[ii+1];
+
+  return neg_diff;
+}
 
 } // namespace Dakota
 

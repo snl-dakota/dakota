@@ -1,0 +1,21 @@
+Blurb::
+candidate generation by advancement of maximum rank and maximum basis order
+
+Description::
+Within adaptive refinement processes, this specification selects the
+advancement of both \c max_rank and \c max_order to create new
+refinement candidates.  This option requires the use of \c adapt_rank
+and \c adapt_order, for which this advancement creates expanded ranges
+for the cross validation (CV) process.  Once the CV process saturates
+for one or more of these two dimensions (the best rank is less than the
+max rank and/or the best order is less than the max order), then no
+further advancement can occur in that dimension for a particular
+model level/fidelity.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

@@ -1,12 +1,32 @@
-Blurb::
-Initial values 
+Blurb:: Initial values for variables
 
 Description::
+Specifies the initial or default value a variable should assume, for
+example when starting a method or fixing the value of an inactive
+variable.
 
-The \c initial_point specifications provide the point in design space
-(variable values) from which an iterator is started.  These default to
-the midpoint of bounds (continuous design variables) or the middle
-value (discrete design variables).
+<b>Default Behavior</b>
+
+Range variables, including \ref variables-continuous_design, \ref
+variables-continuous_state, \ref variables-discrete_design_range, and
+\ref variables-discrete_state_range are initialized to:
+
+\li Mean/midpoint (or next smaller integer value) when doubly-bounded
+
+\li 0 when unbounded
+
+\li 0 when semi-bounded and zero is in the half interval, otherwise to
+    the specified lower or upper bound
+
+Set variables, including \ref variables-discrete_design_set and \ref
+variables-discrete_state_set default to the middle (or next smaller)
+value of the ordered set of admissible values.
+
+Uncertain variables default initialize to their mean (or nearest
+admissible discrete) value, truncating to any specified lower or upper
+bounds as needed. Epistemic uncertain variable means are calculated
+making a probabilistic assumption on the specified intervals or set
+values.
 
 Topics::	
 Examples::

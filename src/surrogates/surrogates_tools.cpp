@@ -221,9 +221,9 @@ void fd_check_gradient(Surrogate &surr,
   MatrixXd ref_grad;
   MatrixXd perturb_plus(num_steps, num_vars);
   MatrixXd perturb_minus(num_steps, num_vars);
-  MatrixXd value_perturb_plus, value_perturb_minus;
+  VectorXd value_perturb_plus, value_perturb_minus;
   VectorXd ref_grad_repeated(num_steps);
-  surr.gradient(sample, ref_grad, 0);
+  ref_grad = surr.gradient(sample);
   VectorXd scale_factors = surr.dataScaler.get_scaler_features_scale_factors();
 
   /* create h array */
@@ -240,8 +240,8 @@ void fd_check_gradient(Surrogate &surr,
     perturb_minus = ref_sample_repeated;
     perturb_plus.col(i) += h*scale_factors(i);
     perturb_minus.col(i) -= h*scale_factors(i);
-    surr.value(perturb_plus, value_perturb_plus);
-    surr.value(perturb_minus, value_perturb_minus);
+    value_perturb_plus = surr.value(perturb_plus);
+    value_perturb_minus = surr.value(perturb_minus);
     ref_grad_repeated.setConstant(ref_grad(0,i));
     fd_error.col(i) = ((value_perturb_plus - value_perturb_minus)
                        .cwiseQuotient(2.0*h)
@@ -270,17 +270,17 @@ void fd_check_hessian(Surrogate &surr,
   MatrixXd perturb_minus_both(num_steps, num_vars);
   MatrixXd perturb_plus_minus(num_steps, num_vars);
   MatrixXd perturb_minus_plus(num_steps, num_vars);
-  MatrixXd value_perturb_plus_single, value_perturb_minus_single;
-  MatrixXd value_perturb_plus_both, value_perturb_minus_both;
-  MatrixXd value_perturb_plus_minus, value_perturb_minus_plus;
+  VectorXd value_perturb_plus_single, value_perturb_minus_single;
+  VectorXd value_perturb_plus_both, value_perturb_minus_both;
+  VectorXd value_perturb_plus_minus, value_perturb_minus_plus;
   VectorXd ref_hessian_repeated(num_steps);
   VectorXd scale_factors = surr.dataScaler.get_scaler_features_scale_factors();
-  MatrixXd ref_value;
+  VectorXd ref_value;
   VectorXd ref_value_repeated(num_steps);
 
   /* unperturbed value and hessian */
-  surr.value(sample, ref_value);
-  surr.hessian(sample, ref_hessian, 0);
+  ref_value = surr.value(sample);
+  ref_hessian = surr.hessian(sample, 0);
 
   /* create h and reference value arrays */
   VectorXd h(num_steps);
@@ -304,8 +304,8 @@ void fd_check_hessian(Surrogate &surr,
       perturb_plus_single.col(i) += h*scale_factors(i);
       perturb_minus_single.col(i) -= h*scale_factors(i);
 
-      surr.value(perturb_plus_single, value_perturb_plus_single);
-      surr.value(perturb_minus_single, value_perturb_minus_single);
+      value_perturb_plus_single = surr.value(perturb_plus_single);
+      value_perturb_minus_single = surr.value(perturb_minus_single);
 
       if (i == j) {
         fd_error.col(k) = ((value_perturb_plus_single
@@ -330,10 +330,10 @@ void fd_check_hessian(Surrogate &surr,
         perturb_minus_plus.col(i) -= h*scale_factors(i);
         perturb_minus_plus.col(j) += h*scale_factors(j);
 
-        surr.value(perturb_plus_both, value_perturb_plus_both);
-        surr.value(perturb_minus_both, value_perturb_minus_both);
-        surr.value(perturb_plus_minus, value_perturb_plus_minus);
-        surr.value(perturb_minus_plus, value_perturb_minus_plus);
+        value_perturb_plus_both = surr.value(perturb_plus_both);
+        value_perturb_minus_both = surr.value(perturb_minus_both);
+        value_perturb_plus_minus = surr.value(perturb_plus_minus);
+        value_perturb_minus_plus = surr.value(perturb_minus_plus);
 
         fd_error.col(k) = ((value_perturb_plus_both
                           + value_perturb_minus_both

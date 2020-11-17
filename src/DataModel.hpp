@@ -180,6 +180,11 @@ public:
   /// tabular format for the approx point export file
   unsigned short exportApproxFormat;
 
+  /// filename for surrogate variance evaluation export
+  String exportApproxVarianceFile;
+  /// tabular format for the approx variance export file
+  unsigned short exportApproxVarianceFormat;
+
   /// Option to turn on surrogate model export (export_model)
   bool exportSurrogate;
 

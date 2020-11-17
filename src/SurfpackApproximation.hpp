@@ -74,8 +74,15 @@ protected:
   void build() override;
 
   /// export the Surpack model to disk or console
-  void export_model(const String& fn_label, const String& export_prefix = "", 
-                    const unsigned short export_format = NO_MODEL_FORMAT) override;
+  void export_model(const StringArray& var_labels, const String& fn_label,
+		    const String& export_prefix,
+                    const unsigned short export_format) override;
+
+  void
+  export_model(const Variables& vars, const String& fn_label,
+	       const String& export_prefix,
+	       const unsigned short export_format) override;
+
 
   // return #coefficients
   //RealVector approximation_coefficients(bool normalized) const;

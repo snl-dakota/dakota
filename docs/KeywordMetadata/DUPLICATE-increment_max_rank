@@ -1,0 +1,19 @@
+Blurb::
+candidate generation by advancement of maximum rank
+
+Description::
+Within adaptive refinement processes, this specification selects the
+advancement of \c max_rank to create new refinement candidates.  This
+option requires the use of \c adapt_rank, for which this advancement
+creates an expanded range for the cross validation (CV) process.  Once
+the CV process saturates (the best rank is less than the max), then
+no further advancement can occur and the refinement process (for a
+particular model level/fidelity) halts.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

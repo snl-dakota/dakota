@@ -228,7 +228,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
-  evaluationCapacity(1), outputLevel(output_level), hierarchicalTagging(false),
+  evaluationCapacity(1), outputLevel(output_level),
+  mvDist(Pecos::MARGINALS_CORRELATIONS), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), // to be replaced by derived ctors
@@ -263,7 +264,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   evaluationsDB(evaluation_store_db),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
-  evaluationCapacity(1), outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
+  evaluationCapacity(1), outputLevel(NORMAL_OUTPUT),
+  mvDist(Pecos::MARGINALS_CORRELATIONS), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), // to be replaced by derived ctors
@@ -279,18 +281,18 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
     populated problem_db is needed to build a meaningful Model
     object). */
 Model::Model():
-  probDescDB(dummy_db), parallelLib(dummy_lib), evaluationsDB(evaluation_store_db)
+  probDescDB(dummy_db), parallelLib(dummy_lib),
+  evaluationsDB(evaluation_store_db)
 { /* empty ctor */ }
 
 
-/** Used in model instantiations within strategy constructors.
+/** Used for envelope instantiations within strategy constructors.
     Envelope constructor only needs to extract enough data to properly
     execute get_model, since Model(BaseConstructor, problem_db)
     builds the actual base class data for the derived models. */
-Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
-  parallelLib(problem_db.parallel_library()),
-  evaluationsDB(evaluation_store_db),
-  modelRep(get_model(problem_db))
+Model::Model(ProblemDescDB& problem_db):
+  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+  evaluationsDB(evaluation_store_db), modelRep(get_model(problem_db))
 {
   if ( !modelRep ) // bad type or insufficient memory
     abort_handler(MODEL_ERROR);
@@ -333,8 +335,8 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
 
 /** Copy constructor manages sharing of modelRep. */
 Model::Model(const Model& model): probDescDB(model.problem_description_db()),
-  parallelLib(probDescDB.parallel_library()), evaluationsDB(evaluation_store_db),
-  modelRep(model.modelRep)
+  parallelLib(probDescDB.parallel_library()),
+  evaluationsDB(evaluation_store_db), modelRep(model.modelRep)
 { /* empty ctor */ }
 
 
@@ -1172,10 +1174,10 @@ void Model::evaluate()
     modelRep->evaluate();
   else { // letter
     ++modelEvalCntr;
-    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-     modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
-          currentVariables, mvDist, currentResponse, default_active_set());
-      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+    if (modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
+        currentVariables, mvDist, currentResponse, default_active_set());
+      if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }
     
@@ -1185,7 +1187,7 @@ void Model::evaluate()
 
     if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
-          temp_set, currentVariables);
+					  temp_set, currentVariables);
 
     if (derived_master_overload()) {
       // prevents error of trying to run a multiproc. direct job on the master
@@ -1195,13 +1197,12 @@ void Model::evaluate()
     else // perform a normal synchronous map
       derived_evaluate(temp_set);
 
-    if (modelAutoGraphicsFlag) {
-      OutputManager& output_mgr = parallelLib.output_manager();
-      output_mgr.add_datapoint(currentVariables, interface_id(), 
-			       currentResponse);
-    }
-    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
-      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr, currentResponse);
+    if (modelAutoGraphicsFlag)
+      derived_auto_graphics(currentVariables, currentResponse);
+
+    if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr,
+					 currentResponse);
   }
 }
 
@@ -1213,16 +1214,16 @@ void Model::evaluate(const ActiveSet& set)
   else { // letter
     ++modelEvalCntr;
 
-    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
-          currentVariables, mvDist, currentResponse, default_active_set());
-      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+    if (modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
+        currentVariables, mvDist, currentResponse, default_active_set());
+      if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }
 
-    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+    if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
-          set, currentVariables);
+					  set, currentVariables);
 
     // Derivative estimation support goes here and is not replicated in the
     // default asv version of evaluate -> a good reason for using an
@@ -1255,13 +1256,12 @@ void Model::evaluate(const ActiveSet& set)
       // Perform synchronous eval
       derived_evaluate(set);
 
-    if (modelAutoGraphicsFlag) {
-      OutputManager& output_mgr = parallelLib.output_manager();
-      output_mgr.add_datapoint(currentVariables, interface_id(), 
-			       currentResponse);
-    }
-    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
-      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr, currentResponse);
+    if (modelAutoGraphicsFlag)
+      derived_auto_graphics(currentVariables, currentResponse);
+
+    if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr,
+					 currentResponse);
 
   }
 }
@@ -1274,7 +1274,7 @@ void Model::evaluate_nowait()
   else { // letter
     ++modelEvalCntr;
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
           currentVariables, mvDist, currentResponse, default_active_set());
       if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
@@ -1308,7 +1308,7 @@ void Model::evaluate_nowait(const ActiveSet& set)
     ++modelEvalCntr;
 
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
           currentVariables, mvDist, currentResponse, default_active_set());
       if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
@@ -1434,10 +1434,9 @@ const IntResponseMap& Model::synchronize()
 
     // update graphics
     if (modelAutoGraphicsFlag) {
-      OutputManager& output_mgr = parallelLib.output_manager();
       for (r_cit = responseMap.begin(); r_cit != responseMap.end(); ++r_cit) {
 	v_it = varsMap.find(r_cit->first);
-	output_mgr.add_datapoint(v_it->second, interface_id(), r_cit->second);
+	derived_auto_graphics(v_it->second, r_cit->second);
 	varsMap.erase(v_it);
       }
     }
@@ -1451,7 +1450,8 @@ const IntResponseMap& Model::synchronize()
 
     if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
       for(const auto  &id_r : responseMap)
-        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first,
+					   id_r.second); 
     }
     // return final map
     return responseMap;
@@ -1508,8 +1508,7 @@ const IntResponseMap& Model::synchronize_nowait()
       // search for next response set(s) in sequence
       bool found = true;
       while (found) {
-	OutputManager& output_mgr = parallelLib.output_manager();
-	int graphics_cntr = output_mgr.graphics_counter();
+	int graphics_cntr = parallelLib.output_manager().graphics_counter();
 	// find() is not really necessary due to Map ordering
 	//g_it = graphicsRespMap.begin();
 	//if (g_it == graphicsRespMap.end() || g_it->first != graphics_cntr)
@@ -1518,7 +1517,7 @@ const IntResponseMap& Model::synchronize_nowait()
 	  found = false;
 	else {
 	  IntVarsMIter v_it = varsMap.find(graphics_cntr);
-	  output_mgr.add_datapoint(v_it->second, interface_id(), g_it->second);
+	  derived_auto_graphics(v_it->second, g_it->second);
 	  varsMap.erase(v_it); graphicsRespMap.erase(g_it);
 	}
       }
@@ -1532,7 +1531,8 @@ const IntResponseMap& Model::synchronize_nowait()
     cachedResponseMap.clear();
     if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
       for(const auto  &id_r : responseMap)
-        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second);
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first,
+					   id_r.second);
     }
     return responseMap;
   }
@@ -3263,6 +3263,38 @@ bool Model::derived_master_overload() const
 }
 
 
+void Model::create_2d_plots()
+{
+  if (modelRep) // should not occur: protected fn only used by the letter
+    modelRep->create_2d_plots(); // fwd to letter
+  else // default implementation (overridden by hierarch/nonhierarch surr)
+    parallelLib.output_manager().graphics().create_plots_2d(currentVariables,
+							    currentResponse);
+}
+
+
+void Model::create_tabular_datastream()
+{
+  if (modelRep) // should not occur: protected fn only used by the letter
+    modelRep->create_tabular_datastream(); // fwd to letter
+  else { // default implementation (overridden by hierarch/nonhierarch surr)
+    OutputManager& mgr = parallelLib.output_manager();
+    mgr.open_tabular_datastream();
+    mgr.create_tabular_header(currentVariables, currentResponse);
+  }
+}
+
+
+void Model::
+derived_auto_graphics(const Variables& vars, const Response& resp)
+{
+  if (modelRep) // should not occur: protected fn only used by the letter
+    modelRep->derived_auto_graphics(vars, resp); // fwd to letter
+  else // default implementation (overridden by hierarch/nonhierarch surr)
+    parallelLib.output_manager().add_tabular_data(vars, interface_id(), resp);
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
@@ -3364,6 +3396,47 @@ const Model& Model::truth_model() const
 }
 
 
+bool Model::multifidelity() const
+{
+  if (modelRep) return modelRep->multifidelity();
+  else          return false; // default
+}
+
+
+bool Model::multilevel() const
+{
+  if (modelRep) return modelRep->multilevel();
+  else          return false; // default
+}
+
+
+bool Model::multilevel_multifidelity() const
+{
+  if (modelRep) return modelRep->multilevel_multifidelity();
+  else          return false; // default
+}
+
+
+bool Model::multifidelity_precedence() const
+{
+  if (modelRep) return modelRep->multifidelity_precedence();
+  else          return true; // default
+}
+
+
+void Model::multifidelity_precedence(bool mf_prec, bool update_default)
+{
+  if (modelRep)
+    modelRep->multifidelity_precedence(mf_prec, update_default);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual multifidelity_"
+	 << "precedence() function.\n       multifidelity_precedence is not "
+	 << "supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /** since modelList is built with list insertions (using envelope
     copies), these models may not be used for model.assign_rep() since
     this operation must be performed on the original envelope object.
@@ -3431,23 +3504,23 @@ size_t Model::solution_levels(bool lwr_bnd) const
 
 
 /** activate a particular level within a solution / discretization hierarchy. */
-void Model::solution_level_index(unsigned short index)
+void Model::solution_level_cost_index(unsigned short index)
 {
   if (modelRep)
-    modelRep->solution_level_index(index); // envelope fwd to letter
+    modelRep->solution_level_cost_index(index); // envelope fwd to letter
   else if (index != USHRT_MAX) {
     // letter lacking redefinition of virtual fn (for case that requires fwd)
-    Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
-         << "() function.\n       solution_level_index is not supported by this"
-	 << " Model class." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "cost_index() function.\n       solution_level_cost_index is not "
+	 << "supported by this Model class." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
 
 
-unsigned short Model::solution_level_index() const
+unsigned short Model::solution_level_cost_index() const
 {
-  if (modelRep) return modelRep->solution_level_index(); // fwd to letter
+  if (modelRep) return modelRep->solution_level_cost_index(); // fwd to letter
   else          return USHRT_MAX; // not defined (default)
 }
 
@@ -3475,6 +3548,85 @@ Real Model::solution_level_cost() const
   }
 
   return modelRep->solution_level_cost(); // envelope fwd to letter
+}
+
+
+short Model::solution_control_variable_type() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
+	 << "variable_type() function.\n       solution_control_variable_"
+	 << "type() is not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_control_variable_type(); // envelope fwd to letter
+}
+
+
+size_t Model::solution_control_variable_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
+	 << "variable_index() function.\n       solution_control_variable_"
+	 << "index() is not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_control_variable_index(); // envelope fwd to letter
+}
+
+
+size_t Model::solution_control_discrete_variable_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
+	 << "discrete_variable_index() function.\n       solution_control_"
+	 << "discrete_variable_index() is not supported by this Model class."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_control_discrete_variable_index(); // envelope fwd
+}
+
+
+int Model::solution_level_int_value() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "int_value() function.\n       solution_level_int_value is not "
+	 << "supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_int_value(); // envelope fwd to letter
+}
+
+
+String Model::solution_level_string_value() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "string_value() function.\n       solution_level_string_value is "
+	 << "not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_string_value(); // envelope fwd to letter
+}
+
+
+Real Model::solution_level_real_value() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "real_value() function.\n       solution_level_real_value is not "
+	 << "supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_real_value(); // envelope fwd to letter
 }
 
 

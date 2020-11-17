@@ -73,10 +73,23 @@ public:
 
   /// builds the approximation from scratch
   virtual void build();
-  /// exports the approximation
-  virtual void export_model(const String& fn_label = "",
-    const String& export_prefix = "",
-    const unsigned short export_format = NO_MODEL_FORMAT);
+  /// exports the approximation; if export_format > NO_MODEL_FORMAT,
+  /// uses all 3 parameters, otherwise extracts these from the
+  /// Approximation's sharedDataRep to build a filename
+  virtual void export_model(const StringArray& var_labels = StringArray(),
+			    const String& fn_label = "",
+			    const String& export_prefix = "",
+			    const unsigned short export_format = NO_MODEL_FORMAT);
+  /// approximation export that generates labels from the passed
+  /// Variables, since only the derived classes know how the variables
+  /// are ordered w.r.t. the surrogate build; if export_format >
+  /// NO_MODEL_FORMAT, uses all 3 parameters, otherwise extracts these
+  /// from the Approximation's sharedDataRep to build a filename
+  virtual void export_model(const Variables& vars,
+			    const String& fn_label = "",
+			    const String& export_prefix = "",
+			    const unsigned short export_format = NO_MODEL_FORMAT);
+
   /// rebuilds the approximation incrementally
   virtual void rebuild();
   /// removes entries from end of SurrogateData::{vars,resp}Data

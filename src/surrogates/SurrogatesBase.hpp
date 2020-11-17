@@ -14,13 +14,21 @@
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+
 #include <fstream>
 
+#include <boost/archive/codecvt_null.hpp>
+#include <boost/math/special_functions/nonfinite_num_facets.hpp>
+
+#include <locale>
 
 namespace dakota {
 namespace surrogates {
@@ -48,17 +56,17 @@ public:
    * \brief Constructor that sets configOptions but does not build.
    * \param[in] param_list List that overrides entries in defaultConfigOptions.
    */
-  Surrogate(const Teuchos::ParameterList& param_list);
+  Surrogate(const ParameterList& param_list);
 
   /**
    * \brief Constructor for the Surrogate that sets configOptions
-   *        and builds the GP.
-   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
+   *  and builds the surrogate (does nothing in the base class).
+   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features).
    * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
-   * \param[in] param_list List that overrides entries in defaultConfigOptions
+   * \param[in] param_list List that overrides entries in defaultConfigOptions.
    */
   Surrogate(const MatrixXd &samples, const MatrixXd &response,
-            const Teuchos::ParameterList &param_list);
+            const ParameterList &param_list);
 
   /// Default destructor.
   virtual ~Surrogate();
@@ -66,56 +74,88 @@ public:
   /**
    * \brief Build the Surrogate using specified build data.
    *
-   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
-   * \param[in] response Vector of responses/targets for surrogate construction - (num_samples by num_qoi)
+   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features).
+   * \param[in] response Vector of responses/targets for surrogate construction - (num_samples by num_qoi = 1).
    */
   virtual void build(const MatrixXd &samples, const MatrixXd &response) = 0;
 
   /**
-   *  \brief Evaluate the Surrogate at a set of prediction points.
-   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
-   *  \param[out] value Values of the Surrogate at the prediction
-   *  points - (num_pts by num_qoi) 
-   */
-  virtual void value(const MatrixXd &samples, MatrixXd &value) = 0;
-
-  /**
-   *  \brief Evaluate the Surrogate at a set of prediction points.
-   *  \param[in] samples Matrix of prediction points - (num_pts by num_features).
+   *  \brief Evaluate the Surrogate at a set of prediction points for a single QoI.
+   *  \param[in] eval_points Matrix of prediction points - (num_pts by num_features).
    *  \param[in] qoi Index for surrogate QoI.
-   *  \returns value Values of the Surrogate at the prediction
+   *  \returns Values of the Surrogate at the prediction
    *  points - (num_pts).
    */
-  virtual VectorXd value(const MatrixXd &samples, const int qoi) = 0;
+  virtual VectorXd value(const MatrixXd &eval_points, const int qoi) = 0;
 
   /**
    *  \brief Evaluate the Surrogate at a set of prediction points for QoI index 0.
-   *  \param[in] samples Vector of prediction points - (num_features).
-   *  \returns VectorXd Values of the Surrogate at the prediction points.
+   *  \param[in] eval_points Vector of prediction points - (num_features).
+   *  \returns Values of the Surrogate at the prediction points - (num_pts).
    */
-  VectorXd value(const MatrixXd &samples) {return value(samples, 0);}
+  VectorXd value(const MatrixXd &eval_points) {return value(eval_points, 0);}
 
   /**
    *  \brief Evaluate the gradient of the Surrogate at a set of prediction points.
-   *  \param[in] samples Coordinates of the prediction points - (num_pts by num_features).
-   *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
-   *  (num_pts by num_features).
+   *  \param[in] eval_points Matrix of prediction points - (num_pts by num_features).
    *  \param[in] qoi Index of the quantity of interest for gradient evaluation - 
    *  0 for scalar-valued surrogates.
-   *
+   *  \returns Matrix of gradient vectors at the prediction points - 
+   *  (num_pts by num_features).
    */
-  virtual void gradient(const MatrixXd &samples, MatrixXd &gradient, int qoi);
+  virtual MatrixXd gradient(const MatrixXd &eval_points, const int qoi);
+
+  /**
+   *  \brief Evaluate the gradient of the Surrogate at a set of prediction points
+   *  for QoI index 0.
+   *  \param[in] eval_points Matrix of prediction points - (num_pts by num_features).
+   *  \returns Matrix of gradient vectors at the prediction points - 
+   *  (num_pts by num_features).
+   */
+  MatrixXd gradient(const MatrixXd &eval_points) {return gradient(eval_points, 0);}
 
   /**
    *  \brief Evaluate the Hessian of the Surrogate at a single point.
-   *  \param[in] samples Coordinates of the prediction point - (num_samples by num_features).
-   *  \param[out] hessian Hessian matrix at the prediction point - 
-   *  (num_features by num_features).
+   *  \param[in] eval_point Coordinates of the prediction point - (1 by num_features).
    *  \param[in] qoi Index of the quantity of interest for Hessian evaluation - 
    *  0 for scalar-valued surrogates.
+   *  \returns Hessian matrix at the prediction point - 
+   *  (num_features by num_features).
    */
-  virtual void hessian(const MatrixXd &samples, MatrixXd &hessian, int qoi);
+  virtual MatrixXd hessian(const MatrixXd &eval_point, const int qoi);
 
+  /**
+   *  \brief Evaluate the Hessian of the Surrogate at a single point for QoI index 0.
+   *  \param[in] eval_point Coordinates of the prediction point - (1 by num_features).
+   *  \returns Hessian matrix at the prediction point - 
+   *  (num_features by num_features).
+   */
+  MatrixXd hessian(const MatrixXd &eval_point) {return hessian(eval_point, 0);}
+
+  /**
+      \brief Set the variable/feature names
+      \param[in] var_labels Vector of strings, one per input variable
+   */
+  void variable_labels(const std::vector<std::string>& var_labels);
+
+  /**
+      \brief Get the (possibly empty) variable/feature names
+      \returns Vector of strings, one per input variable; empty if not set
+   */
+  const std::vector<std::string>& variable_labels() const;
+
+  /**
+      \brief Set the response/QoI names
+      \param[in] resp_labels Vector of strings, one per surrogate response
+   */
+  void response_labels(const std::vector<std::string>& resp_labels);
+
+  /**
+      \brief Get the (possibly empty) response/QoI names
+      \returns Vector of strings, one per surrogate response; empty if not set
+   */
+  const std::vector<std::string>& response_labels() const;
+ 
   /**
    *  \brief Set the Surrogate's configOptions.
    *  \param[in] options ParameterList of configuration options.
@@ -128,40 +168,47 @@ public:
    */
   void get_options(ParameterList &options);
 
+  /// Print the Surrogate's configOptions.
+  void print_options();
+
   /// Initialize the Surrogate's defaultConfigOptions.
   virtual void default_options() = 0;
 
   /// DataScaler class for a Surrogate's build samples.
   util::DataScaler dataScaler;
 
-  /// serialize Surrogate (derived type only) to file
-  template<typename DerivedSurr>
-  static void save(const DerivedSurr& surr_out, const std::string& outfile,
+  /// serialize Surrogate to file (typically through
+  /// shared_ptr<Surrogate>, but Derived& or Derived* okay too)
+  template<typename SurrHandle>
+  static void save(const SurrHandle& surr_out, const std::string& outfile,
 		   const bool binary);
 
-  /// serialize Surrogate (derived type only) from file
-  template<typename DerivedSurr>
+  /// serialize Surrogate from file (typically through
+  /// shared_ptr<Surrogate>, but Derived& or Derived* okay too)
+  template<typename SurrHandle>
   static void load(const std::string& infile, const bool binary,
-		   DerivedSurr& pr4);
+		   SurrHandle& surr_in);
+
+  // member variant of save to save as shared_ptr(*this)
+  // could enable if desired, but might require shared_from_this?
+  // void save(const std::string& outfile, const bool binary);
+
+  /// serialize Surrogate from file through pointer to base class
+  /// (must have been saved via same data type)
+  static std::shared_ptr<Surrogate>
+  load(const std::string& infile, const bool binary);
+
+  // also demo load via ctor
+  //  Surrogate(infile, binary)
 
   /// Evalute metrics at specified points (within surrogates)
   VectorXd evaluate_metrics(const StringArray &mnames,
                             const MatrixXd &points,
                             const MatrixXd &ref_values);
 
-  /// Evalute metrics at specified points (from Dakota)
-  RealMatrix evaluate_metrics(const StringArray &mnames,
-                              const RealMatrix &points,
-                              const RealMatrix &ref_values);
-
   /// Perform K-folds cross-validation (within surrogates)
   VectorXd cross_validate(const MatrixXd &samples,
     const MatrixXd &response, const StringArray &mnames,
-    const int num_folds = 5, const int seed = 20);
-
-  /// Perform K-folds cross-validation (from Dakota)
-  RealMatrix cross_validate(const RealMatrix &samples,
-    const RealMatrix &response, const StringArray &mnames,
     const int num_folds = 5, const int seed = 20);
 
 protected:
@@ -169,11 +216,15 @@ protected:
   int numSamples;
   /// Number of features/variables in the Surrogate's build samples.
   int numVariables;
+  /// Names of the variables/features; need not be populated
+  std::vector<std::string> variableLabels;
   /**
    *  \brief Number of quantities of interest predicted by the surrogate. For 
-   *  scaler-valued surrogates numQOI = 1.
+   *  scalar-valued surrogates numQOI = 1.
    */
   int numQOI;
+  /// Names of the responses/QoIs; need not be populated
+  std::vector<std::string> responseLabels;
   /// Default Key/value options to configure the surrogate.
   ParameterList defaultConfigOptions;
   /// Key/value options to configure the surrogate - will override defaultConfigOptions.
@@ -194,7 +245,12 @@ private:
 
 };
 
-
+/**
+* \brief Serialize a derived (i.e. non-base) surrogate model.
+* \param[in] surr_out Surrogate to seralize.
+* \param[in] outfile Name of the output text or binary file.
+* \param[in] binary Flag for binary or text format.
+*/
 template<typename DerivedSurr>
 void Surrogate::save(const DerivedSurr& surr_out, const std::string& outfile,
 		     const bool binary)
@@ -215,7 +271,17 @@ void Surrogate::save(const DerivedSurr& surr_out, const std::string& outfile,
     if (!model_ostream.good())
       throw std::runtime_error("Failure opening model file '" + outfile +
 			       "' for save.");
-    boost::archive::text_oarchive output_archive(model_ostream);
+
+    // enable portable write/read of nan/inf, per
+    // https://www.boost.org/doc/libs/1_58_0/libs/math/example/nonfinite_serialization_archives.cpp
+    std::locale default_locale(std::locale::classic(),
+			       new boost::archive::codecvt_null<char>);
+    std::locale nonfinite_locale(default_locale,
+				 new boost::math::nonfinite_num_put<char>);
+    model_ostream.imbue(nonfinite_locale);
+    boost::archive::text_oarchive output_archive(model_ostream,
+						 boost::archive::no_codecvt);
+
     output_archive << surr_out;
     std::cout << "Model saved to text file '" << outfile << "'."
 	      << std::endl;
@@ -223,6 +289,12 @@ void Surrogate::save(const DerivedSurr& surr_out, const std::string& outfile,
 }
 
 
+/**
+* \brief Load a derived (i.e. non-base) surrogate model.
+* \param[in] infile Filename for serialized surrogate.
+* \param[in] binary Flag for binary or text format.
+* \param[in] surr_in Derived surrogate class to be populated with serialized data.
+*/
 template<typename DerivedSurr>
 void Surrogate::load(const std::string& infile, const bool binary,
 		     DerivedSurr& surr_in)
@@ -242,7 +314,15 @@ void Surrogate::load(const std::string& infile, const bool binary,
     if (!model_istream.good())
       throw std::string("Failure opening model file for load.");
 
-    boost::archive::text_iarchive input_archive(model_istream);
+    // enable portable write/read of nan/inf, per
+    // https://www.boost.org/doc/libs/1_58_0/libs/math/example/nonfinite_serialization_archives.cpp
+    std::locale default_locale(std::locale::classic(),
+			       new boost::archive::codecvt_null<char>);
+    std::locale nonfinite_locale(default_locale,
+				 new boost::math::nonfinite_num_get<char>);
+    model_istream.imbue(nonfinite_locale);
+    boost::archive::text_iarchive input_archive(model_istream,
+						boost::archive::no_codecvt);
     input_archive >> surr_in;
     std::cout << "Model loaded from text file." << std::endl;
   }
@@ -252,12 +332,15 @@ void Surrogate::load(const std::string& infile, const bool binary,
 template<class Archive>
 void Surrogate::serialize(Archive& archive, const unsigned int version)
 {
+  silence_unused_args(version);
   // For future extension such as archiving final config options (will
   // require writing a serializer that maps to ParameterList
   // serialization)
   archive & dataScaler;
   archive & numSamples;
   archive & numVariables;
+  archive & variableLabels;
+  archive & responseLabels;
   //archive & configOptions;
 }
 
@@ -265,6 +348,7 @@ void Surrogate::serialize(Archive& archive, const unsigned int version)
 } // namespace dakota
 
 
+BOOST_CLASS_EXPORT_KEY(dakota::surrogates::Surrogate)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(dakota::surrogates::Surrogate)
 
 #endif // include guard

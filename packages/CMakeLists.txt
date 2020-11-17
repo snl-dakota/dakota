@@ -189,7 +189,10 @@ endif(HAVE_NOMAD)
 
 if(HAVE_NOWPAC)
   if(NOT HAVE_EXTERNAL_NOWPAC)
-    add_subdirectory(external/nowpac)
+    set(NOWPAC_EIGEN_INCLUDE_PATH
+      "${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/include/eigen3")
+#      CACHE PATH "Dakota forcing NOWPAC to use Dakota's Eigen")
+    add_subdirectory(external/snowpac)
   endif()
 endif()
 

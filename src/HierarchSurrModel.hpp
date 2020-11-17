@@ -95,6 +95,16 @@ protected:
   const IntResponseMap& derived_synchronize();
   const IntResponseMap& derived_synchronize_nowait();
 
+  void create_tabular_datastream();
+  void derived_auto_graphics(const Variables& vars, const Response& resp);
+
+  bool multifidelity() const;
+  bool multilevel() const;
+  bool multilevel_multifidelity() const;
+
+  bool multifidelity_precedence() const;
+  void multifidelity_precedence(bool mf_prec, bool update_default = false);
+
   /// return the active low fidelity model
   Model& surrogate_model();
   /// return the active low fidelity model
@@ -196,6 +206,30 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// return the model form index from the incoming key
+  unsigned short model_form(const UShortArray& key) const;
+  /// assign the model form index to the incoming key
+  void model_form(UShortArray& key, unsigned short form);
+  /// return the resolution level index from the incoming key
+  unsigned short resolution_level(const UShortArray& key) const;
+  /// assign the resolution level index to the incoming key
+  void resolution_level(UShortArray& key, unsigned short lev);
+
+  /// define default {truth,surr,active}ModelKey
+  void assign_default_keys();
+
+  /// synchronize the HF model's solution level control with truthModelKey
+  void assign_truth_key();
+  /// synchronize the LF model's solution level control with surrModelKey
+  void assign_surrogate_key();
+
+  /// helper to select among Variables::all_discrete_{int,string,real}_
+  /// variable_labels() for exporting a solution control variable label
+  const String& solution_control_label();
+  /// helper to select among Model::solution_level_{int,string,real}_value()
+  /// for exporting a scalar solution level value
+  void add_tabular_solution_level_value(Model& model);
+
   /// utility for propagating new key values
   void key_updates(unsigned short model_index, unsigned short soln_lev_index);
 
@@ -265,6 +299,7 @@ private:
   /// Ordered sequence (low to high) of model fidelities.  Models are of
   /// arbitrary type and supports recursions.
   ModelArray orderedModels;
+
   /// flag indicating that the {low,high}FidelityKey correspond to the
   /// same model instance, requiring modifications to updating and evaluation
   /// scheduling processes
@@ -273,6 +308,8 @@ private:
   /// employ the same interface instance, requiring modifications to evaluation
   /// scheduling processes
   bool sameInterfaceInstance;
+  /// tie breaker for type of model hierarchy when forms and levels are present
+  bool mfPrecedence;
 
   /// store {LF,HF} model key that is active in component_parallel_mode()
   UShortArray componentParallelKey;
@@ -357,11 +394,44 @@ inline size_t HierarchSurrModel::qoi() const
 }
 
 
+inline unsigned short HierarchSurrModel::
+model_form(const UShortArray& key) const
+{ return (key.size() < 2) ? USHRT_MAX : key[1]; }
+
+
+inline void HierarchSurrModel::
+model_form(UShortArray& key, unsigned short form)
+{
+  if (key.size() >= 2) key[1] = form;
+  else {
+    Cerr << "Error: assignment out of bounds in HierarchSurrModel::"
+	 << "model_form()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+inline unsigned short HierarchSurrModel::
+resolution_level(const UShortArray& key) const
+{ return (key.size() < 3) ? USHRT_MAX : key[2]; }
+
+
+inline void HierarchSurrModel::
+resolution_level(UShortArray& key, unsigned short lev)
+{
+  if (key.size() >= 3) key[2] = lev;
+  else {
+    Cerr << "Error: assignment out of bounds in HierarchSurrModel::"
+	 << "resolution_level()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 inline void HierarchSurrModel::check_model_interface_instance()
 {
-  unsigned short
-    lf_form = ( surrModelKey.empty()) ? USHRT_MAX :  surrModelKey[1],
-    hf_form = (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1];
+  unsigned short lf_form = model_form( surrModelKey),
+                 hf_form = model_form(truthModelKey);
 
   if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
     sameModelInstance = sameInterfaceInstance = false; // including both undef
@@ -393,7 +463,7 @@ inline void HierarchSurrModel::correction_type(short corr_type)
 
 inline Model& HierarchSurrModel::surrogate_model()
 {
-  unsigned short lf_form = (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[1];
+  unsigned short lf_form = model_form(surrModelKey);
   if (lf_form == USHRT_MAX) // either empty key or undefined model form
     return orderedModels.front();
   else {
@@ -409,7 +479,7 @@ inline Model& HierarchSurrModel::surrogate_model()
 
 inline const Model& HierarchSurrModel::surrogate_model() const
 {
-  unsigned short lf_form = (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[1];
+  unsigned short lf_form = model_form(surrModelKey);
   if (lf_form == USHRT_MAX) // either empty key or undefined model form
     return orderedModels.front();
   else {
@@ -425,8 +495,7 @@ inline const Model& HierarchSurrModel::surrogate_model() const
 
 inline Model& HierarchSurrModel::truth_model()
 {
-  unsigned short hf_form
-    = (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1];
+  unsigned short hf_form = model_form(truthModelKey);
   if (hf_form == USHRT_MAX) // either empty key or undefined model form
     return orderedModels.back();
   else {
@@ -442,8 +511,7 @@ inline Model& HierarchSurrModel::truth_model()
 
 inline const Model& HierarchSurrModel::truth_model() const
 {
-  unsigned short hf_form
-    = (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1];
+  unsigned short hf_form = model_form(truthModelKey);
   if (hf_form == USHRT_MAX) // either empty key or undefined model form
     return orderedModels.back();
   else {
@@ -457,24 +525,38 @@ inline const Model& HierarchSurrModel::truth_model() const
 }
 
 
+inline void HierarchSurrModel::assign_truth_key()
+{
+  unsigned short hf_form = model_form(truthModelKey);
+  if (hf_form != USHRT_MAX)
+    orderedModels[hf_form].solution_level_cost_index(
+      resolution_level(truthModelKey));
+}
+
+
+inline void HierarchSurrModel::assign_surrogate_key()
+{
+  unsigned short lf_form = model_form(surrModelKey);
+  if (lf_form != USHRT_MAX)
+    orderedModels[lf_form].solution_level_cost_index(
+      resolution_level(surrModelKey));
+}
+
+
 inline void HierarchSurrModel::active_model_key(const UShortArray& key)
 {
-  // assign activeKey and extract {surr,truth}ModelKey
+  // assign activeKey
   SurrogateModel::active_model_key(key);
-
   // update {truth,surr}ModelKey
   extract_model_keys(key, truthModelKey, surrModelKey);
+  // assign same{Model,Interface}Instance
+  check_model_interface_instance();
 
-  unsigned short hf_form = (truthModelKey.empty()) ? USHRT_MAX:truthModelKey[1],
-                 lf_form =  (surrModelKey.empty()) ? USHRT_MAX: surrModelKey[1];
-  if (hf_form != lf_form) { // distinct model forms
-
-    // If model forms are distinct (multifidelity), can activate soln level
-    // index now; else (multilevel) must defer until run-time.
-    if (hf_form != USHRT_MAX)
-      orderedModels[hf_form].solution_level_index(truthModelKey[2]);
-    if (lf_form != USHRT_MAX)
-      orderedModels[lf_form].solution_level_index(surrModelKey[2]);
+  // If model forms are distinct (multifidelity), can activate soln level
+  // index now; else (multilevel) must defer until run-time.
+  if (!sameModelInstance) {
+    assign_truth_key();     // protected for empty or USHRT_MAX
+    assign_surrogate_key(); // protected for empty or USHRT_MAX
 
     // Pull inactive variable change up into top-level currentVariables,
     // so that data flows correctly within Model recursions?  No, current
@@ -484,19 +566,56 @@ inline void HierarchSurrModel::active_model_key(const UShortArray& key)
     //update_from_model(orderedModels[hf_form]);
   }
 
-  // assign same{Model,Interface}Instance
-  check_model_interface_instance();
-
   switch (responseMode) {
-  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
-    if (lf_form != USHRT_MAX) { // a LF model form is defined
+  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE: {
+    unsigned short lf_form = model_form(surrModelKey);
+    if (lf_form != USHRT_MAX) {// LF form def'd
       DiscrepancyCorrection& delta_corr = deltaCorr[key]; // per data group
       if (!delta_corr.initialized())
-	delta_corr.initialize(surrogate_model(), surrogateFnIndices, corrType,
-			      corrOrder);
+	delta_corr.initialize(surrogate_model(), surrogateFnIndices,
+			      corrType, corrOrder);
     }
     break;
   }
+  }
+}
+
+
+inline bool HierarchSurrModel::multifidelity_precedence() const
+{ return mfPrecedence; }
+
+
+inline void HierarchSurrModel::
+multifidelity_precedence(bool mf_prec, bool update_default)
+{
+  mfPrecedence = mf_prec;
+  if (update_default) assign_default_keys();
+}
+
+
+inline bool HierarchSurrModel::multifidelity() const
+{
+  // This function is used when we don't want to alter logic at run-time based
+  // on a deactivated key (as for same{Model,Interface}Instance)
+  // > we rely on mfPrecedence passed from NonDExpansion::configure_sequence()
+  //   based on the ML/MF algorithm selection; otherwise defaults to true
+
+  return ( orderedModels.size() > 1 &&
+	   ( mfPrecedence || orderedModels.back().solution_levels() <= 1 ) );
+}
+
+
+inline bool HierarchSurrModel::multilevel() const
+{
+  return ( orderedModels.back().solution_levels() > 1 &&
+	   ( !mfPrecedence || orderedModels.size() <= 1 ) );
+}
+
+
+inline bool HierarchSurrModel::multilevel_multifidelity() const
+{
+  return ( orderedModels.size() > 1 &&
+	   orderedModels.back().solution_levels() > 1 );
 }
 
 

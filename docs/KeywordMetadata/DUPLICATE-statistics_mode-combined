@@ -1,0 +1,23 @@
+Blurb:: use statistics for the combined expansion within multifidelity refinement
+
+Description:: When performing adaptive refinement in multifidelity UQ
+methods, this option adapts based on the statistics for the aggregate
+multifidelity expansion.  This approach may incur additional
+computational overhead, but ensures that the refinement occurs in the
+aggregate multifidelity context.
+
+<b> Default Behavior </b>
+
+<b> Expected Output </b>
+
+<b> Usage Tips </b>
+
+<b> Additional Discussion </b>
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

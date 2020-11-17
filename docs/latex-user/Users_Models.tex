@@ -126,7 +126,7 @@ currently no use of forward- or backward-stepping regression methods
 to eliminate unnecessary terms from the polynomial model.
 
 An experimental least squares regression polynomial model was added
-in Dakota 6.12. The user may specify the basis functions in the 
+in Dakota 6.12. The user may specify the basis functions in the
 polynomial through a total degree scheme.
 
 \textbf{Gaussian Process (GP) or Kriging Interpolation}
@@ -953,19 +953,20 @@ Extending the piecewise decomposition option to other global surrogate models is
 \subsubsection{Surrogate Diagnostic Metrics}\label{models:surf:diagnostics}
 
 The surrogate models provided by Dakota's Surfpack package
-(polynomial, Kriging, ANN, MARS, RBF, and MLS) include the ability to
-compute diagnostic metrics on the basis of (1) simple prediction error
-with respect to the training data, (2) prediction error estimated by
-cross-validation (iteratively omitting subsets of the training data),
-and (3) prediction error with respect to user-supplied hold-out or
-challenge data.  All diagnostics are based on differences between
-$o(x_i)$ the observed value, and $p(x_i)$, the surrogate model
-prediction for training (or omitted or challenge) data point $x_i$.
-In the simple error metric case, the points $x_i$ are those used to
-train the model, for cross validation they are points selectively
-omitted from the build, and for challenge data, they are supplementary
-points provided by the user.  The basic metrics are specified via the
-{\tt metrics} keyword, followed by one or more of:
+(polynomial, Kriging, ANN, MARS, RBF, and MLS) as well as the
+experimental surrogates include the ability to compute diagnostic
+metrics on the basis of (1) simple prediction error with respect to
+the training data, (2) prediction error estimated by cross-validation
+(iteratively omitting subsets of the training data), and (3)
+prediction error with respect to user-supplied hold-out or challenge
+data.  All diagnostics are based on differences between $o(x_i)$ the
+observed value, and $p(x_i)$, the surrogate model prediction for
+training (or omitted or challenge) data point $x_i$.  In the simple
+error metric case, the points $x_i$ are those used to train the model,
+for cross validation they are points selectively omitted from the
+build, and for challenge data, they are supplementary points provided
+by the user.  The basic metrics are specified via the {\tt metrics}
+keyword, followed by one or more of:
 
 \begin{itemize}
 \item {\tt sum\_squared}: $\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}$
@@ -1120,6 +1121,53 @@ surrogate model types.
       to construct the \texttt{gaussian\_process} \texttt{surfpack}
       model; Hessians will not be used even if they are available.
 \end{itemize}
+
+\subsection{Python Interface to the Surrogates Module}
+\label{models:surrogate:python}
+
+Dakota 6.13 uses Pybind11~\cite{pybind11} to provide a Python interface to the
+surrogates module \texttt{dakota.surrogates}, which currently contains
+polynomial and Gaussian process regression surrogates. In this section we
+describe how to enable the interface and provide a simple demonstration.
+
+After installing Dakota, \texttt{dakota.surrogates} may be used by setting the
+environment variable \texttt{PYTHONPATH} to include
+\texttt{\$DAK\_INSTALL/share/dakota/Python}. Note that doing so will also
+enable \texttt{dakota.interfacing} as described in
+\ref{interfaces:dakota.interfacing}.
+
+The Python code snippet below shows how a Gaussian process surrogate can be
+built from existing Numpy arrays and an optional dictionary of configuration options,
+evaluated at a set of points, and serialized to disk for later use. The
+\texttt{print\_options} method writes the surrogate's current configuration
+options to the console, which can useful for determining default settings.
+
+
+\begin{verbatim}
+import dakota.surrogates as daksurr
+
+nugget_opts = {"estimate nugget" : True}
+config_opts = {"scaler name" : "none", "Nugget" : nugget_opts}
+
+gp = daksurr.GaussianProcess(build_samples, build_response, config_opts)
+
+gp.print_options()
+
+gp_eval_surr = gp.value(eval_samples)
+
+daksurr.save(gp, "gp.bin", True)
+\end{verbatim}
+
+The test \texttt{test\_surrogate.py} located in
+\texttt{\$DAK\_SRC/src/surrogates/unit} contains additional examples of
+surrogate build/save/load workflows and other Python-accessible methods
+(e.g. gradient and hessian evaluation, getting and setting of variable
+and response labels).
+
+As a word of caution, the configuration options for a surrogate loaded from
+disk will be empty because the current implementation does not serialize
+them.
+
 
 \section{Nested Models} \label{models:nested}
 

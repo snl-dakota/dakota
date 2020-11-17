@@ -43,6 +43,9 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   exportPointsFile(
     problem_db.get_string("model.surrogate.export_approx_points_file")),
   exportFormat(problem_db.get_ushort("model.surrogate.export_approx_format")),
+  exportVarianceFile(
+    problem_db.get_string("model.surrogate.export_approx_variance_file")),
+  exportVarianceFormat(problem_db.get_ushort("model.surrogate.export_approx_variance_format")),
   autoRefine(problem_db.get_bool("model.surrogate.auto_refine")),
   maxIterations(problem_db.get_int("model.max_iterations")),
   maxFuncEvals(problem_db.get_int("model.max_function_evals")),
@@ -60,7 +63,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     pointsManagement = (pointsTotal > 0) ? TOTAL_POINTS : RECOMMENDED_POINTS;
 
   bool import_pts = !importPointsFile.empty(),
-       export_pts = !exportPointsFile.empty();
+    export_pts = !exportPointsFile.empty() || !exportVarianceFile.empty();
   if (pointReuse.empty()) // assign default
     pointReuse = (import_pts) ? "all" : "none";
 
@@ -234,7 +237,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   surrogateType = approx_type;
 
   bool import_pts = !importPointsFile.empty(),
-       export_pts = !exportPointsFile.empty();
+    export_pts = !exportPointsFile.empty() || !exportVarianceFile.empty();
   if (pointReuse.empty()) // assign default
     pointReuse = (import_pts) ? "all" : "none";
 
@@ -941,8 +944,15 @@ void DataFitSurrModel::build_approx_interface()
       actualModel.discrete_real_lower_bounds(),
       actualModel.discrete_real_upper_bounds());
   }
-  if (exportSurrogate)
-    approxInterface.export_approximation();
+  if (exportSurrogate) {
+    // skip the ApproximationInterface layer and go directly to
+    // Approximations this could pass in the response name too,
+    // presumably, but the API for export_model requires all
+    // {resp_label, prefix, format} parameters or none to handle
+    // whether comes from shared data vs. Model...
+    for (auto approx : approximations())
+      approx.export_model(currentVariables);
+  }
 }
 
 
@@ -1487,7 +1497,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       currentResponse.active_set(set);
       currentResponse.update(actualModel.current_response());
       // TODO: Add to surrogate build data
-      //      add_datapoint(....)
+      //      add_tabular_data(....)
       break;
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       actualModel.evaluate(set);
@@ -1547,7 +1557,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 
 
     // export data (optional)
-    if (!exportPointsFile.empty())
+    if (!exportPointsFile.empty() || !exportVarianceFile.empty())
       export_point(surrModelEvalCntr, currentVariables, approx_response);
 
     // post-process
@@ -1679,7 +1689,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     case AUTO_CORRECTED_SURROGATE:
       rawVarsMap[surrModelEvalCntr] = currentVariables.copy(); break;
     default:
-      if (!exportPointsFile.empty())
+      if (!exportPointsFile.empty() || !exportVarianceFile.empty())
 	rawVarsMap[surrModelEvalCntr] = currentVariables.copy();
       break;
     }
@@ -1917,7 +1927,8 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
 
   //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
-  IntRespMIter r_it; bool export_pts = !exportPointsFile.empty();
+  IntRespMIter r_it;
+  bool export_pts = !exportPointsFile.empty() || !exportVarianceFile.empty();
   if (responseMode == AUTO_CORRECTED_SURROGATE && corrType) {
     // Interface::rawResponseMap can be corrected directly in the case of an
     // ApproximationInterface since data_pairs is not used (not true for
@@ -2100,18 +2111,35 @@ import_points(unsigned short tabular_format, bool use_var_labels, bool active_on
 /** Constructor helper to export approximation-based evaluations to a file. */
 void DataFitSurrModel::initialize_export()
 {
-  TabularIO::open_file(exportFileStream, exportPointsFile,
-		       "DataFitSurrModel export");
-  TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				  currentResponse, "eval_id", exportFormat);
+  if (!exportPointsFile.empty()) {
+    TabularIO::open_file(exportFileStream, exportPointsFile,
+			 "DataFitSurrModel export");
+    TabularIO::write_header_tabular(exportFileStream, currentVariables,
+				    currentResponse, "eval_id", "interface",
+				    exportFormat);
+  }
+  if (!exportVarianceFile.empty()) {
+    StringArray variance_labels;
+    for (const auto& label : currentResponse.function_labels())
+      variance_labels.push_back(label + "_variance");
+    TabularIO::open_file(exportVarianceFileStream, exportVarianceFile,
+			 "DataFitSurrModel variance export");
+    TabularIO::write_header_tabular(exportVarianceFileStream, currentVariables,
+				    variance_labels, "eval_id", "interface",
+				    exportVarianceFormat);
+  }
 }
 
 
 /** Constructor helper to export approximation-based evaluations to a file. */
 void DataFitSurrModel::finalize_export()
 {
-  TabularIO::close_file(exportFileStream, exportPointsFile,
-			"DataFitSurrModel export");
+  if (!exportPointsFile.empty())
+    TabularIO::close_file(exportFileStream, exportPointsFile,
+			  "DataFitSurrModel export");
+  if (!exportVarianceFile.empty())
+    TabularIO::close_file(exportVarianceFileStream, exportVarianceFile,
+			  "DataFitSurrModel variance export");
 }
 
 
@@ -2121,15 +2149,36 @@ void DataFitSurrModel::finalize_export()
 void DataFitSurrModel::
 export_point(int eval_id, const Variables& vars, const Response& resp)
 {
+  Response response_variance;
+  if (!exportVarianceFile.empty()) {
+    RealVector approx_var = approximation_variances(vars);
+    response_variance = resp.copy();
+    response_variance.function_values(approx_var);
+  }
+
   if (recastings()) {
     Variables export_vars; Response export_resp;
     iterator_space_to_user_space(vars, resp, export_vars, export_resp);
-    TabularIO::write_data_tabular(exportFileStream, export_vars, interface_id(),
-				  export_resp, eval_id, exportFormat);
+    if (!exportPointsFile.empty())
+      TabularIO::write_data_tabular(exportFileStream, export_vars, interface_id(),
+				    export_resp, eval_id, exportFormat);
+    if (!exportVarianceFile.empty()) {
+      // BMA TODO WARN or SKIP: exported variance not transformed?!?
+      // Can't in general map it through a recast model...
+      TabularIO::write_data_tabular(exportVarianceFileStream, export_vars, interface_id(),
+				    response_variance, eval_id, exportVarianceFormat);
+    }
+
   }
-  else
-    TabularIO::write_data_tabular(exportFileStream, vars, interface_id(), resp, 
-				  eval_id, exportFormat);
+  else {
+    if (!exportPointsFile.empty())
+      TabularIO::write_data_tabular(exportFileStream, vars, interface_id(), resp, 
+				    eval_id, exportFormat);
+    if (!exportVarianceFile.empty()) {
+      TabularIO::write_data_tabular(exportVarianceFileStream, vars, interface_id(),
+				    response_variance, eval_id, exportVarianceFormat);
+    }
+  }
 }
 
 

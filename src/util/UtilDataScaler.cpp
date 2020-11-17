@@ -46,23 +46,6 @@ DataScaler::DataScaler() :
 DataScaler::~DataScaler()
 { }
 
-const RowVectorXd& DataScaler::scale_sample(const RowVectorXd &unscaled_sample) {
-
-  const int num_features = unscaled_sample.size();
-  if (num_features != scaledSample.size()) {
-    throw(std::runtime_error("scaleSample input is not consistent."
-          "Number of features does not match."));
-  }
-
-  for (int i = 0; i < num_features; i++) {
-    if (check_for_zero_scaler_factor(i))
-      scaledSample(i) = unscaled_sample(i)  - scalerFeaturesOffsets(i);
-    else
-      scaledSample(i) = (unscaled_sample(i) - scalerFeaturesOffsets(i))/scalerFeaturesScaleFactors(i);
-  }
-  return scaledSample;
-}
-
 void DataScaler::scale_samples(const MatrixXd &unscaled_samples,
                                MatrixXd &scaled_samples) {
   const int num_features = unscaled_samples.cols();

@@ -12,6 +12,7 @@ method,
 #	  reuse_points			#s1,#s3
 #	  use_derivatives		#s2,#s3,#s5
 #	  tensor_grid			#s4,#s5
+          output quiet
 
 variables,
 	normal_uncertain = 2			

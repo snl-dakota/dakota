@@ -1465,6 +1465,26 @@ gnewton_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
 }
 
 
+/** This is a helper function that provides modularity on incoming Model. */
+void Iterator::initialize_model_graphics(Model& model, int iterator_server_id)
+{
+  OutputManager& mgr = parallelLib.output_manager();
+  bool auto_log = false;
+
+  // For graphics, limit (currently) to server id 1, for both ded master
+  // (parent partition rank 1) and peer partitions (parent partition rank 0)
+  if (mgr.graph2DFlag && iterator_server_id == 1) // initialize the 2D plots
+    { model.create_2d_plots();           auto_log = true; }
+
+  // initialize the tabular data file on all iterator masters
+  if (mgr.tabularDataFlag)
+    { model.create_tabular_datastream(); auto_log = true; }
+
+  if (auto_log) // turn out automatic graphics logging
+    model.auto_graphics(true);
+}
+
+
 /** This is a convenience function for encapsulating graphics
     initialization operations. It is overridden by derived classes
     that specialize the graphics display. */
@@ -1472,29 +1492,8 @@ void Iterator::initialize_graphics(int iterator_server_id)
 {
   if (iteratorRep)
     iteratorRep->initialize_graphics(iterator_server_id);
-  else { // no redefinition of virtual fn., use default initialization
-    OutputManager& mgr = parallelLib.output_manager();
-    Graphics& dakota_graphics = mgr.graphics();
-    const Variables& vars = iteratedModel.current_variables();
-    const Response&  resp = iteratedModel.current_response();
-    bool auto_log = false;
-
-    // For graphics, limit (currently) to server id 1, for both ded master
-    // (parent partition rank 1) and peer partitions (parent partition rank 0)
-    if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
-      dakota_graphics.create_plots_2d(vars, resp);
-      auto_log = true;
-    }
-
-    // initialize the tabular data file on all iterator masters
-    if (mgr.tabularDataFlag) {
-      mgr.create_tabular_datastream(vars, resp);
-      auto_log = true;
-    }
-
-    if (auto_log) // turn out automatic graphics logging
-      iteratedModel.auto_graphics(true);
-  }
+  else
+    initialize_model_graphics(iteratedModel, iterator_server_id);
 }
 
 
@@ -1794,13 +1793,25 @@ void Iterator::export_final_surrogates(Model& data_fit_surr_model)
   if (!exportSurrogate)
     return;
 
-  const auto& labels = data_fit_surr_model.response_labels();
+  // BMA: Seems might be better encapsulated in a DataFitSurrModel
+  // Also, dynamic cast the contained model and bail if wrong?
+
+  const auto& resp_labels = data_fit_surr_model.response_labels();
   auto& approxs = data_fit_surr_model.approximations();
-  assert(labels.size() == approxs.size());
-  auto label_it = labels.begin();
+  if (resp_labels.size() != approxs.size()) {
+    Cerr << "\nError: Method cannot export_model(s) due to improperly sized "
+	 << "response\n       descriptors. Found " << approxs.size()
+	 << " surrogates and " << resp_labels.size() << " descriptors."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  auto rlabel_it = resp_labels.begin();
   auto approx_it = approxs.begin();
-  for ( ; approx_it != approxs.end(); ++label_it, ++approx_it)
-    approx_it->export_model(*label_it, surrExportPrefix, surrExportFormat);
+  for ( ; approx_it != approxs.end(); ++rlabel_it, ++approx_it) {
+    const Variables& vars = data_fit_surr_model.current_variables();
+    approx_it->export_model(vars, *rlabel_it, surrExportPrefix, surrExportFormat);
+  }
 }
 
 } // namespace Dakota

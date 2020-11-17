@@ -10,22 +10,16 @@
 #include "ProbabilityTransformModel.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
-#include "DataFitSurrModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "NonDPolynomialChaos.hpp"
 #define N 2
 
 namespace Dakota {
 
-/// initialization of static needed by RecastModel
-AdaptedBasisModel* AdaptedBasisModel::abmInstance(NULL);
 
-
-AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
-  RecastModel(problem_db, get_sub_model(problem_db)),
-  numFullspaceVars(subModel.cv()),
-  numFunctions(subModel.response_size()), adaptedBasisInitialized(false),
-  reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
+AdaptedBasisModel::
+AdaptedBasisModel(ProblemDescDB& problem_db):
+  SubspaceModel(problem_db, get_sub_model(problem_db))
 {
   // BMA: can't do this in get_sub_model as Iterator envelope hasn't
   // been default constructed yet; for now we transfer ownership of
@@ -36,18 +30,18 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   modelType = "adapted_basis";
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
-  componentParallelMode = CONFIG_PHASE;
 
-  offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
-  onlineEvalConcurrency = 1; // Will be overwritten with correct value in
-                             // derived_init_communicators()
+  if (!reducedRank)  // no user spec
+    reducedRank = 1; // subspace-specific default
 
   validate_inputs();
+
+  offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
 }
 
 
 AdaptedBasisModel::~AdaptedBasisModel()
-{ /* empty dtor */ }
+{ }
 
 
 Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
@@ -86,7 +80,8 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   }
   else if (exp_order) { // regression PCE: LeastSq/CS (exp_order,colloc_ratio)
     short exp_coeffs_approach = Pecos::DEFAULT_REGRESSION;
-    String import_file;  size_t colloc_pts;  int seed = 12347;
+    String import_file; int seed = 12347;
+    size_t colloc_pts = std::numeric_limits<size_t>::max();
     pcePilotExpRepPtr = new NonDPolynomialChaos(actual_model,
       exp_coeffs_approach, exp_order, dim_pref, colloc_pts, colloc_ratio, seed,
       EXTENDED_U, refine_type, refine_cntl, cov_cntl, //rule_nest, rule_growth,
@@ -123,164 +118,21 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
 }
 
 
-void AdaptedBasisModel::validate_inputs()
+/**  This specialization is because the model is used in multiple contexts
+     depending on build phase. */
+void AdaptedBasisModel::
+derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                           bool recurse_flag)
 {
-  bool error_flag = false;
+  // The inbound subModel concurrency accounts for any finite differences
 
-  // validate variables specification
-  if (subModel.div() > 0 || subModel.dsv() > 0 || subModel.drv() > 0) {
-    error_flag = true;
-    Cerr << "\nError (adapted basis model): only normal uncertain variables "
-	 << "are supported;\n                        remove other variable "
-         << "specifications.\n" << std::endl;
+  onlineEvalConcurrency = max_eval_concurrency;
+
+  if (recurse_flag) {
+    //if (!mappingInitialized)
+      pcePilotExpansion.init_communicators(pl_iter);
+    subModel.init_communicators(pl_iter, max_eval_concurrency);
   }
-
-  if (error_flag)
-    abort_handler(-1);
-}
-
-
-bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
-{
-  bool sub_model_resize = RecastModel::initialize_mapping(pl_iter);
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nAdapted Basis Model: Initializing adapted basis model."
-	 << std::endl;
-
-  // init-time setting of miPLIndex for use in component_parallel_mode()
-  miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
-  // Set mode OFFLINE_PHASE
-  component_parallel_mode(OFFLINE_PHASE);
-
-  // runtime operation to identify the adapted basis model
-  identify_subspace();
-  // complete initialization of the base RecastModel
-  initialize_recast();
-  // convert the normal distributions to the reduced space and set in the
-  // reduced model
-  uncertain_vars_to_subspace();
-  // adapted basis calculation now complete
-  adaptedBasisInitialized = true;
-
-  // Kill servers and return ranks [1,n-1] to serve_init_mapping()
-  component_parallel_mode(CONFIG_PHASE);
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nAdapted Basis Model: Initialization of adapted basis model "
-	 << "is complete." << std::endl;
-
-  // return whether size of variables has changed
-  return (reducedRank != numFullspaceVars || // Active SS is reduced rank
-	  sub_model_resize); // Active SS is full rank but subModel resized
-}
-
-
-bool AdaptedBasisModel::finalize_mapping()
-{
-  // TODO: return to full space
-  Cout << "\nAdapted Basis Model: Finalization of adapted basis model "
-   << "is complete." << std::endl;
-  return false; // This will become true when TODO is implemented.
-}
-
-
-void AdaptedBasisModel::component_parallel_mode(short mode)
-{
-  // stop_servers() if they are active, componentParallelMode = 0 indicates
-  // they are inactive
-  if (componentParallelMode != mode &&
-      componentParallelMode != CONFIG_PHASE) {
-    ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
-    size_t index = subModel.mi_parallel_level_index();
-    if (pc_it->mi_parallel_level_defined(index) &&
-        pc_it->mi_parallel_level(index).server_communicator_size() > 1) {
-      subModel.stop_servers();
-    }
-  }
-
-  // activate new serve mode (matches AdaptedBasisModel::serve_run(pl_iter)).
-  if (componentParallelMode != mode &&
-      modelPCIter->mi_parallel_level_defined(miPLIndex)) {
-    ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
-    const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
-    if (mi_pl.server_communicator_size() > 1) {
-      if (mode == OFFLINE_PHASE) {
-        // This block tells Model::serve_init_mapping() to go into
-        // AdaptedBasisModel::serve_run() to build the subspace
-        short mapping_code = SERVE_RUN;
-        parallelLib.bcast(mapping_code, *pl_iter);
-        parallelLib.bcast(offlineEvalConcurrency, *pl_iter);
-      }
-
-      // bcast mode to AdaptedBasisModel::serve_run()
-      parallelLib.bcast(mode, mi_pl);
-
-      if (mode == OFFLINE_PHASE)
-        subModel.set_communicators(pl_iter, offlineEvalConcurrency);
-      else if (mode == ONLINE_PHASE)
-        set_communicators(pl_iter, onlineEvalConcurrency);
-    }
-  }
-
-  componentParallelMode = mode;
-}
-
-
-void AdaptedBasisModel::serve_run(ParLevLIter pl_iter,
-                                    int max_eval_concurrency)
-{
-  do {
-    parallelLib.bcast(componentParallelMode, *pl_iter);
-    if (componentParallelMode == OFFLINE_PHASE)
-      subModel.serve_run(pl_iter, offlineEvalConcurrency);
-    else if (componentParallelMode == ONLINE_PHASE) {
-      set_communicators(pl_iter, onlineEvalConcurrency, false);
-      subModel.serve_run(pl_iter, onlineEvalConcurrency);
-    }
-  } while (componentParallelMode != CONFIG_PHASE);
-}
-
-
-int AdaptedBasisModel::serve_init_mapping(ParLevLIter pl_iter)
-{
-  short mapping_code = 0;
-  int max_eval_concurrency = 1;
-  int last_eval_concurrency = 0;
-  do {
-    parallelLib.bcast(mapping_code, *pl_iter);
-    switch (mapping_code) {
-      case FREE_COMMS:
-        parallelLib.bcast(max_eval_concurrency, *pl_iter);
-        if (max_eval_concurrency)
-          free_communicators(pl_iter, max_eval_concurrency);
-        break;
-      case INIT_COMMS:
-        last_eval_concurrency = serve_init_communicators(pl_iter);
-        break;
-      case SERVE_RUN:
-        parallelLib.bcast(max_eval_concurrency, *pl_iter);
-        if (max_eval_concurrency)
-          serve_run(pl_iter, max_eval_concurrency);
-        break;
-      case ESTIMATE_MESSAGE_LENGTHS:
-        estimate_message_lengths();
-        break;
-      default:
-        // no-op
-        break;
-    }
-  } while (mapping_code);
-
-  return last_eval_concurrency; // Will be 0 unless serve_init_communicators()
-                                // is called
-}
-
-
-void AdaptedBasisModel::stop_init_mapping(ParLevLIter pl_iter)
-{
-  short term_code = 0;
-  parallelLib.bcast(term_code, *pl_iter);
 }
 
 
@@ -291,7 +143,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
   if (recurse_flag) {
-    //if (!adaptedBasisInitialized) // see ActiveSubspaceModel
+    //if (!mappingInitialized)
       pcePilotExpansion.set_communicators(pl_iter);
 
     subModel.set_communicators(pl_iter, max_eval_concurrency);
@@ -304,7 +156,18 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
-void AdaptedBasisModel::identify_subspace()
+void AdaptedBasisModel::
+derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                           bool recurse_flag)
+{
+  if (recurse_flag) {
+    pcePilotExpansion.free_communicators(pl_iter);
+    subModel.free_communicators(pl_iter, max_eval_concurrency);
+  }
+}
+
+
+void AdaptedBasisModel::compute_subspace()
 {
   ////////////////////////////////////////////////////
   // Scope of AdaptedBasisModel:
@@ -344,7 +207,7 @@ void AdaptedBasisModel::identify_subspace()
   Teuchos::LAPACK<int, Real> la;
 
   // composite set of A_i
-  RealMatrix A_q(numFunctions*numFullspaceVars, numFullspaceVars, false);
+  RealMatrix A_q(numFns*numFullspaceVars, numFullspaceVars, false);
   // Individual rotation matrix for each QoI
   RealMatrix A_i(numFullspaceVars, numFullspaceVars, false);
 
@@ -355,7 +218,7 @@ void AdaptedBasisModel::identify_subspace()
 
   int method=0;
 
-  for (i=0; i<numFunctions; ++i) {
+  for (i=0; i<numFns; ++i) {
     A_i.putScalar(0.);
 
     if (method==0){
@@ -415,8 +278,8 @@ void AdaptedBasisModel::identify_subspace()
 	      A_q(row_cntr,k) = A_i_trans(k,j);
   }
   
-  rotationMatrix = A_q;
-  Cout << "\n Rotation Matrix \n" << rotationMatrix << std::endl;
+  reducedBasis = A_q;
+  Cout << "\n Rotation Matrix \n" << reducedBasis << std::endl;
 
   // TO DO
 
@@ -433,7 +296,7 @@ void AdaptedBasisModel::identify_subspace()
 
   //// Cout << "\nAdapted Basis Model: Composing composite reduction"  << std::endl;
 
-  // Given A_i for i=1,..,numFunctions, we need to compute a composite eta:
+  // Given A_i for i=1,..,numFns, we need to compute a composite eta:
   // Refer to board notes / emerging article:
 
   //   Stack A_i into a tall matrix A, we target KLE of \eta using eigenspectrum
@@ -478,32 +341,32 @@ void AdaptedBasisModel::identify_subspace()
   //   \xi (full dimension d) = 1/n A' \Phi \Lambda \mu (reduced dimension)
 
   // Pre-compute 1/n A' \Phi \Lambda:
-  //// rotationMatrix.shapeUninitialized(numFullspaceVars, reducedRank);
+  //// reducedBasis.shapeUninitialized(numFullspaceVars, reducedRank);
   //// for (i=0; i<numFullspaceVars; ++i) {
   ////   const Real* A_col = A_q[i]; // row of A'
   ////  for (j=0; j<reducedRank; ++j) {
   ////    const Real* U_col = /*truncated_*/left_singular_vectors[j];
   ////    Real sum_prod = 0.;
-  ////    for (k=0; k<numFullspaceVars*numFunctions; ++k)
+  ////    for (k=0; k<numFullspaceVars*numFns; ++k)
   ////	      sum_prod += A_col[k] * U_col[k];
-  ////    rotationMatrix(i,j) = sum_prod * /*truncated_*/singular_values[j];
+  ////    reducedBasis(i,j) = sum_prod * /*truncated_*/singular_values[j];
   ////  }
   ////}
-  ////rotationMatrix.scale(1./numFunctions);
-  ////Cout << "\nRotation matrix\n" << rotationMatrix << std::endl;
+  ////reducedBasis.scale(1./numFns);
+  ////Cout << "\nRotation matrix\n" << reducedBasis << std::endl;
 
 
   //////////////////////////////////////////////////////////////////////////////
 
   /*
-  // TO DO: do we need to transpose or invert rotationMatrix to be consistent
+  // TO DO: do we need to transpose or invert reducedBasis to be consistent
   //        with A definition used by ActiveSubspaceModel ???
 
   A = RealMatrix(reducedRank, numFullspaceVars);
   */
 
   //// if (outputLevel >= DEBUG_OUTPUT)
-  ////   Cout << "\nAdapted Basis Model: rotation matrix is:\n" << rotationMatrix;
+  ////   Cout << "\nAdapted Basis Model: rotation matrix is:\n" << reducedBasis;
   //// Cout << "\n****************************************************************"
   ////      << "**********\nAdapted Basis Model: Build Statistics"
   ////      << "\nsubspace size: " << reducedRank << "\n**************************"
@@ -511,149 +374,37 @@ void AdaptedBasisModel::identify_subspace()
 }
 
 
-/** Initialize the recast model based on the reduced space, with no
-    response function mapping (for now). */
-void AdaptedBasisModel::initialize_recast()
-{
-  // For now, we assume the subspace is over all functions, without
-  // distinguishing primary from secondary
-
-  // ---
-  // Variables mapping: RecastModel maps subspace (reduced) variables to
-  // original fullspace model
-  // ---
-
-  // We assume the mapping is for all active variables, but only
-  // continuous for the active subspace
-  size_t submodel_cv = subModel.cv();
-  size_t submodel_dv = subModel.div() + subModel.dsv() + subModel.drv();
-  size_t submodel_vars = submodel_cv + submodel_dv;
-  size_t recast_cv = reducedRank;
-  size_t recast_vars = recast_cv + submodel_dv;
-
-  // In general, each submodel continuous variable depends on all of
-  // the recast (reduced) variables; others are one-to-one.
-  Sizet2DArray vars_map_indices(submodel_vars);
-  for (size_t i=0; i<submodel_cv; ++i) {
-    vars_map_indices[i].resize(recast_cv);
-    for (size_t j=0; j<recast_cv; ++j)
-      vars_map_indices[i][j] = j;
-  }
-  for (size_t i=0; i<submodel_dv; ++i) {
-    vars_map_indices[submodel_cv + i].resize(1);
-    vars_map_indices[submodel_cv + i][0] = recast_cv + i;
-  }
-  // Variables map is linear
-  bool nonlinear_vars_mapping = false;
-
-  SizetArray vars_comps_total = variables_resize();
-  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
-
-  // Primary and secondary mapping are one-to-one (NULL callbacks)
-  // TODO: can we get RecastModel to tolerate empty indices when no
-  // map is present?
-  size_t num_primary = subModel.num_primary_fns(),
-    num_secondary    = subModel.num_secondary_fns(),
-    num_recast_fns   = num_primary + num_secondary,
-    recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
-
-  Sizet2DArray primary_resp_map_indices(num_primary);
-  for (size_t i=0; i<num_primary; i++) {
-    primary_resp_map_indices[i].resize(1);
-    primary_resp_map_indices[i][0] = i;
-  }
-
-  Sizet2DArray secondary_resp_map_indices(num_secondary);
-  for (size_t i=0; i<num_secondary; i++) {
-    secondary_resp_map_indices[i].resize(1);
-    secondary_resp_map_indices[i][0] = num_primary + i;
-  }
-
-  BoolDequeArray nonlinear_resp_mapping(numFunctions, BoolDeque(numFunctions, false));
-
-  // Initial response order for the newly built adapted basis model same as
-  // the subModel (does not augment with gradient request)
-  const Response& curr_resp = subModel.current_response();
-  short recast_resp_order = 1; // recast resp order to be same as original resp
-  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
-  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
-
-  RecastModel::
-    init_sizes(vars_comps_total, all_relax_di, all_relax_dr, num_primary,
-               num_secondary, recast_secondary_offset, recast_resp_order);
-
-  RecastModel::
-    init_maps(vars_map_indices, nonlinear_vars_mapping, vars_mapping,
-              set_mapping, primary_resp_map_indices, secondary_resp_map_indices,
-              nonlinear_resp_mapping, response_mapping, NULL);
-}
-
-
-/// Create a variables components totals array with the reduced space
-/// size for continuous variables
-SizetArray AdaptedBasisModel::variables_resize()
-{
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
-  SizetArray vc_totals = svd.components_totals();
-  if (reducedRank != subModel.cv()) {
-    short active_view = subModel.current_variables().view().first;
-    switch (active_view) {
-
-    case MIXED_DESIGN: case RELAXED_DESIGN:
-      // resize continuous design
-      vc_totals[TOTAL_CDV] = reducedRank;
-      break;
-
-    case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
-      // resize continuous aleatory
-      vc_totals[TOTAL_CAUV] = reducedRank;
-      break;
-
-    case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN:
-    case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-      // resize continuous epistemic (note there may not actually be
-      // any epistemic variables in the *_UNCERTAIN cases)
-      vc_totals[TOTAL_CEUV] = reducedRank;
-      break;
-
-    case MIXED_ALL: case RELAXED_ALL: case MIXED_STATE: case RELAXED_STATE:
-      // resize continuous state
-      vc_totals[TOTAL_CSV] = reducedRank;
-      break;
-
-    default:
-      Cerr << "\nError (adapted basis model): invalid active variables view "
-           << active_view << "." << std::endl;
-      abort_handler(-1);
-      break;
-
-    }
-
-  }
-  return vc_totals;
-}
-
-
-
 /** Define the distribution of recast reduced dimension
     variables \eta. They are standard Gaussian in adapted 
     basis model. */
 void AdaptedBasisModel::uncertain_vars_to_subspace()
 {
+  // ----------------------------------
+  // initialization of base RecastModel
+  // ----------------------------------
+  initialize_base_recast(variables_mapping, SubspaceModel::set_mapping,
+			 SubspaceModel::response_mapping);
+
+  // -------------
+  // Resize mvDist
+  // -------------
+  SubspaceModel::uncertain_vars_to_subspace();
+
+  // -----------------------
+  // Extract full space data
+  // -----------------------
+
+  // -------------------------
+  // Define reduced space data
+  // -------------------------
+
   // reduced space characterization: mean mu, std dev sd
   RealVector mu_y(reducedRank), sd_y(reducedRank);
-
   for (int i=0; i<reducedRank; ++i)
-  {
-    mu_y(i) = 0.0;
-    sd_y(i) = 1.0;
-  }
-  
+    { mu_y(i) = 0.;  sd_y(i) = 1.; }
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nAdapted Basis Model: mu_y =\n" << mu_y;
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nAdapted Basis Model: sd_y =\n" << sd_y;
+    Cout << "\nAdapted Basis Model: mu_y =\n" << mu_y
+	 << "\nAdapted Basis Model: sd_y =\n" << sd_y;
 
   std::shared_ptr<Pecos::MarginalsCorrDistribution> reduced_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
@@ -685,116 +436,28 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
     variables \eta to original model \xi variables via linear
     transformation.  Maps only continuous variables. */
 void AdaptedBasisModel::
-vars_mapping(const Variables& recast_eta_vars, Variables& sub_model_xi_vars)
+variables_mapping(const Variables& reduced_vars, Variables& full_vars)
 {
-  Teuchos::BLAS<int, Real> teuchos_blas;
+  const RealVector& eta = reduced_vars.continuous_variables();
+  RealVector&        xi =    full_vars.continuous_variables_view();
 
-  const RealVector& eta =    recast_eta_vars.continuous_variables();
-  RealVector&       xi = sub_model_xi_vars.continuous_variables_view();
-
-  const RealMatrix& A = abmInstance->rotationMatrix;
+  const RealMatrix& A = smInstance->reduced_basis();
   int m = A.numRows(), n = A.numCols(), incx = 1, incy = 1;
   Real alpha = 1.0, beta = 0.0;
   // expand \eta with zeros
   int dim_eta = eta.length();
-  RealVector eta_ex(n);
-  for (int i=0; i<n; i++){
-  	if (i<dim_eta)
-  		eta_ex(i) = eta(i);
-  	else
-  		eta_ex(i) = 0.0;
-  }
+  RealVector eta_ex(n); // init to 0
+  for (int i=0; i<dim_eta; i++)
+    eta_ex(i) = eta(i);
   //  Calculate \xi = A^T \eta
+  Teuchos::BLAS<int, Real> teuchos_blas;
   teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, A.values(), m,
                     eta_ex.values(), incy, beta, xi.values(), incx);
 
-  if (abmInstance->outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: Subspace vars are\n";
-    Cout << recast_eta_vars << std::endl;
-
-    Cout << "\nAdapted Basis Model: Fullspace vars are\n";
-    Cout << sub_model_xi_vars << std::endl;
-  }
-
-}
-
-
-/** Simplified derivative variables mapping where all continuous
-    depend on all others.  TODO: Could instead rely on a richer
-    default in RecastModel based on varsMapIndices. */
-void AdaptedBasisModel::set_mapping(const Variables& recast_vars,
-                                      const ActiveSet& recast_set,
-                                      ActiveSet& sub_model_set)
-{
-  // if the reduced-space (recast) set specifies any continuous
-  // variable, enable derivaties w.r.t. all continuous variables in
-  // the full-space (sub) model
-
-  // BMA: unless an empty DVV is allowed, could short-circuit this and
-  // just always set all CV ids on the sub-model.  For now, this is
-  // overly conservative.
-  SizetArray sub_model_dvv;
-  size_t recast_cv = recast_vars.cv();
-  const SizetArray& recast_dvv = recast_set.derivative_vector();
-  size_t max_sm_id = abmInstance->subModel.cv();
-  for (size_t i=0; i<recast_dvv.size(); ++i)
-    if (1 <= recast_dvv[i] && recast_dvv[i] <= recast_cv) {
-      for (size_t j=1; j<=max_sm_id; ++j)
-        sub_model_dvv.push_back(j);
-      break;
-    }
-  sub_model_set.derivative_vector(sub_model_dvv);
-}
-
-
-/**
-  Perform the response mapping from submodel to recast response
-*/
-void AdaptedBasisModel::
-response_mapping(const Variables& recast_eta_vars,
-                 const Variables& sub_model_xi_vars,
-                 const Response& sub_model_resp, Response& recast_resp)
-{
-  Teuchos::BLAS<int, Real> teuchos_blas;
-
-  // Function values are the same for both recast and sub_model:
-  recast_resp.function_values(sub_model_resp.function_values());
-
-  // Gradients and Hessians must be transformed though:
-  const RealMatrix& dg_dx = sub_model_resp.function_gradients();
-  if(!dg_dx.empty()) {
-    RealMatrix dg_dy = recast_resp.function_gradients();
-
-    //  Performs the matrix-matrix operation:
-    // dg_dy <- alpha*W1^T*dg_dx + beta*dg_dy
-    const RealMatrix& W1 = abmInstance->rotationMatrix;
-    int m = W1.numCols(), k = W1.numRows(), n = dg_dx.numCols();
-    Real alpha = 1.0, beta = 0.0;
-    teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, m, n, k, alpha,
-                      W1.values(), k, dg_dx.values(), k, beta,
-		      dg_dy.values(), m);
-
-    recast_resp.function_gradients(dg_dy);
-  }
-
-
-  // Now transform the Hessians:
-  const RealSymMatrixArray& H_x_all = sub_model_resp.function_hessians();
-  if(!H_x_all.empty()) {
-    RealSymMatrixArray H_y_all(H_x_all.size());
-    for (int i = 0; i < H_x_all.size(); i++) {
-      // compute H_y = W1^T * H_x * W1
-      const RealMatrix& W1 = abmInstance->rotationMatrix;
-      int m = W1.numRows(), n = W1.numCols();
-      Real alpha = 1.0;
-      RealSymMatrix H_y(n, false);
-      Teuchos::symMatTripleProduct<int,Real>(Teuchos::TRANS, alpha,
-                                             H_x_all[i], W1, H_y);
-      H_y_all[i] = H_y;
-    }
-
-    recast_resp.function_hessians(H_y_all);
-  }
+  if (smInstance->output_level() >= DEBUG_OUTPUT)
+    Cout <<   "\nAdapted Basis Model: Subspace vars are\n"  << reduced_vars
+	 << "\n\nAdapted Basis Model: Fullspace vars are\n" << full_vars
+	 << std::endl;
 }
 
 }  // namespace Dakota

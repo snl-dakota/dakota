@@ -255,7 +255,7 @@ void DataFitSurrBasedLocalMinimizer::build()
 
   // Update graphics for iteration 0 (initial guess).
   if (globalIterCount == 0)
-    parallelLib.output_manager().add_datapoint(trustRegionData.vars_center(),
+    parallelLib.output_manager().add_tabular_data(trustRegionData.vars_center(),
       iteratedModel.truth_model().interface_id(),
       trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 
@@ -432,7 +432,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
   // record the iteration results, even if no change in center iterate
   iteratedModel.active_variables(trustRegionData.vars_center());
   OutputManager& output_mgr = parallelLib.output_manager();
-  output_mgr.add_datapoint(trustRegionData.vars_center(),
+  output_mgr.add_tabular_data(trustRegionData.vars_center(),
     truth_model.interface_id(),
     trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 

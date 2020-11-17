@@ -37,6 +37,9 @@ model,
 #          active_only                                                  #s6
         polynomial quadratic #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11
 #        experimental_polynomial basis_order 2 #s12
+#         export_model				#s12
+#           filename_prefix 'exp_poly.s12'	#s12
+#           formats binary_archive text_archive #s12
         challenge_points_file = 'dakota_surrogate_import.ff.dat' freeform        #s0,#s3,#s11,#s12
 #        challenge_points_file = 'dakota_surrogate_import.dat' annotated use_variable_labels        #s1,#s2,#s4,#s5
 #        challenge_points_file = 'dakota_surrogate_import.unc_ff.dat' freeform   #s6

@@ -83,36 +83,6 @@ SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer()
 { }
 
 
-/** This just specializes the Iterator implementation to perform
-    default tabulation on the truth model instead of surrogate
-    model. */
-void SurrBasedGlobalMinimizer::initialize_graphics(int iterator_server_id)
-{
-  Model& truth_model = iteratedModel.truth_model();
-  OutputManager& mgr = parallelLib.output_manager();
-  Graphics& dakota_graphics = mgr.graphics();
-  const Variables& vars = truth_model.current_variables();
-  const Response&  resp = truth_model.current_response();
-  bool auto_log = false;
-
-  // For graphics, limit (currently) to server id 1, for both ded master
-  // (parent partition rank 1) and peer partitions (parent partition rank 0)
-  if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
-    dakota_graphics.create_plots_2d(vars, resp);
-    auto_log = true;
-  }
-
-  // For output/restart/tabular data, all Iterator masters stream output
-  if (mgr.tabularDataFlag) { // initialize data tabulation
-    mgr.create_tabular_datastream(vars, resp);
-    auto_log = true;
-  }
-
-  if (auto_log)
-    truth_model.auto_graphics(true);
-}
-
-
 void SurrBasedGlobalMinimizer::core_run()
 {
   // Extract subIterator/subModel(s) from the SurrogateModel

@@ -10,6 +10,9 @@
 method,
     global_reliability x_gaussian_process   #s0
 #    global_reliability x_gaussian_process experimental   #s1
+#         export_model				#s1
+#           filename_prefix 'exp_gp.s1'		#s1
+#           formats binary_archive text_archive #s1
       convergence_tolerance 0.001
       num_response_levels = 0 2 2
       response_levels = 0.2 0.6 0.2 0.6
