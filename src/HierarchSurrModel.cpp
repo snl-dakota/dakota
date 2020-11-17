@@ -25,7 +25,7 @@ extern Model dummy_model; // defined in DakotaModel.cpp
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db),
   corrOrder(problem_db.get_short("model.surrogate.correction_order")),
-  correctionMode(SINGLE_CORRECTION)
+  correctionMode(SINGLE_CORRECTION), mfPrecedence(true)
 {
   // Hierarchical surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
@@ -55,17 +55,7 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
 
   problem_db.set_db_model_nodes(model_index); // restore
 
-  // default index values, to be overridden at run time
-  surrModelKey.assign(3, 0); truthModelKey.assign(3, 0);
-  if (num_models == 1) // first and last solution level (1 model)
-    truthModelKey[2] = orderedModels[0].solution_levels() - 1;
-  else { // first and last model form (solution levels ignored)
-    truthModelKey[1] = num_models - 1;
-    surrModelKey[2]  = truthModelKey[2] = USHRT_MAX;
-  }
-  Pecos::DiscrepancyCalculator::
-    aggregate_keys(truthModelKey, surrModelKey, activeKey);
-  check_model_interface_instance();
+  assign_default_keys();
 
   // Correction is required in HierarchSurrModel for some responseModes.
   // Enforcement of a correction type for these modes occurs in
@@ -78,6 +68,29 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
     break;
   }
   //truthResponseRef[truthModelKey] = currentResponse.copy();
+}
+
+
+void HierarchSurrModel::assign_default_keys()
+{
+  // default index values, to be overridden at run time
+  surrModelKey.assign(3, 0); truthModelKey.assign(3, 0);
+
+  unsigned short last_model = orderedModels.size() - 1;
+  if (multifidelity()) { // first and last model form (solution levels ignored)
+    model_form(truthModelKey, last_model);
+    resolution_level(truthModelKey, USHRT_MAX);
+    resolution_level( surrModelKey, USHRT_MAX);
+  }
+  else if (multilevel()) { // first and last solution level (last model)
+    model_form(truthModelKey, last_model);
+    model_form(surrModelKey,  last_model);
+    resolution_level(truthModelKey, orderedModels[0].solution_levels() - 1);
+  }
+
+  Pecos::DiscrepancyCalculator::
+    aggregate_keys(truthModelKey, surrModelKey, activeKey);
+  check_model_interface_instance();
 }
 
 
@@ -1079,13 +1092,13 @@ void HierarchSurrModel::create_tabular_datastream()
   case AGGREGATED_MODELS: case MODEL_DISCREPANCY: // two models/resolutions
   case BYPASS_SURROGATE: { // use same row len since commonly alternated
 
-    StringArray iface_ids;
-    if (sameInterfaceInstance)
-      iface_ids.push_back("interface");
-    else {
+    bool mf = multifidelity();  StringArray iface_ids;
+    if (mf) { // sameInterfaceInstance can't be used since it varies at run time
       iface_ids.push_back("HF_interf");
       iface_ids.push_back("LF_interf");
     }
+    else
+      iface_ids.push_back("interface");
     mgr.create_tabular_header(iface_ids); // includes graphics cntr
 
     // identify solution level control variable
@@ -1167,15 +1180,15 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
   case BYPASS_SURROGATE: { // use same row len since commonly alternated
 
     // output interface ids, potentially paired
-    StringArray iface_ids;
-    if (sameInterfaceInstance)
-      iface_ids.push_back(hf_model.interface_id());
-    else {
+    bool mf = multifidelity();  StringArray iface_ids;
+    if (mf) { // sameInterfaceInstance can't be used since it varies at run time
       if (truthModelKey.empty()) iface_ids.push_back("N/A");// preserve row len
       else                       iface_ids.push_back(hf_model.interface_id());
       if ( surrModelKey.empty()) iface_ids.push_back("N/A");// preserve row len
       else                       iface_ids.push_back(lf_model.interface_id());
     }
+    else
+      iface_ids.push_back(hf_model.interface_id());
     output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
 
     // identify solution level control variable
@@ -1314,7 +1327,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
   case FULL_MODEL_FORM_CORRECTION: {
     // assume a consistent level index from surrModelKey
     size_t i, num_models = orderedModels.size();  UShortArray paired_key;
-    unsigned short lf_form = surrModelKey[1];
+    unsigned short lf_form = model_form(surrModelKey);
     Pecos::DiscrepancyCalculator::
       aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
     for (i = lf_form; i < num_models - 1; ++i) {
@@ -1326,7 +1339,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
   }
   case FULL_SOLUTION_LEVEL_CORRECTION: {
     // assume a consistent model index from surrModelKey
-    unsigned short lf_lev = surrModelKey[2];
+    unsigned short lf_lev = resolution_level(surrModelKey);
     if (lf_lev == USHRT_MAX) {
       Cerr << "Error: FULL_SOLUTION_LEVEL_CORRECTION requires solution level "
 	   << "within model key." << std::endl;
@@ -1416,8 +1429,8 @@ void HierarchSurrModel::component_parallel_mode(short par_mode)
     UShortArray old_hf_key, old_lf_key;
     extract_model_keys(componentParallelKey, old_hf_key, old_lf_key);
     switch (componentParallelMode) {
-    case SURROGATE_MODEL_MODE:  stop_model(old_lf_key[1]);  break;
-    case     TRUTH_MODEL_MODE:  stop_model(old_hf_key[1]);  break;
+    case SURROGATE_MODEL_MODE:  stop_model(model_form(old_lf_key));  break;
+    case     TRUTH_MODEL_MODE:  stop_model(model_form(old_hf_key));  break;
     }
     restart = true;
   }

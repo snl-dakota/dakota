@@ -3392,6 +3392,47 @@ const Model& Model::truth_model() const
 }
 
 
+bool Model::multifidelity() const
+{
+  if (modelRep) return modelRep->multifidelity();
+  else          return false; // default
+}
+
+
+bool Model::multilevel() const
+{
+  if (modelRep) return modelRep->multilevel();
+  else          return false; // default
+}
+
+
+bool Model::multilevel_multifidelity() const
+{
+  if (modelRep) return modelRep->multilevel_multifidelity();
+  else          return false; // default
+}
+
+
+bool Model::multifidelity_precedence() const
+{
+  if (modelRep) return modelRep->multifidelity_precedence();
+  else          return true; // default
+}
+
+
+void Model::multifidelity_precedence(bool mf_prec, bool update_default)
+{
+  if (modelRep)
+    modelRep->multifidelity_precedence(mf_prec, update_default);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual multifidelity_"
+	 << "precedence() function.\n       multifidelity_precedence is not "
+	 << "supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /** since modelList is built with list insertions (using envelope
     copies), these models may not be used for model.assign_rep() since
     this operation must be performed on the original envelope object.

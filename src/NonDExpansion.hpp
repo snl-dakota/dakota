@@ -256,8 +256,7 @@ protected:
 
   /// configure fidelity/level counts from model hierarchy
   void configure_sequence(unsigned short& num_steps,
-			  unsigned short& fixed_index,
-			  bool& multilevel, bool mf_precedence);
+			  unsigned short& fixed_index, bool& multilevel);
   /// extract cost estimates from model hierarchy (forms or resolutions)
   void configure_cost(unsigned short num_steps, bool multilevel,
 		      RealVector& cost);

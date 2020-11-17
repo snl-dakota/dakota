@@ -222,8 +222,8 @@ inline Interface& SimulationModel::derived_interface()
    solution control is provided */ 
 inline size_t SimulationModel::solution_levels(bool lwr_bnd) const
 {
-  size_t map_len = solnCntlCostMap.size(), min_len = 1;
-  return (lwr_bnd) ? std::max(min_len, map_len) : map_len;
+  size_t map_len = solnCntlCostMap.size(), lwr = 1;
+  return (lwr_bnd) ? std::max(lwr, map_len) : map_len;
 }
 
 
