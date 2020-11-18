@@ -557,40 +557,62 @@ private:
   static Real var_of_var_ml_l(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g);
 
   ///OPTPP definition
-  static void target_var_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
+  static void target_cost_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
                                         RealVector& grad_f, int& result_mode);
+  static void target_cost_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
+                                         RealMatrix& grad_g, int& result_mode);
   static void target_var_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                          RealMatrix& grad_g, int& result_mode);
   static void target_var_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                                RealMatrix& grad_g, int& result_mode);
 
 
-  static void target_sigma_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
   static void target_sigma_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                          RealMatrix& grad_g, int& result_mode);
   static void target_sigma_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                                RealMatrix& grad_g, int& result_mode);
 
-  static void target_scalarization_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
   static void target_scalarization_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                          RealMatrix& grad_g, int& result_mode);
   static void target_scalarization_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                                RealMatrix& grad_g, int& result_mode);
 
+   static void target_var_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
+  static void target_var_objective_eval_logscale_optpp(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
+
+
+  static void target_sigma_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
+  static void target_sigma_objective_eval_logscale_optpp(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
+
+  static void target_scalarization_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
+  static void target_scalarization_objective_eval_logscale_optpp(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
+
   /// NPSOL definition (Wrapper using OPTPP implementation above under the hood)
-  static void target_var_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_cost_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_cost_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
 
-  static void target_sigma_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
   static void target_sigma_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_sigma_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
 
-  static void target_scalarization_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
   static void target_scalarization_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_scalarization_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+
+  static void target_var_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_var_objective_eval_logscale_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+
+  static void target_sigma_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_sigma_objective_eval_logscale_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+
+  static void target_scalarization_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_scalarization_objective_eval_logscale_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
 
   void assign_static_member(Real &conv_tol, size_t &qoi, size_t &qoi_aggregation, size_t &num_functions, RealVector &level_cost_vec, IntRealMatrixMap &sum_Ql,
                             IntRealMatrixMap &sum_Qlm1, IntIntPairRealMatrixMap &sum_QlQlm1,
@@ -1316,7 +1338,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			void (*objective_function_optpp_ptr) (int, int, const RealVector&, double&, RealVector&, int&) = nullptr;
 			void (*constraint_function_optpp_ptr) (int, int, const RealVector&, RealVector&, RealMatrix&, int&) = nullptr;
 			#ifdef HAVE_NPSOL
-				objective_function_npsol_ptr = &target_var_objective_eval_npsol;
+				objective_function_npsol_ptr = &target_cost_objective_eval_npsol;
 				switch(allocationTarget){
 					case TARGET_VARIANCE:
 						constraint_function_npsol_ptr = &target_var_constraint_eval_npsol;
@@ -1341,7 +1363,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		                             3, 1e-15) //derivative_level = 3 means user_supplied gradients
 		                             );
 			#elif HAVE_OPTPP
-				objective_function_optpp_ptr = &target_var_objective_eval_optpp;
+				objective_function_optpp_ptr = &target_cost_objective_eval_optpp;
 				switch(allocationTarget){
 					case TARGET_VARIANCE:
 						constraint_function_optpp_ptr = &target_var_constraint_eval_optpp;
@@ -1392,7 +1414,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 				}
 				nonlin_eq_targets[0] = std::log(eps_sq_div_2[qoi]); //std::log(convergenceTol);
 				#ifdef HAVE_NPSOL
-				objective_function_npsol_ptr = &target_var_objective_eval_npsol;
+				objective_function_npsol_ptr = &target_cost_objective_eval_npsol;
 				switch(allocationTarget){
 					case TARGET_VARIANCE:
 						constraint_function_npsol_ptr = &target_var_constraint_eval_logscale_npsol;
@@ -1417,7 +1439,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 				                               3, 1e-15)
 				                               ); //derivative_level = 3 means user_supplied gradients
 				#elif HAVE_OPTPP
-				objective_function_optpp_ptr = &target_var_objective_eval_optpp;
+				objective_function_optpp_ptr = &target_cost_objective_eval_optpp;
 				switch(allocationTarget){
 					case TARGET_VARIANCE:
 						constraint_function_optpp_ptr = &target_var_constraint_eval_logscale_optpp;
