@@ -206,15 +206,6 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// return the model form index from the incoming key
-  unsigned short model_form(const UShortArray& key) const;
-  /// assign the model form index to the incoming key
-  void model_form(UShortArray& key, unsigned short form);
-  /// return the resolution level index from the incoming key
-  unsigned short resolution_level(const UShortArray& key) const;
-  /// assign the resolution level index to the incoming key
-  void resolution_level(UShortArray& key, unsigned short lev);
-
   /// define default {truth,surr,active}ModelKey
   void assign_default_keys();
 
@@ -270,11 +261,6 @@ private:
   /// helper function for applying a correction across a sequence of
   /// model forms or discretization levels
   void recursive_apply(const Variables& vars, Response& resp);
-
-  /// return the level index from active low fidelity model key
-  unsigned short surrogate_level_index() const;
-  /// return the level index from active high fidelity model key
-  unsigned short truth_level_index() const;
 
   /// stop the servers for the orderedModels instance identified by
   /// the passed index
@@ -390,40 +376,6 @@ inline size_t HierarchSurrModel::qoi() const
   //       such that code below is a bit more general that currResp num_fns/2
   case AGGREGATED_MODELS:  return truth_model().qoi();  break;
   default:                 return response_size();      break;
-  }
-}
-
-
-inline unsigned short HierarchSurrModel::
-model_form(const UShortArray& key) const
-{ return (key.size() < 2) ? USHRT_MAX : key[1]; }
-
-
-inline void HierarchSurrModel::
-model_form(UShortArray& key, unsigned short form)
-{
-  if (key.size() >= 2) key[1] = form;
-  else {
-    Cerr << "Error: assignment out of bounds in HierarchSurrModel::"
-	 << "model_form()." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-inline unsigned short HierarchSurrModel::
-resolution_level(const UShortArray& key) const
-{ return (key.size() < 3) ? USHRT_MAX : key[2]; }
-
-
-inline void HierarchSurrModel::
-resolution_level(UShortArray& key, unsigned short lev)
-{
-  if (key.size() >= 3) key[2] = lev;
-  else {
-    Cerr << "Error: assignment out of bounds in HierarchSurrModel::"
-	 << "resolution_level()." << std::endl;
-    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -775,14 +727,6 @@ inline void HierarchSurrModel::derived_init_serial()
   for (i=0; i<num_models; ++i)
     orderedModels[i].init_serial();
 }
-
-
-inline unsigned short HierarchSurrModel::surrogate_level_index() const
-{ return (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[2]; }
-
-
-inline unsigned short HierarchSurrModel::truth_level_index() const
-{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
 
 
 inline void HierarchSurrModel::stop_servers()

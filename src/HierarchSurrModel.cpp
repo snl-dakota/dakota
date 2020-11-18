@@ -413,8 +413,7 @@ void HierarchSurrModel::build_approximation()
   // -->> move LF model out and restructure if(!approxBuilds)
   //ActiveSet temp_set = lf_model.current_response().active_set();
   //temp_set.request_values(1);
-  //if (sameModelInstance)
-  //  lf_model.solution_level_cost_index(surrogate_level_index());
+  //if (sameModelInstance) assign_surrogate_key();
   //lf_model.evaluate(temp_set);
   //const Response& lo_fi_response = lf_model.current_response();
 
@@ -453,8 +452,7 @@ void HierarchSurrModel::build_approximation()
     truthResponseRef[truthModelKey] = currentResponse.copy();
   ActiveSet hf_set = currentResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
-  if (sameModelInstance)
-    hf_model.solution_level_cost_index(truth_level_index());
+  if (sameModelInstance) assign_truth_key();
   hf_model.evaluate(hf_set);
   truthResponseRef[truthModelKey].update(hf_model.current_response());
 
@@ -561,10 +559,8 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   // ------------------------------
   if (hi_fi_eval) {
     component_parallel_mode(TRUTH_MODEL_MODE); // TO DO: sameModelInstance
-    if (sameModelInstance)
-      hf_model.solution_level_cost_index(truth_level_index());
-    else
-      update_model(hf_model);
+    if (sameModelInstance) assign_truth_key();
+    else                   update_model(hf_model);
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     case AGGREGATED_MODELS: {
@@ -606,10 +602,8 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     }
     // compute the LF response
     component_parallel_mode(SURROGATE_MODEL_MODE); // TO DO: sameModelInstance
-    if (sameModelInstance)
-      lf_model.solution_level_cost_index(surrogate_level_index());
-    else
-      update_model(lf_model);
+    if (sameModelInstance) assign_surrogate_key();
+    else                   update_model(lf_model);
     ActiveSet lo_fi_set;
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
@@ -756,16 +750,14 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // launch nonblocking evals before any blocking ones
   if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
-    if (sameModelInstance)
-      hf_model.solution_level_cost_index(truth_level_index());
+    if (sameModelInstance) assign_truth_key();
     hf_model.evaluate_nowait(hi_fi_set);
     // store map from HF eval id to HierarchSurrModel id
     truthIdMap[hf_model.evaluation_id()] = surrModelEvalCntr;
   }
   if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
-    if (sameModelInstance)
-      lf_model.solution_level_cost_index(surrogate_level_index());
+    if (sameModelInstance) assign_surrogate_key();
     lf_model.evaluate_nowait(lo_fi_set);
     // store map from LF eval id to HierarchSurrModel id
     surrIdMap[lf_model.evaluation_id()] = surrModelEvalCntr;
@@ -777,16 +769,14 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // now launch any blocking evals
   if (hi_fi_eval && !asynch_hi_fi) { // execute HF synchronously & cache resp
     component_parallel_mode(TRUTH_MODEL_MODE);
-    if (sameModelInstance)
-      hf_model.solution_level_cost_index(truth_level_index());
+    if (sameModelInstance) assign_truth_key();
     hf_model.evaluate(hi_fi_set);
     // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately
     cachedTruthRespMap[surrModelEvalCntr] = hf_model.current_response().copy();
   }
   if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
     component_parallel_mode(SURROGATE_MODEL_MODE);
-    if (sameModelInstance)
-      lf_model.solution_level_cost_index(surrogate_level_index());
+    if (sameModelInstance) assign_surrogate_key();
     lf_model.evaluate(lo_fi_set);
     Response lo_fi_response(lf_model.current_response().copy());
     // correct LF response prior to caching

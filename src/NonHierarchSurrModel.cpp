@@ -312,8 +312,7 @@ void NonHierarchSurrModel::build_approximation()
   // -->> move LF model out and restructure if(!approxBuilds)
   //ActiveSet temp_set = lf_model.current_response().active_set();
   //temp_set.request_values(1);
-  //if (sameModelInstance)
-  //  lf_model.solution_level_index(surrogate_level_index());
+  //if (sameModelInstance) assign_surrogate_key();
   //lf_model.evaluate(temp_set);
   //const Response& lo_fi_response = lf_model.current_response();
 
@@ -352,8 +351,7 @@ void NonHierarchSurrModel::build_approximation()
     truthResponseRef[truthModelKey] = currentResponse.copy();
   ActiveSet hf_set = currentResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
-  if (sameModelInstance)
-    hf_model.solution_level_index(truth_level_index());
+  if (sameModelInstance) assign_truth_key();
   hf_model.evaluate(hf_set);
   truthResponseRef[truthModelKey].update(hf_model.current_response());
 
@@ -405,12 +403,8 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
 	Model& model_i = (i < num_unord_models) ? unorderedModels[i]
 	               : truthModel;
 	component_parallel_mode(i+1); // model id (0 is reserved)
-	/*
-	if (sameModelInstance)
-	  model_i.solution_level_index(model_level_index(i)); // TO DO
-	else
-	  update_model(model_i);
-	*/
+	if (sameModelInstance) assign_key(i);
+	else                   update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate(set_i);
 	indiv_response[i] = (sameModelInstance) ? // deep copy or shared rep
@@ -427,12 +421,8 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
       abort_handler(MODEL_ERROR);
     }
     component_parallel_mode(num_models); // model id (0 is reserved)
-    /*
-    if (sameModelInstance)
-      truthModel.solution_level_index(truth_level_index(i)); // TO DO
-    else
-      update_model(truthModel);
-    */
+    if (sameModelInstance) assign_key(truthModelKey);
+    else                   update_model(truthModel);
     truthModel.evaluate(set);
     currentResponse.active_set(set);
     currentResponse.update(truthModel.current_response());
@@ -461,8 +451,7 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // To manage general case of mixed asynch, launch nonblocking evals first,
   // followed by blocking evals.
 
-  // For notes on repetitive setting of model.solution_level_index(), see
-  // derived_evaluate() above.
+  // For notes on repetitive use of assign_key(), see derived_evaluate() above
 
   switch (responseMode) {
   case AGGREGATED_MODELS: {
@@ -474,12 +463,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       Model& model_i = (i < num_unord_models) ? unorderedModels[i]
 	             : truthModel;
       if (model_i.asynch_flag() && test_asv(asv_i)) {
-	/*
-	if (sameModelInstance)
-	  model_i.solution_level_index(model_level_index(i)); // TO DO
-	else
-	  update_model(model_i);
-	*/
+	if (sameModelInstance) assign_key(i);
+	else                   update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate_nowait(set_i);
 	modelIdMap[i][model_i.evaluation_id()] = surrModelEvalCntr;
@@ -492,12 +477,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 	             : truthModel;
       if (!model_i.asynch_flag() && test_asv(asv_i)) {
 	component_parallel_mode(i+1); // model id (0 is reserved)
-	/*
-	if (sameModelInstance)
-	  model_i.solution_level_index(model_level_index(i)); // TO DO
-	else
-	  update_model(model_i);
-	*/
+	if (sameModelInstance) assign_key(i);
+	else                   update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate(set_i);
 	cachedRespMaps[i][surrModelEvalCntr]
@@ -512,12 +493,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    /*
-    if (sameModelInstance)
-      truthModel.solution_level_index(truth_level_index(i)); // TO DO
-    else
-      update_model(truthModel);
-    */
+    if (sameModelInstance) assign_key(truthModelKey);
+    else                   update_model(truthModel);
     truthModel.evaluate_nowait(set); // no need to test for blocking eval
     modelIdMap[0][truthModel.evaluation_id()] = surrModelEvalCntr;
     break;

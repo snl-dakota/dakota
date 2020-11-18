@@ -124,6 +124,15 @@ protected:
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;
 
+  /// return the model form index from the incoming key
+  unsigned short model_form(const UShortArray& key) const;
+  /// assign the model form index within the incoming key
+  void model_form(UShortArray& key, unsigned short form);
+  /// return the resolution level index from the incoming key
+  unsigned short resolution_level(const UShortArray& key) const;
+  /// assign the resolution level index to the incoming key
+  void resolution_level(UShortArray& key, unsigned short lev);
+
   /// evaluate whether a rebuild of the approximation should be
   /// forced based on changes in the inactive data
   bool force_rebuild();
@@ -324,6 +333,38 @@ inline void SurrogateModel::check_key(int key1, int key2) const
   if (key1 != key2) {
     Cerr << "Error: failure in SurrogateModel::check_key().  Keys are not "
 	 << "consistent." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+inline unsigned short SurrogateModel::model_form(const UShortArray& key) const
+{ return (key.size() < 2) ? USHRT_MAX : key[1]; }
+
+
+inline void SurrogateModel::model_form(UShortArray& key, unsigned short form)
+{
+  if (key.size() >= 2) key[1] = form;
+  else {
+    Cerr << "Error: assignment out of bounds in HierarchSurrModel::"
+	 << "model_form()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+inline unsigned short SurrogateModel::
+resolution_level(const UShortArray& key) const
+{ return (key.size() < 3) ? USHRT_MAX : key[2]; }
+
+
+inline void SurrogateModel::
+resolution_level(UShortArray& key, unsigned short lev)
+{
+  if (key.size() >= 3) key[2] = lev;
+  else {
+    Cerr << "Error: assignment out of bounds in HierarchSurrModel::"
+	 << "resolution_level()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }

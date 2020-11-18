@@ -177,6 +177,11 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// assign the resolution level for the model form indicated by the key
+  void assign_key(const UShortArray& key);
+  /// assign the resolution level for the i-th model key
+  void assign_key(size_t i);
+
   /// utility for propagating new key values
   void key_updates(unsigned short model_index, unsigned short soln_lev_index);
 
@@ -223,6 +228,13 @@ private:
   /// model instance.  As a first cut, just need to carry them along
   /// (as tunable hyper-parameters rather than dimensions of the hierarchy).
   //////////////////////////////////////////////////////////////////////////////
+  /// key defining active resolution level for truthModel.  Note: model form
+  /// component is maintained for consistency but is redundant in this case.
+  UShortArray truthModelKey;
+  /// keys defining active resolution levels for unorderedModels.  Note: model
+  /// form components are maintained for consistency but are redundant since
+  /// order across unorderedModel{s,Keys} is consistent.
+  UShort2DArray unorderedModelKeys;
 
   /// flag indicating that the {low,high}FidelityKey correspond to the
   /// same model instance, requiring modifications to updating and evaluation
@@ -359,6 +371,24 @@ inline const Model& NonHierarchSurrModel::truth_model() const
 { return truthModel; }
 
 
+inline void NonHierarchSurrModel::assign_key(const UShortArray& key)
+{
+  unsigned short form = model_form(key);
+  if (form != USHRT_MAX) {
+    Model& model = (form < unorderedModels.size()) ?
+      unorderedModels[form] : truthModel;
+    model.solution_level_cost_index(resolution_level(key));
+  }
+}
+
+
+inline void NonHierarchSurrModel::assign_key(size_t i)
+{
+  if (i < unorderedModels.size()) assign_key(unorderedModelKeys[i]);
+  else if (i != _NPOS)            assign_key(truthModelKey);
+}
+
+
 inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
 {
   // assign activeKey
@@ -367,29 +397,22 @@ inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
   /* *** TO DO: activate solution levels within truth/unordered models
 
   // update {truth,surr}ModelKey
-  extract_model_keys(key, truthModelKey, surrModelKey);
-
-  unsigned short hf_form = (truthModelKey.empty()) ? USHRT_MAX:truthModelKey[1],
-                 lf_form =  (surrModelKey.empty()) ? USHRT_MAX: surrModelKey[1];
-  if (hf_form != lf_form) { // distinct model forms
-
-    // If model forms are distinct (multifidelity), can activate soln level
-    // index now; else (multilevel) must defer until run-time.
-    if (hf_form != USHRT_MAX)
-      orderedModels[hf_form].solution_level_index(truthModelKey[2]);
-    if (lf_form != USHRT_MAX)
-      orderedModels[lf_form].solution_level_index(surrModelKey[2]);
-
-    // Pull inactive variable change up into top-level currentVariables,
-    // so that data flows correctly within Model recursions?  No, current
-    // design is that forward pushes are automated, but inverse pulls are 
-    // generally special case invocations from Iterator code (e.g., with
-    // locally-managed Model recursions).
-    //update_from_model(orderedModels[hf_form]);
-  }
+  extract_model_keys(key, unorderedModelKeys, truthModelKey);
 
   // assign same{Model,Interface}Instance
-  check_model_interface_instance();
+  //check_model_interface_instance();
+
+  // Unconditional for now (no sameModelInstance)
+  for (i=0; i<num_unordered_models; ++i)
+    assign_key(unorderedModelKeys[i]);
+  assign_key(truthModelKey);
+
+  // Pull inactive variable change up into top-level currentVariables,
+  // so that data flows correctly within Model recursions?  No, current
+  // design is that forward pushes are automated, but inverse pulls are 
+  // generally special case invocations from Iterator code (e.g., with
+  // locally-managed Model recursions).
+  //update_from_model(truthModel);
   */
 }
 
