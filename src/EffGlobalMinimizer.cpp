@@ -625,11 +625,10 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
     // delete liar responses
     delete_liar_responses(); // consolidation attempt
 
-    // query the batch
+    // query the batch + update constraints
     evaluate_batch_and_update_constraints(); // consolidation attempt
 
-    numDataPts = fHatModel.approximation_data(0).points(); // debug
-
+    // update convergence counters
     update_convergence_counters(); // consolidation attempt
 
     // check convergence
