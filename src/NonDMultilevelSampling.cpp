@@ -39,6 +39,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
   convergenceTolType(problem_db.get_short("method.nond.convergence_tolerance_type")),
+  convergenceTolTarget(problem_db.get_short("method.nond.convergence_tolerance_target")),
   useTargetVarianceOptimizationFlag(problem_db.get_bool("method.nond.allocation_target.variance.optimization")),
   finalCVRefinement(true),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
@@ -731,7 +732,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
         }
       }
       if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
-        set_convergence_tol(estimator_var0_qoi, convergenceTol, eps_sq_div_2_qoi);
+        set_convergence_tol(estimator_var0_qoi, cost, convergenceTol, eps_sq_div_2_qoi);
       }
 
       // update targets based on variance estimates

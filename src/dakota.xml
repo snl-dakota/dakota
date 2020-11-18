@@ -2888,6 +2888,12 @@
 		<keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}" label="absolute"   />
 		</oneOf>
        </keyword>
+       <keyword  id="convergence_tolerance_target" name="convergence_tolerance_target" code="{0}" label="Target of convergence tolerance"  minOccurs="0" default="variance_constraint" >
+        <oneOf label="Convergence tolerance target">
+		<keyword  id="variance_constraint" name="variance_constraint" code="{N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT)}" label="variance_constraint"   />
+		<keyword  id="cost_constraint" name="cost_constraint" code="{N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT)}" label="cost_constraint"   />
+		</oneOf>
+       </keyword>
 	  &method_max_iterations;
 	  &default_final_moments;
 	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->

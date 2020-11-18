@@ -2680,6 +2680,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"iterator_scheduling", P iteratorScheduling},
 	{"nond.allocation_target", P allocationTarget},
   {"nond.c3function_train.advancement_type", P c3AdvanceType},
+  {"nond.convergence_tolerance_target", P convergenceToleranceTarget},
   {"nond.convergence_tolerance_type", P convergenceToleranceType},
 	{"nond.correction_order", P approxCorrectionOrder},
 	{"nond.covariance_control", P covarianceControl},

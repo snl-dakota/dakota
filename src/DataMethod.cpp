@@ -139,6 +139,7 @@ DataMethodRep::DataMethodRep():
   expansionSamples(std::numeric_limits<size_t>::max()),
   allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
   qoiAggregation(QOI_AGGREGATION_SUM), convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
+  convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
   //expansionSampleType("lhs"),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),

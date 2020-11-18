@@ -503,7 +503,7 @@ private:
                           const size_t& lev, const size_t& qoi);
 
   /// compute epsilon^2/2 term for each qoi based on reference estimator_var0 and relative convergence tolereance
-  void set_convergence_tol(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi);
+  void set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi);
 
   /// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
   void compute_sample_allocation_target(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
@@ -561,6 +561,7 @@ private:
                                         RealVector& grad_f, int& result_mode);
   static void target_cost_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                          RealMatrix& grad_g, int& result_mode);
+
   static void target_var_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                          RealMatrix& grad_g, int& result_mode);
   static void target_var_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
@@ -577,11 +578,10 @@ private:
   static void target_scalarization_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                                RealMatrix& grad_g, int& result_mode);
 
-   static void target_var_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
+  static void target_var_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
                                         RealVector& grad_f, int& result_mode);
   static void target_var_objective_eval_logscale_optpp(int mode, int n, const RealVector& x, double& f,
                                         RealVector& grad_f, int& result_mode);
-
 
   static void target_sigma_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
                                         RealVector& grad_f, int& result_mode);
@@ -596,6 +596,7 @@ private:
   /// NPSOL definition (Wrapper using OPTPP implementation above under the hood)
   static void target_cost_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
   static void target_cost_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+
   static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
   static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
 
@@ -667,6 +668,12 @@ private:
   ///								 reference tolerance * convergence_tol
   ///   - absolute = sets convergence tolerance from input
   short convergenceTolType;
+
+  /// store the convergence_tolerance_target input specification, prior to run-time
+  /// Options right now:
+  ///   - variance_constraint = minimizes cost for equality constraint on variance of estimator (rhs of constraint from convergenceTol)
+  ///   - cost_constraint = minizes variance of estimator for equality constraint on cost (rhs of constraint from convergenceTol)
+  short convergenceTolTarget;
 
   /// mean squared error of mean estimator from pilot sample MC on HF model
   RealVector mcMSEIter0;
@@ -1178,7 +1185,7 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   return agg_mse;
 }
 
-inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi)
+inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, const Real& convergenceTol, RealVector& eps_sq_div_2_qoi)
 {
 	// compute epsilon target based on relative tolerance: total MSE = eps^2
 	// which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -1186,13 +1193,31 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 	// discretization error, we compute an initial estimator variance and
 	// then seek to reduce it by a relative_factor <= 1.
 	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-	  if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)	 
-			eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol;//1.389824213484928e-7; //2.23214285714257e-5; //estimator_var0_qoi[qoi] * convergenceTol;
-		else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)
-			eps_sq_div_2_qoi[qoi] = convergenceTol;
-		else
-			{
-  	  Cerr << "NonDMultilevelSampling::multilevel_mc_Qsum: convergenceTolType is not known.\n";
+
+	  if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+		  if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
+				eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol;
+				Cout << "\n 1eps_sq_div_2_qoi[qoi] for Qoi: " << qoi << ": " << eps_sq_div_2_qoi[qoi] << std::endl;
+			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
+				Cout << "\n 2eps_sq_div_2_qoi[qoi] for Qoi: " << qoi << ": " << eps_sq_div_2_qoi[qoi] << std::endl;
+				eps_sq_div_2_qoi[qoi] = convergenceTol;
+			}else{
+	  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
+	  	  abort_handler(INTERFACE_ERROR);
+			}
+		}else if (convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+			if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
+				eps_sq_div_2_qoi[qoi] = cost[cost.length()-1] * convergenceTol; //Relative cost with respect to convergenceTol evaluations on finest grid
+				Cout << "\n 3eps_sq_div_2_qoi[qoi] for Qoi: " << qoi << ": " << eps_sq_div_2_qoi[qoi] << std::endl;
+			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
+				Cout << "\n 4eps_sq_div_2_qoi[qoi] for Qoi: " << qoi << ": " << eps_sq_div_2_qoi[qoi] << std::endl;
+				eps_sq_div_2_qoi[qoi] = convergenceTol; //Direct cost
+			}else{
+	  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
+	  	  abort_handler(INTERFACE_ERROR);
+			}
+		}else{
+  	  Cout << "NonDMultilevelSampling::set_convergence_tol: convergenceTolTarget is not known.\n";
   	  abort_handler(INTERFACE_ERROR);
 		}
 
@@ -1260,26 +1285,34 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		N_target_qoi_FN.shape(numFunctions, num_steps);
 		delta_N_l_qoi.shape(numFunctions, num_steps);
 	}else{
-  	  Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
+  	  Cout << "NonDMultilevelSampling::compute_sample_allocation_target: qoiAggregation is not known.\n";
   	  abort_handler(INTERFACE_ERROR);
 	}
 
   for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
-  	Real fact_qoi = sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi]; ///TODO: targeting Cost
-		if (outputLevel == DEBUG_OUTPUT)
+  	Real fact_qoi = sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
+		//if (outputLevel == DEBUG_OUTPUT)
 			Cout << "\n\tN_target for Qoi: " << qoi << ", with lagrange: " << fact_qoi << std::endl;
 
 		for (size_t step = 0; step < num_steps; ++step) {
-	      	level_cost_vec[step] = level_cost(cost, step);
-			N_target_qoi(qoi, step) = std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
+    	level_cost_vec[step] = level_cost(cost, step);
+	    if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+				N_target_qoi(qoi, step) = std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
+			}else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+				N_target_qoi(qoi, step) = std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * (1./fact_qoi);
+			}else{
+	  	  Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
+	  	  abort_handler(INTERFACE_ERROR);
+			}
+			Cout << "\t\tN_target_qoi before bounding: " << N_target_qoi(qoi, step) << "\n";
 			N_target_qoi(qoi, step) = N_target_qoi(qoi, step) < 6 ? 6 : N_target_qoi(qoi, step);
 			N_target_qoi_FN(qoi, step) = N_target_qoi(qoi, step);
 			//N_target_qoi_FN(qoi, step) = N_target_qoi(qoi, step);
-			if (outputLevel == DEBUG_OUTPUT) {
+			//if (outputLevel == DEBUG_OUTPUT) {
 			Cout << "\t\tVar of target: " << agg_var_qoi(qoi, step) << std::endl;
 			Cout << "\t\tCost: " << level_cost_vec[step] << "\n";
 			Cout << "\t\tN_target_qoi: " << N_target_qoi(qoi, step) << "\n";
-			}
+			//}
 		}
     bool have_npsol = false, have_optpp = false;
 		#ifdef HAVE_NPSOL
@@ -1337,20 +1370,41 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			void (*constraint_function_npsol_ptr) (int&, int&, int&, int&, int*, double*, double*, double*, int&) = nullptr;
 			void (*objective_function_optpp_ptr) (int, int, const RealVector&, double&, RealVector&, int&) = nullptr;
 			void (*constraint_function_optpp_ptr) (int, int, const RealVector&, RealVector&, RealMatrix&, int&) = nullptr;
+
 			#ifdef HAVE_NPSOL
-				objective_function_npsol_ptr = &target_cost_objective_eval_npsol;
-				switch(allocationTarget){
-					case TARGET_VARIANCE:
-						constraint_function_npsol_ptr = &target_var_constraint_eval_npsol;
-						break;
-					case TARGET_SIGMA:
-						constraint_funcconstraint_function_npsol_ptrtion_ptr = &target_sigma_constraint_eval_npsol;
-						break;
-					case TARGET_SCALARIZATION:
-						constraint_function_npsol_ptr = &target_scalarization_constraint_eval_npsol;
-						break;
-					default:
-						 break;
+	    	if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+					objective_function_npsol_ptr = &target_cost_objective_eval_npsol;
+					switch(allocationTarget){
+						case TARGET_VARIANCE:
+							constraint_function_npsol_ptr = &target_var_constraint_eval_npsol;
+							break;
+						case TARGET_SIGMA:
+							constraint_function_npsol_ptr = &target_sigma_constraint_eval_npsol;
+							break;
+						case TARGET_SCALARIZATION:
+							constraint_function_npsol_ptr = &target_scalarization_constraint_eval_npsol;
+							break;
+						default:
+							 break;
+					}
+				}else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+					constraint_function_npsol_ptr = &target_cost_constraint_eval_npsol;
+					switch(allocationTarget){
+						case TARGET_VARIANCE:
+							objective_function_npsol_ptr = &target_var_objective_eval_npsol;
+							break;
+						case TARGET_SIGMA:
+							objective_function_npsol_ptr = &target_sigma_objective_eval_npsol;
+							break;
+						case TARGET_SCALARIZATION:
+							objective_function_npsol_ptr = &target_scalarization_objective_eval_npsol;
+							break;
+						default:
+							 break;
+					}
+				}else{
+		  	  Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
+		  	  abort_handler(INTERFACE_ERROR);
 				}
 				optimizer.reset(new NPSOLOptimizer(initial_point,
 		                             var_lower_bnds, var_upper_bnds,
@@ -1363,19 +1417,39 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		                             3, 1e-15) //derivative_level = 3 means user_supplied gradients
 		                             );
 			#elif HAVE_OPTPP
-				objective_function_optpp_ptr = &target_cost_objective_eval_optpp;
-				switch(allocationTarget){
-					case TARGET_VARIANCE:
-						constraint_function_optpp_ptr = &target_var_constraint_eval_optpp;
-						break;
-					case TARGET_SIGMA:
-						constraint_function_optpp_ptr = &target_sigma_constraint_eval_optpp;
-						break;
-					case TARGET_SCALARIZATION:
-						constraint_function_optpp_ptr = &target_scalarization_constraint_eval_optpp;
-						break;
-					default:
-						 break;
+	    	if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+					objective_function_optpp_ptr = &target_cost_objective_eval_optpp;
+					switch(allocationTarget){
+						case TARGET_VARIANCE:
+							constraint_function_optpp_ptr = &target_var_constraint_eval_optpp;
+							break;
+						case TARGET_SIGMA:
+							constraint_function_optpp_ptr = &target_sigma_constraint_eval_optpp;
+							break;
+						case TARGET_SCALARIZATION:
+							constraint_function_optpp_ptr = &target_scalarization_constraint_eval_optpp;
+							break;
+						default:
+							 break;
+					}
+				}else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+					constraint_function_optpp_ptr = &target_cost_constraint_eval_optpp;
+					switch(allocationTarget){
+						case TARGET_VARIANCE:
+							objective_function_optpp_ptr = &target_var_objective_eval_optpp;
+							break;
+						case TARGET_SIGMA:
+							objective_function_optpp_ptr = &target_sigma_objective_eval_optpp;
+							break;
+						case TARGET_SCALARIZATION:
+							objective_function_optpp_ptr = &target_scalarization_objective_eval_optpp;
+							break;
+						default:
+							 break;
+					}
+				}else{
+		  	  Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
+		  	  abort_handler(INTERFACE_ERROR);
 				}
 				optimizer.reset(new SNLLOptimizer(initial_point,
 		                            var_lower_bnds, var_upper_bnds,
@@ -1414,55 +1488,95 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 				}
 				nonlin_eq_targets[0] = std::log(eps_sq_div_2[qoi]); //std::log(convergenceTol);
 				#ifdef HAVE_NPSOL
-				objective_function_npsol_ptr = &target_cost_objective_eval_npsol;
-				switch(allocationTarget){
-					case TARGET_VARIANCE:
-						constraint_function_npsol_ptr = &target_var_constraint_eval_logscale_npsol;
-						break;
-					case TARGET_SIGMA:
-						constraint_function_npsol_ptr = &target_sigma_constraint_eval_logscale_npsol;
-						break;
-					case TARGET_SCALARIZATION:
-						constraint_function_npsol_ptr = &target_scalarization_constraint_eval_logscale_npsol;
-						break;
-					default:
-						 break;
-				}
-				optimizer.reset(new NPSOLOptimizer(initial_point,
-				                               var_lower_bnds, var_upper_bnds,
-				                               lin_ineq_coeffs, lin_ineq_lower_bnds,
-				                               lin_ineq_upper_bnds, lin_eq_coeffs,
-				                               lin_eq_targets, nonlin_ineq_lower_bnds,
-				                               nonlin_ineq_upper_bnds, nonlin_eq_targets,
-				                               objective_function_npsol_ptr,
-				                               constraint_function_npsol_ptr,
-				                               3, 1e-15)
-				                               ); //derivative_level = 3 means user_supplied gradients
+		    	if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+					objective_function_npsol_ptr = &target_cost_objective_eval_npsol;
+					switch(allocationTarget){
+						case TARGET_VARIANCE:
+							constraint_function_npsol_ptr = &target_var_constraint_eval_logscale_npsol;
+							break;
+						case TARGET_SIGMA:
+							constraint_function_npsol_ptr = &target_sigma_constraint_eval_logscale_npsol;
+							break;
+						case TARGET_SCALARIZATION:
+							constraint_function_npsol_ptr = &target_scalarization_constraint_eval_logscale_npsol;
+							break;
+						default:
+							 break;
+					}
+					}else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+						constraint_function_npsol_ptr = &target_cost_constraint_eval_npsol;
+						switch(allocationTarget){
+							case TARGET_VARIANCE:
+								objective_function_npsol_ptr = &target_var_objective_eval_logscale_npsol;
+								break;
+							case TARGET_SIGMA:
+								objective_function_npsol_ptr = &target_sigma_objective_eval_logscale_npsol;
+								break;
+							case TARGET_SCALARIZATION:
+								objective_function_npsol_ptr = &target_scalarization_objective_eval_logscale_npsol;
+								break;
+							default:
+								 break;
+						}
+					}else{
+			  	  Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
+			  	  abort_handler(INTERFACE_ERROR);
+					}
+					optimizer.reset(new NPSOLOptimizer(initial_point,
+					                               var_lower_bnds, var_upper_bnds,
+					                               lin_ineq_coeffs, lin_ineq_lower_bnds,
+					                               lin_ineq_upper_bnds, lin_eq_coeffs,
+					                               lin_eq_targets, nonlin_ineq_lower_bnds,
+					                               nonlin_ineq_upper_bnds, nonlin_eq_targets,
+					                               objective_function_npsol_ptr,
+					                               constraint_function_npsol_ptr,
+					                               3, 1e-15)
+					                               ); //derivative_level = 3 means user_supplied gradients
 				#elif HAVE_OPTPP
-				objective_function_optpp_ptr = &target_cost_objective_eval_optpp;
-				switch(allocationTarget){
-					case TARGET_VARIANCE:
-						constraint_function_optpp_ptr = &target_var_constraint_eval_logscale_optpp;
-						break;
-					case TARGET_SIGMA:
-						constraint_function_optpp_ptr = &target_sigma_constraint_eval_logscale_optpp;
-						break;
-					case TARGET_SCALARIZATION:
-						constraint_function_optpp_ptr = &target_scalarization_constraint_eval_logscale_optpp;
-						break;
-					default:
-						 break;
-				}
-				optimizer.reset(new SNLLOptimizer(initial_point,
-				            var_lower_bnds,      var_upper_bnds,
-				            lin_ineq_coeffs, lin_ineq_lower_bnds,
-				            lin_ineq_upper_bnds, lin_eq_coeffs,
-				            lin_eq_targets,     nonlin_ineq_lower_bnds,
-				            nonlin_ineq_upper_bnds, nonlin_eq_targets,
-				            objective_function_optpp_ptr,
-				            constraint_function_optpp_ptr,
-				            100000, 100000, 1.e-14,
-				            1.e-14, 100000));
+			    if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+						objective_function_optpp_ptr = &target_cost_objective_eval_optpp;
+						switch(allocationTarget){
+							case TARGET_VARIANCE:
+								constraint_function_optpp_ptr = &target_var_constraint_eval_logscale_optpp;
+								break;
+							case TARGET_SIGMA:
+								constraint_function_optpp_ptr = &target_sigma_constraint_eval_logscale_optpp;
+								break;
+							case TARGET_SCALARIZATION:
+								constraint_function_optpp_ptr = &target_scalarization_constraint_eval_logscale_optpp;
+								break;
+							default:
+								 break;
+						}
+					}else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+						constraint_function_optpp_ptr = &target_cost_constraint_eval_optpp;
+						switch(allocationTarget){
+							case TARGET_VARIANCE:
+								objective_function_optpp_ptr = &target_var_objective_eval_logscale_optpp;
+								break;
+							case TARGET_SIGMA:
+								objective_function_optpp_ptr = &target_sigma_objective_eval_logscale_optpp;
+								break;
+							case TARGET_SCALARIZATION:
+								objective_function_optpp_ptr = &target_scalarization_objective_eval_logscale_optpp;
+								break;
+							default:
+								 break;
+						}
+					}else{
+			  	  Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
+			  	  abort_handler(INTERFACE_ERROR);
+					}
+					optimizer.reset(new SNLLOptimizer(initial_point,
+					            var_lower_bnds,      var_upper_bnds,
+					            lin_ineq_coeffs, lin_ineq_lower_bnds,
+					            lin_ineq_upper_bnds, lin_eq_coeffs,
+					            lin_eq_targets,     nonlin_ineq_lower_bnds,
+					            nonlin_ineq_upper_bnds, nonlin_eq_targets,
+					            objective_function_optpp_ptr,
+					            constraint_function_optpp_ptr,
+					            100000, 100000, 1.e-14,
+					            1.e-14, 100000));
 				#endif
 				optimizer->run();
 			}
@@ -1494,7 +1608,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		      													 	:
 		      													 	delta_N_l_qoi(qoi, step);
 		    }else{
-		      Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: allocationTarget is not implemented.\n";
+		      Cout << "NonDMultilevelSampling::compute_sample_allocation_target: allocationTarget is not implemented.\n";
 		      abort_handler(INTERFACE_ERROR);
 		    }
 	  	}
@@ -1513,7 +1627,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			delta_N_l[step] = delta_N_l_qoi(max_qoi_idx, step);
 	    }
 	}else{
-  	  Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
+  	  Cout << "NonDMultilevelSampling::compute_sample_allocation_target: qoiAggregation is not known.\n";
   	  abort_handler(INTERFACE_ERROR);
 	}
 }

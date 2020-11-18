@@ -201,6 +201,10 @@ enum {TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION};
 
 // define special values for computation of convergence tolerance, either absolute or relative 
 enum {CONVERGENCE_TOLERANCE_TYPE_RELATIVE, CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE};
+
+// define optimization formulation for MLMC sample allocation by specifing equality constraint, either variance or cost 
+enum {CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT, CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT};
+
 // ---------------
 // NonDReliability
 // ---------------
@@ -978,6 +982,8 @@ public:
   short qoiAggregation;
   /// the |c convergence_tolerance_type selection in \ref MethodMultilevelMC
   short convergenceToleranceType;
+  /// the |c convergence_tolerance_type selection in \ref MethodMultilevelMC
+  short convergenceToleranceTarget;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
   short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE
