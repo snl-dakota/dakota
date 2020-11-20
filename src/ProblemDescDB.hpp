@@ -402,13 +402,11 @@ private:
 
   // inner classes to help with mapping keys to class member data values
 
-  /// Retrieve member of type T from class R (Data*Rep)
+  /// Retrieve member of type T from class R (Data*Rep) (instantiate
+  /// template with T& if the return type needs to be T&, similar const T&)
   template <typename T, class Rep>
-  //  using RepGetter = std::function<T&(Rep&)>;
   using RepGetter = std::function<T(Rep&)>;
   // TODO: using RepGetter = std::function<T&(std::shared_ptr<Rep>&)>;
-  // TODO: return by value instead of reference? (need to support set)
-  // Can't return by reference due to abort_handler_t<int>()
 
   /// Encapsulate lookups across Data*Rep types
   template <typename T>
@@ -429,7 +427,6 @@ private:
       modMap(mod_map), varMap(var_map), intMap(int_map), resMap(res_map)
     { }
 
-    // TODO: update to support reference to avoid copies
     T get(const std::string& entry_name,
 	  const std::shared_ptr<ProblemDescDB>& db_rep) const;
 

@@ -1430,34 +1430,41 @@ get(const std::string& entry_name,
 #define P_RES &DataResponsesRep::
 
 
+// static LookerUpper<const T&> lookup
+// { "get_T",
+//   { /* environment */ },
+//   { /* method */ },
+//   { /* model */ },
+//   { /* variables */ },
+//   { /* interface */ },
+//   { /* responses */ }
+// };
+// return lookup.get(entry_name, dbRep);
+
+
 const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 {
-  const char *L;
+  static LookerUpper<const RealMatrixArray&> lookup
+  { "get_rma",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    {
+      {"discrete_design_set_int.adjacency_matrix", P_VAR discreteDesignSetIntAdj},
+      {"discrete_design_set_real.adjacency_matrix", P_VAR discreteDesignSetRealAdj},
+      {"discrete_design_set_str.adjacency_matrix", P_VAR discreteDesignSetStrAdj}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-  if (!dbRep)
-	Null_rep("get_rma");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealMatrixArray, DataVariablesRep> RMAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_design_set_int.adjacency_matrix", P discreteDesignSetIntAdj},
-	{"discrete_design_set_real.adjacency_matrix", P discreteDesignSetRealAdj},
-	{"discrete_design_set_str.adjacency_matrix", P discreteDesignSetStrAdj}
-	};
-    #undef P
-    KW<RealMatrixArray, DataVariablesRep> *kw;
-    if ((kw = (KW<RealMatrixArray, DataVariablesRep>*)Binsearch(RMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_rma");
-  return abort_handler_t<const RealMatrixArray&>(PARSE_ERROR);
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
-{
+{  
+
   const char *L;
 
   if (!dbRep)
