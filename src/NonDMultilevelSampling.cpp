@@ -922,7 +922,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     myfile.close();
     */
     ////
-    compute_moments(sum_Ql, sum_Qlm1, N_l);
+    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
 
     // populate finalStatErrors
     compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
@@ -1452,7 +1452,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
     if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
       eps_sq_div_2 = estimator_var0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
-	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
+	     Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
     }
 
     // All CV lf_increment() calls now follow all ML level evals:
@@ -3091,116 +3091,30 @@ void NonDMultilevelSampling::
   for (qoi = 0; qoi < numFunctions; ++qoi) {
 
     // std error in mean estimate
-    lev = 0;
-    Nlq = num_Q[lev][qoi];
-
-    bessel_corr = (Real) Nlq / (Real) (Nlq - 1);
-    cm1l = sum_Q1l(qoi, lev) / Nlq;
-    var_Yl = (sum_Q2l(qoi, lev) / Nlq - cm1l * cm1l) * bessel_corr; // var_Ql
-    agg_estim_var = var_Yl / Nlq;
-    for (lev = 1; lev < num_lev; ++lev) {
+    agg_estim_var = 0;
+    for (lev = 0; lev < num_lev; ++lev) {
       Nlq = num_Q[lev][qoi];
-      cm1l = sum_Q1l(qoi, lev) / Nlq;
-      cm1lm1 = sum_Q1lm1(qoi, lev) / Nlq;
-      //var_Yl = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-      var_Yl = (sum_Q2l(qoi, lev) / Nlq - cm1l * cm1l
-                - 2. * (sum_Q1lQ1lm1(qoi, lev) / Nlq - cm1l * cm1lm1) +
-                sum_Q2lm1(qoi, lev) / Nlq - cm1lm1 * cm1lm1) * bessel_corr;
-      agg_estim_var += var_Yl / Nlq;
+      agg_estim_var += aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, num_Q, lev, qoi)/Nlq;
     }
     check_negative(agg_estim_var);
 
     finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
     if (outputLevel >= DEBUG_OUTPUT) {
-      Cout << "Estimator variance for mean = " << agg_estim_var << "\n";
       Cout << "Estimator SE for mean = " << finalStatErrors[cntr - 1] << "\n";
     }
     // std error in variance or std deviation estimate
     lev = 0;
-    Nlq = num_Q[lev][qoi];
-    uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq, sum_Q2l(qoi, lev) / Nlq,
-                           sum_Q3l(qoi, lev) / Nlq, sum_Q4l(qoi, lev) / Nlq,
-                           cm1l, cm2l, cm3l, cm4l, Nlq);
-    cm2l_sq = cm2l * cm2l;
-
-    //[fm] bias correction for var_P2l
-    var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
-    agg_estim_var = var_P2l / Nlq;
-    for (lev = 1; lev < num_lev; ++lev) {
+    agg_estim_var = 0;
+    for (lev = 0; lev < num_lev; ++lev) {
       Nlq = num_Q[lev][qoi];
-      mu_Q2l = sum_Q2l(qoi, lev) / Nlq;
-      uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq, mu_Q2l,
-                             sum_Q3l(qoi, lev) / Nlq, sum_Q4l(qoi, lev) / Nlq,
-                             cm1l, cm2l, cm3l, cm4l, Nlq);
-      mu_Q2lm1 = sum_Q2lm1(qoi, lev) / Nlq;
-      uncentered_to_centered(sum_Q1lm1(qoi, lev) / Nlq, mu_Q2lm1,
-                             sum_Q3lm1(qoi, lev) / Nlq, sum_Q4lm1(qoi, lev) / Nlq,
-                             cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq);
-      cm2l_sq = cm2l * cm2l;
-      cm2lm1_sq = cm2lm1 * cm2lm1;
-
-      //[fm] unbiased products of mean
-      mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi, lev) / Nlq;
-      mu_Q1lm1_mu_Q2lQ1lm1 = unbiased_mean_product_pair(sum_Q1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
-                                                        sum_Q2lQ2lm1(qoi, lev), Nlq);
-      mu_Q1lm1_mu_Q1lm1_muQ2l = unbiased_mean_product_triplet(sum_Q1lm1(qoi, lev), sum_Q1lm1(qoi, lev),
-                                                              sum_Q2l(qoi, lev),
-                                                              sum_Q2lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
-                                                              sum_Q2lQ1lm1(qoi, lev),
-                                                              sum_Q2lQ2lm1(qoi, lev), Nlq);
-      mu_Q1l_mu_Q1lQ2lm1 = unbiased_mean_product_pair(sum_Q1l(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
-                                                      sum_Q2lQ2lm1(qoi, lev), Nlq);
-      mu_Q1l_mu_Q1l_mu_Q2lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1l(qoi, lev),
-                                                             sum_Q2lm1(qoi, lev),
-                                                             sum_Q2l(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
-                                                             sum_Q1lQ2lm1(qoi, lev),
-                                                             sum_Q2lQ2lm1(qoi, lev), Nlq);
-      mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev),
-                                                                 sum_Q1lQ1lm1(qoi, lev),
-                                                                 sum_Q1lQ1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
-                                                                 sum_Q1lQ2lm1(qoi, lev),
-                                                                 sum_Q2lQ2lm1(qoi, lev), Nlq);
-      mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 = unbiased_mean_product_pairpair(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev),
-                                                                      sum_Q1lQ1lm1(qoi, lev),
-                                                                      sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev),
-                                                                      sum_Q2lQ1lm1(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
-                                                                      sum_Q2lQ2lm1(qoi, lev), Nlq);
-      mu_Q2l_muQ2lm1 = unbiased_mean_product_pair(sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev),
-                                                  Nlq);
-      mu_P2lP2lm1 = mu_Q2lQ2lm1 //E[QL2 Ql2]
-                    - 2. * mu_Q1lm1_mu_Q2lQ1lm1 //E[Ql] E[QL2Ql]
-                    + 2. * mu_Q1lm1_mu_Q1lm1_muQ2l //E[Ql]2 E[QL2]
-                    - 2. * mu_Q1l_mu_Q1lQ2lm1 //E[QL] E[QLQl2]
-                    + 2. * mu_Q1l_mu_Q1l_mu_Q2lm1 //E[QL]2 E[Ql2]
-                    + 4. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 //E[QL] E[Ql] E[QLQl]
-                    - 4. * mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 //E[QL]2 E[Ql]2
-                    - mu_Q2l_muQ2lm1; //E[QL2] E[Ql2]
-
-      // [fm] bias correction for var_P2l and var_P2lm1
-      var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
-      var_P2lm1 =
-          Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
-
-      // [fm] unbiased by opening up the square and compute three different term
-      mu_Q1lQ1lm1_mu_Q1lQ1lm1 = unbiased_mean_product_pair(sum_Q1lQ1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
-                                                           sum_Q2lQ2lm1(qoi, lev), Nlq);
-      term = mu_Q1lQ1lm1_mu_Q1lQ1lm1 - 2. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 + mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1;
-
-      //[fm] Using an unbiased estimator we include the var_Ql * var_Qlm1 term in mu_P2lP2lm1
-      //     and term is already squared out
-      covar_P2lP2lm1
-          = mu_P2lP2lm1 + term / (Nlq - 1.);
-      agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
-
-      if (outputLevel >= DEBUG_OUTPUT) {
-        Cout << "Estimator for covariance for variance = " << covar_P2lP2lm1 << "\n";
-        Cout << "Estimator for covariance for variance first term = " << mu_P2lP2lm1 << "\n";
-        Cout << "Estimator for covariance for variance second  term = " << term << "\n";
-      }
+      agg_estim_var += aggregate_variance_variance_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, num_Q, lev, qoi)/Nlq;
     }
+
     check_negative(agg_estim_var);
-    if (outputLevel >= DEBUG_OUTPUT)
+    if (outputLevel >= DEBUG_OUTPUT){
+      Cout << "Estimator Var for variance = " << agg_estim_var << "\n";
       Cout << "Estimator SE for variance = " << sqrt(agg_estim_var) << "\n";
+    }
 
     Real mom2 = momentStats(1, qoi);
     if (finalMomentsType == STANDARD_MOMENTS && mom2 > 0.) {
@@ -4028,8 +3942,8 @@ void NonDMultilevelSampling::target_sigma_constraint_eval_optpp(int mode, int n,
                                        compute_gradient, gradient_var_var);
       agg_estim_var_of_var += agg_estim_var_of_var_l[0];
 
-      agg_estim_var_l[0] = variance_Qsum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Qlm1)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], 
-                    (*static_sum_QlQlm1)[pr11][0][qoi], (*static_sum_Qlm1)[2][0][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+      agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+                                       compute_gradient, gradient_var);
       agg_estim_var += agg_estim_var_l[0];
 
       if(compute_gradient){
@@ -4049,8 +3963,8 @@ void NonDMultilevelSampling::target_sigma_constraint_eval_optpp(int mode, int n,
                                          compute_gradient, gradient_var_var);
         agg_estim_var_of_var += agg_estim_var_of_var_l[lev];
 
-        agg_estim_var_l[lev] = variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+        agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi],
+                               (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
         agg_estim_var += agg_estim_var_l[lev];
 
         if(compute_gradient){
@@ -4069,13 +3983,9 @@ void NonDMultilevelSampling::target_sigma_constraint_eval_optpp(int mode, int n,
     agg_estim_var_of_var += agg_estim_var_of_var_l[0];
     grad_var_var[0] = gradient_var_var;
 
-    agg_estim_var_l[0] = variance_Qsum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Qlm1)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], 
-                    (*static_sum_QlQlm1)[pr11][0][qoi], (*static_sum_Qlm1)[2][0][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+    agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+                                       compute_gradient, gradient_var); 
     grad_var[0] = gradient_var;
-    //Cout << "agg_estim_var_l[0]: " << agg_estim_var_l[0] << "\n";
-    //if(compute_gradient){
-    //  Cout << "grad_agg_estim_var_l[0]: " << gradient_var << "\n";
-    //}
 
     agg_estim_var += agg_estim_var_l[0];
 
@@ -4088,8 +3998,8 @@ void NonDMultilevelSampling::target_sigma_constraint_eval_optpp(int mode, int n,
       agg_estim_var_of_var += agg_estim_var_of_var_l[lev];
       grad_var_var[lev] = gradient_var_var;
 
-      agg_estim_var_l[lev] = variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+      agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
+                    (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
       agg_estim_var += agg_estim_var_l[lev];
       grad_var[lev] = gradient_var;
     }
@@ -4098,60 +4008,15 @@ void NonDMultilevelSampling::target_sigma_constraint_eval_optpp(int mode, int n,
         grad_g[0][lev] = agg_estim_var > 0 ? 
                           1./4. * ( (grad_var_var[lev] * agg_estim_var - agg_estim_var_of_var * grad_var[lev])/(agg_estim_var*agg_estim_var) ) 
                           : 0;
-        /*
-        //FD test
-        Real dh = 0.0000000001;
-        Real Nlq_plus = x[lev] + dh;
-        Real Nlq_minus = x[lev] - dh;
-        size_t Nlq_pilot = (*static_Nlq_pilot)[lev];
-        Real agg_estim_var_of_var_l_plus, agg_estim_var_of_var_l_minus;
-        if(lev==0){
-          agg_estim_var_of_var_l_plus = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq_plus, qoi,
-                                         false, gradient_var_var);
-          agg_estim_var_of_var_l_minus = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq_minus, qoi,
-                                         false, gradient_var_var);
-        }else{
-          agg_estim_var_of_var_l_plus = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq_plus, qoi, lev,
-                                         false, gradient_var_var);
-          agg_estim_var_of_var_l_minus = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq_minus, qoi, lev,
-                                         false, gradient_var_var);
-        }
-        Real agg_estim_var_l_plus = variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq_plus, false, gradient_var);
-        Real agg_estim_var_l_minus = variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq_minus, false, gradient_var);
-
-        Real agg_estim_var_of_var_plus = 0;
-        Real agg_estim_var_plus = 0;
-        Real agg_estim_var_of_var_minus = 0;
-        Real agg_estim_var_minus = 0;
-        for (size_t lev_in = 0; lev_in < num_lev; ++lev_in) {
-          if(lev_in == lev){
-            agg_estim_var_of_var_plus += agg_estim_var_of_var_l_plus;
-            agg_estim_var_plus += agg_estim_var_l_plus;
-            agg_estim_var_of_var_minus += agg_estim_var_of_var_l_minus;
-            agg_estim_var_minus += agg_estim_var_l_minus;
-          }else{
-            agg_estim_var_of_var_plus += agg_estim_var_of_var_l[lev_in];
-            agg_estim_var_plus += agg_estim_var_l[lev_in];
-            agg_estim_var_of_var_minus += agg_estim_var_of_var_l[lev_in];
-            agg_estim_var_minus += agg_estim_var_l[lev_in];
-          }
-        }
-        Real deriv_fd = 1./(2.*dh) * 0.25 * (agg_estim_var_of_var_plus/agg_estim_var_plus - agg_estim_var_of_var_minus/agg_estim_var_minus);
-        Real deriv_fwd_fd = 1./(dh) * 0.25 * (agg_estim_var_of_var_plus/agg_estim_var_plus - agg_estim_var_of_var/agg_estim_var);
-        Real deriv_bw_fd = 1./(dh) * 0.25 * (agg_estim_var_of_var/agg_estim_var - agg_estim_var_of_var_minus/agg_estim_var_minus);
-
-        Cout << "Lev: " << lev << " Orig: " << grad_g[0][lev] << " FD: " << deriv_fd << " , " << deriv_fwd_fd << " , " << deriv_bw_fd << " Old: " << grad_test[lev] << "\n";
-      */
       }
     }
   }else{
-    Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
+    Cout << "NonDMultilevelSampling::target_sigma_constraint_eval_optpp: qoiAggregation is not known.\n";
     abort_handler(INTERFACE_ERROR);
   }
 
   g[0] = agg_estim_var > 0 ? 1./4. * agg_estim_var_of_var/agg_estim_var : 0; // - (*static_eps_sq_div_2);
+
 }
 
 void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
@@ -4204,8 +4069,8 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
                                        compute_gradient, gradient_var_var);
       agg_estim_var_of_var += agg_estim_var_of_var_l[0];
 
-      agg_estim_var_l[0] = variance_Qsum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Qlm1)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], 
-                    (*static_sum_QlQlm1)[pr11][0][qoi], (*static_sum_Qlm1)[2][0][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+      agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+                                       compute_gradient, gradient_var); 
       agg_estim_var += agg_estim_var_l[0];
 
       if(compute_gradient){
@@ -4225,8 +4090,8 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
                                          compute_gradient, gradient_var_var);
         agg_estim_var_of_var += agg_estim_var_of_var_l[lev];
 
-        agg_estim_var_l[lev] = variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+        agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
+                    (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
         agg_estim_var += agg_estim_var_l[lev];
 
         if(compute_gradient){
@@ -4245,8 +4110,8 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
     agg_estim_var_of_var += agg_estim_var_of_var_l[0];
     grad_var_var[0] = gradient_var_var;
 
-    agg_estim_var_l[0] = variance_Qsum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Qlm1)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], 
-                    (*static_sum_QlQlm1)[pr11][0][qoi], (*static_sum_Qlm1)[2][0][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+    agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+                                       compute_gradient, gradient_var); 
     grad_var[0] = gradient_var;
     //Cout << "agg_estim_var_l[0]: " << agg_estim_var_l[0] << "\n";
     //if(compute_gradient){
@@ -4261,11 +4126,13 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
 
       agg_estim_var_of_var_l[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
                                        compute_gradient, gradient_var_var);
+
       agg_estim_var_of_var += agg_estim_var_of_var_l[lev];
+
       grad_var_var[lev] = gradient_var_var;
 
-      agg_estim_var_l[lev] = variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+      agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
+                    (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
       agg_estim_var += agg_estim_var_l[lev];
       grad_var[lev] = gradient_var;
     }
@@ -4277,7 +4144,7 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
       }
     }
   }else{
-    Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
+    Cout << "NonDMultilevelSampling::target_sigma_objective_eval_optpp: qoiAggregation is not known.\n";
     abort_handler(INTERFACE_ERROR);
   }
 
@@ -4313,7 +4180,8 @@ void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode
 
   //Mean
   Real g_mean = 0;
-  Real cur_grad_mean = 0;
+  Real g_var = 0;
+  Real cur_grad_var = 0;
   RealVector grad_g_mean;
   grad_g_mean.resize(num_lev);
   if (qoiAggregation==QOI_AGGREGATION_SUM) {
@@ -4322,10 +4190,13 @@ void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode
         Nlq = x[lev];
         Nlq_pilot = (*static_Nlq_pilot)[lev];
 
-        g_mean += variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_mean);
+        g_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+                                       compute_gradient, cur_grad_var) :
+                           variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
+                                       (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+        g_mean += g_var/Nlq;
         if(compute_gradient){
-          grad_g_mean[lev] += cur_grad_mean;
+          grad_g_mean[lev] += (Nlq * cur_grad_var - g_var)/(Nlq*Nlq);
         }
       }
     }
@@ -4334,10 +4205,14 @@ void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode
       Nlq = x[lev];
       Nlq_pilot = (*static_Nlq_pilot)[lev];
 
-      g_mean += variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_mean);
+      g_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+                                       compute_gradient, cur_grad_var) :
+                          variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
+                                      (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+      
+      g_mean += g_var/Nlq;
       if(compute_gradient){
-        grad_g_mean[lev] = cur_grad_mean;
+        grad_g_mean[lev] = (Nlq * cur_grad_var - g_var)/(Nlq*Nlq);
       }
     }
   }else{
@@ -4349,7 +4224,7 @@ void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode
   Real g_sigma;
   RealVector grad_g_sigma;
   grad_g_sigma.resize(num_lev);
-  target_scalarization_constraint_eval_optpp(mode, n, x, g, grad_g, result_mode);
+  target_sigma_constraint_eval_optpp(mode, n, x, g, grad_g, result_mode);
   g_sigma = g[0];
   for (lev = 0; lev < num_lev; ++lev) {
     grad_g_sigma[lev] = grad_g[0][lev];
@@ -4357,14 +4232,16 @@ void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode
 
   //Cov
   //TODO
-  Real g_cov = 0;
-  RealVector grad_g_cov;
-  grad_g_cov.resize(num_lev);
+  Real g_upper_bound_cov = std::sqrt(g_mean * g_sigma);
+  RealVector grad_g_upper_bound_cov;
+  grad_g_upper_bound_cov.resize(num_lev);
   if(compute_gradient){
     for (lev = 0; lev < num_lev; ++lev) {
-      grad_g_cov[lev] = 0;
+      grad_g_upper_bound_cov[lev] = 1./(2.*g_upper_bound_cov)*(grad_g_mean[lev]*g_sigma + g_mean*grad_g_sigma[lev]);
+      //grad_g_upper_bound_cov[lev] = 0;
     }
   }
+  //g_upper_bound_cov = 0;
 
   RealMatrix alpha_mean_scalarization(nb_qois, nb_qois);
   RealMatrix alpha_sigma_scalarization(nb_qois, nb_qois);
@@ -4374,7 +4251,7 @@ void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode
   //      + 2.0 * alpha_mean_scalarization[qoi][qoi] * alpha_sigma_scalarization[qoi][qoi] * g_cov;
   Real g_tmp = 1.*1.*g_mean 
         + 3.*3.*g_sigma 
-        + 2.0 * 1. * 3. * g_cov;
+        + 2.0 * 1. * 3. * g_upper_bound_cov;
   g[0] = g_tmp > 0 ? g_tmp : 0;
   if(compute_gradient){
     for (lev = 0; lev < num_lev; ++lev) {
@@ -4383,7 +4260,7 @@ void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode
       //  + 2.0 * alpha_mean_scalarization[qoi][qoi] * alpha_sigma_scalarization[qoi][qoi] * grad_g_cov[lev] ;
       grad_g[0][lev] = 1. * 1. *grad_g_mean[lev] 
         + 3. * 3. * grad_g_sigma[lev] 
-        + 2.0 * 1. * 3. * grad_g_cov[lev] ;
+        + 2.0 * 1. * 3. * grad_g_upper_bound_cov[lev] ;
     }
   }
 }
@@ -4417,7 +4294,8 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
 
   //Mean
   Real f_mean = 0;
-  Real cur_grad_mean = 0;
+  Real f_var = 0;
+  Real cur_grad_var = 0;
   RealVector grad_f_mean;
   grad_f_mean.resize(num_lev);
   if (qoiAggregation==QOI_AGGREGATION_SUM) {
@@ -4426,10 +4304,15 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
         Nlq = x[lev];
         Nlq_pilot = (*static_Nlq_pilot)[lev];
 
-        f_mean += variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_mean);
+        f_var = 0 ? variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+                                       compute_gradient, cur_grad_var) :
+                    variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
+                      (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+        
+        f_mean += f_var/Nlq;
+
         if(compute_gradient){
-          grad_f_mean[lev] += cur_grad_mean;
+          grad_f_mean[lev] += (Nlq * cur_grad_var - f_var)/(Nlq*Nlq);
         }
       }
     }
@@ -4438,10 +4321,15 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
       Nlq = x[lev];
       Nlq_pilot = (*static_Nlq_pilot)[lev];
 
-      f_mean += variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_mean);
+      f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+                                       compute_gradient, cur_grad_var) :
+                           variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
+                                       (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+        
+      f_mean += f_var/Nlq;
+      
       if(compute_gradient){
-        grad_f_mean[lev] = cur_grad_mean;
+        grad_f_mean[lev] = (Nlq * cur_grad_var - f_var)/(Nlq*Nlq);
       }
     }
   }else{
@@ -4453,7 +4341,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
   Real f_sigma;
   RealVector grad_f_sigma;
   grad_f_sigma.resize(num_lev);
-  target_scalarization_objective_eval_optpp(mode, n, x, f, grad_f, result_mode);
+  target_sigma_objective_eval_optpp(mode, n, x, f, grad_f, result_mode);
   f_sigma = f;
   for (lev = 0; lev < num_lev; ++lev) {
     grad_f_sigma[lev] = grad_f[lev];
@@ -4461,12 +4349,12 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
 
   //Cov
   //TODO
-  Real f_cov = 0;
-  RealVector grad_f_cov;
-  grad_f_cov.resize(num_lev);
+  Real f_upper_bound_cov = std::sqrt(f_mean * f_sigma);
+  RealVector grad_f_upper_bound_cov;
+  grad_f_upper_bound_cov.resize(num_lev);
   if(compute_gradient){
     for (lev = 0; lev < num_lev; ++lev) {
-      grad_f_cov[lev] = 0;
+      grad_f_upper_bound_cov[lev] = 1./(2.*f_upper_bound_cov)*(grad_f_mean[lev]*f_sigma + f_mean*grad_f_sigma[lev]);
     }
   }
 
@@ -4478,7 +4366,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
   //      + 2.0 * alpha_mean_scalarization[qoi][qoi] * alpha_sigma_scalarization[qoi][qoi] * g_cov;
   Real f_tmp = 1.*1.*f_mean 
         + 3.*3.*f_sigma 
-        + 2.0 * 1. * 3. * f_cov;
+        + 2.0 * 1. * 3. * f_upper_bound_cov;
   f = f_tmp > 0 ? f_tmp : 0;
   if(compute_gradient){
     for (lev = 0; lev < num_lev; ++lev) {
@@ -4487,7 +4375,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
       //  + 2.0 * alpha_mean_scalarization[qoi][qoi] * alpha_sigma_scalarization[qoi][qoi] * grad_g_cov[lev] ;
       grad_f[lev] = 1. * 1. *grad_f_mean[lev] 
         + 3. * 3. * grad_f_sigma[lev] 
-        + 2.0 * 1. * 3. * grad_f_cov[lev] ;
+        + 2.0 * 1. * 3. * grad_f_upper_bound_cov[lev] ;
     }
   }
 }

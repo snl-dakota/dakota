@@ -412,11 +412,20 @@ private:
 
   /// compute variance from sum accumulators
   Real variance_Ysum(Real sum_Y, Real sum_YY, size_t Nlq);
+
+  /// compute variance from sum accumulators, necessary for sample allocation optimization
+  static Real variance_Ysum_static(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad);
+
   /// compute variance from sum accumulators
   Real variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
 		     Real sum_Qlm1Qlm1, size_t Nlq);
   /// compute variance from sum accumulators, necessary for sample allocation optimization
   static Real variance_Qsum_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
+	      Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad);
+
+  Real var_lev_l(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
+	      Real sum_Qlm1Qlm1, size_t Nlq);
+	static Real var_lev_l_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
 	      Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad);
 
   /// sum up variances for QoI (using sum_YY with means from sum_Y) based on allocation target
@@ -513,7 +522,7 @@ private:
   // Roll up expected value estimators for central moments.  Final expected
   // value is sum of expected values from telescopic sum.  Note: raw moments
   // have no bias correction (no additional variance from an estimated center).
-  void compute_moments(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, const Sizet2DArray& N_l);
+  void compute_moments(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const Sizet2DArray& N_l);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
   void compute_equiv_HF_evals(const SizetArray& raw_N_l, const RealVector& cost);
@@ -886,6 +895,30 @@ variance_Ysum(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq)
   */
 }
 
+inline Real NonDMultilevelSampling::
+variance_Ysum_static(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad)
+{
+  Real mu_Y = sum_Y / Nlq_pilot;
+  // Note: precision loss in variance is difficult to avoid without
+  // storing full sample history; must accumulate Y^2 across iterations
+  // instead of (Y-mean)^2 since mean is updated on each iteration.
+  Real variance_tmp = (sum_YY / Nlq_pilot - mu_Y * mu_Y); 
+
+  if(compute_gradient){
+  	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+  }
+
+  Real var_Y = variance_tmp * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
+  return var_Y;
+
+  /*
+  Real new_mu_Y = mu_Y + offset;
+  return var_Y
+    //  + offset   * offset    // uncenter from old mu_hat
+    //  - new_mu_Y * new_mu_Y; // recenter with new_mu_Y
+    - mu_Y * mu_Y - 2. * mu_Y * offset; // cancel offset^2
+  */
+}
 
 inline Real NonDMultilevelSampling::
 variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
@@ -899,15 +932,42 @@ variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
     * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
 }
 
+
 inline Real NonDMultilevelSampling::
 variance_Qsum_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
-	      Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, bool compute_gradient, double& grad)
+	      Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad)
 {
   Real mu_Ql = sum_Ql / Nlq_pilot, mu_Qlm1 = sum_Qlm1 / Nlq_pilot;
   //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
   Real variance_tmp = (       sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql     // var_Ql
     - 2. * (   sum_QlQlm1 / Nlq_pilot - mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
     +        sum_Qlm1Qlm1 / Nlq_pilot - mu_Qlm1 * mu_Qlm1 ); // var_Qlm1
+  if(compute_gradient){
+  	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+  }
+
+  return variance_tmp * (Real)Nlq / (Real)(Nlq - 1.); // Bessel's correction
+}
+
+inline Real NonDMultilevelSampling::
+var_lev_l(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
+	      Real sum_Qlm1Qlm1, size_t Nlq)
+{
+  Real mu_Ql = sum_Ql / Nlq, mu_Qlm1 = sum_Qlm1 / Nlq;
+  //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
+  return (sum_QlQl / Nlq - mu_Ql * mu_Ql)     // var_Ql
+    			- (sum_Qlm1Qlm1 / Nlq - mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
+    * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
+}
+
+inline Real NonDMultilevelSampling::
+var_lev_l_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
+	      Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad)
+{
+  Real mu_Ql = sum_Ql / Nlq_pilot, mu_Qlm1 = sum_Qlm1 / Nlq_pilot;
+  //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
+  Real variance_tmp = (sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql)     // var_Ql
+    										- (sum_Qlm1Qlm1 / Nlq_pilot - mu_Qlm1 * mu_Qlm1 ); // var_Qlm1
   if(compute_gradient){
   	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
   }
@@ -989,17 +1049,17 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
                       const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
                       const size_t& lev, const size_t& qoi)
 {
-	Real agg_var_l = 0., var_Y;
-	//if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
-	//for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
-	  agg_var_l = (lev) ?
-	               variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
-	                             sum_Qlm1Qlm1[qoi], N_l[qoi]) :
-	               variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], N_l[qoi]);
-	//if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
-	//}
-	//if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
-	return agg_var_l;
+       Real agg_var_l = 0., var_Y;
+       //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
+       //for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
+         agg_var_l = (lev) ?
+                      variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+                                    sum_Qlm1Qlm1[qoi], N_l[qoi]) :
+                      variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], N_l[qoi]);
+       //if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
+       //}
+       //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
+       return agg_var_l;
 }
 
 inline Real NonDMultilevelSampling::aggregate_variance_variance_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
@@ -1030,8 +1090,7 @@ inline Real NonDMultilevelSampling::aggregate_variance_sigma_Qsum(IntRealMatrixM
 	                                                         N_l[step][qoi], qoi, false, place_holder)
 	                                      : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
 	                                                        N_l[step][qoi], qoi, step, false, place_holder)); 
- 	var_l = variance_Qsum(sum_Ql[1][step][qoi], sum_Qlm1[1][step][qoi], sum_Ql[2][step][qoi], 
-                  sum_QlQlm1[pr11][step][qoi], sum_Qlm1[2][step][qoi], N_l[step][qoi]);
+ 	var_l = var_lev_l(sum_Ql[1][step][qoi], sum_Qlm1[1][step][qoi], sum_Ql[2][step][qoi], sum_Qlm1[2][step][qoi], N_l[step][qoi]);
 
 	return 1./(4. * var_l) * agg_var_l * N_l[step][qoi]; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile
 }
@@ -1040,7 +1099,7 @@ inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRea
  									IntIntPairRealMatrixMap sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
 {
-	Real cov_of_mean_sigma = 0;
+	Real upper_bound_cov_of_mean_sigma = 0;
 	Real var_of_mean_l = 0.;
 	Real var_of_sigma_l = 0;
 	Real var_of_scalarization_l = 0;
@@ -1050,14 +1109,14 @@ inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRea
 
 	var_of_mean_l = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
 	var_of_sigma_l = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
-  cov_of_mean_sigma = 0; //TODO
+  upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l); //TODO
 
   //var_of_scalarization_l = alpha_mean_scalarization[step][qoi]*alpha_mean_scalarization[step][qoi]*var_of_mean_l 
   //												+ alpha_sigma_scalarization[step][qoi]*alpha_sigma_scalarization[step][qoi]*var_of_sigma_l 
   //												+ 2.0 * alpha_mean_scalarization[step][qoi] * alpha_sigma_scalarization[step][qoi] * cov_of_mean_sigma;
   var_of_scalarization_l = 1. * 1. * var_of_mean_l 
   												+ 3. * 3. * var_of_sigma_l 
-  												+ 2.0 * 1. * 3. * cov_of_mean_sigma;
+  												+ 2.0 * 1. * 3. * upper_bound_cov_of_mean_sigma;
 
 	return var_of_scalarization_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile is already done in submethods
 }
@@ -1151,8 +1210,7 @@ aggregate_mse_sigma_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1,
 	                                                         N_l[step][qoi], qoi, false, place_holder)
 	                                      : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
 	                                                        N_l[step][qoi], qoi, step, false, place_holder)); 
- 	var_l = variance_Qsum(sum_Ql[1][step][qoi], sum_Qlm1[1][step][qoi], sum_Ql[2][step][qoi], 
-                  sum_QlQlm1[pr11][step][qoi], sum_Qlm1[2][step][qoi], N_l[step][qoi]);
+ 	var_l = var_lev_l(sum_Ql[1][step][qoi], sum_Qlm1[1][step][qoi], sum_Ql[2][step][qoi], sum_Qlm1[2][step][qoi], N_l[step][qoi]);
 
 	return 1./(4. * var_l) * agg_var_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile
 }
@@ -1197,9 +1255,7 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 	  if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
 		  if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
 				eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol;
-				Cout << "\n 1eps_sq_div_2_qoi[qoi] for Qoi: " << qoi << ": " << eps_sq_div_2_qoi[qoi] << std::endl;
 			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
-				Cout << "\n 2eps_sq_div_2_qoi[qoi] for Qoi: " << qoi << ": " << eps_sq_div_2_qoi[qoi] << std::endl;
 				eps_sq_div_2_qoi[qoi] = convergenceTol;
 			}else{
 	  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
@@ -1208,9 +1264,7 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 		}else if (convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
 			if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
 				eps_sq_div_2_qoi[qoi] = cost[cost.length()-1] * convergenceTol; //Relative cost with respect to convergenceTol evaluations on finest grid
-				Cout << "\n 3eps_sq_div_2_qoi[qoi] for Qoi: " << qoi << ": " << eps_sq_div_2_qoi[qoi] << std::endl;
 			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
-				Cout << "\n 4eps_sq_div_2_qoi[qoi] for Qoi: " << qoi << ": " << eps_sq_div_2_qoi[qoi] << std::endl;
 				eps_sq_div_2_qoi[qoi] = convergenceTol; //Direct cost
 			}else{
 	  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
@@ -1291,7 +1345,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 
   for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
   	Real fact_qoi = sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
-		//if (outputLevel == DEBUG_OUTPUT)
+		if (outputLevel == DEBUG_OUTPUT)
 			Cout << "\n\tN_target for Qoi: " << qoi << ", with lagrange: " << fact_qoi << std::endl;
 
 		for (size_t step = 0; step < num_steps; ++step) {
@@ -1304,15 +1358,15 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 	  	  Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
 	  	  abort_handler(INTERFACE_ERROR);
 			}
-			Cout << "\t\tN_target_qoi before bounding: " << N_target_qoi(qoi, step) << "\n";
+
 			N_target_qoi(qoi, step) = N_target_qoi(qoi, step) < 6 ? 6 : N_target_qoi(qoi, step);
 			N_target_qoi_FN(qoi, step) = N_target_qoi(qoi, step);
 			//N_target_qoi_FN(qoi, step) = N_target_qoi(qoi, step);
-			//if (outputLevel == DEBUG_OUTPUT) {
-			Cout << "\t\tVar of target: " << agg_var_qoi(qoi, step) << std::endl;
-			Cout << "\t\tCost: " << level_cost_vec[step] << "\n";
-			Cout << "\t\tN_target_qoi: " << N_target_qoi(qoi, step) << "\n";
-			//}
+			if (outputLevel == DEBUG_OUTPUT) {
+				Cout << "\t\tVar of target: " << agg_var_qoi(qoi, step) << std::endl;
+				Cout << "\t\tCost: " << level_cost_vec[step] << "\n";
+				Cout << "\t\tN_target_qoi: " << N_target_qoi(qoi, step) << "\n";
+			}
 		}
     bool have_npsol = false, have_optpp = false;
 		#ifdef HAVE_NPSOL
@@ -1325,13 +1379,16 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			size_t qoi_copy = qoi;
 			size_t qoiAggregation_copy = qoiAggregation;
 			size_t numFunctions_copy = numFunctions;
-	        Cout << "Numerical Optimization for sample allocation targeting " << (allocationTarget == TARGET_VARIANCE ? "variance" : "sigma") << " using " << (have_npsol ? "NPSOL" : "OPTPP") << std::endl;
+	    if (outputLevel == DEBUG_OUTPUT) {
+    		Cout << "Numerical Optimization for sample allocation targeting " << (allocationTarget == TARGET_VARIANCE ? "variance" : (allocationTarget == TARGET_SIGMA ? "sigma" : "scalarization")) << " using " << (have_npsol ? "NPSOL" : "OPTPP") << std::endl;
+        Cout << "\t\t\t Convergence Target " << eps_sq_div_2 << std::endl;
+      }
 			RealVector initial_point, pilot_samples;
 			initial_point.size(num_steps);
 			pilot_samples.size(num_steps);
 			for (size_t step = 0; step < num_steps; ++step) {
 				pilot_samples[step] = N_l[step][qoi];
-				initial_point[step] = 8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); 
+				initial_point[step] = N_l[step][qoi];//8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); 
 			}
 
 			RealVector var_lower_bnds, var_upper_bnds, lin_ineq_lower_bnds, lin_ineq_upper_bnds, lin_eq_targets,
@@ -1482,9 +1539,9 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			}
 
 			if(std::abs(1. - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) > 1.0e-5){
-				Cout << "Relative Constraint violation violated: Switching to log scale " << std::endl;
+				if (outputLevel == DEBUG_OUTPUT) Cout << "Relative Constraint violation violated: Switching to log scale " << std::endl;
 				for (size_t step = 0; step < num_steps; ++step) {
-				  initial_point[step] = 8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); //optimizer->variables_results().continuous_variable(step) > pilot_samples[step] ? optimizer->variables_results().continuous_variable(step) : pilot_samples[step];
+				  initial_point[step] = N_l[step][qoi]; //8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); //optimizer->variables_results().continuous_variable(step) > pilot_samples[step] ? optimizer->variables_results().continuous_variable(step) : pilot_samples[step];
 				}
 				nonlin_eq_targets[0] = std::log(eps_sq_div_2[qoi]); //std::log(convergenceTol);
 				#ifdef HAVE_NPSOL
@@ -1596,7 +1653,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		for (size_t step = 0; step < num_steps; ++step) {
 		    if(allocationTarget == TARGET_MEAN){
 		      delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step));
-		    }else if (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA){
+		    }else if (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA || allocationTarget == TARGET_SCALARIZATION){
 		      delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*3, one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step)));
 		      delta_N_l_qoi(qoi, step) = delta_N_l_qoi(qoi, step) > 1 
 		      														?  
@@ -1632,30 +1689,34 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 	}
 }
 
-inline void NonDMultilevelSampling::compute_moments(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, const Sizet2DArray& N_l)
+inline void NonDMultilevelSampling::compute_moments(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const Sizet2DArray& N_l)
 {
 	//RealMatrix Q_raw_mom(numFunctions, 4);
 	RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q2l = sum_Ql[2],
 	    &sum_Q3l = sum_Ql[3], &sum_Q4l = sum_Ql[4],
 	    &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
 	    &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
+  IntIntPair pr11(1, 1);
 	Real cm1, cm2, cm3, cm4, cm1l, cm2l, cm3l, cm4l;
 	size_t num_steps = sum_Q1l.numCols();
 	assert(sum_Q1l.numCols() == sum_Q2l.numCols() && sum_Q2l.numCols() == sum_Q3l.numCols()&& sum_Q3l.numCols() == sum_Q4l.numCols());
+
 	if (momentStats.empty())
 	  momentStats.shapeUninitialized(4, numFunctions);
-		for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-	  cm1 = cm2 = cm3 = cm4 = 0.;
+	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
+  	cm1 = cm2 = cm3 = cm4 = 0.;
 	  for (size_t step=0; step<num_steps; ++step) {
 	    size_t Nlq = N_l[step][qoi];
 	    // roll up unbiased moments centered on level mean
 	    uncentered_to_centered(sum_Q1l(qoi, step) / Nlq, sum_Q2l(qoi, step) / Nlq,
 	                           sum_Q3l(qoi, step) / Nlq, sum_Q4l(qoi, step) / Nlq,
 	                           cm1l, cm2l, cm3l, cm4l, Nlq);
+
 	    cm1 += cm1l;
 	    cm2 += cm2l;
 	    cm3 += cm3l;
 	    cm4 += cm4l;
+
 	    if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "CM_l   for level " << step << ": "
 	         << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
@@ -1664,7 +1725,7 @@ inline void NonDMultilevelSampling::compute_moments(IntRealMatrixMap sum_Ql, Int
 	                             sum_Q3lm1(qoi, step) / Nlq, sum_Q4lm1(qoi, step) / Nlq,
 	                             cm1l, cm2l, cm3l, cm4l, Nlq);
 	      cm1 -= cm1l;
-	      cm2 -= cm2l;
+	      cm2 -= cm2l; 
 	      cm3 -= cm3l;
 	      cm4 -= cm4l;
 	      if (outputLevel == DEBUG_OUTPUT)
@@ -1856,7 +1917,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(IntRealMatrixMap sum_Ql, In
              - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
   }
-  //[fm] bias correction for var_P2l
+
   return var_of_var;
 }
 
@@ -1887,7 +1948,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, 
              - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
   }
-  //[fm] bias correction for var_P2l
+
   return var_of_var;
 }
 
@@ -1919,6 +1980,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, Int
                          cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq_pilot);
   cm2l_sq = cm2l * cm2l;
   cm2lm1_sq = cm2lm1 * cm2lm1;
+
 
   // [fm] bias correction for var_P2l and var_P2lm1
   var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);

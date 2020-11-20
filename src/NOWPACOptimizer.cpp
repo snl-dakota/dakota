@@ -143,7 +143,7 @@ void NOWPACOptimizer::initialize_options()
   //nowpacSolver.set_trustregion(tr_factor); // if only initial
 
   // Scale the design variables since the TR size controls are absolute, not
-  // relative.  Based on the default max TR size of 1., scale to [0,1].
+  // relative.  Based on the default max TR size of 1., scale to [-1,1].
   RealArray l_bnds, u_bnds; size_t num_v = iteratedModel.cv();
   l_bnds.assign(num_v, -1.); u_bnds.assign(num_v, 1.);
   nowpacSolver.set_lower_bounds(l_bnds);
@@ -322,7 +322,7 @@ void NOWPACBlackBoxEvaluator::allocate_constraints()
 void NOWPACBlackBoxEvaluator::
 evaluate(RealArray const &x, RealArray &vals, void *param)
 {
-  // NOWPACOptimizer enforces an embedded scaling: incoming x is scaled on [0,1]
+  // NOWPACOptimizer enforces an embedded scaling: incoming x is scaled on [-1,1]
   // -->  unscale for posting to iteratedModel
   RealVector& c_vars
     = iteratedModel.current_variables().continuous_variables_view();
