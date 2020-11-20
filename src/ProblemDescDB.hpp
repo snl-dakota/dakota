@@ -400,6 +400,50 @@ protected:
 
 private:
 
+  // inner classes to help with mapping keys to class member data values
+
+  /// Retrieve member of type T from class R (Data*Rep)
+  template <typename T, class Rep>
+  //  using RepGetter = std::function<T&(Rep&)>;
+  using RepGetter = std::function<T(Rep&)>;
+  // TODO: using RepGetter = std::function<T&(std::shared_ptr<Rep>&)>;
+  // TODO: return by value instead of reference? (need to support set)
+  // Can't return by reference due to abort_handler_t<int>()
+
+  /// Encapsulate lookups across Data*Rep types
+  template <typename T>
+  class LookerUpper
+  {
+  public:
+
+    LookerUpper
+    (const std::string& context_msg,
+     const std::map<std::string, RepGetter<T, DataEnvironmentRep>>& env_map,
+     const std::map<std::string, RepGetter<T, DataMethodRep>>& met_map,
+     const std::map<std::string, RepGetter<T, DataModelRep>>& mod_map,
+     const std::map<std::string, RepGetter<T, DataVariablesRep>>& var_map,
+     const std::map<std::string, RepGetter<T, DataInterfaceRep>>& int_map,
+     const std::map<std::string, RepGetter<T, DataResponsesRep>>& res_map
+     ):
+      contextMsg(context_msg), envMap(env_map), metMap(met_map),
+      modMap(mod_map), varMap(var_map), intMap(int_map), resMap(res_map)
+    { }
+
+    // TODO: update to support reference to avoid copies
+    T get(const std::string& entry_name,
+	  const std::shared_ptr<ProblemDescDB>& db_rep) const;
+
+  private:
+    std::string contextMsg;
+    std::map<std::string, RepGetter<T, DataEnvironmentRep>> envMap;
+    std::map<std::string, RepGetter<T, DataMethodRep>> metMap;
+    std::map<std::string, RepGetter<T, DataModelRep>> modMap;
+    std::map<std::string, RepGetter<T, DataVariablesRep>> varMap;
+    std::map<std::string, RepGetter<T, DataInterfaceRep>> intMap;
+    std::map<std::string, RepGetter<T, DataResponsesRep>> resMap;
+  };
+
+
   //
   //- Heading: Private convenience functions
   //

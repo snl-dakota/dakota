@@ -1366,6 +1366,70 @@ static void Null_rep1(const char *who)
   abort_handler(PARSE_ERROR);
 }
 
+
+template <typename T>
+T ProblemDescDB::LookerUpper<T>::
+get(const std::string& entry_name,
+    const std::shared_ptr<ProblemDescDB>& db_rep) const
+{
+  const char *L;
+
+  if (!db_rep)
+    Null_rep(contextMsg.c_str());
+  if ((L = Begins(entry_name, "environment."))) {
+    auto it = envMap.find(L);
+    if (it != envMap.end())
+      return it->second(*(db_rep->environmentSpec.dataEnvRep));
+  }
+  else if ((L = Begins(entry_name, "method."))) {
+    if (db_rep->methodDBLocked)
+      Locked_db();
+    auto it = metMap.find(L);
+    if (it != metMap.end())
+      return it->second(*(db_rep->dataMethodIter->dataMethodRep));
+  }
+  else if ((L = Begins(entry_name, "model."))) {
+    if (db_rep->modelDBLocked)
+      Locked_db();
+    auto it = modMap.find(L);
+    if (it != modMap.end())
+      return it->second(*(db_rep->dataModelIter->dataModelRep));
+  }
+  else if ((L = Begins(entry_name, "variables."))) {
+    if (db_rep->variablesDBLocked)
+      Locked_db();
+    auto it = varMap.find(L);
+    if (it != varMap.end())
+      return it->second(*(db_rep->dataVariablesIter->dataVarsRep));
+  }
+  else if ((L = Begins(entry_name, "interface."))) {
+    if (db_rep->interfaceDBLocked)
+      Locked_db();
+    auto it = intMap.find(L);
+    if (it != intMap.end())
+      return it->second(*(db_rep->dataInterfaceIter->dataIfaceRep));
+  }
+  else if ((L = Begins(entry_name, "responses."))) {
+    if (db_rep->responsesDBLocked)
+      Locked_db();
+    auto it = resMap.find(L);
+    if (it != resMap.end())
+      return it->second(*(db_rep->dataResponsesIter->dataRespRep));
+  }
+  Bad_name(entry_name, contextMsg.c_str());
+  return abort_handler_t<T>(PARSE_ERROR);
+}
+
+
+// shorthand for pointer to Data*Rep member for use in key to data maps
+#define P_ENV &DataEnvironmentRep::
+#define P_MET &DataMethodRep::
+#define P_MOD &DataModelRep::
+#define P_VAR &DataVariablesRep::
+#define P_INT &DataInterfaceRep::
+#define P_RES &DataResponsesRep::
+
+
 const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 {
   const char *L;
@@ -2541,20 +2605,6 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
   return abort_handler_t<const Real&>(PARSE_ERROR);
 }
 
-// would like to template on T = int, A = DataEnvironmentRep
-//    template<typename T, class A>
-//      std::function<T&(A&)>;
-
-// Would also like to encode the data rep member, e.g.,
-// environmentSpec.dataEnvRep
-// dataMethodIter->dataMethodRep
-// So might want to make a member function...
-
-// https://stackoverflow.com/questions/46415283/stdmap-of-polymorphic-member-variables-pointers
-// Retrieve member of type T from class R (Data*Rep)
-template <typename T, class Rep>
-  using RepGetter = std::function<T&(Rep&)>;
-  //TODO:   using RepGetter = std::function<T&(std::shared_ptr<Rep>&)>;
 
 int ProblemDescDB::get_int(const String& entry_name) const
 {
@@ -2681,115 +2731,75 @@ int ProblemDescDB::get_int(const String& entry_name) const
 
 short ProblemDescDB::get_short(const String& entry_name) const
 {
-  const char *L;
+  static LookerUpper<short> lookup
+  { "get_short",
+    { /* environment */ },
+    {
+      {"iterator_scheduling", P_MET iteratorScheduling},
+      {"nond.allocation_target", P_MET allocationTarget},
+      {"nond.c3function_train.advancement_type", P_MET c3AdvanceType},
+      {"nond.correction_order", P_MET approxCorrectionOrder},
+      {"nond.covariance_control", P_MET covarianceControl},
+      {"nond.distribution", P_MET distributionType},
+      {"nond.emulator", P_MET emulatorType},
+      {"nond.expansion_basis_type", P_MET expansionBasisType},
+      {"nond.expansion_refinement_control", P_MET refinementControl},
+      {"nond.expansion_refinement_type", P_MET refinementType},
+      {"nond.expansion_type", P_MET expansionType},
+      {"nond.final_moments", P_MET finalMomentsType},
+      {"nond.growth_override", P_MET growthOverride},
+      {"nond.least_squares_regression_type", P_MET lsRegressionType},
+      {"nond.multilevel_allocation_control", P_MET multilevAllocControl},
+      {"nond.multilevel_discrepancy_emulation", P_MET multilevDiscrepEmulation},
+      {"nond.nesting_override", P_MET nestingOverride},
+      {"nond.qoi_aggregation", P_MET qoiAggregation},
+      {"nond.refinement_statistics_mode", P_MET statsMetricMode},
+      {"nond.regression_type", P_MET regressionType},
+      {"nond.response_level_target", P_MET responseLevelTarget},
+      {"nond.response_level_target_reduce", P_MET responseLevelTargetReduce},
+      {"optpp.merit_function", P_MET meritFn},
+      {"output", P_MET methodOutput},
+      {"sbl.acceptance_logic", P_MET surrBasedLocalAcceptLogic},
+      {"sbl.constraint_relax", P_MET surrBasedLocalConstrRelax},
+      {"sbl.merit_function", P_MET surrBasedLocalMeritFn},
+      {"sbl.subproblem_constraints", P_MET surrBasedLocalSubProbCon},
+      {"sbl.subproblem_objective", P_MET surrBasedLocalSubProbObj},
+      {"wilks.sided_interval", P_MET wilksSidedInterval}
+    },
+    {
+      {"c3function_train.advancement_type", P_MOD c3AdvanceType},
+      //{"c3function_train.refinement_control", P_MOD refinementControl},
+      //{"c3function_train.refinement_type", P_MOD refinementType},
+      {"nested.iterator_scheduling", P_MOD subMethodScheduling},
+      {"surrogate.correction_order", P_MOD approxCorrectionOrder},
+      {"surrogate.correction_type", P_MOD approxCorrectionType},
+      {"surrogate.find_nugget", P_MOD krigingFindNugget},
+      {"surrogate.kriging_max_trials", P_MOD krigingMaxTrials},
+      {"surrogate.mars_max_bases", P_MOD marsMaxBases},
+      {"surrogate.mls_weight_function", P_MOD mlsWeightFunction},
+      {"surrogate.neural_network_nodes", P_MOD annNodes},
+      {"surrogate.neural_network_random_weight", P_MOD annRandomWeight},
+      {"surrogate.points_management", P_MOD pointsManagement},
+      {"surrogate.polynomial_order", P_MOD polynomialOrder},
+      {"surrogate.rbf_bases", P_MOD rbfBases},
+      {"surrogate.rbf_max_pts", P_MOD rbfMaxPts},
+      {"surrogate.rbf_max_subsets", P_MOD rbfMaxSubsets},
+      {"surrogate.rbf_min_partition", P_MOD rbfMinPartition},
+      {"surrogate.regression_type", P_MOD regressionType}
+    },
+    {
+      {"domain", P_VAR varsDomain},
+      {"view", P_VAR varsView}
+    },
+    {
+      {"analysis_scheduling", P_INT analysisScheduling},
+      {"evaluation_scheduling", P_INT evalScheduling},
+      {"local_evaluation_scheduling", P_INT asynchLocalEvalScheduling}
+    },
+    { /* responses */}
+  };
 
-  if (!dbRep)
-	Null_rep("get_short");
-  if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<short, DataMethodRep> Shdme[] = {
-      // must be sorted by string (key)
-	{"iterator_scheduling", P iteratorScheduling},
-	{"nond.allocation_target", P allocationTarget},
-        {"nond.c3function_train.advancement_type", P c3AdvanceType},
-	{"nond.correction_order", P approxCorrectionOrder},
-	{"nond.covariance_control", P covarianceControl},
-	{"nond.distribution", P distributionType},
-	{"nond.emulator", P emulatorType},
-	{"nond.expansion_basis_type", P expansionBasisType},
-	{"nond.expansion_refinement_control", P refinementControl},
-	{"nond.expansion_refinement_type", P refinementType},
-	{"nond.expansion_type", P expansionType},
-	{"nond.final_moments", P finalMomentsType},
-	{"nond.growth_override", P growthOverride},
-	{"nond.least_squares_regression_type", P lsRegressionType},
-	{"nond.multilevel_allocation_control", P multilevAllocControl},
-	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
-	{"nond.nesting_override", P nestingOverride},
-	{"nond.qoi_aggregation", P qoiAggregation},
-	{"nond.refinement_statistics_mode", P statsMetricMode},
-	{"nond.regression_type", P regressionType},
-	{"nond.response_level_target", P responseLevelTarget},
-	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
-	{"optpp.merit_function", P meritFn},
-	{"output", P methodOutput},
-	{"sbl.acceptance_logic", P surrBasedLocalAcceptLogic},
-	{"sbl.constraint_relax", P surrBasedLocalConstrRelax},
-	{"sbl.merit_function", P surrBasedLocalMeritFn},
-	{"sbl.subproblem_constraints", P surrBasedLocalSubProbCon},
-	{"sbl.subproblem_objective", P surrBasedLocalSubProbObj},
-	{"wilks.sided_interval", P wilksSidedInterval}};
-    #undef P
-
-    KW<short, DataMethodRep> *kw;
-    if ((kw = (KW<short, DataMethodRep>*)Binsearch(Shdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    static KW<short, DataModelRep> Shdmo[] = {
-      // must be sorted by string (key)
-        {"c3function_train.advancement_type", P c3AdvanceType},
-      //{"c3function_train.refinement_control", P refinementControl},
-      //{"c3function_train.refinement_type", P refinementType},
-	{"nested.iterator_scheduling", P subMethodScheduling},
-	{"surrogate.correction_order", P approxCorrectionOrder},
-	{"surrogate.correction_type", P approxCorrectionType},
-	{"surrogate.find_nugget", P krigingFindNugget},
-	{"surrogate.kriging_max_trials", P krigingMaxTrials},
-	{"surrogate.mars_max_bases", P marsMaxBases},
-	{"surrogate.mls_weight_function", P mlsWeightFunction},
-	{"surrogate.neural_network_nodes", P annNodes},
-	{"surrogate.neural_network_random_weight", P annRandomWeight},
-	{"surrogate.points_management", P pointsManagement},
-	{"surrogate.polynomial_order", P polynomialOrder},
-	{"surrogate.rbf_bases", P rbfBases},
-	{"surrogate.rbf_max_pts", P rbfMaxPts},
-	{"surrogate.rbf_max_subsets", P rbfMaxSubsets},
-	{"surrogate.rbf_min_partition", P rbfMinPartition},
-	{"surrogate.regression_type", P regressionType}
-    };
-    #undef P
-
-    KW<short, DataModelRep> *kw;
-    if ((kw = (KW<short, DataModelRep>*)Binsearch(Shdmo, L)))
-	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<short, DataVariablesRep> Shdv[] = {
-      // must be sorted by string (key)
-	{"domain", P varsDomain},
-	{"view", P varsView}};
-    #undef P
-
-    KW<short, DataVariablesRep> *kw;
-    if ((kw = (KW<short, DataVariablesRep>*)Binsearch(Shdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "interface."))) {
-    if (dbRep->interfaceDBLocked)
-	Locked_db();
-    #define P &DataInterfaceRep::
-    static KW<short, DataInterfaceRep> Shdi[] = {
-      // must be sorted by string (key)
-	{"analysis_scheduling", P analysisScheduling},
-	{"evaluation_scheduling", P evalScheduling},
-	{"local_evaluation_scheduling", P asynchLocalEvalScheduling}};
-    #undef P
-
-    KW<short, DataInterfaceRep> *kw;
-    if ((kw = (KW<short, DataInterfaceRep>*)Binsearch(Shdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_short");
-  return abort_handler_t<short>(PARSE_ERROR);
+  return lookup.get(entry_name, dbRep);
 }
 
 
