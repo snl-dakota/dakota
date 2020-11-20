@@ -2541,6 +2541,20 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
   return abort_handler_t<const Real&>(PARSE_ERROR);
 }
 
+// would like to template on T = int, A = DataEnvironmentRep
+//    template<typename T, class A>
+//      std::function<T&(A&)>;
+
+// Would also like to encode the data rep member, e.g.,
+// environmentSpec.dataEnvRep
+// dataMethodIter->dataMethodRep
+// So might want to make a member function...
+
+// https://stackoverflow.com/questions/46415283/stdmap-of-polymorphic-member-variables-pointers
+// Retrieve member of type T from class R (Data*Rep)
+template <typename T, class Rep>
+  using RepGetter = std::function<T&(Rep&)>;
+  //TODO:   using RepGetter = std::function<T&(std::shared_ptr<Rep>&)>;
 
 int ProblemDescDB::get_int(const String& entry_name) const
 {
@@ -2550,22 +2564,21 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	Null_rep("get_int");
   if ((L = Begins(entry_name, "environment."))) {
     #define P &DataEnvironmentRep::
-    static KW<int, DataEnvironmentRep> Ide[] = {
-      // must be sorted by string (key)
+    std::map<std::string, RepGetter<int, DataEnvironmentRep>> kwmap = {
         {"output_precision", P outputPrecision},
-        {"stop_restart", P stopRestart}};
+        {"stop_restart", P stopRestart}
+    };
     #undef P
 
-    KW<int, DataEnvironmentRep> *kw;
-    if ((kw = (KW<int, DataEnvironmentRep>*)Binsearch(Ide, L)))
-      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
+    auto it = kwmap.find(L);
+    if (it != kwmap.end())
+      return it->second(*(dbRep->environmentSpec.dataEnvRep));
   }
   else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<int, DataMethodRep> Idme[] = {
-      // must be sorted by string (key)
+    std::map<std::string, RepGetter<int, DataMethodRep>> kwmap = {
 	{"batch_size", P batchSize},
 	{"batch_size.exploration", P batchSizeExplore},
 	{"build_samples", P buildSamples},
@@ -2596,7 +2609,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.prop_cov_update_period", P proposalCovUpdatePeriod},
 	{"nond.pushforward_samples", P numPushforwardSamples},
 	{"nond.samples_on_emulator", P samplesOnEmulator},
-  {"nond.surrogate_order", P emulatorOrder},
+	{"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},
 	{"optpp.search_scheme_size", P searchSchemeSize},
 	{"parameter_study.num_steps", P numSteps},
@@ -2605,19 +2618,19 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"random_seed", P randomSeed},
 	{"samples", P numSamples},
 	{"sub_sampling_period", P subSamplingPeriod},
-	{"symbols", P numSymbols}};
+	{"symbols", P numSymbols}
+    };
     #undef P
 
-    KW<int, DataMethodRep> *kw;
-    if ((kw = (KW<int, DataMethodRep>*)Binsearch(Idme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
+    auto it = kwmap.find(L);
+    if (it != kwmap.end())
+      return it->second(*(dbRep->dataMethodIter->dataMethodRep));
   }
   else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<int, DataModelRep> Idmo[] = {
-      // must be sorted by string (key)
+    std::map<std::string, RepGetter<int, DataModelRep>> kwmap = {
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
         {"c3function_train.max_cross_iterations", P maxCrossIterations},
@@ -2634,31 +2647,32 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"surrogate.folds", P numFolds},
         {"surrogate.num_restarts", P numRestarts},
         {"surrogate.points_total", P pointsTotal},
-        {"surrogate.refine_cv_folds", P refineCVFolds}};
+        {"surrogate.refine_cv_folds", P refineCVFolds}
+    };
     #undef P
 
-    KW<int, DataModelRep> *kw;
-    if ((kw = (KW<int, DataModelRep>*)Binsearch(Idmo, L)))
-	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
+    auto it = kwmap.find(L);
+    if (it != kwmap.end())
+      return it->second(*(dbRep->dataModelIter->dataModelRep));
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
 	Locked_db();
     #define P &DataInterfaceRep::
-    static KW<int, DataInterfaceRep> Idi[] = {
-      // must be sorted by string (key)
+    std::map<std::string, RepGetter<int, DataInterfaceRep>> kwmap = {
 	{"analysis_servers", P analysisServers},
 	{"asynch_local_analysis_concurrency", P asynchLocalAnalysisConcurrency},
 	{"asynch_local_evaluation_concurrency", P asynchLocalEvalConcurrency},
 	{"direct.processors_per_analysis", P procsPerAnalysis},
 	{"evaluation_servers", P evalServers},
 	{"failure_capture.retry_limit", P retryLimit},
-	{"processors_per_evaluation", P procsPerEval}};
+	{"processors_per_evaluation", P procsPerEval}
+    };
     #undef P
 
-    KW<int, DataInterfaceRep> *kw;
-    if ((kw = (KW<int, DataInterfaceRep>*)Binsearch(Idi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
+    auto it = kwmap.find(L);
+    if (it != kwmap.end())
+      return it->second(*(dbRep->dataInterfaceIter->dataIfaceRep));
   }
   Bad_name(entry_name, "get_int");
   return abort_handler_t<int>(PARSE_ERROR);
