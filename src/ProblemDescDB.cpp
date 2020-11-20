@@ -1429,7 +1429,8 @@ get(const std::string& entry_name,
 #define P_INT &DataInterfaceRep::
 #define P_RES &DataResponsesRep::
 
-
+// TEMPLATE:
+//
 // static LookerUpper<const T&> lookup
 // { "get_T",
 //   { /* environment */ },
@@ -1439,6 +1440,7 @@ get(const std::string& entry_name,
 //   { /* interface */ },
 //   { /* responses */ }
 // };
+//
 // return lookup.get(entry_name, dbRep);
 
 
@@ -1449,7 +1451,7 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
     { /* environment */ },
     { /* method */ },
     { /* model */ },
-    {
+    { /* variables */
       {"discrete_design_set_int.adjacency_matrix", P_VAR discreteDesignSetIntAdj},
       {"discrete_design_set_real.adjacency_matrix", P_VAR discreteDesignSetRealAdj},
       {"discrete_design_set_str.adjacency_matrix", P_VAR discreteDesignSetStrAdj}
@@ -1464,1275 +1466,941 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {  
+  static LookerUpper<const RealVector&> lookup
+  { "get_rv",
+    { /* environment */ },
+    { /* method */
+      {"concurrent.parameter_sets", P_MET concurrentParameterSets},
+      {"jega.distance_vector", P_MET distanceVector},
+      {"jega.niche_vector", P_MET nicheVector},
+      {"nond.data_dist_covariance", P_MET dataDistCovariance},
+      {"nond.data_dist_means", P_MET dataDistMeans},
+      {"nond.dimension_preference", P_MET anisoDimPref},
+      {"nond.hyperprior_alphas", P_MET hyperPriorAlphas},
+      {"nond.hyperprior_betas", P_MET hyperPriorBetas},
+      {"nond.prediction_configs", P_MET predictionConfigList},
+      {"nond.proposal_covariance_data", P_MET proposalCovData},
+      {"nond.regression_noise_tolerance", P_MET regressionNoiseTol},
+      {"parameter_study.final_point", P_MET finalPoint},
+      {"parameter_study.list_of_points", P_MET listOfPoints},
+      {"parameter_study.step_vector", P_MET stepVector},
+      {"trust_region.initial_size", P_MET trustRegionInitSize}
+    },
+    {
+      {"nested.primary_response_mapping", P_MOD primaryRespCoeffs},
+      {"nested.secondary_response_mapping", P_MOD secondaryRespCoeffs},
+      {"simulation.solution_level_cost", P_MOD solutionLevelCost},
+      {"surrogate.kriging_correlations", P_MOD krigingCorrelations},
+      {"surrogate.kriging_max_correlations", P_MOD krigingMaxCorrelations},
+      {"surrogate.kriging_min_correlations", P_MOD krigingMinCorrelations}
+    },
+    { /* model */
+      {"beta_uncertain.alphas", P_VAR betaUncAlphas},
+      {"beta_uncertain.betas", P_VAR betaUncBetas},
+      {"beta_uncertain.lower_bounds", P_VAR betaUncLowerBnds},
+      {"beta_uncertain.upper_bounds", P_VAR betaUncUpperBnds},
+      {"binomial_uncertain.prob_per_trial", P_VAR binomialUncProbPerTrial},
+      {"continuous_aleatory_uncertain.initial_point",
+	  P_VAR continuousAleatoryUncVars},
+      {"continuous_aleatory_uncertain.lower_bounds",
+	  P_VAR continuousAleatoryUncLowerBnds},
+      {"continuous_aleatory_uncertain.upper_bounds",
+	  P_VAR continuousAleatoryUncUpperBnds},
+      {"continuous_design.initial_point", P_VAR continuousDesignVars},
+      {"continuous_design.lower_bounds", P_VAR continuousDesignLowerBnds},
+      {"continuous_design.scales", P_VAR continuousDesignScales},
+      {"continuous_design.upper_bounds", P_VAR continuousDesignUpperBnds},
+      {"continuous_epistemic_uncertain.initial_point",
+	  P_VAR continuousEpistemicUncVars},
+      {"continuous_epistemic_uncertain.lower_bounds",
+	  P_VAR continuousEpistemicUncLowerBnds},
+      {"continuous_epistemic_uncertain.upper_bounds",
+	  P_VAR continuousEpistemicUncUpperBnds},
+      {"continuous_state.initial_state", P_VAR continuousStateVars},
+      {"continuous_state.lower_bounds", P_VAR continuousStateLowerBnds},
+      {"continuous_state.upper_bounds", P_VAR continuousStateUpperBnds},
+      {"discrete_aleatory_uncertain_real.initial_point",
+	  P_VAR discreteRealAleatoryUncVars},
+      {"discrete_aleatory_uncertain_real.lower_bounds",
+	  P_VAR discreteRealAleatoryUncLowerBnds},
+      {"discrete_aleatory_uncertain_real.upper_bounds",
+	  P_VAR discreteRealAleatoryUncUpperBnds},
+      {"discrete_design_set_real.initial_point", P_VAR discreteDesignSetRealVars},
+      {"discrete_design_set_real.lower_bounds",
+	  P_VAR discreteDesignSetRealLowerBnds},
+      {"discrete_design_set_real.upper_bounds",
+	  P_VAR discreteDesignSetRealUpperBnds},
+      {"discrete_epistemic_uncertain_real.initial_point",
+	  P_VAR discreteRealEpistemicUncVars},
+      {"discrete_epistemic_uncertain_real.lower_bounds",
+	  P_VAR discreteRealEpistemicUncLowerBnds},
+      {"discrete_epistemic_uncertain_real.upper_bounds",
+	  P_VAR discreteRealEpistemicUncUpperBnds},
+      {"discrete_state_set_real.initial_state", P_VAR discreteStateSetRealVars},
+      {"discrete_state_set_real.lower_bounds",
+	  P_VAR discreteStateSetRealLowerBnds},
+      {"discrete_state_set_real.upper_bounds",
+	  P_VAR discreteStateSetRealUpperBnds},
+      {"exponential_uncertain.betas", P_VAR exponentialUncBetas},
+      {"frechet_uncertain.alphas", P_VAR frechetUncAlphas},
+      {"frechet_uncertain.betas", P_VAR frechetUncBetas},
+      {"gamma_uncertain.alphas", P_VAR gammaUncAlphas},
+      {"gamma_uncertain.betas", P_VAR gammaUncBetas},
+      {"geometric_uncertain.prob_per_trial", P_VAR geometricUncProbPerTrial},
+      {"gumbel_uncertain.alphas", P_VAR gumbelUncAlphas},
+      {"gumbel_uncertain.betas", P_VAR gumbelUncBetas},
+      {"linear_equality_constraints", P_VAR linearEqConstraintCoeffs},
+      {"linear_equality_scales", P_VAR linearEqScales},
+      {"linear_equality_targets", P_VAR linearEqTargets},
+      {"linear_inequality_constraints", P_VAR linearIneqConstraintCoeffs},
+      {"linear_inequality_lower_bounds", P_VAR linearIneqLowerBnds},
+      {"linear_inequality_scales", P_VAR linearIneqScales},
+      {"linear_inequality_upper_bounds", P_VAR linearIneqUpperBnds},
+      {"lognormal_uncertain.error_factors", P_VAR lognormalUncErrFacts},
+      {"lognormal_uncertain.lambdas", P_VAR lognormalUncLambdas},
+      {"lognormal_uncertain.lower_bounds", P_VAR lognormalUncLowerBnds},
+      {"lognormal_uncertain.means", P_VAR lognormalUncMeans},
+      {"lognormal_uncertain.std_deviations", P_VAR lognormalUncStdDevs},
+      {"lognormal_uncertain.upper_bounds", P_VAR lognormalUncUpperBnds},
+      {"lognormal_uncertain.zetas", P_VAR lognormalUncZetas},
+      {"loguniform_uncertain.lower_bounds", P_VAR loguniformUncLowerBnds},
+      {"loguniform_uncertain.upper_bounds", P_VAR loguniformUncUpperBnds},
+      {"negative_binomial_uncertain.prob_per_trial",
+	  P_VAR negBinomialUncProbPerTrial},
+      {"normal_uncertain.lower_bounds", P_VAR normalUncLowerBnds},
+      {"normal_uncertain.means", P_VAR normalUncMeans},
+      {"normal_uncertain.std_deviations", P_VAR normalUncStdDevs},
+      {"normal_uncertain.upper_bounds", P_VAR normalUncUpperBnds},
+      {"poisson_uncertain.lambdas", P_VAR poissonUncLambdas},
+      {"triangular_uncertain.lower_bounds", P_VAR triangularUncLowerBnds},
+      {"triangular_uncertain.modes", P_VAR triangularUncModes},
+      {"triangular_uncertain.upper_bounds", P_VAR triangularUncUpperBnds},
+      {"uniform_uncertain.lower_bounds", P_VAR uniformUncLowerBnds},
+      {"uniform_uncertain.upper_bounds", P_VAR uniformUncUpperBnds},
+      {"weibull_uncertain.alphas", P_VAR weibullUncAlphas},
+      {"weibull_uncertain.betas", P_VAR weibullUncBetas}
+    },
+    { /* interface */
+      {"failure_capture.recovery_fn_vals", P_INT recoveryFnVals}
+    },
+    { /* responses */
+      {"exp_config_variables", P_RES expConfigVars},
+      {"exp_observations", P_RES expObservations},
+      {"exp_std_deviations", P_RES expStdDeviations},
+      {"fd_gradient_step_size", P_RES fdGradStepSize},
+      {"fd_hessian_step_size", P_RES fdHessStepSize},
+      {"nonlinear_equality_scales", P_RES nonlinearEqScales},
+      {"nonlinear_equality_targets", P_RES nonlinearEqTargets},
+      {"nonlinear_inequality_lower_bounds", P_RES nonlinearIneqLowerBnds},
+      {"nonlinear_inequality_scales", P_RES nonlinearIneqScales},
+      {"nonlinear_inequality_upper_bounds", P_RES nonlinearIneqUpperBnds},
+      {"primary_response_fn_scales", P_RES primaryRespFnScales},
+      {"primary_response_fn_weights", P_RES primaryRespFnWeights},
+      {"simulation_variance", P_RES simVariance}
+    }
+  };
 
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_rv");
-  if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-
-    #define P &DataMethodRep::
-    static KW<RealVector, DataMethodRep> RVdme[] = {
-      // must be sorted by string (key)
-	{"concurrent.parameter_sets", P concurrentParameterSets},
-	{"jega.distance_vector", P distanceVector},
-	{"jega.niche_vector", P nicheVector},
-	{"nond.data_dist_covariance", P dataDistCovariance},
-	{"nond.data_dist_means", P dataDistMeans},
-	{"nond.dimension_preference", P anisoDimPref},
-	{"nond.hyperprior_alphas", P hyperPriorAlphas},
-	{"nond.hyperprior_betas", P hyperPriorBetas},
-	{"nond.prediction_configs", P predictionConfigList},
-	{"nond.proposal_covariance_data", P proposalCovData},
-	{"nond.regression_noise_tolerance", P regressionNoiseTol},
-	{"parameter_study.final_point", P finalPoint},
-	{"parameter_study.list_of_points", P listOfPoints},
-	{"parameter_study.step_vector", P stepVector},
-	{"trust_region.initial_size", P trustRegionInitSize}};
-    #undef P
-
-    KW<RealVector, DataMethodRep> *kw;
-    if ((kw = (KW<RealVector, DataMethodRep>*)Binsearch(RVdme, L)))
-      return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-
-    #define P &DataModelRep::
-    static KW<RealVector, DataModelRep> RVdmo[] = {
-      // must be sorted by string (key)
-	{"nested.primary_response_mapping", P primaryRespCoeffs},
-	{"nested.secondary_response_mapping", P secondaryRespCoeffs},
-	{"simulation.solution_level_cost", P solutionLevelCost},
-	{"surrogate.kriging_correlations", P krigingCorrelations},
-	{"surrogate.kriging_max_correlations", P krigingMaxCorrelations},
-	{"surrogate.kriging_min_correlations", P krigingMinCorrelations}};
-    #undef P
-
-    KW<RealVector, DataModelRep> *kw;
-    if ((kw = (KW<RealVector, DataModelRep>*)Binsearch(RVdmo, L)))
-	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "variables."))) {
-
-    #define P &DataVariablesRep::
-    static KW<RealVector, DataVariablesRep> RVdv[] = {
-      // must be sorted by string (key)
-	{"beta_uncertain.alphas", P betaUncAlphas},
-	{"beta_uncertain.betas", P betaUncBetas},
-	{"beta_uncertain.lower_bounds", P betaUncLowerBnds},
-	{"beta_uncertain.upper_bounds", P betaUncUpperBnds},
-	{"binomial_uncertain.prob_per_trial", P binomialUncProbPerTrial},
-	{"continuous_aleatory_uncertain.initial_point",
-	 P continuousAleatoryUncVars},
-	{"continuous_aleatory_uncertain.lower_bounds",
-	 P continuousAleatoryUncLowerBnds},
-	{"continuous_aleatory_uncertain.upper_bounds",
-	 P continuousAleatoryUncUpperBnds},
-	{"continuous_design.initial_point", P continuousDesignVars},
-	{"continuous_design.lower_bounds", P continuousDesignLowerBnds},
-	{"continuous_design.scales", P continuousDesignScales},
-	{"continuous_design.upper_bounds", P continuousDesignUpperBnds},
-	{"continuous_epistemic_uncertain.initial_point",
-	 P continuousEpistemicUncVars},
-	{"continuous_epistemic_uncertain.lower_bounds",
-	 P continuousEpistemicUncLowerBnds},
-	{"continuous_epistemic_uncertain.upper_bounds",
-	 P continuousEpistemicUncUpperBnds},
-	{"continuous_state.initial_state", P continuousStateVars},
-	{"continuous_state.lower_bounds", P continuousStateLowerBnds},
-	{"continuous_state.upper_bounds", P continuousStateUpperBnds},
-	{"discrete_aleatory_uncertain_real.initial_point",
-	 P discreteRealAleatoryUncVars},
-	{"discrete_aleatory_uncertain_real.lower_bounds",
-	 P discreteRealAleatoryUncLowerBnds},
-	{"discrete_aleatory_uncertain_real.upper_bounds",
-	 P discreteRealAleatoryUncUpperBnds},
-	{"discrete_design_set_real.initial_point", P discreteDesignSetRealVars},
-	{"discrete_design_set_real.lower_bounds",
-	 P discreteDesignSetRealLowerBnds},
-	{"discrete_design_set_real.upper_bounds",
-	 P discreteDesignSetRealUpperBnds},
-	{"discrete_epistemic_uncertain_real.initial_point",
-	 P discreteRealEpistemicUncVars},
-	{"discrete_epistemic_uncertain_real.lower_bounds",
-	 P discreteRealEpistemicUncLowerBnds},
-	{"discrete_epistemic_uncertain_real.upper_bounds",
-	 P discreteRealEpistemicUncUpperBnds},
-	{"discrete_state_set_real.initial_state", P discreteStateSetRealVars},
-	{"discrete_state_set_real.lower_bounds",
-	 P discreteStateSetRealLowerBnds},
-	{"discrete_state_set_real.upper_bounds",
-	 P discreteStateSetRealUpperBnds},
-	{"exponential_uncertain.betas", P exponentialUncBetas},
-	{"frechet_uncertain.alphas", P frechetUncAlphas},
-	{"frechet_uncertain.betas", P frechetUncBetas},
-	{"gamma_uncertain.alphas", P gammaUncAlphas},
-	{"gamma_uncertain.betas", P gammaUncBetas},
-	{"geometric_uncertain.prob_per_trial", P geometricUncProbPerTrial},
-	{"gumbel_uncertain.alphas", P gumbelUncAlphas},
-	{"gumbel_uncertain.betas", P gumbelUncBetas},
-	{"linear_equality_constraints", P linearEqConstraintCoeffs},
-	{"linear_equality_scales", P linearEqScales},
-	{"linear_equality_targets", P linearEqTargets},
-	{"linear_inequality_constraints", P linearIneqConstraintCoeffs},
-	{"linear_inequality_lower_bounds", P linearIneqLowerBnds},
-	{"linear_inequality_scales", P linearIneqScales},
-	{"linear_inequality_upper_bounds", P linearIneqUpperBnds},
-	{"lognormal_uncertain.error_factors", P lognormalUncErrFacts},
-	{"lognormal_uncertain.lambdas", P lognormalUncLambdas},
-	{"lognormal_uncertain.lower_bounds", P lognormalUncLowerBnds},
-	{"lognormal_uncertain.means", P lognormalUncMeans},
-	{"lognormal_uncertain.std_deviations", P lognormalUncStdDevs},
-	{"lognormal_uncertain.upper_bounds", P lognormalUncUpperBnds},
-	{"lognormal_uncertain.zetas", P lognormalUncZetas},
-	{"loguniform_uncertain.lower_bounds", P loguniformUncLowerBnds},
-	{"loguniform_uncertain.upper_bounds", P loguniformUncUpperBnds},
-	{"negative_binomial_uncertain.prob_per_trial",
-	 P negBinomialUncProbPerTrial},
-	{"normal_uncertain.lower_bounds", P normalUncLowerBnds},
-	{"normal_uncertain.means", P normalUncMeans},
-	{"normal_uncertain.std_deviations", P normalUncStdDevs},
-	{"normal_uncertain.upper_bounds", P normalUncUpperBnds},
-	{"poisson_uncertain.lambdas", P poissonUncLambdas},
-	{"triangular_uncertain.lower_bounds", P triangularUncLowerBnds},
-	{"triangular_uncertain.modes", P triangularUncModes},
-	{"triangular_uncertain.upper_bounds", P triangularUncUpperBnds},
-	{"uniform_uncertain.lower_bounds", P uniformUncLowerBnds},
-	{"uniform_uncertain.upper_bounds", P uniformUncUpperBnds},
-	{"weibull_uncertain.alphas", P weibullUncAlphas},
-	{"weibull_uncertain.betas", P weibullUncBetas}};
-    #undef P
-
-    KW<RealVector, DataVariablesRep> *kw;
-    if ((kw = (KW<RealVector, DataVariablesRep>*)Binsearch(RVdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  else if (strbegins(entry_name, "interface.")) {
-    if (dbRep->interfaceDBLocked)
-	Locked_db();
-    else if (strends(entry_name, "failure_capture.recovery_fn_vals"))
-      return dbRep->dataInterfaceIter->dataIfaceRep->recoveryFnVals;
-  }
-  else if ((L = Begins(entry_name, "responses."))) {
-    if (dbRep->responsesDBLocked)
-	Locked_db();
-
-    #define P &DataResponsesRep::
-    static KW<RealVector, DataResponsesRep> RVdr[] = {
-      // must be sorted by string (key)
-	{"exp_config_variables", P expConfigVars},
-	{"exp_observations", P expObservations},
-	{"exp_std_deviations", P expStdDeviations},
-	{"fd_gradient_step_size", P fdGradStepSize},
-	{"fd_hessian_step_size", P fdHessStepSize},
-	{"nonlinear_equality_scales", P nonlinearEqScales},
-	{"nonlinear_equality_targets", P nonlinearEqTargets},
-	{"nonlinear_inequality_lower_bounds", P nonlinearIneqLowerBnds},
-	{"nonlinear_inequality_scales", P nonlinearIneqScales},
-	{"nonlinear_inequality_upper_bounds", P nonlinearIneqUpperBnds},
-	{"primary_response_fn_scales", P primaryRespFnScales},
-	{"primary_response_fn_weights", P primaryRespFnWeights},
-        {"simulation_variance", P simVariance}};
-    #undef P
-
-    KW<RealVector, DataResponsesRep> *kw;
-    if ((kw = (KW<RealVector, DataResponsesRep>*)Binsearch(RVdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_rv");
-  return abort_handler_t<const RealVector&>(PARSE_ERROR);
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 {
-  const char *L;
+  static LookerUpper<const IntVector&> lookup
+  { "get_iv",
+    { /* environment */ },
+    { /* method */
+      {"fsu_quasi_mc.primeBase", P_MET primeBase},
+      {"fsu_quasi_mc.sequenceLeap", P_MET sequenceLeap},
+      {"fsu_quasi_mc.sequenceStart", P_MET sequenceStart},
+      {"nond.refinement_samples", P_MET refineSamples},
+      {"parameter_study.steps_per_variable", P_MET stepsPerVariable}
+    },
+    { /* model */
+      {"refinement_samples", P_MOD refineSamples}
+    },
+    { /* variables */
+      {"binomial_uncertain.num_trials", P_VAR binomialUncNumTrials},
+      {"discrete_aleatory_uncertain_int.initial_point",
+	  P_VAR discreteIntAleatoryUncVars},
+      {"discrete_aleatory_uncertain_int.lower_bounds",
+	  P_VAR discreteIntAleatoryUncLowerBnds},
+      {"discrete_aleatory_uncertain_int.upper_bounds",
+	  P_VAR discreteIntAleatoryUncUpperBnds},
+      {"discrete_design_range.initial_point", P_VAR discreteDesignRangeVars},
+      {"discrete_design_range.lower_bounds", P_VAR discreteDesignRangeLowerBnds},
+      {"discrete_design_range.upper_bounds", P_VAR discreteDesignRangeUpperBnds},
+      {"discrete_design_set_int.initial_point", P_VAR discreteDesignSetIntVars},
+      {"discrete_design_set_int.lower_bounds",
+	  P_VAR discreteDesignSetIntLowerBnds},
+      {"discrete_design_set_int.upper_bounds",
+	  P_VAR discreteDesignSetIntUpperBnds},
+      {"discrete_epistemic_uncertain_int.initial_point",
+	  P_VAR discreteIntEpistemicUncVars},
+      {"discrete_epistemic_uncertain_int.lower_bounds",
+	  P_VAR discreteIntEpistemicUncLowerBnds},
+      {"discrete_epistemic_uncertain_int.upper_bounds",
+	  P_VAR discreteIntEpistemicUncUpperBnds},
+      {"discrete_state_range.initial_state", P_VAR discreteStateRangeVars},
+      {"discrete_state_range.lower_bounds", P_VAR discreteStateRangeLowerBnds},
+      {"discrete_state_range.upper_bounds", P_VAR discreteStateRangeUpperBnds},
+      {"discrete_state_set_int.initial_state", P_VAR discreteStateSetIntVars},
+      {"discrete_state_set_int.lower_bounds", P_VAR discreteStateSetIntLowerBnds},
+      {"discrete_state_set_int.upper_bounds", P_VAR discreteStateSetIntUpperBnds},
+      {"hypergeometric_uncertain.num_drawn", P_VAR hyperGeomUncNumDrawn},
+      {"hypergeometric_uncertain.selected_population",
+	  P_VAR hyperGeomUncSelectedPop},
+      {"hypergeometric_uncertain.total_population", P_VAR hyperGeomUncTotalPop},
+      {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials}
+    },
+    { /* interface */ },
+    {
+      {"lengths", P_RES fieldLengths},
+      {"num_coordinates_per_field", P_RES numCoordsPerField}
+    }
+  };
 
-  if (!dbRep)
-	Null_rep("get_iv");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntVector, DataVariablesRep> IVdv[] = {
-      // must be sorted by string (key)
-	{"binomial_uncertain.num_trials", P binomialUncNumTrials},
-	{"discrete_aleatory_uncertain_int.initial_point",
-	 P discreteIntAleatoryUncVars},
-	{"discrete_aleatory_uncertain_int.lower_bounds",
-	 P discreteIntAleatoryUncLowerBnds},
-	{"discrete_aleatory_uncertain_int.upper_bounds",
-	 P discreteIntAleatoryUncUpperBnds},
-	{"discrete_design_range.initial_point", P discreteDesignRangeVars},
-	{"discrete_design_range.lower_bounds", P discreteDesignRangeLowerBnds},
-	{"discrete_design_range.upper_bounds", P discreteDesignRangeUpperBnds},
-	{"discrete_design_set_int.initial_point", P discreteDesignSetIntVars},
-	{"discrete_design_set_int.lower_bounds",
-	 P discreteDesignSetIntLowerBnds},
-	{"discrete_design_set_int.upper_bounds",
-	 P discreteDesignSetIntUpperBnds},
-	{"discrete_epistemic_uncertain_int.initial_point",
-	 P discreteIntEpistemicUncVars},
-	{"discrete_epistemic_uncertain_int.lower_bounds",
-	 P discreteIntEpistemicUncLowerBnds},
-	{"discrete_epistemic_uncertain_int.upper_bounds",
-	 P discreteIntEpistemicUncUpperBnds},
-	{"discrete_state_range.initial_state", P discreteStateRangeVars},
-	{"discrete_state_range.lower_bounds", P discreteStateRangeLowerBnds},
-	{"discrete_state_range.upper_bounds", P discreteStateRangeUpperBnds},
-	{"discrete_state_set_int.initial_state", P discreteStateSetIntVars},
-	{"discrete_state_set_int.lower_bounds", P discreteStateSetIntLowerBnds},
-	{"discrete_state_set_int.upper_bounds", P discreteStateSetIntUpperBnds},
-	{"hypergeometric_uncertain.num_drawn", P hyperGeomUncNumDrawn},
-	{"hypergeometric_uncertain.selected_population",
-	 P hyperGeomUncSelectedPop},
-	{"hypergeometric_uncertain.total_population", P hyperGeomUncTotalPop},
-	{"negative_binomial_uncertain.num_trials", P negBinomialUncNumTrials}};
-    #undef P
-
-    KW<IntVector, DataVariablesRep> *kw;
-    if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "method."))) {
-	if (dbRep->methodDBLocked)
-		Locked_db();
-    #define P &DataMethodRep::
-    static KW<IntVector, DataMethodRep> IVdme[] = {
-      // must be sorted by string (key)
-	{"fsu_quasi_mc.primeBase", P primeBase},
-	{"fsu_quasi_mc.sequenceLeap", P sequenceLeap},
-	{"fsu_quasi_mc.sequenceStart", P sequenceStart},
-	{"nond.refinement_samples", P refineSamples},
-	{"parameter_study.steps_per_variable", P stepsPerVariable}};
-    #undef P
-    KW<IntVector, DataMethodRep> *kw;
-    if ((kw = (KW<IntVector, DataMethodRep>*)Binsearch(IVdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-      Locked_db();
-    #define P &DataModelRep::
-    static KW<IntVector, DataModelRep> IVdr[] = {
-      // must be sorted by string (key)
-      {"refinement_samples", P refineSamples}};
-    #undef P
-    KW<IntVector, DataModelRep> *kw;
-    if ((kw = (KW<IntVector, DataModelRep>*)Binsearch(IVdr, L)))
-      return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "responses."))) {
-    if (dbRep->responsesDBLocked)
-      Locked_db();
-    #define P &DataResponsesRep::
-    static KW<IntVector, DataResponsesRep> IVdr[] = {
-      // must be sorted by string (key)
-	{"lengths", P fieldLengths},
-	{"num_coordinates_per_field", P numCoordsPerField}};
-    #undef P
-    KW<IntVector, DataResponsesRep> *kw;
-    if ((kw = (KW<IntVector, DataResponsesRep>*)Binsearch(IVdr, L)))
-      return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_iv");
-  return abort_handler_t<const IntVector&>(PARSE_ERROR);
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 {
-  const char *L;
+  static LookerUpper<const BitArray&> lookup
+  { "get_ba",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"binomial_uncertain.categorical", P_VAR binomialUncCat},
+      {"discrete_design_range.categorical", P_VAR discreteDesignRangeCat},
+      {"discrete_design_set_int.categorical", P_VAR discreteDesignSetIntCat},
+      {"discrete_design_set_real.categorical", P_VAR discreteDesignSetRealCat},
+      {"discrete_interval_uncertain.categorical", P_VAR discreteIntervalUncCat},
+      {"discrete_state_range.categorical", P_VAR discreteStateRangeCat},
+      {"discrete_state_set_int.categorical", P_VAR discreteStateSetIntCat},
+      {"discrete_state_set_real.categorical", P_VAR discreteStateSetRealCat},
+      {"discrete_uncertain_set_int.categorical", P_VAR discreteUncSetIntCat},
+      {"discrete_uncertain_set_real.categorical", P_VAR discreteUncSetRealCat},
+      {"geometric_uncertain.categorical", P_VAR geometricUncCat},
+      {"histogram_uncertain.point_int.categorical",
+	  P_VAR histogramUncPointIntCat},
+      {"histogram_uncertain.point_real.categorical",
+	  P_VAR histogramUncPointRealCat},
+      {"hypergeometric_uncertain.categorical", P_VAR hyperGeomUncCat},
+      {"negative_binomial_uncertain.categorical", P_VAR negBinomialUncCat},
+      {"poisson_uncertain.categorical", P_VAR poissonUncCat}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-  if (!dbRep)
-  	Null_rep("get_ba");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<BitArray, DataVariablesRep> BAdv[] = {
-      // must be sorted by string (key)
-	{"binomial_uncertain.categorical", P binomialUncCat},
-	{"discrete_design_range.categorical", P discreteDesignRangeCat},
-	{"discrete_design_set_int.categorical", P discreteDesignSetIntCat},
-	{"discrete_design_set_real.categorical", P discreteDesignSetRealCat},
-	{"discrete_interval_uncertain.categorical", P discreteIntervalUncCat},
-	{"discrete_state_range.categorical", P discreteStateRangeCat},
-	{"discrete_state_set_int.categorical", P discreteStateSetIntCat},
-	{"discrete_state_set_real.categorical", P discreteStateSetRealCat},
-	{"discrete_uncertain_set_int.categorical", P discreteUncSetIntCat},
-	{"discrete_uncertain_set_real.categorical", P discreteUncSetRealCat},
-	{"geometric_uncertain.categorical", P geometricUncCat},
-	{"histogram_uncertain.point_int.categorical",
-         P histogramUncPointIntCat},
-	{"histogram_uncertain.point_real.categorical",
-         P histogramUncPointRealCat},
-	{"hypergeometric_uncertain.categorical", P hyperGeomUncCat},
-	{"negative_binomial_uncertain.categorical", P negBinomialUncCat},
-	{"poisson_uncertain.categorical", P poissonUncCat}};
-    #undef P
-
-    KW<BitArray, DataVariablesRep> *kw;
-    if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-
-  Bad_name(entry_name, "get_ba");
-  return abort_handler_t<const BitArray&>(PARSE_ERROR);
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 {
-  const char *L;
+  static LookerUpper<const SizetArray&> lookup
+  { "get_sza",
+    { /* environment */ },
+    { /* method */
+      {"nond.c3function_train.start_rank_sequence", P_MET startRankSeq},
+      {"nond.collocation_points", P_MET collocationPointsSeq},
+      {"nond.expansion_samples", P_MET expansionSamplesSeq},
+      {"nond.pilot_samples", P_MET pilotSamples},
+      {"random_seed_sequence", P_MET randomSeedSeq}
+    },
+    { /* model */ },
+    { /* variables */ },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-  if (!dbRep)
-  	Null_rep("get_sza");
-  if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<SizetArray, DataMethodRep> SZAdme[] = {
-      // must be sorted by string (key)
-      {"nond.c3function_train.start_rank_sequence", P startRankSeq},
-      {"nond.collocation_points", P collocationPointsSeq},
-      {"nond.expansion_samples", P expansionSamplesSeq},
-      {"nond.pilot_samples", P pilotSamples},
-      {"random_seed_sequence", P randomSeedSeq}};
-    #undef P
-
-    KW<SizetArray, DataMethodRep> *kw;
-    if ((kw = (KW<SizetArray, DataMethodRep>*)Binsearch(SZAdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-
-  Bad_name(entry_name, "get_sza");
-  return abort_handler_t<const SizetArray&>(PARSE_ERROR);
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 {
-  const char *L;
+  static LookerUpper<const UShortArray&> lookup
+  { "get_usa",
+    { /* environment */ },
+    { /* method */
+      {"nond.c3function_train.start_order_sequence", P_MET startOrderSeq},
+      {"nond.expansion_order", P_MET expansionOrderSeq},
+      {"nond.quadrature_order", P_MET quadratureOrderSeq},
+      {"nond.sparse_grid_level", P_MET sparseGridLevelSeq},
+      {"nond.tensor_grid_order", P_MET tensorGridOrder},
+      {"partitions", P_MET varPartitions}
+    },
+    { /* model */ },
+    { /* variables */ },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-  if (!dbRep)
-  	Null_rep("get_usa");
-  if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<UShortArray, DataMethodRep> USAdme[] = {
-      // must be sorted by string (key)
-	{"nond.c3function_train.start_order_sequence", P startOrderSeq},
-	{"nond.expansion_order", P expansionOrderSeq},
-	{"nond.quadrature_order", P quadratureOrderSeq},
-	{"nond.sparse_grid_level", P sparseGridLevelSeq},
-	{"nond.tensor_grid_order", P tensorGridOrder},
-	{"partitions", P varPartitions}};
-    #undef P
-
-    KW<UShortArray, DataMethodRep> *kw;
-    if ((kw = (KW<UShortArray, DataMethodRep>*)Binsearch(USAdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-
-  Bad_name(entry_name, "get_usa");
-  return abort_handler_t<const UShortArray&>(PARSE_ERROR);
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 {
-  if (!dbRep)
-	Null_rep("get_rsm");
-  if (strbegins(entry_name, "variables.")) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    if (strends(entry_name, "uncertain.correlation_matrix"))
-      return dbRep->dataVariablesIter->dataVarsRep->uncertainCorrelations;
-  }
-  Bad_name(entry_name, "get_rsm");
-  return abort_handler_t<const RealSymMatrix&>(PARSE_ERROR);
+  static LookerUpper<const RealSymMatrix&> lookup
+  { "get_rsm",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      { "uncertain.correlation_matrix", P_VAR uncertainCorrelations}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-    Null_rep("get_rva");
-  if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<RealVectorArray, DataMethodRep> RVAdme[] = {
-      // must be sorted by string (key)
-	{"nond.gen_reliability_levels", P genReliabilityLevels},
-	{"nond.probability_levels", P probabilityLevels},
-	{"nond.reliability_levels", P reliabilityLevels},
-	{"nond.response_levels", P responseLevels}};
-    #undef P
-
-    KW<RealVectorArray, DataMethodRep> *kw;
-    if ((kw = (KW<RealVectorArray, DataMethodRep>*)Binsearch(RVAdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-
-  Bad_name(entry_name, "get_rva");
-  return abort_handler_t<const RealVectorArray&>(PARSE_ERROR);
+  static LookerUpper<const RealVectorArray&> lookup
+  { "get_rva",
+    { /* environment */ },
+    { /* method */
+      {"nond.gen_reliability_levels", P_MET genReliabilityLevels},
+      {"nond.probability_levels", P_MET probabilityLevels},
+      {"nond.reliability_levels", P_MET reliabilityLevels},
+      {"nond.response_levels", P_MET responseLevels}
+    },
+    { /* model */ },
+    { /* variables */ },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-    Null_rep("get_iva");
   // BMA: no current use cases
-  Bad_name(entry_name, "get_iva");
-  return abort_handler_t<const IntVectorArray&>(PARSE_ERROR);
+  static LookerUpper<const IntVectorArray&> lookup
+  { "get_iva",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */ },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_is");
-  if (strbegins(entry_name, "model.")) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    if (strends(entry_name, "surrogate.function_indices"))
-      return dbRep->dataModelIter->dataModelRep->surrogateFnIndices;
-  }
-  else if ((L = Begins(entry_name, "responses."))) {
-    if (dbRep->responsesDBLocked)
-	Locked_db();
-    #define P &DataResponsesRep::
-    static KW<IntSet, DataResponsesRep> ISdr[] = {
-      // must be sorted by string (key)
-	{"gradients.mixed.id_analytic", P idAnalyticGrads},
-	{"gradients.mixed.id_numerical", P idNumericalGrads},
-	{"hessians.mixed.id_analytic", P idAnalyticHessians},
-	{"hessians.mixed.id_numerical", P idNumericalHessians},
-	{"hessians.mixed.id_quasi", P idQuasiHessians}};
-    #undef P
-
-    KW<IntSet, DataResponsesRep> *kw;
-    if ((kw = (KW<IntSet, DataResponsesRep>*)Binsearch(ISdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_is");
-  return abort_handler_t<const IntSet&>(PARSE_ERROR);
+  static LookerUpper<const IntSet&> lookup
+  { "get_is",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */
+      {"surrogate.function_indices", P_MOD surrogateFnIndices}
+    },
+    { /* variables */ },
+    { /* interface */ },
+    { /* responses */
+      {"gradients.mixed.id_analytic", P_RES idAnalyticGrads},
+      {"gradients.mixed.id_numerical", P_RES idNumericalGrads},
+      {"hessians.mixed.id_analytic", P_RES idAnalyticHessians},
+      {"hessians.mixed.id_numerical", P_RES idNumericalHessians},
+      {"hessians.mixed.id_quasi", P_RES idQuasiHessians}
+    }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_isa");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntSetArray, DataVariablesRep> ISAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_design_set_int.values", P discreteDesignSetInt},
-	{"discrete_state_set_int.values", P discreteStateSetInt}};
-    #undef P
-
-    KW<IntSetArray, DataVariablesRep> *kw;
-    if ((kw = (KW<IntSetArray, DataVariablesRep>*)Binsearch(ISAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_isa");
-  return abort_handler_t<const IntSetArray&>(PARSE_ERROR);
+  static LookerUpper<const IntSetArray&> lookup
+  { "get_isa",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_design_set_int.values", P_VAR discreteDesignSetInt},
+      {"discrete_state_set_int.values", P_VAR discreteStateSetInt}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_ssa");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<StringSetArray, DataVariablesRep> SSAdv[] = {
-      // must be sorted by string (key)
-      {"discrete_design_set_string.values", P discreteDesignSetStr},
-      {"discrete_state_set_string.values", P discreteStateSetStr}};
-    #undef P
-
-    KW<StringSetArray, DataVariablesRep> *kw;
-    if ((kw = (KW<StringSetArray, DataVariablesRep>*)Binsearch(SSAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_ssa");
-  return abort_handler_t<const StringSetArray&>(PARSE_ERROR);
+  static LookerUpper<const StringSetArray&> lookup
+  { "get_ssa",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_design_set_string.values", P_VAR discreteDesignSetStr},
+      {"discrete_state_set_string.values", P_VAR discreteStateSetStr}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_rsa()");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealSetArray, DataVariablesRep> RSAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_design_set_real.values", P discreteDesignSetReal},
-	{"discrete_state_set_real.values", P discreteStateSetReal}};
-    #undef P
-
-    KW<RealSetArray, DataVariablesRep> *kw;
-    if ((kw = (KW<RealSetArray, DataVariablesRep>*)Binsearch(RSAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_rsa");
-  return abort_handler_t<const RealSetArray&>(PARSE_ERROR);
+  static LookerUpper<const RealSetArray&> lookup
+  { "get_rsa",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_design_set_real.values", P_VAR discreteDesignSetReal},
+      {"discrete_state_set_real.values", P_VAR discreteStateSetReal}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_irma");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_uncertain_set_int.values_probs",
-	 P discreteUncSetIntValuesProbs},
-	{"histogram_uncertain.point_int_pairs", P histogramUncPointIntPairs}};
-    #undef P
-
-    KW<IntRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<IntRealMapArray, DataVariablesRep>*)Binsearch(IRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_irma");
-  return abort_handler_t<const IntRealMapArray&>(PARSE_ERROR);
+  static LookerUpper<const IntRealMapArray&> lookup
+  { "get_irma",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_uncertain_set_int.values_probs",
+	  P_VAR discreteUncSetIntValuesProbs},
+      {"histogram_uncertain.point_int_pairs", P_VAR histogramUncPointIntPairs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_srma");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_uncertain_set_string.values_probs",
-	 P discreteUncSetStrValuesProbs},
-	{"histogram_uncertain.point_string_pairs", P histogramUncPointStrPairs}};
-    #undef P
-
-    KW<StringRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<StringRealMapArray, DataVariablesRep>*)Binsearch(SRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_srma");
-  return abort_handler_t<const StringRealMapArray&>(PARSE_ERROR);
+  static LookerUpper<const StringRealMapArray&> lookup
+  { "get_srma",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_uncertain_set_string.values_probs",
+	  P_VAR discreteUncSetStrValuesProbs},
+      {"histogram_uncertain.point_string_pairs", P_VAR histogramUncPointStrPairs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_rrma()");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealRealMapArray, DataVariablesRep> RRMAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_uncertain_set_real.values_probs",
-	 P discreteUncSetRealValuesProbs},
-	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
-	{"histogram_uncertain.point_real_pairs", P histogramUncPointRealPairs}};
-    #undef P
-
-    KW<RealRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<RealRealMapArray, DataVariablesRep>*)Binsearch(RRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_rrma");
-  return abort_handler_t<const RealRealMapArray&>(PARSE_ERROR);
+ static LookerUpper<const RealRealMapArray&> lookup
+  { "get_rrma",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_uncertain_set_real.values_probs",
+	  P_VAR discreteUncSetRealValuesProbs},
+      {"histogram_uncertain.bin_pairs",   P_VAR histogramUncBinPairs},
+      {"histogram_uncertain.point_real_pairs", P_VAR histogramUncPointRealPairs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const RealRealPairRealMapArray& ProblemDescDB::
 get_rrrma(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_rrrma()");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealRealPairRealMapArray, DataVariablesRep> RRRMAdv[] = {
-
-      // must be sorted by string (key)
+ static LookerUpper<const RealRealPairRealMapArray&> lookup
+  { "get_rrrma",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
       {"continuous_interval_uncertain.basic_probs",
-       P continuousIntervalUncBasicProbs}};
-    #undef P
-
-    KW<RealRealPairRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<RealRealPairRealMapArray, DataVariablesRep>*)
-	 Binsearch(RRRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_rrrma");
-  return abort_handler_t<const RealRealPairRealMapArray&>(PARSE_ERROR);
+	  P_VAR continuousIntervalUncBasicProbs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const IntIntPairRealMapArray& ProblemDescDB::
 get_iirma(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_iirma()");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntIntPairRealMapArray, DataVariablesRep> IIRMAdv[] = {
-
-      // must be sorted by string (key)
+ static LookerUpper<const IntIntPairRealMapArray&> lookup
+  { "get_iirma",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
       {"discrete_interval_uncertain.basic_probs",
-       P discreteIntervalUncBasicProbs}};
-    #undef P
-
-    KW<IntIntPairRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<IntIntPairRealMapArray, DataVariablesRep>*)
-	 Binsearch(IIRMAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_iirma");
-  return abort_handler_t<const IntIntPairRealMapArray&>(PARSE_ERROR);
+	  P_VAR discreteIntervalUncBasicProbs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_sa");
-  // if ((L = Begins(entry_name, "environment."))) {
-  //   #define P &DataEnvironmentRep::
-  //   static KW<StringArray, DataEnvironmentRep> SAenv[] = {
-  //     // must be sorted by string (key)
-  //     {"env_options", P envOptions}};
-  //   #undef P
-
-  //   KW<StringArray, DataEnvironmentRep> *kw;
-  //   if ((kw = (KW<StringArray, DataEnvironmentRep>*)Binsearch(SAenv, L)))
-  // 	return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
-  // }
-  // else
-  if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<StringArray, DataMethodRep> SAds[] = {
-      // must be sorted by string (key)
-	{"coliny.misc_options", P miscOptions},
-	{"hybrid.method_names", P hybridMethodNames},
-	{"hybrid.method_pointers", P hybridMethodPointers},
-	{"hybrid.model_pointers", P hybridModelPointers}};
-    #undef P
-
-    KW<StringArray, DataMethodRep> *kw;
-    if ((kw = (KW<StringArray, DataMethodRep>*)Binsearch(SAds, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    static KW<StringArray, DataModelRep> SAdmo[] = {
-      // must be sorted by string (key)
-	{"metrics", P diagMetrics},
-	{"nested.primary_variable_mapping", P primaryVarMaps},
-	{"nested.secondary_variable_mapping", P secondaryVarMaps},
-	{"surrogate.ordered_model_pointers", P orderedModelPointers}};
-    #undef P
-
-    KW<StringArray, DataModelRep> *kw;
-    if ((kw = (KW<StringArray, DataModelRep>*)Binsearch(SAdmo, L)))
-	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<StringArray, DataVariablesRep> SAdv[] = {
-      // must be sorted by string (key)
-	{"continuous_aleatory_uncertain.labels", P continuousAleatoryUncLabels},
-	{"continuous_design.labels", P continuousDesignLabels},
-	{"continuous_design.scale_types", P continuousDesignScaleTypes},
-	{"continuous_epistemic_uncertain.labels",
-	 P continuousEpistemicUncLabels},
-	{"continuous_state.labels", P continuousStateLabels},
-	{"discrete_aleatory_uncertain_int.labels",
-	 P discreteIntAleatoryUncLabels},
-	{"discrete_aleatory_uncertain_real.labels",
-	 P discreteRealAleatoryUncLabels},
-	{"discrete_aleatory_uncertain_string.initial_point",
-	 P discreteStrAleatoryUncVars},
-	{"discrete_aleatory_uncertain_string.labels",
-	 P discreteStrAleatoryUncLabels},
-	{"discrete_aleatory_uncertain_string.lower_bounds",
-	 P discreteStrAleatoryUncLowerBnds},
-	{"discrete_aleatory_uncertain_string.upper_bounds",
-	 P discreteStrAleatoryUncUpperBnds},
-	{"discrete_design_range.labels", P discreteDesignRangeLabels},
-	{"discrete_design_set_int.labels", P discreteDesignSetIntLabels},
-	{"discrete_design_set_real.labels", P discreteDesignSetRealLabels},
-	{"discrete_design_set_string.initial_point", P discreteDesignSetStrVars},
-	{"discrete_design_set_string.labels", P discreteDesignSetStrLabels},
-	{"discrete_design_set_string.lower_bounds", P discreteDesignSetStrLowerBnds},
-	{"discrete_design_set_string.upper_bounds", P discreteDesignSetStrUpperBnds},
-	{"discrete_epistemic_uncertain_int.labels",
-	 P discreteIntEpistemicUncLabels},
-	{"discrete_epistemic_uncertain_real.labels",
-	 P discreteRealEpistemicUncLabels},
-	{"discrete_epistemic_uncertain_string.initial_point",
-	 P discreteStrEpistemicUncVars},
-	{"discrete_epistemic_uncertain_string.labels",
-	 P discreteStrEpistemicUncLabels},
-	{"discrete_epistemic_uncertain_string.lower_bounds",
-	 P discreteStrEpistemicUncLowerBnds},
-	{"discrete_epistemic_uncertain_string.upper_bounds",
-	 P discreteStrEpistemicUncUpperBnds},
-	{"discrete_state_range.labels", P discreteStateRangeLabels},
-	{"discrete_state_set_int.labels", P discreteStateSetIntLabels},
-	{"discrete_state_set_real.labels", P discreteStateSetRealLabels},
-	{"discrete_state_set_string.initial_state", P discreteStateSetStrVars},
-	{"discrete_state_set_string.labels", P discreteStateSetStrLabels},
-	{"discrete_state_set_string.lower_bounds", P discreteStateSetStrLowerBnds},
-	{"discrete_state_set_string.upper_bounds", P discreteStateSetStrUpperBnds},
-	{"discrete_uncertain_set_string.initial_point", P discreteUncSetStrVars},
-	{"linear_equality_scale_types", P linearEqScaleTypes},
-	{"linear_inequality_scale_types", P linearIneqScaleTypes}};
-    #undef P
-
-    KW<StringArray, DataVariablesRep> *kw;
-    if ((kw = (KW<StringArray, DataVariablesRep>*)Binsearch(SAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "interface."))) {
-    if (dbRep->interfaceDBLocked)
-	Locked_db();
-    #define P &DataInterfaceRep::
-    static KW<StringArray, DataInterfaceRep> SAdi[] = {
-      // must be sorted by string (key)
-	{ "application.analysis_drivers", P analysisDrivers},
-	{ "copyFiles", P copyFiles},
-	{ "linkFiles", P linkFiles}};
-    #undef P
-
-    KW<StringArray, DataInterfaceRep> *kw;
-    if ((kw = (KW<StringArray, DataInterfaceRep>*)Binsearch(SAdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "responses."))) {
-    if (dbRep->responsesDBLocked)
-	Locked_db();
-    #define P &DataResponsesRep::
-    static KW<StringArray, DataResponsesRep> SAdr[] = {
-      // must be sorted by string (key)
-	{ "labels", P responseLabels},
-	{ "nonlinear_equality_scale_types", P nonlinearEqScaleTypes},
-	{ "nonlinear_inequality_scale_types", P nonlinearIneqScaleTypes},
-	{ "primary_response_fn_scale_types", P primaryRespFnScaleTypes},
-	{ "primary_response_fn_sense", P primaryRespFnSense},
-	{ "variance_type", P varianceType}};
-    #undef P
-
-    KW<StringArray, DataResponsesRep> *kw;
-    if ((kw = (KW<StringArray, DataResponsesRep>*)Binsearch(SAdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_sa");
-  return abort_handler_t<const StringArray&>(PARSE_ERROR);
+  static LookerUpper<const StringArray&> lookup
+  { "get_sa",
+    { /* environment */ },
+    { /* method */
+      {"coliny.misc_options", P_MET miscOptions},
+      {"hybrid.method_names", P_MET hybridMethodNames},
+      {"hybrid.method_pointers", P_MET hybridMethodPointers},
+      {"hybrid.model_pointers", P_MET hybridModelPointers}
+    },
+    { /* model */
+      {"metrics", P_MOD diagMetrics},
+      {"nested.primary_variable_mapping", P_MOD primaryVarMaps},
+      {"nested.secondary_variable_mapping", P_MOD secondaryVarMaps},
+      {"surrogate.ordered_model_pointers", P_MOD orderedModelPointers}
+    },
+    { /* variables */
+      {"continuous_aleatory_uncertain.labels", P_VAR continuousAleatoryUncLabels},
+      {"continuous_design.labels", P_VAR continuousDesignLabels},
+      {"continuous_design.scale_types", P_VAR continuousDesignScaleTypes},
+      {"continuous_epistemic_uncertain.labels",
+	  P_VAR continuousEpistemicUncLabels},
+      {"continuous_state.labels", P_VAR continuousStateLabels},
+      {"discrete_aleatory_uncertain_int.labels",
+	  P_VAR discreteIntAleatoryUncLabels},
+      {"discrete_aleatory_uncertain_real.labels",
+	  P_VAR discreteRealAleatoryUncLabels},
+      {"discrete_aleatory_uncertain_string.initial_point",
+	  P_VAR discreteStrAleatoryUncVars},
+      {"discrete_aleatory_uncertain_string.labels",
+	  P_VAR discreteStrAleatoryUncLabels},
+      {"discrete_aleatory_uncertain_string.lower_bounds",
+	  P_VAR discreteStrAleatoryUncLowerBnds},
+      {"discrete_aleatory_uncertain_string.upper_bounds",
+	  P_VAR discreteStrAleatoryUncUpperBnds},
+      {"discrete_design_range.labels", P_VAR discreteDesignRangeLabels},
+      {"discrete_design_set_int.labels", P_VAR discreteDesignSetIntLabels},
+      {"discrete_design_set_real.labels", P_VAR discreteDesignSetRealLabels},
+      {"discrete_design_set_string.initial_point", P_VAR discreteDesignSetStrVars},
+      {"discrete_design_set_string.labels", P_VAR discreteDesignSetStrLabels},
+      {"discrete_design_set_string.lower_bounds", P_VAR discreteDesignSetStrLowerBnds},
+      {"discrete_design_set_string.upper_bounds", P_VAR discreteDesignSetStrUpperBnds},
+      {"discrete_epistemic_uncertain_int.labels",
+	  P_VAR discreteIntEpistemicUncLabels},
+      {"discrete_epistemic_uncertain_real.labels",
+	  P_VAR discreteRealEpistemicUncLabels},
+      {"discrete_epistemic_uncertain_string.initial_point",
+	  P_VAR discreteStrEpistemicUncVars},
+      {"discrete_epistemic_uncertain_string.labels",
+	  P_VAR discreteStrEpistemicUncLabels},
+      {"discrete_epistemic_uncertain_string.lower_bounds",
+	  P_VAR discreteStrEpistemicUncLowerBnds},
+      {"discrete_epistemic_uncertain_string.upper_bounds",
+	  P_VAR discreteStrEpistemicUncUpperBnds},
+      {"discrete_state_range.labels", P_VAR discreteStateRangeLabels},
+      {"discrete_state_set_int.labels", P_VAR discreteStateSetIntLabels},
+      {"discrete_state_set_real.labels", P_VAR discreteStateSetRealLabels},
+      {"discrete_state_set_string.initial_state", P_VAR discreteStateSetStrVars},
+      {"discrete_state_set_string.labels", P_VAR discreteStateSetStrLabels},
+      {"discrete_state_set_string.lower_bounds", P_VAR discreteStateSetStrLowerBnds},
+      {"discrete_state_set_string.upper_bounds", P_VAR discreteStateSetStrUpperBnds},
+      {"discrete_uncertain_set_string.initial_point", P_VAR discreteUncSetStrVars},
+      {"linear_equality_scale_types", P_VAR linearEqScaleTypes},
+      {"linear_inequality_scale_types", P_VAR linearIneqScaleTypes}
+    },
+    { /* interface */
+      { "application.analysis_drivers", P_INT analysisDrivers},
+      { "copyFiles", P_INT copyFiles},
+      { "linkFiles", P_INT linkFiles}
+    },
+    { /* responses */
+      { "labels", P_RES responseLabels},
+      { "nonlinear_equality_scale_types", P_RES nonlinearEqScaleTypes},
+      { "nonlinear_inequality_scale_types", P_RES nonlinearIneqScaleTypes},
+      { "primary_response_fn_scale_types", P_RES primaryRespFnScaleTypes},
+      { "primary_response_fn_sense", P_RES primaryRespFnSense},
+      { "variance_type", P_RES varianceType}
+    }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 {
-  if (!dbRep)
-	Null_rep("get_2sa");
-  if (strbegins(entry_name, "interface.")) {
-    if (dbRep->interfaceDBLocked)
-	Locked_db();
-    if (strends(entry_name, "application.analysis_components"))
-      return dbRep->dataInterfaceIter->dataIfaceRep->analysisComponents;
-  }
-  Bad_name(entry_name, "get_s2a");
-  return abort_handler_t<const String2DArray&>(PARSE_ERROR);
+  static LookerUpper<const String2DArray&> lookup
+  { "get_s2a",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */ },
+    { /* interface */
+      {"application.analysis_components", P_INT analysisComponents}
+    },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const String& ProblemDescDB::get_string(const String& entry_name) const
 {
-  const char *L;
+  static LookerUpper<const String&> lookup
+  { "get_string",
+    { /* environment */
+      {"error_file", P_ENV errorFile},
+      {"output_file", P_ENV outputFile},
+      {"post_run_input", P_ENV postRunInput},
+      {"post_run_output", P_ENV postRunOutput},
+      {"pre_run_input", P_ENV preRunInput},
+      {"pre_run_output", P_ENV preRunOutput},
+      {"read_restart", P_ENV readRestart},
+      {"results_output_file", P_ENV resultsOutputFile},
+      {"run_input", P_ENV runInput},
+      {"run_output", P_ENV runOutput},
+      {"tabular_graphics_file", P_ENV tabularDataFile},
+      {"top_method_pointer", P_ENV topMethodPointer},
+      {"write_restart", P_ENV writeRestart}
+    },
+    { /* method */
+      {"advanced_options_file", P_MET advancedOptionsFilename},
+      {"asynch_pattern_search.merit_function", P_MET meritFunction},
+      {"batch_selection", P_MET batchSelectionType},
+      {"coliny.beta_solver_name", P_MET betaSolverName},
+      {"coliny.division", P_MET boxDivision},
+      {"coliny.exploratory_moves", P_MET exploratoryMoves},
+      {"coliny.pattern_basis", P_MET patternBasis},
+      {"crossover_type", P_MET crossoverType},
+      {"dl_solver.dlDetails", P_MET dlDetails},
+      {"export_approx_points_file", P_MET exportApproxPtsFile},
+      {"fitness_metric", P_MET fitnessMetricType},
+      {"fitness_type", P_MET fitnessType},
+      {"flat_file", P_MET flatFile},
+      {"hybrid.global_method_name", P_MET hybridGlobalMethodName},
+      {"hybrid.global_method_pointer", P_MET hybridGlobalMethodPointer},
+      {"hybrid.global_model_pointer", P_MET hybridGlobalModelPointer},
+      {"hybrid.local_method_name", P_MET hybridLocalMethodName},
+      {"hybrid.local_method_pointer", P_MET hybridLocalMethodPointer},
+      {"hybrid.local_model_pointer", P_MET hybridLocalModelPointer},
+      {"id", P_MET idMethod},
+      {"import_approx_points_file", P_MET importApproxPtsFile},
+      {"import_build_points_file", P_MET importBuildPtsFile},
+      {"import_candidate_points_file", P_MET importCandPtsFile},
+      {"import_prediction_configs", P_MET importPredConfigs},
+      {"initialization_type", P_MET initializationType},
+      {"jega.convergence_type", P_MET convergenceType},
+      {"jega.niching_type", P_MET nichingType},
+      {"jega.postprocessor_type", P_MET postProcessorType},
+      {"lipschitz", P_MET lipschitzType},
+      {"log_file", P_MET logFile},
+      {"low_fidelity_model_pointer", P_MET lowFidModelPointer},
+      {"mesh_adaptive_search.display_format", P_MET displayFormat},
+      {"mesh_adaptive_search.history_file", P_MET historyFile},
+      {"mesh_adaptive_search.use_surrogate", P_MET useSurrogate},
+      {"model_export_prefix", P_MET modelExportPrefix},
+      {"model_pointer", P_MET modelPointer},
+      {"mutation_type", P_MET mutationType},
+      {"nond.data_dist_cov_type", P_MET dataDistCovInputType},
+      {"nond.data_dist_filename", P_MET dataDistFile},
+      {"nond.data_dist_type", P_MET dataDistType},
+      {"nond.discrepancy_type", P_MET modelDiscrepancyType},
+	//{"nond.expansion_sample_type", P_MET expansionSampleType},
+      {"nond.export_corrected_model_file", P_MET exportCorrModelFile},
+      {"nond.export_corrected_variance_file", P_MET exportCorrVarFile},
+      {"nond.export_discrepancy_file", P_MET exportDiscrepFile},
+      {"nond.export_expansion_file", P_MET exportExpansionFile},
+      {"nond.export_mcmc_points_file", P_MET exportMCMCPtsFile},
+      {"nond.import_expansion_file", P_MET importExpansionFile},
+      {"nond.mcmc_type", P_MET mcmcType},
+      {"nond.point_reuse", P_MET pointReuse},
+      {"nond.posterior_density_export_file", P_MET posteriorDensityExportFilename},
+      {"nond.posterior_samples_export_file", P_MET posteriorSamplesExportFilename},
+      {"nond.posterior_samples_import_file", P_MET posteriorSamplesImportFilename},
+      {"nond.proposal_covariance_filename", P_MET proposalCovFile},
+      {"nond.proposal_covariance_input_type", P_MET proposalCovInputType},
+      {"nond.proposal_covariance_type", P_MET proposalCovType},
+      {"nond.reliability_integration", P_MET reliabilityIntegration},
+      {"optpp.search_method", P_MET searchMethod},
+      {"pattern_search.synchronization", P_MET evalSynchronize},
+      {"pstudy.import_file", P_MET pstudyFilename},
+      {"random_number_generator", P_MET rngName},
+      {"replacement_type", P_MET replacementType},
+      {"sub_method_name", P_MET subMethodName},
+      {"sub_method_pointer", P_MET subMethodPointer},
+      {"sub_model_pointer", P_MET subModelPointer},
+      {"trial_type", P_MET trialType}
+    },
+    { /* model */
+      {"advanced_options_file", P_MOD advancedOptionsFilename},
+      {"dace_method_pointer", P_MOD subMethodPointer},
+      {"id", P_MOD idModel},
+      {"interface_pointer", P_MOD interfacePointer},
+      {"nested.sub_method_pointer", P_MOD subMethodPointer},
+      {"optional_interface_responses_pointer", P_MOD optionalInterfRespPointer},
+      {"rf.propagation_model_pointer", P_MOD propagationModelPointer},
+      {"rf_data_file", P_MOD rfDataFileName},
+      {"simulation.solution_level_control", P_MOD solutionLevelControl},
+      {"surrogate.actual_model_pointer", P_MOD actualModelPointer},
+      {"surrogate.challenge_points_file", P_MOD importChallengePtsFile},
+      {"surrogate.decomp_cell_type", P_MOD decompCellType},
+      {"surrogate.export_approx_points_file", P_MOD exportApproxPtsFile},
+      {"surrogate.export_approx_variance_file", P_MOD exportApproxVarianceFile},
+      {"surrogate.import_build_points_file", P_MOD importBuildPtsFile},
+      {"surrogate.kriging_opt_method", P_MOD krigingOptMethod},
+      {"surrogate.mars_interpolation", P_MOD marsInterpolation},
+      {"surrogate.model_export_prefix", P_MOD modelExportPrefix},
+      {"surrogate.point_reuse", P_MOD approxPointReuse},
+      {"surrogate.refine_cv_metric", P_MOD refineCVMetric},
+      {"surrogate.trend_order", P_MOD trendOrder},
+      {"surrogate.type", P_MOD surrogateType},
+      {"type", P_MOD modelType}
+    },
+    { /* variables */
+      {"id", P_VAR idVariables}
+    },
+    { /* interface */
+      {"algebraic_mappings", P_INT algebraicMappings},
+      {"application.input_filter", P_INT inputFilter},
+      {"application.output_filter", P_INT outputFilter},
+      {"application.parameters_file", P_INT parametersFile},
+      {"application.results_file", P_INT resultsFile},
+      {"failure_capture.action", P_INT failAction},
+      {"id", P_INT idInterface},
+      {"workDir", P_INT workDir}
+    },
+    { /* responses */
+      {"fd_gradient_step_type", P_RES fdGradStepType},
+      {"fd_hessian_step_type", P_RES fdHessStepType},
+      {"gradient_type", P_RES gradientType},
+      {"hessian_type", P_RES hessianType},
+      {"id", P_RES idResponses},
+      {"interval_type", P_RES intervalType},
+      {"method_source", P_RES methodSource},
+      {"quasi_hessian_type", P_RES quasiHessianType},
+      {"scalar_data_filename", P_RES scalarDataFileName}
+    }
+  };
 
-  if (!dbRep)
-	Null_rep("get_string");
-  if ((L = Begins(entry_name, "environment."))) {
-    #define P &DataEnvironmentRep::
-    static KW<String, DataEnvironmentRep> Sde[] = {
-      // must be sorted by string (key)
-	{"error_file", P errorFile},
-	{"output_file", P outputFile},
-	{"post_run_input", P postRunInput},
-	{"post_run_output", P postRunOutput},
-	{"pre_run_input", P preRunInput},
-	{"pre_run_output", P preRunOutput},
-	{"read_restart", P readRestart},
-	{"results_output_file", P resultsOutputFile},
-	{"run_input", P runInput},
-	{"run_output", P runOutput},
-	{"tabular_graphics_file", P tabularDataFile},
-	{"top_method_pointer", P topMethodPointer},
-	{"write_restart", P writeRestart}};
-    #undef P
-
-    KW<String, DataEnvironmentRep> *kw;
-    if ((kw = (KW<String, DataEnvironmentRep>*)Binsearch(Sde, L)))
-      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<String, DataMethodRep> Sdme[] = {
-      // must be sorted by string (key)
-	{"advanced_options_file", P advancedOptionsFilename},
-	{"asynch_pattern_search.merit_function", P meritFunction},
-	{"batch_selection", P batchSelectionType},
-	{"coliny.beta_solver_name", P betaSolverName},
-	{"coliny.division", P boxDivision},
-	{"coliny.exploratory_moves", P exploratoryMoves},
-	{"coliny.pattern_basis", P patternBasis},
-	{"crossover_type", P crossoverType},
-	{"dl_solver.dlDetails", P dlDetails},
-	{"export_approx_points_file", P exportApproxPtsFile},
-	{"fitness_metric", P fitnessMetricType},
-	{"fitness_type", P fitnessType},
-	{"flat_file", P flatFile},
-	{"hybrid.global_method_name", P hybridGlobalMethodName},
-	{"hybrid.global_method_pointer", P hybridGlobalMethodPointer},
-	{"hybrid.global_model_pointer", P hybridGlobalModelPointer},
-	{"hybrid.local_method_name", P hybridLocalMethodName},
-	{"hybrid.local_method_pointer", P hybridLocalMethodPointer},
-	{"hybrid.local_model_pointer", P hybridLocalModelPointer},
-	{"id", P idMethod},
-	{"import_approx_points_file", P importApproxPtsFile},
-	{"import_build_points_file", P importBuildPtsFile},
-	{"import_candidate_points_file", P importCandPtsFile},
-	{"import_prediction_configs", P importPredConfigs},
-	{"initialization_type", P initializationType},
-	{"jega.convergence_type", P convergenceType},
-	{"jega.niching_type", P nichingType},
-	{"jega.postprocessor_type", P postProcessorType},
-	{"lipschitz", P lipschitzType},
-	{"log_file", P logFile},
-	{"low_fidelity_model_pointer", P lowFidModelPointer},
-	{"mesh_adaptive_search.display_format", P displayFormat},
-	{"mesh_adaptive_search.history_file", P historyFile},
-	{"mesh_adaptive_search.use_surrogate", P useSurrogate},
-	{"model_export_prefix", P modelExportPrefix},
-	{"model_pointer", P modelPointer},
-	{"mutation_type", P mutationType},
-	{"nond.data_dist_cov_type", P dataDistCovInputType},
-        {"nond.data_dist_filename", P dataDistFile},
-	{"nond.data_dist_type", P dataDistType},
-	{"nond.discrepancy_type", P modelDiscrepancyType},
-      //{"nond.expansion_sample_type", P expansionSampleType},
-	{"nond.export_corrected_model_file", P exportCorrModelFile},
-	{"nond.export_corrected_variance_file", P exportCorrVarFile},
-	{"nond.export_discrepancy_file", P exportDiscrepFile},
-	{"nond.export_expansion_file", P exportExpansionFile},
-	{"nond.export_mcmc_points_file", P exportMCMCPtsFile},
-	{"nond.import_expansion_file", P importExpansionFile},
-	{"nond.mcmc_type", P mcmcType},
-	{"nond.point_reuse", P pointReuse},
-	{"nond.posterior_density_export_file", P posteriorDensityExportFilename},
-	{"nond.posterior_samples_export_file", P posteriorSamplesExportFilename},
-	{"nond.posterior_samples_import_file", P posteriorSamplesImportFilename},
-	{"nond.proposal_covariance_filename", P proposalCovFile},
-	{"nond.proposal_covariance_input_type", P proposalCovInputType},
-	{"nond.proposal_covariance_type", P proposalCovType},
-	{"nond.reliability_integration", P reliabilityIntegration},
-	{"optpp.search_method", P searchMethod},
-	{"pattern_search.synchronization", P evalSynchronize},
-	{"pstudy.import_file", P pstudyFilename},
-	{"random_number_generator", P rngName},
-	{"replacement_type", P replacementType},
-	{"sub_method_name", P subMethodName},
-	{"sub_method_pointer", P subMethodPointer},
-	{"sub_model_pointer", P subModelPointer},
-	{"trial_type", P trialType}};
-    #undef P
-
-    KW<String, DataMethodRep> *kw;
-    if ((kw = (KW<String, DataMethodRep>*)Binsearch(Sdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    static KW<String, DataModelRep> Sdmo[] = {
-      // must be sorted by string (key)
-	{"advanced_options_file", P advancedOptionsFilename},
-	{"dace_method_pointer", P subMethodPointer},
-	{"id", P idModel},
-	{"interface_pointer", P interfacePointer},
-	{"nested.sub_method_pointer", P subMethodPointer},
-	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
-	{"rf.propagation_model_pointer", P propagationModelPointer},
-	{"rf_data_file", P rfDataFileName},
-	{"simulation.solution_level_control", P solutionLevelControl},
-	{"surrogate.actual_model_pointer", P actualModelPointer},
-	{"surrogate.challenge_points_file", P importChallengePtsFile},
-	{"surrogate.decomp_cell_type", P decompCellType},
-	{"surrogate.export_approx_points_file", P exportApproxPtsFile},
-	{"surrogate.export_approx_variance_file", P exportApproxVarianceFile},
-	{"surrogate.import_build_points_file", P importBuildPtsFile},
-	{"surrogate.kriging_opt_method", P krigingOptMethod},
-	{"surrogate.mars_interpolation", P marsInterpolation},
-	{"surrogate.model_export_prefix", P modelExportPrefix},
-	{"surrogate.point_reuse", P approxPointReuse},
-	{"surrogate.refine_cv_metric", P refineCVMetric},
-        {"surrogate.trend_order", P trendOrder},
-	{"surrogate.type", P surrogateType},
-	{"type", P modelType}};
-    #undef P
-
-    KW<String, DataModelRep> *kw;
-    if ((kw = (KW<String, DataModelRep>*)Binsearch(Sdmo, L)))
-	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
-  }
-  else if (strbegins(entry_name, "variables.")) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    if (strends(entry_name, "id"))
-      return dbRep->dataVariablesIter->dataVarsRep->idVariables;
-  }
-  else if ((L = Begins(entry_name, "interface."))) {
-    if (dbRep->interfaceDBLocked)
-	Locked_db();
-    #define P &DataInterfaceRep::
-    static KW<String, DataInterfaceRep> Sdi[] = {
-      // must be sorted by string (key)
-	{"algebraic_mappings", P algebraicMappings},
-	{"application.input_filter", P inputFilter},
-	{"application.output_filter", P outputFilter},
-	{"application.parameters_file", P parametersFile},
-	{"application.results_file", P resultsFile},
-	{"failure_capture.action", P failAction},
-	{"id", P idInterface},
-	{"workDir", P workDir}};
-    #undef P
-
-    KW<String, DataInterfaceRep> *kw;
-    if ((kw = (KW<String, DataInterfaceRep>*)Binsearch(Sdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "responses."))) {
-    if (dbRep->responsesDBLocked)
-	Locked_db();
-    #define P &DataResponsesRep::
-    static KW<String, DataResponsesRep> Sdr[] = {
-      // must be sorted by string (key)
-	{"fd_gradient_step_type", P fdGradStepType},
-	{"fd_hessian_step_type", P fdHessStepType},
-	{"gradient_type", P gradientType},
-	{"hessian_type", P hessianType},
-	{"id", P idResponses},
-	{"interval_type", P intervalType},
-	{"method_source", P methodSource},
-	{"quasi_hessian_type", P quasiHessianType},
-	{"scalar_data_filename", P scalarDataFileName}};
-    #undef P
-
-    KW<String, DataResponsesRep> *kw;
-    if ((kw = (KW<String, DataResponsesRep>*)Binsearch(Sdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
-
-  }
-  Bad_name(entry_name, "get_string");
-  return abort_handler_t<const String&>(PARSE_ERROR);
+  return lookup.get(entry_name, dbRep);
 }
 
 
 const Real& ProblemDescDB::get_real(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_real");
-  if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<Real, DataMethodRep> Rdme[] = {
-      // must be sorted by string (key)
-      {"asynch_pattern_search.constraint_penalty", P constrPenalty},
-      {"asynch_pattern_search.contraction_factor", P contractStepLength},
-      {"asynch_pattern_search.initial_delta", P initStepLength},
-      {"asynch_pattern_search.smoothing_factor", P smoothFactor},
-      {"asynch_pattern_search.solution_target", P solnTarget},
-      {"coliny.contraction_factor", P contractFactor},
-      {"coliny.global_balance_parameter", P globalBalanceParam},
-      {"coliny.initial_delta", P initDelta},
-      {"coliny.local_balance_parameter", P localBalanceParam},
-      {"coliny.max_boxsize_limit", P maxBoxSize},
-      {"coliny.variable_tolerance", P threshDelta},
-      {"confidence_level", P wilksConfidenceLevel},
-      {"constraint_penalty", P constraintPenalty},
-      {"constraint_tolerance", P constraintTolerance},
-      {"convergence_tolerance", P convergenceTolerance},
-      {"crossover_rate", P crossoverRate},
-      {"dream.gr_threshold", P grThreshold},
-      {"function_precision", P functionPrecision},
-      {"gradient_tolerance", P gradientTolerance},
-      {"hybrid.local_search_probability", P hybridLSProb},
-      {"jega.fitness_limit", P fitnessLimit},
-      {"jega.percent_change", P convergenceTolerance},
-      {"jega.shrinkage_percentage", P shrinkagePercent},
-      {"mesh_adaptive_search.initial_delta", P initMeshSize},
-      {"mesh_adaptive_search.variable_neighborhood_search", P vns},
-      {"mesh_adaptive_search.variable_tolerance", P minMeshSize},
-      {"min_boxsize_limit", P minBoxSize},
-      {"mutation_rate", P mutationRate},
-      {"mutation_scale", P mutationScale},
-      {"nl2sol.absolute_conv_tol", P absConvTol},
-      {"nl2sol.false_conv_tol", P falseConvTol},
-      {"nl2sol.initial_trust_radius", P initTRRadius},
-      {"nl2sol.singular_conv_tol", P singConvTol},
-      {"nl2sol.singular_radius", P singRadius},
-      {"nond.c3function_train.solver_rounding_tolerance", P solverRoundingTol},
-      {"nond.c3function_train.solver_tolerance", P solverTol},
-      {"nond.c3function_train.stats_rounding_tolerance", P statsRoundingTol},
-      {"nond.collocation_ratio", P collocationRatio},
-      {"nond.collocation_ratio_terms_order", P collocRatioTermsOrder},
-      {"nond.multilevel_estimator_rate", P multilevEstimatorRate},
-      {"nond.regression_penalty", P regressionL2Penalty},
-      {"npsol.linesearch_tolerance", P lineSearchTolerance},
-      {"optpp.centering_parameter", P centeringParam},
-      {"optpp.max_step", P maxStep},
-      {"optpp.steplength_to_boundary", P stepLenToBoundary},
-      {"percent_variance_explained", P percentVarianceExplained},
-      {"prior_prop_cov_mult", P priorPropCovMult},
-      {"solution_target", P solnTarget},
-      {"trust_region.contract_threshold", P trustRegionContractTrigger},
-      {"trust_region.contraction_factor", P trustRegionContract},
-      {"trust_region.expand_threshold", P trustRegionExpandTrigger},
-      {"trust_region.expansion_factor", P trustRegionExpand},
-      {"trust_region.minimum_size", P trustRegionMinSize},
-      {"variable_tolerance", P threshStepLength},
-      {"vbd_drop_tolerance", P vbdDropTolerance},
-      {"verification.refinement_rate", P refinementRate},
-      {"volume_boxsize_limit", P volBoxSize},
-      {"x_conv_tol", P xConvTol}};
-    #undef P
-
-    KW<Real, DataMethodRep> *kw;
-    if ((kw = (KW<Real, DataMethodRep>*)Binsearch(Rdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    static KW<Real, DataModelRep> Rdmo[] = {
-      // must be sorted by string (key)
-      {"active_subspace.cv.decrease_tolerance", P decreaseTolerance},
-      {"active_subspace.cv.relative_tolerance", P relTolerance},
+  static LookerUpper<const Real&> lookup
+  { "get_real",
+    { /* environment */ },
+    { /* method */
+      {"asynch_pattern_search.constraint_penalty", P_MET constrPenalty},
+      {"asynch_pattern_search.contraction_factor", P_MET contractStepLength},
+      {"asynch_pattern_search.initial_delta", P_MET initStepLength},
+      {"asynch_pattern_search.smoothing_factor", P_MET smoothFactor},
+      {"asynch_pattern_search.solution_target", P_MET solnTarget},
+      {"coliny.contraction_factor", P_MET contractFactor},
+      {"coliny.global_balance_parameter", P_MET globalBalanceParam},
+      {"coliny.initial_delta", P_MET initDelta},
+      {"coliny.local_balance_parameter", P_MET localBalanceParam},
+      {"coliny.max_boxsize_limit", P_MET maxBoxSize},
+      {"coliny.variable_tolerance", P_MET threshDelta},
+      {"confidence_level", P_MET wilksConfidenceLevel},
+      {"constraint_penalty", P_MET constraintPenalty},
+      {"constraint_tolerance", P_MET constraintTolerance},
+      {"convergence_tolerance", P_MET convergenceTolerance},
+      {"crossover_rate", P_MET crossoverRate},
+      {"dream.gr_threshold", P_MET grThreshold},
+      {"function_precision", P_MET functionPrecision},
+      {"gradient_tolerance", P_MET gradientTolerance},
+      {"hybrid.local_search_probability", P_MET hybridLSProb},
+      {"jega.fitness_limit", P_MET fitnessLimit},
+      {"jega.percent_change", P_MET convergenceTolerance},
+      {"jega.shrinkage_percentage", P_MET shrinkagePercent},
+      {"mesh_adaptive_search.initial_delta", P_MET initMeshSize},
+      {"mesh_adaptive_search.variable_neighborhood_search", P_MET vns},
+      {"mesh_adaptive_search.variable_tolerance", P_MET minMeshSize},
+      {"min_boxsize_limit", P_MET minBoxSize},
+      {"mutation_rate", P_MET mutationRate},
+      {"mutation_scale", P_MET mutationScale},
+      {"nl2sol.absolute_conv_tol", P_MET absConvTol},
+      {"nl2sol.false_conv_tol", P_MET falseConvTol},
+      {"nl2sol.initial_trust_radius", P_MET initTRRadius},
+      {"nl2sol.singular_conv_tol", P_MET singConvTol},
+      {"nl2sol.singular_radius", P_MET singRadius},
+      {"nond.c3function_train.solver_rounding_tolerance", P_MET solverRoundingTol},
+      {"nond.c3function_train.solver_tolerance", P_MET solverTol},
+      {"nond.c3function_train.stats_rounding_tolerance", P_MET statsRoundingTol},
+      {"nond.collocation_ratio", P_MET collocationRatio},
+      {"nond.collocation_ratio_terms_order", P_MET collocRatioTermsOrder},
+      {"nond.multilevel_estimator_rate", P_MET multilevEstimatorRate},
+      {"nond.regression_penalty", P_MET regressionL2Penalty},
+      {"npsol.linesearch_tolerance", P_MET lineSearchTolerance},
+      {"optpp.centering_parameter", P_MET centeringParam},
+      {"optpp.max_step", P_MET maxStep},
+      {"optpp.steplength_to_boundary", P_MET stepLenToBoundary},
+      {"percent_variance_explained", P_MET percentVarianceExplained},
+      {"prior_prop_cov_mult", P_MET priorPropCovMult},
+      {"solution_target", P_MET solnTarget},
+      {"trust_region.contract_threshold", P_MET trustRegionContractTrigger},
+      {"trust_region.contraction_factor", P_MET trustRegionContract},
+      {"trust_region.expand_threshold", P_MET trustRegionExpandTrigger},
+      {"trust_region.expansion_factor", P_MET trustRegionExpand},
+      {"trust_region.minimum_size", P_MET trustRegionMinSize},
+      {"variable_tolerance", P_MET threshStepLength},
+      {"vbd_drop_tolerance", P_MET vbdDropTolerance},
+      {"verification.refinement_rate", P_MET refinementRate},
+      {"volume_boxsize_limit", P_MET volBoxSize},
+      {"x_conv_tol", P_MET xConvTol}
+    },
+    { /* model */
+      {"active_subspace.cv.decrease_tolerance", P_MOD decreaseTolerance},
+      {"active_subspace.cv.relative_tolerance", P_MOD relTolerance},
       {"active_subspace.truncation_method.energy.truncation_tolerance",
-       P truncationTolerance},
-      {"adapted_basis.collocation_ratio", P adaptedBasisCollocRatio},
-      {"c3function_train.collocation_ratio", P collocationRatio},
-      {"c3function_train.solver_rounding_tolerance", P solverRoundingTol},
-      {"c3function_train.solver_tolerance", P solverTol},
-      {"c3function_train.stats_rounding_tolerance", P statsRoundingTol},
-      {"convergence_tolerance", P convergenceTolerance},
-      {"surrogate.discont_grad_thresh", P discontGradThresh},
-      {"surrogate.discont_jump_thresh", P discontJumpThresh},
-      {"surrogate.neural_network_range", P annRange},
-      {"surrogate.nugget", P krigingNugget},
-      {"surrogate.percent", P percentFold},
-      {"surrogate.regression_penalty", P regressionL2Penalty},
-      {"truncation_tolerance", P truncationTolerance}};
-    #undef P
-
-    KW<Real, DataModelRep> *kw;
-    if ((kw = (KW<Real, DataModelRep>*)Binsearch(Rdmo, L)))
-	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
-  }
-  else if (strbegins(entry_name, "interface.")) {
-    if (strends(entry_name, "nearby_evaluation_cache_tolerance"))
-      return dbRep->dataInterfaceIter->dataIfaceRep->nearbyEvalCacheTol;
-  }
-  Bad_name(entry_name, "get_real");
-  return abort_handler_t<const Real&>(PARSE_ERROR);
+	  P_MOD truncationTolerance},
+      {"adapted_basis.collocation_ratio", P_MOD adaptedBasisCollocRatio},
+      {"c3function_train.collocation_ratio", P_MOD collocationRatio},
+      {"c3function_train.solver_rounding_tolerance", P_MOD solverRoundingTol},
+      {"c3function_train.solver_tolerance", P_MOD solverTol},
+      {"c3function_train.stats_rounding_tolerance", P_MOD statsRoundingTol},
+      {"convergence_tolerance", P_MOD convergenceTolerance},
+      {"surrogate.discont_grad_thresh", P_MOD discontGradThresh},
+      {"surrogate.discont_jump_thresh", P_MOD discontJumpThresh},
+      {"surrogate.neural_network_range", P_MOD annRange},
+      {"surrogate.nugget", P_MOD krigingNugget},
+      {"surrogate.percent", P_MOD percentFold},
+      {"surrogate.regression_penalty", P_MOD regressionL2Penalty},
+      {"truncation_tolerance", P_MOD truncationTolerance}
+    },
+    { /* variables */ },
+    { /* interface */
+      {"nearby_evaluation_cache_tolerance", P_INT nearbyEvalCacheTol}
+    },
+    { /* responses */ }
+  };
 }
 
 
 int ProblemDescDB::get_int(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_int");
-  if ((L = Begins(entry_name, "environment."))) {
-    #define P &DataEnvironmentRep::
-    std::map<std::string, RepGetter<int, DataEnvironmentRep>> kwmap = {
-        {"output_precision", P outputPrecision},
-        {"stop_restart", P stopRestart}
-    };
-    #undef P
-
-    auto it = kwmap.find(L);
-    if (it != kwmap.end())
-      return it->second(*(dbRep->environmentSpec.dataEnvRep));
-  }
-  else if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    std::map<std::string, RepGetter<int, DataMethodRep>> kwmap = {
-	{"batch_size", P batchSize},
-	{"batch_size.exploration", P batchSizeExplore},
-	{"build_samples", P buildSamples},
-	{"burn_in_samples", P burnInSamples},
-	{"coliny.contract_after_failure", P contractAfterFail},
-	{"coliny.expand_after_success", P expandAfterSuccess},
-	{"coliny.mutation_range", P mutationRange},
-	{"coliny.new_solutions_generated", P newSolnsGenerated},
-	{"coliny.number_retained", P numberRetained},
-	{"coliny.total_pattern_size", P totalPatternSize},
-	{"concurrent.random_jobs", P concurrentRandomJobs},
-	{"dream.crossover_chain_pairs", P crossoverChainPairs},
-	{"dream.jump_step", P jumpStep},
-	{"dream.num_chains", P numChains},
-	{"dream.num_cr", P numCR},
-	{"evidence_samples", P evidenceSamples},
-	{"fsu_cvt.num_trials", P numTrials},
-	{"iterator_servers", P iteratorServers},
-	{"max_function_evaluations", P maxFunctionEvaluations},
-	{"max_hifi_evaluations", P maxHifiEvals},
-	{"max_iterations", P maxIterations},
-	{"mesh_adaptive_search.neighbor_order", P neighborOrder},
-	{"nl2sol.covariance", P covarianceType},
-        {"nond.c3function_train.max_cross_iterations", P maxCrossIterations},
-	{"nond.chain_samples", P chainSamples},
-	{"nond.max_refinement_iterations", P maxRefineIterations},
-	{"nond.max_solver_iterations", P maxSolverIterations},
-	{"nond.prop_cov_update_period", P proposalCovUpdatePeriod},
-	{"nond.pushforward_samples", P numPushforwardSamples},
-	{"nond.samples_on_emulator", P samplesOnEmulator},
-	{"nond.surrogate_order", P emulatorOrder},
-	{"npsol.verify_level", P verifyLevel},
-	{"optpp.search_scheme_size", P searchSchemeSize},
-	{"parameter_study.num_steps", P numSteps},
-	{"population_size", P populationSize},
-	{"processors_per_iterator", P procsPerIterator},
-	{"random_seed", P randomSeed},
-	{"samples", P numSamples},
-	{"sub_sampling_period", P subSamplingPeriod},
-	{"symbols", P numSymbols}
-    };
-    #undef P
-
-    auto it = kwmap.find(L);
-    if (it != kwmap.end())
-      return it->second(*(dbRep->dataMethodIter->dataMethodRep));
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    std::map<std::string, RepGetter<int, DataModelRep>> kwmap = {
-        {"active_subspace.bootstrap_samples", P numReplicates},
-        {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
-        {"c3function_train.max_cross_iterations", P maxCrossIterations},
-        {"initial_samples", P initialSamples},
-        {"max_function_evals", P maxFunctionEvals},
-        {"max_iterations", P maxIterations},
-	{"max_solver_iterations", P maxSolverIterations},
-        {"nested.iterator_servers", P subMethodServers},
-        {"nested.processors_per_iterator", P subMethodProcs},
-        {"rf.expansion_bases", P subspaceDimension},
-        {"soft_convergence_limit", P softConvergenceLimit},
-        {"subspace.dimension", P subspaceDimension},
-        {"surrogate.decomp_support_layers", P decompSupportLayers},
-        {"surrogate.folds", P numFolds},
-        {"surrogate.num_restarts", P numRestarts},
-        {"surrogate.points_total", P pointsTotal},
-        {"surrogate.refine_cv_folds", P refineCVFolds}
-    };
-    #undef P
-
-    auto it = kwmap.find(L);
-    if (it != kwmap.end())
-      return it->second(*(dbRep->dataModelIter->dataModelRep));
-  }
-  else if ((L = Begins(entry_name, "interface."))) {
-    if (dbRep->interfaceDBLocked)
-	Locked_db();
-    #define P &DataInterfaceRep::
-    std::map<std::string, RepGetter<int, DataInterfaceRep>> kwmap = {
-	{"analysis_servers", P analysisServers},
-	{"asynch_local_analysis_concurrency", P asynchLocalAnalysisConcurrency},
-	{"asynch_local_evaluation_concurrency", P asynchLocalEvalConcurrency},
-	{"direct.processors_per_analysis", P procsPerAnalysis},
-	{"evaluation_servers", P evalServers},
-	{"failure_capture.retry_limit", P retryLimit},
-	{"processors_per_evaluation", P procsPerEval}
-    };
-    #undef P
-
-    auto it = kwmap.find(L);
-    if (it != kwmap.end())
-      return it->second(*(dbRep->dataInterfaceIter->dataIfaceRep));
-  }
-  Bad_name(entry_name, "get_int");
-  return abort_handler_t<int>(PARSE_ERROR);
+  static LookerUpper<int> lookup
+  { "get_int",
+    { /* environment */
+      {"output_precision", P_ENV outputPrecision},
+      {"stop_restart", P_ENV stopRestart}
+    },
+    { /* method */
+      {"batch_size", P_MET batchSize},
+      {"batch_size.exploration", P_MET batchSizeExplore},
+      {"build_samples", P_MET buildSamples},
+      {"burn_in_samples", P_MET burnInSamples},
+      {"coliny.contract_after_failure", P_MET contractAfterFail},
+      {"coliny.expand_after_success", P_MET expandAfterSuccess},
+      {"coliny.mutation_range", P_MET mutationRange},
+      {"coliny.new_solutions_generated", P_MET newSolnsGenerated},
+      {"coliny.number_retained", P_MET numberRetained},
+      {"coliny.total_pattern_size", P_MET totalPatternSize},
+      {"concurrent.random_jobs", P_MET concurrentRandomJobs},
+      {"dream.crossover_chain_pairs", P_MET crossoverChainPairs},
+      {"dream.jump_step", P_MET jumpStep},
+      {"dream.num_chains", P_MET numChains},
+      {"dream.num_cr", P_MET numCR},
+      {"evidence_samples", P_MET evidenceSamples},
+      {"fsu_cvt.num_trials", P_MET numTrials},
+      {"iterator_servers", P_MET iteratorServers},
+      {"max_function_evaluations", P_MET maxFunctionEvaluations},
+      {"max_hifi_evaluations", P_MET maxHifiEvals},
+      {"max_iterations", P_MET maxIterations},
+      {"mesh_adaptive_search.neighbor_order", P_MET neighborOrder},
+      {"nl2sol.covariance", P_MET covarianceType},
+      {"nond.c3function_train.max_cross_iterations", P_MET maxCrossIterations},
+      {"nond.chain_samples", P_MET chainSamples},
+      {"nond.max_refinement_iterations", P_MET maxRefineIterations},
+      {"nond.max_solver_iterations", P_MET maxSolverIterations},
+      {"nond.prop_cov_update_period", P_MET proposalCovUpdatePeriod},
+      {"nond.pushforward_samples", P_MET numPushforwardSamples},
+      {"nond.samples_on_emulator", P_MET samplesOnEmulator},
+      {"nond.surrogate_order", P_MET emulatorOrder},
+      {"npsol.verify_level", P_MET verifyLevel},
+      {"optpp.search_scheme_size", P_MET searchSchemeSize},
+      {"parameter_study.num_steps", P_MET numSteps},
+      {"population_size", P_MET populationSize},
+      {"processors_per_iterator", P_MET procsPerIterator},
+      {"random_seed", P_MET randomSeed},
+      {"samples", P_MET numSamples},
+      {"sub_sampling_period", P_MET subSamplingPeriod},
+      {"symbols", P_MET numSymbols}
+    },
+    { /* model */
+      {"active_subspace.bootstrap_samples", P_MOD numReplicates},
+      {"active_subspace.cv.max_rank", P_MOD subspaceCVMaxRank},
+      {"c3function_train.max_cross_iterations", P_MOD maxCrossIterations},
+      {"initial_samples", P_MOD initialSamples},
+      {"max_function_evals", P_MOD maxFunctionEvals},
+      {"max_iterations", P_MOD maxIterations},
+      {"max_solver_iterations", P_MOD maxSolverIterations},
+      {"nested.iterator_servers", P_MOD subMethodServers},
+      {"nested.processors_per_iterator", P_MOD subMethodProcs},
+      {"rf.expansion_bases", P_MOD subspaceDimension},
+      {"soft_convergence_limit", P_MOD softConvergenceLimit},
+      {"subspace.dimension", P_MOD subspaceDimension},
+      {"surrogate.decomp_support_layers", P_MOD decompSupportLayers},
+      {"surrogate.folds", P_MOD numFolds},
+      {"surrogate.num_restarts", P_MOD numRestarts},
+      {"surrogate.points_total", P_MOD pointsTotal},
+      {"surrogate.refine_cv_folds", P_MOD refineCVFolds}
+    },
+    { /* variables */ },
+    { /* interface */
+      {"analysis_servers", P_INT analysisServers},
+      {"asynch_local_analysis_concurrency", P_INT asynchLocalAnalysisConcurrency},
+      {"asynch_local_evaluation_concurrency", P_INT asynchLocalEvalConcurrency},
+      {"direct.processors_per_analysis", P_INT procsPerAnalysis},
+      {"evaluation_servers", P_INT evalServers},
+      {"failure_capture.retry_limit", P_INT retryLimit},
+      {"processors_per_evaluation", P_INT procsPerEval}
+    },
+    { /* responses */ }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
@@ -2741,7 +2409,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
   static LookerUpper<short> lookup
   { "get_short",
     { /* environment */ },
-    {
+    { /* method */
       {"iterator_scheduling", P_MET iteratorScheduling},
       {"nond.allocation_target", P_MET allocationTarget},
       {"nond.c3function_train.advancement_type", P_MET c3AdvanceType},
@@ -2773,7 +2441,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"sbl.subproblem_objective", P_MET surrBasedLocalSubProbObj},
       {"wilks.sided_interval", P_MET wilksSidedInterval}
     },
-    {
+    { /* model */
       {"c3function_train.advancement_type", P_MOD c3AdvanceType},
       //{"c3function_train.refinement_control", P_MOD refinementControl},
       //{"c3function_train.refinement_type", P_MOD refinementType},
@@ -2794,11 +2462,11 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"surrogate.rbf_min_partition", P_MOD rbfMinPartition},
       {"surrogate.regression_type", P_MOD regressionType}
     },
-    {
+    { /* variables */
       {"domain", P_VAR varsDomain},
       {"view", P_VAR varsView}
     },
-    {
+    { /* interface */
       {"analysis_scheduling", P_INT analysisScheduling},
       {"evaluation_scheduling", P_INT evalScheduling},
       {"local_evaluation_scheduling", P_INT asynchLocalEvalScheduling}
@@ -2812,124 +2480,76 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
 unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 {
-  const char *L;
+  static LookerUpper<unsigned short> lookup
+  { "get_ushort",
+    { /* environment */
+      {"interface_evals_selection", P_ENV interfEvalsSelection},
+      {"model_evals_selection", P_ENV modelEvalsSelection},
+      {"post_run_input_format", P_ENV postRunInputFormat},
+      {"pre_run_output_format", P_ENV preRunOutputFormat},
+      {"results_output_format", P_ENV resultsOutputFormat},
+      {"tabular_format", P_ENV tabularFormat}
+    },
+    { /* method */
+      {"algorithm", P_MET methodName},
+      {"export_approx_format", P_MET exportApproxFormat},
+      {"import_approx_format", P_MET importApproxFormat},
+      {"import_build_format", P_MET importBuildFormat},
+      {"import_candidate_format", P_MET importCandFormat},
+      {"import_prediction_configs_format", P_MET importPredConfigFormat},
+      {"model_export_format", P_MET modelExportFormat},
+      {"nond.adapted_basis.advancements", P_MET adaptedBasisAdvancements},
+	//{"nond.adapted_basis.initial_level", P_MET adaptedBasisInitLevel},
+      {"nond.c3function_train.kick_order", P_MET kickOrder},
+      {"nond.c3function_train.max_order", P_MET maxOrder},
+      {"nond.c3function_train.start_order", P_MET startOrder},
+      {"nond.calibrate_error_mode", P_MET calibrateErrorMode},
+      {"nond.cubature_integrand", P_MET cubIntOrder},
+      {"nond.expansion_order", P_MET expansionOrder},
+      {"nond.export_corrected_model_format", P_MET exportCorrModelFormat},
+      {"nond.export_corrected_variance_format", P_MET exportCorrVarFormat},
+      {"nond.export_discrep_format", P_MET exportDiscrepFormat},
+      {"nond.export_samples_format", P_MET exportSamplesFormat},
+      {"nond.integration_refinement", P_MET integrationRefine},
+      {"nond.pre_solve_method", P_MET preSolveMethod},
+      {"nond.quadrature_order", P_MET quadratureOrder},
+      {"nond.reliability_search_type", P_MET reliabilitySearchType},
+      {"nond.sparse_grid_level", P_MET sparseGridLevel},
+      {"nond.vbd_interaction_order", P_MET vbdOrder},
+      {"order", P_MET wilksOrder},
+      {"pstudy.import_format", P_MET pstudyFileFormat},
+      {"sample_type", P_MET sampleType},
+      {"soft_convergence_limit", P_MET softConvLimit},
+      {"sub_method", P_MET subMethod}
+    },
+    { /* model */
+      {"active_subspace.cv.id_method", P_MOD subspaceIdCVMethod},
+      {"active_subspace.normalization", P_MOD subspaceNormalization},
+      {"active_subspace.sample_type", P_MOD subspaceSampleType},
+      {"adapted_basis.expansion_order", P_MOD adaptedBasisExpOrder},
+      {"adapted_basis.sparse_grid_level", P_MOD adaptedBasisSparseGridLev},
+      {"c3function_train.kick_order", P_MOD kickOrder},
+      {"c3function_train.max_order", P_MOD maxOrder},
+      {"c3function_train.start_order", P_MOD startOrder},
+      {"rf.analytic_covariance", P_MOD analyticCovIdForm},
+      {"rf.expansion_form", P_MOD randomFieldIdForm},
+      {"surrogate.challenge_points_file_format", P_MOD importChallengeFormat},
+      {"surrogate.export_approx_format", P_MOD exportApproxFormat},
+      {"surrogate.export_approx_variance_format", P_MOD exportApproxVarianceFormat},
+      {"surrogate.import_build_format", P_MOD importBuildFormat},
+      {"surrogate.model_export_format", P_MOD modelExportFormat}
+    },
+    { /* variables */ },
+    { /* interface */
+      {"application.results_file_format", P_INT resultsFileFormat},
+      {"type", P_INT interfaceType}
+    },
+    { /* responses */
+      {"scalar_data_format", P_RES scalarDataFormat}
+    }
+  };
 
-  if (!dbRep)
-	Null_rep("get_ushort");
-  if ((L = Begins(entry_name, "environment."))) {
-    #define P &DataEnvironmentRep::
-    static KW<unsigned short, DataEnvironmentRep> UShde[] = {
-      // must be sorted by string (key)
-        {"interface_evals_selection", P interfEvalsSelection},
-        {"model_evals_selection", P modelEvalsSelection},
-        {"post_run_input_format", P postRunInputFormat},
-        {"pre_run_output_format", P preRunOutputFormat},
-        {"results_output_format", P resultsOutputFormat},
-        {"tabular_format", P tabularFormat}};
-    #undef P
-
-    KW<unsigned short, DataEnvironmentRep> *kw;
-    if ((kw = (KW<unsigned short, DataEnvironmentRep>*)Binsearch(UShde, L)))
-      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<unsigned short, DataMethodRep> UShdme[] = {
-      // must be sorted by string (key)
-	{"algorithm", P methodName},
-	{"export_approx_format", P exportApproxFormat},
-	{"import_approx_format", P importApproxFormat},
-	{"import_build_format", P importBuildFormat},
-	{"import_candidate_format", P importCandFormat},
-	{"import_prediction_configs_format", P importPredConfigFormat},
-	{"model_export_format", P modelExportFormat},
-	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
-      //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
-        {"nond.c3function_train.kick_order", P kickOrder},
-        {"nond.c3function_train.max_order", P maxOrder},
-        {"nond.c3function_train.start_order", P startOrder},
-	{"nond.calibrate_error_mode", P calibrateErrorMode},
-	{"nond.cubature_integrand", P cubIntOrder},
-	{"nond.expansion_order", P expansionOrder},
-	{"nond.export_corrected_model_format", P exportCorrModelFormat},
-	{"nond.export_corrected_variance_format", P exportCorrVarFormat},
-	{"nond.export_discrep_format", P exportDiscrepFormat},
-	{"nond.export_samples_format", P exportSamplesFormat},
-	{"nond.integration_refinement", P integrationRefine},
-	{"nond.pre_solve_method", P preSolveMethod},
-	{"nond.quadrature_order", P quadratureOrder},
-	{"nond.reliability_search_type", P reliabilitySearchType},
-	{"nond.sparse_grid_level", P sparseGridLevel},
-	{"nond.vbd_interaction_order", P vbdOrder},
-	{"order", P wilksOrder},
-	{"pstudy.import_format", P pstudyFileFormat},
-	{"sample_type", P sampleType},
-	{"soft_convergence_limit", P softConvLimit},
-	{"sub_method", P subMethod}};
-    #undef P
-
-    KW<unsigned short, DataMethodRep> *kw;
-    if ((kw = (KW<unsigned short, DataMethodRep>*)Binsearch(UShdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    static KW<unsigned short, DataModelRep> UShdmo[] = {
-      // must be sorted by string (key)
-	{"active_subspace.cv.id_method", P subspaceIdCVMethod},
-	{"active_subspace.normalization", P subspaceNormalization},
-	{"active_subspace.sample_type", P subspaceSampleType},
-	{"adapted_basis.expansion_order", P adaptedBasisExpOrder},
-	{"adapted_basis.sparse_grid_level", P adaptedBasisSparseGridLev},
-        {"c3function_train.kick_order", P kickOrder},
-        {"c3function_train.max_order", P maxOrder},
-        {"c3function_train.start_order", P startOrder},
-	{"rf.analytic_covariance", P analyticCovIdForm},
-	{"rf.expansion_form", P randomFieldIdForm},
-	{"surrogate.challenge_points_file_format", P importChallengeFormat},
-	{"surrogate.export_approx_format", P exportApproxFormat},
-	{"surrogate.export_approx_variance_format", P exportApproxVarianceFormat},
-	{"surrogate.import_build_format", P importBuildFormat},
-	{"surrogate.model_export_format", P modelExportFormat}};
-    #undef P
-
-    KW<unsigned short, DataModelRep> *kw;
-    if ((kw = (KW<unsigned short, DataModelRep>*)Binsearch(UShdmo, L)))
-	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "interface."))) {
-    if (dbRep->interfaceDBLocked)
-	Locked_db();
-    #define P &DataInterfaceRep::
-    static KW<unsigned short, DataInterfaceRep> UShdi[] = {
-      // must be sorted by string (key)
-	{"application.results_file_format", P resultsFileFormat},
-        {"type", P interfaceType}};
-    #undef P
-
-    KW<unsigned short, DataInterfaceRep> *kw;
-    if ((kw = (KW<unsigned short, DataInterfaceRep>*)Binsearch(UShdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "responses."))) {
-    if (dbRep->responsesDBLocked)
-	Locked_db();
-    #define P &DataResponsesRep::
-    static KW<unsigned short, DataResponsesRep> UShdr[] = {
-      // must be sorted by string (key)
-        {"scalar_data_format", P scalarDataFormat}};
-    #undef P
-
-    KW<unsigned short, DataResponsesRep> *kw;
-    if ((kw = (KW<unsigned short, DataResponsesRep>*)Binsearch(UShdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_ushort");
-  return abort_handler_t<unsigned short>(PARSE_ERROR);
+  return lookup.get(entry_name, dbRep);
 }
 
 
@@ -3101,199 +2721,141 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
 bool ProblemDescDB::get_bool(const String& entry_name) const
 {
-  const char *L;
-  if (!dbRep)
-	Null_rep("get_bool");
-  if ((L = Begins(entry_name, "environment."))) {
-    #define P &DataEnvironmentRep::
-    static KW<bool, DataEnvironmentRep> Bde[] = {
-      // must be sorted by string (key)
-	{"check", P checkFlag},
-	{"graphics", P graphicsFlag},
-	{"post_run", P postRunFlag},
-	{"pre_run", P preRunFlag},
-	{"results_output", P resultsOutputFlag},
-	{"run", P runFlag},
-	{"tabular_graphics_data", P tabularDataFlag}};
-    #undef P
-
-    KW<bool, DataEnvironmentRep> *kw;
-    if ((kw = (KW<bool, DataEnvironmentRep>*)Binsearch(Bde, L)))
-      return dbRep->environmentSpec.dataEnvRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<bool, DataMethodRep> Bdme[] = {
-      // must be sorted by string (key)
-	{"backfill", P backfillFlag},
-        {"chain_diagnostics", P chainDiagnostics},
-        {"chain_diagnostics.confidence_intervals", P chainDiagnosticsCI},
-	{"coliny.constant_penalty", P constantPenalty},
-	{"coliny.expansion", P expansionFlag},
-	{"coliny.randomize", P randomizeOrderFlag},
-	{"coliny.show_misc_options", P showMiscOptions},
-	{"derivative_usage", P methodUseDerivsFlag},
-	{"export_surrogate", P exportSurrogate},
-	{"fixed_seed", P fixedSeedFlag},
-	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
-	{"import_approx_active_only", P importApproxActive},
-	{"import_build_active_only", P importBuildActive},
-        {"laplace_approx", P modelEvidLaplace},
-	{"latinize", P latinizeFlag},
-	{"main_effects", P mainEffectsFlag},
-        {"mc_approx", P modelEvidMC},
-	{"mesh_adaptive_search.display_all_evaluations", P showAllEval},
-        {"model_evidence", P modelEvidence},
-	{"mutation_adaptive", P mutationAdaptive},
-	{"nl2sol.regression_diagnostics", P regressDiag},
-	{"nond.adapt_exp_design", P adaptExpDesign},
-	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
-	{"nond.allocation_target.variance.optimization", P useTargetVarianceOptimizationFlag},
-	{"nond.c3function_train.adapt_order", P adaptOrder},
-	{"nond.c3function_train.adapt_rank", P adaptRank},
-	{"nond.cross_validation", P crossValidation},
-	{"nond.cross_validation.noise_only", P crossValidNoiseOnly},
-	{"nond.d_optimal", P dOptimal},
-	{"nond.evaluate_posterior_density", P evaluatePosteriorDensity},
-	{"nond.export_sample_sequence", P exportSampleSeqFlag},
-	{"nond.generate_posterior_samples", P generatePosteriorSamples},
-	{"nond.gpmsa_normalize", P gpmsaNormalize},
-	{"nond.logit_transform", P logitTransform},
-	{"nond.model_discrepancy", P calModelDiscrepancy},
-	{"nond.mutual_info_ksg2", P mutualInfoKSG2},
-	{"nond.normalized", P normalizedCoeffs},
-	{"nond.piecewise_basis", P piecewiseBasis},
-	{"nond.relative_convergence_metric", P relativeConvMetric},
-	{"nond.standardized_space", P standardizedSpace},
-	{"nond.tensor_grid", P tensorGridFlag},
-	{"posterior_stats.kde", P posteriorStatsKDE},
-	{"posterior_stats.kl_divergence", P posteriorStatsKL},
-	{"posterior_stats.mutual_info", P posteriorStatsMutual},
-	{"principal_components", P pcaFlag},
-	{"print_each_pop", P printPopFlag},
-	{"pstudy.import_active_only", P pstudyFileActive},
-	{"quality_metrics", P volQualityFlag},
-	{"sbg.replace_points", P surrBasedGlobalReplacePts},
-	{"sbl.truth_surrogate_bypass", P surrBasedLocalLayerBypass},
-	{"scaling", P methodScaling},
-	{"speculative", P speculativeFlag},
-	{"variance_based_decomp", P vbdFlag},
-	{"wilks", P wilksFlag}};
-    #undef P
-
-    KW<bool, DataMethodRep> *kw;
-    if ((kw = (KW<bool, DataMethodRep>*)Binsearch(Bdme, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    static KW<bool, DataModelRep> Bdmo[] = {
-      // must be sorted by string (key)
-	{"active_subspace.build_surrogate", P subspaceBuildSurrogate},
-	{"active_subspace.cv.incremental", P subspaceCVIncremental},
-	{"active_subspace.truncation_method.bing_li", P subspaceIdBingLi},
-	{"active_subspace.truncation_method.constantine", P subspaceIdConstantine},
-	{"active_subspace.truncation_method.cv", P subspaceIdCV},
-	{"active_subspace.truncation_method.energy", P subspaceIdEnergy},
-        {"c3function_train.adapt_order", P adaptOrder},
-        {"c3function_train.adapt_rank", P adaptRank},
-	{"c3function_train.tensor_grid", P tensorGridFlag},
-	{"hierarchical_tags", P hierarchicalTags},
-	{"nested.identity_resp_map", P identityRespMap},
-	{"surrogate.auto_refine", P autoRefine},
-	{"surrogate.challenge_points_file_active", P importChallengeActive},
-	{"surrogate.challenge_use_variable_labels", P importChalUseVariableLabels},
-	{"surrogate.cross_validate", P crossValidateFlag},
-	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
-	{"surrogate.derivative_usage", P modelUseDerivsFlag},
-	{"surrogate.domain_decomp", P domainDecomp},
-	{"surrogate.export_surrogate", P exportSurrogate},
-	{"surrogate.import_build_active_only", P importBuildActive},
-	{"surrogate.import_use_variable_labels", P importUseVariableLabels},
-	{"surrogate.point_selection", P pointSelection},
-	{"surrogate.press", P pressFlag}};
-    #undef P
-
-    KW<bool, DataModelRep> *kw;
-    if ((kw = (KW<bool, DataModelRep>*)Binsearch(Bdmo, L)))
-	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<bool, DataVariablesRep> Bdv[] = {
-      // must be sorted by string (key)
-	{"uncertain.initial_point_flag", P uncertainVarsInitPt}};
-    #undef P
-
-    KW<bool, DataVariablesRep> *kw;
-    if ((kw = (KW<bool, DataVariablesRep>*)Binsearch(Bdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "interface."))) {
-    if (dbRep->interfaceDBLocked)
-	Locked_db();
-    #define P &DataInterfaceRep::
-    static KW<bool, DataInterfaceRep> Bdi[] = {
-      // must be sorted by string (key)
-	{"active_set_vector", P activeSetVectorFlag},
-	{"allow_existing_results", P allowExistingResultsFlag},
-	{"application.aprepro", P apreproFlag},
-	{"application.file_save", P fileSaveFlag},
-	{"application.file_tag", P fileTagFlag},
-	{"application.verbatim", P verbatimFlag},
-        {"asynch", P asynchFlag},
-        {"batch", P batchEvalFlag},
-	{"dirSave", P dirSave},
-	{"dirTag", P dirTag},
-	{"evaluation_cache", P evalCacheFlag},
-	{"nearby_evaluation_cache", P nearbyEvalCacheFlag},
-	{"python.numpy", P numpyFlag},
-	{"restart_file", P restartFileFlag},
-	{"templateReplace", P templateReplace},
-	{"useWorkdir", P useWorkdir}};
-    #undef P
-
-    KW<bool, DataInterfaceRep> *kw;
-    if ((kw = (KW<bool, DataInterfaceRep>*)Binsearch(Bdi, L)))
-	return dbRep->dataInterfaceIter->dataIfaceRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "responses."))) {
-    if (dbRep->responsesDBLocked)
-	Locked_db();
-    #define P &DataResponsesRep::
-    static KW<bool, DataResponsesRep> Bdr[] = {
-      // must be sorted by string (key)
-	{"calibration_data", P calibrationDataFlag},
-	{"central_hess", P centralHess},
-	{"ignore_bounds", P ignoreBounds},
-	{"interpolate", P interpolateFlag},
-	{"read_field_coordinates", P readFieldCoords}};
-    #undef P
-
-    KW<bool, DataResponsesRep> *kw;
-    if ((kw = (KW<bool, DataResponsesRep>*)Binsearch(Bdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_bool");
-  return abort_handler_t<bool>(PARSE_ERROR);
+  static LookerUpper<bool> lookup
+  { "get_bool",
+    { /* environment */
+      {"check", P_ENV checkFlag},
+      {"graphics", P_ENV graphicsFlag},
+      {"post_run", P_ENV postRunFlag},
+      {"pre_run", P_ENV preRunFlag},
+      {"results_output", P_ENV resultsOutputFlag},
+      {"run", P_ENV runFlag},
+      {"tabular_graphics_data", P_ENV tabularDataFlag}
+    },
+    { /* method */
+      {"backfill", P_MET backfillFlag},
+      {"chain_diagnostics", P_MET chainDiagnostics},
+      {"chain_diagnostics.confidence_intervals", P_MET chainDiagnosticsCI},
+      {"coliny.constant_penalty", P_MET constantPenalty},
+      {"coliny.expansion", P_MET expansionFlag},
+      {"coliny.randomize", P_MET randomizeOrderFlag},
+      {"coliny.show_misc_options", P_MET showMiscOptions},
+      {"derivative_usage", P_MET methodUseDerivsFlag},
+      {"export_surrogate", P_MET exportSurrogate},
+      {"fixed_seed", P_MET fixedSeedFlag},
+      {"fsu_quasi_mc.fixed_sequence", P_MET fixedSequenceFlag},
+      {"import_approx_active_only", P_MET importApproxActive},
+      {"import_build_active_only", P_MET importBuildActive},
+      {"laplace_approx", P_MET modelEvidLaplace},
+      {"latinize", P_MET latinizeFlag},
+      {"main_effects", P_MET mainEffectsFlag},
+      {"mc_approx", P_MET modelEvidMC},
+      {"mesh_adaptive_search.display_all_evaluations", P_MET showAllEval},
+      {"model_evidence", P_MET modelEvidence},
+      {"mutation_adaptive", P_MET mutationAdaptive},
+      {"nl2sol.regression_diagnostics", P_MET regressDiag},
+      {"nond.adapt_exp_design", P_MET adaptExpDesign},
+      {"nond.adaptive_posterior_refinement", P_MET adaptPosteriorRefine},
+      {"nond.allocation_target.variance.optimization", P_MET useTargetVarianceOptimizationFlag},
+      {"nond.c3function_train.adapt_order", P_MET adaptOrder},
+      {"nond.c3function_train.adapt_rank", P_MET adaptRank},
+      {"nond.cross_validation", P_MET crossValidation},
+      {"nond.cross_validation.noise_only", P_MET crossValidNoiseOnly},
+      {"nond.d_optimal", P_MET dOptimal},
+      {"nond.evaluate_posterior_density", P_MET evaluatePosteriorDensity},
+      {"nond.export_sample_sequence", P_MET exportSampleSeqFlag},
+      {"nond.generate_posterior_samples", P_MET generatePosteriorSamples},
+      {"nond.gpmsa_normalize", P_MET gpmsaNormalize},
+      {"nond.logit_transform", P_MET logitTransform},
+      {"nond.model_discrepancy", P_MET calModelDiscrepancy},
+      {"nond.mutual_info_ksg2", P_MET mutualInfoKSG2},
+      {"nond.normalized", P_MET normalizedCoeffs},
+      {"nond.piecewise_basis", P_MET piecewiseBasis},
+      {"nond.relative_convergence_metric", P_MET relativeConvMetric},
+      {"nond.standardized_space", P_MET standardizedSpace},
+      {"nond.tensor_grid", P_MET tensorGridFlag},
+      {"posterior_stats.kde", P_MET posteriorStatsKDE},
+      {"posterior_stats.kl_divergence", P_MET posteriorStatsKL},
+      {"posterior_stats.mutual_info", P_MET posteriorStatsMutual},
+      {"principal_components", P_MET pcaFlag},
+      {"print_each_pop", P_MET printPopFlag},
+      {"pstudy.import_active_only", P_MET pstudyFileActive},
+      {"quality_metrics", P_MET volQualityFlag},
+      {"sbg.replace_points", P_MET surrBasedGlobalReplacePts},
+      {"sbl.truth_surrogate_bypass", P_MET surrBasedLocalLayerBypass},
+      {"scaling", P_MET methodScaling},
+      {"speculative", P_MET speculativeFlag},
+      {"variance_based_decomp", P_MET vbdFlag},
+      {"wilks", P_MET wilksFlag}
+    },
+    { /* model */
+      {"active_subspace.build_surrogate", P_MOD subspaceBuildSurrogate},
+      {"active_subspace.cv.incremental", P_MOD subspaceCVIncremental},
+      {"active_subspace.truncation_method.bing_li", P_MOD subspaceIdBingLi},
+      {"active_subspace.truncation_method.constantine", P_MOD subspaceIdConstantine},
+      {"active_subspace.truncation_method.cv", P_MOD subspaceIdCV},
+      {"active_subspace.truncation_method.energy", P_MOD subspaceIdEnergy},
+      {"c3function_train.adapt_order", P_MOD adaptOrder},
+      {"c3function_train.adapt_rank", P_MOD adaptRank},
+      {"c3function_train.tensor_grid", P_MOD tensorGridFlag},
+      {"hierarchical_tags", P_MOD hierarchicalTags},
+      {"nested.identity_resp_map", P_MOD identityRespMap},
+      {"surrogate.auto_refine", P_MOD autoRefine},
+      {"surrogate.challenge_points_file_active", P_MOD importChallengeActive},
+      {"surrogate.challenge_use_variable_labels", P_MOD importChalUseVariableLabels},
+      {"surrogate.cross_validate", P_MOD crossValidateFlag},
+      {"surrogate.decomp_discont_detect", P_MOD decompDiscontDetect},
+      {"surrogate.derivative_usage", P_MOD modelUseDerivsFlag},
+      {"surrogate.domain_decomp", P_MOD domainDecomp},
+      {"surrogate.export_surrogate", P_MOD exportSurrogate},
+      {"surrogate.import_build_active_only", P_MOD importBuildActive},
+      {"surrogate.import_use_variable_labels", P_MOD importUseVariableLabels},
+      {"surrogate.point_selection", P_MOD pointSelection},
+      {"surrogate.press", P_MOD pressFlag}
+    },
+    { /* variables */
+      {"uncertain.initial_point_flag", P_VAR uncertainVarsInitPt}
+    },
+    { /* interface */
+      {"active_set_vector", P_INT activeSetVectorFlag},
+      {"allow_existing_results", P_INT allowExistingResultsFlag},
+      {"application.aprepro", P_INT apreproFlag},
+      {"application.file_save", P_INT fileSaveFlag},
+      {"application.file_tag", P_INT fileTagFlag},
+      {"application.verbatim", P_INT verbatimFlag},
+      {"asynch", P_INT asynchFlag},
+      {"batch", P_INT batchEvalFlag},
+      {"dirSave", P_INT dirSave},
+      {"dirTag", P_INT dirTag},
+      {"evaluation_cache", P_INT evalCacheFlag},
+      {"nearby_evaluation_cache", P_INT nearbyEvalCacheFlag},
+      {"python.numpy", P_INT numpyFlag},
+      {"restart_file", P_INT restartFileFlag},
+      {"templateReplace", P_INT templateReplace},
+      {"useWorkdir", P_INT useWorkdir}
+    },
+    { /* responses */
+      {"calibration_data", P_RES calibrationDataFlag},
+      {"central_hess", P_RES centralHess},
+      {"ignore_bounds", P_RES ignoreBounds},
+      {"interpolate", P_RES interpolateFlag},
+      {"read_field_coordinates", P_RES readFieldCoords}
+    }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 void** ProblemDescDB::get_voidss(const String& entry_name) const
 {
-	if (entry_name == "method.dl_solver.dlLib") {
-		if (dbRep->methodDBLocked)
-			Locked_db();
-		return &dbRep->dataMethodIter->dataMethodRep->dlLib;
-		}
-	Bad_name(entry_name, "get_voidss");
-	return abort_handler_t<void**>(PARSE_ERROR);
-	}
+  if (entry_name == "method.dl_solver.dlLib") {
+    if (dbRep->methodDBLocked)
+      Locked_db();
+    return &dbRep->dataMethodIter->dataMethodRep->dlLib;
+  }
+  Bad_name(entry_name, "get_voidss");
+  return abort_handler_t<void**>(PARSE_ERROR);
+}
 
 void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 {
