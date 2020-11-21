@@ -74,7 +74,7 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 }
 
 
-void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
+bool SurrogateModel::check_active_variables(const Model& sub_model)
 {
   // Check for compatible array sizing between sub_model and currentVariables,
   // accounting for the use of different views in different variables sets:
@@ -149,11 +149,55 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
   }
   //else: other options are specific to DataFit and Hierarch surrogates
 
-  if (error_flag)
-    abort_handler(-1);
+  return error_flag;
 }
 
 
+bool SurrogateModel::check_inactive_variables(const Model& sub_model)
+{
+  bool error_flag = false;
+  // TO DO: Bayes exp design (hi2lo) introduces new requirements on a
+  // hierarchical model, and MF active subspaces will as well.
+  // > For (simulation-based) OED, one option is to enforce consistency in
+  //   inactive state (config vars) and allow active parameterization to vary.
+  // > For hi2lo, this implies that the active variable subset could be null
+  //   for HF, as the active calibration variables only exist for LF.
+  size_t sm_icv = sub_model.icv(),  sm_idiv = sub_model.idiv(),
+    sm_idsv = sub_model.idsv(),     sm_idrv = sub_model.idrv(),
+    icv  = currentVariables.icv(),  idiv = currentVariables.idiv(),
+    idsv = currentVariables.idsv(), idrv = currentVariables.idrv();
+  if (sm_icv != icv || sm_idiv != idiv || sm_idsv != idsv || sm_idrv != idrv) {
+    Cerr << "Error: incompatibility between subordinate and aggregate model "
+	 << "variable sets within\n       SurrogateModel: inactive "
+	 << "subordinate = " << icv << " continuous, " << idiv
+	 << " discrete int, " << idsv << " discrete string, and " << idrv
+	 << " discrete real and\n       inactive aggregate = " << sm_icv
+	 << " continuous, " << sm_idiv << " discrete int, " << sm_idsv
+	 << " discrete string, and " << sm_idrv << " discrete real.  Check "
+	 << "consistency of variables specifications." << std::endl;
+    error_flag = true;
+  }
+  return error_flag;
+}
+
+
+bool SurrogateModel::check_response_qoi(const Model& sub_model)
+{
+  bool error_flag = false;
+  // Check for compatible array sizing between sub_model and currentResponse.
+  // NonHierarchSurrModel creates aggregations (and a DataFitSurrModel will
+  // consume them). Aggregations may span truthModel, unorderedModels, or both.
+  // For now, allow any aggregation factor.
+  size_t sm_qoi = sub_model.qoi();//, aggregation = numFns / sm_qoi;
+  if ( numFns % sm_qoi ) {
+    Cerr << "Error: incompatibility between subordinate and aggregate model "
+	 << "response function sets\n       within SurrogateModel: " << numFns
+	 << " aggregate and " << sm_qoi << " subordinate functions.\n       "
+	 << "Check consistency of responses specifications." << std::endl;
+    error_flag = true;
+  }
+  return error_flag;
+}
 
 
 /** Update variables and constraints data within model using

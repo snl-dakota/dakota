@@ -94,11 +94,18 @@ protected:
   /// verify compatibility between SurrogateModel attributes and
   /// attributes of the submodel (DataFitSurrModel::actualModel or
   /// HierarchSurrModel::highFidelityModel)
-  virtual void check_submodel_compatibility(const Model& sub_model);
+  virtual void check_submodel_compatibility(const Model& sub_model) = 0;
 
   //
   //- Heading: Member functions
   //
+
+  /// check sub_model for consistency in active variable counts
+  bool check_active_variables(const Model& sub_model);
+  /// check sub_model for consistency in inactive variable counts
+  bool check_inactive_variables(const Model& sub_model);
+  /// check sub_model for consistency in response QoI counts
+  bool check_response_qoi(const Model& sub_model);
 
   /// distributes the incoming orig_asv among actual_asv and approx_asv
   void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
@@ -116,10 +123,6 @@ protected:
   void update_model(Model& model);
   /// update current variables/labels/bounds/targets with data from model
   void update_from_model(const Model& model);
-
-  /// define truth and surrogate keys from incoming active key
-  void extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
-			  UShortArray& surr_key);
 
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;
@@ -295,22 +298,6 @@ trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
 
 inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
-
-
-inline void SurrogateModel::
-extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
-		   UShortArray& surr_key)
-{
-  if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
-    Pecos::DiscrepancyCalculator::extract_keys(active_key, truth_key, surr_key);
-  else // single key: assign to truth or surr key based on responseMode
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
-      surr_key  = active_key;  truth_key.clear();  break;
-    default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
-      truth_key = active_key;   surr_key.clear();  break;
-    }
-}
 
 
 inline void SurrogateModel::active_model_key(const UShortArray& key)

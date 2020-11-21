@@ -177,10 +177,17 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// initialize truthModelKey and unorderedModelKeys to default values
+  void assign_default_keys();
+
   /// assign the resolution level for the model form indicated by the key
   void assign_key(const UShortArray& key);
   /// assign the resolution level for the i-th model key
   void assign_key(size_t i);
+
+  /// define truth key and surrogate key array from incoming active key
+  void extract_model_keys(const UShortArray& active_key,
+			  UShortArray& truth_key, UShort2DArray& surr_keys);
 
   /// utility for propagating new key values
   void key_updates(unsigned short model_index, unsigned short soln_lev_index);
@@ -311,25 +318,32 @@ inline size_t NonHierarchSurrModel::qoi() const
 }
 
 
-/*
 inline void NonHierarchSurrModel::check_model_interface_instance()
 {
-  unsigned short
-    lf_form = ( surrModelKey.empty()) ? USHRT_MAX :  surrModelKey[1],
-    hf_form = (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1];
+  unsigned short hf_form = model_form(truthModelKey);
 
-  if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
-    sameModelInstance = sameInterfaceInstance = false; // including both undef
+  size_t i, num_unord = unorderedModelKeys.size();
+  if (hf_form == USHRT_MAX || num_unord == 0)
+    sameModelInstance = sameInterfaceInstance = false;
   else {
-    sameModelInstance = (lf_form == hf_form);
-    if (sameModelInstance) sameInterfaceInstance = true;
-    else
-      sameInterfaceInstance
-	= (surrogate_model().interface_id() == truth_model().interface_id());
+    sameModelInstance = true;
+    for (i=0; i<num_unord; ++i)
+      if (model_form(unorderedModelKeys[i]) != hf_form)
+	{ sameModelInstance = false; break; }
+  }
+
+  if (sameModelInstance) sameInterfaceInstance = true;
+  else {
+    const String& hf_id = truthModel.interface_id();
+    sameInterfaceInstance = true;
+    for (i=0; i<num_unord; ++i)
+      if (unorderedModels[i].interface_id() != hf_id)
+	{ sameInterfaceInstance = false; break; }
   }
 }
 
 
+/*
 inline Model& NonHierarchSurrModel::surrogate_model()
 {
   unsigned short lf_form = (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[1];
@@ -375,8 +389,7 @@ inline void NonHierarchSurrModel::assign_key(const UShortArray& key)
 {
   unsigned short form = model_form(key);
   if (form != USHRT_MAX) {
-    Model& model = (form < unorderedModels.size()) ?
-      unorderedModels[form] : truthModel;
+    Model& model = (form) ? unorderedModels[form-1] : truthModel;
     model.solution_level_cost_index(resolution_level(key));
   }
 }
@@ -384,8 +397,25 @@ inline void NonHierarchSurrModel::assign_key(const UShortArray& key)
 
 inline void NonHierarchSurrModel::assign_key(size_t i)
 {
-  if (i < unorderedModels.size()) assign_key(unorderedModelKeys[i]);
-  else if (i != _NPOS)            assign_key(truthModelKey);
+  if      (i == 0)     assign_key(truthModelKey);
+  else if (i != _NPOS) assign_key(unorderedModelKeys[i-1]);
+}
+
+
+inline void NonHierarchSurrModel::
+extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+		   UShort2DArray& surr_keys)
+{
+  //if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
+    Pecos::DiscrepancyCalculator::
+      extract_keys(active_key, truth_key, surr_keys);
+  //else // single key: assign to truth or surr key based on responseMode
+  //  switch (responseMode) {
+  //  case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
+  //    surr_key  = active_key;  truth_key.clear();  break;
+  //  default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
+  //    truth_key = active_key;   surr_key.clear();  break;
+  //  }
 }
 
 
@@ -394,15 +424,14 @@ inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
   // assign activeKey
   SurrogateModel::active_model_key(key);
 
-  /* *** TO DO: activate solution levels within truth/unordered models
-
-  // update {truth,surr}ModelKey
-  extract_model_keys(key, unorderedModelKeys, truthModelKey);
+  // update {truth,unordered}ModelKey
+  extract_model_keys(key, truthModelKey, unorderedModelKeys);
 
   // assign same{Model,Interface}Instance
-  //check_model_interface_instance();
+  check_model_interface_instance();
 
   // Unconditional for now (no sameModelInstance)
+  size_t i, num_unordered_models = unorderedModelKeys.size();
   for (i=0; i<num_unordered_models; ++i)
     assign_key(unorderedModelKeys[i]);
   assign_key(truthModelKey);
@@ -413,7 +442,6 @@ inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
   // generally special case invocations from Iterator code (e.g., with
   // locally-managed Model recursions).
   //update_from_model(truthModel);
-  */
 }
 
 
@@ -583,12 +611,12 @@ inline void NonHierarchSurrModel::stop_servers()
 inline void NonHierarchSurrModel::stop_model(short model_id)
 {
   if (model_id) {
-    Model& model = (model_id <= unorderedModels.size()) ?
-      unorderedModels[model_id-1] : truthModel;
+    short model_index = model_id - 1; // id to index
+    Model& model = (model_index) ? unorderedModels[model_index-1] : truthModel;
     ParConfigLIter pc_it = model.parallel_configuration_iterator();
-    size_t index = model.mi_parallel_level_index();
-    if (pc_it->mi_parallel_level_defined(index) &&
-	pc_it->mi_parallel_level(index).server_communicator_size() > 1)
+    size_t pl_index = model.mi_parallel_level_index();
+    if (pc_it->mi_parallel_level_defined(pl_index) &&
+	pc_it->mi_parallel_level(pl_index).server_communicator_size() > 1)
       model.stop_servers();
   }
 }

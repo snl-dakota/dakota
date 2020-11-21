@@ -214,6 +214,10 @@ private:
   /// synchronize the LF model's solution level control with surrModelKey
   void assign_surrogate_key();
 
+  /// define truth and surrogate keys from incoming active key
+  void extract_model_keys(const UShortArray& active_key,
+			  UShortArray& truth_key, UShortArray& surr_key);
+
   /// helper to select among Variables::all_discrete_{int,string,real}_
   /// variable_labels() for exporting a solution control variable label
   const String& solution_control_label();
@@ -492,6 +496,22 @@ inline void HierarchSurrModel::assign_surrogate_key()
   if (lf_form != USHRT_MAX)
     orderedModels[lf_form].solution_level_cost_index(
       resolution_level(surrModelKey));
+}
+
+
+inline void HierarchSurrModel::
+extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+		   UShortArray& surr_key)
+{
+  if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
+    Pecos::DiscrepancyCalculator::extract_keys(active_key, truth_key, surr_key);
+  else // single key: assign to truth or surr key based on responseMode
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
+      surr_key  = active_key;  truth_key.clear();  break;
+    default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
+      truth_key = active_key;   surr_key.clear();  break;
+    }
 }
 
 

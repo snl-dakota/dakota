@@ -339,7 +339,21 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 
 void DataFitSurrModel::check_submodel_compatibility(const Model& sub_model)
 {
-  bool error_flag = false;
+  bool err1 = check_active_variables(sub_model), err2 = false, err3 = false;
+
+  // cases not covered by the SurrogateModel check are disallowed for DFSModel
+  short active_view = currentVariables.view().first,
+     sm_active_view = sub_model.current_variables().view().first;
+  if ( !( active_view == sm_active_view ||
+	( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
+	  active_view >= RELAXED_DESIGN ) ||
+	( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
+	  sm_active_view >= RELAXED_DESIGN ) ) ) {
+    Cerr << "Error: unsupported variable view differences between approximate "
+	 << "and actual models within DataFitSurrModel." << std::endl;
+    err2 = true;
+  }
+
   // Check for compatible array sizing between sub_model and currentResponse.
   // HierarchSurrModel creates aggregations and DataFitSurrModel consumes them.
   // For now, allow either a factor of 2 or 1 from aggregation or not.  In the
@@ -352,27 +366,11 @@ void DataFitSurrModel::check_submodel_compatibility(const Model& sub_model)
 	 << "response function sets\n       within DataFitSurrModel: " << numFns
 	 << " approximate and " << sm_qoi << " actual functions.\n       "
 	 << "Check consistency of responses specifications." << std::endl;
-    error_flag = true;
+    err3 = true;
   }
 
-  // check view-based variable counts:
-  SurrogateModel::check_submodel_compatibility(sub_model);
-  // cases not covered by the SurrogateModel check are disallowed for DFSModel
-  short active_view = currentVariables.view().first,
-     sm_active_view = sub_model.current_variables().view().first;
-  if ( !( active_view == sm_active_view ||
-	( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
-	  active_view >= RELAXED_DESIGN ) ||
-	( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
-	  sm_active_view >= RELAXED_DESIGN ) ) ) {
-    Cerr << "Error: unsupported variable view differences between "
-   	     << "approximate and actual models within DataFitSurrModel."
-   	     << std::endl;
-    error_flag = true;
-  }
-
-  if (error_flag)
-    abort_handler(-1);
+  if (err1 || err2 || err3)
+    abort_handler(MODEL_ERROR);
 }
 
 

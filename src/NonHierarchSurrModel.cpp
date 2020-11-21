@@ -55,76 +55,45 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
 
   problem_db.set_db_model_nodes(model_index); // restore
 
-  /*
-  // default index values, to be overridden at run time
-  surrModelKey.assign(3, 0); truthModelKey.assign(3, 0);
-  if (num_models == 1) // first and last solution level (1 model)
-    truthModelKey[2] = orderedModels[0].solution_levels() - 1;
-  else { // first and last model form (solution levels ignored)
-    truthModelKey[1] = num_models - 1;
-    surrModelKey[2]  = truthModelKey[2] = USHRT_MAX;
-  }
-  Pecos::DiscrepancyCalculator::
-    aggregate_keys(truthModelKey, surrModelKey, activeKey);
-  check_model_interface_instance();
+  assign_default_keys();
+}
 
-  // Correction is required in NonHierarchSurrModel for some responseModes.
-  // Enforcement of a correction type for these modes occurs in
-  // surrogate_response_mode(short).
-  switch (responseMode) {
-  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
-    if (corrType) // initialize DiscrepancyCorrection using initial keys
-      deltaCorr[activeKey].initialize(surrogate_model(), surrogateFnIndices,
-				      corrType, corrOrder);
-    break;
+
+void NonHierarchSurrModel::assign_default_keys()
+{
+  // default key values, to be overridden at run time
+  truthModelKey.assign(3, 0);
+  size_t hf_soln_lev = truthModel.solution_levels();
+  truthModelKey[2] = (hf_soln_lev > 1) ? hf_soln_lev - 1 : USHRT_MAX;
+
+  if (responseMode == BYPASS_SURROGATE)
+    unorderedModelKeys.clear();
+  else {
+    size_t i, num_unord = unorderedModels.size(), lf_soln_lev;
+    unorderedModelKeys.resize(num_unord);
+    for (i=0; i<num_unord; ++i) {
+      UShortArray& key_i = unorderedModelKeys[i];
+      key_i.resize(3);  key_i[0] = 0;                             // group
+      key_i[1] = i+1;                                             // model form
+      lf_soln_lev = unorderedModels[i].solution_levels();
+      key_i[2] = (lf_soln_lev > 1) ? lf_soln_lev - 1 : USHRT_MAX; // soln lev
+    }
   }
-  //truthResponseRef[truthModelKey] = currentResponse.copy();
-  */
+
+  Pecos::DiscrepancyCalculator::
+    aggregate_keys(truthModelKey, unorderedModelKeys, activeKey);
+  check_model_interface_instance();
 }
 
 
 void NonHierarchSurrModel::check_submodel_compatibility(const Model& sub_model)
 {
-  SurrogateModel::check_submodel_compatibility(sub_model);
-  
-  bool error_flag = false;
-  // Check for compatible array sizing between sub_model and currentResponse.
-  // NonHierarchSurrModel creates aggregations (and a DataFitSurrModel will
-  // consume them). Aggregations may span truthModel, unorderedModels, or both.
-  // For now, allow any aggregation factor.
-  size_t sm_qoi = sub_model.qoi();//, aggregation = numFns / sm_qoi;
-  if ( numFns % sm_qoi ) {
-    Cerr << "Error: incompatibility between subordinate and aggregate model "
-	 << "response function sets\n       within NonHierarchSurrModel: "
-	 << numFns << " aggregate and " << sm_qoi << " subordinate functions.\n"
-	 << "       Check consistency of responses specifications."<< std::endl;
-    error_flag = true;
-  }
+  bool err1 = check_active_variables(sub_model),
+       err2 = check_inactive_variables(sub_model),
+       err3 = check_response_qoi(sub_model);
 
-  // TO DO: Bayes exp design (hi2lo) introduces new requirements on a
-  // hierarchical model, and MF active subspaces will as well.
-  // > For (simulation-based) OED, one option is to enforce consistency in
-  //   inactive state (config vars) and allow active parameterization to vary.
-  // > For hi2lo, this implies that the active variable subset could be null
-  //   for HF, as the active calibration variables only exist for LF.
-  size_t sm_icv = sub_model.icv(),  sm_idiv = sub_model.idiv(),
-    sm_idsv = sub_model.idsv(),     sm_idrv = sub_model.idrv(),
-    icv  = currentVariables.icv(),  idiv = currentVariables.idiv(),
-    idsv = currentVariables.idsv(), idrv = currentVariables.idrv();
-  if (sm_icv != icv || sm_idiv != idiv || sm_idsv != idsv || sm_idrv != idrv) {
-    Cerr << "Error: incompatibility between subordinate and aggregate model "
-	 << "variable sets within\n       NonHierarchSurrModel: inactive "
-	 << "subordinate = " << icv << " continuous, " << idiv
-	 << " discrete int, " << idsv << " discrete string, and " << idrv
-	 << " discrete real and\n       inactive aggregate = " << sm_icv
-	 << " continuous, " << sm_idiv << " discrete int, " << sm_idsv
-	 << " discrete string, and " << sm_idrv << " discrete real.  Check "
-	 << "consistency of variables specifications." << std::endl;
-    error_flag = true;
-  }
-
-  if (error_flag)
-    abort_handler(-1);
+  if (err1 || err2 || err3)
+    abort_handler(MODEL_ERROR);
 }
 
 
@@ -400,9 +369,8 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
     for (size_t i=0; i<num_models; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       if (test_asv(asv_i)) {
-	Model& model_i = (i < num_unord_models) ? unorderedModels[i]
-	               : truthModel;
-	component_parallel_mode(i+1); // model id (0 is reserved)
+	Model& model_i = (i) ? unorderedModels[i-1] : truthModel;
+	component_parallel_mode(i+1); // index to id (0 is reserved)
 	if (sameModelInstance) assign_key(i);
 	else                   update_model(model_i);
 	set_i.request_vector(asv_i);
@@ -460,8 +428,7 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     // first pass for nonblocking models
     for (i=0; i<num_models; ++i) {
       ShortArray& asv_i = indiv_asv[i];
-      Model& model_i = (i < num_unord_models) ? unorderedModels[i]
-	             : truthModel;
+      Model& model_i = (i) ? unorderedModels[i-1] : truthModel;
       if (model_i.asynch_flag() && test_asv(asv_i)) {
 	if (sameModelInstance) assign_key(i);
 	else                   update_model(model_i);
@@ -473,8 +440,7 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     // second pass for blocking models
     for (i=0; i<num_models; ++i) {
       ShortArray& asv_i = indiv_asv[i];
-      Model& model_i = (i < num_unord_models) ? unorderedModels[i]
-	             : truthModel;
+      Model& model_i = (i) ? unorderedModels[i-1] : truthModel;
       if (!model_i.asynch_flag() && test_asv(asv_i)) {
 	component_parallel_mode(i+1); // model id (0 is reserved)
 	if (sameModelInstance) assign_key(i);
@@ -550,11 +516,11 @@ derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
   size_t i, num_models = model_resp_maps_rekey.size(),
       num_unord_models = unorderedModels.size();
   for (i=0; i<num_models; ++i) {
-    Model& model = (i < num_unord_models) ? unorderedModels[i] : truthModel;
+    Model& model = (i) ? unorderedModels[i-1] : truthModel;
     IntIntMap& model_id_map = modelIdMap[i];
     IntResponseMap& model_resp_map = model_resp_maps_rekey[i];
     if (!model_id_map.empty()) { // synchronize evals for i-th Model
-      component_parallel_mode(i+1); // model id (0 is reserved)
+      component_parallel_mode(i+1); // index to id (0 is reserved)
       rekey_synch(model, block, model_id_map, model_resp_map);
     }
     // add cached evals from:
@@ -703,9 +669,11 @@ void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 
 void NonHierarchSurrModel::component_parallel_mode(short model_id)
 {
-  // This implemenation differs from others tha accept a mode enum.  Here we
-  // still support the virtual API of passing a short, but we reinterpret as
-  // model id (not model_index since 0 is reserved for use by stop_servers())
+  // This implementation differs from others that accept a par_mode enum.  Here
+  // we still support the virtual API of passing a short, but we reinterpret as
+  // model id (not model_index since 0 is reserved for use by stop_servers()).
+  // This essentially extends from the pair of {SURROGATE,TRUTH}_MODEL_MODE to
+  // an open-ended number of models.
 
   // mode may be correct, but can't guarantee active parallel config is in sync
   //if (componentParallelMode == mode)
@@ -722,11 +690,11 @@ void NonHierarchSurrModel::component_parallel_mode(short model_id)
   // TO DO: restarting servers for a change in soln control index w/o change
   // in model may be overkill (send of state vars in vars buffer sufficient?)
   if (componentParallelMode != model_id || componentParallelKey != activeKey) {
-    //UShort2DArray old_keys;
-    //extract_model_keys(componentParallelKey, old_keys);
+    //UShortArray old_truth;  UShort2DArray old_surr;
+    //extract_model_keys(componentParallelKey, old_truth, old_surr);
     //switch (componentParallelMode) {
-    //case SURROGATE_MODEL_MODE:  stop_model(old_lf_key[1]);  break;
-    //case     TRUTH_MODEL_MODE:  stop_model(old_hf_key[1]);  break;
+    //case SURROGATE_MODEL_MODE:  stop_model(old_surr[model_id][1]);  break;
+    //case     TRUTH_MODEL_MODE:  stop_model(old_truth[1]);  break;
     //}
     stop_model(componentParallelMode);
 
@@ -758,12 +726,12 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
   // match communication from NonHierarchSurrModel::component_parallel_mode()
   componentParallelMode = 1; // dummy value for entering loop
-  while (componentParallelMode) {
+  while (componentParallelMode) { // model id is bcast, so 0 is exit code
     parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
     if (componentParallelMode) {
-      // *** TO DO: aggregate keys required for tagging surrogate data ***
       // use a quick size estimation for recv buffer i/o size bcast
-      UShortArray dummy_key(5, 0); // for size estimation (worst 2-model case)
+      size_t num_mod = unorderedModels.size() + 1;
+      UShortArray dummy_key(1+2*num_mod, 0);// for size estimation
       MPIPackBuffer send_buff;  send_buff << responseMode << dummy_key;
       int buffer_len = send_buff.size();
 
@@ -774,8 +742,7 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
       active_model_key(activeKey);
       size_t index = componentParallelMode - 1; // id to index
-      Model& model = (index < unorderedModels.size()) ?
-	unorderedModels[index] : truthModel;
+      Model& model = (index) ? unorderedModels[index-1] : truthModel;
       model.serve_run(pl_iter, max_eval_concurrency);
     }
   }
