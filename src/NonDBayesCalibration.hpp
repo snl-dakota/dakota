@@ -149,8 +149,18 @@ protected:
   void print_hi2lo_selected(int num_it, int batchEvals, RealMatrix& 
       			    optimal_config_matrix, const RealVector& 
 			    optimal_config, double max_MI);
+  void print_hi2lo_chain_moments();
   /// supplement high-fidelity data with LHS samples
   void add_lhs_hifi_data();
+  /// calculate the optimal points to add for a given batch
+  void choose_batch_hi2lo(int batchEvals, int batch_size, 
+                          const int num_filtered, 
+                          int random_seed,
+                          int num_it, int &num_candidates,
+                          double &max_MI, RealMatrix& mi_chain,
+                          RealMatrix& design_matrix, 
+                          RealMatrix& optimal_obs, RealVector& optimal_config,
+                          RealMatrix& optimal_config_matrix, RealVector& MI_vec);
   /// apply simulation error vector
   void apply_error_vec(const RealVector& error_vec, int &seed, int experiment);
   /// build matrix of errors 
