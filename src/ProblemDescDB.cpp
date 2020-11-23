@@ -1436,6 +1436,17 @@ get(const std::string& entry_name,
 }
 
 
+// couldn't get const-correctness right with a simple forwarder...
+// template <typename T>
+// void ProblemDescDB::LookerUpper<T>::
+// set(const std::string& entry_name,
+//     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const
+// {
+//   T& entry_rep_ref = get(entry_name, db_rep);
+//   entry_rep_ref = entry_value;
+// }
+
+
 // shorthand for pointer to Data*Rep members for use in key to data maps;
 // these names are super terse on purpose and only used in this compilation unit
 #define P_ENV &DataEnvironmentRep::
@@ -1445,7 +1456,7 @@ get(const std::string& entry_name,
 #define P_INT &DataInterfaceRep::
 #define P_RES &DataResponsesRep::
 
-// TEMPLATE:
+// TEMPLATEs:
 //
 // static LookerUpper<const T&> lookup
 // { "get_T",
@@ -1458,6 +1469,20 @@ get(const std::string& entry_name,
 // };
 //
 // return lookup.get(entry_name, dbRep);
+//
+
+// static LookerUpper<T&> lookup
+// { "set(T)",
+//   { /* environment */ },
+//   { /* method */ },
+//   { /* model */ },
+//   { /* variables */ },
+//   { /* interface */ },
+//   { /* responses */ }
+// };
+//
+// T& rep_t = lookup.get(entry_name, dbRep);
+// rep_t = t_in;
 
 
 const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
@@ -2839,540 +2864,438 @@ void** ProblemDescDB::get_voidss(const String& entry_name) const
 
 void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 {
-  const char *L;
-  if (!dbRep)
-	Null_rep1("set(RealVector&)");
-  if ((L = Begins(entry_name, "model.nested."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    static KW<RealVector, DataModelRep> RVdmo[] = {
-      // must be sorted by string (key)
-	{"primary_response_mapping", P primaryRespCoeffs},
-	{"secondary_response_mapping", P secondaryRespCoeffs}};
-    #undef P
+  static LookerUpper<RealVector&> lookup
+  { "set(RealVector&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */
+      {"nested.primary_response_mapping", P_MOD primaryRespCoeffs},
+      {"nested.secondary_response_mapping", P_MOD secondaryRespCoeffs}
+    },
+    { /* variables */
+      {"beta_uncertain.alphas", P_VAR betaUncAlphas},
+      {"beta_uncertain.betas", P_VAR betaUncBetas},
+      {"beta_uncertain.lower_bounds", P_VAR betaUncLowerBnds},
+      {"beta_uncertain.upper_bounds", P_VAR betaUncUpperBnds},
+      {"binomial_uncertain.prob_per_trial", P_VAR binomialUncProbPerTrial},
+      {"continuous_aleatory_uncertain.initial_point",
+	  P_VAR continuousAleatoryUncVars},
+      {"continuous_aleatory_uncertain.lower_bounds",
+	  P_VAR continuousAleatoryUncLowerBnds},
+      {"continuous_aleatory_uncertain.upper_bounds",
+	  P_VAR continuousAleatoryUncUpperBnds},
+      {"continuous_design.initial_point", P_VAR continuousDesignVars},
+      {"continuous_design.initial_point", P_VAR continuousDesignVars},
+      {"continuous_design.lower_bounds", P_VAR continuousDesignLowerBnds},
+      {"continuous_design.lower_bounds", P_VAR continuousDesignLowerBnds},
+      {"continuous_design.scales", P_VAR continuousDesignScales},
+      {"continuous_design.upper_bounds", P_VAR continuousDesignUpperBnds},
+      {"continuous_design.upper_bounds", P_VAR continuousDesignUpperBnds},
+      {"continuous_epistemic_uncertain.initial_point",
+	  P_VAR continuousEpistemicUncVars},
+      {"continuous_epistemic_uncertain.lower_bounds",
+	  P_VAR continuousEpistemicUncLowerBnds},
+      {"continuous_epistemic_uncertain.upper_bounds",
+	  P_VAR continuousEpistemicUncUpperBnds},
+      {"continuous_state.initial_state", P_VAR continuousStateVars},
+      {"continuous_state.lower_bounds", P_VAR continuousStateLowerBnds},
+      {"continuous_state.upper_bounds", P_VAR continuousStateUpperBnds},
+      {"discrete_aleatory_uncertain_real.initial_point",
+	  P_VAR discreteRealAleatoryUncVars},
+      {"discrete_aleatory_uncertain_real.lower_bounds",
+	  P_VAR discreteRealAleatoryUncLowerBnds},
+      {"discrete_aleatory_uncertain_real.upper_bounds",
+	  P_VAR discreteRealAleatoryUncUpperBnds},
+      {"discrete_design_set_real.initial_point", P_VAR discreteDesignSetRealVars},
+      {"discrete_design_set_real.initial_point", P_VAR discreteDesignSetRealVars},
+      {"discrete_epistemic_uncertain_real.initial_point",
+	  P_VAR discreteRealEpistemicUncVars},
+      {"discrete_epistemic_uncertain_real.lower_bounds",
+	  P_VAR discreteRealEpistemicUncLowerBnds},
+      {"discrete_epistemic_uncertain_real.upper_bounds",
+	  P_VAR discreteRealEpistemicUncUpperBnds},
+      {"discrete_state_set_real.initial_state", P_VAR discreteStateSetRealVars},
+      {"exponential_uncertain.betas", P_VAR exponentialUncBetas},
+      {"frechet_uncertain.alphas", P_VAR frechetUncAlphas},
+      {"frechet_uncertain.betas", P_VAR frechetUncBetas},
+      {"gamma_uncertain.alphas", P_VAR gammaUncAlphas},
+      {"gamma_uncertain.betas", P_VAR gammaUncBetas},
+      {"geometric_uncertain.prob_per_trial", P_VAR geometricUncProbPerTrial},
+      {"gumbel_uncertain.alphas", P_VAR gumbelUncAlphas},
+      {"gumbel_uncertain.betas", P_VAR gumbelUncBetas},
+      {"linear_equality_constraints", P_VAR linearEqConstraintCoeffs},
+      {"linear_equality_scales", P_VAR linearEqScales},
+      {"linear_equality_targets", P_VAR linearEqTargets},
+      {"linear_inequality_constraints", P_VAR linearIneqConstraintCoeffs},
+      {"linear_inequality_lower_bounds", P_VAR linearIneqLowerBnds},
+      {"linear_inequality_scales", P_VAR linearIneqScales},
+      {"linear_inequality_upper_bounds", P_VAR linearIneqUpperBnds},
+      {"lognormal_uncertain.error_factors", P_VAR lognormalUncErrFacts},
+      {"lognormal_uncertain.lambdas", P_VAR lognormalUncLambdas},
+      {"lognormal_uncertain.lower_bounds", P_VAR lognormalUncLowerBnds},
+      {"lognormal_uncertain.means", P_VAR lognormalUncMeans},
+      {"lognormal_uncertain.std_deviations", P_VAR lognormalUncStdDevs},
+      {"lognormal_uncertain.upper_bounds", P_VAR lognormalUncUpperBnds},
+      {"lognormal_uncertain.zetas", P_VAR lognormalUncZetas},
+      {"loguniform_uncertain.lower_bounds", P_VAR loguniformUncLowerBnds},
+      {"loguniform_uncertain.upper_bounds", P_VAR loguniformUncUpperBnds},
+      {"negative_binomial_uncertain.prob_per_trial",
+	  P_VAR negBinomialUncProbPerTrial},
+      {"normal_uncertain.lower_bounds", P_VAR normalUncLowerBnds},
+      {"normal_uncertain.means", P_VAR normalUncMeans},
+      {"normal_uncertain.std_deviations", P_VAR normalUncStdDevs},
+      {"normal_uncertain.upper_bounds", P_VAR normalUncUpperBnds},
+      {"poisson_uncertain.lambdas", P_VAR poissonUncLambdas},
+      {"triangular_uncertain.lower_bounds", P_VAR triangularUncLowerBnds},
+      {"triangular_uncertain.modes", P_VAR triangularUncModes},
+      {"triangular_uncertain.upper_bounds", P_VAR triangularUncUpperBnds},
+      {"uniform_uncertain.lower_bounds", P_VAR uniformUncLowerBnds},
+      {"uniform_uncertain.upper_bounds", P_VAR uniformUncUpperBnds},
+      {"weibull_uncertain.alphas", P_VAR weibullUncAlphas},
+      {"weibull_uncertain.betas", P_VAR weibullUncBetas}
+    },
+    { /* interface */ },
+    { /* responses */
+      {"nonlinear_equality_scales", P_RES nonlinearEqScales},
+      {"nonlinear_equality_targets", P_RES nonlinearEqTargets},
+      {"nonlinear_inequality_lower_bounds", P_RES nonlinearIneqLowerBnds},
+      {"nonlinear_inequality_scales", P_RES nonlinearIneqScales},
+      {"nonlinear_inequality_upper_bounds", P_RES nonlinearIneqUpperBnds},
+      {"primary_response_fn_scales", P_RES primaryRespFnScales},
+      {"primary_response_fn_weights", P_RES primaryRespFnWeights}
+    }
+  };
 
-    KW<RealVector, DataModelRep> *kw;
-    if ((kw = (KW<RealVector, DataModelRep>*)Binsearch(RVdmo, L))) {
-	dbRep->dataModelIter->dataModelRep.get()->*kw->p = rv;
-	return;
-	}
-  }
-  else if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealVector, DataVariablesRep> RVdv[] = {
-      // must be sorted by string (key)
-	{"beta_uncertain.alphas", P betaUncAlphas},
-	{"beta_uncertain.betas", P betaUncBetas},
-	{"beta_uncertain.lower_bounds", P betaUncLowerBnds},
-	{"beta_uncertain.upper_bounds", P betaUncUpperBnds},
-	{"binomial_uncertain.prob_per_trial", P binomialUncProbPerTrial},
-	{"continuous_aleatory_uncertain.initial_point",
-	 P continuousAleatoryUncVars},
-	{"continuous_aleatory_uncertain.lower_bounds",
-	 P continuousAleatoryUncLowerBnds},
-	{"continuous_aleatory_uncertain.upper_bounds",
-	 P continuousAleatoryUncUpperBnds},
-	{"continuous_design.initial_point", P continuousDesignVars},
-	{"continuous_design.initial_point", P continuousDesignVars},
-	{"continuous_design.lower_bounds", P continuousDesignLowerBnds},
-	{"continuous_design.lower_bounds", P continuousDesignLowerBnds},
-	{"continuous_design.scales", P continuousDesignScales},
-	{"continuous_design.upper_bounds", P continuousDesignUpperBnds},
-	{"continuous_design.upper_bounds", P continuousDesignUpperBnds},
-	{"continuous_epistemic_uncertain.initial_point",
-	 P continuousEpistemicUncVars},
-	{"continuous_epistemic_uncertain.lower_bounds",
-	 P continuousEpistemicUncLowerBnds},
-	{"continuous_epistemic_uncertain.upper_bounds",
-	 P continuousEpistemicUncUpperBnds},
-	{"continuous_state.initial_state", P continuousStateVars},
-	{"continuous_state.lower_bounds", P continuousStateLowerBnds},
-	{"continuous_state.upper_bounds", P continuousStateUpperBnds},
-	{"discrete_aleatory_uncertain_real.initial_point",
-	 P discreteRealAleatoryUncVars},
-	{"discrete_aleatory_uncertain_real.lower_bounds",
-	 P discreteRealAleatoryUncLowerBnds},
-	{"discrete_aleatory_uncertain_real.upper_bounds",
-	 P discreteRealAleatoryUncUpperBnds},
-	{"discrete_design_set_real.initial_point", P discreteDesignSetRealVars},
-	{"discrete_design_set_real.initial_point", P discreteDesignSetRealVars},
-	{"discrete_epistemic_uncertain_real.initial_point",
-	 P discreteRealEpistemicUncVars},
-	{"discrete_epistemic_uncertain_real.lower_bounds",
-	 P discreteRealEpistemicUncLowerBnds},
-	{"discrete_epistemic_uncertain_real.upper_bounds",
-	 P discreteRealEpistemicUncUpperBnds},
-	{"discrete_state_set_real.initial_state", P discreteStateSetRealVars},
-	{"exponential_uncertain.betas", P exponentialUncBetas},
-	{"frechet_uncertain.alphas", P frechetUncAlphas},
-	{"frechet_uncertain.betas", P frechetUncBetas},
-	{"gamma_uncertain.alphas", P gammaUncAlphas},
-	{"gamma_uncertain.betas", P gammaUncBetas},
-	{"geometric_uncertain.prob_per_trial", P geometricUncProbPerTrial},
-	{"gumbel_uncertain.alphas", P gumbelUncAlphas},
-	{"gumbel_uncertain.betas", P gumbelUncBetas},
-	{"linear_equality_constraints", P linearEqConstraintCoeffs},
-	{"linear_equality_scales", P linearEqScales},
-	{"linear_equality_targets", P linearEqTargets},
-	{"linear_inequality_constraints", P linearIneqConstraintCoeffs},
-	{"linear_inequality_lower_bounds", P linearIneqLowerBnds},
-	{"linear_inequality_scales", P linearIneqScales},
-	{"linear_inequality_upper_bounds", P linearIneqUpperBnds},
-	{"lognormal_uncertain.error_factors", P lognormalUncErrFacts},
-	{"lognormal_uncertain.lambdas", P lognormalUncLambdas},
-	{"lognormal_uncertain.lower_bounds", P lognormalUncLowerBnds},
-	{"lognormal_uncertain.means", P lognormalUncMeans},
-	{"lognormal_uncertain.std_deviations", P lognormalUncStdDevs},
-	{"lognormal_uncertain.upper_bounds", P lognormalUncUpperBnds},
-	{"lognormal_uncertain.zetas", P lognormalUncZetas},
-	{"loguniform_uncertain.lower_bounds", P loguniformUncLowerBnds},
-	{"loguniform_uncertain.upper_bounds", P loguniformUncUpperBnds},
-	{"negative_binomial_uncertain.prob_per_trial",
-	 P negBinomialUncProbPerTrial},
-	{"normal_uncertain.lower_bounds", P normalUncLowerBnds},
-	{"normal_uncertain.means", P normalUncMeans},
-	{"normal_uncertain.std_deviations", P normalUncStdDevs},
-	{"normal_uncertain.upper_bounds", P normalUncUpperBnds},
-	{"poisson_uncertain.lambdas", P poissonUncLambdas},
-	{"triangular_uncertain.lower_bounds", P triangularUncLowerBnds},
-	{"triangular_uncertain.modes", P triangularUncModes},
-	{"triangular_uncertain.upper_bounds", P triangularUncUpperBnds},
-	{"uniform_uncertain.lower_bounds", P uniformUncLowerBnds},
-	{"uniform_uncertain.upper_bounds", P uniformUncUpperBnds},
-	{"weibull_uncertain.alphas", P weibullUncAlphas},
-	{"weibull_uncertain.betas", P weibullUncBetas}};
-    #undef P
-
-    KW<RealVector, DataVariablesRep> *kw;
-    if ((kw = (KW<RealVector, DataVariablesRep>*)Binsearch(RVdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rv;
-	return;
-	}
-  }
-  else if ((L = Begins(entry_name, "responses."))) {
-    if (dbRep->responsesDBLocked)
-	Locked_db();
-    #define P &DataResponsesRep::
-    static KW<RealVector, DataResponsesRep> RVdr[] = {
-      // must be sorted by string (key)
-	{"nonlinear_equality_scales", P nonlinearEqScales},
-	{"nonlinear_equality_targets", P nonlinearEqTargets},
-	{"nonlinear_inequality_lower_bounds", P nonlinearIneqLowerBnds},
-	{"nonlinear_inequality_scales", P nonlinearIneqScales},
-	{"nonlinear_inequality_upper_bounds", P nonlinearIneqUpperBnds},
-	{"primary_response_fn_scales", P primaryRespFnScales},
-	{"primary_response_fn_weights", P primaryRespFnWeights}};
-    #undef P
-
-    KW<RealVector, DataResponsesRep> *kw;
-    if ((kw = (KW<RealVector, DataResponsesRep>*)Binsearch(RVdr, L))) {
-	dbRep->dataResponsesIter->dataRespRep.get()->*kw->p = rv;
-	return;
-	}
-  }
-  Bad_name(entry_name, "set(RealVector&)");
+  RealVector& rep_rv = lookup.get(entry_name, dbRep);
+  rep_rv = rv;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 {
-  const char *L;
-  if (!dbRep)
-	Null_rep1("set(IntVector&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntVector, DataVariablesRep> IVdv[] = {
-      // must be sorted by string (key)
-	{"binomial_uncertain.num_trials", P binomialUncNumTrials},
-	{"discrete_aleatory_uncertain_int.initial_point",
-	 P discreteIntAleatoryUncVars},
-	{"discrete_aleatory_uncertain_int.lower_bounds",
-	 P discreteIntAleatoryUncLowerBnds},
-	{"discrete_aleatory_uncertain_int.upper_bounds",
-	 P discreteIntAleatoryUncUpperBnds},
-	{"discrete_design_range.initial_point", P discreteDesignRangeVars},
-	{"discrete_design_range.lower_bounds", P discreteDesignRangeLowerBnds},
-	{"discrete_design_range.upper_bounds", P discreteDesignRangeUpperBnds},
-	{"discrete_design_set_int.initial_point", P discreteDesignSetIntVars},
-	{"discrete_epistemic_uncertain_int.initial_point",
-	 P discreteIntEpistemicUncVars},
-	{"discrete_epistemic_uncertain_int.lower_bounds",
-	 P discreteIntEpistemicUncLowerBnds},
-	{"discrete_epistemic_uncertain_int.upper_bounds",
-	 P discreteIntEpistemicUncUpperBnds},
-	{"discrete_state_range.initial_state", P discreteStateRangeVars},
-	{"discrete_state_range.lower_bounds", P discreteStateRangeLowerBnds},
-	{"discrete_state_range.upper_bounds", P discreteStateRangeUpperBnds},
-	{"discrete_state_set_int.initial_state", P discreteStateSetIntVars},
-	{"hypergeometric_uncertain.num_drawn", P hyperGeomUncNumDrawn},
-	{"hypergeometric_uncertain.selected_population",
-	 P hyperGeomUncSelectedPop},
-	{"hypergeometric_uncertain.total_population", P hyperGeomUncTotalPop},
-	{"negative_binomial_uncertain.num_trials", P negBinomialUncNumTrials}};
-    #undef P
+  static LookerUpper<IntVector&> lookup
+  { "set(IntVector&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"binomial_uncertain.num_trials", P_VAR binomialUncNumTrials},
+      {"discrete_aleatory_uncertain_int.initial_point",
+	  P_VAR discreteIntAleatoryUncVars},
+      {"discrete_aleatory_uncertain_int.lower_bounds",
+	  P_VAR discreteIntAleatoryUncLowerBnds},
+      {"discrete_aleatory_uncertain_int.upper_bounds",
+	  P_VAR discreteIntAleatoryUncUpperBnds},
+      {"discrete_design_range.initial_point", P_VAR discreteDesignRangeVars},
+      {"discrete_design_range.lower_bounds", P_VAR discreteDesignRangeLowerBnds},
+      {"discrete_design_range.upper_bounds", P_VAR discreteDesignRangeUpperBnds},
+      {"discrete_design_set_int.initial_point", P_VAR discreteDesignSetIntVars},
+      {"discrete_epistemic_uncertain_int.initial_point",
+	  P_VAR discreteIntEpistemicUncVars},
+      {"discrete_epistemic_uncertain_int.lower_bounds",
+	  P_VAR discreteIntEpistemicUncLowerBnds},
+      {"discrete_epistemic_uncertain_int.upper_bounds",
+	  P_VAR discreteIntEpistemicUncUpperBnds},
+      {"discrete_state_range.initial_state", P_VAR discreteStateRangeVars},
+      {"discrete_state_range.lower_bounds", P_VAR discreteStateRangeLowerBnds},
+      {"discrete_state_range.upper_bounds", P_VAR discreteStateRangeUpperBnds},
+      {"discrete_state_set_int.initial_state", P_VAR discreteStateSetIntVars},
+      {"hypergeometric_uncertain.num_drawn", P_VAR hyperGeomUncNumDrawn},
+      {"hypergeometric_uncertain.selected_population",
+	  P_VAR hyperGeomUncSelectedPop},
+      {"hypergeometric_uncertain.total_population", P_VAR hyperGeomUncTotalPop},
+      {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<IntVector, DataVariablesRep> *kw;
-    if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = iv;
-	return;
-	}
-  }
-  Bad_name(entry_name, "set(IntVector&)");
+  IntVector& rep_iv = lookup.get(entry_name, dbRep);
+  rep_iv = iv;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 {
-  const char *L;
-  if (!dbRep)
-	Null_rep1("set(BitArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<BitArray, DataVariablesRep> BAdv[] = {
-      // must be sorted by string (key)
-	{"binomial_uncertain.categorical", P binomialUncCat},
-	{"discrete_design_range.categorical", P discreteDesignRangeCat},
-	{"discrete_design_set_int.categorical", P discreteDesignSetIntCat},
-	{"discrete_design_set_real.categorical", P discreteDesignSetRealCat},
-	{"discrete_interval_uncertain.categorical", P discreteIntervalUncCat},
-	{"discrete_state_range.categorical", P discreteStateRangeCat},
-	{"discrete_state_set_int.categorical", P discreteStateSetIntCat},
-	{"discrete_state_set_real.categorical", P discreteStateSetRealCat},
-	{"discrete_uncertain_set_int.categorical", P discreteUncSetIntCat},
-	{"discrete_uncertain_set_real.categorical", P discreteUncSetRealCat},
-	{"geometric_uncertain.categorical", P geometricUncCat},
-	{"histogram_uncertain.point_int.categorical",
-         P histogramUncPointIntCat},
-	{"histogram_uncertain.point_real.categorical",
-         P histogramUncPointRealCat},
-	{"hypergeometric_uncertain.categorical", P hyperGeomUncCat},
-	{"negative_binomial_uncertain.categorical", P negBinomialUncCat},
-	{"poisson_uncertain.categorical", P poissonUncCat}};
-    #undef P
+  static LookerUpper<BitArray&> lookup
+  { "set(BitArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"binomial_uncertain.categorical", P_VAR binomialUncCat},
+      {"discrete_design_range.categorical", P_VAR discreteDesignRangeCat},
+      {"discrete_design_set_int.categorical", P_VAR discreteDesignSetIntCat},
+      {"discrete_design_set_real.categorical", P_VAR discreteDesignSetRealCat},
+      {"discrete_interval_uncertain.categorical", P_VAR discreteIntervalUncCat},
+      {"discrete_state_range.categorical", P_VAR discreteStateRangeCat},
+      {"discrete_state_set_int.categorical", P_VAR discreteStateSetIntCat},
+      {"discrete_state_set_real.categorical", P_VAR discreteStateSetRealCat},
+      {"discrete_uncertain_set_int.categorical", P_VAR discreteUncSetIntCat},
+      {"discrete_uncertain_set_real.categorical", P_VAR discreteUncSetRealCat},
+      {"geometric_uncertain.categorical", P_VAR geometricUncCat},
+      {"histogram_uncertain.point_int.categorical",
+	  P_VAR histogramUncPointIntCat},
+      {"histogram_uncertain.point_real.categorical",
+	  P_VAR histogramUncPointRealCat},
+      {"hypergeometric_uncertain.categorical", P_VAR hyperGeomUncCat},
+      {"negative_binomial_uncertain.categorical", P_VAR negBinomialUncCat},
+      {"poisson_uncertain.categorical", P_VAR poissonUncCat}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<BitArray, DataVariablesRep> *kw;
-    if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = ba;
-	return;
-	}
-  }
-  Bad_name(entry_name, "set(BitArray&)");
+  BitArray& rep_ba = lookup.get(entry_name, dbRep);
+  rep_ba = ba;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 {
-  if (!dbRep)
-	Null_rep1("set(RealSymMatrix&)");
-  if (strbegins(entry_name, "variables.")) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    if (strends(entry_name, "uncertain.correlation_matrix")) {
-	dbRep->dataVariablesIter->dataVarsRep->uncertainCorrelations = rsm;
-	return;
-	}
-  }
-  Bad_name(entry_name, "set(RealSymMatrix&)");
+  static LookerUpper<RealSymMatrix&> lookup
+  { "set(RealSymMatrix&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"uncertain.correlation_matrix", P_VAR uncertainCorrelations}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
+
+  RealSymMatrix& rep_rsm = lookup.get(entry_name, dbRep);
+  rep_rsm = rsm;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 {
-  const char *L;
-  if (!dbRep)
-    Null_rep1("set(RealVectorArray&)");
-  if ((L = Begins(entry_name, "method.nond."))) {
-    if (dbRep->methodDBLocked)
-      Locked_db();
-    #define P &DataMethodRep::
-    static KW<RealVectorArray, DataMethodRep> RVAdme[] = {
-      // must be sorted by string (key)
-	{"gen_reliability_levels", P genReliabilityLevels},
-	{"probability_levels", P probabilityLevels},
-	{"reliability_levels", P reliabilityLevels},
-	{"response_levels", P responseLevels}};
-    #undef P
+  static LookerUpper<RealVectorArray&> lookup
+  { "set(RealVectorArray&)",
+    { /* environment */ },
+    { /* method */
+      {"nond.gen_reliability_levels", P_MET genReliabilityLevels},
+      {"nond.probability_levels", P_MET probabilityLevels},
+      {"nond.reliability_levels", P_MET reliabilityLevels},
+      {"nond.response_levels", P_MET responseLevels}
+    },
+    { /* model */ },
+    { /* variables */ },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<RealVectorArray, DataMethodRep> *kw;
-    if ((kw = (KW<RealVectorArray, DataMethodRep>*)Binsearch(RVAdme, L))) {
-      dbRep->dataMethodIter->dataMethodRep.get()->*kw->p = rva;
-      return;
-    }
-  }
-  Bad_name(entry_name, "set(RealVectorArray&)");
+  RealVectorArray& rep_rva = lookup.get(entry_name, dbRep);
+  rep_rva = rva;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
 {
-  const char *L;
-  if (!dbRep)
-    Null_rep1("set(IntVectorArray&)");
-  // BMA: No current use cases
-  Bad_name(entry_name, "set(IntVectorArray&)");
+  static LookerUpper<IntVectorArray&> lookup
+  { "set(IntVectorArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */ },
+    { /* interface */ },
+    { /* responses */ }
+  };
+
+  IntVectorArray& rep_iva = lookup.get(entry_name, dbRep);
+  rep_iva = iva;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 {
-  const char *L;
-  if (!dbRep)
-    Null_rep1("set(IntSetArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntSetArray, DataVariablesRep> ISAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_design_set_int.values", P discreteDesignSetInt},
-	{"discrete_state_set_int.values",  P discreteStateSetInt}};
-    #undef P
+  static LookerUpper<IntSetArray&> lookup
+  { "set(IntSetArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_design_set_int.values", P_VAR discreteDesignSetInt},
+      {"discrete_state_set_int.values",  P_VAR discreteStateSetInt}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<IntSetArray, DataVariablesRep> *kw;
-    if ((kw = (KW<IntSetArray, DataVariablesRep>*)Binsearch(ISAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = isa;
-      return;
-    }
-  }
-  Bad_name(entry_name, "set(IntSetArray&)");
+  IntSetArray& rep_isa = lookup.get(entry_name, dbRep);
+  rep_isa = isa;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 {
-  const char *L;
-  if (!dbRep)
-    Null_rep1("set(RealSetArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealSetArray, DataVariablesRep> RSAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_design_set_real.values", P discreteDesignSetReal},
-	{"discrete_state_set_real.values",  P discreteStateSetReal}};
-    #undef P
+  static LookerUpper<RealSetArray&> lookup
+  { "set(RealSetArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_design_set_real.values", P_VAR discreteDesignSetReal},
+      {"discrete_state_set_real.values",  P_VAR discreteStateSetReal}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<RealSetArray, DataVariablesRep> *kw;
-    if ((kw = (KW<RealSetArray, DataVariablesRep>*)Binsearch(RSAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rsa;
-      return;
-    }
-  }
-  Bad_name(entry_name, "set(RealSetArray&)");
+  RealSetArray& rep_rsa = lookup.get(entry_name, dbRep);
+  rep_rsa = rsa;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 {
-  const char *L;
-  if (!dbRep)
-    Null_rep1("set(IntRealMapArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_uncertain_set_int.values_probs",
-	 P discreteUncSetIntValuesProbs},
-	{"histogram_uncertain.point_int_pairs", P histogramUncPointIntPairs}};
-    #undef P
+  static LookerUpper<IntRealMapArray&> lookup
+  { "set(IntRealMapArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_uncertain_set_int.values_probs",
+	  P_VAR discreteUncSetIntValuesProbs},
+      {"histogram_uncertain.point_int_pairs", P_VAR histogramUncPointIntPairs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<IntRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<IntRealMapArray, DataVariablesRep>*)Binsearch(IRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = irma;
-      return;
-    }
-  }
-  Bad_name(entry_name, "set(IntRealMapArray&)");
+  IntRealMapArray& rep_irma = lookup.get(entry_name, dbRep);
+  rep_irma = irma;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma)
 {
-  const char *L;
-  if (!dbRep)
-    Null_rep1("set(StringRealMapArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-    #define P &DataVariablesRep::
-    static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = {
-      // must be sorted by string (key)
-	{"histogram_uncertain.point_string_pairs", P histogramUncPointStrPairs}};
-    #undef P
+  static LookerUpper<StringRealMapArray&> lookup
+  { "set(StringRealMapArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"histogram_uncertain.point_string_pairs", P_VAR histogramUncPointStrPairs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<StringRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<StringRealMapArray, DataVariablesRep>*)Binsearch(SRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = srma;
-      return;
-    }
-  }
-  Bad_name(entry_name, "set(StringRealMapArray&)");
+  StringRealMapArray& rep_srma = lookup.get(entry_name, dbRep);
+  rep_srma = srma;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 {
-  const char *L;
-  if (!dbRep)
-    Null_rep1("set(RealRealMapArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealRealMapArray, DataVariablesRep> RRMAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_uncertain_set_real.values_probs",
-	 P discreteUncSetRealValuesProbs}};
-    #undef P
+  static LookerUpper<RealRealMapArray&> lookup
+  { "set(RealRealMapArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_uncertain_set_real.values_probs",
+	  P_VAR discreteUncSetRealValuesProbs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<RealRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<RealRealMapArray, DataVariablesRep>*)Binsearch(RRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rrma;
-      return;
-    }
-  }
-  Bad_name(entry_name, "set(RealRealMapArray&)");
+  RealRealMapArray& rep_rrma = lookup.get(entry_name, dbRep);
+  rep_rrma = rrma;
 }
 
 void ProblemDescDB::
 set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 {
-  const char *L;
-  if (!dbRep)
-    Null_rep1("set(RealRealPairRealMapArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealRealPairRealMapArray, DataVariablesRep> RRRMAdv[] = {
-      // must be sorted by string (key)
-	{"continuous_interval_uncertain.basic_probs",
-	 P continuousIntervalUncBasicProbs}};
-    #undef P
+  static LookerUpper<RealRealPairRealMapArray&> lookup
+  { "set(RealRealPairRealMapArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"continuous_interval_uncertain.basic_probs",
+	  P_VAR continuousIntervalUncBasicProbs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<RealRealPairRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<RealRealPairRealMapArray, DataVariablesRep>*)Binsearch(RRRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = rrrma;
-      return;
-    }
-  }
-  Bad_name(entry_name, "set(RealRealPairRealMapArray&)");
+  RealRealPairRealMapArray& rep_rrrma = lookup.get(entry_name, dbRep);
+  rep_rrrma = rrrma;
 }
 
 void ProblemDescDB::
 set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 {
-  const char *L;
-  if (!dbRep)
-    Null_rep1("set(IntIntPairRealMapArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntIntPairRealMapArray, DataVariablesRep> IIRMAdv[] = {
-      // must be sorted by string (key)
-	{"discrete_interval_uncertain.basic_probs",
-	 P discreteIntervalUncBasicProbs}};
-    #undef P
+  static LookerUpper<IntIntPairRealMapArray&> lookup
+  { "set(IntIntPairRealMapArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */ },
+    { /* variables */
+      {"discrete_interval_uncertain.basic_probs",
+	  P_VAR discreteIntervalUncBasicProbs}
+    },
+    { /* interface */ },
+    { /* responses */ }
+  };
 
-    KW<IntIntPairRealMapArray, DataVariablesRep> *kw;
-    if ((kw = (KW<IntIntPairRealMapArray, DataVariablesRep>*)Binsearch(IIRMAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = iirma;
-      return;
-    }
-  }
-  Bad_name(entry_name, "set(IntIntPairRealMapArray&)");
+  IntIntPairRealMapArray& rep_iirma = lookup.get(entry_name, dbRep);
+  rep_iirma = iirma;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 {
-  const char *L;
-  if (!dbRep)
-	Null_rep1("set(StringArray&)");
-  if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    static KW<StringArray, DataModelRep> SAdmo[] = {
-      // must be sorted by string (key)
-	{"diagnostics", P diagMetrics},
-	{"nested.primary_variable_mapping", P primaryVarMaps},
-	{"nested.secondary_variable_mapping", P secondaryVarMaps}};
-    #undef P
+  static LookerUpper<StringArray&> lookup
+  { "set(StringArray&)",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */
+      {"diagnostics", P_MOD diagMetrics},
+      {"nested.primary_variable_mapping", P_MOD primaryVarMaps},
+      {"nested.secondary_variable_mapping", P_MOD secondaryVarMaps}
+    },
+    { /* variables */
+      {"continuous_aleatory_uncertain.labels", P_VAR continuousAleatoryUncLabels},
+      {"continuous_design.labels", P_VAR continuousDesignLabels},
+      {"continuous_design.scale_types", P_VAR continuousDesignScaleTypes},
+      {"continuous_epistemic_uncertain.labels",
+	  P_VAR continuousEpistemicUncLabels},
+      {"continuous_state.labels", P_VAR continuousStateLabels},
+      {"discrete_aleatory_uncertain_int.labels",
+	  P_VAR discreteIntAleatoryUncLabels},
+      {"discrete_aleatory_uncertain_real.labels",
+	  P_VAR discreteRealAleatoryUncLabels},
+      {"discrete_design_range.labels", P_VAR discreteDesignRangeLabels},
+      {"discrete_design_set_int.labels", P_VAR discreteDesignSetIntLabels},
+      {"discrete_design_set_real.labels", P_VAR discreteDesignSetRealLabels},
+      {"discrete_epistemic_uncertain_int.labels",
+	  P_VAR discreteIntEpistemicUncLabels},
+      {"discrete_epistemic_uncertain_real.labels",
+	  P_VAR discreteRealEpistemicUncLabels},
+      {"discrete_state_range.labels", P_VAR discreteStateRangeLabels},
+      {"discrete_state_set_int.labels", P_VAR discreteStateSetIntLabels},
+      {"discrete_state_set_real.labels", P_VAR discreteStateSetRealLabels},
+      {"discrete_state_set_string.labels", P_VAR discreteStateSetStrLabels},
+      {"linear_equality_scale_types", P_VAR linearEqScaleTypes},
+      {"linear_inequality_scale_types", P_VAR linearIneqScaleTypes}
+    },
+    { /* interface */ },
+    { /* responses */
+      {"labels", P_RES responseLabels },
+      {"nonlinear_equality_scale_types", P_RES nonlinearEqScaleTypes },
+      {"nonlinear_inequality_scale_types", P_RES nonlinearIneqScaleTypes },
+      {"primary_response_fn_scale_types", P_RES primaryRespFnScaleTypes }
+    }
+  };
 
-    KW<StringArray, DataModelRep> *kw;
-    if ((kw = (KW<StringArray, DataModelRep>*)Binsearch(SAdmo, L))) {
-	dbRep->dataModelIter->dataModelRep.get()->*kw->p = sa;
-	return;
-	}
-  }
-  else if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<StringArray, DataVariablesRep> SAdv[] = {
-      // must be sorted by string (key)
-	{"continuous_aleatory_uncertain.labels", P continuousAleatoryUncLabels},
-	{"continuous_design.labels", P continuousDesignLabels},
-	{"continuous_design.scale_types", P continuousDesignScaleTypes},
-	{"continuous_epistemic_uncertain.labels",
-	 P continuousEpistemicUncLabels},
-	{"continuous_state.labels", P continuousStateLabels},
-	{"discrete_aleatory_uncertain_int.labels",
-	 P discreteIntAleatoryUncLabels},
-	{"discrete_aleatory_uncertain_real.labels",
-	 P discreteRealAleatoryUncLabels},
-	{"discrete_design_range.labels", P discreteDesignRangeLabels},
-	{"discrete_design_set_int.labels", P discreteDesignSetIntLabels},
-	{"discrete_design_set_real.labels", P discreteDesignSetRealLabels},
-	{"discrete_epistemic_uncertain_int.labels",
-	 P discreteIntEpistemicUncLabels},
-	{"discrete_epistemic_uncertain_real.labels",
-	 P discreteRealEpistemicUncLabels},
-	{"discrete_state_range.labels", P discreteStateRangeLabels},
-	{"discrete_state_set_int.labels", P discreteStateSetIntLabels},
-	{"discrete_state_set_real.labels", P discreteStateSetRealLabels},
-	{"discrete_state_set_string.labels", P discreteStateSetStrLabels},
-	{"linear_equality_scale_types", P linearEqScaleTypes},
-	{"linear_inequality_scale_types", P linearIneqScaleTypes}};
-    #undef P
-
-    KW<StringArray, DataVariablesRep> *kw;
-    if ((kw = (KW<StringArray, DataVariablesRep>*)Binsearch(SAdv, L))) {
-	dbRep->dataVariablesIter->dataVarsRep.get()->*kw->p = sa;
-	return;
-	}
-  }
-  else if ((L = Begins(entry_name, "responses."))) {
-    if (dbRep->responsesDBLocked)
-	Locked_db();
-    #define P &DataResponsesRep::
-    static KW<StringArray, DataResponsesRep> SAdr[] = {
-      // must be sorted by string (key)
-	{"labels", P responseLabels },
-	{"nonlinear_equality_scale_types", P nonlinearEqScaleTypes },
-	{"nonlinear_inequality_scale_types", P nonlinearIneqScaleTypes },
-	{"primary_response_fn_scale_types", P primaryRespFnScaleTypes }};
-    #undef P
-
-    KW<StringArray, DataResponsesRep> *kw;
-    if ((kw = (KW<StringArray, DataResponsesRep>*)Binsearch(SAdr, L))) {
-	dbRep->dataResponsesIter->dataRespRep.get()->*kw->p = sa;
-	return;
-	}
-  }
-  Bad_name(entry_name, "set(StringArray&)");
+  StringArray& rep_sa = lookup.get(entry_name, dbRep);
+  rep_sa = sa;
 }
 
 

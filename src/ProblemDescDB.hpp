@@ -429,6 +429,9 @@ private:
     T get(const std::string& entry_name,
 	  const std::shared_ptr<ProblemDescDB>& db_rep) const;
 
+//     void set(const std::string& entry_name,
+// 	     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const;
+
   private:
     std::string contextMsg;
     std::map<std::string, RepGetter<T, DataEnvironmentRep>> envMap;
