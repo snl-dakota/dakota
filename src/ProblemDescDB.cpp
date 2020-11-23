@@ -1486,7 +1486,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"parameter_study.step_vector", P_MET stepVector},
       {"trust_region.initial_size", P_MET trustRegionInitSize}
     },
-    {
+    { /* model */
       {"nested.primary_response_mapping", P_MOD primaryRespCoeffs},
       {"nested.secondary_response_mapping", P_MOD secondaryRespCoeffs},
       {"simulation.solution_level_cost", P_MOD solutionLevelCost},
@@ -1494,7 +1494,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"surrogate.kriging_max_correlations", P_MOD krigingMaxCorrelations},
       {"surrogate.kriging_min_correlations", P_MOD krigingMinCorrelations}
     },
-    { /* model */
+    { /* variables */
       {"beta_uncertain.alphas", P_VAR betaUncAlphas},
       {"beta_uncertain.betas", P_VAR betaUncBetas},
       {"beta_uncertain.lower_bounds", P_VAR betaUncLowerBnds},
@@ -1654,7 +1654,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
       {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials}
     },
     { /* interface */ },
-    {
+    { /* responses */
       {"lengths", P_RES fieldLengths},
       {"num_coordinates_per_field", P_RES numCoordsPerField}
     }
@@ -2315,6 +2315,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     },
     { /* responses */ }
   };
+
+  return lookup.get(entry_name, dbRep);
 }
 
 
@@ -2555,167 +2557,126 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
 size_t ProblemDescDB::get_sizet(const String& entry_name) const
 {
-  const char *L;
-
-  if (!dbRep)
-	Null_rep("get_sizet");
-  if ((L = Begins(entry_name, "method."))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<size_t, DataMethodRep> Szdmo[] = {
-      // must be sorted by string (key)
-	{"final_solutions", P numFinalSolutions},
-	{"jega.num_cross_points", P numCrossPoints},
-	{"jega.num_designs", P numDesigns},
-	{"jega.num_generations", P numGenerations},
-	{"jega.num_offspring", P numOffspring},
-	{"jega.num_parents", P numParents},
-        {"nond.c3function_train.kick_rank", P kickRank},
-      	{"nond.c3function_train.max_rank", P maxRank},
-        {"nond.c3function_train.start_rank", P startRank},
-	{"nond.collocation_points", P collocationPoints},
-	{"nond.expansion_samples", P expansionSamples},
-	{"num_candidate_designs", P numCandidateDesigns},
-	{"num_candidates", P numCandidates},
-	{"num_prediction_configs", P numPredConfigs}
-    };
-    #undef P
-
-    KW<size_t, DataMethodRep> *kw;
-    if ((kw = (KW<size_t, DataMethodRep>*)Binsearch(Szdmo, L)))
-	return dbRep->dataMethodIter->dataMethodRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "model."))) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    #define P &DataModelRep::
-    static KW<size_t, DataModelRep> Szmo[] = {
-      // must be sorted by string (key)
-      // must be sorted by string (key)
-	{"c3function_train.collocation_points", P collocationPoints},
-        {"c3function_train.kick_rank", P kickRank},
-      	{"c3function_train.max_rank", P maxRank},
-        {"c3function_train.start_rank", P startRank}//,
-      //{"c3function_train.verbosity", P verbosity}
-    };
-    #undef P
-
-    KW<size_t, DataModelRep> *kw;
-    if ((kw = (KW<size_t, DataModelRep>*)Binsearch(Szmo, L)))
-	return dbRep->dataModelIter->dataModelRep.get()->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "variables."))) {
+  // first handle special case for variable group queries
+  const char* L;
+  if ((L = Begins(entry_name, "variables."))) {
+    if (!dbRep)
+      Null_rep("get_sizet");
     if (dbRep->variablesDBLocked)
-	Locked_db();
-    std::list<DataVariables>::iterator v_iter = dbRep->dataVariablesIter;
-    DataVariablesRep* VRep = v_iter->dataVarsRep.get();
+      Locked_db();
 
-    // DataVariables helper functions
-    struct HelperFcn { const char *name; int no; };
-    static HelperFcn hf[] = {
-	{"aleatory_uncertain", 0},
-	{"continuous", 1},
-	{"design", 2},
-	{"discrete", 3},
-	{"epistemic_uncertain", 4},
-	{"state", 5},
-	{"total", 6},
-	{"uncertain", 7}};
-
-    // normal DB lookups
-    #define P &DataVariablesRep::
-    static KW<size_t, DataVariablesRep> Szdv[] = {
-      // must be sorted by string (key)
-	{"beta_uncertain", P numBetaUncVars},
-	{"binomial_uncertain", P numBinomialUncVars},
-	{"continuous_design", P numContinuousDesVars},
-	{"continuous_interval_uncertain", P numContinuousIntervalUncVars},
-	{"continuous_state", P numContinuousStateVars},
-	{"discrete_design_range", P numDiscreteDesRangeVars},
-	{"discrete_design_set_int", P numDiscreteDesSetIntVars},
-	{"discrete_design_set_real", P numDiscreteDesSetRealVars},
-	{"discrete_design_set_string", P numDiscreteDesSetStrVars},
-	{"discrete_interval_uncertain", P numDiscreteIntervalUncVars},
-	{"discrete_state_range", P numDiscreteStateRangeVars},
-	{"discrete_state_set_int", P numDiscreteStateSetIntVars},
-	{"discrete_state_set_real", P numDiscreteStateSetRealVars},
-	{"discrete_state_set_string", P numDiscreteStateSetStrVars},
-	{"discrete_uncertain_set_int", P numDiscreteUncSetIntVars},
-	{"discrete_uncertain_set_real", P numDiscreteUncSetRealVars},
-	{"discrete_uncertain_set_string", P numDiscreteUncSetStrVars},
-	{"exponential_uncertain", P numExponentialUncVars},
-	{"frechet_uncertain", P numFrechetUncVars},
-	{"gamma_uncertain", P numGammaUncVars},
-	{"geometric_uncertain", P numGeometricUncVars},
-	{"gumbel_uncertain", P numGumbelUncVars},
-	{"histogram_uncertain.bin", P numHistogramBinUncVars},
-	{"histogram_uncertain.point_int", P numHistogramPtIntUncVars},
-	{"histogram_uncertain.point_real", P numHistogramPtRealUncVars},
-	{"histogram_uncertain.point_string", P numHistogramPtStrUncVars},
-	{"hypergeometric_uncertain", P numHyperGeomUncVars},
-	{"lognormal_uncertain", P numLognormalUncVars},
-	{"loguniform_uncertain", P numLoguniformUncVars},
-	{"negative_binomial_uncertain", P numNegBinomialUncVars},
-	{"normal_uncertain", P numNormalUncVars},
-	{"poisson_uncertain", P numPoissonUncVars},
-	{"triangular_uncertain", P numTriangularUncVars},
-	{"uniform_uncertain", P numUniformUncVars},
-	{"weibull_uncertain", P numWeibullUncVars}};
-    #undef P
-
-    HelperFcn *kwh;
-    KW<size_t, DataVariablesRep> *kw;
-
-    if ((kwh = (HelperFcn*)Binsearch(hf, L)))
-	switch(kwh->no) {
-	  case 0: return v_iter->aleatory_uncertain();
-	  case 1: return v_iter->continuous_variables();
-	  case 2: return v_iter->design();
-	  case 3: return v_iter->discrete_variables();
-	  case 4: return v_iter->epistemic_uncertain();
-	  case 5: return v_iter->state();
-	  case 6: return v_iter->total_variables();
-	  case 7: return v_iter->uncertain();
-	  }
-    else if ((kw = (KW<size_t, DataVariablesRep>*)Binsearch(Szdv, L)))
-	return VRep->*kw->p;
+    // string for lookup key without the leading "variables."
+    std::string entry_str(L);
+    auto v_iter = dbRep->dataVariablesIter;
+    if (entry_str == "aleatory_uncertain")
+      return v_iter->aleatory_uncertain();
+    else if (entry_str == "continuous")
+      return v_iter->continuous_variables();
+    else if (entry_str == "design")
+      return v_iter->design();
+    else if (entry_str == "discrete")
+      return v_iter->discrete_variables();
+    else if (entry_str == "epistemic_uncertain")
+      return v_iter->epistemic_uncertain();
+    else if (entry_str == "state")
+      return v_iter->state();
+    else if (entry_str == "total")
+      return v_iter->total_variables();
+    else if (entry_str == "uncertain")
+      return v_iter->uncertain();
+    // else fall through to normal queries
   }
-  else if ((L = Begins(entry_name, "responses.num_"))) {
-    if (dbRep->responsesDBLocked)
-	Locked_db();
-    #define P &DataResponsesRep::
-    static KW<size_t, DataResponsesRep> Szdr[] = {
-      // must be sorted by string (key)
-	{"calibration_terms", P numLeastSqTerms},
-	{"config_vars", P numExpConfigVars},
-	{"experiments", P numExperiments},
-	{"field_calibration_terms", P numFieldLeastSqTerms},
-	{"field_nonlinear_equality_constraints",
-	 P numFieldNonlinearEqConstraints},
-	{"field_nonlinear_inequality_constraints",
-	 P numFieldNonlinearIneqConstraints},
-	{"field_objectives", P numFieldObjectiveFunctions},
-	{"field_responses", P numFieldResponseFunctions},
-	{"nonlinear_equality_constraints", P numNonlinearEqConstraints},
-	{"nonlinear_inequality_constraints", P numNonlinearIneqConstraints},
-	{"objective_functions", P numObjectiveFunctions},
-	{"response_functions", P numResponseFunctions},
-	{"scalar_calibration_terms", P numScalarLeastSqTerms},
-	{"scalar_nonlinear_equality_constraints",
-	 P numScalarNonlinearEqConstraints},
-	{"scalar_nonlinear_inequality_constraints",
-	 P numScalarNonlinearIneqConstraints},
-	{"scalar_objectives", P numScalarObjectiveFunctions},
-	{"scalar_responses", P numScalarResponseFunctions}};
-    #undef P
 
-    KW<size_t, DataResponsesRep> *kw;
-    if ((kw = (KW<size_t, DataResponsesRep>*)Binsearch(Szdr, L)))
-	return dbRep->dataResponsesIter->dataRespRep.get()->*kw->p;
-  }
-  Bad_name(entry_name, "get_sizet");
-  return abort_handler_t<size_t>(PARSE_ERROR);
+  static LookerUpper<size_t> lookup
+  { "get_sizet",
+    { /* environment */ },
+    { /* method */
+      {"final_solutions", P_MET numFinalSolutions},
+      {"jega.num_cross_points", P_MET numCrossPoints},
+      {"jega.num_designs", P_MET numDesigns},
+      {"jega.num_generations", P_MET numGenerations},
+      {"jega.num_offspring", P_MET numOffspring},
+      {"jega.num_parents", P_MET numParents},
+      {"nond.c3function_train.kick_rank", P_MET kickRank},
+      {"nond.c3function_train.max_rank", P_MET maxRank},
+      {"nond.c3function_train.start_rank", P_MET startRank},
+      {"nond.collocation_points", P_MET collocationPoints},
+      {"nond.expansion_samples", P_MET expansionSamples},
+      {"num_candidate_designs", P_MET numCandidateDesigns},
+      {"num_candidates", P_MET numCandidates},
+      {"num_prediction_configs", P_MET numPredConfigs}
+    },
+    { /* model */
+      {"c3function_train.collocation_points", P_MOD collocationPoints},
+      {"c3function_train.kick_rank", P_MOD kickRank},
+      {"c3function_train.max_rank", P_MOD maxRank},
+      {"c3function_train.start_rank", P_MOD startRank}//,
+      //{"c3function_train.verbosity", P_MOD verbosity}
+    },
+    { /* variables */
+      {"beta_uncertain", P_VAR numBetaUncVars},
+      {"binomial_uncertain", P_VAR numBinomialUncVars},
+      {"continuous_design", P_VAR numContinuousDesVars},
+      {"continuous_interval_uncertain", P_VAR numContinuousIntervalUncVars},
+      {"continuous_state", P_VAR numContinuousStateVars},
+      {"discrete_design_range", P_VAR numDiscreteDesRangeVars},
+      {"discrete_design_set_int", P_VAR numDiscreteDesSetIntVars},
+      {"discrete_design_set_real", P_VAR numDiscreteDesSetRealVars},
+      {"discrete_design_set_string", P_VAR numDiscreteDesSetStrVars},
+      {"discrete_interval_uncertain", P_VAR numDiscreteIntervalUncVars},
+      {"discrete_state_range", P_VAR numDiscreteStateRangeVars},
+      {"discrete_state_set_int", P_VAR numDiscreteStateSetIntVars},
+      {"discrete_state_set_real", P_VAR numDiscreteStateSetRealVars},
+      {"discrete_state_set_string", P_VAR numDiscreteStateSetStrVars},
+      {"discrete_uncertain_set_int", P_VAR numDiscreteUncSetIntVars},
+      {"discrete_uncertain_set_real", P_VAR numDiscreteUncSetRealVars},
+      {"discrete_uncertain_set_string", P_VAR numDiscreteUncSetStrVars},
+      {"exponential_uncertain", P_VAR numExponentialUncVars},
+      {"frechet_uncertain", P_VAR numFrechetUncVars},
+      {"gamma_uncertain", P_VAR numGammaUncVars},
+      {"geometric_uncertain", P_VAR numGeometricUncVars},
+      {"gumbel_uncertain", P_VAR numGumbelUncVars},
+      {"histogram_uncertain.bin", P_VAR numHistogramBinUncVars},
+      {"histogram_uncertain.point_int", P_VAR numHistogramPtIntUncVars},
+      {"histogram_uncertain.point_real", P_VAR numHistogramPtRealUncVars},
+      {"histogram_uncertain.point_string", P_VAR numHistogramPtStrUncVars},
+      {"hypergeometric_uncertain", P_VAR numHyperGeomUncVars},
+      {"lognormal_uncertain", P_VAR numLognormalUncVars},
+      {"loguniform_uncertain", P_VAR numLoguniformUncVars},
+      {"negative_binomial_uncertain", P_VAR numNegBinomialUncVars},
+      {"normal_uncertain", P_VAR numNormalUncVars},
+      {"poisson_uncertain", P_VAR numPoissonUncVars},
+      {"triangular_uncertain", P_VAR numTriangularUncVars},
+      {"uniform_uncertain", P_VAR numUniformUncVars},
+      {"weibull_uncertain", P_VAR numWeibullUncVars}
+    },
+    { /* interface */ },
+    { /* responses */
+      {"num_calibration_terms", P_RES numLeastSqTerms},
+      {"num_config_vars", P_RES numExpConfigVars},
+      {"num_experiments", P_RES numExperiments},
+      {"num_field_calibration_terms", P_RES numFieldLeastSqTerms},
+      {"num_field_nonlinear_equality_constraints",
+	  P_RES numFieldNonlinearEqConstraints},
+      {"num_field_nonlinear_inequality_constraints",
+	  P_RES numFieldNonlinearIneqConstraints},
+      {"num_field_objectives", P_RES numFieldObjectiveFunctions},
+      {"num_field_responses", P_RES numFieldResponseFunctions},
+      {"num_nonlinear_equality_constraints", P_RES numNonlinearEqConstraints},
+      {"num_nonlinear_inequality_constraints", P_RES numNonlinearIneqConstraints},
+      {"num_objective_functions", P_RES numObjectiveFunctions},
+      {"num_response_functions", P_RES numResponseFunctions},
+      {"num_scalar_calibration_terms", P_RES numScalarLeastSqTerms},
+      {"num_scalar_nonlinear_equality_constraints",
+	  P_RES numScalarNonlinearEqConstraints},
+      {"num_scalar_nonlinear_inequality_constraints",
+	  P_RES numScalarNonlinearIneqConstraints},
+      {"num_scalar_objectives", P_RES numScalarObjectiveFunctions},
+      {"num_scalar_responses", P_RES numScalarResponseFunctions}
+    }
+  };
+  
+  return lookup.get(entry_name, dbRep);
 }
 
 
@@ -2846,6 +2807,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
   return lookup.get(entry_name, dbRep);
 }
 
+/** This special case involving pointers doesn't use generic lookups */
 void** ProblemDescDB::get_voidss(const String& entry_name) const
 {
   if (entry_name == "method.dl_solver.dlLib") {
