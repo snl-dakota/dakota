@@ -405,8 +405,7 @@ private:
   /// Retrieve member of type T from class R (Data*Rep) (instantiate
   /// template with T& if the return type needs to be T&, similar const T&)
   template <typename T, class Rep>
-  using RepGetter = std::function<T(Rep&)>;
-  // TODO: using RepGetter = std::function<T&(std::shared_ptr<Rep>&)>;
+  using RepGetter = std::function<T(std::shared_ptr<Rep>&)>;
 
   /// Encapsulate lookups across Data*Rep types
   template <typename T>

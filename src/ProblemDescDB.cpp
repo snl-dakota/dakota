@@ -1338,7 +1338,7 @@ template<typename T, class A> struct KW {const char*key; T A::* p;};
 #define Binsearch(t,s) binsearch(t, sizeof(t[0]), sizeof(t)/sizeof(t[0]), s)
 // L is the length of the prefix already tested, e.g., 7 for "method."
 
-static void Bad_name(String entry_name, const char *where)
+static void Bad_name(const String& entry_name, const String& where)
 {
   Cerr << "\nBad entry_name in ProblemDescDB::" << where << ":  "
        << entry_name << std::endl;
@@ -1352,76 +1352,92 @@ static void Locked_db()
   abort_handler(PARSE_ERROR);
 }
 
-static void Null_rep(const char *who)
+static void Null_rep(const String& who)
 {
   Cerr << "\nError: ProblemDescDB::" << who
        << "() called with NULL representation." << std::endl;
   abort_handler(PARSE_ERROR);
 }
 
-static void Null_rep1(const char *who)
+static void Null_rep1(const String& who)
 {
   Cerr << "\nError: ProblemDescDB::" << who
        << " called with NULL representation." << std::endl;
   abort_handler(PARSE_ERROR);
 }
 
+// split the entry name on the first period into block.entry
+std::pair<std::string, std::string>
+split_entry_name(const std::string& entry_name, const std::string& context_msg)
+{
+  auto first_dot = entry_name.find(".");
+  // must find a split point and have trailing lookup entry content
+  if (first_dot == std::string::npos || first_dot == entry_name.size()-1)
+    Bad_name(entry_name, context_msg);
+  const std::string block = entry_name.substr(0, first_dot);
+  const std::string entry = entry_name.substr(first_dot + 1,
+					      entry_name.size() - first_dot - 1);
+  return std::make_pair(block, entry);
+}
 
 template <typename T>
 T ProblemDescDB::LookerUpper<T>::
 get(const std::string& entry_name,
     const std::shared_ptr<ProblemDescDB>& db_rep) const
 {
-  const char *L;
-
   if (!db_rep)
-    Null_rep(contextMsg.c_str());
-  if ((L = Begins(entry_name, "environment."))) {
-    auto it = envMap.find(L);
+    Null_rep(contextMsg);
+  
+  std::string block, entry;
+  std::tie(block, entry) = split_entry_name(entry_name, contextMsg);
+
+  if (block == "environment") {
+    auto it = envMap.find(entry);
     if (it != envMap.end())
-      return it->second(*(db_rep->environmentSpec.dataEnvRep));
+      return it->second(db_rep->environmentSpec.dataEnvRep);
   }
-  else if ((L = Begins(entry_name, "method."))) {
+  else if (block == "method") {
     if (db_rep->methodDBLocked)
       Locked_db();
-    auto it = metMap.find(L);
+    auto it = metMap.find(entry);
     if (it != metMap.end())
-      return it->second(*(db_rep->dataMethodIter->dataMethodRep));
+      return it->second(db_rep->dataMethodIter->dataMethodRep);
   }
-  else if ((L = Begins(entry_name, "model."))) {
+  else if (block == "model") {
     if (db_rep->modelDBLocked)
       Locked_db();
-    auto it = modMap.find(L);
+    auto it = modMap.find(entry);
     if (it != modMap.end())
-      return it->second(*(db_rep->dataModelIter->dataModelRep));
+      return it->second(db_rep->dataModelIter->dataModelRep);
   }
-  else if ((L = Begins(entry_name, "variables."))) {
+  else if (block == "variables") {
     if (db_rep->variablesDBLocked)
       Locked_db();
-    auto it = varMap.find(L);
+    auto it = varMap.find(entry);
     if (it != varMap.end())
-      return it->second(*(db_rep->dataVariablesIter->dataVarsRep));
+      return it->second(db_rep->dataVariablesIter->dataVarsRep);
   }
-  else if ((L = Begins(entry_name, "interface."))) {
+  else if (block == "interface") {
     if (db_rep->interfaceDBLocked)
       Locked_db();
-    auto it = intMap.find(L);
+    auto it = intMap.find(entry);
     if (it != intMap.end())
-      return it->second(*(db_rep->dataInterfaceIter->dataIfaceRep));
+      return it->second(db_rep->dataInterfaceIter->dataIfaceRep);
   }
-  else if ((L = Begins(entry_name, "responses."))) {
+  else if (block == "responses") {
     if (db_rep->responsesDBLocked)
       Locked_db();
-    auto it = resMap.find(L);
+    auto it = resMap.find(entry);
     if (it != resMap.end())
-      return it->second(*(db_rep->dataResponsesIter->dataRespRep));
+      return it->second(db_rep->dataResponsesIter->dataRespRep);
   }
-  Bad_name(entry_name, contextMsg.c_str());
+  Bad_name(entry_name, contextMsg);
   return abort_handler_t<T>(PARSE_ERROR);
 }
 
 
-// shorthand for pointer to Data*Rep member for use in key to data maps
+// shorthand for pointer to Data*Rep members for use in key to data maps;
+// these names are super terse on purpose and only used in this compilation unit
 #define P_ENV &DataEnvironmentRep::
 #define P_MET &DataMethodRep::
 #define P_MOD &DataModelRep::
@@ -2558,31 +2574,33 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 size_t ProblemDescDB::get_sizet(const String& entry_name) const
 {
   // first handle special case for variable group queries
-  const char* L;
-  if ((L = Begins(entry_name, "variables."))) {
+
+  std::string block, entry;
+  std::tie(block, entry) = split_entry_name(entry_name, "get_sizet");
+
+  if (block == "variables") {
     if (!dbRep)
       Null_rep("get_sizet");
     if (dbRep->variablesDBLocked)
       Locked_db();
 
     // string for lookup key without the leading "variables."
-    std::string entry_str(L);
     auto v_iter = dbRep->dataVariablesIter;
-    if (entry_str == "aleatory_uncertain")
+    if (entry == "aleatory_uncertain")
       return v_iter->aleatory_uncertain();
-    else if (entry_str == "continuous")
+    else if (entry == "continuous")
       return v_iter->continuous_variables();
-    else if (entry_str == "design")
+    else if (entry == "design")
       return v_iter->design();
-    else if (entry_str == "discrete")
+    else if (entry == "discrete")
       return v_iter->discrete_variables();
-    else if (entry_str == "epistemic_uncertain")
+    else if (entry == "epistemic_uncertain")
       return v_iter->epistemic_uncertain();
-    else if (entry_str == "state")
+    else if (entry == "state")
       return v_iter->state();
-    else if (entry_str == "total")
+    else if (entry == "total")
       return v_iter->total_variables();
-    else if (entry_str == "uncertain")
+    else if (entry == "uncertain")
       return v_iter->uncertain();
     // else fall through to normal queries
   }
@@ -3462,5 +3480,14 @@ void ProblemDescDB::enforce_unique_ids()
   if (found_error)
     abort_handler(PARSE_ERROR);
 }
+
+
+#undef P_ENV
+#undef P_MET
+#undef P_MOD
+#undef P_VAR
+#undef P_INT
+#undef P_RES
+
 
 } // namespace Dakota
