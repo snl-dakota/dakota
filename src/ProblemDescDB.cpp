@@ -1298,50 +1298,10 @@ int ProblemDescDB::max_procs_per_ie(int max_eval_concurrency)
 }
 
 
- static void*
-binsearch(void *kw, size_t kwsize, size_t n, const char* key)
-{
-	/* Binary search, based loosely on b_search.c in the */
-	/* AMPL/solver interface library. */
-	char *ow, *ow1, *s;
-	int c;
-	size_t n1;
-
-	ow = (char*)kw;
-	while(n > 0) {
-		ow1 = ow + (n1 = n >> 1)*kwsize;
-		s = *(char **)ow1;
-        if ((c = std::strcmp(key, s)) == 0)
-			return ow1;
-		if (c < 0)
-			n = n1;
-		else {
-			n -= n1 + 1;
-			ow = ow1 + kwsize;
-			}
-		}
-	return 0;
-	}
-
- static const char*
-Begins(const String &entry_name, const char *s)
-{
-	const char *t, *t0;
-	t = entry_name.data();
-	while(*t++ == *s++)
-		if (!*s)
-			return t;
-	return 0;
-	}
-
-template<typename T, class A> struct KW {const char*key; T A::* p;};
-#define Binsearch(t,s) binsearch(t, sizeof(t[0]), sizeof(t)/sizeof(t[0]), s)
-// L is the length of the prefix already tested, e.g., 7 for "method."
-
 static void Bad_name(const String& entry_name, const String& where)
 {
-  Cerr << "\nBad entry_name in ProblemDescDB::" << where << ":  "
-       << entry_name << std::endl;
+  Cerr << "\nBad entry_name '" << entry_name << "' in ProblemDescDB::"
+       << where << std::endl;
   abort_handler(PARSE_ERROR);
 }
 
@@ -1353,13 +1313,6 @@ static void Locked_db()
 }
 
 static void Null_rep(const String& who)
-{
-  Cerr << "\nError: ProblemDescDB::" << who
-       << "() called with NULL representation." << std::endl;
-  abort_handler(PARSE_ERROR);
-}
-
-static void Null_rep1(const String& who)
 {
   Cerr << "\nError: ProblemDescDB::" << who
        << " called with NULL representation." << std::endl;
@@ -1488,7 +1441,7 @@ get(const std::string& entry_name,
 const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 {
   static LookerUpper<const RealMatrixArray&> lookup
-  { "get_rma",
+  { "get_rma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1508,7 +1461,7 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {  
   static LookerUpper<const RealVector&> lookup
-  { "get_rv",
+  { "get_rv()",
     { /* environment */ },
     { /* method */
       {"concurrent.parameter_sets", P_MET concurrentParameterSets},
@@ -1648,7 +1601,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 {
   static LookerUpper<const IntVector&> lookup
-  { "get_iv",
+  { "get_iv()",
     { /* environment */ },
     { /* method */
       {"fsu_quasi_mc.primeBase", P_MET primeBase},
@@ -1708,7 +1661,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 {
   static LookerUpper<const BitArray&> lookup
-  { "get_ba",
+  { "get_ba()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1743,7 +1696,7 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 {
   static LookerUpper<const SizetArray&> lookup
-  { "get_sza",
+  { "get_sza()",
     { /* environment */ },
     { /* method */
       {"nond.c3function_train.start_rank_sequence", P_MET startRankSeq},
@@ -1765,7 +1718,7 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 {
   static LookerUpper<const UShortArray&> lookup
-  { "get_usa",
+  { "get_usa()",
     { /* environment */ },
     { /* method */
       {"nond.c3function_train.start_order_sequence", P_MET startOrderSeq},
@@ -1788,7 +1741,7 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 {
   static LookerUpper<const RealSymMatrix&> lookup
-  { "get_rsm",
+  { "get_rsm()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1806,7 +1759,7 @@ const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 {
   static LookerUpper<const RealVectorArray&> lookup
-  { "get_rva",
+  { "get_rva()",
     { /* environment */ },
     { /* method */
       {"nond.gen_reliability_levels", P_MET genReliabilityLevels},
@@ -1828,7 +1781,7 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 {
   // BMA: no current use cases
   static LookerUpper<const IntVectorArray&> lookup
-  { "get_iva",
+  { "get_iva()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1844,7 +1797,7 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 {
   static LookerUpper<const IntSet&> lookup
-  { "get_is",
+  { "get_is()",
     { /* environment */ },
     { /* method */ },
     { /* model */
@@ -1868,7 +1821,7 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 {
   static LookerUpper<const IntSetArray&> lookup
-  { "get_isa",
+  { "get_isa()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1886,7 +1839,7 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 {
   static LookerUpper<const StringSetArray&> lookup
-  { "get_ssa",
+  { "get_ssa()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1905,7 +1858,7 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 {
   static LookerUpper<const RealSetArray&> lookup
-  { "get_rsa",
+  { "get_rsa()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1924,7 +1877,7 @@ const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 {
   static LookerUpper<const IntRealMapArray&> lookup
-  { "get_irma",
+  { "get_irma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1943,7 +1896,7 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) const
 {
   static LookerUpper<const StringRealMapArray&> lookup
-  { "get_srma",
+  { "get_srma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1963,7 +1916,7 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
 const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 {
  static LookerUpper<const RealRealMapArray&> lookup
-  { "get_rrma",
+  { "get_rrma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1985,7 +1938,7 @@ const RealRealPairRealMapArray& ProblemDescDB::
 get_rrrma(const String& entry_name) const
 {
  static LookerUpper<const RealRealPairRealMapArray&> lookup
-  { "get_rrrma",
+  { "get_rrrma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -2005,7 +1958,7 @@ const IntIntPairRealMapArray& ProblemDescDB::
 get_iirma(const String& entry_name) const
 {
  static LookerUpper<const IntIntPairRealMapArray&> lookup
-  { "get_iirma",
+  { "get_iirma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -2024,7 +1977,7 @@ get_iirma(const String& entry_name) const
 const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
   static LookerUpper<const StringArray&> lookup
-  { "get_sa",
+  { "get_sa()",
     { /* environment */ },
     { /* method */
       {"coliny.misc_options", P_MET miscOptions},
@@ -2109,7 +2062,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 {
   static LookerUpper<const String2DArray&> lookup
-  { "get_s2a",
+  { "get_s2a()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -2127,7 +2080,7 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 const String& ProblemDescDB::get_string(const String& entry_name) const
 {
   static LookerUpper<const String&> lookup
-  { "get_string",
+  { "get_string()",
     { /* environment */
       {"error_file", P_ENV errorFile},
       {"output_file", P_ENV outputFile},
@@ -2269,7 +2222,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 const Real& ProblemDescDB::get_real(const String& entry_name) const
 {
   static LookerUpper<const Real&> lookup
-  { "get_real",
+  { "get_real()",
     { /* environment */ },
     { /* method */
       {"asynch_pattern_search.constraint_penalty", P_MET constrPenalty},
@@ -2364,7 +2317,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 int ProblemDescDB::get_int(const String& entry_name) const
 {
   static LookerUpper<int> lookup
-  { "get_int",
+  { "get_int()",
     { /* environment */
       {"output_precision", P_ENV outputPrecision},
       {"stop_restart", P_ENV stopRestart}
@@ -2450,7 +2403,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 short ProblemDescDB::get_short(const String& entry_name) const
 {
   static LookerUpper<short> lookup
-  { "get_short",
+  { "get_short()",
     { /* environment */ },
     { /* method */
       {"iterator_scheduling", P_MET iteratorScheduling},
@@ -2524,7 +2477,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 {
   static LookerUpper<unsigned short> lookup
-  { "get_ushort",
+  { "get_ushort()",
     { /* environment */
       {"interface_evals_selection", P_ENV interfEvalsSelection},
       {"model_evals_selection", P_ENV modelEvalsSelection},
@@ -2605,7 +2558,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
   if (block == "variables") {
     if (!dbRep)
-      Null_rep("get_sizet");
+      Null_rep("get_sizet()");
     if (dbRep->variablesDBLocked)
       Locked_db();
 
@@ -2631,7 +2584,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
   }
 
   static LookerUpper<size_t> lookup
-  { "get_sizet",
+  { "get_sizet()",
     { /* environment */ },
     { /* method */
       {"final_solutions", P_MET numFinalSolutions},
@@ -2726,7 +2679,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 bool ProblemDescDB::get_bool(const String& entry_name) const
 {
   static LookerUpper<bool> lookup
-  { "get_bool",
+  { "get_bool()",
     { /* environment */
       {"check", P_ENV checkFlag},
       {"graphics", P_ENV graphicsFlag},
