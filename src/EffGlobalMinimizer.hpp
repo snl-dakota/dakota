@@ -137,7 +137,7 @@ private:
 
     /// expected violation function for the constraint functions
     RealVector expected_violation(const RealVector& means,
-      				                    const RealVector& variances);
+                                        const RealVector& variances);
 
     /// initialize and update the penaltyParameter
     void update_penalty();
@@ -150,13 +150,13 @@ private:
     /// static function used as the objective function in the
     /// Expected Improvement (EIF) problem formulation for EGO
     static void PIF_objective_eval(const Variables& sub_model_vars,
-  				                        const Variables& recast_vars,
+                                        const Variables& recast_vars,
                                   const Response& sub_model_response,
                                   Response& recast_response);
     /// static function used as the objective function in the
     /// Expected Improvement (EIF) problem formulation for EGO
     static void EIF_objective_eval(const Variables& sub_model_vars,
-  				                        const Variables& recast_vars,
+                                        const Variables& recast_vars,
                                   const Response& sub_model_response,
                                   Response& recast_response);
     /// static function used as the objective function in the
@@ -167,7 +167,7 @@ private:
                                   Response& recast_response);
     /// Variance formulation for primary
     static void Variances_objective_eval(const Variables& sub_model_vars,
-  				                        const Variables& recast_vars,
+                                        const Variables& recast_vars,
                                   const Response& sub_model_response,
                                   Response& recast_response);
 
@@ -180,11 +180,15 @@ private:
     /// synchronous batch-sequential implementation: main function
     void batch_synchronous_ego();
     /// construct batch acquisition
-    void construct_batch_acquisition(VariablesArray varsArrayBatchAcquisition);
+    void construct_batch_acquisition();
+    /// construct batch exploration
+    void construct_batch_exploration();
     /// delete liar responses
     void delete_liar_responses();
     /// evaluate batch
-    void evaluate_batch();
+    void evaluate_batch_and_update_constraints();
+    /// update convergence counters
+    void update_convergence_counters();
 
     /// convergence checkers
     // check convergence if EGO has converged
@@ -248,12 +252,10 @@ private:
     size_t numDataPts;
 
     /// placeholder for batch input (before querying the batch)
-    VariablesArray varsArrayBatchAcquisition;
+    VariablesArray varsArrayBatch;
 
     /// liar response
-    const IntResponsePair respStarLiar;
-
-    const IntResponseMap synchronousRespStarTruth;
+    IntResponseMap synchronousRespStarTruth;
 
     /// check model parallelism
     /// bool flag if model supports asynchronous parallelism
