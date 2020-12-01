@@ -1,0 +1,8 @@
+* Test:
+    * dprepro --simpler-parser
+    * pyprepro dakoa-include
+
+* How to handle 
+    {include('file')} 
+  which is wrong vs
+    {% include('file') %}

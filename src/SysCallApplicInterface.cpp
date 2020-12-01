@@ -16,8 +16,6 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "CommandShell.hpp"
-#include <sys/types.h> // MAY REQUIRE ifndef(HPUX)
-#include <sys/stat.h>
 #include "WorkdirHelper.hpp"
 #include <thread>
 
@@ -220,23 +218,18 @@ void SysCallApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 }
 
 
-bool SysCallApplicInterface::
-system_call_file_test(const bfs::path& root_file)
+bool SysCallApplicInterface::system_call_file_test(const bfs::path& root_file)
 {
-  // Unix stat utility returns 0 if successful in gathering file statistics,
-  // -1 if there's an error (e.g., the file does not exist).
-  struct stat buf; // see man pages for info available from buf (not used here)
   size_t num_programs = programNames.size();
   if ( num_programs > 1 && oFilterName.empty() ) {
 #ifdef __SUNPRO_CC
     // Sun Solaris has been observed to have problems with the final results
     // file existing before previous results files exist (I/O threading?)
     for (size_t i=0; i<num_programs; ++i) {
-      // BMA TODO: rework with BFS utils
       bfs::path tagged_file = 
 	WorkdirHelper::concat_path(root_file, "." + std::to_string(i+1));
-      if ( stat((char*)tagged_file.string().data(), &buf) == -1 )
-        return false;
+      if (!bfs::exists(tagged_file))
+	return false;
     }
     return true;
 #else
@@ -244,11 +237,11 @@ system_call_file_test(const bfs::path& root_file)
     // really necessary to check the last tagged_file: root_file.[num_programs]
     bfs::path tagged_file = 
       WorkdirHelper::concat_path(root_file, "." + std::to_string(num_programs));
-    return ( stat((char*)tagged_file.string().data(), &buf) == -1 ) ? false : true;
+    return bfs::exists(tagged_file);
 #endif // __SUNPRO_CC
   }
   else
-    return ( stat((char*)root_file.string().data(), &buf) == -1 ) ? false : true;
+    return bfs::exists(root_file);
 }
 
 

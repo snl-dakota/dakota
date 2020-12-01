@@ -75,14 +75,19 @@ protected:
 
   const RealVector& gradient(const RealVector& c_vars) override;
 
+  /// set the surrogate's verbosity level according to Dakota's verbosity
+  void set_verbosity();
+
   /// export the model to disk
   void
-  export_model(const String& fn_label, const String& export_prefix = "",
-	       const unsigned short export_format = NO_MODEL_FORMAT) override;
+  export_model(const StringArray& var_labels, const String& fn_label,
+	       const String& export_prefix,
+	       const unsigned short export_format) override;
 
-  /// Derived implementation of model export since only derived
-  /// classes can serialize.
-  virtual void derived_export_model(const String& filename, bool binary) = 0;
+  void
+  export_model(const Variables& vars, const String& fn_label,
+	       const String& export_prefix,
+	       const unsigned short export_format) override;
 
   /// Key/value config options for underlying surrogate
   dakota::ParameterList surrogateOpts;

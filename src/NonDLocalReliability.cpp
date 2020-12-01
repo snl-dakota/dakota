@@ -526,8 +526,7 @@ void NonDLocalReliability::initialize_graphics(int iterator_server_id)
     // For graphics, limit (currently) to server id 1, for both ded master
     // (parent partition rank 1) and peer partitions (parent partition rank 0)
     if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
-      dakota_graphics.create_plots_2d(iteratedModel.current_variables(),
-				      iteratedModel.current_response());
+      iteratedModel.create_2d_plots();
       // Visualize mostProbPointX in the vars windows and CDF/CCDF
       // probability/reliability-response level pairs in the response windows.
       dakota_graphics.set_x_labels2d("Response Level");
@@ -542,9 +541,7 @@ void NonDLocalReliability::initialize_graphics(int iterator_server_id)
     // For output/restart/tabular data, all Iterator masters stream output
     if (mgr.tabularDataFlag) { // initialize the tabular data file
       dakota_graphics.tabular_counter_label("z");
-      dakota_graphics.create_tabular_datastream(
-        iteratedModel.current_variables(), iteratedModel.current_response(),
-        );
+      iteratedModel.create_tabular_datastream();
     }
     */
   }

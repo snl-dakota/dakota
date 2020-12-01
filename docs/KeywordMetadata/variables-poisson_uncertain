@@ -1,11 +1,12 @@
 Blurb::
 Aleatory uncertain discrete variable - Poisson
+
 Description::
 The Poisson distribution is used to predict the number of discrete events that happen in a single time interval.  The random events occur uniformly and independently.
 The expected number of occurences in a single time interval is \f$\lambda\f$, which must be a positive real number.  For example, if events occur on average 4 times per year and we are interested in the distribution of events over six months, \f$\lambda\f$ would be 2.  However, if we were interested in the distribution of events occuring over 5 years, \f$\lambda\f$ would be 20.
  
-The density function for the poisson distribution is given by: 
-\f[f(x) = \frac{\lambda e^{-\lambda}}{x!}\f] 
+The probability mass function for the poisson distribution is given by:
+\f[f(x) = \frac{\lambda^{x} e^{-\lambda}}{x!}\f]
 where 
 -\f$\lambda\f$ is the expected number of events occuring in a single time interval
 -\c x is the number of events that occur in this time period 
@@ -15,13 +16,14 @@ where
 Topics:: 	discrete_variables, aleatory_uncertain_variables
 Examples::
 Theory::
-When used with design of experiments and multidimensional parameter
-studies, distribution bounds are inferred.
-These bounds are [0, \f$\mu + 3 \sigma\f$].
 
-For vector and centered parameter studies, an inferred initial
-starting point is needed for the uncertain variables.
-These variables are initialized to their means for these studies.
+When used with some methods such as design of experiments and
+multidimensional parameter studies, distribution bounds are inferred
+to be [0, \f$\mu + 3 \sigma\f$].
+
+For some methods, including vector and centered parameter studies, an
+initial point is needed for the uncertain variables. When not given
+explicitly, these variables are initialized to their means.
 
 Faq::
 See_Also::	

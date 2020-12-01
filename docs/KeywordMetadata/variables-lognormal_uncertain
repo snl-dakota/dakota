@@ -1,5 +1,6 @@
 Blurb::
 Aleatory uncertain variable - lognormal
+
 Description::
 If the logarithm of an uncertain variable X has a normal distribution, that is 
 \f$\log X \sim N(\mu,\sigma)\f$,
@@ -9,7 +10,15 @@ The lognormal is often used to model:
 -# variables which are the product of a large number of other quantities, by the Central Limit Theorem
 -# quantities which cannot have negative values. 
 
-Within the lognormal uncertain optional group specification, the number of lognormal uncertain variables, the means, and either standard deviations or error factors must be specified, and the distribution lower and upper bounds and variable descriptors are optional specifications. These distribution bounds can be used to truncate the tails of lognormal distributions, which as for bounded normal, can result in the mean and the standard deviation of the sample data being different from the mean and standard deviation of the underlying distribution (see "bounded lognormal" and "bounded lognormal-n" distribution types in \cite Wyss1998). 
+The number of lognormal uncertain variables, their means, and either
+standard deviations or error factors must be specified, while the
+distribution lower and upper bounds and variable descriptors are
+optional specifications. These distribution bounds can be used to
+truncate the tails of lognormal distributions, which as for bounded
+normal, can result in the mean and the standard deviation of the
+sample data being different from the mean and standard deviation of
+the underlying distribution (see "bounded lognormal" and "bounded
+lognormal-n" distribution types in \cite Wyss1998).
 
 For the lognormal variables, one may specify either the mean 
 \f$\mu\f$
@@ -37,30 +46,32 @@ and standard deviation
 \f$\zeta\f$
 of the underlying normal distribution are as follows:
 
-\f[\zeta = \frac{ln(\epsilon)}{1.645}\f]
-\f[\zeta^2 = ln(\frac{\sigma^2}{\mu^2} + 1)\f]
-\f[\lambda = ln(\mu) - \frac{\zeta^2}{2}\f]
+\f[\zeta = \frac{\ln(\epsilon)}{1.645}\f]
+\f[\zeta^2 = \ln\left(\frac{\sigma^2}{\mu^2} + 1\right)\f]
+\f[\lambda = \ln(\mu) - \frac{\zeta^2}{2}\f]
 
 Conversions from \f$\lambda\f$ and \f$\zeta\f$ back to \f$\mu\f$ 
 and \f$\epsilon\f$ or \f$\sigma\f$ are as follows:
 
-\f[\mu = e^{\lambda + \frac{\zeta^2}{2}}\f]
-\f[\sigma^2 = e^{2\lambda + \zeta^2}(e^{\zeta^2} - 1)\f]
-\f[\epsilon = e^{1.645\zeta}\f]
+\f[\mu = \exp \left( \lambda + \frac{\zeta^2}{2} \right) \f]
+\f[\sigma^2 = \exp \left( 2\lambda + \zeta^2 \right) \left( \exp \left(\zeta^2\right) - 1\right)\f]
+\f[\epsilon = \exp \left( 1.645\zeta \right) \f]
 
 The density function for the lognormal distribution is: 
-\f[f(x) = \frac{1}{\sqrt{2\pi}\zeta x} e^{-\frac{1}{2}\left(\frac{ln x-\lambda}{\zeta}\right)^2}\f]
+\f[f(x) = \frac{1}{\sqrt{2\pi}\zeta x}
+	\exp \left( -\frac{1}{2}\left(\frac{\ln(x)-\lambda}{\zeta}\right)^2 \right) \f]
 
 Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
-When used with design of experiments and multidimensional parameter
-studies, distribution bounds are inferred.
-These bounds are [0, \f$\mu + 3 \sigma\f$].
+When used with some methods such as design of experiments and
+multidimensional parameter studies, distribution bounds are inferred
+to be [0, \f$\mu + 3 \sigma\f$].
 
-For vector and centered parameter studies, an inferred initial
-starting point is needed for the uncertain variables.
-These variables are initialized to their means for these studies.
+For some methods, including vector and centered parameter studies, an
+initial point is needed for the uncertain variables. When not given
+explicitly, these variables are initialized to their means, correcting
+to bounds if needed.
 
 Faq::
 See_Also::	

@@ -1,0 +1,34 @@
+Blurb::
+Activate adaptive procedure for determining the best basis order
+
+Description:: This option activates a cross validation procedure to
+select the best basis order for representing the current set of data.
+It searches from \c start_order to \c max_order in increments of
+\c kick_order.
+
+<b> Default Behavior </b>
+
+No cross validation for basis order.
+
+Topics::
+
+Examples::
+This example shows specification of an order adaptation starting at order 2,
+incrementing by 2, and limited at order 6.
+\verbatim
+model,
+	id_model = 'FT'
+	surrogate global function_train
+	  start_rank = 4
+	  adapt_order  start_order = 2  kick_order = 2  max_order = 6
+	  solver_tolerance   = 1e-12
+	  rounding_tolerance = 1e-12
+	dace_method_pointer = 'SAMPLING'
+\endverbatim
+
+Note that \c adapt_rank and \c adapt_order can either be combined or
+used separately.
+
+Theory::
+Faq::
+See_Also:: model-surrogate-global-function_train-start_order, model-surrogate-global-function_train-kick_order, model-surrogate-global-function_train-max_order

@@ -14,6 +14,11 @@ __license__ = 'GNU Lesser General Public License'
 PYTHON3 = True if sys.version_info[0] == 3 else False 
 PYTHON2 = True if sys.version_info[0] == 2 else False
 
+if PYTHON3:
+    from itertools import zip_longest
+else:
+    from itertools import izip_longest as zip_longest
+
 #### Exceptions
 
 
@@ -30,6 +35,9 @@ class BatchSettingError(Exception):
     pass
 
 class BatchWriteError(Exception):
+    pass
+
+class ResultsUpdateError(Exception):
     pass
 
 # Constant used to specify an unnamed results file
@@ -173,6 +181,20 @@ class Response(object):
         self._hessian = None
         self._ignore_asv = ignore_asv
         self._batch = False
+    
+    def shape_matches(self, other):
+        """True if the "shape" of other matches self
+
+           Shape includes the descriptor, derivative variables, asv,
+           ignore_asv flag, and batch flag"""
+        if self._descriptor == other._descriptor and \
+           self._num_deriv_vars == other._num_deriv_vars and \
+           self.asv == other.asv and \
+           self._ignore_asv == other._ignore_asv and \
+           self._batch == other._batch:
+             return True
+        else:
+            return False
 
     @property
     def function(self):
@@ -286,6 +308,55 @@ class Results(object):
         else:
             return self._responses[key]
 
+    def update(self, other, check=False):
+        """Copy a Results object.
+
+        check: If True, verify that other Results is consistent with self.
+        
+        raises: ResultsUpdateError if consistency check fails
+        """
+        if not check:
+            self.aprepro_format = other.aprepro_format
+            self.ignore_asv = other.ignore_asv
+            self._deriv_vars = other._deriv_vars[:]
+            num_deriv_vars = len(self._deriv_vars)        
+            self._responses.clear()
+            self._responses = copy.deepcopy(other._responses)
+            self.results_file = other.results_file
+            self.eval_id = other.eval_id
+            self.eval_num = other.eval_num
+            self._failed = other._failed
+            self._batch = other._batch
+        else:
+            if self.aprepro_format != other.aprepro_format:
+                raise ResultsUpdateError("Mismatch between aprepro_format flag")
+            if self.ignore_asv != other.ignore_asv:
+                raise ResultsUpdateError("Mismatch between ignore_asv flag")
+            if not all(s == o for s, o in 
+                    zip_longest(self._deriv_vars, other._deriv_vars)):
+                raise ResultsUpdateError("Mismatch between derivative " + \
+                        "variables")
+            try:
+                if not all(s[1].shape_matches(o[1]) for s, o in 
+                        zip_longest(self._responses.items(), 
+                                    other._responses.items())):
+                    raise ResultsUpdateError("Mismatch between expected " + \
+                            "responses") 
+            except AttributeError: # Happens when responses are different 
+                                   # lengths, and None.shape_matches() is called
+                raise ResultsUpdateError("Mismatch between expected responses")           
+            self._responses.clear()
+            self._responses = copy.deepcopy(other._responses)
+            if self.results_file != other.results_file:
+                raise ResultsUpdateError("Mismatch between results file name")
+            if self.eval_id != other.eval_id:
+                raise ResultsUpdateError("Mismatch between evaluation ids")
+            if self.eval_num != other.eval_num:
+                raise ResultsUpdateError("Mismatch between evaluation nums")
+            self._failed = other._failed
+            if self._batch != other._batch:
+                raise ResultsUpdateError("Mismatch between batch flags")
+           
     @property
     def num_deriv_vars(self):
         return len(self._deriv_vars)
@@ -308,7 +379,7 @@ class Results(object):
             if (v.asv.gradient or ignore_asv) and v.gradient is not None:
                 print("[ ",file=stream, end="")
                 for e in v.gradient:
-                    print("% 24.16E" % e,file=stream,end="")
+                    print(" %24.16E" % e,file=stream,end="")
                 print(" ]",file=stream)
         # Write Hessians
         for t, v in self._responses.items():
@@ -320,7 +391,7 @@ class Results(object):
                         print("\n  ",file=stream,end="")
                     first=False
                     for c in r:
-                        print("% 24.16E" % c,file=stream, end="")
+                        print(" %24.16E" % c,file=stream, end="")
                 print(" ]]",file=stream)
 
     def write(self, stream=None, ignore_asv=None):
@@ -334,13 +405,15 @@ class Results(object):
                 setting provided at construct time.
 
         Raises:
-            dakota.interfacing.MissingSourceError: No results_file was provided at 
-                construct time, and no stream was provided to the method call.
-            dakota.interfacing.ResponseError: A result requested by Dakota is missing 
-                (and ignore_asv is False).
+            dakota.interfacing.MissingSourceError: No results_file was provided 
+                at construct time, and no stream was provided to the method
+                call.
+            dakota.interfacing.ResponseError: A result requested by Dakota is 
+                missing (and ignore_asv is False).
         """
         if self._batch:
-            raise BatchWriteError("write() called on Results object in batch mode. Write using BatchResults container")
+            raise BatchWriteError("write() called on Results object in " + \
+                    "batch mode. Write using BatchResults container")
         my_ignore_asv = self.ignore_asv
         if ignore_asv is not None:
             my_ignore_asv = ignore_asv
@@ -410,10 +483,11 @@ class Results(object):
         return self._batch
 
 class BatchParameters(object):
-    """Access variables and analysis components from a Dakota batch parameters file
+    """Access variables and analysis components from a batch parameters file
 
-    BatchParameters objects are simple collections of Parameters objects. Individual Parameters objects
-    can be access by index or by iterating the BatchParameters object.
+    BatchParameters objects are simple collections of Parameters objects. 
+    Individual Parameters objects can be access by index or by iterating 
+    the BatchParameters object.
 
     BatchParameters objects typically should be constructed by the convenience
     function ``dakota.interfacing.read_parameters_file``.
@@ -451,15 +525,17 @@ class BatchParameters(object):
 class BatchResults(object):
     """Collect response data and write to results file for a batch evaluation.
 
-    BatchResults objects typically should be constructed by the convenience function
+    BatchResults objects should be constructed by the convenience function
     ``dakota.interfacing.read_parameters_file``.
 
-    BatchResults objects are simple collections of the Results objects for a batch
-    evaluation. The individual Results objects can be accessed by index or by iterating the BatchResults object.
+    BatchResults objects are simple collections of the Results objects for a 
+    batch evaluation. The individual Results objects can be accessed by index
+    or by iterating the BatchResults object.
 
     Attributes:
         batch_id: batch id (string).
-        ignore_asv: True if the underlying Results objects will perform ASV checking when .write() is called
+        ignore_asv: True if the underlying Results objects will perform ASV
+            checking when .write() is called
         results_file: Name of results file that will be written
     """
 
@@ -484,6 +560,9 @@ class BatchResults(object):
     def __getitem__(self, index):
         return self._eval_results[index]
 
+    def __setitem__(self, index, other):
+        self._eval_results[index].update(other)
+
     def _toggle_batch_write(self, results, stream, ignore_asv):
         results._set_batch(False)
         results.write(stream, ignore_asv)
@@ -492,7 +571,7 @@ class BatchResults(object):
     def write(self, stream=None, ignore_asv=None):
         my_ignore_asv = self._ignore_asv
         if ignore_asv is not None:
-            my_ignore_asv= ignore_asv
+            my_ignore_asv=ignore_asv
 
         if stream is None:
             if self._results_file is None:
@@ -534,7 +613,8 @@ _pRE = {
             "num_an_comps":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_AN_COMPS)")),
             "eval_id":re.compile(_aprepro_re_base.format(
-                value="(?P<value>\d+(?::\d+)*)", tag="(?P<tag>DAKOTA_EVAL_ID)")),
+                value="(?P<value>\d+(?::\d+)*)",
+                tag="(?P<tag>DAKOTA_EVAL_ID)")),
             "variable":re.compile(_aprepro_re_base.format(
                 value="\"?(?P<value>.+?)\"?", tag ="(?P<tag>\S+)")),
             "function":re.compile(_aprepro_re_base.format(
@@ -554,7 +634,8 @@ _pRE = {
                 value="(?P<value>\d+)", tag="(?P<tag>analysis_components)")),
             "eval_id":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+(?::\d+)*)", tag="(?P<tag>eval_id)")),
-            # A lookahead assertion is required to catch string variables with spaces
+            # A lookahead assertion is required to catch string variables with
+            # spaces
             "variable":re.compile("\s*(?P<value>.+?)(?= \S+\n) (?P<tag>\S+)\n"),
             "function":re.compile(_dakota_re_base.format(
                 value="(?P<value>[0-7])", tag="ASV_\d+:(?P<tag>\S+)")),
@@ -580,13 +661,15 @@ def _extract_block(stream, numRE, dataRE, handle):
     line = stream.readline()
     m = numRE.match(line)
     if m is None:
-        raise ParamsFormatError("Improper format for section header in parameters file")
+        raise ParamsFormatError("Improper format for section header in " + \
+                "parameters file")
     num = int(numRE.match(line).group("value"))
     for i in range(num):
         line = stream.readline()
         m = dataRE.match(line)
         if m is None:
-            raise ParamsFormatError("Improperly formatted item in parameters file")
+            raise ParamsFormatError("Improperly formatted item in " + \
+                    "parameters file")
         tag = m.group("tag")
         value = m.group("value")
         handle(tag,value)
@@ -690,10 +773,10 @@ def read_parameters_file(parameters_file=None, results_file=None,
         object and Results object configured based on the parameters file.
             
     Raises:
-        dakota.interfacing.MissingSourceError: Parameters or results filename is 
+        dakota.interfacing.MissingSourceError: Parameters or results filename is
             not provided and cannot be read from the command line arguments.
 
-        dakota.interfacing.ParamsFormatError: The Dakota parameters file was not 
+        dakota.interfacing.ParamsFormatError: The Dakota parameters file was not
             valid. 
     """
     ### Determine the name of the parameters file and read it in
@@ -770,8 +853,8 @@ def dprepro(template, parameters=None, results=None, include=None,
     env.update(include)
     
     # Call the template engine
-    output_string = dprepro_mod.dprepro(include=env, template=template, fmt=fmt, code=code,
-            code_block=code_block, inline=inline, warn=warn)
+    output_string = dprepro_mod.dprepro(include=env, template=template, fmt=fmt,
+            code=code, code_block=code_block, inline=inline, warn=warn)
 
     # Output
     if output is None:

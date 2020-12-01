@@ -243,7 +243,11 @@ protected:
 
   /// query approxInterface for available advancements in order, rank, etc.
   bool advancement_available();
-
+  /// query approxInterface for updates in formulation (requiring a rebuild)
+  bool formulation_updated() const;
+  /// update the formulation status in approxInterface
+  void formulation_updated(bool update);
+  
   /// execute the DACE iterator to generate build data
   void run_dace();
 
@@ -421,12 +425,20 @@ private:
   String pointReuse;
   /// file name from \c import_build_points_file specification
   String importPointsFile;
+
   /// file name from \c export_approx_points_file specification
   String exportPointsFile;
   /// file export format for variables and approximate responses
   unsigned short exportFormat;
   /// output file stream for \c export_approx_points_file specification
   std::ofstream exportFileStream;
+
+  /// file name from \c export_approx_variance_file specification
+  String exportVarianceFile;
+  /// file export format for variables and approximate response variance
+  unsigned short exportVarianceFormat;
+  /// output file stream for \c export_approx_variance_file specification
+  std::ofstream exportVarianceFileStream;
 
   /// manages the building and subsequent evaluation of the approximations
   /// (required for both global and local)
@@ -712,6 +724,14 @@ inline void DataFitSurrModel::clear_inactive()
 
 inline bool DataFitSurrModel::advancement_available()
 { return approxInterface.advancement_available(); }
+
+
+inline bool DataFitSurrModel::formulation_updated() const
+{ return approxInterface.formulation_updated(); }
+
+
+inline void DataFitSurrModel::formulation_updated(bool update)
+{ approxInterface.formulation_updated(update); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()

@@ -148,12 +148,16 @@ weibull, poisson, negative binomial, geometric, and unspecified
 lognormal, and [\f$\mu - 3 \sigma\f$, \f$\mu + 3 \sigma\f$] for gumbel
 and unspecified normal.
 
-When an intial point is needed, uncertain variables are initialized to
-their means, where mean values for bounded normal and bounded
-lognormal may be further adjusted to satisfy any user-specified
-distribution bounds, mean values for discrete integer range
-distributions are rounded down to the nearest integer, and mean values
-for discrete set distributions are rounded to the nearest set value.
+When an intial point is needed and not explcitly specified in user
+input, it is assigned as described in the \c initial_point or \c
+initial_state specification, e.g., \ref
+variables-normal_uncertain-initial_point. For example, uncertain
+variables are initialized to their means, where mean values for
+bounded normal and bounded lognormal may be further adjusted to
+satisfy any user-specified distribution bounds, mean values for
+discrete integer range distributions are rounded down to the nearest
+integer, and mean values for discrete set distributions are rounded to
+the nearest set value.
 
 Topics::	block
 Examples::

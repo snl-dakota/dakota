@@ -1,0 +1,74 @@
+# Demonstrate list parameter study on global GP, exporting values and
+# variance, and model.
+# TODO: Diff tabular data against exported surrogate evals
+
+environment
+  method_pointer = 'LPS'
+  tabular_data
+
+method
+  id_method = 'LPS'
+  model_pointer = 'SURR_M'
+  list_parameter_study
+    list_of_points 
+     ## -2.0+4*numpy.random.rand(10,4)
+       0.00985493  0.95008775 -0.51641151  0.98315669
+       0.82213636 -1.86136262 -0.77771719  1.42761258
+       0.27477982 -1.90457729  1.27878245 -1.41019623
+       1.00546662  0.37812606  1.38477882 -0.35509361
+      -0.23974697 -0.18235846 -1.73280266  1.50175674
+      -0.0123335  -1.5267247   0.95489254  0.45657187
+       0.6614069   1.12063938 -1.81585359  1.81508035
+       1.30571495  0.72309377 -1.1653353   1.41451813
+       0.83924728  1.91255567  0.03809609 -1.51624221
+      -1.10362795 -1.22591065  1.78002812  1.87126221
+
+model
+  id_model = 'SURR_M'
+  surrogate global
+    dace_method_pointer = 'DACE'
+    experimental_gaussian_process
+      metrics 'root_mean_squared'
+        cross_validation folds 5
+      export_model
+        filename_prefix = 'gp_export'
+        formats = binary_archive
+      export_approx_points_file 'gp_values.dat'
+      export_approx_variance_file 'gp_variance.dat'
+
+
+variables
+  active design
+  continuous_design = 4
+    initial_point  -0.9 -1.1 -1.1 -1.1
+    lower_bounds   -2.0 -2.0 -2.0 -2.0
+    upper_bounds    2.0  2.0  2.0  2.0
+    descriptors    'x1' 'x2' 'x3' 'x4'
+
+responses
+  objective_functions = 1
+  no_gradients
+  no_hessians
+
+
+#########################################
+# interface truth model and dace method #
+#########################################
+
+method
+  id_method = 'DACE'
+  model_pointer = 'DACE_M'
+  sampling
+    samples = 200
+    seed = 50
+    sample_type lhs
+
+model
+  id_model = 'DACE_M'
+  single
+    interface_pointer = 'I1'
+
+interface
+  id_interface = 'I1'
+  direct
+    analysis_driver = 'herbie'

@@ -21,7 +21,7 @@
 #include <boost/math/distributions/uniform.hpp>
 #include <boost/math/distributions/normal.hpp>
 // for uniform samples (uniform_real is deprecated)
-#include <boost/random/mersenne_twister.hpp>
+#include "dakota_mersenne_twister.hpp"
 #include <boost/random/uniform_real.hpp>
 
 namespace Dakota {

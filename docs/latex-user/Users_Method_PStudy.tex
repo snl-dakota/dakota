@@ -84,20 +84,23 @@ studies.
 The vector and centered parameter studies use the initial values of
 the variables from the \texttt{variables} keyword block as the
 starting point and the central point of the parameter studies,
-respectively. In the case of design variables, the
-\texttt{initial\_point} is used, and in the case of state variables, 
-the \texttt{initial\_state} is used (see the Dakota Reference
-Manual~\cite{RefMan} for default values when \texttt{initial\_point} or
-\texttt{initial\_state} are unspecified). In the case of uncertain
-variables, initial values are inferred from the distribution
+respectively. These parameter study starting values for design,
+uncertain, and state variables are referenced in the following
+sections using the identifier ``Initial Values.''
+
+In the case of design variables, the \dakotakw{initial_point} is used,
+and in the case of state variables, the \dakotakw{initial_state} is
+used. In the case of uncertain variables, initial values not specified
+by an \dakotakw{initial_point} are inferred from the distribution
 specification: all uncertain initial values are set to their means,
-where mean values for bounded normal and bounded lognormal are
-repaired of needed to satisfy the specified distribution bounds, mean
-values for discrete integer range distributions are rounded down to
-the nearest integer, and mean values for discrete set distributions
-are rounded to the nearest set value.  These parameter study starting
-values for design, uncertain, and state variables are referenced in
-the following sections using the identifier ``Initial Values.''
+correcting as needed.  For example, mean values for bounded normal and
+bounded lognormal are repaired as needed to satisfy the specified
+distribution bounds, mean values for discrete integer range
+distributions are rounded down to the nearest integer, and mean values
+for discrete set distributions are rounded to the nearest set
+value. See the \dakotakw{variables}, \dakotakw{initial_point}, and
+\dakotakw{initial_state} keywords in the Dakota Reference
+Manual~\cite{RefMan} for additional details on default values.
 
 \subsection{Bounds}\label{ps:overview:bounds}
 

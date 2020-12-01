@@ -124,8 +124,8 @@ public:
   /// return active maximum value for expansion rank (mutable)
   size_t& max_rank();
 
-  // return c3RefineType
-  //short refinement_type() const;
+  // return c3AdvancementType
+  //short advancement_type() const;
 
   /// update oneApproxOpts with active basis orders after an order change
   void update_basis();
@@ -158,7 +158,7 @@ protected:
 
   void random_variables_key(const BitArray& random_vars_key);
 
-  //void refinement_statistics_type(short stats_type);
+  //void refinement_statistics_mode(short stats_mode);
 
   //const Pecos::BitArrayULongMap& SharedApproxData::sobol_index_map();
 
@@ -206,7 +206,7 @@ protected:
   unsigned short maxOrder;
   /// user specification for maximum order used within adapt_order;
   /// usually a scalar specification but can be adapted per model key
-  /// for UNIFORM_MAX_{ORDER,RANK_ORDER} refine types
+  /// for MAX_{ORDER,RANK_ORDER}_ADVANCEMENT refine types
   std::map<UShortArray, unsigned short> maxOrderMap;
   /// C3 FT can support CV over polynomial order in addition to adapt_rank
   bool adaptOrder;
@@ -230,7 +230,7 @@ protected:
   size_t maxRank;
   /// user specification for maximum rank used within adapt_rank;
   /// usually a scalar specification but can be adapted per model key
-  /// for UNIFORM_MAX_{RANK,RANK_ORDER} refine types
+  /// for MAX_{RANK,RANK_ORDER}_ADVANCEMENT refine types
   std::map<UShortArray, size_t> maxRankMap;
   /// internal C3 adaptation that identifies the best rank representation
   /// for a set of sample data based on cross validation
@@ -267,9 +267,10 @@ protected:
   /// RANK_SAMPLING, GREEDY
   short allocControl;
   // indicates refinement based on active or combined statistics
-  //short refineStatsType;
-  /// type of (uniform) refinement: UNIFORM_{START_ORDER,START_RANK,MAX_RANK}
-  short c3RefineType;
+  //short refineStatsMode;
+  /// type of advancement strategy used in uniform refinement:
+  /// {START_ORDER,START_RANK,MAX_ORDER,MAX_RANK,MAX_RANK_ORDER}_ADVANCEMENT
+  short c3AdvancementType;
 
   /// flag indicating availability of rank advancement (accumulated from
   /// C3Approximation::advancement_available())
@@ -396,8 +397,8 @@ inline size_t& SharedC3ApproxData::max_rank()
 }
 
 
-//inline short SharedC3ApproxData::refinement_type() const
-//{ return c3RefineType; }
+//inline short SharedC3ApproxData::advancement_type() const
+//{ return c3AdvancementType; }
 
 
 /** simplified estimation for scalar-valued rank and order (e.g., from 
@@ -454,7 +455,18 @@ inline size_t SharedC3ApproxData::regression_size()
 {
   return regression_size(numVars, start_rank(), max_rank(),
 			 start_orders(), max_order());
-  // TO DO: incorporate dimension preference -> ranks array
+
+  /* If max regression size logic were proliferated to non-refinement cases,
+     could automate max helpers below based on adapt{Rank,Order}:
+  size_t max_r = max_rank(), regress_r = (adaptRank) ? max_r : start_rank();
+  unsigned short max_o = max_order();
+  if (adaptOrder) {
+    UShortArray max_orders(numVars, max_o);// no dim_pref; adapt is isotropic
+    return regression_size(numVars, regress_r, max_r,   max_orders,   max_o);
+  }
+  else
+    return regression_size(numVars, regress_r, max_r, start_orders(), max_o);
+  */
 }
 
 
@@ -471,10 +483,8 @@ inline size_t SharedC3ApproxData::max_order_regression_size()
   //NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
   //  dim_pref, numVars, max_orders);
 
-  // the CV range for adapt_order is currently isotropic, so don't bother with
-  // dim_pref (for now)
   unsigned short max_o = max_order();
-  UShortArray max_orders(numVars, max_o);
+  UShortArray max_orders(numVars, max_o);// no dim_pref; adaptOrder is isotropic
 
   return regression_size(numVars, start_rank(), max_rank(), max_orders, max_o);
 }
@@ -486,10 +496,8 @@ inline size_t SharedC3ApproxData::max_regression_size()
   //NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
   //  dim_pref, numVars, max_orders);
 
-  // the CV range for adapt_order is currently isotropic, so don't bother with
-  // dim_pref (for now)
   size_t max_r = max_rank();  unsigned short max_o = max_order();
-  UShortArray max_orders(numVars, max_o);
+  UShortArray max_orders(numVars, max_o);// no dim_pref; adaptOrder is isotropic
 
   return regression_size(numVars, max_r, max_r, max_orders, max_o);
 }
@@ -538,11 +546,11 @@ inline void SharedC3ApproxData::set_parameter(String var, bool val)
 
 inline void SharedC3ApproxData::set_parameter(String var, short val)
 {
-  if      (var.compare("regress_type")     == 0)     regressType = val;
-  else if (var.compare("discrepancy_type") == 0) discrepancyType = val;
-  else if (var.compare("alloc_control")    == 0)    allocControl = val;
-  else if (var.compare("combine_type")     == 0)     combineType = val;
-  else if (var.compare("refinement_type")  == 0)    c3RefineType = val;
+  if      (var.compare("regress_type")      == 0)       regressType = val;
+  else if (var.compare("discrepancy_type")  == 0)   discrepancyType = val;
+  else if (var.compare("alloc_control")     == 0)      allocControl = val;
+  else if (var.compare("combine_type")      == 0)       combineType = val;
+  else if (var.compare("advancement_type")  == 0) c3AdvancementType = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
@@ -623,8 +631,8 @@ random_variables_key(const BitArray& random_vars_key)
 }
 
 
-//inline void SharedC3ApproxData::refinement_statistics_type(short stats_type)
-//{ refineStatsType = stats_type; }
+//inline void SharedC3ApproxData::refinement_statistics_mode(short stats_mode)
+//{ refineStatsMode = stats_mode; }
 
 
 inline void SharedC3ApproxData::build()

@@ -29,10 +29,15 @@ quadrature_order, the sparse_grid_level specification admits an array
 input for enabling specification of multiple grid resolutions used by
 certain advanced solution methodologies.
 
+A corresponding sequence specification is documented at, e.g.,
+\ref method-multifidelity_polynomial_chaos-sparse_grid_level_sequence and
+\ref method-multifidelity_stoch_collocation-sparse_grid_level_sequence
+
+
 Topics::
 Examples::
 Theory::
 Faq::
-See_Also::	
-A corresponding sequence specification is documented at, e.g.,
-method-polynomial_chaos-sparse_grid_level_sequence
+See_Also::
+method-multifidelity_polynomial_chaos-sparse_grid_level_sequence
+method-multifidelity_stoch_collocation-sparse_grid_level_sequence

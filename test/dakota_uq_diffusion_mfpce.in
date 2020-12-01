@@ -20,7 +20,7 @@ method,
 #	    seed = 1237					#s4,#s5
 #	    seed_sequence = 1234 2345 3456 4567 5678	#s6
 #	    orthogonal_matching_pursuit			#s4,#s5,#s6
-	output silent
+	output quiet
 
 model,
 	id_model = 'HIERARCH'

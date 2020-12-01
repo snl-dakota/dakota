@@ -2302,6 +2302,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"mesh_adaptive_search.display_format", P displayFormat},
 	{"mesh_adaptive_search.history_file", P historyFile},
 	{"mesh_adaptive_search.use_surrogate", P useSurrogate},
+	{"model_export_prefix", P modelExportPrefix},
 	{"model_pointer", P modelPointer},
 	{"mutation_type", P mutationType},
 	{"nond.data_dist_cov_type", P dataDistCovInputType},
@@ -2358,6 +2359,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"surrogate.challenge_points_file", P importChallengePtsFile},
 	{"surrogate.decomp_cell_type", P decompCellType},
 	{"surrogate.export_approx_points_file", P exportApproxPtsFile},
+	{"surrogate.export_approx_variance_file", P exportApproxVarianceFile},
 	{"surrogate.import_build_points_file", P importBuildPtsFile},
 	{"surrogate.kriging_opt_method", P krigingOptMethod},
 	{"surrogate.mars_interpolation", P marsInterpolation},
@@ -2618,7 +2620,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
       // must be sorted by string (key)
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
-        {"active_subspace.dimension", P subspaceDimension},
         {"c3function_train.max_cross_iterations", P maxCrossIterations},
         {"initial_samples", P initialSamples},
         {"max_function_evals", P maxFunctionEvals},
@@ -2628,6 +2629,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
         {"soft_convergence_limit", P softConvergenceLimit},
+        {"subspace.dimension", P subspaceDimension},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
         {"surrogate.num_restarts", P numRestarts},
@@ -2677,7 +2679,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       // must be sorted by string (key)
 	{"iterator_scheduling", P iteratorScheduling},
 	{"nond.allocation_target", P allocationTarget},
-        {"nond.c3function_train.uniform_refinement_type", P c3RefineType},
+        {"nond.c3function_train.advancement_type", P c3AdvanceType},
 	{"nond.correction_order", P approxCorrectionOrder},
 	{"nond.covariance_control", P covarianceControl},
 	{"nond.distribution", P distributionType},
@@ -2693,6 +2695,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.qoi_aggregation", P qoiAggregation},
+	{"nond.refinement_statistics_mode", P statsMetricMode},
 	{"nond.regression_type", P regressionType},
 	{"nond.response_level_target", P responseLevelTarget},
 	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
@@ -2716,9 +2719,9 @@ short ProblemDescDB::get_short(const String& entry_name) const
     #define P &DataModelRep::
     static KW<short, DataModelRep> Shdmo[] = {
       // must be sorted by string (key)
-	{"c3function_train.refinement_control", P refinementControl},
-	{"c3function_train.refinement_type", P refinementType},
-        {"c3function_train.uniform_refinement_type", P c3RefineType},
+        {"c3function_train.advancement_type", P c3AdvanceType},
+      //{"c3function_train.refinement_control", P refinementControl},
+      //{"c3function_train.refinement_type", P refinementType},
 	{"nested.iterator_scheduling", P subMethodScheduling},
 	{"surrogate.correction_order", P approxCorrectionOrder},
 	{"surrogate.correction_type", P approxCorrectionType},
@@ -2810,6 +2813,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"import_build_format", P importBuildFormat},
 	{"import_candidate_format", P importCandFormat},
 	{"import_prediction_configs_format", P importPredConfigFormat},
+	{"model_export_format", P modelExportFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
         {"nond.c3function_train.kick_order", P kickOrder},
@@ -2857,6 +2861,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"rf.expansion_form", P randomFieldIdForm},
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
 	{"surrogate.export_approx_format", P exportApproxFormat},
+	{"surrogate.export_approx_variance_format", P exportApproxVarianceFormat},
 	{"surrogate.import_build_format", P importBuildFormat},
 	{"surrogate.model_export_format", P modelExportFormat}};
     #undef P
@@ -3099,6 +3104,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"coliny.randomize", P randomizeOrderFlag},
 	{"coliny.show_misc_options", P showMiscOptions},
 	{"derivative_usage", P methodUseDerivsFlag},
+	{"export_surrogate", P exportSurrogate},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"import_approx_active_only", P importApproxActive},
@@ -3128,6 +3134,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.mutual_info_ksg2", P mutualInfoKSG2},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
+	{"nond.relative_convergence_metric", P relativeConvMetric},
 	{"nond.standardized_space", P standardizedSpace},
 	{"nond.tensor_grid", P tensorGridFlag},
 	{"posterior_stats.kde", P posteriorStatsKDE},

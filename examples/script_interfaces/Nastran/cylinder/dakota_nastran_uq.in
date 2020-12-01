@@ -5,7 +5,7 @@ method,
 	sampling
 	  seed = 1234 samples = 40
 	  sample_type lhs
-	  response_thresholds = 1001.249 2687.641
+	  response_levels = 1001.249 2687.641
 
 variables,
 	normal_uncertain = 1

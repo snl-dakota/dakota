@@ -7,7 +7,7 @@ to be used in scaling each objective function. They only have effect
 when the associated method specifies \c scaling.
 
 This keyword is required for \ref
-responses-objective_functions-scale_types of <tt>'value'</tt> and
+responses-objective_functions-primary_scale_types of <tt>'value'</tt> and
 optional for <tt>'log'</tt>. When specified in conjunction with log,
 scale values are applied prior to the logarithm, to permit log scaling
 of strictly negative response functions.
@@ -26,7 +26,7 @@ responses plus the sum of the lengths of the fields.
 <b>Usage Tips:</b>
 
 When \c primary_scales are specified, but not \ref
-responses-objective_functions-scale_types, the scaling type is assumed
+responses-objective_functions-primary_scale_types, the scaling type is assumed
 to be 'value' for all primary response functions.
 
 Use scale values of 1.0 to selectively avoid scaling a subset of

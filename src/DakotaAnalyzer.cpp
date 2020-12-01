@@ -629,8 +629,7 @@ void Analyzer::pre_output()
   TabularIO::write_header_tabular(tabular_file,
 				  iteratedModel.current_variables(), 
 				  iteratedModel.current_response(),
-				  "eval_id",
-				  tabular_format);
+				  "eval_id", "interface", tabular_format);
 
   tabular_file << std::setprecision(write_precision) 
 	       << std::resetiosflags(std::ios::floatfield);

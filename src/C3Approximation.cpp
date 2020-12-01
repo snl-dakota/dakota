@@ -79,14 +79,14 @@ bool C3Approximation::advancement_available()
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
 
   bool r_advance = false, o_advance = false;
-  switch (shared_data_rep->c3RefineType) {
+  switch (shared_data_rep->c3AdvancementType) {
 
   // these options query recovered ranks/orders for each C3Approximation
-  case UNIFORM_MAX_RANK: // check adapted FT ranks against maxRank
+  case MAX_RANK_ADVANCEMENT: // check adapted FT ranks against maxRank
     r_advance = max_rank_advancement_available();   break;
-  case UNIFORM_MAX_ORDER:
+  case MAX_ORDER_ADVANCEMENT:
     o_advance = max_order_advancement_available();  break;
-  case UNIFORM_MAX_RANK_ORDER:
+  case MAX_RANK_ORDER_ADVANCEMENT:
     r_advance = max_rank_advancement_available();
     o_advance = max_order_advancement_available();  break;
   }
@@ -180,6 +180,9 @@ void C3Approximation::build()
   else // default
     ft_regress_set_alg_and_obj(ftr, AIO, FTLS);
 
+  // this should precede any solves, including the cross-validation loop(s)
+  ft_regress_set_seed(ftr, data_rep->randomSeed);
+
   size_t r_adapt = data_rep->adaptRank ? 1 : 0;
   ft_regress_set_adapt(ftr, r_adapt);
   if (r_adapt) {
@@ -187,7 +190,7 @@ void C3Approximation::build()
 
     // if not user-specified, use internal C3 default (in src/lib_superlearn/
     // regress.c, maxrank = 10 assigned in ft_regress_alloc())
-    // > default could become an issue for UNIFORM_START_RANK advancement
+    // > default could become an issue for START_RANK_ADVANCEMENT
     if (max_r != std::numeric_limits<size_t>::max())
       ft_regress_set_maxrank(ftr, max_r);
 
@@ -296,7 +299,6 @@ void C3Approximation::build()
 
   // Build FT model (using full data set, as compared to best config identified
   // using partial fold data in CV)
-  ft_regress_set_seed(ftr, data_rep->randomSeed);
   struct FunctionTrain * ft
     = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
   ftd.function_train(ft);
@@ -992,14 +994,14 @@ size_t C3Approximation::regression_size()
   //   or from rank/order advancements.
   // Usage:  this function is only currently used from NonDC3FunctionTrain::
   //   sample_allocation_metric() for non-MAX uniform refinements.
-  // For UNIFORM_START_* + adapt_*: increments for the former may overwrite
+  // For START_*_ADVANCEMENT + adapt_*: increments for the former may overwrite
   //   recovery for the latter; in this case, we use the latest incremented/
   //   decremented state from sharedDataRep.
 
   size_t         max_r = data_rep->max_rank();
   unsigned short max_o = data_rep->max_order();
-  switch (data_rep->c3RefineType) {
-  case UNIFORM_START_RANK: { // use start ranks + recovered orders
+  switch (data_rep->c3AdvancementType) {
+  case START_RANK_ADVANCEMENT: { // use start ranks + recovered orders
     size_t v, num_v = data_rep->numVars, start_r = data_rep->start_rank();
     SizetVector start_ranks(num_v + 1, false);
     start_ranks[0] = start_ranks[num_v] = 1;
@@ -1008,7 +1010,7 @@ size_t C3Approximation::regression_size()
       levApproxIter->second.ft_orders() : data_rep->start_orders();
     return regression_size(start_r, max_r, ft_orders, max_o);  break;
   }
-  case UNIFORM_START_ORDER: { // use start orders + recovered ranks
+  case START_ORDER_ADVANCEMENT: { // use start orders + recovered ranks
     const UShortArray& start_o = data_rep->start_orders(); // anisotropic is OK
     SizetVector ft_ranks; recover_function_train_ranks(ft_ranks);
     return regression_size(ft_ranks, max_r, start_o, max_o);  break;

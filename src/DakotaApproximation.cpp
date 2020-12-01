@@ -255,11 +255,20 @@ void Approximation::build()
 
 
 void Approximation::
-export_model(const String& fn_label, const String& export_prefix, 
-	     const unsigned short export_format)
+export_model(const StringArray& var_labels, const String& fn_label,
+	     const String& export_prefix, const unsigned short export_format)
 {
   if (approxRep)
-    approxRep->export_model(fn_label, export_prefix, export_format);
+    approxRep->export_model(var_labels, fn_label, export_prefix, export_format);
+  // if no export_model, return without doing anything
+}
+
+void Approximation::
+export_model(const Variables& vars, const String& fn_label,
+	     const String& export_prefix, const unsigned short export_format)
+{
+  if (approxRep)
+    approxRep->export_model(vars, fn_label, export_prefix, export_format);
   // if no export_model, return without doing anything
 }
 

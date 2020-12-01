@@ -10,10 +10,11 @@ If adaptive refinement is active, then this sequence specifies the
 starting point for each level within either an individual or
 integrated refinement approach.
 
+A corresponding scalar specification is documented at, e.g.,
+\ref method-polynomial_chaos-expansion_order-expansion_samples
+
 Topics::
 Examples::
 Theory::
 Faq::
-See_Also::	
-A corresponding scalar specification is documented at, e.g.,
-method-polynomial_chaos-expansion_samples
+See_Also::	method-polynomial_chaos-expansion_order-expansion_samples

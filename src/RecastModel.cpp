@@ -189,6 +189,10 @@ init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
   bool reshape_vars =
     init_variables(vars_comps_totals, all_relax_di, all_relax_dr); 
 
+  // Currently this reshape is subspace-specific and handled in derived classes
+  //if (reshape_vars) // else full-space initialization is sufficient
+  //  init_distribution(rv_types, vars_comps_totals); // reshape mvDist
+
   // recasting of response and constraints
   init_response(num_recast_primary_fns, num_recast_secondary_fns, 
 		recast_resp_order, reshape_vars);
@@ -280,7 +284,6 @@ init_variables(const SizetArray& vars_comps_totals,
       svd.all_relaxed_discrete_int()  == all_relax_di )      &&
     ( all_relax_dr.empty() || 
       svd.all_relaxed_discrete_real() == all_relax_dr );
-  bool reshape_vars = !vars_char_same;
 
   // check change in character first as mapping may not yet be present...
   if (vars_char_same) {
@@ -295,10 +298,10 @@ init_variables(const SizetArray& vars_comps_totals,
     currentVariables = Variables(recast_svd);
   }
 
-  // propagate number of active continuous vars to deriv vars
+  // propagate number of active continuous vars to derivative vars
   numDerivVars = currentVariables.cv();
 
-  return reshape_vars;
+  return !vars_char_same; // return reshape_vars
 }
 
 

@@ -11,10 +11,11 @@ If adaptive refinement is active, then this sequence specifies the
 starting point for each level within either an individual or
 integrated refinement approach.
 
+A corresponding scalar specification is documented at, e.g.,
+\ref method-function_train-start_rank
+
 Topics::
 Examples::
 Theory::
 Faq::
-See_Also::	
-A corresponding scalar specification is documented at, e.g.,
-method-function_train-start_rank
+See_Also::	method-function_train-start_rank

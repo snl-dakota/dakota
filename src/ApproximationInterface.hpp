@@ -127,6 +127,8 @@ protected:
   const RealVector& approximation_variances(const Variables& vars);
 
   bool formulation_updated() const;
+  void formulation_updated(bool update);
+
   bool advancement_available();
 
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
@@ -425,6 +427,10 @@ inline void ApproximationInterface::clear_active_data()
 
 inline bool ApproximationInterface::formulation_updated() const
 { return sharedData.formulation_updated(); }
+
+
+inline void ApproximationInterface::formulation_updated(bool update)
+{ return sharedData.formulation_updated(update); }
 
 
 inline bool ApproximationInterface::advancement_available()

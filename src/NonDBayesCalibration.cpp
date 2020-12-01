@@ -26,7 +26,7 @@
 #include "SNLLOptimizer.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "LHSDriver.hpp"
-#include "boost/random/mersenne_twister.hpp"
+#include "dakota_mersenne_twister.hpp"
 #include "boost/random.hpp"
 #include "boost/random/normal_distribution.hpp"
 #include "boost/random/variate_generator.hpp"
@@ -1742,7 +1742,7 @@ void NonDBayesCalibration::export_discrepancy(RealMatrix&
       		       "NonDBayesCalibration discrepancy response export");
 
   TabularIO::write_header_tabular(discrep_stream, output_vars, resp_labels, 
-      				  "config_id", discrep_format);
+      				  "config_id", "interface", discrep_format);
   discrep_stream << std::setprecision(write_precision)
     		 << std::resetiosflags(std::ios::floatfield);
   for (int i = 0; i < num_pred; ++i) {
@@ -1772,7 +1772,7 @@ void NonDBayesCalibration::export_discrepancy(RealMatrix&
       		       "NonDBayesCalibration corrected model response export");
 
   TabularIO::write_header_tabular(corrmodel_stream, output_vars, resp_labels, 
-      				  "config_id", corrmodel_format);
+      				  "config_id", "interface", corrmodel_format);
   corrmodel_stream << std::setprecision(write_precision)
     		 << std::resetiosflags(std::ios::floatfield);
   for (int i = 0; i < num_pred; ++i) {
@@ -1809,7 +1809,7 @@ void NonDBayesCalibration::export_discrepancy(RealMatrix&
     var_labels[i] = s.str();
   }
   TabularIO::write_header_tabular(discrepvar_stream, output_vars, var_labels, 
-      				  "pred_config", discrepvar_format);
+      				  "pred_config", "interface",discrepvar_format);
   discrepvar_stream << std::setprecision(write_precision)
     		 << std::resetiosflags(std::ios::floatfield);
   for (int i = 0; i < num_pred; ++i) {
@@ -1851,7 +1851,7 @@ void NonDBayesCalibration::export_field_discrepancy(RealMatrix& pred_vars_mat)
       		       "NonDBayesCalibration discrepancy response export");
 
   TabularIO::write_header_tabular(discrep_stream, output_vars, resp_labels, 
-      				  "config_id", discrep_format);
+      				  "config_id", "interface", discrep_format);
   discrep_stream << std::setprecision(write_precision)
     		 << std::resetiosflags(std::ios::floatfield);
   int ind = 0;
@@ -1892,7 +1892,7 @@ void NonDBayesCalibration::export_field_discrepancy(RealMatrix& pred_vars_mat)
       		       "NonDBayesCalibration corrected model response export");
 
   TabularIO::write_header_tabular(corrmodel_stream, output_vars, resp_labels, 
-      				  "config_id", corrmodel_format);
+      				  "config_id", "interface", corrmodel_format);
   corrmodel_stream << std::setprecision(write_precision)
     		 << std::resetiosflags(std::ios::floatfield);
   ind = 0;
@@ -1941,7 +1941,7 @@ void NonDBayesCalibration::export_field_discrepancy(RealMatrix& pred_vars_mat)
     var_labels[i] = s.str();
   }
   TabularIO::write_header_tabular(discrepvar_stream, output_vars, var_labels, 
-      				  "pred_config", discrepvar_format);
+      				  "pred_config", "interface",discrepvar_format);
   discrepvar_stream << std::setprecision(write_precision)
     		 << std::resetiosflags(std::ios::floatfield);
   ind = 0;
@@ -2505,9 +2505,8 @@ export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals)
   }
   */
 
-  TabularIO::
-    write_header_tabular(export_mcmc_stream, output_vars, 
-			 resp_labels, "mcmc_id", exportMCMCFormat);
+  TabularIO::write_header_tabular(export_mcmc_stream, output_vars, resp_labels,
+				  "mcmc_id", "interface", exportMCMCFormat);
 
   size_t wpp4 = write_precision+4;
   export_mcmc_stream << std::setprecision(write_precision) 

@@ -17,10 +17,14 @@ script_name=`basename ${0}`
 # assume DAKOTA lives in same directory
 
 if [ $(uname) == 'Darwin' ]; then
-  execpath=`dirname ${0}`
+  if [ -L ${0} ]; then
+    execpath=$( dirname $( readlink "${0}" ) )  
+  else
+    execpath=`dirname ${0}`
+  fi
 else
   # readlink reliably takes care of the case when dakota.sh is called via a
-  # symlink, but doesn't work on Darwin.
+  # symlink, but doesn't work on Darwin with the -f option.
   execpath=$( dirname $( readlink -f "${0}" ) )  
 fi
 
@@ -53,8 +57,8 @@ if [ `uname | grep -c -i "cygwin"` -gt 0 ]; then
   export LC_ALL="C"
 fi
 
-#echo "Appending PATH with ${execpath}:${execpath}/../test:."
-PATH="$PATH:${execpath}:${execpath}/../test:."
+#echo "Appending PATH with ${execpath}:${execpath}/../share/dakota/test:."
+PATH="$PATH:${execpath}:${execpath}/../share/dakota/test:."
 export PATH
 #echo "Launching ${execpath}/dakota with args: $@"
 "${execpath}/dakota" "$@"

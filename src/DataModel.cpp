@@ -26,7 +26,8 @@ DataModelRep::DataModelRep():
   importBuildFormat(TABULAR_ANNOTATED),  importUseVariableLabels(false),
   importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
-  exportApproxFormat(TABULAR_ANNOTATED), numRestarts(10),
+  exportApproxFormat(TABULAR_ANNOTATED),
+  exportApproxVarianceFormat(TABULAR_ANNOTATED), numRestarts(10),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
   krigingNugget(0.0), krigingFindNugget(0), mlsWeightFunction(0),
@@ -54,9 +55,8 @@ DataModelRep::DataModelRep():
   tensorGridFlag(false), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
   adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
-  c3RefineType(NO_C3_REFINEMENT),
+  c3AdvanceType(NO_C3_ADVANCEMENT),
   collocationPoints(std::numeric_limits<size_t>::max()), collocationRatio(0.),
-  refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
@@ -76,7 +76,9 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << modelExportPrefix << modelExportFormat << importUseVariableLabels
     << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
-    << exportApproxPtsFile << exportApproxFormat << numRestarts
+    << exportApproxPtsFile << exportApproxFormat
+    << exportApproxVarianceFile << exportApproxVarianceFormat
+    << numRestarts
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
@@ -99,9 +101,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank << kickRank << maxRank << adaptRank << c3RefineType
+    << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
     << collocationPoints << collocationRatio
-    << refinementType << refinementControl
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
@@ -123,7 +124,9 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> modelExportPrefix >> modelExportFormat >> importUseVariableLabels
     >> importBuildActive
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
-    >> exportApproxPtsFile >> exportApproxFormat >> numRestarts
+    >> exportApproxPtsFile >> exportApproxFormat
+    >> exportApproxVarianceFile >> exportApproxVarianceFormat
+    >> numRestarts
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
     >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
     >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
@@ -146,9 +149,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> regressionType >> regressionL2Penalty >> maxSolverIterations
     >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
     >> tensorGridFlag >> startOrder >> kickOrder >> maxOrder >> adaptOrder
-    >> startRank >> kickRank >> maxRank >> adaptRank >> c3RefineType
+    >> startRank >> kickRank >> maxRank >> adaptRank >> c3AdvanceType
     >> collocationPoints >> collocationRatio
-    >> refinementType >> refinementControl
     >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
     >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
     >> adaptedBasisCollocRatio >> propagationModelPointer >> truncationTolerance
@@ -170,7 +172,9 @@ void DataModelRep::write(std::ostream& s) const
     << modelExportPrefix << modelExportFormat << importUseVariableLabels
     << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
-    << exportApproxPtsFile << exportApproxFormat 
+    << exportApproxPtsFile << exportApproxFormat
+    << exportApproxVarianceFile << exportApproxVarianceFormat
+    << numRestarts
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
@@ -193,9 +197,8 @@ void DataModelRep::write(std::ostream& s) const
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank << kickRank << maxRank << adaptRank << c3RefineType
+    << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
     << collocationPoints << collocationRatio
-    << refinementType << refinementControl
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance

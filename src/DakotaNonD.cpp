@@ -349,11 +349,12 @@ void NonD::initialize_final_statistics()
 }
 
 
-void NonD::pull_level_mappings(RealVector& level_maps)
+void NonD::pull_level_mappings(RealVector& level_maps, size_t offset)
 {
-  level_maps.sizeUninitialized(totalLevelRequests);
+  if (level_maps.length() < offset + totalLevelRequests)
+    level_maps.resize(totalLevelRequests);
 
-  size_t i, j, num_lev, cntr = 0;
+  size_t i, j, num_lev, cntr = offset;
   for (i=0; i<numFunctions; ++i) {
     num_lev = requestedRespLevels[i].length();
     switch (respLevelTarget) {
@@ -378,9 +379,15 @@ void NonD::pull_level_mappings(RealVector& level_maps)
 }
 
 
-void NonD::push_level_mappings(const RealVector& level_maps)
+void NonD::push_level_mappings(const RealVector& level_maps, size_t offset)
 {
-  size_t i, j, num_lev, cntr = 0;
+  if (level_maps.length() < offset + totalLevelRequests) {
+    Cerr << "Error: insufficient vector length in NonD::push_level_mappings()"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  size_t i, j, num_lev, cntr = offset;
   for (i=0; i<numFunctions; ++i) {
     num_lev = requestedRespLevels[i].length();
     switch (respLevelTarget) {

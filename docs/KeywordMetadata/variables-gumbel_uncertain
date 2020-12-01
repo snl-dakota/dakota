@@ -4,23 +4,23 @@ Description::
 The Gumbel distribution is also referred to as the Type I Largest Extreme Value distribution. The distribution of maxima in sample sets from a population with a normal distribution will asymptotically converge to this distribution. It is commonly used to model demand variables such as wind loads and flood levels.
 
 The density function for the Gumbel distribution is given by: 
-\f[f(x) = \alpha e^{-\alpha(x-\beta)} exp(-e^{-\alpha(x-\beta)})\f]
-where 
-\f$\mu_{GU} = \beta + \frac{0.5772}{\alpha}\f$ 
-and 
-\f$\sigma_{GU} = \frac{\pi}{\sqrt{6}\alpha}\f$.
+\f[f(x) = \alpha \exp \left( -\alpha(x-\beta) \right)
+	         \exp \left( -e^{-\alpha(x-\beta)} \right),
+\f]
+\f$\mu = \beta + \frac{0.5772}{\alpha},\f$ and 
+\f$\sigma = \frac{\pi}{\sqrt{6}\alpha}\f$.
 
 
 Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
-When used with design of experiments and multidimensional parameter
-studies, distribution bounds are inferred.
-These bounds are [\f$\mu - 3 \sigma\f$, \f$\mu + 3 \sigma\f$]
+When used with some methods such as design of experiments and
+multidimensional parameter studies, distribution bounds are inferred
+to be [\f$\mu - 3 \sigma\f$, \f$\mu + 3 \sigma\f$]
 
-For vector and centered parameter studies, an inferred initial
-starting point is needed for the uncertain variables.
-These variables are initialized to their means for these studies.
+For some methods, including vector and centered parameter studies, an
+initial point is needed for the uncertain variables. When not given
+explicitly, these variables are initialized to their means.
 
 Faq::
 See_Also::	

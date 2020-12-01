@@ -5,4 +5,8 @@ Description::
 The \c adapt_rank procedure increments the rank on each iteration, using an
 increment defined by \c kick_rank
 
+<b> Default Behavior </b>
+
+Default is 1.
+
 See_Also::	model-surrogate-global-function_train-adapt_rank

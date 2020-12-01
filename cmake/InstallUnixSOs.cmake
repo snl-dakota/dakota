@@ -50,13 +50,17 @@ execute_process(
   OUTPUT_VARIABLE dakota_unix_sos
   )
 
-# Ignore empty list elements:
+# NOTE: The list will have a trailing empty item due to trailing semicolon,
+# but it's guarded against below; set policy to accept empty
 cmake_policy(PUSH)
-cmake_policy(SET CMP0007 OLD)
+cmake_policy(SET CMP0007 NEW)
+# Guard against duplicates
 list(REMOVE_DUPLICATES dakota_unix_sos)
 cmake_policy(POP)
 
-## Process each DLL and install
+# Install each DLL, guarding against empty strings
 foreach(dakota_dll ${dakota_unix_sos})
-  dakota_install_dll("${dakota_dll}")
+  if(dakota_dll)
+    dakota_install_dll("${dakota_dll}")
+  endif()
 endforeach()

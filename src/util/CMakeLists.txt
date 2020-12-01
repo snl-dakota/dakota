@@ -30,10 +30,25 @@ set(util_headers
 
 add_library(dakota_util ${util_sources} ${util_headers})
 
+# Rationale: append includes from our source outward to system
+target_include_directories(dakota_util PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include>
+  )
+
+# Rationale: Teuchos is included in API headers
+target_include_directories(dakota_util PUBLIC
+  "$<BUILD_INTERFACE:${Teuchos_INCLUDE_DIRS}>"
+  $<INSTALL_INTERFACE:include>
+  )
+# Rationale: Teuchos libraries aren't used directly, but something is
+# indirectly using CommandLine, RCP, and TimeMonitor, so this link is
+# more liberal than should be needed
+target_link_libraries(dakota_util PUBLIC ${Teuchos_LIBRARIES})
+
 # BMA TODO: CMake config at top-level per RWH example
 #set(EIGEN3_INCLUDE_DIRS
 #  "${Dakota_SOURCE_DIR}/packages/external/eigen3/include/eigen3")
-
 SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../../packages/external/eigen3/share/eigen3/cmake)
 find_package(Eigen3 3.3 REQUIRED CONFIG)
 if(TARGET Eigen3::Eigen)
@@ -41,26 +56,18 @@ if(TARGET Eigen3::Eigen)
   ${EIGEN3_INCLUDE_DIR}")
 endif()
 
+# Rationale: restrict Eigen to MPL2-licensed components
+# Rationale: Eigen is referenced in API headers
+target_compile_definitions(dakota_util PUBLIC "EIGEN_MPL2_ONLY")
+target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)
+
+# Rationale: Boost headers are implementation details only, while
+# serialization is referenced in API headers
 target_link_libraries(dakota_util PRIVATE Boost::boost
   PUBLIC Boost::serialization)
 
-target_include_directories(dakota_util PRIVATE
-  ${Teuchos_INCLUDE_DIRS})
-
-# BMA TODO: review with Tom how to handle correctly (PUBLIC vs INTERFACE)
-#target_include_directories(dakota_util INTERFACE
-target_include_directories(dakota_util PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include>
-)
-target_compile_definitions(dakota_util PUBLIC
-  "EIGEN_MPL2_ONLY"
-)
-
 dakota_strict_warnings(dakota_util)
 dakota_gcov_target(dakota_util)
-
-target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)
 
 install(FILES ${util_headers} DESTINATION "include")
 install(TARGETS dakota_util EXPORT ${ExportTarget} DESTINATION lib)

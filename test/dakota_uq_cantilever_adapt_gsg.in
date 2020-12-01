@@ -15,7 +15,8 @@ method,
 #	  compute probabilities
 #	    samples_on_emulator = 100000 seed = 1237 fixed_seed
 #	  distribution complementary 		#s2,#s3,#s6,#s7,#s8
-#	  output silent
+	  output quiet					#s0,#s1,#s4,#s5
+#	  output silent					#s2,#s3,#s6,#s7,#s8
 
 variables,
 #	continuous_design = 2				#s8

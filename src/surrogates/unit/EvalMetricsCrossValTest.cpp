@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -50,8 +50,8 @@ TEUCHOS_UNIT_TEST(surrogates, eval_metrics_and_cross_validation)
   ParameterList poly_param_list("Polynomial Test Parameters");
   poly_param_list.set("max degree", 3);
   PolynomialRegression poly(xs_u, response, poly_param_list);
-  MatrixXd pred_vals_poly;
-  poly.value(eval_pts, pred_vals_poly);
+  VectorXd pred_vals_poly;
+  pred_vals_poly = poly.value(eval_pts);
 
   /* Evaluate metrics */
   StringArray metrics_names = {"sum_squared", "mean_squared",

@@ -2414,8 +2414,10 @@ static void Vgen_ContinuousDes(DataVariablesRep *dv, size_t offset)
     Set_rv(U, dbl_inf, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
-    for(i = 0; i < n; i++) { // init to 0, repairing to bounds if needed
-      if      ((*L)[i] > 0.) (*V)[i] = (*L)[i];
+    for(i = 0; i < n; i++) { // init to mean or 0, repairing to bounds if needed
+      if ( -dbl_inf < (*L)[i] && (*U)[i] < dbl_inf )
+	(*V)[i] = ( (*L)[i] + (*U)[i] ) / 2.0;
+      else if ((*L)[i] > 0.) (*V)[i] = (*L)[i];
       else if ((*U)[i] < 0.) (*V)[i] = (*U)[i];
       else                   (*V)[i] = 0;
     }
@@ -2436,8 +2438,12 @@ static void Vgen_DiscreteDesRange(DataVariablesRep *dv, size_t offset)
     Set_iv(U, INT_MAX, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
-    for(i = 0; i < n; ++i) { // init to 0, repairing to bounds if needed
-      if      ((*L)[i] > 0) (*V)[i] = (*L)[i];
+    for(i = 0; i < n; ++i) {
+      // init to mean, truncating to left if needed; otherwise init to
+      // 0, repairing to bounds if needed
+      if ( INT_MIN < (*L)[i] && (*U)[i] < INT_MAX )
+	(*V)[i] = (*L)[i] + ((*U)[i] - (*L)[i])/2;
+      else if ((*L)[i] > 0) (*V)[i] = (*L)[i];
       else if ((*U)[i] < 0) (*V)[i] = (*U)[i];
       else                  (*V)[i] = 0;
     }
@@ -2459,8 +2465,10 @@ static void Vgen_ContinuousState(DataVariablesRep *dv, size_t offset)
     Set_rv(U, dbl_inf, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
-    for(i = 0; i < n; i++) { // init to 0, repairing to bounds if needed
-      if      ((*L)[i] > 0.) (*V)[i] = (*L)[i];
+    for(i = 0; i < n; i++) { // init to mean or 0, repairing to bounds if needed
+      if ( -dbl_inf < (*L)[i] && (*U)[i] < dbl_inf )
+	(*V)[i] = ( (*L)[i] + (*U)[i] ) / 2.0;
+      else if ((*L)[i] > 0.) (*V)[i] = (*L)[i];
       else if ((*U)[i] < 0.) (*V)[i] = (*U)[i];
       else                   (*V)[i] = 0;
     }
@@ -2481,8 +2489,12 @@ static void Vgen_DiscreteStateRange(DataVariablesRep *dv, size_t offset)
     Set_iv(U, INT_MAX, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
-    for(i = 0; i < n; ++i) { // init to 0, repairing to bounds if needed
-      if      ((*L)[i] > 0) (*V)[i] = (*L)[i];
+    for(i = 0; i < n; ++i) {
+      // init to mean, truncating to left if needed; otherwise init to
+      // 0, repairing to bounds if needed
+      if ( INT_MIN < (*L)[i] && (*U)[i] < INT_MAX )
+	(*V)[i] = (*L)[i] + ((*U)[i] - (*L)[i])/2;
+      else if ((*L)[i] > 0) (*V)[i] = (*L)[i];
       else if ((*U)[i] < 0) (*V)[i] = (*U)[i];
       else                  (*V)[i] = 0;
     }
@@ -4444,14 +4456,32 @@ check_LUV_size(size_t num_v, RealVector& L, RealVector& U, RealVector& V,
   return init_V;
 }
 
+
+/// Compute the midpoint of floating-point or integer range [a, b] (a <= b),
+/// possibly indices, rounding toward a if needed. (Eventually replace
+/// with C++20 midpoint, which is more general.)
+template<typename T>
+T midpoint(T a, T b)
+{
+  // avoid overflow and possibly integer truncate the middle value
+  // (b-a)/2 toward 0:
+  return a + (b-a)/2;
+}
+
+
+/// get the middle or left-of-middle index among indices [0,num_inds-1]
+static size_t mid_or_next_lower_index(const size_t num_inds)
+{
+  return midpoint((size_t)0, num_inds-1);
+}
+
+
 static void
 Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
 	   IntVector& V, bool aggregate_LUV = false, size_t offset = 0)
 {
   ISCIter ie, it;
-  Real avg_val, r_val;
-  int i, i_val, i_left, i_right;
-  size_t num_set_i;
+  size_t i, num_set_i;
 
   bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
 
@@ -4466,28 +4496,10 @@ Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
       L[offset] = *it;     // lower bound is first value
       U[offset] = *(--ie); // upper bound is final value
       if (init_V) {
-	// select the initial value to be closest set value to avg_val
-	for(avg_val = 0., ++ie; it != ie; ++it)
-	  avg_val += *it;
-	avg_val /= num_set_i;
-	// bracket avg_val between [i_left,i_right]
-	i_left = L[offset]; i_right = U[offset];
-	for(it = set_i.begin(); it != ie; ++it) {
-	  r_val = i_val = *it;
-	  if (r_val > avg_val) {      // update nearest neighbor to right
-	    if (i_val < i_right)
-	      i_right = i_val;
-	  }
-	  else if (r_val < avg_val) { // update nearest neighbor to left
-	    if (i_val > i_left)
-	      i_left = i_val;
-	  }
-	  else { // r_val equals avg_val
-	    i_left = i_right = i_val;
-	    break;
-	  }
-	}
-	V[offset] = (i_right - avg_val < avg_val - i_left) ? i_right : i_left;
+	// OLD: Select the initial value to be closest set value to mean value
+	// NEW: Select value from middle or next lower index
+	std::advance(it, mid_or_next_lower_index(num_set_i));
+	V[offset] = *it;
       }
     }
   }
@@ -4516,14 +4528,7 @@ Vgen_DSset(size_t num_v, StringSetArray& sets, StringArray& L, StringArray& U,
       L[offset] = *it;     // lower bound is first value
       U[offset] = *(--ie); // upper bound is final value
       if (init_V) {
-	size_t mid_index = 0;
-	// initial value is at middle index or the one directly below
-	if ( (num_set_i % 2 == 0) )
-	  // initial value is to the left of middle
-	  mid_index = num_set_i / 2 - 1;
-	else
-	  mid_index = (num_set_i + 1) / 2 - 1;
-	std::advance(it, mid_index);
+	std::advance(it, mid_or_next_lower_index(num_set_i));
 	V[offset] = *it;
       }
     }
@@ -4536,8 +4541,6 @@ Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs, IntVector& IP,
 	   bool aggregate_LUV = false, size_t offset = 0)
 {
   IRMCIter ite, it;
-  Real avg_val, r_val;
-  int i_val, i_left, i_right;
   size_t i, j, num_vp_j, num_IP = IP.length();
 
   bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
@@ -4558,28 +4561,10 @@ Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs, IntVector& IP,
       U[i] = (--ite)->first; // upper bound is final value
       if (num_IP) V[i] = IP[j]; // presence of value w/i set already checked
       else if (init_V) {
-	// select the initial value to be closest set value to avg_val
-	for(avg_val = 0., ++ite; it != ite; ++it)
-	  avg_val += it->first;
-	avg_val /= num_vp_j;
-	// bracket avg_val between [i_left,i_right]
-	i_left = L[offset]; i_right = U[offset];
-	for(it = vp_j.begin(); it != ite; ++it) {
-	  r_val = i_val = it->first;
-	  if (r_val > avg_val) {      // update nearest neighbor to right
-	    if (i_val < i_right)
-	      i_right = i_val;
-	  }
-	  else if (r_val < avg_val) { // update nearest neighbor to left
-	    if (i_val > i_left)
-	      i_left = i_val;
-	  }
-	  else { // r_val equals avg_val
-	    i_left = i_right = i_val;
-	    break;
-	  }
-	}
-	V[i] = (i_right - avg_val < avg_val - i_left) ? i_right : i_left;
+	// OLD: Select the initial value to be closest set value to mean value
+	// NEW: Select value from middle or next lower index
+	std::advance(it, mid_or_next_lower_index(num_vp_j));
+	V[i] = it->first;
       }
     }
   }
@@ -4589,10 +4574,8 @@ static void
 Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
 	   RealVector& V, bool aggregate_LUV = false, size_t offset = 0)
 {
-  Real avg_val, set_val, s_left, s_right;
   RSCIter ie, it;
-  int i;
-  size_t num_set_i;
+  size_t i, num_set_i;
 
   bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
 
@@ -4607,28 +4590,10 @@ Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
       L[offset] = *it;     // lower bound is first value
       U[offset] = *(--ie); // upper bound is final value
       if (init_V) {
-	// select the initial value to be closest set value to avg_val
-	for(avg_val = 0., ++ie; it != ie; ++it)
-	  avg_val += *it;
-	avg_val /= num_set_i;
-	// bracket avg_val between [s_left,s_right]
-	s_left = L[offset]; s_right = U[offset];
-	for(it = set_i.begin(); it != ie; ++it) {
-	  set_val = *it;
-	  if (set_val > avg_val) {      // update nearest neighbor to right
-	    if (set_val < s_right)
-	      s_right = set_val;
-	  }
-	  else if (set_val < avg_val) { // update nearest neighbor to left
-	    if (set_val > s_left)
-	      s_left = set_val;
-	  }
-	  else { // set_val equals avg_val
-	    s_left = s_right = set_val;
-	    break;
-	  }
-	}
-	V[offset] = (s_right - avg_val < avg_val - s_left) ? s_right : s_left;
+	// OLD: Select the initial value to be closest set value to mean value
+	// NEW: Select value from middle or next lower index
+	std::advance(it, mid_or_next_lower_index(num_set_i));
+	V[offset] = *it;
       }
     }
   }
@@ -4639,7 +4604,6 @@ Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs, RealVector& IP,
 	   RealVector& L, RealVector& U, RealVector& V,
 	   bool aggregate_LUV = false, size_t offset = 0)
 {
-  Real avg_val, set_val, s_left, s_right;
   RRMCIter ite, it;
   size_t i, j, num_vp_j, num_IP = IP.length();
 
@@ -4661,28 +4625,10 @@ Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs, RealVector& IP,
       U[i] = (--ite)->first; // upper bound is final value
       if (num_IP) V[i] = IP[j];
       else if (init_V) {
-	// select the initial value to be closest set value to avg_val
-	for(avg_val = 0., ++ite; it != ite; ++it)
-	  avg_val += it->first;
-	avg_val /= num_vp_j;
-	// bracket avg_val between [s_left,s_right]
-	s_left = L[i]; s_right = U[i];
-	for(it = vp_j.begin(); it != ite; ++it) {
-	  set_val = it->first;
-	  if (set_val > avg_val) {      // update nearest neighbor to right
-	    if (set_val < s_right)
-	      s_right = set_val;
-	  }
-	  else if (set_val < avg_val) { // update nearest neighbor to left
-	    if (set_val > s_left)
-	      s_left = set_val;
-	  }
-	  else { // set_val equals avg_val
-	    s_left = s_right = set_val;
-	    break;
-	  }
-	}
-	V[i] = (s_right - avg_val < avg_val - s_left) ? s_right : s_left;
+	// OLD: Select the initial value to be closest set value to mean value
+	// NEW: Select value from middle or next lower index
+	std::advance(it, mid_or_next_lower_index(num_vp_j));
+	V[i] = it->first;
       }
     }
   }
@@ -4715,14 +4661,7 @@ Vgen_DSset(size_t num_v, StringRealMapArray& vals_probs, StringArray& IP,
       U[i] = (--ite)->first; // upper bound is final value
       if (num_IP) V[i] = IP[j];
       else if (init_V) {
-	size_t mid_index = 0;
-	// initial value is at middle index or the one directly below
-	if ( (num_vp_j % 2 == 0) )
-	  // initial value is to the left of middle
-	  mid_index = num_vp_j / 2 - 1;
-	else
-	  mid_index = (num_vp_j + 1) / 2 - 1;
-	std::advance(it, mid_index);
+	std::advance(it, mid_or_next_lower_index(num_vp_j));
 	V[i] = it->first;
       }
     }
@@ -6905,6 +6844,7 @@ static String
 	MP_(importPredConfigs),
 	MP_(logFile),
 	MP_(lowFidModelPointer),
+	MP_(modelExportPrefix),
 	MP_(modelPointer),
         MP_(posteriorDensityExportFilename),
         MP_(posteriorSamplesExportFilename),
@@ -6913,7 +6853,7 @@ static String
 	MP_(pstudyFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
-    MP_(subModelPointer);
+        MP_(subModelPointer);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -6937,6 +6877,7 @@ static bool
         MP_(evaluatePosteriorDensity),
 	MP_(expansionFlag),
 	MP_(exportSampleSeqFlag),
+	MP_(exportSurrogate),
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
         MP_(generatePosteriorSamples),
@@ -6962,11 +6903,12 @@ static bool
 	MP_(pstudyFileActive),
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
+	MP_(relativeConvMetric),
 	MP_(showAllEval),
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
 	MP_(standardizedSpace),
-  MP_(useTargetVarianceOptimizationFlag),
+	MP_(useTargetVarianceOptimizationFlag),
 	MP_(tensorGridFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
@@ -6974,12 +6916,15 @@ static bool
 	MP_(volQualityFlag),
 	MP_(wilksFlag);
 
+/* It seems these are redundant with Method_mp_type:
 static short
-	MP_(c3RefineType),
+	MP_(c3AdvanceType),
         MP_(expansionType),
-	MP_(nestingOverride),
-	MP_(refinementType),
+        MP_(nestingOverride),
+        MP_(refinementControl),
+        MP_(refinementType),
 	MP_(wilksSidedInterval);
+*/
 
 static int
 	MP_(batchSize),
@@ -7041,15 +6986,16 @@ static size_t
 static Method_mp_type
 	MP2s(allocationTarget,TARGET_MEAN),
 	MP2s(allocationTarget,TARGET_VARIANCE),
-	MP2s(c3RefineType,UNIFORM_START_ORDER),
-	MP2s(c3RefineType,UNIFORM_START_RANK),
-	MP2s(c3RefineType,UNIFORM_MAX_ORDER),
-	MP2s(c3RefineType,UNIFORM_MAX_RANK),
-	MP2s(c3RefineType,UNIFORM_MAX_RANK_ORDER),
+	MP2s(c3AdvanceType,MAX_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,MAX_RANK_ADVANCEMENT),
+	MP2s(c3AdvanceType,MAX_RANK_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,START_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,START_RANK_ADVANCEMENT),
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
 	MP2s(distributionType,CUMULATIVE),
+	MP2s(emulatorType,EXPGP_EMULATOR),
 	MP2s(emulatorType,GP_EMULATOR),
 	MP2s(emulatorType,KRIGING_EMULATOR),
 	MP2s(emulatorType,MF_PCE_EMULATOR),
@@ -7116,6 +7062,8 @@ static Method_mp_type
 	MP2s(responseLevelTarget,RELIABILITIES),
 	MP2s(responseLevelTargetReduce,SYSTEM_PARALLEL),
 	MP2s(responseLevelTargetReduce,SYSTEM_SERIES),
+        MP2p(statsMetricMode,ACTIVE_EXPANSION_STATS),   // Pecos
+        MP2p(statsMetricMode,COMBINED_EXPANSION_STATS), // Pecos
 	MP2s(surrBasedLocalAcceptLogic,FILTER),
 	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
 	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),
@@ -7264,6 +7212,8 @@ static Method_mp_utype
 	MP2s(methodName,LIST_PARAMETER_STUDY),
 	MP2s(methodName,CENTERED_PARAMETER_STUDY),
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
+        MP2s(modelExportFormat,TEXT_ARCHIVE),
+        MP2s(modelExportFormat,BINARY_ARCHIVE),
 	MP2s(preSolveMethod,SUBMETHOD_NIP),
 	MP2s(preSolveMethod,SUBMETHOD_NONE),
 	MP2s(preSolveMethod,SUBMETHOD_SQP),
@@ -7373,15 +7323,15 @@ static Model_mp_type
 	MP2s(approxCorrectionType,ADDITIVE_CORRECTION),
 	MP2s(approxCorrectionType,COMBINED_CORRECTION),
 	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
-	MP2s(c3RefineType,UNIFORM_START_ORDER),
-	MP2s(c3RefineType,UNIFORM_START_RANK),
-	MP2s(c3RefineType,UNIFORM_MAX_ORDER),
-	MP2s(c3RefineType,UNIFORM_MAX_RANK),
-	MP2s(c3RefineType,UNIFORM_MAX_RANK_ORDER),
+	MP2s(c3AdvanceType,MAX_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,MAX_RANK_ADVANCEMENT),
+	MP2s(c3AdvanceType,MAX_RANK_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,START_ORDER_ADVANCEMENT),
+	MP2s(c3AdvanceType,START_RANK_ADVANCEMENT),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
-	MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
-	MP2p(refinementType,P_REFINEMENT),        // Pecos
+      //MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
+      //MP2p(refinementType,P_REFINEMENT),        // Pecos
 	MP2s(regressionType,FT_LS),
 	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),
@@ -7398,6 +7348,11 @@ static Model_mp_utype
         MP2s(exportApproxFormat,TABULAR_EVAL_ID),
         MP2s(exportApproxFormat,TABULAR_IFACE_ID),
         MP2s(exportApproxFormat,TABULAR_ANNOTATED),
+        MP2s(exportApproxVarianceFormat,TABULAR_NONE),
+        MP2s(exportApproxVarianceFormat,TABULAR_HEADER),
+        MP2s(exportApproxVarianceFormat,TABULAR_EVAL_ID),
+        MP2s(exportApproxVarianceFormat,TABULAR_IFACE_ID),
+        MP2s(exportApproxVarianceFormat,TABULAR_ANNOTATED),
       //MP2s(importApproxFormat,TABULAR_NONE),
       //MP2s(importApproxFormat,TABULAR_HEADER),
       //MP2s(importApproxFormat,TABULAR_EVAL_ID),
@@ -7461,6 +7416,7 @@ static String
         MP_(advancedOptionsFilename),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
+	MP_(exportApproxVarianceFile),
 	MP_(idModel),
       //MP_(importApproxPtsFile),
 	MP_(importBuildPtsFile),
@@ -7519,7 +7475,7 @@ static unsigned short
 static short
 	MP_(annNodes),
 	MP_(annRandomWeight),
-	MP_(c3RefineType),
+	MP_(c3AdvanceType),
 	MP_(krigingFindNugget),
 	MP_(krigingMaxTrials),
 	MP_(marsMaxBases),

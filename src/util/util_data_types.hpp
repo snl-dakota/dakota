@@ -40,7 +40,9 @@ template <typename ... Ts> void silence_unused_args(const Ts ...)
 
 // TODO: May want to have distinct Dakota names such as EigMatrixXd
 
-/// Eigen generic vector of doubles in Dakota namespace
+/// Eigen generic row vector of doubles in Dakota namespace
+using RowVectorXd = Eigen::RowVectorXd;
+/// Eigen generic column vector of doubles in Dakota namespace
 using VectorXd = Eigen::VectorXd;
 /// Eigen generic matrix of doubles in Dakota namespace
 using MatrixXd = Eigen::MatrixXd;
@@ -61,6 +63,9 @@ using ParameterList = Teuchos::ParameterList;
 
 /// Array of strings
 using StringArray = std::vector<std::string>;
+
+/// Double precision difference tolerance
+const double near_zero = std::abs(10.0*std::numeric_limits<double>::min());
 
 }  // namespace dakota
 

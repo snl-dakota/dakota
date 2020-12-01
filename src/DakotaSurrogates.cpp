@@ -32,13 +32,14 @@ SurrogatesBaseApprox(const ProblemDescDB& problem_db,
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
 {
   advanced_options_file = problem_db.get_string("model.advanced_options_file");
+  set_verbosity();
 }
 
 
 SurrogatesBaseApprox::
 SurrogatesBaseApprox(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data)
-{ }
+{ set_verbosity(); }
 
 
 bool SurrogatesBaseApprox::diagnostics_available()
@@ -217,17 +218,10 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
     abort_handler(-1);
   }
 
-  const size_t num_evals = 1;
-  const size_t num_vars = c_vars.length();
-  const size_t num_qoi = 1;
+  const int num_vars = c_vars.length();
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
 
-  // Could instead use RowVectorXd
-  Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
-  MatrixXd pred(num_evals, num_qoi);
-
-  model->value(eval_pts, pred);
-
-  return pred(0,0);
+  return model->value(eval_point)(0);
 }
     
 const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
@@ -238,9 +232,7 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
 
   // not sending Eigen view of approxGradient as model->gradient calls resize()
-  const size_t qoi = 0; // only one response for now
-  MatrixXd pred_grad(num_evals, num_vars);
-  model->gradient(eval_pts, pred_grad, qoi);
+  MatrixXd pred_grad = model->gradient(eval_pts);
 
   approxGradient.sizeUninitialized(c_vars.length());
   for (size_t j = 0; j < num_vars; j++)
@@ -251,30 +243,73 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   return approxGradient;
 }
 
-void SurrogatesBaseApprox::export_model(const String& fn_label,
-					const String& export_prefix,
-					const unsigned short export_format)
+
+void SurrogatesBaseApprox::
+export_model(const Variables& vars, const String& fn_label,
+	     const String& export_prefix, const unsigned short export_format)
 {
+  // order the variable labels the way the surrogate inputs are ordered
+  StringArray var_labels(vars.continuous_variable_labels().begin(),
+			 vars.continuous_variable_labels().end());
+  var_labels.insert(var_labels.end(),
+		    vars.discrete_int_variable_labels().begin(),
+		    vars.discrete_int_variable_labels().end());
+  var_labels.insert(var_labels.end(),
+		    vars.discrete_real_variable_labels().begin(),
+		    vars.discrete_real_variable_labels().end());
+  export_model(var_labels, fn_label, export_prefix, export_format);
+}
+
+
+void SurrogatesBaseApprox::
+export_model(const StringArray& var_labels, const String& fn_label,
+	     const String& export_prefix, const unsigned short export_format)
+{
+  // Surrogates may not be built for some (or all) responses
+  if (!model) {
+    Cout << "Info: Surrogate for response '" << fn_label << "' not built; "
+        << "skipping export." << std::endl;
+    return;
+  }
+
+  model->variable_labels(var_labels);
+
+  // This block uses prefix, label, maybe formats
   String without_extension;
   unsigned short formats;
   if(export_format) {
+    model->response_labels(StringArray(1, fn_label));
     without_extension = export_prefix + "." + fn_label;
     formats = export_format;
   }
   else {
+    model->response_labels(StringArray(1, approxLabel));
     without_extension = sharedDataRep->modelExportPrefix + "." + approxLabel;
     formats = sharedDataRep->modelExportFormat;
   }
+
+  // This block without_extension, formats
   // Saving to text archive
   if(formats & TEXT_ARCHIVE) {
     String filename = without_extension + ".txt";
-    derived_export_model(filename, false);
+    dakota::surrogates::Surrogate::save(model, filename, false);
   }
   // Saving to binary archive
   if(formats & BINARY_ARCHIVE) {
     String filename = without_extension + ".bin";
-    derived_export_model(filename, true);
+    dakota::surrogates::Surrogate::save(model, filename, false);
   }
+}
+
+void SurrogatesBaseApprox::set_verbosity()
+{
+  auto dak_verb = sharedDataRep->outputLevel;
+  if (dak_verb == SILENT_OUTPUT || dak_verb == QUIET_OUTPUT)
+    surrogateOpts.set("verbosity", 0);
+  else if (dak_verb == NORMAL_OUTPUT)
+    surrogateOpts.set("verbosity", 1);
+  else if (dak_verb == VERBOSE_OUTPUT || dak_verb == DEBUG_OUTPUT)
+    surrogateOpts.set("verbosity", 2);
 }
 
 } // namespace Dakota

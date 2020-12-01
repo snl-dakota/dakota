@@ -39,9 +39,6 @@ list(APPEND DAKOTA_INCDIRS
   ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
   )
 
-list(APPEND EXT_TPL_INCDIRS
-  ${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-
 add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 
@@ -138,6 +135,8 @@ endif()
 
 # -----------------
 # Boost Adjustments
+
+# BMA TODO: Consider removing these, if possible
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "XL" OR
    ${CMAKE_CXX_COMPILER_ID} MATCHES "VisualAge")
@@ -309,42 +308,29 @@ if(DAKOTA_SCILAB)
   endif() # SCILAB_ROOT
 endif() #DAKOTA_SCILAB
 
-option(DAKOTA_PYTHON "Toggle Python interface, default is disabled" OFF)
-option(DAKOTA_PYTHON_NUMPY
-  "Attempt to link to Python NumPy interface? Default: yes." ON)
-if(DAKOTA_PYTHON)
-  include(FindPythonLibs)
+if(DAKOTA_PYTHON_DIRECT_INTERFACE)
 
-  if(PYTHONLIBS_FOUND)
-    # Have a valid Python.h and libraries
-    message(STATUS "Using Python headers in: ${PYTHON_INCLUDE_DIRS}")
-    message(STATUS "Using Python libraries in: ${PYTHON_LIBRARIES}")
-    list(APPEND EXT_TPL_INCDIRS ${PYTHON_INCLUDE_DIRS})
-    add_definitions("-DDAKOTA_PYTHON")
-    list(APPEND EXT_TPL_LIBS ${PYTHON_LIBRARIES})
+  message(STATUS "Dakota Python direct interface using:\n"
+    "     Include dirs: ${Python_INCLUDE_DIRS}\n"
+    "     Libraries:    ${Python_LIBRARIES}"
+    )
 
-    if(DAKOTA_PYTHON_NUMPY)
-      include(FindNUMARRAY)
-      if(PYTHON_NUMARRAY_FOUND)
-	# Have a valid arrayobject.h
-	message(STATUS "Using NumPy headers in: ${PYTHON_NUMARRAY_INCLUDE_DIR}")
-	list(APPEND EXT_TPL_INCDIRS ${PYTHON_NUMARRAY_INCLUDE_DIR})
-	add_definitions("-DDAKOTA_PYTHON_NUMPY")
-      else()
-	message("Python NumPy requested, but headers/libaries not found; "
-	  "disabling NumPy")
-      endif(PYTHON_NUMARRAY_FOUND)
-    else()
-      message(STATUS "Disabling NumPy interface due to DAKOTA_PYTHON_NUMPY = "
-	"${DAKOTA_PYTHON_NUMPY}")
-    endif()
-  else()
-    message(SEND_ERROR 
-      "Python requested via DAKOTA_PYTHON, but Python headers/libraries "
-      "associated with Python installed with ${PYTHON_EXECUTABLE} not found"
-      )
+  # TODO: Use imported targets for include/lib if we can figure them out
+  # TODO: Use target_definitions
+  # If not, use  Python_LIBRARY_DIRS
+
+  list(APPEND EXT_TPL_INCDIRS ${Python_INCLUDE_DIRS})
+  add_definitions("-DDAKOTA_PYTHON")
+  list(APPEND EXT_TPL_LIBS ${Python_LIBRARIES})
+
+  if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
+    message(STATUS "Dakota Python direct interface using NumPy:\n"
+      "     Include dirs: ${Python_NumPy_INCLUDE_DIRS}")
+    list(APPEND EXT_TPL_INCDIRS ${Python_NumPy_INCLUDE_DIRS})
+    add_definitions("-DDAKOTA_PYTHON_NUMPY")
   endif()
-endif(DAKOTA_PYTHON)
+
+endif()
 
 if(DAKOTA_MODELCENTER)
   add_definitions("-DDAKOTA_MODELCENTER")
@@ -441,8 +427,9 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ProbabilityTransformModel.cpp
   ScalingModel.cpp ScalingOptions.cpp WeightingModel.cpp SurrogateModel.cpp
-  DataFitSurrModel.cpp HierarchSurrModel.cpp ActiveSubspaceModel.cpp
-  RandomFieldModel.cpp DiscrepancyCorrection.cpp AdaptedBasisModel.cpp)
+  DataFitSurrModel.cpp HierarchSurrModel.cpp RandomFieldModel.cpp
+  SubspaceModel.cpp ActiveSubspaceModel.cpp AdaptedBasisModel.cpp
+  DiscrepancyCorrection.cpp)
 
 ## Constraint sources.
 set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
@@ -489,7 +476,7 @@ if(DAKOTA_MATLAB)
   list(APPEND interface_src MatlabInterface.cpp)
 endif()
 
-if(DAKOTA_PYTHON)
+if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   list(APPEND interface_src PythonInterface.cpp)
 endif()
 
@@ -599,12 +586,6 @@ if(HAVE_QUESO)
   endif()
 endif(HAVE_QUESO)
 
-# Boost is required, but have to protect against empty DIR list
-if(Boost_FOUND)
-  list(APPEND EXT_TPL_LIBDIRS ${Boost_LIBRARY_DIRS})
-  list(APPEND EXT_TPL_LIBS ${Boost_LIBRARIES})
-endif()
-
 CheckPackage(C3)
 if(HAVE_C3)
   set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp NonDMultilevelFunctionTrain.cpp)
@@ -713,13 +694,15 @@ endif(HAVE_NOMAD)
 if(HAVE_NOWPAC)
   add_definitions("-DHAVE_NOWPAC")
   if(NOT DAKOTA_NOWPAC_ROOT_DIR)
-    set(DAKOTA_NOWPAC_ROOT_DIR   "${Dakota_SOURCE_DIR}/packages/external/nowpac")
+    set(DAKOTA_NOWPAC_ROOT_DIR   "${Dakota_SOURCE_DIR}/packages/external/snowpac")
   endif(NOT DAKOTA_NOWPAC_ROOT_DIR)
   if( NOT DAKOTA_NOWPAC_NLOPT_ROOT)
-    set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/nlopt")
+    set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/snowpac/nowpac/external/nlopt")
   endif(NOT DAKOTA_NOWPAC_NLOPT_ROOT)
   if( NOT DAKOTA_NOWPAC_EIGEN_ROOT )
-    set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/eigen")
+    #set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_SOURCE_DIR}/packages/external/snowpac/nowpac/external/eigen")
+    set(DAKOTA_NOWPAC_EIGEN_ROOT
+      "${Dakota_SOURCE_DIR}/packages/external/eigen3")
   endif(NOT DAKOTA_NOWPAC_EIGEN_ROOT)
   message(STATUS "NOWPAC ROOT DIR ${DAKOTA_NOWPAC_ROOT_DIR}")
   message(STATUS "NOWPAC NLOPT DIR ${DAKOTA_NOWPAC_NLOPT_ROOT}")
@@ -893,7 +876,9 @@ set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
 list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
 add_library(dakota_src ${Dakota_src})
-target_link_libraries(dakota_src dakota_src_fortran)
+# When using Boost imported targets, we only link libraries using them,
+# then rely on transitive library linking from CMake
+target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
 if(DAKOTA_MODULE_SURROGATES)
   target_link_libraries(dakota_src dakota_surrogates)
   #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)
@@ -915,7 +900,9 @@ list (APPEND DAKOTA_LIBS dakota_src dakota_src_fortran)
 set(DAKOTA_ALL_LIBS ${DAKOTA_LIBS})
 list(APPEND DAKOTA_ALL_LIBS ${DAKOTA_PKG_LIBS})
 list(APPEND DAKOTA_ALL_LIBS ${DAKOTA_EXTPROJ_LIBS})
+# We do not put Boost targets in EXT_TPL_LIBS
 list(APPEND DAKOTA_ALL_LIBS ${EXT_TPL_LIBS})
+
 
 # --- Explicit dependencies for Dakota core libraries
 
@@ -927,9 +914,16 @@ if(HAVE_NOWPAC)
   # Require Eigen and NLOPT ExternalProjects to be downloaded, built,
   # and installed before building Dakota sources
   if(NOT HAVE_EXTERNAL_NOWPAC)
-  add_dependencies(dakota_src EIGEN NLOPT)
+    # Dakota always needs Eigen anyway so use Dakota's
+    #add_dependencies(dakota_src EIGEN NLOPT)
+    add_dependencies(dakota_src NLOPT)
   endif()
-  target_link_libraries(dakota_src ${DAKOTA_NOWPAC_ROOT_DIR}/lib/libnowpac.a)
+  # BMA: Why are we linking to something in a source dir?
+  #target_link_libraries(dakota_src ${DAKOTA_NOWPAC_ROOT_DIR}/snowpac/lib/libnowpac.a)
+  # This will only work for in-build NOWPACK for now:
+  target_link_libraries(dakota_src ${NOWPAC_BINARY_DIR}/nowpac/lib/libnowpac.a)
+  # Can't do following as not exported
+  #target_link_libraries(dakota_src nowpac)
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
@@ -1049,7 +1043,8 @@ set(Dakota_LIBRARIES ${DAKOTA_LIBS} ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS}
   CACHE INTERNAL "Dakota libraries") 
 
 # Libraries that will be on the system
-set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS}  
+# We add Boost libraries by path/name here for Makefile.export purposes
+set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS} ${Boost_LIBRARIES}
   CACHE INTERNAL "Dakota TPL libraries") 
  
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")

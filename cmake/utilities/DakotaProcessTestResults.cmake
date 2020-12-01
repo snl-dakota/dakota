@@ -130,12 +130,14 @@ function( process_unit_test_results _build_path )
     ${_build_path}/${subset_out_filename}
     ${_build_path}/${unit_test_results_log} COPYONLY )
 
-  # PASS/FAIL summary for reporting to team
-  file( STRINGS ${_build_path}/${subset_out_filename} unitPass REGEX "Passed " )
-  file( STRINGS ${_build_path}/${subset_out_filename} unitFail REGEX "Failed " )
-  list( LENGTH unitPass passCount )
-  list( LENGTH unitFail failCount )
-
+  # PASS/FAIL summary for reporting to team.
+  # Get the number of fails and total number of tests from the summary line near the end 
+  # of the report. The number of passes is the difference.
+  file(READ ${_build_path}/${subset_out_filename} unitText)
+  string(REGEX MATCH "tests passed, ([0-9]+) tests failed out of ([0-9]+)" unitJunk ${unitText})
+  set(failCount ${CMAKE_MATCH_1})
+  set(totalCount ${CMAKE_MATCH_2})
+  math(EXPR passCount "${totalCount} - ${failCount}")
   file( APPEND ${_build_path}/${unit_test_results_log}
     "\nDashboard/Email Reporting.. \n" )
   file( APPEND ${_build_path}/${unit_test_results_log} "${subset_name} Counts:\n" )

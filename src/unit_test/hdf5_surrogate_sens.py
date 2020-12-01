@@ -2,7 +2,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014 Sandia Corporation.
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -136,7 +136,7 @@ class Correlations(unittest.TestCase):
                 self.assertEqual(set(corr.keys()), set(hdf_partial.keys()))
                 # for each response, verify data are the same length, factors are same,
                 # and data are the same
-                for resp in corr.keys():
+                for resp in list(corr.keys()):
                     self.assertEqual(len(corr[resp][1]), hdf_partial[resp].shape[0])
                     for cf, hf in zip(corr[resp][0], hdf_partial[resp].dims[0][0][:]):
                         self.assertEqual(cf, hf)
@@ -155,9 +155,10 @@ class EvaluationsStructure(unittest.TestCase):
         expected_interfaces = {"NO_ID":["truth_m"],
                                "APPROX_INTERFACE_1":["surr"]}
         with h5py.File(_TEST_NAME + ".h5","r") as h:
-            self.assertItemsEqual(expected_interfaces.keys(), h["/interfaces"].keys())
-            for k, g in h["/interfaces"].items():
-                self.assertItemsEqual(expected_interfaces[k], g.keys())
+            self.assertListEqual(sorted(list(expected_interfaces.keys())), 
+                    sorted(list(h["/interfaces"].keys())))
+            for k, g in list(h["/interfaces"].items()):
+                self.assertListEqual(expected_interfaces[k], list(g.keys()))
 
     def test_model_presence(self):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
@@ -181,18 +182,18 @@ class TabularData(unittest.TestCase):
         variables = ["x1", "x2","x3"]
         responses = ["f"]
         descriptors = metadata + variables + responses
-        self.assertItemsEqual(descriptors, tdata.keys())
+        self.assertListEqual(descriptors, list(tdata.keys()))
 
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/interfaces/APPROX_INTERFACE_1/surr/variables/continuous"]
-            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(tdata["%eval_id"], tdata[v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
             hresps = h["/interfaces/APPROX_INTERFACE_1/surr/responses/functions"]
             # Responses
-            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            self.assertListEqual(responses, hresps.dims[1][0][:].tolist())
             for i, r in enumerate(responses):
                 for eid, tr, hr in zip(tdata["%eval_id"],tdata[r], hresps[:,i]):
                     self.assertAlmostEqual(tr, hr, msg="Bad comparison for response '%s'" % r, places=9)
@@ -203,13 +204,13 @@ class RestartData(unittest.TestCase):
         variables = ["x1", "x2","x3"]
         responses = ["f"]
         ac = ["component1","component2"]
-        self.assertItemsEqual(variables, rdata["variables"]["continuous"].keys())
-        self.assertItemsEqual(responses, rdata["response"].keys())
+        self.assertListEqual(variables, list(rdata["variables"]["continuous"].keys()))
+        self.assertListEqual(responses, list(rdata["response"].keys()))
         
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
             hvars = h["/interfaces/NO_ID/truth_m/variables/continuous"]
-            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            self.assertListEqual(variables, hvars.dims[1][0][:].tolist())
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(rdata["eval_id"], rdata["variables"]["continuous"][v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
@@ -229,7 +230,7 @@ class RestartData(unittest.TestCase):
                 for dvv_id, dvv_bool in zip(dvv_lookup, h_dvv):
                     if dvv_bool == 1:
                         h_dvv_ids.append(dvv_id)
-                self.assertItemsEqual(r_dvv, h_dvv_ids)
+                self.assertListEqual(r_dvv, h_dvv_ids)
             # Analysis Components
             self.assertEqual(len(ac), len(hac), "Unexpected number of analysis components")
             for e, h in zip(ac, hac):
@@ -242,7 +243,7 @@ class RestartData(unittest.TestCase):
                     if d == 1:
                         grad.append(g)
                 return grad
-            self.assertItemsEqual(responses, hresps_f.dims[1][0][:])
+            self.assertListEqual(responses, hresps_f.dims[1][0][:].tolist())
             for i, r in enumerate(responses):
                 for eid, a, d, tr, hf, hg in zip(rdata["eval_id"], hasv, hdvv, rdata["response"][r], hresps_f[:,i], hresps_g[:,i,:]):
                     if a & 1:

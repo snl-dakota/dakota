@@ -63,11 +63,11 @@ void ParamResponsePair::write_tabular(std::ostream& s,
 
 /** When the eval id or interface isn't needed, directly appeal to
     Variables and Response write_tabular_labels... */
-void ParamResponsePair::write_tabular_labels(std::ostream& s,
-					     unsigned short tabular_format) const
+void ParamResponsePair::
+write_tabular_labels(std::ostream& s, unsigned short tabular_format) const
 {
-  TabularIO::
-    write_header_tabular(s, prpVariables, prpResponse, "eval_id", tabular_format);
+  TabularIO::write_header_tabular(s, prpVariables, prpResponse, "eval_id",
+				  "interface", tabular_format);
 }
 
 

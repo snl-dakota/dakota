@@ -79,13 +79,4 @@ SurrogatesPolyApprox::build()
 }
 
 
-void
-SurrogatesPolyApprox::derived_export_model(const String& filename, bool binary)
-{
-  dakota::surrogates::Surrogate::save
-    (*std::static_pointer_cast<dakota::surrogates::PolynomialRegression>(model),
-     filename, binary);
-}
-
-
 } // namespace Dakota

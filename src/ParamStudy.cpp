@@ -916,7 +916,7 @@ void ParamStudy::distribute_partitions()
       discStringStepVector[i] = integer_step(dss_vals_i.size() - 1, part);
     }
     else
-      { initialDRVPoint[i] = dr_vars[i]; discRealStepVector[i] = 0; }
+      { initialDSVPoint[i] = ds_vars[i]; discStringStepVector[i] = 0; }
   }
   for (i=0; i<numDiscreteRealVars; ++i) {
     part = discRealVarPartitions[i];

@@ -26,6 +26,7 @@ GaussianProcess::GaussianProcess(){
 GaussianProcess::GaussianProcess(const ParameterList &param_list) {
   default_options();
   configOptions = param_list;
+  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
 
 // Constructor that sets user-defined params but does not build.
@@ -33,6 +34,7 @@ GaussianProcess::GaussianProcess(const std::string &param_list_xml_filename) {
   default_options();
   auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
   configOptions = *param_list;
+  configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
 
 // BMA NOTE: ParameterList::get() can throw, so direct delegation
@@ -59,14 +61,26 @@ GaussianProcess::~GaussianProcess(){}
 void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
 {
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
-  std::cout << "\nBuilding GaussianProcess with configuration options\n"
-	  << configOptions << "\n";
+  verbosity = configOptions.get<int>("verbosity");
+
+  if (verbosity > 0) {
+    if (verbosity == 1) {
+      std::cout << "\nBuilding GaussianProcess\n\n";
+    }
+    else if (verbosity == 2) {
+      std::cout << "\nBuilding GaussianProcess with configuration options\n"
+                << configOptions << "\n";
+    }
+    else
+      throw(std::runtime_error("Invalid verbosity int for GaussianProcess surrogate"));
+  }
 
   numQOI = response.cols();
   numSamples = samples.rows();
   numVariables = samples.cols();
   targetValues = response;
   eyeMatrix = MatrixXd::Identity(numSamples,numSamples);
+  hasBestCholFact = false;
 
   /* Optimization-related data*/
   VectorXd sigma_bounds = configOptions.get<VectorXd>("sigma bounds");
@@ -79,7 +93,7 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   VectorXd nugget_bounds;
 
   const int num_restarts = configOptions.get<int>("num restarts");
-  
+
   /* Scale the data and compute build squared distances */
   dataScaler = *(util::scaler_factory(
     util::DataScaler::scaler_type(configOptions.get<std::string>("scaler name")),
@@ -191,6 +205,8 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   std::vector<std::string> output;
 
   objectiveFunctionHistory.resize(num_restarts);
+  objectiveGradientHistory.resize(num_restarts, dim);
+  thetaHistory.resize(num_restarts, dim);
 
   double final_obj_value;
   VectorXd final_obj_gradient(dim);
@@ -211,8 +227,8 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
     if (estimateNugget) {
       estimatedNuggetValue = (*x_ptr)[numVariables+1+numPolyTerms];
     }
-    /* get the final objective function value */
-    negative_marginal_log_likelihood(final_obj_value, final_obj_gradient);
+    /* get the final objective function value and gradient */
+    negative_marginal_log_likelihood(true, true, final_obj_value, final_obj_gradient);
     if (final_obj_value < bestObjFunValue) {
       bestObjFunValue = final_obj_value;
       bestThetaValues = thetaValues;
@@ -222,6 +238,12 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
         bestEstimatedNuggetValue = estimatedNuggetValue;
     }
     objectiveFunctionHistory(i) = final_obj_value;
+    objectiveGradientHistory.row(i) = final_obj_gradient;
+    thetaHistory.row(i).head(numVariables+1) = thetaValues;
+    if (estimateTrend)
+      thetaHistory.row(i).segment(numVariables+1, numPolyTerms) = betaValues;
+    if (estimateNugget)
+      thetaHistory.row(i).tail(1)(0) = estimatedNuggetValue;
     algo.reset();
   }
 
@@ -234,6 +256,11 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   if (estimateNugget)
     estimatedNuggetValue = bestEstimatedNuggetValue;
 
+  /* compute and store best Cholesky factorization */
+  compute_gram(cwiseDists2, true, false, GramMatrix);
+  CholFact.compute(GramMatrix);
+  hasBestCholFact = true;
+
   /* Useful info for debugging */
   /*
   std::cout << "\n";
@@ -245,25 +272,31 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   */
 }
 
-void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
-  if (samples.cols() != numVariables) {
+VectorXd GaussianProcess::value(const MatrixXd &eval_points, const int qoi) {
+
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
+  assert(qoi == 0);
+
+  if (eval_points.cols() != numVariables) {
     throw(std::runtime_error("Gaussian Process value inputs are not consistent."
-          " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
+          " Dimension of the feature space for the evaluation point and Gaussian Process do not match"));
   }
 
-  const int numPredictionPts = samples.rows();
-  approx_values.resize(numPredictionPts,numVariables);
+  VectorXd approx_values;
 
-  /* scale the samples (prediction points) */
-  MatrixXd scaled_pred_pts;
-  dataScaler.scale_samples(samples, scaled_pred_pts);
-  compute_pred_dists(scaled_pred_pts);
+  /* scale the eval_points (prediction points) */
+  const MatrixXd& scaled_pred_points = dataScaler.scale_samples(eval_points);
+  compute_pred_dists(scaled_pred_points);
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_gram(cwiseDists2, true, false, GramMatrix);
-  CholFact.compute(GramMatrix);
+  if (!hasBestCholFact) {
+    compute_gram(cwiseDists2, true, false, GramMatrix);
+    CholFact.compute(GramMatrix);
+  }
 
-  MatrixXd resid, pred_basis_matrix, mixed_pred_gram;
+  VectorXd resid, chol_solve_resid;
+  MatrixXd mixed_pred_gram, pred_basis_matrix;
   compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
 
   if (estimateTrend) {
@@ -273,55 +306,43 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
     resid = targetValues;
 
 
-  MatrixXd chol_solve_resid, chol_solve_pred_mat;
   chol_solve_resid = CholFact.solve(resid);
-  chol_solve_pred_mat = CholFact.solve(mixed_pred_gram.transpose());
-
-  /* value */
-  approx_values = mixed_pred_gram*chol_solve_resid;
-
-  /* compute the covariance matrix and standard deviation */
-  MatrixXd pred_gram;
-  compute_gram(cwisePredDists2, true, false, pred_gram);
-  posteriorCov = pred_gram - mixed_pred_gram*chol_solve_pred_mat;
+  approx_values = (mixed_pred_gram*chol_solve_resid);
 
   if (estimateTrend) {
-    polyRegression->compute_basis_matrix(scaled_pred_pts, pred_basis_matrix);
+    polyRegression->compute_basis_matrix(scaled_pred_points, pred_basis_matrix);
     MatrixXd z = CholFact.solve(basisMatrix);
-    MatrixXd R_mat = pred_basis_matrix - mixed_pred_gram*(z);
-    MatrixXd h_mat = basisMatrix.transpose()*z;
-    approx_values += pred_basis_matrix*betaValues;
-    posteriorCov += R_mat*(h_mat.ldlt().solve(R_mat.transpose()));
+    approx_values += (pred_basis_matrix*betaValues);
   }
-
-  posteriorStdDev = posteriorCov.diagonal().array().sqrt();
+  return approx_values;
 }
 
-void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
-                               const int qoi) {
-  silence_unused_args(qoi);
 
-  // Surrogate models don't yet support multiple responses
+MatrixXd GaussianProcess::gradient(const MatrixXd &eval_points, const int qoi) {
+
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
   assert(qoi == 0);
 
-  if (samples.cols() != numVariables) {
+  if (eval_points.cols() != numVariables) {
     throw(std::runtime_error("Gaussian Process gradient inputs are not consistent."
           " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
   }
 
-  const int numPredictionPts = samples.rows();
+  const int numPredictionPts = eval_points.rows();
 
-  /* resize the gradient */
-  gradient.resize(numPredictionPts, numVariables);
+  MatrixXd gradient(numPredictionPts, numVariables);
 
-  /* scale the samples (prediction points) */
+  /* scale the eval_points (prediction points) */
   MatrixXd scaled_pred_pts;
-  dataScaler.scale_samples(samples, scaled_pred_pts);
+  dataScaler.scale_samples(eval_points, scaled_pred_pts);
   compute_pred_dists(scaled_pred_pts);
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_gram(cwiseDists2, true, false, GramMatrix);
-  CholFact.compute(GramMatrix);
+  if (!hasBestCholFact) {
+    compute_gram(cwiseDists2, true, false, GramMatrix);
+    CholFact.compute(GramMatrix);
+  }
 
   MatrixXd mixed_pred_gram, chol_solve_resid, first_deriv_pred_gram,
            grad_components, resid;
@@ -340,34 +361,34 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient,
   /* extra terms for GP with a trend */
   if (estimateTrend) {
     MatrixXd poly_grad_pred_pts;
-    polyRegression->gradient(scaled_pred_pts, poly_grad_pred_pts);
-    gradient += poly_grad_pred_pts;
+    gradient += polyRegression->gradient(scaled_pred_pts);
   }
+  return gradient;
 }
 
-void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
-                              const int qoi) {
-  silence_unused_args(qoi);
+MatrixXd GaussianProcess::hessian(const MatrixXd &eval_point, const int qoi) {
 
-  // Surrogate models don't yet support multiple responses
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
   assert(qoi == 0);
 
-  if (sample.rows() != 1) {
+  if (eval_point.rows() != 1) {
     throw(std::runtime_error("Gaussian Process Hessian evaluation is for a single point."
           "The input contains more than one sample."));
   }
 
-  /* resize the Hessian */
-  hessian.resize(numVariables, numVariables);
+  MatrixXd hessian(numVariables, numVariables);
 
-  /* scale the samples (prediction points) */
+  /* scale the eval_point (prediction points) */
   MatrixXd scaled_pred_point;
-  dataScaler.scale_samples(sample, scaled_pred_point);
+  dataScaler.scale_samples(eval_point, scaled_pred_point);
   compute_pred_dists(scaled_pred_point);
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_gram(cwiseDists2, true, false, GramMatrix);
-  CholFact.compute(GramMatrix);
+  if (!hasBestCholFact) {
+    compute_gram(cwiseDists2, true, false, GramMatrix);
+    CholFact.compute(GramMatrix);
+  }
 
   MatrixXd mixed_pred_gram, chol_solve_resid, second_deriv_pred_gram, resid;
   compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
@@ -388,49 +409,112 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian,
 
   if (estimateTrend) {
     MatrixXd poly_hessian_pred_pt;
-    polyRegression->hessian(scaled_pred_point, poly_hessian_pred_pt);
-    hessian += poly_hessian_pred_pt;
+    hessian += polyRegression->hessian(scaled_pred_point);
   }
+
+  return hessian;
 }
 
-void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient) {
-  double logSum;
-  VectorXd z;
-  MatrixXd Q, resid;
+MatrixXd GaussianProcess::covariance(const MatrixXd &eval_points, const int qoi) {
 
-  compute_gram(cwiseDists2, true, true, GramMatrix);
-  CholFact.compute(GramMatrix);
-  VectorXd D(CholFact.vectorD());
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
+  assert(qoi == 0);
+
+  if (eval_points.cols() != numVariables) {
+    throw(std::runtime_error("Gaussian Process variance input has wrong dimension."
+          " Dimension of the feature space for the evaluation point and Gaussian Process do not match"));
+  }
+
+  MatrixXd covariance;
+  /* scale the eval_points (prediction points) */
+  const MatrixXd& scaled_pred_points = dataScaler.scale_samples(eval_points);
+  compute_pred_dists(scaled_pred_points);
+
+  /* compute the Gram matrix and its Cholesky factorization */
+  if (!hasBestCholFact) {
+    compute_gram(cwiseDists2, true, false, GramMatrix);
+    CholFact.compute(GramMatrix);
+  }
+
+  VectorXd resid;
+  MatrixXd mixed_pred_gram, pred_basis_matrix, chol_solve_pred_mat;
+  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
+
+  if (estimateTrend)
+    resid = targetValues - basisMatrix*betaValues;
+  else
+    resid = targetValues;
+
+  chol_solve_pred_mat = CholFact.solve(mixed_pred_gram.transpose());
+
+  MatrixXd pred_gram;
+  compute_gram(cwisePredDists2, true, false, pred_gram);
+  covariance = (pred_gram - mixed_pred_gram*chol_solve_pred_mat);
 
   if (estimateTrend) {
-    resid = targetValues - basisMatrix*betaValues;
-    z = CholFact.solve(resid);
-    obj_gradient.segment(numVariables+1, numPolyTerms) = 
-                         -basisMatrix.transpose()*z;
-  }
-  else {
-    resid = targetValues;
-    z = CholFact.solve(resid);
+    MatrixXd chol_solve_resid = CholFact.solve(resid);
+    polyRegression->compute_basis_matrix(scaled_pred_points, pred_basis_matrix);
+    MatrixXd z = CholFact.solve(basisMatrix);
+    MatrixXd R_mat = pred_basis_matrix - mixed_pred_gram*(z);
+    MatrixXd h_mat = basisMatrix.transpose()*z;
+    covariance += (R_mat*(h_mat.ldlt().solve(R_mat.transpose())));
   }
 
-  logSum = 0.5*log(D.array()).matrix().sum();
-  Q = -0.5*(z*z.transpose() - CholFact.solve(eyeMatrix));
-
-  obj_value = logSum + 0.5*(resid.transpose()*z)(0,0) + 
-              static_cast<double>(numSamples)/2.0*log(2.0*PI);
-
-  for (int k = 0; k < numVariables+1; k++)
-    obj_gradient(k) = (GramMatrixDerivs[k].cwiseProduct(Q)).sum();
-
-  if (estimateNugget) {
-    obj_gradient(numVariables+1+numPolyTerms) = 2.0*exp(2.0*estimatedNuggetValue)
-                                              * Q.trace();
-  }
+  return covariance;
 }
 
-const VectorXd& GaussianProcess::get_posterior_std_dev() const { return posteriorStdDev; }
+VectorXd GaussianProcess::variance(const MatrixXd &eval_points, const int qoi) {
 
-const MatrixXd& GaussianProcess::get_posterior_covariance() const { return posteriorCov; }
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
+  assert(qoi == 0);
+
+  VectorXd variance = covariance(eval_points).diagonal();
+
+  for (int i = 0; i < variance.size(); i++) {
+    if (variance(i) < 0.0 || std::isnan(variance(i))) {
+      variance(i) = 0.0;
+    }
+  }
+
+  return variance;
+}
+
+void GaussianProcess::negative_marginal_log_likelihood(bool compute_grad, bool form_gram,
+    double &obj_value, VectorXd &obj_gradient) {
+
+  if (form_gram) {
+    compute_gram(cwiseDists2, true, true, GramMatrix);
+    CholFact.compute(GramMatrix);
+    trendTargetResidual = targetValues;
+    if (estimateTrend)
+      trendTargetResidual -= basisMatrix*betaValues;
+    GramResidualSolution = CholFact.solve(trendTargetResidual);
+  }
+
+  obj_value = 0.5*log(CholFact.vectorD().array()).matrix().sum()
+            + 0.5*(trendTargetResidual.transpose()*GramResidualSolution)(0,0)
+            + static_cast<double>(numSamples)/2.0*log(2.0*PI);
+
+  if (compute_grad) {
+    /* DTS: This Cholesky solve is much more expensive than the factorization! */
+    MatrixXd Q = -0.5*(GramResidualSolution*GramResidualSolution.transpose()
+               - CholFact.solve(eyeMatrix));
+    if (estimateTrend) {
+      obj_gradient.segment(numVariables+1, numPolyTerms) =
+                           -basisMatrix.transpose()*GramResidualSolution;
+    }
+
+    for (int k = 0; k < numVariables+1; k++)
+      obj_gradient(k) = (GramMatrixDerivs[k].cwiseProduct(Q)).sum();
+
+    if (estimateNugget) {
+      obj_gradient(numVariables+1+numPolyTerms) = 2.0*exp(2.0*estimatedNuggetValue)
+                                                * Q.trace();
+    }
+  }
+}
 
 int GaussianProcess::get_num_opt_variables() {
   return numVariables + 1 + numPolyTerms + numNuggetTerms;
@@ -473,12 +557,18 @@ void GaussianProcess::default_options()
   nugget_bounds(0) = 3.17e-8;
   nugget_bounds(1) = 1.0e-2;
 
+
   defaultConfigOptions.set("sigma bounds", sigma_bounds, "sigma [lb, ub]");
   // BMA: Do we want to allow 1 x 2 always as a fallback?
   defaultConfigOptions.set("length-scale bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
   defaultConfigOptions.set("scaler name", "standardization", "scaler for variables");
   defaultConfigOptions.set("num restarts", 10, "local optimizer number of initial iterates");
   defaultConfigOptions.set("gp seed", 42, "random seed for initial iterate generation");
+  /* Verbosity levels
+     2 - maximum level: print out config options and building notification
+     1 - minimum level: print out building notification
+     0 - no output */
+  defaultConfigOptions.set("verbosity", 1, "console output verbosity");
   /* Nugget */
   defaultConfigOptions.sublist("Nugget")
                       .set("fixed nugget", 0.0, "fixed nugget term");
@@ -498,6 +588,8 @@ void GaussianProcess::default_options()
                       .set("scaler type", "none", "Type of data scaling");
   defaultConfigOptions.sublist("Trend").sublist("Options")
                       .set("regression solver type", "SVD", "Type of regression solver");
+  defaultConfigOptions.sublist("Trend").sublist("Options")
+                      .set("verbosity", 1, "console output verbosity");
 }
 
 void GaussianProcess::compute_build_dists() {
@@ -572,7 +664,6 @@ void GaussianProcess::compute_first_deriv_pred_gram(const MatrixXd &pred_gram, c
   first_deriv_pred_gram = -pred_gram.cwiseProduct(cwiseMixedDists[index])
                         * exp(-2.0*thetaValues[index+1]);
 }
-
 void GaussianProcess::compute_second_deriv_pred_gram(const MatrixXd &pred_gram,
                                                      const int index_i, const int index_j,
                                                      MatrixXd &second_deriv_pred_gram) {
@@ -638,34 +729,34 @@ void GaussianProcess::setup_default_optimization_params(
      Teuchos::RCP<ParameterList> rol_params) {
   /* Secant */
   rol_params->sublist("General").sublist("Secant").
-             set("Type","Limited-Memory BFGS");
+             set("Type", "Limited-Memory BFGS");
   rol_params->sublist("General").sublist("Secant").
-             set("Maximum Storage",25);
+             set("Maximum Storage", 20);
   /* Step */ 
   rol_params->sublist("General").sublist("Step").
-             sublist("Line Search").set("Function Evaluation Limit",20);
+             sublist("Line Search").set("Function Evaluation Limit", 3);
 
   rol_params->sublist("General").sublist("Step").
-             sublist("Line Search").set("Sufficient Decrease Tolerance",1.0e-4);
+             sublist("Line Search").set("Sufficient Decrease Tolerance", 1.0e-4);
 
   rol_params->sublist("General").sublist("Step").
-             sublist("Line Search").set("Initial Step Size",1.0);
-
-  rol_params->sublist("General").sublist("Step").
-             sublist("Line Search").sublist("Descent Method").
-             set("Type","Quasi-Newton");
+             sublist("Line Search").set("Initial Step Size", 1.0);
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Descent Method").
-             set("Nonlinear CG Type","Hestenes-Stiefel");
+             set("Type", "Quasi-Newton");
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Descent Method").
+             set("Nonlinear CG Type", "Hestenes-Stiefel");
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Curvature Condition").
-             set("Type","Strong Wolfe Conditions");
+             set("Type", "Strong Wolfe Conditions");
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Curvature Condition").
-             set("General Parameter",0.9);
+             set("General Parameter", 0.9);
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Curvature Condition").
@@ -673,27 +764,28 @@ void GaussianProcess::setup_default_optimization_params(
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Line-Search Method").
-             set("Type","Cubic Interpolation");
+             set("Type", "Cubic Interpolation");
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Line-Search Method").
-             set("Backtracking Rate",0.5);
+             set("Backtracking Rate", 0.5);
 
   rol_params->sublist("General").sublist("Step").
              sublist("Line Search").sublist("Line-Search Method").
-             set("Bracketing Tolerance",1.0e-8);
+             set("Bracketing Tolerance", 1.0e-8);
 
   /* Status Test */
   rol_params->sublist("Status Test").
-             set("Gradient Tolerance",1.0e-6);
+             set("Gradient Tolerance", 1.0e-4);
 
   rol_params->sublist("Status Test").
-             set("Step Tolerance",1.0e-8);
+             set("Step Tolerance", 1.0e-8);
 
   rol_params->sublist("Status Test").
-             set("Iteration Limit",200);
+             set("Iteration Limit", 200);
 }
 
 }  // namespace surrogates
 }  // namespace dakota
 
+BOOST_CLASS_EXPORT_IMPLEMENT(dakota::surrogates::GaussianProcess)

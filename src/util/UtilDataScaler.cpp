@@ -78,6 +78,7 @@ NormalizationScaler::NormalizationScaler(const MatrixXd &features,
 
   const int num_features = features.cols();
 
+  scaledSample.resize(num_features);
   scalerFeaturesOffsets.resize(num_features);
   scalerFeaturesScaleFactors.resize(num_features);
 
@@ -103,6 +104,7 @@ StandardizationScaler::StandardizationScaler(const MatrixXd &features,
 
   const int num_features = features.cols();
 
+  scaledSample.resize(num_features);
   scalerFeaturesOffsets.resize(num_features);
   scalerFeaturesScaleFactors.resize(num_features);
 
@@ -124,6 +126,8 @@ NoScaler::~NoScaler(){}
 NoScaler::NoScaler(const MatrixXd &features) {
 
   const int num_features = features.cols();
+
+  scaledSample.resize(num_features);
   scalerFeaturesOffsets = VectorXd::Zero(num_features);
   scalerFeaturesScaleFactors = VectorXd::Ones(num_features);
 
@@ -131,9 +135,7 @@ NoScaler::NoScaler(const MatrixXd &features) {
 }
 
 bool DataScaler::check_for_zero_scaler_factor(int index) {
-  double value     = std::abs(scalerFeaturesScaleFactors(index));
-  double near_zero = std::abs(100.0*std::numeric_limits<double>::min());
-  return value < near_zero;
+  return std::abs(scalerFeaturesScaleFactors(index)) < near_zero;
 }
 
 std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd &unscaled_matrix) {

@@ -55,7 +55,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Resolve settings
   // ----------------
   check_surrogate();    // check for global surrogate function_train model
-  resolve_refinement(); // set c3RefineType
+  resolve_refinement(); // set c3AdvancementType
   short data_order;
   // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
   // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
@@ -135,7 +135,7 @@ NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
   collocPtsSpec(0) // in lieu of sequence specification
 {
   check_surrogate();    // check for global surrogate function_train model
-  resolve_refinement(); // set c3RefineType
+  resolve_refinement(); // set c3AdvancementType
 
   // Rest is in derived class...
 }
@@ -149,30 +149,23 @@ size_t NonDC3FunctionTrain::regression_size()
 {
   // compute initial regression size using a static helper
   // (uSpaceModel.shared_approximation() is not yet available)
-  size_t regress_size;  UShortArray orders;
-  switch (c3RefineType) {
-  case UNIFORM_MAX_RANK:
-    configure_expansion_orders(startOrderSpec, dimPrefSpec, orders);
-    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-      maxRankSpec, maxRankSpec, orders, maxOrderSpec);    break;
-  case UNIFORM_MAX_ORDER:
-    // order anisotropy not supported by adapt_order search:
-    //configure_expansion_orders(maxOrderSpec, dimPrefSpec, orders);
-    orders.assign(numContinuousVars, maxOrderSpec);
-    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-      startRankSpec, maxRankSpec, orders, maxOrderSpec);    break;
-  case UNIFORM_MAX_RANK_ORDER:
-    // order anisotropy not supported by adapt_order search:
-    //configure_expansion_orders(maxOrderSpec, dimPrefSpec, orders);
-    orders.assign(numContinuousVars, maxOrderSpec);
-    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-      maxRankSpec, maxRankSpec, orders, maxOrderSpec);      break;
-  default:
-    configure_expansion_orders(startOrderSpec, dimPrefSpec, orders);
-    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-      startRankSpec, maxRankSpec, orders, maxOrderSpec);  break;
+
+  bool max_r, max_o;
+  switch (c3AdvancementType) {
+  case MAX_RANK_ADVANCEMENT:       max_r = true;  max_o = false;  break;
+  case MAX_ORDER_ADVANCEMENT:      max_o = true;  max_r = false;  break;
+  case MAX_RANK_ORDER_ADVANCEMENT: max_r = max_o = true;          break;
+  default:                         max_r = max_o = false;         break;
   }
-  return regress_size;
+  UShortArray regress_o;
+  if (max_o) // order anisotropy not supported by adapt_order search
+    //configure_expansion_orders(maxOrderSpec, dimPrefSpec, orders);
+    regress_o.assign(numContinuousVars, maxOrderSpec);
+  else
+    configure_expansion_orders(startOrderSpec, dimPrefSpec, regress_o);
+  size_t regress_r = (max_r) ? maxRankSpec : startRankSpec;
+  return SharedC3ApproxData::regression_size(numContinuousVars,
+    regress_r, maxRankSpec, regress_o, maxOrderSpec);
 }
 
 
@@ -189,38 +182,62 @@ void NonDC3FunctionTrain::check_surrogate()
 
 void NonDC3FunctionTrain::resolve_refinement()
 {
-  // hardwired for now (prior to XML spec option), but logic avoids need to
-  // check dependencies (refine{Type,Control}, adaptRank) downstream
-  // > Ideally, we could rely on C3's internal cross validation to select both
-  //   the best rank and the best basis order, and migrate Dakota control to
-  //   defining the CV ranges.
-  // > This could entail multi-index candidate generation for max{Rank,Order}
-  bool refine_err = false, adapt_err = false;
+  // {START,MAX}_{ORDER,RANK}_ADVANCEMENT (Dakota uniform refinement) is
+  // separate from adapt_{order,rank} (internal C3 cross validation).  Former
+  // may require consistent settings for the latter, but latter can also be
+  // used stand-alone.  In particular, the refinement hierarchy is as follows:
+  // > refine{Type,Control} --> uniform p-refinement | no refinement by Dakota
+  // > c3AdvancementType defines data to advance: {start,max} {order,rank}
+  //   >> relies on an explicit sub-specification of uniform p-refinement
+  //   >> could entail multi-index candidate generation in the future
+  //      (including per-variable settings in the limit)
+  // > adapt{Rank,Order} rely on C3's internal cross validation to select best
+  //   rank and/or order within {start,kick,max} ranges.  This makes sense for:
+  //   >> a fixed/prescribed range (no Dakota refinement)
+  //   >> an advancing range from increments to max bounds (uniform Dakota
+  //      refinement with MAX_*_ADVANCEMENT, including {indiv,integrated} MFFT).
+  //   >> multilevel FT which matches the sample profile to the best recovery
+  //      (no Dakota refinement, but C3 adaptation should be included)
+  //   Cases that don't seem appropriate:
+  //   >> START_*_ADVANCEMENT + adapt_*: this should be disallowed since it
+  //      adapts w/i a shrinking window (bounded by a fixed max).  But still
+  //      allow mismatched: adapt_rank with START_ORDER and vice versa.
+  // Other notes:
+  // > In line with disallowed case above, MAX_* + adapt_* pairing is enforced
+  // > Max regression sizes follow c3AdvancementType, not adapt order/rank, and
+  //   are applied on a per-max basis.  For example, ML FT with adapt rank/order
+  //   does not utilize any Dakota refinement and does not employ any max-based
+  //   sizing (instead sized based on recovered values).
+  // > NonDC3 caches some settings that are redundant with SharedC3ApproxData
+  //   since some logic is required prior to uSpaceModel construction
+  //   (uSpaceModel.shared_data() not yet available)
+
+  bool refine_err = false, rm_adapt_err = false, add_adapt_err = false,
+    adapt_r = probDescDB.get_bool("method.nond.c3function_train.adapt_rank"),
+    adapt_o = probDescDB.get_bool("method.nond.c3function_train.adapt_order");
   switch (refineType) {
   case Pecos::P_REFINEMENT:
     switch (refineControl) {
     case Pecos::UNIFORM_CONTROL: // only uniform p-refine supported at this time
-      // logic is weak in that UNIFORM_START_ORDER also benefits from
-      // adapt_rank, but at least it makes some sense in its absence
-      c3RefineType = probDescDB.get_short(
-	"method.nond.c3function_train.uniform_refinement_type");
-      switch (c3RefineType) {
-    //case UNIFORM_START_ORDER: // supports with or without adapt_rank
-    //case UNIFORM_START_RANK:  // supports with or without adapt_rank
-      case UNIFORM_MAX_RANK:    // requires adapt_rank
-	if (!probDescDB.get_bool("method.nond.c3function_train.adapt_rank"))
-	  adapt_err = true;
+      c3AdvancementType = probDescDB.get_short(
+	"method.nond.c3function_train.advancement_type");
+      switch (c3AdvancementType) {
+      case START_ORDER_ADVANCEMENT: // use with adapt_order is a poor choice
+	if (adapt_o)               rm_adapt_err = true;
 	break;
-      case UNIFORM_MAX_ORDER:   // requires adapt_order
-	if (!probDescDB.get_bool("method.nond.c3function_train.adapt_order"))
-	  adapt_err = true;
+      case START_RANK_ADVANCEMENT:  // use with adapt_rank is a poor choice
+	if (adapt_r)               rm_adapt_err = true;
 	break;
-      case UNIFORM_MAX_RANK_ORDER: // requires adapt_rank + adapt_order
-	if (!probDescDB.get_bool("method.nond.c3function_train.adapt_rank") ||
-	    !probDescDB.get_bool("method.nond.c3function_train.adapt_order"))
-	  adapt_err = true;
+      case MAX_RANK_ADVANCEMENT:    // require adapt_rank
+	if (!adapt_r)             add_adapt_err = true;
 	break;
-      case NO_C3_REFINEMENT:
+      case MAX_ORDER_ADVANCEMENT:   // require adapt_order
+	if (!adapt_o)             add_adapt_err = true;
+	break;
+      case MAX_RANK_ORDER_ADVANCEMENT: // require adapt_rank + adapt_order
+	if (!adapt_r || !adapt_o) add_adapt_err = true;
+	break;
+      case NO_C3_ADVANCEMENT:
 	refine_err = true;  break; // no default assign since spec is reqd
       }
       break;
@@ -228,18 +245,30 @@ void NonDC3FunctionTrain::resolve_refinement()
       refine_err = true;  break;
     }
     break;
-  case Pecos::NO_REFINEMENT:       c3RefineType = NO_C3_REFINEMENT;  break;
-  default: /*Pecos::H_REFINEMENT*/ refine_err   = true;              break;
+  case Pecos::NO_REFINEMENT:
+    // There is technically no "advancement" without Dakota refinement,
+    // but reusing c3AdvancementType could expand max regression size usage:
+    //if (adapt_r && adapt_o) c3AdvancementType = MAX_RANK_ORDER_ADVANCEMENT;
+    //else if (adapt_r)       c3AdvancementType = MAX_RANK_ADVANCEMENT;
+    //else if (adapt_o)       c3AdvancementType = MAX_ORDER_ADVANCEMENT;
+    //else
+      c3AdvancementType = NO_C3_ADVANCEMENT;
+    break;
+  default: /*Pecos::H_REFINEMENT*/
+    refine_err   = true;  break;
   }
 
   if (refine_err)
     Cerr << "Error: refineType " << refineType << " with refineControl "
 	 << refineControl << " is not supported by function_train methods "
 	 << "at this time." << std::endl;
-  if (adapt_err)
-    Cerr << "Error: C3 uniform refinement type " << c3RefineType << " requires "
-	 << "consistent adapt_rank/adapt_order specifications." << std::endl;
-  if (refine_err || adapt_err)
+  if (rm_adapt_err)
+    Cerr << "Error: adapt_rank/adapt_order specification not supported for C3 "
+	 << "advancement type " << c3AdvancementType << "." << std::endl;
+  if (add_adapt_err)
+    Cerr << "Error: adapt_rank/adapt_order specification required for C3 "
+	 << "advancement type " << c3AdvancementType << "." << std::endl;
+  if (refine_err || rm_adapt_err || add_adapt_err)
     abort_handler(METHOD_ERROR);
 }
 
@@ -414,7 +443,7 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
   shared_data_rep->set_parameter("random_seed",      randomSeed);
   shared_data_rep->set_parameter("discrepancy_type", multilevDiscrepEmulation);
   shared_data_rep->set_parameter("alloc_control",    multilevAllocControl);
-  shared_data_rep->set_parameter("refinement_type",  c3RefineType); 
+  shared_data_rep->set_parameter("advancement_type", c3AdvancementType); 
 }
 
 
@@ -524,17 +553,17 @@ sample_allocation_metric(Real& regress_metric, Real power)
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(
     uSpaceModel.shared_approximation().data_rep());
-  switch (c3RefineType) {
+  switch (c3AdvancementType) {
   // These 3 cases scale samples based on max rank and/or max order to avoid
   // challenges from sample and rank advancements not being synchronized.  This
   // simplification is consistent with corresponding advancement_available()
   // logic under Model/ApproximationInterface/Approximation: refinement
   // candidates are generated when max rank and/or max order are active bounds.
-  case UNIFORM_MAX_RANK: // includes refine{Type,Control},adaptRank dependencies
+  case MAX_RANK_ADVANCEMENT: // incl. refine{Type,Control},adaptRank dependency
     regress_metric = shared_data_rep->max_rank_regression_size();   break;
-  case UNIFORM_MAX_ORDER://includes refine{Type,Control},adaptOrder dependencies
+  case MAX_ORDER_ADVANCEMENT:// incl. refine{Type,Control},adaptOrder dependency
     regress_metric = shared_data_rep->max_order_regression_size();  break;
-  case UNIFORM_MAX_RANK_ORDER:// incl. refine{Type,Cntl},adapt{R,O} dependencies
+  case MAX_RANK_ORDER_ADVANCEMENT:// includes refine{T,C},adapt{R,O} dependency
     regress_metric = shared_data_rep->max_regression_size();        break;
   // Default approach increments samples based on recovered rank/order after CV:
   default: {

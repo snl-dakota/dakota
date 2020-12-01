@@ -204,32 +204,25 @@ NonDMultilevelFunctionTrain::~NonDMultilevelFunctionTrain()
     current/max values to the general SharedC3ApproxData helper. */
 size_t NonDMultilevelFunctionTrain::regression_size(size_t index)
 {
-  size_t regress_size;  UShortArray orders;
   // compute initial regression size using a static helper
   // (uSpaceModel.shared_approximation() is not yet available)
-  switch (c3RefineType) {
-  case UNIFORM_MAX_RANK:
-    configure_expansion_orders(start_order(index), dimPrefSpec, orders);
-    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-      maxRankSpec, maxRankSpec, orders, maxOrderSpec);        break;
-  case UNIFORM_MAX_ORDER:
-    // order anisotropy not supported by adapt_order search:
-    //configure_expansion_orders(maxOrderSpec, dimPrefSpec, orders);
-    orders.assign(numContinuousVars, maxOrderSpec);
-    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-      start_rank(index), maxRankSpec, orders, maxOrderSpec);    break;
-  case UNIFORM_MAX_RANK_ORDER:
-    // order anisotropy not supported by adapt_order search:
-    //configure_expansion_orders(maxOrderSpec, dimPrefSpec, orders);
-    orders.assign(numContinuousVars, maxOrderSpec);
-    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-      maxRankSpec, maxRankSpec, orders, maxOrderSpec);          break;
-  default:
-    configure_expansion_orders(start_order(index), dimPrefSpec, orders);
-    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-      start_rank(index), maxRankSpec, orders, maxOrderSpec);  break;
+
+  bool max_r, max_o;
+  switch (c3AdvancementType) {
+  case MAX_RANK_ADVANCEMENT:       max_r = true;  max_o = false;  break;
+  case MAX_ORDER_ADVANCEMENT:      max_o = true;  max_r = false;  break;
+  case MAX_RANK_ORDER_ADVANCEMENT: max_r = max_o = true;          break;
+  default:                         max_r = max_o = false;         break;
   }
-  return regress_size;
+  UShortArray regress_o;
+  if (max_o) // order anisotropy not supported by adapt_order search
+    //configure_expansion_orders(maxOrderSpec, dimPrefSpec, orders);
+    regress_o.assign(numContinuousVars, maxOrderSpec);
+  else
+    configure_expansion_orders(start_order(index), dimPrefSpec, regress_o);
+  size_t regress_r = (max_r) ? maxRankSpec : start_rank(index);
+  return SharedC3ApproxData::regression_size(numContinuousVars,
+    regress_r, maxRankSpec, regress_o, maxOrderSpec);
 }
 
 
@@ -238,7 +231,7 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
   //if (multilevAllocControl == GREEDY_REFINEMENT)
-  //  statsType = Pecos::COMBINED_EXPANSION_STATS;
+  //  statsMetricType = Pecos::COMBINED_EXPANSION_STATS;
 
   NonDExpansion::initialize_u_space_model();
 
@@ -272,22 +265,13 @@ void NonDMultilevelFunctionTrain::core_run()
   switch (methodName) {
   case MULTIFIDELITY_FUNCTION_TRAIN:
     multifid_uq = true;
-    // general-purpose algorithms inherited from NonDExpansion:
-    switch (multilevAllocControl) {
-    case GREEDY_REFINEMENT:  greedy_multifidelity_expansion();     break;
-    default:                 multifidelity_expansion(refineType);  break;
-    }
-    break;
+    multifidelity_expansion();    break;
   case MULTILEVEL_FUNCTION_TRAIN:
-    // general-purpose algorithm inherited from NonDExpansion:
-    multilevel_regression();
-    // TO DO: assign a default ML alloc_control = RANK_SAMPLING
-    break;
+    multilevel_regression();      break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelFunctionTrain::"
 	 << "core_run()" << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
+    abort_handler(METHOD_ERROR);  break;
   }
 
   // generate final results

@@ -1,17 +1,19 @@
 Blurb::
 Aleatory uncertain variable - loguniform
+
 Description::
 If the logarithm of an uncertain variable X has a uniform distribution, that is 
-\f$\log X \sim U(L_{LU},U_{LU})\f$, 
+\f$\log X \sim U(L_{LU},U_{LU}),\f$
 then X is distributed with a loguniform distribution. The distribution lower bound is \f$L_{LU}\f$ and upper bound is \f$L_{LU}\f$
 The loguniform distribution has the density function:
-\f[f(x) = \frac{1}{x(ln U_{LU} - ln {L_{LU}})}\f]
+\f[f(x) = \frac{1}{ x \left( \ln(U_{LU}) - \ln(L_{LU}) \right) }\f]
 
 Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
-For vector and centered parameter studies, an inferred initial
-starting point is needed for the uncertain variables.
-These variables are initialized to their means for these studies.
+For some methods, including vector and centered parameter studies, an
+initial point is needed for the uncertain variables. When not given
+explicitly, these variables are initialized to their means.
+
 Faq::
 See_Also::	

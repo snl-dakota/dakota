@@ -1,3 +1,6 @@
 Testing JSON include
 {in_json = False} # True
+{in_json2 = False} # True
 {only_in_json}
+{in_python = True} # True
+{only_in_python}

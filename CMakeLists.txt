@@ -7,7 +7,8 @@
 #  _______________________________________________________________________
 
 # Dakota itself requires this CMake version; some TPLs may require even newer
-cmake_minimum_required(VERSION 3.10)
+# For Dakota to find Python NumPy component, need 3.14 or newer
+cmake_minimum_required(VERSION 3.12)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
@@ -42,18 +43,18 @@ include(DakotaOptions)
 # -----
 
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 12)
+set(Dakota_VERSION_MINOR 13)
 set(Dakota_VERSION_PATCH 0)
 
 # --- Release time toggles
 
 # Toggle this to append to the version number for stable
-##set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
+#set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
 set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # If empty, the build date will be used as the release date (could consider 
 # using the Git rev date); use format Mmm dd yyyy, as in asctime()
-##set(Dakota_RELEASE_DATE "May 15 2020")    # Versioned release date Mmm dd yyyy
+#set(Dakota_RELEASE_DATE "Nov. 16 2020")    # Versioned release date Mmm dd yyyy
 set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
 
 # Define convenience variables used here and in subdirs, such as
@@ -147,8 +148,9 @@ endif()
 find_package(Perl REQUIRED)
 
 # Python is optionally required by Dakota, Teuchos, and Acro; probe
-# for the interpreter here at top-level:
-include(FindPythonInterp)
+# for components here at top-level:
+include(DakotaFindPython)
+dakota_find_python()
 
 # Conditionally find Java JDK needed for input spec, docs, Java API
 include(DakotaFindJava)
@@ -228,9 +230,6 @@ dakota_gcov_init()
 if(DAKOTA_MODULE_UTIL)
   add_subdirectory(src/util)
 endif()
-if(BUILD_IN_TRILINOS)
-  set(DAKOTA_MODULE_SURROGATES OFF CACHE BOOL "DAKOTA SURROGATES MODULE is disabled for in-Trilinos builds" FORCE)
-endif(BUILD_IN_TRILINOS)
 
 if(DAKOTA_MODULE_SURROGATES)
   add_subdirectory(src/surrogates)

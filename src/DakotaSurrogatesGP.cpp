@@ -45,6 +45,8 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   }
   else if (trend_string == "none")
     surrogateOpts.sublist("Trend").set("estimate trend", false);
+  surrogateOpts.sublist("Trend").sublist("Options").set("verbosity",
+      surrogateOpts.get<int>("verbosity"));
 
   // TODO: Surfpack find_nugget is an integer; likely want bool or
   // different semantics
@@ -79,7 +81,33 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
 /// On-the-fly constructor
 SurrogatesGPApprox::
 SurrogatesGPApprox(const SharedApproxData& shared_data):
-  SurrogatesBaseApprox(shared_data) {}
+  SurrogatesBaseApprox(shared_data)
+{
+  // other GPs default to reduced_quadratic
+  //surrogateOpts.sublist("Trend").set("estimate trend", true);
+  //surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 2);
+  //surrogateOpts.sublist("Trend").sublist("Options").set("reduced basis", true);
+
+  surrogateOpts.set("num restarts", 20);
+
+  // allow larger bounds for functions with high variability
+  VectorXd sig_bnds(2);
+  sig_bnds << 1.0e-2, 1.0e4;
+  surrogateOpts.set("sigma bounds", sig_bnds);
+
+  // use same verbosity level for polynomial trend
+  surrogateOpts.sublist("Trend").sublist("Options").set("verbosity",
+      surrogateOpts.get<int>("verbosity"));
+
+  // by default, estimate the nugget
+  surrogateOpts.sublist("Nugget").set("estimate nugget", true);
+  surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
+
+  // nugget bounded by [1.0e-15, 1.0e-8]
+  VectorXd nugget_bounds(2);
+  nugget_bounds << 3.17e-8, 1.0e-4;
+  surrogateOpts.sublist("Nugget").set("nugget bounds", nugget_bounds);
+}
 
 int
 SurrogatesGPApprox::min_coefficients() const
@@ -97,24 +125,60 @@ SurrogatesGPApprox::build()
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp);
 
-  // construct the surrogate
+  /* DTS: Should also consider the case when we want config options to change
+   * over the course of EG*-type algorithms */
+
   if (!advanced_options_file.empty()) {
     model.reset(new dakota::surrogates::GaussianProcess
-	        (vars, resp, advanced_options_file));
+          (vars, resp, advanced_options_file));
   }
   else {
     model.reset(new dakota::surrogates::GaussianProcess
-	        (vars, resp, surrogateOpts));
+          (vars, resp, surrogateOpts));
   }
+
+  /* DTS: This is not working as I thought it would ... */
+  /*
+  if (!model) {
+    // construct the surrogate
+    if (!advanced_options_file.empty()) {
+      model.reset(new dakota::surrogates::GaussianProcess
+            (vars, resp, advanced_options_file));
+    }
+    else {
+      model.reset(new dakota::surrogates::GaussianProcess
+            (vars, resp, surrogateOpts));
+    }
+  }
+  else {
+    model->build(vars, resp);
+  }
+  */
 }
 
-
-void
-SurrogatesGPApprox::derived_export_model(const String& filename, bool binary)
+Real SurrogatesGPApprox::prediction_variance(const Variables& vars)
 {
-  dakota::surrogates::Surrogate::save
-    (*std::static_pointer_cast<dakota::surrogates::GaussianProcess>(model),
-     filename, binary);
+  RealVector x_rv(sharedDataRep->numVars);
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    vars_to_realarray(vars, x_rv);
+  return prediction_variance(x_rv);
+}
+
+Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
+{
+  if (!model) {
+    Cerr << "Error: surface is null in SurrogatesBaseApprox::value()"
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  const int num_vars = c_vars.length();
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
+
+  auto gp_model =
+      std::static_pointer_cast<dakota::surrogates::GaussianProcess>(model);
+
+  return gp_model->variance(eval_point)(0);
 }
 
 

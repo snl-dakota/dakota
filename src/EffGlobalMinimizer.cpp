@@ -46,110 +46,118 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   batchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
   setUpType("model"), dataOrder(1)
 {
-    // substract the total batchSize from batchSizeExploration
-    batchSizeAcquisition = batchSize - batchSizeExploration;
+  // substract the total batchSize from batchSizeExploration
+  batchSizeAcquisition = batchSize - batchSizeExploration;
 
-    // historical default convergence tolerances
-    if (convergenceTol < 0.) convergenceTol = 1.e-12;
-    distanceTol = probDescDB.get_real("method.x_conv_tol");
-    if (distanceTol < 0.) distanceTol = 1.e-8;
+  // historical default convergence tolerances
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-12;
+  distanceTol = probDescDB.get_real("method.x_conv_tol");
+  if (distanceTol < 0.0) distanceTol = 1.0e-8;
 
-    bestVariablesArray.push_back(iteratedModel.current_variables().copy());
+  bestVariablesArray.push_back(iteratedModel.current_variables().copy());
 
-    // initialize augmented Lagrange multipliers
-    size_t num_multipliers = numNonlinearEqConstraints;
-    for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
-        if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
-            ++num_multipliers;
-        if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
-            ++num_multipliers;
+  // initialize augmented Lagrange multipliers
+  size_t num_multipliers = numNonlinearEqConstraints;
+  for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
+    if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
+      ++num_multipliers;
+    if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
+      ++num_multipliers;
+  }
+  augLagrangeMult.resize(num_multipliers);
+  augLagrangeMult = 0.;
+
+  truthFnStar.resize(numFunctions);
+
+  // Always build a global Gaussian process model.  No correction is needed.
+  String approx_type = "global_kriging";
+  if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
+    approx_type = "global_gaussian";
+  else if (probDescDB.get_short("method.nond.emulator") == EXPGP_EMULATOR)
+    approx_type = "global_exp_gauss_proc";
+
+  String sample_reuse = "none"; // *** TO DO: allow reuse separate from import
+  UShortArray approx_order; // empty
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  if (probDescDB.get_bool("method.derivative_usage")) {
+    if (approx_type == "global_gaussian") {
+      Cerr << "\nError: efficient_global does not support gaussian_process "
+	   << "when derivatives present; use kriging instead." << std::endl;
+      abort_handler(METHOD_ERROR);
     }
-    augLagrangeMult.resize(num_multipliers);
-    augLagrangeMult = 0.;
+    if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
+    if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
+  }
+  int db_samples = probDescDB.get_int("method.samples");
+  int samples = (db_samples > 0) ? db_samples :
+    (numContinuousVars+1)*(numContinuousVars+2)/2;
+  int lhs_seed = probDescDB.get_int("method.random_seed");
+  unsigned short sample_type = SUBMETHOD_DEFAULT;
+  String rng; // empty string: use default
+  //int symbols = samples; // symbols needed for DDACE
+  bool vary_pattern = false;// for consistency across any outer loop invocations
+  // get point samples file
+  const String& import_pts_file
+    = probDescDB.get_string("method.import_build_points_file");
+  if (!import_pts_file.empty()) // *** TO DO: allow reuse separate from import
+    { samples = 0; sample_reuse = "all"; }
 
-    truthFnStar.resize(numFunctions);
+  Iterator dace_iterator;
+  // The following uses on the fly derived ctor:
+  dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
+    sample_type, samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM));
+  // only use derivatives if the user requested and they are available
+  dace_iterator.active_set_request_values(dataOrder);
 
-    // Always build a global Gaussian process model.  No correction is needed.
-    String approx_type = "global_kriging";
-    if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
-        approx_type = "global_gaussian";
+  // Construct f-hat (fHatModel) using a GP approximation for each response
+  // function over the active/design vars (same view as iteratedModel:
+  // not the typical All view for DACE).
+  //const Variables& curr_vars = iteratedModel.current_variables();
+  ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+  gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+  fHatModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+     iteratedModel, gp_set, approx_type, approx_order, corr_type, corr_order,
+     dataOrder, outputLevel, sample_reuse, import_pts_file,
+     probDescDB.get_ushort("method.import_build_format"),
+     probDescDB.get_bool("method.import_build_active_only"),
+     probDescDB.get_string("method.export_approx_points_file"),
+     probDescDB.get_ushort("method.export_approx_format")));
+  
+  // Following this ctor, IteratorScheduler::init_iterator() initializes the
+  // parallel configuration for EffGlobalMinimizer + iteratedModel using
+  // EffGlobalMinimizer's maxEvalConcurrency.  During fHatModel construction
+  // above, DataFitSurrModel::derived_init_communicators() initializes the
+  // parallel config for dace_iterator + iteratedModel using dace_iterator's
+  // maxEvalConcurrency.  The only iteratedModel concurrency currently exercised
+  // is that used by dace_iterator within the initial GP construction, but the
+  // EffGlobalMinimizer maxEvalConcurrency must still be set so as to avoid
+  // parallel config errors resulting from avail_procs > max_concurrency within
+  // IteratorScheduler::init_iterator().  A max of the local derivative
+  // concurrency and the DACE concurrency is used for this purpose.
+  maxEvalConcurrency = std::max(maxEvalConcurrency,
+				dace_iterator.maximum_evaluation_concurrency());
 
-    String sample_reuse = "none"; // *** TO DO: allow reuse separate from import
-    UShortArray approx_order; // empty
-    short corr_order = -1, corr_type = NO_CORRECTION;
-    if (probDescDB.get_bool("method.derivative_usage")) {
-        if (approx_type == "global_gaussian") {
-            Cerr << "\nError: efficient_global does not support gaussian_process "
-      	   << "when derivatives present; use kriging instead." << std::endl;
-            abort_handler(METHOD_ERROR);
-        }
-        if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
-        if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
-    }
-    int db_samples = probDescDB.get_int("method.samples");
-    int samples = (db_samples > 0) ? db_samples :
-      (numContinuousVars+1)*(numContinuousVars+2)/2;
-    int lhs_seed = probDescDB.get_int("method.random_seed");
-    unsigned short sample_type = SUBMETHOD_DEFAULT;
-    String rng; // empty string: use default
-    //int symbols = samples; // symbols needed for DDACE
-    bool vary_pattern = false;// for consistency across any outer loop invocations
-    // get point samples file
-    const String& import_pts_file = probDescDB.get_string("method.import_build_points_file");
-    if (!import_pts_file.empty()) // *** TO DO: allow reuse separate from import
-      { samples = 0; sample_reuse = "all"; }
+  // Configure a RecastModel with one objective and no constraints using the
+  // alternate minimalist constructor: the recast fn pointers are reset for
+  // each level within the run fn.
+  SizetArray recast_vars_comps_total; // default: empty; no change in size
+  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  short recast_resp_order = 1; // nongradient-based optimizers
+  approxSubProbModel.assign_rep(std::make_shared<RecastModel>(fHatModel,
+    recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0,
+    recast_resp_order));
 
-    Iterator dace_iterator;
-    // The following uses on the fly derived ctor:
-    dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, sample_type, samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM));
-    // only use derivatives if the user requested and they are available
-    dace_iterator.active_set_request_values(dataOrder);
-
-    // Construct f-hat (fHatModel) using a GP approximation for each response function over
-    // the active/design vars (same view as iteratedModel: not the typical All
-    // view for DACE).
-    //const Variables& curr_vars = iteratedModel.current_variables();
-    ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
-    gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-    fHatModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-	iteratedModel, gp_set, approx_type, approx_order, corr_type, corr_order,
-	dataOrder, outputLevel, sample_reuse, import_pts_file,
-        probDescDB.get_ushort("method.import_build_format"),
-        probDescDB.get_bool("method.import_build_active_only"),
-        probDescDB.get_string("method.export_approx_points_file"),
-        probDescDB.get_ushort("method.export_approx_format")));
-
-    // Following this ctor, IteratorScheduler::init_iterator() initializes the
-    // parallel configuration for EffGlobalMinimizer + iteratedModel using
-    // EffGlobalMinimizer's maxEvalConcurrency.  During fHatModel construction
-    // above, DataFitSurrModel::derived_init_communicators() initializes the
-    // parallel config for dace_iterator + iteratedModel using dace_iterator's
-    // maxEvalConcurrency.  The only iteratedModel concurrency currently exercised
-    // is that used by dace_iterator within the initial GP construction, but the
-    // EffGlobalMinimizer maxEvalConcurrency must still be set so as to avoid
-    // parallel config errors resulting from avail_procs > max_concurrency within
-    // IteratorScheduler::init_iterator().  A max of the local derivative
-    // concurrency and the DACE concurrency is used for this purpose.
-    maxEvalConcurrency = std::max(maxEvalConcurrency,
-				  dace_iterator.maximum_evaluation_concurrency());
-
-    // Configure a RecastModel with one objective and no constraints using the
-    // alternate minimalist constructor: the recast fn pointers are reset for
-    // each level within the run fn.
-    SizetArray recast_vars_comps_total; // default: empty; no change in size
-    BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
-    short recast_resp_order = 1; // nongradient-based optimizers
-    approxSubProbModel.assign_rep(std::make_shared<RecastModel>(fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr, 1, 0, 0, recast_resp_order));
-
-    // must use alternate NoDB ctor chain
-    int max_iterations = 10000, max_fn_evals = 50000;
-    double min_box_size = 1.e-15, vol_box_size = 1.e-15;
+  // must use alternate NoDB ctor chain
+  int max_iterations = 10000, max_fn_evals = 50000;
+  double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU
-    approxSubProbMinimizer.assign_rep(std::make_shared<NCSUOptimizer>(approxSubProbModel, max_iterations, max_fn_evals, min_box_size, vol_box_size));
+  approxSubProbMinimizer.assign_rep(std::make_shared<NCSUOptimizer>(
+    approxSubProbModel, max_iterations, max_fn_evals,
+    min_box_size, vol_box_size));
 #else
-    Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
-	 << "Aborting process." << std::endl;
-    abort_handler(METHOD_ERROR);
+  Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
+       << "Aborting process." << std::endl;
+  abort_handler(METHOD_ERROR);
 #endif //HAVE_NCSU
 }
 
@@ -1057,13 +1065,16 @@ void EffGlobalMinimizer::check_convergence_deprecated(const Real& eif_star,
 
 void EffGlobalMinimizer::post_process()
 {
-    // Set best variables and response for use by strategy level.
-    // c_vars, fmin contain the optimal design
-    get_best_sample(); // pull optimal result from sample data
-    bestVariablesArray.front().continuous_variables(varStar);
-    bestResponseArray.front().function_values(truthFnStar);
+  // Set best variables and response for use by strategy level.
+  // c_vars, fmin contain the optimal design
+  get_best_sample(); // pull optimal result from sample data
+  bestVariablesArray.front().continuous_variables(varStar);
+  bestResponseArray.front().function_values(truthFnStar);
 
-    debug_plots();
+  // (conditionally) export final surrogates
+  export_final_surrogates(fHatModel);
+
+  debug_plots();
 }
 
 

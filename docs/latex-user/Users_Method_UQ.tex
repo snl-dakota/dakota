@@ -285,30 +285,31 @@ observational data.
 
 \subsection{Variables and Responses for UQ}\label{uq:overview:varsresp}
 
-All the UQ methods perform a forward uncertainty propagation in which
-probability or interval information for input parameters is mapped to
-probability or interval information for output response functions. The
-$m$ functions in the Dakota response data set are interpreted as $m$
-general response functions by the Dakota methods (with no specific
-interpretation of the functions as for optimization and least
-squares).
+Most of the UQ methods perform a forward uncertainty propagation in
+which probability or interval information for input parameters is
+mapped to probability or interval information for output response
+functions. The $m$ functions in the Dakota response data set are
+interpreted as $m$ general response functions by the Dakota methods
+(with no specific interpretation of the functions as for optimization
+and least squares).
 
 Within the variables specification, uncertain variable descriptions
 are employed to define the parameter probability distributions (see
-Section~\ref{variables:uncertain}). The continuous aleatory
-distribution types include: normal (Gaussian), lognormal, uniform,
-loguniform, triangular, exponential, beta, gamma, gumbel, frechet,
-weibull, and histogram bin. The discrete aleatory distribution types
-include: poisson, binomial, negative binomial, geometric,
-hypergeometric, and histogram point. The epistemic distribution type
-is interval for continuous variables. For epistemic discrete
-variables, there are three types: integer range, integer set, and real
-set.  When gradient and/or Hessian information is used in an
-uncertainty assessment, derivative components are normally computed
-with respect to the active continuous variables, which could be
-aleatory uncertain, epistemic uncertain, aleatory and epistemic
-uncertain, or all continuous variables, depending on the active view
-(see Section~\ref{variables:mixed}).
+Section~\ref{variables:uncertain}). For Bayesian inference methods,
+these uncertain variable properties characterize the prior
+distribution. The continuous aleatory distribution types include:
+normal (Gaussian), lognormal, uniform, loguniform, triangular,
+exponential, beta, gamma, gumbel, frechet, weibull, and histogram
+bin. The discrete aleatory distribution types include: poisson,
+binomial, negative binomial, geometric, hypergeometric, and histogram
+point. The epistemic distribution type is interval for continuous
+variables. For epistemic discrete variables, there are three types:
+integer range, integer set, and real set.  When gradient and/or
+Hessian information is used in an uncertainty assessment, derivative
+components are normally computed with respect to the active continuous
+variables, which could be aleatory uncertain, epistemic uncertain,
+aleatory and epistemic uncertain, or all continuous variables,
+depending on the active view (see Section~\ref{variables:mixed}).
 
 \section{Sampling Methods}\label{uq:sampling}
 
@@ -2380,6 +2381,13 @@ function that describes knowledge before the incorporation of data is
 called the prior, $f_{\boldsymbol{\Theta}}\left( \boldsymbol{\theta}
 \right)$.
  
+Note: In Dakota, the prior distribution is characterized by the
+properties of the active uncertain variables. Correlated priors are
+only supported for unbounded normal, untruncated lognormal, uniform,
+exponential, gumbel, frechet, and weibull distributions and require a
+probability transformation by specifying
+\dakotakw{standardized_space}.
+
 When data are available, the likelihood function describes how well
 each parameter value is supported by the data. Bayes
 Theorem~\cite{Jaynes}, shown in Equation~\ref{eq:BayesThm}, is used
@@ -2633,14 +2641,12 @@ Manual~\cite{RefMan} for more information.
 MUQ is the MIT Uncertainty Quantification library.  See
 \url{https://bitbucket.org/mituq/muq2/src/master/} and
 \url{https://mituq.bitbucket.io/index.html} for additional
-documentation.  Dakota currently exposes two types of MCMC approaches
-as supplied by MUQ: Metropolis-Hastings and Adaptive Metropolis.  The
-MUQ implementation in Dakota is a preliminary one, anticipated to grow
-in future releases of Dakotato to leverage components in MUQ that
-support Hamiltonian Monte Carlo and Langevin-based sampling
-strategies.  Note that the MUQ is an experimental capability within
-Dakota. Thus, the library is not exposed by default and must be
-enabled explicitely when compiling Dakota.
+documentation.  Dakota currently exposes two MCMC approaches from MUQ:
+Metropolis-Hastings and Adaptive Metropolis. Dakota's MUQ integration
+is preliminary, anticipated to extend to use MUQ components for
+Hamiltonian Monte Carlo and Langevin-based sampling.  MUQ is an
+experimental Dakota capability, and as such, it is not turned on by
+default, and must be explicitly enabled when compiling Dakota.
 
 \subsection{WASABI}
 WASABI differs from the other Bayesian approaches in that it is 
@@ -3491,3 +3497,5 @@ calibration capabilities.
 %methods, previously mentioned, is being assessed for possible
 %implementation in Dakota.
 \end{comment}
+
+%%  LocalWords:  MUQ MCMC Langevin

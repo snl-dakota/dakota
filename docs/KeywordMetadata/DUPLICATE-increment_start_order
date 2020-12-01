@@ -1,0 +1,16 @@
+Blurb::
+candidate generation by advancement of starting basis order
+
+Description::
+Within adaptive refinement processes, this specification selects the
+advancement of \c start_order to create new refinement candidates.
+It is typically used in the absence of \c adapt_order to more rigidly
+define a refinement sequence.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

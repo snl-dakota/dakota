@@ -405,6 +405,13 @@ protected:
 				 const ActiveSet& recast_set,
 				 ActiveSet& sub_model_set);
 
+  /// helper function that encapsulates initialization operations,
+  /// modular on incoming Model instance
+  void initialize_model_graphics(Model& model, int iterator_server_id);
+
+  /// export final surrogates generated, e.g., GP in EGO and friends
+  void export_final_surrogates(Model& data_fit_surr_model);
+
   //
   //- Heading: Data
   //
@@ -484,6 +491,15 @@ protected:
 
   /// Whether this is the top level iterator
   bool topLevel;
+
+  /// whether to export final surrogates
+  bool exportSurrogate = false;
+
+  /// base filename for exported surrogates
+  String surrExportPrefix;
+
+  /// (bitwise) format(s) to export
+  unsigned short surrExportFormat = NO_MODEL_FORMAT;
 
 private:
 

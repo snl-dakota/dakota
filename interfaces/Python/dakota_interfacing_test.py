@@ -85,7 +85,7 @@ def set_function(r):
     r["response_fn_1"].function = 5.0
 
 def set_gradient(r):
-    r["response_fn_1"].gradient = [1.0, 2.0]
+    r["response_fn_1"].gradient = [1.0189673084127668E-266, -6.3508646783183408E-264]
 
 def set_hessian(r):
     r["response_fn_1"].hessian = [[1.0, 2.0],[2.0,3.0]]
@@ -192,9 +192,9 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         rio = StringIO.StringIO()
         r.write(stream=rio)
         expected = """  5.0000000000000000E+00 response_fn_1
-[   1.0000000000000000E+00  2.0000000000000000E+00 ]
-[[  1.0000000000000000E+00  2.0000000000000000E+00
-    2.0000000000000000E+00  3.0000000000000000E+00 ]]
+[   1.0189673084127668E-266 -6.3508646783183408E-264 ]
+[[   1.0000000000000000E+00   2.0000000000000000E+00
+     2.0000000000000000E+00   3.0000000000000000E+00 ]]
 """
         self.assertEqual(rio.getvalue(), expected)
         # Test simulation failure flag
