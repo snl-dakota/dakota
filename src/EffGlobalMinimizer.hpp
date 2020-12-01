@@ -106,17 +106,13 @@ private:
 
     /// get augmented Lagrangian
     Real get_augmented_lagrangian(const RealVector& mean,
-                                  const RealVector& c_vars,
-                                  const Real& eif_star);
+				  const RealVector& c_vars, Real eif_star);
 
     /// print mean and variance if debug flag is ON
     void debug_print_values();
 
     /// print counter if debug flag is ON
-    void debug_print_counter(unsigned short globalIterCount,
-                             const Real& eif_star,
-                             Real distCStar,
-                             unsigned short dist_convergence_cntr);
+    void debug_print_counter(const Real& eif_star);
 
     // DEBUG - output set of samples used to build the GP
     // If problem is 2d, output a grid of points on the GP and truth (if requested)
@@ -124,20 +120,23 @@ private:
 
     /// probability improvement (PI) function for the EGO
     /// PI acquisition function implementation
-    Real compute_probability_improvement(const RealVector& means, const RealVector& variances);
+    Real compute_probability_improvement(const RealVector& means,
+					 const RealVector& variances);
     /// expected improvement (EI) function for the EGO
     /// EI acquisition function implementation
-    Real compute_expected_improvement(const RealVector& means, const RealVector& variances);
+    Real compute_expected_improvement(const RealVector& means,
+				      const RealVector& variances);
     /// lower confidence bound (LCB) function for the EGO
     /// LCB acquisition function implementation
-    Real compute_lower_confidence_bound(const RealVector& means, const RealVector& variances);
+    Real compute_lower_confidence_bound(const RealVector& means,
+					const RealVector& variances);
     /// variance function for the EGO
     /// MSE acquisition implementation
     Real compute_variances(const RealVector& variances);
 
     /// expected violation function for the constraint functions
     RealVector expected_violation(const RealVector& means,
-                                        const RealVector& variances);
+				  const RealVector& variances);
 
     /// initialize and update the penaltyParameter
     void update_penalty();
@@ -150,15 +149,15 @@ private:
     /// static function used as the objective function in the
     /// Expected Improvement (EIF) problem formulation for EGO
     static void PIF_objective_eval(const Variables& sub_model_vars,
-                                        const Variables& recast_vars,
-                                  const Response& sub_model_response,
-                                  Response& recast_response);
+				   const Variables& recast_vars,
+				   const Response& sub_model_response,
+				   Response& recast_response);
     /// static function used as the objective function in the
     /// Expected Improvement (EIF) problem formulation for EGO
     static void EIF_objective_eval(const Variables& sub_model_vars,
-                                        const Variables& recast_vars,
-                                  const Response& sub_model_response,
-                                  Response& recast_response);
+				   const Variables& recast_vars,
+				   const Response& sub_model_response,
+				   Response& recast_response);
     /// static function used as the objective function in the
     /// Lower-Confidence Bound (LCB) problem formulation for EGO
     static void LCB_objective_eval(const Variables& sub_model_vars,
@@ -167,12 +166,12 @@ private:
                                   Response& recast_response);
     /// Variance formulation for primary
     static void Variances_objective_eval(const Variables& sub_model_vars,
-                                        const Variables& recast_vars,
-                                  const Response& sub_model_response,
-                                  Response& recast_response);
+					 const Variables& recast_vars,
+					 const Response& sub_model_response,
+					 Response& recast_response);
 
     /// function that checks if model supports asynchronous parallelism
-    bool check_parallelism();
+    void check_parallelism();
 
     /// sequential EGO implementation: main function
     void serial_ego();
@@ -212,9 +211,9 @@ private:
     static EffGlobalMinimizer* effGlobalInstance;
     // static EffGlobalMinimizer* prev_instance;
 
-    /// controls iteration mode: "model" (normal usage) or "user_functions"
-    /// (user-supplied functions mode for "on the fly" instantiations).
-    String setUpType;
+    // controls iteration mode: "model" (normal usage) or "user_functions"
+    // (user-supplied functions mode for "on the fly" instantiations).
+    //String setUpType;
 
     /// GP model of response, one approximation per response function
     Model fHatModel;

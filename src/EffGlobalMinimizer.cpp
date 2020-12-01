@@ -41,10 +41,12 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 
 // This constructor accepts a Model
 EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
-  SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
+  SurrBasedMinimizer(problem_db, model,
+		     std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
   batchSize(probDescDB.get_int("method.batch_size")),
   batchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
-  setUpType("model"), dataOrder(1)
+  //setUpType("model"),
+  dataOrder(1)
 {
   // substract the total batchSize from batchSizeExploration
   batchSizeAcquisition = batchSize - batchSizeExploration;
@@ -180,37 +182,41 @@ void EffGlobalMinimizer::pre_run()
 
 void EffGlobalMinimizer::core_run()
 {
-  if (setUpType=="model") {
+  EffGlobalMinimizer* prev_instance = effGlobalInstance;
+  effGlobalInstance = this; // instance pointer used within static member fns
 
-    EffGlobalMinimizer* prev_instance = effGlobalInstance;
+  //if (setUpType=="model") {
 
     // initialize convergence and flag variables
     initialize_convergence_variables();
 
-    // build initial GP for all response functions: fHatModel.build_approximation()
+    // build initial GP for all response functions
     build_gp();
 
     // check if iterated model supports asynchronous parallelism
-    parallelFlag = check_parallelism();
+    check_parallelism();
 
     // iterate until EGO converges
-    while (!approxConverged) {
-      batch_synchronous_ego(); // with safeguard implemented for batchSize if parallelism fails
-    }
+    if (true)
+      batch_synchronous_ego();
+    //else
+    //  batch_asynchronous_ego(); // ** TO DO
 
     post_process();
 
-    // restore in case of recursion
-    effGlobalInstance = prev_instance;
-  }
-  else if (setUpType=="user_functions") {
-    Cerr << "Error: user_functions mode not implemented in EffGlobalMinimizer::core_run()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  else {
-    Cerr << "Error: bad setUpType in EffGlobalMinimizer::core_run()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  //}
+  //else if (setUpType=="user_functions") {
+  //  Cerr << "Error: user_functions mode not implemented in EffGlobalMinimizer"
+  // 	   << "::core_run()." << std::endl;
+  //  abort_handler(METHOD_ERROR);
+  //}
+  //else {
+  //  Cerr << "Error: bad setUpType in EffGlobalMinimizer::core_run()."
+  // 	   << std::endl;
+  //  abort_handler(METHOD_ERROR);
+  //}
+
+  effGlobalInstance = prev_instance;  // restore in case of recursion
 }
 
 
@@ -225,10 +231,12 @@ void EffGlobalMinimizer::post_run(std::ostream& s)
 
 /** To maximize expected improvement (PI), the approxSubProbMinimizer will minimize -(compute_probability_improvement). **/
 // Implementation of PI acquisition function
-void EffGlobalMinimizer::PIF_objective_eval(const Variables& sub_model_vars,
-           const Variables& recast_vars,
-           const Response& sub_model_response,
-           Response& recast_response) {
+void EffGlobalMinimizer::
+PIF_objective_eval(const Variables& sub_model_vars,
+		   const Variables& recast_vars,
+		   const Response& sub_model_response,
+		   Response& recast_response)
+{
     // Means are passed in, but must retrieve variance from the GP
     const RealVector& means = sub_model_response.function_values();
     const RealVector& variances = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
@@ -243,10 +251,12 @@ void EffGlobalMinimizer::PIF_objective_eval(const Variables& sub_model_vars,
 
 /** To maximize expected improvement (EI), the approxSubProbMinimizer will minimize -(compute_expected_improvement). **/
 // Implementation of EI acquisition function
-void EffGlobalMinimizer::EIF_objective_eval(const Variables& sub_model_vars,
-           const Variables& recast_vars,
-           const Response& sub_model_response,
-           Response& recast_response) {
+void EffGlobalMinimizer::
+EIF_objective_eval(const Variables& sub_model_vars,
+		   const Variables& recast_vars,
+		   const Response& sub_model_response,
+		   Response& recast_response)
+{
     // Means are passed in, but must retrieve variance from the GP
     const RealVector& means = sub_model_response.function_values();
     const RealVector& variances = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
@@ -261,10 +271,12 @@ void EffGlobalMinimizer::EIF_objective_eval(const Variables& sub_model_vars,
 
 /** To maximize lower confidence bound (LCB), the approxSubProbMinimizer will minimize -(compute_lower_confidence_bound). **/
 // Implementation of LCB acquisition function
-void EffGlobalMinimizer::LCB_objective_eval(const Variables& sub_model_vars,
-           const Variables& recast_vars,
-           const Response& sub_model_response,
-           Response& recast_response) {
+void EffGlobalMinimizer::
+LCB_objective_eval(const Variables& sub_model_vars,
+		   const Variables& recast_vars,
+		   const Response& sub_model_response,
+		   Response& recast_response)
+{
     // Means are passed in, but must retrieve variance from the GP
     const RealVector& means = sub_model_response.function_values();
     const RealVector& variances = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
@@ -279,10 +291,12 @@ void EffGlobalMinimizer::LCB_objective_eval(const Variables& sub_model_vars,
 
 /** To maximize variances, the approxSubProbMinimizer will minimize -(variances). **/
 // Implementation of MSE acquisition function
-void EffGlobalMinimizer::Variances_objective_eval(const Variables& sub_model_vars,
-           const Variables& recast_vars,
-           const Response& sub_model_response,
-           Response& recast_response) {
+void EffGlobalMinimizer::
+Variances_objective_eval(const Variables& sub_model_vars,
+			 const Variables& recast_vars,
+			 const Response& sub_model_response,
+			 Response& recast_response)
+{
     // Means are passed in, but must retrieve variance from the GP
     // const RealVector& means = sub_model_response.function_values();
     const RealVector& variances = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
@@ -296,7 +310,10 @@ void EffGlobalMinimizer::Variances_objective_eval(const Variables& sub_model_var
 
 
 /** Compute the PI acquisition function **/
-Real EffGlobalMinimizer::compute_probability_improvement(const RealVector& means, const RealVector& variances) {
+Real EffGlobalMinimizer::
+compute_probability_improvement(const RealVector& means,
+				const RealVector& variances)
+{
     // Objective calculation will incorporate any sense changes or
     // weights, such that this is an objective to minimize.
     Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
@@ -330,7 +347,10 @@ Real EffGlobalMinimizer::compute_probability_improvement(const RealVector& means
 
 
 /** Compute the EI acquisition function **/
-Real EffGlobalMinimizer::compute_expected_improvement(const RealVector& means, const RealVector& variances) {
+Real EffGlobalMinimizer::
+compute_expected_improvement(const RealVector& means,
+			     const RealVector& variances)
+{
     // Objective calculation will incorporate any sense changes or
     // weights, such that this is an objective to minimize.
     Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
@@ -367,7 +387,10 @@ Real EffGlobalMinimizer::compute_expected_improvement(const RealVector& means, c
 
 
 /** Compute the LCB acquisition function **/
-Real EffGlobalMinimizer::compute_lower_confidence_bound(const RealVector& means, const RealVector& variances) {
+Real EffGlobalMinimizer::
+compute_lower_confidence_bound(const RealVector& means,
+			       const RealVector& variances)
+{
     // Objective calculation will incorporate any sense changes or
     // weights, such that this is an objective to minimize.
     Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
@@ -392,7 +415,8 @@ Real EffGlobalMinimizer::compute_lower_confidence_bound(const RealVector& means,
 
 
 /** Compute the variances **/
-Real EffGlobalMinimizer::compute_variances(const RealVector& variances) {
+Real EffGlobalMinimizer::compute_variances(const RealVector& variances)
+{
     // Objective calculation will incorporate any sense changes or
     // weights, such that this is an objective to minimize.
     const Real& stdv = std::sqrt(variances[0]); // *** sqrt(sum(variances(1:nUsrPrimaryFns))
@@ -403,7 +427,9 @@ Real EffGlobalMinimizer::compute_variances(const RealVector& variances) {
 
 
 /** Compute the expected violation for constraints **/
-RealVector EffGlobalMinimizer::expected_violation(const RealVector& means, const RealVector& variances) {
+RealVector EffGlobalMinimizer::
+expected_violation(const RealVector& means, const RealVector& variances)
+{
     RealVector ev(numNonlinearConstraints);
 
     size_t i, cntr=0;
@@ -467,7 +493,8 @@ RealVector EffGlobalMinimizer::expected_violation(const RealVector& means, const
 
 
 /** Get the best-so-far sample **/
-void EffGlobalMinimizer::get_best_sample() {
+void EffGlobalMinimizer::get_best_sample()
+{
     // pull the samples and responses from data used to build latest GP
     // to determine fnStar for use in the expected improvement function
 
@@ -509,7 +536,8 @@ void EffGlobalMinimizer::get_best_sample() {
 }
 
 
-void EffGlobalMinimizer::update_penalty() {
+void EffGlobalMinimizer::update_penalty()
+{
     // Logic follows Conn, Gould, and Toint, section 14.4, step 3
     //   CGT use mu *= tau with tau = 0.01 ->   r_p *= 50
     //   Rodriguez, Renaud, Watson:             r_p *= 10
@@ -527,59 +555,61 @@ void EffGlobalMinimizer::update_penalty() {
 }
 
 
-void EffGlobalMinimizer::declare_sources() {
-    // This override exists purely to prevent an optimizer/minimizer from declaring sources
-    // when it's being used to evaluate a user-defined function (e.g. finding the correlation
-    // lengths of Dakota's GP).
-    if(setUpType == "user_functions")
-        return;
-    else
-        Iterator::declare_sources();
+void EffGlobalMinimizer::declare_sources()
+{
+  // This override exists purely to prevent an optimizer/minimizer from
+  // declaring sources when it's being used to evaluate a user-defined
+  // function (e.g. finding the correlation lengths of Dakota's GP).
+
+  //if (setUpType == "user_functions")
+  //  return;
+  //else
+  Iterator::declare_sources();
 }
 
 
-Real EffGlobalMinimizer::get_augmented_lagrangian(const RealVector& mean, const RealVector& c_vars, const Real& eif_star) {
+Real EffGlobalMinimizer::
+get_augmented_lagrangian(const RealVector& mean, const RealVector& c_vars,
+			 Real eif_star)
+{
     Real aug_lag = augmented_lagrangian_merit(mean,
         iteratedModel.primary_response_fn_sense(),
         iteratedModel.primary_response_fn_weights(), origNonlinIneqLowerBnds,
         origNonlinIneqUpperBnds, origNonlinEqTargets);
 
     // print out message
-      Cout << "\nResults of EGO iteration:\nFinal point =\n" << c_vars
-     << "Expected Improvement    =\n                     "
-     << std::setw(write_precision+7) << -eif_star
-     << "\n                     " << std::setw(write_precision+7)
-     << aug_lag << " [merit]\n";
-     return aug_lag;
+    Cout << "\nResults of EGO iteration:\nFinal point =\n" << c_vars
+	 << "Expected Improvement    =\n                     "
+	 << std::setw(write_precision+7) << -eif_star
+	 << "\n                     " << std::setw(write_precision+7)
+	 << aug_lag << " [merit]\n";
+    return aug_lag;
 }
 
 
-bool EffGlobalMinimizer::check_parallelism() {
-    // Add safeguard: If model cannot run asynchronously
-    //                  then reset batchSizeAcquisition = 1
-    //                  and throw warnings on screens
-    //                  and proceed with batchSize = 1
+void EffGlobalMinimizer::check_parallelism()
+{
+  // Add safeguard: If model cannot run asynchronously
+  //                  then reset batchSizeAcquisition = 1
+  //                  and throw warnings on screens
+  //                  and proceed with batchSize = 1
 
-    bool parallelFlag = false; // default: run sequential by default
-
-    if (batchSizeAcquisition > 1 || batchSizeExploration > 1) {
-        if (iteratedModel.asynch_flag()) // change model.asynch_flag() to iteratedModel.asynch_flag()
-            parallelFlag = true; // turn on parallelFlag if the requirements are satisfied
-        else {
-            Cerr << "Warning: concurrent operations not supported by model. Batch size request ignored." << std::endl;
-            batchSizeAcquisition = 1; // reverse to the default sequential
-            batchSizeExploration = 0; // reverse to the default sequential
-        }
+  parallelFlag = false; // default: run sequential by default
+  if (batchSizeAcquisition > 1 || batchSizeExploration > 1) {
+    if (iteratedModel.asynch_flag())
+      parallelFlag = true; // turn on if requirements are satisfied
+    else {
+      Cerr << "Warning: concurrent operations not supported by model. "
+	   << "Batch size request ignored." << std::endl;
+      batchSizeAcquisition = 1; // reverse to the default sequential
+      batchSizeExploration = 0; // reverse to the default sequential
     }
-    return parallelFlag;
+  }
 }
 
 
-void EffGlobalMinimizer::build_gp() {
-
-    // set the object instance pointers for use within the static member fns
-    effGlobalInstance = this;
-
+void EffGlobalMinimizer::build_gp()
+{
     // now that variables/labels/bounds/targets have flowed down at run-time from
     // any higher level recursions, propagate them up the instantiate-on-the-fly
     // Model recursion so that they are correct when they propagate back down.
@@ -599,31 +629,34 @@ void EffGlobalMinimizer::build_gp() {
 }
 
 
-void EffGlobalMinimizer::initialize_convergence_variables() {
-    eifConvergenceCntr = 0;
-    distConvergenceCntr = 0;
-    eifConvergenceLimit = 2;
-    distConvergenceLimit = 1;
-    globalIterCount = 0;
-    approxConverged = false;
+void EffGlobalMinimizer::initialize_convergence_variables()
+{
+  eifConvergenceCntr = 0;   distConvergenceCntr = 0;
+  eifConvergenceLimit = 2;  distConvergenceLimit = 1;
+  globalIterCount = 0;      approxConverged = false;
 }
 
 
+void EffGlobalMinimizer::batch_synchronous_ego()
+{
+  // with safeguard implemented for batchSize if parallelism fails
 
-void EffGlobalMinimizer::batch_synchronous_ego() {
+  // initialize input array for batch construction
+  varsArrayBatch.resize(batchSize); // acquisition + exploration
+
+  while (!approxConverged) {
     ++globalIterCount;
 
-    if (parallelFlag) {
-        // reset the convergence counters
-        distConvergenceCntr = 0; // reset distance convergence counters
-        // distConvergenceLimit = std::max(batchSizeAcquisition, batchSizeExploration); // reset convergence limit for parallel EGO
-        distConvergenceLimit = batchSize; // reset convergence limit for parallel EGO
+    if (parallelFlag) { // *** TO DO: why is this a special logic case?
+      // reset the convergence counters
+      distConvergenceCntr = 0; // reset distance convergence counters
+      //distConvergenceLimit
+      //  = std::max(batchSizeAcquisition, batchSizeExploration);
+      distConvergenceLimit = batchSize; // reset conv limit for parallel EGO
     }
 
-    Cout << "\n>>>>> Initiating global optimization\n";
-
-    // initialize input array for batch construction
-    varsArrayBatch.resize(batchSize);
+    Cout << "\n>>>>> Initiating global iteration " << globalIterCount << '\n';
+    // *** TO DO: augment global iter with batch iter
 
     // construct the acquisition batch
     construct_batch_acquisition(); // consolidation attempt
@@ -642,15 +675,15 @@ void EffGlobalMinimizer::batch_synchronous_ego() {
 
     // check convergence
     approxConverged = assess_convergence();
+  }
 
-    // clean up
-    varsArrayBatch.clear();
+  // clean up
+  varsArrayBatch.clear();
 }
 
 
-
-void EffGlobalMinimizer::construct_batch_acquisition() {
-
+void EffGlobalMinimizer::construct_batch_acquisition()
+{
     // initialize EIF recast model
     Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
     BoolDequeArray nonlinear_resp_map(1, BoolDeque(numFunctions, true));
@@ -726,14 +759,13 @@ void EffGlobalMinimizer::construct_batch_acquisition() {
         varsArrayBatch[i] = vars_star.copy();
 
         // advance counters
-        ++globalIterCount;
+        //++globalIterCount;
     }
 }
 
 
-
-void EffGlobalMinimizer::construct_batch_exploration(){
-
+void EffGlobalMinimizer::construct_batch_exploration()
+{
     // initialize EIF recast model
     Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
     BoolDequeArray nonlinear_resp_map(1, BoolDeque(numFunctions, true));
@@ -792,13 +824,13 @@ void EffGlobalMinimizer::construct_batch_exploration(){
         varsArrayBatch[batchSizeAcquisition + i] = vars_star.copy();
 
         // advance counters
-        ++globalIterCount;
+        //++globalIterCount;
     }
 }
 
 
-
-void EffGlobalMinimizer::delete_liar_responses() {
+void EffGlobalMinimizer::delete_liar_responses()
+{
     for (int i = 0; i < batchSizeAcquisition; i++) {
         fHatModel.pop_approximation(false);
         numDataPts = fHatModel.approximation_data(0).points(); // debug
@@ -808,9 +840,8 @@ void EffGlobalMinimizer::delete_liar_responses() {
 }
 
 
-
-void EffGlobalMinimizer::evaluate_batch_and_update_constraints() {
-
+void EffGlobalMinimizer::evaluate_batch_and_update_constraints()
+{
     if (parallelFlag) {
         // parallel evaluation
         for (int i = 0; i < batchSize; i++) {
@@ -850,7 +881,7 @@ void EffGlobalMinimizer::evaluate_batch_and_update_constraints() {
         // serial evaluation
         fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
 
-        const Variables&  vars_star = varsArrayBatch[0];
+        const Variables& vars_star = varsArrayBatch[0];
         iteratedModel.active_variables(varsArrayBatch[0]);
         ActiveSet set = iteratedModel.current_response().active_set();
         set.request_values(dataOrder);
@@ -877,7 +908,8 @@ void EffGlobalMinimizer::evaluate_batch_and_update_constraints() {
 
 
 
-void EffGlobalMinimizer::update_convergence_counters() {
+void EffGlobalMinimizer::update_convergence_counters()
+{
     // update convergence counters
     for (int i = 0; i < batchSize; i++) {
         const Variables&  vars_star = approxSubProbMinimizer.variables_results();
@@ -912,7 +944,7 @@ void EffGlobalMinimizer::update_convergence_counters() {
         //   the center point more than once, which will damage the GPs.
         //   Unfortunately, when it happens the second time, it may still
         //   be that DIRECT failed and not that EGO converged.
-        debug_print_counter(globalIterCount, eif_star, distCStar, distConvergenceCntr);
+        debug_print_counter(eif_star);
     }
 }
 
@@ -929,25 +961,19 @@ bool EffGlobalMinimizer::assess_convergence()
         if (outputLevel > NORMAL_OUTPUT) {
              // debug
             if (distConvergenceCntr >= distConvergenceLimit) {
-                  Cout << "\nStopping criteria met: distConvergenceCntr (="
-                  << distConvergenceCntr
-                  << ") >= distConvergenceLimit (="
-                  << distConvergenceLimit
-                  << ").\n";
+	      Cout << "\nStopping criteria met: distConvergenceCntr (="
+		   << distConvergenceCntr  << ") >= distConvergenceLimit (="
+		   << distConvergenceLimit << ").\n";
             }
             if (eifConvergenceCntr >= eifConvergenceLimit) {
               Cout << "\nStopping criteria met: eifConvergenceCntr (="
-              << eifConvergenceCntr
-              << ") >= eifConvergenceLimit (="
-              << eifConvergenceLimit
-              << ").\n";
+		   << eifConvergenceCntr  << ") >= eifConvergenceLimit (="
+		   << eifConvergenceLimit << ").\n";
             }
             if (globalIterCount >= maxIterations) {
               Cout << "\nStopping criteria met: globalIterCount (="
-              << globalIterCount
-              << ") >= maxIterations (="
-              << maxIterations
-              << ").\n";
+		   << globalIterCount << ") >= maxIterations (="
+		   << maxIterations   << ").\n";
             }
         }
     } else {
@@ -957,25 +983,19 @@ bool EffGlobalMinimizer::assess_convergence()
         if (outputLevel > NORMAL_OUTPUT) {
             // debug
             if (distConvergenceCntr < distConvergenceLimit) {
-                Cout << "\nStopping criteria not met: distConvergenceCntr (="
-                  << distConvergenceCntr
-                  << ") < distConvergenceLimit (="
-                  << distConvergenceLimit
-                  << ").\n";
+	      Cout << "\nStopping criteria not met: distConvergenceCntr (="
+		   << distConvergenceCntr  << ") < distConvergenceLimit (="
+		   << distConvergenceLimit << ").\n";
             }
             if (eifConvergenceCntr < eifConvergenceLimit) {
-                Cout << "\nStopping criteria not met: eifConvergenceCntr (="
-                  << eifConvergenceCntr
-                  << ") < eifConvergenceLimit (="
-                  << eifConvergenceLimit
-                  << ").\n";
+	      Cout << "\nStopping criteria not met: eifConvergenceCntr (="
+		   << eifConvergenceCntr  << ") < eifConvergenceLimit (="
+		   << eifConvergenceLimit << ").\n";
             }
             if (globalIterCount < maxIterations) {
-            Cout << "\nStopping criteria not met: globalIterCount (="
-              << globalIterCount
-              << ") < maxIterations (="
-              << maxIterations
-              << ").\n";
+	      Cout << "\nStopping criteria not met: globalIterCount (="
+		   << globalIterCount << ") < maxIterations (=" << maxIterations
+		   << ").\n";
             }
         }
     }
@@ -988,7 +1008,8 @@ void EffGlobalMinimizer::check_convergence_deprecated(const Real& eif_star,
                                           const RealVector& c_vars,
                                           RealVector prevCvStar,
                                           unsigned short eifConvergenceCntr,
-                                          unsigned short distConvergenceCntr) {
+                                          unsigned short distConvergenceCntr)
+{
     // Check for convergence based on max EIF
     if ( -eif_star < convergenceTol )
         ++eifConvergenceCntr;
@@ -1051,13 +1072,12 @@ void EffGlobalMinimizer::debug_print_values()
 
 
 void EffGlobalMinimizer::
-debug_print_counter(unsigned short globalIterCount, const Real& eif_star,
-            Real distCStar, unsigned short distConvergenceCntr)
+debug_print_counter(const Real& eif_star)
 {
 #ifdef DEBUG
-        Cout << "EGO Iteration " << globalIterCount << "\neif_star " << eif_star
-             << "\ndistCStar "  << distCStar      << "\ndistConvergenceCntr "
-             << distConvergenceCntr << '\n';
+  Cout << "EGO Iteration " << globalIterCount << "\neif_star " << eif_star
+       << "\ndistCStar "   << distCStar       << "\ndistConvergenceCntr "
+       << distConvergenceCntr << '\n';
 #endif //DEBUG
 }
 
@@ -1065,85 +1085,87 @@ debug_print_counter(unsigned short globalIterCount, const Real& eif_star,
 void EffGlobalMinimizer::debug_plots()
 {
 #ifdef DEBUG_PLOTS
-        // DEBUG - output set of samples used to build the GP
-        // If problem is 2d, output a grid of points on the GP
-        //   and truth (if requested)
-        for (size_t i=0; i<numFunctions; i++) {
-            std::string samsfile("ego_sams");
-            std::string tag = "_" + boost::lexical_cast<std::string>(i+1) + ".out";
-            samsfile += tag;
-            std::ofstream samsOut(samsfile.c_str(),std::ios::out);
-            samsOut << std::scientific;
-            const Pecos::SurrogateData& gp_data = fHatModel.approximation_data(i);
-            const Pecos::SDVArray& sdv_array = gp_data.variables_data();
-            const Pecos::SDRArray& sdr_array = gp_data.response_data();
-            size_t num_data_pts = gp_data.size(), num_vars = fHatModel.cv();
-            for (size_t j=0; j<num_data_pts; ++j) {
-                samsOut << '\n';
-                const RealVector& sams = sdv_array[j].continuous_variables();
-                for (size_t k=0; k<num_vars; k++)
-                    samsOut << std::setw(13) << sams[k] << ' ';
-                samsOut << std::setw(13) << sdr_array[j].response_function();
-            }
-            samsOut << std::endl;
+  // DEBUG - output set of samples used to build the GP
+  // If problem is 2d, output a grid of points on the GP
+  //   and truth (if requested)
+  for (size_t i=0; i<numFunctions; i++) {
+    std::string samsfile("ego_sams");
+    std::string tag = "_" + boost::lexical_cast<std::string>(i+1) + ".out";
+    samsfile += tag;
+    std::ofstream samsOut(samsfile.c_str(),std::ios::out);
+    samsOut << std::scientific;
+    const Pecos::SurrogateData& gp_data = fHatModel.approximation_data(i);
+    const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+    const Pecos::SDRArray& sdr_array = gp_data.response_data();
+    size_t num_data_pts = gp_data.size(), num_vars = fHatModel.cv();
+    for (size_t j=0; j<num_data_pts; ++j) {
+      samsOut << '\n';
+      const RealVector& sams = sdv_array[j].continuous_variables();
+      for (size_t k=0; k<num_vars; k++)
+	samsOut << std::setw(13) << sams[k] << ' ';
+      samsOut << std::setw(13) << sdr_array[j].response_function();
+    }
+    samsOut << std::endl;
 
-            // Plotting the GP over a grid is intended for visualization and
-            //   is therefore only available for 2D problems
-            if (num_vars==2) {
-                std::string gpfile("ego_gp");
-                std::string varfile("ego_var");
-                gpfile  += tag;
-                varfile += tag;
-                std::ofstream  gpOut(gpfile.c_str(),  std::ios::out);
-                std::ofstream varOut(varfile.c_str(), std::ios::out);
-                std::ofstream eifOut("ego_eif.out",   std::ios::out);
-                gpOut  << std::scientific;
-                varOut << std::scientific;
-                eifOut << std::scientific;
-                RealVector test_pt(2);
-                const RealVector& lbnd = fHatModel.continuous_lower_bounds();
-                const RealVector& ubnd = fHatModel.continuous_upper_bounds();
-                Real interval0 = (ubnd[0] - lbnd[0])/100., interval1 = (ubnd[1] - lbnd[1])/100.;
-                for (size_t j=0; j<101; j++) {
-                        test_pt[0] = lbnd[0] + float(j) * interval0;
-                        for (size_t k=0; k<101; k++) {
-                            test_pt[1] = lbnd[1] + float(k) * interval1;
+    // Plotting the GP over a grid is intended for visualization and
+    //   is therefore only available for 2D problems
+    if (num_vars==2) {
+      std::string gpfile("ego_gp");
+      std::string varfile("ego_var");
+      gpfile  += tag;
+      varfile += tag;
+      std::ofstream  gpOut(gpfile.c_str(),  std::ios::out);
+      std::ofstream varOut(varfile.c_str(), std::ios::out);
+      std::ofstream eifOut("ego_eif.out",   std::ios::out);
+      gpOut  << std::scientific;
+      varOut << std::scientific;
+      eifOut << std::scientific;
+      RealVector test_pt(2);
+      const RealVector& lbnd = fHatModel.continuous_lower_bounds();
+      const RealVector& ubnd = fHatModel.continuous_upper_bounds();
+      Real interval0 = (ubnd[0] - lbnd[0])/100.,
+	   interval1 = (ubnd[1] - lbnd[1])/100.;
+      for (size_t j=0; j<101; j++) {
+	test_pt[0] = lbnd[0] + float(j) * interval0;
+	for (size_t k=0; k<101; k++) {
+	  test_pt[1] = lbnd[1] + float(k) * interval1;
 
-                          fHatModel.continuous_variables(test_pt);
-                          fHatModel.evaluate();
-                          const Response& gp_resp = fHatModel.current_response();
-                          const RealVector& gp_fn = gp_resp.function_values();
+	  fHatModel.continuous_variables(test_pt);
+	  fHatModel.evaluate();
+	  const Response& gp_resp = fHatModel.current_response();
+	  const RealVector& gp_fn = gp_resp.function_values();
 
-                          gpOut << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
-                                    << test_pt[1] << ' ' << std::setw(13) << gp_fn[i];
+	  gpOut << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
+		<< test_pt[1] << ' ' << std::setw(13) << gp_fn[i];
 
-                          RealVector variances = fHatModel.approximation_variances(fHatModel.current_variables());
+	  RealVector variances
+	    = fHatModel.approximation_variances(fHatModel.current_variables());
 
-                          varOut << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
-                                     << test_pt[1] << ' ' << std::setw(13) << variances[i];
+	  varOut << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
+		 << test_pt[1] << ' ' << std::setw(13) << variances[i];
 
-                          if (i==numFunctions-1) {
-                                Real m = augmented_lagrangian_merit(gp_fn,
-                                  iteratedModel.primary_response_fn_sense(),
-                                  iteratedModel.primary_response_fn_weights(),
-                                  origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
-                                  origNonlinEqTargets);
-                                RealVector merit(1);
-                                merit[0] = m;
+	  if (i==numFunctions-1) {
+	    Real m = augmented_lagrangian_merit(gp_fn,
+	      iteratedModel.primary_response_fn_sense(),
+	      iteratedModel.primary_response_fn_weights(),
+	      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+	      origNonlinEqTargets);
+	    RealVector merit(1);
+	    merit[0] = m;
 
-                                Real ei = compute_expected_improvement(merit, test_pt);
+	    Real ei = compute_expected_improvement(merit, test_pt);
 
-                                eifOut << '\n' << std::setw(13) << test_pt[0] << ' '
-                                       << std::setw(13) << test_pt[1] << ' ' << std::setw(13) << ei;
-                          }
-                        }
-                    gpOut  << std::endl;
-                    varOut << std::endl;
-                    if (i == numFunctions - 1)
-                      eifOut << std::endl;
-                }
-            }
-        }
+	    eifOut << '\n' << std::setw(13) << test_pt[0] << ' '
+		   << std::setw(13) << test_pt[1] << ' ' << std::setw(13) << ei;
+	  }
+	}
+	gpOut  << std::endl;
+	varOut << std::endl;
+	if (i == numFunctions - 1)
+	  eifOut << std::endl;
+      }
+    }
+  }
 #endif //DEBUG_PLOTS
 }
 
