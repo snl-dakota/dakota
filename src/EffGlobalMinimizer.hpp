@@ -291,9 +291,22 @@ inline const Model& EffGlobalMinimizer::algorithm_space_model() const
 
 inline void EffGlobalMinimizer::initialize_counters_limits()
 {
-  globalIterCount     = 0;
-  eifConvergenceCntr  = 0;  distConvergenceCntr  = 0;
-  eifConvergenceLimit = 2;  distConvergenceLimit = 1;
+  // note that eif/dist conv triggers must be sequential:
+  // counters are reset to 0 when condition is not met
+  globalIterCount = eifConvergenceCntr = distConvergenceCntr = 0;
+
+  // These soft conv limits should be elevated to the spec as in other
+  // surrogate-based approaches.  For now, they are hard-wired, with logic
+  // to soften the criteria when liar-based iterations are included.
+  // > *** TO DO: could introduce a predVarConv cntr/limit, but do we ever want
+  //   to terminate based only on PV separate from or integrated with EIF?
+  //   Right now, PV convergence assessment is omitted / non-integrated.
+  if (parallelFlag) {
+    eifConvergenceLimit  = 3; // could tie to batchSizeAcquisition
+    distConvergenceLimit = 2; // could tie to batchSize
+  }
+  else
+    { eifConvergenceLimit = 2;  distConvergenceLimit = 1; }
 }
 
 

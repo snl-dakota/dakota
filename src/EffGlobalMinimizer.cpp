@@ -175,10 +175,10 @@ void EffGlobalMinimizer::pre_run()
     //if (var_size_changed) resize();
   }
 
-  // initialize convergence and flag variables
-  initialize_counters_limits();
-  // check if iterated model supports asynchronous parallelism
+  // assign parallelFlag based on user spec and model asynch support
   check_parallelism();
+  // initialize convergence counters and limits
+  initialize_counters_limits(); // order dependency: utilizes parallelFlag
   // initialize persistent batch arrays
   varsArrayBatch.resize(batchSize); // size for acquisition + exploration
 }
@@ -258,7 +258,7 @@ void EffGlobalMinimizer::build_gp()
   // and weights, and recasts nonlinear constraints, so we don't let these
   // propagate to the approxSubproblemMinimizer.
   approxSubProbModel.primary_response_fn_sense(BoolDeque());
-  approxSubProbModel.primary_response_fn_weights(RealVector(), false); // no recursion
+  approxSubProbModel.primary_response_fn_weights(RealVector(), false);//no recur
   approxSubProbModel.reshape_constraints(0, 0,
     approxSubProbModel.num_linear_ineq_constraints(),
     approxSubProbModel.num_linear_eq_constraints());
@@ -273,8 +273,9 @@ void EffGlobalMinimizer::batch_synchronous_ego()
   bool approx_converged = false;
   while (!approx_converged) {
 
-    // Need to be less aggressive about convergence when you are accumulating
-    // liar evaluations...
+    /* MSE: deactivated this now that distConvergenceCntr gets reset.
+    // *** This work-around reflects need to be less aggressive about
+    // *** convergence when you are accumulating liar evaluations...
     // *** TO DO: consider avoiding these increments unless truth eval...
     // *** handle in a similar way to nonlinear constraint multipliers/penalties
     if (parallelFlag) {
@@ -284,6 +285,7 @@ void EffGlobalMinimizer::batch_synchronous_ego()
       //  = std::max(batchSizeAcquisition, batchSizeExploration);
       distConvergenceLimit = batchSize; // reset conv limit for parallel EGO
     }
+    */
 
     // construct the acquisition batch
     if (batchSizeAcquisition) construct_batch_acquisition();
@@ -304,10 +306,12 @@ void EffGlobalMinimizer::batch_asynchronous_ego()
   bool approx_converged = false;
   while (!approx_converged) {
 
+    /* MSE: deactivated this now that distConvergenceCntr gets reset.
     // parallelFlag is true: reset the convergence counters
     // *** TO DO: see above
     distConvergenceCntr  = 0; // reset distance convergence counters
     distConvergenceLimit = batchSize; // reset conv limit for parallel EGO
+    */
 
     size_t running_acq  = 0,// acqBatchQueue.size(),
            running_expl = 0,//explBatchQueue.size(),
@@ -556,8 +560,8 @@ update_convergence_counters(const Variables& vars_star)
   const RealVector& c_vars = vars_star.continuous_variables();
   Real dist_cv_star = (prevCvStar.empty()) ? DBL_MAX
                     : rel_change_L2(c_vars, prevCvStar);
-  if (dist_cv_star < distanceTol)
-    ++distConvergenceCntr;
+  if (dist_cv_star < distanceTol) ++distConvergenceCntr; // increment
+  else                              distConvergenceCntr = 0; // reset
 
   // update prevCvStar
   copy_data(c_vars, prevCvStar); // *** TO DO: distinguish truth vs. liar?
@@ -574,8 +578,10 @@ update_convergence_counters(const Response& resp_star)
 {
   Real eif_star = -resp_star.function_value(0);
   // Check for convergence based on max EIF
-  if ( eif_star < convergenceTol ) // Note: based only on approx subprob solve
-    ++eifConvergenceCntr;          // *** TO DO: distinguish truth vs. liar?
+  // > Note: maximal EIF is based solely on approx subproblem
+  // > *** TO DO: distinguish truth-only surrogate vs. liar-corrupted?
+  if ( eif_star < convergenceTol ) ++eifConvergenceCntr; // increment
+  else                               eifConvergenceCntr = 0; // reset
 
   // If DIRECT failed to find a point with EIF>0, it returns the center point
   // as the optimal solution. EGO may have converged, but DIRECT may have just
