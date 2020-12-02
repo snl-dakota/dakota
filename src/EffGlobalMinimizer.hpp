@@ -112,15 +112,10 @@ private:
   void construct_batch_acquisition();
   /// construct batch exploration
   void construct_batch_exploration();
-  /// delete liar responses
-  void delete_liar_responses();
-  /// evaluate batch
-  void evaluate_batch_and_update_constraints();
 
-  /// convergence checkers
-  // check convergence if EGO has converged
-  //void check_convergence_deprecated(const Real& eif_star,
-  //                                  const RealVector& c_vars);
+  /// evaluate batch in parallel and replace liar responses
+  void evaluate_batch();
+
   /// check convergence indicators to assess if EGO has converged
   bool assess_convergence();
 
@@ -130,13 +125,27 @@ private:
   /// initialize counters and limits used for assessing convergence
   void initialize_counters_limits();
   /// update counters used for assessing convergence
-  void update_convergence_counters();
+  void update_convergence_counters(const Variables& vars_star,
+				   const Response&  resp_star);
+  /// update counters used for assessing convergence in variables
+  void update_convergence_counters(const Variables& vars_star);
+  /// update counters used for assessing convergence in response
+  void update_convergence_counters(const Response&  resp_star);
+
+  /// delete all liar responses
+  void pop_liar_responses();
+  /// delete a particular liar response
+  void pop_liar_response(int liar_id);
+  /// evaluate and append a liar response
+  void append_liar(const Variables& vars_star, int liar_id);
 
   /// determine best solution from among the dataset
   void get_best_sample();
 
   /// helper for evaluating the value of the augmented Lagrangian merit fn
   Real augmented_lagrangian(const RealVector& mean);
+  /// update constraint penalties and multipliers
+  void update_constraints(const RealVector& fn_vals);
 
   /// probability improvement (PI) function for the EGO
   /// PI acquisition function implementation
@@ -233,8 +242,8 @@ private:
   /// order of the data used for surrogate construction, in ActiveSet
   /// request vector 3-bit format; user may override responses spec
   short dataOrder;
-  /// number of points in the current GP
-  size_t numDataPts;
+  // number of points in the current GP
+  //size_t numDataPts;
 
   /// total batch size for parallel EGO
   int batchSize;
@@ -297,6 +306,51 @@ inline Real EffGlobalMinimizer::augmented_lagrangian(const RealVector& mean)
     iteratedModel.primary_response_fn_sense(),
     iteratedModel.primary_response_fn_weights(), origNonlinIneqLowerBnds,
     origNonlinIneqUpperBnds, origNonlinEqTargets);
+}
+
+
+inline void EffGlobalMinimizer::update_constraints(const RealVector& fn_vals)
+{
+  // Update the merit function parameters
+  // Logic follows Conn, Gould, and Toint, section 14.4:
+  Real norm_cv_star = std::sqrt(constraint_violation(fn_vals, 0.));
+  if (norm_cv_star < etaSequence)
+    update_augmented_lagrange_multipliers(fn_vals);
+  else
+    update_penalty();
+}
+
+
+inline void EffGlobalMinimizer::
+update_convergence_counters(const Variables& vars_star,
+			    const Response&  resp_star)
+{
+  update_convergence_counters(vars_star);
+  update_convergence_counters(resp_star);
+}
+
+
+inline void EffGlobalMinimizer::pop_liar_responses()
+{
+  for (size_t i=0; i<batchSize; i++) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "\nParallel EGO: deleting liar response...\n";
+    fHatModel.pop_approximation(false); // TO DO: add option based on liar_id
+  }
+  //numDataPts = fHatModel.approximation_data(0).points();
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nParallel EGO: all liar responses deleted.\n";
+}
+
+
+inline void EffGlobalMinimizer::pop_liar_response(int liar_id)
+{
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nParallel EGO: deleting liar response...\n";
+  //fHatModel.pop_approximation(liar_id, false); // *** TO DO ***
+  //numDataPts = fHatModel.approximation_data(0).points();
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nParallel EGO: liar response deleted.\n";
 }
 
 

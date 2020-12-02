@@ -195,8 +195,8 @@ void EffGlobalMinimizer::core_run()
     build_gp(); // TO DO: consider moving to pre_run() to enable alt workflow
 
     // iteratively adapt the GP (in parallel) until EGO converges
-    if (batchAsynch)  batch_asynchronous_ego();
-    else              batch_synchronous_ego();
+    if (batchAsynch && parallelFlag) batch_asynchronous_ego();
+    else                             batch_synchronous_ego();
 
   //}
   //else if (setUpType=="user_functions") {
@@ -228,10 +228,8 @@ void EffGlobalMinimizer::post_run(std::ostream& s)
 
 void EffGlobalMinimizer::check_parallelism()
 {
-  // Add safeguard: If model cannot run asynchronously
-  //                  then reset batchSizeAcquisition = 1
-  //                  and throw warnings on screens
-  //                  and proceed with batchSize = 1
+  // Add safeguard: If model does not support asynchronous evals, then reset
+  // batch sizes for serial execution and echo a warning
 
   parallelFlag = false; // default: run sequential by default
   if (batchSizeAcquisition > 1 || batchSizeExploration > 1) {
@@ -240,8 +238,8 @@ void EffGlobalMinimizer::check_parallelism()
     else {
       Cerr << "Warning: concurrent operations not supported by model. "
 	   << "Batch size request ignored." << std::endl;
-      batchSizeAcquisition = 1; // reverse to the default sequential
-      batchSizeExploration = 0; // reverse to the default sequential
+      batchSize = batchSizeAcquisition = 1; // revert to sequential default
+      batchSizeExploration = 0; // revert
     }
   }
 }
@@ -274,9 +272,12 @@ void EffGlobalMinimizer::batch_synchronous_ego()
 {
   bool approx_converged = false;
   while (!approx_converged) {
-    ++globalIterCount;
 
-    if (parallelFlag) { // *** TO DO: why is this a special logic case?
+    // Need to be less aggressive about convergence when you are accumulating
+    // liar evaluations...
+    // *** TO DO: consider avoiding these increments unless truth eval...
+    // *** handle in a similar way to nonlinear constraint multipliers/penalties
+    if (parallelFlag) {
       // reset the convergence counters
       distConvergenceCntr = 0; // reset distance convergence counters
       //distConvergenceLimit
@@ -284,21 +285,14 @@ void EffGlobalMinimizer::batch_synchronous_ego()
       distConvergenceLimit = batchSize; // reset conv limit for parallel EGO
     }
 
-    Cout << "\n>>>>> Initiating global iteration " << globalIterCount << '\n';
-    // *** TO DO: augment global iter with batch iter
-
     // construct the acquisition batch
-    construct_batch_acquisition();
+    if (batchSizeAcquisition) construct_batch_acquisition();
     // construct the exploration batch
-    construct_batch_exploration();
+    if (batchSizeExploration) construct_batch_exploration();
 
-    // delete liar responses
-    delete_liar_responses(); // *** TO DO: shouldn't this be part of batch eval?
-    // query the batch + update constraints
-    evaluate_batch_and_update_constraints(); // consolidation attempt
+    // blocking synch for composite batch (acquisition + exploration)
+    evaluate_batch();
 
-    // update convergence counters
-    update_convergence_counters();
     // check convergence
     approx_converged = assess_convergence();
   }
@@ -309,31 +303,25 @@ void EffGlobalMinimizer::batch_asynchronous_ego()
 {
   bool approx_converged = false;
   while (!approx_converged) {
-    ++globalIterCount;
 
-    if (parallelFlag) { // *** TO DO: why is this a special logic case?
-      // reset the convergence counters
-      distConvergenceCntr = 0; // reset distance convergence counters
-      //distConvergenceLimit
-      //  = std::max(batchSizeAcquisition, batchSizeExploration);
-      distConvergenceLimit = batchSize; // reset conv limit for parallel EGO
-    }
+    // parallelFlag is true: reset the convergence counters
+    // *** TO DO: see above
+    distConvergenceCntr  = 0; // reset distance convergence counters
+    distConvergenceLimit = batchSize; // reset conv limit for parallel EGO
 
-    Cout << "\n>>>>> Initiating global iteration " << globalIterCount << '\n';
-    // *** TO DO: augment global iter with batch iter
+    size_t running_acq  = 0,// acqBatchQueue.size(),
+           running_expl = 0,//explBatchQueue.size(),
+           new_acq  = batchSizeAcquisition - running_acq,
+           new_expl = batchSizeExploration - running_expl;
 
     // construct the acquisition batch
-    construct_batch_acquisition();
+    if (new_acq)  construct_batch_acquisition();
     // construct the exploration batch
-    construct_batch_exploration();
+    if (new_expl) construct_batch_exploration();
 
-    // delete liar responses
-    delete_liar_responses(); // *** TO DO: shouldn't this be part of batch eval?
-    // query the batch + update constraints
-    //query_batch_and_update_constraints(); // TO DO
+    // non-blocking synch for composite batch (acquisition + exploration)
+    //query_batch(); // *** TO DO
 
-    // update convergence counters
-    update_convergence_counters();
     // check convergence
     approx_converged = assess_convergence();
   }
@@ -350,72 +338,41 @@ void EffGlobalMinimizer::construct_batch_acquisition()
     primary_resp_map[0][i] = i;
   BoolDequeArray nonlinear_resp_map(1, BoolDeque(numFunctions, true));
 
+  // set objective ptr for asp_model_rep to EIF_objective_eval for all i
   std::shared_ptr<RecastModel> asp_model_rep
     = std::static_pointer_cast<RecastModel>(approxSubProbModel.model_rep());
   asp_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
     secondary_resp_map, nonlinear_resp_map, EIF_objective_eval, NULL);
 
   // construct the acquisition batch
-  for (i=0; i<batchSizeAcquisition; i++) {
+  bool append_liars = (batchSize > 1);
+  int start_eval_id = iteratedModel.evaluation_id() + 1;
+  for (i=0; i<batchSizeAcquisition; ++i) {
 
+    Cout << "\n>>>>> Initiating global iteration " << ++globalIterCount
+	 << " (acquisition batch " << i+1 << ")\n";
+    
     // determine fnStar from among sample data
     get_best_sample();
-    bestVariablesArray.front().continuous_variables(varStar); // debug
-    bestResponseArray.front().function_values(truthFnStar); // debug
 
     // execute GLOBAL search and retrieve results
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    // maximize the EI acquisition function
     approxSubProbMinimizer.reset();
-    approxSubProbMinimizer.run(pl_iter);
+    approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fn
+    const Variables&   vars_star = approxSubProbMinimizer.variables_results();
+    const Response& ei_resp_star = approxSubProbMinimizer.response_results();
 
-    const Variables&  vars_star = approxSubProbMinimizer.variables_results();
-    const RealVector& c_vars    = vars_star.continuous_variables();
-    const Response&   resp_star = approxSubProbMinimizer.response_results();
-    const Real&       eif_star  = resp_star.function_value(0);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nResults of EGO iteration:\nFinal point =\n" << vars_star
+	   << "Expected Improvement    =\n" << std::setw(write_precision+28)
+	   << -ei_resp_star.function_value(0) << '\n';
 
-    //Cout << "acquisition::vars_star" << vars_star; // debug
+    update_convergence_counters(vars_star, ei_resp_star);
+    if (append_liars)
+      append_liar(vars_star, start_eval_id + i);
 
-    // get expected value for output
-    fHatModel.continuous_variables(c_vars);
-    fHatModel.evaluate();
-    const Response& approx_response = fHatModel.current_response();
-
-    Real aug_lag = augmented_lagrangian(approx_response.function_values());
-    Cout << "\nResults of EGO iteration:\nFinal point =\n" << c_vars
-	 << "Expected Improvement    =\n                     "
-	 << std::setw(write_precision+7) << -eif_star
-	 << "\n                     " << std::setw(write_precision+7)
-	 << aug_lag << " [merit]\n";
-
-    // impose constant liar -- temporarily cast constant liar as observations
-    IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + i + 1,
-				   approx_response); // implement a liar counter
-
-    // update GP
-    numDataPts = fHatModel.approximation_data(0).points(); // debug
-    Cout << "\nParallel EGO: Adding a liar response for the acquisition batch...\n"; // debug
-
-    // append constant liar to fHatModel (aka heuristic liar)
-    fHatModel.append_approximation(vars_star, resp_star_liar, true); // BUG? replace resp_star_liar with mean of GP
-
-    // update constraints based on the constant liar
-    if (numNonlinearConstraints) {
-      const RealVector& fns_star_liar = resp_star_liar.second.function_values();
-      Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
-      if (norm_cv_star < etaSequence)
-	update_augmented_lagrange_multipliers(fns_star_liar);
-      else
-	update_penalty();
-    }
-
-    Cout << "Parallel EGO: Finished adding a liar response for the "
-	 << "acquisition batch!\n";
-    // save a copy
+    // save a copy for truth replacement downstream
     varsArrayBatch[i] = vars_star.copy();
-
-    // advance counters
-    //++globalIterCount;
   }
 }
 
@@ -424,83 +381,85 @@ void EffGlobalMinimizer::construct_batch_exploration()
 {
   // initialize EIF recast model
   Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
-  BoolDequeArray nonlinear_resp_map(1, BoolDeque(numFunctions, true));
+  size_t i;
   primary_resp_map[0].resize(numFunctions);
-  for (size_t i=0; i<numFunctions; i++)
+  for (i=0; i<numFunctions; i++)
     primary_resp_map[0][i] = i;
+  BoolDequeArray nonlinear_resp_map(1, BoolDeque(numFunctions, true));
 
-  // try to consolidate to 01 RecastModel and ->init.maps() before approxSubProbMinimizer is called
-  std::shared_ptr<RecastModel> asp_model_rep = std::static_pointer_cast<RecastModel>(approxSubProbModel.model_rep());
-
-  // re-initialize asp_model_rep to Variances_objective_eval;
-  asp_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map, secondary_resp_map, nonlinear_resp_map, Variances_objective_eval, NULL);
+  // set objective ptr for asp_model_rep to Variances_objective_eval for all i
+  std::shared_ptr<RecastModel> asp_model_rep
+    = std::static_pointer_cast<RecastModel>(approxSubProbModel.model_rep());
+  asp_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
+    secondary_resp_map, nonlinear_resp_map, Variances_objective_eval, NULL);
 
   // construct the exploration batch
-  for (int i = 0; i < batchSizeExploration; i++) {
+  bool append_liars = (batchSize > 1);
+  int start_eval_id = iteratedModel.evaluation_id() + batchSizeAcquisition + 1;
+  for (i=0; i<batchSizeExploration; ++i) {
+
+    Cout << "\n>>>>> Initiating global iteration " << ++globalIterCount
+	 << " (exploration batch " << i+1 << ")\n";
+    
     // execute GLOBAL search and retrieve results
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    // maximize the posterior variance function
     approxSubProbMinimizer.reset();
-    approxSubProbMinimizer.run(pl_iter);
+    approxSubProbMinimizer.run(pl_iter); // maximize the posterior variance fn
+    const Variables& vars_star = approxSubProbMinimizer.variables_results();
 
-    const Variables&  vars_star       = approxSubProbMinimizer.variables_results();
-    const RealVector& c_vars          = vars_star.continuous_variables();
-    const Response&   resp_star       = approxSubProbMinimizer.response_results();
-
-    // Cout << "exploration::vars_star" << vars_star; // debug
-
-    // get expected value for output
-    fHatModel.continuous_variables(c_vars);
-    fHatModel.evaluate();
-    const Response& approx_response = fHatModel.current_response();
-
-    // impose constant liar -- temporarily cast constant liar as observations
-    const IntResponsePair resp_star_liar(iteratedModel.evaluation_id() + batchSizeAcquisition + i + 1, approx_response); // implement a liar counter
-
-    // update GP
-    numDataPts = fHatModel.approximation_data(0).points(); // debug
-    Cout << "\nParallel EGO: Adding a liar response for the exploration batch...\n"; // debug
-
-    // append constant liar to fHatModel (aka heuristic liar)
-    fHatModel.append_approximation(vars_star, resp_star_liar, true); // BUG? replace resp_star_liar with mean of GP
-
-    // update constraints based on the constant liar
-    if (numNonlinearConstraints) {
-      const RealVector& fns_star_liar = resp_star_liar.second.function_values();
-      Real norm_cv_star = std::sqrt(constraint_violation(fns_star_liar, 0.));
-      if (norm_cv_star < etaSequence)
-	update_augmented_lagrange_multipliers(fns_star_liar);
-      else
-	update_penalty();
+    if (outputLevel >= NORMAL_OUTPUT) {
+      const Response& pv_resp_star = approxSubProbMinimizer.response_results();
+      Real pv_star = -pv_resp_star.function_value(0);
+      Cout << "\nResults of EGO iteration:\nFinal point =\n" << vars_star
+	   << "Prediction Variance     =\n                     "
+	   << std::setw(write_precision+7) << pv_star << '\n';
     }
 
-    Cout << "Parallel EGO: Finished adding a liar response for the acquisition batch!\n";
+    update_convergence_counters(vars_star);//, pv_resp_star); // *** TO DO
+    if (append_liars)
+      append_liar(vars_star, start_eval_id + i);
 
-    // save a copy
+    // save a copy for truth replacement downstream
     varsArrayBatch[batchSizeAcquisition + i] = vars_star.copy();
-
-    // advance counters
-    //++globalIterCount;
   }
 }
 
 
-void EffGlobalMinimizer::delete_liar_responses()
+void EffGlobalMinimizer::append_liar(const Variables& vars_star, int liar_id)
 {
-  for (int i = 0; i < batchSizeAcquisition; i++) {
-    fHatModel.pop_approximation(false);
-    numDataPts = fHatModel.approximation_data(0).points(); // debug
-    Cout << "\nParallel EGO:  Deleting liar response...\n";
-  }
-  Cout << "\nParallel EGO:  Finished deleting liar responses!\n";
+  // get approximate (liar) response value for optimal point (vars_star)
+  fHatModel.active_variables(vars_star);
+  fHatModel.evaluate();
+  const Response& fhat_resp_star = fHatModel.current_response();
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "                     " << std::setw(write_precision+7)
+	 << augmented_lagrangian(fhat_resp_star.function_values())
+	 << " [approx merit]\n";
+
+  // update GP by appending constant liar to fHatModel (aka heuristic liar)
+  // > Do not update constraint penalties/multipliers based on liar data, as
+  //   these accumulate increments --> only accumulate once for truth data
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nParallel EGO: appending liar response for evaluation "
+	 << liar_id << ".\n";
+  IntResponsePair liar_resp_pr(liar_id, fhat_resp_star);
+  fHatModel.append_approximation(vars_star, liar_resp_pr, true);
+  //numDataPts = fHatModel.approximation_data(0).points(); // updated count
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Parallel EGO: liar response appended.\n";
 }
 
 
-void EffGlobalMinimizer::evaluate_batch_and_update_constraints()
+void EffGlobalMinimizer::evaluate_batch()
 {
   if (parallelFlag) {
-    // parallel evaluation
-    for (int i = 0; i < batchSize; i++) {
+
+    // remove all liar responses prior to replacement with truth
+    pop_liar_responses();
+
+    // queue evaluations for composite batch (acquisition + exploration)
+    for (int i=0; i<batchSize; ++i) {
       fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
       iteratedModel.active_variables(varsArrayBatch[i]);
       ActiveSet set = iteratedModel.current_response().active_set();
@@ -508,106 +467,52 @@ void EffGlobalMinimizer::evaluate_batch_and_update_constraints()
       iteratedModel.evaluate_nowait(set);
     }
 
-    // get true responses resp_star_truth
-    // const IntResponseMap& synchronous_resp_star_truth = iteratedModel.synchronize(); // alternative -- update constraints directly after this
-    synchronousRespStarTruth = iteratedModel.synchronize();
+    // blocking synchronize: evaluate true responses in parallel
+    const IntResponseMap& truth_resp_map = iteratedModel.synchronize();
 
     // update the GP approximation with batch results
-    Cout << "\nParallel EGO: Adding true response...\n"; // debug
-    fHatModel.append_approximation(varsArrayBatch, synchronousRespStarTruth, true);
-    Cout << "\nParallel EGO: Finished adding true responses!\n"; // debug
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "\nParallel EGO: adding true responses...\n";
+    fHatModel.append_approximation(varsArrayBatch, truth_resp_map, true);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "\nParallel EGO: all true responses added.\n";
 
-    // update constraints
-    if (numNonlinearConstraints) {
-      IntRespMCIter batch_response_it; // IntRMMIter (iterator)? IntRMMCIter (const_iterator)?
-      for (batch_response_it = synchronousRespStarTruth.begin(); batch_response_it != synchronousRespStarTruth.end(); batch_response_it++) {
-	// update the merit function parameters
-	// Logic follows Conn, Gould, and Toint, section 14.4:
-	// const RealVector& fns_star_truth = resp_star_truth.second.function_values(); // old implementation
-	const RealVector& fns_star_truth = batch_response_it->second.function_values(); // current implementation
-	Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
-	if (norm_cv_star < etaSequence)
-	  update_augmented_lagrange_multipliers(fns_star_truth);
-	else
-	  update_penalty();
-      }
-    }
+    // update constraints (truth resp only, not for liar resp)
+    if (numNonlinearConstraints)
+      for (IntRespMCIter r_cit = truth_resp_map.begin();
+	   r_cit != truth_resp_map.end(); ++r_cit)
+	update_constraints(r_cit->second.function_values());
   }
   else {
+    // no pop: liar was not appended in serial case
+
     // serial evaluation
     fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
-
     const Variables& vars_star = varsArrayBatch[0];
-    iteratedModel.active_variables(varsArrayBatch[0]);
+    iteratedModel.active_variables(vars_star);
     ActiveSet set = iteratedModel.current_response().active_set();
     set.request_values(dataOrder);
     iteratedModel.evaluate(set);
 
-    IntResponsePair serial_resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response());
-
     // update the GP approximation
-    fHatModel.append_approximation(vars_star, serial_resp_star_truth, true); // vars_star -> varsArrayBatch
+    const Response& truth_resp = iteratedModel.current_response();
+    IntResponsePair truth_resp_pr(iteratedModel.evaluation_id(), truth_resp);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "\nParallel EGO: adding true response...\n";
+    fHatModel.append_approximation(vars_star, truth_resp_pr, true);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "\nParallel EGO: true response added.\n";
 
-    // update constraints
-    if (numNonlinearConstraints) {
-      // Update the merit function parameters
-      // Logic follows Conn, Gould, and Toint, section 14.4:
-      const RealVector& fns_star_truth = serial_resp_star_truth.second.function_values();
-      Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
-      if (norm_cv_star < etaSequence)
-	update_augmented_lagrange_multipliers(fns_star_truth);
-      else
-	update_penalty();
-    }
-  }
-}
-
-
-
-void EffGlobalMinimizer::update_convergence_counters()
-{
-  // update convergence counters
-  for (int i = 0; i < batchSize; i++) {
-    const Variables&  vars_star = approxSubProbMinimizer.variables_results();
-    const RealVector& c_vars    = vars_star.continuous_variables();
-    const Response&   resp_star = approxSubProbMinimizer.response_results();
-    Real              eif_star  = resp_star.function_value(0);
-
-    if (outputLevel >= DEBUG_OUTPUT) debug_print_values(vars_star);
-    // Check for convergence based on max EIF
-    if ( -eif_star < convergenceTol )
-      ++eifConvergenceCntr;
-
-    // check for convergence based in distance between successive points
-    // If the dist between successive points is very small, then there is
-    // little value in updating the GP since the new training point will
-    // essentially be the previous optimal point.
-    distCStar = (prevCvStar.empty()) ? DBL_MAX
-                                     : rel_change_L2(c_vars, prevCvStar);
-
-    // update prevCvStar
-    copy_data(c_vars, prevCvStar);
-
-    if (distCStar < distanceTol)
-      ++distConvergenceCntr;
-
-    // If DIRECT failed to find a point with EIF>0, it returns the
-    //   center point as the optimal solution. EGO may have converged,
-    //   but DIRECT may have just failed to find a point with a good
-    //   EIF value. Adding this midpoint can alter the GPs enough to
-    //   to allow DIRECT to find something useful, so we force
-    //   max(EIF)<tol twice to make sure. Note that we cannot make
-    //   this check more than 2 because it would cause EGO to add
-    //   the center point more than once, which will damage the GPs.
-    //   Unfortunately, when it happens the second time, it may still
-    //   be that DIRECT failed and not that EGO converged.
-    if (outputLevel >= DEBUG_OUTPUT) debug_print_counters(eif_star);
+    // update constraints (truth resp only, not for liar resp)
+    if (numNonlinearConstraints)
+      update_constraints(truth_resp.function_values());
   }
 }
 
 
 bool EffGlobalMinimizer::assess_convergence()
-{
+{ 
+  // set convergence flag if any counters have reached their limits
   bool converged = ( distConvergenceCntr >= distConvergenceLimit ||
 		     eifConvergenceCntr  >= eifConvergenceLimit ||
 		     globalIterCount     >= maxIterations );
@@ -642,6 +547,46 @@ bool EffGlobalMinimizer::assess_convergence()
 }
 
 
+void EffGlobalMinimizer::
+update_convergence_counters(const Variables& vars_star)
+{
+  // check for convergence based in distance between successive points
+  // If the dist between successive points is very small, then there is
+  // little value in updating the GP since the new training point will
+  // essentially be the previous optimal point.
+  const RealVector& c_vars = vars_star.continuous_variables();
+  distCStar = (prevCvStar.empty()) ? DBL_MAX
+                                   : rel_change_L2(c_vars, prevCvStar);
+  if (distCStar < distanceTol)
+    ++distConvergenceCntr;
+
+  // update prevCvStar
+  copy_data(c_vars, prevCvStar); // *** TO DO: distinguish truth vs. liar?
+
+  if (outputLevel >= DEBUG_OUTPUT) debug_print_values(vars_star);
+}
+
+
+void EffGlobalMinimizer::
+update_convergence_counters(const Response& resp_star)
+{
+  Real eif_star = -resp_star.function_value(0);
+  // Check for convergence based on max EIF
+  if ( eif_star < convergenceTol ) // Note: based only on approx subprob solve
+    ++eifConvergenceCntr;          // *** TO DO: distinguish truth vs. liar?
+
+  // If DIRECT failed to find a point with EIF>0, it returns the center point
+  // as the optimal solution. EGO may have converged, but DIRECT may have just
+  // failed to find a point with a good EIF value.  Adding this midpoint can
+  // alter the GPs enough to allow DIRECT to find something useful, so we force
+  // max(EIF)<tol twice to make sure. Note that we cannot make this check more
+  // than 2 because it would cause EGO to add the center point more than once,
+  // which will damage the GPs.  Unfortunately, when it happens the second time,
+  // it may still be that DIRECT failed and not that EGO converged.
+  if (outputLevel >= DEBUG_OUTPUT) debug_print_counters(eif_star);
+}
+
+
 void EffGlobalMinimizer::retrieve_final_results()
 {
   // Set best variables and response for use by strategy level.
@@ -656,6 +601,7 @@ void EffGlobalMinimizer::retrieve_final_results()
   debug_plots(); // *** TO DO: perhaps moot, but plot final only?
 }
 
+////////////////  MIKE TO EDIT ABOVE; TOM AND ANH BELOW //////////////////
 
 /** To maximize expected improvement (PI), the approxSubProbMinimizer
     will minimize -(compute_probability_improvement). **/
@@ -796,8 +742,8 @@ compute_expected_improvement(const RealVector& means,
     // stdv_M = stdv_f
     const RealVector& ev = expected_violation(means, variances);
     for (size_t i=0; i<numNonlinearConstraints; ++i)
-      mean += augLagrangeMult[i]*ev[i] + penaltyParameter*ev[i]*ev[i];
-    stdv = std::sqrt(variances[0]); // ***
+      mean += augLagrangeMult[i]*ev[i] + penaltyParameter*ev[i]*ev[i]; // ***
+    stdv = std::sqrt(variances[0]); // *** if variance is only dependent on parameter points and not on QoI observations, then this would be Ok
   }
   else { // extend for NLS/MOO ***
     // mean_M = M(mu_f)
@@ -1067,41 +1013,6 @@ void EffGlobalMinimizer::debug_plots()
 
 
 /*
-void EffGlobalMinimizer::
-check_convergence_deprecated(const Real& eif_star,
-                             const RealVector& c_vars)
-{
-    // Check for convergence based on max EIF
-    if ( -eif_star < convergenceTol )
-        ++eifConvergenceCntr;
-
-    // Check for convergence based in distance between successive points.
-    // If the dist between successive points is very small, then there is
-    // little value in updating the GP since the new training point will
-    // essentially be the previous optimal point.
-
-    distCStar = (prevCvStar.empty()) ? DBL_MAX
-                                     : rel_change_L2(c_vars, prevCvStar);
-    // update prevCvStar
-    copy_data(c_vars, prevCvStar);
-    if (distCStar < distanceTol)
-        ++distConvergenceCntr;
-
-    // If DIRECT failed to find a point with EIF>0, it returns the
-    //   center point as the optimal solution. EGO may have converged,
-    //   but DIRECT may have just failed to find a point with a good
-    //   EIF value. Adding this midpoint can alter the GPs enough to
-    //   to allow DIRECT to find something useful, so we force
-    //   max(EIF)<tol twice to make sure. Note that we cannot make
-    //   this check more than 2 because it would cause EGO to add
-    //   the center point more than once, which will damage the GPs.
-    //   Unfortunately, when it happens the second time, it may still
-    //   be that DIRECT failed and not that EGO converged.
-
-    return;
-}
-
-
 void EffGlobalMinimizer::declare_sources()
 {
   // This override exists purely to prevent an optimizer/minimizer from
