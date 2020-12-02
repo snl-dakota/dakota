@@ -1013,7 +1013,7 @@ private:
   //
   //- Heading: Data
   //
-  
+
   /// reference to the MPI manager with Dakota's MPI options
   const MPIManager& mpiManager;
   /// programOptions is non-const due to updates from broadcast
