@@ -173,7 +173,9 @@ private:
   /// print mean and variance if debug flag is ON
   void debug_print_values(const Variables& vars);
   /// print counters if debug flag is ON
-  void debug_print_counters(Real eif_star);
+  void debug_print_dist_counters(Real dist_cv_star);
+  /// print counters if debug flag is ON
+  void debug_print_eif_counters(Real eif_star);
   /// DEBUG_PLOTS conditional - output set of samples used to build the
   /// GP if problem is 2D
   void debug_plots();
@@ -237,7 +239,7 @@ private:
   /// true function values corresponding to the minimum penalized response
   RealVector truthFnStar;
   /// point that corresponds to the optimal value meritFnStar
-  RealVector varStar;
+  RealVector varsStar;
 
   /// order of the data used for surrogate construction, in ActiveSet
   /// request vector 3-bit format; user may override responses spec
@@ -255,9 +257,6 @@ private:
   /// placeholder for batch input (before querying the batch)
   VariablesArray varsArrayBatch;
 
-  /// liar response
-  IntResponseMap synchronousRespStarTruth;
-
   /// check model parallelism
   /// bool flag if model supports asynchronous parallelism
   bool parallelFlag;
@@ -267,8 +266,6 @@ private:
   /// convergence checkers
   /// tolerance convergence on distance between predicted best-so-far samples
   Real distanceTol;
-  /// limit convergence (compared with tolerance) in input measured in L2
-  Real distCStar;
   /// counter for convergence in EIF
   unsigned short eifConvergenceCntr;
   /// limit convergence (compared with counter) of EIF
@@ -369,11 +366,18 @@ inline void EffGlobalMinimizer::debug_print_values(const Variables& vars)
 }
 
 
-inline void EffGlobalMinimizer::debug_print_counters(Real eif_star)
+inline void EffGlobalMinimizer::debug_print_dist_counters(Real dist_cv_star)
 {
-  Cout << "EGO Iteration " << globalIterCount << "\neif_star " << eif_star
-       << "\ndistCStar "   << distCStar       << "\ndistConvergenceCntr "
+  Cout << "EGO Iteration " << globalIterCount << ": dist_cv_star = "
+       << dist_cv_star << " distance convergence cntr = "
        << distConvergenceCntr << '\n';
+}
+
+
+inline void EffGlobalMinimizer::debug_print_eif_counters(Real eif_star)
+{
+  Cout << "EGO Iteration " << globalIterCount << ": EIF star = " << eif_star
+       << " EIF convergence cntr = " << eifConvergenceCntr << '\n';
 }
 
 } // namespace Dakota

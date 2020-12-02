@@ -46,7 +46,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   batchSize(probDescDB.get_int("method.batch_size")),
   batchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
   //setUpType("model"),
-  dataOrder(1), batchAsynch(false)
+  dataOrder(1), batchAsynch(false) // *** TO DO
 {
   // substract the total batchSize from batchSizeExploration
   batchSizeAcquisition = batchSize - batchSizeExploration;
@@ -453,6 +453,7 @@ void EffGlobalMinimizer::append_liar(const Variables& vars_star, int liar_id)
 
 void EffGlobalMinimizer::evaluate_batch()
 {
+  fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
   if (parallelFlag) {
 
     // remove all liar responses prior to replacement with truth
@@ -460,7 +461,6 @@ void EffGlobalMinimizer::evaluate_batch()
 
     // queue evaluations for composite batch (acquisition + exploration)
     for (int i=0; i<batchSize; ++i) {
-      fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
       iteratedModel.active_variables(varsArrayBatch[i]);
       ActiveSet set = iteratedModel.current_response().active_set();
       set.request_values(dataOrder);
@@ -487,7 +487,6 @@ void EffGlobalMinimizer::evaluate_batch()
     // no pop: liar was not appended in serial case
 
     // serial evaluation
-    fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
     const Variables& vars_star = varsArrayBatch[0];
     iteratedModel.active_variables(vars_star);
     ActiveSet set = iteratedModel.current_response().active_set();
@@ -555,15 +554,18 @@ update_convergence_counters(const Variables& vars_star)
   // little value in updating the GP since the new training point will
   // essentially be the previous optimal point.
   const RealVector& c_vars = vars_star.continuous_variables();
-  distCStar = (prevCvStar.empty()) ? DBL_MAX
-                                   : rel_change_L2(c_vars, prevCvStar);
-  if (distCStar < distanceTol)
+  Real dist_cv_star = (prevCvStar.empty()) ? DBL_MAX
+                    : rel_change_L2(c_vars, prevCvStar);
+  if (dist_cv_star < distanceTol)
     ++distConvergenceCntr;
 
   // update prevCvStar
   copy_data(c_vars, prevCvStar); // *** TO DO: distinguish truth vs. liar?
 
-  if (outputLevel >= DEBUG_OUTPUT) debug_print_values(vars_star);
+  if (outputLevel >= DEBUG_OUTPUT) {
+    debug_print_values(vars_star);
+    debug_print_dist_counters(dist_cv_star);
+  }
 }
 
 
@@ -583,7 +585,7 @@ update_convergence_counters(const Response& resp_star)
   // than 2 because it would cause EGO to add the center point more than once,
   // which will damage the GPs.  Unfortunately, when it happens the second time,
   // it may still be that DIRECT failed and not that EGO converged.
-  if (outputLevel >= DEBUG_OUTPUT) debug_print_counters(eif_star);
+  if (outputLevel >= DEBUG_OUTPUT) debug_print_eif_counters(eif_star);
 }
 
 
@@ -592,7 +594,7 @@ void EffGlobalMinimizer::retrieve_final_results()
   // Set best variables and response for use by strategy level.
   // c_vars, fmin contain the optimal design
   get_best_sample(); // pull optimal result from sample data
-  bestVariablesArray.front().continuous_variables(varStar);
+  bestVariablesArray.front().continuous_variables(varsStar);
   bestResponseArray.front().function_values(truthFnStar);
 
   // (conditionally) export final surrogates
@@ -894,7 +896,7 @@ void EffGlobalMinimizer::get_best_sample()
     fn = augmented_lagrangian(f_hat);
 
     if (fn < fn_star) {
-      copy_data(sams, varStar);
+      copy_data(sams, varsStar);
       sam_star_idx = i;
       fn_star = meritFnStar = fn;
       truthFnStar[0] = sdr_array[i].response_function();
