@@ -1,0 +1,10 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)
+  Approximate Mean Response                  =  1.3076125109e-01
+  Approximate Standard Deviation of Response =  6.9025862250e-01
+  Importance Factor for x1                   =  5.0000000000e-01
+  Importance Factor for x2                   =  5.0000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.1000000000e-01   4.8800262402e-01   3.0077496195e-02   3.0077496195e-02
+   3.0000000000e-01   5.9684210851e-01  -2.4518165133e-01  -2.4518165133e-01
