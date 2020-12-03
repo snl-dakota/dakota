@@ -24730,18 +24730,18 @@ Test Number 15 succeeded
                       3.8005048866e-01
 <<<<< Best data captured at function evaluation 49
 Test Number 16 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 355 total (355 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 276 total (271 new, 5 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 380 total (380 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 210 total (208 new, 2 duplicate)
 <<<<< Best parameters          =
-                      4.9532030002e+01 x1
-                      1.9626907410e+01 x2
+                      4.9526421099e+01 x1
+                      1.9622870792e+01 x2
 <<<<< Best objective function  =
-                     -3.1637151054e+01
+                     -3.1636854446e+01
 <<<<< Best constraint values   =
-                      3.8880080954e-01
-                     -9.3711871084e-05
-                      3.7994584139e-01
-<<<<< Best data captured at function evaluation 276
+                      3.8835794573e-01
+                     -1.2060536007e-05
+                      3.8005514937e-01
+<<<<< Best data captured at function evaluation 199
 Test Number 17 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 53 total (53 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 100 total (100 new, 0 duplicate)
@@ -25565,17 +25565,17 @@ Test Number 7 succeeded
                       1.1102230246e-16
 <<<<< Best data captured at function evaluation 49
 Test Number 8 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 194 total (194 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 56 total (55 new, 1 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 422 total (422 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 111 total (108 new, 3 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      4.9999960904e-01 x2
+                      5.0000000000e-01 x2
 <<<<< Best objective function  =
-                      1.2500019548e-01
+                      1.2500000000e-01
 <<<<< Best constraint values   =
-                      1.9547801991e-07
-                     -3.9095588697e-07
-<<<<< Best data captured at function evaluation 45
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 100
 Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 183 total (183 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 56 total (55 new, 1 duplicate)
@@ -36474,19 +36474,19 @@ Test Number 0 succeeded
 dakota_surrogate_export.in
 Test Number 0 succeeded
 Surrogate quality metrics at build (training) points for obj_fn:
-   root_mean_squared  8.3578393789e-17
+   root_mean_squared  9.4358752286e-17
 Surrogate quality metrics (5-fold CV) for obj_fn:
-   root_mean_squared  1.3859004487e-01
+   root_mean_squared  1.4795223011e-01
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 10 total (10 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 200 total (200 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0054666200e+00 x1
-                      3.7812606000e-01 x2
-                      1.3847788200e+00 x3
-                     -3.5509361000e-01 x4
+                     -1.2333500000e-02 x1
+                     -1.5267247000e+00 x2
+                      9.5489254000e-01 x3
+                      4.5657187000e-01 x4
 <<<<< Best objective function  =
-                     -7.2346849574e-01
-<<<<< Best data captured at function evaluation 4
+                     -6.3558374448e-01
+<<<<< Best data captured at function evaluation 6
 dakota_surrogate_import.in
 Test Number 0 succeeded
 Surrogate quality metrics at build (training) points for response_fn_1:
@@ -40222,10 +40222,10 @@ weight:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
 stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
 displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 105 total (105 new, 0 duplicate)
+<<<<< Function evaluation summary: 164 total (163 new, 1 duplicate)
 weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
 stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
-displ:  Min = -9.9315672724e-01  Max = 6.7426701571e+01
+displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01
 dakota_uq_cantilever_ivp_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 294 total (294 new, 0 duplicate)

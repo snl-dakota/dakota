@@ -150,3 +150,30 @@ TEUCHOS_UNIT_TEST(util, create_cross_validation_folds)
   }
 
 }
+
+TEUCHOS_UNIT_TEST(util, create_random_real_matrices)
+{
+  double tight_tol = 1.0e-15;
+  //std::cout << std::fixed << std::showpoint;
+  //std::cout << std::setprecision(15);
+
+  MatrixXd gold_random_matrix(3, 2);
+  gold_random_matrix << 0.208460537066790, 0.701962978742542,
+                        0.481681059226785, 0.730506643823000,
+                        0.420538031594022, 0.637479150350550;
+
+  MatrixXd random_matrix = create_uniform_random_double_matrix(3, 2);
+  //std::cout << "\n\n(0, 1) Random matrix:\n\n" << random_matrix << "\n";
+  TEST_ASSERT(matrix_equals(random_matrix, gold_random_matrix, tight_tol));
+
+  MatrixXd gold_scaled_random_matrix(2, 3);
+  gold_scaled_random_matrix <<
+      1.395270773068832,  1.254321804096532, -1.284416306597278,
+      0.365419989071186, -1.782547124610875, -1.556054711238494;
+
+  MatrixXd scaled_random_matrix =
+      create_uniform_random_double_matrix(2, 3, 15, true, -2.0, 2.0);
+  //std::cout << "\n(-2, 2) Random matrix:\n\n" << scaled_random_matrix << "\n\n";
+  TEST_ASSERT(matrix_equals(scaled_random_matrix, gold_scaled_random_matrix,
+      tight_tol));
+}

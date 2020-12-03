@@ -7,6 +7,7 @@
     _______________________________________________________________________ */
 
 #include "util_common.hpp"
+#include "util_math_tools.hpp"
 #include "UtilLinearSolvers.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
@@ -54,7 +55,7 @@ namespace {
                    bool & success )
   {
     MatrixXd A = create_simple_invertible_matrix();
-    MatrixXd b = MatrixXd::Random(A.cols(), 1);
+    MatrixXd b = create_uniform_random_double_matrix(A.cols(), 1, 23);
     MatrixXd x(A.cols(), 1);
 
     solver.solve(A, b, x);
@@ -79,7 +80,7 @@ namespace {
                              bool & success )
   {
     MatrixXd A = create_symmetric_matrix();
-    MatrixXd b = MatrixXd::Random(A.cols(), 1);
+    MatrixXd b = create_uniform_random_double_matrix(A.cols(), 1, 24);
     MatrixXd x(A.cols(), 1);
 
     solver.solve(A, b, x);
@@ -109,7 +110,7 @@ namespace {
 TEUCHOS_UNIT_TEST(util, solver_base)
 {
   MatrixXd A = create_simple_invertible_matrix();
-  MatrixXd b = MatrixXd::Random(A.cols(), 1);
+  MatrixXd b = create_uniform_random_double_matrix(A.cols(), 1, 25);
   MatrixXd x(A.cols(), 1);
 
   LinearSolverBase base;
