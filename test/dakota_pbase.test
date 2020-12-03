@@ -3059,35 +3059,35 @@ Test Number 29 succeeded
 <<<<< Best data captured at function evaluation 27
 dakota_cantilever_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 34 total (28 new, 6 duplicate)
+<<<<< Function evaluation summary: 22 total (18 new, 4 duplicate)
 <<<<< Best parameters          =
-                      2.3887872784e+00 w
-                      3.2768124778e+00 t
+                      2.5847431794e+00 w
+                      3.8618689563e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8276079605e+00
+                      9.9819394445e+00
 <<<<< Best constraint values   =
-                     -1.4093736565e-02
-                     -1.1572045806e-04
-<<<<< Best data captured at function evaluation 31
+                     -3.2019503773e-01
+                     -3.8385438367e-01
+<<<<< Best data captured at function evaluation 15
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 18 total (16 new, 2 duplicate)
+<<<<< Function evaluation summary: 36 total (32 new, 4 duplicate)
 <<<<< Best parameters          =
-                      3.0283132805e+00 w
-                      4.2487292372e+00 t
+                      2.1658707175e+00 w
+                      3.6913608472e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      1.2866483175e+01
+                      7.9950103668e+00
 <<<<< Best constraint values   =
-                     -5.3312078371e-01
-                     -6.3024655349e-01
-<<<<< Best data captured at function evaluation 4
+                     -5.8618780761e-02
+                     -9.2828961076e-03
+<<<<< Best data captured at function evaluation 31
 dakota_cantilever_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
@@ -4998,13 +4998,13 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 31
 dakota_rosenbrock_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+<<<<< Function evaluation summary: 78 total (70 new, 8 duplicate)
 <<<<< Best parameters          =
-                      1.4428719902e+00 x1
-                      1.9999987455e+00 x2
+                      9.8831165328e-01 x1
+                      9.7677070456e-01 x2
 <<<<< Best objective function  =
-                      8.6658270549e-01
-<<<<< Best data captured at function evaluation 13
+                      1.3662907093e-04
+<<<<< Best data captured at function evaluation 60
 dakota_rosenbrock_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)

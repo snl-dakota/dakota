@@ -5072,37 +5072,37 @@ Sample moment statistics for each response function:
                   3.6680602749e+00  9.0000000000e-01
 dakota_cantilever_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 15 total (14 new, 1 duplicate)
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.0620586293e+00 w
-                      3.9177378110e+00 t
+                      2.3374513822e+00 w
+                      3.3474825992e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      8.0786050603e+00
+                      7.8245778283e+00
 <<<<< Best constraint values   =
-                     -7.5845141872e-02
-                      1.8525662058e-02
-<<<<< Best data captured at function evaluation 13
+                     -1.7250222970e-02
+                     -1.1222890521e-04
+<<<<< Best data captured at function evaluation 15
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3888888889e+00 w
-                      3.2763778105e+00 t
+                      2.3374513822e+00 w
+                      3.3474825992e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8269025474e+00
+                      7.8245778283e+00
 <<<<< Best constraint values   =
-                     -1.3944351080e-02
-                      7.5221078672e-05
-<<<<< Best data captured at function evaluation 18
+                     -1.7250222970e-02
+                     -1.1222890521e-04
+<<<<< Best data captured at function evaluation 15
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
+<<<<< Function evaluation summary: 16 total (15 new, 1 duplicate)
 <<<<< Best parameters          =
                       1.7065346859e+00 w
                       2.5432070540e+00 t
@@ -5116,50 +5116,50 @@ Test Number 2 succeeded
                       2.2583705918e+00
 <<<<< Best data captured at function evaluation 14
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 15 total (14 new, 1 duplicate)
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.2776422971e+00 w
-                      3.4339192874e+00 t
+                      2.1676601918e+00 w
+                      3.6748999419e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8212398137e+00
+                      7.9659343129e+00
 <<<<< Best constraint values   =
-                     -2.0479424680e-02
-                      4.6772956076e-03
-<<<<< Best data captured at function evaluation 13
-Test Number 4 succeeded
-<<<<< Function evaluation summary: 30 total (28 new, 2 duplicate)
-<<<<< Best parameters          =
-                      2.3389134448e+00 w
-                      3.3858913783e+00 t
-                      4.0000000000e+04 R
-                      2.9000000000e+07 E
-                      5.0000000000e+02 X
-                      1.0000000000e+03 Y
-<<<<< Best objective function  =
-                      7.9193068673e+00
-<<<<< Best constraint values   =
-                     -3.5677576663e-02
-                     -2.3511949912e-02
-<<<<< Best data captured at function evaluation 19
-Test Number 5 succeeded
-<<<<< Function evaluation summary: 39 total (30 new, 9 duplicate)
-<<<<< Best parameters          =
-                      2.1624498298e+00 w
-                      3.6853206659e+00 t
-                      4.0000000000e+04 R
-                      2.9000000000e+07 E
-                      5.0000000000e+02 X
-                      1.0000000000e+03 Y
-<<<<< Best objective function  =
-                      7.9693210467e+00
-<<<<< Best constraint values   =
-                     -5.4061113063e-02
-                     -2.9056496371e-03
+                     -5.3256606239e-02
+                     -3.8965363712e-03
 <<<<< Best data captured at function evaluation 16
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 22 total (18 new, 4 duplicate)
+<<<<< Best parameters          =
+                      2.5847431794e+00 w
+                      3.8618520212e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      9.9818956716e+00
+<<<<< Best constraint values   =
+                     -3.2019035026e-01
+                     -3.8384927554e-01
+<<<<< Best data captured at function evaluation 15
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.3374513822e+00 w
+                      3.3474825992e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      7.8245778283e+00
+<<<<< Best constraint values   =
+                     -1.7250222970e-02
+                     -1.1222890521e-04
+<<<<< Best data captured at function evaluation 15
 dakota_cantilever_egra.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 116 total (115 new, 1 duplicate)
@@ -22930,29 +22930,29 @@ Test Number 30 succeeded
 <<<<< Best data captured at function evaluation 1766
 dakota_rosenbrock.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 46 total (44 new, 2 duplicate)
+<<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.8686903469e-01 x1
-                      9.7394568102e-01 x2
+                      1.0013529993e+00 x1
+                      1.0026805414e+00 x2
 <<<<< Best objective function  =
-                      1.7254607914e-04
-<<<<< Best data captured at function evaluation 23
+                      1.9050696338e-06
+<<<<< Best data captured at function evaluation 38
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 46 total (44 new, 2 duplicate)
+<<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.8686903469e-01 x1
-                      9.7394568102e-01 x2
+                      9.9794883625e-01 x1
+                      9.9572819760e-01 x2
 <<<<< Best objective function  =
-                      1.7254607914e-04
-<<<<< Best data captured at function evaluation 23
+                      7.2238223384e-06
+<<<<< Best data captured at function evaluation 54
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+<<<<< Function evaluation summary: 23 total (23 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.4428719902e+00 x1
-                      1.9999987455e+00 x2
+                     -8.6064674053e-01 x1
+                      7.3943464518e-01 x2
 <<<<< Best objective function  =
-                      8.6658270549e-01
-<<<<< Best data captured at function evaluation 13
+                      3.4621696641e+00
+<<<<< Best data captured at function evaluation 22
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 197 total (197 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -23131,13 +23131,13 @@ Test Number 1 succeeded
                       1.7254607914e-04
 <<<<< Best data captured at function evaluation 23
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+<<<<< Function evaluation summary: 90 total (82 new, 8 duplicate)
 <<<<< Best parameters          =
-                      1.4428719902e+00 x1
-                      1.9999987455e+00 x2
+                      9.8856756128e-01 x1
+                      9.7758860657e-01 x2
 <<<<< Best objective function  =
-                      8.6658270549e-01
-<<<<< Best data captured at function evaluation 13
+                      1.4111956506e-04
+<<<<< Best data captured at function evaluation 76
 dakota_rosenbrock_ext.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 135 total (100 new, 35 duplicate)

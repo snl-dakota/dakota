@@ -302,8 +302,9 @@ inline void EffGlobalMinimizer::initialize_counters_limits()
   //   to terminate based only on PV separate from or integrated with EIF?
   //   Right now, PV convergence assessment is omitted / non-integrated.
   if (parallelFlag) {
-    eifConvergenceLimit  = 3; // could tie to batchSizeAcquisition
-    distConvergenceLimit = 2; // could tie to batchSize
+    // use relevant batch size bounded between serial setting (lwr) and 5 (upr)
+    eifConvergenceLimit  = std::min(5, std::max(2, batchSizeAcquisition));//3;
+    distConvergenceLimit = std::min(5, std::max(1, batchSize));           //2;
   }
   else
     { eifConvergenceLimit = 2;  distConvergenceLimit = 1; }
