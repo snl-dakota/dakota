@@ -109,12 +109,18 @@ private:
   void batch_asynchronous_ego();
 
   /// construct batch acquisition
-  void construct_batch_acquisition();
+  void construct_batch_acquisition(size_t new_acq);
   /// construct batch exploration
-  void construct_batch_exploration();
+  void construct_batch_exploration(size_t new_expl);
 
   /// evaluate batch in parallel and replace liar responses
   void evaluate_batch();
+  /// perform nonblocking synchronization for parallel evaluation of
+  /// truth responses and replace liar responses for any completions
+  bool query_batch();
+  /// backfill any completed truth response evaluations in case of
+  /// nonblocking synchronization
+  void backfill_batch(size_t new_acq, size_t new_expl);
 
   /// check convergence indicators to assess if EGO has converged
   bool assess_convergence();
@@ -134,8 +140,8 @@ private:
 
   /// delete all liar responses
   void pop_liar_responses();
-  /// delete a particular liar response
-  void pop_liar_response(int liar_id);
+  // delete a particular liar response
+  //void pop_liar_response(int liar_id);
   /// evaluate and append a liar response
   void append_liar(const Variables& vars_star, int liar_id);
 
@@ -254,10 +260,13 @@ private:
   /// number of new sampling points defined from maximizing posterior variance
   int batchSizeExploration;
 
-  /// placeholder for batch input (before querying the batch)
-  VariablesArray varsArrayBatch;
+  /// variable sets for batch evaluation of truth model, accumulated by
+  /// construct_batch_acquisition()
+  IntVariablesMap varsAcquisitionMap;
+  /// variable sets for batch evaluation of truth model, accumulated by
+  /// construct_batch_exploration()
+  IntVariablesMap varsExplorationMap;
 
-  /// check model parallelism
   /// bool flag if model supports asynchronous parallelism
   bool parallelFlag;
   /// algorithm option for fully asynchronous batch updating of the GP
@@ -343,10 +352,13 @@ update_convergence_counters(const Variables& vars_star,
 
 inline void EffGlobalMinimizer::pop_liar_responses()
 {
+  // Pop counts are 1 for append_approximation() calls in append_liar()
+  // (only {evaluate/query}_batch() appends multiple in truth_resp_map),
+  // so here we call pop_approximation() repeatedly for each liar.
   for (size_t i=0; i<batchSize; i++) {
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "\nParallel EGO: deleting liar response...\n";
-    fHatModel.pop_approximation(false); // TO DO: add option based on liar_id
+    fHatModel.pop_approximation(false); // defer rebuild until truth append
   }
   //numDataPts = fHatModel.approximation_data(0).points();
   if (outputLevel >= DEBUG_OUTPUT)
@@ -354,6 +366,8 @@ inline void EffGlobalMinimizer::pop_liar_responses()
 }
 
 
+/* Don't want to remove and then append (changes order, incurs more overhead);
+   prefer to update in place.
 inline void EffGlobalMinimizer::pop_liar_response(int liar_id)
 {
   if (outputLevel >= DEBUG_OUTPUT)
@@ -363,6 +377,7 @@ inline void EffGlobalMinimizer::pop_liar_response(int liar_id)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nParallel EGO: liar response deleted.\n";
 }
+*/
 
 
 inline void EffGlobalMinimizer::debug_print_values(const Variables& vars)

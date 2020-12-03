@@ -760,7 +760,9 @@ void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
     Cout << "\n>>>>> Popping data from " << surrogateType
 	 << " approximations.\n";
 
-  // append to the current points for each approximation
+  // remove the most recent data appends from each approximation, where the
+  // number of points to pop is tracked by pop counts at a lower level.
+  // Typical use is to pop a candidate refinement following its evaluation.
   approxInterface.pop_approximation(save_surr_data);
 
   if (rebuild_flag) { // update the coefficients for each approximation
@@ -780,7 +782,10 @@ void DataFitSurrModel::push_approximation()//(bool rebuild_flag)
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Retrieving " << surrogateType << " approximation data.\n";
 
-  // append to the current points for each approximation
+  // restore one of the previously popped data sets for each approximation,
+  // where the data set to restore is tracked by the push index at a lower
+  // level.  Typical use is to select the best candidate refinement from
+  // previously popped data sets.
   approxInterface.push_approximation();
 
   /*
@@ -801,7 +806,7 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Finalizing " << surrogateType << " approximations.\n";
 
-  // append to the current points for each approximation
+  // restore all remaining popped data sets to finalize each approximation
   approxInterface.finalize_approximation();
 
   /*

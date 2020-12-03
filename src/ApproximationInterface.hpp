@@ -289,7 +289,7 @@ inline void ApproximationInterface::clear_model_keys()
   // time: all key assignments can be performed at run time.  However, they
   // each contain their own approxData which must be cleared.
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    // Approximation::approxData instances: clear all keys
+    // Approximation::approxData: clear all keys
     functionSurfaces[*it].clear_model_keys();
 }
 
@@ -330,7 +330,7 @@ inline void ApproximationInterface::pop_approximation(bool save_data)
 
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData (1 or more keys for 1 or more instances)
+    // Approximation::approxData (pop for 1 or more approxDataKeys)
     fn_surf.pop_data(save_data);
     // Approximation coefficients
     fn_surf.pop_coefficients(save_data);
@@ -346,7 +346,7 @@ inline void ApproximationInterface::push_approximation()
 
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData (1 or more keys for 1 or more instances)
+    // Approximation::approxData (push for 1 or more approxDataKeys)
     fn_surf.push_data(); // uses shared restoration index
     // Approximation coefficients
     fn_surf.push_coefficients();
@@ -367,7 +367,7 @@ inline void ApproximationInterface::finalize_approximation()
   size_t fn_index, key_index, num_keys;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData (1 or more keys for 1 or more instances)
+    // Approximation::approxData (finalize for 1 or more approxDataKeys)
     fn_surf.finalize_data(); // uses shared finalization index
     // Approximation coefficients
     fn_surf.finalize_coefficients();
@@ -401,8 +401,8 @@ inline void ApproximationInterface::clear_inactive()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData instances:
-    fn_surf.clear_inactive_data(); // only retain 1st of active data keys
+    // Approximation::approxData: only retain 1st of active data keys
+    fn_surf.clear_inactive_data();
     // Approximation coefficients
     fn_surf.clear_inactive_coefficients();
   }
