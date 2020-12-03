@@ -1645,26 +1645,33 @@ in dakota_filename.in, writing dakota_filename.in_
 
 =item B<baseline generation>
 
-dakota_test.perl [--parallel] --base
+dakota_test.perl [--parallel] --base [dakota_*.in ...]
 
-executes all the serial [parallel] tests in the test input directory
-and creates a new baseline file, dakota_[p]base.test.new
+executes all the (or specified) serial [parallel] tests in the test
+input directory and creates new baseline files in out-dir, e.g.,
+dakota_study.[p]base.new
 
 =item B<Baseline creation guidelines>
 
-To create a new serial [parallel] baseline:
+To create a new serial [parallel] baseline (conservative method):
 
-1. Run dakota_test.perl in baseline serial [parallel] mode
+1. In dakota_build/test, run dakota_test.perl in baseline serial
+     [parallel] mode:
      dakota_test.perl [--parallel] --base
 
-2. Review results in dakota_[p]base.test.new to make sure all tests
+2. Review results in dakota_*.[p]base.new to make sure all tests
    executed correctly. Making sure any expected changes are present
    and are reasonable.
 
-3. Copy the dakota_[p]base.test.new file
-     cp dakota_[p]base.test.new dakota_[p]base.test
+3. Copy the baseline files to the source tree dakota_src/test and
+   commit
 
-4. Commit the updated dakota_[p]base.test to the repository
+Alternately, use the --baseline-overwrite option to replace the
+baseline files in baseline-indir and use git diff or other tools to
+review before committing. From dakota_build/test:
+
+dakota_test.perl [--parallel] --base --baseline-indir=dakota_src/test
+  --baseline-overwrite[dakota_*.in ...]
 
 =back
 

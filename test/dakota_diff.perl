@@ -131,9 +131,10 @@ exit $exitcode;
 # --------
 
 
-# Extract test output from the passed file handle until another
-# dakota_*.in test header is encountered. This is only really needed
-# for the sub-test indices anymore.
+# Extract test output from the passed file handle and tabulate
+# sub-test numbers and start/end line indices for each. This is only
+# really needed for the sub-test indices anymore, so could just gulp
+# in whole file.
 #
 # IN:  file handle to read from
 # OUT: reference to array of subtest numbers found
