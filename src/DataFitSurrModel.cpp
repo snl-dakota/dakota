@@ -671,7 +671,7 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
     approxInterface.append_approximation(daceIterator.all_variables(),all_resp);
 
   if (rebuild_flag)
-    rebuild_approximation(all_resp);
+    rebuild_approximation(all_resp); // all_resp used to define build_fns
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n<<<<< " << surrogateType
@@ -696,32 +696,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
   approxInterface.append_approximation(vars, response_pr);
 
   if (rebuild_flag)
-    rebuild_approximation(response_pr);
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType
-	 << " approximation updates completed.\n";
-}
-
-
-/** This function appends multiple points to SurrogateData::{vars,resp}Data
-    and rebuilds the approximation, if requested.  It does not modify other 
-    data (i.e., SurrogateData::anchor{Vars,Resp}) and does not update the
-    actualModel with revised bounds, labels, etc.  Thus, it appends to data
-    from a previous call to build_approximation(), and is not intended to
-    be used in isolation. */
-void DataFitSurrModel::
-append_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map, bool rebuild_flag)
-{
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
-
-  // append to the current points for each approximation
-  approxInterface.append_approximation(vars_array, resp_map);
-
-  if (rebuild_flag)
-    rebuild_approximation(resp_map);
+    rebuild_approximation(response_pr); // response_pr used to define build_fns
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n<<<<< " << surrogateType
@@ -747,6 +722,56 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 
   if (rebuild_flag)
     rebuild_approximation(resp_map);
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
+}
+
+
+/** This function appends multiple points to SurrogateData::{vars,resp}Data
+    and rebuilds the approximation, if requested.  It does not modify other 
+    data (i.e., SurrogateData::anchor{Vars,Resp}) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it appends to data
+    from a previous call to build_approximation(), and is not intended to
+    be used in isolation. */
+void DataFitSurrModel::
+append_approximation(const VariablesArray& vars_array,
+		     const IntResponseMap& resp_map, bool rebuild_flag)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.append_approximation(vars_array, resp_map);
+
+  if (rebuild_flag)
+    rebuild_approximation(resp_map); // resp_map used to define build_fns
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
+}
+
+
+/** This function appends multiple points to SurrogateData::{vars,resp}Data
+    and rebuilds the approximation, if requested.  It does not modify other 
+    data (i.e., SurrogateData::anchor{Vars,Resp}) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it appends to data
+    from a previous call to build_approximation(), and is not intended to
+    be used in isolation. */
+void DataFitSurrModel::
+append_approximation(const IntVariablesMap& vars_map,
+		     const IntResponseMap&  resp_map, bool rebuild_flag)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.append_approximation(vars_map, resp_map);
+
+  if (rebuild_flag)
+    rebuild_approximation(resp_map); // resp_map used to define build_fns
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n<<<<< " << surrogateType

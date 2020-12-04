@@ -259,6 +259,9 @@ private:
   int batchSizeAcquisition;
   /// number of new sampling points defined from maximizing posterior variance
   int batchSizeExploration;
+  /// counter for incrementing evaluation ids to allow synchronization with
+  /// iteratedModel ids across acquisition and exploration job queues
+  int batchEvalId;
 
   /// variable sets for batch evaluation of truth model, accumulated by
   /// construct_batch_acquisition()

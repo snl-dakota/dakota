@@ -3794,6 +3794,32 @@ void Model::rebuild_approximation()
 }
 
 
+void Model::rebuild_approximation(const IntResponsePair& response_pr)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation(response_pr);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+	 << "approximation(IntResponsePair) function.\nThis model does not "
+	 << "support approximation rebuilding." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::rebuild_approximation(const IntResponseMap& resp_map)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation(resp_map);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+	 << "approximation(IntResponseMap) function.\nThis model does not "
+	 << "support approximation rebuilding." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 void Model::update_approximation(bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
@@ -3881,6 +3907,21 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 
 
 void Model::
+append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
+		     bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "support approximation appending." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
 append_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
@@ -3896,14 +3937,14 @@ append_approximation(const VariablesArray& vars_array,
 
 
 void Model::
-append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
+append_approximation(const IntVariablesMap& vars_map,
+		     const IntResponseMap&  resp_map, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+    modelRep->append_approximation(vars_map, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "(IntVariablesMap, IntResponseMap) function.\nThis model does not "
          << "support approximation appending." << std::endl;
     abort_handler(MODEL_ERROR);
   }

@@ -154,6 +154,9 @@ public:
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const VariablesArray& vars_array,
 				    const IntResponseMap& resp_map);
+  /// appends multiple points to an existing approximation
+  virtual void append_approximation(const IntVariablesMap& vars_map,
+				    const IntResponseMap&  resp_map);
 
   /// builds the approximation
   virtual void build_approximation(const RealVector& c_l_bnds,

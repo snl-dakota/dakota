@@ -1081,6 +1081,21 @@ append_approximation(const VariablesArray& vars_array,
 
 
 void Interface::
+append_approximation(const IntVariablesMap& vars_map,
+		     const IntResponseMap&  resp_map)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->append_approximation(vars_map, resp_map);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+         << "(IntVariablesMap, IntResponseMap) function.\n       This interface"
+	 << " does not support approximation appending." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::
 build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
 		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)

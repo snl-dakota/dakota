@@ -46,7 +46,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   batchSize(probDescDB.get_int("method.batch_size")),
   batchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
   //setUpType("model"),
-  dataOrder(1), batchAsynch(false) // *** TO DO
+  dataOrder(1), batchEvalId(1), batchAsynch(false) // *** TO DO
 {
   // substract the total batchSize from batchSizeExploration
   batchSizeAcquisition = batchSize - batchSizeExploration;
@@ -262,6 +262,8 @@ void EffGlobalMinimizer::build_gp()
 
   // Build initial GP once for all response functions
   fHatModel.build_approximation();
+
+  batchEvalId = iteratedModel.evaluation_id() + 1;
 }
 
 
@@ -333,8 +335,7 @@ void EffGlobalMinimizer::construct_batch_acquisition(size_t new_acq)
 
   // construct the acquisition batch
   bool append_liars = (batchSize > 1);
-  int liar_id = iteratedModel.evaluation_id() + 1; // *** TO DO: verify for nonblocking
-  for (i=0; i<new_acq; ++i, ++liar_id) {
+  for (i=0; i<new_acq; ++i, ++batchEvalId) {
 
     Cout << "\n>>>>> Initiating global iteration " << ++globalIterCount
 	 << " (acquisition batch " << i+1 << ")\n";
@@ -356,10 +357,10 @@ void EffGlobalMinimizer::construct_batch_acquisition(size_t new_acq)
 
     update_convergence_counters(vars_star, ei_resp_star);
     if (append_liars)
-      append_liar(vars_star, liar_id);
+      append_liar(vars_star, batchEvalId);
 
     // save a copy for truth replacement downstream
-    varsAcquisitionMap[liar_id] = vars_star.copy();
+    varsAcquisitionMap[batchEvalId] = vars_star.copy();
   }
 }
 
@@ -384,8 +385,7 @@ void EffGlobalMinimizer::construct_batch_exploration(size_t new_expl)
 
   // construct the exploration batch
   bool append_liars = (batchSize > 1);
-  int liar_id = iteratedModel.evaluation_id() + batchSizeAcquisition + 1; // *** TO DO: verify for nonblocking
-  for (i=0; i<new_expl; ++i, ++liar_id) {
+  for (i=0; i<new_expl; ++i, ++batchEvalId) {
 
     Cout << "\n>>>>> Initiating global iteration " << ++globalIterCount
 	 << " (exploration batch " << i+1 << ")\n";
@@ -406,10 +406,10 @@ void EffGlobalMinimizer::construct_batch_exploration(size_t new_expl)
 
     update_convergence_counters(vars_star);//, pv_resp_star); // *** TO DO
     if (append_liars)
-      append_liar(vars_star, liar_id);
+      append_liar(vars_star, batchEvalId);
 
     // save a copy for truth replacement downstream
-    varsExplorationMap[liar_id] = vars_star.copy();
+    varsExplorationMap[batchEvalId] = vars_star.copy();
   }
 }
 
@@ -469,11 +469,13 @@ void EffGlobalMinimizer::evaluate_batch()
     // update the GP approximation with batch results
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "\nParallel EGO: adding true responses...\n";
-    // reuse varsAcquisitionMap for composite map to avoid some extra copies;
-    // will be cleared at function end
+    // reuse varsAcquisitionMap for composite map to avoid some extra copies,
+    // as will be cleared at fn end.  Could also generalize append_approximation
+    // to advance both maps and only complete matches within the id sequences
+    // (and call for each varsMap), but complicates things with little gain.
     varsAcquisitionMap.insert(varsExplorationMap.begin(),
 			      varsExplorationMap.end());
-    //fHatModel.append_approximation(varsAcquisitionMap, truth_resp_map, true);// *** TO DO
+    fHatModel.append_approximation(varsAcquisitionMap, truth_resp_map, true);
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "\nParallel EGO: true responses added.\n";
 
@@ -530,14 +532,14 @@ bool EffGlobalMinimizer::query_batch()
   for (r_cit=truth_resp_map.begin(); r_cit!=truth_resp_map.end(); ++r_cit) {
     id   = r_cit->first;
     v_it = varsAcquisitionMap.find(id);
-    if (v_it != varsAcquisitionMap.end()) {
-      //fHatModel.replace_approximation(id, v_it->second, r_cit->second, false);
+    if (v_it != varsAcquisitionMap.end()) { // *** TO DO
+    //fHatModel.replace_approximation(id, v_it->second, r_cit->second, false);
       varsAcquisitionMap.erase(v_it);
     }
     else {
       v_it = varsExplorationMap.find(id);
-      if (v_it != varsExplorationMap.end()) {
-	//fHatModel.replace_approximation(id, v_it->second, r_cit->second, false);
+      if (v_it != varsExplorationMap.end()) { // *** TO DO
+      //fHatModel.replace_approximation(id, v_it->second, r_cit->second, false);
 	varsExplorationMap.erase(v_it);
       }
       else {
@@ -547,10 +549,10 @@ bool EffGlobalMinimizer::query_batch()
       }
     }
     // *** Note: could orchestrate pop/push to start, deferring on implementing
-    //     new replace_approximation().  For example, to replace 2nd from end:
-    //     pop(save), pop(discard), append, push (saved)
+    // *** new replace_approximation().  For example, to replace 2nd from end:
+    // *** pop(save), pop(discard), append, push (saved)
   }
-  //fHatModel.rebuild_approximation(truth_resp_map); // *** TO DO; map defines rebuild_fns
+  fHatModel.rebuild_approximation(truth_resp_map);//resp_map defines rebuild_fns
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nParallel EGO: all true responses added.\n";
 
@@ -567,21 +569,36 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
 {
   if (!new_acq && !new_expl) return;
 
-  // queue evaluations for composite batch (acquisition + exploration)
-  // > launches the trailing map id's (*** new additions must trail ***)
+  // queue nonblocking evals for composite batch (acquisition + exploration),
+  // launching the trailing map id's in the sequence defined by batchEvalId
   ActiveSet set = iteratedModel.current_response().active_set();
   set.request_values(dataOrder);
-  IntVarsMCIter v_cit = varsAcquisitionMap.begin();
-  std::advance(v_cit, varsAcquisitionMap.size() - new_acq);
-  for (; v_cit!=varsAcquisitionMap.end(); ++v_cit) {
-    iteratedModel.active_variables(v_cit->second);
-    iteratedModel.evaluate_nowait(set); // *** TO DO: induced eval id must be consistent to match returned resp map with vars maps
-  }
-  v_cit = varsExplorationMap.begin();
-  std::advance(v_cit, varsExplorationMap.size() - new_expl);
-  for (; v_cit!=varsExplorationMap.end(); ++v_cit) {
-    iteratedModel.active_variables(v_cit->second);
-    iteratedModel.evaluate_nowait(set); // *** TO DO: induced eval id must be consistent to match returned resp map with vars maps
+  IntVarsMCIter va_cit = varsAcquisitionMap.begin(),
+                ve_cit = varsExplorationMap.begin();
+  std::advance(va_cit, varsAcquisitionMap.size() - new_acq);
+  std::advance(ve_cit, varsExplorationMap.size() - new_expl);
+  int va_id = (va_cit==varsExplorationMap.end()) ? INT_MAX : va_cit->first,
+      ve_id = (ve_cit==varsExplorationMap.end()) ? INT_MAX : ve_cit->first;
+  while (va_id != INT_MAX || ve_id != INT_MAX) {
+    // properly sequence backfill evaluations across the two queues so that
+    // the liar/truth sequences are synchronized, enabling id-based replacement
+    if (va_id < ve_id) {
+      iteratedModel.active_variables(va_cit->second);
+      iteratedModel.evaluate_nowait(set);
+      ++va_cit;
+      va_id = (va_cit==varsExplorationMap.end()) ? INT_MAX : va_cit->first;
+    }
+    else if (ve_id < va_id) {    
+      iteratedModel.active_variables(ve_cit->second);
+      iteratedModel.evaluate_nowait(set);
+      ++ve_cit;
+      ve_id = (ve_cit==varsExplorationMap.end()) ? INT_MAX : ve_cit->first;
+    }
+    else {
+      Cerr << "Error: duplicate evaluation ids in EffGlobalMinimizer::"
+	   << "backfill_batch()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
   }
 }
 

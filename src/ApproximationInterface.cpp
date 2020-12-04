@@ -16,7 +16,7 @@
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
-#include "PRPMultiIndex.hpp"
+//#include "PRPMultiIndex.hpp"
 
 //#define DEBUG
 
@@ -369,26 +369,8 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
   if (actualModelCache) {
     // anchor vars/resp are not sufficiently persistent for use in shallow
     // copies.  Therefore, use ordered id lookup in global PRPCache.
-    IntStringPair ids(response_pr.first, actualModelInterfaceId);
-    PRPCacheCIter p_it;
-    // sign indicates dataset source (see DataFitSurrModel::build_global()):
-    //   eval id > 0 for unique evals from current execution (in data_pairs)
-    //   eval id = 0 for evals from file import (not in data_pairs)
-    //   eval id < 0 for non-unique evals from restart (in data_pairs)
-    if (response_pr.first > 0) // unique evals: current run
-      p_it = lookup_by_ids(data_pairs, ids);
-    else { // non-unique eval ids from restart/file import
-      // rather than resorting to lookup_by_val(), use a two-pass approach
-      // to process multiple returns from equal_range(search_ids)
-      if(actualModelInterfaceId.empty()) {
-        ParamResponsePair search_pr(vars, "NO_ID", response_pr.second);
-        p_it = lookup_by_ids(data_pairs, ids, search_pr);
-      } else {
-        ParamResponsePair search_pr(vars, actualModelInterfaceId,
-				    response_pr.second);
-        p_it = lookup_by_ids(data_pairs, ids, search_pr);
-      }
-    }
+    PRPCacheCIter p_it
+      = cache_lookup(vars, response_pr.first, response_pr.second);
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, true);
     else                          // shallow copies of cached vars/resp data
@@ -423,26 +405,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
-      IntStringPair ids(r_it->first, actualModelInterfaceId);
-      // sign indicates dataset source (see DataFitSurrModel::build_global()):
-      //   eval id > 0 for unique evals from current execution (in data_pairs)
-      //   eval id = 0 for evals from file import (not in data_pairs)
-      //   eval id < 0 for non-unique evals from restart (in data_pairs)
-      if (r_it->first > 0) // unique evals: current run
-	p_it = lookup_by_ids(data_pairs, ids);
-      else { // nonunique eval ids from restart/file import
-	// rather than resorting to lookup_by_val(), use a two-pass approach
-	// to process multiple returns from equal_range(search_ids)
-	sample_to_variables(samples[i], num_cv, actualModelVars);
-        if (actualModelInterfaceId.empty()) {
-	  ParamResponsePair search_pr(actualModelVars, "NO_ID", r_it->second);
-	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
-        } else {
-	  ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
-				      r_it->second);
-	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
-        }
-      }
+      p_it = cache_lookup(samples[i], num_cv, r_it->first, r_it->second);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
       else                          // shallow copies of cached vars/resp data
@@ -480,25 +443,7 @@ update_approximation(const VariablesArray& vars_array,
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
-      IntStringPair ids(r_it->first, actualModelInterfaceId);
-      // sign indicates dataset source (see DataFitSurrModel::build_global()):
-      //   eval id > 0 for unique evals from current execution (in data_pairs)
-      //   eval id = 0 for evals from file import (not in data_pairs)
-      //   eval id < 0 for non-unique evals from restart (in data_pairs)
-      if (r_it->first > 0) // unique evals: current run
-	p_it = lookup_by_ids(data_pairs, ids);
-      else { // nonunique eval ids from restart/file import
-	// rather than resorting to lookup_by_val(), use a two-pass approach
-	// to process multiple returns from equal_range(search_ids)
-        if(actualModelInterfaceId.empty()) {
-          ParamResponsePair search_pr(vars_array[i], "NO_ID", r_it->second);
-          p_it = lookup_by_ids(data_pairs, ids, search_pr);
-        } else {
-          ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
-				      r_it->second);
-          p_it = lookup_by_ids(data_pairs, ids, search_pr);
-        }
-      }
+      p_it = cache_lookup(vars_array[i], r_it->first, r_it->second);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);
       else                          // shallow copies of cached vars/resp data
@@ -523,26 +468,8 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
   if (actualModelCache) {
     // anchor vars/resp are not sufficiently persistent for use in shallow
     // copies.  Therefore, use ordered id lookup in global PRPCache.
-    IntStringPair ids(response_pr.first, actualModelInterfaceId);
-    PRPCacheCIter p_it;
-    // sign indicates dataset source (see DataFitSurrModel::build_global()):
-    //   eval id > 0 for unique evals from current execution (in data_pairs)
-    //   eval id = 0 for evals from file import (not in data_pairs)
-    //   eval id < 0 for non-unique evals from restart (in data_pairs)
-    if (response_pr.first > 0) // unique evals: current run
-      p_it = lookup_by_ids(data_pairs, ids);
-    else { // nonunique eval ids from restart/file import
-      // rather than resorting to lookup_by_val(), use a two-pass approach
-      // to process multiple returns from equal_range(search_ids)
-      if(actualModelInterfaceId.empty()) {
-        ParamResponsePair search_pr(vars, "NO_ID", response_pr.second);
-        p_it = lookup_by_ids(data_pairs, ids, search_pr);
-      } else {
-        ParamResponsePair search_pr(vars, actualModelInterfaceId,
-				    response_pr.second);
-        p_it = lookup_by_ids(data_pairs, ids, search_pr);
-      }
-    }
+    PRPCacheCIter p_it
+      = cache_lookup(vars, response_pr.first, response_pr.second);
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, false);
     else                          // shallow copies of cached vars/resp data
@@ -576,26 +503,7 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
-      IntStringPair ids(r_it->first, actualModelInterfaceId);
-      // sign indicates dataset source (see DataFitSurrModel::build_global()):
-      //   eval id > 0 for unique evals from current execution (in data_pairs)
-      //   eval id = 0 for evals from file import (not in data_pairs)
-      //   eval id < 0 for non-unique evals from restart (in data_pairs)
-      if (r_it->first > 0) // unique evals: current run
-	p_it = lookup_by_ids(data_pairs, ids);
-      else { // nonunique eval ids from restart/file import
-	// rather than resorting to lookup_by_val(), use a two-pass approach
-	// to process multiple returns from equal_range(search_ids)
-	sample_to_variables(samples[i], num_cv, actualModelVars);
-        if(actualModelInterfaceId.empty()) {
-          ParamResponsePair search_pr(actualModelVars, "NO_ID", r_it->second);
-          p_it = lookup_by_ids(data_pairs, ids, search_pr);
-        } else {
-          ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
-				      r_it->second);
-          p_it = lookup_by_ids(data_pairs, ids, search_pr);
-        }
-      }
+      p_it = cache_lookup(samples[i], num_cv, r_it->first, r_it->second);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
       else                          // shallow copies of cached vars/resp data
@@ -632,25 +540,7 @@ append_approximation(const VariablesArray& vars_array,
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
-      IntStringPair ids(r_it->first, actualModelInterfaceId);
-      // sign indicates dataset source (see DataFitSurrModel::build_global()):
-      //   eval id > 0 for unique evals from current execution (in data_pairs)
-      //   eval id = 0 for evals from file import (not in data_pairs)
-      //   eval id < 0 for non-unique evals from restart (in data_pairs)
-      if (r_it->first > 0) // unique evals: current run
-	p_it = lookup_by_ids(data_pairs, ids);
-      else { // nonunique eval ids from restart/file import
-	// rather than resorting to lookup_by_val(), use a two-pass approach
-	// to process multiple returns from equal_range(search_ids)
-        if(actualModelInterfaceId.empty()) {
-          ParamResponsePair search_pr(vars_array[i], "NO_ID", r_it->second);
-          p_it = lookup_by_ids(data_pairs, ids, search_pr);
-        } else {
-          ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
-				      r_it->second);
-          p_it = lookup_by_ids(data_pairs, ids, search_pr);
-        }
-      }
+      p_it = cache_lookup(vars_array[i], r_it->first, r_it->second);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);
       else                          // shallow copies of cached vars/resp data
@@ -660,6 +550,49 @@ append_approximation(const VariablesArray& vars_array,
   else                            // deep response copies with vars sharing
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
       mixed_add(vars_array[i], r_it->second, false);
+
+  update_pop_counts(resp_map);
+
+  // reset active approxData key using SharedApproxData::approxDataKeys
+  restore_data_key();
+}
+
+
+/** This function appends to each Approximation::currentPoints with
+    multiple incoming variables/response data points. */
+void ApproximationInterface::
+append_approximation(const IntVariablesMap& vars_map,
+		     const IntResponseMap&  resp_map)
+{
+  size_t i, num_pts = resp_map.size();
+  if (vars_map.size() != num_pts) {
+    Cerr << "Error: mismatch in variable and response set lengths in "
+	 << "ApproximationInterface::append_approximation()." << std::endl;
+    abort_handler(-1);
+  }
+  // append multiple points to SurrogateData::{vars,resp}Data
+  IntVarsMCIter v_it; IntRespMCIter r_it; int eval_id;
+  if (actualModelCache) {
+    PRPCacheCIter p_it;
+    for (v_it =vars_map.begin(), r_it =resp_map.begin();
+	 v_it!=vars_map.end() && r_it!=resp_map.end(); ++v_it, ++r_it) {
+      // allVariables/allResponses are not sufficiently persistent for use in
+      // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
+      eval_id = r_it->first;
+      check_id(v_it->first, eval_id);
+      p_it = cache_lookup(v_it->second, eval_id, r_it->second);
+      if (p_it == data_pairs.end()) // deep response copies with vars sharing
+	mixed_add(v_it->second, r_it->second, false);
+      else                          // shallow copies of cached vars/resp data
+	shallow_add(p_it->variables(), p_it->response(), false);
+    }
+  }
+  else                            // deep response copies with vars sharing
+    for (v_it =vars_map.begin(), r_it =resp_map.begin();
+	 v_it!=vars_map.end() && r_it!=resp_map.end(); ++v_it, ++r_it) {
+      check_id(v_it->first, r_it->first);
+      mixed_add(v_it->second, r_it->second, false);
+    }
 
   update_pop_counts(resp_map);
 
@@ -742,6 +675,63 @@ void ApproximationInterface::rebuild_approximation(const BitArray& rebuild_fns)
       // diagnostics not currently active on rebuild
     }
   }
+}
+
+
+PRPCacheCIter ApproximationInterface::
+cache_lookup(const Variables& vars, int eval_id, const Response& response)
+{
+  IntStringPair ids(eval_id, actualModelInterfaceId);
+  PRPCacheCIter p_it;
+  // sign indicates dataset source (see DataFitSurrModel::build_global()):
+  //   eval id > 0 for unique evals from current execution (in data_pairs)
+  //   eval id = 0 for evals from file import (not in data_pairs)
+  //   eval id < 0 for non-unique evals from restart (in data_pairs)
+  if (eval_id > 0) // unique evals: current run
+    p_it = lookup_by_ids(data_pairs, ids);
+  else { // nonunique eval ids from restart/file import
+    // rather than resorting to lookup_by_val(), use a two-pass approach
+    // to process multiple returns from equal_range(search_ids)
+    if (actualModelInterfaceId.empty()) {
+      ParamResponsePair search_pr(vars, "NO_ID", response);
+      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+    }
+    else {
+      ParamResponsePair search_pr(vars, actualModelInterfaceId, response);
+      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+    }
+  }
+  return p_it;
+}
+
+
+PRPCacheCIter ApproximationInterface::
+cache_lookup(const Real* vars, size_t num_v, int eval_id,
+	     const Response& response)
+{
+  IntStringPair ids(eval_id, actualModelInterfaceId);
+  PRPCacheCIter p_it;
+  // sign indicates dataset source (see DataFitSurrModel::build_global()):
+  //   eval id > 0 for unique evals from current execution (in data_pairs)
+  //   eval id = 0 for evals from file import (not in data_pairs)
+  //   eval id < 0 for non-unique evals from restart (in data_pairs)
+  if (eval_id > 0) // unique evals: current run
+    p_it = lookup_by_ids(data_pairs, ids);
+  else { // nonunique eval ids from restart/file import
+    // rather than resorting to lookup_by_val(), use a two-pass approach
+    // to process multiple returns from equal_range(search_ids)
+    sample_to_variables(vars, num_v, actualModelVars);
+    if (actualModelInterfaceId.empty()) {
+      ParamResponsePair search_pr(actualModelVars, "NO_ID", response);
+      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+    }
+    else {
+      ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
+				  response);
+      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+    }
+  }
+  return p_it;
 }
 
 

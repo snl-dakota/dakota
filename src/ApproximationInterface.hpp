@@ -20,10 +20,10 @@
 #include "DakotaInterface.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
+#include "PRPMultiIndex.hpp"
 
 
 namespace Dakota {
-
 
 /// Derived class within the interface class hierarchy for supporting
 /// approximations to simulation-based results.
@@ -93,6 +93,8 @@ protected:
 			    const IntResponseMap& resp_map);
   void append_approximation(const VariablesArray& vars_array,
 			    const IntResponseMap& resp_map);
+  void append_approximation(const IntVariablesMap& vars_map,
+			    const IntResponseMap&  resp_map);
 
   void build_approximation(const RealVector&  c_l_bnds,
 			   const RealVector&  c_u_bnds,
@@ -168,6 +170,15 @@ private:
   /// append to the stack of pop counts within each of the functionSurfaces
   /// based on the active set definitions within a map of incoming responses
   void update_pop_counts(const IntResponseMap& resp_map);
+
+  /// helper to find a cached PRP record in data_pairs
+  PRPCacheCIter cache_lookup(const Variables& vars, int eval_id,
+			     const Response& response);
+  /// helper to find a cached PRP record in data_pairs
+  PRPCacheCIter cache_lookup(const Real* vars, size_t num_v, int eval_id,
+			     const Response& response);
+  /// verify consistency between two evaluation identifiers
+  void check_id(int id1, int id2);
 
   /// following Approximation::add() and Approximation::pop_count() operations,
   /// which may enumerate multiple approxDataKeys, restore the active
@@ -485,6 +496,16 @@ sample_to_variables(const Real* sample_c_vars, size_t num_cv, Variables& vars)
   else {
     Cerr << "Error: size mismatch in ApproximationInterface::"
 	 << "sample_to_variables()" << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+inline void ApproximationInterface::check_id(int id1, int id2)
+{
+  if (id1 != id2) {
+    Cerr << "Error: id mismatch in ApproximationInterface::check_id()"
+	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
 }

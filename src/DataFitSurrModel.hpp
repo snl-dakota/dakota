@@ -187,7 +187,7 @@ protected:
   void rebuild_approximation(const IntResponsePair& response_pr);
   /// Rebuilds the local/multipoint/global approximation using
   /// the passed response data for a set of samples
-  void rebuild_approximation(const IntResponseMap& all_resp);
+  void rebuild_approximation(const IntResponseMap& resp_map);
 
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
@@ -212,14 +212,18 @@ protected:
   void append_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
 			    bool rebuild_flag);
-  /// appends an array of points to a global approximation and rebuilds it
-  /// if requested
-  void append_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
   /// appends a matrix of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const RealMatrix& samples,
 			    const IntResponseMap& resp_map, bool rebuild_flag);
+  /// appends an array of points to a global approximation and rebuilds it
+  /// if requested
+  void append_approximation(const VariablesArray& vars_array,
+			    const IntResponseMap& resp_map, bool rebuild_flag);
+  /// appends an map of points to a global approximation and rebuilds it
+  /// if requested
+  void append_approximation(const IntVariablesMap& vars_map,
+			    const IntResponseMap&  resp_map, bool rebuild_flag);
 
   /// remove approximation data added on previous append_approximation() call
   /// or a specified number of points
@@ -777,12 +781,12 @@ rebuild_approximation(const IntResponsePair& response_pr)
 
 
 inline void DataFitSurrModel::
-rebuild_approximation(const IntResponseMap& all_resp)
+rebuild_approximation(const IntResponseMap& resp_map)
 {
   // decide which surrogates to rebuild based on resp_map content
   BitArray rebuild_fns(numFns); // init to false
   for (size_t i=0; i<numFns; ++i)
-    for (IntRespMCIter r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it)
+    for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
       if (r_it->second.active_set_request_vector()[i])
 	{ rebuild_fns.set(i); break; }
   // rebuild the designated surrogates
