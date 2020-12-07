@@ -1,0 +1,57 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 62 total (62 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e+00 b
+                      1.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 124 total (62 new, 62 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e+00 b
+                      1.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 310 total (217 new, 93 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 403 total (248 new, 155 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 465 total (248 new, 217 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 527 total (248 new, 279 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Results summary:
+   set_id             w1             w2              b              h       obj_fn_1       obj_fn_2 
+        1              1              0              5             15              0              0 
+        2            0.8            0.2              5             15              0              0 
+        3            0.6            0.4             15             25              0              0 
+        4            0.4            0.6             15             25              0              0 
+        5            0.2            0.8             15             25              0              0 
+        6              0              1             15             25              0              0 

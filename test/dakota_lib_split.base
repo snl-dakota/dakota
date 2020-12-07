@@ -1,0 +1,11 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9999878332e-01 x1
+                      4.9999878332e-01 x2
+<<<<< Best objective function  =
+                      1.2500121668e-01
+<<<<< Best constraint values   =
+                     -6.0833612095e-07
+                     -6.0833612095e-07
+<<<<< Best data captured at function evaluation 9

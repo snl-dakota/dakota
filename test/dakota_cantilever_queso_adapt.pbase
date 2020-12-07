@@ -1,0 +1,48 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 57 total (57 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.8587819101240195e+04 R
+                      3.1743707436499655e+07 E
+                      3.8362770758586555e+02 X
+                      6.9057018528749745e+02 Y
+<<<<< Best misfit              =
+                      9.7237300141531229e+00
+<<<<< Best log prior           =
+                     -1.1179735202011267e+01
+<<<<< Best log posterior       =
+                     -6.0360887744443474e+01
+Sample moment statistics for each posterior variable:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+             R  3.8632799263410518e+04  1.4670705707944855e+03  3.1362427152769289e-02  3.6373767170672938e-01
+             E  3.1874766723431639e+07  1.0783873713353737e+06  9.1818857565694828e-02  1.6764275523365985e-01
+             X  3.8398671543114966e+02  5.5952983792480545e+01 -2.1794065737540710e-01 -8.7713994779589022e-02
+             Y  6.9138681576973556e+02  4.7480549062477046e+01 -1.5956653727705186e-01 -8.3467736359714551e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+        stress  2.6615443347035048e+03  8.7398487111933449e+01 -7.3409585559503041e-02  2.0576762925144521e-01
+  displacement  2.9389214592584278e-01  9.8391864850537487e-03  2.7584007195422297e-02 -2.8606411538641730e-02
+Information gained from prior to posterior = 7.3813410287766260e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.9576109478771585e+04 R
+                      3.1000000000000000e+07 E
+                      3.0000000000000000e+02 X
+                      8.0000000000000000e+02 Y
+<<<<< Best misfit              =
+                      4.0276958954028089e+02
+<<<<< Best log prior           =
+                     -2.7725887222397811e+00
+<<<<< Best log posterior       =
+                     -4.4499960079079978e+02
+Sample moment statistics for each posterior variable:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+             R  3.9617298729155365e+04  7.2459737564629606e+01  3.8320856947048959e-01 -3.4028725751338036e-02
+             E  3.0994594394025739e+07  5.3272591884802750e+03 -1.8332827080742562e+00  4.5215924588789180e+00
+             X  3.0039048159037327e+02  3.5890660816315578e-01  1.5580038506610485e+00  3.1005667612228471e+00
+             Y  8.0014882406782442e+02  1.4196237940506609e-01  1.6260180851497181e+00  3.3473463991704864e+00
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+        stress  2.6434106081200257e+03  7.0892028361721174e+01 -3.4885452164431913e-01 -1.4910083215816350e-01
+  displacement  5.6643176323954025e-01  7.5317923763391177e-04  6.8472666387059700e-01  2.1735421174887590e-01
+Information gained from prior to posterior = 1.1284111288359374e+02

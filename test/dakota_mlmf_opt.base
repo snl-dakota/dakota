@@ -1,0 +1,9 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (LO_I): 617 total (510 new, 107 duplicate)
+<<<<< Function evaluation summary (HI_I): 213 total (213 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9982940945e-01 x1
+                      9.9965193248e-01 x2
+<<<<< Best objective function  =
+                      3.3883574493e-08
+<<<<< Best data captured at function evaluation 213

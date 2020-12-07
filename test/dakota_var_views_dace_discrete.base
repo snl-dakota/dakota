@@ -1,0 +1,232 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     0 x1
+                                     2 x2
+                      1.0000000000e+00 x3
+                                     3 x4
+                                     3 x5
+                                     6 x6
+                      5.0000000000e+00 x7
+                                     0 x8
+                                     2 x9
+                      1.0000000000e+00 x10
+<<<<< Best objective function  =
+                      9.1700000000e+02
+<<<<< Best constraint values   =
+                     -1.0000000000e+00
+                      4.0000000000e+00
+<<<<< Best data captured at function evaluation 1
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     1 x1
+                                     2 x2
+                      1.0000000000e+00 x3
+                                     3 x4
+                                     3 x5
+                                     6 x6
+                      5.0000000000e+00 x7
+                                     0 x8
+                                     2 x9
+                      1.0000000000e+00 x10
+<<<<< Best objective function  =
+                      9.1600000000e+02
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      3.5000000000e+00
+<<<<< Best data captured at function evaluation 1
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     3 x1
+                                     2 x2
+                      5.0000000000e+00 x3
+                                     3 x4
+                                     3 x5
+                                     6 x6
+                      5.0000000000e+00 x7
+                                     3 x8
+                                     6 x9
+                      5.0000000000e+00 x10
+<<<<< Best objective function  =
+                      2.0830000000e+03
+<<<<< Best constraint values   =
+                      8.0000000000e+00
+                      2.5000000000e+00
+<<<<< Best data captured at function evaluation 6
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 27 total (27 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     0 x1
+                                     2 x2
+                      1.0000000000e+00 x3
+                                     3 x4
+                                     3 x5
+                                     6 x6
+                      5.0000000000e+00 x7
+                                     0 x8
+                                     2 x9
+                      1.0000000000e+00 x10
+<<<<< Best objective function  =
+                      9.1700000000e+02
+<<<<< Best constraint values   =
+                     -1.0000000000e+00
+                      4.0000000000e+00
+<<<<< Best data captured at function evaluation 1
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2           x3       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+          x1  1.00000e+00 
+          x2  0.00000e+00  1.00000e+00 
+          x3  0.00000e+00 -1.38778e-17  1.00000e+00 
+      obj_fn  7.25359e-02  7.62557e-01  4.76133e-01  1.00000e+00 
+nln_ineq_con_1  9.55341e-01 -1.06149e-01 -6.93889e-18 -6.53974e-04  1.00000e+00 
+nln_ineq_con_2 -3.06725e-02  9.81518e-01 -6.93889e-18  8.13581e-01 -1.33490e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+          x1  1.65625e-01  9.60769e-01 -1.60280e-01 
+          x2  8.70125e-01 -3.59211e-01  9.81981e-01 
+          x3  7.40670e-01  0.00000e+00  8.54650e-17 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2           x3       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+          x1  1.00000e+00 
+          x2  0.00000e+00  1.00000e+00 
+          x3  0.00000e+00  1.38778e-17  1.00000e+00 
+      obj_fn  1.92274e-01  8.18619e-01  4.48638e-01  1.00000e+00 
+nln_ineq_con_1  9.48683e-01 -3.16228e-01  0.00000e+00 -7.64634e-02  1.00000e+00 
+nln_ineq_con_2 -3.16228e-01  9.48683e-01  0.00000e+00  7.15808e-01 -6.00000e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+          x1  5.36196e-01  1.00000e+00 -1.00000e+00 
+          x2  9.37939e-01 -1.00000e+00  1.00000e+00 
+          x3  8.28976e-01  0.00000e+00  0.00000e+00 
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     0 x1
+                                     2 x2
+                      1.0000000000e+00 x3
+                                     3 x4
+                                     3 x5
+                                     6 x6
+                      5.0000000000e+00 x7
+                                     0 x8
+                                     2 x9
+                      1.0000000000e+00 x10
+<<<<< Best objective function  =
+                      9.1700000000e+02
+<<<<< Best constraint values   =
+                     -1.0000000000e+00
+                      4.0000000000e+00
+<<<<< Best data captured at function evaluation 1
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     1 x1
+                                     2 x2
+                      1.0000000000e+00 x3
+                                     1 x4
+                                     2 x5
+                                     4 x6
+                      3.0000000000e+00 x7
+                                     3 x8
+                                     6 x9
+                      5.0000000000e+00 x10
+<<<<< Best objective function  =
+                      9.9600000000e+02
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      3.5000000000e+00
+<<<<< Best data captured at function evaluation 1
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 41 total (41 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     3 x1
+                                     2 x2
+                      5.0000000000e+00 x3
+                                     3 x4
+                                     3 x5
+                                     6 x6
+                      5.0000000000e+00 x7
+                                     3 x8
+                                     6 x9
+                      5.0000000000e+00 x10
+<<<<< Best objective function  =
+                      2.0830000000e+03
+<<<<< Best constraint values   =
+                      8.0000000000e+00
+                      2.5000000000e+00
+<<<<< Best data captured at function evaluation 6
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 59049 total (59049 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     0 x1
+                                     2 x2
+                      1.0000000000e+00 x3
+                                     0 x4
+                                     0 x5
+                                     2 x6
+                      1.0000000000e+00 x7
+                                     0 x8
+                                     2 x9
+                      1.0000000000e+00 x10
+<<<<< Best objective function  =
+                      7.0000000000e+00
+<<<<< Best constraint values   =
+                     -1.0000000000e+00
+                      4.0000000000e+00
+<<<<< Best data captured at function evaluation 1
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2           x4           x5           x6           x8           x9           x3           x7          x10       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+          x1  1.00000e+00 
+          x2  0.00000e+00  1.00000e+00 
+          x4  0.00000e+00 -6.77626e-21  1.00000e+00 
+          x5  0.00000e+00 -6.77626e-21  6.77626e-21  1.00000e+00 
+          x6  0.00000e+00 -6.77626e-21  6.77626e-21 -6.09864e-20  1.00000e+00 
+          x8  0.00000e+00 -6.77626e-21  6.77626e-21 -6.09864e-20 -3.86247e-19  1.00000e+00 
+          x9  0.00000e+00 -6.77626e-21  6.77626e-21 -6.09864e-20 -3.86247e-19  4.74338e-20  1.00000e+00 
+          x3  0.00000e+00 -6.77626e-21  6.77626e-21 -6.09864e-20 -3.86247e-19  4.74338e-20 -2.55465e-18  1.00000e+00 
+          x7  0.00000e+00 -6.77626e-21  6.77626e-21 -6.09864e-20 -3.86247e-19  4.74338e-20 -2.55465e-18 -2.55465e-18  1.00000e+00 
+         x10  0.00000e+00 -6.77626e-21  6.77626e-21 -6.09864e-20 -3.86247e-19  4.74338e-20 -2.55465e-18 -2.55465e-18 -9.49355e-18  1.00000e+00 
+      obj_fn  3.74756e-02  3.93974e-01  3.93974e-01  3.74756e-02  3.93974e-01  3.74756e-02  3.93974e-01  2.45994e-01  2.45994e-01  2.45994e-01  1.00000e+00 
+nln_ineq_con_1  9.55341e-01 -1.06149e-01  3.38813e-21  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00 -3.37875e-04  1.00000e+00 
+nln_ineq_con_2 -3.06725e-02  9.81518e-01  3.38813e-21  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  4.20335e-01 -1.33490e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+          x1  8.49114e-02  9.60769e-01 -1.60280e-01 
+          x2  6.67273e-01 -3.59211e-01  9.81981e-01 
+          x4  6.67273e-01  0.00000e+00  6.25258e-20 
+          x5  8.49114e-02  0.00000e+00  0.00000e+00 
+          x6  6.67273e-01  0.00000e+00  3.90787e-20 
+          x8  8.49114e-02  0.00000e+00  0.00000e+00 
+          x9  6.67273e-01  0.00000e+00  3.90787e-20 
+          x3  4.88196e-01  0.00000e+00  3.90787e-20 
+          x7  4.88196e-01  0.00000e+00  3.90787e-20 
+         x10  4.88196e-01  0.00000e+00  3.90787e-20 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2           x4           x5           x6           x8           x9           x3           x7          x10       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+          x1  1.00000e+00 
+          x2  0.00000e+00  1.00000e+00 
+          x4  0.00000e+00 -6.77626e-21  1.00000e+00 
+          x5  0.00000e+00 -6.77626e-21 -6.77626e-21  1.00000e+00 
+          x6  0.00000e+00 -6.77626e-21 -6.77626e-21 -6.09864e-20  1.00000e+00 
+          x8  0.00000e+00 -6.77626e-21 -6.77626e-21 -6.09864e-20 -3.86247e-19  1.00000e+00 
+          x9  0.00000e+00 -6.77626e-21 -6.77626e-21 -6.09864e-20 -3.86247e-19  4.74338e-20  1.00000e+00 
+          x3  0.00000e+00 -6.77626e-21 -6.77626e-21 -6.09864e-20 -3.86247e-19  4.74338e-20 -2.55465e-18  1.00000e+00 
+          x7  0.00000e+00 -6.77626e-21 -6.77626e-21 -6.09864e-20 -3.86247e-19  4.74338e-20 -2.55465e-18 -2.55465e-18  1.00000e+00 
+         x10  0.00000e+00 -6.77626e-21 -6.77626e-21 -6.09864e-20 -3.86247e-19  4.74338e-20 -2.55465e-18 -2.55465e-18 -9.49355e-18  1.00000e+00 
+      obj_fn  4.21586e-02  3.90580e-01  3.91136e-01  4.21586e-02  3.90580e-01  4.21586e-02  3.90580e-01  2.37619e-01  2.37619e-01  2.37619e-01  1.00000e+00 
+nln_ineq_con_1  9.48683e-01 -3.16228e-01  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00 -8.35171e-02  1.00000e+00 
+nln_ineq_con_2 -3.16228e-01  9.48683e-01 -6.77626e-21 -6.77626e-21 -6.77626e-21 -6.77626e-21 -6.77626e-21 -6.77626e-21 -6.77626e-21 -6.77626e-21  3.57205e-01 -6.00000e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+          x1  9.06245e-02  1.00000e+00 -1.00000e+00 
+          x2  6.44564e-01 -1.00000e+00  1.00000e+00 
+          x4  6.45100e-01  0.00000e+00  0.00000e+00 
+          x5  9.06245e-02  0.00000e+00  0.00000e+00 
+          x6  6.44564e-01  0.00000e+00  0.00000e+00 
+          x8  9.06245e-02  0.00000e+00  0.00000e+00 
+          x9  6.44564e-01  0.00000e+00  0.00000e+00 
+          x3  4.56371e-01  0.00000e+00  0.00000e+00 
+          x7  4.56371e-01  0.00000e+00  0.00000e+00 
+         x10  4.56371e-01  0.00000e+00  0.00000e+00 

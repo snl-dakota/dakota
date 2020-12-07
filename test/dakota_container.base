@@ -1,0 +1,20 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9873894231e+00 H
+                      4.0270846274e+00 D
+<<<<< Best objective function  =
+                      9.8432498116e+01
+<<<<< Best constraint values   =
+                     -9.6918029158e-12
+<<<<< Best data captured at function evaluation 36
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9873894231e+00 H
+                      4.0270846274e+00 D
+<<<<< Best objective function  =
+                      9.8432498116e+01
+<<<<< Best constraint values   =
+                     -9.6918029158e-12
+<<<<< Best data captured at function evaluation 36

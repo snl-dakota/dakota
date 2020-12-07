@@ -1,0 +1,154 @@
+Test Number 0 succeeded
+Optimal design:
+                      3.4010060611e+01
+Mutual information = 3.8014015211e+00
+<<<<< Function evaluation summary (lofi_IF): 5161 total (5149 new, 12 duplicate)
+<<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.6452518774e-02 uuv_1
+                     -3.9286540881e+00 uuv_2
+                      1.3186957643e+02 uuv_3
+<<<<< Best misfit              =
+                      8.0035393516e-02
+<<<<< Best log prior           =
+                     -4.8267124559e+00
+<<<<< Best log posterior       =
+                     -7.6635634491e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+         uuv_1  3.4885564834e-02  3.6541295927e-03 -1.0416483542e+00 -4.6618228724e-02
+         uuv_2 -3.8348255853e+00  2.5618356642e-01  1.1354302493e+00  4.5701235437e-01
+         uuv_3  1.3121948593e+02  4.9363449263e+00 -1.9573519277e-01  3.0669602470e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  4.1148417783e+01  3.0458369057e+00  3.0153050712e+00  1.3808119764e+01
+Test Number 1 succeeded
+Optimal design:
+                      3.4010060611e+01
+Mutual information = 4.5389288694e+00
+<<<<< Function evaluation summary (lofi_IF): 5110 total (5090 new, 20 duplicate)
+<<<<< Function evaluation summary (hifi_IF): 2 total (2 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.5734147370e-02 uuv_1
+                     -3.8633757113e+00 uuv_2
+                      1.3049918448e+02 uuv_3
+<<<<< Best misfit              =
+                      9.3521289818e-02
+<<<<< Best log prior           =
+                     -4.8267124559e+00
+<<<<< Best log posterior       =
+                     -7.6770493454e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+         uuv_1  3.2599673519e-02  5.6044534486e-03 -9.3241342177e-01 -2.0836337786e-01
+         uuv_2 -3.6230599342e+00  4.4257077490e-01  1.0475536174e+00 -2.8437694850e-02
+         uuv_3  1.2665293595e+02  6.9827964216e+00 -1.3529886131e+00  7.7133257926e-01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  4.1139976014e+01  2.5656069615e+00  1.8540209890e+00  1.2454754914e+01
+Test Number 2 succeeded
+Optimal design:
+                      4.0000000000e+01
+Mutual information = 3.6815920188e+00
+<<<<< Function evaluation summary (lofi_IF): 5134 total (5122 new, 12 duplicate)
+<<<<< Function evaluation summary (hifi_IF): 1 total (1 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.2471763471e-02 uuv_1
+                     -3.6677503350e+00 uuv_2
+                      1.2961576440e+02 uuv_3
+<<<<< Best misfit              =
+                      1.2022021361e-01
+<<<<< Best log prior           =
+                     -4.8267124559e+00
+<<<<< Best log posterior       =
+                     -7.7037482692e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+         uuv_1  3.0121482013e-02  2.3314834026e-03  3.8423799431e-01 -8.3338614117e-01
+         uuv_2 -3.5212489454e+00  1.4779999765e-01 -3.9662904584e-01 -6.0401286567e-01
+         uuv_3  1.2852608123e+02  3.9922601480e+00  2.9307168814e+00  1.0958938093e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  3.5870494636e+01  2.3254732876e+00  5.1564034700e-01  2.1230996605e+01
+Test Number 3 succeeded
+Optimal design:
+                      3.4010060611e+01
+Mutual information = 3.5589492831e+00
+<<<<< Function evaluation summary (lofi_IF): 5161 total (5149 new, 12 duplicate)
+<<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.6452518774e-02 uuv_1
+                     -3.9286540881e+00 uuv_2
+                      1.3186957643e+02 uuv_3
+<<<<< Best misfit              =
+                      8.0035393516e-02
+<<<<< Best log prior           =
+                     -4.8267124559e+00
+<<<<< Best log posterior       =
+                     -7.6635634491e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+         uuv_1  3.4885564834e-02  3.6541295927e-03 -1.0416483542e+00 -4.6618228724e-02
+         uuv_2 -3.8348255853e+00  2.5618356642e-01  1.1354302493e+00  4.5701235437e-01
+         uuv_3  1.3121948593e+02  4.9363449263e+00 -1.9573519277e-01  3.0669602470e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  4.1148417783e+01  3.0458369057e+00  3.0153050712e+00  1.3808119764e+01
+Test Number 4 succeeded
+Optimal design:
+                      3.4010060611e+01
+Mutual information = 5.0163117810e+00
+<<<<< Function evaluation summary (lofi_IF): 5172 total (5148 new, 24 duplicate)
+<<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.4867619791e-02 uuv_1
+                     -3.8548730353e+00 uuv_2
+                      1.3142282166e+02 uuv_3
+<<<<< Best misfit              =
+                      1.8989577761e-02
+<<<<< Best log prior           =
+                     -4.8267124559e+00
+<<<<< Best log posterior       =
+                     -7.6025176333e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+         uuv_1  3.4952493278e-02  2.1921828587e-03 -7.5796237508e-01  4.3921915783e-01
+         uuv_2 -3.8539235114e+00  1.5606573074e-01  7.1510751398e-01  6.5657476483e-01
+         uuv_3  1.3108401538e+02  2.5912851554e+00 -5.8059436213e-01  1.3627680395e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  4.0440840686e+01  1.8339407374e+00 -1.1239808902e+00  1.0291715129e+01
+Test Number 5 succeeded
+Optimal design:
+                      2.7450049782e+01
+Mutual information = 3.7184595016e+00
+Optimal design:
+                      4.5956089355e+01
+Mutual information = 4.4271258867e+00
+Mutual information = 4.4271258867e+00
+Optimal design:
+                      5.8666167716e+01
+Mutual information = 1.8572086339e+00
+Optimal design:
+                      5.8666167716e+01
+Mutual information = 1.8572086339e+00
+<<<<< Function evaluation summary (lofi_IF): 12718 total (11715 new, 1003 duplicate)
+<<<<< Function evaluation summary (hifi_IF): 5 total (5 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.5675352259e-02 uuv_1
+                     -3.8470203292e+00 uuv_2
+                      1.3008069350e+02 uuv_3
+<<<<< Best misfit              =
+                      6.9183460335e+00
+<<<<< Best log prior           =
+                     -4.8267124559e+00
+<<<<< Best log posterior       =
+                     -1.6339751155e+01
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+         uuv_1  3.6902667153e-02  2.1622926090e-03  1.2694791370e+00  2.5918181774e+00
+         uuv_2 -3.9715369676e+00  2.1890808754e-01 -1.8993952026e+00  2.6244909903e+00
+         uuv_3  1.3259563372e+02  5.1500683740e+00  2.1198147441e+00  3.6214953981e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.6609399230e+01  3.5983892400e+00 -4.9898716015e+00  3.0566495791e+01

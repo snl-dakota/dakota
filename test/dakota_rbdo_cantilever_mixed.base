@@ -1,0 +1,52 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 1609 total (1609 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.4592449847e+00 w
+                      2.4558186620e+00 t
+                      2.0000000000e+02 X_mean
+                      2.0000000000e+02 Y_mean
+<<<<< Best objective function  =
+                      6.0394597278e+00
+<<<<< Best constraint values   =
+                      3.9344254353e+00
+                      3.0004313690e+00
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 444 total (444 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.4592450249e+00 w
+                      2.4558186246e+00 t
+                      2.0000000000e+02 X_mean
+                      2.0000000000e+02 Y_mean
+<<<<< Best objective function  =
+                      6.0394597348e+00
+<<<<< Best constraint values   =
+                      3.9344254453e+00
+                      3.0004313802e+00
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 1748 total (1748 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.4607932142e+00 w
+                      2.4543777609e+00 t
+                      2.0000000000e+02 X_mean
+                      2.0000000000e+02 Y_mean
+<<<<< Best objective function  =
+                      6.0397161390e+00
+<<<<< Best constraint values   =
+                     -1.4839748139e-01
+                     -1.4904298730e-04
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 891 total (891 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.4607935929e+00 w
+                      2.4543774325e+00 t
+                      2.0000000000e+02 X_mean
+                      2.0000000000e+02 Y_mean
+<<<<< Best objective function  =
+                      6.0397162605e+00
+<<<<< Best constraint values   =
+                     -1.4839750683e-01
+                     -1.4907863805e-04
+<<<<< Best data not found in evaluation cache

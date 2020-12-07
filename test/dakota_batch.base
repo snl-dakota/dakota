@@ -1,0 +1,22 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.1966231881e+00  3.7697935224e+00  2.0251056246e+00  3.2836818689e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  1.4486143670e+00  2.9446320092e+00  3.3099045184e+00  4.3792758525e+00
+Simple Correlation Matrix among all inputs and outputs:
+                       x1 response_fn_1 
+          x1  1.00000e+00 
+response_fn_1 -7.36396e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -7.36396e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1 response_fn_1 
+          x1  1.00000e+00 
+response_fn_1 -7.03054e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -7.03054e-01 

@@ -1,0 +1,139 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 570 total (570 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0296688990e-01 x1
+                      1.4754579920e-01 x2
+<<<<< Best misfit              =
+                      1.0749626112e-01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.8696074634e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  1.7987909654e-01  1.1392520750e-01  1.6236307029e+00  1.2510053683e+00
+            x2  1.5781078334e-01  2.3848851894e-02  4.0526017993e+00  2.1483906580e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1 -1.5372555671e+00  1.3385789307e+00 -8.6928482957e-01 -7.6472547547e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 567 total (567 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0296688990e-01 x1
+                      1.4754579920e-01 x2
+<<<<< Best misfit              =
+                      1.0749626112e-01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.8696074634e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  1.7987909654e-01  1.1392520750e-01  1.6236307029e+00  1.2510053683e+00
+            x2  1.5781078334e-01  2.3848851894e-02  4.0526017993e+00  2.1483906580e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1 -1.5372555671e+00  1.3385789307e+00 -8.6928482957e-01 -7.6472547547e-01
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 562 total (561 new, 1 duplicate)
+<<<<< Best parameters          =
+                      1.0296688990e-01 x1
+                      1.4754579920e-01 x2
+<<<<< Best misfit              =
+                      1.0749626112e-01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.8696074634e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  1.7987909654e-01  1.1392520750e-01  1.6236307029e+00  1.2510053683e+00
+            x2  1.5781078334e-01  2.3848851894e-02  4.0526017993e+00  2.1483906580e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1 -1.5372555671e+00  1.3385789307e+00 -8.6928482957e-01 -7.6472547547e-01
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 563 total (561 new, 2 duplicate)
+<<<<< Best parameters          =
+                      1.0296688990e-01 x1
+                      1.4754579920e-01 x2
+<<<<< Best misfit              =
+                      1.0749626112e-01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.8696074634e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  1.7987909654e-01  1.1392520750e-01  1.6236307029e+00  1.2510053683e+00
+            x2  1.5781078334e-01  2.3848851894e-02  4.0526017993e+00  2.1483906580e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1 -1.5372555671e+00  1.3385789307e+00 -8.6928482957e-01 -7.6472547547e-01
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 105 total (104 new, 1 duplicate)
+<<<<< Best parameters          =
+                      4.9425344097e-01 x1
+                      2.5551502236e-01 x2
+<<<<< Best misfit              =
+                      2.0634827555e+01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.3396938757e+01
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  4.4551964859e-01  3.7859340308e-02 -1.4489884085e+00  3.0966090212e+00
+            x2  2.4603082494e-01  2.8315582355e-02  8.4306487437e-02 -3.2141938112e-01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ oscillatorB_1  5.2106416974e-01  1.0493909586e-03 -9.6245562304e-02 -3.4878817335e-01
+ oscillatorB_2  6.9072480019e-01  3.9302921797e-03 -1.6957822306e-01 -4.5976614018e-01
+ oscillatorB_3  1.1198846963e+00  9.6903460364e-03 -1.5587261668e-01 -7.5030785438e-01
+ oscillatorB_4  1.8428065812e+00  2.1776548567e-02  1.2787308506e-01 -7.2079355810e-01
+ oscillatorB_5  2.8138668033e+00  4.3439200307e-02  3.5549078663e-01 -4.4732553065e-01
+ oscillatorB_6  3.9177678135e+00  7.6044069736e-02  4.3427105616e-01 -3.2183977874e-01
+ oscillatorB_7  4.9913540921e+00  1.1901826883e-01  4.0569653685e-01 -3.7485516112e-01
+ oscillatorB_8  5.8533613228e+00  1.7018770827e-01  3.0938220510e-01 -5.2673238972e-01
+ oscillatorB_9  6.3371985724e+00  2.2638915320e-01  1.7680227817e-01 -6.8619132596e-01
+oscillatorB_10  6.3214105754e+00  2.8426863302e-01  4.0104452729e-02 -7.7284520968e-01
+oscillatorB_11  5.7528618910e+00  3.4104635201e-01 -6.5685396865e-02 -7.4169282585e-01
+oscillatorB_12  4.6588630088e+00  3.9497619682e-01 -1.1075383839e-01 -6.1061025708e-01
+oscillatorB_13  3.1462332206e+00  4.4527382077e-01 -8.7369470356e-02 -4.5477909901e-01
+oscillatorB_14  1.3873850664e+00  4.9147543953e-01 -2.3479629911e-02 -3.3863474135e-01
+oscillatorB_15 -4.0441034666e-01  5.3249795894e-01  2.4528642719e-02 -2.3203440061e-01
+oscillatorB_16 -2.0066869613e+00  5.6591468939e-01  1.0557970099e-03 -1.1773109224e-02
+oscillatorB_17 -3.2213725093e+00  5.8789971158e-01 -1.2088944586e-01  4.3970113624e-01
+oscillatorB_18 -3.9049782457e+00  5.9393303930e-01 -3.3426142594e-01  1.1436855392e+00
+oscillatorB_19 -3.9905891786e+00  5.7999250226e-01 -6.1104925708e-01  2.0137964966e+00
+oscillatorB_20 -3.4981391374e+00  5.4383052891e-01 -9.1706952186e-01  2.8915008672e+00
+oscillatorB_21 -2.5312980545e+00  4.8603346013e-01 -1.2172192522e+00  3.5669430039e+00
+oscillatorB_22 -1.2614088147e+00  4.1077478338e-01 -1.4654390649e+00  3.7564457924e+00
+oscillatorB_23  9.9045483441e-02  3.2648492503e-01 -1.5646707920e+00  3.0866219434e+00
+oscillatorB_24  1.3293089969e+00  2.4711363043e-01 -1.2663369764e+00  1.5001212379e+00
+oscillatorB_25  2.2344174785e+00  1.9365289464e-01 -2.3468445859e-01  5.2508131643e-01
+oscillatorB_26  2.6751283627e+00  1.8388491185e-01  9.3839843891e-01  7.1847878448e-01
+oscillatorB_27  2.5890328516e+00  2.0495519057e-01  1.6315477192e+00  3.2856733080e+00
+oscillatorB_28  1.9995524289e+00  2.2800301312e-01  2.1382283153e+00  7.3044986718e+00
+oscillatorB_29  1.0114286728e+00  2.3625538339e-01  2.5707877893e+00  1.0909662654e+01
+oscillatorB_30 -2.0655874057e-01  2.2471389185e-01  2.9678472544e+00  1.4081426484e+01
+oscillatorB_31 -1.4489007644e+00  1.9529161522e-01  3.3541267505e+00  1.7187948965e+01
+oscillatorB_32 -2.5063721742e+00  1.5445527524e-01  3.6865411061e+00  2.0195758073e+01
+oscillatorB_33 -3.1995316219e+00  1.1271119612e-01  3.5314633861e+00  2.0333794816e+01
+oscillatorB_34 -3.4074187080e+00  8.5690180294e-02  1.5368488349e+00  9.2260542109e+00
+oscillatorB_35 -3.0869204189e+00  8.6381034383e-02 -4.4066439774e-01  9.2799329488e-01
+oscillatorB_36 -2.2797555415e+00  1.0429191816e-01 -5.4901813871e-01  5.7814216603e-01
+oscillatorB_37 -1.1059829364e+00  1.2379011845e-01 -5.0997732645e-01  5.2942195058e-01
+oscillatorB_38  2.5493116187e-01  1.4042889484e-01 -5.9237251953e-01  4.9478694459e-01
+oscillatorB_39  1.5924864456e+00  1.5559326454e-01 -6.9327917998e-01  2.8240483475e-01
+oscillatorB_40  2.6984711559e+00  1.7088394492e-01 -6.0800189474e-01 -4.9025856358e-02
+oscillatorB_41  3.3999614227e+00  1.8517990218e-01 -2.4042016003e-01 -5.6092064016e-02
+oscillatorB_42  3.5867762548e+00  1.9485445081e-01  2.9564426176e-01  4.1826785671e-01
+oscillatorB_43  3.2290432819e+00  1.9600669352e-01  8.1653779170e-01  1.0425478626e+00
+oscillatorB_44  2.3820927364e+00  1.8686735860e-01  1.1549171173e+00  1.3423922834e+00
+oscillatorB_45  1.1778990209e+00  1.6974159282e-01  1.1192389638e+00  9.6798439869e-01
+oscillatorB_46 -1.9558559300e-01  1.5248483821e-01  5.3549528775e-01  1.0870165698e-02
+oscillatorB_47 -1.5239476313e+00  1.4721793797e-01 -2.8051903406e-01 -6.8188970865e-01
+oscillatorB_48 -2.6000233080e+00  1.6058224716e-01 -7.6614715627e-01  2.4953399885e-01
+oscillatorB_49 -3.2564840350e+00  1.8521758601e-01 -1.1474618525e+00  2.7550859794e+00
+oscillatorB_50 -3.3921534463e+00  2.0804155327e-01 -1.5594162330e+00  5.2302280965e+00

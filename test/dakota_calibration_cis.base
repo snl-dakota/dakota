@@ -1,0 +1,87 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 116 total (116 new, 0 duplicate)
+           area: 116 val (116 n, 0 d), 116 grad (116 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 116 val (116 n, 0 d), 116 grad (116 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 116 val (116 n, 0 d), 116 grad (116 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      3.0910526482e+07 E
+                      2.9397954857e+00 w
+                      2.6317233178e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses =
+                      7.7367283293e+00
+                      2.6582650241e+03
+                      3.4815223945e-01
+<<<<< Best residual terms =
+                     -3.5298255102e-02
+                      5.6738122039e-03
+                      2.8472554428e-02
+<<<<< Best residual terms =
+                     -3.5298255102e-02
+                      5.6738122039e-03
+                      2.8472554428e-02
+<<<<< Best data captured at function evaluation 116
+Confidence Intervals on Calibrated Parameters:
+             E: [ 1.9921327410e+07, 4.1899725553e+07 ]
+             w: [ 1.9620663589e+00, 3.9175246125e+00 ]
+             t: [ 1.9539926368e+00, 3.3094539988e+00 ]
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 50 total (50 new, 0 duplicate)
+           area: 50 val (50 n, 0 d), 50 grad (50 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 50 val (50 n, 0 d), 50 grad (50 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 50 val (50 n, 0 d), 50 grad (50 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      3.1000000000e+07 E
+                      2.9165018173e+00 w
+                      2.6480180723e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses =
+                      7.7229495200e+00
+                      2.6582502065e+03
+                      3.2368878019e-01
+<<<<< Best residual terms =
+                     -4.9077064353e-02
+                     -9.1437391275e-03
+                      4.0090951642e-03
+<<<<< Best residual terms =
+                     -4.9077064353e-02
+                     -9.1437391275e-03
+                      4.0090951642e-03
+<<<<< Best data captured at function evaluation 50
+Confidence Intervals on Calibrated Parameters:
+             E: [ 2.1205016517e+07, 4.0794983483e+07 ]
+             w: [ 1.8233888010e+00, 4.0096148336e+00 ]
+             t: [ 1.8763663909e+00, 3.4196697537e+00 ]
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)
+           area: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      3.1000000000e+07 E
+                      2.9127663337e+00 w
+                      2.6510040379e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses =
+                      7.7217553123e+00
+                      2.6488799926e+03
+                      3.2009126430e-01
+<<<<< Best residual terms =
+                     -5.0271272086e-02
+                     -9.3793576585e+00
+                      4.1157927406e-04
+<<<<< Best residual terms =
+                     -5.0271272086e-02
+                     -9.3793576585e+00
+                      4.1157927406e-04
+<<<<< Best data captured at function evaluation 12
+Confidence Intervals on Calibrated Parameters:
+             E: [ 2.1212201131e+07, 4.0787798869e+07 ]
+             w: [ 1.7985655321e+00, 4.0269671353e+00 ]
+             t: [ 1.8590970482e+00, 3.4429110277e+00 ]

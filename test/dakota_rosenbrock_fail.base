@@ -1,0 +1,52 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+  -5.3333333333e+02   P0   P1
+   9.1695238095e+02   P2   P0
+  -1.3073986338e-12   P1   P1
+   2.6666666667e+02   P0   P2
+   3.4106051316e-13   P3   P0
+  -1.0666666667e+03   P2   P1
+  -4.8316906032e-13   P1   P2
+  -4.4764192353e-13   P0   P3
+   3.6571428571e+02   P4   P0
+  -1.9895196601e-13   P3   P1
+  -1.3642420527e-12   P2   P2
+  -8.5265128291e-14   P1   P3
+   2.7433610938e-13   P0   P4
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  6.0656024184e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   1.2557292886e-02   1.0000000000e-01   2.0584907071e-02
+   1.0000000000e-01   1.0000000000e+00   1.3222222222e-02
+   1.0000000000e+00   5.0000000000e+01   4.6612244898e-03
+   5.0000000000e+01   1.0000000000e+02   2.0220000000e-03
+   1.0000000000e+02   5.0000000000e+02   9.2950000000e-04
+   5.0000000000e+02   1.0000000000e+03   2.8060000000e-04
+   1.0000000000e+03   3.3580401847e+03   6.1364518271e-05
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.8000000000e-03
+   1.0000000000e+00   1.3700000000e-02
+   5.0000000000e+01   2.4210000000e-01
+   1.0000000000e+02   3.4320000000e-01
+   5.0000000000e+02   7.1500000000e-01
+   1.0000000000e+03   8.5530000000e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 443 total (443 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 1200 total (1200 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0004590123e+00 x1
+                      1.0009202337e+00 x2
+<<<<< Best objective function  =
+                      2.1109166929e-07
+<<<<< Best data captured at function evaluation 1200

@@ -1,0 +1,15 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 90 total (90 new, 0 duplicate)
+mean_f1:  Min = 2.9224259407e+06  Max = 5.6798492523e+06
+ccdf_beta_f2:  Min = 1.1142846380e+01  Max = 1.5000341555e+01
+ccdf_beta_f3:  Min = 2.1149763722e+01  Max = 2.9965272113e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 306 total (306 new, 0 duplicate)
+mean_f1:  Min = 2.4271658417e+06  Max = 6.2681799041e+06
+ccdf_beta_f2:  Min = 1.0918832972e+01  Max = 1.5386715423e+01
+ccdf_beta_f3:  Min = 2.0696377241e+01  Max = 3.0762469002e+01
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 55629 total (55629 new, 0 duplicate)
+mean_f1:  Min = 2.4269060017e+06  Max = 6.2684359041e+06
+ccdf_beta_f2:  Min = 1.0918832972e+01  Max = 1.5386715423e+01
+ccdf_beta_f3:  Min = 2.0696377241e+01  Max = 3.0762469002e+01

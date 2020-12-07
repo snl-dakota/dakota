@@ -1,0 +1,55 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 17 total (17 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 765 total (765 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for PLOAS:
+   4.2560555556e-01   P0   P0   P0   P0   P0   P0   P0   P0
+  -9.5339940039e-02   P1   P0   P0   P0   P0   P0   P0   P0
+   2.3888888889e-03   P2   P0   P0   P0   P0   P0   P0   P0
+   6.4549722437e-05   P0   P1   P0   P0   P0   P0   P0   P0
+  -5.5555555556e-05   P0   P2   P0   P0   P0   P0   P0   P0
+  -2.5193756667e-01   P0   P0   P1   P0   P0   P0   P0   P0
+  -8.6111111111e-03   P0   P0   P2   P0   P0   P0   P0   P0
+   1.2264447263e-03   P0   P0   P0   P1   P0   P0   P0   P0
+  -5.5555555556e-05   P0   P0   P0   P2   P0   P0   P0   P0
+  -4.4732957649e-02   P0   P0   P0   P0   P1   P0   P0   P0
+   2.6111111111e-03   P0   P0   P0   P0   P2   P0   P0   P0
+   9.6824583655e-02   P0   P0   P0   P0   P0   P1   P0   P0
+  -2.0000000000e-03   P0   P0   P0   P0   P0   P2   P0   P0
+  -6.3516926878e-02   P0   P0   P0   P0   P0   P0   P1   P0
+   9.6666666667e-03   P0   P0   P0   P0   P0   P0   P2   P0
+   1.0844353369e-02   P0   P0   P0   P0   P0   P0   P0   P1
+  -3.3333333333e-04   P0   P0   P0   P0   P0   P0   P0   P2
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.2560555556e-01  1.7146654688e-01
+  integration:  4.2560555556e-01  1.7159130537e-01 -1.2051100976e-01 -2.0124361413e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 23 total (23 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 1035 total (1035 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for PLOAS:
+   4.0060176931e-01   P0   P0   P0   P0   P0   P0   P0   P0
+  -8.8257677229e-02   P1   P0   P0   P0   P0   P0   P0   P0
+  -4.5548132773e-02   P0   P1   P0   P0   P0   P0   P0   P0
+  -1.9475603227e-01   P0   P0   P1   P0   P0   P0   P0   P0
+   2.9454390090e-02   P0   P0   P0   P1   P0   P0   P0   P0
+  -2.0935952594e-02   P0   P0   P0   P0   P1   P0   P0   P0
+   3.4963876037e-02   P0   P0   P0   P0   P0   P1   P0   P0
+  -8.4400619522e-03   P1   P1   P0   P0   P0   P0   P0   P0
+   8.6704500991e-02   P1   P0   P1   P0   P0   P0   P0   P0
+   6.4768768803e-02   P0   P1   P1   P0   P0   P0   P0   P0
+  -6.0487897571e-02   P0   P0   P2   P0   P0   P0   P0   P0
+   2.9301900712e-02   P1   P0   P0   P1   P0   P0   P0   P0
+   2.1476668747e-02   P0   P0   P0   P2   P0   P0   P0   P0
+  -2.2086729413e-02   P0   P1   P0   P0   P1   P0   P0   P0
+  -2.9790627824e-02   P0   P0   P0   P0   P2   P0   P0   P0
+  -4.9707659243e-02   P1   P0   P0   P0   P0   P0   P1   P0
+  -1.5139781472e-02   P0   P0   P1   P0   P0   P0   P1   P0
+   1.8450052919e-02   P0   P0   P0   P1   P0   P0   P1   P0
+  -5.5218940458e-02   P0   P0   P0   P0   P1   P0   P1   P0
+  -1.5495535638e-02   P0   P0   P0   P0   P0   P0   P2   P0
+   1.2246451071e-03   P1   P0   P0   P0   P0   P0   P0   P1
+  -2.2439794968e-02   P0   P0   P0   P1   P0   P0   P0   P1
+   2.0948730189e-02   P0   P0   P0   P0   P0   P0   P1   P1
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+         PLOAS  4.0060176931e-01  1.4164763563e-01

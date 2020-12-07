@@ -1,0 +1,354 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.1308360176e+04  7.4433893442e+03  7.7723693337e-01  2.2176255876e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  8.5289529162e+03  1.4087767435e+04  5.9279668770e+03  1.0006261280e+04
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n  6.33651e-02  1.00000e+00 
+        TF1u -1.28647e-01 -3.04011e-03  1.00000e+00 
+        TF2u -5.14779e-02  1.48985e-01 -3.03729e-02  1.00000e+00 
+        TF1e -1.17935e-01  1.01272e-02  4.63782e-02 -9.44075e-02  1.00000e+00 
+response_fn_1  1.21891e-01  9.13581e-01  2.00498e-01  2.52524e-01  2.00645e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n  3.09146e-01 
+        TF2n  9.41429e-01 
+        TF1u  5.70094e-01 
+        TF2u  3.88796e-01 
+        TF1e  8.12557e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n  4.78309e-02  1.00000e+00 
+        TF1u -9.41046e-02  3.27030e-02  1.00000e+00 
+        TF2u -1.40156e-02  1.49277e-01 -3.44828e-02  1.00000e+00 
+        TF1e -3.89321e-02 -2.11346e-02  2.00222e-03  1.66852e-02  1.00000e+00 
+response_fn_1  1.26140e-01  9.07898e-01  2.71190e-01  3.39266e-01  7.80868e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n  4.63004e-01 
+        TF2n  9.67887e-01 
+        TF1u  7.61425e-01 
+        TF2u  6.99974e-01 
+        TF1e  4.00212e-01 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 60 total (30 new, 30 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.1308360176e+04  7.4433893442e+03  7.7723693337e-01  2.2176255876e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  8.5289529162e+03  1.4087767435e+04  5.9279668770e+03  1.0006261280e+04
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n  6.33651e-02  1.00000e+00 
+        TF1u -1.28647e-01 -3.04011e-03  1.00000e+00 
+        TF2u -5.14779e-02  1.48985e-01 -3.03729e-02  1.00000e+00 
+        TF1e -1.17935e-01  1.01272e-02  4.63782e-02 -9.44075e-02  1.00000e+00 
+response_fn_1  1.21891e-01  9.13581e-01  2.00498e-01  2.52524e-01  2.00645e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n  3.09146e-01 
+        TF2n  9.41429e-01 
+        TF1u  5.70094e-01 
+        TF2u  3.88796e-01 
+        TF1e  8.12557e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n  4.78309e-02  1.00000e+00 
+        TF1u -9.41046e-02  3.27030e-02  1.00000e+00 
+        TF2u -1.40156e-02  1.49277e-01 -3.44828e-02  1.00000e+00 
+        TF1e -3.89321e-02 -2.11346e-02  2.00222e-03  1.66852e-02  1.00000e+00 
+response_fn_1  1.26140e-01  9.07898e-01  2.71190e-01  3.39266e-01  7.80868e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n  4.63004e-01 
+        TF2n  9.67887e-01 
+        TF1u  7.61425e-01 
+        TF2u  6.99974e-01 
+        TF1e  4.00212e-01 
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.1223528211e+04  7.3481244348e+03  1.1868790131e+00  1.5975944570e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  9.3253063864e+03  1.3121750036e+04  6.2285204845e+03  8.9622276840e+03
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n  4.70060e-02  1.00000e+00 
+        TF1u -5.96520e-02 -1.86701e-02  1.00000e+00 
+        TF2u -6.98860e-03  5.85122e-02 -2.82601e-02  1.00000e+00 
+        TF1e -6.09853e-02  7.96544e-02  5.62381e-02 -4.30447e-02  1.00000e+00 
+response_fn_1  1.65138e-01  8.86587e-01  2.34185e-01  2.26976e-01  1.26009e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n  4.24119e-01 
+        TF2n  9.41977e-01 
+        TF1u  6.45598e-01 
+        TF2u  5.18331e-01 
+        TF1e  1.86907e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n  2.46735e-02  1.00000e+00 
+        TF1u -5.70714e-02  5.55710e-05  1.00000e+00 
+        TF2u  3.80106e-02  7.06307e-02 -2.83412e-02  1.00000e+00 
+        TF1e -4.37899e-02 -1.82829e-02 -1.33370e-03  7.00194e-02  1.00000e+00 
+response_fn_1  1.35482e-01  8.90470e-01  2.48013e-01  3.22756e-01  2.52848e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n  4.42316e-01 
+        TF2n  9.62885e-01 
+        TF1u  7.32906e-01 
+        TF2u  7.31368e-01 
+        TF1e  1.15802e-01 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+response_fn_1:  Min = 2.8087833327e+05  Max = 5.9824832515e+06
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e       biuv_1      hpiuv_1      hpiuv_2      dusiv_1      dusrv_1      dusrv_2 response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n -3.11007e-02  1.00000e+00 
+        TF1u  3.37678e-02 -8.44045e-03  1.00000e+00 
+        TF2u -3.86585e-02 -5.55003e-02 -7.30186e-02  1.00000e+00 
+        TF1e  8.67305e-02  5.73982e-03  1.32861e-01  1.03686e-01  1.00000e+00 
+      biuv_1 -7.75950e-03 -6.38913e-02  6.99529e-04  9.49888e-02  1.34121e-01  1.00000e+00 
+     hpiuv_1 -7.41406e-02  4.63245e-02 -3.72655e-02  6.37314e-02  8.52765e-02  0.00000e+00  1.00000e+00 
+     hpiuv_2  5.82725e-02  4.62921e-02  1.40738e-02  3.41743e-02  1.33862e-02  4.03786e-02 -1.83712e-01  1.00000e+00 
+     dusiv_1  3.97056e-02  1.48158e-02 -5.04872e-02 -6.01277e-02  5.31534e-02 -4.49327e-02 -4.95591e-02  2.40260e-02  1.00000e+00 
+     dusrv_1 -3.43603e-02  4.14335e-03 -4.16222e-03 -1.40828e-01  1.77118e-01  6.47499e-02 -9.81981e-02  8.01784e-02  1.56137e-01  1.00000e+00 
+     dusrv_2  1.71998e-01  9.92734e-02 -3.46628e-02 -4.49550e-03  6.00765e-03  1.07676e-01 -8.16497e-02  1.00000e-01 -1.44156e-01  2.67261e-01  1.00000e+00 
+response_fn_1  5.82588e-02  1.22228e-01 -7.30234e-02 -7.68900e-02 -1.70882e-02 -9.95131e-02 -2.69709e-02  7.49853e-02  8.80552e-01  3.77914e-02 -3.61229e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n -2.44166e-03 
+        TF2n  1.99916e-01 
+        TF1u -4.64975e-02 
+        TF2u -7.34769e-02 
+        TF1e -7.24123e-02 
+      biuv_1 -1.19429e-01 
+     hpiuv_1  5.77908e-02 
+     hpiuv_2  1.27557e-01 
+     dusiv_1  9.00430e-01 
+     dusrv_1 -2.78994e-01 
+     dusrv_2  2.58757e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e       biuv_1      hpiuv_1      hpiuv_2      dusiv_1      dusrv_1      dusrv_2 response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n -5.13904e-02  1.00000e+00 
+        TF1u  6.00667e-03 -6.89655e-03  1.00000e+00 
+        TF2u  4.33815e-02 -3.80423e-02 -6.11791e-02  1.00000e+00 
+        TF1e  2.42492e-02  3.18131e-02  9.09900e-02  1.62403e-02  1.00000e+00 
+      biuv_1 -8.95667e-03 -5.53476e-02  5.44290e-02  4.93765e-02  9.82937e-02  1.00000e+00 
+     hpiuv_1 -9.43333e-03  3.77333e-02 -4.24500e-02  6.13167e-02  2.12250e-01 -4.13872e-02  1.00000e+00 
+     hpiuv_2 -8.76449e-03  3.70805e-02  1.37086e-02  3.68558e-02 -7.82062e-02  6.19420e-02 -1.76290e-01  1.00000e+00 
+     dusiv_1  1.29047e-02  7.78730e-02 -4.44988e-02 -5.22861e-02 -3.55991e-03 -4.77742e-02 -4.71719e-02  2.30374e-02  1.00000e+00 
+     dusrv_1  4.24500e-02 -1.88667e-02 -4.24500e-02 -1.13200e-01 -4.71667e-03  7.30362e-02 -1.00000e-01  8.57629e-02  1.01420e-01  1.00000e+00 
+     dusrv_2  1.42492e-01  9.62785e-02 -3.46603e-02 -1.92557e-02  2.69580e-02  8.34873e-02 -8.16497e-02  1.05038e-01 -1.46360e-01  2.44949e-01  1.00000e+00 
+response_fn_1 -6.00667e-03  8.87653e-02 -1.49055e-02 -6.20690e-02 -3.00334e-02 -3.74343e-02 -7.07500e-02  6.26998e-02  9.93214e-01  1.22633e-01 -1.34790e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n -1.86936e-01 
+        TF2n  1.09649e-01 
+        TF1u  3.02068e-01 
+        TF2u -5.63242e-02 
+        TF1e -2.44739e-01 
+      biuv_1  7.41193e-02 
+     hpiuv_1 -9.04467e-02 
+     hpiuv_2  3.15035e-01 
+     dusiv_1  9.94968e-01 
+     dusrv_1  1.76269e-01 
+     dusrv_2  4.11049e-02 
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 60 total (30 new, 30 duplicate)
+response_fn_1:  Min = 2.8087833327e+05  Max = 5.9824832515e+06
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e       biuv_1      hpiuv_1      hpiuv_2      dusiv_1      dusrv_1      dusrv_2 response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n -3.11007e-02  1.00000e+00 
+        TF1u  3.37678e-02 -8.44045e-03  1.00000e+00 
+        TF2u -3.86585e-02 -5.55003e-02 -7.30186e-02  1.00000e+00 
+        TF1e  8.67305e-02  5.73982e-03  1.32861e-01  1.03686e-01  1.00000e+00 
+      biuv_1 -7.75950e-03 -6.38913e-02  6.99529e-04  9.49888e-02  1.34121e-01  1.00000e+00 
+     hpiuv_1 -7.41406e-02  4.63245e-02 -3.72655e-02  6.37314e-02  8.52765e-02  0.00000e+00  1.00000e+00 
+     hpiuv_2  5.82725e-02  4.62921e-02  1.40738e-02  3.41743e-02  1.33862e-02  4.03786e-02 -1.83712e-01  1.00000e+00 
+     dusiv_1  3.97056e-02  1.48158e-02 -5.04872e-02 -6.01277e-02  5.31534e-02 -4.49327e-02 -4.95591e-02  2.40260e-02  1.00000e+00 
+     dusrv_1 -3.43603e-02  4.14335e-03 -4.16222e-03 -1.40828e-01  1.77118e-01  6.47499e-02 -9.81981e-02  8.01784e-02  1.56137e-01  1.00000e+00 
+     dusrv_2  1.71998e-01  9.92734e-02 -3.46628e-02 -4.49550e-03  6.00765e-03  1.07676e-01 -8.16497e-02  1.00000e-01 -1.44156e-01  2.67261e-01  1.00000e+00 
+response_fn_1  5.82588e-02  1.22228e-01 -7.30234e-02 -7.68900e-02 -1.70882e-02 -9.95131e-02 -2.69709e-02  7.49853e-02  8.80552e-01  3.77914e-02 -3.61229e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n -2.44166e-03 
+        TF2n  1.99916e-01 
+        TF1u -4.64975e-02 
+        TF2u -7.34769e-02 
+        TF1e -7.24123e-02 
+      biuv_1 -1.19429e-01 
+     hpiuv_1  5.77908e-02 
+     hpiuv_2  1.27557e-01 
+     dusiv_1  9.00430e-01 
+     dusrv_1 -2.78994e-01 
+     dusrv_2  2.58757e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e       biuv_1      hpiuv_1      hpiuv_2      dusiv_1      dusrv_1      dusrv_2 response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n -5.13904e-02  1.00000e+00 
+        TF1u  6.00667e-03 -6.89655e-03  1.00000e+00 
+        TF2u  4.33815e-02 -3.80423e-02 -6.11791e-02  1.00000e+00 
+        TF1e  2.42492e-02  3.18131e-02  9.09900e-02  1.62403e-02  1.00000e+00 
+      biuv_1 -8.95667e-03 -5.53476e-02  5.44290e-02  4.93765e-02  9.82937e-02  1.00000e+00 
+     hpiuv_1 -9.43333e-03  3.77333e-02 -4.24500e-02  6.13167e-02  2.12250e-01 -4.13872e-02  1.00000e+00 
+     hpiuv_2 -8.76449e-03  3.70805e-02  1.37086e-02  3.68558e-02 -7.82062e-02  6.19420e-02 -1.76290e-01  1.00000e+00 
+     dusiv_1  1.29047e-02  7.78730e-02 -4.44988e-02 -5.22861e-02 -3.55991e-03 -4.77742e-02 -4.71719e-02  2.30374e-02  1.00000e+00 
+     dusrv_1  4.24500e-02 -1.88667e-02 -4.24500e-02 -1.13200e-01 -4.71667e-03  7.30362e-02 -1.00000e-01  8.57629e-02  1.01420e-01  1.00000e+00 
+     dusrv_2  1.42492e-01  9.62785e-02 -3.46603e-02 -1.92557e-02  2.69580e-02  8.34873e-02 -8.16497e-02  1.05038e-01 -1.46360e-01  2.44949e-01  1.00000e+00 
+response_fn_1 -6.00667e-03  8.87653e-02 -1.49055e-02 -6.20690e-02 -3.00334e-02 -3.74343e-02 -7.07500e-02  6.26998e-02  9.93214e-01  1.22633e-01 -1.34790e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n -1.86936e-01 
+        TF2n  1.09649e-01 
+        TF1u  3.02068e-01 
+        TF2u -5.63242e-02 
+        TF1e -2.44739e-01 
+      biuv_1  7.41193e-02 
+     hpiuv_1 -9.04467e-02 
+     hpiuv_2  3.15035e-01 
+     dusiv_1  9.94968e-01 
+     dusrv_1  1.76269e-01 
+     dusrv_2  4.11049e-02 
+response_fn_1:  Min = 2.3159867453e+05  Max = 6.0112999193e+06
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e       biuv_1      hpiuv_1      hpiuv_2      dusiv_1      dusrv_1      dusrv_2 response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n -8.65128e-04  1.00000e+00 
+        TF1u  8.01996e-03  1.36033e-02  1.00000e+00 
+        TF2u -1.67529e-02 -4.39959e-02 -4.37859e-02  1.00000e+00 
+        TF1e  8.00277e-02 -8.77908e-03  6.02372e-02  5.38779e-02  1.00000e+00 
+      biuv_1  5.54997e-03 -2.05248e-03 -4.41570e-03  7.26889e-04  3.99727e-02  1.00000e+00 
+     hpiuv_1  9.35287e-03  3.73872e-02 -3.31556e-02 -2.54068e-02  1.01078e-01 -6.45721e-02  1.00000e+00 
+     hpiuv_2  1.11877e-02  6.38039e-02  4.24558e-02  3.01774e-02  6.69944e-02  5.96595e-02 -1.53418e-01  1.00000e+00 
+     dusiv_1  4.00725e-03  4.25067e-03 -5.99029e-02 -1.37546e-02  4.47444e-02 -9.33198e-04 -4.49045e-02 -2.25099e-02  1.00000e+00 
+     dusrv_1 -5.72963e-02  5.64387e-02 -8.74278e-02 -1.26836e-01  1.05836e-01  1.33863e-01 -1.63663e-02  9.82040e-02  1.85842e-02  1.00000e+00 
+     dusrv_2  1.72914e-03  6.27480e-02  1.28711e-02 -1.17424e-02 -1.05999e-02  2.63615e-02 -8.16497e-02  5.84573e-02 -4.04572e-02  2.13809e-01  1.00000e+00 
+response_fn_1  4.35813e-02  6.60163e-02 -1.11169e-01 -3.35284e-02 -8.09130e-02 -6.40092e-03  2.54698e-03 -4.82697e-02  8.83838e-01 -1.02429e-02 -4.70367e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n  1.09796e-01 
+        TF2n  1.38735e-01 
+        TF1u -1.15955e-01 
+        TF2u -3.19585e-02 
+        TF1e -2.62758e-01 
+      biuv_1  1.21145e-02 
+     hpiuv_1  1.04683e-01 
+     hpiuv_2 -2.84898e-02 
+     dusiv_1  8.95531e-01 
+     dusrv_1 -3.83853e-02 
+     dusrv_2 -1.68114e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1e       biuv_1      hpiuv_1      hpiuv_2      dusiv_1      dusrv_1      dusrv_2 response_fn_1 
+        TF1n  1.00000e+00 
+        TF2n -2.25063e-02  1.00000e+00 
+        TF1u  7.89108e-03  1.12253e-02  1.00000e+00 
+        TF2u  2.88413e-02 -9.11364e-03 -4.37344e-02  1.00000e+00 
+        TF1e  4.42345e-02 -9.33593e-03  2.83968e-02 -1.62267e-02  1.00000e+00 
+      biuv_1  3.01694e-02  1.42832e-02  7.38492e-03  4.80878e-03  5.43851e-03  1.00000e+00 
+     hpiuv_1  1.41441e-02  5.06830e-02 -3.18242e-02 -2.47522e-02  1.39084e-01 -9.95671e-02  1.00000e+00 
+     hpiuv_2 -1.30304e-02  2.79986e-02  3.83330e-02  2.51341e-02  1.23564e-02  5.61676e-02 -1.48911e-01  1.00000e+00 
+     dusiv_1  6.17027e-03  4.04958e-02 -5.47542e-02 -1.36469e-02 -2.61264e-02  2.43376e-03 -4.65719e-02 -2.66728e-02  1.00000e+00 
+     dusrv_1 -1.88588e-02  3.65389e-02 -1.02545e-01 -1.03723e-01  4.95044e-02  1.34780e-01 -6.93889e-18  1.16746e-01  4.12662e-03  1.00000e+00 
+     dusrv_2  1.92477e-03  5.19687e-02  1.73229e-02 -1.34734e-02 -9.62384e-03 -1.18970e-02 -8.16497e-02  6.03063e-02 -3.94698e-02  2.04124e-01  1.00000e+00 
+response_fn_1  1.31703e-02  8.89136e-02 -4.77355e-02 -2.39511e-02 -1.56710e-02  4.67998e-02 -2.35735e-02  6.64158e-02  9.77765e-01  4.71470e-02  3.84954e-03  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+        TF1n  4.64835e-02 
+        TF2n  2.38615e-01 
+        TF1u  2.17762e-02 
+        TF2u -5.51204e-02 
+        TF1e  1.35526e-02 
+      biuv_1  2.29806e-01 
+     hpiuv_1  2.23410e-01 
+     hpiuv_2  4.67601e-01 
+     dusiv_1  9.85437e-01 
+     dusrv_1  9.98939e-02 
+     dusrv_2  1.97016e-01 
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+response_fn_1:  Min = 2.7042832593e+02  Max = 8.2166641537e+03
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1u         TF2u      dussv_1 response_fn_1 
+        TF1u  1.00000e+00 
+        TF2u  2.23413e-02  1.00000e+00 
+     dussv_1 -4.90601e-02 -1.40329e-01  1.00000e+00 
+response_fn_1  6.12808e-01  6.08995e-01  7.52649e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+        TF1u  7.82521e-01 
+        TF2u  7.86779e-01 
+     dussv_1  3.66382e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1u         TF2u      dussv_1 response_fn_1 
+        TF1u  1.00000e+00 
+        TF2u  4.16018e-02  1.00000e+00 
+     dussv_1 -5.75024e-02 -1.47702e-01  1.00000e+00 
+response_fn_1  6.13793e-01  6.70300e-01  8.45624e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+        TF1u  8.30709e-01 
+        TF2u  8.58610e-01 
+     dussv_1  4.75786e-01 
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 60 total (30 new, 30 duplicate)
+response_fn_1:  Min = 2.7042832593e+02  Max = 8.2166641537e+03
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1u         TF2u      dussv_1 response_fn_1 
+        TF1u  1.00000e+00 
+        TF2u  2.23413e-02  1.00000e+00 
+     dussv_1 -4.90601e-02 -1.40329e-01  1.00000e+00 
+response_fn_1  6.12808e-01  6.08995e-01  7.52649e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+        TF1u  7.82521e-01 
+        TF2u  7.86779e-01 
+     dussv_1  3.66382e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1u         TF2u      dussv_1 response_fn_1 
+        TF1u  1.00000e+00 
+        TF2u  4.16018e-02  1.00000e+00 
+     dussv_1 -5.75024e-02 -1.47702e-01  1.00000e+00 
+response_fn_1  6.13793e-01  6.70300e-01  8.45624e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+        TF1u  8.30709e-01 
+        TF2u  8.58610e-01 
+     dussv_1  4.75786e-01 
+response_fn_1:  Min = 2.7042832593e+02  Max = 1.0328173411e+04
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1u         TF2u      dussv_1 response_fn_1 
+        TF1u  1.00000e+00 
+        TF2u  3.65152e-02  1.00000e+00 
+     dussv_1 -4.14345e-02 -9.26543e-02  1.00000e+00 
+response_fn_1  6.39941e-01  6.05236e-01  8.39138e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+        TF1u  7.96504e-01 
+        TF2u  7.82223e-01 
+     dussv_1  3.27768e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1u         TF2u      dussv_1 response_fn_1 
+        TF1u  1.00000e+00 
+        TF2u  4.11225e-02  1.00000e+00 
+     dussv_1 -4.28271e-02 -9.01623e-02  1.00000e+00 
+response_fn_1  6.63073e-01  6.32453e-01  7.26934e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+        TF1u  8.42388e-01 
+        TF2u  8.32003e-01 
+     dussv_1  3.53382e-01 

@@ -1,0 +1,108 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 16 total (16 new, 0 duplicate)
+         obj_fn: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 15248 total (13488 new, 1760 duplicate)
+  response_fn_1: 1220 val (1044 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1016 val (840 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 1004 val (828 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_4: 1016 val (840 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_5: 1004 val (828 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_6: 5408 val (5232 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_7: 1220 val (1044 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_8: 1124 val (948 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_9: 1040 val (864 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ response_fn_10: 1196 val (1020 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1_mean
+                      1.3485334409e+00 x2_mean
+                      5.0000000000e-01 x3_mean
+                      1.3238647472e+00 x4_mean
+                      8.8581358424e-01 x5_mean
+                      1.2000000000e+00 x6_mean
+                      4.0000000000e-01 x7_mean
+<<<<< Best objective function  =
+                      2.4892163867e+01
+<<<<< Best constraint values   =
+                      1.2815496349e+00
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 11 total (11 new, 0 duplicate)
+         obj_fn: 11 val (11 n, 0 d), 11 grad (11 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 37286 total (36076 new, 1210 duplicate)
+  response_fn_1: 3527 val (3406 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 3383 val (3262 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 3371 val (3250 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_4: 3383 val (3262 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_5: 3371 val (3250 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_6: 6347 val (6226 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_7: 3515 val (3394 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_8: 3479 val (3358 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_9: 3383 val (3262 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ response_fn_10: 3527 val (3406 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1_mean
+                      1.3464050156e+00 x2_mean
+                      5.0000000000e-01 x3_mean
+                      1.3220749410e+00 x4_mean
+                      8.7500000000e-01 x5_mean
+                      1.2000000000e+00 x6_mean
+                      4.0000000000e-01 x7_mean
+<<<<< Best objective function  =
+                      2.4851541967e+01
+<<<<< Best constraint values   =
+                      1.2877641292e+00
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
+         obj_fn: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 7536 total (6876 new, 660 duplicate)
+  response_fn_1: 426 val (360 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 486 val (420 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 414 val (348 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_4: 426 val (360 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_5: 426 val (360 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_6: 3474 val (3408 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_7: 450 val (384 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_8: 474 val (408 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_9: 414 val (348 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ response_fn_10: 546 val (480 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1_mean
+                      1.1000000000e+00 x2_mean
+                      5.0000000000e-01 x3_mean
+                      1.0000000000e+00 x4_mean
+                      8.7500000000e-01 x5_mean
+                      1.2000000000e+00 x6_mean
+                      4.0000000000e-01 x7_mean
+<<<<< Best objective function  =
+                      2.1916500000e+01
+<<<<< Best constraint values   =
+                      2.1019162344e+01
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
+         obj_fn: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 21924 total (21264 new, 660 duplicate)
+  response_fn_1: 1878 val (1812 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1914 val (1848 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 1866 val (1800 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_4: 1878 val (1812 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_5: 1878 val (1812 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_6: 4830 val (4764 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_7: 1890 val (1824 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_8: 1926 val (1860 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_9: 1866 val (1800 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ response_fn_10: 1998 val (1932 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1_mean
+                      1.1000000000e+00 x2_mean
+                      5.0000000000e-01 x3_mean
+                      1.0000000000e+00 x4_mean
+                      8.7500000000e-01 x5_mean
+                      1.2000000000e+00 x6_mean
+                      4.0000000000e-01 x7_mean
+<<<<< Best objective function  =
+                      2.1916500000e+01
+<<<<< Best constraint values   =
+                      2.1049412627e+01
+<<<<< Best data not found in evaluation cache

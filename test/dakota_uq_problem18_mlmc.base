@@ -1,0 +1,45 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 122 total (110 new, 12 duplicate)
+  response_fn_1: 122 val (110 n, 12 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 122 val (110 n, 12 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 2.2100000000e+01
+Sample moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  1.3178284434e+00  1.4884209416e-03 -1.6483880336e-04  2.1230933133e-05
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 465 total (204 new, 261 duplicate)
+  response_fn_1: 465 val (204 n, 261 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 465 val (204 n, 261 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.6440000000e+02
+Sample moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  1.3263640170e+00  1.7741418235e-03 -1.9962228068e-06  1.7237852612e-05
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 5508 total (2866 new, 2642 duplicate)
+  response_fn_1: 5508 val (2866 n, 2642 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 5508 val (2866 n, 2642 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.9575000000e+03
+Sample moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  1.3228189255e+00  2.1771890371e-03 -3.6413212072e-06  1.8637784730e-05
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 232 total (150 new, 82 duplicate)
+  response_fn_1: 232 val (150 n, 82 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 232 val (150 n, 82 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 8.2600000000e+01
+Sample moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  1.3233730643e+00  1.3592617789e-03 -2.7621690778e-05  1.3272673834e-05
+Test Number 4 succeeded
+<<<<< Function evaluation summary (UQ_I): 2698 total (600 new, 2098 duplicate)
+  response_fn_1: 2698 val (600 n, 2098 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 2698 val (600 n, 2098 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.2922000000e+03
+Sample moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  1.3156650780e+00  2.4736020303e-03 -8.1893477287e-05  2.6471996860e-05

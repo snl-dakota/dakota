@@ -1,0 +1,11 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 126250 total (126250 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 2695 total (1001 new, 1694 duplicate)
+<<<<< Best parameters          =
+                      4.0199942403e+02 P_mean
+                      1.7607990271e+03 M_mean
+                      5.9969907245e+00 Y_mean
+                                     2 ddsi_ModelForm
+<<<<< Best objective function  =
+                     -3.6680411469e+00
+<<<<< Best data not found in evaluation cache

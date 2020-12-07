@@ -1,0 +1,52 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.6666666667e-01 cdv_1
+                      3.3333333333e-01 cdv_2
+                      0.0000000000e+00 cdv_3
+                      0.0000000000e+00 cdv_4
+                      0.0000000000e+00 cdv_5
+                      3.3333333333e-01 cdv_6
+                      0.0000000000e+00 cdv_7
+                      0.0000000000e+00 cdv_8
+                      6.6666666667e-01 cdv_9
+                      0.0000000000e+00 cdv_10
+                      1.0000000000e+00 cdv_11
+                      6.6666666667e-01 cdv_12
+                      3.3333333333e-01 cdv_13
+                      0.0000000000e+00 cdv_14
+                      1.0000000000e+00 cdv_15
+                      0.0000000000e+00 cdv_16
+                      3.3333333333e-01 cdv_17
+                      6.6666666667e-01 cdv_18
+                      3.3333333333e-01 cdv_19
+                      0.0000000000e+00 cdv_20
+<<<<< Best objective function  =
+                     -1.7076519863e+02
+<<<<< Best data captured at function evaluation 19
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.6666666670e-01 cdv_1
+                      3.3333333330e-01 cdv_2
+                      0.0000000000e+00 cdv_3
+                      0.0000000000e+00 cdv_4
+                      0.0000000000e+00 cdv_5
+                      3.3333333330e-01 cdv_6
+                      0.0000000000e+00 cdv_7
+                      0.0000000000e+00 cdv_8
+                      6.6666666670e-01 cdv_9
+                      0.0000000000e+00 cdv_10
+                      1.0000000000e+00 cdv_11
+                      6.6666666670e-01 cdv_12
+                      3.3333333330e-01 cdv_13
+                      0.0000000000e+00 cdv_14
+                      1.0000000000e+00 cdv_15
+                      0.0000000000e+00 cdv_16
+                      3.3333333330e-01 cdv_17
+                      6.6666666670e-01 cdv_18
+                      3.3333333330e-01 cdv_19
+                      0.0000000000e+00 cdv_20
+<<<<< Best objective function  =
+                     -1.7076519860e+02
+<<<<< Best data captured at function evaluation 19

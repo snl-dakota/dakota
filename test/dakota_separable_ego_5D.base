@@ -1,0 +1,11 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 150 total (150 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1114159427e+00 cdv_1
+                      9.8033836305e-01 cdv_2
+                      8.9620484682e-01 cdv_3
+                      8.4865112026e-01 cdv_4
+                      9.4192958390e-01 cdv_5
+<<<<< Best objective function  =
+                     -1.2074753846e+00
+<<<<< Best data captured at function evaluation 150

@@ -1,0 +1,92 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
+         stress: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.8691852474e+07 E
+                      2.4998843409e+00 w
+<<<<< Best misfit              =
+                      9.7137281272e+00
+<<<<< Best log prior           =
+                     -2.0703165165e+01
+<<<<< Best log posterior       =
+                     -6.9874315821e+01
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  2.8609959149e+07  1.4417714265e+05  8.0289072767e-01  7.8655956161e-02
+             w  2.5016445558e+00  3.8306697138e-03 -1.2217188066e-01  3.8866929785e-02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+        stress  2.6282814617e+03  8.9765361327e+01  1.3400226598e-01  4.9239052295e-02
+  displacement  2.9604502307e-01  1.0636886950e-02 -3.5080744510e-01 -1.2381836901e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                  2.4532691039e+03  5.0000000000e-02
+                  2.8135291937e+03  9.5000000000e-01
+                  2.4826692535e+03  1.0000000000e-01
+                  2.7721260449e+03  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                  2.7441078882e-01  5.0000000000e-02
+                  3.1315737297e-01  9.5000000000e-01
+                  2.7697240600e-01  1.0000000000e-01
+                  3.1131408378e-01  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                  2.0843894793e+03  5.0000000000e-02
+                  3.1738032617e+03  9.5000000000e-01
+                  2.1663019534e+03  1.0000000000e-01
+                  3.0881754948e+03  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                  2.3243987081e-01  5.0000000000e-02
+                  3.5984952189e-01  9.5000000000e-01
+                  2.4309506889e-01  1.0000000000e-01
+                  3.4867791685e-01  9.0000000000e-01
+Information gained from prior to posterior = 6.0209966781e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
+         stress: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.8691852474e+07 E
+                      2.4998843409e+00 w
+<<<<< Best misfit              =
+                      9.7137281272e+00
+<<<<< Best log prior           =
+                     -2.0703165165e+01
+<<<<< Best log posterior       =
+                     -6.9874315821e+01
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  2.8649799715e+07  1.5816378604e+05  4.0631124108e-01 -1.7670285146e-01
+             w  2.5010234127e+00  3.9208250582e-03 -3.5142687224e-01  1.3374146477e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+        stress  2.6428442969e+03  9.1977723081e+01  3.7000745315e-01  1.3550328156e+00
+  displacement  2.9357375791e-01  1.1652542201e-02 -5.7317768058e-02 -3.6122725670e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                  2.4835862032e+03  5.0000000000e-02
+                  2.8925159769e+03  9.5000000000e-01
+                  2.5227790342e+03  1.0000000000e-01
+                  2.8131592543e+03  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                  2.7209399053e-01  5.0000000000e-02
+                  3.1512683670e-01  9.5000000000e-01
+                  2.7509816884e-01  1.0000000000e-01
+                  3.1124014864e-01  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                  2.1007167943e+03  5.0000000000e-02
+                  3.2012291705e+03  9.5000000000e-01
+                  2.1662017754e+03  1.0000000000e-01
+                  3.1195269530e+03  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                  2.2842975112e-01  5.0000000000e-02
+                  3.5828171623e-01  9.5000000000e-01
+                  2.4141757650e-01  1.0000000000e-01
+                  3.4803474966e-01  9.0000000000e-01
+Information gained from prior to posterior = 6.0209966781e+00
