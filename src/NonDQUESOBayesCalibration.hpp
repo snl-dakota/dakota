@@ -91,6 +91,10 @@ protected:
   /// define solver options, likelihood callback, posterior RV, and
   /// inverse problem
   virtual void init_queso_solver();
+  virtual void specify_likelihood();
+  virtual void init_bayesian_solver();
+  virtual void specify_posterior();
+
 
   /// use derivative information from the emulator to define the proposal
   /// covariance (inverse of misfit Hessian)
@@ -126,15 +130,15 @@ protected:
   /// compute the L2 norm of the change in emulator coefficients
   Real assess_emulator_convergence();
 
-  /// intialize the QUESO parameter space, min, max, initial, and domain
-  void init_parameter_domain();
+  /// intialize the QUESO parameter space, min, max, initial, domain, and prior
+  void specify_prior(); 
 
   void init_proposal_covariance();
 
   /// use covariance of prior distribution for setting proposal covariance
   void prior_proposal_covariance();
 
-  /// set proposal covariance from user-provided diagonal or matrix
+  /// Set proposal covariance from user-provided diagonal or matrix
   void user_proposal_covariance(const String& input_fmt, 
 				const RealVector& cov_data, 
 				const String& cov_filename);
@@ -142,9 +146,9 @@ protected:
   // perform sanity checks on proposalCovMatrix
   void validate_proposal();
 
-  /// set inverse problem options calIpOptionsValues common to all solvers
+  /// Set inverse problem options calIpOptionsValues common to all solvers
   void set_ip_options(); 
-  /// set MH-specific inverse problem options calIpMhOptionsValues
+  /// Set MH-specific inverse problem options calIpMhOptionsValues
   void set_mh_options();
   /// update MH-specific inverse problem options calIpMhOptionsValues
   void update_chain_size(unsigned int size);

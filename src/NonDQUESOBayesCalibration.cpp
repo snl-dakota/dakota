@@ -120,33 +120,31 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 /** Perform the uncertainty quantification */
 void NonDQUESOBayesCalibration::calibrate()
 {
-  // instantiate QUESO objects and execute
+ 
+  // This needs to stay at runtime. Because they are static, a single 
+  // instance of it is shared across the whole Dakota execution. For 
+  // a single calibration that would be fine but it would be problematic 
+  // for things like model selection. 
   nonDQUESOInstance = this;
-  tk_factory_dipc.set_callback(nonDQUESOInstance);
-  tk_factory_dipclogit.set_callback(nonDQUESOInstance);
 
-  // initialize the ASV request value for preconditioning and
-  // construct a Response for use in residual computation
-  if (proposalCovarType == "derivatives")
-    init_precond_request_value();
-
-  // BMA TODO: make sure Recast is setup properly to have the right request val
-  // likelihood needs fn_vals; preconditioning may need derivs
-  //  short request_value_needed = 1 | precondRequestValue;
-  //  init_residual_response(request_value_needed);
-
-  // pull vars data prior to emulator build
-  init_parameter_domain();
-
+  specify_prior();
+ 
   // build the emulator and initialize transformations, as needed
-  initialize_model();
+  initialize_model(); // NOTE this function is implemented in the base class
 
-  // may pull Hessian data from emulator
-  init_proposal_covariance();
+  specify_likelihood();
 
-  // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
-  init_queso_solver();
+  // TNP TODO: May want to think about better nomenclature for this.
+  // Hoping that this would be general enough for the non-MH approaches.
+  // TNP TODO: Would we ever need to update the proposal covariance stuff? May
+  // want to move that into the posterior call....
+  init_bayesian_solver(); 
 
+  // TNP TODO: This depends on init_bayesian_solver() having been called at least
+  // once. Is that ok?
+  specify_posterior(); 
+
+  // TNP NOTE: Arguably, this next bit is the new calibrate() call.
   // generate the sample chain that defines the joint posterior distribution
   if (adaptPosteriorRefine) {
     if (!emulatorType) { // current spec prevents this
@@ -165,11 +163,11 @@ void NonDQUESOBayesCalibration::calibrate()
       // updated emulator; placing block at loop end could result in emulator
       // convergence w/o final chain.
       if (num_mcmc) {
-	// update the emulator surrogate data with new truth evals and
-	// reconstruct surrogate (e.g., via PCE sparse recovery)
-	update_model();
-	// assess posterior convergence via convergence of the emulator coeffs
-	adapt_metric = assess_emulator_convergence();
+	      // update the emulator surrogate data with new truth evals and
+	      // reconstruct surrogate (e.g., via PCE sparse recovery)
+	      update_model();
+	      // assess posterior convergence via convergence of the emulator coeffs
+	      adapt_metric = assess_emulator_convergence();
       }
 
       map_pre_solve();
@@ -178,8 +176,8 @@ void NonDQUESOBayesCalibration::calibrate()
 
       // assess convergence of the posterior via sample-based K-L divergence:
       //adapt_metric = assess_posterior_convergence();
-    }
-  }
+    } // adapt while
+  } // if adaptPosteriorRefine
   else {
     map_pre_solve();
     run_chain();
@@ -216,7 +214,7 @@ void NonDQUESOBayesCalibration::map_pre_solve()
   Cout << std::endl;
 
   // propagate MAP to paramInitials for starting point of MCMC chain.  
-  // Note: init_parameter_domain() happens once per calibrate(),
+  // Note: specify_prior() happens once per calibrate(),
   // upstream of map_pre_solve()
   copy_gsl(map_c_vars, *paramInitials);
   // if multiple pre-solves, propagate MAP as initial guess for next pre-solve
@@ -319,6 +317,9 @@ void NonDQUESOBayesCalibration::init_queso_environment()
 
 void NonDQUESOBayesCalibration::init_precond_request_value()
 {
+  // TNP 11/23/20 - seems like could be moved to the base class entirely, 
+  // if MUQ would use this too
+  
   // Gauss-Newton approximate Hessian requires gradients of residuals (rv=2)
   // full Hessian requires values/gradients/Hessians of residuals (rv=7)
   precondRequestValue = 0;
@@ -339,9 +340,62 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
   }
 }
 
+void NonDQUESOBayesCalibration::specify_likelihood(){
+  // Instantiate the likelihood function object that computes [ln(function)]
+  likelihoodFunctionObj = std::make_shared
+    <QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>>
+    ("like_", *paramDomain, &dakotaLogLikelihood, (void *)nullptr, true);
+}
+
+void NonDQUESOBayesCalibration::init_bayesian_solver(){
+  // Sets proposal covariance options, ip options, mh options.
+  tk_factory_dipc.set_callback(nonDQUESOInstance);
+  tk_factory_dipclogit.set_callback(nonDQUESOInstance);
+  
+  // initialize the ASV request value for preconditioning and
+  // construct a Response for use in residual computation
+  if (proposalCovarType == "derivatives")
+    init_precond_request_value();
+
+  // may pull Hessian data from emulator
+  init_proposal_covariance();
+
+  // initialize proposal covariance (must follow parameter domain init)
+  // This is the leading sub-matrix in the case of calibrating sigma terms
+  if (proposalCovarType == "user") // either filename OR data values defined
+    user_proposal_covariance(proposalCovarInputType, proposalCovarData,
+			     proposalCovarFilename);
+  else if (proposalCovarType == "prior")
+    prior_proposal_covariance(); // prior selection or default for no emulator
+  else // misfit Hessian-based proposal with prior preconditioning
+    prior_cholesky_factorization();
+
+  // define calIpOptionsValues
+  set_ip_options();
+  // Set options specific to MH algorithm
+  set_mh_options();
+
+}
+
+void NonDQUESOBayesCalibration::specify_posterior(){
+  // Create a pointer for the posterior RV and generate a QUESO IP
+  // Must have called init_bayesian_solver at least once. 
+ 
+  // Instantiate the inverse problem
+  postRv =
+    std::make_shared<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>>
+    ("post_", *paramSpace);
+  // Q: are Prior/posterior RVs copied by StatInvProblem, such that these
+  //    instances can be local and allowed to go out of scope?
+  // Inverse problem: instantiate it (posterior rv is instantiated internally)
+  inverseProb = std::make_shared
+    <QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>>
+    ("", calIpOptionsValues.get(), *priorRv, *likelihoodFunctionObj, *postRv);
+}
 
 void NonDQUESOBayesCalibration::init_queso_solver()
 {
+  // TNP TODO: Delete when GPMSA is updated.
   // Instantiate the likelihood function object that computes [ln(function)]
   likelihoodFunctionObj = std::make_shared
     <QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>>
@@ -856,10 +910,9 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
     return std::sqrt(l2_norm_delta_coeffs);
 }
 
-
 /** Initialize the calibration parameter domain (paramSpace,
     paramMins/paramMaxs, paramDomain, paramInitials, priorRV) */
-void NonDQUESOBayesCalibration::init_parameter_domain()
+void NonDQUESOBayesCalibration::specify_prior()
 {
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
@@ -905,7 +958,6 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   ("prior_", *paramDomain, nonDQUESOInstance);
 
 }
-
 
 void NonDQUESOBayesCalibration::init_proposal_covariance()
 {
