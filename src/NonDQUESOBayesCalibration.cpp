@@ -121,30 +121,6 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 void NonDQUESOBayesCalibration::calibrate()
 {
  
-  // This needs to stay at runtime. Because they are static, a single 
-  // instance of it is shared across the whole Dakota execution. For 
-  // a single calibration that would be fine but it would be problematic 
-  // for things like model selection. 
-  nonDQUESOInstance = this;
-
-  specify_prior();
- 
-  // build the emulator and initialize transformations, as needed
-  initialize_model(); // NOTE this function is implemented in the base class
-
-  specify_likelihood();
-
-  // TNP TODO: May want to think about better nomenclature for this.
-  // Hoping that this would be general enough for the non-MH approaches.
-  // TNP TODO: Would we ever need to update the proposal covariance stuff? May
-  // want to move that into the posterior call....
-  init_bayesian_solver(); 
-
-  // TNP TODO: This depends on init_bayesian_solver() having been called at least
-  // once. Is that ok?
-  specify_posterior(); 
-
-  // TNP NOTE: Arguably, this next bit is the new calibrate() call.
   // generate the sample chain that defines the joint posterior distribution
   if (adaptPosteriorRefine) {
     if (!emulatorType) { // current spec prevents this
@@ -183,10 +159,7 @@ void NonDQUESOBayesCalibration::calibrate()
     run_chain();
   }
 
-  // Generate useful stats from the posterior samples
-  compute_statistics();
 }
-
 
 void NonDQUESOBayesCalibration::map_pre_solve()
 {
@@ -348,6 +321,11 @@ void NonDQUESOBayesCalibration::specify_likelihood(){
 }
 
 void NonDQUESOBayesCalibration::init_bayesian_solver(){
+  // TNP TODO: Would we ever need to update the proposal covariance stuff? May
+  // want to move that into the posterior call....
+
+  nonDQUESOInstance = this;
+
   // Sets proposal covariance options, ip options, mh options.
   tk_factory_dipc.set_callback(nonDQUESOInstance);
   tk_factory_dipclogit.set_callback(nonDQUESOInstance);
@@ -392,33 +370,6 @@ void NonDQUESOBayesCalibration::specify_posterior(){
     <QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>>
     ("", calIpOptionsValues.get(), *priorRv, *likelihoodFunctionObj, *postRv);
 }
-
-void NonDQUESOBayesCalibration::init_queso_solver()
-{
-  // TNP TODO: Delete when GPMSA is updated.
-  // Instantiate the likelihood function object that computes [ln(function)]
-  likelihoodFunctionObj = std::make_shared
-    <QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>>
-    ("like_", *paramDomain, &dakotaLogLikelihood, (void *)nullptr, true);
-
-  // Instantiate the inverse problem
-
-  postRv =
-    std::make_shared<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>>
-    ("post_", *paramSpace);
-  // Q: are Prior/posterior RVs copied by StatInvProblem, such that these
-  //    instances can be local and allowed to go out of scope?
-
-  // define calIpOptionsValues
-  set_ip_options();
-  // set options specific to MH algorithm
-  set_mh_options();
-  // Inverse problem: instantiate it (posterior rv is instantiated internally)
-  inverseProb = std::make_shared
-    <QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>>
-    ("", calIpOptionsValues.get(), *priorRv, *likelihoodFunctionObj, *postRv);
-}
-
 
 void NonDQUESOBayesCalibration::precondition_proposal(unsigned int chain_index)
 {
@@ -914,6 +865,9 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
     paramMins/paramMaxs, paramDomain, paramInitials, priorRV) */
 void NonDQUESOBayesCalibration::specify_prior()
 {
+ 
+  nonDQUESOInstance = this;
+
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
   paramSpace = std::make_shared

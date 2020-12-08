@@ -88,13 +88,13 @@ protected:
   /// initialize the ASV value for preconditioned cases
   void init_precond_request_value();
   
+  /// intialize the QUESO parameter space, min, max, initial, domain, and prior
   /// define solver options, likelihood callback, posterior RV, and
   /// inverse problem
-  virtual void init_queso_solver();
-  virtual void specify_likelihood();
-  virtual void init_bayesian_solver();
-  virtual void specify_posterior();
-
+  void specify_prior() override; 
+  void specify_likelihood() override;
+  void init_bayesian_solver() override;
+  void specify_posterior() override;
 
   /// use derivative information from the emulator to define the proposal
   /// covariance (inverse of misfit Hessian)
@@ -129,9 +129,6 @@ protected:
 
   /// compute the L2 norm of the change in emulator coefficients
   Real assess_emulator_convergence();
-
-  /// intialize the QUESO parameter space, min, max, initial, domain, and prior
-  void specify_prior(); 
 
   void init_proposal_covariance();
 

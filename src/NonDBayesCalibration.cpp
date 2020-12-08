@@ -690,10 +690,18 @@ void NonDBayesCalibration::core_run()
 {
   nonDBayesInstance = this;
 
-  if (adaptExpDesign) // use meta-iteration in this class
+  if (adaptExpDesign){ // use meta-iteration in this class
     calibrate_to_hifi();
-  else                // delegate to base class calibration
+    }
+  else{                // delegate to base class calibration
+    specify_prior();
+    initialize_model();
+    specify_likelihood();
+    init_bayesian_solver();
+    specify_posterior();  
     calibrate();
+    compute_statistics();
+  }
 
   if (calModelDiscrepancy) // calibrate a model discrepancy function
     build_model_discrepancy();
@@ -830,6 +838,11 @@ void NonDBayesCalibration::calibrate_to_hifi()
     Cout << "Max high-fidelity model runs = " << max_hifi << "\n\n";
   }
 
+  specify_prior();
+  initialize_model();
+  specify_likelihood();
+  init_bayesian_solver();
+  specify_posterior();  
   while (!stop_metric) {
     
     // EVALUATE STOPPING CRITERIA
@@ -908,6 +921,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	    	MI_vec, max_hifi, resp_matrix, optimal_config, max_MI);
     } // end MI loop
   } // end while loop
+  compute_statistics();
 }
 
 bool NonDBayesCalibration::eval_hi2lo_stop(bool stop_metric, double prev_MI,

@@ -104,6 +104,14 @@ protected:
   //- Heading: New virtual functions
   //
 
+  /// Methods for instantiating a Bayesian inverse problem.
+  /// No-ops in the base class that can be specialized by child
+  /// classes.
+  virtual void specify_prior(){}
+  virtual void specify_likelihood(){}
+  virtual void init_bayesian_solver(){}
+  virtual void specify_posterior(){}
+
   /// Perform Bayesian calibration (all derived classes must implement)
   virtual void calibrate() = 0;
 
