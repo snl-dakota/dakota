@@ -9,7 +9,15 @@
 
 # Tests of top-level Dakota Python interface
 
+import sys
+
+# Optionally append a path to the python library, passed as argv[1]
+if len(sys.argv) > 1:
+    dakpy_lib_path = sys.argv[1]
+    sys.path.append(dakpy_lib_path)
+
 import dakpy
+
 
 # Probably don't want / need this...
 def test_cmd():

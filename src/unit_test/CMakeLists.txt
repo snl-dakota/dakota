@@ -257,6 +257,17 @@ if(DAKOTA_PYBIND11)
   install(TARGETS dakpy EXPORT ${ExportTarget}
     DESTINATION share/dakota/Python/dakota/dakpy/)
   install(FILES __init__.py DESTINATION share/dakota/Python/dakota/dakpy)
+
+
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/test_dakota.in"
+    dakota_unit_test_copied_files
+    )
+  add_test(NAME dakota_python
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.py
+    $<TARGET_FILE_DIR:dakpy>
+    )
+
 endif()
 
 
