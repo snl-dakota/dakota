@@ -400,7 +400,7 @@ protected:
 
 private:
 
-  // inner classes to help with mapping keys to class member data values
+  // helpers to map keys to class member data values
 
   /// Retrieve member of type T from class R (Data*Rep) when passed a
   /// pointer to the rep (instantiate template with T& if the return
@@ -408,53 +408,23 @@ private:
   template <typename T, class Rep>
   using RepGetter = std::function<T(std::shared_ptr<Rep>&)>;
 
-  /// Encapsulate lookups across Data*Rep types
-  template <typename T>
-  class LookerUpper
-  {
-  public:
-
-    /// the lookup class must be initialized with all 6 maps from keys
-    /// to values, but any of them can be an empty map
-    LookerUpper
-    (const std::string& context_msg,
-     const std::map<std::string, RepGetter<T, DataEnvironmentRep>>& env_map,
-     const std::map<std::string, RepGetter<T, DataMethodRep>>& met_map,
-     const std::map<std::string, RepGetter<T, DataModelRep>>& mod_map,
-     const std::map<std::string, RepGetter<T, DataVariablesRep>>& var_map,
-     const std::map<std::string, RepGetter<T, DataInterfaceRep>>& int_map,
-     const std::map<std::string, RepGetter<T, DataResponsesRep>>& res_map
-     ):
-      contextMsg(context_msg), envMap(env_map), metMap(met_map),
-      modMap(mod_map), varMap(var_map), intMap(int_map), resMap(res_map)
-    { }
-
-    /// given an entry_name = block.entry_key, return the
-    /// corresponding member value from the appropriate Data*Rep in
-    /// the passed ProblemDescDB rep.
-    T get(const std::string& entry_name,
-	  const std::shared_ptr<ProblemDescDB>& db_rep) const;
+  /// Encapsulate lookups across Data*Rep types:
+  /// given lookup tables mapping strings to Data*Rep members, and an
+  /// entry_name = block.entry_key, return the corresponding member
+  /// value from the appropriate Data*Rep in the ProblemDescDB rep.
+  template<typename T>
+  T get(const std::string& context_msg,
+	const std::map<std::string, RepGetter<T, DataEnvironmentRep>>& env_map,
+	const std::map<std::string, RepGetter<T, DataMethodRep>>& met_map,
+	const std::map<std::string, RepGetter<T, DataModelRep>>& mod_map,
+	const std::map<std::string, RepGetter<T, DataVariablesRep>>& var_map,
+	const std::map<std::string, RepGetter<T, DataInterfaceRep>>& int_map,
+	const std::map<std::string, RepGetter<T, DataResponsesRep>>& res_map,
+	const std::string& entry_name,
+	const std::shared_ptr<ProblemDescDB>& db_rep) const;
 
 //     void set(const std::string& entry_name,
 // 	     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const;
-
-  private:
-    /// message to print if lookup key not found or other error
-    std::string contextMsg;
-    /// environment: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataEnvironmentRep>> envMap;
-    /// method: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataMethodRep>> metMap;
-    /// model: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataModelRep>> modMap;
-    /// variables: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataVariablesRep>> varMap;
-    /// interface: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataInterfaceRep>> intMap;
-    /// responses: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataResponsesRep>> resMap;
-  };
-
 
   //
   //- Heading: Private convenience functions
