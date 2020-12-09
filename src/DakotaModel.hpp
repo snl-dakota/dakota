@@ -289,6 +289,15 @@ public:
 				    const IntResponseMap&  resp_map,
 				    bool rebuild_flag);
 
+  /// replace the response for a single point (based on eval id from
+  /// response_pr) within an existing surrogate's data
+  virtual void replace_approximation(const IntResponsePair& response_pr,
+				     bool rebuild_flag);
+  /// replace the responses for a set of points (based on eval ids from
+  /// resp_map) within an existing surrogate's data
+  virtual void replace_approximation(const IntResponseMap& resp_map,
+				     bool rebuild_flag);
+
   /// remove the previous data set addition to a surrogate (e.g., due
   /// to a previous append_approximation() call); flag manages storing
   /// of surrogate data for use in a subsequent push_approximation()

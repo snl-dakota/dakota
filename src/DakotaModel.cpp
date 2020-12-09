@@ -3951,6 +3951,34 @@ append_approximation(const IntVariablesMap& vars_map,
 }
 
 
+void Model::
+replace_approximation(const IntResponsePair& response_pr, bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->replace_approximation(response_pr, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+         << "approximation(IntResponsePair) function.\nThis model does not "
+	 << "support approximation data replacement." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->replace_approximation(resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+         << "approximation(IntResponseMap) function.\nThis model does not "
+         << "support approximation data replacement." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter

@@ -96,6 +96,9 @@ protected:
   void append_approximation(const IntVariablesMap& vars_map,
 			    const IntResponseMap&  resp_map);
 
+  void replace_approximation(const IntResponsePair& response_pr);
+  void replace_approximation(const IntResponseMap& resp_map);
+
   void build_approximation(const RealVector&  c_l_bnds,
 			   const RealVector&  c_u_bnds,
 			   const IntVector&  di_l_bnds,

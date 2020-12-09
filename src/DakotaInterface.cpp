@@ -1138,6 +1138,32 @@ void Interface::rebuild_approximation(const BitArray& rebuild_fns)
 }
 
 
+void Interface::replace_approximation(const IntResponsePair& response_pr)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->replace_approximation(response_pr);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+	 << "approximation(IntResponsePair) function.\n       This interface "
+	 << "does not support approximation data replacement." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::replace_approximation(const IntResponseMap& resp_map)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->append_approximation(resp_map);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+	 << "approximation(IntResponseMap) function.\n       This interface "
+	 << "does not support approximation data replacement." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 void Interface::pop_approximation(bool save_data)
 {
   if (interfaceRep) // envelope fwd to letter

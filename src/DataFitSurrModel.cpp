@@ -779,6 +779,44 @@ append_approximation(const IntVariablesMap& vars_map,
 }
 
 
+void DataFitSurrModel::
+replace_approximation(const IntResponsePair& response_pr, bool rebuild_flag)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Replacing response id " << response_pr.first << " in "
+	 << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.replace_approximation(response_pr);
+
+  if (rebuild_flag)
+    rebuild_approximation(response_pr); // response_pr used to define build_fns
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation data replacement completed.\n";
+}
+
+
+void DataFitSurrModel::
+replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Replacing response data in " << surrogateType
+	 << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.replace_approximation(resp_map);
+
+  if (rebuild_flag)
+    rebuild_approximation(resp_map);
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation data replacements completed.\n";
+}
+
+
 void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   if (outputLevel >= NORMAL_OUTPUT)

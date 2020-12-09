@@ -158,6 +158,11 @@ public:
   virtual void append_approximation(const IntVariablesMap& vars_map,
 				    const IntResponseMap&  resp_map);
 
+  /// replace the response for a single point within an existing approximation
+  virtual void replace_approximation(const IntResponsePair& response_pr);
+  /// replace responses for multiple points within an existing approximation
+  virtual void replace_approximation(const IntResponseMap& resp_map);
+
   /// builds the approximation
   virtual void build_approximation(const RealVector& c_l_bnds,
     const RealVector&  c_u_bnds, const IntVector&  di_l_bnds,

@@ -601,6 +601,21 @@ append_approximation(const IntVariablesMap& vars_map,
 }
 
 
+void ApproximationInterface::
+replace_approximation(const IntResponsePair& response_pr)
+{
+  // TO DO: shared surrogate data only?
+}
+
+
+void ApproximationInterface::
+replace_approximation(const IntResponseMap& resp_map)
+{
+  for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
+    // TO DO: shared surrogate data only?
+  }
+}
+
 /** This function finds the coefficients for each Approximation based
     on the data passed through update_approximation() calls.  The
     bounds are used only for graphics visualization. */
@@ -681,8 +696,8 @@ void ApproximationInterface::rebuild_approximation(const BitArray& rebuild_fns)
 PRPCacheCIter ApproximationInterface::
 cache_lookup(const Variables& vars, int eval_id, const Response& response)
 {
-  IntStringPair ids(eval_id, actualModelInterfaceId);
   PRPCacheCIter p_it;
+  IntStringPair ids(eval_id, actualModelInterfaceId);
   // sign indicates dataset source (see DataFitSurrModel::build_global()):
   //   eval id > 0 for unique evals from current execution (in data_pairs)
   //   eval id = 0 for evals from file import (not in data_pairs)
@@ -709,8 +724,8 @@ PRPCacheCIter ApproximationInterface::
 cache_lookup(const Real* vars, size_t num_v, int eval_id,
 	     const Response& response)
 {
-  IntStringPair ids(eval_id, actualModelInterfaceId);
   PRPCacheCIter p_it;
+  IntStringPair ids(eval_id, actualModelInterfaceId);
   // sign indicates dataset source (see DataFitSurrModel::build_global()):
   //   eval id > 0 for unique evals from current execution (in data_pairs)
   //   eval id = 0 for evals from file import (not in data_pairs)

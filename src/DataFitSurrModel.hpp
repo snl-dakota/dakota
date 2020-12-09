@@ -225,16 +225,15 @@ protected:
   void append_approximation(const IntVariablesMap& vars_map,
 			    const IntResponseMap&  resp_map, bool rebuild_flag);
 
-  /// remove approximation data added on previous append_approximation() call
-  /// or a specified number of points
+  void replace_approximation(const IntResponsePair& response_pr,
+			     bool rebuild_flag);
+  void replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag);
+
   void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
 
-  /// retrieve a previous approximation data state
   void push_approximation();
-  /// query for whether a trial increment can be retrieved
   bool push_available();
 
-  /// finalize data fit by applying all previous trial increments
   void finalize_approximation();
 
   /// combine all level approximations into a separate composite approximation

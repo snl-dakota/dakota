@@ -261,6 +261,7 @@ void EffGlobalMinimizer::build_gp()
     approxSubProbModel.num_linear_eq_constraints());
 
   // Build initial GP once for all response functions
+  fHatModel.track_evaluation_ids(true); // enable replacement by id
   fHatModel.build_approximation();
 
   batchEvalId = iteratedModel.evaluation_id() + 1;
@@ -528,31 +529,28 @@ bool EffGlobalMinimizer::query_batch()
   // process completions
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nParallel EGO: adding true responses...\n";
-  IntVarsMIter v_it;  IntRespMCIter r_cit;  int id;
+  // Replace liar responses with new truth responses based on evals ids
+  fHatModel.replace_approximation(truth_resp_map, true); // rebuild
+  // remove completed evals from varMaps
+  IntVarsMIter a_it = varsAcquisitionMap.begin(),
+               e_it = varsExplorationMap.begin();
+  int r_id, a_id = (a_it==varsAcquisitionMap.end()) ? INT_MAX : a_it->first,
+            e_id = (e_it==varsExplorationMap.end()) ? INT_MAX : e_it->first;
+  IntRespMCIter r_cit;
   for (r_cit=truth_resp_map.begin(); r_cit!=truth_resp_map.end(); ++r_cit) {
-    id   = r_cit->first;
-    v_it = varsAcquisitionMap.find(id);
-    if (v_it != varsAcquisitionMap.end()) { // *** TO DO
-    //fHatModel.replace_approximation(id, v_it->second, r_cit->second, false);
-      varsAcquisitionMap.erase(v_it);
-    }
+    r_id = r_cit->first;
+    while (a_id < r_id)
+      a_id = (++a_it==varsAcquisitionMap.end()) ? INT_MAX : a_it->first;
+    while (e_id < r_id)
+      e_id = (++e_it==varsExplorationMap.end()) ? INT_MAX : e_it->first;
+    if      (a_id == r_id) varsAcquisitionMap.erase(v_it);
+    else if (e_id == r_id) varsExplorationMap.erase(v_it);
     else {
-      v_it = varsExplorationMap.find(id);
-      if (v_it != varsExplorationMap.end()) { // *** TO DO
-      //fHatModel.replace_approximation(id, v_it->second, r_cit->second, false);
-	varsExplorationMap.erase(v_it);
-      }
-      else {
-	Cerr << "Error: response id not found in EffGlobalMinimizer::"
-	     << "query_batch()" << std::endl;
-	abort_handler(METHOD_ERROR);
-      }
+      Cerr << "Error: no match for response id in EffGlobalMinimizer::"
+	   << "query_batch()" << std::endl;
+      abort_handler(METHOD_ERROR);
     }
-    // *** Note: could orchestrate pop/push to start, deferring on implementing
-    // *** new replace_approximation().  For example, to replace 2nd from end:
-    // *** pop(save), pop(discard), append, push (saved)
   }
-  fHatModel.rebuild_approximation(truth_resp_map);//resp_map defines rebuild_fns
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nParallel EGO: all true responses added.\n";
 
@@ -577,7 +575,7 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
                 ve_cit = varsExplorationMap.begin();
   std::advance(va_cit, varsAcquisitionMap.size() - new_acq);
   std::advance(ve_cit, varsExplorationMap.size() - new_expl);
-  int va_id = (va_cit==varsExplorationMap.end()) ? INT_MAX : va_cit->first,
+  int va_id = (va_cit==varsAcquisitionMap.end()) ? INT_MAX : va_cit->first,
       ve_id = (ve_cit==varsExplorationMap.end()) ? INT_MAX : ve_cit->first;
   while (va_id != INT_MAX || ve_id != INT_MAX) {
     // properly sequence backfill evaluations across the two queues so that
@@ -585,14 +583,12 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
     if (va_id < ve_id) {
       iteratedModel.active_variables(va_cit->second);
       iteratedModel.evaluate_nowait(set);
-      ++va_cit;
-      va_id = (va_cit==varsExplorationMap.end()) ? INT_MAX : va_cit->first;
+      va_id = (++va_cit==varsAcquisitionMap.end()) ? INT_MAX : va_cit->first;
     }
     else if (ve_id < va_id) {    
       iteratedModel.active_variables(ve_cit->second);
       iteratedModel.evaluate_nowait(set);
-      ++ve_cit;
-      ve_id = (ve_cit==varsExplorationMap.end()) ? INT_MAX : ve_cit->first;
+      ve_id = (++ve_cit==varsExplorationMap.end()) ? INT_MAX : ve_cit->first;
     }
     else {
       Cerr << "Error: duplicate evaluation ids in EffGlobalMinimizer::"
