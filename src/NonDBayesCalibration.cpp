@@ -856,8 +856,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     residualModel.assign_rep(std::make_shared<DataTransformModel>
 			     (mcmcModel, expData, numHyperparams,
 			      obsErrorMultiplierMode, mcmcDerivOrder));
-    // TODO: Also switch this to an assign/update
-    construct_map_optimizer();
+    //construct_map_optimizer();
 
     // Run the underlying calibration solver (MCMC)
     calibrate();
