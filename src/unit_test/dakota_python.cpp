@@ -39,6 +39,12 @@ namespace python {
   // return Eigen::Map<Eigen::VectorXd>(resp.function_values().values(), num_fns);
   // }
 
+  Real get_response_fn_val(const Dakota::LibraryEnvironment & env) {
+    // retrieve the final response values
+    const Response& resp  = env.response_results();
+    return resp.function_value(0);
+  }
+    
 }
 }
 
@@ -73,6 +79,19 @@ PYBIND11_MODULE(dakpy, m) {
     .def("execute", &Dakota::ExecutableEnvironment::execute)
     ;
 
+  // demo a Response wrapper
+  py::class_<Dakota::Response>(m, "Response")
+    .def(py::init
+	 ([]()
+	  {
+	    return new Dakota::Response(); 
+	  }))
+
+    .def("function_value", static_cast<const Dakota::Real & (Dakota::Response::*)(size_t) const>(&Dakota::Response::function_value)
+         , "Return function value by index"
+         , py::arg("i"))
+    ;
+
   // demo a library environment that models opt_tpl_test semantics
   py::class_<Dakota::LibraryEnvironment>(m, "LibEnv")
     .def(py::init
@@ -90,6 +109,12 @@ PYBIND11_MODULE(dakpy, m) {
 	 , py::arg("input"), py::arg("input_string"))
 
     .def("execute", &Dakota::LibraryEnvironment::execute)
+    .def("response_results", &Dakota::LibraryEnvironment::response_results)
     ;
+
+  m.def("get_response_fn_val",
+        &Dakota::python::get_response_fn_val,
+	"Get final Response function value"
+	);
 
 }

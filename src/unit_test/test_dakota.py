@@ -54,8 +54,10 @@ responses,
     daklib = dakpy.LibEnv(input = "", input_string = text_book_input)
     print("\n+++ Running LibEnv...\n")
     daklib.execute()
-#    print("\n+++ Final Functions:\n")
-#    print(daklib.response_results(daklib))
+    print("\n+++ Final Functions:\n")
+    print("\tUsing free fn: "+str(dakpy.get_response_fn_val(daklib)))
+    resp_res = daklib.response_results()
+    print("\tUsing wrapped objs: "+str(resp_res.function_value(0)))
     print("\n+++ Done LibEnv.\n")
 
 
