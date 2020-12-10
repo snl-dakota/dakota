@@ -1154,7 +1154,7 @@ void Interface::replace_approximation(const IntResponsePair& response_pr)
 void Interface::replace_approximation(const IntResponseMap& resp_map)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(resp_map);
+    interfaceRep->replace_approximation(resp_map);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual replace_"
 	 << "approximation(IntResponseMap) function.\n       This interface "

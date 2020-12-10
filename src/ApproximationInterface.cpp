@@ -604,15 +604,23 @@ append_approximation(const IntVariablesMap& vars_map,
 void ApproximationInterface::
 replace_approximation(const IntResponsePair& response_pr)
 {
-  // TO DO: shared surrogate data only?
+  int fn_index;
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    fn_index = *it;
+    functionSurfaces[fn_index].replace(response_pr, fn_index); // --> active approxData
+  }
 }
 
 
 void ApproximationInterface::
 replace_approximation(const IntResponseMap& resp_map)
 {
-  for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
-    // TO DO: shared surrogate data only?
+  int fn_index;
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    fn_index = *it;
+    Approximation& fn_surf = functionSurfaces[fn_index];
+    for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
+      fn_surf.replace(*r_it, fn_index); // --> active approxData
   }
 }
 

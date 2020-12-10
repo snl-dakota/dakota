@@ -261,7 +261,8 @@ void EffGlobalMinimizer::build_gp()
     approxSubProbModel.num_linear_eq_constraints());
 
   // Build initial GP once for all response functions
-  fHatModel.track_evaluation_ids(true); // enable replacement by id
+  //if (batchAsynch)
+  //  fHatModel.track_evaluation_ids(true);// enable replacement by id *** TO DO
   fHatModel.build_approximation();
 
   batchEvalId = iteratedModel.evaluation_id() + 1;
@@ -292,6 +293,7 @@ void EffGlobalMinimizer::batch_asynchronous_ego()
   bool approx_converged = false;  size_t new_acq, new_expl;
   while (!approx_converged) {
 
+    // non-blocking synch for composite batch (acquisition + exploration)
     /*bool completed = */query_batch();
     //if (globalIterCount && !completed) delay();
 
@@ -307,8 +309,8 @@ void EffGlobalMinimizer::batch_asynchronous_ego()
     // construct the exploration batch
     construct_batch_exploration(new_expl);
 
-    // non-blocking synch for composite batch (acquisition + exploration)
-    backfill_batch(new_acq, new_expl); // launch trailing ids
+    // launch new truth jobs using liar variable sets
+    backfill_batch(new_acq, new_expl);
 
     // check convergence
     approx_converged = assess_convergence();
@@ -543,8 +545,8 @@ bool EffGlobalMinimizer::query_batch()
       a_id = (++a_it==varsAcquisitionMap.end()) ? INT_MAX : a_it->first;
     while (e_id < r_id)
       e_id = (++e_it==varsExplorationMap.end()) ? INT_MAX : e_it->first;
-    if      (a_id == r_id) varsAcquisitionMap.erase(v_it);
-    else if (e_id == r_id) varsExplorationMap.erase(v_it);
+    if      (a_id == r_id) varsAcquisitionMap.erase(a_it);
+    else if (e_id == r_id) varsExplorationMap.erase(e_it);
     else {
       Cerr << "Error: no match for response id in EffGlobalMinimizer::"
 	   << "query_batch()" << std::endl;

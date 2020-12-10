@@ -76,7 +76,7 @@ SurrogatesBaseApprox::cv_diagnostic(const StringArray& metric_types,
 }
 
 
-void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
+void SurrogatesBaseApprox::primary_diagnostics(size_t fn_index)
 {
   // BMA TODO: Check for null in case not yet built?!?
   String func_description = approxLabel.empty() ?
@@ -124,7 +124,7 @@ void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
 
 
 void SurrogatesBaseApprox::
-challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+challenge_diagnostics(size_t fn_index, const RealMatrix& challenge_points,
 		      const RealVector& challenge_responses)
 {
   String func_description = approxLabel.empty() ?

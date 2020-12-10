@@ -92,6 +92,9 @@ public:
 
   /// rebuilds the approximation incrementally
   virtual void rebuild();
+
+  /// replace the response data 
+  virtual void replace(const IntResponsePair& response_pr, size_t fn_index);
   /// removes entries from end of SurrogateData::{vars,resp}Data
   /// (last points appended, or as specified in args)
   virtual void pop_coefficients(bool save_data);
@@ -202,14 +205,14 @@ public:
   virtual RealArray cv_diagnostic(const StringArray& metric_types,
 				  unsigned num_folds);
   /// compute and print all requested diagnostics and cross-validation 
-  virtual void primary_diagnostics(int fn_index);
+  virtual void primary_diagnostics(size_t fn_index);
   /// compute requested diagnostics for user provided challenge pts
   virtual RealArray challenge_diagnostic(const StringArray& metric_types,
 			    const RealMatrix& challenge_points,
                             const RealVector& challenge_responses);
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
-  virtual void challenge_diagnostics(int fn_index, 
+  virtual void challenge_diagnostics(size_t fn_index, 
 				     const RealMatrix& challenge_points, 
                                      const RealVector& challenge_responses);
   // TODO: private implementation of cross-validation:
@@ -300,7 +303,7 @@ public:
   void add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag,
 	   bool deep_copy, size_t key_index = _NPOS);
   /// adds a new data point by appending to SurrogateData::respData
-  void add(const Response& response, int fn_index, bool anchor_flag,
+  void add(const Response& response, size_t fn_index, bool anchor_flag,
 	   bool deep_copy, size_t key_index = _NPOS);
 
   /// add surrogate data from the provided sample and response data,
@@ -404,6 +407,11 @@ private:
   /// Used only by the alternate envelope constructor to initialize
   /// approxRep to the appropriate derived type.
   std::shared_ptr<Approximation> get_approx(const SharedApproxData& shared_data);
+
+  /// create a SurrogateDataResp instance from the response data for a
+  /// particular QoI
+  Pecos::SurrogateDataResp response_to_sdr(const Response& response,
+					   size_t fn_index);
 
   //
   //- Heading: Data
