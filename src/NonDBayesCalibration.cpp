@@ -690,18 +690,18 @@ void NonDBayesCalibration::core_run()
 {
   nonDBayesInstance = this;
 
-  if (adaptExpDesign){ // use meta-iteration in this class
+  specify_prior();
+  initialize_model();
+  specify_likelihood();
+  init_bayesian_solver();
+  specify_posterior();  
+
+  if (adaptExpDesign) // use meta-iteration in this class
     calibrate_to_hifi();
-    }
-  else{                // delegate to base class calibration
-    specify_prior();
-    initialize_model();
-    specify_likelihood();
-    init_bayesian_solver();
-    specify_posterior();  
+  else                // delegate to base class calibration
     calibrate();
-    compute_statistics();
-  }
+
+  compute_statistics();
 
   if (calModelDiscrepancy) // calibrate a model discrepancy function
     build_model_discrepancy();
@@ -838,11 +838,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
     Cout << "Max high-fidelity model runs = " << max_hifi << "\n\n";
   }
 
-  specify_prior();
-  initialize_model();
-  specify_likelihood();
-  init_bayesian_solver();
-  specify_posterior();  
   while (!stop_metric) {
     
     // EVALUATE STOPPING CRITERIA
@@ -850,14 +845,18 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	                          num_hifi, max_hifi, num_candidates);
 
     // If the experiment data changed, need to update a number of
-    // models that wrap it.  TODO: make this more lightweight instead
-    // of reconstructing
+    // models that wrap it.  
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
     mcmcModel.continuous_variables(initial_point);
+    // TODO: make this more lightweight instead of reconstructing
+    // DataTransformModel supports instantiation and assignment
+    // separately. Move this construction out of while loop and
+    // update/assign instead.
     residualModel.assign_rep(std::make_shared<DataTransformModel>
 			     (mcmcModel, expData, numHyperparams,
 			      obsErrorMultiplierMode, mcmcDerivOrder));
+    // TODO: Also switch this to an assign/update
     construct_map_optimizer();
 
     // Run the underlying calibration solver (MCMC)
@@ -921,7 +920,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	    	MI_vec, max_hifi, resp_matrix, optimal_config, max_MI);
     } // end MI loop
   } // end while loop
-  compute_statistics();
 }
 
 bool NonDBayesCalibration::eval_hi2lo_stop(bool stop_metric, double prev_MI,
