@@ -135,6 +135,15 @@ protected:
 
   /// initialize emulator model and probability space transformations
   void initialize_model();
+  
+  /// copy bestSamples to allSamples to use in surrogate update
+  void best_to_all();
+  /// evaluates allSamples on iteratedModel and update the mcmcModel emulator
+  /// with all{Samples,Responses}
+  void update_model();
+  /// compute the L2 norm of the change in emulator coefficients
+  Real assess_emulator_convergence();
+
 
   /// calibrate the model to a high-fidelity data source, using mutual
   /// information-guided design of experiments (adaptive experimental
@@ -251,6 +260,10 @@ protected:
   /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR,
   /// SC_EMULATOR, ML_PCE_EMULATOR, MF_PCE_EMULATOR, or MF_SC_EMULATOR
   short emulatorType;
+  /// cache previous expansion coefficients for assessing convergence of
+  /// emulator refinement process
+  RealVectorArray prevCoeffs;
+
   /// Model instance employed in the likelihood function; provides response
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
   /// or direct access to simulations (no surrogate option)

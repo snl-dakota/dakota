@@ -80,6 +80,7 @@ protected:
 
   /// convenience function to print calibration parameters, e.g., for
   /// MAP / best parameters
+  // TNP TODO: this seems like it should be base class
   void print_variables(std::ostream& s, const RealVector& c_vars);
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
@@ -119,16 +120,6 @@ protected:
   /// aggregated set within allSamples; unique points with best
   /// conditioning are selected, as determined by pivoted LU
   void filter_chain_by_conditioning();
-
-  /// copy bestSamples to allSamples to use in surrogate update
-  void best_to_all();
-
-  /// evaluates allSamples on iteratedModel and update the mcmcModel emulator
-  /// with all{Samples,Responses}
-  void update_model();
-
-  /// compute the L2 norm of the change in emulator coefficients
-  Real assess_emulator_convergence();
 
   void init_proposal_covariance();
 
@@ -259,9 +250,6 @@ private:
   // - Heading: Data
   // 
   
-  /// cache previous expansion coefficients for assessing convergence of
-  /// emulator refinement process
-  RealVectorArray prevCoeffs;
 };
 
 } // namespace Dakota

@@ -790,6 +790,168 @@ void NonDBayesCalibration::initialize_model()
     Cout << "Mutual Information estimation not yet implemented\n";
 }
 
+void NonDBayesCalibration::best_to_all()
+{
+  if (outputLevel >= NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
+
+  int num_best = bestSamples.size();
+  if (allSamples.numCols() != num_best)
+    allSamples.shapeUninitialized(numContinuousVars, num_best);
+
+  std::/*multi*/map<Real, RealVector>::const_iterator
+    bs_it = bestSamples.begin(), bs_end = bestSamples.end();
+  for (int i=0; bs_it != bs_end; ++bs_it, ++i) {
+    Teuchos::setCol(bs_it->second, i, allSamples);
+    if (outputLevel >= NORMAL_OUTPUT) {
+      Cout << "Best point " << i+1 << ": Log posterior = " << bs_it->first
+	   << " Sample:";
+      // BMA TODO: vector writer?
+      //      Cout << bs_it->second;
+      write_col_vector_trans(Cout, (int)i, allSamples, false, false, true);
+    }
+  }
+}
+
+
+void NonDBayesCalibration::update_model()
+{
+  if (!emulatorType) {
+    Cerr << "Error: NonDBayesCalibration::update_model() requires an "
+	 << "emulator model." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // perform truth evals (in parallel) for selected points
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Updating emulator: evaluating " << allSamples.numCols()
+	 << " best points." << std::endl;
+  // bypass surrogate but preserve transformations to standardized space
+  short orig_resp_mode = mcmcModel.surrogate_response_mode(); // store mode
+  mcmcModel.surrogate_response_mode(BYPASS_SURROGATE); // actual model evals
+  switch (emulatorType) {
+  case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
+    nondInstance = (NonD*)stochExpIterator.iterator_rep().get();
+    evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
+    nondInstance = this; // restore
+    break;
+  case GP_EMULATOR: case KRIGING_EMULATOR:
+    if (standardizedSpace)
+      nondInstance = (NonD*)mcmcModel.subordinate_iterator().iterator_rep().get();
+    evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
+    if (standardizedSpace)
+      nondInstance = this; // restore
+    break;
+  }
+  mcmcModel.surrogate_response_mode(orig_resp_mode); // restore mode
+
+  // update mcmcModel with new data from iteratedModel
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Updating emulator: appending " << allResponses.size()
+	 << " new data sets." << std::endl;
+  switch (emulatorType) {
+  case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
+    // Adapt the expansion in sync with the dataset using a top-down design
+    // (more explicit than embedded logic w/i mcmcModel.append_approximation).
+    std::shared_ptr<NonDExpansion> se_iterator =
+      std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
+    se_iterator->append_expansion(allSamples, allResponses);
+    // TO DO: order increment places addtnl reqmts on emulator conv assessment
+    break;
+  }
+  case GP_EMULATOR: case KRIGING_EMULATOR:
+    mcmcModel.append_approximation(allSamples, allResponses, true); // rebuild
+    break;
+  }
+}
+
+
+Real NonDBayesCalibration::assess_emulator_convergence()
+{
+  // coeff reference point not yet available; force another iteration rather
+  // than use norm of current coeffs (stopping on small norm is not meaningful)
+  if (prevCoeffs.empty()) {
+    switch (emulatorType) {
+    case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR:
+      prevCoeffs = mcmcModel.approximation_coefficients(true);  break;
+    case SC_EMULATOR: case MF_SC_EMULATOR:
+      prevCoeffs = mcmcModel.approximation_coefficients(false); break;
+    case GP_EMULATOR: case KRIGING_EMULATOR:
+      Cerr << "Warning: convergence norm not yet defined for GP emulators in "
+	   << "NonDBayesCalibration::assess_emulator_convergence()."
+	   << std::endl;
+      break;
+    }
+    return DBL_MAX;
+  }
+
+  Real l2_norm_delta_coeffs = 0., delta_coeff_ij;
+  switch (emulatorType) {
+  case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: {
+    // normalized coeffs:
+    const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(true);
+    size_t i, j, num_qoi = coeffs.size(),
+      num_curr_coeffs, num_prev_coeffs, num_coeffs;
+
+    // This approach assumes a well-ordered progression in multiIndex, which is
+    // acceptable for regression PCE using consistently incremented (candidate)
+    // expansion definitions.  Sparsity is not a concern as returned coeffs are
+    // inflated to be dense w.r.t. SharedOrthogPolyApproxData::multiIndex.
+    // Could implement as resize (inflat smaller w/ 0's) + vector difference +
+    // Frobenious norm, but current approach should have lower overhead.
+    for (i=0; i<num_qoi; ++i) {
+      const RealVector&      coeffs_i =     coeffs[i];
+      const RealVector& prev_coeffs_i = prevCoeffs[i];
+      num_curr_coeffs = coeffs_i.length();
+      num_prev_coeffs = prev_coeffs_i.length();
+      num_coeffs = std::max(num_curr_coeffs, num_prev_coeffs);
+      for (j=0; j<num_coeffs; ++j) {
+	delta_coeff_ij = 0.;
+	if (j<num_curr_coeffs) delta_coeff_ij += coeffs_i[j];
+	if (j<num_prev_coeffs) delta_coeff_ij -= prev_coeffs_i[j];
+	l2_norm_delta_coeffs += delta_coeff_ij * delta_coeff_ij;
+      }
+    }
+
+    prevCoeffs = coeffs;
+    break;
+  }
+  case SC_EMULATOR: case MF_SC_EMULATOR: {
+    // Interpolation could use a similar concept with the expansion coeffs,
+    // although adaptation would imply differences in the grid.
+    const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(false);
+
+    Cerr << "Warning: convergence norm not yet defined for SC emulator in "
+	 << "NonDBayesCalibration::assess_emulator_convergence()."
+	 << std::endl;
+    //abort_handler(METHOD_ERROR);
+    return DBL_MAX;
+    break;
+  }
+  case GP_EMULATOR: case KRIGING_EMULATOR:
+    // Consider use of correlation lengths.
+    // TO DO: define SurfpackApproximation::approximation_coefficients()...
+    Cerr << "Warning: convergence norm not yet defined for GP emulators in "
+	 << "NonDBayesCalibration::assess_emulator_convergence()."
+	 << std::endl;
+    //abort_handler(METHOD_ERROR);
+    return DBL_MAX;
+    break;
+  }
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Real norm = std::sqrt(l2_norm_delta_coeffs);
+    Cout << "Assessing emulator convergence: l2 norm = " << norm << std::endl;
+    return norm;
+  }
+  else
+    return std::sqrt(l2_norm_delta_coeffs);
+}
+
+
+
+
 
 void NonDBayesCalibration::calibrate_to_hifi()
 {
@@ -871,7 +1033,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       if (outputLevel >= NORMAL_OUTPUT) 
 	print_hi2lo_begin(num_it);
 
-      // After QUESO is run, get the posterior values of the samples; go
+      // After calibration is run, get the posterior values of the samples; go
       // through all the designs and pick the one with maximum mutual
       // information
   
@@ -2578,6 +2740,7 @@ export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals)
     export_mcmc_stream << '\n';
   }
 
+  // TNP ? Should this just be NonDBayes?
   TabularIO::close_file(export_mcmc_stream, mcmc_filename,
 			"NonDQUESOBayesCalibration chain export");
 }
