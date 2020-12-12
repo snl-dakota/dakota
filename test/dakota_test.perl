@@ -19,8 +19,8 @@ use Config;
 my $DTP_DEBUG = 0;  # set to 1 to debug
 
 # set default options (global to this script)
-my $baseline_filename = "";  # default is dakota_[p]base.test.new
-my $baseline_indir ="";      # default reference baseline is in pwd
+my $baseline_indir ="";      # default reference baselines are in pwd
+my $baseline_overwrite = 0;  # default is dakota_[p]base.test.new
 my $bin_dir = "";            # default binary location is pwd (none)
 my $bin_ext = "";            # default extension is empty
 my @dakota_config = ();      # CMake/#define configuration of Dakota itself
@@ -98,12 +98,6 @@ if ($mode eq "base" || $mode eq "run") {
   @dakota_config = check_dakota_config();
 }
 
-# create new baseline file for output from all tests
-if ($mode eq "base") {
-  open (TEST_OUT, ">${output_dir}${baseline_filename}") ||
-    die "Error: cannot open ${output_dir}${baseline_filename}\n$!";
-}
-
 if ($mode eq "test_props") {
   open (PROPERTIES_OUT, ">${test_props_dir}/dakota_tests.props");
   open (USEREXAMPLES_OUT, ">${test_props_dir}/dakota_usersexamples.props");
@@ -147,9 +141,24 @@ foreach my $file (@test_inputs) {
   my($base_filename, $output, $error, $input, $test, $restart_file) = 
     get_filenames($file);
 
+  # replace .in witn .[p]base
+  if ($parallelism eq "parallel") {
+    $baseline_filename = substr($base_filename, 0, -2) . "pbase"
+  }
+  else {
+    $baseline_filename = substr($base_filename, 0, -2) . "base"
+  }
+
   if ($mode eq "base" && ${last_test} >= 0) {
-    # annotate baseline with test filenames (if there exist ser/par subtests)
-    print TEST_OUT "$base_filename\n";
+    # create baseline file for output from this test
+    if ($baseline_overwrite) {
+      $fq_baseline_filename = "${baseline_indir}${baseline_filename}"
+    }
+    else {
+      $fq_baseline_filename = "${output_dir}${baseline_filename}.new"
+    }
+    open (TEST_OUT, ">${fq_baseline_filename}") ||
+      die "Error: cannot open ${fq_baseline_filename}\n$!";
   }
   elsif ($mode eq "run") { 
     # if normal test mode, open individual test output file
@@ -380,9 +389,11 @@ foreach my $file (@test_inputs) {
   }  # foreach(test)
 
 
+  # close .tst or .[p]base file
+  close(TEST_OUT);
+
   if ($mode eq "run" && -e $test) { 
     # if normal mode, generate diffs
-    close(TEST_OUT);
     my $diff_path = abs_path($0);
     $diff_path = dirname($diff_path);
     my $diff_script = File::Spec->catfile($diff_path, "dakota_diff.perl");
@@ -390,12 +401,12 @@ foreach my $file (@test_inputs) {
     my $perlexe = $Config{perlpath};
     if ($parallelism eq "parallel") {
       system("${perlexe} ${diff_script} $base_filename $baseline_indir" . 
-	     "dakota_pbase.test $test >> $output_dir" . 
+	     "${baseline_filename} $test >> $output_dir" .
 	     "dakota_pdiffs.out");
     }
     else {
       system("${perlexe} ${diff_script} $base_filename $baseline_indir" . 
-	     "dakota_base.test $test >> $output_dir" .
+	     "${baseline_filename} $test >> $output_dir" .
 	     "dakota_diffs.out");
     }
 
@@ -422,10 +433,6 @@ if ($mode eq "test_props") {
   close(USEREXAMPLES_OUT);
 }
 
-if ($mode eq "base") {
-  close(TEST_OUT);
-}
-
 print "Testing Script Complete.\n";
 
 exit $summary_exitcode;
@@ -435,10 +442,10 @@ exit $summary_exitcode;
 # ---------------
 
 
-# Uses global @ARGV.  May set global option variables:
+# Uses global @ARGV.  May set global option variables at top:
 #   mode, parallelism, test_num
 #   directories input_dir and output_dir
-#   file names baseline_filename and extract_filename
+#   file names extract_filename, other globals
 #   array test_inputs
 sub process_command_line {
 
@@ -461,10 +468,10 @@ sub process_command_line {
   # Process long options
   GetOptions('base'           => \$opt_base,
   	     'baseline-indir=s' => \$baseline_indir,
+	     'baseline-overwrite' => \$baseline_overwrite,
   	     'bin-dir=s'      => \$bin_dir,
 	     'bin-ext=s'      => \$bin_ext,
   	     'extract'        => \$opt_extract,
-  	     'file-base=s'    => \$baseline_filename,
   	     'file-extract=s' => \$extract_filename,
   	     'help|?'         => \$opt_help,
   	     'input-dir=s'    => \$input_dir,
@@ -490,22 +497,13 @@ sub process_command_line {
     $mode = "test_props";
   }
   elsif ($opt_extract || $extract_filename) {
-    if ($opt_base || $baseline_filename) {
+    if ($opt_base || $baseline_overwrite) {
       die "Error: cannot specify --base* and --extract* together";
     }
     $mode = "extract";
   }
-  elsif ($opt_base || $baseline_filename) {
+  elsif ($opt_base || $baseline_overwrite) {
     $mode = "base";
-    # default baseline filenames
-    if (! $baseline_filename) {
-      if ($parallelism eq "parallel") {
-        $baseline_filename = "dakota_pbase.test.new";
-      }
-      else {
-        $baseline_filename = "dakota_base.test.new";
-      }
-    }
   }
 
   # cleanup options
@@ -545,12 +543,12 @@ sub process_command_line {
   
   # parse any remaining command-line arguments
   if (@ARGV) {
-    if ($mode eq "base") {
-      die "Error: cannot specify files or individual tests in baseline mode";
-    }
     foreach my $arg (@ARGV) {
       if ($arg =~ /^[0-9]+$/) {      
         # a specified test number (exact match on integers)
+	if ($mode eq "base") {
+	  die "Error: cannot specify individual sub-tests in baseline mode";
+	}
         if (defined $test_num) {
           die "Error: only one test number may be specified";
         }
@@ -1544,12 +1542,18 @@ skip individual tests
 
 =item B<--base>                  
 
-create baseline file (default dakota_[p]base.test.new); cannot be
-specified with extract options
+create baseline file(s) (default <output-dir>/dakota_*.[p]base.new);
+cannot be specified with extract options
 
-=item B<--file-base=filename>    
+=item B<--baseline-overwrite>
 
-create specified baseline file; implies --base
+generate baseline file(s) in-place, overwriting existing (typically
+used with --baseline-indir=<dakota-src>/test), does not append .new
+suffix, and implies --base
+
+=item B<--baseline-indir=filepath>
+
+directory containing test reference baselines to diff against
 
 =item B<--extract>
 
@@ -1575,13 +1579,9 @@ directory containing executables such as dakota
 
 directory containing test input files
 
-=item B<--baseline-indir=filepath>
-
-directory containing test reference baselines
-
 =item B<--output-dir=filepath>
 
-for generated intermediate, diff, and baseline files
+for generated intermediate and diff files
 
 =item B<--save-output>
 
@@ -1645,26 +1645,33 @@ in dakota_filename.in, writing dakota_filename.in_
 
 =item B<baseline generation>
 
-dakota_test.perl [--parallel] --base
+dakota_test.perl [--parallel] --base [dakota_*.in ...]
 
-executes all the serial [parallel] tests in the test input directory
-and creates a new baseline file, dakota_[p]base.test.new
+executes all the (or specified) serial [parallel] tests in the test
+input directory and creates new baseline files in out-dir, e.g.,
+dakota_study.[p]base.new
 
 =item B<Baseline creation guidelines>
 
-To create a new serial [parallel] baseline:
+To create a new serial [parallel] baseline (conservative method):
 
-1. Run dakota_test.perl in baseline serial [parallel] mode
+1. In dakota_build/test, run dakota_test.perl in baseline serial
+     [parallel] mode:
      dakota_test.perl [--parallel] --base
 
-2. Review results in dakota_[p]base.test.new to make sure all tests
+2. Review results in dakota_*.[p]base.new to make sure all tests
    executed correctly. Making sure any expected changes are present
    and are reasonable.
 
-3. Copy the dakota_[p]base.test.new file
-     cp dakota_[p]base.test.new dakota_[p]base.test
+3. Copy the baseline files to the source tree dakota_src/test and
+   commit
 
-4. Commit the updated dakota_[p]base.test to the repository
+Alternately, use the --baseline-overwrite option to replace the
+baseline files in baseline-indir and use git diff or other tools to
+review before committing. From dakota_build/test:
+
+dakota_test.perl [--parallel] --base --baseline-indir=dakota_src/test
+  --baseline-overwrite[dakota_*.in ...]
 
 =back
 

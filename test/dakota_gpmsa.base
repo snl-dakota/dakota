@@ -1,0 +1,7 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)
+Sample moment statistics for each posterior variable:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+         uuv_1  2.1897335966417755e-01  1.4699260526187483e-01 -2.3363113340970540e-01 -7.1318509795232432e-01
+         uuv_2 -3.5553592249280874e-01  6.1348288630121289e-02 -1.2937717857100500e-01 -4.8534088433767486e-01
+         uuv_3 -9.2574471140873388e-03  1.0671671917024228e-01 -1.2955622509091946e-01 -7.5228930443482889e-01

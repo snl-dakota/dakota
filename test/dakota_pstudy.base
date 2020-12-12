@@ -1,0 +1,223 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 cdv_1
+                      1.0000000000e+00 cdv_2
+                      1.0000000000e+00 cdv_3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best constraint values   =
+                      5.0000000000e-01
+                      5.0000000000e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 35 total (35 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 cdv_1
+                      1.0000000000e+00 cdv_2
+                      1.0000000000e+00 cdv_3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best constraint values   =
+                      5.0000000000e-01
+                      5.0000000000e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 cdv_1
+                      1.0000000000e+00 cdv_2
+                      1.0000000000e+00 cdv_3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best constraint values   =
+                      5.0000000000e-01
+                      5.0000000000e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1000000000e+00 cdv_1
+                      1.2000000000e+00 cdv_2
+                      1.3000000000e+00 cdv_3
+<<<<< Best objective function  =
+                      9.8000000000e-03
+<<<<< Best constraint values   =
+                      6.1000000000e-01
+                      8.9000000000e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
+<<<<< Best parameters          =
+                      8.0000000000e-01 cdv_1
+                      1.0000000000e+00 cdv_2
+                      1.0000000000e+00 cdv_3
+<<<<< Best objective function  =
+                      1.6000000000e-03
+<<<<< Best constraint values   =
+                      1.4000000000e-01
+                      6.0000000000e-01
+<<<<< Best data captured at function evaluation 3
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 cdv_1
+                      3.3333333333e+00 cdv_2
+                      0.0000000000e+00 cdv_3
+<<<<< Best objective function  =
+                      3.1641975309e+01
+<<<<< Best constraint values   =
+                     -1.6666666667e+00
+                      1.1111111111e+01
+<<<<< Best data captured at function evaluation 32
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  0.00000e+00  1.00000e+00 
+       cdv_3  0.00000e+00  1.38778e-17  1.00000e+00 
+      obj_fn -3.26241e-01 -2.71606e-01 -2.40573e-01  1.00000e+00 
+nln_ineq_con_1  0.00000e+00 -7.88110e-02  5.20417e-18  5.14068e-01  1.00000e+00 
+nln_ineq_con_2 -9.14708e-02 -3.46945e-18 -1.04083e-17  5.42460e-01 -6.93889e-17  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -3.50098e-01  0.00000e+00 -9.14708e-02 
+       cdv_2 -2.97109e-01 -7.88110e-02 -5.71976e-17 
+       cdv_3 -2.65701e-01  2.84217e-18 -1.20583e-17 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  0.00000e+00  1.00000e+00 
+       cdv_3  0.00000e+00 -1.38778e-17  1.00000e+00 
+      obj_fn -3.54919e-01 -2.97947e-01 -2.56651e-01  1.00000e+00 
+nln_ineq_con_1  0.00000e+00 -5.43607e-01  3.46945e-18  5.83498e-01  1.00000e+00 
+nln_ineq_con_2 -4.77240e-01  1.08915e-02  1.73472e-18  5.69201e-01 -7.10481e-03  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -3.86020e-01  0.00000e+00 -4.77268e-01 
+       cdv_2 -3.31428e-01 -5.43607e-01  1.23939e-02 
+       cdv_3 -2.89626e-01  0.00000e+00  0.00000e+00 
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 cdv_1
+                      1.0000000000e+00 cdv_2
+                      1.0000000000e+00 cdv_3
+                                     0 ddriv_1
+                                     2 ddsiv_1
+                      1.0000000000e+00 ddsrv_1
+<<<<< Best objective function  =
+                      2.0000000000e+00
+<<<<< Best constraint values   =
+                      5.0000000000e-01
+                      5.0000000000e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1000000000e+00 cdv_1
+                      1.2000000000e+00 cdv_2
+                      1.3000000000e+00 cdv_3
+                                     1 ddriv_1
+                                     2 ddsiv_1
+                      3.0000000000e+00 ddsrv_1
+<<<<< Best objective function  =
+                      1.7009800000e+01
+<<<<< Best constraint values   =
+                      6.1000000000e-01
+                      8.9000000000e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 cdv_1
+                      1.0000000000e+00 cdv_2
+                      1.0000000000e+00 cdv_3
+                                     3 ddriv_1
+                                     6 ddsiv_1
+                      5.0000000000e+00 ddsrv_1
+<<<<< Best objective function  =
+                      8.9700010000e+02
+<<<<< Best constraint values   =
+                      3.1000000000e-01
+                      5.5000000000e-01
+<<<<< Best data captured at function evaluation 2
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 729 total (729 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 cdv_1
+                      0.0000000000e+00 cdv_2
+                      0.0000000000e+00 cdv_3
+                                     0 ddriv_1
+                                     2 ddsiv_1
+                      1.0000000000e+00 ddsrv_1
+<<<<< Best objective function  =
+                      5.0000000000e+00
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 14
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3      ddriv_1      ddsiv_1      ddsrv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  0.00000e+00  1.00000e+00 
+       cdv_3  0.00000e+00  0.00000e+00  1.00000e+00 
+     ddriv_1  0.00000e+00  0.00000e+00  0.00000e+00  1.00000e+00 
+     ddsiv_1  0.00000e+00  0.00000e+00  0.00000e+00 -3.46945e-18  1.00000e+00 
+     ddsrv_1  0.00000e+00  0.00000e+00  0.00000e+00 -3.46945e-18 -1.04083e-17  1.00000e+00 
+      obj_fn -3.01269e-01 -3.01269e-01 -3.01269e-01  2.32663e-02  2.44595e-01  1.52723e-01  1.00000e+00 
+nln_ineq_con_1  0.00000e+00 -8.62796e-02  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  4.80663e-01  1.00000e+00 
+nln_ineq_con_2 -8.62796e-02  2.16840e-19 -2.16840e-19 -2.16840e-19 -2.16840e-19 -2.16840e-19  4.80663e-01  1.08420e-19  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -3.51460e-01  0.00000e+00 -8.62796e-02 
+       cdv_2 -3.51460e-01 -8.62796e-02  0.00000e+00 
+       cdv_3 -3.51460e-01  0.00000e+00  0.00000e+00 
+     ddriv_1  2.89799e-02  1.68820e-19  3.37640e-19 
+     ddsiv_1  2.91547e-01  0.00000e+00  0.00000e+00 
+     ddsrv_1  1.86952e-01  0.00000e+00  0.00000e+00 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3      ddriv_1      ddsiv_1      ddsrv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  0.00000e+00  1.00000e+00 
+       cdv_3  0.00000e+00  0.00000e+00  1.00000e+00 
+     ddriv_1  0.00000e+00  0.00000e+00  0.00000e+00  1.00000e+00 
+     ddsiv_1  0.00000e+00  0.00000e+00  0.00000e+00 -3.46945e-18  1.00000e+00 
+     ddsrv_1  0.00000e+00  0.00000e+00  0.00000e+00 -3.46945e-18 -1.04083e-17  1.00000e+00 
+      obj_fn -3.02964e-01 -3.02964e-01 -3.02964e-01  3.74354e-02  2.30900e-01  1.41862e-01  1.00000e+00 
+nln_ineq_con_1  0.00000e+00 -5.33761e-01  2.16840e-19  2.16840e-19  2.16840e-19  2.16840e-19  5.33726e-01  1.00000e+00 
+nln_ineq_con_2 -5.33761e-01  0.00000e+00 -4.33681e-19 -4.33681e-19 -4.33681e-19 -4.33681e-19  5.33726e-01  3.49520e-17  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -3.51812e-01  0.00000e+00 -5.33761e-01 
+       cdv_2 -3.51812e-01 -5.33761e-01  0.00000e+00 
+       cdv_3 -3.51812e-01  0.00000e+00  0.00000e+00 
+     ddriv_1  4.63901e-02  0.00000e+00  0.00000e+00 
+     ddsiv_1  2.75366e-01  0.00000e+00  0.00000e+00 
+     ddsrv_1  1.73322e-01  0.00000e+00  0.00000e+00 
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1000000000e+00 cdv_1
+                      1.2000000000e+00 cdv_2
+                      1.3000000000e+00 cdv_3
+<<<<< Best objective function  =
+                      9.8000000000e-03
+<<<<< Best constraint values   =
+                      6.1000000000e-01
+                      8.9000000000e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1000000000e+00 cdv_1
+                      1.2000000000e+00 cdv_2
+                      1.3000000000e+00 cdv_3
+                                     1 ddriv_1
+                                     2 ddsiv_1
+                      3.0000000000e+00 ddsrv_1
+<<<<< Best objective function  =
+                      1.7009800000e+01
+<<<<< Best constraint values   =
+                      6.1000000000e-01
+                      8.9000000000e-01
+<<<<< Best data captured at function evaluation 1

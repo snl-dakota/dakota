@@ -1,0 +1,13 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 201786 total (201786 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 cdv_1
+                      4.4387975700e-01 cdv_2
+                     -1.0000000000e+00 cdv_3
+<<<<< Best objective function  =
+                      9.2018669868e-02
+<<<<< Best constraint values   =
+                      1.6940264598e-02
+                      1.1439681452e-01
+                      1.6940264249e-02
+<<<<< Best data not found in evaluation cache

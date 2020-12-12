@@ -9,6 +9,8 @@
 #include "SurrogatesGaussianProcess.hpp"
 #include "SurrogatesGPObjective.hpp"
 
+#include "util_math_tools.hpp"
+
 #include "ROL_Algorithm.hpp"
 #include "ROL_Bounds.hpp"
 #include "ROL_LineSearchStep.hpp"
@@ -132,10 +134,10 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   }
 
   /* set up the initial guesses */
-  srand(configOptions.get<int>("gp seed"));
+  //srand(configOptions.get<int>("gp seed"));
   MatrixXd initial_guesses;
-  generate_initial_guesses(sigma_bounds, length_scale_bounds,
-                           nugget_bounds, num_restarts,
+  generate_initial_guesses(sigma_bounds, length_scale_bounds, nugget_bounds,
+                           num_restarts, configOptions.get<int>("gp seed"),
                            initial_guesses);
 
   ROL::Ptr<std::ostream> outStream;
@@ -681,10 +683,13 @@ void GaussianProcess::generate_initial_guesses(const VectorXd &sigma_bounds,
                                                const MatrixXd &length_scale_bounds,
                                                const VectorXd &nugget_bounds,
                                                const int num_restarts,
+                                               const int seed,
                                                MatrixXd &initial_guesses) {
 
-  initial_guesses = MatrixXd::Random(num_restarts,numVariables + 1
-                    + numPolyTerms + numNuggetTerms);
+  initial_guesses = util::create_uniform_random_double_matrix(num_restarts,
+                    numVariables + 1 + numPolyTerms + numNuggetTerms,
+                    seed, true, -1.0, 1.0);
+
   double mean, span;
   for (int j = 0; j < numVariables+1; j++) {
     if (j == 0) {

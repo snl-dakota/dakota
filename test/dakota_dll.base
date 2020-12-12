@@ -1,0 +1,20 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  1.73472e-17  1.00000e+00 
+response_fn_1 -3.00705e-03 -5.01176e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -3.47498e-03 
+          x2 -5.01178e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2 -1.38778e-17  1.00000e+00 
+response_fn_1 -4.07034e-02 -5.01532e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -4.70484e-02 
+          x2 -5.01948e-01 

@@ -1,0 +1,12 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
+response_fn_1:  Min = 4.4376104545e+01  Max = 1.2000223265e+04
+response_fn_2:  Min = -3.6713252985e+00  Max = 9.8183834392e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 60 total (58 new, 2 duplicate)
+response_fn_1:  Min = 4.0425600000e+01  Max = 1.3950161600e+04
+response_fn_2:  Min = -4.0000000000e+00  Max = 9.9500000000e+01
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 3432 total (3429 new, 3 duplicate)
+response_fn_1:  Min = 4.0425600000e+01  Max = 1.3950161600e+04
+response_fn_2:  Min = -4.0000000000e+00  Max = 9.9500000000e+01

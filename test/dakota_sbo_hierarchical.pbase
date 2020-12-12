@@ -1,0 +1,9 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 23 total (23 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000128e+00 x1
+                      1.0000000224e+00 x2
+<<<<< Best objective function  =
+                      1.1816927162e-15
+<<<<< Best data captured at function evaluation 21

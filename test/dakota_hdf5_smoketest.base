@@ -1,0 +1,14 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 45 total (43 new, 2 duplicate)
+         stress: 45 val (43 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 45 val (43 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      7.6259321155e-01 E
+                      1.1628259903e+00 w
+<<<<< Best residual terms =
+                      3.8795753666e-03
+                      1.3541116651e-04
+<<<<< Best data captured at function evaluation 40
+Confidence Intervals on Calibrated Parameters:
+             E: [ -9.1248819768e+04, 9.1250344955e+04 ]
+             w: [ -2.7848325462e+05, 2.7848558027e+05 ]

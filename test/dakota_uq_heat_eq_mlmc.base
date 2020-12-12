@@ -1,0 +1,66 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 340 total (340 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.6890000000e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.4818878260e+01  9.7359731568e+01  1.7046236294e+00  5.0267548551e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 2766 total (2766 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 3.5077750000e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.9997888340e+01  1.0695614925e+02  2.3005197137e+00  7.5312341428e+00
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 26412 total (26412 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 1.1620600000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1277632856e+01  1.0692093070e+02  2.1745744266e+00  7.0328542373e+00
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 27726 total (27726 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.9388460000e+03
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1331091656e+01  1.0646767850e+02  2.0328901393e+00  6.0132085587e+00
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 31598 total (31598 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 5.0078700000e+03
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1329789962e+01  1.0646375073e+02  2.0325529319e+00  6.0100708394e+00
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 340 total (340 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.6890000000e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.4818878260e+01  9.7359731568e+01  1.7046236294e+00  5.0267548551e+00
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 2766 total (2766 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 3.5077750000e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.9997888340e+01  1.0695614925e+02  2.3005197137e+00  7.5312341428e+00
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 26412 total (26412 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 1.1620600000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1277632856e+01  1.0692093070e+02  2.1745744266e+00  7.0328542373e+00
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 27726 total (27726 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.9388460000e+03
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1331091656e+01  1.0646767850e+02  2.0328901393e+00  6.0132085587e+00
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 31598 total (31598 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 5.0078700000e+03
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1329789962e+01  1.0646375073e+02  2.0325529319e+00  6.0100708394e+00
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 10587 total (10587 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 6.5087375000e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1678105074e+01  1.0806582247e+02  2.0995111298e+00  6.4524074325e+00

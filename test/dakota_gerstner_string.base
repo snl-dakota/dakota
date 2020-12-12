@@ -1,0 +1,79 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 48 total (48 new, 0 duplicate)
+Simple Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1 
+           x  1.00000e+00 
+           y  6.93889e-18  1.00000e+00 
+      ancomp  6.93889e-18 -1.38778e-17  1.00000e+00 
+response_fn_1 -8.40796e-02 -8.40796e-02 -9.24030e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+           x -2.25439e-01 
+           y -2.25439e-01 
+      ancomp -9.30632e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1 
+           x  1.00000e+00 
+           y  0.00000e+00  1.00000e+00 
+      ancomp  0.00000e+00  0.00000e+00  1.00000e+00 
+response_fn_1 -7.60320e-02 -7.46863e-02 -9.41606e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+           x -2.31573e-01 
+           y -2.27689e-01 
+      ancomp -9.47000e-01 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 36 total (36 new, 0 duplicate)
+Simple Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1 
+           x  1.00000e+00 
+           y  0.00000e+00  1.00000e+00 
+      ancomp  0.00000e+00  1.38778e-17  1.00000e+00 
+response_fn_1 -1.55882e-01 -2.58867e-01 -5.03949e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+           x -1.89170e-01 
+           y -3.04710e-01 
+      ancomp -5.28663e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1 
+           x  1.00000e+00 
+           y  0.00000e+00  1.00000e+00 
+      ancomp  0.00000e+00  0.00000e+00  1.00000e+00 
+response_fn_1 -2.19447e-01 -3.06171e-01 -5.04400e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+           x -2.71806e-01 
+           y -3.66620e-01 
+      ancomp -5.44510e-01 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 7 total (7 new, 0 duplicate)
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+response_fn_1:  Min = 6.6824445465e-08  Max = 1.9558884857e+01
+Simple Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1 
+           x  1.00000e+00 
+           y -3.63213e-02  1.00000e+00 
+      ancomp  1.29291e-01  6.59701e-02  1.00000e+00 
+response_fn_1 -2.38556e-01 -6.85358e-02 -9.43655e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+           x -3.56460e-01 
+           y -3.76143e-02 
+      ancomp -9.47640e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1 
+           x  1.00000e+00 
+           y -3.68991e-02  1.00000e+00 
+      ancomp  1.29654e-01  6.12911e-02  1.00000e+00 
+response_fn_1 -2.36343e-01 -1.18311e-01 -9.42940e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+           x -3.60197e-01 
+           y -2.10952e-01 
+      ancomp -9.48409e-01 

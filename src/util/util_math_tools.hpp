@@ -100,6 +100,11 @@ void random_permutation(const int num_pts,
 void create_cv_folds(const int num_folds, const int num_pts,
   std::vector<VectorXi> &fold_indices, const int seed = 22);
 
+/// Generate a real-valued matrix of uniformly distributed random values.
+MatrixXd create_uniform_random_double_matrix(const int rows,
+    const int cols, const unsigned int seed = 22,
+    bool transform = false, const double low = 0.0, const double high = 1.0);
+
 } // namespace util
 } // namespace dakota
 

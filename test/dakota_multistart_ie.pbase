@@ -1,0 +1,112 @@
+Test Number 0 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.1000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.3308633610e+01
+<<<<< Best data captured at function evaluation 10
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.9000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      2.8257610000e-02
+<<<<< Best data captured at function evaluation 20
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.1000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.3308633610e+01
+<<<<< Best data captured at function evaluation 10
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 3 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 4 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.1000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.3308633610e+01
+<<<<< Best data captured at function evaluation 10
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.1000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.3308633610e+01
+<<<<< Best data captured at function evaluation 10
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 7 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 8 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.98    15.36953616 
+        2           -0.5          -0.48     4.79785216 
+        3            0.5           0.52     0.05308416 
+        4              1              1              0 
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.8000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.5369536160e+01
+<<<<< Best data captured at function evaluation 3
+<<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.2000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      5.3084160000e-02
+<<<<< Best data captured at function evaluation 6
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.98    15.36953616 
+        2           -0.5          -0.48     4.79785216 
+        3            0.5           0.52     0.05308416 
+        4              1              1              0 

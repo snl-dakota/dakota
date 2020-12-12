@@ -1,0 +1,20 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+  -4.5474735089e-13   1.2969918890e-07   5.1507850307e+00   5.1507850307e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+  -4.5474735089e-13   1.3783736922e-07   5.1507850307e+00   5.1393607209e+00
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+  -4.5474735089e-13   9.9999986216e-01  -5.1507850307e+00  -5.1393607208e+00
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 14 total (13 new, 1 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+  -4.5474735089e-13   1.3783736922e-07   5.1507850307e+00   5.1393607209e+00

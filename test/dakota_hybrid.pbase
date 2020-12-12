@@ -1,0 +1,104 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 405 total (405 new, 0 duplicate)
+         obj_fn: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          (set 1) =
+                      1.0527006153e+00 x1
+                      1.0825664856e+00 x2
+<<<<< Best objective function  (set 1) =
+                      5.4188250571e-05
+<<<<< Best data captured at function evaluation 12
+<<<<< Best parameters          (set 2) =
+                      3.5587762942e+00 x1
+                      1.6449863703e+00 x2
+<<<<< Best objective function  (set 2) =
+                      4.3040672492e+01
+<<<<< Best data captured at function evaluation 402
+<<<<< Best parameters          (set 3) =
+                      4.0522638270e+00 x1
+                      1.1470223103e+00 x2
+<<<<< Best objective function  (set 3) =
+                      8.6794182534e+01
+<<<<< Best data captured at function evaluation 403
+<<<<< Function evaluation summary: 235 total (234 new, 1 duplicate)
+         obj_fn: 235 val (234 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      1.0121224903e+00 x1
+                      1.0117657044e+00 x2
+<<<<< Best objective function  =
+                      4.0759068116e-08
+<<<<< Best data captured at function evaluation 640
+<<<<< Function evaluation summary: 36 total (36 new, 0 duplicate)
+         obj_fn: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 12 Hess (12 n, 0 d)
+<<<<< Best parameters          =
+                      1.0000934323e+00 x1
+                      1.0000906824e+00 x2
+<<<<< Best objective function  =
+                      1.4382822838e-16
+<<<<< Best data captured at function evaluation 675
+<<<<< Best parameters          (set 1) =
+                      1.0000934323e+00 x1
+                      1.0000906824e+00 x2
+<<<<< Best response functions  (set 1) =
+                      1.4382822838e-16
+<<<<< Best parameters          (set 2) =
+                      1.0000727327e+00 x1
+                      1.0000696574e+00 x2
+<<<<< Best response functions  (set 2) =
+                      5.1527961202e-17
+<<<<< Best parameters          (set 3) =
+                      9.9989470256e-01 x1
+                      1.0001011503e+00 x2
+<<<<< Best response functions  (set 3) =
+                      2.2761478478e-16
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 405 total (405 new, 0 duplicate)
+         obj_fn: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          (set 1) =
+                      1.0527006153e+00 x1
+                      1.0825664856e+00 x2
+<<<<< Best objective function  (set 1) =
+                      5.4188250571e-05
+<<<<< Best data captured at function evaluation 12
+<<<<< Best parameters          (set 2) =
+                      3.5587762942e+00 x1
+                      1.6449863703e+00 x2
+<<<<< Best objective function  (set 2) =
+                      4.3040672492e+01
+<<<<< Best data captured at function evaluation 402
+<<<<< Best parameters          (set 3) =
+                      4.0522638270e+00 x1
+                      1.1470223103e+00 x2
+<<<<< Best objective function  (set 3) =
+                      8.6794182534e+01
+<<<<< Best data captured at function evaluation 403
+<<<<< Function evaluation summary: 235 total (234 new, 1 duplicate)
+         obj_fn: 235 val (234 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      1.0121224903e+00 x1
+                      1.0117657044e+00 x2
+<<<<< Best objective function  =
+                      4.0759068116e-08
+<<<<< Best data captured at function evaluation 640
+<<<<< Function evaluation summary: 34 total (14 new, 20 duplicate)
+         obj_fn: 34 val (14 n, 20 d), 34 grad (14 n, 20 d), 34 Hess (14 n, 20 d)
+<<<<< Best parameters          =
+                      1.0010492764e+00 x1
+                      1.0010492764e+00 x2
+<<<<< Best objective function  =
+                      2.4243177401e-12
+<<<<< Best data captured at function evaluation 673
+<<<<< Best parameters          (set 1) =
+                      1.0010492764e+00 x1
+                      1.0010492764e+00 x2
+<<<<< Best response functions  (set 1) =
+                      2.4243177401e-12
+<<<<< Best parameters          (set 2) =
+                      1.0008123242e+00 x1
+                      1.0008123242e+00 x2
+<<<<< Best response functions  (set 2) =
+                      8.7085863611e-13
+<<<<< Best parameters          (set 3) =
+                      9.9882254252e-01 x1
+                      1.0011774575e+00 x2
+<<<<< Best response functions  (set 3) =
+                      3.8442438432e-12

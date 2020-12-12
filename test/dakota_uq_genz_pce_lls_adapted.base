@@ -1,0 +1,232 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  7.1999640073789206e-01  1.3946993690354773e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.9999998912007071e-01  9.9999998979993110e-01 x1
+                      1.0200068993802358e-08  1.0879929393397386e-08 x2
+                      6.7986039959502704e-10 x1 x2 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  7.1999640073746596e-01  1.3946993690121090e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.9999998912007038e-01  9.9999998979993154e-01 x1
+                      1.0200068667497525e-08  1.0879929867047627e-08 x2
+                      6.7986119955010209e-10 x1 x2 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  7.1999640072520976e-01  1.3946993687470452e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.9999998912011290e-01  9.9999998979998284e-01 x1
+                      1.0200017176590333e-08  1.0879887151986211e-08 x2
+                      6.7986997539587917e-10 x1 x2 
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  7.1999640073371585e-01  1.3946993689819701e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.9999998912007249e-01  9.9999998979993132e-01 x1
+                      1.0200068795817340e-08  1.0879927594000043e-08 x2
+                      6.7985879818270229e-10 x1 x2 
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  7.1999640073371585e-01  1.3946993689819701e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.9999998912007249e-01  9.9999998979993132e-01 x1
+                      1.0200068795817340e-08  1.0879927594000043e-08 x2
+                      6.7985879818270229e-10 x1 x2 
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  3.3253026663419150e-01  1.9886926444193906e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.6190334120631249e-01  9.7288212499139715e-01 uuv_1
+                      2.6429792867247413e-02  3.7143230676564998e-02 uuv_2
+                      6.6401381403678695e-04  9.4049557120296531e-04 uuv_3
+                      1.6222777985918761e-05  2.2929766275462310e-05 uuv_4
+                      3.9295882098099301e-07  5.7385514609740291e-07 uuv_5
+                      1.1983489684087961e-08  1.4501284661386648e-08 uuv_6
+                      0.0000000000000000e+00  0.0000000000000000e+00 uuv_7
+                      9.1828586914496136e-11  2.3084024360778788e-10 uuv_8
+                      8.3001691654489959e-11  6.6770991240051823e-10 uuv_9
+                      1.8379296930255696e-09  3.1781228191734600e-09 uuv_10
+                      1.0702852931559958e-02 uuv_1 uuv_2 
+                      2.6610365124623094e-04 uuv_1 uuv_3 
+                      7.2679045809395531e-06 uuv_2 uuv_3 
+                      6.4962402535797254e-06 uuv_1 uuv_4 
+                      1.6738906124891842e-07 uuv_2 uuv_4 
+                      1.0537506999363235e-09 uuv_3 uuv_4 
+                      1.7666142256931757e-07 uuv_1 uuv_5 
+                      7.2090087301753845e-10 uuv_2 uuv_5 
+                      1.8566647322692383e-10 uuv_3 uuv_5 
+                      2.3651467782417726e-09 uuv_1 uuv_6 
+                      1.5264819905691420e-10 uuv_3 uuv_6 
+                      1.3901165669329173e-10 uuv_5 uuv_8 
+                      5.2940717837982365e-10 uuv_1 uuv_9 
+                      5.5301042366204605e-11 uuv_4 uuv_9 
+                      1.3401931261478902e-09 uuv_1 uuv_10 
+                      3.1056199500913179e-06 uuv_1 uuv_2 uuv_3 
+                      4.2249922972598937e-08 uuv_1 uuv_2 uuv_4 
+                      2.1959820432011225e-09 uuv_1 uuv_3 uuv_5 
+                      9.9334150095341134e-10 uuv_2 uuv_3 uuv_5 
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  3.3198465291306356e-01  1.9761744857038621e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.6447075184353437e-01  9.7415678555933782e-01 uuv_1
+                      2.5282297300786280e-02  3.4836798770449894e-02 uuv_2
+                      5.0461572568760769e-04  6.3977955617426424e-04 uuv_3
+                      1.0047011769283842e-06  1.4831868793123952e-05 uuv_4
+                      0.0000000000000000e+00  4.4710366627815967e-05 uuv_5
+                      0.0000000000000000e+00  7.4673732188262299e-05 uuv_6
+                      0.0000000000000000e+00  2.4270499117937860e-05 uuv_7
+                      0.0000000000000000e+00  2.2942759494176563e-05 uuv_8
+                      0.0000000000000000e+00  4.9027824546205656e-05 uuv_9
+                      2.1200257425307863e-07  1.1670408965280865e-04 uuv_10
+                      9.4424287957885766e-03 uuv_1 uuv_2 
+                      1.0312780358929865e-04 uuv_1 uuv_3 
+                      1.8752021039438975e-06 uuv_2 uuv_3 
+                      9.4361188983424422e-07 uuv_1 uuv_4 
+                      7.5682089632334942e-06 uuv_2 uuv_4 
+                      2.5960570076423758e-06 uuv_2 uuv_5 
+                      1.0575964063199291e-06 uuv_2 uuv_6 
+                      3.1930419557873169e-07 uuv_3 uuv_6 
+                      8.4530420882028184e-07 uuv_5 uuv_6 
+                      1.7456966511665268e-06 uuv_5 uuv_7 
+                      4.1966333918007293e-06 uuv_1 uuv_8 
+                      1.4375157900733121e-06 uuv_4 uuv_9 
+                      2.0182392390949229e-07 uuv_5 uuv_9 
+                      1.5015466486848309e-07 uuv_1 uuv_10 
+                      3.9731307889947915e-06 uuv_2 uuv_10 
+                      1.4719537013507076e-06 uuv_5 uuv_10 
+                      3.8219855420047293e-06 uuv_6 uuv_10 
+                      1.8044763826409116e-06 uuv_7 uuv_10 
+                      7.2642330201678436e-07 uuv_9 uuv_10 
+                      4.0081720597837913e-06 uuv_1 uuv_2 uuv_3 
+                      3.8778309730545167e-06 uuv_1 uuv_2 uuv_4 
+                      3.2292947606716160e-06 uuv_1 uuv_3 uuv_6 
+                      1.4741626582042887e-06 uuv_1 uuv_5 uuv_6 
+                      1.9357178638291246e-06 uuv_1 uuv_2 uuv_7 
+                      1.8901405210278081e-06 uuv_1 uuv_3 uuv_7 
+                      4.7614212721344348e-07 uuv_2 uuv_5 uuv_7 
+                      8.6691655242861129e-07 uuv_2 uuv_6 uuv_7 
+                      3.5603233960635394e-07 uuv_5 uuv_6 uuv_7 
+                      9.0243608486150899e-08 uuv_1 uuv_3 uuv_8 
+                      1.5842854858351442e-06 uuv_1 uuv_5 uuv_8 
+                      2.9453547104308976e-06 uuv_3 uuv_5 uuv_8 
+                      3.0463945633856931e-10 uuv_2 uuv_7 uuv_8 
+                      5.8341152238069745e-07 uuv_1 uuv_3 uuv_9 
+                      1.3353393670545537e-06 uuv_2 uuv_3 uuv_9 
+                      3.9424621375984941e-06 uuv_1 uuv_5 uuv_9 
+                      4.1386498198242224e-06 uuv_2 uuv_7 uuv_9 
+                      3.9036539825337768e-07 uuv_6 uuv_7 uuv_9 
+                      2.8909196025336484e-06 uuv_1 uuv_8 uuv_9 
+                      8.3135315670891163e-07 uuv_6 uuv_8 uuv_9 
+                      1.2597225054125136e-05 uuv_1 uuv_2 uuv_10 
+                      2.8455301273299086e-06 uuv_1 uuv_5 uuv_10 
+                      1.0962754125140717e-05 uuv_1 uuv_6 uuv_10 
+                      4.5624890903061557e-07 uuv_3 uuv_6 uuv_10 
+                      1.1143085614616333e-06 uuv_1 uuv_7 uuv_10 
+                      5.3581783866398901e-06 uuv_1 uuv_8 uuv_10 
+                      4.3271412254087531e-07 uuv_7 uuv_8 uuv_10 
+                      1.6979321257759633e-06 uuv_1 uuv_9 uuv_10 
+                      8.1329719439031915e-06 uuv_2 uuv_9 uuv_10 
+                      1.8019330947021120e-06 uuv_6 uuv_9 uuv_10 
+                      1.0568840497818355e-07 uuv_1 uuv_3 uuv_6 uuv_8 
+                      4.3488965218843782e-06 uuv_1 uuv_2 uuv_5 uuv_9 
+                      1.3466376154333214e-05 uuv_1 uuv_2 uuv_6 uuv_9 
+                      5.3212195622244946e-07 uuv_1 uuv_5 uuv_7 uuv_9 
+                      9.8260290992468510e-07 uuv_3 uuv_7 uuv_8 uuv_9 
+                      1.5824919531124576e-05 uuv_1 uuv_2 uuv_5 uuv_10 
+                      3.5196235394766480e-06 uuv_1 uuv_3 uuv_5 uuv_10 
+                      2.1499913618496610e-05 uuv_1 uuv_2 uuv_6 uuv_10 
+                      1.0695400284589798e-05 uuv_1 uuv_3 uuv_6 uuv_10 
+                      2.4931023783942196e-06 uuv_2 uuv_6 uuv_7 uuv_10 
+                      3.5244810748411122e-06 uuv_1 uuv_7 uuv_8 uuv_10 
+                      1.5867258191061666e-06 uuv_1 uuv_7 uuv_9 uuv_10 
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  3.3193658078688298e-01  1.9764625436574315e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.6420458488653460e-01  9.7398566701291633e-01 uuv_1
+                      2.5482414075045711e-02  3.5137812373723022e-02 uuv_2
+                      5.0606870835426872e-04  6.2987874767072563e-04 uuv_3
+                      6.2840474183717799e-06  9.7081971868924274e-06 uuv_4
+                      2.2210868924806033e-07  1.5691640464226764e-05 uuv_5
+                      2.8783239622785620e-08  1.2811571056920201e-05 uuv_6
+                      0.0000000000000000e+00  6.8029372323142281e-06 uuv_7
+                      7.8852814787256040e-09  1.0844643273634003e-05 uuv_8
+                      0.0000000000000000e+00  4.8672210204910845e-06 uuv_9
+                      9.3556699698680700e-08  1.5632099373815077e-05 uuv_10
+                      9.6410462052965544e-03 uuv_1 uuv_2 
+                      1.1622086047945209e-04 uuv_1 uuv_3 
+                      1.1557256003907421e-06 uuv_2 uuv_3 
+                      1.2371159258873291e-06 uuv_2 uuv_4 
+                      4.4273718950134182e-06 uuv_2 uuv_5 
+                      6.1896188933414936e-07 uuv_2 uuv_6 
+                      5.3203548018927439e-07 uuv_5 uuv_6 
+                      3.4892823937238560e-07 uuv_3 uuv_7 
+                      9.6737370413212142e-07 uuv_5 uuv_7 
+                      1.6042709517375343e-06 uuv_1 uuv_8 
+                      6.7717950250050503e-10 uuv_2 uuv_8 
+                      1.5002957282351136e-07 uuv_4 uuv_9 
+                      5.1325915854376190e-07 uuv_5 uuv_9 
+                      4.8723255164452758e-07 uuv_6 uuv_9 
+                      1.1514371733880310e-06 uuv_1 uuv_10 
+                      8.7227956463185247e-07 uuv_2 uuv_10 
+                      2.1949547504030735e-06 uuv_6 uuv_10 
+                      1.7582037636656797e-07 uuv_7 uuv_10 
+                      1.0469137464814712e-07 uuv_9 uuv_10 
+                      5.1504445310096404e-07 uuv_1 uuv_2 uuv_3 
+                      9.3187336060828364e-07 uuv_1 uuv_2 uuv_4 
+                      1.2179932951583506e-07 uuv_1 uuv_3 uuv_6 
+                      2.5881627874234199e-07 uuv_2 uuv_5 uuv_6 
+                      7.6318225531913465e-07 uuv_1 uuv_3 uuv_7 
+                      2.7891681323152798e-07 uuv_2 uuv_3 uuv_7 
+                      5.1536858664409905e-08 uuv_2 uuv_5 uuv_7 
+                      1.1613166057342865e-06 uuv_1 uuv_6 uuv_7 
+                      8.4919443935724780e-07 uuv_5 uuv_6 uuv_7 
+                      7.6417546463154910e-07 uuv_1 uuv_3 uuv_8 
+                      6.3007573933116698e-06 uuv_1 uuv_5 uuv_8 
+                      7.9923303870447276e-10 uuv_3 uuv_5 uuv_8 
+                      6.4364953668538336e-07 uuv_3 uuv_6 uuv_8 
+                      4.5321785621305090e-07 uuv_1 uuv_3 uuv_9 
+                      4.7702503451713555e-07 uuv_2 uuv_5 uuv_9 
+                      4.2473217486892644e-09 uuv_2 uuv_7 uuv_9 
+                      6.7083192697946822e-07 uuv_1 uuv_8 uuv_9 
+                      7.6629884961292168e-08 uuv_6 uuv_8 uuv_9 
+                      2.8174531981801046e-06 uuv_1 uuv_2 uuv_10 
+                      3.8073235031646854e-06 uuv_1 uuv_6 uuv_10 
+                      9.0469885959044527e-07 uuv_3 uuv_6 uuv_10 
+                      1.4710185722412612e-06 uuv_1 uuv_7 uuv_10 
+                      4.4976284463452260e-08 uuv_1 uuv_9 uuv_10 
+                      1.4171364165374526e-07 uuv_2 uuv_9 uuv_10 
+                      4.2741859980813329e-08 uuv_5 uuv_9 uuv_10 
+                      7.5723652721147128e-08 uuv_1 uuv_3 uuv_6 uuv_8 
+                      5.9226442126121674e-07 uuv_5 uuv_6 uuv_7 uuv_8 
+                      4.5635601822658851e-07 uuv_1 uuv_2 uuv_5 uuv_9 
+                      4.5818663399250706e-07 uuv_1 uuv_3 uuv_6 uuv_10 
+                      1.0697834732481024e-07 uuv_1 uuv_2 uuv_8 uuv_10 
+                      1.1051309092015221e-06 uuv_3 uuv_4 uuv_9 uuv_10 
+                      1.3913762488537942e-07 uuv_1 uuv_7 uuv_9 uuv_10 

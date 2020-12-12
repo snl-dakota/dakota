@@ -1,0 +1,177 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
+<<<<< Best parameters (experiment config variables omitted) =
+                      2.8500000211e+07 E
+                      2.6313476691e+00 w
+<<<<< Best configuration variables (experiment 1) =
+                      3.0000000000e+00 t
+                      4.2000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses (experiment 1) =
+                     -2.2219015580e+03 stress
+                      1.0253776751e-01 displacement
+<<<<< Best configuration variables (experiment 2) =
+                      3.0000000000e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.3000000000e+03 Y
+<<<<< Best model responses (experiment 2) =
+                      7.3787664323e+03 stress
+                      6.1767741155e-01 displacement
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
+<<<<< Best data not found in evaluation cache
+Confidence Intervals on Calibrated Parameters:
+             E: [ 2.8499998058e+07, 2.8500002364e+07 ]
+             w: [ 1.9700278272e+00, 3.2926675111e+00 ]
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 3460 total (3460 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.9469435990e+07 E
+                      2.6335894124e+00 w
+<<<<< Best misfit              =
+                      3.5771128932e+02
+<<<<< Best log prior           =
+                     -2.0703165165e+01
+<<<<< Best log posterior       =
+                     -3.8630315891e+02
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  2.8996586799e+07  5.2327277771e+05  4.4764470330e-01 -1.2880903883e+00
+             w  2.6413360401e+00  1.2520729931e-02 -8.5193555441e-01  1.8047629847e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
+least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
+Information gained from prior to posterior = 3.9196284455e+00
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
+<<<<< Best parameters (experiment config variables omitted) =
+                      2.8500000211e+07 E
+                      2.6313476691e+00 w
+<<<<< Best configuration variables (experiment 1) =
+                      3.0000000000e+00 t
+                      4.2000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses (experiment 1) =
+                     -2.2219015580e+03 stress
+                      1.0253776751e-01 displacement
+<<<<< Best configuration variables (experiment 2) =
+                      3.0000000000e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.3000000000e+03 Y
+<<<<< Best model responses (experiment 2) =
+                      7.3787664323e+03 stress
+                      6.1767741155e-01 displacement
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
+<<<<< Best data not found in evaluation cache
+Confidence Intervals on Calibrated Parameters:
+             E: [ 2.8499998058e+07, 2.8500002364e+07 ]
+             w: [ 1.9700278272e+00, 3.2926675111e+00 ]
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
+<<<<< Best parameters (experiment config variables omitted) =
+                      2.8500000211e+07 E
+                      2.6313476691e+00 w
+<<<<< Best configuration variables (experiment 1) =
+                      3.0000000000e+00 t
+                      4.2000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses (experiment 1) =
+                     -2.2219015580e+03 stress
+                      1.0253776751e-01 displacement
+<<<<< Best configuration variables (experiment 2) =
+                      3.0000000000e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.3000000000e+03 Y
+<<<<< Best model responses (experiment 2) =
+                      7.3787664323e+03 stress
+                      6.1767741155e-01 displacement
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
+<<<<< Best data not found in evaluation cache
+Confidence Intervals on Calibrated Parameters:
+             E: [ 2.8499998058e+07, 2.8500002364e+07 ]
+             w: [ 1.9700278272e+00, 3.2926675111e+00 ]
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 3460 total (3460 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.9469435990e+07 E
+                      2.6335894124e+00 w
+<<<<< Best misfit              =
+                      3.5771128932e+02
+<<<<< Best log prior           =
+                     -2.0703165165e+01
+<<<<< Best log posterior       =
+                     -3.8630315891e+02
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  2.8996586799e+07  5.2327277771e+05  4.4764470330e-01 -1.2880903883e+00
+             w  2.6413360401e+00  1.2520729931e-02 -8.5193555441e-01  1.8047629847e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
+least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
+Information gained from prior to posterior = 3.9196284455e+00
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 2060 total (2060 new, 0 duplicate)
+<<<<< Best parameters (experiment config variables omitted) =
+                      2.8916091328e+07 E
+                      2.5746941568e+00 w
+<<<<< Best configuration variables (experiment 1) =
+                      3.0000000000e+00 t
+                      4.2000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses (experiment 1) =
+                     -1.0218391665e+03 least_sq_term_1
+                      1.5157123564e-01 least_sq_term_2
+<<<<< Best configuration variables (experiment 2) =
+                      3.0000000000e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.3000000000e+03 Y
+<<<<< Best model responses (experiment 2) =
+                      8.7460737513e+03 least_sq_term_1
+                      6.6481437035e-01 least_sq_term_2
+<<<<< Best residual terms =
+                     -1.2756896974e+01
+                     -5.4645507028e+00
+                      2.1210276733e+01
+                      1.2809469648e+01
+<<<<< Best residual terms =
+                     -1.2756896974e+01
+                     -5.4645507028e+00
+                      2.1210276733e+01
+                      1.2809469648e+01
+<<<<< Best data not found in evaluation cache

@@ -297,7 +297,7 @@ export_model(const StringArray& var_labels, const String& fn_label,
   // Saving to binary archive
   if(formats & BINARY_ARCHIVE) {
     String filename = without_extension + ".bin";
-    dakota::surrogates::Surrogate::save(model, filename, false);
+    dakota::surrogates::Surrogate::save(model, filename, true);
   }
 }
 

@@ -1,0 +1,24 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 770 total (770 new, 0 duplicate)
+mean_limit:  Min = -7.1726082293e+00  Max = 8.4492360254e+00
+std_dev_limit:  Min = 2.2123955936e-01  Max = 7.4099283986e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 2618 total (2310 new, 308 duplicate)
+mean_limit:  Min = -1.1807930097e+01  Max = 1.0220248897e+01
+std_dev_limit:  Min = 2.0229642834e-01  Max = 1.1201081379e+01
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 2635 total (2550 new, 85 duplicate)
+mean_limit:  Min = -1.1802556867e+01  Max = 1.0089900924e+01
+std_dev_limit:  Min = 2.0192896185e-01  Max = 1.1153851585e+01
+Test Number 3 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 2618 total (2543 new, 75 duplicate)
+mean_limit:  Min = -1.1807930097e+01  Max = 1.0220248897e+01
+std_dev_limit:  Min = 2.0016844611e-01  Max = 1.1062806921e+01
+Test Number 4 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 2975 total (2890 new, 85 duplicate)
+mean_limit:  Min = -1.1802556867e+01  Max = 1.0479881985e+01
+std_dev_limit:  Min = 1.9957448390e-01  Max = 1.0988137837e+01
+Test Number 5 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 181874 total (181591 new, 283 duplicate)
+mean_limit:  Min = -1.1807930097e+01  Max = 9.7167760971e+00
+std_dev_limit:  Min = 2.0229642834e-01  Max = 1.1201081379e+01

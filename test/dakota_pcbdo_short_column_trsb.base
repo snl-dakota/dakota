@@ -1,0 +1,60 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 13 total (13 new, 0 duplicate)
+         obj_fn: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 240 total (240 new, 0 duplicate)
+  response_fn_1: 240 val (240 n, 0 d), 120 grad (120 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 240 val (240 n, 0 d), 120 grad (120 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1014101625e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0253525406e+02
+<<<<< Best constraint values   =
+                      2.5000000000e+00
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 26 total (26 new, 0 duplicate)
+         obj_fn: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 240 total (220 new, 20 duplicate)
+  response_fn_1: 240 val (220 n, 20 d), 120 grad (120 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 240 val (220 n, 20 d), 120 grad (120 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1014101625e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0253525406e+02
+<<<<< Best constraint values   =
+                      2.5000000000e+00
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 13 total (13 new, 0 duplicate)
+         obj_fn: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 372 total (372 new, 0 duplicate)
+  response_fn_1: 372 val (372 n, 0 d), 186 grad (186 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 372 val (372 n, 0 d), 186 grad (186 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1145857712e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0286464428e+02
+<<<<< Best constraint values   =
+                      2.5000000000e+00
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 26 total (26 new, 0 duplicate)
+         obj_fn: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 372 total (341 new, 31 duplicate)
+  response_fn_1: 372 val (341 n, 31 d), 186 grad (186 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 372 val (341 n, 31 d), 186 grad (186 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1145857712e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0286464428e+02
+<<<<< Best constraint values   =
+                      2.5000000000e+00
+<<<<< Best data not found in evaluation cache

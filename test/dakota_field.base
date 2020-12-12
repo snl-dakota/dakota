@@ -1,0 +1,46 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.4737278205e+01  3.1672132208e+01  1.1268425474e+00 -2.3464616046e-01
+response_fn_2_1  1.3342793304e+00  1.6631664240e+00  3.8462659335e-01 -8.4481657845e-01
+response_fn_2_2  1.3014693010e+00  1.5095770701e+00  5.7245870290e-01 -8.7641599286e-01
+response_fn_3_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
+response_fn_3_2  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
+response_fn_3_3  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  2.0803997037e+00  4.7394156707e+01  2.1785207605e+01  5.7820967061e+01
+response_fn_2_1  1.4452174322e-01  2.5240369175e+00  1.1439844211e+00  3.0362935588e+00
+response_fn_2_2  2.2158291879e-01  2.3813556832e+00  1.0383402561e+00  2.7558992706e+00
+response_fn_3_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+response_fn_3_2  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+response_fn_3_3  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 response_fn_2_1 response_fn_2_2 response_fn_3_1 response_fn_3_2 response_fn_3_3 
+          x1  1.00000e+00 
+          x2  9.20349e-03  1.00000e+00 
+response_fn_1 -6.81911e-01 -6.51320e-01  1.00000e+00 
+response_fn_2_1 -1.35189e-01 -7.17801e-01  6.61605e-01  1.00000e+00 
+response_fn_2_2 -5.35738e-01  5.07477e-02  3.91467e-01 -2.82851e-01  1.00000e+00 
+response_fn_3_1         -nan         -nan         -nan         -nan         -nan         -nan 
+response_fn_3_2         -nan         -nan         -nan         -nan         -nan         -nan         -nan 
+response_fn_3_3         -nan         -nan         -nan         -nan         -nan         -nan         -nan         -nan 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2_1 response_fn_2_2 response_fn_3_1 response_fn_3_2 response_fn_3_3 
+          x1 -8.90804e-01 -1.84687e-01 -5.36920e-01         -nan         -nan         -nan 
+          x2 -8.81925e-01 -7.23227e-01  6.59424e-02         -nan         -nan         -nan 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 response_fn_2_1 response_fn_2_2 response_fn_3_1 response_fn_3_2 response_fn_3_3 
+          x1  1.00000e+00 
+          x2 -7.87879e-02  1.00000e+00 
+response_fn_1 -5.63636e-01 -6.24242e-01  1.00000e+00 
+response_fn_2_1 -1.81818e-02 -6.84848e-01  6.12121e-01  1.00000e+00 
+response_fn_2_2 -6.36364e-01 -3.03030e-02  5.51515e-01 -2.12121e-01  1.00000e+00 
+response_fn_3_1         -nan         -nan         -nan         -nan         -nan         -nan 
+response_fn_3_2         -nan         -nan         -nan         -nan         -nan         -nan         -nan 
+response_fn_3_3         -nan         -nan         -nan         -nan         -nan         -nan         -nan         -nan 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2_1 response_fn_2_2 response_fn_3_1 response_fn_3_2 response_fn_3_3 
+          x1 -7.86874e-01 -9.93083e-02 -6.41037e-01         -nan         -nan         -nan 
+          x2 -8.12005e-01 -6.88535e-01 -1.04606e-01         -nan         -nan         -nan 

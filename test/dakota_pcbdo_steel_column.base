@@ -1,0 +1,56 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 12 total (12 new, 0 duplicate)
+ nln_ineq_con_1: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1320 total (1320 new, 0 duplicate)
+  response_fn_1: 1320 val (1320 n, 0 d), 1320 grad (1320 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.0000000000e+02 b
+                      1.7500000000e+01 d
+                      1.0000000000e+02 h
+<<<<< Best objective function  =
+                     -3.2432345060e+00
+<<<<< Best constraint values   =
+                      4.0000000000e+03
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 12 total (12 new, 0 duplicate)
+ nln_ineq_con_1: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 9240 total (9240 new, 0 duplicate)
+  response_fn_1: 9240 val (9240 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.0000000000e+02 b
+                      1.7500000000e+01 d
+                      1.0000000000e+02 h
+<<<<< Best objective function  =
+                     -3.2432345060e+00
+<<<<< Best constraint values   =
+                      4.0000000000e+03
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 12 total (12 new, 0 duplicate)
+ nln_ineq_con_1: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 2388 total (2388 new, 0 duplicate)
+  response_fn_1: 2388 val (2388 n, 0 d), 2388 grad (2388 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.0000000000e+02 b
+                      1.7500000000e+01 d
+                      1.0000000000e+02 h
+<<<<< Best objective function  =
+                     -3.2361600239e+00
+<<<<< Best constraint values   =
+                      4.0000000000e+03
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 12 total (12 new, 0 duplicate)
+ nln_ineq_con_1: 12 val (12 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 16716 total (16716 new, 0 duplicate)
+  response_fn_1: 16716 val (16716 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.0000000000e+02 b
+                      1.7500000000e+01 d
+                      1.0000000000e+02 h
+<<<<< Best objective function  =
+                     -3.2361600239e+00
+<<<<< Best constraint values   =
+                      4.0000000000e+03
+<<<<< Best data not found in evaluation cache
