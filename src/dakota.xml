@@ -3727,7 +3727,7 @@
           </keyword>
         </keyword>
         <keyword  id="surrogate" name="surrogate" code="{N_mom(lit,modelType_surrogate)}" label="Surrogate"  complexity="0" >
-          <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(intsetm1,surrogateFnIndices)}" label="Surrogate Response IDs"  minOccurs="0" default="All response functions are approximated" >
+          <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(id_to_index_set,surrogateFnIndices)}" label="Surrogate Response IDs"  minOccurs="0" default="All response functions are approximated" >
             <param type="INTEGERLIST" />
           </keyword>
           <oneOf label="Surrogate Category">

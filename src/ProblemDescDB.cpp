@@ -1761,9 +1761,7 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
   ( "get_is()",
     { /* environment */ },
     { /* method */ },
-    { /* model */
-      {"surrogate.function_indices", P_MOD surrogateFnIndices}
-    },
+    { /* model */ },
     { /* variables */ },
     { /* interface */ },
     { /* responses */
@@ -1792,6 +1790,23 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
     { /* responses */ },
     entry_name, dbRep);
 }
+
+
+const SizetSet& ProblemDescDB::get_szs(const String& entry_name) const
+{
+  return get<const SizetSet&>
+  ( "get_szs()",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */
+      {"surrogate.function_indices", P_MOD surrogateFnIndices}
+    },
+    { /* variables */ },
+    { /* interface */ },
+    { /* responses */ },
+    entry_name, dbRep);
+}
+
 
 const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 {

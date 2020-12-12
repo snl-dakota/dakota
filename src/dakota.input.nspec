@@ -5796,7 +5796,7 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( surrogate {N_mom(lit,modelType_surrogate)}
-    [ id_surrogates INTEGERLIST {N_mom(intsetm1,surrogateFnIndices)} ]
+    [ id_surrogates INTEGERLIST {N_mom(id_to_index_set,surrogateFnIndices)} ]
     ( global {0}
       ( experimental_gaussian_process {N_mom(lit,surrogateType_global_exp_gauss_proc)}
         [ trend {0}

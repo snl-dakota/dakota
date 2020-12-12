@@ -32,7 +32,7 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       bool am_cache, const String& am_interface_id,
 		       const StringArray& fn_labels):
   Interface(BaseConstructor(), problem_db), 
-  approxFnIndices(problem_db.get_is("model.surrogate.function_indices")),
+  approxFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
   //graph3DFlag(problem_db.get_bool("environment.graphics")),
   challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
   challengeFormat(
@@ -656,7 +656,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
           read_challenge_points();
         functionSurfaces[fn_index].challenge_diagnostics(fn_index,
 	  challengePoints, Teuchos::getCol(Teuchos::View, challengeResponses,
-					   fn_index));
+					   (int)fn_index));
       }
     }
   }

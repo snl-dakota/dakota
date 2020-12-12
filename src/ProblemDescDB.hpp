@@ -217,6 +217,8 @@ public:
   const IntSet& get_is(const String& entry_name) const;
   /// get an IntSetArray out of the database based on an identifier string
   const IntSetArray& get_isa(const String& entry_name) const;
+  /// get a SizetSet out of the database based on an identifier string
+  const SizetSet& get_szs(const String& entry_name) const;
   /// get an StringSetArray out of the database based on an identifier string
   const StringSetArray& get_ssa(const String& entry_name) const;
   /// get a RealSetArray out of the database based on an identifier string

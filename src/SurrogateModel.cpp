@@ -29,7 +29,7 @@ namespace Dakota {
 
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
-  surrogateFnIndices(problem_db.get_is("model.surrogate.function_indices")),
+  surrogateFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
   surrModelEvalCntr(0), approxBuilds(0)
 {

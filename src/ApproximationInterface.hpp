@@ -267,7 +267,7 @@ inline int ApproximationInterface::minimum_points(bool constraint_flag) const
   // different approximation types are not yet supported).  Recompute this at
   // the time needed, since it may vary (depending on presence of constraints).
   int min_points = 0;
-  for (ISCIter cit=approxFnIndices.begin(); cit!=approxFnIndices.end(); cit++)
+  for (StSCIter cit=approxFnIndices.begin(); cit!=approxFnIndices.end(); cit++)
     min_points = std::max(min_points,
 			  functionSurfaces[*cit].min_points(constraint_flag));
   return min_points;
@@ -281,7 +281,7 @@ recommended_points(bool constraint_flag) const
   // different approximation types are not yet supported).  Recompute this at
   // the time needed, since it may vary (depending on presence of constraints).
   int rec_points = 0;
-  for (ISCIter cit=approxFnIndices.begin(); cit!=approxFnIndices.end(); cit++)
+  for (StSCIter cit=approxFnIndices.begin(); cit!=approxFnIndices.end(); cit++)
     rec_points = std::max(rec_points, 
       functionSurfaces[*cit].recommended_points(constraint_flag));
   return rec_points;

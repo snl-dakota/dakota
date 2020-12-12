@@ -1037,7 +1037,7 @@ void DataFitSurrModel::build_local_multipoint()
       actualModel.hessian_type() != "none")
     asv_value += 4;
   ShortArray orig_asv(numFns), actual_asv;
-  ISIter it;
+  StSIter it;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
     orig_asv[*it] = asv_value;
   asv_inflate_build(orig_asv, actual_asv);
@@ -1224,7 +1224,7 @@ void DataFitSurrModel::rebuild_global()
   // Evaluate new data points using daceIterator
   // *******************************************
   size_t pts_i, curr_points = std::numeric_limits<size_t>::max();
-  ISIter it;
+  StSIter it;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     pts_i = approxInterface.approximation_data(*it).points();
     if (pts_i < curr_points) curr_points = pts_i;
@@ -2059,9 +2059,9 @@ asv_inflate_build(const ShortArray& orig_asv, ShortArray& actual_asv)
       actual_asv = orig_asv;
   }
   else { // mixed response set
-    size_t i; int index; short orig_asv_val;
+    size_t i, index; short orig_asv_val;
     actual_asv.assign(num_actual, 0);
-    for (ISIter it=surrogateFnIndices.begin();
+    for (StSIter it=surrogateFnIndices.begin();
 	 it!=surrogateFnIndices.end(); ++it) {
       index = *it; orig_asv_val = orig_asv[index];
       if (orig_asv_val)
@@ -2681,11 +2681,11 @@ ActiveSet DataFitSurrModel::default_interface_active_set() {
       for(auto &a : asv)
         a |=  2;
     if(has_hessians)
-       for(auto &a : asv)
-         a |=  4;
+      for(auto &a : asv)
+	a |=  4;
   } else {
     std::fill(asv.begin(), asv.end(), 0);
-    for(int i = 0; i < numFns; ++i) {
+    for(size_t i = 0; i < numFns; ++i) {
       if(surrogateFnIndices.count(i)) {
         asv[i] = 1;
         if(has_gradients)
