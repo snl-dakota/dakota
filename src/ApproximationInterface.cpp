@@ -52,11 +52,11 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   interfaceType = APPROX_INTERFACE;
   algebraicMappings = false; // for now; *** TO DO ***
 
-  // process approxFnIndices.  IntSets are sorted and unique.  Error checking
+  // process approxFnIndices.  SizetSets are sorted and unique.  Error checking
   // is performed in SurrogateModel and does not need to be replicated here.
-  size_t num_fns = fn_labels.size();
+  size_t i, num_fns = fn_labels.size();
   if (approxFnIndices.empty()) // default: all fns are approximated
-    for (int i=0; i<num_fns; i++)
+    for (i=0; i<num_fns; i++)
       approxFnIndices.insert(i);
 
   // This section moved to the constructor so that ApproxInterfaces can be
@@ -69,7 +69,7 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   size_t num_vars = actualModelVars.cv()  + actualModelVars.div()
                   + actualModelVars.dsv() + actualModelVars.drv();
   sharedData = SharedApproxData(problem_db, num_vars);
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it] = Approximation(problem_db, sharedData,
                                           fn_labels[*it]);
 
@@ -143,11 +143,11 @@ ApproximationInterface(const String& approx_type,
 
   functionSurfaces.resize(num_fns);
   // despite view mappings, x in map() always = size of active actualModelVars
-  size_t num_vars = actualModelVars.cv()  + actualModelVars.div()
-                  + actualModelVars.dsv() + actualModelVars.drv();
+  size_t i, num_vars = actualModelVars.cv()  + actualModelVars.div()
+                     + actualModelVars.dsv() + actualModelVars.drv();
   sharedData = SharedApproxData(approx_type, approx_order, num_vars,
 				data_order, output_level);
-  for (int i=0; i<num_fns; i++) {
+  for (i=0; i<num_fns; i++) {
     approxFnIndices.insert(i);
     functionSurfaces[i] = Approximation(sharedData);
   }
@@ -278,8 +278,8 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     //size_t num_core_vars = x.length(), 
     //bool approx_scale_len  = (approxScale.length())  ? true : false;
     //bool approx_offset_len = (approxOffset.length()) ? true : false;
-    for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-      int index = *it;
+    for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+      size_t index = *it;
       if (core_asv[index] & 1) {
 	Real fn_val = functionSurfaces[index].value(surf_vars);
 	//if (approx_scale_len)
@@ -396,7 +396,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
     abort_handler(-1);
   }
   // clear active SurrogateData::{vars,resp}Data
-  ISIter a_it; IntRespMCIter r_it;
+  StSIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
     functionSurfaces[*a_it].clear_active_data();
   // replace active SurrogateData::{vars,resp}Data
@@ -434,7 +434,7 @@ update_approximation(const VariablesArray& vars_array,
     abort_handler(-1);
   }
   // clear active SurrogateData::{vars,resp}Data
-  ISIter a_it; IntRespMCIter r_it;
+  StSIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
     functionSurfaces[*a_it].clear_active_data();
   // replace active SurrogateData::{vars,resp}Data
@@ -604,8 +604,8 @@ append_approximation(const IntVariablesMap& vars_map,
 void ApproximationInterface::
 replace_approximation(const IntResponsePair& response_pr)
 {
-  int fn_index;
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+  size_t fn_index;
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
     functionSurfaces[fn_index].replace(response_pr, fn_index); // --> active approxData
   }
@@ -615,8 +615,8 @@ replace_approximation(const IntResponsePair& response_pr)
 void ApproximationInterface::
 replace_approximation(const IntResponseMap& resp_map)
 {
-  int fn_index;
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+  size_t fn_index;
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
     Approximation& fn_surf = functionSurfaces[fn_index];
     for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
@@ -637,8 +637,8 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 			dr_l_bnds, dr_u_bnds);
   sharedData.build();
   // build the approximation surface instances
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int fn_index = *it;
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    size_t fn_index = *it;
     // construct the approximation
     functionSurfaces[fn_index].build();
 
@@ -662,7 +662,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   }
 
   /* Old 3D graphics capability:
-  int fn_index = *approxFnIndices.begin();
+  size_t fn_index = *approxFnIndices.begin();
   // if graphics is on for 2 variables, plot first functionSurface in 3D
   if (graph3DFlag && sharedData.num_variables() == 2) {
     functionSurfaces[fn_index].draw_surface();
@@ -674,7 +674,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 /** This function calls export on each approximation */
 void ApproximationInterface::export_approximation()
 {
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].export_model();
 }
    
@@ -686,8 +686,8 @@ void ApproximationInterface::rebuild_approximation(const BitArray& rebuild_fns)
   // rebuild data shared among approximation instances
   sharedData.rebuild();
   // rebuild the approximation surfaces
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int fn_index = *it;
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    size_t fn_index = *it;
     // check for rebuild request (defaults to true if no deque defined)
     if (rebuild_fns.empty() || rebuild_fns[fn_index]) {
       // approx bounds not updated as in build_approximation()
@@ -765,7 +765,7 @@ mixed_add(const Variables& vars, const Response& response, bool anchor)
   const ShortArray& asv = response.active_set_request_vector();
   size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
     key_index;
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
@@ -800,7 +800,7 @@ mixed_add(const Real* c_vars, const Response& response, bool anchor)
   const ShortArray& asv = response.active_set_request_vector();
   size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
     key_index;
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
@@ -834,7 +834,7 @@ shallow_add(const Variables& vars, const Response& response, bool anchor)
   const ShortArray& asv = response.active_set_request_vector();
   size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
     key_index;
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
@@ -856,7 +856,7 @@ update_pop_counts(const IntResponsePair& response_pr)
   const ShortArray& asv = response_pr.second.active_set_request_vector();
   size_t i, key_index, fn_index, num_fns = functionSurfaces.size(),
     num_asv = asv.size(), count;
-  ISIter fn_it;
+  StSIter fn_it;
   for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
     fn_index = *fn_it;
     // asv may be larger than num_fns due to response aggregation modes
@@ -870,7 +870,7 @@ update_pop_counts(const IntResponsePair& response_pr)
 
 void ApproximationInterface::update_pop_counts(const IntResponseMap& resp_map)
 {
-  ISIter fn_it; IntRespMCIter r_it = resp_map.begin();
+  StSIter fn_it; IntRespMCIter r_it = resp_map.begin();
   size_t i, count, key_index, fn_index, num_fns = functionSurfaces.size(),
     num_asv = r_it->second.active_set_request_vector().size();
   for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
@@ -890,8 +890,7 @@ Real2DArray ApproximationInterface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {
   Real2DArray cv_diags;
-  ISIter a_it = approxFnIndices.begin();
-  ISCIter a_end = approxFnIndices.end();
+  StSIter a_it = approxFnIndices.begin(), a_end = approxFnIndices.end();
   for ( ; a_it != a_end; ++a_it) {
     size_t index = *a_it;
     cv_diags.push_back(functionSurfaces[index].
@@ -907,8 +906,7 @@ challenge_diagnostics(const StringArray& metric_types,
                       const RealVector& challenge_resps)
 {
   Real2DArray chall_diags;
-  ISIter a_it = approxFnIndices.begin();
-  ISCIter a_end = approxFnIndices.end();
+  StSIter a_it = approxFnIndices.begin(), a_end = approxFnIndices.end();
   for ( ; a_it != a_end; ++a_it) {
     size_t index = *a_it;
     chall_diags.push_back(functionSurfaces[index].
@@ -927,8 +925,8 @@ approximation_coefficients(bool normalized)
   // (i.e., do it here rather than in build/update functions above).
   if (functionSurfaceCoeffs.empty())
     functionSurfaceCoeffs.resize(functionSurfaces.size());
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    size_t index = *it;
     functionSurfaceCoeffs[index]
       = functionSurfaces[index].approximation_coefficients(normalized);
   }
@@ -940,8 +938,8 @@ void ApproximationInterface::
 approximation_coefficients(const RealVectorArray& approx_coeffs,
 			   bool normalized)
 {
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    size_t index = *it;
     functionSurfaces[index].approximation_coefficients(approx_coeffs[index],
 						       normalized);
   }
@@ -956,8 +954,8 @@ approximation_variances(const Variables& vars)
   // (i.e., do it here rather than in build/update functions above).
   if (functionSurfaceVariances.empty())
     functionSurfaceVariances.sizeUninitialized(functionSurfaces.size());
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    size_t index = *it;
     functionSurfaceVariances[index]
       = functionSurfaces[index].prediction_variance(vars);
   }

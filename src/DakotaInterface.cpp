@@ -971,7 +971,8 @@ void Interface::clear_model_keys()
 }
 
 
-void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
+void Interface::
+approximation_function_indices(const SizetSet& approx_fn_indices)
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->approximation_function_indices(approx_fn_indices);
@@ -1159,6 +1160,19 @@ void Interface::replace_approximation(const IntResponseMap& resp_map)
     Cerr << "Error: Letter lacking redefinition of virtual replace_"
 	 << "approximation(IntResponseMap) function.\n       This interface "
 	 << "does not support approximation data replacement." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::track_evaluation_ids(bool track)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->track_evaluation_ids(track);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
+	 << "ids() function.\n       This interface does not support "
+	 << "evaluation tracking." << std::endl;
     abort_handler(-1);
   }
 }

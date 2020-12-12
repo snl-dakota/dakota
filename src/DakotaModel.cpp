@@ -3648,7 +3648,7 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-void Model::surrogate_function_indices(const IntSet& surr_fn_indices)
+void Model::surrogate_function_indices(const SizetSet& surr_fn_indices)
 {
   if (modelRep)
     modelRep->surrogate_function_indices(surr_fn_indices); // fwd to letter
@@ -3979,14 +3979,27 @@ replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag)
 }
 
 
+void Model::track_evaluation_ids(bool track)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->track_evaluation_ids(track);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
+	 << "ids() function.\n       This model does not support evaluation "
+	 << "tracking." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->pop_approximation(save_surr_data, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual\n       "
-	 << "pop_approximation(bool, bool) function.  This model does not\n"
-	 << "       support approximation data removal." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
+	 << "(bool, bool) function.\n       This model does not support "
+	 << "approximation data removal." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }

@@ -140,7 +140,7 @@ protected:
   void surrogate_response_mode(short mode);
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
-  void surrogate_function_indices(const IntSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// use the high fidelity model to compute the truth values needed for
   /// correction of the low fidelity model results
@@ -726,7 +726,7 @@ inline void HierarchSurrModel::surrogate_response_mode(short mode)
 
 
 inline void HierarchSurrModel::
-surrogate_function_indices(const IntSet& surr_fn_indices)
+surrogate_function_indices(const SizetSet& surr_fn_indices)
 { surrogateFnIndices = surr_fn_indices; }
 
 

@@ -182,7 +182,7 @@ public:
 					   bool recurse_flag = true);
 
   /// set the (currently active) surrogate function index set
-  virtual void surrogate_function_indices(const IntSet& surr_fn_indices);
+  virtual void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// return probability transformation employed by the Model (forwarded along
   /// to ProbabilityTransformModel recasting)
@@ -297,6 +297,9 @@ public:
   /// resp_map) within an existing surrogate's data
   virtual void replace_approximation(const IntResponseMap& resp_map,
 				     bool rebuild_flag);
+  /// assigns a flag to track evaluation ids within surrogate data,
+  /// enabling id-based lookups for data replacement
+  virtual void track_evaluation_ids(bool track);
 
   /// remove the previous data set addition to a surrogate (e.g., due
   /// to a previous append_approximation() call); flag manages storing

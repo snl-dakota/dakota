@@ -1387,7 +1387,7 @@ void NonDLocalReliability::initialize_level_data()
   // Create the initial Taylor series approximation used by AMV/AMV+/TANA
   if (mppSearchType < NO_APPROX) {
     // restrict the approximation index set
-    IntSet surr_fn_indices;
+    SizetSet surr_fn_indices;
     surr_fn_indices.insert(respFnCount);
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
     // construct the approximation

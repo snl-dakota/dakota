@@ -168,7 +168,7 @@ protected:
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   /// and ApproximationInterface::approxFnIndices
-  void surrogate_function_indices(const IntSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points
@@ -228,6 +228,7 @@ protected:
   void replace_approximation(const IntResponsePair& response_pr,
 			     bool rebuild_flag);
   void replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag);
+  void track_evaluation_ids(bool track);
 
   void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
 
@@ -710,7 +711,7 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
 
 
 inline void DataFitSurrModel::
-surrogate_function_indices(const IntSet& surr_fn_indices)
+surrogate_function_indices(const SizetSet& surr_fn_indices)
 {
   surrogateFnIndices = surr_fn_indices;
   approxInterface.approximation_function_indices(surr_fn_indices);
@@ -792,6 +793,10 @@ rebuild_approximation(const IntResponseMap& resp_map)
   approxInterface.rebuild_approximation(rebuild_fns);
   ++approxBuilds;
 }
+
+
+inline void DataFitSurrModel::track_evaluation_ids(bool track)
+{ approxInterface.track_evaluation_ids(track); }
 
 
 inline const RealVector& DataFitSurrModel::

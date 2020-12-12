@@ -260,11 +260,11 @@ void EffGlobalMinimizer::build_gp()
     approxSubProbModel.num_linear_ineq_constraints(),
     approxSubProbModel.num_linear_eq_constraints());
 
-  // Build initial GP once for all response functions
-  //if (batchAsynch)
-  //  fHatModel.track_evaluation_ids(true);// enable replacement by id *** TO DO
+  // Build initial GPs for all response functions
+  if (batchAsynch)
+    fHatModel.track_evaluation_ids(true); // enable replacements by eval id
   fHatModel.build_approximation();
-
+  // initialize counter for GP refinements (used for vars{Acq,Expl}Map)
   batchEvalId = iteratedModel.evaluation_id() + 1;
 }
 

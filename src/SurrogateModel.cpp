@@ -39,7 +39,7 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 
   // process surrogateFnIndices. IntSets are sorted and unique.
   if (surrogateFnIndices.empty()) // default: all fns are approximated
-    for (int i=0; i<numFns; ++i)
+    for (size_t i=0; i<numFns; ++i)
       surrogateFnIndices.insert(i);
   else {
     // check for out of range values
@@ -69,7 +69,7 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
 
   // set up surrogateFnIndices to use default (all fns are approximated)
-  for (int i=0; i<numFns; ++i)
+  for (size_t i=0; i<numFns; ++i)
     surrogateFnIndices.insert(i);
 }
 
@@ -473,7 +473,7 @@ asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
     // else response set is mixed:
     else if (build_flag) { // construct mode: define actual_asv
       actual_asv.assign(num_qoi, 0);
-      for (ISIter it=surrogateFnIndices.begin();
+      for (StSIter it=surrogateFnIndices.begin();
 	   it!=surrogateFnIndices.end(); ++it)
 	actual_asv[*it] = orig_asv[*it];
     }
