@@ -156,12 +156,14 @@ private:
 
   /// add variables/response data to functionSurfaces using a mixture
   /// of shallow and deep copies
-  void mixed_add(const Variables& vars, const Response& response, bool anchor);
+  void mixed_add(const Variables& vars, const IntResponsePair& response_pr,
+		 bool anchor);
   /// add variables/response data to functionSurfaces using a mixture
   /// of shallow and deep copies
-  void mixed_add(const Real* c_vars, const Response& response, bool anchor);
+  void mixed_add(const Real* c_vars, const IntResponsePair& response_pr,
+		 bool anchor);
   /// add variables/response data to functionSurfaces using a shallow copy
-  void shallow_add(const Variables& vars, const Response& response,
+  void shallow_add(const Variables& vars, const IntResponsePair& response_pr,
 		   bool anchor);
 
   /// populate continuous variables within vars from sample_c_vars

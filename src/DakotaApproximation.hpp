@@ -305,6 +305,8 @@ public:
   /// adds a new data point by appending to SurrogateData::respData
   void add(const Response& response, size_t fn_index, bool anchor_flag,
 	   bool deep_copy, size_t key_index = _NPOS);
+  /// tracks a new data point by appending to SurrogateData::dataIdentifiers
+  void add(int eval_id, size_t key_index = _NPOS);
 
   /// add surrogate data from the provided sample and response data,
   /// assuming continuous variables and function values only
@@ -406,7 +408,8 @@ private:
 
   /// Used only by the alternate envelope constructor to initialize
   /// approxRep to the appropriate derived type.
-  std::shared_ptr<Approximation> get_approx(const SharedApproxData& shared_data);
+  std::shared_ptr<Approximation>
+  get_approx(const SharedApproxData& shared_data);
 
   /// create a SurrogateDataResp instance from the response data for a
   /// particular QoI
@@ -521,6 +524,24 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag, bool deep_copy,
       if (anchor_flag) approxData.anchor_response(sdr);
       else             approxData.push_back(sdr);
     }
+  }
+}
+
+
+inline void Approximation::add(int eval_id, size_t key_index)
+{
+  if (approxRep)
+    approxRep->add(eval_id, key_index);
+  else { // not virtual: all derived classes use following definition
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    if (key_index == _NPOS) key_index = 0; // make front() the default
+    if (key_index >= keys.size()) {
+      Cerr << "Error: index out of range in Approximation::add()" << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
+
+    approxData.active_key(keys[key_index]);// no-op if key already active
+    approxData.push_back(eval_id);
   }
 }
 

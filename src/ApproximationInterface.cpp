@@ -372,12 +372,12 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
     PRPCacheCIter p_it
       = cache_lookup(vars, response_pr.first, response_pr.second);
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
-      mixed_add(vars, response_pr.second, true);
+      mixed_add(vars, response_pr, true);
     else                          // shallow copies of cached vars/resp data
-      shallow_add(p_it->variables(), p_it->response(), true);
+      shallow_add(p_it->variables(), p_it->response_pair(), true);
   }
   else                            // deep response copies with vars sharing
-    mixed_add(vars, response_pr.second, true);
+    mixed_add(vars, response_pr, true);
 
   // reset active approxData key using SharedApproxData::approxDataKeys
   restore_data_key();
@@ -407,14 +407,14 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
       p_it = cache_lookup(samples[i], num_cv, r_it->first, r_it->second);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
-	mixed_add(samples[i], r_it->second, false);
+	mixed_add(samples[i], *r_it, false);
       else                          // shallow copies of cached vars/resp data
-	shallow_add(p_it->variables(), p_it->response(), false);
+	shallow_add(p_it->variables(), p_it->response_pair(), false);
     }
   }
   else                              // deep response copies with vars sharing
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
-      mixed_add(samples[i], r_it->second, false);
+      mixed_add(samples[i], *r_it, false);
 
   // reset active approxData key using SharedApproxData::approxDataKeys
   restore_data_key();
@@ -445,14 +445,14 @@ update_approximation(const VariablesArray& vars_array,
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
       p_it = cache_lookup(vars_array[i], r_it->first, r_it->second);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
-	mixed_add(vars_array[i], r_it->second, false);
+	mixed_add(vars_array[i], *r_it, false);
       else                          // shallow copies of cached vars/resp data
-	shallow_add(p_it->variables(), p_it->response(), false);
+	shallow_add(p_it->variables(), p_it->response_pair(), false);
     }
   }
   else                            // deep response copies with vars sharing
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
-      mixed_add(vars_array[i], r_it->second, false);
+      mixed_add(vars_array[i], *r_it, false);
 
   // reset active approxData key using SharedApproxData::approxDataKeys
   restore_data_key();
@@ -471,12 +471,12 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
     PRPCacheCIter p_it
       = cache_lookup(vars, response_pr.first, response_pr.second);
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
-      mixed_add(vars, response_pr.second, false);
+      mixed_add(vars, response_pr, false);
     else                          // shallow copies of cached vars/resp data
-      shallow_add(p_it->variables(), p_it->response(), false);
+      shallow_add(p_it->variables(), p_it->response_pair(), false);
   }
   else                            // deep response copies with vars sharing
-    mixed_add(vars, response_pr.second, false);
+    mixed_add(vars, response_pr, false);
 
   update_pop_counts(response_pr);
 
@@ -505,14 +505,14 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
       p_it = cache_lookup(samples[i], num_cv, r_it->first, r_it->second);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
-	mixed_add(samples[i], r_it->second, false);
+	mixed_add(samples[i], *r_it, false);
       else                          // shallow copies of cached vars/resp data
-	shallow_add(p_it->variables(), p_it->response(), false);
+	shallow_add(p_it->variables(), p_it->response_pair(), false);
     }
   }
   else                            // deep response copies with vars sharing
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
-      mixed_add(samples[i], r_it->second, false);
+      mixed_add(samples[i], *r_it, false);
 
   update_pop_counts(resp_map);
 
@@ -542,14 +542,14 @@ append_approximation(const VariablesArray& vars_array,
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
       p_it = cache_lookup(vars_array[i], r_it->first, r_it->second);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
-	mixed_add(vars_array[i], r_it->second, false);
+	mixed_add(vars_array[i], *r_it, false);
       else                          // shallow copies of cached vars/resp data
-	shallow_add(p_it->variables(), p_it->response(), false);
+	shallow_add(p_it->variables(), p_it->response_pair(), false);
     }
   }
   else                            // deep response copies with vars sharing
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
-      mixed_add(vars_array[i], r_it->second, false);
+      mixed_add(vars_array[i], *r_it, false);
 
   update_pop_counts(resp_map);
 
@@ -582,16 +582,16 @@ append_approximation(const IntVariablesMap& vars_map,
       check_id(v_it->first, eval_id);
       p_it = cache_lookup(v_it->second, eval_id, r_it->second);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
-	mixed_add(v_it->second, r_it->second, false);
+	mixed_add(v_it->second, *r_it, false);
       else                          // shallow copies of cached vars/resp data
-	shallow_add(p_it->variables(), p_it->response(), false);
+	shallow_add(p_it->variables(), p_it->response_pair(), false);
     }
   }
   else                            // deep response copies with vars sharing
     for (v_it =vars_map.begin(), r_it =resp_map.begin();
 	 v_it!=vars_map.end() && r_it!=resp_map.end(); ++v_it, ++r_it) {
       check_id(v_it->first, r_it->first);
-      mixed_add(v_it->second, r_it->second, false);
+      mixed_add(v_it->second, *r_it, false);
     }
 
   update_pop_counts(resp_map);
@@ -759,91 +759,102 @@ cache_lookup(const Real* vars, size_t num_v, int eval_id,
 
 
 void ApproximationInterface::
-mixed_add(const Variables& vars, const Response& response, bool anchor)
+mixed_add(const Variables& vars, const IntResponsePair& response_pr,
+	  bool anchor)
 {
+  int           eval_id = response_pr.first;
+  const Response&  resp = response_pr.second;
+  const ShortArray& asv = resp.active_set_request_vector();
+  size_t i, fn_index, num_fns = functionSurfaces.size(),
+    num_asv = asv.size(), key_index;
   Pecos::SurrogateDataVars sdv; bool first_vars = true;
-  const ShortArray& asv = response.active_set_request_vector();
-  size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
-    key_index;
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
+    Approximation& fn_surf = functionSurfaces[fn_index];
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
     // to vector of SurrogateData
     for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
       if (asv[i]) {
-	Approximation& fn_surf = functionSurfaces[fn_index];
 	// rather than unrolling the response (containing all response fns)
 	// into per-response function arrays for input to fn_surf, pass the
 	// complete response along with a response function index.
 	if (first_vars) {
-	  fn_surf.add(vars,        anchor,  true, key_index); // deep
-	  fn_surf.add(response, i, anchor,  true, key_index); // deep
+	  fn_surf.add(vars,    anchor,  true, key_index); // deep
+	  fn_surf.add(resp, i, anchor,  true, key_index); // deep
 	  // carry newly added sdv over to other approx fn indices:
 	  sdv = (anchor) ? fn_surf.surrogate_data().anchor_variables() :
 	                   fn_surf.surrogate_data().variables_data().back();
 	  first_vars = false;
 	}
 	else {
-	  fn_surf.add(sdv,         anchor, false, key_index); // shallow
-	  fn_surf.add(response, i, anchor,  true, key_index); // deep
+	  fn_surf.add(sdv,     anchor, false, key_index); // shallow
+	  fn_surf.add(resp, i, anchor,  true, key_index); // deep
 	}
+	if (trackEvalIds) fn_surf.add(eval_id, key_index);
       }
   }
 }
 
 
 void ApproximationInterface::
-mixed_add(const Real* c_vars, const Response& response, bool anchor)
+mixed_add(const Real* c_vars, const IntResponsePair& response_pr, bool anchor)
 {
+  int           eval_id = response_pr.first;
+  const Response&  resp = response_pr.second;
+  const ShortArray& asv = resp.active_set_request_vector();
+  size_t i, fn_index, num_fns = functionSurfaces.size(),
+    num_asv = asv.size(), key_index;
   Pecos::SurrogateDataVars sdv; bool first_vars = true;
-  const ShortArray& asv = response.active_set_request_vector();
-  size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
-    key_index;
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
+    Approximation& fn_surf = functionSurfaces[fn_index];
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
     // to vector of SurrogateData
     for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
       if (asv[i]) {
-	Approximation& fn_surf = functionSurfaces[fn_index];
 	// rather than unrolling the response (containing all response fns)
 	// into per-response function arrays for input to fn_surf, pass the
 	// complete response along with a response function index.
 	if (first_vars) {
-	  fn_surf.add(c_vars,      anchor,  true, key_index); // deep
-	  fn_surf.add(response, i, anchor,  true, key_index); // deep
+	  fn_surf.add(c_vars,  anchor,  true, key_index); // deep
+	  fn_surf.add(resp, i, anchor,  true, key_index); // deep
 	  // carry newly added sdv over to other approx fn indices:
 	  sdv = (anchor) ? fn_surf.surrogate_data().anchor_variables() :
 	                   fn_surf.surrogate_data().variables_data().back();
 	  first_vars = false;
 	}
 	else {
-	  fn_surf.add(sdv,         anchor, false, key_index); // shallow
-	  fn_surf.add(response, i, anchor,  true, key_index); // deep
+	  fn_surf.add(sdv,     anchor, false, key_index); // shallow
+	  fn_surf.add(resp, i, anchor,  true, key_index); // deep
 	}
+	if (trackEvalIds) fn_surf.add(eval_id, key_index);
       }
   }
 }
 
 
 void ApproximationInterface::
-shallow_add(const Variables& vars, const Response& response, bool anchor)
+shallow_add(const Variables& vars, const IntResponsePair& response_pr,
+	    bool anchor)
 {
-  const ShortArray& asv = response.active_set_request_vector();
-  size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
-    key_index;
+  int           eval_id = response_pr.first;
+  const Response&  resp = response_pr.second;
+  const ShortArray& asv = resp.active_set_request_vector();
+  size_t i, fn_index, num_fns = functionSurfaces.size(),
+    num_asv = asv.size(), key_index;
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
+    Approximation& fn_surf = functionSurfaces[fn_index];
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
     // to vector of SurrogateData
     for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
       if (asv[i]) {
-	Approximation& fn_surf = functionSurfaces[fn_index];
-	fn_surf.add(vars,        anchor, false, key_index); // shallow
-	fn_surf.add(response, i, anchor, false, key_index); // shallow
+	fn_surf.add(vars,    anchor, false, key_index); // shallow
+	fn_surf.add(resp, i, anchor, false, key_index); // shallow
+	if (trackEvalIds) fn_surf.add(eval_id, key_index);
       }
   }
 }
