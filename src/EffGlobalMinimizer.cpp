@@ -46,7 +46,8 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   batchSize(probDescDB.get_int("method.batch_size")),
   batchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
   //setUpType("model"),
-  dataOrder(1), batchEvalId(1), batchAsynch(false) // *** TO DO
+  dataOrder(1), batchEvalId(1),
+  batchAsynch(probDescDB.get_bool("method.batch_size.asynchronous"))
 {
   // substract the total batchSize from batchSizeExploration
   batchSizeAcquisition = batchSize - batchSizeExploration;
@@ -79,7 +80,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   default:              approx_type = "global_kriging";
   }
 
-  String sample_reuse = "none"; // *** TO DO: allow reuse separate from import
+  String sample_reuse = "none"; // TO DO: allow reuse separate from import
   UShortArray approx_order; // empty
   short corr_order = -1, corr_type = NO_CORRECTION;
   if (probDescDB.get_bool("method.derivative_usage")) {
@@ -102,7 +103,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   // get point samples file
   const String& import_pts_file
     = probDescDB.get_string("method.import_build_points_file");
-  if (!import_pts_file.empty()) // *** TO DO: allow reuse separate from import
+  if (!import_pts_file.empty()) // TO DO: allow reuse separate from import
     { samples = 0; sample_reuse = "all"; }
 
   Iterator dace_iterator;
@@ -449,7 +450,7 @@ void EffGlobalMinimizer::evaluate_batch()
   if (parallelFlag) {
 
     // remove all liar responses prior to appending truth
-    pop_liar_responses();
+    pop_liar_responses(); // *** TO DO: replace can avoid some inefficiencies
 
     // queue evaluations for composite batch (acquisition + exploration)
     ActiveSet set = iteratedModel.current_response().active_set();

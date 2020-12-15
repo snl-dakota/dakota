@@ -2622,6 +2622,7 @@
             <keyword  id="exploration" name="exploration" code="{N_mdm(int,batchSizeExplore)}" label="Portion of specified batch size that performs exploration rather than selected acquisition"  minOccurs="0" >
   	      <param type="INTEGER" constraint=">= 0" />
     	    </keyword>
+            <keyword  id="asynchronous" name="asynchronous" code="{N_mdm(true,batchAsynchFlag)}" label="Activate fully asynchronous management of batch refinement"  minOccurs="0" />
     	  </keyword>
           &method_max_iterations;
 	  <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance"  minOccurs="0" default="1.e-12" >

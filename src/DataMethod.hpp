@@ -1127,6 +1127,8 @@ public:
   int batchSize;
   /// portion of batchSize earmarked for exploration rather than acquisition
   int batchSizeExplore;
+  /// flag for fully-asynchronous management of parallel batch evaluations
+  bool batchAsynchFlag;
   /// indicate that the KSG2 algorithm is to be employed in the calculation
   /// of the mutual information
   bool mutualInfoKSG2;

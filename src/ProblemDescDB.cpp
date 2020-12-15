@@ -2633,6 +2633,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     },
     { /* method */
       {"backfill", P_MET backfillFlag},
+      {"batch_size.asynchronous", P_MET batchAsynchFlag},
       {"chain_diagnostics", P_MET chainDiagnostics},
       {"chain_diagnostics.confidence_intervals", P_MET chainDiagnosticsCI},
       {"coliny.constant_penalty", P_MET constantPenalty},

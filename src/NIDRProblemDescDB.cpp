@@ -6872,6 +6872,7 @@ static bool
 	MP_(adaptPosteriorRefine),
         MP_(adaptRank),
 	MP_(backfillFlag),
+	MP_(batchAsynchFlag),
 	MP_(calModelDiscrepancy),
 	MP_(chainDiagnostics),
 	MP_(chainDiagnosticsCI),

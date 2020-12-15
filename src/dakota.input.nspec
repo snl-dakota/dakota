@@ -988,6 +988,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ batch_size INTEGER >= 1 {N_mdm(int,batchSize)}
       [ exploration INTEGER >= 0 {N_mdm(int,batchSizeExplore)} ]
+      [ asynchronous {N_mdm(true,batchAsynchFlag)} ]
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
