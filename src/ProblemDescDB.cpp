@@ -2109,7 +2109,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"nond.proposal_covariance_type", P_MET proposalCovType},
       {"nond.reliability_integration", P_MET reliabilityIntegration},
       {"optpp.search_method", P_MET searchMethod},
-      {"pattern_search.synchronization", P_MET evalSynchronize},
       {"pstudy.import_file", P_MET pstudyFilename},
       {"random_number_generator", P_MET rngName},
       {"replacement_type", P_MET replacementType},
@@ -2383,6 +2382,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"sbl.merit_function", P_MET surrBasedLocalMeritFn},
       {"sbl.subproblem_constraints", P_MET surrBasedLocalSubProbCon},
       {"sbl.subproblem_objective", P_MET surrBasedLocalSubProbObj},
+      {"synchronization", P_MET evalSynchronize},
       {"wilks.sided_interval", P_MET wilksSidedInterval}
     },
     { /* model */
@@ -2633,7 +2633,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     },
     { /* method */
       {"backfill", P_MET backfillFlag},
-      {"batch_size.asynchronous", P_MET batchAsynchFlag},
       {"chain_diagnostics", P_MET chainDiagnostics},
       {"chain_diagnostics.confidence_intervals", P_MET chainDiagnosticsCI},
       {"coliny.constant_penalty", P_MET constantPenalty},
