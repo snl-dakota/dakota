@@ -33,6 +33,7 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       const StringArray& fn_labels):
   Interface(BaseConstructor(), problem_db), 
   approxFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
+  trackEvalIds(false),
   //graph3DFlag(problem_db.get_bool("environment.graphics")),
   challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
   challengeFormat(

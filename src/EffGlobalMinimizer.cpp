@@ -409,7 +409,11 @@ void EffGlobalMinimizer::construct_batch_exploration(size_t new_expl)
 	   << std::setw(write_precision+7) << pv_star << '\n';
     }
 
-    update_convergence_counters(vars_star);//, pv_resp_star); // *** TO DO
+    // Do not monitor value of pv_resp_star as a convergence counter.  This
+    // assumes a user intent to augment acquisition with some optional
+    // exploration, where convergence is only achieved based on exploiting
+    // good solutions and not based on a lack of good exploration candidates.
+    update_convergence_counters(vars_star);//, pv_resp_star);
     if (append_liars)
       append_liar(vars_star, batchEvalId);
 
@@ -451,7 +455,7 @@ void EffGlobalMinimizer::evaluate_batch()
   if (parallelFlag) {
 
     // remove all liar responses prior to appending truth
-    pop_liar_responses(); // *** TO DO: replace can avoid some inefficiencies
+    pop_liar_responses(); // Note: use of replace could avoid sdv movements
 
     // queue evaluations for composite batch (acquisition + exploration)
     ActiveSet set = iteratedModel.current_response().active_set();
