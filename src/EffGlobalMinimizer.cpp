@@ -529,25 +529,33 @@ bool EffGlobalMinimizer::query_batch()
   const IntResponseMap& truth_resp_map = iteratedModel.synchronize_nowait();
   if (truth_resp_map.empty()) return false;
 
-  // process completions
+  // Pextract_id(++e_it, varsExplorationMap)rocess completions
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nParallel EGO: adding true responses...\n";
   // Replace liar responses with new truth responses based on evals ids
   fHatModel.replace_approximation(truth_resp_map, true); // rebuild
-  // remove completed evals from varMaps
+  // Remove completed evals from varMaps (using single iterator traversals
+  // rather than repeated lookups)
   IntVarsMIter a_it = varsAcquisitionMap.begin(),
                e_it = varsExplorationMap.begin();
-  int r_id, a_id = (a_it==varsAcquisitionMap.end()) ? INT_MAX : a_it->first,
-            e_id = (e_it==varsExplorationMap.end()) ? INT_MAX : e_it->first;
+  int r_id, a_id = extract_id(a_it, varsAcquisitionMap),
+            e_id = extract_id(e_it, varsExplorationMap);
   IntRespMCIter r_cit;
   for (r_cit=truth_resp_map.begin(); r_cit!=truth_resp_map.end(); ++r_cit) {
     r_id = r_cit->first;
     while (a_id < r_id)
-      a_id = (++a_it==varsAcquisitionMap.end()) ? INT_MAX : a_it->first;
+      a_id = extract_id(++a_it, varsAcquisitionMap);
     while (e_id < r_id)
-      e_id = (++e_it==varsExplorationMap.end()) ? INT_MAX : e_it->first;
-    if      (a_id == r_id) varsAcquisitionMap.erase(a_it);
-    else if (e_id == r_id) varsExplorationMap.erase(e_it);
+      e_id = extract_id(++e_it, varsExplorationMap);
+    // Note: use postfix iterator increments to avoid invalidation by erase
+    if (a_id == r_id) {
+      varsAcquisitionMap.erase(a_it++); // copy a_it, increment orig, erase copy
+      a_id = extract_id(a_it, varsAcquisitionMap);
+    }
+    else if (e_id == r_id) {
+      varsExplorationMap.erase(e_it++); // copy e_it, increment orig, erase copy
+      e_id = extract_id(e_it, varsExplorationMap);
+    }
     else {
       Cerr << "Error: no match for response id in EffGlobalMinimizer::"
 	   << "query_batch()" << std::endl;
@@ -574,24 +582,24 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
   // launching the trailing map id's in the sequence defined by batchEvalId
   ActiveSet set = iteratedModel.current_response().active_set();
   set.request_values(dataOrder);
-  IntVarsMCIter va_cit = varsAcquisitionMap.begin(),
-                ve_cit = varsExplorationMap.begin();
-  std::advance(va_cit, varsAcquisitionMap.size() - new_acq);
-  std::advance(ve_cit, varsExplorationMap.size() - new_expl);
-  int va_id = (va_cit==varsAcquisitionMap.end()) ? INT_MAX : va_cit->first,
-      ve_id = (ve_cit==varsExplorationMap.end()) ? INT_MAX : ve_cit->first;
-  while (va_id != INT_MAX || ve_id != INT_MAX) {
+  IntVarsMCIter a_cit = varsAcquisitionMap.begin(),
+                e_cit = varsExplorationMap.begin();
+  std::advance(a_cit, varsAcquisitionMap.size() - new_acq);
+  std::advance(e_cit, varsExplorationMap.size() - new_expl);
+  int a_id = extract_id(a_cit, varsAcquisitionMap),
+      e_id = extract_id(e_cit, varsExplorationMap);
+  while (a_id != INT_MAX || e_id != INT_MAX) {
     // properly sequence backfill evaluations across the two queues so that
     // the liar/truth sequences are synchronized, enabling id-based replacement
-    if (va_id < ve_id) {
-      iteratedModel.active_variables(va_cit->second);
+    if (a_id < e_id) {
+      iteratedModel.active_variables(a_cit->second);
       iteratedModel.evaluate_nowait(set);
-      va_id = (++va_cit==varsAcquisitionMap.end()) ? INT_MAX : va_cit->first;
+      a_id = extract_id(++a_cit, varsAcquisitionMap);
     }
-    else if (ve_id < va_id) {    
-      iteratedModel.active_variables(ve_cit->second);
+    else if (e_id < a_id) {
+      iteratedModel.active_variables(e_cit->second);
       iteratedModel.evaluate_nowait(set);
-      ve_id = (++ve_cit==varsExplorationMap.end()) ? INT_MAX : ve_cit->first;
+      e_id = extract_id(++e_cit, varsExplorationMap);
     }
     else {
       Cerr << "Error: duplicate evaluation ids in EffGlobalMinimizer::"

@@ -145,6 +145,9 @@ private:
   /// evaluate and append a liar response
   void append_liar(const Variables& vars_star, int liar_id);
 
+  /// manage special value when iterator has advanced to end
+  int extract_id(IntVarsMCIter it, const IntVariablesMap& map);
+
   /// determine best solution from among the dataset
   void get_best_sample();
 
@@ -351,6 +354,11 @@ update_convergence_counters(const Variables& vars_star,
   update_convergence_counters(vars_star);
   update_convergence_counters(resp_star);
 }
+
+
+inline int EffGlobalMinimizer::
+extract_id(IntVarsMCIter cit, const IntVariablesMap& map)
+{ return (cit == map.end()) ? INT_MAX : cit->first; }
 
 
 inline void EffGlobalMinimizer::pop_liar_responses()
