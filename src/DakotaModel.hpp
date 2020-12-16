@@ -182,7 +182,7 @@ public:
 					   bool recurse_flag = true);
 
   /// set the (currently active) surrogate function index set
-  virtual void surrogate_function_indices(const IntSet& surr_fn_indices);
+  virtual void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// return probability transformation employed by the Model (forwarded along
   /// to ProbabilityTransformModel recasting)
@@ -245,8 +245,13 @@ public:
   /// anchor response at vars; rebuild if needed
   virtual bool build_approximation(const Variables& vars,
 				   const IntResponsePair& response_pr);
-  /// update an existing SurrogateModel approximation
+
+  /// incremental rebuild of an existing SurrogateModel approximation
   virtual void rebuild_approximation();
+  /// incremental rebuild of an existing SurrogateModel approximation
+  virtual void rebuild_approximation(const IntResponsePair& response_pr);
+  /// incremental rebuild of an existing SurrogateModel approximation
+  virtual void rebuild_approximation(const IntResponseMap& resp_map);
 
   /// replace the approximation data within an existing surrogate
   /// based on data updates propagated elsewhere
@@ -272,13 +277,29 @@ public:
 				    const IntResponsePair& response_pr,
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
+  virtual void append_approximation(const RealMatrix& samples,
+				    const IntResponseMap& resp_map,
+				    bool rebuild_flag);
+  /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const VariablesArray& vars_array,
 				    const IntResponseMap& resp_map,
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
-  virtual void append_approximation(const RealMatrix& samples,
-				    const IntResponseMap& resp_map,
+  virtual void append_approximation(const IntVariablesMap& vars_map,
+				    const IntResponseMap&  resp_map,
 				    bool rebuild_flag);
+
+  /// replace the response for a single point (based on eval id from
+  /// response_pr) within an existing surrogate's data
+  virtual void replace_approximation(const IntResponsePair& response_pr,
+				     bool rebuild_flag);
+  /// replace the responses for a set of points (based on eval ids from
+  /// resp_map) within an existing surrogate's data
+  virtual void replace_approximation(const IntResponseMap& resp_map,
+				     bool rebuild_flag);
+  /// assigns a flag to track evaluation ids within surrogate data,
+  /// enabling id-based lookups for data replacement
+  virtual void track_evaluation_ids(bool track);
 
   /// remove the previous data set addition to a surrogate (e.g., due
   /// to a previous append_approximation() call); flag manages storing

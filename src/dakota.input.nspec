@@ -988,6 +988,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ batch_size INTEGER >= 1 {N_mdm(int,batchSize)}
       [ exploration INTEGER >= 0 {N_mdm(int,batchSizeExplore)} ]
+      [ asynchronous {N_mdm(true,batchAsynchFlag)} ]
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
@@ -5796,7 +5797,7 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( surrogate {N_mom(lit,modelType_surrogate)}
-    [ id_surrogates INTEGERLIST {N_mom(intsetm1,surrogateFnIndices)} ]
+    [ id_surrogates INTEGERLIST {N_mom(id_to_index_set,surrogateFnIndices)} ]
     ( global {0}
       ( experimental_gaussian_process {N_mom(lit,surrogateType_global_exp_gauss_proc)}
         [ trend {0}

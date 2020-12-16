@@ -179,7 +179,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     // vars (same view as iteratedModel: not the typical All view for DACE).
     // For RBDO with GP over {u}+{d}, view set to All from all_variables spec.
     Model g_hat_x_model;
-    IntSet surr_fn_indices; // Only want functions with requested levels
+    SizetSet surr_fn_indices; // Only want functions with requested levels
     ActiveSet set = iteratedModel.current_response().active_set();// copy
     set.request_values(0);
     for (i=0; i<numFunctions; ++i)
@@ -229,7 +229,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     // variables (using the same view as iteratedModel/g_u_model: not the
     // typical All view for DACE).
     // For RBDO with GP over {u}+{d}, view set to All from all_variables spec.
-    IntSet surr_fn_indices; // Only want functions with requested levels
+    SizetSet surr_fn_indices; // Only want functions with requested levels
     ActiveSet set = iteratedModel.current_response().active_set();// copy
     set.request_values(0);
     for (i=0; i<numFunctions; ++i)

@@ -42,10 +42,10 @@ public:
   /// default constructor
   DiscrepancyCorrection();
   /// standard constructor
-  DiscrepancyCorrection(Model& surr_model, const IntSet& surr_fn_indices,
+  DiscrepancyCorrection(Model& surr_model, const SizetSet& surr_fn_indices,
 			short corr_type, short corr_order);
   /// alternate constructor
-  DiscrepancyCorrection(const IntSet& surr_fn_indices, size_t num_fns,
+  DiscrepancyCorrection(const SizetSet& surr_fn_indices, size_t num_fns,
 			size_t num_vars, short corr_type, short corr_order);
   /// destructor
   ~DiscrepancyCorrection();
@@ -55,13 +55,13 @@ public:
   //
 
   /// initialize the DiscrepancyCorrection data
-  void initialize(Model& surr_model, const IntSet& surr_fn_indices,
+  void initialize(Model& surr_model, const SizetSet& surr_fn_indices,
 		  short corr_type, short corr_order);
   /// initialize the DiscrepancyCorrection data
-  void initialize(const IntSet& surr_fn_indices, size_t num_fns,
+  void initialize(const SizetSet& surr_fn_indices, size_t num_fns,
 		  size_t num_vars, short corr_type, short corr_order);
   /// initialize the DiscrepancyCorrection data
-  void initialize(const IntSet& surr_fn_indices, size_t num_fns,
+  void initialize(const SizetSet& surr_fn_indices, size_t num_fns,
 		  size_t num_vars, short corr_type, short corr_order,
 		  const String& approx_type);
 
@@ -115,7 +115,7 @@ protected:
 
   /// for mixed response sets, this array specifies the response function
   /// subset that is approximated
-  IntSet surrogateFnIndices;
+  SizetSet surrogateFnIndices;
 
   /// indicates that discrepancy correction instance has been
   /// initialized following construction
@@ -252,7 +252,7 @@ inline DiscrepancyCorrection::DiscrepancyCorrection():
 
 
 inline DiscrepancyCorrection::
-DiscrepancyCorrection(Model& surr_model, const IntSet& surr_fn_indices,
+DiscrepancyCorrection(Model& surr_model, const SizetSet& surr_fn_indices,
 		      short corr_type, short corr_order)
 { initialize(surr_model, surr_fn_indices, corr_type, corr_order); }
 
@@ -296,7 +296,8 @@ inline bool DiscrepancyCorrection::initialized() const
 inline void DiscrepancyCorrection::
 apply_additive(const Variables& vars, RealVector& approx_fns)
 {
-  for (ISIter it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
+  for (StSIter it=surrogateFnIndices.begin();
+       it!=surrogateFnIndices.end(); ++it)
     approx_fns[*it] += addCorrections[*it].value(vars);
 }
 
@@ -304,7 +305,8 @@ apply_additive(const Variables& vars, RealVector& approx_fns)
 inline void DiscrepancyCorrection::
 apply_multiplicative(const Variables& vars, RealVector& approx_fns)
 {
-  for (ISIter it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
+  for (StSIter it=surrogateFnIndices.begin();
+       it!=surrogateFnIndices.end(); ++it)
     approx_fns[*it] *= multCorrections[*it].value(vars);
 }
 

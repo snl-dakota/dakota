@@ -422,7 +422,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     // This may be more confusing than helpful:
     //if (evalIdRefPt)
     //  Cout << " (local evaluation " << evalIdCntr - evalIdRefPt << ")";
-    if (interfaceId.empty() || interfaceId == "NO_ID") Cout << "\n---------------------\n";
+    if (interfaceId.empty() || interfaceId == "NO_ID")
+      Cout << "\n---------------------\n";
     else Cout << "\n------------------------------\n";
   }
   if (outputLevel > QUIET_OUTPUT)

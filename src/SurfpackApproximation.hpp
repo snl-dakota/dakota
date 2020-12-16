@@ -121,10 +121,11 @@ protected:
 		  const SurfData& data);
 
   /// compute and print all requested diagnostics and cross-validation 
-  void primary_diagnostics(int fn_index) override;
+  void primary_diagnostics(size_t fn_index) override;
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
-  void challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+  void challenge_diagnostics(size_t fn_index,
+			     const RealMatrix& challenge_points,
                              const RealVector& challenge_responses) override;
 
   /// compute and return cross-validation for metric_type with num_folds

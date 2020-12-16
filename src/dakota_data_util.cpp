@@ -274,5 +274,4 @@ void iround(const RealVector& input_vec, IntVector& rounded_vec)
     rounded_vec[i] = boost::math::iround(input_vec[i]);
 }
 
-
 } // namespace Dakota

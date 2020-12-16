@@ -712,7 +712,7 @@ Real SurfpackApproximation::diagnostic(const String& metric_type,
 }
 
 
-void SurfpackApproximation::primary_diagnostics(int fn_index)
+void SurfpackApproximation::primary_diagnostics(size_t fn_index)
 {
   String func_description = approxLabel.empty() ?
     "function " + std::to_string(fn_index+1) : approxLabel;
@@ -774,7 +774,7 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
 
 
 void SurfpackApproximation::
-challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+challenge_diagnostics(size_t fn_index, const RealMatrix& challenge_points,
                       const RealVector& challenge_responses)
 {
   if (!model) { 

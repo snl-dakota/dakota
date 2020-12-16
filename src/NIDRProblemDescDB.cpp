@@ -1417,17 +1417,6 @@ model_int(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-model_intsetm1(const char *keyname, Values *val, void **g, void *v)
-{
-  IntSet *is = &((*(Mod_Info**)g)->dmo->**(IntSet DataModelRep::**)v);
-  int *z = val->i;
-  size_t i, n = val->n;
-
-  for(i = 0; i < n; i++)
-    is->insert(z[i] - 1); // model converts ids -> indices
-}
-
-void NIDRProblemDescDB::
 model_lit(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_lit*)v)->sp = ((Model_mp_lit*)v)->lit;
@@ -1499,6 +1488,22 @@ model_sizet(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(size_t DataModelRep::**)v = n;
 }
 
+void NIDRProblemDescDB::
+model_id_to_index_set(const char *keyname, Values *val, void **g, void *v)
+{
+  SizetSet *ss = &((*(Mod_Info**)g)->dmo->**(SizetSet DataModelRep::**)v);
+  int *z = val->i; // extract as int ptr, prior to storage as SizetSet
+  size_t i, n = val->n, s;
+
+  for(i = 0; i < n; i++) {
+    if (z[i] > 0) {
+      s = z[i] - 1; // model converts ids -> indices
+      ss->insert(s);
+    }
+    else
+      botch("%s must be positive", keyname);      
+  }
+}
 
 void NIDRProblemDescDB::
 model_start(const char *keyname, Values *val, void **g, void *v)
@@ -6867,6 +6872,7 @@ static bool
 	MP_(adaptPosteriorRefine),
         MP_(adaptRank),
 	MP_(backfillFlag),
+	MP_(batchAsynchFlag),
 	MP_(calModelDiscrepancy),
 	MP_(chainDiagnostics),
 	MP_(chainDiagnosticsCI),
@@ -7275,7 +7281,7 @@ static Method_mp_utype
 #define MP2s(x,y) model_mp_##x##_##y = {&DataModelRep::x,y}
 #define MP2p(x,y) model_mp_##x##_##y = {&DataModelRep::x,Pecos::y}
 
-static IntSet
+static SizetSet
 	MP_(surrogateFnIndices);
 
 static Model_mp_lit
