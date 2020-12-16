@@ -210,10 +210,8 @@ void APPSOptimizer::set_apps_parameters()
     // A null string is the DB default and nonblocking is the HOPS default, so
     // the flag is true only for an explicit blocking user specification.
 
-    const bool blocking_synch
-      = (probDescDB.get_string("method.pattern_search.synchronization") ==
-	 "blocking");
-    if (blocking_synch) {
+    if (probDescDB.get_short("method.synchronization") ==
+	BLOCKING_SYNCHRONIZATION) {
       mediatorParams->setParameter("Synchronous Evaluations", true);
       citizenParams->setParameter("Use Random Order", false);
       evalMgr->set_blocking_synch(true);

@@ -527,9 +527,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ variable_tolerance REAL {N_mdm(Real,threshStepLength)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
     [ synchronization {0}
-      blocking {N_mdm(lit,evalSynchronize_blocking)}
+      blocking {N_mdm(type,evalSynchronize_BLOCKING_SYNCHRONIZATION)}
       |
-      nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
+      nonblocking {N_mdm(type,evalSynchronize_NONBLOCKING_SYNCHRONIZATION)}
      ]
     [ merit_function {0}
       merit_max {N_mdm(lit,meritFunction_merit_max)}
@@ -782,9 +782,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
       basic_pattern {N_mdm(lit,exploratoryMoves_simple)}
      ]
     [ synchronization {0}
-      blocking {N_mdm(lit,evalSynchronize_blocking)}
+      blocking {N_mdm(type,evalSynchronize_BLOCKING_SYNCHRONIZATION)}
       |
-      nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
+      nonblocking {N_mdm(type,evalSynchronize_NONBLOCKING_SYNCHRONIZATION)}
      ]
     [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
     [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
@@ -988,7 +988,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ batch_size INTEGER >= 1 {N_mdm(int,batchSize)}
       [ exploration INTEGER >= 0 {N_mdm(int,batchSizeExplore)} ]
-      [ asynchronous {N_mdm(true,batchAsynchFlag)} ]
+      [ synchronization {0}
+        blocking {N_mdm(type,evalSynchronize_BLOCKING_SYNCHRONIZATION)}
+        |
+        nonblocking {N_mdm(type,evalSynchronize_NONBLOCKING_SYNCHRONIZATION)}
+       ]
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]

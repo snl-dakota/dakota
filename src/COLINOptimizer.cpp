@@ -770,9 +770,8 @@ void COLINOptimizer::set_solver_parameters()
     // specification.
 
     // default is blocking (most solvers) unless explicit override for PS
-    blockingSynch =
-      (probDescDB.get_string("method.pattern_search.synchronization") ==
-       "nonblocking") ? false : true;
+    blockingSynch = (probDescDB.get_short("method.synchronization") !=
+		     NONBLOCKING_SYNCHRONIZATION);
 
     const Real& contraction_factor
       = probDescDB.get_real("method.coliny.contraction_factor");

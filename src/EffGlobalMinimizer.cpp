@@ -47,7 +47,8 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   batchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
   //setUpType("model"),
   dataOrder(1), batchEvalId(1),
-  batchAsynch(probDescDB.get_bool("method.batch_size.asynchronous"))
+  batchAsynch(probDescDB.get_short("method.synchronization") ==
+	      NONBLOCKING_SYNCHRONIZATION)
 {
   // substract the total batchSize from batchSizeExploration
   batchSizeAcquisition = batchSize - batchSizeExploration;
