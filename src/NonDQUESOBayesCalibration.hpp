@@ -76,12 +76,8 @@ protected:
   //
 
   void calibrate();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-
-  /// convenience function to print calibration parameters, e.g., for
-  /// MAP / best parameters
-  // TNP TODO: this seems like it should be base class
-  void print_variables(std::ostream& s, const RealVector& c_vars);
+  void print_results(std::ostream& s, short 
+      results_state = FINAL_RESULTS) override;
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
   void init_queso_environment();
@@ -104,7 +100,7 @@ protected:
   /// perform the MCMC process
   void run_queso_solver();
 
-  void map_pre_solve();
+  void map_pre_solve() override;
 
   /// short term option to restart the MCMC chain with updated proposal
   /// density computed from the emulator at a new starting point

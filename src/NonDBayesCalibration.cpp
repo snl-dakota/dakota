@@ -800,6 +800,83 @@ void NonDBayesCalibration::initialize_model()
     Cout << "Mutual Information estimation not yet implemented\n";
 }
 
+void NonDBayesCalibration::map_pre_solve(){
+  /// Runs a pre-solve for the MAP point. If running calibrate_to_hifi()
+  /// or calibrate_with_adaptive_emulator(), propagates the solution to
+  /// the mapSoln variable. Returns the optimal solution as a vector.
+
+  // Management of pre_solve spec options occurs in NonDBayesCalibration ctor,
+  // manifesting here as a valid mapOptimizer instance.
+  if (mapOptimizer.is_null()) return;
+  
+  // Pre-solve for MAP point using optimization prior to MCMC.
+
+  Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
+       << std::endl;
+  // set initial point pulled from mcmcModel at construct time or
+  // warm start from previous map soln computed from previous emulator
+  negLogPostModel.current_variables().continuous_variables(mapSoln);
+
+  // Perform optimization
+  mapOptimizer.run();
+  //negLogPostModel.print_evaluation_summary(Cout);
+  //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
+  Cout << "Maximum a posteriori probability (MAP) point from pre-solve"
+       << "\n(will be used as initial point for MCMC chain):\n";
+
+  // TNP ? Why are we introducting this local variable instead of copying to
+  // mapSoln?
+  const RealVector& map_c_vars
+    = mapOptimizer.variables_results().continuous_variables();
+  print_variables(Cout, map_c_vars);
+  Cout << std::endl;
+
+  // TNP ? Switched to propagating to mapSoln no matter what--is that violating
+  // some underlying assumption?
+  
+  // if multiple pre-solves, propagate MAP as initial guess for next pre-solve
+  //if (adaptPosteriorRefine || adaptExpDesign)
+    copy_data(map_c_vars, mapSoln); // deep copy of view
+
+}
+
+void NonDBayesCalibration::calibrate_with_adaptive_emulator(){
+  /// This method will perform a Bayesian calibration with an emulator, 
+  /// but periodically the emulator is updated with more sample points from the 
+  /// original model in the high-posterior-density region of parameter space.
+  
+  // TNP ? This seems like it maybe should be happening in ctor?
+  if (!emulatorType) { // current spec prevents this
+    Cerr << "Error: adaptive posterior refinement requires emulator model."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  compactMode = true; // update_model() uses all{Samples,Responses}
+  Real adapt_metric = DBL_MAX; unsigned short int num_mcmc = 0;
+  while (adapt_metric > convergenceTol && num_mcmc <= maxIterations) {
+
+    // TO DO: treat this like cross-validation as there is likely a sweet
+    // spot prior to degradation of conditioning (too much refinement data)
+
+    // place update block here so that chain is always run for initial or
+    // updated emulator; placing block at loop end could result in emulator
+    // convergence w/o final chain.
+    if (num_mcmc) {
+	    // update the emulator surrogate data with new truth evals and
+	    // reconstruct surrogate (e.g., via PCE sparse recovery)
+	    update_model();
+	    // assess posterior convergence via convergence of the emulator coeffs
+	    adapt_metric = assess_emulator_convergence();
+    }
+
+    calibrate();
+    ++num_mcmc;
+
+    // assess convergence of the posterior via sample-based K-L divergence:
+    //adapt_metric = assess_posterior_convergence();
+  } // adapt while
+}
+
 void NonDBayesCalibration::best_to_all()
 {
   if (outputLevel >= NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
@@ -960,42 +1037,6 @@ Real NonDBayesCalibration::assess_emulator_convergence()
 } // assess_emulator_convergence
 
 
-void NonDBayesCalibration::calibrate_with_adaptive_emulator(){
-  /// This method will perform a Bayesian calibration with an emulator, 
-  /// but periodically the emulator is updated with more sample points from the 
-  /// original model in the high-posterior-density region of parameter space.
-  
-  // TNP ? This seems like it maybe should be happening in ctor?
-  if (!emulatorType) { // current spec prevents this
-    Cerr << "Error: adaptive posterior refinement requires emulator model."
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  compactMode = true; // update_model() uses all{Samples,Responses}
-  Real adapt_metric = DBL_MAX; unsigned short int num_mcmc = 0;
-  while (adapt_metric > convergenceTol && num_mcmc <= maxIterations) {
-
-    // TO DO: treat this like cross-validation as there is likely a sweet
-    // spot prior to degradation of conditioning (too much refinement data)
-
-    // place update block here so that chain is always run for initial or
-    // updated emulator; placing block at loop end could result in emulator
-    // convergence w/o final chain.
-    if (num_mcmc) {
-	    // update the emulator surrogate data with new truth evals and
-	    // reconstruct surrogate (e.g., via PCE sparse recovery)
-	    update_model();
-	    // assess posterior convergence via convergence of the emulator coeffs
-	    adapt_metric = assess_emulator_convergence();
-    }
-
-    calibrate();
-    ++num_mcmc;
-
-    // assess convergence of the posterior via sample-based K-L divergence:
-    //adapt_metric = assess_posterior_convergence();
-  } // adapt while
-}
 
 void NonDBayesCalibration::calibrate_to_hifi()
 {
@@ -3115,6 +3156,38 @@ void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
   if (posteriorStatsKL)
     print_kl(s);
 }
+
+void NonDBayesCalibration::
+print_variables(std::ostream& s, const RealVector& c_vars)
+{
+  StringMultiArrayConstView cv_labels =
+    iteratedModel.continuous_variable_labels();
+  // the residualModel includes any hyper-parameters
+  StringArray combined_labels;
+  copy_data(residualModel.continuous_variable_labels(), combined_labels);
+
+  size_t wpp7 = write_precision+7;
+
+  // print MAP for continuous random variables
+  if (standardizedSpace) {
+    RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
+    RealVector x_rv;
+    mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+    write_data(Cout, x_rv, cv_labels);
+  }
+  else
+    for (size_t j=0; j<numContinuousVars; ++j)
+      s << "                     " << std::setw(wpp7) << c_vars[j]
+	<< ' ' << cv_labels[j] << '\n';
+  // print MAP for hyper-parameters (e.g., observation error params)
+  for (size_t j=0; j<numHyperparams; ++j)
+    s << "                     " << std::setw(wpp7)
+      << c_vars[numContinuousVars+j] << ' '
+      << combined_labels[numContinuousVars + j] << '\n';
+}
+
+
+
 
 void NonDBayesCalibration::kl_post_prior(RealMatrix& acceptanceChain)
 {

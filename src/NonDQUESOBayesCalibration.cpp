@@ -130,39 +130,16 @@ void NonDQUESOBayesCalibration::calibrate()
 void NonDQUESOBayesCalibration::map_pre_solve()
 {
 
-  // TNP TODO: Most of this other than the copy could
-  // go in the base class. 
-  
-  // Management of pre_solve spec options occurs in NonDBayesCalibration ctor,
-  // manifesting here as a valid mapOptimizer instance.
+  // doing a double check here to avoid a double copy if not optimizing 
+  // for MAP (this check happens again in base class map_pre_solve()). 
   if (mapOptimizer.is_null()) return;
-  
-  // Pre-solve for MAP point using optimization prior to MCMC.
-
-  Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
-       << std::endl;
-  // set initial point pulled from mcmcModel at construct time or
-  // warm start from previous map soln computed from previous emulator
-  negLogPostModel.current_variables().continuous_variables(mapSoln);
-
-  // Perform optimization
-  mapOptimizer.run();
-  //negLogPostModel.print_evaluation_summary(Cout);
-  //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
-  Cout << "Maximum a posteriori probability (MAP) point from pre-solve"
-       << "\n(will be used as initial point for MCMC chain):\n";
-  const RealVector& map_c_vars
-    = mapOptimizer.variables_results().continuous_variables();
-  print_variables(Cout, map_c_vars);
-  Cout << std::endl;
+  NonDBayesCalibration::map_pre_solve();
 
   // propagate MAP to paramInitials for starting point of MCMC chain.  
   // Note: specify_prior() happens once per calibrate(),
   // upstream of map_pre_solve()
-  copy_gsl(map_c_vars, *paramInitials);
-  // if multiple pre-solves, propagate MAP as initial guess for next pre-solve
-  if (adaptPosteriorRefine || adaptExpDesign)
-    copy_data(map_c_vars, mapSoln); // deep copy of view
+  //copy_gsl(map_c_vars, *paramInitials);
+  copy_gsl(mapSoln, *paramInitials);
 }
 
 
@@ -1096,37 +1073,6 @@ print_results(std::ostream& s, short results_state)
   // Print final stats for variables and responses 
   NonDBayesCalibration::print_results(s, results_state);
 }
-
-
-void NonDQUESOBayesCalibration::
-print_variables(std::ostream& s, const RealVector& c_vars)
-{
-  StringMultiArrayConstView cv_labels =
-    iteratedModel.continuous_variable_labels();
-  // the residualModel includes any hyper-parameters
-  StringArray combined_labels;
-  copy_data(residualModel.continuous_variable_labels(), combined_labels);
-
-  size_t wpp7 = write_precision+7;
-
-  // print MAP for continuous random variables
-  if (standardizedSpace) {
-    RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
-    RealVector x_rv;
-    mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
-    write_data(Cout, x_rv, cv_labels);
-  }
-  else
-    for (size_t j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(wpp7) << c_vars[j]
-	<< ' ' << cv_labels[j] << '\n';
-  // print MAP for hyper-parameters (e.g., observation error params)
-  for (size_t j=0; j<numHyperparams; ++j)
-    s << "                     " << std::setw(wpp7)
-      << c_vars[numContinuousVars+j] << ' '
-      << combined_labels[numContinuousVars + j] << '\n';
-}
-
 
 double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   const QUESO::GslVector& paramValues, const QUESO::GslVector* paramDirection,

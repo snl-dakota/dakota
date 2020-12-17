@@ -96,7 +96,12 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  virtual void print_results(std::ostream& s, 
+      short results_state = FINAL_RESULTS);
+  /// convenience function to print calibration parameters, e.g., for
+  /// MAP / best parameters
+  void print_variables(std::ostream& s, const RealVector& c_vars);
+
 
   const Model& algorithm_space_model() const;
 
@@ -132,6 +137,8 @@ protected:
   void construct_map_model();
   /// construct the MAP optimizer for minimization of negLogPostModel
   void construct_map_optimizer();
+
+  virtual void map_pre_solve();
 
   /// initialize emulator model and probability space transformations
   void initialize_model();
