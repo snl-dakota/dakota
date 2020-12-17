@@ -71,8 +71,6 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   augLagrangeMult.resize(num_multipliers);
   augLagrangeMult = 0.;
 
-  truthFnStar.resize(numFunctions);
-
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type;
   switch (probDescDB.get_short("method.nond.emulator")) {
@@ -274,8 +272,7 @@ void EffGlobalMinimizer::build_gp()
 
 void EffGlobalMinimizer::batch_synchronous_ego()
 {
-  bool approx_converged = false;
-  while (!approx_converged) {
+  while (!converged()) {
 
     // construct the acquisition batch
     construct_batch_acquisition(batchSizeAcquisition, batchSize);
@@ -284,17 +281,14 @@ void EffGlobalMinimizer::batch_synchronous_ego()
 
     // blocking synch for composite batch (acquisition + exploration)
     evaluate_batch();
-
-    // check convergence
-    approx_converged = assess_convergence();
   }
 }
 
 
 void EffGlobalMinimizer::batch_asynchronous_ego()
 {
-  bool approx_converged = false;  size_t new_acq, new_expl, new_batch;
-  while (!approx_converged) {
+  size_t new_acq, new_expl, new_batch;
+  while (!converged()) {
 
     // non-blocking synch for composite batch (acquisition + exploration)
     /*bool completed = */query_batch();
@@ -315,18 +309,12 @@ void EffGlobalMinimizer::batch_asynchronous_ego()
 
     // launch new truth jobs using liar variable sets
     backfill_batch(new_acq, new_expl);
-
-    // check convergence
-    approx_converged = assess_convergence();
   }
 
   // Complete any jobs that are still running at time of convergence kick out.
   // Don't rebuild as only need latest build data for extract_best_sample().
-  if (!varsAcquisitionMap.empty() || !varsExplorationMap.empty()) {
-    fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
-    const IntResponseMap& truth_resp_map = iteratedModel.synchronize();
-    process_truth_response_map(truth_resp_map, false); // no rebuild
-  }
+  while (!empty_queues())
+    query_batch();
 }
 
 
@@ -355,8 +343,8 @@ construct_batch_acquisition(size_t new_acq, size_t new_batch)
     Cout << "\n>>>>> Initiating global iteration " << ++globalIterCount
 	 << " (acquisition batch " << i+1 << ")\n";
 
-    // determine fnStar from among sample data
-    extract_best_sample();
+    // determine meritFnStar for use in EIF
+    compute_best_sample();
 
     // execute GLOBAL search and retrieve results
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
@@ -526,7 +514,7 @@ void EffGlobalMinimizer::evaluate_batch()
 /** query running jobs and process any new completions */
 bool EffGlobalMinimizer::query_batch()
 {
-  if (varsAcquisitionMap.empty() && varsExplorationMap.empty()) return false;
+  if (empty_queues()) return false;
 
   // nonblocking synchronize: evaluate truth responses in parallel
   fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
@@ -607,6 +595,8 @@ void EffGlobalMinimizer::launch_single(const Variables& vars_star)
 void EffGlobalMinimizer::
 process_truth_response_map(const IntResponseMap& truth_resp_map, bool rebuild)
 {
+  if (truth_resp_map.empty()) return;
+
   // Process completions: replace liar resp w/ new truth resp based on eval ids
   fHatModel.replace_approximation(truth_resp_map, rebuild);
   // update constraints (truth resp only, not for liar resp)
@@ -649,6 +639,71 @@ update_variable_maps(const IntResponseMap& truth_resp_map)
 }
 
 
+/** Extract the best merit function from build data through evaluaton
+    of points on fHatModel.  This merit fnb value is used within the
+    EIF during an approximate sub-problem solve. */
+void EffGlobalMinimizer::compute_best_sample()
+{
+  // pull the samples and responses from data used to build latest GP
+  // to determine meritFnStar for use in the expected improvement function
+
+  const Pecos::SurrogateData& gp_data_0 = fHatModel.approximation_data(0);
+  const Pecos::SDVArray&    sdv_array_0 = gp_data_0.variables_data();
+  size_t i, index_star = 0, num_data_pts = gp_data_0.points();
+  Real merit_fn;  meritFnStar = DBL_MAX;
+  RealVector fn_sample(numFunctions);
+  for (i=0; i<num_data_pts; ++i) {
+
+    const RealVector& cv = sdv_array_0[i].continuous_variables();
+
+    fHatModel.continuous_variables(cv);
+    fHatModel.evaluate();
+    const RealVector& f_hat = fHatModel.current_response().function_values();
+    merit_fn = augmented_lagrangian(f_hat);
+
+    if (merit_fn < meritFnStar)
+      { index_star = i;  meritFnStar = merit_fn; }
+  }
+
+  // Only meritFnStar required for EIF in approx sub-problem solve:
+  //copy_data(sdv_array_0[index_star].continuous_variables(), cVarsStar);
+  //extract_qoi_build_data(index_star, truthFnStar);
+}
+
+
+/** Extract the best point from the build data for final results reporting. */
+void EffGlobalMinimizer::extract_best_sample()
+{
+  // pull the samples and responses from data used to build latest GP
+  // to determine final cVarsStar and truthFnStar
+
+  const Pecos::SurrogateData& gp_data_0 = fHatModel.approximation_data(0);
+  size_t i, index_star = 0, num_data_pts = gp_data_0.points();
+  Real merit_fn, merit_fn_star = DBL_MAX;
+  RealVector fn_sample(numFunctions);
+  for (i=0; i<num_data_pts; ++i) {
+
+    // extract build data from individual surrogates and form merit fn using
+    // latest penalties/multipliers.
+    // > this may include liar data for a particular look-ahead iteration, but
+    //   it is rescanned from scratch each time using the most up-to-date data
+    //   (any pollution is temporary and gets removed).
+    extract_qoi_build_data(i, fn_sample);
+    merit_fn = augmented_lagrangian(fn_sample);
+
+    if (merit_fn < merit_fn_star)
+      { index_star = i; merit_fn_star = merit_fn; }
+  }
+
+  // update best{Variables,Response}Array from index_star
+  const Pecos::SDVArray& sdv_array_0 = gp_data_0.variables_data();
+  const RealVector& cv_star = sdv_array_0[index_star].continuous_variables();
+  bestVariablesArray.front().continuous_variables(cv_star);
+  RealVector fn_star = bestResponseArray.front().function_values_view();
+  extract_qoi_build_data(index_star, fn_star);
+}
+
+
 void EffGlobalMinimizer::
 extract_qoi_build_data(size_t data_index, RealVector& fn_vals)
 {
@@ -663,40 +718,40 @@ extract_qoi_build_data(size_t data_index, RealVector& fn_vals)
 }
 
 
-bool EffGlobalMinimizer::assess_convergence()
+bool EffGlobalMinimizer::converged()
 { 
   // set convergence flag if any counters have reached their limits
-  bool converged = ( distConvergenceCntr >= distConvergenceLimit ||
-		     eifConvergenceCntr  >= eifConvergenceLimit ||
-		     globalIterCount     >= maxIterations );
+  bool conv = ( distConvergenceCntr >= distConvergenceLimit ||
+		eifConvergenceCntr  >= eifConvergenceLimit ||
+		globalIterCount     >= maxIterations );
 
-  if (outputLevel > NORMAL_OUTPUT) { // if verbose or debug
+  if (conv || outputLevel >= DEBUG_OUTPUT) {
     if (distConvergenceCntr >= distConvergenceLimit)
-      Cout << "\nStopping criteria met: distConvergenceCntr (="
+      Cout << "\nStopping criteria met:     distConvergenceCntr ("
 	   << distConvergenceCntr << ") >= ";
     else
-      Cout << "\nStopping criteria not met: distConvergenceCntr (="
+      Cout << "\nStopping criteria not met: distConvergenceCntr ("
 	   << distConvergenceCntr << ") < ";
-    Cout << "distConvergenceLimit (=" << distConvergenceLimit << ").\n";
+    Cout << "distConvergenceLimit (" << distConvergenceLimit << ")\n";
 
     if (eifConvergenceCntr >= eifConvergenceLimit)
-      Cout << "\nStopping criteria met: eifConvergenceCntr (="
+      Cout << "Stopping criteria met:     eifConvergenceCntr ("
 	   << eifConvergenceCntr << ") >= ";
     else
-      Cout << "\nStopping criteria not met: eifConvergenceCntr (="
+      Cout << "Stopping criteria not met: eifConvergenceCntr ("
 	   << eifConvergenceCntr << ") < ";
-    Cout << "eifConvergenceLimit (=" << eifConvergenceLimit << ").\n";
+    Cout << "eifConvergenceLimit (" << eifConvergenceLimit << ")\n";
 
     if (globalIterCount >= maxIterations)
-      Cout << "\nStopping criteria met: globalIterCount (="
+      Cout << "Stopping criteria met:     globalIterCount ("
 	   << globalIterCount << ") >= ";
     else
-      Cout << "\nStopping criteria not met: globalIterCount (="
+      Cout << "Stopping criteria not met: globalIterCount ("
 	   << globalIterCount << ") < ";
-    Cout << "maxIterations (=" << maxIterations << ").\n";
+    Cout << "maxIterations (" << maxIterations << ")\n";
   }
 
-  return converged;
+  return conv;
 }
 
 
@@ -748,10 +803,7 @@ update_convergence_counters(const Response& resp_star)
 void EffGlobalMinimizer::retrieve_final_results()
 {
   // Set best variables and response for use by strategy level.
-  // c_vars, fmin contain the optimal design
   extract_best_sample(); // pull optimal result from sample data
-  bestVariablesArray.front().continuous_variables(cVarsStar);
-  bestResponseArray.front().function_values(truthFnStar);
 
   // (conditionally) export final surrogates
   export_final_surrogates(fHatModel);
@@ -1027,39 +1079,6 @@ expected_violation(const RealVector& means, const RealVector& variances)
   }
 
   return ev;
-}
-
-
-/** Extract the best sample so far from build data **/
-void EffGlobalMinimizer::extract_best_sample()
-{
-  // pull the samples and responses from data used to build latest GP
-  // to determine fnStar for use in the expected improvement function
-
-  const Pecos::SurrogateData& gp_data_0 = fHatModel.approximation_data(0);
-  const Pecos::SDVArray&    sdv_array_0 = gp_data_0.variables_data();
-  const Pecos::SDRArray&    sdr_array_0 = gp_data_0.response_data();
-
-  size_t i, index_star = 0, num_data_pts = gp_data_0.points();
-  Real merit_fn;  meritFnStar = DBL_MAX;
-  RealVector fn_sample(numFunctions);
-  for (i=0; i<num_data_pts; ++i) {
-
-    // extract build data from individual surrogates and form merit fn using
-    // latest penalties/multipliers.  Note that this may include liar data at
-    // for a particular look-ahead iteration, but it is rescanned each time
-    // with the most up-to-date info (pollution is removed).
-    extract_qoi_build_data(i, fn_sample);
-    merit_fn = augmented_lagrangian(fn_sample);
-
-    if (merit_fn < meritFnStar)
-      { index_star = i; meritFnStar = merit_fn; }
-  }
-
-  // update truthFnStar with all additional primary/secondary fns corresponding
-  // to lowest merit function value
-  copy_data(sdv_array_0[index_star].continuous_variables(), cVarsStar);
-  extract_qoi_build_data(index_star, truthFnStar);
 }
 
 

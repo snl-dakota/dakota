@@ -135,7 +135,7 @@ private:
   void update_variable_maps(const IntResponseMap& truth_resp_map);
 
   /// check convergence indicators to assess if EGO has converged
-  bool assess_convergence();
+  bool converged();
 
   /// post-processing: retrieve and export best samples and responses
   void retrieve_final_results();
@@ -160,7 +160,9 @@ private:
   /// manage special value when iterator has advanced to end
   int extract_id(IntVarsMCIter it, const IntVariablesMap& map);
 
-  /// determine best solution from among the GP build data
+  /// determine meritFnStar from among the GP build data for use in EIF
+  void compute_best_sample();
+  /// extract best solution from among the GP build data for final results
   void extract_best_sample();
   /// extra response function build data from across the set of QoI
   void extract_qoi_build_data(size_t data_index, RealVector& fn_vals);
@@ -171,6 +173,9 @@ private:
   void update_constraints(const RealVector& fn_vals);
   /// update constraint penalties and multipliers for a set of responses
   void update_constraints(const IntResponseMap& truth_resp_map);
+
+  /// helper for checking queued jobs in vars{Acquisition,Exploration}Map
+  bool empty_queues() const;
 
   /// probability improvement (PI) function for the EGO
   /// PI acquisition function implementation
@@ -261,13 +266,8 @@ private:
 
   /// minimum penalized response from among truth build data
   Real meritFnStar;
-  /// truth function values corresponding to the minimum penalized response
-  RealVector truthFnStar;
-  /// continuous variables that corresponds to the optimal value meritFnStar
-  RealVector cVarsStar;
 
   /// previous solution to EIF approximation sub-problem
-  /// (distinct from cVarsStar)
   RealVector prevSubProbSoln;
 
   /// order of the data used for surrogate construction, in ActiveSet
@@ -381,6 +381,10 @@ update_convergence_counters(const Variables& vars_star,
   update_convergence_counters(vars_star);
   update_convergence_counters(resp_star);
 }
+
+
+inline bool EffGlobalMinimizer::empty_queues() const
+{ return (varsAcquisitionMap.empty() && varsExplorationMap.empty()); }
 
 
 inline int EffGlobalMinimizer::
