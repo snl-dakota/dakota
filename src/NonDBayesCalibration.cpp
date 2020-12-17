@@ -870,6 +870,13 @@ void NonDBayesCalibration::calibrate_with_adaptive_emulator(){
     }
 
     calibrate();
+
+    // populate allSamples for surrogate updating
+    if (emulatorType == PCE_EMULATOR)
+      filter_chain_by_conditioning();
+    else
+      best_to_all();
+    
     ++num_mcmc;
 
     // assess convergence of the posterior via sample-based K-L divergence:

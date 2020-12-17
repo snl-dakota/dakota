@@ -115,7 +115,7 @@ protected:
   /// extract batchSize points from the MCMC chain and store final
   /// aggregated set within allSamples; unique points with best
   /// conditioning are selected, as determined by pivoted LU
-  void filter_chain_by_conditioning();
+  void filter_chain_by_conditioning() override;
 
   void init_proposal_covariance();
 

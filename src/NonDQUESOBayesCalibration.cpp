@@ -160,13 +160,6 @@ void NonDQUESOBayesCalibration::run_chain()
 
   // always update bestSamples with highest posterior probability points
   log_best();
-  if (adaptPosteriorRefine) {
-    // populate allSamples for surrogate updating
-    if (emulatorType == PCE_EMULATOR)
-      filter_chain_by_conditioning();
-    else
-      best_to_all();
-  }
   // populate acceptanceChain, acceptedFnVals
   cache_chain();
 }

@@ -145,6 +145,15 @@ protected:
 
   /// Run calibration, looping to refine emulator around posterior mode.
   void calibrate_with_adaptive_emulator(); 
+  /// Filter mcmc chain for PCE adaptive emulator.
+  /// extract batchSize points from the MCMC chain and store final
+  /// aggregated set within allSamples; unique points with best
+  /// conditioning are selected, as determined by pivoted LU
+  virtual void filter_chain_by_conditioning(){ 
+    Cerr << "Error: filter_chain_by_conditioning() has not been"
+      << "implemented in the child class." << std::endl;
+      abort_handler(METHOD_ERROR);
+  }
   /// copy bestSamples to allSamples to use in surrogate update
   void best_to_all();
   /// evaluates allSamples on iteratedModel and update the mcmcModel emulator
