@@ -280,7 +280,7 @@ void EffGlobalMinimizer::batch_synchronous_ego()
     construct_batch_exploration(batchSizeExploration, batchSize);
 
     // blocking synch for composite batch (acquisition + exploration)
-    evaluate_batch();
+    evaluate_batch(true); // rebuild
   }
 }
 
@@ -291,7 +291,7 @@ void EffGlobalMinimizer::batch_asynchronous_ego()
   while (!converged()) {
 
     // non-blocking synch for composite batch (acquisition + exploration)
-    /*bool completed = */query_batch();
+    /*bool completed = */query_batch(true); // rebuild
     //if (globalIterCount && !completed) delay();
 
     // If new jobs are allocated based on batch_ratio * total_completed, the
@@ -312,9 +312,10 @@ void EffGlobalMinimizer::batch_asynchronous_ego()
   }
 
   // Complete any jobs that are still running at time of convergence kick out.
-  // Don't rebuild as only need latest build data for extract_best_sample().
+  // Don't rebuild as only need the final build data for extract_best_sample().
   while (!empty_queues())
-    query_batch();
+    /*bool completed = */query_batch(false); // no rebuild
+    //if (!completed) delay();
 }
 
 
@@ -464,7 +465,7 @@ append_liar(const Variables& vars_star, int liar_id, bool rebuild)
 }
 
 
-void EffGlobalMinimizer::evaluate_batch()
+void EffGlobalMinimizer::evaluate_batch(bool rebuild)
 {
   fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
   if (parallelFlag) {
@@ -483,7 +484,7 @@ void EffGlobalMinimizer::evaluate_batch()
     // (and call for each varsMap), but adds complexity with little gain.
     varsAcquisitionMap.insert(varsExplorationMap.begin(),
 			      varsExplorationMap.end());
-    fHatModel.append_approximation(varsAcquisitionMap, truth_resp_map, true);
+    fHatModel.append_approximation(varsAcquisitionMap, truth_resp_map, rebuild);
 
     // update constraints (truth resp only, not for liar resp)
     if (numNonlinearConstraints)
@@ -500,7 +501,7 @@ void EffGlobalMinimizer::evaluate_batch()
     // update the GP approximation
     const Response& truth_resp = iteratedModel.current_response();
     IntResponsePair truth_resp_pr(iteratedModel.evaluation_id(), truth_resp);
-    fHatModel.append_approximation(vars_star, truth_resp_pr, true);
+    fHatModel.append_approximation(vars_star, truth_resp_pr, rebuild);
 
     // update constraints (truth resp only, not for liar resp)
     if (numNonlinearConstraints)
@@ -512,7 +513,7 @@ void EffGlobalMinimizer::evaluate_batch()
 
 
 /** query running jobs and process any new completions */
-bool EffGlobalMinimizer::query_batch()
+bool EffGlobalMinimizer::query_batch(bool rebuild)
 {
   if (empty_queues()) return false;
 
@@ -521,7 +522,7 @@ bool EffGlobalMinimizer::query_batch()
   const IntResponseMap& truth_resp_map = iteratedModel.synchronize_nowait();
   if (truth_resp_map.empty()) return false;
 
-  process_truth_response_map(truth_resp_map, true); // rebuild
+  process_truth_response_map(truth_resp_map, rebuild);
   update_variable_maps(truth_resp_map);
   return true;
 }

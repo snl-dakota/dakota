@@ -114,10 +114,10 @@ private:
   void construct_batch_exploration(size_t new_expl, size_t new_batch);
 
   /// evaluate batch in parallel and replace liar responses
-  void evaluate_batch();
+  void evaluate_batch(bool rebuild);
   /// perform nonblocking synchronization for parallel evaluation of
   /// truth responses and replace liar responses for any completions
-  bool query_batch();
+  bool query_batch(bool rebuild);
   /// backfill any completed truth response evaluations in case of
   /// nonblocking synchronization
   void backfill_batch(size_t new_acq, size_t new_expl);
