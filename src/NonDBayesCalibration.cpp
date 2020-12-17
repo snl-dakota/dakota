@@ -66,6 +66,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   chainSamples(probDescDB.get_int("method.nond.chain_samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
   mcmcDerivOrder(1),
+  batchSize(1), 
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
   initHifiSamples (probDescDB.get_int("method.samples")),
   scalarDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
@@ -176,6 +177,14 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	 ACTIVE_UNIFORM);
       hifiSampler.assign_rep(lhs_sampler_rep);
     }
+  }
+
+  // assign default maxIterations (DataMethod default is -1)
+  if (adaptPosteriorRefine) {
+    // BMA --> MSE: Why 5? Fix magic constant
+    batchSize = 5;
+    if (maxIterations < 0)
+      maxIterations = 25;
   }
 
   switch (emulatorType) {

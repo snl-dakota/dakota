@@ -49,7 +49,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   propCovUpdatePeriod(probDescDB.get_int("method.nond.prop_cov_update_period")),
-  batchSize(1), precondRequestValue(0),
+  precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
   priorPropCovMult(probDescDB.get_real("method.prior_prop_cov_mult")),
   advancedOptionsFile(probDescDB.get_string("method.advanced_options_file"))
@@ -77,14 +77,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
       propCovUpdatePeriod >= chainSamples) {
     Cout << "\nWarning: QUESO proposal covariance update_period >= chain_samples;"
 	 << "\n         no updates will occur." << std::endl;
-  }
-
-  // assign default maxIterations (DataMethod default is -1)
-  if (adaptPosteriorRefine) {
-    // BMA --> MSE: Why 5? Fix magic constant
-    batchSize = 5;
-    if (maxIterations < 0)
-      maxIterations = 25;
   }
 
   if (!advancedOptionsFile.empty()) {

@@ -314,6 +314,10 @@ protected:
   /// random seed for MCMC process
   int randomSeed;
 
+  /// number of points to add to surrogate at each iteration of
+  /// calibrate_with_adaptive_emulator
+  unsigned int batchSize;
+
   /// order of derivatives used in MCMC process (bitwise like ASV)
   short mcmcDerivOrder;
 

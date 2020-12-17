@@ -175,8 +175,6 @@ protected:
   String mcmcType;
   /// period (number of accepted chain samples) for proposal covariance update
   int propCovUpdatePeriod;
-  /// number of points to add to surrogate at each iteration
-  unsigned int batchSize;
   /// the active set request value to use in proposal preconditioning
   short precondRequestValue;
   /// flag indicating user activation of logit transform option
