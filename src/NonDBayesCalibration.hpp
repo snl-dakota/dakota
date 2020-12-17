@@ -135,7 +135,9 @@ protected:
 
   /// initialize emulator model and probability space transformations
   void initialize_model();
-  
+
+  /// Run calibration, looping to refine emulator around posterior mode.
+  void calibrate_with_adaptive_emulator(); 
   /// copy bestSamples to allSamples to use in surrogate update
   void best_to_all();
   /// evaluates allSamples on iteratedModel and update the mcmcModel emulator
@@ -143,7 +145,6 @@ protected:
   void update_model();
   /// compute the L2 norm of the change in emulator coefficients
   Real assess_emulator_convergence();
-
 
   /// calibrate the model to a high-fidelity data source, using mutual
   /// information-guided design of experiments (adaptive experimental

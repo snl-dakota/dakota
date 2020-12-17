@@ -696,13 +696,23 @@ void NonDBayesCalibration::core_run()
   init_bayesian_solver();
   specify_posterior();  
 
+  // TNP ? At the moment these two advanced approaches
+  // assume they're dealing with chains. Do we need to
+  // do anything for the classes this wouldn't make
+  // sense for?
   if (adaptExpDesign) // use meta-iteration in this class
     calibrate_to_hifi();
+  else if (adaptPosteriorRefine)
+    calibrate_with_adaptive_emulator();
   else                // delegate to base class calibration
     calibrate();
 
+  // TNP ? This call only applies if it was an MCMC. 
+  // Is it applicable to non-MCMC classes? Should they 
+  // override?
   compute_statistics();
 
+  // TNP ? This also assumes a chain I think.
   if (calModelDiscrepancy) // calibrate a model discrepancy function
     build_model_discrepancy();
     //print_discrepancy_results();
@@ -947,11 +957,45 @@ Real NonDBayesCalibration::assess_emulator_convergence()
   }
   else
     return std::sqrt(l2_norm_delta_coeffs);
+} // assess_emulator_convergence
+
+
+void NonDBayesCalibration::calibrate_with_adaptive_emulator(){
+  /// This method will perform a Bayesian calibration with an emulator, 
+  /// but periodically the emulator is updated with more sample points from the 
+  /// original model in the high-posterior-density region of parameter space.
+  
+  // TNP ? This seems like it maybe should be happening in ctor?
+  if (!emulatorType) { // current spec prevents this
+    Cerr << "Error: adaptive posterior refinement requires emulator model."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  compactMode = true; // update_model() uses all{Samples,Responses}
+  Real adapt_metric = DBL_MAX; unsigned short int num_mcmc = 0;
+  while (adapt_metric > convergenceTol && num_mcmc <= maxIterations) {
+
+    // TO DO: treat this like cross-validation as there is likely a sweet
+    // spot prior to degradation of conditioning (too much refinement data)
+
+    // place update block here so that chain is always run for initial or
+    // updated emulator; placing block at loop end could result in emulator
+    // convergence w/o final chain.
+    if (num_mcmc) {
+	    // update the emulator surrogate data with new truth evals and
+	    // reconstruct surrogate (e.g., via PCE sparse recovery)
+	    update_model();
+	    // assess posterior convergence via convergence of the emulator coeffs
+	    adapt_metric = assess_emulator_convergence();
+    }
+
+    calibrate();
+    ++num_mcmc;
+
+    // assess convergence of the posterior via sample-based K-L divergence:
+    //adapt_metric = assess_posterior_convergence();
+  } // adapt while
 }
-
-
-
-
 
 void NonDBayesCalibration::calibrate_to_hifi()
 {
