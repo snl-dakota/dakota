@@ -1,4 +1,6 @@
 #@ s*: TimeoutDelay=120
+#@ s6: Label=StochDiff
+#@ s7: Label=StochDiff
 #@ p0: MPIProcs=4
 #@ p1: MPIProcs=6
 
