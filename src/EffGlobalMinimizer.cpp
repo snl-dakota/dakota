@@ -180,7 +180,7 @@ void EffGlobalMinimizer::pre_run()
   // assign parallelFlag based on user spec and model asynch support
   check_parallelism();
   // initialize convergence counters and limits
-  initialize_counters_limits(); // order dependency: utilizes parallelFlag
+  initialize_counters_limits(); // order dependency: requires parallelFlag
 }
 
 
@@ -195,8 +195,8 @@ void EffGlobalMinimizer::core_run()
     build_gp(); // TO DO: consider moving to pre_run() to enable alt workflow
 
     // iteratively adapt the GP (in parallel) until EGO converges
-    if (batchAsynch && parallelFlag) batch_asynchronous_ego();
-    else                             batch_synchronous_ego();
+    if (batchAsynch) batch_asynchronous_ego();
+    else             batch_synchronous_ego();
 
   //}
   //else if (setUpType=="user_functions") {
@@ -230,17 +230,18 @@ void EffGlobalMinimizer::check_parallelism()
   // Add safeguard: If model does not support asynchronous evals, then reset
   // batch sizes for serial execution and echo a warning
 
-  parallelFlag = false; // default: run sequential by default
-  if (batchSizeAcquisition > 1 || batchSizeExploration > 1) {
+  if (batchSize > 1) {
     if (iteratedModel.asynch_flag())
-      parallelFlag = true; // turn on if requirements are satisfied
-    else {
+      parallelFlag = true; // turn parallelFlag on; batchAsynch from user spec
+    else { // revert to serial EGO settings
       Cerr << "Warning: concurrent operations not supported by model. "
 	   << "Batch size request ignored." << std::endl;
-      batchSize = batchSizeAcquisition = 1; // revert to sequential default
-      batchSizeExploration = 0; // revert
+      parallelFlag = batchAsynch = false;
+      batchSize = batchSizeAcquisition = 1; batchSizeExploration = 0;
     }
   }
+  else
+    parallelFlag = batchAsynch = false;
 }
 
 
@@ -277,9 +278,9 @@ void EffGlobalMinimizer::batch_synchronous_ego()
   while (!approx_converged) {
 
     // construct the acquisition batch
-    construct_batch_acquisition(batchSizeAcquisition);
+    construct_batch_acquisition(batchSizeAcquisition, batchSize);
     // construct the exploration batch
-    construct_batch_exploration(batchSizeExploration);
+    construct_batch_exploration(batchSizeExploration, batchSize);
 
     // blocking synch for composite batch (acquisition + exploration)
     evaluate_batch();
@@ -292,7 +293,7 @@ void EffGlobalMinimizer::batch_synchronous_ego()
 
 void EffGlobalMinimizer::batch_asynchronous_ego()
 {
-  bool approx_converged = false;  size_t new_acq, new_expl;
+  bool approx_converged = false;  size_t new_acq, new_expl, new_batch;
   while (!approx_converged) {
 
     // non-blocking synch for composite batch (acquisition + exploration)
@@ -303,13 +304,14 @@ void EffGlobalMinimizer::batch_asynchronous_ego()
     // common case of one completion always gets assigned to the larger of
     // the two batch sizes, starving the other.  Therefore, keep two queues
     // and backfill based on type of completed job.
-    new_acq  = batchSizeAcquisition - varsAcquisitionMap.size();
-    new_expl = batchSizeExploration - varsExplorationMap.size();
+    new_acq   = batchSizeAcquisition - varsAcquisitionMap.size();
+    new_expl  = batchSizeExploration - varsExplorationMap.size();
+    new_batch = new_acq + new_expl;
 
     // construct the acquisition batch
-    construct_batch_acquisition(new_acq);
+    construct_batch_acquisition(new_acq,  new_batch);
     // construct the exploration batch
-    construct_batch_exploration(new_expl);
+    construct_batch_exploration(new_expl, new_batch);
 
     // launch new truth jobs using liar variable sets
     backfill_batch(new_acq, new_expl);
@@ -318,19 +320,18 @@ void EffGlobalMinimizer::batch_asynchronous_ego()
     approx_converged = assess_convergence();
   }
 
-  // Complete any jobs that might still be running, but don't launch new ones
-  // that are still pending.  Don't rebuild as only need latest build data for
-  // extract_best_sample().
+  // Complete any jobs that are still running at time of convergence kick out.
+  // Don't rebuild as only need latest build data for extract_best_sample().
   if (!varsAcquisitionMap.empty() || !varsExplorationMap.empty()) {
     fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
     const IntResponseMap& truth_resp_map = iteratedModel.synchronize();
-    //if (!truth_resp_map.empty())
     process_truth_response_map(truth_resp_map, false); // no rebuild
   }
 }
 
 
-void EffGlobalMinimizer::construct_batch_acquisition(size_t new_acq)
+void EffGlobalMinimizer::
+construct_batch_acquisition(size_t new_acq, size_t new_batch)
 {
   if (!new_acq) return;
 
@@ -349,12 +350,11 @@ void EffGlobalMinimizer::construct_batch_acquisition(size_t new_acq)
     secondary_resp_map, nonlinear_resp_map, EIF_objective_eval, NULL);
 
   // construct the acquisition batch
-  bool append_liars = (batchSize > 1);
   for (i=0; i<new_acq; ++i, ++batchEvalId) {
 
     Cout << "\n>>>>> Initiating global iteration " << ++globalIterCount
 	 << " (acquisition batch " << i+1 << ")\n";
-    
+
     // determine fnStar from among sample data
     extract_best_sample();
 
@@ -375,10 +375,14 @@ void EffGlobalMinimizer::construct_batch_acquisition(size_t new_acq)
     //   on approx subproblem solve, so nothing to update with truth evals.
     update_convergence_counters(vars_star, ei_resp_star);
 
-    // append liar if more than 1 refinement iteration prior to synch
-    // *** TO DO: detect last look-ahead and avoid one unnecessary rebuild.
-    if (append_liars)
-      append_liar(vars_star, batchEvalId);
+    // append liar in parallelMode, even if it will be replaced before the next
+    // approx sub-problem solve (cost does not justify increased complexity in
+    // replace/pop logic).  But do suppress an unnecessary rebuild if last
+    // look-ahead before truth synchronization, since this can be expensive.
+    if (parallelFlag) {
+      bool rebuild = (new_batch > new_acq || i+1 < new_acq);
+      append_liar(vars_star, batchEvalId, rebuild);
+    }
 
     // save a copy for truth replacement downstream
     varsAcquisitionMap[batchEvalId] = vars_star.copy();
@@ -386,7 +390,8 @@ void EffGlobalMinimizer::construct_batch_acquisition(size_t new_acq)
 }
 
 
-void EffGlobalMinimizer::construct_batch_exploration(size_t new_expl)
+void EffGlobalMinimizer::
+construct_batch_exploration(size_t new_expl, size_t new_batch)
 {
   if (!new_expl) return;
 
@@ -405,7 +410,6 @@ void EffGlobalMinimizer::construct_batch_exploration(size_t new_expl)
     secondary_resp_map, nonlinear_resp_map, Variances_objective_eval, NULL);
 
   // construct the exploration batch
-  bool append_liars = (batchSize > 1);
   for (i=0; i<new_expl; ++i, ++batchEvalId) {
 
     Cout << "\n>>>>> Initiating global iteration " << ++globalIterCount
@@ -432,10 +436,14 @@ void EffGlobalMinimizer::construct_batch_exploration(size_t new_expl)
     // Similarly, don't update prevSubProbSoln coming from exploration.
     //update_convergence_counters(vars_star);//, pv_resp_star);
     
-    // append liar if more than 1 refinement iteration prior to synch
-    // *** TO DO: capture last and avoid one unnecessary rebuild.
-    if (append_liars)
-      append_liar(vars_star, batchEvalId);
+    // append liar in parallelMode, even if it will be replaced before the next
+    // approx sub-problem solve (cost does not justify increased complexity in
+    // replace/pop logic).  But do suppress an unnecessary rebuild if last
+    // look-ahead before truth synchronization, since this can be expensive.
+    if (parallelFlag) {
+      bool rebuild = (i+1 < new_expl);
+      append_liar(vars_star, batchEvalId, rebuild);
+    }
 
     // save a copy for truth replacement downstream
     varsExplorationMap[batchEvalId] = vars_star.copy();
@@ -443,7 +451,8 @@ void EffGlobalMinimizer::construct_batch_exploration(size_t new_expl)
 }
 
 
-void EffGlobalMinimizer::append_liar(const Variables& vars_star, int liar_id)
+void EffGlobalMinimizer::
+append_liar(const Variables& vars_star, int liar_id, bool rebuild)
 {
   // get approximate (liar) response value for optimal point (vars_star)
   fHatModel.active_variables(vars_star);
@@ -462,7 +471,7 @@ void EffGlobalMinimizer::append_liar(const Variables& vars_star, int liar_id)
     Cout << "\nParallel EGO: appending liar response for evaluation "
 	 << liar_id << ".\n";
   IntResponsePair liar_resp_pr(liar_id, fhat_resp_star);
-  fHatModel.append_approximation(vars_star, liar_resp_pr, true); // rebuild
+  fHatModel.append_approximation(vars_star, liar_resp_pr, rebuild);
   //numDataPts = fHatModel.approximation_data(0).points(); // updated count
 }
 
@@ -1036,8 +1045,10 @@ void EffGlobalMinimizer::extract_best_sample()
   RealVector fn_sample(numFunctions);
   for (i=0; i<num_data_pts; ++i) {
 
-    // extract build data from individual surrogates and form merit fn
-    // using latest penalties/multipliers
+    // extract build data from individual surrogates and form merit fn using
+    // latest penalties/multipliers.  Note that this may include liar data at
+    // for a particular look-ahead iteration, but it is rescanned each time
+    // with the most up-to-date info (pollution is removed).
     extract_qoi_build_data(i, fn_sample);
     merit_fn = augmented_lagrangian(fn_sample);
 

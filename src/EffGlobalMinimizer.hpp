@@ -108,10 +108,10 @@ private:
   /// synchronous batch-sequential implementation: main function
   void batch_asynchronous_ego();
 
-  /// construct batch acquisition
-  void construct_batch_acquisition(size_t new_acq);
-  /// construct batch exploration
-  void construct_batch_exploration(size_t new_expl);
+  /// construct a batch of points from performing acquisition cycles
+  void construct_batch_acquisition(size_t new_acq,  size_t new_batch);
+  /// construct a batch of points from performing exploration cycles
+  void construct_batch_exploration(size_t new_expl, size_t new_batch);
 
   /// evaluate batch in parallel and replace liar responses
   void evaluate_batch();
@@ -155,7 +155,7 @@ private:
   // delete a particular liar response
   //void pop_liar_response(int liar_id);
   /// evaluate and append a liar response
-  void append_liar(const Variables& vars_star, int liar_id);
+  void append_liar(const Variables& vars_star, int liar_id, bool rebuild);
 
   /// manage special value when iterator has advanced to end
   int extract_id(IntVarsMCIter it, const IntVariablesMap& map);
