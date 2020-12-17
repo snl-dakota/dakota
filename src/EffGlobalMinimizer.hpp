@@ -122,6 +122,18 @@ private:
   /// nonblocking synchronization
   void backfill_batch(size_t new_acq, size_t new_expl);
 
+  /// launch all jobs in the variables map queues
+  void launch_batch();
+  /// launch a single job
+  void launch_single(const Variables& vars_star);
+
+  /// update approximation data and constraint penalties/multipliers
+  /// based on new truth data
+  void process_truth_response_map(const IntResponseMap& truth_resp_map,
+				  bool rebuild);
+  /// update variable map queues based on completed jobs
+  void update_variable_maps(const IntResponseMap& truth_resp_map);
+
   /// check convergence indicators to assess if EGO has converged
   bool assess_convergence();
 
@@ -148,13 +160,17 @@ private:
   /// manage special value when iterator has advanced to end
   int extract_id(IntVarsMCIter it, const IntVariablesMap& map);
 
-  /// determine best solution from among the dataset
-  void get_best_sample();
+  /// determine best solution from among the GP build data
+  void extract_best_sample();
+  /// extra response function build data from across the set of QoI
+  void extract_qoi_build_data(size_t data_index, RealVector& fn_vals);
 
   /// helper for evaluating the value of the augmented Lagrangian merit fn
   Real augmented_lagrangian(const RealVector& mean);
-  /// update constraint penalties and multipliers
+  /// update constraint penalties and multipliers for a single response
   void update_constraints(const RealVector& fn_vals);
+  /// update constraint penalties and multipliers for a set of responses
+  void update_constraints(const IntResponseMap& truth_resp_map);
 
   /// probability improvement (PI) function for the EGO
   /// PI acquisition function implementation
@@ -243,12 +259,16 @@ private:
      of available {variables,response} updates can be pushed to the GP
      irregardless of acquisition type. */
 
-  /// minimum penalized response from among true function evaluations
+  /// minimum penalized response from among truth build data
   Real meritFnStar;
-  /// true function values corresponding to the minimum penalized response
+  /// truth function values corresponding to the minimum penalized response
   RealVector truthFnStar;
-  /// point that corresponds to the optimal value meritFnStar
-  RealVector varsStar;
+  /// continuous variables that corresponds to the optimal value meritFnStar
+  RealVector cVarsStar;
+
+  /// previous solution to EIF approximation sub-problem
+  /// (distinct from cVarsStar)
+  RealVector prevSubProbSoln;
 
   /// order of the data used for surrogate construction, in ActiveSet
   /// request vector 3-bit format; user may override responses spec
@@ -291,8 +311,6 @@ private:
   unsigned short distConvergenceLimit;
   /// counter for global iteration
   unsigned short globalIterCount;
-  /// previous best-so-far sample
-  RealVector prevCvStar;
 };
 
 
@@ -344,6 +362,15 @@ inline void EffGlobalMinimizer::update_constraints(const RealVector& fn_vals)
     update_augmented_lagrange_multipliers(fn_vals);
   else
     update_penalty();
+}
+
+
+inline void EffGlobalMinimizer::
+update_constraints(const IntResponseMap& truth_resp_map)
+{
+  for (IntRespMCIter r_cit = truth_resp_map.begin();
+       r_cit != truth_resp_map.end(); ++r_cit)
+    update_constraints(r_cit->second.function_values());
 }
 
 
