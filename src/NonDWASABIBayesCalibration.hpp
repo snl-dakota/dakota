@@ -69,8 +69,10 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void calibrate();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void calibrate() override;
+  void print_results(std::ostream& s, 
+      short results_state = FINAL_RESULTS) override;
+  void compute_statistics() override {}
 
   /// Extract a subset of samples for posterior eval according to the
   /// indices in points_to_keep

@@ -705,10 +705,6 @@ void NonDBayesCalibration::core_run()
   init_bayesian_solver();
   specify_posterior();  
 
-  // TNP ? At the moment these two advanced approaches
-  // assume they're dealing with chains. Do we need to
-  // do anything for the classes this wouldn't make
-  // sense for?
   if (adaptExpDesign) // use meta-iteration in this class
     calibrate_to_hifi();
   else if (adaptPosteriorRefine)
@@ -716,12 +712,9 @@ void NonDBayesCalibration::core_run()
   else                // delegate to base class calibration
     calibrate();
 
-  // TNP ? This call only applies if it was an MCMC. 
-  // Is it applicable to non-MCMC classes? Should they 
-  // override?
+  // May need to override this in some child classes without chains
   compute_statistics();
 
-  // TNP ? This also assumes a chain I think.
   if (calModelDiscrepancy) // calibrate a model discrepancy function
     build_model_discrepancy();
     //print_discrepancy_results();
@@ -2841,7 +2834,6 @@ export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals)
     export_mcmc_stream << '\n';
   }
 
-  // TNP ? Should this just be NonDBayes?
   TabularIO::close_file(export_mcmc_stream, mcmc_filename,
 			"NonDQUESOBayesCalibration chain export");
 }
