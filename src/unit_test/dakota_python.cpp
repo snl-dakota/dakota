@@ -18,9 +18,13 @@
 //#include "Eigen/Dense"
 
 //#include <pybind11/eigen.h> 
+
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+#ifdef DAKOTA_PYTHON_NUMPY
 #include <pybind11/numpy.h>
-//#include <pybind11/stl.h>
+#endif
 
 namespace py = pybind11;
 
@@ -40,7 +44,20 @@ namespace python {
   // return Eigen::Map<Eigen::VectorXd>(resp.function_values().values(), num_fns);
   // }
 
-  py::array_t<double> get_variables_cv_values(const Dakota::LibraryEnvironment & env)
+  std::vector<double> get_variables_values(const Dakota::LibraryEnvironment & env)
+  {
+    const Variables& vars = env.variables_results();
+    const RealVector& var_vals = vars.continuous_variables();
+    std::vector<double> values;
+    copy_data(var_vals, values);
+    return values;
+  }
+
+
+#ifdef DAKOTA_PYTHON_NUMPY
+  // This version requires numpy
+  blah;
+  py::array_t<double> get_variables_values_numpy(const Dakota::LibraryEnvironment & env)
   {
     const Variables& vars = env.variables_results();
     const RealVector& var_vals = vars.continuous_variables();
@@ -64,6 +81,7 @@ namespace python {
 
     return result;
   }
+#endif
     
 
   Real get_response_fn_val(const Dakota::LibraryEnvironment & env) {
@@ -153,8 +171,15 @@ PYBIND11_MODULE(dakpy, m) {
     .def("response_results", &Dakota::LibraryEnvironment::response_results)
     ;
 
-  m.def("get_variable_response_vals",
-        &Dakota::python::get_variables_cv_values,
+#ifdef DAKOTA_PYTHON_NUMPY
+  m.def("get_variable_values_np",
+        &Dakota::python::get_variables_values_numpy,
+	"Get active continuous Variable values"
+	);
+#endif
+
+  m.def("get_variable_values",
+        &Dakota::python::get_variables_values,
 	"Get active continuous Variable values"
 	);
 
