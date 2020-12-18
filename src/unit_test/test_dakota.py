@@ -10,6 +10,7 @@
 # Tests of top-level Dakota Python interface
 
 import sys
+import numpy as np
 
 # Optionally append a path to the python library, passed as argv[1]
 if len(sys.argv) > 1:
@@ -58,6 +59,10 @@ responses,
     print("\tUsing free fn: "+str(dakpy.get_response_fn_val(daklib)))
     resp_res = daklib.response_results()
     print("\tUsing wrapped objs: "+str(resp_res.function_value(0)))
+    vars_res = daklib.variables_results()
+    print("\tNumber active continuous variables: "+str(vars_res.num_active_cv()))
+    dak_vars = dakpy.get_variable_response_vals(daklib)
+    print(dak_vars)
     print("\n+++ Done LibEnv.\n")
 
 

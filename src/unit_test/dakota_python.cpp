@@ -19,6 +19,7 @@
 
 //#include <pybind11/eigen.h> 
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 //#include <pybind11/stl.h>
 
 namespace py = pybind11;
@@ -38,6 +39,32 @@ namespace python {
   // size_t num_fns = resp.num_functions();
   // return Eigen::Map<Eigen::VectorXd>(resp.function_values().values(), num_fns);
   // }
+
+  py::array_t<double> get_variables_cv_values(const Dakota::LibraryEnvironment & env)
+  {
+    const Variables& vars = env.variables_results();
+    const RealVector& var_vals = vars.continuous_variables();
+
+    auto result = py::array(py::buffer_info(
+          nullptr,                              /* Pointer to data (nullptr -> ask NumPy to allocate!) */
+          sizeof(double),                       /* Size of one item */
+          py::format_descriptor<double>::value, /* Buffer format */
+          1,                                    /* How many dimensions? */
+          { vars.cv() },                        /* Number of elements for each dimension */
+          { sizeof(double) }                    /* Strides for each dimension */
+          ));
+
+    auto buffer = result.request();
+
+    double *ptr = (double *) buffer.ptr;
+
+    // Could consider using either copy_data or an adapter - RWH
+    for (size_t i=0; i<buffer.shape[0]; ++i)
+      ptr[i] = var_vals[i];
+
+    return result;
+  }
+    
 
   Real get_response_fn_val(const Dakota::LibraryEnvironment & env) {
     // retrieve the final response values
@@ -79,6 +106,19 @@ PYBIND11_MODULE(dakpy, m) {
     .def("execute", &Dakota::ExecutableEnvironment::execute)
     ;
 
+  // demo a Variables wrapper
+  py::class_<Dakota::Variables>(m, "Variables")
+    .def(py::init
+	 ([]()
+	  {
+	    return new Dakota::Variables(); 
+	  }))
+
+    .def("num_active_cv", &Dakota::Variables::cv
+         , "Return number of active continuous vars"
+         )
+    ;
+
   // demo a Response wrapper
   py::class_<Dakota::Response>(m, "Response")
     .def(py::init
@@ -109,8 +149,14 @@ PYBIND11_MODULE(dakpy, m) {
 	 , py::arg("input"), py::arg("input_string"))
 
     .def("execute", &Dakota::LibraryEnvironment::execute)
+    .def("variables_results", &Dakota::LibraryEnvironment::variables_results)
     .def("response_results", &Dakota::LibraryEnvironment::response_results)
     ;
+
+  m.def("get_variable_response_vals",
+        &Dakota::python::get_variables_cv_values,
+	"Get active continuous Variable values"
+	);
 
   m.def("get_response_fn_val",
         &Dakota::python::get_response_fn_val,
