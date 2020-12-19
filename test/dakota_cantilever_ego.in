@@ -1,6 +1,4 @@
 #@ s*: TimeoutDelay=120
-#@ s6: Label=StochDiff
-#@ s7: Label=StochDiff
 #@ p0: MPIProcs=4
 #@ p1: MPIProcs=6
 
@@ -12,7 +10,7 @@
 
 method,
     efficient_global
-      gaussian_process dakota			#s0,#s4,#s6,#s7,#p0,#p1
+      gaussian_process dakota			#s0,#s4,#p0,#p1
 #     gaussian_process surfpack			#s1
 #       convergence_tolerance 1.0e-3		#s3
 #       x_conv_tol 1.0e-2			#s3
@@ -21,11 +19,9 @@ method,
 #         filename_prefix 'exp_gp.s6'		#s5
 #         formats binary_archive text_archive	#s5
       seed = 123457
-#     batch_size = 4				#s4,#p0,#s6
-#     batch_size = 6                        	#p1,#s7
-#       exploration = 2                       	#p1,#s7
-#	nonblocking synchronization		#s6,#s7
-#     max_iterations = 26                   	#p1
+#     batch_size = 4				#s4,#p0
+#     batch_size = 6                        	#p1
+#       exploration = 2                       	#p1
 
 variables,
     continuous_design = 2
@@ -39,12 +35,12 @@ variables,
 
 interface,
     direct				    #s0,#s1,#s2,#s3,#s5,#p0,#p1
-#    fork asynchronous			    #s4,#s6,#s7
+#    fork asynchronous			    #s4
       analysis_driver = 'cantilever'
 
 responses,
-    objective_functions = 1                 #s0,#s1,#s3,#s4,#s5,#s6,#s7,#p0,#p1
-    nonlinear_inequality_constraints = 2    #s0,#s1,#s4,#s5,#s6,#s7,#p0,#p1
+    objective_functions = 1                 #s0,#s1,#s3,#s4,#s5,#p0,#p1
+    nonlinear_inequality_constraints = 2    #s0,#s1,#s4,#s5,#p0,#p1
 #   nonlinear_equality_constraints = 1      #s3
 #   nonlinear_inequality_constraints = 1    #s3
 #   calibration_terms = 3                   #s2
