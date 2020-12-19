@@ -14,17 +14,17 @@ Test Number 0 succeeded
                      -3.8385438367e-01
 <<<<< Best data captured at function evaluation 15
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 36 total (32 new, 4 duplicate)
+<<<<< Function evaluation summary: 48 total (37 new, 11 duplicate)
 <<<<< Best parameters          =
-                      2.1658707175e+00 w
-                      3.6913608472e+00 t
+                      2.1652271842e+00 w
+                      3.6721564576e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.9950103668e+00
+                      7.9510529867e+00
 <<<<< Best constraint values   =
-                     -5.8618780761e-02
-                     -9.2828961076e-03
-<<<<< Best data captured at function evaluation 31
+                     -5.0612158895e-02
+                     -3.3548403150e-05
+<<<<< Best data captured at function evaluation 37
