@@ -702,8 +702,9 @@ void NonDBayesCalibration::core_run()
   specify_prior();
   initialize_model();
   specify_likelihood();
-  init_bayesian_solver();
+  //init_bayesian_solver();
   specify_posterior();  
+  init_bayesian_solver();
 
   if (adaptExpDesign) // use meta-iteration in this class
     calibrate_to_hifi();
