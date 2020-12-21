@@ -70,6 +70,10 @@ inline H5::DataType h5_file_dtype( const unsigned int & )
 inline H5::DataType h5_file_dtype( const unsigned long & )
 { return H5::PredType::STD_U64LE; }
 
+// Return the HDF5 datatype to store an unsigned long long (maybe a size_t)
+inline H5::DataType h5_file_dtype( const unsigned long long & )
+{ return H5::PredType::STD_U64LE; }
+
 /// Return the HDF5 datatype to store a Real
 inline H5::DataType h5_file_dtype( const Real & )
 { return H5::PredType::IEEE_F64LE; }
@@ -118,13 +122,18 @@ inline H5::DataType h5_mem_dtype( const short & )
 inline H5::DataType h5_mem_dtype( const int & )
 { return H5::PredType::NATIVE_INT; }
 
-/// Return the HDF5 datatype to read an unssigned long (maybe a size_t) in memory
+/// Return the HDF5 datatype to read an unsigned int in memory
+inline H5::DataType h5_mem_dtype( const unsigned int & )
+{ return H5::PredType::NATIVE_UINT; }
+
+/// Return the HDF5 datatype to read an unsigned long (maybe a size_t) in memory
 inline H5::DataType h5_mem_dtype( const unsigned long & )
 { return H5::PredType::NATIVE_ULONG; }
 
-/// Return the HDF5 datatype to read a uint in memory
-inline H5::DataType h5_mem_dtype( const unsigned int & )
-{ return H5::PredType::NATIVE_UINT; }
+/// Return the HDF5 datatype to read an unsigned long long (maybe a
+/// size_t) in memory
+inline H5::DataType h5_mem_dtype( const unsigned long long & )
+{ return H5::PredType::NATIVE_ULLONG; }
 
 /// Return the HDF5 datatype to read a string in memory
 inline H5::DataType h5_mem_dtype( const char * )
