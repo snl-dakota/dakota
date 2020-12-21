@@ -71,7 +71,6 @@ void NonDWASABIBayesCalibration::calibrate()
   // Step 1 of 10: Build the response surface approximation (RSA)
   ////////////////////////////////////////////////////////
   
-  initialize_model();
   if (emulatorType == NO_EMULATOR) {
     Cerr << "\nError: WASABI requires an emulator!"<<std::endl;
     abort_handler(METHOD_ERROR);
