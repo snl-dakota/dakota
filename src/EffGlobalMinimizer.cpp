@@ -769,8 +769,10 @@ bool EffGlobalMinimizer::converged()
 //      corruption, even though the liar jobs in front of it have cleared out
 //      (the state of the GP when the point was generated indicates the degree
 //      of trust in that queued point)
-//   >> Consider implementing a discount formula based on aggregate GP "health"
-//      (truth/total build data) where batch-synch discount rate could be inf.
+//   >> Consider implementing an increment based on aggregate GP "health" (e.g.
+//      truth/total build data) where batch-synch could use higher penalization.
+//      E.g., real_cntr += GP_truth2total ^ p  for p ~= 2 (synch), 10 (asynch)
+//            real_cntr += 2./(2.+vars_map_index),     etc.
 
 void EffGlobalMinimizer::
 update_convergence_counters(const Variables& vars_star)
