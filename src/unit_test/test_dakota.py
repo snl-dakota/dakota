@@ -39,8 +39,7 @@ def text_book(**kwargs):
         g = []
         for val in x:
             g.append( 4.0*pow(val-1.0, 3) )
-        retval['fnGrads'] = g
-        print(g)
+        retval['fnGrads'] = [g]
 
     if (ASV[0] & 4): # **** d^2f/dx^2:
         raise("Hessians not currently supported for this driver.")
