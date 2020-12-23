@@ -12,13 +12,14 @@
 
 # Usage
 if (scalar(@ARGV) != 3) {
-  die "Usage: dakota_diff.perl dakota_input_filename dakota_base_file " . 
-      "dakota_test_output";
+  die "Usage: dakota_diff.perl dakota_input_filename (dakota_study.in) " .
+      "dakota_base_file (dakota_study.[p]base) dakota_test_output " .
+      "(dakota_study.tst)";
 }
 
 # Input processing
-$testin    = @ARGV[0]; # dakota input filename,          e.g. dakota_dace.in
-$base_file = @ARGV[1]; # baseline file name,             e.g. dakota_base.test
+$testin    = @ARGV[0]; # dakota input filename, e.g. dakota_dace.in
+$base_file = @ARGV[1]; # baseline file name, e.g. dakota_dace.[p]base
 $tst_file  = @ARGV[2]; # reduced test results file name, e.g. dakota_dace.tst
 
 # Output setup: exit code for worst test result status (see dakota_test.perl)
@@ -75,22 +76,8 @@ open (my $DAKOTA_BASE, $base_file) || die "Error: Cannot open file $base_file" ;
 my @base_subtest_numbers;  # subtest numbers found in base file  
 my @base_subtest_indices;  # line indices for start of each subtest in baseline  
 my @base_output;           # test output baseline excerpt for this test file
-$test_found = 0;
-while ($line = <$DAKOTA_BASE>) {
-
-  my $mod_testin = $testin;
-  $mod_testin =~ s/\./\\\./g; # escape the "." in dakota_*.in
-
-  if ($line =~ /$mod_testin/) {
-    $test_found = 1;
-    extract_test_output($DAKOTA_BASE, \@base_subtest_numbers, 
-			\@base_subtest_indices, \@base_output);
-  }
-
-  # stop processing 
-  last if ($test_found == 1);
-
-}
+extract_test_output($DAKOTA_BASE, \@base_subtest_numbers,
+		    \@base_subtest_indices, \@base_output);
 close ($DAKOTA_BASE);
 
 
@@ -113,6 +100,7 @@ foreach my $tst_subtest_index (0 .. $#tst_subtest_numbers) {
                       $base_index > $#base_subtest_numbers;
   if ($base_index > $#base_subtest_numbers) {
     print "Test number " . $test_num . " missing from baseline\n";
+    # SPLIT: BMA: Shouldn't this be an error?
   }
   else {
     # extract .base data for this test num
@@ -143,8 +131,11 @@ exit $exitcode;
 # --------
 
 
-# Extract test output from the passed file handle until another
-# dakota_*.in test header is encountered. 
+# Extract test output from the passed file handle and tabulate
+# sub-test numbers and start/end line indices for each. This is only
+# really needed for the sub-test indices anymore, so could just gulp
+# in whole file.
+#
 # IN:  file handle to read from
 # OUT: reference to array of subtest numbers found
 # OUT: reference to array of subtest delineation indices
@@ -160,9 +151,6 @@ sub extract_test_output {
       push @{$ref_subtest_numbers}, $subtest_num;
       push @{$ref_subtest_indices}, $line_index;
     }
-
-    # stop when we encounter the next test file
-    last if ($line =~ /dakota_\w+\.in/);
 
     push @{$ref_output}, $line;
     $line_index++;
@@ -186,15 +174,7 @@ sub compare_output {
   my $test_diff = 0;
   my $test_fail = 0;
 
-  if ($test_found == 0) {
-    # test was not found in baseline
-    print "FAIL test $test_num (has no baseline)\n";
-    $test_fail = 1;
-    $exitcode = 93 if $exitcode < 93;
-  }
-
-  # only proceed if there's a baseline...
-  while ( $test_found && scalar(@tst_excerpt) > 0 ) { 
+  while (scalar(@tst_excerpt) > 0 ) {
     
     # --------------------------------------
     # Test for immediate FAILure or mismatch

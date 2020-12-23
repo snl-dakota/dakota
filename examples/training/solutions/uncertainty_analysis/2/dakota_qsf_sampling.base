@@ -1,0 +1,35 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 50 total (50 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6549612978e-01  1.4550483815e-01  1.2091968707e-01 -2.7225276885e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.2414411232e-01  4.0684814724e-01  1.2154513997e-01  1.8131843288e-01
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   8.1986176783e-02   1.0000000000e-01   1.1102584809e+00
+   1.0000000000e-01   3.0000000000e-01   1.6000000000e+00
+   3.0000000000e-01   7.3355304913e-01   1.5223050589e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   2.0000000000e-02
+   3.0000000000e-01   3.4000000000e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2 -5.56839e-02  1.00000e+00 
+response_fn_1  2.44576e-02 -4.21296e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+          x1  2.21657e-02 
+          x2 -4.08432e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2 -5.85354e-02  1.00000e+00 
+response_fn_1 -3.40936e-03 -8.19688e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -8.24930e-03 
+          x2 -8.23100e-02 

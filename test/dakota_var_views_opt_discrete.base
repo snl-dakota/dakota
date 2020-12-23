@@ -1,0 +1,76 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 156 total (156 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     1 x1
+                                     2 x2
+                      1.0000000000e+00 x3
+                                     3 x4
+                                     3 x5
+                                     6 x6
+                      5.0000000000e+00 x7
+                                     3 x8
+                                     6 x9
+                      5.0000000000e+00 x10
+<<<<< Best objective function  =
+                      1.8110000000e+03
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      3.5000000000e+00
+<<<<< Best data captured at function evaluation 109
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 138 total (138 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     1 x1
+                                     2 x2
+                      1.0000000000e+00 x3
+                                     3 x4
+                                     3 x5
+                                     6 x6
+                      5.0000000000e+00 x7
+                                     3 x8
+                                     6 x9
+                      5.0000000000e+00 x10
+<<<<< Best objective function  =
+                      1.8110000000e+03
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      3.5000000000e+00
+<<<<< Best data captured at function evaluation 5
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 4941 total (4941 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     1 x1
+                                     2 x2
+                      3.0000000000e+00 x3
+                                     3 x4
+                                     2 x5
+                                     2 x6
+                      3.0000000000e+00 x7
+                                     1 x8
+                                     4 x9
+                      3.0000000000e+00 x10
+<<<<< Best objective function  =
+                      1.4800000000e+02
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      3.5000000000e+00
+<<<<< Best data captured at function evaluation 2749
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 1072 total (1063 new, 9 duplicate)
+<<<<< Best parameters          =
+                                     1 x1
+                                     2 x2
+                      1.0000000000e+00 x3
+                                     1 x4
+                                     1 x5
+                                     2 x6
+                      1.0000000000e+00 x7
+                                     1 x8
+                                     2 x9
+                      1.0000000000e+00 x10
+<<<<< Best objective function  =
+                      3.0000000000e+00
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      3.5000000000e+00
+<<<<< Best data captured at function evaluation 845

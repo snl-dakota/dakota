@@ -971,7 +971,8 @@ void Interface::clear_model_keys()
 }
 
 
-void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
+void Interface::
+approximation_function_indices(const SizetSet& approx_fn_indices)
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->approximation_function_indices(approx_fn_indices);
@@ -1081,6 +1082,21 @@ append_approximation(const VariablesArray& vars_array,
 
 
 void Interface::
+append_approximation(const IntVariablesMap& vars_map,
+		     const IntResponseMap&  resp_map)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->append_approximation(vars_map, resp_map);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+         << "(IntVariablesMap, IntResponseMap) function.\n       This interface"
+	 << " does not support approximation appending." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::
 build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
 		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
@@ -1118,6 +1134,45 @@ void Interface::rebuild_approximation(const BitArray& rebuild_fns)
     Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
 	 << "approximation() function.\n       This interface does not "
 	 << "support approximations." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::replace_approximation(const IntResponsePair& response_pr)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->replace_approximation(response_pr);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+	 << "approximation(IntResponsePair) function.\n       This interface "
+	 << "does not support approximation data replacement." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::replace_approximation(const IntResponseMap& resp_map)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->replace_approximation(resp_map);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+	 << "approximation(IntResponseMap) function.\n       This interface "
+	 << "does not support approximation data replacement." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::track_evaluation_ids(bool track)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->track_evaluation_ids(track);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
+	 << "ids() function.\n       This interface does not support "
+	 << "evaluation tracking." << std::endl;
     abort_handler(-1);
   }
 }

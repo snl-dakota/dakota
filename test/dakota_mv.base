@@ -1,0 +1,76 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+  Approximate Mean Response                  =  0.0000000000e+00
+  Approximate Standard Deviation of Response =  3.1401590299e-24
+  Importance Factor for TF1ln                =  5.0000000000e-01
+  Importance Factor for TF2ln                =  5.0000000000e-01
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for TF1ln                =  9.4117647059e-01
+  Importance Factor for TF2ln                =  5.8823529412e-02
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for TF1ln                =  5.8823529412e-02
+  Importance Factor for TF2ln                =  9.4117647059e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+  Approximate Mean Response                  =  0.0000000000e+00
+  Approximate Standard Deviation of Response =  3.5803321568e-24
+  Importance Factor for TF1ln                =  3.8461538462e-01
+  Importance Factor for TF2ln                =  3.8461538462e-01
+  Importance Factor for TF1ln     TF2ln      =  2.3076923077e-01
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  9.5524865873e-01
+  Importance Factor for TF1ln                =  1.0958904110e+00
+  Importance Factor for TF2ln                =  6.8493150685e-02
+  Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  9.5524865873e-01
+  Importance Factor for TF1ln                =  6.8493150685e-02
+  Importance Factor for TF2ln                =  1.0958904110e+00
+  Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+  Approximate Mean Response                  =  0.0000000000e+00
+  Approximate Standard Deviation of Response =  1.1104333047e-22
+  Importance Factor for TF1ln                =  3.9984192768e-04
+  Importance Factor for TF2ln                =  9.9960015807e-01
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for TF1ln                =  9.4117647059e-01
+  Importance Factor for TF2ln                =  5.8823529412e-02
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for TF1ln                =  5.8823529412e-02
+  Importance Factor for TF2ln                =  9.4117647059e-01
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  Approximate Mean Response                  =  8.0000000000e-06
+  Approximate Standard Deviation of Response =  3.1401590299e-24
+  Importance Factor for TF1ln                =  5.0000000000e-01
+  Importance Factor for TF2ln                =  5.0000000000e-01
+  Approximate Mean Response                  =  7.5000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for TF1ln                =  9.4117647059e-01
+  Importance Factor for TF2ln                =  5.8823529412e-02
+  Approximate Mean Response                  =  7.5000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for TF1ln                =  5.8823529412e-02
+  Importance Factor for TF2ln                =  9.4117647059e-01
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  Approximate Mean Response                  =  8.0000000000e-06
+  Approximate Standard Deviation of Response =  3.5803321568e-24
+  Importance Factor for TF1ln                =  3.8461538462e-01
+  Importance Factor for TF2ln                =  3.8461538462e-01
+  Importance Factor for TF1ln     TF2ln      =  2.3076923077e-01
+  Approximate Mean Response                  =  7.5000000000e-01
+  Approximate Standard Deviation of Response =  9.5524865873e-01
+  Importance Factor for TF1ln                =  1.0958904110e+00
+  Importance Factor for TF2ln                =  6.8493150685e-02
+  Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01
+  Approximate Mean Response                  =  7.5000000000e-01
+  Approximate Standard Deviation of Response =  9.5524865873e-01
+  Importance Factor for TF1ln                =  6.8493150685e-02
+  Importance Factor for TF2ln                =  1.0958904110e+00
+  Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01

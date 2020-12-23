@@ -54,9 +54,10 @@ public:
   RealArray cv_diagnostic(const StringArray& metric_types,
 			  unsigned num_folds) override;
 
-  void primary_diagnostics(int fn_index) override;
+  void primary_diagnostics(size_t fn_index) override;
 
-  void challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+  void challenge_diagnostics(size_t fn_index,
+			     const RealMatrix& challenge_points,
                              const RealVector& challenge_responses) override;
 
   // Modify configuration options through the parameterList (non-const)

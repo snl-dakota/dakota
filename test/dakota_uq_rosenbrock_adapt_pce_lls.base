@@ -1,0 +1,48 @@
+Test Number 0 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.0459713062e+01  0.0000000000e+00
+<<<<< Function evaluation summary: 42 total (42 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Test Number 1 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.0459713062e+01  0.0000000000e+00
+<<<<< Function evaluation summary: 42 total (42 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Test Number 2 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0833611607e+03  0.0000000000e+00
+<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Test Number 3 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0833611607e+03  0.0000000000e+00
+<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Test Number 4 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.0200000000e+02  0.0000000000e+00
+<<<<< Function evaluation summary: 72 total (72 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Test Number 5 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0000000000e+00  0.0000000000e+00
+<<<<< Function evaluation summary: 81 total (80 new, 1 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0199996741e+02  1.0499552537e+03

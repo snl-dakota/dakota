@@ -1337,9 +1337,9 @@ void NonDBayesCalibration::build_scalar_discrepancy()
   } 
 
   // Initialize DiscrepancyCorrection class
-  IntSet fn_indices;
+  SizetSet fn_indices;
   // Hardcode for now, call id_surrogates eventually? See SurrogateModel.cpp 
-  for (int i = 0; i < numFunctions; ++i)
+  for (size_t i = 0; i < numFunctions; ++i)
     fn_indices.insert(i);
   DiscrepancyCorrection modelDisc;
   short corr_type = ADDITIVE_CORRECTION; 

@@ -1,0 +1,143 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 7 total (7 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9803921506e-01 x1
+                      1.0019607849e+00 x2
+<<<<< Best objective functions =
+                      2.9563091639e-11
+                      4.9510188232e-01
+                      5.0490580704e-01
+<<<<< Best data captured at function evaluation 4
+<<<<< Function evaluation summary: 11 total (9 new, 2 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      2.9000000000e+00 x2
+<<<<< Best objective functions =
+                      1.3094600000e+01
+                     -1.2000000000e+00
+                      8.1600000000e+00
+<<<<< Best data captured at function evaluation 17
+<<<<< Function evaluation summary: 19 total (17 new, 2 duplicate)
+<<<<< Best parameters          =
+                      5.8000000000e+00 x1
+                      0.0000000000e+00 x2
+<<<<< Best objective functions =
+                      5.3184160000e+02
+                      3.3640000000e+01
+                     -2.9000000000e+00
+<<<<< Best data captured at function evaluation 36
+<<<<< Function evaluation summary: 17 total (15 new, 2 duplicate)
+<<<<< Best parameters          =
+                      5.0017165408e-01 x1
+                      5.0000014262e-01 x2
+<<<<< Best objective functions =
+                      1.2491414584e-01
+                      1.7161223697e-04
+                     -8.5684424577e-05
+<<<<< Best data captured at function evaluation 53
+<<<<< Results summary:
+   set_id             w1             w2             w3             x1             x2       obj_fn_1       obj_fn_2       obj_fn_3 
+        1              1              0              0   0.9980392151    1.001960785 2.956309164e-11   0.4951018823    0.504905807 
+        2              0              1              0            0.5            2.9        13.0946           -1.2           8.16 
+        3              0              0              1            5.8              0       531.8416          33.64           -2.9 
+        4          0.333          0.333          0.333   0.5001716541   0.5000001426   0.1249141458 0.000171612237 -8.568442458e-05 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.1945649231e-01 x1
+                      4.4657684735e-01 x2
+<<<<< Best objective functions =
+                      1.4713071367e-01
+                      4.6546623727e-02
+                     -6.0297365564e-02
+<<<<< Best data captured at function evaluation 26
+<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
+<<<<< Best parameters          =
+                      5.1601239301e-01 x1
+                      6.2744530277e-01 x2
+<<<<< Best objective functions =
+                      7.4134861160e-02
+                     -4.7453861645e-02
+                      1.3568141147e-01
+<<<<< Best data captured at function evaluation 49
+<<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
+<<<<< Best parameters          =
+                      6.0500432783e-01 x1
+                      2.7155391515e-01 x2
+<<<<< Best objective functions =
+                      3.0591485577e-01
+                      2.3025327911e-01
+                     -2.2876063508e-01
+<<<<< Best data captured at function evaluation 75
+<<<<< Function evaluation summary: 21 total (19 new, 2 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      1.5193583486e+00 x2
+<<<<< Best objective functions =
+                      1.3525594215e-01
+                     -5.0967917431e-01
+                      2.0584497915e+00
+<<<<< Best data captured at function evaluation 95
+<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
+<<<<< Best parameters          =
+                      1.0701715263e+00 x1
+                      3.9485492712e-01 x2
+<<<<< Best objective functions =
+                      1.3412709578e-01
+                      9.4783963222e-01
+                     -3.7917534969e-01
+<<<<< Best data captured at function evaluation 119
+<<<<< Results summary:
+   set_id             w1             w2             w3             x1             x2       obj_fn_1       obj_fn_2       obj_fn_3 
+        1   0.2897437398   0.3143362955   0.3959199647   0.5194564923   0.4465768474   0.1471307137  0.04654662373 -0.06029736556 
+        2   0.4843957316   0.3116136957   0.2039905727    0.516012393   0.6274453028  0.07413486116 -0.04745386165   0.1356814115 
+        3   0.1230791813   0.2741464443   0.6027743744   0.6050043278   0.2715539151   0.3059148558   0.2302532791  -0.2287606351 
+        4   0.2584742133   0.6776816758  0.06384411092            0.5    1.519358349   0.1352559421  -0.5096791743    2.058449792 
+        5   0.3837228161   0.1159633082   0.5003138757    1.070171526   0.3948549271   0.1341270958   0.9478396322  -0.3791753497 
+Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 162 total (162 new, 0 duplicate)
+<<<<< Function evaluation summary: 97 total (92 new, 5 duplicate)
+<<<<< Best parameters          =
+                      1.0002588122e+00 x1
+                      1.0051034610e+00 x2
+<<<<< Best objective functions =
+                      6.7836286456e-10
+                      4.9796596082e-01
+                      5.1010356118e-01
+<<<<< Best data captured at function evaluation 67
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 33 total (33 new, 0 duplicate)
+<<<<< Function evaluation summary: 134 total (124 new, 10 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      2.9000000000e+00 x2
+<<<<< Best objective functions =
+                      1.3094600000e+01
+                     -1.2000000000e+00
+                      8.1600000000e+00
+<<<<< Best data captured at function evaluation 110
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 54 total (54 new, 0 duplicate)
+<<<<< Function evaluation summary: 171 total (160 new, 11 duplicate)
+<<<<< Best parameters          =
+                      3.3719531250e+00 x1
+                     -3.1057454253e-14 x2
+<<<<< Best objective functions =
+                      3.2653694655e+01
+                      1.1370067877e+01
+                     -1.6859765625e+00
+<<<<< Best data captured at function evaluation 171
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 91 total (91 new, 0 duplicate)
+<<<<< Function evaluation summary: 238 total (224 new, 14 duplicate)
+<<<<< Best parameters          =
+                      5.0000567293e-01 x1
+                      5.0000031500e-01 x2
+<<<<< Best objective functions =
+                      1.2499700608e-01
+                      5.5154626105e-06
+                     -2.5214647076e-06
+<<<<< Best data captured at function evaluation 226
+<<<<< Results summary:
+   set_id             w1             w2             w3             x1             x2       obj_fn_1       obj_fn_2       obj_fn_3 
+        1              1              0              0    1.000258812    1.005103461 6.783628646e-10   0.4979659608   0.5101035612 
+        2              0              1              0            0.5            2.9        13.0946           -1.2           8.16 
+        3              0              0              1    3.371953125 -3.105745425e-14    32.65369466    11.37006788   -1.685976563 
+        4          0.333          0.333          0.333   0.5000056729    0.500000315   0.1249970061 5.51546261e-06 -2.521464708e-06 

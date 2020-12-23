@@ -1,0 +1,100 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+01 mass
+                     -5.0000000000e+00 a
+                     -2.0000001744e+00 v
+<<<<< Best objective function  =
+                     -5.0000000000e+01
+<<<<< Best constraint values   =
+                      2.0000003489e+01
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 23 total (23 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.8659776669e-01 x1
+                      2.9240395179e+00 mass
+                      9.7662035104e-02 a
+                      8.8371154279e-01 x4
+                      2.8159618198e+00 v
+<<<<< Best objective function  =
+                      2.5786928362e+01
+<<<<< Best constraint values   =
+                     -1.3798814791e+00
+                      1.9999999999e+01
+<<<<< Best data captured at function evaluation 23
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 147 total (147 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+01 mass
+                     -5.0000000000e+00 a
+                     -2.0000001744e+00 v
+<<<<< Best objective function  =
+                     -5.0000000000e+01
+<<<<< Best constraint values   =
+                      2.0000003489e+01
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 253 total (253 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.8659731862e-01 x1
+                      2.9240394812e+00 mass
+                      9.7662273086e-02 a
+                      8.8371729725e-01 x4
+                      2.8159618363e+00 v
+<<<<< Best objective function  =
+                      2.5786928320e+01
+<<<<< Best constraint values   =
+                     -1.3798817176e+00
+                      1.9999999999e+01
+<<<<< Best data captured at function evaluation 243
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.0000000000e+00 mass
+                      2.0000000000e+00 a
+                      4.0000000000e+00 v
+<<<<< Best objective function  =
+                      6.0000000000e+00
+<<<<< Best constraint values   =
+                      2.4000000000e+01
+<<<<< Best data captured at function evaluation 2
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 x1
+                      2.0000000000e+00 mass
+                      1.0000000000e+00 a
+                      0.0000000000e+00 x4
+                      3.0000000000e+00 v
+<<<<< Best objective function  =
+                      2.1000000000e+01
+<<<<< Best constraint values   =
+                     -1.0000000000e+00
+                      1.3000000000e+01
+<<<<< Best data captured at function evaluation 1
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.0000000000e+00 mass
+                      2.0000000000e+00 a
+                      4.0000000000e+00 v
+<<<<< Best objective function  =
+                      6.0000000000e+00
+<<<<< Best constraint values   =
+                      2.4000000000e+01
+<<<<< Best data captured at function evaluation 2
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 x1
+                      2.0000000000e+00 mass
+                      1.0000000000e+00 a
+                      0.0000000000e+00 x4
+                      3.0000000000e+00 v
+<<<<< Best objective function  =
+                      2.1000000000e+01
+<<<<< Best constraint values   =
+                     -1.0000000000e+00
+                      1.3000000000e+01
+<<<<< Best data captured at function evaluation 1

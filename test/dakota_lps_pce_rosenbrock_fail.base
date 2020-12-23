@@ -1,0 +1,35 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 5 total (5 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 25 total (25 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 45 total (45 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 135 total (135 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 4 succeeded
+<<<<< Function evaluation summary (UQ_I): 40 total (40 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1

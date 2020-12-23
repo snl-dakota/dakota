@@ -168,7 +168,7 @@ protected:
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   /// and ApproximationInterface::approxFnIndices
-  void surrogate_function_indices(const IntSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points
@@ -187,7 +187,7 @@ protected:
   void rebuild_approximation(const IntResponsePair& response_pr);
   /// Rebuilds the local/multipoint/global approximation using
   /// the passed response data for a set of samples
-  void rebuild_approximation(const IntResponseMap& all_resp);
+  void rebuild_approximation(const IntResponseMap& resp_map);
 
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
@@ -212,25 +212,29 @@ protected:
   void append_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
 			    bool rebuild_flag);
-  /// appends an array of points to a global approximation and rebuilds it
-  /// if requested
-  void append_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
   /// appends a matrix of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const RealMatrix& samples,
 			    const IntResponseMap& resp_map, bool rebuild_flag);
+  /// appends an array of points to a global approximation and rebuilds it
+  /// if requested
+  void append_approximation(const VariablesArray& vars_array,
+			    const IntResponseMap& resp_map, bool rebuild_flag);
+  /// appends an map of points to a global approximation and rebuilds it
+  /// if requested
+  void append_approximation(const IntVariablesMap& vars_map,
+			    const IntResponseMap&  resp_map, bool rebuild_flag);
 
-  /// remove approximation data added on previous append_approximation() call
-  /// or a specified number of points
+  void replace_approximation(const IntResponsePair& response_pr,
+			     bool rebuild_flag);
+  void replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag);
+  void track_evaluation_ids(bool track);
+
   void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
 
-  /// retrieve a previous approximation data state
   void push_approximation();
-  /// query for whether a trial increment can be retrieved
   bool push_available();
 
-  /// finalize data fit by applying all previous trial increments
   void finalize_approximation();
 
   /// combine all level approximations into a separate composite approximation
@@ -717,7 +721,7 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
 
 
 inline void DataFitSurrModel::
-surrogate_function_indices(const IntSet& surr_fn_indices)
+surrogate_function_indices(const SizetSet& surr_fn_indices)
 {
   surrogateFnIndices = surr_fn_indices;
   approxInterface.approximation_function_indices(surr_fn_indices);
@@ -787,18 +791,22 @@ rebuild_approximation(const IntResponsePair& response_pr)
 
 
 inline void DataFitSurrModel::
-rebuild_approximation(const IntResponseMap& all_resp)
+rebuild_approximation(const IntResponseMap& resp_map)
 {
   // decide which surrogates to rebuild based on resp_map content
   BitArray rebuild_fns(numFns); // init to false
   for (size_t i=0; i<numFns; ++i)
-    for (IntRespMCIter r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it)
+    for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
       if (r_it->second.active_set_request_vector()[i])
 	{ rebuild_fns.set(i); break; }
   // rebuild the designated surrogates
   approxInterface.rebuild_approximation(rebuild_fns);
   ++approxBuilds;
 }
+
+
+inline void DataFitSurrModel::track_evaluation_ids(bool track)
+{ approxInterface.track_evaluation_ids(track); }
 
 
 inline const RealVector& DataFitSurrModel::

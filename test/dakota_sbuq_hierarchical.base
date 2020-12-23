@@ -1,0 +1,1303 @@
+Test Number 0 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 50 total (45 new, 5 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 5 total (5 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+  -2.5461114698e-14  He3  He0
+   1.0000000000e+02  He4  He0
+  -1.8947806287e-15  He5  He0
+   2.6211132030e-14  He6  He0
+   1.3534147348e-16  He7  He0
+  -2.0000000000e+02  He0  He1
+   1.8662155155e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0000000000e+02  He0  He2
+   2.5562885142e-14  He1  He2
+  -2.2822022050e-14  He2  He2
+   1.3614109839e-14  He0  He3
+  -1.2032042029e-14  He0  He4
+  -7.3829831138e-16  He0  He5
+   4.1843072217e-15  He0  He6
+  -7.5318939798e-16  He0  He7
+   9.4739031435e-15  He3  He1
+   1.3026616822e-14  He4  He1
+   9.4739031435e-16  He5  He1
+  -5.6843418861e-15  He6  He1
+  -2.7068294696e-16  He7  He1
+   4.7369515717e-15  He3  He2
+  -7.1054273576e-15  He4  He2
+   1.1842378929e-15  He5  He2
+   1.5789838572e-16  He6  He2
+   9.0227648985e-17  He7  He2
+  -3.9782991716e-15  He1  He3
+   1.5163796145e-14  He2  He3
+   2.8680761469e-16  He1  He4
+  -3.8210175764e-15  He2  He4
+   1.9206858326e-15  He1  He5
+  -1.3933298959e-15  He2  He5
+  -2.1464311809e-16  He1  He6
+   1.2422162064e-15  He2  He6
+  -2.4001964437e-16  He1  He7
+  -7.7609876198e-16  He2  He7
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 1 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6400000000e+00  0.0000000000e+00
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1 -3.6400000000e+00  0.0000000000e+00
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0000000000e+00  0.0000000000e+00
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+<<<<< Function evaluation summary (LOFI_FN): 66 total (45 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+  -2.0000000000e+02  He0  He1
+   1.0000000000e+02  He0  He2
+  -2.3388698385e-14  He3  He0
+   1.0000000000e+02  He4  He0
+  -1.9539925233e-15  He5  He0
+   2.5441377400e-14  He6  He0
+  -2.5940449083e-16  He7  He0
+   5.7835680689e-15  He1  He1
+  -2.0000000000e+02  He2  He1
+   4.4214631956e-14  He1  He2
+  -2.2377932840e-14  He2  He2
+   1.1356656356e-14  He0  He3
+  -1.2809198147e-14  He0  He4
+  -1.2415994159e-15  He0  He5
+   4.1547012744e-15  He0  He6
+  -7.9689341545e-16  He0  He7
+   9.4739031435e-15  He3  He1
+   1.3026616822e-14  He4  He1
+   9.4739031435e-16  He5  He1
+  -5.6843418861e-15  He6  He1
+  -2.7068294696e-16  He7  He1
+   4.7369515717e-15  He3  He2
+  -7.1054273576e-15  He4  He2
+   1.1842378929e-15  He5  He2
+   1.5789838572e-16  He6  He2
+   9.0227648985e-17  He7  He2
+  -3.9782991716e-15  He1  He3
+   1.5163796145e-14  He2  He3
+   2.8680761469e-16  He1  He4
+  -3.8210175764e-15  He2  He4
+   1.9206858326e-15  He1  He5
+  -1.3933298959e-15  He2  He5
+  -2.1464311809e-16  He1  He6
+   1.2422162064e-15  He2  He6
+  -2.4001964437e-16  He1  He7
+  -7.7609876198e-16  He2  He7
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 2 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6400000000e+00  0.0000000000e+00
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1 -3.6400000000e+00  0.0000000000e+00
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0000000000e+00  0.0000000000e+00
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  3.6911320757e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  9.3244011068e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.4395156655e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0430752609e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+<<<<< Function evaluation summary (LOFI_FN): 64 total (43 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+  -2.5953776165e-14  He3  He0
+   1.0000000000e+02  He4  He0
+  -3.7155463891e-15  He5  He0
+   5.9615275679e-14  He6  He0
+   1.3957089452e-16  He7  He0
+  -2.0000000000e+02  He0  He1
+   1.0000000000e+02  He0  He2
+  -1.3322676296e-15  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0436096431e-14  He1  He2
+  -4.7961634664e-14  He2  He2
+   9.4739031435e-15  He3  He1
+   1.3026616822e-14  He4  He1
+   9.4739031435e-16  He5  He1
+  -5.6843418861e-15  He6  He1
+  -2.7068294696e-16  He7  He1
+   4.7369515717e-15  He3  He2
+  -7.1054273576e-15  He4  He2
+   1.1842378929e-15  He5  He2
+   1.5789838572e-16  He6  He2
+   9.0227648985e-17  He7  He2
+  -2.2574534834e-15  He0  He3
+  -8.1786429481e-15  He0  He4
+   2.0724163126e-16  He0  He5
+   2.7336158029e-15  He0  He6
+  -6.6260929724e-17  He0  He7
+   6.4491621919e-15  He8  He0
+   3.6028401505e-17  He9  He0
+  -1.7256037868e-16 He10  He0
+   7.1999841110e-18 He11  He0
+  -6.7290990742e-18 He12  He0
+  -4.0662032954e-19 He13  He0
+   1.6705485460e-18 He14  He0
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 3 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 50 total (45 new, 5 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 5 total (5 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 4 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6400000000e+00  8.8817841970e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1 -3.6400000000e+00  8.8817841970e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0000000000e+00  2.2204460493e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+<<<<< Function evaluation summary (LOFI_FN): 66 total (45 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 5 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6400000000e+00  8.8817841970e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1 -3.6400000000e+00  8.8817841970e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0000000000e+00  2.2204460493e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  3.6911320757e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  9.3244011068e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.1588457788e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0430752609e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+<<<<< Function evaluation summary (LOFI_FN): 64 total (43 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 6 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 34 total (33 new, 1 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 9 total (9 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+  -4.8849813084e-15  He3  He0
+   1.0000000000e+02  He4  He0
+  -2.0000000000e+02  He0  He1
+  -3.1086244690e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+  -1.9243865760e-14  He3  He1
+   2.3832787595e-14  He4  He1
+   1.0000000000e+02  He0  He2
+   2.5313084961e-14  He1  He2
+   6.9499961342e-14  He2  He2
+  -5.9211894647e-16  He3  He2
+   7.9936057773e-15  He4  He2
+   9.3258734069e-15  He0  He3
+   6.2172489379e-15  He1  He3
+  -5.9211894647e-15  He2  He3
+   2.3684757859e-15  He3  He3
+   1.0855514019e-15  He4  He3
+  -1.7948605565e-14  He0  He4
+  -5.9211894647e-16  He1  He4
+  -1.4062824979e-14  He2  He4
+  -9.8686491078e-17  He3  He4
+  -3.4540271877e-15  He4  He4
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  integration:  4.0200000000e+02  1.0499552371e+03  6.0795301477e+00  4.0847433680e+01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 7 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6400000000e+00  0.0000000000e+00
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1 -3.6400000000e+00  0.0000000000e+00
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0000000000e+00  0.0000000000e+00
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+<<<<< Function evaluation summary (LOFI_FN): 543 total (361 new, 182 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 91 total (81 new, 10 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+  -1.5016005367e-14  He3  He0
+   1.0000000000e+02  He4  He0
+  -1.5077810050e-15  He5  He0
+   6.0377789837e-14  He6  He0
+   2.7815210065e-16  He7  He0
+   6.4544233744e-15  He8  He0
+  -1.4987854800e-17  He9  He0
+  -1.5104648665e-16 He10  He0
+   2.0180084575e-18 He11  He0
+  -4.7288872935e-18 He12  He0
+  -1.2830894845e-19 He13  He0
+   1.3977884117e-18 He14  He0
+  -2.0000000000e+02  He0  He1
+   7.0936145910e-15  He1  He1
+  -2.0000000000e+02  He2  He1
+  -6.7778236346e-15  He3  He1
+   5.3599671571e-14  He4  He1
+  -1.2982661890e-15  He5  He1
+  -1.4817279794e-14  He6  He1
+   1.4154006565e-16  He7  He1
+  -1.2222892002e-15  He8  He1
+   9.5614510555e-18  He9  He1
+   5.0087056406e-18 He10  He1
+  -2.9326196343e-18 He11  He1
+   7.0025741219e-19 He12  He1
+   2.3890233108e-19 He13  He1
+   4.3136985326e-20 He14  He1
+   1.0000000000e+02  He0  He2
+   7.6331792166e-15  He1  He2
+  -8.3210080299e-14  He2  He2
+   7.7955756616e-15  He3  He2
+  -2.9004624500e-14  He4  He2
+  -7.5491977412e-18  He5  He2
+   6.3619449995e-16  He6  He2
+  -1.9041478173e-16  He7  He2
+   1.9542022307e-16  He8  He2
+   7.8299635964e-18  He9  He2
+  -2.2463086356e-17 He10  He2
+   1.2164522228e-19 He11  He2
+   2.9084557191e-18 He12  He2
+   1.7397990922e-20 He13  He2
+  -1.5710553203e-19 He14  He2
+   6.6088288532e-15  He0  He3
+   9.3059834421e-16  He1  He3
+   4.8744825917e-14  He2  He3
+  -1.3999905458e-15  He3  He3
+   8.2801663552e-16  He4  He3
+  -4.0415378581e-16  He5  He3
+   3.0312018758e-16  He6  He3
+   4.8166205782e-17  He7  He3
+  -1.8167406623e-18  He8  He3
+  -3.1874604715e-18  He9  He3
+   2.2781485529e-18 He10  He3
+  -1.8367149345e-19 He11  He3
+  -4.0398877842e-19 He12  He3
+  -2.3372640354e-20 He13  He3
+   1.7239428981e-20 He14  He3
+  -1.4895464896e-14  He0  He4
+   3.1277423008e-16  He1  He4
+  -4.1878659236e-15  He2  He4
+  -1.3933450416e-15  He3  He4
+   1.4257079030e-15  He4  He4
+  -1.4907045446e-16  He5  He4
+  -1.1160423032e-16  He6  He4
+   1.2165347601e-17  He7  He4
+  -4.6537513045e-18  He8  He4
+  -8.4147781039e-19  He9  He4
+  -8.6809897037e-19 He10  He4
+   2.3200631610e-19 He11  He4
+   1.0368301894e-19 He12  He4
+  -3.4969089230e-22 He13  He4
+  -9.6192388419e-21 He14  He4
+  -1.4710343381e-16  He0  He5
+   7.4905722870e-16  He1  He5
+   3.7371139365e-15  He2  He5
+   1.4153194235e-15  He3  He5
+   3.5169847799e-16  He4  He5
+  -7.0251436984e-17  He5  He5
+  -1.3076791591e-16  He6  He5
+  -2.5391019414e-17  He7  He5
+   1.5491483721e-17  He8  He5
+   4.2799573922e-19  He9  He5
+   3.3313651846e-19 He10  He5
+  -9.4869019922e-20 He11  He5
+  -8.4395221903e-20 He12  He5
+   2.0156441458e-21 He13  He5
+   7.8811545449e-21 He14  He5
+   7.7058545918e-15  He0  He6
+  -4.0506873366e-16  He1  He6
+   2.3044271966e-15  He2  He6
+  -9.9574292878e-18  He3  He6
+   3.3999395170e-16  He4  He6
+   4.2655667683e-17  He5  He6
+   3.8492705957e-17  He6  He6
+   8.5507775845e-19  He7  He6
+  -3.4864530431e-19  He8  He6
+   3.8433224812e-19  He9  He6
+   2.1607128941e-19 He10  He6
+  -6.8961925667e-21 He11  He6
+  -2.3273187454e-20 He12  He6
+  -5.9280715368e-22 He13  He6
+   1.0937701982e-21 He14  He6
+  -1.2840760399e-15  He0  He7
+  -5.6340377054e-19  He1  He7
+  -2.6179241826e-15  He2  He7
+  -1.1513100840e-16  He3  He7
+  -1.3917324390e-16  He4  He7
+  -1.4799745077e-18  He5  He7
+   4.4503124016e-17  He6  He7
+   5.0881311909e-18  He7  He7
+  -2.3159515686e-18  He8  He7
+  -3.3941398067e-19  He9  He7
+  -1.6471347158e-19 He10  He7
+   8.2795033190e-21 He11  He7
+   4.0177258015e-20 He12  He7
+   8.2552381128e-22 He13  He7
+  -3.3909866458e-21 He14  He7
+   1.1322285257e-15  He0  He8
+  -1.8310728608e-17  He1  He8
+   9.1356446997e-16  He2  He8
+  -8.0248127466e-18  He3  He8
+   1.7688303923e-16  He4  He8
+  -3.8301097267e-18  He5  He8
+  -2.2344701362e-18  He6  He8
+   5.8993479742e-19  He7  He8
+   1.5476463579e-19  He8  He8
+  -7.1280966073e-20  He9  He8
+   7.8124929686e-21 He10  He8
+  -4.9549146577e-21 He11  He8
+  -3.3501608269e-21 He12  He8
+   2.0584987144e-22 He13  He8
+   4.5683251526e-22 He14  He8
+   1.1945419317e-16  He0  He9
+   1.8615116134e-17  He1  He9
+   2.0191706107e-16  He2  He9
+   6.9488039404e-18  He3  He9
+   1.0386642944e-17  He4  He9
+  -2.9434142550e-18  He5  He9
+  -3.7977731359e-18  He6  He9
+   2.3837514633e-21  He7  He9
+   2.2333428831e-19  He8  He9
+   1.6102872067e-20  He9  He9
+   2.5399635311e-20 He10  He9
+  -8.5350383261e-22 He11  He9
+  -5.1130476874e-21 He12  He9
+   3.5791213606e-23 He13  He9
+   3.7774510385e-22 He14  He9
+  -3.4838963127e-17  He0 He10
+  -4.9267130726e-18  He1 He10
+  -9.1653831652e-17  He2 He10
+   4.5958961700e-18  He3 He10
+  -1.3132264175e-17  He4 He10
+   6.0435373934e-19  He5 He10
+   1.0963277882e-18  He6 He10
+  -5.2949003119e-20  He7 He10
+  -4.0956542151e-20  He8 He10
+  -1.9408334828e-21  He9 He10
+  -9.3667297602e-21 He10 He10
+   1.3543604816e-21 He11 He10
+   7.8622087856e-22 He12 He10
+  -7.4474711745e-23 He13 He10
+  -7.2011730505e-23 He14 He10
+  -1.1787391266e-17  He0 He11
+  -2.2691995898e-18  He1 He11
+  -1.2767674451e-17  He2 He11
+  -1.1270737788e-18  He3 He11
+  -8.5325569284e-19  He4 He11
+   9.2713890694e-20  He5 He11
+   1.4581548454e-19  He6 He11
+   4.0202742252e-21  He7 He11
+  -8.2619488521e-21  He8 He11
+  -2.2118100928e-21  He9 He11
+  -8.6208734086e-22 He10 He11
+   1.5586935551e-23 He11 He11
+   2.6798172481e-22 He12 He11
+   3.0506668089e-24 He13 He11
+  -2.1523688000e-23 He14 He11
+   3.3473589375e-18  He0 He12
+  -1.3202667788e-19  He1 He12
+   1.0012459910e-17  He2 He12
+   2.2542975570e-19  He3 He12
+   1.6429531038e-18  He4 He12
+  -1.0601394629e-19  He5 He12
+  -1.0376425785e-19  He6 He12
+   1.2741227778e-20  He7 He12
+   3.8978874180e-21  He8 He12
+  -4.2243233240e-22  He9 He12
+   9.3705919514e-22 He10 He12
+  -7.1936360032e-23 He11 He12
+  -6.3851507546e-23 He12 He12
+   3.3713818755e-24 He13 He12
+   8.1150674086e-24 He14 He12
+   6.7724382391e-19  He0 He13
+   6.7285271429e-20  He1 He13
+   8.0295834024e-19  He2 He13
+  -3.5169115058e-20  He3 He13
+  -2.3109610315e-20  He4 He13
+   1.5895879000e-22  He5 He13
+   2.7804053390e-21  He6 He13
+   1.0754570598e-22  He7 He13
+   4.5265289242e-22  He8 He13
+   1.1763269897e-23  He9 He13
+  -1.0068810436e-23 He10 He13
+   4.0521025070e-24 He11 He13
+  -3.7740003242e-24 He12 He13
+  -6.0825882047e-25 He13 He13
+   8.9985735228e-25 He14 He13
+  -3.2159101303e-19  He0 He14
+  -3.2543887052e-20  He1 He14
+  -9.2084500202e-19  He2 He14
+   4.4009158931e-20  He3 He14
+  -1.6975882537e-19  He4 He14
+   1.5157524616e-21  He5 He14
+   4.8876374065e-21  He6 He14
+  -8.8157036628e-22  He7 He14
+   5.8949944354e-23  He8 He14
+   4.1479929298e-23  He9 He14
+  -1.0394912007e-23 He10 He14
+   2.0554963892e-24 He11 He14
+   6.0279585274e-24 He12 He14
+  -3.5168925483e-25 He13 He14
+  -5.6305496768e-25 He14 He14
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 8 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 34 total (33 new, 1 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 9 total (9 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03  6.0795301477e+00  4.0847433680e+01
+  integration:  4.0200000000e+02  1.0499552371e+03  6.0795301477e+00  4.0847433680e+01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 9 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6400000000e+00  8.8817841970e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1 -3.6400000000e+00  8.8817841970e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0000000000e+00  2.2204460493e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+<<<<< Function evaluation summary (LOFI_FN): 543 total (361 new, 182 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 91 total (81 new, 10 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 10 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.3095314591e+04  1.7800410018e+04
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.3229750000e+02  3.2524611474e+02
+<<<<< Function evaluation summary (LOFI_FN): 466 total (385 new, 81 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 81 total (81 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3427612091e+04  1.8098603754e+04  1.6260371772e+00  1.8716617852e+00
+  integration:  1.3427612091e+04  1.8098603754e+04  1.6260371772e+00  1.8716617852e+00
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7350180823e-01  9.2720398873e-01 x1
+                      7.2796011268e-02  1.2649819177e-01 x2
+                      5.3702180498e-02 x1 x2 
+Test Number 11 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.3012941544e+04  1.7631580865e+04
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.2969333333e+02  3.1971145981e+02
+<<<<< Function evaluation summary (LOFI_FN): 466 total (385 new, 81 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 81 total (81 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3342634878e+04  1.7928166847e+04  1.6690888734e+00  2.4415906715e+00
+  integration:  1.3342634878e+04  1.7928166847e+04  1.6690888734e+00  2.4415906715e+00
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.6487992751e-01  9.2621185875e-01 x1
+                      7.3788141247e-02  1.3512007249e-01 x2
+                      6.1331931247e-02 x1 x2 
+Test Number 12 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 42 total (42 new, 0 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 12 total (12 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+  -2.0000000000e+02  He0  He1
+   6.0100000000e+02  He2  He0
+  -1.2079226508e-12  He1  He1
+   1.0000000000e+02  He0  He2
+   4.3254289039e-13  He3  He0
+  -2.0000000000e+02  He2  He1
+  -1.5631940187e-13  He1  He2
+   0.0000000000e+00  He0  He3
+   1.0000000000e+02  He4  He0
+  -7.6738615462e-13  He3  He1
+  -8.5265128291e-13  He2  He2
+  -1.6342482922e-13  He1  He3
+   8.5265128291e-14  He0  He4
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 13 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 28 total (28 new, 0 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 9 total (9 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+  -2.0000000000e+02  He0  He1
+   6.0100000000e+02  He2  He0
+   2.5060701849e-14  He1  He1
+   1.0000000000e+02  He0  He2
+  -2.0000000000e+02  He2  He1
+   5.3968734258e-14  He1  He2
+   1.0000000000e+02  He4  He0
+   4.4152784022e-13  He3  He1
+  -6.3153372026e-13  He1  He3
+  -1.2366970270e-13  He0  He4
+  -6.8019734953e-14  He5  He0
+  -5.0134371381e-13  He1  He4
+   1.7020851115e-13  He0  He5
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 14 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 50 total (50 new, 0 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 10 total (10 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+  -2.0000000000e+02  He0  He1
+   6.0100000000e+02  He2  He0
+   1.0658141036e-14  He1  He1
+   1.0000000000e+02  He0  He2
+   8.3932860662e-14  He3  He0
+  -2.0000000000e+02  He2  He1
+  -2.3980817332e-13  He1  He2
+   6.8389738317e-14  He0  He3
+   1.0000000000e+02  He4  He0
+  -1.8474111130e-13  He3  He1
+  -1.8474111130e-13  He2  He2
+  -9.9475983006e-14  He1  He3
+   3.5527136788e-14  He0  He4
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 15 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 50 total (50 new, 0 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 10 total (10 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000001e+00  He1  He0
+  -2.0000000000e+02  He0  He1
+   6.0100000000e+02  He2  He0
+   1.6515411261e-10  He1  He1
+   1.0000000000e+02  He0  He2
+  -6.8546945897e-11  He3  He0
+  -2.0000000000e+02  He2  He1
+  -2.6919977358e-10  He1  He2
+  -3.7723602020e-10  He0  He3
+   9.9999999999e+01  He4  He0
+   1.6999734953e-11  He3  He1
+  -4.1282532948e-10  He2  He2
+  -4.8530068852e-12  He1  He3
+  -1.7697487920e-10  He0  He4
+  -1.2562950680e-11  He5  He0
+  -1.0971734632e-10  He4  He1
+  -8.8665075282e-11  He3  He2
+   1.1750955764e-10  He2  He3
+  -8.0271789216e-11  He1  He4
+  -9.0285112719e-11  He0  He5
+  -9.7798213972e-11  He6  He0
+  -2.3573143437e-11  He5  He1
+  -9.2784446792e-11  He4  He2
+   2.1316282073e-11  He3  He3
+  -5.5806026467e-11  He2  He4
+  -2.4783730623e-11  He1  He5
+  -2.8261837315e-11  He0  He6
+  -1.3353172734e-12  He7  He0
+  -4.2468251138e-12  He6  He1
+  -1.4476753130e-12  He5  He2
+  -2.8173241517e-11  He4  He3
+  -1.2396195181e-11  He3  He4
+   3.0952851393e-11  He2  He5
+  -5.3506088449e-12  He1  He6
+  -6.0518257072e-12  He0  He7
+  -4.4080294970e-12  He8  He0
+  -3.3920644071e-12  He7  He1
+  -3.0014879471e-12  He6  He2
+   4.1317504973e-12  He5  He3
+  -4.6854187197e-12  He4  He4
+   7.8540646209e-13  He3  He5
+  -5.0994763967e-12  He2  He6
+  -2.4560353751e-12  He1  He7
+  -1.2230771951e-12  He0  He8
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 16 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5509456080e+02  8.3647910770e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5457612278e+01  6.8117465393e+01
+<<<<< Function evaluation summary (LOFI_FN): 2200 total (2200 new, 0 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 200 total (200 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   3.9055217307e+02  He0  He0
+  -5.8481380699e+00  He1  He0
+  -1.8706052235e+02  He0  He1
+   5.5088671278e+02  He2  He0
+  -3.4142327137e+01  He1  He1
+   7.7349729475e+01  He0  He2
+  -6.8137400083e+00  He3  He0
+  -1.2539946538e+02  He2  He1
+   4.0975841629e+01  He1  He2
+   1.3263274328e+00  He0  He3
+   6.1237522400e+01  He4  He0
+  -7.0342871822e+00  He3  He1
+  -5.4042852985e+01  He2  He2
+   5.7548344594e+00  He1  He3
+  -3.4130756769e+00  He0  He4
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.9055217307e+02  8.9031767463e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7964705028e-01  9.4039386152e-01 x1
+                      5.9606138478e-02  1.2035294972e-01 x2
+                      6.0746811246e-02 x1 x2 
+Test Number 17 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 34 total (34 new, 0 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 10 total (10 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+  -2.0000000000e+02  He0  He1
+   6.0100000000e+02  He2  He0
+   5.6221693967e-13  He1  He1
+   1.0000000000e+02  He0  He2
+   6.3948846218e-14  He3  He0
+  -2.0000000000e+02  He2  He1
+  -3.6948222260e-13  He1  He2
+   1.0000000000e+02  He4  He0
+  -2.8066438063e-13  He3  He1
+  -3.4106051316e-13  He2  He2
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 18 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920281e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 20 total (20 new, 0 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 6 total (6 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -1.9999999993e+00  He1  He0
+  -2.0000000000e+02  He0  He1
+   6.0099999999e+02  He2  He0
+   1.0000000000e+02  He0  He2
+   1.1253069879e-09  He3  He0
+  -1.9999999999e+02  He2  He1
+  -3.8826619831e-09  He1  He2
+   9.9999999999e+01  He4  He0
+  -3.1024009051e-10  He3  He1
+   6.9866496804e-11  He2  He2
+   9.7989977541e-11  He5  He0
+   2.2403422743e-09  He4  He1
+  -1.2048983306e-09  He3  He2
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409146e-02  1.2699495467e-01 x2
+                      7.2568545522e-02 x1 x2 
+Test Number 19 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+<<<<< Function evaluation summary (LOFI_FN): 62 total (62 new, 0 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 20 total (20 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+  -2.0000000000e+02  He0  He1
+   6.0100000000e+02  He2  He0
+   1.4201972931e-12  He1  He1
+   1.0000000000e+02  He0  He2
+  -1.5099033135e-13  He3  He0
+  -2.0000000000e+02  He2  He1
+  -1.2709833186e-12  He1  He2
+   1.6409096304e-13  He0  He3
+   1.0000000000e+02  He4  He0
+   7.8159700934e-14  He3  He1
+   4.5297099405e-13  He2  He2
+   5.2580162446e-13  He1  He3
+   1.5276668819e-13  He0  He4
+  -2.6645352591e-15  He5  He0
+  -1.2967404928e-13  He4  He1
+   1.7408297026e-13  He3  He2
+  -4.3032244434e-13  He2  He3
+  -4.6540549192e-13  He1  He4
+  -1.9984014443e-14  He0  He5
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 20 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+<<<<< Function evaluation summary (LOFI_FN): 39 total (39 new, 0 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 14 total (14 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000041e+00  He1  He0
+  -2.0000000000e+02  He0  He1
+   6.0099999999e+02  He2  He0
+   2.2995023097e-10  He1  He1
+   9.9999999999e+01  He0  He2
+  -3.2515719953e-09  He3  He0
+  -2.0000000000e+02  He2  He1
+   9.9999999996e+01  He4  He0
+   4.0667957763e-10  He3  He1
+  -2.6481495214e-10  He1  He3
+  -4.8312063418e-10  He0  He4
+  -4.2599597482e-10  He5  He0
+   4.1178085746e-10  He3  He2
+  -2.7980151310e-10  He1  He4
+   8.2385008980e-12  He0  He5
+  -3.6463395056e-10  He6  He0
+   3.2738113134e-11  He5  He1
+  -2.9919908266e-11  He0  He6
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504532e-01  9.4557359085e-01 x1
+                      5.4426409147e-02  1.2699495468e-01 x2
+                      7.2568545529e-02 x1 x2 
+Test Number 21 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 122 total (101 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+   9.0002368984e-14  He3  He0
+   1.0000000000e+02  He4  He0
+   1.4459151469e-14  He5  He0
+   6.0867206337e-14  He6  He0
+  -2.2854183272e-15  He7  He0
+  -2.0000000000e+02  He0  He1
+   8.2492606496e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0836239313e-15  He3  He1
+   1.3919421171e-14  He4  He1
+   2.9013828377e-15  He5  He1
+  -4.5747356520e-15  He6  He1
+  -2.3442447278e-16  He7  He1
+   1.0000000000e+02  He0  He2
+  -6.6048728986e-14  He1  He2
+  -4.4877296324e-15  He2  He2
+   2.6737871176e-15  He3  He2
+  -3.4347524824e-15  He4  He2
+   7.7438055968e-16  He5  He2
+   1.6678016992e-15  He6  He2
+   2.3587833626e-16  He7  He2
+   8.5571379265e-15  He0  He3
+   3.4590386111e-15  He1  He3
+   3.5874081483e-14  He2  He3
+  -2.1614509950e-14  He0  He4
+  -1.8989439650e-15  He1  He4
+  -7.7276148443e-15  He2  He4
+  -2.7404294112e-15  He0  He5
+  -3.0161058836e-16  He1  He5
+  -2.6784130469e-15  He2  He5
+   8.0959930118e-15  He0  He6
+   2.6059401550e-16  He1  He6
+   2.9457917587e-15  He2  He6
+  -4.9399417537e-16  He0  He7
+   5.2880980018e-16  He1  He7
+  -6.9142222811e-16  He2  He7
+   5.3643156936e-15  He8  He0
+   7.5189707488e-17  He9  He0
+  -1.1679467896e-16 He10  He0
+   1.8729072592e-17 He11  He0
+  -4.2835348508e-18 He12  He0
+  -2.2107059296e-18 He13  He0
+   1.1984950600e-18 He14  He0
+  -3.5465457731e-15  He3  He3
+   1.7270135939e-16  He4  He3
+   4.3915488530e-16  He5  He3
+  -9.3752166524e-17  He6  He3
+   9.8686491078e-18  He7  He3
+   7.8486599935e-16  He3  He4
+   4.8726454970e-16  He4  He4
+  -4.6876083262e-16  He5  He4
+  -8.5939485980e-17  He6  He4
+  -4.2529178298e-17  He7  He4
+  -1.0954200510e-15  He3  He5
+  -5.3167347068e-16  He4  He5
+   3.4540271877e-17  He5  He5
+   6.2830399320e-17  He6  He5
+   6.8610608083e-18  He7  He5
+  -1.1842378929e-16  He3  He6
+   5.4812121919e-16  He4  He6
+   3.7171911639e-17  He5  He6
+  -1.3925760408e-17  He6  He6
+   9.7120038838e-19  He7  He6
+   1.2829243840e-16  He3  He7
+   3.7829821580e-17  He4  He7
+  -2.6316397621e-18  He5  He7
+  -1.1685733705e-17  He6  He7
+   9.4882249925e-19  He7  He7
+   4.7658085591e-16  He0  He8
+   6.4420348342e-18  He0  He9
+   5.9916798154e-18  He0 He10
+   6.1234042083e-19  He0 He11
+  -4.7468249677e-20  He0 He12
+  -5.2142046568e-20  He0 He13
+  -3.7244318977e-20  He0 He14
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 22 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  3.9729656429e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 50 total (45 new, 5 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 45 total (45 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   3.0100000000e+02  He2  He0
+  -7.1054273576e-15  He0  He1
+   1.0000000000e+02  He0  He2
+   7.3089682454e-15  He3  He0
+  -1.2212453271e-14  He4  He0
+  -1.4062824979e-16  He5  He0
+   4.4408920985e-17  He6  He0
+  -3.1861638548e-16  He7  He0
+  -3.7331249203e-14  He1  He1
+  -8.2104462118e-15  He2  He1
+  -4.9335535657e-15  He1  He2
+  -1.4357438849e-14  He2  He2
+   1.2409055265e-15  He0  He3
+  -2.0157486791e-15  He0  He4
+  -2.7339241981e-16  He0  He5
+   2.7262143160e-16  He0  He6
+  -9.1285004247e-17  He0  He7
+  -1.4247862149e-14  He3  He1
+   1.5358085174e-15  He4  He1
+   2.9605947323e-17  He5  He1
+  -1.1447632965e-15  He6  He1
+   1.5084935065e-16  He7  He1
+   4.9219887425e-15  He3  He2
+  -1.6468308199e-15  He4  He2
+  -3.4786988105e-16  He5  He2
+   8.0922922684e-16  He6  He2
+   3.2425561354e-17  He7  He2
+   6.3976601794e-15  He1  He3
+   2.7316112335e-15  He2  He3
+  -1.5635640930e-15  He1  He4
+  -1.1391350826e-15  He2  He4
+  -7.8178204651e-16  He1  He5
+   5.3059408719e-16  He2  He5
+   3.7685903780e-16  He1  He6
+   3.3337530267e-16  He2  He6
+   1.3146450419e-16  He1  He7
+  -1.0529496146e-16  He2  He7
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  4.4855991796e+02
+  integration:  4.0200000000e+02  4.4855991796e+02  2.5060060628e+00  9.8515168231e+00
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.0059938570e-01  9.0059938570e-01 x1
+                      9.9400614296e-02  9.9400614296e-02 x2
+                      3.5765813857e-32 x1 x2 
+Test Number 23 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6564000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6360000000e+01  6.9283186994e+01
+<<<<< Function evaluation summary (LOFI_FN): 50 total (45 new, 5 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 5 total (5 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  8.7300504533e-01 x1
+                      5.4426409145e-02  5.4426409145e-02 x2
+Test Number 24 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6400000000e+00  8.8817841970e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1 -3.6400000000e+00  8.8817841970e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0000000000e+00  2.2204460493e-16
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  3.7167814033e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6200000000e+02  9.3345842971e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.1731817817e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9883564214e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9883564214e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6200000000e+02  9.9751920282e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0149357912e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0383066597e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0371795698e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0486873763e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0486807296e+03
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
+<<<<< Function evaluation summary (LOFI_FN): 86 total (43 new, 43 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 43 total (43 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
+Test Number 25 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.3095314591e+04  1.7800410018e+04
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.3229750000e+02  3.2524611474e+02
+<<<<< Function evaluation summary (LOFI_FN): 466 total (385 new, 81 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 81 total (81 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3427612091e+04  1.8098603754e+04  1.6260371772e+00  1.8716617852e+00
+  integration:  1.3427612091e+04  1.8098603754e+04  1.6260371772e+00  1.8716617852e+00
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.7350180823e-01  9.2720398873e-01 x1
+                      7.2796011268e-02  1.2649819177e-01 x2
+                      5.3702180498e-02 x1 x2 
+Test Number 26 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.3012941544e+04  1.7631580865e+04
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.2969333333e+02  3.1971145981e+02
+<<<<< Function evaluation summary (LOFI_FN): 466 total (385 new, 81 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 81 total (81 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3342634878e+04  1.7928166847e+04  1.6690888734e+00  2.4415906715e+00
+  integration:  1.3342634878e+04  1.7928166847e+04  1.6690888734e+00  2.4415906715e+00
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      8.6487992751e-01  9.2600408373e-01 x1
+                      7.3995916270e-02  1.3512007249e-01 x2
+                      6.1124156224e-02 x1 x2 

@@ -669,7 +669,7 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
     approxInterface.append_approximation(daceIterator.all_variables(),all_resp);
 
   if (rebuild_flag)
-    rebuild_approximation(all_resp);
+    rebuild_approximation(all_resp); // all_resp used to define build_fns
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n<<<<< " << surrogateType
@@ -694,32 +694,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
   approxInterface.append_approximation(vars, response_pr);
 
   if (rebuild_flag)
-    rebuild_approximation(response_pr);
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType
-	 << " approximation updates completed.\n";
-}
-
-
-/** This function appends multiple points to SurrogateData::{vars,resp}Data
-    and rebuilds the approximation, if requested.  It does not modify other 
-    data (i.e., SurrogateData::anchor{Vars,Resp}) and does not update the
-    actualModel with revised bounds, labels, etc.  Thus, it appends to data
-    from a previous call to build_approximation(), and is not intended to
-    be used in isolation. */
-void DataFitSurrModel::
-append_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map, bool rebuild_flag)
-{
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
-
-  // append to the current points for each approximation
-  approxInterface.append_approximation(vars_array, resp_map);
-
-  if (rebuild_flag)
-    rebuild_approximation(resp_map);
+    rebuild_approximation(response_pr); // response_pr used to define build_fns
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n<<<<< " << surrogateType
@@ -752,13 +727,103 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 }
 
 
+/** This function appends multiple points to SurrogateData::{vars,resp}Data
+    and rebuilds the approximation, if requested.  It does not modify other 
+    data (i.e., SurrogateData::anchor{Vars,Resp}) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it appends to data
+    from a previous call to build_approximation(), and is not intended to
+    be used in isolation. */
+void DataFitSurrModel::
+append_approximation(const VariablesArray& vars_array,
+		     const IntResponseMap& resp_map, bool rebuild_flag)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.append_approximation(vars_array, resp_map);
+
+  if (rebuild_flag)
+    rebuild_approximation(resp_map); // resp_map used to define build_fns
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
+}
+
+
+/** This function appends multiple points to SurrogateData::{vars,resp}Data
+    and rebuilds the approximation, if requested.  It does not modify other 
+    data (i.e., SurrogateData::anchor{Vars,Resp}) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it appends to data
+    from a previous call to build_approximation(), and is not intended to
+    be used in isolation. */
+void DataFitSurrModel::
+append_approximation(const IntVariablesMap& vars_map,
+		     const IntResponseMap&  resp_map, bool rebuild_flag)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.append_approximation(vars_map, resp_map);
+
+  if (rebuild_flag)
+    rebuild_approximation(resp_map); // resp_map used to define build_fns
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
+}
+
+
+void DataFitSurrModel::
+replace_approximation(const IntResponsePair& response_pr, bool rebuild_flag)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Replacing response id " << response_pr.first << " in "
+	 << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.replace_approximation(response_pr);
+
+  if (rebuild_flag)
+    rebuild_approximation(response_pr); // response_pr used to define build_fns
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation data replacement completed.\n";
+}
+
+
+void DataFitSurrModel::
+replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Replacing response data in " << surrogateType
+	 << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.replace_approximation(resp_map);
+
+  if (rebuild_flag)
+    rebuild_approximation(resp_map);
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation data replacements completed.\n";
+}
+
+
 void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Popping data from " << surrogateType
 	 << " approximations.\n";
 
-  // append to the current points for each approximation
+  // remove the most recent data appends from each approximation, where the
+  // number of points to pop is tracked by pop counts at a lower level.
+  // Typical use is to pop a candidate refinement following its evaluation.
   approxInterface.pop_approximation(save_surr_data);
 
   if (rebuild_flag) { // update the coefficients for each approximation
@@ -778,7 +843,10 @@ void DataFitSurrModel::push_approximation()//(bool rebuild_flag)
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Retrieving " << surrogateType << " approximation data.\n";
 
-  // append to the current points for each approximation
+  // restore one of the previously popped data sets for each approximation,
+  // where the data set to restore is tracked by the push index at a lower
+  // level.  Typical use is to select the best candidate refinement from
+  // previously popped data sets.
   approxInterface.push_approximation();
 
   /*
@@ -799,7 +867,7 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Finalizing " << surrogateType << " approximations.\n";
 
-  // append to the current points for each approximation
+  // restore all remaining popped data sets to finalize each approximation
   approxInterface.finalize_approximation();
 
   /*
@@ -967,7 +1035,7 @@ void DataFitSurrModel::build_local_multipoint()
       actualModel.hessian_type() != "none")
     asv_value += 4;
   ShortArray orig_asv(numFns), actual_asv;
-  ISIter it;
+  StSIter it;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
     orig_asv[*it] = asv_value;
   asv_inflate_build(orig_asv, actual_asv);
@@ -1154,7 +1222,7 @@ void DataFitSurrModel::rebuild_global()
   // Evaluate new data points using daceIterator
   // *******************************************
   size_t pts_i, curr_points = std::numeric_limits<size_t>::max();
-  ISIter it;
+  StSIter it;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     pts_i = approxInterface.approximation_data(*it).points();
     if (pts_i < curr_points) curr_points = pts_i;
@@ -1989,9 +2057,9 @@ asv_inflate_build(const ShortArray& orig_asv, ShortArray& actual_asv)
       actual_asv = orig_asv;
   }
   else { // mixed response set
-    size_t i; int index; short orig_asv_val;
+    size_t i, index; short orig_asv_val;
     actual_asv.assign(num_actual, 0);
-    for (ISIter it=surrogateFnIndices.begin();
+    for (StSIter it=surrogateFnIndices.begin();
 	 it!=surrogateFnIndices.end(); ++it) {
       index = *it; orig_asv_val = orig_asv[index];
       if (orig_asv_val)
@@ -2251,11 +2319,11 @@ ActiveSet DataFitSurrModel::default_interface_active_set() {
       for(auto &a : asv)
         a |=  2;
     if(has_hessians)
-       for(auto &a : asv)
-         a |=  4;
+      for(auto &a : asv)
+	a |=  4;
   } else {
     std::fill(asv.begin(), asv.end(), 0);
-    for(int i = 0; i < numFns; ++i) {
+    for(size_t i = 0; i < numFns; ++i) {
       if(surrogateFnIndices.count(i)) {
         asv[i] = 1;
         if(has_gradients)

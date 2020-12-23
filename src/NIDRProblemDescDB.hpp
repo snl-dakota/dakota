@@ -197,11 +197,11 @@ public:
   KWH(model_ivec);
   KWH(model_false);
   KWH(model_int);
-  KWH(model_intsetm1);
   KWH(model_lit);
   KWH(model_order);
   KWH(model_shint);
   KWH(model_sizet);
+  KWH(model_id_to_index_set);
   KWH(model_start);
   KWH(model_stop);
   KWH(model_str);

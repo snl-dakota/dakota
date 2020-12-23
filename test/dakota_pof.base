@@ -1,0 +1,59 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 1000000 total (1000000 new, 0 duplicate)
+<<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.0941269757e+00  -9.0000000000e-01   1.1268552413e+00
+  -9.0000000000e-01  -8.0000000000e-01   2.1697500000e+00
+  -8.0000000000e-01  -5.0000000000e-01   1.2864800000e+00
+  -5.0000000000e-01  -1.3637474857e-01   4.9041698643e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+  -9.0000000000e-01   2.1875300000e-01
+  -8.0000000000e-01   4.3572800000e-01
+  -5.0000000000e-01   8.2167200000e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 2000 total (2000 new, 0 duplicate)
+<<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   7.3724230674e-05   2.0000000000e+00   1.5050554795e-01
+   2.0000000000e+00   1.3843939488e+02   5.1231537680e-03
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -9.6557461493e-01   1.0000000000e-01   1.8018447259e-01
+   1.0000000000e-01   4.9109430198e+00   1.6795044063e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   2.0000000000e+00   3.0100000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.9200000000e-01
+Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 1000000 total (1000000 new, 0 duplicate)
+<<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.1297789728e+00  -9.0000000000e-01   9.3633458857e-01
+  -9.0000000000e-01  -8.0000000000e-01   2.2382800000e+00
+  -8.0000000000e-01  -5.0000000000e-01   1.2785933333e+00
+  -5.0000000000e-01  -1.2923975932e-01   4.7859500704e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+  -9.0000000000e-01   2.1515000000e-01
+  -8.0000000000e-01   4.3897800000e-01
+  -5.0000000000e-01   8.2255600000e-01
+Test Number 3 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 1000000 total (1000000 new, 0 duplicate)
+<<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.1297789728e+00  -9.0000000000e-01   9.3633458857e-01
+  -9.0000000000e-01  -8.0000000000e-01   2.2382800000e+00
+  -8.0000000000e-01  -5.0000000000e-01   1.2785933333e+00
+  -5.0000000000e-01  -1.2923975932e-01   4.7859500704e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+  -9.0000000000e-01   2.1515000000e-01
+  -8.0000000000e-01   4.3897800000e-01
+  -5.0000000000e-01   8.2255600000e-01

@@ -1,0 +1,24 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 166 total (166 new, 0 duplicate)
+<<<<< Function evaluation summary (UQ_I): 4550 total (4550 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.4551997893e+00 w
+                      3.7544918537e+00 t
+<<<<< Best objective function  =
+                      9.2180276081e+00
+<<<<< Best constraint values   =
+                      3.2540849098e-02
+                      1.4596265983e-02
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 114 total (114 new, 0 duplicate)
+<<<<< Function evaluation summary (UQ_I): 2750 total (2750 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.4273371519e+00 w
+                      3.8658424803e+00 t
+<<<<< Best objective function  =
+                      9.3837030760e+00
+<<<<< Best constraint values   =
+                     -5.7799694475e-08
+                     -2.7875644631e-07
+<<<<< Best data not found in evaluation cache

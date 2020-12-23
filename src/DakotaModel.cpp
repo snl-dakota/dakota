@@ -3652,7 +3652,7 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-void Model::surrogate_function_indices(const IntSet& surr_fn_indices)
+void Model::surrogate_function_indices(const SizetSet& surr_fn_indices)
 {
   if (modelRep)
     modelRep->surrogate_function_indices(surr_fn_indices); // fwd to letter
@@ -3736,7 +3736,6 @@ bool Model::initialize_mapping(ParLevLIter pl_iter)
     }
 
     mappingInitialized = true;
-
     return false; // size did not change
   }
 }
@@ -3796,6 +3795,32 @@ void Model::rebuild_approximation()
     modelRep->rebuild_approximation();
   else
     build_approximation(); // default: build from scratch
+}
+
+
+void Model::rebuild_approximation(const IntResponsePair& response_pr)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation(response_pr);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+	 << "approximation(IntResponsePair) function.\nThis model does not "
+	 << "support approximation rebuilding." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::rebuild_approximation(const IntResponseMap& resp_map)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation(resp_map);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+	 << "approximation(IntResponseMap) function.\nThis model does not "
+	 << "support approximation rebuilding." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 }
 
 
@@ -3886,6 +3911,21 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 
 
 void Model::
+append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
+		     bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "support approximation appending." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
 append_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
@@ -3901,15 +3941,56 @@ append_approximation(const VariablesArray& vars_array,
 
 
 void Model::
-append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
+append_approximation(const IntVariablesMap& vars_map,
+		     const IntResponseMap&  resp_map, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+    modelRep->append_approximation(vars_map, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "(IntVariablesMap, IntResponseMap) function.\nThis model does not "
          << "support approximation appending." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+replace_approximation(const IntResponsePair& response_pr, bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->replace_approximation(response_pr, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+         << "approximation(IntResponsePair) function.\nThis model does not "
+	 << "support approximation data replacement." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->replace_approximation(resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+         << "approximation(IntResponseMap) function.\nThis model does not "
+         << "support approximation data replacement." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::track_evaluation_ids(bool track)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->track_evaluation_ids(track);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
+	 << "ids() function.\n       This model does not support evaluation "
+	 << "tracking." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
@@ -3920,9 +4001,9 @@ void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
   if (modelRep) // envelope fwd to letter
     modelRep->pop_approximation(save_surr_data, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual\n       "
-	 << "pop_approximation(bool, bool) function.  This model does not\n"
-	 << "       support approximation data removal." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
+	 << "(bool, bool) function.\n       This model does not support "
+	 << "approximation data removal." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }

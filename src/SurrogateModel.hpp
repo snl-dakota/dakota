@@ -164,7 +164,7 @@ protected:
 
   /// for mixed response sets, this array specifies the response function
   /// subset that is approximated
-  IntSet surrogateFnIndices;
+  SizetSet surrogateFnIndices;
 
   /// an enumeration that controls the response calculation mode in
   /// {DataFit,Hierarch}SurrModel approximate response computations

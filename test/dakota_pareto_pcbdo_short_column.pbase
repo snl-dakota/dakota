@@ -1,0 +1,107 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 62 total (62 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e+00 b
+                      1.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 155 total (124 new, 31 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Results summary:
+   set_id             w1             w2              b              h       obj_fn_1       obj_fn_2 
+        1              1              0              5             15              0              0 
+        2            0.8            0.2              5             15              0              0 
+        3            0.6            0.4             15             25              0              0 
+        4            0.4            0.6             15             25              0              0 
+        5            0.2            0.8             15             25              0              0 
+        6              0              1             15             25              0              0 
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 186 total (186 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e+00 b
+                      1.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 372 total (186 new, 186 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e+00 b
+                      1.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 930 total (651 new, 279 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 1209 total (744 new, 465 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 1395 total (744 new, 651 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 1581 total (744 new, 837 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Results summary:
+   set_id             w1             w2              b              h       obj_fn_1       obj_fn_2 
+        1              1              0              5             15              0              0 
+        2            0.8            0.2              5             15              0              0 
+        3            0.6            0.4             15             25              0              0 
+        4            0.4            0.6             15             25              0              0 
+        5            0.2            0.8             15             25              0              0 
+        6              0              1             15             25              0              0 
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 186 total (186 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e+00 b
+                      1.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Function evaluation summary (UQ_I): 465 total (372 new, 93 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+01 b
+                      2.5000000000e+01 h
+<<<<< Best objective functions =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+<<<<< Results summary:
+   set_id             w1             w2              b              h       obj_fn_1       obj_fn_2 
+        1              1              0              5             15              0              0 
+        2            0.8            0.2              5             15              0              0 
+        3            0.6            0.4             15             25              0              0 
+        4            0.4            0.6             15             25              0              0 
+        5            0.2            0.8             15             25              0              0 
+        6              0              1             15             25              0              0 

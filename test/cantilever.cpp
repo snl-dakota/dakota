@@ -16,6 +16,12 @@
 #include <algorithm>
 #include <cctype>
 
+//#define RANDOM_DURATION
+
+#ifdef RANDOM_DURATION
+#include <thread> // for sleep_for
+#endif // RANDOM_DURATION
+
 enum var_t { W, T, R, E, X, Y };
 
 
@@ -51,8 +57,8 @@ int main(int argc, char** argv)
 	      (int(*)(int))tolower);
     v_iter = var_t_map.find(label_i);
     if (v_iter == var_t_map.end()) {
-      std::cerr << "Error: label \"" << label_i << "\" not supported in analysis "
-	   << "driver." << std::endl;
+      std::cerr << "Error: label \"" << label_i
+		<< "\" not supported in analysis driver." << std::endl;
       exit(-1);
     }
     else
@@ -80,12 +86,13 @@ int main(int argc, char** argv)
   }
 
   if (num_vars != 4 && num_vars != 6) {
-    std::cerr << "Error: Wrong number of variables in cantilever test fn." << std::endl;
+    std::cerr << "Error: Wrong number of variables in cantilever test fn."
+	      << std::endl;
     exit(-1);
   }
   if (num_fns < 2 || num_fns > 3) {
-    std::cerr << "Error: wrong number of response functions in cantilever test fn."
-         << std::endl;
+    std::cerr << "Error: wrong number of response functions in cantilever "
+	      << "test fn." << std::endl;
     exit(-1);
   }
 
@@ -103,6 +110,12 @@ int main(int argc, char** argv)
   double e = vars[E]; // Young's modulus
   double x = vars[X]; // horizontal load
   double y = vars[Y]; // vertical load
+
+#ifdef RANDOM_DURATION
+  srand ( (unsigned int) (time(NULL)/y) );
+  std::this_thread::sleep_for
+    (std::chrono::seconds((int)(10.*((double)rand()/RAND_MAX))));
+#endif // RANDOM_DURATION
 
   // allow f,c1,c2 (optimization) or just c1,c2 (calibration)
   bool objective; size_t c1i, c2i;

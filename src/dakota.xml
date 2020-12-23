@@ -1348,6 +1348,14 @@
 	     &default_scaling;
 	     ' >
 
+    <!ENTITY method_synchronization '
+             <keyword  id="synchronization" name="synchronization" code="{0}" label="Evaluation synchronization"  minOccurs="0" default="method specific" >
+               <oneOf label="Synchronization">
+                 <keyword  id="blocking" name="blocking" code="{N_mdm(type,evalSynchronize_BLOCKING_SYNCHRONIZATION)}" label="blocking"   />
+                 <keyword  id="nonblocking" name="nonblocking" code="{N_mdm(type,evalSynchronize_NONBLOCKING_SYNCHRONIZATION)}" label="nonblocking"   />
+               </oneOf>
+             </keyword>
+	     ' >
 
     <!ENTITY method_gp_alternatives_no_export '
 	     <keyword  id="gaussian_process2" name="gaussian_process" code="{0}" label="gaussian_process"  minOccurs="0" default="Surfpack Gaussian process" >
@@ -2152,12 +2160,7 @@
             <alias name="solution_accuracy"/>
             <param type="REAL" />
           </keyword>
-          <keyword  id="synchronization" name="synchronization" code="{0}" label="Evaluation synchronization"  minOccurs="0" default="nonblocking" >
-            <oneOf label="Synchronization">
-              <keyword  id="blocking" name="blocking" code="{N_mdm(lit,evalSynchronize_blocking)}" label="blocking"   />
-              <keyword  id="nonblocking" name="nonblocking" code="{N_mdm(lit,evalSynchronize_nonblocking)}" label="nonblocking"   />
-            </oneOf>
-          </keyword>
+	  &method_synchronization;
           <keyword  id="merit_function2" name="merit_function" code="{0}" label="Merit function"  minOccurs="0" default="merit2_squared" >
             <oneOf label="Merit Function">
               <keyword  id="merit_max" name="merit_max" code="{N_mdm(lit,meritFunction_merit_max)}" label="merit_max"   />
@@ -2366,12 +2369,7 @@
               <keyword  id="basic_pattern" name="basic_pattern" code="{N_mdm(lit,exploratoryMoves_simple)}" label="basic_pattern"   />
             </oneOf>
           </keyword>
-          <keyword  id="synchronization1" name="synchronization" code="{0}" label="Evaluation synchronization"  minOccurs="0" default="nonblocking" >
-            <oneOf label="Synchronization">
-              <keyword  id="blocking1" name="blocking" code="{N_mdm(lit,evalSynchronize_blocking)}" label="blocking"   />
-              <keyword  id="nonblocking1" name="nonblocking" code="{N_mdm(lit,evalSynchronize_nonblocking)}" label="nonblocking"   />
-            </oneOf>
-          </keyword>
+          &method_synchronization;
           <keyword  id="contraction_factor2" name="contraction_factor" code="{N_mdm(Real,contractFactor)}" label="contraction_factor"  minOccurs="0" default="0.5" >
             <param type="REAL" />
           </keyword>
@@ -2622,6 +2620,7 @@
             <keyword  id="exploration" name="exploration" code="{N_mdm(int,batchSizeExplore)}" label="Portion of specified batch size that performs exploration rather than selected acquisition"  minOccurs="0" >
   	      <param type="INTEGER" constraint=">= 0" />
     	    </keyword>
+            &method_synchronization;
     	  </keyword>
           &method_max_iterations;
 	  <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance"  minOccurs="0" default="1.e-12" >
@@ -3727,7 +3726,7 @@
           </keyword>
         </keyword>
         <keyword  id="surrogate" name="surrogate" code="{N_mom(lit,modelType_surrogate)}" label="Surrogate"  complexity="0" >
-          <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(intsetm1,surrogateFnIndices)}" label="Surrogate Response IDs"  minOccurs="0" default="All response functions are approximated" >
+          <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(id_to_index_set,surrogateFnIndices)}" label="Surrogate Response IDs"  minOccurs="0" default="All response functions are approximated" >
             <param type="INTEGERLIST" />
           </keyword>
           <oneOf label="Surrogate Category">

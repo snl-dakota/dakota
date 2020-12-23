@@ -196,6 +196,8 @@ typedef std::list<ParallelConfiguration>::iterator ParConfigLIter;
 
 typedef IntSet::iterator                       ISIter;
 typedef IntSet::const_iterator                 ISCIter;
+typedef SizetSet::iterator                     StSIter;
+typedef SizetSet::const_iterator               StSCIter;
 typedef StringSet::iterator                    SSIter;
 typedef StringSet::const_iterator              SSCIter;
 typedef RealSet::iterator                      RSIter;
