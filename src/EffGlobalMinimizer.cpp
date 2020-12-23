@@ -359,12 +359,11 @@ construct_batch_acquisition(size_t new_acq, size_t new_batch)
 	   << "Expected Improvement    =\n" << std::setw(write_precision+28)
 	   << -ei_resp_star.function_value(0) << '\n';
 
-    // For acquisition, we monitor history of vars* and EIF*
-    // > Note: for vars*, truth evaluation is irrelevant and EIF* is based
-    //   on approx subproblem solve, so nothing to update with truth evals.
+    // For acquisition, we monitor history of vars* and EIF* (both deactivated
+    // for exploration)
     update_convergence_counters(vars_star, ei_resp_star);
 
-    // append liar in parallelMode, even if it will be replaced before the next
+    // append liar in parallel mode, even if it will be replaced before the next
     // approx sub-problem solve (cost does not justify increased complexity in
     // replace/pop logic).  But do suppress an unnecessary rebuild if last
     // look-ahead before truth synchronization, since this can be expensive.
@@ -418,8 +417,8 @@ construct_batch_exploration(size_t new_expl, size_t new_batch)
 	   << std::setw(write_precision+7) << pv_star << '\n';
     }
 
-    // Do not monitor value of pv_resp_star as a convergence counter.  This
-    // assumes a user intent to augment acquisition with some optional
+    // We do not monitor value of pv_resp_star as a convergence counter.
+    // We assume the user's intent is to augment acquisition with some optional
     // exploration, where convergence is only achieved based on exploiting
     // good solutions and not based on a lack of good exploration candidates.
     // Similarly, don't update prevSubProbSoln coming from exploration.
@@ -755,6 +754,23 @@ bool EffGlobalMinimizer::converged()
   return conv;
 }
 
+// Some thoughts on convergence assessments: *** TO DO ***
+// > For vars*, truth evaluation is irrelevant and EIF* is based on approx
+//   subproblem solve, so nothing to modify/update with recovered truth evals.
+// > We do need to factor in the relative state of the GP in terms of
+//   truth/liar response content and discount convergence assessements
+//   with signficiant liar accumulation.
+//   >> for batch-synchronous, could simply use the vars*Map index to
+//      indicate the amount of liar corruption.  Could also consider entirely
+//      ignoring iterations with any liar data, but this is not an option for
+//      batch-asynch where some amount of liar data might always be present.
+//   >> for batch-asynchronous, this is trickier since a job near the front of
+//      the variables queue could have been generated with considerable liar
+//      corruption, even though the liar jobs in front of it have cleared out
+//      (the state of the GP when the point was generated indicates the degree
+//      of trust in that queued point)
+//   >> Consider implementing a discount formula based on aggregate GP "health"
+//      (truth/total build data) where batch-synch discount rate could be inf.
 
 void EffGlobalMinimizer::
 update_convergence_counters(const Variables& vars_star)
