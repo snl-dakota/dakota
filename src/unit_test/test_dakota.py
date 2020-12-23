@@ -9,7 +9,6 @@
 
 # Tests of top-level Dakota Python interface
 
-import h5py
 import sys
 #import numpy as np
 
@@ -112,16 +111,25 @@ def test_lib():
     assert(abs((dak_vars2[2] - target)/target) < max_tol)
     print("\n+++ Done LibEnv.\n")
 
-    # Test values written to the h5 file
-    with h5py.File("test.dakota.h5", "r") as h:
-        hresps = h["/methods/NO_METHOD_ID/results/execution:1/best_objective_functions"]
-        hvars =  h["/methods/NO_METHOD_ID/results/execution:1/best_parameters/continuous"]
-        print(hresps.value)
-        print(hvars.value)
-        assert(hresps.value[0] < 1.e-20)
-        assert(abs((hvars.value[0] - target)/target) < max_tol)
-        assert(abs((hvars.value[1] - target)/target) < max_tol)
-        assert(abs((hvars.value[2] - target)/target) < max_tol)
+    # Conditionally test values written to the h5 file if h5py is available
+    test_dakota_has_h5py = True
+    try:
+        import h5py
+        # This variant did not seem to work ...
+        #__import__(h5py)
+    except ImportError:
+        print("Module h5py not found. Skipping check of hdf5 file values.")
+        test_dakota_has_h5py = False
+
+    if test_dakota_has_h5py:
+        with h5py.File("test.dakota.h5", "r") as h:
+            hresps = h["/methods/NO_METHOD_ID/results/execution:1/best_objective_functions"]
+            hvars =  h["/methods/NO_METHOD_ID/results/execution:1/best_parameters/continuous"]
+            assert(hresps[0] < 1.e-20)
+            assert(abs((hvars[0] - target)/target) < max_tol)
+            assert(abs((hvars[1] - target)/target) < max_tol)
+            assert(abs((hvars[2] - target)/target) < max_tol)
+
 
 
 if __name__ == "__main__":
