@@ -13,6 +13,7 @@ include(AddFileCopyCommand)
 include(CheckIncludeFile)
 include(CMakeParseArguments)
 include(DakotaCopyTarget)
+include(DakotaTestHelpers)
 include(ListFilterEmacsBackups)
 include(ModifyTargetRpath)
 
@@ -242,26 +243,10 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
   file(GLOB dakota_test_input_files 
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
-     
-  # Generate the test properties to a file by parsing test input
-  # files.  This can be slow, so do once, then parse the output.  Work
-  # in the source tree to avoid having to manage fully-qualified paths
-  # to binary tree.
-  execute_process(COMMAND "${PERL_EXECUTABLE}" 
-    "${CMAKE_CURRENT_SOURCE_DIR}/dakota_test.perl" 
-    "--test-properties=${CMAKE_CURRENT_BINARY_DIR}" 
-    "dakota_*.in" 
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    OUTPUT_VARIABLE test_props_output  # Let errors go to the console
-    RESULT_VARIABLE test_props_code
-    )
-  if ( (NOT test_props_code EQUAL 0) OR 
-       (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/dakota_tests.props") )
-    message(FATAL_ERROR "Could not get test properties.  Exit code: "
-      "${test_props_code}; output:\n" ${test_props_output})
-  endif()
 
-  file(READ "${CMAKE_CURRENT_BINARY_DIR}/dakota_tests.props" test_props)
+  # Parse dakota_*.in to generate test properties to file and test_props var
+  dakota_generate_test_properties(${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR} test_props)
 
   # Iterate the list of test files and create tests for each
   foreach(test_input_file ${dakota_test_input_files})
@@ -280,6 +265,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
     # Copy (or configure) ALL test-associated files into test/ to
     # support direct testing with Perl
+    # consider a property to specify whether it's configured...
     if(${test_name} IN_LIST dakota_test_configured_inputs)
       set(test_copied_files ${test_aux_files})
       configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${test_input_file}
