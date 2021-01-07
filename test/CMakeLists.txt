@@ -14,7 +14,6 @@ include(CheckIncludeFile)
 include(CMakeParseArguments)
 include(DakotaCopyTarget)
 include(DakotaTestHelpers)
-include(ListFilterEmacsBackups)
 include(ModifyTargetRpath)
 
 # Configured input files: These files will be configured into the
@@ -255,17 +254,13 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
     # Glob up all files associated with this test input file
     # These get copied by add_application_test into test/dakota_*/
-    file(GLOB test_all_files
-      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*" "${test_name}-*"
-      )
-    list_filter_emacs_backups(test_all_files)
-    # All files associated with the test, less the input file itself
-    set(test_aux_files ${test_all_files})
-    list(REMOVE_ITEM test_aux_files ${test_input_file})
+    dakota_test_dependent_files(${CMAKE_CURRENT_SOURCE_DIR} ${test_name}
+      test_all_files test_aux_files)
 
     # Copy (or configure) ALL test-associated files into test/ to
     # support direct testing with Perl
-    # consider a property to specify whether it's configured...
+    # TODO: consider a property to specify whether it's configured...
+    # TODO: should these include ReqFiles specified in the dakota_*.in
     if(${test_name} IN_LIST dakota_test_configured_inputs)
       set(test_copied_files ${test_aux_files})
       configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${test_input_file}

@@ -1,3 +1,14 @@
+#  _______________________________________________________________________
+#
+#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  This software is distributed under the GNU Lesser General Public License.
+#  For more information, see the README file in the top Dakota directory.
+#  _______________________________________________________________________
+
+include(ListFilterEmacsBackups)
+
+
 # Generate the test properties for ${src_dir}/dakota_*.in to a file
 # ${bin_dir}/dakota_tests.props by parsing test input files. Output
 # the properties to the specified props_output_var in parent scope.
@@ -24,6 +35,27 @@ function(dakota_generate_test_properties src_dir bin_dir props_output_var)
   file(READ "${bin_dir}/dakota_tests.props" test_props)
 
   set(${props_output_var} ${test_props} PARENT_SCOPE)
+
+endfunction()
+
+
+# Glob up all files associated with a test input file ${test_name}.in,
+# filtering out emacs tmp files. Set parent variables with all
+# (includes the input file) and aux (omits the input file) file lists
+function(dakota_test_dependent_files src_dir test_name
+  all_files_output_var aux_files_output_var)
+
+    file(GLOB test_all_files
+      RELATIVE ${src_dir} "${test_name}.*" "${test_name}-*"
+      )
+    list_filter_emacs_backups(test_all_files)
+
+    # All files associated with the test, less the input file itself
+    set(test_aux_files ${test_all_files})
+    list(REMOVE_ITEM test_aux_files "${test_name}.in")
+
+    set(${all_files_output_var} ${test_all_files} PARENT_SCOPE)
+    set(${aux_files_output_var} ${test_aux_files} PARENT_SCOPE)
 
 endfunction()
 
