@@ -157,9 +157,10 @@ endfunction()
 # subdirectory for each file and either run all tests as a single
 # dakota_test.perl, or optionally register and run subtests
 # 0.._last_subtest in succession in that directory.
-function(dakota_app_test _test_name _last_subtest)
+function(dakota_app_test _input_name _last_subtest)
   # Parse options
   set(_option_args SERIAL PARALLEL) # SERIAL default if not specified
+  set(_one_value_keyword_args NAME_PREFIX)
   set(_multi_value_keyword_args FILE_DEPENDENCIES CONFIGURE_FILES LABELS)
   cmake_parse_arguments(
     _dat
@@ -170,12 +171,13 @@ function(dakota_app_test _test_name _last_subtest)
     )
 
   # Default values and parallel overrides
-  set(_test_input_file "${_test_name}.in")
+  set(_test_input_file "${_input_name}.in")
+  set(_ctest_name "${_dat_NAME_PREFIX}${_input_name}")
   set(_diffs_filename dakota_diffs.out)
   set(_par_clopt "")
   set(_par_mark "")
   if (_dat_PARALLEL)
-    set(_test_name "p${_test_name}")
+    set(_ctest_name "${_dat_NAME_PREFIX}p${_input_name}")
     set(_diffs_filename dakota_pdiffs.out)
     set(_par_clopt "--parallel")
     set(_par_mark "p")
@@ -192,14 +194,14 @@ function(dakota_app_test _test_name _last_subtest)
     # Add the 0th serial test. Don't create custom target for copied files.
     # Create the unique work directory here.
     add_application_test(
-      ${_test_name}
+      ${_ctest_name}
       SUBTEST 0
       FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
       CONFIGURE_FILES "${_dat_CONFIGURE_FILES}"
       PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
       APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
-          --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
+          --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}
           --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
           ${binext}
           ${_test_input_file} 0
@@ -212,34 +214,34 @@ function(dakota_app_test _test_name _last_subtest)
     if (_last_subtest GREATER 0)
       foreach(st_num RANGE 1 ${_last_subtest})
         add_application_test(
-    	${_test_name}
+    	${_ctest_name}
   	SUBTEST ${st_num}
 	APPLICATION COMMAND ${PERL_EXECUTABLE}
             ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
-              --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
+              --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}
               --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
               ${binext}
-              ${test_input_file} ${st_num}
-    	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_test_name}"
+              ${_test_input_file} ${st_num}
+    	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}"
     	NO_TARGET
-    	LABELS ${test_labels}
+    	LABELS ${_dat_labels}
     	)
         math(EXPR prev_st "${st_num}-1")
-        set_tests_properties("${_test_name}:${st_num}" PROPERTIES
-  	  DEPENDS "${_test_name}:${prev_st}")
+        set_tests_properties("${_input_name}:${st_num}" PROPERTIES
+  	  DEPENDS "${_input_name}:${prev_st}")
       endforeach()
     endif()
   else()
     # Add a single test for the whole file. Don't create custom target
     # for copied files.
     add_application_test(
-      ${_test_name}
+      ${_ctest_name}
       FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
       CONFIGURE_FILES "${_dat_CONFIGURE_FILES}"
       PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
       APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
-          --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
+          --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}
           --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
           ${binext}
           ./${_test_input_file}
@@ -314,41 +316,51 @@ endfunction()
 
 # Add suite_name regression tests for any dakota_*.in input files
 # found in ${src_dir}. Test them in a protected subdir
-# ${bin_dir}/[p]dakota_*/, e.g., where
-# bin_dir=CMAKE_CURRENT_BINARY_DIR
-function(dakota_add_regression_tests suite_name src_dir bin_dir)
-
-  # examples
-  # dir_rel_to_src = source/test
-  #                = build/_deps/official/bayes_calibration/multiqoi 
+# $CMAKE_CURRENT_BINARY_DIR}/${suite_name}[p]dakota_*/
+#
+# Examples:
+#   suite_name = official-bayes_calibration-multi_qoi-
+#   src_dir = build/_deps/official/bayes_calibration/multiqoi
+#
+#   suite_name = official-centered_parameter_study
+#   src_dir = "${Dakota_BINARY_DIR}/_deps/dakota_examples_repos-src/official/centered_parameter_study"
+#
+function(dakota_add_regression_tests suite_name src_dir)
 
   # glob test files dakota_*.in relative to specified source dir
-  file(GLOB dakota_test_input_files RELATIVE ${src_dir} "dakota_*.in")
+  file(GLOB dakota_test_input_files RELATIVE ${src_dir}
+    "${src_dir}/dakota_*.in")
 
   # generate test properties for the directory to suite_name_props
-  dakota_generate_test_properties(${src_dir} ${bin_dir} ${suite_name}_props)
+  #dakota_generate_test_properties(${src_dir} ${bin_dir} ${suite_name}_props)
 
-  # determine all associated files to copy and keep a list for build-time deps
-  # publish to PARENT_SCOPE suite_name_deps
+  # conservatively assume all files are needed for each test
+  file(GLOB dakota_test_all_files "${src_dir}/*")
 
-  # need option for whether to configure vs. copy the input file
-  
-  # foreach input file, add test with dakota_app_test
+  # Iterate the list of test files and create tests for each
+  set(suite_copied_files)
+  foreach(test_input_file ${dakota_test_input_files})
 
-endfunction()
+    get_filename_component(input_name ${test_input_file} NAME_WE)
 
+    set(last_subtest 0)
+    dakota_app_test(${input_name} ${last_subtest} SERIAL
+      NAME_PREFIX "${suite_name}-"
+      FILE_DEPENDENCIES "${dakota_test_all_files}"
+      LABELS "DakotaExamplesRepo"
+      )
 
-# Find input files in examples repo and make corresponding directories
-# in build tree.
-function(parse_examples_repo repo_root)
+    # absolute paths to generated files for adding to a parent target
+    foreach(file ${dakota_test_all_files})
+      get_filename_component(file_we ${file} NAME_WE)
+      # Assumes serial test only:
+      set(copied_file
+	"${CMAKE_CURRENT_BINARY_DIR}/${suite_name}-${input_name}/${file_we}")
+      list(APPEND suite_copied_files "${copied_file}")
+    endforeach()
 
-  foreach(example_repo_dir)
-    # Populate with RWH code to
-    # make build tree dir
-    # generate serial and parallel tests specifying src_dir, bin_dir
-    # aggregate all dep files
   endforeach()
 
-  # generate all dep files for examples repo
-
+  set(${suite_name}_copied_files_abs ${suite_copied_files} PARENT_SCOPE)
+  
 endfunction()
