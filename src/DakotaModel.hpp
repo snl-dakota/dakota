@@ -99,13 +99,13 @@ public:
   /// dive through model recursions that may bypass some components.
   virtual Model& subordinate_model();
 
-  /// set the active multi-index key within surrogate data, grid driver,
+  /// set the active model key within surrogate data, grid driver,
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
-  virtual void active_model_key(const UShortArray& mi_key);
-  /// reset by removing all multi-index keys within surrogate data, grid
-  /// driver, and approximation classes that support the management of
-  /// multiple approximation states within surrogate models
+  virtual void active_model_key(const Pecos::ActiveKey& key);
+  /// reset by removing all model keys within surrogate data, grid driver,
+  /// and approximation classes that support the management of multiple
+  /// approximation states within surrogate models
   virtual void clear_model_keys();
 
   /// return number of unique response functions (managing any aggregations)

@@ -186,7 +186,7 @@ inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
 {
   SurrBasedLevelData& tr = trustRegions[tr_index];
   UShortArray hf_lf_key;
-  Pecos::DiscrepancyCalculator::
+  Pecos::ActiveKey::
     form_key(tr.data_group(), tr.truth_model_form(), tr.truth_model_level(),
 	     tr.approx_model_form(), tr.approx_model_level(), hf_lf_key);
   iteratedModel.active_model_key(hf_lf_key);

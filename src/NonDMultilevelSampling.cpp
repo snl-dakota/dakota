@@ -19,7 +19,7 @@
 #include "DakotaResponse.hpp"
 #include "NonDMultilevelSampling.hpp"
 #include "ProblemDescDB.hpp"
-#include "DiscrepancyCalculator.hpp"
+#include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
 #ifdef HAVE_NPSOL
@@ -203,8 +203,7 @@ void NonDMultilevelSampling::core_run()
     else { // multiple model forms (only) --> CVMC
       // use nominal value from user input, ignoring solution_level_control
       UShortArray hf_lf_key;  unsigned short lev = USHRT_MAX;
-      Pecos::DiscrepancyCalculator::
-	form_key(0, hf_form, lev, lf_form, lev, hf_lf_key);
+      Pecos::ActiveKey::form_key(0, hf_form, lev, lf_form, lev, hf_lf_key);
       control_variate_mc(hf_lf_key);
     }
   }
@@ -252,9 +251,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
   // 2. Better: select N_l based on convergence in aggregated variance.
 
   // assign truth model form (solution level assignment is deferred until loop)
-  UShortArray truth_key;
+  Pecos::ActiveKey truth_key;
   unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-  Pecos::DiscrepancyCalculator::form_key(0, model_form, lev, truth_key);
+  Pecos::ActiveKey::form_key(0, model_form, lev, truth_key);
   iteratedModel.active_model_key(truth_key);
   Model& truth_model = iteratedModel.truth_model();
 
@@ -559,9 +558,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
 {
     // assign truth model form (solution level assignment is deferred until loop)
-    UShortArray truth_key;
+    Pecos::ActiveKey truth_key;
     unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-    Pecos::DiscrepancyCalculator::form_key(0, model_form, lev, truth_key);
+    Pecos::ActiveKey::form_key(0, model_form, lev, truth_key);
     iteratedModel.active_model_key(truth_key);
     Model& truth_model = iteratedModel.truth_model();
 
@@ -1027,7 +1026,7 @@ void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, R
 /** This function performs control variate MC across two combinations of 
     model form and discretization level. */
 void NonDMultilevelSampling::
-control_variate_mc(const UShortArray& active_key)
+control_variate_mc(const Pecos::ActiveKey& active_key)
 {
   // Current implementation performs pilot + shared increment + LF increment,
   // where these increments are targeting a prescribed MSE reduction.
@@ -1059,8 +1058,8 @@ control_variate_mc(const UShortArray& active_key)
   load_pilot_sample(pilotSamples, NLev, delta_N_l);
 
   // NLev allocations currently enforce truncation to #HF levels (1)
-  UShortArray hf_key, lf_key;
-  Pecos::DiscrepancyCalculator::extract_keys(active_key, hf_key, lf_key);
+  Pecos::ActiveKey hf_key, lf_key;
+  Pecos::ActiveKey::extract_keys(active_key, hf_key, lf_key);
   unsigned short hf_model_form = hf_key[1], lf_model_form = lf_key[1];
   SizetArray& N_lf = NLev[lf_model_form][0];//[lf_lev_index];
   SizetArray& N_hf = NLev[hf_model_form][0];//[hf_lev_index];
@@ -1149,9 +1148,9 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 				    unsigned short hf_model_form)
 {
   // assign model forms (solution level assignments are deferred until loop)
-  UShortArray active_key;
+  Pecos::ActiveKey active_key;
   unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-  Pecos::DiscrepancyCalculator::
+  Pecos::ActiveKey::
     form_key(0, hf_model_form, lev, lf_model_form, lev, active_key);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
@@ -1377,9 +1376,9 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 				    unsigned short hf_model_form)
 {
   // assign model forms (solution level assignments are deferred until loop)
-  UShortArray active_key;
+  Pecos::ActiveKey active_key;
   unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-  Pecos::DiscrepancyCalculator::
+  Pecos::ActiveKey::
     form_key(0, hf_model_form, lev, lf_model_form, lev, active_key);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
@@ -1634,8 +1633,8 @@ configure_indices(unsigned short group, unsigned short form,
   // > group index is assigned based on step in model form/resolution sequence
   // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
 
-  UShortArray hf_key;
-  Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
+  Pecos::ActiveKey hf_key;
+  Pecos::ActiveKey::form_key(group, form, lev, hf_key);
 
   if (hf_key[s_index] == 0) { // step 0 in the sequence
     bypass_surrogate_mode();
@@ -1644,9 +1643,9 @@ configure_indices(unsigned short group, unsigned short form,
   else { //if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     aggregated_models_mode();
 
-    UShortArray lf_key(hf_key), aggregate_key;
-    Pecos::DiscrepancyCalculator::decrement_key(lf_key, s_index);    
-    Pecos::DiscrepancyCalculator::aggregate_keys(hf_key, lf_key, aggregate_key);
+    Pecos::ActiveKey lf_key = hf_key.copy(), aggregate_key;
+    Pecos::ActiveKey::decrement_key(lf_key, s_index);    
+    Pecos::ActiveKey::aggregate_keys(hf_key, lf_key, aggregate_key);
     iteratedModel.active_model_key(aggregate_key); // two active fidelities
   }
 }

@@ -3319,10 +3319,10 @@ Model& Model::subordinate_model()
 }
 
 
-void Model::active_model_key(const UShortArray& mi_key)
+void Model::active_model_key(const Pecos::ActiveKey& key)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->active_model_key(mi_key);
+    modelRep->active_model_key(key);
   else {
     Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
 	 << "function.\n       model key activation is not supported by this "

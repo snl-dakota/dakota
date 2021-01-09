@@ -76,7 +76,7 @@ protected:
   /// return truth_model()
   Model& subordinate_model();
 
-  void active_model_key(const UShortArray& key);
+  void active_model_key(const Pecos::ActiveKey& key);
 
   /// return responseMode
   short surrogate_response_mode() const;
@@ -128,13 +128,17 @@ protected:
   void check_key(int key1, int key2) const;
 
   /// return the model form index from the incoming key
-  unsigned short model_form(const UShortArray& key) const;
+  unsigned short model_form(const Pecos::ActiveKeyData& data,
+			    size_t i = 0) const;
   /// assign the model form index within the incoming key
-  void model_form(UShortArray& key, unsigned short form);
+  void model_form(Pecos::ActiveKeyData& data, unsigned short form,
+		  size_t i = 0);
   /// return the resolution level index from the incoming key
-  unsigned short resolution_level(const UShortArray& key) const;
+  unsigned short resolution_level(const Pecos::ActiveKeyData& data,
+				  size_t i = 0) const;
   /// assign the resolution level index to the incoming key
-  void resolution_level(UShortArray& key, unsigned short lev);
+  void resolution_level(Pecos::ActiveKeyData& data, unsigned short lev,
+			size_t i = 0);
 
   /// evaluate whether a rebuild of the approximation should be
   /// forced based on changes in the inactive data
@@ -173,7 +177,7 @@ protected:
   short responseMode;
 
   /// array of indices that identify the currently active model key
-  UShortArray activeKey;
+  Pecos::ActiveKey activeKey;
 
   /// type of correction: additive, multiplicative, or combined
   short corrType;
@@ -300,10 +304,10 @@ inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 
-inline void SurrogateModel::active_model_key(const UShortArray& key)
+inline void SurrogateModel::active_model_key(const Pecos::ActiveKey& key)
 {
   // base implementation (augmented in derived SurrogateModels)
-  activeKey = key;
+  activeKey = key.copy(); // don't share representations
 }
 
 
@@ -325,36 +329,36 @@ inline void SurrogateModel::check_key(int key1, int key2) const
 }
 
 
-inline unsigned short SurrogateModel::model_form(const UShortArray& key) const
-{ return (key.size() < 2) ? USHRT_MAX : key[1]; }
-
-
-inline void SurrogateModel::model_form(UShortArray& key, unsigned short form)
-{
-  if (key.size() >= 2) key[1] = form;
-  else {
-    Cerr << "Error: assignment out of bounds in HierarchSurrModel::"
-	 << "model_form()." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-inline unsigned short SurrogateModel::
-resolution_level(const UShortArray& key) const
-{ return (key.size() < 3) ? USHRT_MAX : key[2]; }
+/*
+inline const UShortArray& SurrogateModel::
+model_indices(const Pecos::ActiveKeyData& data) const
+{ return data.model_indices(); }
 
 
 inline void SurrogateModel::
-resolution_level(UShortArray& key, unsigned short lev)
-{
-  if (key.size() >= 3) key[2] = lev;
-  else {
-    Cerr << "Error: assignment out of bounds in HierarchSurrModel::"
-	 << "resolution_level()." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
+model_indices(Pecos::ActiveKeyData& data, const UShortArray& indices)
+{ data.model_indices(indices); }
+*/
+
+
+inline unsigned short SurrogateModel::
+model_form(const Pecos::ActiveKeyData& data, size_t i) const
+{ return data.model_index(i); } // assumes 1D model indexing; push_back Ok
+
+
+inline void SurrogateModel::
+model_form(Pecos::ActiveKeyData& data, unsigned short form, size_t i)
+{ data.model_index(form, i); } // assumes 1D model indexing; push_back Ok
+
+
+inline size_t SurrogateModel::
+resolution_level(const Pecos::ActiveKeyData& data, size_t i) const
+{ return data.discrete_set_index(i); } // support discrete sets for now...
+
+
+inline void SurrogateModel::
+resolution_level(Pecos::ActiveKeyData& data, size_t lev, size_t i)
+{ data.discrete_set_index(lev, i); } // support discrete sets for now...
 
 
 /** return the SurrogateModel evaluation id counter.  Due to possibly

@@ -80,7 +80,7 @@ void NonHierarchSurrModel::assign_default_keys()
     }
   }
 
-  Pecos::DiscrepancyCalculator::
+  Pecos::ActiveKey::
     aggregate_keys(truthModelKey, unorderedModelKeys, activeKey);
   check_model_interface_instance();
 }

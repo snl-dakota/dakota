@@ -129,7 +129,7 @@ protected:
   Iterator& subordinate_iterator();
 
   /// set active model key within approxInterface
-  void active_model_key(const UShortArray& mi_key);
+  void active_model_key(const Pecos::ActiveKey& key);
   /// remove all model keys within approxInterface
   void clear_model_keys();
 
@@ -575,7 +575,7 @@ inline Iterator& DataFitSurrModel::subordinate_iterator()
 { return daceIterator; }
 
 
-inline void DataFitSurrModel::active_model_key(const UShortArray& key)
+inline void DataFitSurrModel::active_model_key(const Pecos::ActiveKey& key)
 {
   // assign activeKey
   SurrogateModel::active_model_key(key);

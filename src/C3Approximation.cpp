@@ -11,6 +11,7 @@
 #include "ProblemDescDB.hpp"
 #include "SharedC3ApproxData.hpp"
 #include "DiscrepancyCalculator.hpp"
+#include "ActiveKey.hpp"
 
 // NOTE: only include this header in isolated compilation units
 #include "dakota_c3_include.hpp"
@@ -539,7 +540,7 @@ void C3Approximation::synchronize_surrogate_data()
   short discrep_type = data_rep->discrepancyType,
         combine_type = data_rep->combineType;
   if (!discrep_type ||
-      !Pecos::DiscrepancyCalculator::aggregated_key(active_key))
+      !Pecos::ActiveKey::aggregated_key(active_key))
     return;
 
   switch (discrep_type) {
@@ -569,7 +570,7 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
   // Modeled after Pecos::PolynomialApproximation::generate_synthetic_data()
 
   UShortArray hf_key, lf0_key, lf_hat_key; // LF-hat in surplus case
-  Pecos::DiscrepancyCalculator::extract_keys(active_key, hf_key, lf_hat_key);
+  Pecos::ActiveKey::extract_keys(active_key, hf_key, lf_hat_key);
   lf0_key = surr_data.filtered_key(Pecos::RAW_DATA_FILTER, 0);
 
   // initialize surr_data[lf_hat_key]

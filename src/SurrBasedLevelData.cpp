@@ -12,7 +12,7 @@
 //- Checked by:
 
 #include "SurrBasedLevelData.hpp"
-#include "DiscrepancyCalculator.hpp"
+#include "ActiveKey.hpp"
 
 namespace Dakota {
 
@@ -55,7 +55,7 @@ initialize_keys(unsigned short group,
   truthModelKey[1]  =  truth_form;  truthModelKey[2]  =  truth_level;
   approxModelKey[1] = approx_form;  approxModelKey[2] = approx_level;
 
-  Pecos::DiscrepancyCalculator::
+  Pecos::ActiveKey::
     aggregate_keys(truthModelKey, approxModelKey, pairedModelKey);
 }
 
@@ -63,8 +63,7 @@ initialize_keys(unsigned short group,
 void SurrBasedLevelData::initialize_keys(const UShortArray& aggregate_key)
 {
   pairedModelKey = aggregate_key;
-  Pecos::DiscrepancyCalculator::
-    extract_keys(aggregate_key, truthModelKey, approxModelKey);
+  Pecos::ActiveKey::extract_keys(aggregate_key, truthModelKey, approxModelKey);
 }
 
 

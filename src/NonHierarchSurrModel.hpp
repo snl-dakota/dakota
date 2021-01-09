@@ -406,9 +406,8 @@ inline void NonHierarchSurrModel::
 extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
 		   UShort2DArray& surr_keys)
 {
-  //if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
-    Pecos::DiscrepancyCalculator::
-      extract_keys(active_key, truth_key, surr_keys);
+  //if (Pecos::ActiveKey::aggregated_key(active_key))
+    Pecos::ActiveKey::extract_keys(active_key, truth_key, surr_keys);
   //else // single key: assign to truth or surr key based on responseMode
   //  switch (responseMode) {
   //  case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:

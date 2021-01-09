@@ -239,7 +239,7 @@ protected:
 
   /// multi-index key indicating the active model or model-pair used
   /// for approximation data
-  UShortArray activeKey;
+  Pecos::ActiveKey activeKey;
   /// set of multi-index model keys to enumerate when updating the
   /// SurrogateData for each Approximation
   UShort2DArray approxDataKeys;

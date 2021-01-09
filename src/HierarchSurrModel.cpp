@@ -73,22 +73,26 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
 
 void HierarchSurrModel::assign_default_keys()
 {
-  // default index values, to be overridden at run time
-  surrModelKey.assign(3, 0); truthModelKey.assign(3, 0);
-
-  unsigned short last_model = orderedModels.size() - 1;
+  // default key data values, to be overridden at run time
+  ActiveKeyData surr_key_data, truth_key_data;
+  unsigned short id = 0, last_model = orderedModels.size() - 1;
+  size_t SZ_MAX = std::numeric_limits<size_t>::max(); 
   if (multifidelity()) { // first and last model form (solution levels ignored)
-    model_form(truthModelKey, last_model);
-    resolution_level(truthModelKey, USHRT_MAX);
-    resolution_level( surrModelKey, USHRT_MAX);
+    model_form(truth_key_data, last_model);
+    model_form(surr_key_data,  0);
+    //resolution_level(truth_key_data, SZ_MAX); // leave empty? set finest?
+    //resolution_level(surr_key_data,  SZ_MAX); // leave empty? set finest?
   }
   else if (multilevel()) { // first and last solution level (last model)
-    model_form(truthModelKey, last_model);
-    model_form(surrModelKey,  last_model);
-    resolution_level(truthModelKey, orderedModels[0].solution_levels() - 1);
+    model_form(truth_key_data, last_model);
+    model_form(surr_key_data,  last_model);
+    resolution_level(truth_key_data,
+		     orderedModels[last_model].solution_levels() - 1);
+    resolution_level(surr_key_data, 0);
   }
-
-  Pecos::DiscrepancyCalculator::
+  surrModelKey.assign(id,  surr_key_data,  SHALLOW_COPY);
+  truthModelKey.assign(id, truth_key_data, SHALLOW_COPY);
+  Pecos::ActiveKey::
     aggregate_keys(truthModelKey, surrModelKey, activeKey);
   check_model_interface_instance();
 }
@@ -1260,7 +1264,7 @@ single_apply(const Variables& vars, Response& resp,
   DiscrepancyCorrection& delta_corr = deltaCorr[paired_key];
   if (!delta_corr.computed()) {
     UShortArray truth_key;
-    Pecos::DiscrepancyCalculator::extract_key(paired_key, truth_key, 0);
+    Pecos::ActiveKey::extract_key(paired_key, truth_key, 0);
     std::map<UShortArray, Response>::iterator it
       = truthResponseRef.find(truth_key);
     if (it == truthResponseRef.end()) apply_corr = false; // not found
@@ -1281,7 +1285,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
     // assume a consistent level index from surrModelKey
     size_t i, num_models = orderedModels.size();  UShortArray paired_key;
     unsigned short lf_form = model_form(surrModelKey);
-    Pecos::DiscrepancyCalculator::
+    Pecos::ActiveKey::
       aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
     for (i = lf_form; i < num_models - 1; ++i) {
       paired_key[1] = i+1;  // update HF model form
@@ -1300,7 +1304,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
     }
     size_t i, num_levels = surrogate_model().solution_levels();
     UShortArray paired_key;
-    Pecos::DiscrepancyCalculator::
+    Pecos::ActiveKey::
       aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
     for (i = lf_lev; i < num_levels - 1; ++i) {
       paired_key[2] = i+1;  // update   fine solution level

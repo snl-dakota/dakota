@@ -20,7 +20,7 @@
 #ifdef HAVE_SURFPACK
 #include "SharedSurfpackApproxData.hpp"
 #endif // HAVE_SURFPACK
-#include "DiscrepancyCalculator.hpp"
+#include "ActiveKey.hpp"
 
 //#define DEBUG
 
@@ -290,9 +290,9 @@ void SharedApproxData::active_model_key(const UShortArray& key)
     // update activeKey
     activeKey = key;
     // update approxDataKeys
-    if (Pecos::DiscrepancyCalculator::aggregated_key(key)) {
+    if (Pecos::ActiveKey::aggregated_key(key)) {
       UShortArray hf_key, lf_key;
-      Pecos::DiscrepancyCalculator::extract_keys(key, hf_key, lf_key);
+      Pecos::ActiveKey::extract_keys(key, hf_key, lf_key);
       if (discrepancy_type()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREP
 	approxDataKeys.resize(3); // 3 keys: HF, LF, aggregate
 	approxDataKeys[2] = key;

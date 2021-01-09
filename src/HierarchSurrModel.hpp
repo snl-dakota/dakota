@@ -116,7 +116,7 @@ protected:
   const Model& truth_model() const;
 
   /// define the active model key and associated {truth,surr}ModelKey pairing
-  void active_model_key(const UShortArray& key);
+  void active_model_key(const Pecos::ActiveKey& key);
 
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -302,14 +302,14 @@ private:
   bool mfPrecedence;
 
   /// store {LF,HF} model key that is active in component_parallel_mode()
-  UShortArray componentParallelKey;
+  Pecos::ActiveKey componentParallelKey;
 
   /// array of indices that identify the truth (e.g., high fidelity) model
   /// (leading portion of activeKey, if aggregated models)
-  UShortArray truthModelKey;
+  Pecos::ActiveKey truthModelKey;
   /// array of indices that identify the surrogate (e.g., low fidelity) model
   /// (trailing portion of activeKey, if aggregated models)
-  UShortArray surrModelKey;
+  Pecos::ActiveKey surrModelKey;
 
   /// map from actualModel/highFidelityModel evaluation ids to
   /// DataFitSurrModel/HierarchSurrModel ids
@@ -503,8 +503,8 @@ inline void HierarchSurrModel::
 extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
 		   UShortArray& surr_key)
 {
-  if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
-    Pecos::DiscrepancyCalculator::extract_keys(active_key, truth_key, surr_key);
+  if (Pecos::ActiveKey::aggregated_key(active_key))
+    Pecos::ActiveKey::extract_keys(active_key, truth_key, surr_key);
   else // single key: assign to truth or surr key based on responseMode
     switch (responseMode) {
     case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
@@ -515,7 +515,7 @@ extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
 }
 
 
-inline void HierarchSurrModel::active_model_key(const UShortArray& key)
+inline void HierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
 {
   // assign activeKey
   SurrogateModel::active_model_key(key);
