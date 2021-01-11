@@ -1046,8 +1046,6 @@ Real NonDBayesCalibration::assess_emulator_convergence()
     return std::sqrt(l2_norm_delta_coeffs);
 } // assess_emulator_convergence
 
-
-
 void NonDBayesCalibration::calibrate_to_hifi()
 {
   const RealVector initial_point(Teuchos::Copy, 
@@ -1061,8 +1059,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
   */
   int num_exp = expData.num_experiments();
   int num_lhs_samples = std::max(initHifiSamples - num_exp, 0);
-  if (num_lhs_samples > 0) 
+  if (num_lhs_samples > 0)
     add_lhs_hifi_data();
+
   num_exp = expData.num_experiments();
   int random_seed = randomSeed; 
   
@@ -1078,7 +1077,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       Cout << "Exp Data  i " << i << " value = " << expData.all_data(i);
 
   // Build matrix of candidate designs
-  int num_candidates = numCandidates;
+  int num_candidates = numCandidates; // local version gets decremented
   RealMatrix design_matrix;
   build_designs(design_matrix);
 
@@ -1095,6 +1094,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
     Cout << "Max high-fidelity model runs = " << max_hifi << "\n\n";
   }
 
+  RealMatrix mi_chain; // filtered chain used to computed mutual information
+  RealMatrix resp_matrix; // array that will contain new hifi model evals 
   while (!stop_metric) {
     
     // EVALUATE STOPPING CRITERIA
@@ -1126,20 +1127,19 @@ void NonDBayesCalibration::calibrate_to_hifi()
     if (!stop_metric || max_hifi == 0) {
 
       if (outputLevel >= NORMAL_OUTPUT) 
-	print_hi2lo_begin(num_it);
+        print_hi2lo_begin(num_it);
 
       // After calibration is run, get the posterior values of the samples; go
       // through all the designs and pick the one with maximum mutual
       // information
   
-      RealMatrix mi_chain;
+      //RealMatrix mi_chain;
       filter_chain(acceptanceChain, mi_chain, 5000);
-      int num_filtered = mi_chain.numCols();
 
       int batch_size = batchEvals;
       if (max_hifi != 0)  
         if (num_candidates < batchEvals || max_hifi - num_hifi < batchEvals) 
-	  batchEvals = min(num_candidates, max_hifi - num_hifi);
+          batchEvals = min(num_candidates, max_hifi - num_hifi);
       // Build optimal observations matrix, contains obsverations from
       // previously selected optimal designs
       RealMatrix optimal_obs;  
@@ -1152,26 +1152,27 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // mutual information between the model parameters and experimental data.  
       // Then, conditional on adding this point, a next best point is added 
       // based on conditional MI. 
-      choose_batch_hi2lo(batchEvals, batch_size, num_filtered, random_seed, 
+      choose_batch_hi2lo(batchEvals, batch_size, mi_chain.numCols(), random_seed, 
                          num_it, num_candidates,
                          max_MI, mi_chain, design_matrix, optimal_obs, 
                          optimal_config, optimal_config_matrix, MI_vec);
 
       // RUN HIFI MODEL WITH NEW POINT(S)
-      RealMatrix resp_matrix;
+      //RealMatrix resp_matrix;
       if (max_hifi > 0) {
-	run_hifi(optimal_config_matrix, resp_matrix);
+        // TODO: Should be using new batch evaluators for this.
+        run_hifi(optimal_config_matrix, resp_matrix);
         if (hifi_sim_error.length() > 0) // apply sim error to new point
           for (int i = 0; i < optimal_config_matrix.numCols(); i++) 
             apply_error_vec(hifi_sim_error, random_seed, num_exp+num_hifi+i);
-	num_hifi += optimal_config_matrix.numCols();;
+	      num_hifi += optimal_config_matrix.numCols();
       }
       num_it++;
 
       // Print results to screen and to file
       if (outputLevel >= NORMAL_OUTPUT) 
-	print_hi2lo_selected(num_it, batchEvals, optimal_config_matrix, 
-	    		     optimal_config, max_MI);
+        print_hi2lo_selected(num_it, batchEvals, optimal_config_matrix, 
+            optimal_config, max_MI);
       print_hi2lo_file(out_file, num_it, batchEvals, optimal_config_matrix, 
 	    	MI_vec, max_hifi, resp_matrix, optimal_config, max_MI);
     } // end MI loop
@@ -1517,9 +1518,9 @@ void NonDBayesCalibration::build_designs(RealMatrix& design_matrix)
       num_candidates_in = numCandidates;
       design_matrix_in.reshape(num_design_vars, num_candidates_in);
       if (outputLevel >= VERBOSE_OUTPUT) {
-	Cout << "\nWarning: Bayesian design of experiments only using the "
-	     << "first " << numCandidates << " candidates in " 
-	     << importCandPtsFile << '\n';
+        Cout << "\nWarning: Bayesian design of experiments only using the "
+	      << "first " << numCandidates << " candidates in " 
+	      << importCandPtsFile << '\n';
       }
     }
     // populate the sub-matrix (possibly full matrix) of imported candidates
