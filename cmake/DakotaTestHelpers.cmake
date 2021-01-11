@@ -160,7 +160,7 @@ endfunction()
 function(dakota_app_test _input_name _last_subtest)
   # Parse options
   set(_option_args SERIAL PARALLEL) # SERIAL default if not specified
-  set(_one_value_keyword_args NAME_PREFIX)
+  set(_one_value_keyword_args BIN_DIR NAME_PREFIX)
   set(_multi_value_keyword_args FILE_DEPENDENCIES CONFIGURE_FILES LABELS)
   cmake_parse_arguments(
     _dat
@@ -183,6 +183,11 @@ function(dakota_app_test _input_name _last_subtest)
     set(_par_mark "p")
   endif()
 
+  set(bin_dir ${CMAKE_CURRENT_BINARY_DIR})
+  if (_dat_BIN_DIR)
+    set(bin_dir ${_dat_BIN_DIR})
+  endif()
+
   # Circumvent SIP on OSX by running dakota and other test executables
   # with custom generated .sh scripts.
   set(binext "")
@@ -202,7 +207,7 @@ function(dakota_app_test _input_name _last_subtest)
       APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
           --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}
-          --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+          --bin-dir=${bin_dir}
           ${binext}
           ${_test_input_file} 0
       UNIQUE_DIRECTORY
@@ -219,7 +224,7 @@ function(dakota_app_test _input_name _last_subtest)
 	APPLICATION COMMAND ${PERL_EXECUTABLE}
             ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
               --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}
-              --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+              --bin-dir=${bin_dir}
               ${binext}
               ${_test_input_file} ${st_num}
     	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}"
@@ -242,7 +247,7 @@ function(dakota_app_test _input_name _last_subtest)
       APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
           --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}
-          --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+          --bin-dir=${bin_dir}
           ${binext}
           ./${_test_input_file}
       UNIQUE_DIRECTORY
@@ -329,13 +334,19 @@ function(dakota_add_regression_tests suite_name src_dir)
 
   # glob test files dakota_*.in relative to specified source dir
   file(GLOB dakota_test_input_files RELATIVE ${src_dir}
-    "${src_dir}/dakota_*.in")
+    "${src_dir}/*.in")
 
   # generate test properties for the directory to suite_name_props
   #dakota_generate_test_properties(${src_dir} ${bin_dir} ${suite_name}_props)
 
   # conservatively assume all files are needed for each test
   file(GLOB dakota_test_all_files "${src_dir}/*")
+
+  # workaround for dprepro for now; will aggressively copy these files
+  # into all test dirs. Need to understand extent of dependencies and
+  # cleanup throughout testing.
+  list(APPEND dakota_test_all_files
+    ${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro)
 
   # Iterate the list of test files and create tests for each
   set(suite_copied_files)
@@ -346,17 +357,20 @@ function(dakota_add_regression_tests suite_name src_dir)
     set(last_subtest 0)
     dakota_app_test(${input_name} ${last_subtest} SERIAL
       NAME_PREFIX "${suite_name}-"
-      FILE_DEPENDENCIES "${dakota_test_all_files}"
+      BIN_DIR "${Dakota_BINARY_DIR}/test"
+      # Can't use since AddApplicationTest assumes current src dir
+      # FILE_DEPENDENCIES "${dakota_test_all_files}"
       LABELS "DakotaExamplesRepo"
       )
 
     # absolute paths to generated files for adding to a parent target
-    foreach(file ${dakota_test_all_files})
-      get_filename_component(file_we ${file} NAME_WE)
+    foreach(src_file_fq ${dakota_test_all_files})
+      get_filename_component(file ${src_file_fq} NAME)
       # Assumes serial test only:
-      set(copied_file
-	"${CMAKE_CURRENT_BINARY_DIR}/${suite_name}-${input_name}/${file_we}")
-      list(APPEND suite_copied_files "${copied_file}")
+      set(dest_file_fq
+	"${CMAKE_CURRENT_BINARY_DIR}/${suite_name}-${input_name}/${file}")
+      add_file_copy_command("${src_file_fq}" "${dest_file_fq}")
+      list(APPEND suite_copied_files "${dest_file_fq}")
     endforeach()
 
   endforeach()
