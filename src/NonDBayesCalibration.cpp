@@ -1055,35 +1055,37 @@ void NonDBayesCalibration::calibrate_to_hifi()
   /* TODO:
      - Handling of hyperparameters
      - More efficient resizing/reconstruction
-     - Use hierarhical surrogate eval modes
+     - Use hierarchical surrogate eval modes
   */
-  int num_exp = expData.num_experiments();
-  int num_lhs_samples = std::max(initHifiSamples - num_exp, 0);
-  if (num_lhs_samples > 0)
+
+  // TNP TODO: regroup so initializations are together as much as possible.
+  if ( initHifiSamples - expData.num_experiments() > 0)
     add_lhs_hifi_data();
 
-  num_exp = expData.num_experiments();
-  int random_seed = randomSeed; 
-  
+  int num_exp = expData.num_experiments();
+  int random_seed = randomSeed;  // locally incremented
+
+  // TNP TODO: can we modularize this further and wrap it into the 
+  // hifi evaluation calls? 
   // Apply hifi error
   const RealVector& hifi_sim_error = hifiModel.current_response().
                                        shared_data().simulation_error();
-  if (hifi_sim_error.length() > 0)  
+  if (hifi_sim_error.length() > 0)  {
+    // TNP TODO is this covered in testing?
     for (int i = 0; i < num_exp; i++) 
       apply_error_vec(hifi_sim_error, random_seed, i);
+  }
 
   if (outputLevel >= DEBUG_OUTPUT)
     for (size_t i=0; i<initHifiSamples; i++)
       Cout << "Exp Data  i " << i << " value = " << expData.all_data(i);
 
   // Build matrix of candidate designs
-  int num_candidates = numCandidates; // local version gets decremented
   RealMatrix design_matrix;
   build_designs(design_matrix);
 
   bool stop_metric = false;
-  double max_MI;
-  double prev_MI;
+  double prev_MI = std::numeric_limits<Real>::infinity();
   int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : numCandidates;
   int num_hifi = 0;
   int num_it = 1;
@@ -1096,18 +1098,19 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
   RealMatrix mi_chain; // filtered chain used to computed mutual information
   RealMatrix resp_matrix; // array that will contain new hifi model evals 
+  RealVector MI_vec(batchEvals); // mutual information for design point batches
+  RealMatrix optimal_config_matrix(design_matrix.numRows(), batchEvals);
   while (!stop_metric) {
     
     // EVALUATE STOPPING CRITERIA
-    stop_metric = eval_hi2lo_stop(stop_metric, prev_MI, max_MI, num_it, 
-	                          num_hifi, max_hifi, num_candidates);
-
-    // If the experiment data changed, need to update a number of
-    // models that wrap it.  
+    eval_hi2lo_stop(stop_metric, prev_MI, MI_vec, 
+        num_hifi, max_hifi, design_matrix.numCols());
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
     mcmcModel.continuous_variables(initial_point);
-    // TODO: make this more lightweight instead of reconstructing
+    // If the experiment data changed, need to update a number of
+    // models that wrap it.  
+    // TNP TODO: make this more lightweight instead of reconstructing
     // DataTransformModel supports instantiation and assignment
     // separately. Move this construction out of while loop and
     // update/assign instead.
@@ -1129,36 +1132,19 @@ void NonDBayesCalibration::calibrate_to_hifi()
       if (outputLevel >= NORMAL_OUTPUT) 
         print_hi2lo_begin(num_it);
 
-      // After calibration is run, get the posterior values of the samples; go
-      // through all the designs and pick the one with maximum mutual
-      // information
-  
-      //RealMatrix mi_chain;
+      // Removing burn-in and thinning
       filter_chain(acceptanceChain, mi_chain, 5000);
 
-      int batch_size = batchEvals;
-      if (max_hifi != 0)  
-        if (num_candidates < batchEvals || max_hifi - num_hifi < batchEvals) 
-          batchEvals = min(num_candidates, max_hifi - num_hifi);
       // Build optimal observations matrix, contains obsverations from
       // previously selected optimal designs
-      RealMatrix optimal_obs;  
-      RealVector optimal_config(design_matrix.numRows());
-      RealMatrix optimal_config_matrix(design_matrix.numRows(), batchEvals);
-      RealVector MI_vec(batchEvals);
+      //RealMatrix optimal_obs; // TNP ? This doesn't seem to be doing anything
  
-      // Choose next optimal points to add.  Note that this optimization 
-      // is done for a batch of points.  The best point is chosen based on  
-      // mutual information between the model parameters and experimental data.  
-      // Then, conditional on adding this point, a next best point is added 
-      // based on conditional MI. 
-      choose_batch_hi2lo(batchEvals, batch_size, mi_chain.numCols(), random_seed, 
-                         num_it, num_candidates,
-                         max_MI, mi_chain, design_matrix, optimal_obs, 
-                         optimal_config, optimal_config_matrix, MI_vec);
+      // After calibration is run, get the posterior values of the samples; 
+      // loop through designs and pick batch with maximum mutual information
+      choose_batch_hi2lo( random_seed, num_it, max_hifi, num_hifi, mi_chain, 
+          design_matrix, optimal_config_matrix, MI_vec );
 
       // RUN HIFI MODEL WITH NEW POINT(S)
-      //RealMatrix resp_matrix;
       if (max_hifi > 0) {
         // TODO: Should be using new batch evaluators for this.
         run_hifi(optimal_config_matrix, resp_matrix);
@@ -1169,26 +1155,26 @@ void NonDBayesCalibration::calibrate_to_hifi()
       }
       num_it++;
 
-      // Print results to screen and to file
+      // TNP NOTE: changed apis to carry less state
       if (outputLevel >= NORMAL_OUTPUT) 
-        print_hi2lo_selected(num_it, batchEvals, optimal_config_matrix, 
-            optimal_config, max_MI);
-      print_hi2lo_file(out_file, num_it, batchEvals, optimal_config_matrix, 
-	    	MI_vec, max_hifi, resp_matrix, optimal_config, max_MI);
+        print_hi2lo_selected(num_it, optimal_config_matrix, MI_vec);
+      print_hi2lo_file(out_file, num_it, optimal_config_matrix, 
+          MI_vec, resp_matrix); 
     } // end MI loop
   } // end while loop
 }
 
-bool NonDBayesCalibration::eval_hi2lo_stop(bool stop_metric, double prev_MI,
-    			   double max_MI, int num_it, int num_hifi, int 
+void NonDBayesCalibration::eval_hi2lo_stop(bool& stop_metric, double& prev_MI,
+              const RealVector& MI_vec, 
+              //int num_it, 
+              int num_hifi, int 
 			   max_hifi, int num_candidates)
 {
+  
   // check relative MI change
-  if (num_it == 1)
-    prev_MI = max_MI;
-  else if (num_it > 1) {
-    double MIdiff = prev_MI - max_MI;
-    double MIrel = fabs(MIdiff/prev_MI);
+  double max_MI = MI_vec[ MI_vec.length()-1 ];
+  if ( prev_MI != std::numeric_limits<Real>::infinity() ){
+    double MIrel = fabs((prev_MI - max_MI)/prev_MI);
     if (MIrel < 0.05) {
       stop_metric = true;
       Cout << "Experimental Design Stop Criteria met: "
@@ -1216,7 +1202,6 @@ bool NonDBayesCalibration::eval_hi2lo_stop(bool stop_metric, double prev_MI,
          << "been reached \n" 
          << '\n';
   }
-  return stop_metric;
 }
 
 void NonDBayesCalibration::print_hi2lo_begin(int num_it)
@@ -1263,67 +1248,84 @@ void NonDBayesCalibration::print_hi2lo_batch_status(int num_it, int batch_n,
   Cout << "\n";
 }
  
-void NonDBayesCalibration::print_hi2lo_selected(int num_it, int batchEvals, 
-    			   RealMatrix& optimal_config_matrix, const RealVector&
-      		           optimal_config, double max_MI)
+void NonDBayesCalibration::print_hi2lo_selected(int num_it, 
+    			   RealMatrix& optimal_config_matrix, 
+             const RealVector& MI_vec)
 {
+  int batch_evals = optimal_config_matrix.numCols();
   Cout << "\n----------------------------------------------\n";
   Cout << "Experimental Design Iteration " << num_it-1 << " Complete";
   Cout << "\n----------------------------------------------\n";
-  if (batchEvals > 1) {
-    Cout << batchEvals << " optimal designs selected\n";
-    for (int batch_n = 0; batch_n < batchEvals; batch_n++) {
-      RealVector col = Teuchos::getCol(Teuchos::View, 
-			       optimal_config_matrix, batch_n);
-      Cout << col;
-    }
-  } 
+  if (batch_evals > 1)
+    Cout << batch_evals << " optimal designs selected\n";
   else 
-    Cout << "Optimal design:\n" << optimal_config;
-  Cout << "Mutual information = " << max_MI << '\n';
+    Cout << "Optimal design:\n";
+  
+  for (int batch_n = 0; batch_n < batch_evals; batch_n++) {
+    RealVector col = Teuchos::getCol(Teuchos::View, 
+		       optimal_config_matrix, batch_n);
+
+    Cout << "Design point = " << col; 
+    // TNP NOTE: This was printing just one MI even if there was
+    // a batch. I had it print for each element in the vector.
+    Cout << "Mutual Information = " << MI_vec[batch_n] << '\n';
+  }
   Cout << "\n";
 }
 
 void NonDBayesCalibration::print_hi2lo_file(std::ostream& out_file, int num_it, 
-    			   int batchEvals, RealMatrix& optimal_config_matrix, 
-			   const RealVector& MI_vec, int max_hifi, RealMatrix& 
-			   resp_matrix, const RealVector& optimal_config, 
-			   double max_MI)
+    			   RealMatrix& optimal_config_matrix, 
+			        const RealVector& MI_vec, RealMatrix& resp_matrix )
 {  
 
+  int batch_evals = optimal_config_matrix.numCols();
+  // TNP: This output spec is just so it is compatible with the
+  // old way
   out_file << "ITERATION " << num_it -1 << "\n";
-  if (batchEvals > 1) {
-    out_file << batchEvals << " optimal designs selected\n\n";
-    for (int batch_n = 0; batch_n < batchEvals; batch_n++) {
+  if (batch_evals > 1) 
+    out_file << batch_evals << " optimal designs selected\n\n";
+  else
+    out_file << "Optimal Design: ";
+
+  for (int batch_n = 0; batch_n < batch_evals; batch_n++) {
       RealVector col = Teuchos::getCol(Teuchos::View, 
                                 optimal_config_matrix, batch_n);
-      out_file << "Design point " << col;
+      if (batch_evals > 1){ out_file << "Design point "; }
+      out_file << col;
       out_file << "Mutual Information = " << MI_vec[batch_n] << '\n';
-      if (max_hifi > 0) { 
+      if (resp_matrix.numCols() > 0) { 
         RealVector col = Teuchos::getCol(Teuchos::View, resp_matrix, 
    	                                 batch_n);
         out_file << "Hifi Response = " << col << '\n';
       }
-    }
-  } 
-  else { 
-    out_file << "Optimal Design: " << optimal_config;
-    out_file << "Mutual Information = " << max_MI << '\n';
-    if (max_hifi > 0) { 
-      RealVector col = Teuchos::getCol(Teuchos::View, resp_matrix, 0);
-      out_file << "Hifi Response = " << col << '\n';
-    }
   }
 }
 
-void NonDBayesCalibration::choose_batch_hi2lo(int batchEvals, int batch_size, 
-                           const int num_filtered, int random_seed, 
-                           int num_it, int &num_candidates,
-                           double &max_MI, RealMatrix& mi_chain, 
-                           RealMatrix& design_matrix, 
-                           RealMatrix& optimal_obs, RealVector& optimal_config, 
+void NonDBayesCalibration::choose_batch_hi2lo( int random_seed, int num_it, 
+                           int max_hifi, int num_hifi,
+                           RealMatrix& mi_chain, RealMatrix& design_matrix, 
                            RealMatrix& optimal_config_matrix, RealVector& MI_vec)
 {
+
+  // Choose next optimal points to add.  Note that this optimization 
+  // is done for a batch of points.  The best point is chosen based on  
+  // mutual information between the model parameters and experimental data.  
+  // Then, conditional on adding this point, a next best point is added 
+  // based on conditional MI. 
+ 
+  // If there are fewer designs or allowed model evaluations than the 
+  // batch size, resize arrays.
+  if (max_hifi != 0)  
+    if (design_matrix.numCols() < batchEvals || 
+        max_hifi - num_hifi < batchEvals){ 
+      batchEvals = min(design_matrix.numCols(), max_hifi - num_hifi);
+      optimal_config_matrix.reshape(design_matrix.numRows(), batchEvals);
+      MI_vec.resize(batchEvals);
+    }
+
+  //int batch_size = MI_vec.length();
+  double max_MI;
+  int num_filtered = mi_chain.numCols();
   size_t optimal_ind;
   RealMatrix Xmatrix;
   // For loop for batch MI 
@@ -1340,7 +1342,7 @@ void NonDBayesCalibration::choose_batch_hi2lo(int batchEvals, int batch_size,
       build_error_matrix(sim_error_vec, sim_error_matrix, random_seed);
     }
 
-    for (size_t i=0; i<num_candidates; i++) {
+    for (size_t i=0; i < design_matrix.numCols(); i++) {
       RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, 
       				    int(i));
       Model::inactive_variables(xi_i, mcmcModel); 
@@ -1366,7 +1368,7 @@ void NonDBayesCalibration::choose_batch_hi2lo(int batchEvals, int batch_size,
     } // end for over the number of candidates
     
     MI_vec[batch_n-1] = max_MI;
-    optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix,
+    RealVector optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix,
     					           int(optimal_ind));
     Teuchos::setCol(optimal_config, batch_n-1, optimal_config_matrix);
     // Update optimal_obs matrix
@@ -1378,16 +1380,18 @@ void NonDBayesCalibration::choose_batch_hi2lo(int batchEvals, int batch_size,
       if (sim_error_matrix.numRows() > 0)
         lofi_resp_matrix += sim_error_matrix;
 
-      RealMatrix optimal_obs
-        (Teuchos::View, Xmatrix, numFunctions, num_filtered,
-         numContinuousVars + (batch_n-1)*numFunctions, 0);
-      optimal_obs.assign(lofi_resp_matrix);
+      // TNP NOTE: Commented this out because it didn't seem to be
+      // used anywhere.
+      //RealMatrix optimal_obs
+      //  (Teuchos::View, Xmatrix, numFunctions, num_filtered,
+      //   numContinuousVars + (batch_n-1)*numFunctions, 0);
+      //optimal_obs.assign(lofi_resp_matrix);
     }
 
     // update list of candidates
     remove_column(design_matrix, optimal_ind);
-    --num_candidates;
-    if (batch_size > 1) 
+    //--num_candidates;
+    if (batchEvals > 1) 
       if (outputLevel >= NORMAL_OUTPUT) 
         print_hi2lo_batch_status(num_it, batch_n, batchEvals, 
 				     optimal_config, max_MI);

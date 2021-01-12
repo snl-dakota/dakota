@@ -167,33 +167,32 @@ protected:
   /// design)
   void calibrate_to_hifi();
   /// evaluate stopping criteria for calibrate_to_hifi
-  bool eval_hi2lo_stop(bool stop_metric, double prev_MI, double max_MI, 
-      		       int num_it, int num_hifi, int max_hifi, 
-		       int num_candidates);
+  void eval_hi2lo_stop(bool& stop_metric, double& prev_MI, 
+                 const RealVector& MI_vec, 
+                 int num_hifi, int max_hifi, 
+		             int num_candidates);
   /// print calibrate_to_hifi progress to file
-  void print_hi2lo_file(std::ostream& out_file, int num_it, int batchEvals, 
-                        RealMatrix& optimal_config_matrix, const RealVector& 
-			MI_vec, int max_hifi, RealMatrix& resp_matrix, const 
-			RealVector& optimal_config, double max_MI);
+  void print_hi2lo_file(std::ostream& out_file, int num_it, 
+                        RealMatrix& optimal_config_matrix, 
+                        const RealVector& MI_vec, RealMatrix& resp_matrix );
+      //double max_MI);
   /// print calibrate_to_hifi progress
   void print_hi2lo_begin(int num_it);
   void print_hi2lo_status(int num_it, int i, const RealVector& xi_i, double MI);
   void print_hi2lo_batch_status(int num_it, int batch_n, int batchEvals, 
       			const RealVector& optimal_config, double max_MI);
-  void print_hi2lo_selected(int num_it, int batchEvals, RealMatrix& 
-      			    optimal_config_matrix, const RealVector& 
-			    optimal_config, double max_MI);
+  void print_hi2lo_selected(int num_it, // int batchEvals, 
+                RealMatrix& optimal_config_matrix, 
+                const RealVector& MI_vec);
   void print_hi2lo_chain_moments();
   /// supplement high-fidelity data with LHS samples
   void add_lhs_hifi_data();
   /// calculate the optimal points to add for a given batch
-  void choose_batch_hi2lo(int batchEvals, int batch_size, 
-                          const int num_filtered, 
-                          int random_seed,
-                          int num_it, int &num_candidates,
-                          double &max_MI, RealMatrix& mi_chain,
+  void choose_batch_hi2lo( int random_seed,
+                          int num_it, 
+                          int max_hifi, int num_hifi, 
+                          RealMatrix& mi_chain,
                           RealMatrix& design_matrix, 
-                          RealMatrix& optimal_obs, RealVector& optimal_config,
                           RealMatrix& optimal_config_matrix, RealVector& MI_vec);
   /// apply simulation error vector
   void apply_error_vec(const RealVector& error_vec, int &seed, int experiment);
