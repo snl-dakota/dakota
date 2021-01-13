@@ -1120,6 +1120,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     //construct_map_optimizer();
 
     // Run the underlying calibration solver (MCMC)
+    // TNP TODO: expose opt_for_map() and run_chain() 
     calibrate();
 
     if (outputLevel >= DEBUG_OUTPUT) {
@@ -1127,6 +1128,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
       print_hi2lo_chain_moments();
     }
 
+    // Compute batch points, either because the stop metric is still false, 
+    // or because the user specified no hifi evaluations. This way they
+    // are reported what evaluations would be done.
     if (!stop_metric || max_hifi == 0) {
 
       if (outputLevel >= NORMAL_OUTPUT) 
@@ -1265,11 +1269,12 @@ void NonDBayesCalibration::print_hi2lo_selected(int num_it,
     RealVector col = Teuchos::getCol(Teuchos::View, 
 		       optimal_config_matrix, batch_n);
 
-    Cout << "Design point = " << col; 
+    //Cout << "Design point " << col; 
+    Cout << col; 
     // TNP NOTE: This was printing just one MI even if there was
     // a batch. I had it print for each element in the vector.
-    Cout << "Mutual Information = " << MI_vec[batch_n] << '\n';
   }
+  Cout << "Mutual information = " << MI_vec[MI_vec.length()-1] << '\n';
   Cout << "\n";
 }
 
