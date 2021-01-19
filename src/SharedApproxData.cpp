@@ -88,7 +88,7 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   }
 
   // initialize sequence of one empty key for Approximation::approxData
-  approxDataKeys.resize(1);
+  //approxDataKeys.resize(1);
 }
 
 
@@ -131,7 +131,7 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
   }
 
   // initialize sequence of one empty key for first Approximation::approxData
-  approxDataKeys.resize(1);
+  //approxDataKeys.resize(1);
 }
 
 
@@ -288,12 +288,13 @@ void SharedApproxData::active_model_key(const UShortArray& key)
   if (dataRep) dataRep->active_model_key(key);
   else {
     // update activeKey
-    activeKey = key;
+    activeKey = key;//.copy();
+    /*
     // update approxDataKeys
     if (Pecos::ActiveKey::aggregated_key(key)) {
       UShortArray hf_key, lf_key;
       Pecos::ActiveKey::extract_keys(key, hf_key, lf_key);
-      if (discrepancy_type()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREP
+      if (discrepancy_reduction()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREPANCY
 	approxDataKeys.resize(3); // 3 keys: HF, LF, aggregate
 	approxDataKeys[2] = key;
       }
@@ -309,6 +310,7 @@ void SharedApproxData::active_model_key(const UShortArray& key)
       approxDataKeys.resize(1); // prune trailing entries
       approxDataKeys[0] = key;
     }
+    */
   }
 }
 
@@ -316,7 +318,7 @@ void SharedApproxData::active_model_key(const UShortArray& key)
 void SharedApproxData::clear_model_keys()
 {
   if (dataRep) dataRep->clear_model_keys();
-  else { activeKey.clear(); approxDataKeys.clear(); }
+  else activeKey.clear(); // approxDataKeys.clear(); }
 }
 
 
@@ -327,8 +329,8 @@ void SharedApproxData::link_multilevel_surrogate_data()
   //else no-op (no linkage required for derived SharedApproxData)
 
   //else
-  //  switch (discrepancy_type()) {
-  //  case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP:
+  //  switch (discrepancy_reduction()) {
+  //  case Pecos::DISTINCT_DISCREPANCY: case Pecos::RECURSIVE_DISCREPANCY:
   //    approxDataKeys.resize(3); // HF, LF, discrep
   //    break;
   //  default: // default ctor linkages are sufficient
@@ -349,10 +351,10 @@ void SharedApproxData::integration_iterator(const Iterator& iterator)
 }
 
 
-short SharedApproxData::discrepancy_type() const
+short SharedApproxData::discrepancy_reduction() const
 {
-  if (dataRep) return dataRep->discrepancy_type();
-  else         return Pecos::NO_DISCREP; // this enum is 0
+  if (dataRep) return dataRep->discrepancy_reduction();
+  else         return Pecos::NO_REDUCTION; // this enum is 0
 }
 
 

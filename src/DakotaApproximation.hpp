@@ -67,7 +67,7 @@ public:
   //
 
   /// activate an approximation state based on its multi-index key
-  virtual void active_model_key(const UShortArray& sd_key);
+  virtual void active_model_key(const Pecos::ActiveKey& sd_key);
   /// reset initial state by removing all model keys for an approximation
   virtual void clear_model_keys();
 
@@ -320,13 +320,13 @@ public:
   // end of SurrogateData::{vars,resp}Data, based on size of last data append)
   //size_t pop_count(size_t key_index) const;
 
-  /// clear SurrogateData::{vars,resp}Data for all approxDataKeys
+  /// clear SurrogateData::{vars,resp}Data for activeKey + embedded keys
   void clear_data();
   /// clear active approximation data
   void clear_active_data();
   /// clear inactive approximation data
   void clear_inactive_data();
-  /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack for active key
+  /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack for activeKey
   void clear_active_popped();
   /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack for all keys
   void clear_popped();
@@ -367,6 +367,9 @@ protected:
 
   /// Check number of build points against minimum required
   void check_points(size_t num_build_pts);
+
+  /// extract and assign i-th embedded active key
+  void assign_key_index(size_t key_index);
 
   //
   //- Heading: Data
@@ -439,6 +442,23 @@ inline Pecos::SurrogateData& Approximation::surrogate_data()
 }
 
 
+inline void Approximation::assign_key_index(size_t key_index)
+{
+  /*
+  const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+  if (key_index == _NPOS) key_index = 0; // make front() the default
+  if (key_index >= keys.size()) {
+    Cerr << "Error: index out of range in Approximation::add()" << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+  */
+
+  // extract a particular raw key if activeKey is aggregated
+  const Pecos::ActiveKey& key = sharedDataRep->activeKey.extract_key(key_index);
+  approxData.active_key(key);// no-op if key already active
+}
+
+
 inline void Approximation::
 add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag, bool deep_copy,
     size_t key_index)
@@ -446,14 +466,7 @@ add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag, bool deep_copy,
   if (approxRep)
     approxRep->add(sdv, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
-    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
-    if (key_index == _NPOS) key_index = 0; // make front() the default
-    if (key_index >= keys.size()) {
-      Cerr << "Error: index out of range in Approximation::add()" << std::endl;
-      abort_handler(APPROX_ERROR);
-    }
-
-    approxData.active_key(keys[key_index]);// no-op if key already active
+    assign_key_index(key_index);
     if (deep_copy) {
       if (anchor_flag) approxData.anchor_variables(sdv.copy());
       else             approxData.push_back(sdv.copy());
@@ -508,14 +521,7 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag, bool deep_copy,
   if (approxRep)
     approxRep->add(sdr, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
-    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
-    if (key_index == _NPOS) key_index = 0; // make front() the default
-    if (key_index >= keys.size()) {
-      Cerr << "Error: index out of range in Approximation::add()" << std::endl;
-      abort_handler(APPROX_ERROR);
-    }
-
-    approxData.active_key(keys[key_index]);// no-op if key already active
+    assign_key_index(key_index);
     if (deep_copy) {
       if (anchor_flag) approxData.anchor_response(sdr.copy());
       else             approxData.push_back(sdr.copy());
@@ -533,14 +539,7 @@ inline void Approximation::add(int eval_id, size_t key_index)
   if (approxRep)
     approxRep->add(eval_id, key_index);
   else { // not virtual: all derived classes use following definition
-    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
-    if (key_index == _NPOS) key_index = 0; // make front() the default
-    if (key_index >= keys.size()) {
-      Cerr << "Error: index out of range in Approximation::add()" << std::endl;
-      abort_handler(APPROX_ERROR);
-    }
-
-    approxData.active_key(keys[key_index]);// no-op if key already active
+    assign_key_index(key_index);
     approxData.push_back(eval_id);
   }
 }
@@ -551,7 +550,7 @@ inline size_t Approximation::pop_count(size_t key_index) const
 {
   if (approxRep) return approxRep->pop_count(key_index);
   else {
-    approxData.active_key(sharedDataRep->approxDataKeys[key_index]);
+    assign_key_index(key_index);
     return approxData.pop_count();
   }
 }
@@ -562,13 +561,13 @@ inline void Approximation::pop_count(size_t count, size_t key_index)
 {
   if (approxRep) approxRep->pop_count(count, key_index);
   else {
-    approxData.active_key(sharedDataRep->approxDataKeys[key_index]);
+    assign_key_index(key_index);
     approxData.pop_count(count);
   }
 }
 
 
-inline void Approximation::active_model_key(const UShortArray& sd_key)
+inline void Approximation::active_model_key(const Pecos::ActiveKey& sd_key)
 {
   if (approxRep) approxRep->active_model_key(sd_key);
   else approxData.active_key(sd_key);
@@ -605,14 +604,14 @@ inline void Approximation::clear_data()
 inline void Approximation::clear_active_data()
 {
   if (approxRep) approxRep->clear_active_data();
-  else approxData.clear_active_data(sharedDataRep->approxDataKeys);
+  else approxData.clear_active_data(sharedDataRep->activeKey);
 }
 
 
 inline void Approximation::clear_inactive_data()
 {
   if (approxRep) approxRep->clear_inactive_data();
-  else // This is used after combination, so can ignore approxDataKeys
+  else // This is used after combination, so don't enumerate embedded keys
     approxData.clear_inactive_data();
 }
 
@@ -620,7 +619,7 @@ inline void Approximation::clear_inactive_data()
 inline void Approximation::clear_active_popped()
 {
   if (approxRep) approxRep->clear_active_popped();
-  else approxData.clear_active_popped(sharedDataRep->approxDataKeys);
+  else approxData.clear_active_popped(sharedDataRep->activeKey);
 }
 
 

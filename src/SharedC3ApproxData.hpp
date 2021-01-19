@@ -146,7 +146,7 @@ protected:
 
   void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
 
-  short discrepancy_type() const;
+  short discrepancy_reduction() const;
 
   // Activate as additional features (and basis types) come online
   
@@ -262,7 +262,7 @@ protected:
   /// type of discrepancy calculation: additive, multiplicative, or both
   short combineType;
   /// type of multilevel discrepancy emulation: distinct or recursive
-  short discrepancyType;
+  short discrepReduction;
   /// type of multilevel strategy for sample allocation: ESTIMATOR_VARIANCE,
   /// RANK_SAMPLING, GREEDY
   short allocControl;
@@ -308,7 +308,7 @@ inline SharedC3ApproxData::SharedC3ApproxData()
 
 inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
 {
-  // set activeKey and approxDataKeys
+  // set activeKey
   SharedApproxData::active_model_key(key);
 
   // these aren't used enough to warrant active iterators
@@ -331,8 +331,8 @@ inline void SharedC3ApproxData::update_basis()
 { update_basis(start_orders(), max_order()); }
 
 
-inline short SharedC3ApproxData::discrepancy_type() const
-{ return discrepancyType; }
+inline short SharedC3ApproxData::discrepancy_reduction() const
+{ return discrepReduction; }
 
 
 inline const UShortArray& SharedC3ApproxData::start_orders() const
@@ -547,7 +547,7 @@ inline void SharedC3ApproxData::set_parameter(String var, bool val)
 inline void SharedC3ApproxData::set_parameter(String var, short val)
 {
   if      (var.compare("regress_type")      == 0)       regressType = val;
-  else if (var.compare("discrepancy_type")  == 0)   discrepancyType = val;
+  else if (var.compare("discrepancy_type")  == 0)  discrepReduction = val;
   else if (var.compare("alloc_control")     == 0)      allocControl = val;
   else if (var.compare("combine_type")      == 0)       combineType = val;
   else if (var.compare("advancement_type")  == 0) c3AdvancementType = val;

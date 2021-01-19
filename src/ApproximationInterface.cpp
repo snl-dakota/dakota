@@ -380,7 +380,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
   else                            // deep response copies with vars sharing
     mixed_add(vars, response_pr, true);
 
-  // reset active approxData key using SharedApproxData::approxDataKeys
+  // reset active approxData key using SharedApproxData::activeKey
   restore_data_key();
 }
 
@@ -417,7 +417,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
       mixed_add(samples[i], *r_it, false);
 
-  // reset active approxData key using SharedApproxData::approxDataKeys
+  // reset active approxData key using SharedApproxData::activeKey
   restore_data_key();
 }
 
@@ -455,7 +455,7 @@ update_approximation(const VariablesArray& vars_array,
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
       mixed_add(vars_array[i], *r_it, false);
 
-  // reset active approxData key using SharedApproxData::approxDataKeys
+  // reset active approxData key using SharedApproxData::activeKey
   restore_data_key();
 }
 
@@ -481,7 +481,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
 
   update_pop_counts(response_pr);
 
-  // reset active approxData key using SharedApproxData::approxDataKeys
+  // reset active approxData key using SharedApproxData::activeKey
   restore_data_key();
 }
 
@@ -517,7 +517,7 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 
   update_pop_counts(resp_map);
 
-  // reset active approxData key using SharedApproxData::approxDataKeys
+  // reset active approxData key using SharedApproxData::activeKey
   restore_data_key();
 }
 
@@ -554,7 +554,7 @@ append_approximation(const VariablesArray& vars_array,
 
   update_pop_counts(resp_map);
 
-  // reset active approxData key using SharedApproxData::approxDataKeys
+  // reset active approxData key using SharedApproxData::activeKey
   restore_data_key();
 }
 
@@ -597,7 +597,7 @@ append_approximation(const IntVariablesMap& vars_map,
 
   update_pop_counts(resp_map);
 
-  // reset active approxData key using SharedApproxData::approxDataKeys
+  // reset active approxData key using SharedApproxData::activeKey
   restore_data_key();
 }
 
@@ -624,6 +624,7 @@ replace_approximation(const IntResponseMap& resp_map)
       fn_surf.replace(*r_it, fn_index); // --> active approxData
   }
 }
+
 
 /** This function finds the coefficients for each Approximation based
     on the data passed through update_approximation() calls.  The

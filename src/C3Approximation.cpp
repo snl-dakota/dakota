@@ -507,8 +507,8 @@ void C3Approximation::link_multilevel_surrogate_data()
 
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  switch (data_rep->discrepancyType) {
-  case Pecos::DISTINCT_DISCREP:  case Pecos::RECURSIVE_DISCREP: {
+  switch (data_rep->discrepReduction) {
+  case Pecos::DISTINCT_DISCREPANCY:  case Pecos::RECURSIVE_DISCREPANCY: {
     // push another SurrogateData instance for modSurrData
     // (allows consolidation of Approximation::push/pop operations)
     const UShortArray& key = approxData.back().active_key();
@@ -537,14 +537,14 @@ void C3Approximation::synchronize_surrogate_data()
   }
 
   // level 0: approxData non-aggregated key stores raw data
-  short discrep_type = data_rep->discrepancyType,
+  short discrep_type = data_rep->discrepReduction,
         combine_type = data_rep->combineType;
   if (!discrep_type ||
       !Pecos::ActiveKey::aggregated_key(active_key))
     return;
 
   switch (discrep_type) {
-  case Pecos::RECURSIVE_DISCREP:
+  case Pecos::RECURSIVE_DISCREPANCY:
     // When using a recursive discrepancy with additive/multiplicative corr,
     // we will subtract/divide the current polynomial approx prediction from
     // the new surrData so that we form an expansion on the surplus.  Prior
@@ -552,7 +552,7 @@ void C3Approximation::synchronize_surrogate_data()
     // will be stored within surrData in a format that compute() can utilize.
     generate_synthetic_data(approxData, active_key, combine_type);
     break;
-  //case Pecos::DISTINCT_DISCREP:
+  //case Pecos::DISTINCT_DISCREPANCY:
     // When using a distinct discrepancy with additive/multiplicative corr,
     // we will subtract/divide the HF,LF pairs.  In this case, the data is
     // already provided within surrData and specific pairings are identified

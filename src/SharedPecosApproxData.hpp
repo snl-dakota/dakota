@@ -121,7 +121,7 @@ protected:
 
   void integration_iterator(const Iterator& iterator);
 
-  short discrepancy_type() const;
+  short discrepancy_reduction() const;
 
   void build();
   void rebuild();
@@ -193,8 +193,8 @@ inline void SharedPecosApproxData::clear_model_keys()
 }
 
 
-inline short SharedPecosApproxData::discrepancy_type() const
-{ return pecosSharedDataRep->discrepancy_type(); }
+inline short SharedPecosApproxData::discrepancy_reduction() const
+{ return pecosSharedDataRep->discrepancy_reduction(); }
 
 
 inline void SharedPecosApproxData::build()

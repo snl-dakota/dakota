@@ -28,6 +28,7 @@
 namespace Pecos { /* forward declarations */
 class SurrogateData;
 class ProbabilityTransformation;
+class ActiveKey;
 }
 
 namespace Dakota {

@@ -134,11 +134,9 @@ protected:
   void model_form(Pecos::ActiveKeyData& data, unsigned short form,
 		  size_t i = 0);
   /// return the resolution level index from the incoming key
-  unsigned short resolution_level(const Pecos::ActiveKeyData& data,
-				  size_t i = 0) const;
+  size_t resolution_level(const Pecos::ActiveKeyData& data, size_t i = 0) const;
   /// assign the resolution level index to the incoming key
-  void resolution_level(Pecos::ActiveKeyData& data, unsigned short lev,
-			size_t i = 0);
+  void resolution_level(Pecos::ActiveKeyData& data, size_t lev, size_t i = 0);
 
   /// evaluate whether a rebuild of the approximation should be
   /// forced based on changes in the inactive data
@@ -307,7 +305,7 @@ inline Model& SurrogateModel::subordinate_model()
 inline void SurrogateModel::active_model_key(const Pecos::ActiveKey& key)
 {
   // base implementation (augmented in derived SurrogateModels)
-  activeKey = key.copy(); // don't share representations
+  activeKey = key;//.copy(); // *** try to share representations except for entering data into DB storage (reduce overhead of short-term activations)
 }
 
 

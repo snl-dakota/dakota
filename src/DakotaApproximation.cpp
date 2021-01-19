@@ -230,26 +230,14 @@ void Approximation::build()
   if (approxRep)
     approxRep->build();
   else { // default is only a data check --> augmented/replaced by derived class
-    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
-    size_t num_keys = keys.size();
-    if (num_keys <= 1)
-      check_points(approxData.points());
-    else { // active key may be aggregate key, which is populated downstream
+    check_points(approxData.points());
 
-      // This approach should be sufficient
-      check_points(approxData.points(keys.front())); // raw HF
-
-      // DISTINCT_DISCREPANCY has up to 2 raw data:
-      //size_t i, num_checks = (num_keys <= 2) ? num_keys : 2;
-      //for (i=0; i<num_checks; ++i)
-      //  check_points(approxData.points(keys[i]));
-
-      // This approach is more general (RECURSIVE_DISCREPANCY has 1 raw data),
-      // but overkill for now
-      //size_t i, num_checks = sharedDataRep->num_data_keys(); // virtual
-      //for (i=0; i<num_checks; ++i)
-      //  check_points(approxData.points(keys[i]));
-    }
+    // Could also enumerate embedded keys:
+    //std::vector<Pecos::ActiveKey> embedded_keys
+    //  = sharedDataRep->activeKey.extract_keys();
+    //size_t i, num_checks = embedded_keys.size();
+    //for (i=0; i<num_checks; ++i)
+    //  check_points(approxData.points(embedded_keys[i]));
   }
 }
 
@@ -298,7 +286,7 @@ void Approximation::replace(const IntResponsePair& response_pr, size_t fn_index)
 void Approximation::pop_data(bool save_data)
 {
   if (approxRep) approxRep->pop_data(save_data);
-  else approxData.pop(sharedDataRep->approxDataKeys, save_data);
+  else approxData.pop(sharedDataRep->activeKey, save_data);
 }
 
 
@@ -306,6 +294,12 @@ void Approximation::push_data()
 {
   if (approxRep) approxRep->push_data();
   else {
+    const Pecos::ActiveKey& key = sharedDataRep->activeKey;
+    // want aggregated active key (not embedded keys) for retrieval index
+    // as this is what is activated through the Model
+    size_t r_index = sharedDataRep->push_index(key);
+    approxData.push(key, r_index); // preserves active state
+    /*
     const UShort2DArray& keys = sharedDataRep->approxDataKeys;
     if (!keys.empty()) {
       // Only want active key for retrieval index as this is what is
@@ -316,6 +310,7 @@ void Approximation::push_data()
       // preserves active state
       approxData.push(keys, r_index); // preserves active state
     }
+    */
   }
 }
 
@@ -326,6 +321,15 @@ void Approximation::finalize_data()
 
   if (approxRep) approxRep->finalize_data();
   else {
+    const Pecos::ActiveKey& key = sharedDataRep->activeKey;
+    // want aggregated active key (not embedded keys) for retrieval index
+    // as this is what is activated through the Model
+    size_t f_index, p, num_popped = approxData.popped_sets(key);
+    for (p=0; p<num_popped; ++p) {
+      f_index = sharedDataRep->finalize_index(p, key);
+      approxData.push(key, f_index, false);
+    }
+    /*
     const UShort2DArray& keys = sharedDataRep->approxDataKeys;
     if (!keys.empty()) {
       // Only need truth model key for finalization indices (see above)
@@ -337,6 +341,7 @@ void Approximation::finalize_data()
 	approxData.push(keys, f_index, false);
       }
     }
+    */
 
     clear_active_popped(); // after all finalization indices processes
   }
