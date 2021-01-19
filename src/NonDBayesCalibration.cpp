@@ -1048,68 +1048,55 @@ Real NonDBayesCalibration::assess_emulator_convergence()
 
 void NonDBayesCalibration::calibrate_to_hifi()
 {
-  const RealVector initial_point(Teuchos::Copy, 
-      				 mcmcModel.continuous_variables().values(), 
-				 mcmcModel.continuous_variables().length());
-  
   /* TODO:
      - Handling of hyperparameters
      - More efficient resizing/reconstruction
      - Use hierarchical surrogate eval modes
   */
 
-  // TNP TODO: regroup so initializations are together as much as possible.
-  if ( initHifiSamples - expData.num_experiments() > 0)
-    add_lhs_hifi_data();
-
-  int num_exp = expData.num_experiments();
+  const RealVector initial_point(Teuchos::Copy, 
+      				 mcmcModel.continuous_variables().values(), 
+				 mcmcModel.continuous_variables().length());
   int random_seed = randomSeed;  // locally incremented
-
-  // TNP TODO: can we modularize this further and wrap it into the 
-  // hifi evaluation calls? 
-  // Apply hifi error
-  const RealVector& hifi_sim_error = hifiModel.current_response().
-                                       shared_data().simulation_error();
-  if (hifi_sim_error.length() > 0)  {
-    // TNP TODO is this covered in testing?
-    for (int i = 0; i < num_exp; i++) 
-      apply_error_vec(hifi_sim_error, random_seed, i);
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    for (size_t i=0; i<initHifiSamples; i++)
-      Cout << "Exp Data  i " << i << " value = " << expData.all_data(i);
-
-  // Build matrix of candidate designs
-  RealMatrix design_matrix;
-  build_designs(design_matrix);
-
-  bool stop_metric = false;
-  double prev_MI = std::numeric_limits<Real>::infinity();
+  int num_exp;
   int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : numCandidates;
   int num_hifi = 0;
   int num_it = 1;
+  // We assume the hifiModel's active variables are the config vars
+  int num_design_vars =
+    hifiModel.cv() + hifiModel.div() + hifiModel.dsv() + hifiModel.drv();
+  bool stop_metric = false;
+  double prev_MI = std::numeric_limits<Real>::infinity();
+  RealMatrix design_matrix(num_design_vars, numCandidates);
   std::ofstream out_file("experimental_design_output.txt");
+  RealMatrix mi_chain; // filtered chain used to computed mutual information
+  RealMatrix resp_matrix; // array that will contain new hifi model evals 
+  RealVector MI_vec(batchEvals); // mutual information for design point batches
+  RealMatrix optimal_config_matrix(num_design_vars, batchEvals);
+
+  // Get initial set of hifi model evaluations
+  add_lhs_hifi_data();
+  num_exp = expData.num_experiments();
+  apply_hifi_sim_error(random_seed, num_exp);
+ 
+  if (outputLevel >= DEBUG_OUTPUT)
+    for (size_t i=0; i<initHifiSamples; i++) // TNP ? Why is this not num_exp?
+      Cout << "Exp Data  i " << i << " value = " << expData.all_data(i);
+
+  build_designs(design_matrix);
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Design Matrix   " << design_matrix << '\n';
     Cout << "Max high-fidelity model runs = " << max_hifi << "\n\n";
   }
 
-  RealMatrix mi_chain; // filtered chain used to computed mutual information
-  RealMatrix resp_matrix; // array that will contain new hifi model evals 
-  RealVector MI_vec(batchEvals); // mutual information for design point batches
-  RealMatrix optimal_config_matrix(design_matrix.numRows(), batchEvals);
   while (!stop_metric) {
     
-    // EVALUATE STOPPING CRITERIA
     eval_hi2lo_stop(stop_metric, prev_MI, MI_vec, 
         num_hifi, max_hifi, design_matrix.numCols());
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
     mcmcModel.continuous_variables(initial_point);
-    // If the experiment data changed, need to update a number of
-    // models that wrap it.  
     // TNP TODO: make this more lightweight instead of reconstructing
     // DataTransformModel supports instantiation and assignment
     // separately. Move this construction out of while loop and
@@ -1117,24 +1104,18 @@ void NonDBayesCalibration::calibrate_to_hifi()
     residualModel.assign_rep(std::make_shared<DataTransformModel>
 			     (mcmcModel, expData, numHyperparams,
 			      obsErrorMultiplierMode, mcmcDerivOrder));
-    //construct_map_optimizer();
 
-    // Run the underlying calibration solver (MCMC)
     // TNP TODO: expose opt_for_map() and run_chain() 
     calibrate();
 
-    if (outputLevel >= DEBUG_OUTPUT) {
-      // Print chain moments and responses 
-      print_hi2lo_chain_moments();
-    }
+    print_hi2lo_chain_moments();
 
     // Compute batch points, either because the stop metric is still false, 
     // or because the user specified no hifi evaluations. This way they
     // are reported what evaluations would be done.
     if (!stop_metric || max_hifi == 0) {
 
-      if (outputLevel >= NORMAL_OUTPUT) 
-        print_hi2lo_begin(num_it);
+      print_hi2lo_begin(num_it);
 
       // Removing burn-in and thinning
       filter_chain(acceptanceChain, mi_chain, 5000);
@@ -1145,23 +1126,20 @@ void NonDBayesCalibration::calibrate_to_hifi()
  
       // After calibration is run, get the posterior values of the samples; 
       // loop through designs and pick batch with maximum mutual information
-      choose_batch_hi2lo( random_seed, num_it, max_hifi, num_hifi, mi_chain, 
-          design_matrix, optimal_config_matrix, MI_vec );
+      choose_batch_from_mutual_info( random_seed, num_it, max_hifi, num_hifi, 
+          mi_chain, design_matrix, optimal_config_matrix, MI_vec );
 
-      // RUN HIFI MODEL WITH NEW POINT(S)
       if (max_hifi > 0) {
         // TODO: Should be using new batch evaluators for this.
         run_hifi(optimal_config_matrix, resp_matrix);
-        if (hifi_sim_error.length() > 0) // apply sim error to new point
-          for (int i = 0; i < optimal_config_matrix.numCols(); i++) 
-            apply_error_vec(hifi_sim_error, random_seed, num_exp+num_hifi+i);
+        apply_hifi_sim_error( random_seed, optimal_config_matrix.numCols(), 
+            num_exp+num_hifi);
 	      num_hifi += optimal_config_matrix.numCols();
       }
       num_it++;
 
-      // TNP NOTE: changed apis to carry less state
-      if (outputLevel >= NORMAL_OUTPUT) 
-        print_hi2lo_selected(num_it, optimal_config_matrix, MI_vec);
+      //if (outputLevel >= NORMAL_OUTPUT) 
+      print_hi2lo_selected(num_it, optimal_config_matrix, MI_vec);
       print_hi2lo_file(out_file, num_it, optimal_config_matrix, 
           MI_vec, resp_matrix); 
     } // end MI loop
@@ -1169,10 +1147,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
 }
 
 void NonDBayesCalibration::eval_hi2lo_stop(bool& stop_metric, double& prev_MI,
-              const RealVector& MI_vec, 
-              //int num_it, 
-              int num_hifi, int 
-			   max_hifi, int num_candidates)
+              const RealVector& MI_vec, int num_hifi, int max_hifi, 
+              int num_candidates)
 {
   
   // check relative MI change
@@ -1210,9 +1186,11 @@ void NonDBayesCalibration::eval_hi2lo_stop(bool& stop_metric, double& prev_MI,
 
 void NonDBayesCalibration::print_hi2lo_begin(int num_it)
 {
+  if (outputLevel >= NORMAL_OUTPUT) {
   Cout << "\n----------------------------------------------\n";
   Cout << "Begin Experimental Design Iteration " << num_it;
   Cout << "\n----------------------------------------------\n";
+  }
 }
 	    
 void NonDBayesCalibration::print_hi2lo_status(int num_it, int i, 
@@ -1227,15 +1205,18 @@ void NonDBayesCalibration::print_hi2lo_status(int num_it, int i,
 	    
 void NonDBayesCalibration::print_hi2lo_chain_moments()
 {
-      StringArray combined_labels;
-      copy_data(residualModel.continuous_variable_labels(), 
-       	        combined_labels);
-      NonDSampling::print_moments(Cout, chainStats, RealMatrix(), 
-	  "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
-      // Print response moments
-      StringArray resp_labels = mcmcModel.current_response().function_labels();
-      NonDSampling::print_moments(Cout, fnStats, RealMatrix(), 
-          "response function", STANDARD_MOMENTS, resp_labels, false); 
+  if (outputLevel < DEBUG_OUTPUT) 
+    return;
+
+  StringArray combined_labels;
+  copy_data(residualModel.continuous_variable_labels(), 
+   	        combined_labels);
+  NonDSampling::print_moments(Cout, chainStats, RealMatrix(), 
+  "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
+  // Print response moments
+  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  NonDSampling::print_moments(Cout, fnStats, RealMatrix(), 
+      "response function", STANDARD_MOMENTS, resp_labels, false); 
 }
 
 void NonDBayesCalibration::print_hi2lo_batch_status(int num_it, int batch_n, 
@@ -1256,6 +1237,9 @@ void NonDBayesCalibration::print_hi2lo_selected(int num_it,
     			   RealMatrix& optimal_config_matrix, 
              const RealVector& MI_vec)
 {
+  if (outputLevel < NORMAL_OUTPUT) 
+    return; 
+
   int batch_evals = optimal_config_matrix.numCols();
   Cout << "\n----------------------------------------------\n";
   Cout << "Experimental Design Iteration " << num_it-1 << " Complete";
@@ -1306,8 +1290,8 @@ void NonDBayesCalibration::print_hi2lo_file(std::ostream& out_file, int num_it,
   }
 }
 
-void NonDBayesCalibration::choose_batch_hi2lo( int random_seed, int num_it, 
-                           int max_hifi, int num_hifi,
+void NonDBayesCalibration::choose_batch_from_mutual_info( int random_seed, 
+                           int num_it, int max_hifi, int num_hifi,
                            RealMatrix& mi_chain, RealMatrix& design_matrix, 
                            RealMatrix& optimal_config_matrix, RealVector& MI_vec)
 {
@@ -1404,9 +1388,12 @@ void NonDBayesCalibration::choose_batch_hi2lo( int random_seed, int num_it,
 
 }
 
-
 void NonDBayesCalibration::add_lhs_hifi_data()
 {
+  // If #init hifi samples, do a no-op 
+  if ( initHifiSamples <= expData.num_experiments() )
+    return;
+
   hifiSampler.run();
 
   int num_exp = expData.num_experiments();
@@ -1435,11 +1422,23 @@ void NonDBayesCalibration::add_lhs_hifi_data()
     }
   }
 }
-    
+
+void NonDBayesCalibration::apply_hifi_sim_error(int& random_seed, 
+    int num_exp, int exp_offset){
+  // Apply hifi error
+  const RealVector& hifi_sim_error = hifiModel.current_response().
+                                       shared_data().simulation_error();
+  if (hifi_sim_error.length() > 0){
+    for (int i = 0; i < num_exp; i++) 
+      apply_error_vec(hifi_sim_error, random_seed, exp_offset+i);
+  }
+}
+
 void NonDBayesCalibration::apply_error_vec(const RealVector& sim_error_vec,
     			   int &stoch_seed, int experiment)
 { 
-  int num_exp = expData.num_experiments();
+  // TNP TODO: Seems like tests don't cover sim err length > 1
+  //int num_exp = expData.num_experiments();
   RealVector error_vec(numFunctions);
   Real stdev;
   boost::mt19937 rnumGenerator;
@@ -1510,9 +1509,8 @@ void NonDBayesCalibration::build_error_matrix(const RealVector& sim_error_vec,
 void NonDBayesCalibration::build_designs(RealMatrix& design_matrix)
 {
   // We assume the hifiModel's active variables are the config vars
-  size_t num_candidates_in = 0, num_design_vars =
-    hifiModel.cv() + hifiModel.div() + hifiModel.dsv() + hifiModel.drv();
-  design_matrix.shape(num_design_vars, numCandidates);
+  size_t num_candidates_in = 0, num_design_vars = design_matrix.numRows();
+  //design_matrix.shape(num_design_vars, numCandidates);
 
   // If available, import data first
   if (!importCandPtsFile.empty()) {

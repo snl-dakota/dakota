@@ -188,13 +188,14 @@ protected:
   /// supplement high-fidelity data with LHS samples
   void add_lhs_hifi_data();
   /// calculate the optimal points to add for a given batch
-  void choose_batch_hi2lo( int random_seed,
+  void choose_batch_from_mutual_info( int random_seed,
                           int num_it, 
                           int max_hifi, int num_hifi, 
                           RealMatrix& mi_chain,
                           RealMatrix& design_matrix, 
                           RealMatrix& optimal_config_matrix, RealVector& MI_vec);
   /// apply simulation error vector
+  void apply_hifi_sim_error(int& random_seed, int num_exp, int exp_offset=0 );
   void apply_error_vec(const RealVector& error_vec, int &seed, int experiment);
   /// build matrix of errors 
   void build_error_matrix(const RealVector& sim_error_vec, 
