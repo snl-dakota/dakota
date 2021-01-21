@@ -128,15 +128,17 @@ protected:
   void check_key(int key1, int key2) const;
 
   /// return the model form index from the incoming key
-  unsigned short model_form(const Pecos::ActiveKeyData& data,
-			    size_t i = 0) const;
+  unsigned short model_form(const Pecos::ActiveKey& key,
+			    size_t m = 0, size_t n = 0) const;
   /// assign the model form index within the incoming key
-  void model_form(Pecos::ActiveKeyData& data, unsigned short form,
-		  size_t i = 0);
+  void model_form(Pecos::ActiveKey& key, unsigned short form,
+		  size_t m = 0, size_t n = 0);
   /// return the resolution level index from the incoming key
-  size_t resolution_level(const Pecos::ActiveKeyData& data, size_t i = 0) const;
+  size_t resolution_level(const Pecos::ActiveKey& key,
+			  size_t m = 0, size_t n = 0) const;
   /// assign the resolution level index to the incoming key
-  void resolution_level(Pecos::ActiveKeyData& data, size_t lev, size_t i = 0);
+  void resolution_level(Pecos::ActiveKey& key, size_t lev,
+			size_t m = 0, size_t n = 0);
 
   /// evaluate whether a rebuild of the approximation should be
   /// forced based on changes in the inactive data
@@ -305,7 +307,7 @@ inline Model& SurrogateModel::subordinate_model()
 inline void SurrogateModel::active_model_key(const Pecos::ActiveKey& key)
 {
   // base implementation (augmented in derived SurrogateModels)
-  activeKey = key;//.copy(); // *** try to share representations except for entering data into DB storage (reduce overhead of short-term activations)
+  activeKey = key;//.copy(); // share representations except for entering data into DB storage (reduce overhead of short-term activations)
 }
 
 
@@ -340,23 +342,23 @@ model_indices(Pecos::ActiveKeyData& data, const UShortArray& indices)
 
 
 inline unsigned short SurrogateModel::
-model_form(const Pecos::ActiveKeyData& data, size_t i) const
-{ return data.model_index(i); } // assumes 1D model indexing; push_back Ok
+model_form(const Pecos::ActiveKey& key, size_t m, size_t n) const
+{ return key.data(m).model_index(n); }
 
 
 inline void SurrogateModel::
-model_form(Pecos::ActiveKeyData& data, unsigned short form, size_t i)
-{ data.model_index(form, i); } // assumes 1D model indexing; push_back Ok
+model_form(Pecos::ActiveKey& key, unsigned short form, size_t m, size_t n)
+{ key.data(m).model_index(form, n); } // assumes 1D model indexing; push_back Ok
 
 
 inline size_t SurrogateModel::
-resolution_level(const Pecos::ActiveKeyData& data, size_t i) const
-{ return data.discrete_set_index(i); } // support discrete sets for now...
+resolution_level(const Pecos::ActiveKey& key, size_t m, size_t n) const
+{ return key.data(m).discrete_set_index(n); } // support discrete sets for now
 
 
 inline void SurrogateModel::
-resolution_level(Pecos::ActiveKeyData& data, size_t lev, size_t i)
-{ data.discrete_set_index(lev, i); } // support discrete sets for now...
+resolution_level(Pecos::ActiveKey& key, size_t lev, size_t m, size_t n)
+{ key.data(m).discrete_set_index(lev, n); } // support discrete sets for now
 
 
 /** return the SurrogateModel evaluation id counter.  Due to possibly

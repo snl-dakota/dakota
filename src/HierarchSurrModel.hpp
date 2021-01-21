@@ -215,8 +215,9 @@ private:
   void assign_surrogate_key();
 
   /// define truth and surrogate keys from incoming active key
-  void extract_model_keys(const UShortArray& active_key,
-			  UShortArray& truth_key, UShortArray& surr_key);
+  void extract_model_keys(const Pecos::ActiveKey& active_key,
+			  Pecos::ActiveKey& truth_key,
+			  Pecos::ActiveKey& surr_key);
 
   /// helper to select among Variables::all_discrete_{int,string,real}_
   /// variable_labels() for exporting a solution control variable label
@@ -261,7 +262,7 @@ private:
   /// helper function for applying a single response correction corresponding
   /// to deltaCorr[paired_key]
   void single_apply(const Variables& vars, Response& resp,
-		    const UShortArray& paired_key);
+		    const Pecos::ActiveKey& paired_key);
   /// helper function for applying a correction across a sequence of
   /// model forms or discretization levels
   void recursive_apply(const Variables& vars, Response& resp);
@@ -277,14 +278,14 @@ private:
   /// manages construction and application of correction functions that
   /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
   /// order to reproduce high fidelity data.
-  std::map<UShortArray, DiscrepancyCorrection> deltaCorr;
+  std::map<Pecos::ActiveKey, DiscrepancyCorrection> deltaCorr;
   /// order of correction: 0, 1, or 2
   short corrOrder;
 
   unsigned short correctionMode;
 
   // sequence of discrepancy corrections to apply in SEQUENCE_CORRECTION mode
-  //std::vector<UShortArray> corrSequence;
+  //std::vector<Pecos::ActiveKey> corrSequence;
 
   /// Ordered sequence (low to high) of model fidelities.  Models are of
   /// arbitrary type and supports recursions.
@@ -334,7 +335,7 @@ private:
 
   /// map of reference truth (high fidelity) responses computed in
   /// build_approximation() and used for calculating corrections
-  std::map<UShortArray, Response> truthResponseRef;
+  std::map<Pecos::ActiveKey, Response> truthResponseRef;
 };
 
 
@@ -411,7 +412,7 @@ inline short HierarchSurrModel::correction_type()
 
 inline void HierarchSurrModel::correction_type(short corr_type)
 {
-  std::map<UShortArray, DiscrepancyCorrection>::iterator it;
+  std::map<Pecos::ActiveKey, DiscrepancyCorrection>::iterator it;
   for (it=deltaCorr.begin(); it!=deltaCorr.end(); ++it)
     it->second.correction_type(corr_type);
 }
@@ -500,11 +501,11 @@ inline void HierarchSurrModel::assign_surrogate_key()
 
 
 inline void HierarchSurrModel::
-extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
-		   UShortArray& surr_key)
+extract_model_keys(const Pecos::ActiveKey& active_key,
+		   Pecos::ActiveKey& truth_key, Pecos::ActiveKey& surr_key)
 {
-  if (Pecos::ActiveKey::aggregated_key(active_key))
-    Pecos::ActiveKey::extract_keys(active_key, truth_key, surr_key);
+  if (active_key.aggregated())
+    active_key.extract_keys(truth_key, surr_key);
   else // single key: assign to truth or surr key based on responseMode
     switch (responseMode) {
     case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:

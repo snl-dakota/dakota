@@ -74,26 +74,30 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
 void HierarchSurrModel::assign_default_keys()
 {
   // default key data values, to be overridden at run time
-  ActiveKeyData surr_key_data, truth_key_data;
+  Pecos::ActiveKeyData surr_key_data(true), truth_key_data(true);
   unsigned short id = 0, last_model = orderedModels.size() - 1;
-  size_t SZ_MAX = std::numeric_limits<size_t>::max(); 
+  surrModelKey.assign(id, Pecos::NO_REDUCTION, surr_key_data,
+		      Pecos::SHALLOW_COPY);
+  truthModelKey.assign(id, Pecos::NO_REDUCTION, truth_key_data,
+		       Pecos::SHALLOW_COPY);
+  //size_t SZ_MAX = std::numeric_limits<size_t>::max(); 
+
   if (multifidelity()) { // first and last model form (solution levels ignored)
-    model_form(truth_key_data, last_model);
-    model_form(surr_key_data,  0);
-    //resolution_level(truth_key_data, SZ_MAX); // leave empty? set finest?
-    //resolution_level(surr_key_data,  SZ_MAX); // leave empty? set finest?
+    model_form(truthModelKey, last_model);
+    model_form(surrModelKey,  0);
+    //resolution_level(truthModelKey, SZ_MAX); // leave empty? set finest?
+    //resolution_level(surrModelKey,  SZ_MAX); // leave empty? set finest?
   }
   else if (multilevel()) { // first and last solution level (last model)
-    model_form(truth_key_data, last_model);
-    model_form(surr_key_data,  last_model);
-    resolution_level(truth_key_data,
+    model_form(truthModelKey, last_model);
+    model_form(surrModelKey,  last_model);
+    resolution_level(truthModelKey,
 		     orderedModels[last_model].solution_levels() - 1);
-    resolution_level(surr_key_data, 0);
+    resolution_level(surrModelKey, 0);
   }
-  surrModelKey.assign(id,  surr_key_data,  SHALLOW_COPY);
-  truthModelKey.assign(id, truth_key_data, SHALLOW_COPY);
   Pecos::ActiveKey::
     aggregate_keys(truthModelKey, surrModelKey, activeKey);
+
   check_model_interface_instance();
 }
 
@@ -408,7 +412,7 @@ void HierarchSurrModel::build_approximation()
 
   // compute the response for the high fidelity model
   ShortArray total_asv, hf_asv, lf_asv;
-  std::map<UShortArray, DiscrepancyCorrection>::iterator dc_it
+  std::map<Pecos::ActiveKey, DiscrepancyCorrection>::iterator dc_it
     = deltaCorr.find(activeKey);
   if (dc_it!=deltaCorr.end() && dc_it->second.initialized())
     total_asv.assign(numFns, dc_it->second.data_order());
@@ -974,7 +978,7 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   IntRespMIter  lf_it  = lf_resp_map.begin();
   Response empty_resp;
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  std::map<UShortArray, DiscrepancyCorrection>::iterator dc_it;
+  std::map<Pecos::ActiveKey, DiscrepancyCorrection>::iterator dc_it;
   if (responseMode == MODEL_DISCREPANCY)
     dc_it = deltaCorr.find(activeKey);
   while (hf_cit != hf_resp_map.end() || lf_it != lf_resp_map.end()) {
@@ -1139,10 +1143,10 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
     // output interface ids, potentially paired
     bool mf = multifidelity();  StringArray iface_ids;
     if (mf) { // sameInterfaceInstance can't be used since it varies at run time
-      if (truthModelKey.empty()) iface_ids.push_back("N/A");// preserve row len
-      else                       iface_ids.push_back(hf_model.interface_id());
-      if ( surrModelKey.empty()) iface_ids.push_back("N/A");// preserve row len
-      else                       iface_ids.push_back(lf_model.interface_id());
+      if (truthModelKey.is_null()) iface_ids.push_back("N/A");//preserve row len
+      else                         iface_ids.push_back(hf_model.interface_id());
+      if ( surrModelKey.is_null()) iface_ids.push_back("N/A");//preserve row len
+      else                         iface_ids.push_back(lf_model.interface_id());
     }
     else
       iface_ids.push_back(hf_model.interface_id());
@@ -1156,7 +1160,8 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
       output_mgr.add_tabular_data(vars, 0, av_index);//leading set in spec order
 
       // output paired solution control values
-      bool truth_key = !truthModelKey.empty(), surr_key = !surrModelKey.empty();
+      bool truth_key = !truthModelKey.is_null(),
+	    surr_key = ! surrModelKey.is_null();
       if (sameModelInstance && truth_key && surr_key) {
 	// HF soln cntl was overwritten by LF and must be temporarily restored
 	assign_truth_key();      add_tabular_solution_level_value(hf_model);
@@ -1257,15 +1262,15 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
 
 void HierarchSurrModel::
 single_apply(const Variables& vars, Response& resp,
-	     const UShortArray& paired_key)
+	     const Pecos::ActiveKey& paired_key)
 {
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   bool apply_corr = true;
   DiscrepancyCorrection& delta_corr = deltaCorr[paired_key];
   if (!delta_corr.computed()) {
-    UShortArray truth_key;
-    Pecos::ActiveKey::extract_key(paired_key, truth_key, 0);
-    std::map<UShortArray, Response>::iterator it
+    Pecos::ActiveKey truth_key;
+    paired_key.extract_key(truth_key, 0);
+    std::map<Pecos::ActiveKey, Response>::iterator it
       = truthResponseRef.find(truth_key);
     if (it == truthResponseRef.end()) apply_corr = false; // not found
     else delta_corr.compute(vars, it->second, resp, quiet_flag);
@@ -1283,7 +1288,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
     break;
   case FULL_MODEL_FORM_CORRECTION: {
     // assume a consistent level index from surrModelKey
-    size_t i, num_models = orderedModels.size();  UShortArray paired_key;
+    size_t i, num_models = orderedModels.size();  Pecos::ActiveKey paired_key;
     unsigned short lf_form = model_form(surrModelKey);
     Pecos::ActiveKey::
       aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
@@ -1303,7 +1308,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
       abort_handler(MODEL_ERROR);
     }
     size_t i, num_levels = surrogate_model().solution_levels();
-    UShortArray paired_key;
+    Pecos::ActiveKey paired_key;
     Pecos::ActiveKey::
       aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
     for (i = lf_lev; i < num_levels - 1; ++i) {
@@ -1383,7 +1388,7 @@ void HierarchSurrModel::component_parallel_mode(short par_mode)
   // in model may be overkill (send of state vars in vars buffer sufficient?)
   bool restart = false;
   if (componentParallelMode != par_mode || componentParallelKey != activeKey) {
-    UShortArray old_hf_key, old_lf_key;
+    Pecos::ActiveKey old_hf_key, old_lf_key;
     extract_model_keys(componentParallelKey, old_hf_key, old_lf_key);
     switch (componentParallelMode) {
     case SURROGATE_MODEL_MODE:  stop_model(model_form(old_lf_key));  break;
@@ -1435,7 +1440,7 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
     parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
     if (componentParallelMode) {
       // use a quick size estimation for recv buffer i/o size bcast
-      UShortArray dummy_key(5, 0); // for size estimation (worst 2-model case)
+      Pecos::ActiveKey dummy_key(5, 0); // for size estimation (worst case)
       MPIPackBuffer send_buff;  send_buff << responseMode << dummy_key;
       int buffer_len = send_buff.size();
 

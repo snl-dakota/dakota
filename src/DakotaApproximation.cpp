@@ -229,7 +229,7 @@ void Approximation::build()
 {
   if (approxRep)
     approxRep->build();
-  else { // default is only a data check --> augmented/replaced by derived class
+  else { // default is only a data check; augmented/replaced by derived class
     check_points(approxData.points());
 
     // Could also enumerate embedded keys:

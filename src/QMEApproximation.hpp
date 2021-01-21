@@ -152,8 +152,7 @@ inline void QMEApproximation::clear_current_active_data()
   }
 
   // pop points from approxData
-  for (size_t i=0; i<num_pop; ++i)
-    approxData.pop_front(); // remove oldest
+  approxData.pop_front(num_pop); // remove oldest
 }
 
 } // namespace Dakota

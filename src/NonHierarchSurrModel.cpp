@@ -62,9 +62,14 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
 void NonHierarchSurrModel::assign_default_keys()
 {
   // default key values, to be overridden at run time
-  truthModelKey.assign(3, 0);
-  size_t hf_soln_lev = truthModel.solution_levels();
-  truthModelKey[2] = (hf_soln_lev > 1) ? hf_soln_lev - 1 : USHRT_MAX;
+  Pecos::ActiveKeyData truth_key_data(true), surr_key_data(true);
+  unsigned short id = 0;
+  truthModelKey.assign(id, Pecos::NO_REDUCTION, truth_key_data,
+		       Pecos::SHALLOW_COPY);
+  size_t soln_lev = truthModel.solution_levels(),
+    lev = (soln_lev) ? soln_lev - 1 : USHRT_MAX;
+  model_form(truthModelKey, 0);
+  resolution_level(truthModelKey, lev);
 
   if (responseMode == BYPASS_SURROGATE)
     unorderedModelKeys.clear();
@@ -72,16 +77,17 @@ void NonHierarchSurrModel::assign_default_keys()
     size_t i, num_unord = unorderedModels.size(), lf_soln_lev;
     unorderedModelKeys.resize(num_unord);
     for (i=0; i<num_unord; ++i) {
-      UShortArray& key_i = unorderedModelKeys[i];
-      key_i.resize(3);  key_i[0] = 0;                             // group
-      key_i[1] = i+1;                                             // model form
-      lf_soln_lev = unorderedModels[i].solution_levels();
-      key_i[2] = (lf_soln_lev > 1) ? lf_soln_lev - 1 : USHRT_MAX; // soln lev
+      Pecos::ActiveKey& surr_key_i = unorderedModelKeys[i];
+      surr_key_i.assign(id,Pecos::NO_REDUCTION,surr_key_data,Pecos::DEEP_COPY);
+      model_form(surr_key_i, i+1);       // model form
+      soln_lev = unorderedModels[i].solution_levels();
+      lev = (soln_lev) ? soln_lev - 1 : USHRT_MAX;
+      resolution_level(surr_key_i, lev); // soln lev
     }
   }
-
   Pecos::ActiveKey::
     aggregate_keys(truthModelKey, unorderedModelKeys, activeKey);
+
   check_model_interface_instance();
 }
 
@@ -308,7 +314,7 @@ void NonHierarchSurrModel::build_approximation()
 
   // compute the response for the high fidelity model
   ShortArray total_asv, hf_asv, lf_asv;
-  std::map<UShortArray, DiscrepancyCorrection>::iterator dc_it
+  std::map<Pecos::ActiveKey, DiscrepancyCorrection>::iterator dc_it
     = deltaCorr.find(activeKey);
   if (dc_it!=deltaCorr.end() && dc_it->second.initialized())
     total_asv.assign(numFns, dc_it->second.data_order());
@@ -690,7 +696,7 @@ void NonHierarchSurrModel::component_parallel_mode(short model_id)
   // TO DO: restarting servers for a change in soln control index w/o change
   // in model may be overkill (send of state vars in vars buffer sufficient?)
   if (componentParallelMode != model_id || componentParallelKey != activeKey) {
-    //UShortArray old_truth;  UShort2DArray old_surr;
+    //Pecos::ActiveKey old_truth;  std::vector<Pecos::ActiveKey> old_surr;
     //extract_model_keys(componentParallelKey, old_truth, old_surr);
     //switch (componentParallelMode) {
     //case SURROGATE_MODEL_MODE:  stop_model(old_surr[model_id][1]);  break;
@@ -731,7 +737,7 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
     if (componentParallelMode) {
       // use a quick size estimation for recv buffer i/o size bcast
       size_t num_mod = unorderedModels.size() + 1;
-      UShortArray dummy_key(1+2*num_mod, 0);// for size estimation
+      Pecos::ActiveKey dummy_key(1+2*num_mod, 0);// for size estimation
       MPIPackBuffer send_buff;  send_buff << responseMode << dummy_key;
       int buffer_len = send_buff.size();
 

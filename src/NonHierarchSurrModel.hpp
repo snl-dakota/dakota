@@ -89,7 +89,7 @@ protected:
   const Model& truth_model() const;
 
   /// define the active model key
-  void active_model_key(const UShortArray& key);
+  void active_model_key(const Pecos::ActiveKey& key);
 
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -113,7 +113,7 @@ protected:
   void surrogate_response_mode(short mode);
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
-  void surrogate_function_indices(const IntSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   // use the high fidelity model to compute the truth values needed for
   // correction of approximate model results
@@ -181,13 +181,14 @@ private:
   void assign_default_keys();
 
   /// assign the resolution level for the model form indicated by the key
-  void assign_key(const UShortArray& key);
+  void assign_key(const Pecos::ActiveKey& key);
   /// assign the resolution level for the i-th model key
   void assign_key(size_t i);
 
   /// define truth key and surrogate key array from incoming active key
-  void extract_model_keys(const UShortArray& active_key,
-			  UShortArray& truth_key, UShort2DArray& surr_keys);
+  void extract_model_keys(const Pecos::ActiveKey& active_key,
+			  Pecos::ActiveKey& truth_key,
+			  std::vector<Pecos::ActiveKey>& surr_keys);
 
   /// utility for propagating new key values
   void key_updates(unsigned short model_index, unsigned short soln_lev_index);
@@ -237,11 +238,11 @@ private:
   //////////////////////////////////////////////////////////////////////////////
   /// key defining active resolution level for truthModel.  Note: model form
   /// component is maintained for consistency but is redundant in this case.
-  UShortArray truthModelKey;
+  Pecos::ActiveKey truthModelKey;
   /// keys defining active resolution levels for unorderedModels.  Note: model
   /// form components are maintained for consistency but are redundant since
   /// order across unorderedModel{s,Keys} is consistent.
-  UShort2DArray unorderedModelKeys;
+  std::vector<Pecos::ActiveKey> unorderedModelKeys;
 
   /// flag indicating that the {low,high}FidelityKey correspond to the
   /// same model instance, requiring modifications to updating and evaluation
@@ -253,11 +254,11 @@ private:
   bool sameInterfaceInstance;
 
   /// store aggregate model key that is active in component_parallel_mode()
-  UShortArray componentParallelKey;
+  Pecos::ActiveKey componentParallelKey;
 
   // map of reference truth (high fidelity) responses computed in
   // build_approximation() and used for calculating corrections
-  //std::map<UShortArray, Response> truthResponseRef;
+  //std::map<Pecos::ActiveKey, Response> truthResponseRef;
 
   IntIntMapArray modelIdMap; // *** TO DO: demote base-class IdMaps or promote MapArray
 
@@ -385,7 +386,7 @@ inline const Model& NonHierarchSurrModel::truth_model() const
 { return truthModel; }
 
 
-inline void NonHierarchSurrModel::assign_key(const UShortArray& key)
+inline void NonHierarchSurrModel::assign_key(const Pecos::ActiveKey& key)
 {
   unsigned short form = model_form(key);
   if (form != USHRT_MAX) {
@@ -403,11 +404,22 @@ inline void NonHierarchSurrModel::assign_key(size_t i)
 
 
 inline void NonHierarchSurrModel::
-extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
-		   UShort2DArray& surr_keys)
+extract_model_keys(const Pecos::ActiveKey& active_key,
+		   Pecos::ActiveKey& truth_key,
+		   std::vector<Pecos::ActiveKey>& surr_keys)
 {
-  //if (Pecos::ActiveKey::aggregated_key(active_key))
-    Pecos::ActiveKey::extract_keys(active_key, truth_key, surr_keys);
+  //if (active_key.aggregated()) {
+  size_t num_k = active_key.data_size();
+  if (num_k) {
+    truth_key = active_key.extract_key(0);
+    size_t k, num_surr_k = num_k - 1;
+    surr_keys.resize(num_surr_k);
+    for (k=0; k<num_surr_k; ++k)
+      surr_keys[k] = active_key.extract_key(k+1);
+  }
+  else
+    { truth_key.clear(); surr_keys.clear(); }
+  //}
   //else // single key: assign to truth or surr key based on responseMode
   //  switch (responseMode) {
   //  case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
@@ -418,7 +430,7 @@ extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
 }
 
 
-inline void NonHierarchSurrModel::active_model_key(const UShortArray& key)
+inline void NonHierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
 {
   // assign activeKey
   SurrogateModel::active_model_key(key);
@@ -563,7 +575,7 @@ inline void NonHierarchSurrModel::surrogate_response_mode(short mode)
 
 
 inline void NonHierarchSurrModel::
-surrogate_function_indices(const IntSet& surr_fn_indices)
+surrogate_function_indices(const SizetSet& surr_fn_indices)
 { surrogateFnIndices = surr_fn_indices; }
 
 
