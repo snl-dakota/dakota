@@ -387,8 +387,8 @@ inline size_t HierarchSurrModel::qoi() const
 
 inline void HierarchSurrModel::check_model_interface_instance()
 {
-  unsigned short lf_form = model_form( surrModelKey),
-                 hf_form = model_form(truthModelKey);
+  unsigned short lf_form = retrieve_model_form( surrModelKey),
+                 hf_form = retrieve_model_form(truthModelKey);
 
   if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
     sameModelInstance = sameInterfaceInstance = false; // including both undef
@@ -420,7 +420,7 @@ inline void HierarchSurrModel::correction_type(short corr_type)
 
 inline Model& HierarchSurrModel::surrogate_model()
 {
-  unsigned short lf_form = model_form(surrModelKey);
+  unsigned short lf_form = retrieve_model_form(surrModelKey);
   if (lf_form == USHRT_MAX) // either empty key or undefined model form
     return orderedModels.front();
   else {
@@ -436,7 +436,7 @@ inline Model& HierarchSurrModel::surrogate_model()
 
 inline const Model& HierarchSurrModel::surrogate_model() const
 {
-  unsigned short lf_form = model_form(surrModelKey);
+  unsigned short lf_form = retrieve_model_form(surrModelKey);
   if (lf_form == USHRT_MAX) // either empty key or undefined model form
     return orderedModels.front();
   else {
@@ -452,7 +452,7 @@ inline const Model& HierarchSurrModel::surrogate_model() const
 
 inline Model& HierarchSurrModel::truth_model()
 {
-  unsigned short hf_form = model_form(truthModelKey);
+  unsigned short hf_form = retrieve_model_form(truthModelKey);
   if (hf_form == USHRT_MAX) // either empty key or undefined model form
     return orderedModels.back();
   else {
@@ -468,7 +468,7 @@ inline Model& HierarchSurrModel::truth_model()
 
 inline const Model& HierarchSurrModel::truth_model() const
 {
-  unsigned short hf_form = model_form(truthModelKey);
+  unsigned short hf_form = retrieve_model_form(truthModelKey);
   if (hf_form == USHRT_MAX) // either empty key or undefined model form
     return orderedModels.back();
   else {
@@ -484,19 +484,19 @@ inline const Model& HierarchSurrModel::truth_model() const
 
 inline void HierarchSurrModel::assign_truth_key()
 {
-  unsigned short hf_form = model_form(truthModelKey);
+  unsigned short hf_form = retrieve_model_form(truthModelKey);
   if (hf_form != USHRT_MAX)
     orderedModels[hf_form].solution_level_cost_index(
-      resolution_level(truthModelKey));
+      retrieve_resolution_level(truthModelKey));
 }
 
 
 inline void HierarchSurrModel::assign_surrogate_key()
 {
-  unsigned short lf_form = model_form(surrModelKey);
+  unsigned short lf_form = retrieve_model_form(surrModelKey);
   if (lf_form != USHRT_MAX)
     orderedModels[lf_form].solution_level_cost_index(
-      resolution_level(surrModelKey));
+      retrieve_resolution_level(surrModelKey));
 }
 
 
@@ -541,7 +541,7 @@ inline void HierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
 
   switch (responseMode) {
   case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE: {
-    unsigned short lf_form = model_form(surrModelKey);
+    unsigned short lf_form = retrieve_model_form(surrModelKey);
     if (lf_form != USHRT_MAX) {// LF form def'd
       DiscrepancyCorrection& delta_corr = deltaCorr[key]; // per data group
       if (!delta_corr.initialized())

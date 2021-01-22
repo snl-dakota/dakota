@@ -55,15 +55,14 @@ initialize_keys(unsigned short group,
   truthModelKey[1]  =  truth_form;  truthModelKey[2]  =  truth_level;
   approxModelKey[1] = approx_form;  approxModelKey[2] = approx_level;
 
-  Pecos::ActiveKey::
-    aggregate_keys(truthModelKey, approxModelKey, pairedModelKey);
+  pairedModelKey.aggregate_keys(truthModelKey, approxModelKey);
 }
 
 
 void SurrBasedLevelData::initialize_keys(const UShortArray& aggregate_key)
 {
   pairedModelKey = aggregate_key;
-  Pecos::ActiveKey::extract_keys(aggregate_key, truthModelKey, approxModelKey);
+  aggregate_key.extract_keys(truthModelKey, approxModelKey);
 }
 
 

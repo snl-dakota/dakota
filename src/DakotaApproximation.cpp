@@ -233,8 +233,8 @@ void Approximation::build()
     check_points(approxData.points());
 
     // Could also enumerate embedded keys:
-    //std::vector<Pecos::ActiveKey> embedded_keys
-    //  = sharedDataRep->activeKey.extract_keys();
+    //std::vector<Pecos::ActiveKey> embedded_keys;
+    //sharedDataRep->activeKey.extract_keys(embedded_keys);
     //size_t i, num_checks = embedded_keys.size();
     //for (i=0; i<num_checks; ++i)
     //  check_points(approxData.points(embedded_keys[i]));

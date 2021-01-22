@@ -1323,8 +1323,7 @@ configure_indices(unsigned short group, unsigned short form,
   // (recursion from uSpaceModel to iteratedModel)
   // > group index is assigned based on step in model form/resolution sequence
 
-  UShortArray hf_key;
-  Pecos::ActiveKey::form_key(group, form, lev, hf_key);
+  ActiveKey hf_key;  hf_key.form_key(group, form, lev);
 
   if (hf_key[s_index] == 0 || !multilevDiscrepEmulation) {
     bypass_surrogate_mode();              // one model evaluation
@@ -1336,7 +1335,7 @@ configure_indices(unsigned short group, unsigned short form,
     case DISTINCT_EMULATION:
       aggregated_models_mode(); // two model evaluations
       // child key is the LF model from a {HF,LF} aggregation
-      Pecos::ActiveKey::decrement_key(child_key, s_index);
+      child_key.decrement_key(s_index);
       break;
     case RECURSIVE_EMULATION:
       bypass_surrogate_mode(); // still only one model evaluation
@@ -1344,7 +1343,7 @@ configure_indices(unsigned short group, unsigned short form,
       child_key[1] = child_key[2] = USHRT_MAX;// same group but no form,lev
       break;
     }
-    Pecos::ActiveKey::aggregate_keys(hf_key, child_key, discrep_key);
+    discrep_key.aggregate_keys(hf_key, child_key);
     uSpaceModel.active_model_key(discrep_key);
   }
 }

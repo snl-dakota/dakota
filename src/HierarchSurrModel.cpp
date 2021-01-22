@@ -83,20 +83,19 @@ void HierarchSurrModel::assign_default_keys()
   //size_t SZ_MAX = std::numeric_limits<size_t>::max(); 
 
   if (multifidelity()) { // first and last model form (solution levels ignored)
-    model_form(truthModelKey, last_model);
-    model_form(surrModelKey,  0);
-    //resolution_level(truthModelKey, SZ_MAX); // leave empty? set finest?
-    //resolution_level(surrModelKey,  SZ_MAX); // leave empty? set finest?
+    assign_model_form(truthModelKey, last_model);
+    assign_model_form(surrModelKey,  0);
+    //assign_resolution_level(truthModelKey, SZ_MAX);// leave empty? set finest?
+    //assign_resolution_level(surrModelKey,  SZ_MAX);// leave empty? set finest?
   }
   else if (multilevel()) { // first and last solution level (last model)
-    model_form(truthModelKey, last_model);
-    model_form(surrModelKey,  last_model);
-    resolution_level(truthModelKey,
-		     orderedModels[last_model].solution_levels() - 1);
-    resolution_level(surrModelKey, 0);
+    assign_model_form(truthModelKey, last_model);
+    assign_model_form(surrModelKey,  last_model);
+    assign_resolution_level(truthModelKey,
+			    orderedModels[last_model].solution_levels() - 1);
+    assign_resolution_level(surrModelKey, 0);
   }
-  Pecos::ActiveKey::
-    aggregate_keys(truthModelKey, surrModelKey, activeKey);
+  activeKey.aggregate_keys(truthModelKey, surrModelKey);
 
   check_model_interface_instance();
 }
@@ -1268,8 +1267,7 @@ single_apply(const Variables& vars, Response& resp,
   bool apply_corr = true;
   DiscrepancyCorrection& delta_corr = deltaCorr[paired_key];
   if (!delta_corr.computed()) {
-    Pecos::ActiveKey truth_key;
-    paired_key.extract_key(truth_key, 0);
+    Pecos::ActiveKey truth_key = paired_key.extract_key(0);
     std::map<Pecos::ActiveKey, Response>::iterator it
       = truthResponseRef.find(truth_key);
     if (it == truthResponseRef.end()) apply_corr = false; // not found
@@ -1286,34 +1284,33 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
   case SINGLE_CORRECTION: case DEFAULT_CORRECTION:
     single_apply(vars, resp, activeKey);
     break;
-  case FULL_MODEL_FORM_CORRECTION: {
+  case FULL_MODEL_FORM_CORRECTION: { // *** TO DO: does initialization match default initial keys?
     // assume a consistent level index from surrModelKey
-    size_t i, num_models = orderedModels.size();  Pecos::ActiveKey paired_key;
-    unsigned short lf_form = model_form(surrModelKey);
-    Pecos::ActiveKey::
-      aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
+    size_t i, num_models = orderedModels.size();
+    unsigned short lf_form = retrieve_model_form(surrModelKey);
+    Pecos::ActiveKey paired_key;
+    paired_key.aggregate_keys(surrModelKey, surrModelKey); // initialize
     for (i = lf_form; i < num_models - 1; ++i) {
-      paired_key[1] = i+1;  // update HF model form
-      paired_key[3] = i;    // update LF model form
+      assign_model_form(paired_key, i+1, 0);  // HF model form in KeyData[0]
+      assign_model_form(paired_key, i,   1);  // LF model form in KeyData[1]
       single_apply(vars, resp, paired_key);
     }
     break;
   }
-  case FULL_SOLUTION_LEVEL_CORRECTION: {
+  case FULL_SOLUTION_LEVEL_CORRECTION: { // *** TO DO: does initialization match default initial keys?
     // assume a consistent model index from surrModelKey
-    unsigned short lf_lev = resolution_level(surrModelKey);
-    if (lf_lev == USHRT_MAX) {
+    size_t lf_lev = retrieve_resolution_level(surrModelKey);
+    if (lf_lev == std::numeric_limits<size_t>::max()) {
       Cerr << "Error: FULL_SOLUTION_LEVEL_CORRECTION requires solution level "
 	   << "within model key." << std::endl;
       abort_handler(MODEL_ERROR);
     }
     size_t i, num_levels = surrogate_model().solution_levels();
     Pecos::ActiveKey paired_key;
-    Pecos::ActiveKey::
-      aggregate_keys(surrModelKey, surrModelKey, paired_key); // initialize
+    paired_key.aggregate_keys(surrModelKey, surrModelKey); // initialize
     for (i = lf_lev; i < num_levels - 1; ++i) {
-      paired_key[2] = i+1;  // update   fine solution level
-      paired_key[4] = i;    // update coarse solution level
+      assign_resolution_level(paired_key, i+1, 0); //   fine res in KeyData[0]
+      assign_resolution_level(paired_key, i,   1); // coarse res in KeyData[1]
       single_apply(vars, resp, paired_key);
     }
     break;
@@ -1391,8 +1388,10 @@ void HierarchSurrModel::component_parallel_mode(short par_mode)
     Pecos::ActiveKey old_hf_key, old_lf_key;
     extract_model_keys(componentParallelKey, old_hf_key, old_lf_key);
     switch (componentParallelMode) {
-    case SURROGATE_MODEL_MODE:  stop_model(model_form(old_lf_key));  break;
-    case     TRUTH_MODEL_MODE:  stop_model(model_form(old_hf_key));  break;
+    case SURROGATE_MODEL_MODE:
+      stop_model(retrieve_model_form(old_lf_key));  break;
+    case     TRUTH_MODEL_MODE:
+      stop_model(retrieve_model_form(old_hf_key));  break;
     }
     restart = true;
   }

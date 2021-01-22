@@ -68,8 +68,8 @@ void NonHierarchSurrModel::assign_default_keys()
 		       Pecos::SHALLOW_COPY);
   size_t soln_lev = truthModel.solution_levels(),
     lev = (soln_lev) ? soln_lev - 1 : USHRT_MAX;
-  model_form(truthModelKey, 0);
-  resolution_level(truthModelKey, lev);
+  assign_model_form(truthModelKey, 0);
+  assign_resolution_level(truthModelKey, lev);
 
   if (responseMode == BYPASS_SURROGATE)
     unorderedModelKeys.clear();
@@ -79,14 +79,13 @@ void NonHierarchSurrModel::assign_default_keys()
     for (i=0; i<num_unord; ++i) {
       Pecos::ActiveKey& surr_key_i = unorderedModelKeys[i];
       surr_key_i.assign(id,Pecos::NO_REDUCTION,surr_key_data,Pecos::DEEP_COPY);
-      model_form(surr_key_i, i+1);       // model form
+      assign_model_form(surr_key_i, i+1);       // model form
       soln_lev = unorderedModels[i].solution_levels();
       lev = (soln_lev) ? soln_lev - 1 : USHRT_MAX;
-      resolution_level(surr_key_i, lev); // soln lev
+      assign_resolution_level(surr_key_i, lev); // soln lev
     }
   }
-  Pecos::ActiveKey::
-    aggregate_keys(truthModelKey, unorderedModelKeys, activeKey);
+  aggregate_model_keys(truthModelKey, unorderedModelKeys, activeKey);
 
   check_model_interface_instance();
 }

@@ -291,9 +291,9 @@ void SharedApproxData::active_model_key(const UShortArray& key)
     activeKey = key;//.copy();
     /*
     // update approxDataKeys
-    if (Pecos::ActiveKey::aggregated_key(key)) {
-      UShortArray hf_key, lf_key;
-      Pecos::ActiveKey::extract_keys(key, hf_key, lf_key);
+    if (key.aggregated()) {
+      ActiveKey hf_key, lf_key;
+      key.extract_keys(hf_key, lf_key);
       if (discrepancy_reduction()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREPANCY
 	approxDataKeys.resize(3); // 3 keys: HF, LF, aggregate
 	approxDataKeys[2] = key;

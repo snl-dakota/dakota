@@ -128,17 +128,17 @@ protected:
   void check_key(int key1, int key2) const;
 
   /// return the model form index from the incoming key
-  unsigned short model_form(const Pecos::ActiveKey& key,
-			    size_t m = 0, size_t n = 0) const;
+  unsigned short retrieve_model_form(const Pecos::ActiveKey& key,
+				     size_t m = 0, size_t n = 0) const;
   /// assign the model form index within the incoming key
-  void model_form(Pecos::ActiveKey& key, unsigned short form,
-		  size_t m = 0, size_t n = 0);
+  void assign_model_form(Pecos::ActiveKey& key, unsigned short form,
+			 size_t m = 0, size_t n = 0);
   /// return the resolution level index from the incoming key
-  size_t resolution_level(const Pecos::ActiveKey& key,
-			  size_t m = 0, size_t n = 0) const;
+  size_t retrieve_resolution_level(const Pecos::ActiveKey& key,
+				   size_t m = 0, size_t n = 0) const;
   /// assign the resolution level index to the incoming key
-  void resolution_level(Pecos::ActiveKey& key, size_t lev,
-			size_t m = 0, size_t n = 0);
+  void assign_resolution_level(Pecos::ActiveKey& key, size_t lev,
+			       size_t m = 0, size_t n = 0);
 
   /// evaluate whether a rebuild of the approximation should be
   /// forced based on changes in the inactive data
@@ -342,22 +342,22 @@ model_indices(Pecos::ActiveKeyData& data, const UShortArray& indices)
 
 
 inline unsigned short SurrogateModel::
-model_form(const Pecos::ActiveKey& key, size_t m, size_t n) const
+retrieve_model_form(const Pecos::ActiveKey& key, size_t m, size_t n) const
 { return key.data(m).model_index(n); }
 
 
 inline void SurrogateModel::
-model_form(Pecos::ActiveKey& key, unsigned short form, size_t m, size_t n)
+assign_model_form(Pecos::ActiveKey& key, unsigned short form,size_t m,size_t n)
 { key.data(m).model_index(form, n); } // assumes 1D model indexing; push_back Ok
 
 
 inline size_t SurrogateModel::
-resolution_level(const Pecos::ActiveKey& key, size_t m, size_t n) const
+retrieve_resolution_level(const Pecos::ActiveKey& key, size_t m, size_t n) const
 { return key.data(m).discrete_set_index(n); } // support discrete sets for now
 
 
 inline void SurrogateModel::
-resolution_level(Pecos::ActiveKey& key, size_t lev, size_t m, size_t n)
+assign_resolution_level(Pecos::ActiveKey& key, size_t lev, size_t m, size_t n)
 { key.data(m).discrete_set_index(lev, n); } // support discrete sets for now
 
 

@@ -202,8 +202,8 @@ void NonDMultilevelSampling::core_run()
     }
     else { // multiple model forms (only) --> CVMC
       // use nominal value from user input, ignoring solution_level_control
-      UShortArray hf_lf_key;  unsigned short lev = USHRT_MAX;
-      Pecos::ActiveKey::form_key(0, hf_form, lev, lf_form, lev, hf_lf_key);
+      Pecos::ActiveKey hf_lf_key;  unsigned short lev = USHRT_MAX;
+      hf_lf_key.form_key(0, hf_form, lev, lf_form, lev);
       control_variate_mc(hf_lf_key);
     }
   }
@@ -253,7 +253,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
   // assign truth model form (solution level assignment is deferred until loop)
   Pecos::ActiveKey truth_key;
   unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-  Pecos::ActiveKey::form_key(0, model_form, lev, truth_key);
+  truth_key.form_key(0, model_form, lev);
   iteratedModel.active_model_key(truth_key);
   Model& truth_model = iteratedModel.truth_model();
 
@@ -560,7 +560,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     // assign truth model form (solution level assignment is deferred until loop)
     Pecos::ActiveKey truth_key;
     unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-    Pecos::ActiveKey::form_key(0, model_form, lev, truth_key);
+    truth_key.form_key(0, model_form, lev);
     iteratedModel.active_model_key(truth_key);
     Model& truth_model = iteratedModel.truth_model();
 
@@ -1059,7 +1059,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 
   // NLev allocations currently enforce truncation to #HF levels (1)
   Pecos::ActiveKey hf_key, lf_key;
-  Pecos::ActiveKey::extract_keys(active_key, hf_key, lf_key);
+  active_key.extract_keys(hf_key, lf_key);
   unsigned short hf_model_form = hf_key[1], lf_model_form = lf_key[1];
   SizetArray& N_lf = NLev[lf_model_form][0];//[lf_lev_index];
   SizetArray& N_hf = NLev[hf_model_form][0];//[hf_lev_index];
@@ -1150,8 +1150,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-  Pecos::ActiveKey::
-    form_key(0, hf_model_form, lev, lf_model_form, lev, active_key);
+  active_key.form_key(0, hf_model_form, lev, lf_model_form, lev);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -1378,8 +1377,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-  Pecos::ActiveKey::
-    form_key(0, hf_model_form, lev, lf_model_form, lev, active_key);
+  active_key.form_key(0, hf_model_form, lev, lf_model_form, lev);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -1633,8 +1631,7 @@ configure_indices(unsigned short group, unsigned short form,
   // > group index is assigned based on step in model form/resolution sequence
   // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
 
-  Pecos::ActiveKey hf_key;
-  Pecos::ActiveKey::form_key(group, form, lev, hf_key);
+  Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, lev);
 
   if (hf_key[s_index] == 0) { // step 0 in the sequence
     bypass_surrogate_mode();
@@ -1644,8 +1641,8 @@ configure_indices(unsigned short group, unsigned short form,
     aggregated_models_mode();
 
     Pecos::ActiveKey lf_key = hf_key.copy(), aggregate_key;
-    Pecos::ActiveKey::decrement_key(lf_key, s_index);    
-    Pecos::ActiveKey::aggregate_keys(hf_key, lf_key, aggregate_key);
+    lf_key.decrement_key(s_index);    
+    aggregate_key.aggregate_keys(hf_key, lf_key);
     iteratedModel.active_model_key(aggregate_key); // two active fidelities
   }
 }

@@ -539,8 +539,7 @@ void C3Approximation::synchronize_surrogate_data()
   // level 0: approxData non-aggregated key stores raw data
   short discrep_type = data_rep->discrepReduction,
         combine_type = data_rep->combineType;
-  if (!discrep_type ||
-      !Pecos::ActiveKey::aggregated_key(active_key))
+  if (!discrep_type || !active_key.aggregated())
     return;
 
   switch (discrep_type) {
@@ -570,7 +569,7 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
   // Modeled after Pecos::PolynomialApproximation::generate_synthetic_data()
 
   UShortArray hf_key, lf0_key, lf_hat_key; // LF-hat in surplus case
-  Pecos::ActiveKey::extract_keys(active_key, hf_key, lf_hat_key);
+  active_key.extract_keys(hf_key, lf_hat_key);
   lf0_key = surr_data.filtered_key(Pecos::RAW_DATA_FILTER, 0);
 
   // initialize surr_data[lf_hat_key]
