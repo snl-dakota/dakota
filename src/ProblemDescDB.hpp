@@ -404,26 +404,20 @@ private:
 
   // helpers to map keys to class member data values
 
-  /// Retrieve member of type T from class R (Data*Rep) when passed a
-  /// pointer to the rep (instantiate template with T& if the return
-  /// type needs to be T&, similar const T&)
-  template <typename T, class Rep>
-  using RepGetter = std::function<T(std::shared_ptr<Rep>&)>;
-
-  /// Encapsulate lookups across Data*Rep types:
-  /// given lookup tables mapping strings to Data*Rep members, and an
+  /// Encapsulate lookups across Data*Rep types: given lookup tables
+  /// mapping strings to pointers to Data*Rep members, and an
   /// entry_name = block.entry_key, return the corresponding member
   /// value from the appropriate Data*Rep in the ProblemDescDB rep.
   template<typename T>
-  T get(const std::string& context_msg,
-	const std::map<std::string, RepGetter<T, DataEnvironmentRep>>& env_map,
-	const std::map<std::string, RepGetter<T, DataMethodRep>>& met_map,
-	const std::map<std::string, RepGetter<T, DataModelRep>>& mod_map,
-	const std::map<std::string, RepGetter<T, DataVariablesRep>>& var_map,
-	const std::map<std::string, RepGetter<T, DataInterfaceRep>>& int_map,
-	const std::map<std::string, RepGetter<T, DataResponsesRep>>& res_map,
-	const std::string& entry_name,
-	const std::shared_ptr<ProblemDescDB>& db_rep) const;
+  T& get(const std::string& context_msg,
+	 const std::map<std::string, T DataEnvironmentRep::*>& env_map,
+	 const std::map<std::string, T DataMethodRep::*>& met_map,
+	 const std::map<std::string, T DataModelRep::*>& mod_map,
+	 const std::map<std::string, T DataVariablesRep::*>& var_map,
+	 const std::map<std::string, T DataInterfaceRep::*>& int_map,
+	 const std::map<std::string, T DataResponsesRep::*>& res_map,
+	 const std::string& entry_name,
+	 const std::shared_ptr<ProblemDescDB>& db_rep) const;
 
 //     void set(const std::string& entry_name,
 // 	     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const;

@@ -1334,14 +1334,14 @@ split_entry_name(const std::string& entry_name, const std::string& context_msg)
 }
 
 template <typename T>
-T ProblemDescDB::
+T& ProblemDescDB::
 get(const std::string& context_msg,
-    const std::map<std::string, RepGetter<T, DataEnvironmentRep>>& env_map,
-    const std::map<std::string, RepGetter<T, DataMethodRep>>& met_map,
-    const std::map<std::string, RepGetter<T, DataModelRep>>& mod_map,
-    const std::map<std::string, RepGetter<T, DataVariablesRep>>& var_map,
-    const std::map<std::string, RepGetter<T, DataInterfaceRep>>& int_map,
-    const std::map<std::string, RepGetter<T, DataResponsesRep>>& res_map,
+    const std::map<std::string, T DataEnvironmentRep::*>& env_map,
+    const std::map<std::string, T DataMethodRep::*>& met_map,
+    const std::map<std::string, T DataModelRep::*>& mod_map,
+    const std::map<std::string, T DataVariablesRep::*>& var_map,
+    const std::map<std::string, T DataInterfaceRep::*>& int_map,
+    const std::map<std::string, T DataResponsesRep::*>& res_map,
     const std::string& entry_name,
     const std::shared_ptr<ProblemDescDB>& db_rep) const
 {
@@ -1354,47 +1354,46 @@ get(const std::string& context_msg,
   if (block == "environment") {
     auto it = env_map.find(entry);
     if (it != env_map.end())
-      return it->second(db_rep->environmentSpec.dataEnvRep);
+      return (db_rep->environmentSpec.dataEnvRep).get()->*(it->second);
   }
   else if (block == "method") {
     if (db_rep->methodDBLocked)
       Locked_db();
     auto it = met_map.find(entry);
     if (it != met_map.end())
-      return it->second(db_rep->dataMethodIter->dataMethodRep);
+      return (db_rep->dataMethodIter->dataMethodRep).get()->*(it->second);
   }
   else if (block == "model") {
     if (db_rep->modelDBLocked)
       Locked_db();
     auto it = mod_map.find(entry);
     if (it != mod_map.end())
-      return it->second(db_rep->dataModelIter->dataModelRep);
+      return (db_rep->dataModelIter->dataModelRep).get()->*(it->second);
   }
   else if (block == "variables") {
     if (db_rep->variablesDBLocked)
       Locked_db();
     auto it = var_map.find(entry);
     if (it != var_map.end())
-      return it->second(db_rep->dataVariablesIter->dataVarsRep);
+      return (db_rep->dataVariablesIter->dataVarsRep).get()->*(it->second);
   }
   else if (block == "interface") {
     if (db_rep->interfaceDBLocked)
       Locked_db();
     auto it = int_map.find(entry);
     if (it != int_map.end())
-      return it->second(db_rep->dataInterfaceIter->dataIfaceRep);
+      return (db_rep->dataInterfaceIter->dataIfaceRep).get()->*(it->second);
   }
   else if (block == "responses") {
     if (db_rep->responsesDBLocked)
       Locked_db();
     auto it = res_map.find(entry);
     if (it != res_map.end())
-      return it->second(db_rep->dataResponsesIter->dataRespRep);
+      return (db_rep->dataResponsesIter->dataRespRep).get()->*(it->second);
   }
   Bad_name(entry_name, context_msg);
-  return abort_handler_t<T>(PARSE_ERROR);
+  return abort_handler_t<T&>(PARSE_ERROR);
 }
-
 
 // couldn't get const-correctness right with a simple forwarder...
 // template <typename T>
@@ -1419,7 +1418,7 @@ get(const std::string& context_msg,
 
 const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 {
-  return get<const RealMatrixArray&>
+  return get<RealMatrixArray>
   ( "get_rma()",
     { /* environment */ },
     { /* method */ },
@@ -1437,7 +1436,7 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {  
-  return get<const RealVector&>
+  return get<const RealVector>
   ( "get_rv()",
     { /* environment */ },
     { /* method */
@@ -1575,7 +1574,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
 const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 {
-  return get<const IntVector&>
+  return get<const IntVector>
   ( "get_iv()",
     { /* environment */ },
     { /* method */
@@ -1633,7 +1632,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 
 const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 {
-  return get<const BitArray&>
+  return get<const BitArray>
   ( "get_ba()",
     { /* environment */ },
     { /* method */ },
@@ -1666,7 +1665,7 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 
 const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 {
-  return get<const SizetArray&>
+  return get<const SizetArray>
   ( "get_sza()",
     { /* environment */ },
     { /* method */
@@ -1686,7 +1685,7 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 
 const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 {
-  return get<const UShortArray&>
+  return get<const UShortArray>
   ( "get_usa()",
     { /* environment */ },
     { /* method */
@@ -1707,7 +1706,7 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 
 const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 {
-  return get<const RealSymMatrix&>
+  return get<const RealSymMatrix>
   ( "get_rsm()",
     { /* environment */ },
     { /* method */ },
@@ -1723,7 +1722,7 @@ const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 
 const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 {
-  return get<const RealVectorArray&>
+  return get<const RealVectorArray>
   ( "get_rva()",
     { /* environment */ },
     { /* method */
@@ -1743,7 +1742,7 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 {
   // BMA: no current use cases
-  return get<const IntVectorArray&>
+  return get<const IntVectorArray>
   ( "get_iva()",
     { /* environment */ },
     { /* method */ },
@@ -1757,7 +1756,7 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 
 const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 {
-  return get<const IntSet&>
+  return get<const IntSet>
   ( "get_is()",
     { /* environment */ },
     { /* method */ },
@@ -1777,7 +1776,7 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 
 const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 {
-  return get<const IntSetArray&>
+  return get<const IntSetArray>
   ( "get_isa()",
     { /* environment */ },
     { /* method */ },
@@ -1794,7 +1793,7 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 
 const SizetSet& ProblemDescDB::get_szs(const String& entry_name) const
 {
-  return get<const SizetSet&>
+  return get<const SizetSet>
   ( "get_szs()",
     { /* environment */ },
     { /* method */ },
@@ -1810,7 +1809,7 @@ const SizetSet& ProblemDescDB::get_szs(const String& entry_name) const
 
 const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 {
-  return get <const StringSetArray&>
+  return get <const StringSetArray>
   ( "get_ssa()",
     { /* environment */ },
     { /* method */ },
@@ -1827,7 +1826,7 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 
 const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 {
-  return get<const RealSetArray&>
+  return get<const RealSetArray>
   ( "get_rsa()",
     { /* environment */ },
     { /* method */ },
@@ -1844,7 +1843,7 @@ const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 
 const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 {
-  return get<const IntRealMapArray&>
+  return get<const IntRealMapArray>
   ( "get_irma()",
     { /* environment */ },
     { /* method */ },
@@ -1861,7 +1860,7 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 
 const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) const
 {
-  return get<const StringRealMapArray&>
+  return get<const StringRealMapArray>
   ( "get_srma()",
     { /* environment */ },
     { /* method */ },
@@ -1879,7 +1878,7 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
 
 const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 {
-  return get<const RealRealMapArray&>
+  return get<const RealRealMapArray>
   ( "get_rrma()",
     { /* environment */ },
     { /* method */ },
@@ -1899,7 +1898,7 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 const RealRealPairRealMapArray& ProblemDescDB::
 get_rrrma(const String& entry_name) const
 {
-  return get<const RealRealPairRealMapArray&>
+  return get<const RealRealPairRealMapArray>
   ( "get_rrrma()",
     { /* environment */ },
     { /* method */ },
@@ -1917,7 +1916,7 @@ get_rrrma(const String& entry_name) const
 const IntIntPairRealMapArray& ProblemDescDB::
 get_iirma(const String& entry_name) const
 {
-  return get<const IntIntPairRealMapArray&>
+  return get<const IntIntPairRealMapArray>
   ( "get_iirma()",
     { /* environment */ },
     { /* method */ },
@@ -1934,7 +1933,7 @@ get_iirma(const String& entry_name) const
 
 const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
-  return get<const StringArray&>
+  return get<const StringArray>
   ( "get_sa()",
     { /* environment */ },
     { /* method */
@@ -2017,7 +2016,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
 const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 {
-  return get<const String2DArray&>
+  return get<const String2DArray>
   ( "get_s2a()",
     { /* environment */ },
     { /* method */ },
@@ -2033,7 +2032,7 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 
 const String& ProblemDescDB::get_string(const String& entry_name) const
 {
-  return get<const String&>
+  return get<const String>
   ( "get_string()",
     { /* environment */
       {"error_file", P_ENV errorFile},
@@ -2172,7 +2171,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
 const Real& ProblemDescDB::get_real(const String& entry_name) const
 {
-  return get<const Real&>
+  return get<const Real>
   ( "get_real()",
     { /* environment */ },
     { /* method */
@@ -2758,7 +2757,7 @@ void** ProblemDescDB::get_voidss(const String& entry_name) const
 
 void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 {
-  RealVector& rep_rv = get<RealVector&>
+  RealVector& rep_rv = get<RealVector>
   ( "set(RealVector&)",
     { /* environment */ },
     { /* method */ },
@@ -2866,7 +2865,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 
 void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 {
-  IntVector& rep_iv = get<IntVector&>
+  IntVector& rep_iv = get<IntVector>
   ( "set(IntVector&)",
     { /* environment */ },
     { /* method */ },
@@ -2909,7 +2908,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 
 void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 {
-  BitArray& rep_ba = get<BitArray&>
+  BitArray& rep_ba = get<BitArray>
   ( "set(BitArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2944,7 +2943,7 @@ void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 
 void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 {
-  RealSymMatrix& rep_rsm = get<RealSymMatrix&>
+  RealSymMatrix& rep_rsm = get<RealSymMatrix>
   ( "set(RealSymMatrix&)",
     { /* environment */ },
     { /* method */ },
@@ -2962,7 +2961,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 
 void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 {
-  RealVectorArray& rep_rva = get<RealVectorArray&>
+  RealVectorArray& rep_rva = get<RealVectorArray>
   ( "set(RealVectorArray&)",
     { /* environment */ },
     { /* method */
@@ -2983,7 +2982,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 
 void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
 {
-  IntVectorArray& rep_iva = get<IntVectorArray&>
+  IntVectorArray& rep_iva = get<IntVectorArray>
   ( "set(IntVectorArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2999,7 +2998,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
 
 void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 {
-  IntSetArray& rep_isa = get<IntSetArray&>
+  IntSetArray& rep_isa = get<IntSetArray>
   ( "set(IntSetArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3018,7 +3017,7 @@ void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 
 void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 {
-  RealSetArray& rep_rsa = get<RealSetArray&>
+  RealSetArray& rep_rsa = get<RealSetArray>
   ( "set(RealSetArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3037,7 +3036,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 
 void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 {
-  IntRealMapArray& rep_irma = get<IntRealMapArray&>
+  IntRealMapArray& rep_irma = get<IntRealMapArray>
   ( "set(IntRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3057,7 +3056,7 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 
 void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma)
 {
-  StringRealMapArray& rep_srma = get<StringRealMapArray&>
+  StringRealMapArray& rep_srma = get<StringRealMapArray>
   ( "set(StringRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3075,7 +3074,7 @@ void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma
 
 void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 {
-  RealRealMapArray& rep_rrma = get<RealRealMapArray&>
+  RealRealMapArray& rep_rrma = get<RealRealMapArray>
   ( "set(RealRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3094,7 +3093,7 @@ void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 void ProblemDescDB::
 set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 {
-  RealRealPairRealMapArray& rep_rrrma = get<RealRealPairRealMapArray&>
+  RealRealPairRealMapArray& rep_rrrma = get<RealRealPairRealMapArray>
   ( "set(RealRealPairRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3113,7 +3112,7 @@ set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 void ProblemDescDB::
 set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 {
-  IntIntPairRealMapArray& rep_iirma = get<IntIntPairRealMapArray&>
+  IntIntPairRealMapArray& rep_iirma = get<IntIntPairRealMapArray>
   ( "set(IntIntPairRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3132,7 +3131,7 @@ set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 
 void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 {
-  StringArray& rep_sa = get<StringArray&>
+  StringArray& rep_sa = get<StringArray>
   ( "set(StringArray&)",
     { /* environment */ },
     { /* method */ },
