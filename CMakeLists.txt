@@ -244,8 +244,8 @@ add_subdirectory(src)
 # Build the executables in the test directory even if BUILD_TESTING is OFF
 if(DAKOTA_ENABLE_TESTS)
   add_subdirectory(test)
-  if(TEST_DAKOTA_EXAMPLES_REPOS)
-    add_subdirectory(examples_repos_test)
+  if(DAKOTA_TEST_EXAMPLES_REPO)
+    add_subdirectory(test/examples_repo)
   endif()
 endif()
 
