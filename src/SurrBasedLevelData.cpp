@@ -50,16 +50,14 @@ initialize_keys(unsigned short group,
 		unsigned short truth_form,  unsigned short approx_form,
 		unsigned short truth_level, unsigned short approx_level)
 {
-  truthModelKey.resize(3);  approxModelKey.resize(3);
-  truthModelKey[0]  = approxModelKey[0] = group;
-  truthModelKey[1]  =  truth_form;  truthModelKey[2]  =  truth_level;
-  approxModelKey[1] = approx_form;  approxModelKey[2] = approx_level;
+  truthModelKey.form_key( group,  truth_form,  truth_level);
+  approxModelKey.form_key(group, approx_form, approx_level);
 
   pairedModelKey.aggregate_keys(truthModelKey, approxModelKey);
 }
 
 
-void SurrBasedLevelData::initialize_keys(const UShortArray& aggregate_key)
+void SurrBasedLevelData::initialize_keys(const Pecos::ActiveKey& aggregate_key)
 {
   pairedModelKey = aggregate_key;
   aggregate_key.extract_keys(truthModelKey, approxModelKey);

@@ -323,51 +323,13 @@ inline void container_write(const ContainerT& c, MPIPackBuffer& s)
 #endif
 
 
-/// stream insertion for BitArray
-template <typename Block, typename Allocator>
-inline MPIPackBuffer& 
-operator<<(MPIPackBuffer& s, const boost::dynamic_bitset<Block, Allocator>& bs)
-{ 
-  size_t size = bs.size();
-  s << size;
-
-  // create a vector of blocks and insert it it
-  std::vector<Block> vec_block(bs.num_blocks());
-  to_block_range(bs, vec_block.begin());
-  s << vec_block;
-
-  return s; 
-}
-
-
-/// stream extraction for BitArray
-template <typename Block, typename Allocator>
-inline MPIUnpackBuffer& 
-operator>>(MPIUnpackBuffer& s, boost::dynamic_bitset<Block, Allocator>& bs)
-{ 
-  size_t size;
-  s >> size;
-
-  bs.resize(size);
-
-  // Load vector
-  std::vector<Block> vec_block;
-  s >> vec_block;
-
-  // Convert vector into a bitset
-  from_block_range(vec_block.begin(), vec_block.end(), bs);
-
-  return s;
-}
-
-
 /// global MPIUnpackBuffer extraction operator for generic container
 template <class ContainerT>
 inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ContainerT& data)
 #ifdef DAKOTA_HAVE_MPI
 { container_read(data, s); return s; }
 #else
-{  return s; }
+{ return s; }
 #endif
 
 /// global MPIPackBuffer insertion operator for generic container
@@ -376,8 +338,9 @@ inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const ContainerT& data)
 #ifdef DAKOTA_HAVE_MPI
 { container_write(data, s); return s; }
 #else
-{  return s; }
+{ return s; }
 #endif
+
 
 //---------------------------------------------------------------------
 //

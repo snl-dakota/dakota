@@ -14,6 +14,7 @@
 #include "dakota_data_types.hpp"
 #include "ExperimentDataUtils.hpp"
 #include "MPIPackBuffer.hpp"
+#include "ActiveKey.hpp"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/split_free.hpp>
@@ -1430,6 +1431,44 @@ inline void write_data(MPIPackBuffer& s, const StringMultiArray& v,
 // ----------------------------------------------------------------------------
 
 
+/// stream insertion for BitArray
+template <typename Block, typename Allocator>
+inline MPIPackBuffer& 
+operator<<(MPIPackBuffer& s, const boost::dynamic_bitset<Block, Allocator>& bs)
+{ 
+  size_t size = bs.size();
+  s << size;
+
+  // create a vector of blocks and insert it it
+  std::vector<Block> vec_block(bs.num_blocks());
+  to_block_range(bs, vec_block.begin());
+  s << vec_block;
+
+  return s; 
+}
+
+
+/// stream extraction for BitArray
+template <typename Block, typename Allocator>
+inline MPIUnpackBuffer& 
+operator>>(MPIUnpackBuffer& s, boost::dynamic_bitset<Block, Allocator>& bs)
+{ 
+  size_t size;
+  s >> size;
+
+  bs.resize(size);
+
+  // Load vector
+  std::vector<Block> vec_block;
+  s >> vec_block;
+
+  // Convert vector into a bitset
+  from_block_range(vec_block.begin(), vec_block.end(), bs);
+
+  return s;
+}
+
+
 /// global MPIUnpackBuffer extraction operator for std::pair
 template <typename U, typename V>
 MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::pair<U,V>& data)
@@ -1449,8 +1488,10 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::pair<U,V>& data)
   return s;
 }
 
+// ------------------------------------------------------------------------
+// *** TO DO: activating std::vector specialization (to avoid push_back()
+// *** inefficiency) has induced issues in at least 1 parallel test
 
-/*
 /// global MPIUnpackBuffer extraction operator for std::vector
 /// (specialization of ContainerT template in MPIPackBuffer.hpp)
 template <typename T>
@@ -1476,21 +1517,20 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::vector<T>& data)
     s << data[i];
   return s;
 }
-*/
+// *** END TO DO ***
+// ------------------------------------------------------------------------
 
 
 /// global MPIUnpackBuffer extraction operator for std::set
 template <typename T>
 MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::set<T>& data)
 {
-  data.clear();
-  size_t i, len;
+  size_t i, len;  T val;
   s >> len;
-  T val;
-  for (i=0; i<len; ++i){
-    s >> val; 
-    data.insert(val);
-  }
+
+  data.clear();
+  for (i=0; i<len; ++i)
+    { s >> val; data.insert(val); }
   return s;
 }
 
@@ -1724,6 +1764,40 @@ template <typename OrdinalType, typename ScalarType>
 inline std::ostream& operator<<(std::ostream& s,
   const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data)
 { write_data(s, data, true, true, true); return s; }
+
+// *** Note: these operators for Pecos types have to be promoted to the Dakota
+// *** namespace and rendered MPI buffer-specific to override the overly-generic
+// *** ContainerT template in this file.
+// *** TO DO: retire said template and fill any remaining gaps (e.g., String).
+
+/// stream extraction operator for ActiveKeyData.  Calls read(Stream&).
+//template <typename Stream>
+//Stream& operator>>(Stream& s, Pecos::ActiveKeyData& key_data)
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
+				   Pecos::ActiveKeyData& key_data)
+{ key_data.read(s); return s; }
+
+
+/// stream insertion operator for ActiveKeyData.  Calls write(Stream&).
+//template <typename Stream>
+//Stream& operator<<(Stream& s, const Pecos::ActiveKeyData& key_data)
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s,
+				 const Pecos::ActiveKeyData& key_data)
+{ key_data.write(s); return s; }
+
+
+/// stream extraction operator for ActiveKey.  Calls read(Stream&).
+//template <typename Stream>
+//Stream& operator>>(Stream& s, Pecos::ActiveKey& key)
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, Pecos::ActiveKey& key)
+{ key.read(s); return s; }
+
+
+/// stream insertion operator for ActiveKey.  Calls write(Stream&).
+//template <typename Stream>
+//Stream& operator<<(Stream& s, const Pecos::ActiveKey& key)
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const Pecos::ActiveKey& key)
+{ key.write(s); return s; }
 
 } // namespace Dakota
 

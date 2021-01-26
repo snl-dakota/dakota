@@ -255,8 +255,8 @@ protected:
   void multilevel_regression();
 
   /// configure fidelity/level counts from model hierarchy
-  void configure_sequence(unsigned short& num_steps,
-			  unsigned short& fixed_index, bool& multilevel);
+  void configure_sequence(size_t& num_steps, unsigned short& fixed_index,
+			  short& seq_type);
   /// extract cost estimates from model hierarchy (forms or resolutions)
   void configure_cost(unsigned short num_steps, bool multilevel,
 		      RealVector& cost);
@@ -266,7 +266,7 @@ protected:
   /// hierarchical model.  s_index is the sequence index that defines the
   /// active dimension for a model sequence.
   void configure_indices(unsigned short group, unsigned short form,
-			 unsigned short lev,   unsigned short s_index);
+			 unsigned short lev,   short seq_type);
   /// return aggregate cost (one or more models) for a level sample
   Real sequence_cost(unsigned short step, const RealVector& cost);
   /// compute equivHFEvals from samples per level and cost per evaluation

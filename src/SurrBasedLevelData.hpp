@@ -65,7 +65,7 @@ public:
 		       unsigned short truth_level  = USHRT_MAX,
 		       unsigned short approx_level = USHRT_MAX);
   /// initialize {truth,approx}ModelKey from aggregate_key
-  void initialize_keys(const UShortArray& aggregate_key);
+  void initialize_keys(const Pecos::ActiveKey& aggregate_key);
 
   /// perform several reset operations to restore initialized state
   void reset();
@@ -148,15 +148,15 @@ public:
 		       bool uncorr = true);
   void active_set_star(short request, short response_type, bool uncorr = true);
 
-  const UShortArray& paired_key() const;
+  const Pecos::ActiveKey& paired_key() const;
 
   unsigned short data_group();
 
   unsigned short truth_model_form();
-  unsigned short truth_model_level();
+  size_t truth_model_level();
 
   unsigned short approx_model_form();
-  unsigned short approx_model_level();
+  size_t approx_model_level();
 
   const RealVector& tr_lower_bounds() const;
   Real tr_lower_bound(size_t i) const;
@@ -222,11 +222,11 @@ private:
   unsigned short softConvCount;
 
   /// group, model form, discretization level indices for the approximate model
-  UShortArray approxModelKey;
+  Pecos::ActiveKey approxModelKey;
   /// group, model form, discretization level indices for the truth model
-  UShortArray truthModelKey;
+  Pecos::ActiveKey truthModelKey;
   /// aggregation of {truth,approx} model keys
-  UShortArray pairedModelKey;
+  Pecos::ActiveKey pairedModelKey;
 
   /// Trust region lower bounds
   RealVector trLowerBounds;
@@ -406,32 +406,28 @@ response_center_pair(IntResponsePair& pair, short corr_response_type)
 { response_center_pair(pair.first, pair.second, corr_response_type); }
 
 
-inline const UShortArray& SurrBasedLevelData::paired_key() const
+inline const Pecos::ActiveKey& SurrBasedLevelData::paired_key() const
 { return pairedModelKey; }
 
 
 inline unsigned short SurrBasedLevelData::data_group()
-{
-  if       (!truthModelKey.empty()) return  truthModelKey.front();
-  else if (!approxModelKey.empty()) return approxModelKey.front();
-  else                              return                      0;
-}
+{ return (pairedModelKey.is_null()) ? USHRT_MAX : pairedModelKey.id(); }
 
 
 inline unsigned short SurrBasedLevelData::truth_model_form()
-{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1]; }
+{ return truthModelKey.retrieve_model_form(); } // {d,m}_index=0
 
 
-inline unsigned short SurrBasedLevelData::truth_model_level()
-{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
+inline size_t SurrBasedLevelData::truth_model_level()
+{ return truthModelKey.retrieve_resolution_level(); } // {d,hp}_index=0
 
 
 inline unsigned short SurrBasedLevelData::approx_model_form()
-{ return (approxModelKey.empty()) ? USHRT_MAX : approxModelKey[1]; }
+{ return approxModelKey.retrieve_model_form(); } // {d,m}_index=0
 
 
-inline unsigned short SurrBasedLevelData::approx_model_level()
-{ return (approxModelKey.empty()) ? USHRT_MAX : approxModelKey[2]; }
+inline size_t SurrBasedLevelData::approx_model_level()
+{ return approxModelKey.retrieve_resolution_level(); } // {d,hp}_index=0
 
 
 inline void SurrBasedLevelData::reset_filter()

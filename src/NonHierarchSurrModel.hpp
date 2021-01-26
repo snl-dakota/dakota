@@ -325,7 +325,7 @@ inline size_t NonHierarchSurrModel::qoi() const
 
 inline void NonHierarchSurrModel::check_model_interface_instance()
 {
-  unsigned short hf_form = retrieve_model_form(truthModelKey);
+  unsigned short hf_form = truthModelKey.retrieve_model_form();
 
   size_t i, num_unord = unorderedModelKeys.size();
   if (hf_form == USHRT_MAX || num_unord == 0)
@@ -333,7 +333,7 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
   else {
     sameModelInstance = true;
     for (i=0; i<num_unord; ++i)
-      if (retrieve_model_form(unorderedModelKeys[i]) != hf_form)
+      if (unorderedModelKeys[i].retrieve_model_form() != hf_form)
 	{ sameModelInstance = false; break; }
   }
 
@@ -392,10 +392,10 @@ inline const Model& NonHierarchSurrModel::truth_model() const
 
 inline void NonHierarchSurrModel::assign_key(const Pecos::ActiveKey& key)
 {
-  unsigned short form = retrieve_model_form(key);
+  unsigned short form = key.retrieve_model_form();
   if (form != USHRT_MAX) {
     Model& model = (form) ? unorderedModels[form-1] : truthModel;
-    model.solution_level_cost_index(retrieve_resolution_level(key));
+    model.solution_level_cost_index(key.retrieve_resolution_level());
   }
 }
 

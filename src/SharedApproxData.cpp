@@ -276,7 +276,7 @@ SharedApproxData::~SharedApproxData()
 { /* empty dtor */ }
 
 
-void SharedApproxData::active_model_key(const UShortArray& key)
+void SharedApproxData::active_model_key(const Pecos::ActiveKey& key)
 {
   // approxDataKeys are organized in a 2D array: {truth,surrogate,combined} keys
   // > AGGREGATED_MODELS uses {HF,LF} order, as does ApproxInterface::*_add()
@@ -391,7 +391,7 @@ bool SharedApproxData::push_available()
 }
 
 
-size_t SharedApproxData::push_index(const UShortArray& key)
+size_t SharedApproxData::push_index(const Pecos::ActiveKey& key)
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
     Cerr << "Error: push_index() not available for this approximation type."
@@ -419,7 +419,7 @@ void SharedApproxData::post_push()
 }
 
 
-size_t SharedApproxData::finalize_index(size_t i, const UShortArray& key)
+size_t SharedApproxData::finalize_index(size_t i, const Pecos::ActiveKey& key)
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
     Cerr << "Error: finalize_index() not available for this approximation type."
@@ -536,7 +536,7 @@ bool SharedApproxData::formulation_updated() const
 {
   if (dataRep) return dataRep->formulation_updated();
   else { // not virtual
-    std::map<UShortArray, bool>::const_iterator cit
+    std::map<Pecos::ActiveKey, bool>::const_iterator cit
       = formUpdated.find(activeKey);
     return (cit == formUpdated.end()) ? false : cit->second;
   }

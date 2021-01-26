@@ -4307,7 +4307,7 @@ void Model::correction_type(short corr_type)
 
 
 void Model::single_apply(const Variables& vars, Response& resp,
-			 const UShortArray& paired_key)
+			 const Pecos::ActiveKey& paired_key)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->single_apply(vars, resp, paired_key);

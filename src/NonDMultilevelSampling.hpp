@@ -70,7 +70,7 @@ private:
   /// particular model form using QoI accumulators (sum_Q)
   void multilevel_mc_Qsum(unsigned short model_form);
   /// Perform control variate Monte Carlo across two model forms
-  void control_variate_mc(const UShortArray& active_key);
+  void control_variate_mc(const Pecos::ActiveKey& active_key);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Y (LH correlations for level discrepancies)
@@ -108,7 +108,7 @@ private:
   /// s_index is the sequence index that defines the active dimension for a
   /// model sequence.
   void configure_indices(unsigned short group, unsigned short form,
-			 unsigned short lev,   unsigned short s_index);
+			 unsigned short lev,   short seq_type);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
