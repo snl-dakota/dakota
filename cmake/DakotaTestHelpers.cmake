@@ -319,6 +319,16 @@ function(dakota_regression_test test_name serpar_string test_props
 endfunction()
 
 
+function(dakota_check_input suite_name input_name_we)
+  add_test(NAME "${suite_name}-${input_name_we}-check"
+   COMMAND "$<TARGET_FILE:dakota>" -check -input
+    "${CMAKE_CURRENT_BINARY_DIR}/${suite_name}-${input_name}/${input_name_we}.in"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${suite_name}-${input_name}"
+  )
+  set_tests_properties( "${suite_name}-${input_name_we}-check" PROPERTIES LABELS "DakotaExamplesRepo")
+endfunction()
+
+
 # Add suite_name regression tests for any dakota_*.in input files
 # found in ${src_dir}. Test them in a protected subdir
 # $CMAKE_CURRENT_BINARY_DIR}/${suite_name}[p]dakota_*/
@@ -353,6 +363,9 @@ function(dakota_add_regression_tests suite_name src_dir)
   foreach(test_input_file ${dakota_test_input_files})
 
     get_filename_component(input_name ${test_input_file} NAME_WE)
+
+    # Basic test to validate the input file
+    dakota_check_input("${suite_name}" "${input_name}")
 
     set(last_subtest 0)
     dakota_app_test(${input_name} ${last_subtest} SERIAL
