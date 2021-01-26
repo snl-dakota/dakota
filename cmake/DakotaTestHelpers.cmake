@@ -325,6 +325,7 @@ function(dakota_check_input suite_name input_name_we)
     "${CMAKE_CURRENT_BINARY_DIR}/${suite_name}-${input_name}/${input_name_we}.in"
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${suite_name}-${input_name}"
   )
+  set_tests_properties( "${suite_name}-${input_name_we}-check" PROPERTIES LABELS "DakotaExamplesRepo")
 endfunction()
 
 
