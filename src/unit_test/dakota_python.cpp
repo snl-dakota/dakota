@@ -29,6 +29,25 @@
 namespace py = pybind11;
 
 namespace Dakota {
+
+  namespace {
+
+    void
+      replace_interface_spec(std::string & input, const std::string & callback)
+      {
+        const std::string key = "interface";
+        auto tid = input.find(key);
+        if(tid != std::string::npos)
+        {
+          auto tbeg = input.find("=", tid);
+          auto tend = input.find('\n',tbeg+1);
+          input.replace(tid+key.length(), tend-tid, " python analysis_driver = '"+callback+"'");
+        }
+        else
+          throw std::runtime_error("Did not find \"interface\" in input.");
+      }
+}
+
 namespace python {
 
   // demonstrate a little wrapper to get Dakota version info without
@@ -153,18 +172,25 @@ PYBIND11_MODULE(dakpy, m) {
   // demo a library environment that models opt_tpl_test semantics
   py::class_<Dakota::LibraryEnvironment>(m, "LibEnv")
     .def(py::init
-	 ([](const std::string& input_file,
+	 ([](const std::string& callback,
 	     const std::string& input_string)
 	  {
-	    assert(input_file.empty() || input_string.empty());
+	    assert(!input_string.empty());
+
+            std::string copy_input = input_string;
+            if(!callback.empty())
+            {
+              ::Dakota::replace_interface_spec(copy_input, callback);
+              //std::cout << "New input:\n" << copy_input << std::endl;
+            }
 
 	    Dakota::ProgramOptions opts;
 	    opts.echo_input(false);
-	    opts.input_string(input_string);
+	    opts.input_string(copy_input);
 
 	    return new Dakota::LibraryEnvironment(opts); 
 	  })
-	 , py::arg("input"), py::arg("input_string"))
+	 , py::arg("callback"), py::arg("input_string"))
 
     .def("execute", &Dakota::LibraryEnvironment::execute)
     .def("variables_results", &Dakota::LibraryEnvironment::variables_results)

@@ -79,14 +79,14 @@ def test_lib():
             descriptors     'x1'  'x2'   'x3'
         interface,
           python
-            analysis_driver = 'test_dakota:text_book'
+            analysis_driver = 'BAD_MODULE_NAME:BAD_FN_NAME'
         responses,
           num_objective_functions = 1
           no_gradients
           no_hessians
 """
     print("\n+++ Constructing LibEnv...\n")
-    daklib = dakpy.LibEnv(input = "", input_string = text_book_input)
+    daklib = dakpy.LibEnv(callback="test_dakota:text_book", input_string = text_book_input)
     print("\n+++ Running LibEnv...\n")
     daklib.execute()
     print("\n+++ Final Functions:\n")
