@@ -4,6 +4,10 @@
 # DAKOTA INPUT FILE : dakota_cantilever_ego_stoch.in
 # These tests are not reproducible due to nonblocking synchronization
 
+environment
+  tabular_data
+    tabular_data_file = 'cantilever_opt_ego.dat'
+
 method,
     efficient_global
       gaussian_process dakota
