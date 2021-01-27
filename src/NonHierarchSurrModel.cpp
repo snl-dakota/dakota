@@ -62,7 +62,7 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
 void NonHierarchSurrModel::assign_default_keys()
 {
   // default key values, to be overridden at run time
-  Pecos::ActiveKeyData truth_key_data(true), surr_key_data(true);
+  Pecos::ActiveKeyData truth_key_data, surr_key_data;
   unsigned short id = 0;
   truthModelKey.assign(id, Pecos::NO_REDUCTION, truth_key_data,
 		       Pecos::SHALLOW_COPY);
