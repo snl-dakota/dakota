@@ -1,0 +1,35 @@
+#@ s*: TimeoutDelay=120
+#@ s*: Label=StochDiff
+
+# DAKOTA INPUT FILE: rosen_opt_ego_stoch.in
+# These tests are not reproducible due to nonblocking synchronization
+
+environment
+  tabular_data
+    tabular_data_file = 'rosen_opt_ego.dat'
+
+method
+  efficient_global
+    gaussian_process dakota
+    seed = 123456
+      batch_size = 4				#s2,#p0
+    nonblocking synchronization
+
+variables
+  continuous_design = 2
+    lower_bounds   -2.0 -2.0
+    upper_bounds    2.0  2.0
+    descriptors     'x1' 'x2'
+
+interface
+  analysis_drivers = 'rosenbrock'
+    direct					#s0,#s1,#p0
+#   fork asynchronous				#s2
+
+responses
+  objective_functions = 1
+# Verify same solution maximizing the negative objective
+#   weights  -1.0      		      	        #s1
+#   sense    'max'    				#s1
+  no_gradients
+  no_hessians
