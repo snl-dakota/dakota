@@ -9,13 +9,15 @@ environment
     tabular_data_file = 'cantilever_opt_ego.dat'
 
 method,
-    efficient_global
-      gaussian_process dakota
-      seed = 123457
-      batch_size = 4				#s0
-#     batch_size = 6                        	#s1
-#       exploration = 2                       	#s1
-	nonblocking synchronization
+  efficient_global
+    gaussian_process dakota
+    # gaussian_process surfpack       # s3
+    # gaussian_process experimental   # s4
+    seed = 123457
+    batch_size = 4                    #s0
+    # batch_size = 6                    #s1
+      # exploration = 2                 #s1
+  nonblocking synchronization
 
 variables,
     continuous_design = 2

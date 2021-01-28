@@ -11,8 +11,10 @@ environment
 method
   efficient_global
     gaussian_process dakota
+    # gaussian_process surfpack       # s3
+    # gaussian_process experimental   # s4
     seed = 123456
-      batch_size = 4				#s2,#p0
+      batch_size = 4        #s2,s3,s4,#p0
     nonblocking synchronization
 
 variables
@@ -23,13 +25,13 @@ variables
 
 interface
   analysis_drivers = 'rosenbrock'
-    direct					#s0,#s1,#p0
-#   fork asynchronous				#s2
+    direct                  #s0,#s1,#p0
+#   fork asynchronous       #s2,s3,s4
 
 responses
   objective_functions = 1
 # Verify same solution maximizing the negative objective
-#   weights  -1.0      		      	        #s1
-#   sense    'max'    				#s1
+#   weights  -1.0             #s1
+#   sense    'max'            #s1
   no_gradients
   no_hessians
