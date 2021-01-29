@@ -6,13 +6,10 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
- 
 #ifndef MPI_PACK_BUFFER_H
 #define MPI_PACK_BUFFER_H
 
 #include "dakota_system_defs.hpp"
-//#include "dakota_data_types.hpp"
-
 
 namespace Dakota {
 
@@ -21,6 +18,7 @@ typedef unsigned short u_short;
 typedef unsigned int u_int;
 typedef unsigned long u_long;
 typedef long long long_long;
+
 
 //---------------------------------------------------------------------
 //
@@ -34,9 +32,11 @@ typedef long long long_long;
     the MPI_Pack facility. The \c MPIPackBuffer class dynamically
     resizes the internal buffer to contain enough memory to pack the
     entire object.  When deleted, the \c MPIPackBuffer object deletes
-    this internal buffer.  This class is based on the
-    Dakota_Version_3_0 version of utilib::PackBuffer from
-    utilib/src/io/PackBuf.[cpp,h] */
+    this internal buffer.  This class is based on the Dakota_Version_3_0
+    version of utilib::PackBuffer from utilib/src/io/PackBuf.[cpp,h].
+    This snapshot preceded the introduction of templatization on data
+    type, which was problematic at that time (would be more reliable now).
+*/
 
 class MPIPackBuffer {
 

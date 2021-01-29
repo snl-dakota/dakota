@@ -1329,39 +1329,63 @@ inline void array_write_annotated(std::ostream& s, const ArrayT& v,
 // ------------------------------------------------------
 
 
-/// Read a generic container (vector<T>, list<T>) from MPIUnpackBuffer, s
-// WJB ToDo: consider std::set<T> too (currently in data_io.hpp)
-// MSE 10/26/2018: fine for non-contiguous deque<T> and list<T>, but inefficient
-//   for vector<T> (reallocation + copying).  Should especially avoid for
-//   nested vectors (e.g., UShort{2,3,4,5}DArray) --> MPI pack/unpack for
-//   std::vector<T> readded to dakota_data_io.hpp.
+// MSE 1/29/2021: introduce random-access conditional with C++11:
+// > one option is iterator-based "tag-dispatch"
+// > another option is enable_if<>, but this approach seems more complex
+// Thanks to stackoverflow.com post for sample code adapted below
 
-/// global MPIUnpackBuffer extraction operator for generic container
-template <class ContainerT>
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ContainerT& c)
+// helper alias:
+template<typename ContainerT>
+using IteratorCategoryOf = typename
+  std::iterator_traits<typename ContainerT::iterator>::iterator_category;
+
+
+template<typename ContainerT>
+void container_read(MPIUnpackBuffer& s, ContainerT& c,
+		    std::forward_iterator_tag) // generic version
 {
 #ifdef DAKOTA_HAVE_MPI
   c.clear();
-  typename ContainerT::size_type len;
+  typename ContainerT::size_type i, len;
   s >> len;
-  for (typename ContainerT::size_type i=0; i<len; ++i) {
-    // fresh allocation needed in case T is ref-counted
-    typename ContainerT::value_type data;
+  for (i=0; i<len; ++i) {
+    typename ContainerT::value_type data;// fresh alloc in case T is ref-counted
     s >> data;
     c.push_back(data);
   }
 #endif
-  return s;
 }
 
-/// global MPIPackBuffer insertion operator for generic container
-template <class ContainerT>
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const ContainerT& c)
+template<typename ContainerT>
+void container_read(MPIUnpackBuffer& s, ContainerT& c,
+		    std::random_access_iterator_tag) // random-access version
+{
+  // Container types with random-access iterators include vector<T>, deque<T>.
+  // While the generic version above could be augmented with reserve(len) for
+  // vector, deque does not support this.  Therefore, we use resize() with
+  // operator[] instead of reserve() + push_back():
+#ifdef DAKOTA_HAVE_MPI
+  c.clear(); // ensures fresh allocations in resize() (see note above)
+  typename ContainerT::size_type i, len;
+  s >> len;
+  c.resize(len); // deque<T> supports resize() but not reserve()
+  for (i=0; i<len; ++i)
+    s >> c[i];
+#endif
+}
+
+template<typename ContainerT>
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ContainerT& c) // two versions
+{ container_read(s, c, IteratorCategoryOf<ContainerT>()); return s; }
+
+
+template<typename ContainerT>
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const ContainerT& c) // one version
 {
 #ifdef DAKOTA_HAVE_MPI
   typename ContainerT::size_type len = c.size();
   s << len;
-  for(const typename ContainerT::value_type& entry : c)
+  for (const typename ContainerT::value_type& entry : c)
     s << entry;
 #endif
   return s;
@@ -1425,39 +1449,6 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::pair<U,V>& data)
   return s;
 }
 
-/*
-// ------------------------------------------------------------------------
-// *** TO DO: activating std::vector specialization (to avoid push_back()
-// *** inefficiency) has induced issues in at least 1 parallel test
-
-/// global MPIUnpackBuffer extraction operator for std::vector
-/// (specialization of ContainerT template in MPIPackBuffer.hpp)
-template <typename T>
-MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::vector<T>& data)
-{
-  size_t i, len;
-  s >> len;
-  data.resize(len);
-  for (i=0; i<len; ++i)
-    s >> data[i];
-  return s;
-}
-
-
-/// global MPIPackBuffer insertion operator for std::vector
-/// (specialization of ContainerT template in MPIPackBuffer.hpp)
-template <typename T>
-MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::vector<T>& data)
-{
-  size_t i, len = data.size();
-  s << len;
-  for (i=0; i<len; ++i)
-    s << data[i];
-  return s;
-}
-// *** END TO DO ***
-// ------------------------------------------------------------------------
-*/
 
 /// global MPIUnpackBuffer extraction operator for std::set
 template <typename T>
