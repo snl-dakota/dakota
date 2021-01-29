@@ -1324,111 +1324,48 @@ inline void array_write_annotated(std::ostream& s, const ArrayT& v,
 }
 
 
-// ----------------------------------------
-// templated MPIUnpackBuffer read functions
-// ----------------------------------------
-
-
-/// standard MPI buffer extraction operator for full SerialDenseVector
-/// with labels
-template <typename OrdinalType, typename ScalarType>
-void read_data(MPIUnpackBuffer& s,
-	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
-	       StringMultiArray& label_array)
-{
-  OrdinalType i, len;
-  s >> len;
-  if( len != v.length() )
-    v.sizeUninitialized(len);
-  if( len != label_array.size() )
-    label_array.resize(boost::extents[len]);
-  for (i=0; i<len; ++i)
-    s >> v[i] >> label_array[i];
-}
-
-
-/// standard MPI buffer extraction operator for full SerialDenseVector
-/// with labels
-template <typename OrdinalType, typename ScalarType>
-void read_data(MPIUnpackBuffer& s,
-	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
-	       StringMultiArrayView label_array)
-{
-  OrdinalType i, len;
-  s >> len;
-  if( len != v.length() )
-    v.sizeUninitialized(len);
-  if( len != label_array.size() ) {
-    Cerr << "Error: size of label_array in read_data(MPIUnpackBuffer&) does "
-	 << "not equal length of SerialDenseVector." << std::endl;
-    abort_handler(-1);
-  }
-  for (i=0; i<len; ++i)
-    s >> v[i] >> label_array[i];
-}
-
-
-/// standard MPI buffer extraction operator for StringMultiArray with labels
-inline void read_data(MPIUnpackBuffer& s, StringMultiArray& v,
-		      StringMultiArrayView label_array)
-{
-  size_t i, len;
-  s >> len;
-  if( len != v.size() )
-    v.resize(boost::extents[len]);
-  if( len != label_array.size() ) {
-    Cerr << "Error: size of label_array in read_data(MPIUnpackBuffer&) does "
-	 << "not equal length of StringMultiArray." << std::endl;
-    abort_handler(-1);
-  }
-  for (i=0; i<len; ++i)
-    s >> v[i] >> label_array[i];
-}
-
-
-// ---------------------------------------
-// templated MPIPackBuffer write functions (in namespace Dakota)
-// ---------------------------------------
-
-
-/// standard MPI buffer insertion operator for full SerialDenseVector
-/// with labels
-template <typename OrdinalType, typename ScalarType>
-void write_data(MPIPackBuffer& s,
-		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
-		const StringMultiArray& label_array)
-{
-  OrdinalType i, len = v.length();
-  if (label_array.size() != len) {
-    Cerr << "Error: size of label_array in write_data(MPIPackBuffer) "
-	 << "does not equal length of SerialDenseVector." << std::endl;
-    abort_handler(-1);
-  }
-  s << len;
-  for (i=0; i<len; ++i)
-    s << v[i] << label_array[i];
-}
-
-
-/// standard MPI buffer insertion operator for StringMultiArray with labels
-inline void write_data(MPIPackBuffer& s, const StringMultiArray& v,
-		       StringMultiArrayConstView label_array)
-{
-  size_t i, len = v.size();
-  if (label_array.size() != len) {
-    Cerr << "Error: size of label_array in write_data(MPIPackBuffer) "
-	 << "does not equal length of StringMultiArray." << std::endl;
-    abort_handler(-1);
-  }
-  s << len;
-  for (i=0; i<len; ++i)
-    s << v[i] << label_array[i];
-}
-
-
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------
 // templated MPIPackBuffer insertion/extraction operators (in namespace Dakota)
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------
+
+
+/// Read a generic container (vector<T>, list<T>) from MPIUnpackBuffer, s
+// WJB ToDo: consider std::set<T> too (currently in data_io.hpp)
+// MSE 10/26/2018: fine for non-contiguous deque<T> and list<T>, but inefficient
+//   for vector<T> (reallocation + copying).  Should especially avoid for
+//   nested vectors (e.g., UShort{2,3,4,5}DArray) --> MPI pack/unpack for
+//   std::vector<T> readded to dakota_data_io.hpp.
+
+/// global MPIUnpackBuffer extraction operator for generic container
+template <class ContainerT>
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ContainerT& c)
+{
+#ifdef DAKOTA_HAVE_MPI
+  c.clear();
+  typename ContainerT::size_type len;
+  s >> len;
+  for (typename ContainerT::size_type i=0; i<len; ++i) {
+    // fresh allocation needed in case T is ref-counted
+    typename ContainerT::value_type data;
+    s >> data;
+    c.push_back(data);
+  }
+#endif
+  return s;
+}
+
+/// global MPIPackBuffer insertion operator for generic container
+template <class ContainerT>
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const ContainerT& c)
+{
+#ifdef DAKOTA_HAVE_MPI
+  typename ContainerT::size_type len = c.size();
+  s << len;
+  for(const typename ContainerT::value_type& entry : c)
+    s << entry;
+#endif
+  return s;
+}
 
 
 /// stream insertion for BitArray
@@ -1488,6 +1425,7 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::pair<U,V>& data)
   return s;
 }
 
+/*
 // ------------------------------------------------------------------------
 // *** TO DO: activating std::vector specialization (to avoid push_back()
 // *** inefficiency) has induced issues in at least 1 parallel test
@@ -1519,7 +1457,7 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::vector<T>& data)
 }
 // *** END TO DO ***
 // ------------------------------------------------------------------------
-
+*/
 
 /// global MPIUnpackBuffer extraction operator for std::set
 template <typename T>
@@ -1658,6 +1596,100 @@ MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
     for (j=0; j<=i; ++j)
       s >> data(i,j);
   return s;
+}
+
+
+// -----------------------------------------------------
+// templated MPI{Pack,Unpack}Buffer read,write functions (in namespace Dakota)
+// -----------------------------------------------------
+
+
+/// MPI buffer extraction operator for full SerialDenseVector with labels
+template <typename OrdinalType, typename ScalarType>
+void read_data(MPIUnpackBuffer& s,
+	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
+	       StringMultiArray& label_array)
+{
+  OrdinalType i, len;
+  s >> len;
+  if( len != v.length() )
+    v.sizeUninitialized(len);
+  if( len != label_array.size() )
+    label_array.resize(boost::extents[len]);
+  for (i=0; i<len; ++i)
+    s >> v[i] >> label_array[i];
+}
+
+
+/// MPI buffer extraction operator for full SerialDenseVector with labels
+template <typename OrdinalType, typename ScalarType>
+void read_data(MPIUnpackBuffer& s,
+	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
+	       StringMultiArrayView label_array)
+{
+  OrdinalType i, len;
+  s >> len;
+  if( len != v.length() )
+    v.sizeUninitialized(len);
+  if( len != label_array.size() ) {
+    Cerr << "Error: size of label_array in read_data(MPIUnpackBuffer&) does "
+	 << "not equal length of SerialDenseVector." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=0; i<len; ++i)
+    s >> v[i] >> label_array[i];
+}
+
+
+/// MPI buffer extraction operator for StringMultiArray with labels
+inline void read_data(MPIUnpackBuffer& s, StringMultiArray& v,
+		      StringMultiArrayView label_array)
+{
+  size_t i, len;
+  s >> len;
+  if( len != v.size() )
+    v.resize(boost::extents[len]);
+  if( len != label_array.size() ) {
+    Cerr << "Error: size of label_array in read_data(MPIUnpackBuffer&) does "
+	 << "not equal length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=0; i<len; ++i)
+    s >> v[i] >> label_array[i];
+}
+
+
+/// MPI buffer insertion operator for full SerialDenseVector with labels
+template <typename OrdinalType, typename ScalarType>
+void write_data(MPIPackBuffer& s,
+		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
+		const StringMultiArray& label_array)
+{
+  OrdinalType i, len = v.length();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data(MPIPackBuffer) "
+	 << "does not equal length of SerialDenseVector." << std::endl;
+    abort_handler(-1);
+  }
+  s << len;
+  for (i=0; i<len; ++i)
+    s << v[i] << label_array[i];
+}
+
+
+/// MPI buffer insertion operator for StringMultiArray with labels
+inline void write_data(MPIPackBuffer& s, const StringMultiArray& v,
+		       StringMultiArrayConstView label_array)
+{
+  size_t i, len = v.size();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data(MPIPackBuffer) "
+	 << "does not equal length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  s << len;
+  for (i=0; i<len; ++i)
+    s << v[i] << label_array[i];
 }
 
 

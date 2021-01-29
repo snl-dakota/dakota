@@ -6139,7 +6139,7 @@ KEYWORD model {N_mom3(start,0,stop)}
      )
     |
     ( hierarchical {N_mom(lit,surrogateType_hierarchical)}
-      ordered_model_fidelities ALIAS model_hierarchy STRINGLIST {N_mom(strL,ensembleModelPointers)}
+      ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,ensembleModelPointers)}
       [ correction {0}
         zeroth_order {N_mom(order,approxCorrectionOrder_0)}
         |

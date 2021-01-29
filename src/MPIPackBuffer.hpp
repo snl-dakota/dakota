@@ -289,59 +289,6 @@ inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, bool& data)
 { buff.unpack(data); return buff; }
 
 
-/// Read a generic container (vector<T>, list<T>) from MPIUnpackBuffer, s
-// WJB ToDo: consider std::set<T> too (currently in data_io.hpp)
-// MSE 10/26/2018: fine for non-contiguous deque<T> and list<T>, but inefficient
-//   for vector<T> (reallocation + copying).  Should especially avoid for
-//   nested vectors (e.g., UShort{2,3,4,5}DArray) --> MPI pack/unpack for
-//   std::vector<T> readded to dakota_data_io.hpp.
-#ifdef DAKOTA_HAVE_MPI
-template <class ContainerT>
-inline void container_read(ContainerT& c, MPIUnpackBuffer& s)
-{
-  c.clear();
-  typename ContainerT::size_type len;
-  s >> len;
-  for (typename ContainerT::size_type i=0; i<len; ++i) {
-    // fresh allocation needed in case T is ref-counted
-    typename ContainerT::value_type data;
-    s >> data;
-    c.push_back(data);
-  }
-}
-
-
-/// Write a generic container to MPIPackBuffer, s
-template <class ContainerT>
-inline void container_write(const ContainerT& c, MPIPackBuffer& s)
-{
-  typename ContainerT::size_type len = c.size();
-  s << len;
-  for(const typename ContainerT::value_type& entry : c)
-    s << entry;
-}
-#endif
-
-
-/// global MPIUnpackBuffer extraction operator for generic container
-template <class ContainerT>
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ContainerT& data)
-#ifdef DAKOTA_HAVE_MPI
-{ container_read(data, s); return s; }
-#else
-{ return s; }
-#endif
-
-/// global MPIPackBuffer insertion operator for generic container
-template <class ContainerT>
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const ContainerT& data)
-#ifdef DAKOTA_HAVE_MPI
-{ container_write(data, s); return s; }
-#else
-{ return s; }
-#endif
-
-
 //---------------------------------------------------------------------
 //
 // MPIPackSize
