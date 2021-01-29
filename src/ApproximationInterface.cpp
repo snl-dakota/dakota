@@ -135,8 +135,8 @@ ApproximationInterface(const String& approx_type,
 		       const String& am_interface_id, size_t num_fns,
 		       short data_order, short output_level):
   Interface(NoDBBaseConstructor(), num_fns, output_level), //graph3DFlag(false),
-  challengeFormat(TABULAR_ANNOTATED), challengeActiveOnly(false), 
-  actualModelVars(am_vars.copy()),
+  trackEvalIds(false), challengeFormat(TABULAR_ANNOTATED),
+  challengeActiveOnly(false), actualModelVars(am_vars.copy()),
   actualModelCache(am_cache), actualModelInterfaceId(am_interface_id)
 {
   interfaceId = String("APPROX_INTERFACE_") + std::to_string(++approxIdNum);

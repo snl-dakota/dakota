@@ -276,7 +276,7 @@ void Approximation::replace(const IntResponsePair& response_pr, size_t fn_index)
     approxRep->replace(response_pr, fn_index);
   else {
     Pecos::SurrogateDataResp sdr
-      = response_to_sdr(response_pr.second, fn_index);// *** Note: SHALLOW_COPY *** the referenced responses will be cleared from the Model queue but *may* persist in the eval cache; this is what ApproximationInterface::cache_lookup() manages ...
+      = response_to_sdr(response_pr.second, fn_index);// *** Note: SHALLOW_COPY *** the referenced responses will be cleared from the Model queue but *may* persist in the eval cache; this is what ApproximationInterface::cache_lookup() manages ... Only matters for gradient/Hessian views ...
     approxData.replace(/*sharedDataRep->approxDataKeys,*/
 		       sdr, response_pr.first);
   }

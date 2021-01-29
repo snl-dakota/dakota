@@ -387,7 +387,7 @@ inline size_t HierarchSurrModel::qoi() const
 
 inline void HierarchSurrModel::check_model_interface_instance()
 {
-  unsigned short lf_form = surrModelKey.retrieve_model_form(),
+  unsigned short lf_form =  surrModelKey.retrieve_model_form(),
                  hf_form = truthModelKey.retrieve_model_form();
 
   if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
