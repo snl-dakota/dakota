@@ -11,7 +11,7 @@
 #define MPI_PACK_BUFFER_H
 
 #include "dakota_system_defs.hpp"
-#include "dakota_data_types.hpp"
+//#include "dakota_data_types.hpp"
 
 
 namespace Dakota {
