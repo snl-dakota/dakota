@@ -454,8 +454,11 @@ inline void Approximation::assign_key_index(size_t key_index)
   */
 
   // extract a particular raw key if activeKey is aggregated
-  const Pecos::ActiveKey& key = sharedDataRep->activeKey.extract_key(key_index);
-  approxData.active_key(key);// no-op if key already active
+  const Pecos::ActiveKey& key = sharedDataRep->activeKey;
+  if (key.aggregated() && key_index != _NPOS)
+    approxData.active_key(key.extract_key(key_index));
+  else
+    approxData.active_key(key); // no-op if key already active
 }
 
 
