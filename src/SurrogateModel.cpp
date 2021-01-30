@@ -256,8 +256,18 @@ void SurrogateModel::init_model(Model& model)
   // labels: update model with current{Variables,Response} descriptors
   // inactive vars / bounds: propagate inactive vars when necessary
 
-  if (!approxBuilds)
-    model.response_labels(currentResponse.function_labels());
+  if (!approxBuilds && model.response_labels().empty()) // should not happen
+    switch (responseMode) {
+    case AGGREGATED_MODELS: {
+      StringArray qoi_labels;
+      copy_data_partial(currentResponse.function_labels(),
+			0, model.qoi(), qoi_labels);
+      model.response_labels(qoi_labels);
+      break;
+    }
+    default:
+      model.response_labels(currentResponse.function_labels()); break;
+    }
 
   // Set the incoming model variable descriptors with the variable descriptors
   // from currentVariables (eliminates need to replicate descriptors in the

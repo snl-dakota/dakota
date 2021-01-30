@@ -1332,7 +1332,7 @@ inline void array_write_annotated(std::ostream& s, const ArrayT& v,
 // MSE 1/29/2021: introduce random-access conditional with C++11:
 // > one option is iterator-based "tag-dispatch"
 // > another option is enable_if<>, but this approach seems more complex
-// Thanks to stackoverflow.com post for sample code adapted below
+// Thanks to stackoverflow.com post 23848011 for sample code adapted below
 
 // helper alias:
 template<typename ContainerT>
