@@ -1,0 +1,29 @@
+#@ s*: ReqFiles=ego_test_functions.py
+
+method,
+    efficient_global
+        gaussian_process surfpack #s0,#s2
+#        gaussian_process experimental #s1,#s3
+        seed = 123457
+        initial_samples = 10
+    max_iterations = 50
+
+variables,
+    continuous_design = 2
+        cdv_initial_point   0.0  0.0  #s0,#s1
+        cdv_lower_bounds   -5.0  0.0  #s0,#s1
+        cdv_upper_bounds    10.0  15.0 #s0,#s1
+#        cdv_initial_point   1.0  2.0  #s2,#s3
+#        cdv_lower_bounds   -5.0  -5.0  #s2,#s3
+#        cdv_upper_bounds    5.0   5.0 #s2,#s3
+        cdv_descriptor      'x1' 'x2'
+
+interface,
+    python
+        analysis_drivers = 'ego_test_functions:branin' #s0,#s1
+#        analysis_drivers = 'ego_test_functions:three_hump_camel' #s2,#s3
+
+responses,
+    objective_functions = 1
+    no_gradients
+    no_hessians
