@@ -75,8 +75,11 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   String approx_type;
   switch (probDescDB.get_short("method.nond.emulator")) {
   case GP_EMULATOR:     approx_type = "global_gaussian";
+                        break;
   case EXPGP_EMULATOR:  approx_type = "global_exp_gauss_proc";
+                        break;
   default:              approx_type = "global_kriging";
+                        break;
   }
 
   String sample_reuse = "none"; // TO DO: allow reuse separate from import
