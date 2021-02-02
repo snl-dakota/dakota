@@ -25,6 +25,13 @@
 #include <numpy/arrayobject.h>
 #endif
 
+#ifdef DAKOTA_PYBIND11
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+namespace py = pybind11;
+using namespace pybind11::literals; // to bring in the `_a` literal
+#endif
+
 // Python 2/3 compatibility layer
 // BMA: Using preprocessor defines (only in this compilation unit) per
 // submitted patch since not likely to support Python 2 for long and
@@ -112,7 +119,11 @@ int PythonInterface::derived_map_ac(const String& ac_name)
          << " within PythonInterface." << std::endl;
 #endif // MPI_DEBUG
 
+#ifdef DAKOTA_PYBIND11
+  int fail_code = pybind11_run();
+#else
   int fail_code = python_run(ac_name);
+#endif
 
   // Failure capturing
   if (fail_code) {
@@ -315,6 +326,47 @@ int PythonInterface::python_run(const String& ac_name)
       python_convert(retVal, fnVals, numFns);
   }
   Py_DECREF(retVal);
+
+  return(fail_code);
+}
+
+
+int PythonInterface::pybind11_run()
+{
+  // minimal error checking for now (or actually none ... but should be)
+  int fail_code = 0;
+
+  assert( py11Active );
+
+  assert( Py_IsInitialized() );
+
+  std::vector<double> tmp_cv;
+  copy_data(xC, tmp_cv);
+  py::list cv = py::cast(tmp_cv);
+
+  std::vector<int> tmp_asv;
+  for( auto const & a : directFnASV )
+    tmp_asv.push_back(a);
+  py::list asv = py::cast(tmp_asv);
+
+  py::dict kwargs = py::dict(
+      "variables"_a = numVars,
+      "functions"_a = numFns,
+      "cv"_a        = cv,
+      "asv"_a       = asv      );
+
+  py::dict ret_val = py11CallBack(kwargs);
+
+  for (auto item : ret_val)
+  {
+    auto key = item.first.cast<std::string>();
+    auto value = item.second.cast<std::vector<double>>();
+    //Cout << "key: " << key << " = " << value[i] << std::endl;
+
+    // Hard-coded for a single response
+    if( key == "fns" )
+      fnVals[0] = value[0];
+  }
 
   return(fail_code);
 }

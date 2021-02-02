@@ -332,6 +332,10 @@ if(DAKOTA_PYTHON_DIRECT_INTERFACE)
 
 endif()
 
+# Hard-coded hack to try pybind11
+list(APPEND EXT_TPL_INCDIRS ${pybind11_INCLUDE_DIR})
+add_definitions("-DDAKOTA_PYBIND11")
+
 if(DAKOTA_MODELCENTER)
   add_definitions("-DDAKOTA_MODELCENTER")
   # TODO: generalize the location of this library, possibly install

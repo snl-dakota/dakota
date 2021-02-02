@@ -63,6 +63,9 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
   interfaceId(problem_db.get_string("interface.id")), 
   analysisComponents(
     problem_db.get_s2a("interface.application.analysis_components")),
+#ifdef DAKOTA_PYBIND11
+  py11Active(false),
+#endif
   algebraicMappings(false),
   coreMappings(true), outputLevel(problem_db.get_short("method.output")),
   currEvalId(0), fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT),
@@ -166,7 +169,11 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 
 
 Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
-  interfaceId(no_spec_id()), algebraicMappings(false), coreMappings(true),
+  interfaceId(no_spec_id()),
+#ifdef DAKOTA_PYBIND11
+  py11Active(false),
+#endif
+  algebraicMappings(false), coreMappings(true),
   outputLevel(output_level), currEvalId(0), 
   fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT), evalIdCntr(0), 
   newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),

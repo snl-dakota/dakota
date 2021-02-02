@@ -14,6 +14,7 @@
 
 #include "ExecutableEnvironment.hpp"
 #include "LibraryEnvironment.hpp"
+#include "PythonInterface.hpp"
 
 //#include "Eigen/Dense"
 
@@ -29,24 +30,6 @@
 namespace py = pybind11;
 
 namespace Dakota {
-
-  namespace {
-
-    void
-      replace_interface_spec(std::string & input, const std::string & callback)
-      {
-        const std::string key = "interface";
-        auto tid = input.find(key);
-        if(tid != std::string::npos)
-        {
-          auto tbeg = input.find("=", tid);
-          auto tend = input.find('\n',tbeg+1);
-          input.replace(tid+key.length(), tend-tid, " python analysis_driver = '"+callback+"'");
-        }
-        else
-          throw std::runtime_error("Did not find \"interface\" in input.");
-      }
-}
 
 namespace python {
 
@@ -172,23 +155,21 @@ PYBIND11_MODULE(dakpy, m) {
   // demo a library environment that models opt_tpl_test semantics
   py::class_<Dakota::LibraryEnvironment>(m, "LibEnv")
     .def(py::init
-	 ([](const std::string& callback,
+	 ([](py::object callback,
 	     const std::string& input_string)
 	  {
 	    assert(!input_string.empty());
 
-            std::string copy_input = input_string;
-            if(!callback.empty())
-            {
-              ::Dakota::replace_interface_spec(copy_input, callback);
-              //std::cout << "New input:\n" << copy_input << std::endl;
-            }
-
 	    Dakota::ProgramOptions opts;
 	    opts.echo_input(false);
-	    opts.input_string(copy_input);
+	    opts.input_string(input_string);
 
-	    return new Dakota::LibraryEnvironment(opts); 
+            auto p_libEnv = new Dakota::LibraryEnvironment(opts);
+
+            Dakota::Interface & nonconst_interface = *(p_libEnv->problem_description_db().interface_list().begin());
+            nonconst_interface.register_pybind11_callback_fn(callback);
+
+	    return p_libEnv;
 	  })
 	 , py::arg("callback"), py::arg("input_string"))
 

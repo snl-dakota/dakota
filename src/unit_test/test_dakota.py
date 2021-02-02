@@ -18,7 +18,7 @@ if len(sys.argv) > 1:
     sys.path.append(dakpy_lib_path)
 
 
-def text_book(**kwargs):
+def text_book(kwargs):
 
     num_fns = kwargs['functions']
     x = kwargs['cv']
@@ -86,7 +86,7 @@ def test_lib():
           no_hessians
 """
     print("\n+++ Constructing LibEnv...\n")
-    daklib = dakpy.LibEnv(callback="test_dakota:text_book", input_string = text_book_input)
+    daklib = dakpy.LibEnv(callback=text_book, input_string = text_book_input)
     print("\n+++ Running LibEnv...\n")
     daklib.execute()
     print("\n+++ Final Functions:\n")
