@@ -202,9 +202,9 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
     std::string plevel_s("Major Print Level           = 20");
     send_sol_option(plevel_s);
     Cout << "\nNPSOL option settings:\n----------------------\n" 
-         << verify_s.c_str() << '\n' << "Major Print Level           = 20\n" 
-         << fnprec_s.c_str() << '\n' << lstol_s.c_str() << '\n'
-	 << maxiter_s.c_str() << '\n';
+         << verify_s << '\n' << "Major Print Level           = 20\n" 
+         << fnprec_s << '\n' << lstol_s << '\n'
+	 << maxiter_s << '\n';
   }
   else {
     std::string plevel_s("Major Print Level           = 10");
@@ -221,7 +221,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
     std::string ct_tol_s( ct_tol_stream.str() );
     send_sol_option(ct_tol_s);
     if (output_lev > NORMAL_OUTPUT)
-      Cout << ct_tol_s.c_str() << '\n';
+      Cout << ct_tol_s << '\n';
   }
 
   // conv_tol is an optional parameter in dakota.input.nspec, but
@@ -234,7 +234,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   std::string ctol_s( ctol_stream.str() );
   send_sol_option(ctol_s);
   if (output_lev > NORMAL_OUTPUT)
-    Cout << ctol_s.c_str() << "\nNOTE: NPSOL's convergence tolerance is not a "
+    Cout << ctol_s << "\nNOTE: NPSOL's convergence tolerance is not a "
 	 << "relative tolerance.\n      See \"Optimality tolerance\" in "
          << "Optional Input Parameters section of \n      NPSOL manual for "
          << "description.\n";
@@ -282,8 +282,8 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
     send_sol_option(cfdss_s);
   
     if (output_lev > NORMAL_OUTPUT)
-      Cout << "Derivative Level            = 0\n" << fdss_s.c_str() << '\n'
-	   << cfdss_s.c_str() << "\nNOTE: NPSOL's finite difference interval "
+      Cout << "Derivative Level            = 0\n" << fdss_s << '\n'
+	   << cfdss_s << "\nNOTE: NPSOL's finite difference interval "
 	   << "uses a unit offset to remove the\n      need for a minimum step "
 	   << "specification (see \"Difference interval\" in\n      Optional "
            << "Input Parameters section of NPSOL manual).\n"

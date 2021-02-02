@@ -62,7 +62,7 @@ protected:
   void allocate_workspace(int num_cv, int num_nln_con, int num_lin_con,
 			  int num_lsq);
 
-  /// Sets SOL method options using calls to npoptn2.
+  /// Sets SOL method options using calls to npoptn2 / nloptn2.
   void set_options(bool speculative_flag, bool vendor_num_grad_flag, 
 		   short output_lev, int verify_lev, Real fn_prec,
 		   Real linesrch_tol, int max_iter, Real constr_tol,
@@ -70,7 +70,7 @@ protected:
 		   const RealVector& fdss);
 
   /// Resize and send option to NPSOL (npoptn) or NLSSOL (nloptn) via
-  /// derived impl.
+  /// derived implementation.
   virtual void send_sol_option(std::string sol_option) = 0;
 
   /// augments variable bounds with linear and nonlinear constraint bounds.

@@ -42,7 +42,7 @@ namespace Dakota {
     Print Level = 10), "Verify Level", "Function Precision", and
     "Linesearch Tolerance" parameters, respectively, using NPSOL's
     npoptn() subroutine (as wrapped by npoptn2() from the
-    npoptn_wrapper.f file). Refer to [Gill, P.E., Murray, W.,
+    sol_optn_wrapper.f file). Refer to [Gill, P.E., Murray, W.,
     Saunders, M.A., and Wright, M.H., 1986] for information on NPSOL's
     optional input parameters and the npoptn() subroutine. */
 

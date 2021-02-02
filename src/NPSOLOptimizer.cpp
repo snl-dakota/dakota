@@ -97,28 +97,20 @@ NPSOLOptimizer(Model& model, const int& derivative_level, const Real& conv_tol):
   SOLBase(model), setUpType("model")
 {
   // Set NPSOL options (mostly use defaults)
-  std::string vlevel_s("Verify Level                = -1");
-  vlevel_s.resize(72, ' ');
-  NPOPTN2_F77( vlevel_s.data() ); // NO Null terminator with std::string::data()
-
-  std::string plevel_s("Major Print Level           = 0");
-  plevel_s.resize(72, ' ');
-  NPOPTN2_F77( plevel_s.data() );
+  send_sol_option("Verify Level                = -1");
+  send_sol_option("Major Print Level           = 0");
 
   // assign the derivative_level passed in
   std::string dlevel_s("Derivative Level            = ");
   dlevel_s += std::to_string(derivative_level);
-  dlevel_s.resize(72, ' ');
-  NPOPTN2_F77( dlevel_s.data() );
+  send_sol_option(dlevel_s);
 
   // assign the conv_tol passed in
   if (conv_tol > 0.) { // conv_tol < 0 can be passed to use the NPSOL default
     std::ostringstream ctol_stream;
     ctol_stream << "Optimality Tolerance        = "
                 << std::setiosflags(std::ios::left) << std::setw(26)<< conv_tol;
-    std::string ctol_s( ctol_stream.str() );
-    ctol_s.resize(72, ' ');
-    NPOPTN2_F77( ctol_s.data() );
+    send_sol_option(ctol_stream.str());
   }
 }
 
@@ -157,29 +149,21 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
                  nonlin_ineq_upper_bnds, nonlin_eq_targets);
 
   // Set NPSOL options (mostly use defaults)
-  std::string vlevel_s("Verify Level                = -1");
-  vlevel_s.resize(72, ' ');
-  NPOPTN2_F77( vlevel_s.data() );
-
-  std::string plevel_s("Major Print Level           = 0");
-  plevel_s.resize(72, ' ');
-  NPOPTN2_F77( plevel_s.data() );
+  send_sol_option("Verify Level                = -1");
+  send_sol_option("Major Print Level           = 0");
 
   // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
   // vendor-numerical, ...
   std::string dlevel_s("Derivative Level            = ");
   dlevel_s += std::to_string(derivative_level);
-  dlevel_s.resize(72, ' ');
-  NPOPTN2_F77( dlevel_s.data() );
+  send_sol_option(dlevel_s);
 
   // assign the conv_tol passed in.
   if (conv_tol > 0.) { // conv_tol < 0 can be passed to use the NPSOL default
     std::ostringstream ctol_stream;
     ctol_stream << "Optimality Tolerance        = "
                 << std::setiosflags(std::ios::left) << std::setw(26)<< conv_tol;
-    std::string ctol_s( ctol_stream.str() );
-    ctol_s.resize(72, ' ');
-    NPOPTN2_F77( ctol_s.data() );
+    send_sol_option(ctol_stream.str());
   }
 }
 
@@ -220,40 +204,29 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
                  nonlin_ineq_upper_bnds, nonlin_eq_targets);
 
   // Set NPSOL options (mostly use defaults)
-  std::string vlevel_s("Verify Level                = -1");
-  vlevel_s.resize(72, ' ');
-  NPOPTN2_F77( vlevel_s.data() );
+  send_sol_option("Verify Level                = -1");
 
-  std::string plevel_s("Major Print Level           = 0");
-  plevel_s.resize(72, ' ');
-  NPOPTN2_F77( plevel_s.data() );
+  send_sol_option("Major Print Level           = 0");
 
-  std::string mplevel_s("Minor Print Level           = 0");
-  mplevel_s.resize(72, ' ');
-  NPOPTN2_F77( mplevel_s.data() );
+  send_sol_option("Minor Print Level           = 0");
 
-  std::string fplevel_s("Function Precision           = " + std::to_string(function_precision));
-  fplevel_s.resize(72, ' ');
-  NPOPTN2_F77( fplevel_s.data() );
+  send_sol_option("Function Precision           = " +
+		  std::to_string(function_precision));
 
-  std::string ftlevel_s("Feasibility Tolerance           = " + std::to_string(feas_tol));
-  ftlevel_s.resize(72, ' ');
-  NPOPTN2_F77( ftlevel_s.data() );
+  send_sol_option("Feasibility Tolerance           = " +
+		  std::to_string(feas_tol));
 
-  std::string lftlevel_s("Linear Feasibility Tolerance           = " + std::to_string(lin_feas_tol));
-  lftlevel_s.resize(72, ' ');
-  NPOPTN2_F77( lftlevel_s.data() );
+  send_sol_option("Linear Feasibility Tolerance           = " +
+		  std::to_string(lin_feas_tol));
 
-  std::string nlftlevel_s("Nonlinear Feasibility Tolerance           = " + std::to_string(nonlin_feas_tol));
-  nlftlevel_s.resize(72, ' ');
-  NPOPTN2_F77( nlftlevel_s.data() );
+  send_sol_option("Nonlinear Feasibility Tolerance           = " +
+		  std::to_string(nonlin_feas_tol));
 
   // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
   // vendor-numerical, ...
   std::string dlevel_s("Derivative Level            = ");
   dlevel_s += std::to_string(derivative_level);
-  dlevel_s.resize(72, ' ');
-  NPOPTN2_F77( dlevel_s.data() );
+  send_sol_option(dlevel_s);
 
   // assign the conv_tol passed in.
   if (conv_tol > 0.) { // conv_tol < 0 can be passed to use the NPSOL default
@@ -261,8 +234,7 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
     ctol_stream << "Optimality Tolerance        = "
                 << std::setiosflags(std::ios::left) << std::setw(26)<< conv_tol;
     std::string ctol_s( ctol_stream.str() );
-    ctol_s.resize(72, ' ');
-    NPOPTN2_F77( ctol_s.data() );
+    send_sol_option(ctol_s);
   }
 }
 
@@ -418,12 +390,13 @@ void NPSOLOptimizer::core_run()
 
 void NPSOLOptimizer::send_sol_option(std::string sol_option)
 {
-  // The subroutine npoptn2 in file npoptn_wrapper.f accepts a string of 
+  // The subroutine npoptn2 in file sol_optn_wrapper.f accepts a string of 
   // length 72 (the max that NPSOL accepts) which is then passed along to
   // the npoptn routine in NPSOL. Therefore, strings passed to npoptn2 need
   // to be of length 72 (thus, the use of data() rather than c_str()).
   sol_option.resize(72, ' ');
-  NPOPTN2_F77(sol_option.data());
+  NPOPTN2_F77(sol_option.data()); // NO Null terminator with std::string::data()
+
 }
 
 
