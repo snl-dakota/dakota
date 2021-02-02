@@ -266,7 +266,7 @@ void NLSSOLLeastSq::core_run()
 void NLSSOLLeastSq::send_sol_option(std::string sol_option)
 {
   sol_option.resize(72, ' ');
-  //  NLOPTN2_F77(sol_option.data());
+  NLOPTN2_F77(sol_option.data());
 }
 
 

@@ -68,7 +68,7 @@ Confidence Intervals on Calibrated Parameters:
             x1: [ -7.8313773415e-01, 1.8501667624e+00 ]
             x2: [ -1.7133513760e+00, 2.7463223477e+00 ]
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.3351451416e-01 x1
                       5.1648548584e-01 x2
@@ -77,7 +77,7 @@ Test Number 6 succeeded
                       2.6394993903e-02
 <<<<< Best constraint values   =
                       1.0319523014e-13
-<<<<< Best data captured at function evaluation 5
+<<<<< Best data captured at function evaluation 4
 Confidence Intervals on Calibrated Parameters:
             x1: [ -7.8313773401e-01, 1.8501667623e+00 ]
             x2: [ -1.7133513760e+00, 2.7463223476e+00 ]
@@ -211,7 +211,7 @@ Test Number 11 succeeded
                       3.5294970375e-01
 <<<<< Best data captured at function evaluation 51
 Test Number 12 succeeded
-<<<<< Function evaluation summary: 2 total (2 new, 0 duplicate)
+<<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-02 x2
@@ -223,7 +223,7 @@ Test Number 12 succeeded
                      -2.4750000000e-01
 <<<<< Best data captured at function evaluation 1
 Test Number 13 succeeded
-<<<<< Function evaluation summary: 7 total (7 new, 0 duplicate)
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
