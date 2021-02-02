@@ -69,6 +69,10 @@ protected:
 		   Real conv_tol, const std::string& grad_type,
 		   const RealVector& fdss);
 
+  /// Resize and send option to NPSOL (npoptn) or NLSSOL (nloptn) via
+  /// derived impl.
+  virtual void send_sol_option(std::string sol_option) = 0;
+
   /// augments variable bounds with linear and nonlinear constraint bounds.
   void augment_bounds(RealVector& augmented_l_bnds, 
 		      RealVector& augmented_u_bnds,

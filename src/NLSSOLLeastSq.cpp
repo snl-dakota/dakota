@@ -21,20 +21,28 @@
 static const char rcsId[]="@(#) $Id: NLSSOLLeastSq.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 #define NLSSOL_F77 F77_FUNC(nlssol,NLSSOL)
-extern "C" void NLSSOL_F77(int& m, int& n, int& nclin, int& ncnln, int& nrowa,
-			   int& nrowcj, int& nrowfj, int& nrowr, double* a,
-			   double* bl, double* bu,
-			   void (*funcon)(int& mode, int& ncnln, int& n,
-					  int& nrowj, int* needc, double* x,
-					  double* c, double* cjac, int& nstate),
-			   void (*funobj)(int& mode, int& m, int& n,
-					  int& nrowfj, double* x, double* f,
-					  double* gradf, int& nstate),
-			   int& inform, int& iter, int* istate, double* c,
-			   double* cjac, double* y, double* f, double* fjac,
-			   double* clambda, double& objf, double* r, double* x,
-			   int* iw, int& leniw, double* w, int& lenw);
+// NOTE: nloptn2 uses Fortran 2003 ISO C bindings
+#define NLOPTN2_F77 nloptn2
 
+extern "C" {
+
+void NLSSOL_F77(int& m, int& n, int& nclin, int& ncnln, int& nrowa,
+		int& nrowcj, int& nrowfj, int& nrowr, double* a,
+		double* bl, double* bu,
+		void (*funcon)(int& mode, int& ncnln, int& n,
+			       int& nrowj, int* needc, double* x,
+			       double* c, double* cjac, int& nstate),
+		void (*funobj)(int& mode, int& m, int& n,
+			       int& nrowfj, double* x, double* f,
+			       double* gradf, int& nstate),
+		int& inform, int& iter, int* istate, double* c,
+		double* cjac, double* y, double* f, double* fjac,
+		double* clambda, double& objf, double* r, double* x,
+		int* iw, int& leniw, double* w, int& lenw);
+
+void NLOPTN2_F77( const char* option_string );
+
+}
 namespace Dakota {
 
 NLSSOLLeastSq* NLSSOLLeastSq::nlssolInstance(NULL);
@@ -253,5 +261,13 @@ void NLSSOLLeastSq::core_run()
   solInstance    = prev_sol_instance;
   optLSqInstance = prevMinInstance;
 }
+
+
+void NLSSOLLeastSq::send_sol_option(std::string sol_option)
+{
+  sol_option.resize(72, ' ');
+  //  NLOPTN2_F77(sol_option.data());
+}
+
 
 } // namespace Dakota

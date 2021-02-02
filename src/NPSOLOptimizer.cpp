@@ -416,6 +416,17 @@ void NPSOLOptimizer::core_run()
 }
 
 
+void NPSOLOptimizer::send_sol_option(std::string sol_option)
+{
+  // The subroutine npoptn2 in file npoptn_wrapper.f accepts a string of 
+  // length 72 (the max that NPSOL accepts) which is then passed along to
+  // the npoptn routine in NPSOL. Therefore, strings passed to npoptn2 need
+  // to be of length 72 (thus, the use of data() rather than c_str()).
+  sol_option.resize(72, ' ');
+  NPOPTN2_F77(sol_option.data());
+}
+
+
 void NPSOLOptimizer::find_optimum_on_model()
 {
   //------------------------------------------------------------------

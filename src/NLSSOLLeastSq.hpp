@@ -100,6 +100,9 @@ public:
 
   void core_run();
 
+protected:
+  void send_sol_option(std::string sol_option) override;
+
 private:
 
   //

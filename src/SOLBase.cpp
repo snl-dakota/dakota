@@ -20,13 +20,6 @@
 static const char rcsId[]="@(#) $Id: SOLBase.cpp 7004 2010-10-04 17:55:00Z wjbohnh $";
 
 
-// BMA (20160315): Changed to use Fortran 2003 ISO C bindings.
-// The Fortran symbol will be lowercase with same name as if in C
-//#define NPOPTN2_F77 F77_FUNC(npoptn2,NPOPTN2)
-#define NPOPTN2_F77 npoptn2
-extern "C" void NPOPTN2_F77( const char* option_string );
-
-
 namespace Dakota {
 
 SOLBase*   SOLBase::solInstance(NULL);
@@ -154,11 +147,6 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
 {
   // Set NPSOL options (see "Optional Input Parameters" section of NPSOL manual)
 
-  // The subroutine npoptn2 in file npoptn_wrapper.f accepts a string of 
-  // length 72 (the max that NPSOL accepts) which is then passed along to
-  // the npoptn routine in NPSOL. Therefore, strings passed to npoptn2 need
-  // to be of length 72 (thus, the use of data() rather than c_str()).
- 
   // Each of NPSOL's settings is an optional parameter in dakota.input.nspec, 
   // but always assigning them is OK since they are always defined, either from
   // dakota.in or from the default specified in the DataMethod constructor.
@@ -183,8 +171,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   // NOTE: returned buffers from std::string::data() are NOT Null terminated!
   std::string verify_s("Verify Level                = ");
   verify_s += std::to_string(verify_lev);
-  verify_s.resize(72, ' ');
-  NPOPTN2_F77( verify_s.data() );
+  send_sol_option(verify_s);
 
   // Default NPSOL function precision is frequently tighter than DAKOTA's 
   // 11-digit precision.  Scaling back NPSOL's precision prevents wasted fn. 
@@ -198,26 +185,22 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   fnprec_stream << "Function Precision          = "
                 << std::setiosflags(std::ios::left) << std::setw(26) << fn_prec;
   std::string fnprec_s( fnprec_stream.str() );
-  fnprec_s.resize(72, ' ');
-  NPOPTN2_F77( fnprec_s.data() );
+  send_sol_option(fnprec_s);
 
   std::ostringstream lstol_stream;
   lstol_stream << "Linesearch Tolerance        = "
                << std::setiosflags(std::ios::left)
                << std::setw(26) << linesrch_tol;
   std::string lstol_s( lstol_stream.str() );
-  lstol_s.resize(72, ' ');
-  NPOPTN2_F77( lstol_s.data() );
+  send_sol_option(lstol_s);
 
   std::string maxiter_s("Major Iteration Limit       = ");
   maxiter_s += std::to_string(max_iter);
-  maxiter_s.resize(72, ' ');
-  NPOPTN2_F77( maxiter_s.data() );
+  send_sol_option(maxiter_s);
 
   if (output_lev > NORMAL_OUTPUT) {
     std::string plevel_s("Major Print Level           = 20");
-    plevel_s.resize(72, ' ');
-    NPOPTN2_F77( plevel_s.data() );
+    send_sol_option(plevel_s);
     Cout << "\nNPSOL option settings:\n----------------------\n" 
          << verify_s.c_str() << '\n' << "Major Print Level           = 20\n" 
          << fnprec_s.c_str() << '\n' << lstol_s.c_str() << '\n'
@@ -225,8 +208,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   }
   else {
     std::string plevel_s("Major Print Level           = 10");
-    plevel_s.resize(72, ' ');
-    NPOPTN2_F77( plevel_s.data() );
+    send_sol_option(plevel_s);
   }
 
   // assign a nondefault linear/nonlinear constraint tolerance if a valid
@@ -237,8 +219,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
                   << std::setiosflags(std::ios::left)
                   << std::setw(26) << constr_tol;
     std::string ct_tol_s( ct_tol_stream.str() );
-    ct_tol_s.resize(72, ' ');
-    NPOPTN2_F77( ct_tol_s.data() );
+    send_sol_option(ct_tol_s);
     if (output_lev > NORMAL_OUTPUT)
       Cout << ct_tol_s.c_str() << '\n';
   }
@@ -251,8 +232,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   ctol_stream << "Optimality Tolerance        = "
               << std::setiosflags(std::ios::left) << std::setw(26) << conv_tol;
   std::string ctol_s( ctol_stream.str() );
-  ctol_s.resize(72, ' ');
-  NPOPTN2_F77( ctol_s.data() );
+  send_sol_option(ctol_s);
   if (output_lev > NORMAL_OUTPUT)
     Cout << ctol_s.c_str() << "\nNOTE: NPSOL's convergence tolerance is not a "
 	 << "relative tolerance.\n      See \"Optimality tolerance\" in "
@@ -269,8 +249,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
        ( grad_type == "numerical" && !vendor_num_grad_flag ) ) {
     // user-supplied gradients: Derivative Level = 3
     std::string dlevel_s("Derivative Level            = 3");
-    dlevel_s.resize(72, ' ');
-    NPOPTN2_F77( dlevel_s.data() );
+    send_sol_option(dlevel_s);
     if (output_lev > NORMAL_OUTPUT)
       Cout << "Derivative Level            = 3\n";
   }
@@ -283,8 +262,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   else { // vendor numerical gradients: Derivative Level = 0. No forward/central
          // interval type control, since NPSOL switches automatically.
     std::string dlevel_s("Derivative Level            = 0");
-    dlevel_s.resize(72, ' ');
-    NPOPTN2_F77( dlevel_s.data() );
+    send_sol_option(dlevel_s);
 
     std::ostringstream fdss_stream;
     Real fd_step_size = fdss[0]; // first entry
@@ -292,8 +270,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
                 << std::setiosflags(std::ios::left) << std::setw(26)
 		<< fd_step_size;
     std::string fdss_s( fdss_stream.str() );
-    fdss_s.resize(72, ' ');
-    NPOPTN2_F77( fdss_s.data() );
+    send_sol_option(fdss_s);
   
     // Set "Central Difference Interval" to fdss as well.
     // It may be desirable to set central FDSS to fdss/2. (?)
@@ -302,8 +279,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
                  << std::setiosflags(std::ios::left) << std::setw(26)
 		 << fd_step_size;
     std::string cfdss_s( cfdss_stream.str() );
-    cfdss_s.resize(72, ' ');
-    NPOPTN2_F77( cfdss_s.data() );
+    send_sol_option(cfdss_s);
   
     if (output_lev > NORMAL_OUTPUT)
       Cout << "Derivative Level            = 0\n" << fdss_s.c_str() << '\n'

@@ -144,6 +144,10 @@ public:
   void core_run();
 
   void declare_sources();
+
+protected:
+  void send_sol_option(std::string sol_option) override;
+
 private:
 
   //
