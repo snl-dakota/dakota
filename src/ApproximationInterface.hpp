@@ -319,8 +319,19 @@ inline void ApproximationInterface::clear_model_keys()
 inline void ApproximationInterface::restore_data_key()
 {
   const Pecos::ActiveKey& active_key = sharedData.active_model_key();
-  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].active_model_key(active_key);
+  bool reduce_key = (active_key.aggregated() && active_key.reduction());
+  size_t prev_pts;
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    Approximation& fn_surf = functionSurfaces[*it];
+    Pecos::SurrogateData& approx_data = fn_surf.surrogate_data();
+    // In addition to restoring the original (aggregate) key, we synchronize
+    // the data size for this key with the data size for the embedded keys
+    // (which have been enumerated  prior to restore_data_key()), allowing
+    // use of points() in downstream size checks
+    if (reduce_key) prev_pts = approx_data.points(); // size for embedded keys
+    fn_surf.active_model_key(active_key);            // reassign aggregate key
+    if (reduce_key) approx_data.resize(prev_pts);    // synchronize size
+  }
 }
 
 
