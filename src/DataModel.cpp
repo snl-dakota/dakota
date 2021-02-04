@@ -23,6 +23,8 @@ DataModelRep::DataModelRep():
   hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), exportSurrogate(false),
   modelExportPrefix("exported_surrogate"), modelExportFormat(NO_MODEL_FORMAT),
+  importSurrogate(false),
+  modelImportPrefix("exported_surrogate"), modelImportFormat(NO_MODEL_FORMAT),
   importBuildFormat(TABULAR_ANNOTATED),  importUseVariableLabels(false),
   importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
@@ -73,7 +75,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << surrogateType << actualModelPointer << orderedModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importUseVariableLabels
+    << modelExportPrefix << modelExportFormat << importSurrogate
+    << modelImportPrefix << modelImportFormat << importUseVariableLabels
     << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat
@@ -121,7 +124,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> surrogateType >> actualModelPointer >> orderedModelPointers
     >> pointsTotal >> pointsManagement >> approxPointReuse
     >> importBuildPtsFile >> importBuildFormat >> exportSurrogate
-    >> modelExportPrefix >> modelExportFormat >> importUseVariableLabels
+    >> modelExportPrefix >> modelExportFormat >> importSurrogate
+    >> modelImportPrefix >> modelImportFormat >> importUseVariableLabels
     >> importBuildActive
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat
@@ -169,7 +173,8 @@ void DataModelRep::write(std::ostream& s) const
     << surrogateType << actualModelPointer << orderedModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importUseVariableLabels
+    << modelExportPrefix << modelExportFormat << importSurrogate
+    << modelImportPrefix << modelImportFormat << importUseVariableLabels
     << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat

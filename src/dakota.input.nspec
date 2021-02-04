@@ -5842,6 +5842,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
          ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
+         ]
        )
       |
       ( gaussian_process ALIAS kriging {0}
@@ -6012,6 +6018,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
             [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
       [ domain_decomposition {N_mom(true,domainDecomp)}

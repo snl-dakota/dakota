@@ -186,12 +186,17 @@ public:
 
   /// Option to turn on surrogate model export (export_model)
   bool exportSurrogate;
-
   /// the filename prefix for export_model
   String modelExportPrefix;
-
   /// Format selection for export_model
   unsigned short modelExportFormat;
+
+  /// Option to turn on surrogate model import (import_model)
+  bool importSurrogate;
+  /// the filename prefix for import_model
+  String modelImportPrefix;
+  /// Format selection for import_model
+  unsigned short modelImportFormat;
 
   /// correction type for global and hierarchical approximations:
   /// NO_CORRECTION, ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
