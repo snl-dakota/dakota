@@ -143,6 +143,9 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// construct-time only import of serialized surrogate
+  void import_model(const ProblemDescDB& problem_db);
+
   /// copy from SurrogateData to SurfPoint/SurfData in surfData
   void surrogates_to_surf_data();
 

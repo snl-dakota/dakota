@@ -274,6 +274,9 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
       "sum_abs", "mean_abs", "max_abs",
       "rsquared" };
   shared_surf_data_rep->validate_metrics(allowed_metrics);
+
+  if (problem_db.get_bool("model.surrogate.import_surrogate"))
+    import_model(problem_db);
 }
 
 
@@ -811,6 +814,24 @@ RealArray SurfpackApproximation::challenge_diagnostic(const StringArray& metric_
   for (int j = 0; j < metric_types.size(); ++j)
     chal_metrics.push_back(diagnostic(metric_types[j], *spModel, chal_data));
   return chal_metrics;
+}
+
+
+void SurfpackApproximation::import_model(const ProblemDescDB& problem_db)
+{
+  auto import_prefix =
+    problem_db.get_string("model.surrogate.model_import_prefix");
+  auto import_format =
+    problem_db.get_ushort("model.surrogate.model_import_format");
+  bool is_binary = import_format & BINARY_ARCHIVE;
+  std::string filename = import_prefix + "." + approxLabel +
+    (is_binary ? ".bsps" : ".sps");
+
+  spModel.reset(SurfpackInterface::LoadModel(filename));
+
+  if (sharedDataRep->outputLevel >= NORMAL_OUTPUT)
+    Cout << "Imported surrogate for response '" << approxLabel
+	 << "' from file '" << filename << "'." << std::endl;
 }
 
 

@@ -279,3 +279,41 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 
        TF1ln  2.65550e-02 
        TF2ln  1.68638e-01 
+Test Number 8 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 5000 total (5000 new, 0 duplicate)
+<<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.9544236834e-05  6.4685142676e-05  4.1282635933e+00  2.8773582405e+01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.7750854888e-05  4.1337618781e-05  6.3441789679e-05  6.5978559949e-05
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -4.8773842565e-06   2.0000000000e-05   2.1216056904e+04
+   2.0000000000e-05   3.0000000000e-05   9.6800000000e+03
+   3.0000000000e-05   4.0000000000e-05   6.9200000000e+03
+   4.0000000000e-05   1.0000723701e-03   3.1893429030e+02
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   2.0000000000e-05   5.2780000000e-01
+   3.0000000000e-05   6.2460000000e-01
+   4.0000000000e-05   6.9380000000e-01
+Simple Correlation Matrix among all inputs and outputs:
+                    TF1ln        TF2ln response_fn_1 
+       TF1ln  1.00000e+00 
+       TF2ln -3.37566e-05  1.00000e+00 
+response_fn_1  3.89984e-02  3.39566e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       TF1ln  4.14742e-02 
+       TF2ln  3.39826e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    TF1ln        TF2ln response_fn_1 
+       TF1ln  1.00000e+00 
+       TF2ln  3.43526e-03  1.00000e+00 
+response_fn_1  2.67787e-02  1.68635e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       TF1ln  2.65802e-02 
+       TF2ln  1.68605e-01 

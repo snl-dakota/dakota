@@ -3826,6 +3826,7 @@
                            #	        [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
                        -->
                     &model_full_surfpack_export_format;
+		    &model_surrogate_import;
 		    </keyword>
                   </oneOf>
 		  &model_variance_export;
@@ -3842,6 +3843,7 @@
                     </oneOf>
                   </keyword>
 		  &model_partial_surrogate_export_format;
+		  &model_surrogate_import;
 	        </keyword>
 
                 <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving Least Squares"  >
@@ -3853,6 +3855,7 @@
                     <param type="INTEGER" />
                   </keyword>
                   &model_partial_surrogate_export_format;
+		  &model_surrogate_import;
                 </keyword>
 		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" group="Surrogate-based Methods">
 		  <!-- &ft_model_refinement; -->
@@ -3918,6 +3921,7 @@
             <param type="INTEGER" />
           </keyword>
           &model_full_surfpack_export_format;
+	  &model_surrogate_import;
         </keyword>
 
         <!-- #	    | orthogonal_polynomial {N_mom(lit,surrogateType_global_orthogonal_polynomial)}
@@ -3937,6 +3941,7 @@
                     <param type="INTEGER" />
                   </keyword>
                   &model_full_surfpack_export_format;
+		  &model_surrogate_import;
                 </keyword>
 
                 <keyword  id="polynomial" name="polynomial" code="{N_mom(lit,surrogateType_global_polynomial)}" label="Polynomial"  >
@@ -3949,6 +3954,7 @@
                     <keyword  id="cubic1" name="cubic" code="{N_mom(order,polynomialOrder_3)}" label="Cubic"   />
                   </oneOf>
                   &model_full_surfpack_export_format;
+		  &model_surrogate_import;
                 </keyword>
                 <keyword  id="experimental_polynomial" name="experimental_polynomial" code="{N_mom(lit,surrogateType_global_exp_poly)}" label="Experimental Polynomial"  minOccurs="1" >
                   <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="Basis Order" minOccurs="1" >

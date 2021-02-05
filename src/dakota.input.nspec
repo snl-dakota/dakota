@@ -5889,6 +5889,12 @@ KEYWORD model {N_mom3(start,0,stop)}
               [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
              )
            ]
+          [ import_model {N_mom(true,importSurrogate)}
+            [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+            text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+            |
+            binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
+           ]
          )
         [ export_approx_variance_file STRING {N_mom(str,exportApproxVarianceFile)}
           [ 
@@ -5919,6 +5925,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
          ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
+         ]
        )
       |
       ( moving_least_squares {N_mom(lit,surrogateType_global_moving_least_squares)}
@@ -5930,6 +5942,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
             [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
       |
@@ -5972,6 +5990,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
            )
          ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
+         ]
        )
       |
       ( radial_basis {N_mom(lit,surrogateType_global_radial_basis)}
@@ -5987,6 +6011,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ algebraic_file {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)} ]
             [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
            )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
       |
@@ -6006,6 +6036,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ algebraic_file {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)} ]
             [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
            )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
       |
