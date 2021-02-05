@@ -105,6 +105,18 @@ if(DAKOTA_PYTHON_SURROGATES)
   endif()
 endif()
 
+option(DAKOTA_JAVA_SURROGATES
+  "Dakota Java interface to surrogate module; default OFF" OFF)
+
+if(DAKOTA_JAVA_SURROGATES)
+  if(NOT DAKOTA_MODULE_SURROGATES)
+    message(STATUS "Disabling DAKOTA_JAVA_SURROGATES as "
+      "DAKOTA_MODULE_SURROGATES=${DAKOTA_MODULE_SURROGATES}")
+    set(DAKOTA_JAVA_SURROGATES OFF CACHE BOOL
+      "Java surrogate wrappers disabled as surrogate module is off.")
+  endif()
+endif()
+
 # Option to build an unsupported Java wrapper for Dakota's library mode that 
 # has a Java callback for performing function evaluations.  This is a non-
 # functioning capability that should only be enabled by developers.  It does 

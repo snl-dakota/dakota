@@ -78,4 +78,8 @@ if(DAKOTA_PYTHON_SURROGATES)
   install(FILES __init__.py DESTINATION share/dakota/Python/dakota/surrogates)
 endif()
 
+if(DAKOTA_JAVA_SURROGATES)
+  add_subdirectory(java)
+endif()
+
 add_subdirectory(unit)
