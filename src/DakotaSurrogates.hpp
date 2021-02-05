@@ -79,6 +79,9 @@ protected:
   /// set the surrogate's verbosity level according to Dakota's verbosity
   void set_verbosity();
 
+  /// construct-time only import of serialized surrogate
+  void import_model(const ProblemDescDB& problem_db);
+
   /// export the model to disk
   void
   export_model(const StringArray& var_labels, const String& fn_label,

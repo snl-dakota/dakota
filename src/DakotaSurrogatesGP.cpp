@@ -75,6 +75,9 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   shared_surf_data_rep->validate_metrics(allowed_metrics);
+
+  if (problem_db.get_bool("model.surrogate.import_surrogate"))
+    import_model(problem_db);
 }
 
 

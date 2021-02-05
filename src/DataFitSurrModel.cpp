@@ -197,6 +197,13 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     initialize_export();
   if (import_pts || export_pts)
     manage_data_recastings();
+
+  // actual import of the model happens in specific Approximations
+  if (problem_db.get_bool("model.surrogate.import_surrogate")) {
+    ++approxBuilds;
+    if (strbegins(surrogateType, "global_")) update_global_reference();
+    else                                     update_local_reference();
+  }
 }
 
 

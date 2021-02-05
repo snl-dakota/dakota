@@ -245,6 +245,33 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
 
 
 void SurrogatesBaseApprox::
+import_model(const ProblemDescDB& problem_db)
+{
+  auto import_prefix =
+    problem_db.get_string("model.surrogate.model_import_prefix");
+  auto import_format =
+    problem_db.get_ushort("model.surrogate.model_import_format");
+  bool is_binary = import_format & BINARY_ARCHIVE;
+  std::string filename = import_prefix + "." + approxLabel +
+    (is_binary ? ".bin" : ".txt");
+
+  model = dakota::surrogates::Surrogate::load(filename, is_binary);
+
+  if (sharedDataRep->outputLevel >= NORMAL_OUTPUT)
+    Cout << "Imported surrogate for response '" << approxLabel
+	 << "' from file '" << filename << "'." << std::endl;
+
+  if (sharedDataRep->outputLevel >= SILENT_OUTPUT &&
+      !model->response_labels().empty()) {
+    auto imported_label = model->response_labels()[0];
+    if (imported_label != approxLabel)
+      Cout << "\nWarning: Surrogate imported from file " << filename
+	   << "\nhas response label '" << imported_label << "'; expected '"
+	   << approxLabel << "'." << std::endl;
+  }
+}
+
+void SurrogatesBaseApprox::
 export_model(const Variables& vars, const String& fn_label,
 	     const String& export_prefix, const unsigned short export_format)
 {
