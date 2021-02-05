@@ -57,7 +57,7 @@ public:
   /// alternate constructor
   SurfpackApproximation(const SharedApproxData& shared_data);
   /// destructor
-  ~SurfpackApproximation();
+  ~SurfpackApproximation() { }
 
 protected:
 
@@ -143,14 +143,14 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// copy from SurrogateData to SurfPoint/SurfData
-  SurfData* surrogates_to_surf_data();
+  /// copy from SurrogateData to SurfPoint/SurfData in surfData
+  void surrogates_to_surf_data();
 
   /// set the anchor point (including gradient and hessian if present)
   /// into surf_data
   void add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
 				   const Pecos::SurrogateDataResp& anchor_resp,
-				   short fail_code, SurfData& surf_data);
+				   short fail_code);
 
   //
   //- Heading: Data
@@ -162,19 +162,18 @@ private:
   //RealVector coefficients;
 
   /// The native Surfpack approximation
-  SurfpackModel* model;
+  std::shared_ptr<SurfpackModel> spModel;
   /// factory for the SurfpackModel instance
-  SurfpackModelFactory* factory;
+  std::shared_ptr<SurfpackModelFactory> spFactory;
   /// The data used to build the approximation, in Surfpack format
-  SurfData* surfData;
+  std::shared_ptr<SurfData> surfData;
 
   // convenience pointer to shared data representation
   //std::shared_ptr<SharedSurfpackApproxData> sharedSurfDataRep;
 };
 
 
-inline SurfpackApproximation::SurfpackApproximation():
-  surfData(NULL), model(NULL), factory(NULL)//, sharedDataRep(NULL)
+inline SurfpackApproximation::SurfpackApproximation() // : sharedDataRep(NULL)
 { }
 
 

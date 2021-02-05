@@ -44,8 +44,7 @@ SurfpackApproximation::
 SurfpackApproximation(const ProblemDescDB& problem_db,
 		      const SharedApproxData& shared_data,
                       const String& approx_label):
-  Approximation(BaseConstructor(), problem_db, shared_data, approx_label), //surface(NULL),
-  surfData(NULL), model(NULL), factory(NULL)
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
   //sharedDataRep((SharedSurfpackApproxData*)shared_data.data_rep())
 {
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
@@ -260,7 +259,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
   //for (ParamMap::iterator itr = args.begin(); itr != args.end(); itr++)
   //   Cout << "     " << itr->first << ": " << itr->second << std::endl;
 
-  factory = ModelFactory::createModelFactory(args);
+  spFactory.reset(ModelFactory::createModelFactory(args));
 
   //catch(...) {
   //  Cout << "Exception caught in attempt to create Surface object"
@@ -281,8 +280,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
 /// On-the-fly constructor which uses mostly Surfpack model defaults
 SurfpackApproximation::
 SurfpackApproximation(const SharedApproxData& shared_data):
-  Approximation(NoDBBaseConstructor(), shared_data),
-  surfData(NULL), model(NULL), factory(NULL)
+  Approximation(NoDBBaseConstructor(), shared_data)
   //sharedDataRep((SharedSurfpackApproxData*)shared_data.data_rep())
 {
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
@@ -350,31 +348,21 @@ SurfpackApproximation(const SharedApproxData& shared_data):
   else if (sharedDataRep->approxType == "global_mars")
     args["type"] = "mars";
   
-  factory = ModelFactory::createModelFactory(args);
-}
-
-
-
-// Embedded Surfpack objects will need to be deleted
-SurfpackApproximation::~SurfpackApproximation()
-{
-  delete surfData;
-  delete model;
-  delete factory;
+  spFactory.reset(ModelFactory::createModelFactory(args));
 }
 
 
 int SurfpackApproximation::min_coefficients() const
 {
-  assert(factory);
-  return factory->minPointsRequired();
+  assert(spFactory);
+  return spFactory->minPointsRequired();
 }
 
 
 int SurfpackApproximation::recommended_coefficients() const
 {
-  assert(factory);
-  return factory->recommendedNumPoints();
+  assert(spFactory);
+  return spFactory->recommendedNumPoints();
 }
 
 
@@ -383,9 +371,9 @@ void SurfpackApproximation::build()
   // base class implementation checks data set against min required
   Approximation::build();
 
-  // Surface object should have been created in constructor
-  if (!factory) { 
-    Cerr << "Error: surface is null in SurfpackApproximation::build()."
+  // Surface factory should have been created in constructor
+  if (!spFactory) {
+    Cerr << "Error: Uninitialized model factory in SurfpackApproximation::build()."
 	 << std::endl;  
     abort_handler(-1);
   }
@@ -393,7 +381,6 @@ void SurfpackApproximation::build()
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
 
-  /// surfData will be deleted in dtor
   /// \todo Right now, we're completely deleting the old data and then
   /// recopying the current data into a SurfData object.  This was just
   /// the easiest way to arrive at a solution that would build and run.
@@ -401,11 +388,7 @@ void SurfpackApproximation::build()
   /// and it's not good to go through this whole process every time one
   /// more data point is added.
   try {
-    if (surfData) {
-      delete surfData;
-      surfData = NULL;
-    }
-    surfData = surrogates_to_surf_data();
+    surrogates_to_surf_data();
  
     // set bounds at run time since they are updated by some methods (e.g., SBO)
     if (!sharedDataRep->approxCLowerBnds.empty() ||
@@ -415,7 +398,7 @@ void SurfpackApproximation::build()
       shared_surf_data_rep->merge_variable_arrays(
 	sharedDataRep->approxCLowerBnds, sharedDataRep->approxDILowerBnds,
 	sharedDataRep->approxDRLowerBnds, lb);
-      factory->add("lower_bounds", fromVec<Real>(lb));
+      spFactory->add("lower_bounds", fromVec<Real>(lb));
     }
     if (!sharedDataRep->approxCUpperBnds.empty() ||
 	!sharedDataRep->approxDIUpperBnds.empty() ||
@@ -424,14 +407,10 @@ void SurfpackApproximation::build()
       shared_surf_data_rep->merge_variable_arrays(
 	sharedDataRep->approxCUpperBnds, sharedDataRep->approxDIUpperBnds,
 	sharedDataRep->approxDRUpperBnds, ub);
-      factory->add("upper_bounds", fromVec<Real>(ub));
+      spFactory->add("upper_bounds", fromVec<Real>(ub));
     }
 
-    if (model) {
-      delete model;
-      model = NULL;
-    }
-    model = factory->Build(*surfData); 
+    spModel.reset(spFactory->Build(*surfData));
     // TO DO: extract coefficients array
   }
   catch (std::runtime_error& e) {
@@ -491,7 +470,7 @@ export_model(const StringArray& var_labels, const String& fn_label,
   if(formats & TEXT_ARCHIVE) {
     if(can_save) {
       String filename = without_extension + ".sps";
-      SurfpackInterface::Save(model,filename);
+      SurfpackInterface::Save(spModel.get(),filename);
     } else
         Cerr << "\nRequested surrogate export to text archive failed: "
 		<< "Surfpack lacks support for model saving.\n";
@@ -500,7 +479,7 @@ export_model(const StringArray& var_labels, const String& fn_label,
   if(formats & BINARY_ARCHIVE) {
     if(can_save) {
       String filename = without_extension + ".bsps";
-      SurfpackInterface::Save(model,filename);
+      SurfpackInterface::Save(spModel.get(),filename);
     } else
         Cerr << "\nRequested surrogate export to binary archive failed: "
 	        << "Surfpack lacks support for model saving.\n";
@@ -509,21 +488,21 @@ export_model(const StringArray& var_labels, const String& fn_label,
   if(formats & ALGEBRAIC_FILE) {
     String filename = without_extension + ".alg";
     std::ofstream af(filename.c_str(),std::ofstream::out);
-    af << "Model for response " << fn_label << ":\n" << model->asString();
+    af << "Model for response " << fn_label << ":\n" << spModel->asString();
     af.close();
     Cout << "Model saved in algebraic format to file '" << filename << "'.\n";
   }
   // Writing in algebraic format to screen
   if(formats & ALGEBRAIC_CONSOLE) {
     Cout << "\nModel for response " << fn_label << ":\n";
-    Cout << model->asString();
+    Cout << spModel->asString();
   }    
 }
 
 Real SurfpackApproximation::value(const Variables& vars)
 { 
   //static int times_called = 0;
-  if (!model) { 
+  if (!spModel) {
     Cerr << "Error: surface is null in SurfpackApproximation::value()"
 	 << std::endl;  
     abort_handler(-1);
@@ -532,7 +511,7 @@ Real SurfpackApproximation::value(const Variables& vars)
   RealArray x_array(sharedDataRep->numVars);
   std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
     vars_to_realarray(vars, x_array);
-  return (*model)(x_array);
+  return (*spModel)(x_array);
 }
 
 
@@ -543,7 +522,7 @@ const RealVector& SurfpackApproximation::gradient(const Variables& vars)
     RealArray x_array(sharedDataRep->numVars);
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
       vars_to_realarray(vars, x_array);
-    VecDbl local_grad = model->gradient(x_array);
+    VecDbl local_grad = spModel->gradient(x_array);
     for (unsigned i = 0; i < surfData->xSize(); i++)
       approxGradient[i] = local_grad[i];
   }
@@ -569,7 +548,7 @@ const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
     RealArray x_array(sharedDataRep->numVars);
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
       vars_to_realarray(vars, x_array);
-    MtxDbl sm = model->hessian(x_array);
+    MtxDbl sm = spModel->hessian(x_array);
     ///\todo Make this acceptably efficient
     for (size_t i = 0; i < num_cv; i++)
       for(size_t j = 0; j < num_cv; j++)
@@ -590,7 +569,7 @@ Real SurfpackApproximation::prediction_variance(const Variables& vars)
     RealArray x_array(sharedDataRep->numVars);
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
       vars_to_realarray(vars, x_array);
-    return model->variance(x_array);
+    return spModel->variance(x_array);
   }
   catch (...) {
     Cerr << "Error: prediction_variance() not available for this "
@@ -602,7 +581,7 @@ Real SurfpackApproximation::prediction_variance(const Variables& vars)
 Real SurfpackApproximation::value(const RealVector& c_vars)
 {
     //static int times_called = 0;
-    if (!model) {
+    if (!spModel) {
         Cerr << "Error: surface is null in SurfpackApproximation::value()"
         << std::endl;
         abort_handler(-1);
@@ -611,7 +590,7 @@ Real SurfpackApproximation::value(const RealVector& c_vars)
     RealArray x_array;
     size_t num_vars = c_vars.length();
     for (size_t i = 0; i < num_vars; i++) x_array.push_back(c_vars[i]);
-    return (*model)(x_array);
+    return (*spModel)(x_array);
 }
     
     
@@ -623,7 +602,7 @@ const RealVector& SurfpackApproximation::gradient(const RealVector& c_vars)
         size_t num_vars = c_vars.length();
         for (size_t i = 0; i < num_vars; i++) x_array.push_back(c_vars[i]);
         
-        VecDbl local_grad = model->gradient(x_array);
+        VecDbl local_grad = spModel->gradient(x_array);
         for (unsigned i = 0; i < surfData->xSize(); i++)
             approxGradient[i] = local_grad[i];
     }
@@ -649,7 +628,7 @@ const RealSymMatrix& SurfpackApproximation::hessian(const RealVector& c_vars)
         RealArray x_array;
         for (size_t i = 0; i < num_cv; i++) x_array.push_back(c_vars[i]);
         
-        MtxDbl sm = model->hessian(x_array);
+        MtxDbl sm = spModel->hessian(x_array);
         ///\todo Make this acceptably efficient
         for (size_t i = 0; i < num_cv; i++)
             for(size_t j = 0; j < num_cv; j++)
@@ -670,7 +649,7 @@ Real SurfpackApproximation::prediction_variance(const RealVector& c_vars)
         RealArray x_array;
         size_t num_vars = c_vars.length();
         for (size_t i = 0; i < num_vars; i++) x_array.push_back(c_vars[i]);
-        return model->variance(x_array);
+        return spModel->variance(x_array);
     }
     catch (...) {
         Cerr << "Error: prediction_variance() not available for this "
@@ -682,13 +661,13 @@ Real SurfpackApproximation::prediction_variance(const RealVector& c_vars)
 
 Real SurfpackApproximation::diagnostic(const String& metric_type)
 { 
-  if (!model) { 
+  if (!spModel) {
     Cerr << "Error: surface is null in SurfpackApproximation::diagnostic()"
          << std::endl;  
     abort_handler(-1);
   }
 
-  return diagnostic(metric_type, *model, *surfData);
+  return diagnostic(metric_type, *spModel, *surfData);
 }
 
 
@@ -777,7 +756,7 @@ void SurfpackApproximation::
 challenge_diagnostics(size_t fn_index, const RealMatrix& challenge_points,
                       const RealVector& challenge_responses)
 {
-  if (!model) { 
+  if (!spModel) {
     Cerr << "Error: surface is null in SurfpackApproximation::diagnostic()"
 	 << std::endl;  
     abort_handler(-1);
@@ -805,7 +784,7 @@ RealArray SurfpackApproximation::cv_diagnostic(const StringArray& metric_types,
   CrossValidationFitness CV_fitness(num_folds);
   VecDbl cv_metrics;
   try {
-    CV_fitness.eval_metrics(cv_metrics, *model, *surfData, metric_types);
+    CV_fitness.eval_metrics(cv_metrics, *spModel, *surfData, metric_types);
   } catch(String cv_error) {
     Cerr << "Error: Exception caught while computing CV score:\n" << cv_error << std::endl;
     cv_metrics.resize(metric_types.size());
@@ -830,16 +809,16 @@ RealArray SurfpackApproximation::challenge_diagnostic(const StringArray& metric_
     chal_data.addPoint(SurfPoint(x, f));
   }
   for (int j = 0; j < metric_types.size(); ++j)
-    chal_metrics.push_back(diagnostic(metric_types[j], *model, chal_data));
+    chal_metrics.push_back(diagnostic(metric_types[j], *spModel, chal_data));
   return chal_metrics;
 }
 
 
 /** Copy the data stored in Dakota-style SurrogateData into
-    Surfpack-style SurfPoint and SurfData objects. */
-SurfData* SurfpackApproximation::surrogates_to_surf_data()
+    Surfpack-style SurfPoint and SurfData objects. Updates surfData */
+void SurfpackApproximation::surrogates_to_surf_data()
 {
-  SurfData* surf_data = new SurfData();
+  surfData.reset(new SurfData());
 
   // screen approximation data for failures
   approxData.data_checks();
@@ -859,17 +838,16 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
   // some surrogates, e.g., global_polynomials and kriging, treat the anchor
   // point specially as a constraint; other treat as a regular data point
   size_t constr_index = approxData.anchor_index();
-  if (factory->supports_constraints() && constr_index != _NPOS) {
+  if (spFactory->supports_constraints() && constr_index != _NPOS) {
     for (i=0; i<num_data_pts; ++i) {
       short fail_code = 0;
       if (fit != failed_resp.end() && fit->first == i)
 	{ fail_code = fit->second; ++fit; }
       if (i == constr_index)
-	add_constraints_to_surfdata(sdv_array[i], sdr_array[i], fail_code,
-				    *surf_data);
+	add_constraints_to_surfdata(sdv_array[i], sdr_array[i], fail_code);
       else
 	data_rep->
-	  add_sd_to_surfdata(sdv_array[i], sdr_array[i], fail_code, *surf_data);
+	  add_sd_to_surfdata(sdv_array[i], sdr_array[i], fail_code, *surfData);
     }
   }
   else
@@ -878,10 +856,8 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
       if (fit != failed_resp.end() && fit->first == i)
 	{ fail_code = fit->second; ++fit; }
       data_rep->add_sd_to_surfdata(sdv_array[i], sdr_array[i], fail_code,
-				   *surf_data);
+				   *surfData);
     }
-
-  return surf_data;
 }
 
 
@@ -890,7 +866,7 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 void SurfpackApproximation::
 add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
 			    const Pecos::SurrogateDataResp& anchor_resp,
-			    short fail_code, SurfData& surf_data)
+			    short fail_code)
 {
   // coarse-grained fault tolerance for now: any failure qualifies for omission
   if (fail_code)
@@ -946,15 +922,15 @@ add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
   switch (anchor_data_order) {
 
   case 1:
-    surf_data.setConstraintPoint(SurfPoint(x, f));
+    surfData->setConstraintPoint(SurfPoint(x, f));
     break;
 
   case 3:
-    surf_data.setConstraintPoint(SurfPoint(x, f, gradient));
+    surfData->setConstraintPoint(SurfPoint(x, f, gradient));
     break;
 
   case 7:
-    surf_data.setConstraintPoint(SurfPoint(x, f, gradient, hessian));
+    surfData->setConstraintPoint(SurfPoint(x, f, gradient, hessian));
     break;
 
   default:
