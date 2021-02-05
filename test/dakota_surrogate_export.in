@@ -30,9 +30,12 @@ model
     experimental_gaussian_process
       metrics 'root_mean_squared'
         cross_validation folds 5
-      export_model
-        filename_prefix = 'gp_export'
-        formats = binary_archive
+      export_model			#s0
+        filename_prefix = 'gp_export'	#s0
+        formats = binary_archive	#s0
+#     import_model			#s1
+#       filename_prefix = 'gp_export'	#s1
+#	  binary_archive  		#s1
       export_approx_points_file 'gp_values.dat'
       export_approx_variance_file 'gp_variance.dat'
 
