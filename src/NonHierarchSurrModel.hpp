@@ -185,15 +185,6 @@ private:
   /// assign the resolution level for the i-th model key
   void assign_key(size_t i);
 
-  /// define truth key and surrogate key array from incoming aggregate key
-  void extract_model_keys(const Pecos::ActiveKey& aggregate_key,
-			  Pecos::ActiveKey& truth_key,
-			  std::vector<Pecos::ActiveKey>& surr_keys);
-  /// define active key from incoming truth key and surrogate key array
-  void aggregate_model_keys(const Pecos::ActiveKey& truth_key,
-			    const std::vector<Pecos::ActiveKey>& surr_keys,
-			    Pecos::ActiveKey& aggregate_key);
-
   /// utility for propagating new key values
   void key_updates(unsigned short model_index, unsigned short soln_lev_index);
 
@@ -407,69 +398,15 @@ inline void NonHierarchSurrModel::assign_key(size_t i)
 }
 
 
-inline void NonHierarchSurrModel::
-extract_model_keys(const Pecos::ActiveKey& aggregate_key,
-		   Pecos::ActiveKey& truth_key,
-		   std::vector<Pecos::ActiveKey>& surr_keys)
-{
-  //if (aggregate_key.aggregated()) {
-  size_t num_k = aggregate_key.data_size();
-  if (num_k) {
-    truth_key = aggregate_key.extract_key(0);
-    size_t k, num_surr_k = num_k - 1;
-    surr_keys.resize(num_surr_k);
-    for (k=0; k<num_surr_k; ++k)
-      surr_keys[k] = aggregate_key.extract_key(k+1);
-  }
-  else
-    { truth_key.clear(); surr_keys.clear(); }
-  //}
-  //else // single key: assign to truth or surr key based on responseMode
-  //  switch (responseMode) {
-  //  case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
-  //    surr_key  = aggregate_key;  truth_key.clear();  break;
-  //  default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
-  //    truth_key = aggregate_key;   surr_key.clear();  break;
-  //  }
-}
-
-
-inline void NonHierarchSurrModel::
-aggregate_model_keys(const Pecos::ActiveKey& truth_key,
-		     const std::vector<Pecos::ActiveKey>& surr_keys,
-		     Pecos::ActiveKey& aggregate_key)
-{
-  bool truth = !truth_key.is_null();
-  size_t k, num_surr_k = surr_keys.size(), surr_start;
-  unsigned short id = USHRT_MAX;
-  if      (truth)      { id =    truth_key.id(); surr_start = 0; }
-  else if (num_surr_k) { id = surr_keys[0].id(); surr_start = 1; }
-  else                 { aggregate_key.clear();  return; }
-
-  for (k=surr_start; k<num_surr_k; ++k)
-    if (surr_keys[k].id() != id) {
-      Cerr << "Error: mismatch in group ids in NonHierarchSurrModel::"
-	   << "aggregate_model_keys()." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-
-  aggregate_key.id(id);
-  // unlike ActiveKey::aggregate_keys(), here we can assign a reduction type
-  aggregate_key.type(Pecos::NO_REDUCTION); // aggregation only
-  aggregate_key.clear_data();
-  if (truth) aggregate_key.append(truth_key.data(), Pecos::SHALLOW_COPY);
-  for (k=0; k<num_surr_k; ++k)
-    aggregate_key.append(surr_keys[k].data(), Pecos::SHALLOW_COPY);
-}
-
-
 inline void NonHierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
 {
   // assign activeKey
   SurrogateModel::active_model_key(key);
 
-  // update {truth,unordered}ModelKey
-  extract_model_keys(key, truthModelKey, unorderedModelKeys);
+  // update truthModelKey and unorderedModelKeys
+  // TO DO: support group comprised only of approximations (no truth);
+  //        implement extra logic as in HierarchSurrModel::extract_model_keys()
+  key.extract_keys(truthModelKey, unorderedModelKeys);
 
   // assign same{Model,Interface}Instance
   check_model_interface_instance();

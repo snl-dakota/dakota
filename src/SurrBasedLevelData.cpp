@@ -48,12 +48,13 @@ initialize_data(const Variables& vars, const Response& approx_resp,
 void SurrBasedLevelData::
 initialize_keys(unsigned short group,
 		unsigned short truth_form,  unsigned short approx_form,
-		unsigned short truth_level, unsigned short approx_level)
+		unsigned short truth_level, unsigned short approx_level,
+		unsigned short reduction)
 {
   truthModelKey.form_key( group,  truth_form,  truth_level);
   approxModelKey.form_key(group, approx_form, approx_level);
 
-  pairedModelKey.aggregate_keys(truthModelKey, approxModelKey);
+  pairedModelKey.aggregate_keys(truthModelKey, approxModelKey, reduction);
 }
 
 

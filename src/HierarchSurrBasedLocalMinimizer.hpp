@@ -188,7 +188,7 @@ inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
   Pecos::ActiveKey hf_lf_key;
   hf_lf_key.form_key(tr.data_group(),         tr.truth_model_form(),
 		     tr.truth_model_level(),  tr.approx_model_form(),
-		     tr.approx_model_level(), Pecos::DISTINCT_DISCREPANCY);
+		     tr.approx_model_level(), Pecos::SINGLE_REDUCTION);
   iteratedModel.active_model_key(hf_lf_key);
 }
 

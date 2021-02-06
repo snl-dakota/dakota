@@ -504,13 +504,13 @@ inline void HierarchSurrModel::
 extract_model_keys(const Pecos::ActiveKey& active_key,
 		   Pecos::ActiveKey& truth_key, Pecos::ActiveKey& surr_key)
 {
-  if (active_key.aggregated())
+  if (active_key.aggregated()) // AGGREGATED_MODELS, MODEL_DISCREPANCY
     active_key.extract_keys(truth_key, surr_key);
   else // single key: assign to truth or surr key based on responseMode
     switch (responseMode) {
-    case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
       surr_key  = active_key;  truth_key.clear();  break;
-    default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
+    default: // {BYPASS,NO}_SURROGATE
       truth_key = active_key;   surr_key.clear();  break;
     }
 }

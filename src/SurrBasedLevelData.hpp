@@ -63,7 +63,8 @@ public:
   void initialize_keys(unsigned short group,
 		       unsigned short truth_form, unsigned short approx_form,
 		       unsigned short truth_level  = USHRT_MAX,
-		       unsigned short approx_level = USHRT_MAX);
+		       unsigned short approx_level = USHRT_MAX,
+		       unsigned short reduction    = Pecos::SINGLE_REDUCTION);
   /// initialize {truth,approx}ModelKey from aggregate_key
   void initialize_keys(const Pecos::ActiveKey& aggregate_key);
 

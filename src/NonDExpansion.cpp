@@ -1333,22 +1333,20 @@ configure_indices(unsigned short group, unsigned short form,
     uSpaceModel.active_model_key(hf_key); // one data set
   }
   else { // 3 data sets: HF, either LF or LF-hat, and discrep
-    Pecos::ActiveKey child_key(hf_key.copy()), discrep_key;
-    // *** Now using same child key for LF-hat ***
-    child_key.decrement_key(seq_type); // seq_index defaults to 0
-    discrep_key.aggregate_keys(hf_key, child_key);
     switch (multilevDiscrepEmulation) {
     case DISTINCT_EMULATION:
       aggregated_models_mode(); // two model evaluations
-      discrep_key.type(Pecos::DISTINCT_DISCREPANCY);
       break;
     case RECURSIVE_EMULATION:
       bypass_surrogate_mode(); // still only one model evaluation
-      discrep_key.type(Pecos::RECURSIVE_DISCREPANCY);
       // child key is emulator of the LF model (LF-hat) --> dummy model indices
       //child_key[1] = child_key[2] = USHRT_MAX;// same group but no form,lev
       break;
     }
+    Pecos::ActiveKey child_key(hf_key.copy()), discrep_key;
+    // *** Now using same child key for either LF or LF-hat ***
+    child_key.decrement_key(seq_type); // seq_index defaults to 0
+    discrep_key.aggregate_keys(hf_key, child_key, Pecos::SINGLE_REDUCTION);
     uSpaceModel.active_model_key(discrep_key);
   }
 }

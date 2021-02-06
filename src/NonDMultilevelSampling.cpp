@@ -203,8 +203,7 @@ void NonDMultilevelSampling::core_run()
     else { // multiple model forms (only) --> CVMC
       // use nominal value from user input, ignoring solution_level_control
       Pecos::ActiveKey hf_lf_key;  unsigned short lev = USHRT_MAX;
-      hf_lf_key.form_key(0, hf_form, lev, lf_form, lev,
-			 Pecos::DISTINCT_DISCREPANCY);
+      hf_lf_key.form_key(0, hf_form, lev, lf_form, lev,Pecos::SINGLE_REDUCTION);
       control_variate_mc(hf_lf_key);
     }
   }
@@ -1155,8 +1154,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
   unsigned short lev = USHRT_MAX; // updated in loop below
-  active_key.form_key(0, hf_form, lev, lf_form, lev,
-		      Pecos::DISTINCT_DISCREPANCY);
+  active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::SINGLE_REDUCTION);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -1384,8 +1382,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
   unsigned short lev = USHRT_MAX; // updated in loop below
-  active_key.form_key(0, hf_form, lev, lf_form, lev,
-		      Pecos::DISTINCT_DISCREPANCY);
+  active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::SINGLE_REDUCTION);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -1652,8 +1649,7 @@ configure_indices(unsigned short group, unsigned short form,
 
     Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
     lf_key.decrement_key(seq_type); // seq_index defaults to 0    
-    discrep_key.aggregate_keys(hf_key, lf_key);
-    discrep_key.type(Pecos::DISTINCT_DISCREPANCY);
+    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::SINGLE_REDUCTION);
     iteratedModel.active_model_key(discrep_key); // two active fidelities
   }
 }

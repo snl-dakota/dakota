@@ -62,14 +62,10 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
 void NonHierarchSurrModel::assign_default_keys()
 {
   // default key values, to be overridden at run time
-  Pecos::ActiveKeyData truth_key_data, surr_key_data;
   unsigned short id = 0;
-  truthModelKey.assign(id, Pecos::NO_REDUCTION, truth_key_data,
-		       Pecos::SHALLOW_COPY);
   size_t soln_lev = truthModel.solution_levels(),
     lev = (soln_lev) ? soln_lev - 1 : USHRT_MAX;
-  truthModelKey.assign_model_form(0);
-  truthModelKey.assign_resolution_level(lev);
+  truthModelKey = Pecos::ActiveKey(id, Pecos::NO_REDUCTION, 0, lev);// form,lev
 
   if (responseMode == BYPASS_SURROGATE)
     unorderedModelKeys.clear();
@@ -77,15 +73,14 @@ void NonHierarchSurrModel::assign_default_keys()
     size_t i, num_unord = unorderedModels.size(), lf_soln_lev;
     unorderedModelKeys.resize(num_unord);
     for (i=0; i<num_unord; ++i) {
-      Pecos::ActiveKey& surr_key_i = unorderedModelKeys[i];
-      surr_key_i.assign(id,Pecos::NO_REDUCTION,surr_key_data,Pecos::DEEP_COPY);
-      surr_key_i.assign_model_form(i+1);       // model form
       soln_lev = unorderedModels[i].solution_levels();
       lev = (soln_lev) ? soln_lev - 1 : USHRT_MAX;
-      surr_key_i.assign_resolution_level(lev); // soln lev
+      unorderedModelKeys[i] = Pecos::ActiveKey(id, Pecos::NO_REDUCTION,
+					       i+1, lev); // model form,soln lev
     }
   }
-  aggregate_model_keys(truthModelKey, unorderedModelKeys, activeKey);
+  activeKey.aggregate_keys(truthModelKey, unorderedModelKeys,
+			   Pecos::NO_REDUCTION); // no data reduction
 
   check_model_interface_instance();
 }
@@ -696,7 +691,7 @@ void NonHierarchSurrModel::component_parallel_mode(short model_id)
   // in model may be overkill (send of state vars in vars buffer sufficient?)
   if (componentParallelMode != model_id || componentParallelKey != activeKey) {
     //Pecos::ActiveKey old_truth;  std::vector<Pecos::ActiveKey> old_surr;
-    //extract_model_keys(componentParallelKey, old_truth, old_surr);
+    //componentParallelKey.extract_keys(old_truth, old_surr);
     //switch (componentParallelMode) {
     //case SURROGATE_MODEL_MODE:  stop_model(old_surr[model_id][1]);  break;
     //case     TRUTH_MODEL_MODE:  stop_model(old_truth[1]);  break;

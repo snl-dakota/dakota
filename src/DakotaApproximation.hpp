@@ -444,19 +444,12 @@ inline Pecos::SurrogateData& Approximation::surrogate_data()
 
 inline void Approximation::assign_key_index(size_t key_index)
 {
-  /*
-  const UShort2DArray& keys = sharedDataRep->approxDataKeys;
-  if (key_index == _NPOS) key_index = 0; // make front() the default
-  if (key_index >= keys.size()) {
-    Cerr << "Error: index out of range in Approximation::add()" << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-  */
-
   // extract a particular raw key if activeKey is aggregated
   const Pecos::ActiveKey& key = sharedDataRep->activeKey;
-  if (key.aggregated() && key_index != _NPOS)
-    approxData.active_key(key.extract_key(key_index));
+  if (key.aggregated() && key_index != _NPOS) {
+    Pecos::ActiveKey embedded_key; key.extract_key(key_index, embedded_key);
+    approxData.active_key(embedded_key);
+  }
   else
     approxData.active_key(key); // no-op if key already active
 }

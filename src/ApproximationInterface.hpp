@@ -325,8 +325,10 @@ inline void ApproximationInterface::restore_data_key()
     fn_surf.active_model_key(active_key); // reassign aggregate key
     // In addition to restoring the original (aggregate) key, we synchronize
     // the data size for this key with the data size for the embedded keys
-    // (which have been enumerated  prior to restore_data_key()).  This allows
-    // proper use of points() in downstream checks for the top-level key.
+    // (which have been enumerated prior to restore_data_key()).  This allows
+    // proper use of points() in downstream checks for the top-level key, prior
+    // to processing the reductions (e.g., in Pecos::PolynomialApproximation::
+    // synchronize_surrogate_data()).
     if (reduce_key) fn_surf.surrogate_data().synchronize_reduction_size();
   }
 }
