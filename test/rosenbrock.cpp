@@ -15,6 +15,12 @@
 #include <algorithm>
 #include <cctype>
 
+// #define RANDOM_DURATION
+
+#ifdef RANDOM_DURATION
+#include <thread> // for sleep_for
+#endif // RANDOM_DURATION
+
 enum var_t { X1, X2 };
 
 
@@ -95,6 +101,12 @@ int main(int argc, char** argv)
   double x1 = vars[X1], x2 = vars[X2];
   double f1 = x2-x1*x1;
   double f2 = 1.-x1;
+
+#ifdef RANDOM_DURATION
+  srand ( (unsigned int) (time(NULL)/y) );
+  std::this_thread::sleep_for
+    (std::chrono::seconds((int)(10.*((double)rand()/RAND_MAX))));
+#endif // RANDOM_DURATION
 
   std::ofstream fout(argv[2]);
   if (!fout) {

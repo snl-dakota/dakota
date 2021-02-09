@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <cctype>
 
-//#define RANDOM_DURATION
+// #define RANDOM_DURATION
 
 #ifdef RANDOM_DURATION
 #include <thread> // for sleep_for
