@@ -95,6 +95,16 @@ protected:
   /// attributes of the submodel (DataFitSurrModel::actualModel or
   /// HierarchSurrModel::highFidelityModel)
   virtual void check_submodel_compatibility(const Model& sub_model) = 0;
+  /// initialize model with data that could change once per set of evaluations
+  /// (e.g., an outer iterator execution), including active variable labels,
+  /// inactive variable values/bounds/labels, and linear/nonlinear constraint
+  /// coeffs/bounds
+  virtual void init_model(Model& model);
+  /// update model with data that could change per function evaluation
+  /// (active variable values/bounds)
+  virtual void update_model(Model& model);
+  /// update current variables/labels/bounds/targets with data from model
+  virtual void update_from_model(const Model& model);
 
   //
   //- Heading: Member functions
@@ -113,16 +123,27 @@ protected:
   /// distributes the incoming orig_asv among actual_asv and approx_asv
   void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
 
-  /// initialize model with data that could change once per set of evaluations
-  /// (e.g., an outer iterator execution), including active variable labels,
-  /// inactive variable values/bounds/labels, and linear/nonlinear constraint
-  /// coeffs/bounds
-  void init_model(Model& model);
-  /// update model with data that could change per function evaluation
-  /// (active variable values/bounds)
-  void update_model(Model& model);
-  /// update current variables/labels/bounds/targets with data from model
-  void update_from_model(const Model& model);
+  /// initialize model with linear/nonlinear constraint data that could change
+  /// once per set of evaluations (e.g., an outer iterator execution)
+  void init_model_constraints(Model& model);
+  /// initialize model with active/inactive variable label data that could
+  /// change once per set of evaluations (e.g., an outer iterator execution)
+  void init_model_labels(Model& model);
+  /// initialize model with inactive variable values/bounds data that could
+  /// change once per set of evaluations (e.g., an outer iterator execution)
+  void init_model_inactive_variables(Model& model);
+
+  /// update model with active variable values/bounds data
+  void update_model_active_variables(Model& model);
+  /// update model with random variable distribution data
+  void update_model_distributions(Model& model);
+
+  /// update current variables/bounds with data from model
+  void update_variables_from_model(const Model& model);
+  /// update current random variable distributions with data from model
+  void update_distributions_from_model(const Model& model);
+  /// update response/constraints with data from model
+  void update_response_from_model(const Model& model);
 
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;

@@ -92,6 +92,10 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
+  void init_model(Model& model);
+  void update_model(Model& model);
+  void update_from_model(const Model& model);
+
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
 				const SizetArray& ds_index1,

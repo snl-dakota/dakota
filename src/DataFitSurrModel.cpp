@@ -400,6 +400,35 @@ bool DataFitSurrModel::finalize_mapping()
 }
 
 
+void DataFitSurrModel::init_model(Model& model)
+{
+  init_model_constraints(model);
+  init_model_labels(model);
+  // This push down of vars data can disrupt subsequent calls to
+  // update_from_subordinate_model() in surrogate-based methods with local
+  // DataFit instantiations, such as local reliability, expansion UQ, SBO, etc.
+  // For this reason, we override the SurrogateModel::init_model() default.
+  //init_model_inactive_variables(model);
+}
+
+
+void DataFitSurrModel::update_model(Model& model)
+{
+  if (model.is_null()) return;
+  update_model_active_variables(model);
+  update_model_distributions(model);
+}
+
+
+void DataFitSurrModel::update_from_model(const Model& model)
+{
+  if (model.is_null()) return;
+  update_variables_from_model(model);
+  update_distributions_from_model(model);
+  update_response_from_model(model);
+}
+
+
 /** asynchronous flags need to be initialized for the sub-models.  In addition,
     max_eval_concurrency is the outer level iterator concurrency, not the
     DACE concurrency that actualModel will see, and recomputing the
