@@ -1134,10 +1134,10 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
     // output interface ids, potentially paired
     bool mf = multifidelity();  StringArray iface_ids;
     if (mf) { // sameInterfaceInstance can't be used since it varies at run time
-      if (truthModelKey.is_null()) iface_ids.push_back("N/A");//preserve row len
-      else                         iface_ids.push_back(hf_model.interface_id());
-      if ( surrModelKey.is_null()) iface_ids.push_back("N/A");//preserve row len
-      else                         iface_ids.push_back(lf_model.interface_id());
+      if (truthModelKey.empty()) iface_ids.push_back("N/A");//preserve row len
+      else                       iface_ids.push_back(hf_model.interface_id());
+      if ( surrModelKey.empty()) iface_ids.push_back("N/A");//preserve row len
+      else                       iface_ids.push_back(lf_model.interface_id());
     }
     else
       iface_ids.push_back(hf_model.interface_id());
@@ -1151,8 +1151,7 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
       output_mgr.add_tabular_data(vars, 0, av_index);//leading set in spec order
 
       // output paired solution control values
-      bool truth_key = !truthModelKey.is_null(),
-	    surr_key = ! surrModelKey.is_null();
+      bool truth_key = !truthModelKey.empty(), surr_key = !surrModelKey.empty();
       if (sameModelInstance && truth_key && surr_key) {
 	// HF soln cntl was overwritten by LF and must be temporarily restored
 	assign_truth_key();      add_tabular_solution_level_value(hf_model);

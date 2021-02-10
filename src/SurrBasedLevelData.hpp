@@ -412,7 +412,7 @@ inline const Pecos::ActiveKey& SurrBasedLevelData::paired_key() const
 
 
 inline unsigned short SurrBasedLevelData::data_group()
-{ return (pairedModelKey.is_null()) ? USHRT_MAX : pairedModelKey.id(); }
+{ return pairedModelKey.id(); } // USHRT_MAX if empty key
 
 
 inline unsigned short SurrBasedLevelData::truth_model_form()
