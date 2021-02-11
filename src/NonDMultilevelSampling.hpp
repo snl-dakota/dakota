@@ -97,7 +97,7 @@ private:
   void uncorrected_surrogate_mode();
 
   /// return (aggregate) level cost
-  Real level_cost(const RealVector& cost, unsigned short step);
+  Real level_cost(const RealVector& cost, size_t step);
 
   /// advance any sequence specifications
   void assign_specification_sequence(size_t index);
@@ -108,7 +108,7 @@ private:
   /// s_index is the sequence index that defines the active dimension for a
   /// model sequence.
   void configure_indices(unsigned short group, unsigned short form,
-			 unsigned short lev,   short seq_type);
+			 size_t lev,           short seq_type);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -572,7 +572,7 @@ inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
 
 
 inline Real NonDMultilevelSampling::
-level_cost(const RealVector& cost, unsigned short step)
+level_cost(const RealVector& cost, size_t step)
 {
   // discrepancies incur two level costs
   return (step) ?

@@ -304,8 +304,8 @@ void HierarchSurrBasedLocalMinimizer::build()
 
     // Check convergence state regardless of new candidate or new center
     // so that soft convergence states are also propagated.
-    size_t tr_formp1 = tr_data.truth_model_form() + 1,
-           tr_lev    = tr_data.truth_model_level();
+    unsigned short tr_formp1    = tr_data.truth_model_form() + 1;
+    size_t         tr_lev       = tr_data.truth_model_level();
     unsigned short tr_conv_code = tr_data.converged();
     if (tr_conv_code) {
       Cout << "\n<<<<< Trust region iteration converged for form " << tr_formp1;
@@ -623,7 +623,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_truth(size_t tr_index)
   else {
     Cout << "\nRecursively correcting truth model response (form "
 	 << tr_data.truth_model_form() + 1;
-    if (tr_data.truth_model_level() != USHRT_MAX)
+    if (tr_data.truth_model_level() != std::numeric_limits<size_t>::max())
       Cout << ", level " << tr_data.truth_model_level() + 1;
     Cout << ") for trust region center.\n";
     Variables& center_vars = tr_data.vars_center();
@@ -647,7 +647,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
   else {
     Cout << "\nRecursively correcting truth model response (form "
 	 << tr_data.truth_model_form() + 1;
-    if (tr_data.truth_model_level() != USHRT_MAX)
+    if (tr_data.truth_model_level() != std::numeric_limits<size_t>::max())
       Cout << ", level " << tr_data.truth_model_level() + 1;
     Cout << ") for trust region candidate.\n";
     Variables& star_vars = tr_data.vars_star();
@@ -667,7 +667,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_approx(size_t tr_index)
   size_t j, num_tr = trustRegions.size();
   Cout << "\nRecursively correcting surrogate model response (form "
        << tr_data.approx_model_form() + 1;
-  if (tr_data.approx_model_level() != USHRT_MAX)
+  if (tr_data.approx_model_level() != std::numeric_limits<size_t>::max())
     Cout << ", level " << tr_data.approx_model_level() + 1;
   Cout << ") for trust region center.\n";
   // correct approximation across all levels above i
@@ -687,7 +687,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_approx(size_t tr_index)
   size_t j, num_tr = trustRegions.size();
   Cout << "\nRecursively correcting surrogate model response (form "
        << tr_data.approx_model_form() + 1;
-  if (tr_data.approx_model_level() != USHRT_MAX)
+  if (tr_data.approx_model_level() != std::numeric_limits<size_t>::max())
     Cout << ", level " << tr_data.approx_model_level() + 1;
   Cout << ") for trust region candidate.\n";
   // correct approximation across all levels above i

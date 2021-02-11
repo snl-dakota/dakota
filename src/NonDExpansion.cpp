@@ -1260,8 +1260,7 @@ void NonDExpansion::merge_grid()
 
 
 void NonDExpansion::
-configure_sequence(size_t& num_steps, unsigned short& fixed_index,
-		   short& seq_type)
+configure_sequence(size_t& num_steps, size_t& fixed_index, short& seq_type)
 {
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ML/MF calling algorithm)
@@ -1277,8 +1276,9 @@ configure_sequence(size_t& num_steps, unsigned short& fixed_index,
 	   << "NonDExpansion::configure_sequence().\n";
   }
   else if (iteratedModel.multifidelity()) {
-    seq_type = Pecos::MODEL_FORM_SEQUENCE;
-    num_steps = num_mf;  fixed_index = USHRT_MAX; // sync w/ active soln index
+    seq_type    = Pecos::MODEL_FORM_SEQUENCE;
+    num_steps   = num_mf;
+    fixed_index = std::numeric_limits<size_t>::max();//sync w/ active soln index
     if (num_hf_lev > 1)
       Cerr << "Warning: solution control levels will be ignored in "
 	   << "NonDExpansion::configure_sequence().\n";
@@ -1318,7 +1318,7 @@ query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 
 void NonDExpansion::
 configure_indices(unsigned short group, unsigned short form,
-		  unsigned short lev,   short seq_type)
+		  size_t lev,           short seq_type)
 {
   // Set active surrogate/truth models within the Hierarch,DataFit surrogates
   // (recursion from uSpaceModel to iteratedModel)
@@ -1339,12 +1339,12 @@ configure_indices(unsigned short group, unsigned short form,
       break;
     case RECURSIVE_EMULATION:
       bypass_surrogate_mode(); // still only one model evaluation
-      // child key is emulator of the LF model (LF-hat) --> dummy model indices
-      //child_key[1] = child_key[2] = USHRT_MAX;// same group but no form,lev
+      // child key is emulator of the LF model (LF-hat) --> dummy form,lev
+      //child_key[1] = USHRT_MAX; child_key[2] = SZ_MAX;
       break;
     }
     Pecos::ActiveKey child_key(hf_key.copy()), discrep_key;
-    // *** Now using same child key for either LF or LF-hat ***
+    // using same child key for either LF or LF-hat
     child_key.decrement_key(seq_type); // seq_index defaults to 0
     discrep_key.aggregate_keys(hf_key, child_key, Pecos::SINGLE_REDUCTION);
     uSpaceModel.active_model_key(discrep_key);
@@ -1462,11 +1462,11 @@ void NonDExpansion::multifidelity_reference_expansion()
   refinement_statistics_mode(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps; unsigned short form, lev, fixed_index; short seq_type;
+  size_t num_steps, form, lev, fixed_index; short seq_type;
   configure_sequence(num_steps, fixed_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
-  unsigned short& step = (multilev) ? lev : form;  step = 0;
+  size_t& step = (multilev) ? lev : form;  step = 0;
   if (multilev) form = fixed_index;
   else          lev  = fixed_index;
 
@@ -1525,11 +1525,11 @@ void NonDExpansion::multifidelity_reference_expansion()
 void NonDExpansion::multifidelity_individual_refinement()
 {
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps; unsigned short form, lev, fixed_index; short seq_type;
+  size_t num_steps, form, lev, fixed_index; short seq_type;
   configure_sequence(num_steps, fixed_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
-  unsigned short& step = (multilev) ? lev : form;  step = 0;
+  size_t& step = (multilev) ? lev : form;  step = 0;
   if (multilev) form = fixed_index;
   else          lev  = fixed_index;
 
@@ -1597,11 +1597,11 @@ void NonDExpansion::multifidelity_integrated_refinement()
        << "\nMultifidelity UQ: initiating greedy competition"
        << "\n-----------------------------------------------\n";
   // Initialize again (or must propagate settings from mf_expansion())
-  size_t num_steps; unsigned short form, lev, fixed_index; short seq_type;
+  size_t num_steps, form, lev, fixed_index; short seq_type;
   configure_sequence(num_steps, fixed_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
-  unsigned short& step = (multilev) ? lev : form;
+  size_t& step = (multilev) ? lev : form;
   if (multilev) form = fixed_index;
   else          lev  = fixed_index;
 
@@ -1694,11 +1694,11 @@ void NonDExpansion::multifidelity_integrated_refinement()
 void NonDExpansion::multilevel_regression()
 {
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps; unsigned short form, lev, fixed_index; short seq_type;
+  size_t num_steps, form, lev, fixed_index; short seq_type;
   configure_sequence(num_steps, fixed_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
-  unsigned short& step = (multilev) ? lev : form;
+  size_t& step = (multilev) ? lev : form;
   if (multilev) form = fixed_index;
   else          lev  = fixed_index;
 

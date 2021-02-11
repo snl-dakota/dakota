@@ -202,7 +202,8 @@ void NonDMultilevelSampling::core_run()
     }
     else { // multiple model forms (only) --> CVMC
       // use nominal value from user input, ignoring solution_level_control
-      Pecos::ActiveKey hf_lf_key;  unsigned short lev = USHRT_MAX;
+      Pecos::ActiveKey hf_lf_key;
+      size_t lev = std::numeric_limits<size_t>::max();
       hf_lf_key.form_key(0, hf_form, lev, lf_form, lev,Pecos::SINGLE_REDUCTION);
       control_variate_mc(hf_lf_key);
     }
@@ -253,13 +254,13 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short form)
   // assign truth model form (solution level assignment is deferred until loop)
   Pecos::ActiveKey truth_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-  unsigned short lev = USHRT_MAX; // updated in loop below
+  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
   truth_key.form_key(0, form, lev);
   iteratedModel.active_model_key(truth_key);
   Model& truth_model = iteratedModel.truth_model();
 
   size_t qoi, num_steps = truth_model.solution_levels();// 1 model form
-  unsigned short& step = (true) ? lev : form; // model form option not active
+  size_t& step = lev;//(true) ? lev : form; // model form option not active
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
@@ -561,13 +562,13 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
     // assign truth model form (solution level assignment is deferred until loop)
     Pecos::ActiveKey truth_key;
     short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-    unsigned short lev = USHRT_MAX; // updated in loop below
+    size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
     truth_key.form_key(0, form, lev);
     iteratedModel.active_model_key(truth_key);
     Model& truth_model = iteratedModel.truth_model();
 
     size_t qoi, num_steps = truth_model.solution_levels();//1 model form
-    unsigned short& step = (true) ? lev : form; // model form option not active
+    size_t& step = lev;//(true) ? lev : form; // model form option not active
 
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
     Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost, place_holder;
@@ -1153,7 +1154,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-  unsigned short lev = USHRT_MAX; // updated in loop below
+  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::SINGLE_REDUCTION);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
@@ -1161,7 +1162,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
 
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
-  unsigned short& group = lev; // no alias switch for this algorithm
+  size_t& group = lev; // no alias switch for this algorithm
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
@@ -1381,7 +1382,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-  unsigned short lev = USHRT_MAX; // updated in loop below
+  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::SINGLE_REDUCTION);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
@@ -1389,7 +1390,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
 
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
-  unsigned short& group = lev; // no alias switch for this algorithm
+  size_t& group = lev; // no alias switch for this algorithm
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
@@ -1628,7 +1629,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
 
 void NonDMultilevelSampling::
 configure_indices(unsigned short group, unsigned short form,
-		  unsigned short lev,   short seq_type)
+		  size_t lev,           short seq_type)
 {
   // Notes:
   // > could consolidate with NonDExpansion::configure_indices() with a passed

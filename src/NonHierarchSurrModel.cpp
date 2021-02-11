@@ -63,8 +63,9 @@ void NonHierarchSurrModel::assign_default_keys()
 {
   // default key values, to be overridden at run time
   unsigned short id = 0;
-  size_t soln_lev = truthModel.solution_levels(),
-    lev = (soln_lev) ? soln_lev - 1 : USHRT_MAX;
+  size_t SZ_MAX = std::numeric_limits<size_t>::max(),
+    soln_lev = truthModel.solution_levels(),
+    lev = (soln_lev) ? soln_lev - 1 : SZ_MAX;
   truthModelKey = Pecos::ActiveKey(id, Pecos::NO_REDUCTION, 0, lev);// form,lev
 
   if (responseMode == BYPASS_SURROGATE)
@@ -74,7 +75,7 @@ void NonHierarchSurrModel::assign_default_keys()
     unorderedModelKeys.resize(num_unord);
     for (i=0; i<num_unord; ++i) {
       soln_lev = unorderedModels[i].solution_levels();
-      lev = (soln_lev) ? soln_lev - 1 : USHRT_MAX;
+      lev = (soln_lev) ? soln_lev - 1 : SZ_MAX;
       unorderedModelKeys[i] = Pecos::ActiveKey(id, Pecos::NO_REDUCTION,
 					       i+1, lev); // model form,soln lev
     }

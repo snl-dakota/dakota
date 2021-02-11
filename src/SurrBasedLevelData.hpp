@@ -60,11 +60,11 @@ public:
   void initialize_data(const Variables& vars, const Response& approx_resp,
 		       const Response& truth_resp, bool uncorr = true);
   /// initialize {truth,approx}ModelKey from model forms,discretization levels
-  void initialize_keys(unsigned short group,
-		       unsigned short truth_form, unsigned short approx_form,
-		       unsigned short truth_level  = USHRT_MAX,
-		       unsigned short approx_level = USHRT_MAX,
-		       unsigned short reduction    = Pecos::SINGLE_REDUCTION);
+  void initialize_keys(unsigned short group, unsigned short truth_form,
+		       unsigned short approx_form,
+		       size_t truth_level  = std::numeric_limits<size_t>::max(),
+		       size_t approx_level = std::numeric_limits<size_t>::max(),
+		       unsigned short reduction = Pecos::SINGLE_REDUCTION);
   /// initialize {truth,approx}ModelKey from aggregate_key
   void initialize_keys(const Pecos::ActiveKey& aggregate_key);
 
