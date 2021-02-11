@@ -513,12 +513,18 @@ inline short DataFitSurrModel::query_distribution_parameter_derivatives() const
 
 inline size_t DataFitSurrModel::qoi() const
 {
-  switch (responseMode) {
   // Response inflation from aggregation does not proliferate above
   // this Model recursion level
-  case AGGREGATED_MODELS:  return actualModel.qoi();  break;
-  default:                 return response_size();    break;
-  }
+  return (responseMode == AGGREGATED_MODELS && !actualModel.is_null()) ?
+    actualModel.qoi() : response_size();
+
+  //switch (responseMode) {
+  //case AGGREGATED_MODELS:
+  //  if (actualModel.is_null()) return response_size();
+  //  else                       return actualModel.qoi();
+  //  break;
+  //default:                     return response_size();    break;
+  //}
 }
 
 
@@ -586,7 +592,7 @@ inline void DataFitSurrModel::active_model_key(const Pecos::ActiveKey& key)
 
   // recur both components: (actualModel could be hierarchical)
   approxInterface.active_model_key(key);
-  actualModel.active_model_key(key);
+  if (!actualModel.is_null()) actualModel.active_model_key(key);
 }
 
 
@@ -710,6 +716,11 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
     }
     break;
   case BYPASS_SURROGATE:
+    if (actualModel.is_null()) {
+      Cerr << "Error: actualModel must be defined for mode BYPASS_SURROGATE."
+	   << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
     actualModel.surrogate_response_mode(mode); // recurse in this case
     //approxInterface.deactivate_multilevel_approximation_data();
     break;
@@ -976,7 +987,7 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 inline void DataFitSurrModel::warm_start_flag(const bool flag)
 {
   warmStartFlag = flag;
-  actualModel.warm_start_flag(flag);
+  if (!actualModel.is_null()) actualModel.warm_start_flag(flag);
 }
 
 } // namespace Dakota

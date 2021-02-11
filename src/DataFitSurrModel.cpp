@@ -377,11 +377,13 @@ void DataFitSurrModel::check_submodel_compatibility(const Model& sub_model)
 bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
 {
   Model::initialize_mapping(pl_iter);
-  actualModel.initialize_mapping(pl_iter);
 
-  // push data that varies per iterator execution rather than per-evaluation
-  // from currentVariables and userDefinedConstraints into actualModel
-  init_model(actualModel);
+  if (!actualModel.is_null()) {
+    actualModel.initialize_mapping(pl_iter);
+    // push data that varies per iterator execution rather than per-evaluation
+    // from currentVariables and userDefinedConstraints into actualModel
+    init_model(actualModel);
+  }
 
   return false; // no change to problem size
 }
@@ -393,7 +395,7 @@ bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
     execution within Model::initialize_mapping(). */
 bool DataFitSurrModel::finalize_mapping()
 {
-  actualModel.finalize_mapping();
+  if (!actualModel.is_null()) actualModel.finalize_mapping();
   Model::finalize_mapping();
 
   return false; // no change to problem size
