@@ -50,7 +50,8 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // TODO: Only 1D for multifidelity -- need to support ML & MLMF
-  size_t num_tr = numFid - 1; // no TR for truth model (valid for global bnds)
+  size_t num_tr = numFid - 1, // no TR for truth model (valid for global bnds)
+    SZ_MAX = std::numeric_limits<size_t>::max();
   trustRegions.resize(num_tr);
   for (ml_iter=models.begin(), i=0; i<numFid-1; ++i) {
     // size the trust region bounds to allow individual updates
@@ -59,8 +60,12 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     trustRegions[i].initialize_data(ml_iter->current_variables(),
 				    ml_iter->current_response(),
 				    (++ml_iter)->current_response());
-    // assign the truth / approx model forms
-    trustRegions[i].initialize_keys(i, i+1, i); // data group, HF form, LF form
+    // assign the data group, HF form, LF form
+    // Mirrors HierarchSurrModel::assign_default_keys() for MF case
+    // TO DO: generalize (at least) to 1D multilevel cases;
+    //        consider just pulling iteratedModel.active_model_key()
+    trustRegions[i].initialize_keys(i, i+1, i, SZ_MAX, SZ_MAX,
+				    Pecos::SINGLE_REDUCTION);
   }
 
   // Simpler case than DFSBLM:
