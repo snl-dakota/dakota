@@ -65,6 +65,12 @@ void GaussianProcess::build(const MatrixXd &samples, const MatrixXd &response)
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
   verbosity = configOptions.get<int>("verbosity");
 
+  // std::cout << "Experimental GP samples: \n";
+  // std::cout << samples << "\n\n";
+
+  // std::cout << "Experimental GP responses: \n";
+  // std::cout << response << "\n\n";
+
   if (verbosity > 0) {
     if (verbosity == 1) {
       std::cout << "\nBuilding GaussianProcess\n\n";
