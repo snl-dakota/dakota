@@ -248,6 +248,7 @@ void HierarchSurrBasedLocalMinimizer::build()
   int num_tr = trustRegions.size(), index, next_index, min = minimizeIndex,
     tr_update_max_index = min;
   bool reset_lambda_rho = false, report_unconv = true;
+  size_t SZ_MAX = std::numeric_limits<size_t>::max();
   for (index=min; index<num_tr; ++index) {
     SurrBasedLevelData& tr_data = trustRegions[index];
     next_index = index + 1;
@@ -314,7 +315,7 @@ void HierarchSurrBasedLocalMinimizer::build()
     unsigned short tr_conv_code = tr_data.converged();
     if (tr_conv_code) {
       Cout << "\n<<<<< Trust region iteration converged for form " << tr_formp1;
-      if (tr_lev != _NPOS) Cout << ", level " << tr_lev+1; // id
+      if (tr_lev != SZ_MAX) Cout << ", level " << tr_lev+1; // id
       Cout << "\n<<<<< "; print_convergence_code(Cout, tr_conv_code);
       if (last_tr) {
 	Cout << "<<<<< Optimal solution reached for truth model\n\n";
@@ -326,9 +327,9 @@ void HierarchSurrBasedLocalMinimizer::build()
 	SurrBasedLevelData& next_tr = trustRegions[next_index];
 	size_t next_lev = next_tr.truth_model_level();
 	Cout << "<<<<< Promoting candidate from form " << tr_formp1;
-	if (tr_lev   != _NPOS) Cout << ", level " <<   tr_lev + 1; // id
+	if (tr_lev   != SZ_MAX) Cout << ", level " <<   tr_lev + 1; // id
 	Cout << " for validation by form " << next_tr.truth_model_form() + 1;
-	if (next_lev != _NPOS) Cout << ", level " << next_lev + 1; // id
+	if (next_lev != SZ_MAX) Cout << ", level " << next_lev + 1; // id
 	Cout << "\n\n";
 	// set NEW_CANDIDATE and transfer data for verify(i) on next pass
 	next_tr.vars_star(tr_data.vars_center());
@@ -345,7 +346,7 @@ void HierarchSurrBasedLocalMinimizer::build()
     }
     else if (report_unconv) {
       Cout<<"\n<<<<< Trust region iteration not converged for form "<<tr_formp1;
-      if (tr_lev != _NPOS) Cout << ", level " << tr_lev+1; // id
+      if (tr_lev != SZ_MAX) Cout << ", level " << tr_lev+1; // id
       Cout << ": continuing iteration\n";
       report_unconv = false;
     }

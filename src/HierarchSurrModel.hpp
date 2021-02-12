@@ -528,8 +528,8 @@ inline void HierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
   // If model forms are distinct (multifidelity), can activate soln level
   // index now; else (multilevel) must defer until run-time.
   if (!sameModelInstance) {
-    assign_truth_key();     // protected for empty or USHRT_MAX
-    assign_surrogate_key(); // protected for empty or USHRT_MAX
+    assign_truth_key();
+    assign_surrogate_key();
 
     // Pull inactive variable change up into top-level currentVariables,
     // so that data flows correctly within Model recursions?  No, current

@@ -271,9 +271,9 @@ protected:
   /// return size of subModel::solnControlCostMap
   size_t solution_levels() const;
   /// activate entry in subModel::solnControlCostMap
-  void solution_level_cost_index(unsigned short cost_index);
+  void solution_level_cost_index(size_t cost_index);
   /// return active entry in subModel::solnControlCostMap
-  unsigned short solution_level_cost_index() const;
+  size_t solution_level_cost_index() const;
   /// return cost estimates from subModel::solnControlCostMap
   RealVector solution_level_costs() const;
   /// return active cost estimate from subModel::solnControlCostMap
@@ -790,11 +790,11 @@ inline size_t RecastModel::solution_levels() const
 { return subModel.solution_levels(); }
 
 
-inline void RecastModel::solution_level_cost_index(unsigned short cost_index)
+inline void RecastModel::solution_level_cost_index(size_t cost_index)
 { subModel.solution_level_cost_index(cost_index); }
 
 
-inline unsigned short RecastModel::solution_level_cost_index() const
+inline size_t RecastModel::solution_level_cost_index() const
 { return subModel.solution_level_cost_index(); }
 
 

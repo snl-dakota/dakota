@@ -153,10 +153,10 @@ public:
   virtual size_t solution_levels(bool lwr_bnd = true) const;
   /// activate a particular level within the solution level control
   /// (SimulationModel)
-  virtual void solution_level_cost_index(unsigned short index);
+  virtual void solution_level_cost_index(size_t index);
   /// return currently active level within the solution level control
   /// (SimulationModel)
-  virtual unsigned short solution_level_cost_index() const;
+  virtual size_t solution_level_cost_index() const;
   /// return ordered cost estimates across solution levels (SimulationModel)
   virtual RealVector solution_level_costs() const;
   /// return currently active cost estimate from solution level

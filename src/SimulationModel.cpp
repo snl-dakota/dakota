@@ -189,19 +189,18 @@ initialize_solution_control(const String& control, const RealVector& cost)
 }
 
 
-/* Real */void SimulationModel::
-solution_level_cost_index(unsigned short cost_index)
+/* Real */void SimulationModel::solution_level_cost_index(size_t cost_index)
 {
   // incoming soln level index is an index into the ordered solnCntlCostMap,
   // not to be confused with the value in the key-value pair that corresponds
   // to the discrete variable value index (val_index below).
   // Most often, these two indices will be the same, but we always order with
   // increasing cost in case the discrete values are not monotonic.
-  if (cost_index == USHRT_MAX) { // just return quietly to simplify calling code
-    return;                     // (rather than always checking index validity)
+  if (cost_index == _NPOS) { // just return quietly to simplify calling code
+    return;                  // (rather than always checking index validity)
 
-    //Cerr << "Error: USHRT_MAX passed to SimulationModel::"
-    //     << "solution_level_cost_index()." << std::endl;
+    //Cerr << "Error: _NPOS passed to SimulationModel::solution_level_"
+    //     << "cost_index()." << std::endl;
     //abort_handler(MODEL_ERROR);
   }
 
@@ -274,7 +273,7 @@ solution_level_cost_index(unsigned short cost_index)
 }
 
 
-unsigned short SimulationModel::solution_level_cost_index() const
+size_t SimulationModel::solution_level_cost_index() const
 {
   size_t val_index;
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
@@ -338,12 +337,11 @@ unsigned short SimulationModel::solution_level_cost_index() const
   }
   //////////////////////////////
   default: // EMPTY_TYPE (no solution_level_control provided)
-    return USHRT_MAX; break;
+    return _NPOS; break;
   }
 
   // convert val_index to cost_index and return
-  size_t cost_index = map_value_to_index(val_index, solnCntlCostMap);
-  return (cost_index == _NPOS) ? USHRT_MAX : (unsigned short)cost_index;
+  return map_value_to_index(val_index, solnCntlCostMap);
 }
 
 
@@ -402,8 +400,8 @@ Real SimulationModel::solution_level_cost() const
   std::map<Real, size_t>::const_iterator cit = solnCntlCostMap.begin();
   if (cit == solnCntlCostMap.end()) return 0.;
   else {
-    unsigned short cost_index = solution_level_cost_index();
-    if (cost_index != USHRT_MAX)
+    size_t cost_index = solution_level_cost_index();
+    if (cost_index != _NPOS)
       std::advance(cit, cost_index);
     return cit->first;
   }

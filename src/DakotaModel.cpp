@@ -3504,11 +3504,11 @@ size_t Model::solution_levels(bool lwr_bnd) const
 
 
 /** activate a particular level within a solution / discretization hierarchy. */
-void Model::solution_level_cost_index(unsigned short index)
+void Model::solution_level_cost_index(size_t index)
 {
   if (modelRep)
     modelRep->solution_level_cost_index(index); // envelope fwd to letter
-  else if (index != USHRT_MAX) {
+  else if (index != _NPOS) {
     // letter lacking redefinition of virtual fn (for case that requires fwd)
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
 	 << "cost_index() function.\n       solution_level_cost_index is not "
@@ -3518,10 +3518,10 @@ void Model::solution_level_cost_index(unsigned short index)
 }
 
 
-unsigned short Model::solution_level_cost_index() const
+size_t Model::solution_level_cost_index() const
 {
   if (modelRep) return modelRep->solution_level_cost_index(); // fwd to letter
-  else          return USHRT_MAX; // not defined (default)
+  else          return _NPOS; // not defined (default)
 }
 
 
