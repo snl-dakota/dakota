@@ -59,14 +59,15 @@ public:
   /// initialize response objects via copy
   void initialize_data(const Variables& vars, const Response& approx_resp,
 		       const Response& truth_resp, bool uncorr = true);
-  /// initialize {truth,approx}ModelKey from model forms,discretization levels
-  void initialize_keys(unsigned short group, unsigned short truth_form,
-		       unsigned short approx_form,
-		       size_t truth_level  = std::numeric_limits<size_t>::max(),
-		       size_t approx_level = std::numeric_limits<size_t>::max(),
-		       unsigned short reduction = Pecos::SINGLE_REDUCTION);
-  /// initialize {truth,approx}ModelKey from aggregate_key
-  void initialize_keys(const Pecos::ActiveKey& aggregate_key);
+
+  /// return pairedKey
+  const Pecos::ActiveKey& paired_key() const;
+  /// assign pairedKey
+  void paired_key(const Pecos::ActiveKey& aggregate_key);
+  /// initialize pairedKey from model forms and discretization levels
+  void paired_key(unsigned short group, unsigned short truth_form,
+		  size_t truth_level,   unsigned short approx_form,
+		  size_t approx_level,  unsigned short reduction);
 
   /// perform several reset operations to restore initialized state
   void reset();
@@ -149,8 +150,6 @@ public:
 		       bool uncorr = true);
   void active_set_star(short request, short response_type, bool uncorr = true);
 
-  const Pecos::ActiveKey& paired_key() const;
-
   unsigned short data_group();
 
   unsigned short truth_model_form();
@@ -222,12 +221,8 @@ private:
   /// count reaches softConvLimit, stop SBLM.
   unsigned short softConvCount;
 
-  /// group, model form, discretization level indices for the approximate model
-  Pecos::ActiveKey approxModelKey;
-  /// group, model form, discretization level indices for the truth model
-  Pecos::ActiveKey truthModelKey;
-  /// aggregation of {truth,approx} model keys
-  Pecos::ActiveKey pairedModelKey;
+  /// aggregation of {truth,approximation} key data, in that order
+  Pecos::ActiveKey pairedKey;
 
   /// Trust region lower bounds
   RealVector trLowerBounds;
@@ -250,6 +245,25 @@ inline void SurrBasedLevelData::initialize_bounds(size_t num_c_vars)
 {
   trLowerBounds.sizeUninitialized(num_c_vars); // assign -dbl_inf?
   trUpperBounds.sizeUninitialized(num_c_vars); // assign  dbl_inf?
+}
+
+
+inline const Pecos::ActiveKey& SurrBasedLevelData::paired_key() const
+{ return pairedKey; }
+
+
+inline void SurrBasedLevelData::
+paired_key(const Pecos::ActiveKey& aggregate_key)
+{ pairedKey = aggregate_key; } // shared rep
+
+
+inline void SurrBasedLevelData::
+paired_key(unsigned short group, unsigned short truth_form, size_t truth_level,
+	   unsigned short approx_form, size_t approx_level,
+	   unsigned short reduction)
+{
+  pairedKey.form_key(group, truth_form, truth_level, approx_form, approx_level,
+		     reduction);
 }
 
 
@@ -407,28 +421,24 @@ response_center_pair(IntResponsePair& pair, short corr_response_type)
 { response_center_pair(pair.first, pair.second, corr_response_type); }
 
 
-inline const Pecos::ActiveKey& SurrBasedLevelData::paired_key() const
-{ return pairedModelKey; }
-
-
 inline unsigned short SurrBasedLevelData::data_group()
-{ return pairedModelKey.id(); } // USHRT_MAX if empty key
+{ return pairedKey.id(); } // USHRT_MAX if empty key
 
 
 inline unsigned short SurrBasedLevelData::truth_model_form()
-{ return truthModelKey.retrieve_model_form(); } // {d,m}_index=0
+{ return pairedKey.retrieve_model_form(0); } // {d,m}_index=0
 
 
 inline size_t SurrBasedLevelData::truth_model_level()
-{ return truthModelKey.retrieve_resolution_level(); } // {d,hp}_index=0
+{ return pairedKey.retrieve_resolution_level(0); } // {d,hp}_index=0
 
 
 inline unsigned short SurrBasedLevelData::approx_model_form()
-{ return approxModelKey.retrieve_model_form(); } // {d,m}_index=0
+{ return pairedKey.retrieve_model_form(1); } // d_index=1,m_index=0
 
 
 inline size_t SurrBasedLevelData::approx_model_level()
-{ return approxModelKey.retrieve_resolution_level(); } // {d,hp}_index=0
+{ return pairedKey.retrieve_resolution_level(1); } // d_index=1,hp_index=0
 
 
 inline void SurrBasedLevelData::reset_filter()

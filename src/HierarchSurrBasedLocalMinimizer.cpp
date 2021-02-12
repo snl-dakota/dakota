@@ -54,18 +54,19 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     SZ_MAX = std::numeric_limits<size_t>::max();
   trustRegions.resize(num_tr);
   for (ml_iter=models.begin(), i=0; i<numFid-1; ++i) {
+    SurrBasedLevelData& tr_data = trustRegions[i];
+
     // size the trust region bounds to allow individual updates
-    trustRegions[i].initialize_bounds(numContinuousVars);
+    tr_data.initialize_bounds(numContinuousVars);
     // assign variable/response objects (approx/truth and center/star)
-    trustRegions[i].initialize_data(ml_iter->current_variables(),
-				    ml_iter->current_response(),
-				    (++ml_iter)->current_response());
+    tr_data.initialize_data(ml_iter->current_variables(),
+			    ml_iter->current_response(),
+			    (++ml_iter)->current_response());
     // assign the data group, HF form, LF form
     // Mirrors HierarchSurrModel::assign_default_keys() for MF case
     // TO DO: generalize (at least) to 1D multilevel cases;
     //        consider just pulling iteratedModel.active_model_key()
-    trustRegions[i].initialize_keys(i, i+1, i, SZ_MAX, SZ_MAX,
-				    Pecos::SINGLE_REDUCTION);
+    tr_data.paired_key(i, i+1, i, SZ_MAX, SZ_MAX, Pecos::SINGLE_REDUCTION);
   }
 
   // Simpler case than DFSBLM:
