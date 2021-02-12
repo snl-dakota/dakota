@@ -253,7 +253,7 @@ void HierarchSurrBasedLocalMinimizer::build()
     next_index = index + 1;
     bool last_tr = (next_index == num_tr);
 
-    set_model_states(index); // only HF model is evaluated
+    set_active_model(index); // only HF model is evaluated
 
     // If new candidate indicated for a level, then:
     // > compute response_star_truth (values only)
@@ -373,7 +373,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       // all levels at or below this level must update corrected responses
       update_corr = true;
 
-      set_model_states(index);
+      set_active_model(index);
       // If build was bypassed above due to level convergence, do it now
       // (all updates have propagated and iteration has continued).
       if ( (tr_status & CENTER_BUILT) == 0 )//if (tr_status & CENTER_PENDING)
@@ -433,7 +433,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   // ***************************************************
 
   // Set truth and surrogate models for optimization to be performed on:
-  set_model_states(minimizeIndex);
+  set_active_model(minimizeIndex);
 
   // set up recursive corrections across all model forms
   (std::static_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->
@@ -477,7 +477,7 @@ void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
   Variables& vars_star = tr_data.vars_star(); // candidate iterate
 
-  set_model_states(tr_index);
+  set_active_model(tr_index);
   Model& truth_model = iteratedModel.truth_model();
 
   Cout << "\n>>>>> Evaluating approximate solution with truth model.\n";
@@ -834,7 +834,7 @@ optimize(const RealVector &x, int max_iter, int index)
   approxSubProbMinimizer.maximum_iterations(max_iter);
 
   // Set truth and surrogate models for optimization to be performed on:
-  set_model_states(index);
+  set_active_model(index);
 
   // set up recursive corrections across all solution levels
   (std::static_pointer_cast<HierarchSurrModel>(iteratedModel.model_rep()))->

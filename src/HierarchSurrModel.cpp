@@ -1258,7 +1258,8 @@ single_apply(const Variables& vars, Response& resp,
   bool apply_corr = true;
   DiscrepancyCorrection& delta_corr = deltaCorr[paired_key];
   if (!delta_corr.computed()) {
-    Pecos::ActiveKey truth_key; paired_key.extract_key(0, truth_key); // *** TO DO: consistent with recursive_apply() below, but review other uses since extract_model_keys() can put surr_key first
+    Pecos::ActiveKey truth_key, surr_key;
+    extract_model_keys(paired_key, truth_key, surr_key);
     std::map<Pecos::ActiveKey, Response>::iterator it
       = truthResponseRef.find(truth_key);
     if (it == truthResponseRef.end()) apply_corr = false; // not found
