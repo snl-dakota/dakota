@@ -62,11 +62,11 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     tr_data.initialize_data(ml_iter->current_variables(),
 			    ml_iter->current_response(),
 			    (++ml_iter)->current_response());
-    // assign the data group, HF form, LF form
+    // assign the data group, HF form/lev, LF form/lev
     // Mirrors HierarchSurrModel::assign_default_keys() for MF case
     // TO DO: generalize (at least) to 1D multilevel cases;
-    //        consider just pulling iteratedModel.active_model_key()
-    tr_data.paired_key(i, i+1, i, SZ_MAX, SZ_MAX, Pecos::SINGLE_REDUCTION);
+    //        consider sharing iteratedModel.active_model_key()
+    tr_data.paired_key(i, i+1, SZ_MAX, i, SZ_MAX, Pecos::SINGLE_REDUCTION);
   }
 
   // Simpler case than DFSBLM:

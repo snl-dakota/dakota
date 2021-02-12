@@ -1277,15 +1277,17 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
     single_apply(vars, resp, activeKey);
     break;
   case FULL_MODEL_FORM_CORRECTION: {
-    // assume a consistent level index from surrModelKey
-    size_t i, num_models = orderedModels.size();
-    unsigned short lf_form = surrModelKey.retrieve_model_form();
-    Pecos::ActiveKey paired_key;
+    size_t num_models = orderedModels.size();
+    unsigned short i, lf_form = surrModelKey.retrieve_model_form();
+    // perform a 1D sweep starting from current surrModelKey; this could be
+    // part of a multidimensional sweep, so don't target truthModelKey at end
+    Pecos::ActiveKey paired_key;// = activeKey.copy();
     paired_key.aggregate_keys(surrModelKey.copy(), surrModelKey.copy(),
 			      Pecos::SINGLE_REDUCTION);
     for (i = lf_form; i < num_models - 1; ++i) {
-      paired_key.assign_model_form(i+1, 0);  // HF model form in KeyData[0]
-      paired_key.assign_model_form(i,   1);  // LF model form in KeyData[1]
+      paired_key.id(i); // consistent with current pair sequences
+      paired_key.assign_model_form(i+1, 0); // HF model form in KeyData[0]
+      paired_key.assign_model_form(i,   1); // LF model form in KeyData[1]
       single_apply(vars, resp, paired_key);
     }
     break;
@@ -1299,10 +1301,13 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
       abort_handler(MODEL_ERROR);
     }
     size_t i, num_levels = surrogate_model().solution_levels();
-    Pecos::ActiveKey paired_key;
+    // perform a 1D sweep starting from current surrModelKey; this could be
+    // part of a multidimensional sweep, so don't target truthModelKey at end
+    Pecos::ActiveKey paired_key;// = activeKey.copy();
     paired_key.aggregate_keys(surrModelKey.copy(), surrModelKey.copy(),
 			      Pecos::SINGLE_REDUCTION);
     for (i = lf_lev; i < num_levels - 1; ++i) {
+      paired_key.id(i); // consistent with current pair sequences
       paired_key.assign_resolution_level(i+1, 0); //   fine res in KeyData[0]
       paired_key.assign_resolution_level(i,   1); // coarse res in KeyData[1]
       single_apply(vars, resp, paired_key);
