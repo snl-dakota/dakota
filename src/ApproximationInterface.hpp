@@ -319,7 +319,8 @@ inline void ApproximationInterface::clear_model_keys()
 inline void ApproximationInterface::restore_data_key()
 {
   const Pecos::ActiveKey& active_key = sharedData.active_model_key();
-  bool reduce_key = (active_key.aggregated() && active_key.reduction());
+  bool reduce_key = (active_key.aggregated() &&
+		     active_key.raw_with_reduction_data());
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
     fn_surf.active_model_key(active_key); // reassign aggregate key

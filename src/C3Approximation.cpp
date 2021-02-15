@@ -539,7 +539,8 @@ void C3Approximation::synchronize_surrogate_data()
   // level 0: approxData non-aggregated key stores raw data
   short discrep_type = data_rep->discrepReduction,
         combine_type = data_rep->combineType;
-  if (!discrep_type || !active_key.aggregated())
+  if (!discrep_type || !active_key.aggregated() ||
+      !active_key.raw_with_reduction_data())
     return;
 
   switch (discrep_type) {
@@ -570,7 +571,7 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
 
   UShortArray hf_key, lf0_key, lf_hat_key; // LF-hat in surplus case
   active_key.extract_keys(hf_key, lf_hat_key);
-  lf0_key = surr_data.filtered_key(Pecos::RAW_DATA_FILTER, 0);
+  lf0_key = surr_data.filtered_key(Pecos::SINGLETON_FILTER, 0); // *** Note: ActiveKey first sorts on group id
 
   // initialize surr_data[lf_hat_key]
   surr_data.active_key(lf_hat_key); // active key restored at fn end
@@ -585,8 +586,8 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
 
   // extract all discrepancy data sets (which have expansions supporting
   // stored_{value,gradient} evaluations)
-  const std::map<UShortArray, Pecos::SDRArray>& discrep_resp_map
-    = surr_data.filtered_response_data_map(Pecos::AGGREGATED_DATA_FILTER);
+  const std::map<UShortArray, Pecos::SDRArray>& discrep_resp_map =
+    surr_data.filtered_response_data_map(Pecos::RAW_WITH_REDUCTION_DATA_FILTER);
   std::map<UShortArray, Pecos::SDRArray>::const_iterator cit;
   size_t i, num_pts = hf_sdr_array.size();
   switch (combine_type) {

@@ -86,9 +86,6 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
     // restore the specification
     problem_db.set_db_model_nodes(model_index);
   }
-
-  // initialize sequence of one empty key for Approximation::approxData
-  //approxDataKeys.resize(1);
 }
 
 
@@ -129,9 +126,6 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
       Cerr << "Warning: use_derivatives is not currently supported by "
 	   << approxType << " for Hessian incorporation.\n\n";
   }
-
-  // initialize sequence of one empty key for first Approximation::approxData
-  //approxDataKeys.resize(1);
 }
 
 
@@ -278,7 +272,6 @@ SharedApproxData::~SharedApproxData()
 
 void SharedApproxData::active_model_key(const Pecos::ActiveKey& key)
 {
-  // approxDataKeys are organized in a 2D array: {truth,surrogate,combined} keys
   // > AGGREGATED_MODELS uses {HF,LF} order, as does ApproxInterface::*_add()
   // > When managing distinct sets of paired truth,surrogate data (e.g., one set
   //   of data for Q_l - Q_lm1 and another for Q_lm1 - Q_lm2, it is important to
@@ -286,39 +279,14 @@ void SharedApproxData::active_model_key(const Pecos::ActiveKey& key)
   //   pre-pend in {truth,surrogate,combined} keys.
 
   if (dataRep) dataRep->active_model_key(key);
-  else {
-    // update activeKey
-    activeKey = key;//.copy();
-    /*
-    // update approxDataKeys
-    if (key.aggregated()) {
-      ActiveKey hf_key, lf_key;
-      key.extract_keys(hf_key, lf_key);
-      if (discrepancy_reduction()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREPANCY
-	approxDataKeys.resize(3); // 3 keys: HF, LF, aggregate
-	approxDataKeys[2] = key;
-      }
-      // data from HF,LF with no discrepancy combination: this case is not
-      // currently used, but approxDataKeys logic would be to enumerate these
-      // two keys without a third key (no corresponding discrepancy to process)
-      else
-	approxDataKeys.resize(2); // 2 keys: HF, LF (no aggregation defined)
-      approxDataKeys[0] = hf_key;
-      approxDataKeys[1] = lf_key;
-    }
-    else { // no HF vs. LF distinction; just a single key w/o pairing
-      approxDataKeys.resize(1); // prune trailing entries
-      approxDataKeys[0] = key;
-    }
-    */
-  }
+  else activeKey = key;//.copy();
 }
 
 
 void SharedApproxData::clear_model_keys()
 {
   if (dataRep) dataRep->clear_model_keys();
-  else activeKey.clear(); // approxDataKeys.clear(); }
+  else activeKey.clear();
 }
 
 
@@ -354,7 +322,7 @@ void SharedApproxData::integration_iterator(const Iterator& iterator)
 short SharedApproxData::discrepancy_reduction() const
 {
   if (dataRep) return dataRep->discrepancy_reduction();
-  else         return Pecos::NO_REDUCTION; // this enum is 0
+  else         return Pecos::NO_DISCREPANCY; // this enum is 0
 }
 
 

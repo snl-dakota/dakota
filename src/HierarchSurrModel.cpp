@@ -74,7 +74,7 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
 void HierarchSurrModel::assign_default_keys()
 {
   // default key data values, to be overridden at run time
-  unsigned short id = 0, r_type = Pecos::NO_REDUCTION,
+  unsigned short id = 0, r_type = Pecos::RAW_DATA,
     last_m = orderedModels.size() - 1;
   if (multifidelity()) { // first and last model form (solution levels ignored)
     size_t SZ_MAX = std::numeric_limits<size_t>::max(); 

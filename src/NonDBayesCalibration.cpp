@@ -1710,7 +1710,7 @@ void NonDBayesCalibration::build_GP_field(const RealMatrix& discrep_vars_mat,
   Approximation gpApproximation(sharedData);
 
   // build the GP for the discrepancy
-  gpApproximation.add_array(discrep_vars_mat,concat_disc);
+  gpApproximation.add_array(discrep_vars_mat, true, concat_disc, true); // deep
   gpApproximation.build();
   //gpApproximations.export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
   int pred_length = discrep_vars_pred.numCols();

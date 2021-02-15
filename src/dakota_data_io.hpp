@@ -1788,10 +1788,10 @@ inline std::ostream& operator<<(std::ostream& s,
   const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data)
 { write_data(s, data, true, true, true); return s; }
 
-// *** Note: these operators for Pecos types have to be promoted to the Dakota
-// *** namespace and rendered MPI buffer-specific to override the overly-generic
-// *** ContainerT template in this file.
-// *** TO DO: retire said template and fill any remaining gaps (e.g., String).
+// Note: these operators for Pecos types have to be promoted to the Dakota
+//       namespace for MPI buffer streams to resolve ambiguity between the
+//       Pecos templated stream operators and the generic ContainerT templates
+//       in this file.
 
 /// stream extraction operator for ActiveKeyData.  Calls read(Stream&).
 //template <typename Stream>

@@ -861,9 +861,7 @@ namespace Dakota
                 size_t neighbor = cell_index;
                 if (j > 0) neighbor = _vps_ext_neighbors[cell_index][j];
                 
-                gpApproximations[cell_index].add(training_vars[neighbor], false, false); // not anchor, shallow
-                
-                gpApproximations[cell_index].add(training_resp[neighbor], false, false); // not anchor, shallow
+                gpApproximations[cell_index].add(training_vars[neighbor], false, training_resp[neighbor], false, false, INT_MAX); // shallow, shallow, not anchor,no eval id tracking
             }
             gpApproximations[cell_index].build();
         }

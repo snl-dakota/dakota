@@ -66,7 +66,7 @@ void NonHierarchSurrModel::assign_default_keys()
   size_t SZ_MAX = std::numeric_limits<size_t>::max(),
     soln_lev = truthModel.solution_levels(),
     lev = (soln_lev) ? soln_lev - 1 : SZ_MAX;
-  truthModelKey = Pecos::ActiveKey(id, Pecos::NO_REDUCTION, 0, lev);// form,lev
+  truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0, lev);// form, lev
 
   if (responseMode == BYPASS_SURROGATE)
     unorderedModelKeys.clear();
@@ -76,12 +76,12 @@ void NonHierarchSurrModel::assign_default_keys()
     for (i=0; i<num_unord; ++i) {
       soln_lev = unorderedModels[i].solution_levels();
       lev = (soln_lev) ? soln_lev - 1 : SZ_MAX;
-      unorderedModelKeys[i] = Pecos::ActiveKey(id, Pecos::NO_REDUCTION,
-					       i+1, lev); // model form,soln lev
+      unorderedModelKeys[i]
+	= Pecos::ActiveKey(id, Pecos::RAW_DATA, i+1, lev);// form, lev
     }
   }
   activeKey.aggregate_keys(truthModelKey, unorderedModelKeys,
-			   Pecos::NO_REDUCTION); // no data reduction
+			   Pecos::RAW_DATA); // no data reduction
 
   check_model_interface_instance();
 }

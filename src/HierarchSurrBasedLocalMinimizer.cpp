@@ -171,10 +171,9 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region(size_t tr_index_start)
   // > Non-nested case: only the bottom (LF) level is nested; other levels
   //   constrained by global bounds; intermediate levels can evolve
   //   independently based on the accuracy of their individual discrepancies.
-  size_t num_tr = trustRegions.size();
-  int index, next_index, min = minimizeIndex;
+  size_t num_tr = trustRegions.size(), next_index;  int index;
   bool new_trust_region, parent_update = false;
-  for (index=tr_index_start; index>=min; --index) {
+  for (index=tr_index_start; index>=minimizeIndex; --index) {
 
     // require any of the constitutive bits, not all bits
     new_trust_region = (trustRegions[index].status() & NEW_TRUST_REGION);
@@ -246,11 +245,11 @@ void HierarchSurrBasedLocalMinimizer::build()
   // --------------
   // BOTTOM UP PASS: verify, build, hard convergence
   // --------------
-  int num_tr = trustRegions.size(), index, next_index, min = minimizeIndex,
-    tr_update_max_index = min;
+  size_t num_tr = trustRegions.size(), tr_update_max_index = minimizeIndex,
+    next_index, SZ_MAX = std::numeric_limits<size_t>::max();
+  int index; // use int due to loop decrements
   bool reset_lambda_rho = false, report_unconv = true;
-  size_t SZ_MAX = std::numeric_limits<size_t>::max();
-  for (index=min; index<num_tr; ++index) {
+  for (index=minimizeIndex; index<num_tr; ++index) {
     SurrBasedLevelData& tr_data = trustRegions[index];
     next_index = index + 1;
     bool last_tr = (next_index == num_tr);
@@ -366,7 +365,7 @@ void HierarchSurrBasedLocalMinimizer::build()
   // -------------
   // Loop TRs top-down so that correction logic detects new centers at/above
   bool update_corr = false;
-  for (index=num_tr-1; index>=min; --index) {
+  for (index=num_tr-1; index>=minimizeIndex; --index) {
 
     SurrBasedLevelData& tr_data = trustRegions[index];
     unsigned short tr_status = tr_data.status();

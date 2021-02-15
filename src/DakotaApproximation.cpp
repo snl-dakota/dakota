@@ -1087,39 +1087,57 @@ void Approximation::clear_computed_bits()
 }
 
 
+/*
 void Approximation::
-add(const Variables& vars, bool anchor_flag, bool deep_copy,
-    size_t key_index)
+variables_to_sdv(const RealVector& c_vars, const IntVector& di_vars,
+                 const RealVector& dr_vars)
 {
-  if (approxRep)
-    approxRep->add(vars, anchor_flag, deep_copy, key_index);
-  else { // not virtual: all derived classes use following definition
-    // Approximation does not know about view mappings; therefore, take the
-    // simple approach of matching up active or all counts with numVars.
-    size_t num_v = sharedDataRep->numVars;
-    if (vars.cv() + vars.div() + vars.drv() == num_v)
-      add(vars.continuous_variables(), vars.discrete_int_variables(),
-	  vars.discrete_real_variables(), anchor_flag, deep_copy, key_index);
-    else if (vars.acv() + vars.adiv() + vars.adrv() == num_v)
-      add(vars.all_continuous_variables(), vars.all_discrete_int_variables(),
-	  vars.all_discrete_real_variables(), anchor_flag, deep_copy,key_index);
-    /*
-    else if (vars.cv() == num_v) {  // compactMode does not affect vars
-      IntVector empty_iv; RealVector empty_rv;
-      add(vars.continuous_variables(), empty_iv, empty_rv, anchor_flag,
-          deep_copy, key_index);
-    }
-    else if (vars.acv() == num_v) { // potential conflict with cv/div/drv
-      IntVector empty_iv; RealVector empty_rv;
-      add(vars.all_continuous_variables(), empty_iv, empty_rv, anchor_flag,
-          deep_copy, key_index);
-    }
-    */
-    else {
-      Cerr << "Error: variable size mismatch in Approximation::add()."
-	   << std::endl;
-      abort_handler(APPROX_ERROR);
-    }
+  // deep_copy requests are applied downstream in add(SurrogateDataVars)
+  return Pecos::SurrogateDataVars(c_vars, di_vars, dr_vars,Pecos::SHALLOW_COPY);
+}
+*/
+
+
+Pecos::SurrogateDataVars Approximation::
+variables_to_sdv(const Real* sample_c_vars)
+{
+  // create view of numVars entries within column of sample Matrix;
+  // for compact mode, any active discrete {int,real} vars are managed
+  // as real values (e.g., NonDSampling::update_model_from_sample())
+  // and we do not convert them back to {di,dr}_vars here.
+  RealVector c_vars(Teuchos::View, const_cast<Real*>(sample_c_vars),
+		    sharedDataRep->numVars);
+  // deep_copy requests are applied downstream in add(SurrogateDataVars)
+  return Pecos::SurrogateDataVars(c_vars, Pecos::SHALLOW_COPY);
+}
+
+
+Pecos::SurrogateDataVars Approximation::variables_to_sdv(const Variables& vars)
+{
+  // Approximation does not know about view mappings; therefore, take the
+  // simple approach of matching up active or all counts with numVars.
+  size_t num_v = sharedDataRep->numVars;
+  // these two options take precedence
+  if (vars.cv() + vars.div() + vars.drv() == num_v)
+    return Pecos::SurrogateDataVars(vars.continuous_variables(),
+      vars.discrete_int_variables(), vars.discrete_real_variables(),
+      Pecos::SHALLOW_COPY);
+  else if (vars.acv() + vars.adiv() + vars.adrv() == num_v)
+    return Pecos::SurrogateDataVars(vars.all_continuous_variables(),
+      vars.all_discrete_int_variables(), vars.all_discrete_real_variables(),
+      Pecos::SHALLOW_COPY);
+  // fallback options; currently treat ambiguous case as error
+  else if (vars.cv() == num_v)
+    return Pecos::SurrogateDataVars(vars.continuous_variables(),
+      Pecos::SHALLOW_COPY);
+  //else if (vars.acv() == num_v) // potential conflict with cv/div/drv
+  //  return Pecos::SurrogateDataVars(vars.all_continuous_variables(),
+  //    Pecos::SHALLOW_COPY);
+  else {
+    Cerr << "Error: variable size mismatch in Approximation::variables_to_sdv()"
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+    return Pecos::SurrogateDataVars();
   }
 }
 
@@ -1149,27 +1167,13 @@ response_to_sdr(const Response& response, size_t fn_index)
 }
 
 
-void Approximation::
-add(const Response& response, size_t fn_index, bool anchor_flag, bool deep_copy,
-    size_t key_index)
-{
-  if (approxRep)
-    approxRep->add(response, fn_index, anchor_flag, deep_copy, key_index);
-  else { // not virtual: all derived classes use following definition
-    Pecos::SurrogateDataResp sdr = response_to_sdr(response, fn_index);
-    if (!sdr.is_null())
-      add(sdr, anchor_flag, deep_copy, key_index); // deep copy applied here
-  }
-}
-
-
 /** Short cut function (not used by ApproximationInterface). */
 void Approximation::
-add_array(const RealMatrix& sample_vars, const RealVector& sample_resp,
-	  bool deep_copy, size_t key_index)
+add_array(const RealMatrix& sample_vars, bool v_copy,
+	  const RealVector& sample_resp, bool r_copy, size_t key_index)
 {
   if (approxRep)
-    approxRep->add_array(sample_vars, sample_resp);
+    approxRep->add_array(sample_vars, v_copy, sample_resp, r_copy, key_index);
   else { // not virtual: all derived classes use following definition
     size_t i, num_samples = sample_vars.numCols();
     if (sample_resp.length() != num_samples) {
@@ -1178,14 +1182,16 @@ add_array(const RealMatrix& sample_vars, const RealVector& sample_resp,
       abort_handler(APPROX_ERROR);
     }
     bool anchor_flag = false;
+    assign_key_index(key_index);
     for (i=0; i<num_samples; ++i) {
 
       // add variable values (column of samples matrix)
-      add(sample_vars[i], anchor_flag, deep_copy, key_index);
-
+      Pecos::SurrogateDataVars sdv = variables_to_sdv(sample_vars[i]);
       // add response value (scalar)
       Pecos::SurrogateDataResp sdr(sample_resp[i]);
-      add(sdr, anchor_flag, deep_copy, key_index); // deep copy applied here
+
+      add(sdv, v_copy, sdr, r_copy, anchor_flag);
+      //add(eval_id); // not supported by this API
     }
   }
 }
