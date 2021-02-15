@@ -42,8 +42,8 @@ GaussianProcess::GaussianProcess(const std::string &param_list_xml_filename) {
 // BMA NOTE: ParameterList::get() can throw, so direct delegation
 // probably not good; might want to give a helpful message
 GaussianProcess::GaussianProcess(const MatrixXd &samples,
-				 const MatrixXd &response,
-				 const ParameterList& param_list) {
+                 const MatrixXd &response,
+                 const ParameterList& param_list) {
   default_options();
   configOptions = param_list;
   build(samples, response);

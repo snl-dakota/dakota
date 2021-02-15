@@ -22,7 +22,7 @@ using namespace dakota::surrogates;
 
 // ------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(util, size_level_index_vector)
+TEUCHOS_UNIT_TEST(surrogates, size_level_index_vector)
 {
   const int ndims = 3;
   const int level = 2;
@@ -43,7 +43,7 @@ TEUCHOS_UNIT_TEST(util, size_level_index_vector)
 
 // ------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(util, hyperbolic_subdim_level_indices)
+TEUCHOS_UNIT_TEST(surrogates, hyperbolic_subdim_level_indices)
 {
   // These values were used in manual comparisons with Pecos::util::compute_hyperbolic_level_subdim_indices
   double p = 1.0;
@@ -73,7 +73,7 @@ TEUCHOS_UNIT_TEST(util, hyperbolic_subdim_level_indices)
 
 // ------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(util, hyperbolic_level_indices)
+TEUCHOS_UNIT_TEST(surrogates, hyperbolic_level_indices)
 {
   // These values were used in manual comparisons with Pecos::util::compute_hyperbolic_level_indices
   double p = 1.0;
@@ -114,7 +114,7 @@ TEUCHOS_UNIT_TEST(util, hyperbolic_level_indices)
 
 // ------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(util, hyperbolic_indices)
+TEUCHOS_UNIT_TEST(surrogates, hyperbolic_indices)
 {
   // These values were used in manual comparisons with Pecos::util::compute_hyperbolic_indices
   double p = 1.0;
@@ -140,7 +140,7 @@ TEUCHOS_UNIT_TEST(util, hyperbolic_indices)
 
 // ------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(util, reduced_indices)
+TEUCHOS_UNIT_TEST(surrogates, reduced_indices)
 {
   int ndims = 2, level = 3;
 

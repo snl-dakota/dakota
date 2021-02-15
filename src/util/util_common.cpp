@@ -69,6 +69,16 @@ bool matrix_equals(const RealMatrix &A, const RealMatrix &B, double tol)
 
 // ------------------------------------------------------------
 
+bool relative_allclose(const MatrixXd &A, const MatrixXd &B, const double tol)
+{
+  MatrixXd rel_diff = (A - B).cwiseQuotient(B).cwiseAbs();
+  MatrixXd rel_tol(rel_diff.rows(), rel_diff.cols());
+  rel_tol.fill(tol);
+  return (rel_diff.array() <= rel_tol.array()).all();
+}
+
+// ------------------------------------------------------------
+
 double variance(const VectorXd &vec)
 {
   boost::accumulators::accumulator_set<double, boost::accumulators::features<boost::accumulators::tag::variance>> acc;

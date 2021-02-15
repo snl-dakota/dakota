@@ -47,6 +47,15 @@ bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol);
 bool matrix_equals(const RealMatrix &A, const RealMatrix &B, double tol);
 
 /**
+ *  \brief Tests whether two Eigen MatrixXd objects relatively equal (element-wise) within a given tolerance
+ *  \param[in] A The first matrix to test
+ *  \param[in] B The second matrix to test
+ *  \param[in] tol The relative tolerance to use when comparing double values
+ *  \returns Whether the matrices are relatively equal (within the tolerance)
+*/
+bool relative_allclose(const MatrixXd &A, const MatrixXd &B, const double tol);
+
+/**
  *  \brief Populate a collection of vectors read in a from a text file assuming data layout is one dataset 
  *  per row
  *  \param[in] filename The file that contains the data
