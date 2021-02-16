@@ -1346,7 +1346,8 @@ configure_indices(unsigned short group, unsigned short form,
     Pecos::ActiveKey child_key(hf_key.copy()), discrep_key;
     // using same child key for either LF or LF-hat
     child_key.decrement_key(seq_type); // seq_index defaults to 0
-    discrep_key.aggregate_keys(hf_key, child_key, Pecos::SINGLE_REDUCTION);
+    // For ML/MF PCE/SC/FT, we both aggregate raw levels and apply a reduction
+    discrep_key.aggregate_keys(hf_key, child_key, Pecos::RAW_WITH_REDUCTION);
     uSpaceModel.active_model_key(discrep_key);
   }
 }

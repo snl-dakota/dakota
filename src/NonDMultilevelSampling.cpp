@@ -204,7 +204,7 @@ void NonDMultilevelSampling::core_run()
       // use nominal value from user input, ignoring solution_level_control
       Pecos::ActiveKey hf_lf_key;
       size_t lev = std::numeric_limits<size_t>::max();
-      hf_lf_key.form_key(0, hf_form, lev, lf_form, lev,Pecos::SINGLE_REDUCTION);
+      hf_lf_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
       control_variate_mc(hf_lf_key);
     }
   }
@@ -1155,7 +1155,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
   size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
-  active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::SINGLE_REDUCTION);
+  active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -1383,7 +1383,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
   size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
-  active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::SINGLE_REDUCTION);
+  active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -1645,12 +1645,13 @@ configure_indices(unsigned short group, unsigned short form,
     bypass_surrogate_mode();
     iteratedModel.active_model_key(hf_key);      // one active fidelity
   }
-  else { //if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
+  else {
     aggregated_models_mode();
 
     Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
-    lf_key.decrement_key(seq_type); // seq_index defaults to 0    
-    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::SINGLE_REDUCTION);
+    lf_key.decrement_key(seq_type); // seq_index defaults to 0
+    // For MLMC/MFMC/MLMFMC, we aggregate levels but don't reduce them
+    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
     iteratedModel.active_model_key(discrep_key); // two active fidelities
   }
 }
