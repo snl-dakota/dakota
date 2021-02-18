@@ -304,6 +304,8 @@ private:
 
   /// store {LF,HF} model key that is active in component_parallel_mode()
   Pecos::ActiveKey componentParallelKey;
+  /// size of MPI buffer containing responseMode and an aggregated activeKey
+  int modeKeyBufferSize;
 
   /// array of indices that identify the truth (e.g., high fidelity) model
   /// (leading portion of activeKey, if aggregated models)

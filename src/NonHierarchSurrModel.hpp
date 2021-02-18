@@ -250,6 +250,8 @@ private:
 
   /// store aggregate model key that is active in component_parallel_mode()
   Pecos::ActiveKey componentParallelKey;
+  /// size of MPI buffer containing responseMode and an aggregated activeKey
+  int modeKeyBufferSize;
 
   // map of reference truth (high fidelity) responses computed in
   // build_approximation() and used for calculating corrections

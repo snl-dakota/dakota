@@ -25,7 +25,7 @@ extern Model dummy_model; // defined in DakotaModel.cpp
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db),
   corrOrder(problem_db.get_short("model.surrogate.correction_order")),
-  correctionMode(SINGLE_CORRECTION), mfPrecedence(true)
+  correctionMode(SINGLE_CORRECTION), mfPrecedence(true), modeKeyBufferSize(0)
 {
   // Hierarchical surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
@@ -74,8 +74,8 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
 void HierarchSurrModel::assign_default_keys()
 {
   // default key data values, to be overridden at run time
-  unsigned short id = 0, r_type = Pecos::RAW_DATA,
-    last_m = orderedModels.size() - 1;
+  unsigned short id = 0, last_m = orderedModels.size() - 1;
+  short r_type = Pecos::RAW_DATA;
   if (multifidelity()) { // first and last model form (solution levels ignored)
     size_t SZ_MAX = std::numeric_limits<size_t>::max(); 
     truthModelKey = Pecos::ActiveKey(id, r_type, last_m, SZ_MAX);
@@ -87,7 +87,13 @@ void HierarchSurrModel::assign_default_keys()
     surrModelKey  = Pecos::ActiveKey(id, r_type, last_m, 0);
   }
   activeKey.aggregate_keys(truthModelKey, surrModelKey,
-			   Pecos::SINGLE_REDUCTION); // discrep data reduction
+			   Pecos::SINGLE_REDUCTION); // default: reduction only
+
+  if (parallelLib.mpirun_flag()) {
+    MPIPackBuffer send_buff;  short mode;
+    send_buff << mode << activeKey; // serve_run() recvs single | aggregate key
+    modeKeyBufferSize = send_buff.size();
+  }
 
   check_model_interface_instance();
 }
@@ -1416,6 +1422,8 @@ void HierarchSurrModel::component_parallel_mode(short par_mode)
       if (par_mode) { // send model index state corresponding to active mode
 	MPIPackBuffer send_buff;
 	send_buff << responseMode << activeKey;
+	//int buffer_len = send_buff.size();
+	//parallelLib.bcast(buffer_len, mi_pl); // avoid this overhead
  	parallelLib.bcast(send_buff, mi_pl);
       }
     }
@@ -1437,15 +1445,18 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
   while (componentParallelMode) {
     parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
     if (componentParallelMode) {
-      // use a quick size estimation for recv buffer i/o size bcast
-      Pecos::ActiveKey dummy_key(5, 0); // for size estimation (worst case)
-      MPIPackBuffer send_buff;  send_buff << responseMode << dummy_key;
-      int buffer_len = send_buff.size();
+      // Local size estimation for recv buffer can't simply use activeKey
+      // since previous key may be a singleton from bypass_surrogate_mode():
+      //MPIPackBuffer send_buff;  send_buff << responseMode << activeKey;
+      //int buffer_len = send_buff.size();
+      //
+      // This approach works, but avoid the additional bcast overhead:
+      //parallelLib.bcast(buffer_len, *pl_iter);
 
       // receive model state from HierarchSurrModel::component_parallel_mode()
-      MPIUnpackBuffer recv_buffer(buffer_len);
+      MPIUnpackBuffer recv_buffer(modeKeyBufferSize);
       parallelLib.bcast(recv_buffer, *pl_iter);
-      recv_buffer >> responseMode >> activeKey;
+      recv_buffer >> responseMode >> activeKey; // replace previous/initial key
 
       active_model_key(activeKey); // updates {truth,surr}ModelKey
       if (componentParallelMode == SURROGATE_MODEL_MODE) {
