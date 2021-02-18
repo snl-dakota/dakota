@@ -43,10 +43,14 @@ public:
   DiscrepancyCorrection();
   /// standard constructor
   DiscrepancyCorrection(Model& surr_model, const SizetSet& surr_fn_indices,
-			short corr_type, short corr_order);
+			short    corr_type, short corr_order,
+			String approx_type  = "local_taylor",
+			short  approx_order = SHRT_MAX);
   /// alternate constructor
   DiscrepancyCorrection(const SizetSet& surr_fn_indices, size_t num_fns,
-			size_t num_vars, short corr_type, short corr_order);
+			size_t num_vars, short corr_type, short corr_order,
+			String approx_type  = "local_taylor",
+			short  approx_order = SHRT_MAX);
   /// destructor
   ~DiscrepancyCorrection();
 
@@ -56,11 +60,14 @@ public:
 
   /// initialize the DiscrepancyCorrection data
   void initialize(Model& surr_model, const SizetSet& surr_fn_indices,
-		  short corr_type, short corr_order);
+		  short    corr_type, short corr_order,
+		  String approx_type  = "local_taylor",
+		  short  approx_order = SHRT_MAX);
   /// initialize the DiscrepancyCorrection data
   void initialize(const SizetSet& surr_fn_indices, size_t num_fns,
 		  size_t num_vars, short corr_type, short corr_order,
-		  String approx_type = "local_taylor");
+		  String approx_type  = "local_taylor",
+		  short  approx_order = SHRT_MAX);
 
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in {add,mult}Corrections
@@ -143,6 +150,9 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// initialize types and orders
+  void initialize(short    corr_type, short   corr_order,
+		  String approx_type, short approx_order);
   /// internal convenience function shared by overloaded initialize() variants
   void initialize_corrections();
   
@@ -199,6 +209,8 @@ private:
 
   /// string indicating the discrepancy approximation type
   String approxType;
+  /// polynomial order of the discrepancy approximation (basis or trend order)
+  short approxOrder;
   /// flag indicating that data additions are anchor points (for updating
   /// local and multipoint approximations)
   bool addAnchor;
@@ -253,14 +265,23 @@ inline DiscrepancyCorrection::DiscrepancyCorrection():
 
 inline DiscrepancyCorrection::
 DiscrepancyCorrection(Model& surr_model, const SizetSet& surr_fn_indices,
-		      short corr_type, short corr_order)
-{ initialize(surr_model, surr_fn_indices, corr_type, corr_order); }
+		      short    corr_type, short   corr_order,
+		      String approx_type, short approx_order)
+{
+  initialize(surr_model, surr_fn_indices, corr_type, corr_order,
+	     approx_type, approx_order);
+}
 
 
 inline DiscrepancyCorrection::
 DiscrepancyCorrection(const SizetSet& surr_fn_indices, size_t num_fns,
-		      size_t num_vars, short corr_type, short corr_order)
-{ initialize(surr_fn_indices, num_fns, num_vars, corr_type, corr_order); }
+		      size_t num_vars, short corr_type, short corr_order,
+		      String approx_type, short approx_order)
+
+{
+  initialize(surr_fn_indices, num_fns, num_vars, corr_type, corr_order,
+	     approx_type, approx_order);
+}
 
 
 inline DiscrepancyCorrection::~DiscrepancyCorrection()

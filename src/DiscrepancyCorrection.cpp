@@ -30,36 +30,47 @@ extern PRPCache data_pairs; // global container
 
 void DiscrepancyCorrection::
 initialize(Model& surr_model, const SizetSet& surr_fn_indices,
-	   short corr_type, short corr_order)
+	   short    corr_type, short   corr_order,
+	   String approx_type, short approx_order)
 {
   surrModel = surr_model; // shallow copy
-  surrogateFnIndices = surr_fn_indices;
   numFns = surr_model.qoi(); numVars = surr_model.cv();
-  correctionType = corr_type; correctionOrder = corr_order;
-  approxType = "local_taylor"; // default
-  addAnchor  = true;
 
-  initialize_corrections();
+  surrogateFnIndices = surr_fn_indices;
+  // = surrModel.surrogate_function_indices() would work for DataFitSurrModel,
+  // but not for HierarchSurrModel's surrogate
 
-  initializedFlag = true;
+  initialize(corr_type, corr_order, approx_type, approx_order);
 }
 
 
 void DiscrepancyCorrection::
 initialize(const SizetSet& surr_fn_indices, size_t num_fns, size_t num_vars,
-	   short corr_type, short corr_order, String approx_type)
+	   short    corr_type, short   corr_order,
+	   String approx_type, short approx_order)
 {
+  // in this case, surrModel is null and must be protected
+
   surrogateFnIndices = surr_fn_indices;
   numFns = num_fns; numVars = num_vars;
-  correctionType = corr_type; correctionOrder = corr_order;
-  approxType = (approx_type.empty()) ? "local_taylor" : approx_type;
-  addAnchor = !strbegins(approxType, "global_"); // local, multipoint
+
+  initialize(corr_type, corr_order, approx_type, approx_order);
+}
+
+
+void DiscrepancyCorrection::
+initialize(short    corr_type, short   corr_order,
+	   String approx_type, short approx_order)
+{
+  correctionType  = corr_type;
+  correctionOrder = corr_order;
+  approxOrder = (approx_order == SHRT_MAX) ? correctionOrder : approx_order;
+  approxType  = (approx_type.empty()) ? "local_taylor" : approx_type;
+  addAnchor   = !strbegins(approxType, "global_"); // local, multipoint
 
   initialize_corrections();
 
   initializedFlag = true;
-
-  // in this case, surrModel is null and must be protected
 }
 
 
@@ -76,16 +87,13 @@ void DiscrepancyCorrection::initialize_corrections()
     combineFactors.resize(numFns);
     combineFactors = 1.; // used on 1st cycle prior to existence of prev pt.
   }
-  UShortArray approx_order(numVars, correctionOrder);
-  //if (approxType.begins("global_"))
-  //  dataOrder = 1; // do not need grad or hessian info
-  //else
+  UShortArray approx_orders(numVars, approxOrder);
   switch (correctionOrder) {
   case 2: dataOrder = 7; break;
   case 1: dataOrder = 3; break;
   case 0: default: dataOrder = 1; break;
   }
-  sharedData = SharedApproxData(approxType, approx_order, numVars,
+  sharedData = SharedApproxData(approxType, approx_orders, numVars,
 				dataOrder, NORMAL_OUTPUT);
 
   StSIter it;

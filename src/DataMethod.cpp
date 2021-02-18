@@ -165,13 +165,12 @@ DataMethodRep::DataMethodRep():
   lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
   burnInSamples(0), subSamplingPeriod(1), calModelDiscrepancy(false),
   numPredConfigs(0), importPredConfigFormat(TABULAR_ANNOTATED),
-  modelDiscrepancyType("global_kriging"),
-  approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
+  modelDiscrepancyType("global_kriging"), polynomialOrder(2),
+  exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
   exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
-  mutualInfoKSG2(false),
-  importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(-1.),
-  batchSize(1), batchSizeExplore(0),
+  mutualInfoKSG2(false), importCandFormat(TABULAR_ANNOTATED),
+  numCandidates(0), maxHifiEvals(-1.), batchSize(1), batchSizeExplore(0),
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),
@@ -329,7 +328,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << burnInSamples << subSamplingPeriod << evidenceSamples
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
-    << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
+    << polynomialOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
     << importCandFormat << numCandidates << maxHifiEvals
@@ -495,7 +494,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> burnInSamples >> subSamplingPeriod >> evidenceSamples
     >> calModelDiscrepancy >> numPredConfigs >> predictionConfigList
     >> importPredConfigs >> importPredConfigFormat >> modelDiscrepancyType
-    >> approxCorrectionOrder >> exportCorrModelFile >> exportCorrModelFormat
+    >> polynomialOrder >> exportCorrModelFile >> exportCorrModelFormat
     >> exportCorrVarFile >> exportCorrVarFormat >> exportDiscrepFile
     >> exportDiscrepFormat >> adaptExpDesign >> importCandPtsFile
     >> importCandFormat >> numCandidates >> maxHifiEvals
@@ -661,7 +660,7 @@ void DataMethodRep::write(std::ostream& s) const
     << burnInSamples << subSamplingPeriod << evidenceSamples
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
-    << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
+    << polynomialOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
     << importCandFormat << numCandidates << maxHifiEvals

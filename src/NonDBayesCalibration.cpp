@@ -98,8 +98,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.nond.export_corrected_variance_file")),
   exportCorrVarFormat(
     probDescDB.get_ushort("method.nond.export_corrected_variance_format")),
-  approxCorrectionOrder(probDescDB.get_short("method.nond.correction_order")),
-// BMA: This is probably wrong as config vars need not be continuous!
+  discrepPolyOrder(
+    probDescDB.get_short("method.nond.model_discrepancy.polynomial_order")),
+  // BMA: This is probably wrong as config vars need not be continuous!
   configLowerBnds(probDescDB.get_rv("variables.continuous_state.lower_bounds")),
   configUpperBnds(probDescDB.get_rv("variables.continuous_state.upper_bounds")),
   obsErrorMultiplierMode(
@@ -1342,9 +1343,9 @@ void NonDBayesCalibration::build_scalar_discrepancy()
   for (size_t i = 0; i < numFunctions; ++i)
     fn_indices.insert(i);
   DiscrepancyCorrection modelDisc;
-  short corr_type = ADDITIVE_CORRECTION; 
+  short corr_type = ADDITIVE_CORRECTION, corr_order = 0;
   modelDisc.initialize(fn_indices, numFunctions, num_configvars, corr_type, 
-       		       approxCorrectionOrder, discrepancyType);
+       		       corr_order, discrepancyType, discrepPolyOrder);
 
   // Construct config var information
   Variables vars_copy = mcmcModel.current_variables().copy();

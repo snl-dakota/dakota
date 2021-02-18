@@ -3327,18 +3327,28 @@
 	  <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
 	    <keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Model Discrepancy Type"  minOccurs="0" default="gaussian process" >
     	      <oneOf label="Discrepancy Model">
-    	        <keyword  id="gaussian_process" name="gaussian_process" code="{N_mdm(lit,modelDiscrepancyType_global_kriging)}" label="Discrepancy Type Gaussian Processes"   >
+    	        <keyword  id="gaussian_process" name="gaussian_process" code="{N_mdm(lit,modelDiscrepancyType_global_kriging)}" label="Discrepancy Type Gaussian Process" >
                   <alias name="kriging"/>
+                  <keyword  id="trend_order" name="trend_order" code="{N_mdm(shint,polynomialOrder)}" label="GP trend polynomial order" minOccurs="0" default="2" >
+                    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
 		</keyword>
-		<keyword  id="polynomial" name="polynomial" code="{N_mdm(lit,modelDiscrepancyType_global_polynomial)}" label="Discrepancy Type Polynomial"   />
+		<keyword  id="polynomial" name="polynomial" code="{N_mdm(lit,modelDiscrepancyType_global_polynomial)}" label="Discrepancy Type Polynomial" >
+                  <keyword  id="basis_order" name="basis_order" code="{N_mdm(shint,polynomialOrder)}" label="Polynomial basis order" minOccurs="0" default="2" >
+                    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <!--
+                  <oneOf label="Basis Order">
+                    <keyword  id="basis_order" name="basis_order" code="{N_mdm(shint,polynomialOrder)}" label="Polynomial basis order"  >
+                      <param type="INTEGER" constraint=">= 0" />
+		    </keyword>
+		    <keyword  id="constant" name="constant" code="{N_mdm(order,polynomialOrder_0)}" label="Polynomial Order 0"  />
+                    <keyword  id="linear" name="linear" code="{N_mdm(order,polynomialOrder_1)}" label="Linear Polynomial"   />
+                    <keyword  id="quadratic" name="quadratic" code="{N_mdm(order,polynomialOrder_2)}" label="Quadratic Polynomial"   />
+                  </oneOf>
+		  -->
+    	        </keyword>
     	      </oneOf>
-              <keyword  id="correction_order" name="correction_order" code="{0}" label="Model discrepancy correction"  minOccurs="0" default="2">
-                <oneOf label="Correction Order">
-		  <keyword  id="constant" name="constant" code="{N_mdm(order,approxCorrectionOrder_0)}" label="Polynomial Order 0"  />
-                  <keyword  id="linear" name="linear" code="{N_mdm(order,approxCorrectionOrder_1)}" label="Linear"   />
-                  <keyword  id="quadratic" name="quadratic" code="{N_mdm(order,approxCorrectionOrder_2)}" label="Quadratic"   />
-                </oneOf>
-              </keyword>
     	    </keyword>
             <keyword  id="num_prediction_configs" name="num_prediction_configs" code="{N_mdm(sizet,numPredConfigs)}" label="Number of Prediction Configurations"  minOccurs="0" default="0" >
               <param type="INTEGER" constraint=">= 0" />

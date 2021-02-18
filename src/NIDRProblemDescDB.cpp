@@ -6708,10 +6708,10 @@ static Method_mp_slit2
 static Method_mp_utype_lit
         MP3s(methodName,dlDetails,DL_SOLVER); // struct order: ip, sp, utype
 
-static Method_mp_ord
-	MP2s(approxCorrectionOrder,0),
-	MP2s(approxCorrectionOrder,1),
-	MP2s(approxCorrectionOrder,2);
+//static Method_mp_ord
+// 	MP2s(polynomialOrder,0),
+// 	MP2s(polynomialOrder,1),
+// 	MP2s(polynomialOrder,2);
 
 static Real
 	MP_(absConvTol),
@@ -6919,8 +6919,9 @@ static bool
 	MP_(volQualityFlag),
 	MP_(wilksFlag);
 
-/* It seems these are redundant with Method_mp_type:
 static short
+	MP_(polynomialOrder);
+/* It seems these are redundant with Method_mp_type:
 	MP_(c3AdvanceType),
         MP_(expansionType),
         MP_(nestingOverride),

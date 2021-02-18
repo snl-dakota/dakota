@@ -5378,16 +5378,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
       [ discrepancy_type {0}
-        gaussian_process ALIAS kriging {N_mdm(lit,modelDiscrepancyType_global_kriging)}
+        ( gaussian_process ALIAS kriging {N_mdm(lit,modelDiscrepancyType_global_kriging)}
+          [ trend_order INTEGER >= 0 {N_mdm(shint,polynomialOrder)} ]
+         )
         |
-        polynomial {N_mdm(lit,modelDiscrepancyType_global_polynomial)}
-        [ correction_order {0}
-          constant {N_mdm(order,approxCorrectionOrder_0)}
-          |
-          linear {N_mdm(order,approxCorrectionOrder_1)}
-          |
-          quadratic {N_mdm(order,approxCorrectionOrder_2)}
-         ]
+        ( polynomial {N_mdm(lit,modelDiscrepancyType_global_polynomial)}
+          [ basis_order INTEGER >= 0 {N_mdm(shint,polynomialOrder)} ]
+         )
        ]
       [ num_prediction_configs INTEGER >= 0 {N_mdm(sizet,numPredConfigs)} ]
       [ prediction_configs REALLIST {N_mdm(RealDL,predictionConfigList)} ]

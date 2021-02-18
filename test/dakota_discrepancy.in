@@ -21,15 +21,14 @@ method,
 #            num_prediction_configs = 7 #s1
 #            prediction_configs = 3 5   #s2
 #            import_prediction_configs = 'dakota_discrep_pred_configs.txt' #s3
-#              freeform #s3
-#            discrepancy_type   #s1,#s2,#s3
-#              gaussian_process  #s1,#s2
-#              polynomial       #s3
-#              correction_order         #s1,#s2,#s3
-#                constant               #s1
-#                linear                 #s2
-#                quadratic              #s3
-          #output debug
+#              freeform		       	#s3
+#            discrepancy_type		#s1,#s2,#s3
+#              gaussian_process		#s1,#s2
+#	         trend_order = 0	#s1
+#	         trend_order = 1	#s2
+#              polynomial      		#s3
+#                basis_order = 2        #s3
+#	  output debug
 
 variables,
           continuous_state = 1  
