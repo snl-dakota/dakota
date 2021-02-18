@@ -46,7 +46,8 @@ public class DakotaSurrogates {
     
 	public static void loadDakotaJniSurrogatesLibrary() throws DakotaSurrogatesException {
 		jniSurrogatesLibraryLoaded = false;
-		String dakotaLibPath = DakotaSystemPathUtil.findDakotaLibDirOnSystemPath();
+		//String dakotaLibPath = DakotaSystemPathUtil.findDakotaLibDirOnSystemPath();
+		String dakotaLibPath = new File(".").getAbsolutePath();
 		if(dakotaLibPath != null && !dakotaLibPath.isEmpty()) {	
 			try {
 				File libDir = new File(dakotaLibPath);

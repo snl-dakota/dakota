@@ -29,8 +29,9 @@ public class DakotaJniTest {
 	public String testGetVariableLabels(DakotaSurrogates dakotaSurrogates) throws DakotaSurrogatesException {
 		String errorMessage = "";
 		
-		URL testDataFileUrl = DakotaJniTest.class.getResource("/surrogate/exp_poly.s12.response_fn_1.txt");
-		String surrogateFileAbsPath = new File(testDataFileUrl.getFile()).getAbsolutePath();		
+		//URL testDataFileUrl = DakotaJniTest.class.getResource("/surrogate/exp_poly.s12.response_fn_1.txt");
+		//String surrogateFileAbsPath = new File(testDataFileUrl.getFile()).getAbsolutePath();		
+		String surrogateFileAbsPath = new File("exp_poly.s12.response_fn_1.txt").getAbsolutePath();		
 		
 		List<String> variableLabels = dakotaSurrogates.getVariableLabels(surrogateFileAbsPath);
 		
@@ -50,8 +51,9 @@ public class DakotaJniTest {
 	public String testGetResponseLabels(DakotaSurrogates dakotaSurrogates) throws DakotaSurrogatesException {
 		String errorMessage = "";
 		
-		URL testDataFileUrl = DakotaJniTest.class.getResource("/surrogate/exp_poly.s12.response_fn_1.txt");
-		String surrogateFileAbsPath = new File(testDataFileUrl.getFile()).getAbsolutePath();		
+		//URL testDataFileUrl = DakotaJniTest.class.getResource("/surrogate/exp_poly.s12.response_fn_1.txt");
+		//String surrogateFileAbsPath = new File(testDataFileUrl.getFile()).getAbsolutePath();		
+		String surrogateFileAbsPath = new File("exp_poly.s12.response_fn_1.txt").getAbsolutePath();		
 		
 		List<String> responseLabels = dakotaSurrogates.getResponseLabels(surrogateFileAbsPath);
 		
@@ -64,8 +66,9 @@ public class DakotaJniTest {
 	public String testGetValue(DakotaSurrogates dakotaSurrogates) throws DakotaSurrogatesException {
 		String errorMessage = "";
 		
-		URL testDataFileUrl = DakotaJniTest.class.getResource("/surrogate/exp_poly.s12.response_fn_1.txt");
-		String surrogateFileAbsPath = new File(testDataFileUrl.getFile()).getAbsolutePath();		
+		//URL testDataFileUrl = DakotaJniTest.class.getResource("/surrogate/exp_poly.s12.response_fn_1.txt");
+		//String surrogateFileAbsPath = new File(testDataFileUrl.getFile()).getAbsolutePath();		
+		String surrogateFileAbsPath = new File("exp_poly.s12.response_fn_1.txt").getAbsolutePath();		
 		
 		List<Double> inputValues = new ArrayList<>();
 		inputValues.add(1.0);
