@@ -31,7 +31,7 @@ public class DakotaSurrogates {
     public static final String BIN_FILE_EXTENSION = "bin"; //$NON-NLS-1$
     public static final String TXT_FILE_EXTENSION = "txt"; //$NON-NLS-1$
     
-    public static final String LIBRARY_NAME_WINDOWS = "jni_dakota_surrogates.dll";      //$NON-NLS-1$
+    public static final String LIBRARY_NAME_WINDOWS = "Release/jni_dakota_surrogates.dll";      //$NON-NLS-1$
     public static final String LIBRARY_NAME_MAC     = "libjni_dakota_surrogates.dylib"; //$NON-NLS-1$
     public static final String LIBRARY_NAME_LINUX   = "libjni_dakota_surrogates.so";    //$NON-NLS-1$
 	

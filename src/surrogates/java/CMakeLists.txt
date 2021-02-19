@@ -8,6 +8,7 @@
 
 find_package(Java COMPONENTS Development REQUIRED)
 find_package(JNI REQUIRED)
+include(UseJava)
 
 add_library(jni_dakota_surrogates SHARED
   gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates.cpp)
@@ -16,6 +17,23 @@ target_include_directories(jni_dakota_surrogates PUBLIC ${JNI_INCLUDE_DIRS})
 target_link_libraries(jni_dakota_surrogates PUBLIC dakota_surrogates)
 
 install(TARGETS jni_dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
+
+# For Windows testing, map DLLs into test directory
+if (WIN32)
+  add_custom_command(TARGET jni_dakota_surrogates
+                     POST_BUILD
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:teuchoscomm>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:teuchoscore>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:teuchosnumerics>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:teuchosparameterlist>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:teuchosparser>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:teuchosremainder>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:dakota_util>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:dakota_surrogates>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:blas>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:lapack>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     )
+endif()
 
 # Java JNI bridge to C++ test
 
