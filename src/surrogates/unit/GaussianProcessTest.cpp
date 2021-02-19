@@ -7,18 +7,16 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "util_common.hpp"
 #include "SurrogatesGaussianProcess.hpp"
 #include "surrogates_tools.hpp"
 #include "util_common.hpp"
 #include "util_data_types.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/filesystem.hpp>
 #include <fstream>
 
@@ -30,8 +28,7 @@ using namespace dakota::surrogates;
 namespace {
 
 void get_1D_gp_test_data(MatrixXd& samples, VectorXd& response,
-    VectorXd& eval_pts) {
-
+                         VectorXd& eval_pts) {
   /* num_samples x num_features */
   samples.resize(7, 1);
 
@@ -40,19 +37,18 @@ void get_1D_gp_test_data(MatrixXd& samples, VectorXd& response,
 
   eval_pts.resize(6);
 
-  samples << 0.05536604, 0.28730518, 0.30391231, 0.40768703,
-             0.45035059, 0.52639952, 0.78853488;
+  samples << 0.05536604, 0.28730518, 0.30391231, 0.40768703, 0.45035059,
+      0.52639952, 0.78853488;
 
-  response << -0.15149429, -0.19689361, -0.17323105, -0.02379026,
-               0.02013445, 0.05011702, -0.11678312;
+  response << -0.15149429, -0.19689361, -0.17323105, -0.02379026, 0.02013445,
+      0.05011702, -0.11678312;
 
   eval_pts << 0.0, 0.2, 0.4, 0.6, 0.8, 1.0;
 }
 
 // DTS: Looks like we do not have coverage for nugget bounds
-void get_gp_hyperparameter_bounds(const int nvars,
-    VectorXd& sigma_bounds, MatrixXd& length_scale_bounds) {
-
+void get_gp_hyperparameter_bounds(const int nvars, VectorXd& sigma_bounds,
+                                  MatrixXd& length_scale_bounds) {
   const double lb_val = 1.0e-2;
   const double ub_val = 1.0e2;
 
@@ -68,12 +64,11 @@ void get_gp_hyperparameter_bounds(const int nvars,
 }
 
 ParameterList get_gp_config_options(const VectorXd& sigma_bounds,
-    const MatrixXd& length_scale_bounds) {
-
+                                    const MatrixXd& length_scale_bounds) {
   ParameterList param_list("GP Test Parameters");
   param_list.set("sigma bounds", sigma_bounds);
   param_list.set("length-scale bounds", length_scale_bounds);
-  param_list.set("scaler name","standardization");
+  param_list.set("scaler name", "standardization");
   param_list.set("num restarts", 10);
   param_list.sublist("Nugget").set("fixed nugget", 1.0e-12);
   param_list.set("gp seed", 42);
@@ -82,38 +77,43 @@ ParameterList get_gp_config_options(const VectorXd& sigma_bounds,
 }
 
 void get_1D_gp_golds(VectorXd& gold_mean, VectorXd& gold_std_dev,
-    MatrixXd& gold_cov, bool gp_has_trend=false) {
-
+                     MatrixXd& gold_cov, bool gp_has_trend = false) {
   const int num_pts = 6;
   gold_mean.resize(num_pts);
   gold_std_dev.resize(num_pts);
   gold_cov.resize(num_pts, num_pts);
 
   if (gp_has_trend) {
-    gold_mean << -0.05312219, -0.27214983, -0.033252, 0.02527716, -0.12356696, -0.18573136;
-    gold_std_dev << 0.02028642, 0.00536066, 0.00064835, 0.00459461, 0.00395678, 0.14659393;
-    gold_cov << 0.000411539, -9.13625e-05,  6.17757e-08,  -1.9461e-05,  5.94823e-06, -0.000256977,
-               -9.13625e-05,  2.87366e-05, -5.31468e-07,  6.01025e-06, -4.53635e-06, -5.15403e-05,
-                6.17757e-08, -5.31468e-07,  4.20359e-07,  8.39709e-07, -4.44025e-07, -8.63467e-06,
-               -1.9461e-05,  6.01025e-06,  8.39709e-07,  2.11104e-05, -1.52399e-05, -0.000388392,
-                5.94823e-06, -4.53635e-06, -4.44025e-07, -1.52399e-05,  1.56561e-05,  0.000499163,
-               -0.000256977, -5.15403e-05, -8.63467e-06, -0.000388392,  0.000499163,    0.0214898;
-  }
-  else {
-    gold_mean << -0.046014, -0.278509, -0.0333528, 0.0185393, -0.118491, -0.0506785;
-    gold_std_dev << 0.0170694, 0.00203616, 1.67821e-05, 0.00317294, 0.00392892, 0.121505;
-    gold_cov << 0.000291366, -3.13983e-05, -2.05299e-07, 2.82111e-05, -2.23603e-05, -0.000337062,
-               -3.13983e-05, 4.14595e-06, 3.16567e-08, -4.86909e-06, 4.17091e-06, 6.60782e-05,
-               -2.05299e-07, 3.16567e-08, 2.81647e-10, -4.93076e-08, 4.72685e-08, 8.16402e-07,
-                2.82111e-05, -4.86909e-06, -4.93076e-08, 1.00675e-05, -1.12689e-05, -0.000225718,
-               -2.23603e-05, 4.17091e-06, 4.72685e-08, -1.12689e-05, 1.54364e-05, 0.00039519,
-               -0.000337062, 6.60782e-05, 8.16402e-07, -0.000225718, 0.00039519, 0.0147636;
+    gold_mean << -0.05312219, -0.27214983, -0.033252, 0.02527716, -0.12356696,
+        -0.18573136;
+    gold_std_dev << 0.02028642, 0.00536066, 0.00064835, 0.00459461, 0.00395678,
+        0.14659393;
+    gold_cov << 0.000411539, -9.13625e-05, 6.17757e-08, -1.9461e-05,
+        5.94823e-06, -0.000256977, -9.13625e-05, 2.87366e-05, -5.31468e-07,
+        6.01025e-06, -4.53635e-06, -5.15403e-05, 6.17757e-08, -5.31468e-07,
+        4.20359e-07, 8.39709e-07, -4.44025e-07, -8.63467e-06, -1.9461e-05,
+        6.01025e-06, 8.39709e-07, 2.11104e-05, -1.52399e-05, -0.000388392,
+        5.94823e-06, -4.53635e-06, -4.44025e-07, -1.52399e-05, 1.56561e-05,
+        0.000499163, -0.000256977, -5.15403e-05, -8.63467e-06, -0.000388392,
+        0.000499163, 0.0214898;
+  } else {
+    gold_mean << -0.046014, -0.278509, -0.0333528, 0.0185393, -0.118491,
+        -0.0506785;
+    gold_std_dev << 0.0170694, 0.00203616, 1.67821e-05, 0.00317294, 0.00392892,
+        0.121505;
+    gold_cov << 0.000291366, -3.13983e-05, -2.05299e-07, 2.82111e-05,
+        -2.23603e-05, -0.000337062, -3.13983e-05, 4.14595e-06, 3.16567e-08,
+        -4.86909e-06, 4.17091e-06, 6.60782e-05, -2.05299e-07, 3.16567e-08,
+        2.81647e-10, -4.93076e-08, 4.72685e-08, 8.16402e-07, 2.82111e-05,
+        -4.86909e-06, -4.93076e-08, 1.00675e-05, -1.12689e-05, -0.000225718,
+        -2.23603e-05, 4.17091e-06, 4.72685e-08, -1.12689e-05, 1.54364e-05,
+        0.00039519, -0.000337062, 6.60782e-05, 8.16402e-07, -0.000225718,
+        0.00039519, 0.0147636;
   }
 }
 
 void get_2D_gp_test_data(MatrixXd& samples, VectorXd& response,
-    MatrixXd& eval_pts) {
-
+                         MatrixXd& eval_pts) {
   const int num_datasets = 1;
   const int num_vars = 2;
   const int num_samples = 64;
@@ -130,26 +130,22 @@ void get_2D_gp_test_data(MatrixXd& samples, VectorXd& response,
   std::vector<MatrixXd> samples_list;
 
   populateMatricesFromFile(samples_fname, samples_list, num_datasets, num_vars,
-      num_samples);
+                           num_samples);
   populateMatricesFromFile(responses_fname, responses_list, num_datasets,
-      num_qoi, num_samples);
+                           num_qoi, num_samples);
 
   samples = samples_list[0];
   response = responses_list[0];
 
-  eval_pts << 0.2, 0.45,
-             -0.3, -0.7,
-              0.4, -0.1,
-             -0.25, 0.33;
+  eval_pts << 0.2, 0.45, -0.3, -0.7, 0.4, -0.1, -0.25, 0.33;
 }
 
 ParameterList get_2D_gp_config_options(const VectorXd& sigma_bounds,
-    const MatrixXd& length_scale_bounds) {
-
+                                       const MatrixXd& length_scale_bounds) {
   ParameterList param_list("GP Test Parameters");
   param_list.set("sigma bounds", sigma_bounds);
   param_list.set("length-scale bounds", length_scale_bounds);
-  param_list.set("scaler name","standardization");
+  param_list.set("scaler name", "standardization");
   param_list.set("num restarts", 10);
   param_list.sublist("Nugget").set("fixed nugget", 1.0e-12);
   param_list.set("gp seed", 42);
@@ -158,8 +154,7 @@ ParameterList get_2D_gp_config_options(const VectorXd& sigma_bounds,
 }
 
 void get_2D_gp_golds_no_trend(VectorXd& gold_mean, VectorXd& gold_std_dev,
-    MatrixXd& gold_cov, bool gp_has_trend=false) {
-
+                              MatrixXd& gold_cov, bool gp_has_trend = false) {
   const int num_pts = 4;
   gold_mean.resize(num_pts);
   gold_std_dev.resize(num_pts);
@@ -168,23 +163,21 @@ void get_2D_gp_golds_no_trend(VectorXd& gold_mean, VectorXd& gold_std_dev,
   if (gp_has_trend) {
     gold_mean << 0.779875, 0.84715, 0.744379, 0.746542;
     gold_std_dev << 0.000243319, 0.00178768, 0.000307974, 0.000454846;
-    gold_cov << 5.9204e-08,  6.57492e-08, -9.02961e-09, -4.67214e-08,
-                6.57492e-08,  3.19579e-06, -3.74954e-07,  2.70074e-07,
-                -9.02961e-09, -3.74954e-07,  9.48479e-08, -9.77782e-08,
-                -4.67214e-08,  2.70074e-07, -9.77782e-08,  2.06885e-07;
-  }
-  else {
+    gold_cov << 5.9204e-08, 6.57492e-08, -9.02961e-09, -4.67214e-08,
+        6.57492e-08, 3.19579e-06, -3.74954e-07, 2.70074e-07, -9.02961e-09,
+        -3.74954e-07, 9.48479e-08, -9.77782e-08, -4.67214e-08, 2.70074e-07,
+        -9.77782e-08, 2.06885e-07;
+  } else {
     gold_mean << 0.779863, 0.84671, 0.744502, 0.746539;
     gold_std_dev << 0.000202807, 0.00157021, 0.000266543, 0.000399788;
     gold_cov << 4.11307e-08, 5.05967e-08, -6.56123e-09, -3.19852e-08,
-                   5.05967e-08, 2.46557e-06, -2.8656e-07, 2.18488e-07,
-                  -6.56123e-09, -2.8656e-07, 7.10453e-08, -7.75076e-08,
-                  -3.19852e-08, 2.18488e-07, -7.75076e-08, 1.5983e-07;
+        5.05967e-08, 2.46557e-06, -2.8656e-07, 2.18488e-07, -6.56123e-09,
+        -2.8656e-07, 7.10453e-08, -7.75076e-08, -3.19852e-08, 2.18488e-07,
+        -7.75076e-08, 1.5983e-07;
   }
 }
 
 void get_2D_gp_golds_trend_derivs(MatrixXd& gold_grad, MatrixXd& gold_hessian) {
-
   const int num_vars = 2;
 
   /* grad and hessian evaluated at a single point */
@@ -195,16 +188,14 @@ void get_2D_gp_golds_trend_derivs(MatrixXd& gold_grad, MatrixXd& gold_hessian) {
   gold_hessian << 0.86763171, 0.10209617, 0.10209617, -0.84260876;
 }
 
-void get_gp_test_arrays(GaussianProcess& gp, const MatrixXd& eval_pts, 
-    VectorXd& mean, VectorXd& std_dev, MatrixXd& cov) {
-
+void get_gp_test_arrays(GaussianProcess& gp, const MatrixXd& eval_pts,
+                        VectorXd& mean, VectorXd& std_dev, MatrixXd& cov) {
   mean = gp.value(eval_pts);
   std_dev = gp.variance(eval_pts).array().sqrt();
   cov = gp.covariance(eval_pts);
 }
 
 TEUCHOS_UNIT_TEST(surrogates, 1D_gp_constructor_types) {
-
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds;
@@ -218,7 +209,7 @@ TEUCHOS_UNIT_TEST(surrogates, 1D_gp_constructor_types) {
   get_gp_hyperparameter_bounds(1, sigma_bounds, length_scale_bounds);
 
   /* configuration options */
-  ParameterList param_list = 
+  ParameterList param_list =
       get_gp_config_options(sigma_bounds, length_scale_bounds);
 
   /* gold data for test */
@@ -228,22 +219,19 @@ TEUCHOS_UNIT_TEST(surrogates, 1D_gp_constructor_types) {
   const double rel_float_tol = 1.0e-4;
 
   for (int i = 0; i < 3; i++) {
-
     if (i == 0) {
       /* 1D GP constructor type 1: Construct GP and build surrogate
        * all at once */
       GaussianProcess gp(samples, response, param_list);
       get_gp_test_arrays(gp, eval_pts, mean, std_dev, cov);
-    }
-    else if (i == 1) {
+    } else if (i == 1) {
       /* 1D GP constructor type 2:
        * Separate constructor with given options
        * and build steps */
       GaussianProcess gp(param_list);
       gp.build(samples, response);
       get_gp_test_arrays(gp, eval_pts, mean, std_dev, cov);
-    }
-    else if (i == 2) {
+    } else if (i == 2) {
       /* 1D GP constructor type 3:
        * use defaultConfigOptions and adjust as needed
        * for desired behavior */
@@ -269,13 +257,12 @@ TEUCHOS_UNIT_TEST(surrogates, 1D_gp_constructor_types) {
     }
 
     TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-    TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100*rel_float_tol));
-    TEST_ASSERT(relative_allclose(cov, gold_cov, 100*rel_float_tol));
+    TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+    TEST_ASSERT(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
   }
 }
 
 TEUCHOS_UNIT_TEST(surrogates, 1D_gp_with_trend_values_and_derivs) {
-
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds;
@@ -289,7 +276,7 @@ TEUCHOS_UNIT_TEST(surrogates, 1D_gp_with_trend_values_and_derivs) {
   get_gp_hyperparameter_bounds(1, sigma_bounds, length_scale_bounds);
 
   /* configuration options */
-  ParameterList param_list = 
+  ParameterList param_list =
       get_gp_config_options(sigma_bounds, length_scale_bounds);
 
   /* gold data for test */
@@ -357,18 +344,15 @@ TEUCHOS_UNIT_TEST(surrogates, 1D_gp_with_trend_values_and_derivs) {
 
   double grad_drop, hessian_drop;
 
-  grad_drop = log10(grad_fd_error(0, 0)
-            / grad_fd_error.minCoeff());
+  grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
 
-  hessian_drop = log10(hessian_fd_error(0, 0)
-               / hessian_fd_error.minCoeff());
+  hessian_drop = log10(hessian_fd_error(0, 0) / hessian_fd_error.minCoeff());
 
   TEST_ASSERT(grad_drop > 7.0)
   TEST_ASSERT(hessian_drop > 3.0)
 }
 
 TEUCHOS_UNIT_TEST(surrogates, 2D_gp_no_trend) {
-
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds, eval_pts;
@@ -381,7 +365,7 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_no_trend) {
   get_gp_hyperparameter_bounds(2, sigma_bounds, length_scale_bounds);
 
   /* configuration options */
-  ParameterList param_list = 
+  ParameterList param_list =
       get_gp_config_options(sigma_bounds, length_scale_bounds);
   param_list.sublist("Nugget").set("fixed nugget", 1.0e-10);
   param_list.set("num restarts", 15);
@@ -409,12 +393,11 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_no_trend) {
   }
 
   TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100*rel_float_tol));
-  TEST_ASSERT(relative_allclose(cov, gold_cov, 100*rel_float_tol));
+  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  TEST_ASSERT(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
 }
 
 TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
-
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds, eval_pts;
@@ -471,8 +454,8 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
   }
 
   TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
-  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100*rel_float_tol));
-  TEST_ASSERT(relative_allclose(cov, gold_cov, 100*rel_float_tol));
+  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  TEST_ASSERT(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
 
   /* compute derivatives of GP with trend and check */
   const int eval_point_index = 1;
@@ -504,23 +487,23 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
     std::cout << "\n";
   }
 
-  VectorXd grad_drop(2); // dx, dy
-  VectorXd hessian_drop(3); // dxx, dxy, dyy
+  VectorXd grad_drop(2);     // dx, dy
+  VectorXd hessian_drop(3);  // dxx, dxy, dyy
 
   for (int i = 0; i < 2; i++) {
-    grad_drop(i) = log10(grad_fd_error.col(i)(0)
-                 /  grad_fd_error.col(i).minCoeff());
+    grad_drop(i) =
+        log10(grad_fd_error.col(i)(0) / grad_fd_error.col(i).minCoeff());
 
-    hessian_drop(i) = log10(hessian_fd_error.col(i)(0)
-                    /  hessian_fd_error.col(i).minCoeff());
+    hessian_drop(i) =
+        log10(hessian_fd_error.col(i)(0) / hessian_fd_error.col(i).minCoeff());
 
     TEST_ASSERT(grad_drop(i) > 6.0);
     TEST_ASSERT(hessian_drop(i) > 3.0);
 
     if (i == 2) {
       i += 1;
-      hessian_drop(i) = log10(hessian_fd_error.col(i)(0)
-                      /  hessian_fd_error.col(i).minCoeff());
+      hessian_drop(i) = log10(hessian_fd_error.col(i)(0) /
+                              hessian_fd_error.col(i).minCoeff());
       TEST_ASSERT(hessian_drop(i) > 3.0);
     }
   }
@@ -531,7 +514,6 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
   std::string filename("gp_test.surr");
 
   for (bool binary : {true, false}) {
-
     boost::filesystem::remove(filename);
     Surrogate::save(gp, filename, binary);
 
@@ -556,13 +538,15 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
     // Verify vs. original unit test
     get_gp_test_arrays(gp, eval_pts, mean_load, std_dev_load, cov_load);
     TEST_ASSERT(relative_allclose(mean_load, gold_mean, rel_float_tol));
-    TEST_ASSERT(relative_allclose(std_dev_load, gold_std_dev, 100*rel_float_tol));
-    TEST_ASSERT(relative_allclose(cov_load, gold_cov, 100*rel_float_tol));
+    TEST_ASSERT(
+        relative_allclose(std_dev_load, gold_std_dev, 100 * rel_float_tol));
+    TEST_ASSERT(relative_allclose(cov_load, gold_cov, 100 * rel_float_tol));
   }
 }
 
 TEUCHOS_UNIT_TEST(surrogates, gp_read_from_parameterlist) {
-  std::string test_parameterlist_file = "gp_test_data/GP_test_parameterlist.xml";
+  std::string test_parameterlist_file =
+      "gp_test_data/GP_test_parameterlist.xml";
   GaussianProcess gp(test_parameterlist_file);
 
   ParameterList plist;
@@ -576,7 +560,7 @@ TEUCHOS_UNIT_TEST(surrogates, gp_read_from_parameterlist) {
 
   const ParameterList plist_nugget = plist.get<ParameterList>("Nugget");
   TEST_FLOATING_EQUALITY(plist_nugget.get<double>("fixed nugget"), 1.0e-14,
-      rel_float_tol);
+                         rel_float_tol);
   TEST_EQUALITY(plist_nugget.get<bool>("estimate nugget"), false);
 
   const ParameterList plist_trend = plist.get<ParameterList>("Trend");
@@ -585,9 +569,10 @@ TEUCHOS_UNIT_TEST(surrogates, gp_read_from_parameterlist) {
   const ParameterList plist_options = plist_trend.get<ParameterList>("Options");
   TEST_EQUALITY(plist_options.get<int>("max degree"), 2);
   TEST_FLOATING_EQUALITY(plist_options.get<double>("p-norm"), 1.0,
-      rel_float_tol);
+                         rel_float_tol);
   TEST_EQUALITY(plist_options.get<std::string>("scaler type"), "none");
-  TEST_EQUALITY(plist_options.get<std::string>("regression solver type"), "SVD");
+  TEST_EQUALITY(plist_options.get<std::string>("regression solver type"),
+                "SVD");
 }
 
-}
+}  // namespace

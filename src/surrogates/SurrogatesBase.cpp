@@ -8,77 +8,72 @@
     _______________________________________________________________________ */
 
 #include "SurrogatesBase.hpp"
-#include "util_metrics.hpp"
-#include "util_math_tools.hpp"
 
+#include "util_math_tools.hpp"
+#include "util_metrics.hpp"
 
 namespace dakota {
 namespace surrogates {
 
 Surrogate::Surrogate() : numQOI(0) {}
 
-Surrogate::Surrogate(const ParameterList &param_list) {
+Surrogate::Surrogate(const ParameterList& param_list) {
   numQOI = 0;
   silence_unused_args(param_list);
 }
 
-
-Surrogate::Surrogate(const MatrixXd &samples,
-                     const MatrixXd &response,
+Surrogate::Surrogate(const MatrixXd& samples, const MatrixXd& response,
                      const ParameterList& param_list) {
   numQOI = 0;
   silence_unused_args(samples, response, param_list);
 }
 
-Surrogate::~Surrogate(){}
+Surrogate::~Surrogate() {}
 
-MatrixXd Surrogate::gradient(const MatrixXd &eval_points, const int qoi) {
+MatrixXd Surrogate::gradient(const MatrixXd& eval_points, const int qoi) {
   silence_unused_args(eval_points, qoi);
   throw(std::runtime_error("Surrogate does not implement gradient(...)"));
 }
 
-MatrixXd Surrogate::hessian(const MatrixXd &eval_point, const int qoi) {
+MatrixXd Surrogate::hessian(const MatrixXd& eval_point, const int qoi) {
   silence_unused_args(eval_point, qoi);
   throw(std::runtime_error("Surrogate does not implement hessian(...)"));
 }
 
-void Surrogate::variable_labels(const std::vector<std::string>& var_labels)
-{ variableLabels = var_labels; }
+void Surrogate::variable_labels(const std::vector<std::string>& var_labels) {
+  variableLabels = var_labels;
+}
 
-const std::vector<std::string>& Surrogate::variable_labels() const
-{ return variableLabels; }
+const std::vector<std::string>& Surrogate::variable_labels() const {
+  return variableLabels;
+}
 
-void Surrogate::response_labels(const std::vector<std::string>& resp_labels)
-{ responseLabels = resp_labels; }
+void Surrogate::response_labels(const std::vector<std::string>& resp_labels) {
+  responseLabels = resp_labels;
+}
 
-const std::vector<std::string>& Surrogate::response_labels() const
-{ return responseLabels; }
+const std::vector<std::string>& Surrogate::response_labels() const {
+  return responseLabels;
+}
 
-void Surrogate::set_options(const ParameterList &options) {
+void Surrogate::set_options(const ParameterList& options) {
   configOptions = options;
 }
 
-void Surrogate::get_options(ParameterList &options) {
-  options = configOptions;
-}
+void Surrogate::get_options(ParameterList& options) { options = configOptions; }
 
-void Surrogate::print_options() {
-  std::cout << configOptions << "\n";
-}
+void Surrogate::print_options() { std::cout << configOptions << "\n"; }
 
-
-std::shared_ptr<Surrogate>
-Surrogate::load(const std::string& infile, const bool binary)
-{
+std::shared_ptr<Surrogate> Surrogate::load(const std::string& infile,
+                                           const bool binary) {
   std::shared_ptr<Surrogate> surr_in;
   load(infile, binary, surr_in);
   return surr_in;
 }
 
-
-VectorXd Surrogate::evaluate_metrics(const StringArray &mnames,
-  const MatrixXd &points, const MatrixXd &ref_values) {
-
+VectorXd Surrogate::evaluate_metrics(const StringArray& mnames,
+                                     const MatrixXd& points,
+                                     const MatrixXd& ref_values) {
   const int num_metrics = mnames.size();
   /* Assuming numQOI = 1 */
   VectorXd surr_values(ref_values.size());
@@ -86,16 +81,16 @@ VectorXd Surrogate::evaluate_metrics(const StringArray &mnames,
 
   for (int m = 0; m < num_metrics; m++) {
     surr_values = this->value(points);
-    metrics(m) = util::compute_metric(surr_values,
-      ref_values.col(0), mnames[m]);
+    metrics(m) =
+        util::compute_metric(surr_values, ref_values.col(0), mnames[m]);
   }
   return metrics;
 }
 
-VectorXd Surrogate::cross_validate(const MatrixXd &samples,
-    const MatrixXd &response, const StringArray &mnames,
-    const int num_folds, const int seed) {
-
+VectorXd Surrogate::cross_validate(const MatrixXd& samples,
+                                   const MatrixXd& response,
+                                   const StringArray& mnames,
+                                   const int num_folds, const int seed) {
   const int num_metrics = mnames.size();
   VectorXd cv_results = VectorXd::Zero(num_metrics);
   VectorXd metrics_values(num_metrics);
@@ -114,16 +109,16 @@ VectorXd Surrogate::cross_validate(const MatrixXd &samples,
 
   // clone the surrogate's configuration so CV doesn't invalidate *this
   std::shared_ptr<Surrogate> cv_surrogate = this->clone();
-  //ParameterList cv_surrogate_options;
-  //cv_surrogate->get_options(cv_surrogate_options);
-  //int verbosity_level = cv_surrogate_options.get<int>("verbosity");
+  // ParameterList cv_surrogate_options;
+  // cv_surrogate->get_options(cv_surrogate_options);
+  // int verbosity_level = cv_surrogate_options.get<int>("verbosity");
   int verbosity_level = configOptions.get<int>("verbosity");
 
   for (int i = 0; i < num_folds; i++) {
     if (verbosity_level > 0) {
-      std::cout << "\nCross-validation fold " << i + 1
-                << "/" << num_folds << "\n\n";
-     }
+      std::cout << "\nCross-validation fold " << i + 1 << "/" << num_folds
+                << "\n\n";
+    }
     /* validation samples */
     fold_indices = cv_folds[i];
     num_val_samples = fold_indices.size();
@@ -154,17 +149,15 @@ VectorXd Surrogate::cross_validate(const MatrixXd &samples,
 
     cv_surrogate->build(train_samples, train_response);
     metrics_values =
-      cv_surrogate->evaluate_metrics(mnames, val_samples, val_response);
+        cv_surrogate->evaluate_metrics(mnames, val_samples, val_response);
     cv_results += metrics_values;
-
   }
 
   cv_results /= double(num_folds);
   return cv_results;
-
 }
 
-} // namespace surrogates
-} // namespace dakota
+}  // namespace surrogates
+}  // namespace dakota
 
 BOOST_CLASS_EXPORT_IMPLEMENT(dakota::surrogates::Surrogate)

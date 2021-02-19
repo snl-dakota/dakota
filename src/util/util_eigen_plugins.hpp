@@ -12,23 +12,21 @@
 
 /// Allow serializers access to private class data
 friend class boost::serialization::access;
-template<class Archive>
+template <class Archive>
 /**
  * \brief Serialize an Eigen matrix.
  * \param[in] ar Archive of serialized data.
  * \param[in] version version number (unused).
  */
 void serialize(Archive& ar, const unsigned int version) {
-
   Eigen::Index rows = derived().rows();
   Eigen::Index cols = derived().cols();
-  ar & rows;
-  ar & cols;
-  if(rows != derived().rows() || cols != derived().cols())
+  ar& rows;
+  ar& cols;
+  if (rows != derived().rows() || cols != derived().cols())
     derived().resize(rows, cols);
-  if(derived().size() !=0)
-    ar &  boost::serialization::make_array(derived().data(), rows * cols);
-
+  if (derived().size() != 0)
+    ar& boost::serialization::make_array(derived().data(), rows * cols);
 }
 
 #endif

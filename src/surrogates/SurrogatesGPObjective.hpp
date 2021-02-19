@@ -17,7 +17,6 @@
 #include <ROL_StdVector.hpp>
 #include <ROL_Types.hpp>
 
-
 namespace dakota {
 namespace surrogates {
 
@@ -27,9 +26,7 @@ namespace surrogates {
  *
  */
 class GP_Objective : public ROL::Objective<double> {
-
-public:
-
+ public:
   // ------------------------------------------------------------
   // Constructors and destructors
 
@@ -41,7 +38,6 @@ public:
   GP_Objective(GaussianProcess& gp_model);
   ~GP_Objective();
 
-
   // ------------------------------------------------------------
   // Public utility functions
 
@@ -51,7 +47,7 @@ public:
    *  \param[in] tol Tolerance for inexact evaluation (not used here).
    *
    */
-  double value(const ROL::Vector<double> &p, double &tol);
+  double value(const ROL::Vector<double>& p, double& tol);
 
   /**
    *  \brief Get the gradient of the objective function at a point.
@@ -60,10 +56,10 @@ public:
    *  \param[in] tol Tolerance for inexact evaluation (not used here).
    *
    */
-  void gradient(ROL::Vector<double> &g, const ROL::Vector<double> &p, double &tol);
+  void gradient(ROL::Vector<double>& g, const ROL::Vector<double>& p,
+                double& tol);
 
-private:
-
+ private:
   // ------------------------------------------------------------
   // Private utility functions
 
@@ -80,7 +76,8 @@ private:
    *  \param[in] vec const ROL vector
    *
    */
-  ROL::Ptr<const std::vector<double> > getVector(const ROL::Vector<double>& vec) {
+  ROL::Ptr<const std::vector<double> > getVector(
+      const ROL::Vector<double>& vec) {
     return dynamic_cast<const ROL::StdVector<double>&>(vec).getVector();
   }
 
@@ -97,7 +94,7 @@ private:
   // Private member variables
 
   /// Pointer to the GaussianProcess surrogate.
-  GaussianProcess &gp;
+  GaussianProcess& gp;
   /// Number of optimization variables.
   int nopt;
   /// Previously computed value of the objective function.
@@ -110,6 +107,5 @@ private:
 
 }  // namespace surrogates
 }  // namespace dakota
-
 
 #endif  // include guard
