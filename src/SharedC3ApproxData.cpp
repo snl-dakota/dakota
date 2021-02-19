@@ -331,7 +331,7 @@ void SharedC3ApproxData::decrement_order()
 void SharedC3ApproxData::pre_combine()
 {
   combinedOrders.assign(numVars, 0);
-  std::map<UShortArray, UShortArray>::const_iterator cit;  size_t i;
+  std::map<Pecos::ActiveKey, UShortArray>::const_iterator cit;  size_t i;
   for (cit=startOrdersMap.begin(); cit!=startOrdersMap.end(); ++cit) {
     const UShortArray& so = cit->second;
     for (i=0; i<numVars; ++i)

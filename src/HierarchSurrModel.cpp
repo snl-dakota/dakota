@@ -91,7 +91,7 @@ void HierarchSurrModel::assign_default_keys()
     // Note: for proper modeKeyBufferSize estimation, must maintain consistency
     // with NonDExpansion::configure_{sequence,indices}() and key definition
     // for NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX
-    // usage since this does not allocation a solution level array.
+    // usage, since this suppresses allocation of a solution level array.
     size_t SZ_MAX = std::numeric_limits<size_t>::max(); 
     truthModelKey = Pecos::ActiveKey(id, r_type, last_m, SZ_MAX);
     surrModelKey  = Pecos::ActiveKey(id, r_type,      0, SZ_MAX);

@@ -360,7 +360,7 @@ void C3Approximation::rebuild()
 
 void C3Approximation::pop_coefficients(bool save_data)
 {
-  const UShortArray& key = sharedDataRep->activeKey;
+  const Pecos::ActiveKey& key = sharedDataRep->activeKey;
 
   // likely overkill, but multilevel roll up after increment modifies and
   // then restores active key
@@ -383,7 +383,7 @@ void C3Approximation::push_coefficients()
 {
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  const UShortArray& key = data_rep->activeKey;
+  const Pecos::ActiveKey& key = data_rep->activeKey;
 
   // synchronize expansionCoeff{s,Grads} and approxData
   active_model_key(key);
@@ -393,7 +393,7 @@ void C3Approximation::push_coefficients()
   prevC3FTData = active_ftd.copy(); // deep copy
 
   // retrieve a previously popped state
-  std::map<UShortArray, std::deque<C3FnTrainData> >::iterator prv_it
+  std::map<Pecos::ActiveKey, std::deque<C3FnTrainData> >::iterator prv_it
     = poppedLevelApprox.find(key);
   bool err_flag = false;
   if (prv_it == poppedLevelApprox.end())
@@ -431,7 +431,7 @@ void C3Approximation::combine_coefficients()
 
   // Option 1: adds x to y and overwrites y (I allocate x and y)
   combinedC3FTData.free_ft();
-  std::map<UShortArray, C3FnTrainData>::iterator it = levelApprox.begin();
+  std::map<Pecos::ActiveKey, C3FnTrainData>::iterator it = levelApprox.begin();
   struct FunctionTrain * y = function_train_copy(it->second.function_train());
   ++it;
   // Note: the FT rounding tolerance is relative and default (1.e-8) is too
@@ -488,7 +488,7 @@ void C3Approximation::combined_to_active_coefficients(bool clear_combined)
 
 void C3Approximation::clear_inactive_coefficients()
 {
-  std::map<UShortArray, C3FnTrainData>::iterator it = levelApprox.begin();
+  std::map<Pecos::ActiveKey, C3FnTrainData>::iterator it = levelApprox.begin();
   while (it != levelApprox.end())
     if (it == levApproxIter) // preserve active
       ++it;
@@ -511,7 +511,7 @@ void C3Approximation::link_multilevel_surrogate_data()
   case Pecos::DISTINCT_DISCREPANCY:  case Pecos::RECURSIVE_DISCREPANCY: {
     // push another SurrogateData instance for modSurrData
     // (allows consolidation of Approximation::push/pop operations)
-    const UShortArray& key = approxData.back().active_key();
+    const Pecos::ActiveKey& key = approxData.back().active_key();
     Pecos::SurrogateData mod_surr(key); // new instance
     approxData.push_back(mod_surr);
     // Note: {orig,mod}SurrDataIndex set to {0,1} in SharedC3ApproxData::
@@ -529,7 +529,7 @@ void C3Approximation::synchronize_surrogate_data()
 {
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  const UShortArray& active_key = data_rep->activeKey;
+  const Pecos::ActiveKey& active_key = data_rep->activeKey;
   if (active_key != approxData.active_key()) {
     PCerr << "Error: active key mismatch in C3Approximation::"
 	  << "synchronize_surrogate_data()." << std::endl;
@@ -565,11 +565,11 @@ void C3Approximation::synchronize_surrogate_data()
 
 void C3Approximation::
 generate_synthetic_data(Pecos::SurrogateData& surr_data,
-			const UShortArray& active_key, short combine_type)
+			const Pecos::ActiveKey& active_key, short combine_type)
 {
   // Modeled after Pecos::PolynomialApproximation::generate_synthetic_data()
 
-  UShortArray hf_key, lf0_key, lf_hat_key; // LF-hat in surplus case
+  Pecos::ActiveKey hf_key, lf0_key, lf_hat_key; // LF-hat in surplus case
   active_key.extract_keys(hf_key, lf_hat_key);
   lf0_key = surr_data.filtered_key(Pecos::SINGLETON_FILTER, 0); // *** Note: ActiveKey first sorts on group id
 
@@ -586,9 +586,9 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
 
   // extract all discrepancy data sets (which have expansions supporting
   // stored_{value,gradient} evaluations)
-  const std::map<UShortArray, Pecos::SDRArray>& discrep_resp_map =
+  const std::map<Pecos::ActiveKey, Pecos::SDRArray>& discrep_resp_map =
     surr_data.filtered_response_data_map(Pecos::RAW_WITH_REDUCTION_DATA_FILTER);
-  std::map<UShortArray, Pecos::SDRArray>::const_iterator cit;
+  std::map<Pecos::ActiveKey, Pecos::SDRArray>::const_iterator cit;
   size_t i, num_pts = hf_sdr_array.size();
   switch (combine_type) {
   case Pecos::MULT_COMBINE: {
@@ -962,7 +962,7 @@ const RealSymMatrix& C3Approximation::hessian(const Variables& vars)
 
 // used for stored contributions to synthetic data:
 Real C3Approximation::
-stored_value(const RealVector& c_vars, const UShortArray& key)
+stored_value(const RealVector& c_vars, const Pecos::ActiveKey& key)
 {
   return function_train_eval(levelApprox[key].function_train(),
 			     c_vars.values());
@@ -972,7 +972,7 @@ stored_value(const RealVector& c_vars, const UShortArray& key)
 /* TO DO: synthetic data can utilize *_nonbasis_variables() derivative cases,
    but code below differentiates the FT w.r.t. the basis vars
 const RealVector& C3Approximation::
-gradient(const Variables& vars, const UShortArray& key)
+gradient(const Variables& vars, const Pecos::ActiveKey& key)
 {
   check_function_gradient(key); // compute on demand
 
