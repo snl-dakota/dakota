@@ -76,7 +76,22 @@ void HierarchSurrModel::assign_default_keys()
   // default key data values, to be overridden at run time
   unsigned short id = 0, last_m = orderedModels.size() - 1;
   short r_type = Pecos::RAW_DATA;
-  if (multifidelity()) { // first and last model form (solution levels ignored)
+  if (multilevel_multifidelity()) { // first and last model form / soln levels
+    //size_t last_soln_lev = std::min(orderedModels[last_m].solution_levels(),
+    // 				      orderedModels[0].solution_levels());
+    //truthModelKey = Pecos::ActiveKey(id, r_type, last_m, last_soln_lev);
+    //surrModelKey  = Pecos::ActiveKey(id, r_type,      0, last_soln_lev);
+
+    // span both hierarchical dimensions by default
+    size_t truth_soln_lev = orderedModels[last_m].solution_levels();
+    truthModelKey = Pecos::ActiveKey(id, r_type, last_m, truth_soln_lev - 1);
+    surrModelKey  = Pecos::ActiveKey(id, r_type,      0, 0);
+  }
+  else if (multifidelity()) { // first and last model form (no soln levels)
+    // Note: for proper modeKeyBufferSize estimation, must maintain consistency
+    // with NonDExpansion::configure_{sequence,indices}() and key definition
+    // for NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX
+    // usage since this does not allocation a solution level array.
     size_t SZ_MAX = std::numeric_limits<size_t>::max(); 
     truthModelKey = Pecos::ActiveKey(id, r_type, last_m, SZ_MAX);
     surrModelKey  = Pecos::ActiveKey(id, r_type,      0, SZ_MAX);
