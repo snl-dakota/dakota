@@ -35,6 +35,13 @@ if (WIN32)
                      )
 endif()
 
+if (APPLE)
+  add_custom_command(TARGET jni_dakota_surrogates
+                     POST_BUILD
+                     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:Boost::serialization>" "$<TARGET_FILE_DIR:jni_dakota_surrogates>"
+                     )
+endif()
+
 # Java JNI bridge to C++ test
 
 set(jni_test_surrogates_src "${CMAKE_CURRENT_SOURCE_DIR}/gov.sandia.dakota.jni.test/src/gov/sandia/dakota/jni/surrogates/java")
