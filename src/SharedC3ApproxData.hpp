@@ -194,6 +194,9 @@ protected:
   /// n-D approximation options, augmenting one-D options
   MultiApproxOpts* multiApproxOpts;
 
+  /// option to scale response data prior to regression
+  bool respScaling;
+
   /// starting user specification for polynomial orders (from start_order
   /// scalar plus anisotropic dimension preference)
   UShortArray startOrders;
@@ -539,8 +542,9 @@ inline void SharedC3ApproxData::set_parameter(String var, size_t val)
 
 inline void SharedC3ApproxData::set_parameter(String var, bool val)
 {
-  if (var.compare("adapt_rank") == 0)           adaptRank  = val;
-  else if (var.compare("adapt_order") == 0)     adaptOrder = val;
+  if (var.compare("adapt_rank") == 0)             adaptRank  = val;
+  else if (var.compare("adapt_order") == 0)       adaptOrder = val;
+  else if (var.compare("response_scaling") == 0) respScaling = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 

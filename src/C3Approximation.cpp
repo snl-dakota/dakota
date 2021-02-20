@@ -231,6 +231,21 @@ void C3Approximation::build()
   const Pecos::SDRArray& sdr_array = approxData.response_data();
   size_t ndata = approxData.points();
 
+  // Manage scaling in a localized manner for now: scale the data here and then
+  // unscale the FT at bottom.  Scaling is important for FT regression with
+  // absolute tolerances, especially for small ML/MF discrepancy expansions.
+  Real fn, min_fn, max_fn, range; bool apply_scaling = false;
+  if (data_rep->respScaling && ndata > 1) { // scale resp to [0,1]
+    min_fn = max_fn = sdr_array[0].response_function();
+    for (i=1; i<ndata; ++i) {
+      fn = sdr_array[i].response_function();
+      if      (fn > max_fn) max_fn = fn;
+      else if (fn < min_fn) min_fn = fn;
+    }
+    range = max_fn - min_fn;
+    if (range > 0.) apply_scaling = true;
+  }
+
   // Training data for 1 QoI: transfer data from approxData to double* for C3
   double* xtrain = (double*)calloc(num_v*ndata, sizeof(double)); // vars
   double* ytrain = (double*)calloc(ndata,       sizeof(double)); // QoI
@@ -238,7 +253,8 @@ void C3Approximation::build()
     const RealVector& c_vars = sdv_array[i].continuous_variables();
     for (j=0; j<num_v; j++)
       xtrain[j + i*num_v] = c_vars[j];
-    ytrain[i] = sdr_array[i].response_function();
+    fn = sdr_array[i].response_function();
+    ytrain[i] = (apply_scaling) ? (fn - min_fn)/range : fn;
   }
 #ifdef DEBUG
   RealMatrix  in(Teuchos::View, xtrain, num_v, num_v, ndata);
@@ -300,9 +316,20 @@ void C3Approximation::build()
 
   // Build FT model (using full data set, as compared to best config identified
   // using partial fold data in CV)
-  struct FunctionTrain * ft
+  struct FunctionTrain * ft_soln
     = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
-  ftd.function_train(ft);
+
+  if (apply_scaling) { // unscale the FT expansion: fn = y * range + min
+    // emulate c3axpy with epsilon=0 (no rounding needed for scale + constant)
+    function_train_scale(ft_soln, range); // scaling applied in place
+    struct FunctionTrain * ft_offset
+      = function_train_constant(min_fn, data_rep->multiApproxOpts);
+    struct FunctionTrain * sum_ft = function_train_sum(ft_soln, ft_offset);
+    ftd.function_train(sum_ft); // store result
+    function_train_free(ft_soln);  function_train_free(ft_offset);
+  }
+  else
+    ftd.function_train(ft_soln); // store result
   // Important distinction among derivative cases:
   // > expansionCoeffGradFlag: expansions of derivs w.r.t. inactive/non-build/
   //   non-random vars (not yet supported, but would be managed here)
@@ -320,6 +347,7 @@ void C3Approximation::build()
   //  ftd.ft_hessian(ft1d_array_jacobian(ftg));
   //}
   if (data_rep->outputLevel > SILENT_OUTPUT) {
+    struct FunctionTrain * ft = ftd.function_train();
     Cout << "\nFunction train build() results:\n  Ranks ";
     if (data_rep->adaptRank)
       Cout << "(adapted with start = " << start_r << " kick = " << kick_r
