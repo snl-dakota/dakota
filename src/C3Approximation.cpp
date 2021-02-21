@@ -111,7 +111,7 @@ bool C3Approximation::max_rank_advancement_available()
       v, num_v = shared_data_rep->numVars;
   SizetVector ft_ranks;  recover_function_train_ranks(ft_ranks);
   for (v=1; v<num_v; ++v) // ranks len = num_v+1 with 1's @ ends
-    if (ft_ranks[v] == max_r) // recovery potentially limited by bound
+    if (ft_ranks[v] >= max_r) // recovery potentially limited by bound
       return true;
   return false;
 }
@@ -125,7 +125,7 @@ bool C3Approximation::max_order_advancement_available()
   const UShortArray& ft_ords = levApproxIter->second.ft_orders();
   size_t v, num_v = shared_data_rep->numVars;
   for (v=0; v<num_v; ++v) // ords len = num_v
-    if (ft_ords[v] == max_o) // recovery potentially limited by curr bnd
+    if (ft_ords[v] >= max_o) // recovery potentially limited by curr bnd
       return true;
   return false;
 }
@@ -184,9 +184,9 @@ void C3Approximation::build()
   // this should precede any solves, including the cross-validation loop(s)
   ft_regress_set_seed(ftr, data_rep->randomSeed);
 
-  size_t r_adapt = data_rep->adaptRank ? 1 : 0;
-  ft_regress_set_adapt(ftr, r_adapt);
-  if (r_adapt) {
+  size_t adapt_r = (data_rep->adaptRank && max_r > start_r) ? 1 : 0;
+  ft_regress_set_adapt(ftr, adapt_r);
+  if (adapt_r) {
     ft_regress_set_kickrank(ftr, kick_r); // default is 1
 
     // if not user-specified, use internal C3 default (in src/lib_superlearn/
@@ -267,8 +267,10 @@ void C3Approximation::build()
   // ---------------------------------------
   // > separate from adapt_rank inner loop: one/both/neither can be used
 
-  unsigned short start_o, kick_o, max_o;
-  if (data_rep->adaptOrder) { // CV for basis orders, with/without adapt_rank
+  unsigned short max_o = data_rep->max_order(), kick_o,
+    start_o = find_max(data_rep->start_orders()); // flatten dim_pref
+  bool adapt_o = (data_rep->adaptOrder && max_o > start_o);
+  if (adapt_o) { // CV for basis orders, with/without adapt_rank
 
     // initialize cross validation options
     size_t kfold = (ndata > 5) ? 5 : ndata; // ndata = max folds = leave-one-out
@@ -284,8 +286,7 @@ void C3Approximation::build()
     struct CVOptGrid * cvgrid = cv_opt_grid_init(1); // allocate a 1D grid
     cv_opt_grid_set_verbose(cvgrid, cvverbose);
     // define a scalar range of (isotropic) basis orders
-    start_o = find_max(data_rep->start_orders()); // flatten dim_pref
-    kick_o  = data_rep->kickOrder;  max_o = data_rep->max_order();
+    kick_o = data_rep->kickOrder;
     size_t num_opts = 1 + (max_o - start_o) / kick_o;
     SizetArray np_opts(num_opts);
     np_opts[0] = start_o + 1; // offset by 1 for nparams
@@ -318,18 +319,6 @@ void C3Approximation::build()
   // using partial fold data in CV)
   struct FunctionTrain * ft_soln
     = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
-
-  if (apply_scaling) { // unscale the FT expansion: fn = y * range + min
-    // emulate c3axpy with epsilon=0 (no rounding needed for scale + constant)
-    function_train_scale(ft_soln, range); // scaling applied in place
-    struct FunctionTrain * ft_offset
-      = function_train_constant(min_fn, data_rep->multiApproxOpts);
-    struct FunctionTrain * sum_ft = function_train_sum(ft_soln, ft_offset);
-    ftd.function_train(sum_ft); // store result
-    function_train_free(ft_soln);  function_train_free(ft_offset);
-  }
-  else
-    ftd.function_train(ft_soln); // store result
   // Important distinction among derivative cases:
   // > expansionCoeffGradFlag: expansions of derivs w.r.t. inactive/non-build/
   //   non-random vars (not yet supported, but would be managed here)
@@ -342,20 +331,19 @@ void C3Approximation::build()
   //      on flags / potential for future deriv evals, compute derivative
   //      expansions on demand using helper fns within evaluators
   //if (...supportDerivEvals...) {
-  //  struct FT1DArray * ftg = function_train_gradient(ft);
-  //  ftd.ft_gradient(ftg);
-  //  ftd.ft_hessian(ft1d_array_jacobian(ftg));
+  //  struct FT1DArray * ftg_soln = function_train_gradient(ft_soln);
+  //  ftd.ft_gradient(ftg_soln);
+  //  ftd.ft_hessian(ft1d_array_jacobian(ftg_soln));
   //}
   if (data_rep->outputLevel > SILENT_OUTPUT) {
-    struct FunctionTrain * ft = ftd.function_train();
     Cout << "\nFunction train build() results:\n  Ranks ";
-    if (data_rep->adaptRank)
+    if (adapt_r)
       Cout << "(adapted with start = " << start_r << " kick = " << kick_r
 	   << " max = " << max_r << "):\n";
     else Cout << "(non-adapted):\n";
-    write_data(Cout, function_train_get_ranks(ft), num_v+1);
+    write_data(Cout, function_train_get_ranks(ft_soln), num_v+1);
     Cout << "  Polynomial order ";
-    if (data_rep->adaptOrder)
+    if (adapt_o)
       Cout << "(adapted with start = " << start_o << " kick = " << kick_o
 	   << " max = " << max_o << "):\n";
     else Cout << "(non-adapted):\n";
@@ -363,9 +351,26 @@ void C3Approximation::build()
     for (i=0; i<num_v; ++i)
       Cout << "                     " << std::setw(write_precision+7)
 	   << one_approx_opts_get_nparams(a_opts[i]) - 1 << '\n';
-    Cout << "  C3 regression size:  " << function_train_get_nparams(ft)
-	 << std::endl;
+    Cout << "  C3 regression size:  " << function_train_get_nparams(ft_soln)
+	 << "  Response scaling:  "   << apply_scaling << std::endl;
   }
+
+  // NOTE: function_train_sum will increment the rank by 1 which can interfere
+  // with the adaptation logic, but since the [start,max] range is reinitialized
+  // each time, I believe this is Ok as a final step (any downstream MF roll-up
+  // should not be impacted).
+  if (apply_scaling) { // unscale the FT expansion: fn = y * range + min
+    // emulate c3axpy with epsilon=0 (no rounding needed for scale + constant)
+    function_train_scale(ft_soln, range); // scaling applied in place
+    struct FunctionTrain * ft_offset
+      = function_train_constant(min_fn, data_rep->multiApproxOpts);
+    // this operation will increase the FT rank by 1:
+    struct FunctionTrain * sum_ft = function_train_sum(ft_soln, ft_offset);
+    ftd.function_train(sum_ft); // store result
+    function_train_free(ft_soln);  function_train_free(ft_offset);
+  }
+  else
+    ftd.function_train(ft_soln); // store result
 
   // free approximation stuff
   free(xtrain);          xtrain    = NULL;
