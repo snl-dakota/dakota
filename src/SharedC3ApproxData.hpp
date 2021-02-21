@@ -124,6 +124,8 @@ public:
   /// return active maximum value for expansion rank (mutable)
   size_t& max_rank();
 
+  void assign_start_ranks(SizetVector& start_ranks) const;
+
   // return c3AdvancementType
   //short advancement_type() const;
 
@@ -327,6 +329,17 @@ inline void SharedC3ApproxData::active_model_key(const Pecos::ActiveKey& key)
 
   // ensure approximation rebuild, when needed, in absence of sample increment
   if (form) formUpdated[key] = true;
+}
+
+
+inline void SharedC3ApproxData::
+assign_start_ranks(SizetVector& start_ranks) const
+{
+  size_t v, num_vp1 = numVars + 1, start_r = start_rank();
+  if (start_ranks.length() != num_vp1)
+    start_ranks.sizeUninitialized(num_vp1);
+  start_ranks[0] = start_ranks[numVars] = 1;
+  for (v=1; v<numVars; ++v) start_ranks[v] = start_r;
 }
 
 

@@ -74,8 +74,8 @@ public:
   size_t regression_size(const SizetVector& ranks,  size_t max_rank,
 			 const UShortArray& orders, unsigned short max_order);
 
-  void recover_function_train_ranks(SizetVector& ft_ranks);
-  void recover_function_train_orders(UShortArray& ft_orders);
+  void recover_function_train_ranks(struct FunctionTrain * ft);
+  void recover_function_train_orders(const std::vector<OneApproxOpts*>& a_opts);
 
   //size_t average_rank();
   //size_t maximum_rank();

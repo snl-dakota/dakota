@@ -43,34 +43,37 @@ C3Approximation::~C3Approximation()
 { } // FT memory deallocations managed by C3FnTrainData
 
 
-void C3Approximation::recover_function_train_ranks(SizetVector& ft_ranks)
+void C3Approximation::recover_function_train_ranks(struct FunctionTrain * ft)
 {
   // returns the recovered ranks, reflecting the latest CV if adapt_rank
 
   // Note: this recovery uses active levApproxIter and can be used anytime
 
-  ft_ranks = SizetVector(Teuchos::View,
-    function_train_get_ranks(levApproxIter->second.function_train()),
-    sharedDataRep->numVars + 1);
+  SizetVector ft_ranks(Teuchos::Copy, function_train_get_ranks(ft),
+		       sharedDataRep->numVars + 1);
+
+  levApproxIter->second.recovered_ranks(ft_ranks);
 }
 
 
 /** returns the recovered orders, reflecting the latest CV if adapt_order */
-void C3Approximation::recover_function_train_orders(UShortArray& ft_orders)
+void C3Approximation::
+recover_function_train_orders(const std::vector<OneApproxOpts*>& a_opts)
 {
   // returns the recovered orders, reflecting the latest CV if adapt_order
 
   // Note: this recovery is not keyed and must transfer results from
-  // one_approx_opts_get_nparams() to keyed C3FnTrainData::recoveredBasisOrders
+  // one_approx_opts_get_nparams() to keyed C3FnTrainData::recoveredOrders
   // within build() immediately following the regression solve
 
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   size_t v, num_v = data_rep->numVars;
-  ft_orders.resize(num_v);
-  std::vector<OneApproxOpts*>& a_opts = data_rep->oneApproxOpts;
+  UShortArray ft_orders(num_v);
   for (v=0; v<num_v; ++v)
     ft_orders[v] = one_approx_opts_get_nparams(a_opts[v]) - 1;
+
+  levApproxIter->second.recovered_orders(ft_orders);
 }
 
 
@@ -109,7 +112,7 @@ bool C3Approximation::max_rank_advancement_available()
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   size_t max_r = shared_data_rep->max_rank(), // adapted value
       v, num_v = shared_data_rep->numVars;
-  SizetVector ft_ranks;  recover_function_train_ranks(ft_ranks);
+  const SizetVector& ft_ranks = levApproxIter->second.recovered_ranks();
   for (v=1; v<num_v; ++v) // ranks len = num_v+1 with 1's @ ends
     if (ft_ranks[v] >= max_r) // recovery potentially limited by bound
       return true;
@@ -122,7 +125,7 @@ bool C3Approximation::max_order_advancement_available()
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   unsigned short max_o = shared_data_rep->max_order(); // adapted value
-  const UShortArray& ft_ords = levApproxIter->second.ft_orders();
+  const UShortArray& ft_ords = levApproxIter->second.recovered_orders();
   size_t v, num_v = shared_data_rep->numVars;
   for (v=0; v<num_v; ++v) // ords len = num_v
     if (ft_ords[v] >= max_o) // recovery potentially limited by curr bnd
@@ -304,7 +307,7 @@ void C3Approximation::build()
     // > Note: making this update conditional on adaptOrder avoids a copy in
     //   the non-adaptive case, but induces the need for conditionals when
     //   there is need to retrieve basis order data.
-    recover_function_train_orders(levApproxIter->second.ft_orders());
+    //recover_function_train_orders(data_rep->oneApproxOpts);
 
     // free the cross validation grid and cross validator
     cv_opt_grid_free(cvgrid); cross_validate_free(cv);
@@ -317,8 +320,17 @@ void C3Approximation::build()
 
   // Build FT model (using full data set, as compared to best config identified
   // using partial fold data in CV)
+  // *** TO DO: how does adapt_r interact?  Are we cross-validating across ranks
+  //     again?  Most consistent approach is to use nested rank+order CV above
+  //     and then turn both off here.  If no adapt_o, then leave adapt_r on
+  //     (where it must still perform the final fit for full data set after CV)
+  //if (adapt_o && adapt_r) ft_regress_set_adapt(ftr, 0); // *** just use adapted values, don't repeat adapt rank again for selected order
   struct FunctionTrain * ft_soln
     = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
+  // cache C3FTD recovered{Ranks,Orders} for regression_size()
+  if (data_rep->adaptRank)  recover_function_train_ranks(ft_soln);
+  if (data_rep->adaptOrder)
+    recover_function_train_orders(data_rep->oneApproxOpts);
   // Important distinction among derivative cases:
   // > expansionCoeffGradFlag: expansions of derivs w.r.t. inactive/non-build/
   //   non-random vars (not yet supported, but would be managed here)
@@ -355,10 +367,24 @@ void C3Approximation::build()
 	 << "  Response scaling:  "   << apply_scaling << std::endl;
   }
 
+  // Note: could set c3Max{Rank,Order}Advance after current build instead of
+  // before next build (using cached ranks,orders) if advancement_available()
+  // was the only concern.  However, regression_size() is another requirement
+  // prior to next build, so just cache the relevant data rather than a
+  // potentially growing list of results from that data.
+  //if (shared_data_rep->c3AdvancementType & MAX_RANK_ADVANCEMENT) {
+  //  if (test_ranks_without_requiring_cached_data)
+  //    shared_data_rep->max_rank_advancement(true);
+  //}
+  //if (shared_data_rep->c3AdvancementType & MAX_ORDER_ADVANCEMENT) {
+  //  if (test_orders_without_requiring_cached_data)
+  //    shared_data_rep->max_order_advancement(true);
+  //}
+
   // NOTE: function_train_sum will increment the rank by 1 which can interfere
   // with the adaptation logic, but since the [start,max] range is reinitialized
-  // each time, I believe this is Ok as a final step (any downstream MF roll-up
-  // should not be impacted).
+  // each time, this may be Ok as a final step (roll-ups are not impacted, but
+  // posthumous rank checks would be).
   if (apply_scaling) { // unscale the FT expansion: fn = y * range + min
     // emulate c3axpy with epsilon=0 (no rounding needed for scale + constant)
     function_train_scale(ft_soln, range); // scaling applied in place
@@ -371,6 +397,9 @@ void C3Approximation::build()
   }
   else
     ftd.function_train(ft_soln); // store result
+
+  // store the current scaling values
+  //ftd.scaling_factors(range, min_fn); // multiplicative,additive factors
 
   // free approximation stuff
   free(xtrain);          xtrain    = NULL;
@@ -1036,28 +1065,33 @@ size_t C3Approximation::regression_size()
   unsigned short max_o = data_rep->max_order();
   switch (data_rep->c3AdvancementType) {
   case START_RANK_ADVANCEMENT: { // use start ranks + recovered orders
-    size_t v, num_v = data_rep->numVars, start_r = data_rep->start_rank();
-    SizetVector start_ranks(num_v + 1, false);
-    start_ranks[0] = start_ranks[num_v] = 1;
-    for (v=1; v<num_v; ++v) start_ranks[v] = start_r;
-    const UShortArray& ft_orders = (data_rep->adaptOrder) ?
-      levApproxIter->second.ft_orders() : data_rep->start_orders();
-    return regression_size(start_r, max_r, ft_orders, max_o);  break;
+    SizetVector start_r;  data_rep->assign_start_ranks(start_r);
+    const UShortArray& ft_o = (data_rep->adaptOrder) ?
+      levApproxIter->second.recovered_orders() : data_rep->start_orders();
+    return regression_size(start_r, max_r, ft_o, max_o);  break;
   }
   case START_ORDER_ADVANCEMENT: { // use start orders + recovered ranks
     const UShortArray& start_o = data_rep->start_orders(); // anisotropic is OK
-    SizetVector ft_ranks; recover_function_train_ranks(ft_ranks);
-    return regression_size(ft_ranks, max_r, start_o, max_o);  break;
+    if (data_rep->adaptRank)
+      return regression_size(levApproxIter->second.recovered_ranks(),
+			     max_r, start_o, max_o);
+    else {
+      SizetVector start_r;  data_rep->assign_start_ranks(start_r);
+      return regression_size(start_r, max_r, start_o, max_o);
+    }
+    break;
   }
   default: { // use recovered orders + recovered ranks
-
-    // Simpler approach (not used to retain consistency with above)
-    //return function_train_get_nparams(ftd.function_train());
-
-    SizetVector ft_ranks; recover_function_train_ranks(ft_ranks);
-    const UShortArray& ft_orders = (data_rep->adaptOrder) ?
-      levApproxIter->second.ft_orders() : data_rep->start_orders();
-    return regression_size(ft_ranks, max_r, ft_orders, max_o);  break;
+    const UShortArray& ft_o = (data_rep->adaptOrder) ?
+      levApproxIter->second.recovered_orders() : data_rep->start_orders();
+    if (data_rep->adaptRank)
+      return regression_size(levApproxIter->second.recovered_ranks(),
+			     max_r, ft_o, max_o);
+    else {
+      SizetVector start_r;  data_rep->assign_start_ranks(start_r);
+      return regression_size(start_r, max_r, ft_o, max_o);
+    }
+    break;
   }
   }
 }
