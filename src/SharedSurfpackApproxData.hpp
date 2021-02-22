@@ -98,6 +98,14 @@ private:
   /// variables into *pre-sized* array
   template<typename RealArrayType>
   void vars_to_realarray(const Variables& vars, RealArrayType& ra);
+  /// aggregate active {continuous,discrete int,discrete real}
+  /// variables into *pre-sized* array
+  template<typename RealArrayType>
+  void active_vars_to_realarray(const Variables& vars, RealArrayType& ra);
+  /// aggregate all {continuous,discrete int,discrete real}
+  /// variables into *pre-sized* array
+  template<typename RealArrayType>
+  void all_vars_to_realarray(const Variables& vars, RealArrayType& ra);
 
   /// validate metric names and cross validation options
   void validate_metrics(const std::set<std::string>& allowed_metrics);
@@ -173,17 +181,13 @@ template<typename RealArrayType>
 void SharedSurfpackApproxData::
 vars_to_realarray(const Variables& vars, RealArrayType& ra)
 {
-  // passed array must be sized due to length/size differences
+  // passed array ra must be sized due to length/size differences
 
   // check incoming vars for correct length (active or all views)
   if (vars.cv() + vars.div() + vars.drv() == numVars)
-    merge_variable_arrays(vars.continuous_variables(),
-			  vars.discrete_int_variables(),
-			  vars.discrete_real_variables(), ra);
+    active_vars_to_realarray(vars, ra);
   else if (vars.acv() + vars.adiv() + vars.adrv() == numVars)
-    merge_variable_arrays(vars.all_continuous_variables(),
-			  vars.all_discrete_int_variables(),
-			  vars.all_discrete_real_variables(), ra);
+    all_vars_to_realarray(vars, ra);
   else {
     Cerr << "Error: bad parameter set length in SharedSurfpackApproxData::"
 	 << "vars_to_realarray()." << std::endl;
@@ -191,6 +195,27 @@ vars_to_realarray(const Variables& vars, RealArrayType& ra)
   }
 }
 
+
+template<typename RealArrayType>
+void SharedSurfpackApproxData::
+active_vars_to_realarray(const Variables& vars, RealArrayType& ra)
+{
+  // passed array ra must be sized due to length/size differences
+  merge_variable_arrays(vars.continuous_variables(),
+			vars.discrete_int_variables(),
+			vars.discrete_real_variables(), ra);
+}
+
+
+template<typename RealArrayType>
+void SharedSurfpackApproxData::
+all_vars_to_realarray(const Variables& vars, RealArrayType& ra)
+{
+  // passed array ra must be sized due to length/size differences
+  merge_variable_arrays(vars.all_continuous_variables(),
+			vars.all_discrete_int_variables(),
+			vars.all_discrete_real_variables(), ra);
+}
 
 } // namespace Dakota
 #endif
