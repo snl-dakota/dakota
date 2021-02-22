@@ -82,6 +82,15 @@ protected:
   /// construct-time only import of serialized surrogate
   void import_model(const ProblemDescDB& problem_db);
 
+  /// validate imported labels and initialize map if needed
+  void map_variable_labels(const Variables& vars);
+
+  /// extract active or all view as vector, mapping if needed for import
+  RealVector map_eval_vars(const Variables& vars);
+
+  /// when importing, take all view of vars and permute as needed
+  RealVector imported_eval_vars(const Variables& vars);
+
   /// export the model to disk
   void
   export_model(const StringArray& var_labels, const String& fn_label,
@@ -101,6 +110,13 @@ protected:
 
   /// Advanced configurations options filename
   String advanced_options_file;
+
+  /// whether model serialized in from disk
+  bool modelIsImported;
+
+  /// If populated, reorder variables when evaluating surrogate
+  /// these are indices into the Model's vars so approx_eval[i] = [model_vars[ind[i]]]
+  std::vector<size_t> varsMapIndices;
 
 };
 

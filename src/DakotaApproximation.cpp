@@ -1082,6 +1082,18 @@ void Approximation::clear_computed_bits()
 }
 
 
+void Approximation::map_variable_labels(const Variables& dfsm_vars)
+{
+  if (approxRep)
+    approxRep->map_variable_labels(dfsm_vars);
+  else {
+    Cerr << "Error: Approximation::map_variable_labels() called on unsupported "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
 void Approximation::
 add(const Variables& vars, bool anchor_flag, bool deep_copy,
     size_t key_index)

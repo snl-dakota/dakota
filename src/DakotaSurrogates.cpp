@@ -193,19 +193,46 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
 
 Real SurrogatesBaseApprox::value(const Variables& vars)
 {
-  RealVector x_rv(sharedDataRep->numVars);
-  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-    vars_to_realarray(vars, x_rv);
-  return value(x_rv);
+  return value(map_eval_vars(vars));
 }
 
 
 const RealVector& SurrogatesBaseApprox::gradient(const Variables& vars)
 {
-  RealVector x_rv(sharedDataRep->numVars);
+  return gradient(map_eval_vars(vars));
+}
+
+
+RealVector SurrogatesBaseApprox::map_eval_vars(const Variables& vars)
+{
+  if (modelIsImported)
+    return imported_eval_vars(vars);
+  else {
+    // active or all variables
+    RealVector surr_vars(sharedDataRep->numVars);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      vars_to_realarray(vars, surr_vars);
+    return surr_vars;
+  }
+}
+
+
+RealVector SurrogatesBaseApprox::imported_eval_vars(const Variables& vars)
+{
+  RealVector all_vars(vars.acv() + vars.adiv() + vars.adrv());
   std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-    vars_to_realarray(vars, x_rv);
-  return gradient(x_rv);
+    all_vars_to_realarray(vars, all_vars);
+
+  if (varsMapIndices.empty()) {
+    return all_vars;
+  }
+  else {
+    RealVector eval_vars(model->variable_labels().size());
+    assert(varsMapIndices.size() == eval_vars.length());
+    for (size_t i=0; i<varsMapIndices.size(); ++i)
+      eval_vars[i] = all_vars[varsMapIndices[i]];
+    return eval_vars;
+  }
 }
 
 
@@ -218,9 +245,7 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
     abort_handler(-1);
   }
 
-  const int num_vars = c_vars.length();
-  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
-
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), c_vars.length());
   return model->value(eval_point)(0);
 }
     
@@ -269,7 +294,61 @@ import_model(const ProblemDescDB& problem_db)
 	   << "\nhas response label '" << imported_label << "'; expected '"
 	   << approxLabel << "'." << std::endl;
   }
+
+  modelIsImported = true;
+  varsMapIndices.clear();
 }
+
+
+void
+SurrogatesBaseApprox::map_variable_labels(const Variables& dfsm_vars)
+{
+  // When importing, always map from all variables to the
+  // subset needed by the surrogate...
+  // the surrogate was built over active or all cont, int, real
+  const auto& cv_labels = dfsm_vars.all_continuous_variable_labels();
+  StringArray all_labels(cv_labels.begin(), cv_labels.end());
+  const auto& div_labels = dfsm_vars.all_discrete_int_variable_labels();
+  all_labels.insert(all_labels.end(), div_labels.begin(), div_labels.end());
+  const auto& drv_labels = dfsm_vars.all_discrete_real_variable_labels();
+  all_labels.insert(all_labels.end(), drv_labels.begin(), drv_labels.end());
+
+  const auto& approx_labels = model->variable_labels();
+
+  bool vars_equal = (all_labels == approx_labels);
+  if (!vars_equal) {
+    // each approx model var must be in the wrapping model's var set
+    varsMapIndices.clear();
+    varsMapIndices.reserve(approx_labels.size());
+    StringArray missing_labels;
+    for (const auto& approx_label : approx_labels) {
+      size_t ind = find_index(all_labels, approx_label);
+      if (ind == _NPOS)
+	missing_labels.push_back(approx_label);
+      else
+	varsMapIndices.push_back(ind);
+    }
+    if (!missing_labels.empty()) {
+      Cerr << "\nError: Imported surrogate includes variable labels\n"
+	   << missing_labels << "\nnot present in model's variables:\n"
+	   << all_labels << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
+
+    Cout << "Info: mapping model's variables to imported surrogate."
+	 << std::endl;
+#if 0
+      Cout << "Model all_vars by domain type\n" << all_labels << std::endl;
+      Cout << "Indices s.t. surr_vars[i] = all_vars[index[i]]\n"
+	   << varsMapIndices << std::endl;
+      Cout << "Imported surrogate labels\n" << approx_labels << std::endl;
+      Cout << "Model all_vars mapped to surrogate\n";
+      for (size_t i=0; i<varsMapIndices.size(); ++i)
+	Cout << all_labels[varsMapIndices[i]] << "\n";
+#endif
+  }
+}
+
 
 void SurrogatesBaseApprox::
 export_model(const Variables& vars, const String& fn_label,
