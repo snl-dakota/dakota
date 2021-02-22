@@ -66,7 +66,8 @@ SurrogatesPolyApprox::build()
 {
   // clear any imported model mapping
   modelIsImported = false;
-  varsMapIndices.clear();
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    varsMapIndices.clear();
 
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp);

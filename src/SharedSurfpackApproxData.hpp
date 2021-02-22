@@ -113,6 +113,20 @@ private:
   /// compute number of folds from numFols/percentFold
   unsigned compute_folds();
 
+
+  /// validate imported labels and initialize map if needed
+  void map_variable_labels(const Variables& dfsm_vars,
+			   const StringArray& approx_labels);
+
+  /// when importing, take all view of vars and permute as needed
+  template<typename RealArrayType>
+  RealArrayType imported_eval_vars(const Variables& vars);
+
+  /// If populated, reorder variables when evaluating surrogate
+  /// these are indices into the Model's vars so approx_eval[i] = [model_vars[ind[i]]]
+  std::vector<size_t> varsMapIndices;
+
+
   //
   //- Heading: Data
   //
@@ -216,6 +230,26 @@ all_vars_to_realarray(const Variables& vars, RealArrayType& ra)
 			vars.all_discrete_int_variables(),
 			vars.all_discrete_real_variables(), ra);
 }
+
+
+template<typename RealArrayType>
+RealArrayType
+SharedSurfpackApproxData::imported_eval_vars(const Variables& vars)
+{
+  RealArrayType all_vars(vars.acv() + vars.adiv() + vars.adrv());
+  all_vars_to_realarray(vars, all_vars);
+
+  if (varsMapIndices.empty()) {
+    return all_vars;
+  }
+  else {
+    RealArrayType eval_vars(varsMapIndices.size());
+    for (size_t i=0; i<varsMapIndices.size(); ++i)
+      eval_vars[i] = all_vars[varsMapIndices[i]];
+    return eval_vars;
+  }
+}
+
 
 } // namespace Dakota
 #endif
