@@ -18,7 +18,7 @@ method,
     # batch_size = 6                    #s1
       # exploration = 2                 #s1
   nonblocking synchronization
-  max_iteration = 15
+  max_iterations = 15
 
 variables,
     continuous_design = 2
