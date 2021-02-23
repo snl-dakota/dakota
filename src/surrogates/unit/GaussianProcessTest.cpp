@@ -195,6 +195,40 @@ void get_gp_test_arrays(GaussianProcess& gp, const MatrixXd& eval_pts,
   cov = gp.covariance(eval_pts);
 }
 
+void get_1D_gp_golds_matern(VectorXd& gold_mean, VectorXd& gold_std_dev,
+                            const std::string& kernel_type) {
+  const int num_pts = 6;
+  gold_mean.resize(num_pts);
+  gold_std_dev.resize(num_pts);
+
+  if (kernel_type == "Matern 3/2") {
+    gold_mean << -0.11936208, -0.23318749, -0.03334298, 0.02120401, -0.12067952,
+        -0.0974504;
+    gold_std_dev << 0.03982259, 0.03521074, 0.00304295, 0.03697039, 0.00904159,
+        0.11075583;
+  } else if (kernel_type == "Matern 5/2") {
+    gold_mean << -0.10214858, -0.25591925, -0.03325482, 0.02288785, -0.12158236,
+        -0.10886755;
+    gold_std_dev << 0.0333359, 0.01982311, 0.0007937, 0.02341843, 0.0070827,
+        0.11714938;
+  }
+}
+
+void get_2D_gp_golds_matern(VectorXd& gold_mean, VectorXd& gold_std_dev,
+                            const std::string& kernel_type) {
+  const int num_pts = 4;
+  gold_mean.resize(num_pts);
+  gold_std_dev.resize(num_pts);
+
+  if (kernel_type == "Matern 3/2") {
+    gold_mean << 0.78372109, 0.84579884, 0.74428938, 0.75949557;
+    gold_std_dev << 0.02762492, 0.04026672, 0.02225784, 0.02801156;
+  } else if (kernel_type == "Matern 5/2") {
+    gold_mean << 0.78055266, 0.84403835, 0.74442646, 0.74825591;
+    gold_std_dev << 0.01220025, 0.02180271, 0.00996856, 0.01210915;
+  }
+}
+
 TEUCHOS_UNIT_TEST(surrogates, 1D_gp_constructor_types) {
   bool print_output = false;
 
@@ -343,9 +377,7 @@ TEUCHOS_UNIT_TEST(surrogates, 1D_gp_with_trend_values_and_derivs) {
   }
 
   double grad_drop, hessian_drop;
-
   grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
-
   hessian_drop = log10(hessian_fd_error(0, 0) / hessian_fd_error.minCoeff());
 
   TEST_ASSERT(grad_drop > 7.0)
@@ -500,7 +532,7 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
     TEST_ASSERT(grad_drop(i) > 6.0);
     TEST_ASSERT(hessian_drop(i) > 3.0);
 
-    if (i == 2) {
+    if (i == 1) {
       i += 1;
       hessian_drop(i) = log10(hessian_fd_error.col(i)(0) /
                               hessian_fd_error.col(i).minCoeff());
@@ -541,6 +573,293 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
     TEST_ASSERT(
         relative_allclose(std_dev_load, gold_std_dev, 100 * rel_float_tol));
     TEST_ASSERT(relative_allclose(cov_load, gold_cov, 100 * rel_float_tol));
+  }
+}
+
+TEUCHOS_UNIT_TEST(surrogates, matern_32_gp) {
+  bool print_output = false;
+
+  const std::string kernel_type = "Matern 3/2";
+
+  MatrixXd samples, cov, length_scale_bounds;
+  VectorXd response, eval_pts;
+  VectorXd sigma_bounds, mean, gold_mean, std_dev, gold_std_dev;
+
+  /* 1D GP tests */
+
+  /* build and eval data */
+  get_1D_gp_test_data(samples, response, eval_pts);
+
+  /* bound constraints */
+  get_gp_hyperparameter_bounds(1, sigma_bounds, length_scale_bounds);
+
+  /* configuration options */
+  ParameterList param_list =
+      get_gp_config_options(sigma_bounds, length_scale_bounds);
+
+  /* gold data for test */
+  get_1D_gp_golds_matern(gold_mean, gold_std_dev, kernel_type);
+
+  /* relative tolerance for floating point comparisons */
+  const double rel_float_tol = 1.0e-4;
+
+  GaussianProcess gp_1D(param_list);
+
+  ParameterList current_opts;
+  gp_1D.get_options(current_opts);
+  current_opts.set("kernel type", kernel_type);
+  current_opts.sublist("Nugget").set("fixed nugget", 0.0);
+  param_list.set("num restarts", 10);
+  gp_1D.set_options(current_opts);
+
+  gp_1D.build(samples, response);
+
+  get_gp_test_arrays(gp_1D, eval_pts, mean, std_dev, cov);
+
+  if (print_output) {
+    std::cout << "\n\n1D Matern 3/2 GP mean:\n";
+    std::cout << mean << "\n";
+    std::cout << "\n1D Matern 3/2 GP standard deviation:\n";
+    std::cout << std_dev << "\n";
+  }
+
+  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
+  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
+
+  /* compute gradient of GP and check */
+  /* The Matern 3/2 GP produces C^1-smooth functions and therefore
+   * does not have a Hessian */
+  const int eval_point_index = 0;
+  auto eval_point = eval_pts.row(eval_point_index);
+  MatrixXd grad;
+
+  grad = gp_1D.gradient(eval_point);
+
+  MatrixXd grad_fd_error;
+  fd_check_gradient(gp_1D, eval_point, grad_fd_error);
+
+  if (print_output) {
+    std::cout << "\n1D Matern 3/2 GP gradient:\n";
+    std::cout << grad;
+
+    std::cout << "\n1D Matern 3/2 GP fd error:\n";
+    std::cout << grad_fd_error << "\n";
+  }
+
+  double grad_drop;
+  grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
+  TEST_ASSERT(grad_drop > 6.0)
+
+  /* 2D GP tests */
+
+  /* build and eval data */
+  MatrixXd eval_pts_2D;
+  get_2D_gp_test_data(samples, response, eval_pts_2D);
+
+  /* bound constraints */
+  get_gp_hyperparameter_bounds(2, sigma_bounds, length_scale_bounds);
+
+  /* configuration options */
+  param_list = get_gp_config_options(sigma_bounds, length_scale_bounds);
+
+  /* gold data for test */
+  get_2D_gp_golds_matern(gold_mean, gold_std_dev, kernel_type);
+
+  GaussianProcess gp_2D(param_list);
+
+  gp_2D.get_options(current_opts);
+  current_opts.set("kernel type", kernel_type);
+  current_opts.sublist("Nugget").set("fixed nugget", 0.0);
+  param_list.set("num restarts", 20);
+  gp_2D.set_options(current_opts);
+
+  gp_2D.build(samples, response);
+
+  get_gp_test_arrays(gp_2D, eval_pts_2D, mean, std_dev, cov);
+
+  if (print_output) {
+    std::cout << "\n\n2D Matern 3/2 GP mean:\n";
+    std::cout << mean << "\n";
+    std::cout << "\n2D Matern 3/2 GP standard deviation:\n";
+    std::cout << std_dev << "\n";
+  }
+
+  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
+  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+
+  /* compute derivatives of GP and check */
+  const int eval_point_index_2D = 1;
+  auto eval_point_2D = eval_pts_2D.row(eval_point_index_2D);
+
+  fd_check_gradient(gp_2D, eval_point_2D, grad_fd_error);
+
+  if (print_output) {
+    std::cout << "\n2D Matern 3/2 GP gradient fd error:\n";
+    std::cout << grad_fd_error << "\n";
+  }
+
+  VectorXd grad_drop_2D(2);  // dx, dy
+
+  for (int i = 0; i < 2; i++) {
+    grad_drop_2D(i) =
+        log10(grad_fd_error.col(i)(0) / grad_fd_error.col(i).minCoeff());
+    TEST_ASSERT(grad_drop_2D(i) > 6.0);
+  }
+}
+
+TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
+  bool print_output = false;
+
+  const std::string kernel_type = "Matern 5/2";
+
+  MatrixXd samples, cov, length_scale_bounds;
+  VectorXd response, eval_pts;
+  VectorXd sigma_bounds, mean, gold_mean, std_dev, gold_std_dev;
+
+  /* 1D GP tests */
+
+  /* build and eval data */
+  get_1D_gp_test_data(samples, response, eval_pts);
+
+  /* bound constraints */
+  get_gp_hyperparameter_bounds(1, sigma_bounds, length_scale_bounds);
+
+  /* configuration options */
+  ParameterList param_list =
+      get_gp_config_options(sigma_bounds, length_scale_bounds);
+
+  /* gold data for test */
+  get_1D_gp_golds_matern(gold_mean, gold_std_dev, kernel_type);
+
+  /* relative tolerance for floating point comparisons */
+  const double rel_float_tol = 1.0e-4;
+
+  GaussianProcess gp_1D(param_list);
+
+  ParameterList current_opts;
+  gp_1D.get_options(current_opts);
+  current_opts.set("kernel type", kernel_type);
+  current_opts.sublist("Nugget").set("fixed nugget", 0.0);
+  param_list.set("num restarts", 10);
+  gp_1D.set_options(current_opts);
+
+  gp_1D.build(samples, response);
+
+  get_gp_test_arrays(gp_1D, eval_pts, mean, std_dev, cov);
+
+  if (print_output) {
+    std::cout << "\n\n1D Matern 5/2 GP mean:\n";
+    std::cout << mean << "\n";
+    std::cout << "\n1D Matern 5/2 GP standard deviation:\n";
+    std::cout << std_dev << "\n";
+  }
+
+  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
+  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
+
+  /* compute derivatives of GP with trend and check */
+  const int eval_point_index = 0;
+  auto eval_point = eval_pts.row(eval_point_index);
+  MatrixXd grad, hessian;
+
+  grad = gp_1D.gradient(eval_point);
+  hessian = gp_1D.hessian(eval_point);
+
+  MatrixXd grad_fd_error, hessian_fd_error;
+  fd_check_gradient(gp_1D, eval_point, grad_fd_error);
+  fd_check_hessian(gp_1D, eval_point, hessian_fd_error);
+
+  if (print_output) {
+    std::cout << "\n1D Matern 5/2 GP gradient:\n";
+    std::cout << grad;
+
+    std::cout << "\n1D Matern 5/2 GP hessian:\n";
+    std::cout << hessian;
+
+    std::cout << "\n1D Matern 5/2 GP gradient fd error:\n";
+    std::cout << grad_fd_error << "\n";
+
+    std::cout << "\n1D Matern 5/2 GP hessian fd error:\n";
+    std::cout << hessian_fd_error << "\n";
+  }
+
+  double grad_drop, hessian_drop;
+  grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
+  hessian_drop = log10(hessian_fd_error(0, 0) / hessian_fd_error.minCoeff());
+
+  TEST_ASSERT(grad_drop > 7.0)
+  TEST_ASSERT(hessian_drop > 3.0)
+
+  /* 2D GP tests */
+
+  /* build and eval data */
+  MatrixXd eval_pts_2D;
+  get_2D_gp_test_data(samples, response, eval_pts_2D);
+
+  /* bound constraints */
+  get_gp_hyperparameter_bounds(2, sigma_bounds, length_scale_bounds);
+
+  /* configuration options */
+  param_list = get_gp_config_options(sigma_bounds, length_scale_bounds);
+
+  /* gold data for test */
+  get_2D_gp_golds_matern(gold_mean, gold_std_dev, kernel_type);
+
+  GaussianProcess gp_2D(param_list);
+
+  gp_2D.get_options(current_opts);
+  current_opts.set("kernel type", kernel_type);
+  current_opts.sublist("Nugget").set("fixed nugget", 0.0);
+  param_list.set("num restarts", 20);
+  gp_2D.set_options(current_opts);
+
+  gp_2D.build(samples, response);
+
+  get_gp_test_arrays(gp_2D, eval_pts_2D, mean, std_dev, cov);
+
+  if (print_output) {
+    std::cout << "\n\n2D Matern 5/2 GP mean:\n";
+    std::cout << mean << "\n";
+    std::cout << "\n2D Matern 5/2 GP standard deviation:\n";
+    std::cout << std_dev << "\n";
+  }
+
+  TEST_ASSERT(relative_allclose(mean, gold_mean, rel_float_tol));
+  TEST_ASSERT(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+
+  /* compute derivatives of GP and check */
+  const int eval_point_index_2D = 1;
+  auto eval_point_2D = eval_pts_2D.row(eval_point_index_2D);
+
+  fd_check_gradient(gp_2D, eval_point_2D, grad_fd_error);
+  fd_check_hessian(gp_2D, eval_point_2D, hessian_fd_error);
+
+  if (print_output) {
+    std::cout << "\n2D Matern 5/2 GP gradient fd error:\n";
+    std::cout << grad_fd_error << "\n";
+    std::cout << "\n2D Matern 5/2 GP hessian fd error:\n";
+    std::cout << hessian_fd_error << "\n";
+  }
+
+  VectorXd grad_drop_2D(2);     // dx, dy
+  VectorXd hessian_drop_2D(3);  // dxx, dxy, dyy
+
+  for (int i = 0; i < 2; i++) {
+    grad_drop_2D(i) =
+        log10(grad_fd_error.col(i)(0) / grad_fd_error.col(i).minCoeff());
+
+    hessian_drop_2D(i) =
+        log10(hessian_fd_error.col(i)(0) / hessian_fd_error.col(i).minCoeff());
+
+    TEST_ASSERT(grad_drop_2D(i) > 6.0);
+    TEST_ASSERT(hessian_drop_2D(i) > 3.0);
+
+    if (i == 1) {
+      i += 1;
+      hessian_drop_2D(i) = log10(hessian_fd_error.col(i)(0) /
+                                 hessian_fd_error.col(i).minCoeff());
+      TEST_ASSERT(hessian_drop_2D(i) > 3.0);
+    }
   }
 }
 

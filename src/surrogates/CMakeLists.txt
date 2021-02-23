@@ -11,6 +11,7 @@
 set(surrogates_sources
   SurrogatesBase.cpp
   SurrogatesGaussianProcess.cpp 
+  SurrogatesGPKernels.cpp
   SurrogatesGPObjective.cpp
   SurrogatesPolynomialRegression.cpp
   surrogates_tools.cpp
@@ -19,6 +20,7 @@ set(surrogates_sources
 set(surrogates_headers
   SurrogatesBase.hpp
   SurrogatesGaussianProcess.hpp
+  SurrogatesGPKernels.hpp
   SurrogatesGPObjective.hpp
   SurrogatesPolynomialRegression.hpp
   surrogates_tools.hpp

@@ -11,6 +11,7 @@
 #define DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 
 #include "SurrogatesBase.hpp"
+#include "SurrogatesGPKernels.hpp"
 #include "SurrogatesPolynomialRegression.hpp"
 #include "UtilDataScaler.hpp"
 
@@ -289,30 +290,6 @@ class GaussianProcess : public Surrogate {
                     bool compute_derivs, MatrixXd& gram);
 
   /**
-   *  \brief Compute the first derivatve of the prediction matrix for a given
-   * component. \param[in] pred_gram Prediction Gram matrix - Rectangular matrix
-   * of kernel evaluations between the surrogate and prediction points.
-   *  \param[in] index Specifies the component of the derivative.
-   *  \param[out] first_deriv_pred_gram First derivative of the prediction
-   * matrix for a given component.
-   */
-  void compute_first_deriv_pred_gram(const MatrixXd& pred_gram, const int index,
-                                     MatrixXd& first_deriv_pred_gram);
-
-  /**
-   *  \brief Compute the second derivatve of the prediction matrix for a pair of
-   * components. \param[in] pred_gram Prediction Gram matrix - Rectangular
-   * matrix of kernel evaluations between the surrogate and prediction points.
-   *  \param[in] index_i Specifies the first component of the second derivative.
-   *  \param[in] index_j Specifies the second component of the second
-   * derivative. \param[out] second_deriv_pred_gram Second derivative of the
-   * prediction matrix for a pair of components.
-   */
-  void compute_second_deriv_pred_gram(const MatrixXd& pred_gram,
-                                      const int index_i, const int index_j,
-                                      MatrixXd& second_deriv_pred_gram);
-
-  /**
    *  \brief Randomly generate initial guesses for the optimization routine.
    *  \param[in] sigma_bounds Bounds for the scaling hyperparameter (sigma).
    *  \param[in] length_scale_bounds Bounds for the length scales for each
@@ -413,6 +390,12 @@ class GaussianProcess : public Surrogate {
   /// PolynomialRegression for trend function.
   std::shared_ptr<PolynomialRegression> polyRegression;
 
+  /// Kernel type
+  std::string kernel_type;
+
+  /// Kernel
+  std::shared_ptr<Kernel> kernel;
+
   /// Large constant for polynomial coefficients upper/lower bounds.
   const double betaBound = 1.0e20;
 
@@ -467,6 +450,12 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version) {
   archive& objectiveFunctionHistory;
   archive& objectiveGradientHistory;
   archive& thetaHistory;
+  // if (Archive::is_loading::value)
+  //  kernel.reset(new Kernel());
+  archive& kernel_type;
+  if (Archive::is_loading::value) {
+    kernel = kernel_factory(kernel_type);
+  }
   // BMA TODO: leaving this as shared_ptr pending discussion as it seems natural
   // BMA NOTE: If serializing through shared_ptr, wouldn't have to
   // trap the nullptr case here...
@@ -475,6 +464,7 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version) {
       polyRegression.reset(new PolynomialRegression());
     archive&* polyRegression;
   }
+
   // DTS: Set false so that the Cholesky factorization is recomputed after load
   hasBestCholFact = false;
   archive& hasBestCholFact;
