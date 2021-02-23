@@ -47,6 +47,12 @@ variables,
 #	            0.200 2.166 4.133 6.100 8.067 10.033 12.000		#s5
 #	  counts    1     1     1     1     1     1      1		#s5
 #	            1     1     1     1     1     1      1		#s5
+# Add two extra variables that don't map to the imported surrogate to test
+# reordering:
+#       continuous_design = 1	      	    	  	 		#s8
+#         initial_point = -1.0						#s8
+#       continuous_state = 1	      	    	  	 		#s8
+#         initial_state = 1.0						#s8
 
 responses,
 	response_functions = 1
