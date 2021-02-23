@@ -78,6 +78,10 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
   targetValues = response;
   eyeMatrix = MatrixXd::Identity(numSamples, numSamples);
   hasBestCholFact = false;
+  kernel_type = configOptions.get<std::string>("kernel type");
+
+  /* Kernel function */
+  kernel = kernel_factory(kernel_type);
 
   /* Optimization-related data*/
   VectorXd sigma_bounds = configOptions.get<VectorXd>("sigma bounds");
@@ -356,7 +360,8 @@ MatrixXd GaussianProcess::gradient(const MatrixXd& eval_points, const int qoi) {
   chol_solve_resid = CholFact.solve(resid);
 
   for (int i = 0; i < numVariables; i++) {
-    compute_first_deriv_pred_gram(mixed_pred_gram, i, first_deriv_pred_gram);
+    first_deriv_pred_gram = kernel->compute_first_deriv_pred_gram(
+        mixed_pred_gram, cwiseMixedDists, thetaValues, i);
     grad_components = first_deriv_pred_gram * chol_solve_resid;
     gradient.col(i) = grad_components.col(0);
   }
@@ -402,8 +407,8 @@ MatrixXd GaussianProcess::hessian(const MatrixXd& eval_point, const int qoi) {
   /* Hessian */
   for (int i = 0; i < numVariables; i++) {
     for (int j = i; j < numVariables; j++) {
-      compute_second_deriv_pred_gram(mixed_pred_gram, i, j,
-                                     second_deriv_pred_gram);
+      second_deriv_pred_gram = kernel->compute_second_deriv_pred_gram(
+          mixed_pred_gram, cwiseMixedDists, thetaValues, i, j);
       hessian(i, j) = (second_deriv_pred_gram * chol_solve_resid)(0, 0);
       if (i != j) hessian(j, i) = hessian(i, j);
     }
@@ -561,6 +566,8 @@ void GaussianProcess::default_options() {
   nugget_bounds(0) = 3.17e-8;
   nugget_bounds(1) = 1.0e-2;
 
+  defaultConfigOptions.set("kernel type", "squared exponential",
+                           "kernel function specification");
   defaultConfigOptions.set("sigma bounds", sigma_bounds, "sigma [lb, ub]");
   // BMA: Do we want to allow 1 x 2 always as a fallback?
   defaultConfigOptions.set("length-scale bounds", length_scale_bounds,
@@ -642,21 +649,10 @@ void GaussianProcess::compute_pred_dists(const MatrixXd& scaled_pred_pts) {
 void GaussianProcess::compute_gram(const std::vector<MatrixXd>& dists2,
                                    bool add_nugget, bool compute_derivs,
                                    MatrixXd& gram) {
-  for (int k = 0; k < numVariables; k++) {
-    if (k == 0)
-      gram = dists2[k] * exp(-2.0 * thetaValues[k + 1]);
-    else
-      gram += dists2[k] * exp(-2.0 * thetaValues[k + 1]);
-  }
-  gram = exp(2.0 * thetaValues[0]) * (-0.5 * gram.array()).exp();
+  gram = kernel->compute_gram(dists2, thetaValues);
 
-  if (compute_derivs) {
-    GramMatrixDerivs[0] = 2.0 * gram;
-    for (int k = 1; k < numVariables + 1; k++) {
-      GramMatrixDerivs[k] =
-          gram.cwiseProduct(dists2[k - 1]) * exp(-2.0 * (thetaValues)(k));
-    }
-  }
+  if (compute_derivs)
+    GramMatrixDerivs = kernel->compute_gram_derivs(gram, dists2, thetaValues);
 
   if (add_nugget) {
     /* add in the fixed nugget */
@@ -665,26 +661,6 @@ void GaussianProcess::compute_gram(const std::vector<MatrixXd>& dists2,
     if (estimateNugget)
       gram.diagonal().array() += exp(2.0 * estimatedNuggetValue);
   }
-}
-
-void GaussianProcess::compute_first_deriv_pred_gram(
-    const MatrixXd& pred_gram, const int index,
-    MatrixXd& first_deriv_pred_gram) {
-  first_deriv_pred_gram = -pred_gram.cwiseProduct(cwiseMixedDists[index]) *
-                          exp(-2.0 * thetaValues[index + 1]);
-}
-void GaussianProcess::compute_second_deriv_pred_gram(
-    const MatrixXd& pred_gram, const int index_i, const int index_j,
-    MatrixXd& second_deriv_pred_gram) {
-  double delta_ij = 1.0;
-  if (index_i != index_j) delta_ij = 0.0;
-
-  second_deriv_pred_gram =
-      pred_gram.array() * exp(-2.0 * thetaValues[index_i + 1]) *
-      ((cwiseMixedDists[index_i].cwiseProduct(cwiseMixedDists[index_j]))
-               .array() *
-           exp(-2.0 * thetaValues[index_j + 1]) -
-       delta_ij);
 }
 
 void GaussianProcess::generate_initial_guesses(
