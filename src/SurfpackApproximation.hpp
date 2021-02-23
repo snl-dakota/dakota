@@ -73,6 +73,10 @@ protected:
   /// and the appropriate Surfpack build method will be invoked
   void build() override;
 
+
+  /// validate imported labels and initialize map if needed
+  void map_variable_labels(const Variables& vars);
+
   /// export the Surpack model to disk or console
   void export_model(const StringArray& var_labels, const String& fn_label,
 		    const String& export_prefix,
@@ -155,6 +159,9 @@ private:
 				   const Pecos::SurrogateDataResp& anchor_resp,
 				   short fail_code);
 
+  /// extract active or all view as vector, mapping if needed for import
+  RealArray map_eval_vars(const Variables& vars);
+
   //
   //- Heading: Data
   //
@@ -173,6 +180,9 @@ private:
 
   // convenience pointer to shared data representation
   //std::shared_ptr<SharedSurfpackApproxData> sharedSurfDataRep;
+
+  /// whether model serialized in from disk
+  bool modelIsImported;
 };
 
 

@@ -384,6 +384,10 @@ void SurfpackApproximation::build()
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
 
+  // clear any imported model mapping
+  modelIsImported = false;
+  shared_surf_data_rep->varsMapIndices.clear();
+
   /// \todo Right now, we're completely deleting the old data and then
   /// recopying the current data into a SurfData object.  This was just
   /// the easiest way to arrive at a solution that would build and run.
@@ -441,14 +445,34 @@ void SurfpackApproximation::build()
 }
 
 
+void
+SurfpackApproximation::map_variable_labels(const Variables& dfsm_vars)
+{
+  // When importing, always map from all variables to the
+  // subset needed by the surrogate...
+  const auto& approx_labels = spModel->input_labels();
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    map_variable_labels(dfsm_vars, approx_labels);
+}
+
+
 void SurfpackApproximation::
 export_model(const Variables& vars, const String& fn_label,
 	     const String& export_prefix,
 	     const unsigned short export_format)
 {
-  // Surfpack doesn't do anything with the variable labels
-  // (Could make this a base class default forward?)
-  export_model(StringArray(), fn_label, export_prefix, export_format);
+  // BMA TODO: This may not be right since surrogate can be over active or all...
+
+  // order the variable labels the way the surrogate inputs are ordered
+  StringArray var_labels(vars.continuous_variable_labels().begin(),
+			 vars.continuous_variable_labels().end());
+  var_labels.insert(var_labels.end(),
+		    vars.discrete_int_variable_labels().begin(),
+		    vars.discrete_int_variable_labels().end());
+  var_labels.insert(var_labels.end(),
+		    vars.discrete_real_variable_labels().begin(),
+		    vars.discrete_real_variable_labels().end());
+  export_model(var_labels, fn_label, export_prefix, export_format);
 }
 
 
@@ -457,6 +481,8 @@ export_model(const StringArray& var_labels, const String& fn_label,
 	     const String& export_prefix, const unsigned short export_format)
 {
   // TODO: This needs protection against empty model too (maybe)
+
+  spModel->input_labels(var_labels);
 
   String without_extension;
   unsigned short formats;
@@ -511,10 +537,7 @@ Real SurfpackApproximation::value(const Variables& vars)
     abort_handler(-1);
   }
 
-  RealArray x_array(sharedDataRep->numVars);
-  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-    vars_to_realarray(vars, x_array);
-  return (*spModel)(x_array);
+  return (*spModel)(map_eval_vars(vars));
 }
 
 
@@ -522,10 +545,7 @@ const RealVector& SurfpackApproximation::gradient(const Variables& vars)
 {
   approxGradient.sizeUninitialized(vars.cv());
   try {
-    RealArray x_array(sharedDataRep->numVars);
-    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-      vars_to_realarray(vars, x_array);
-    VecDbl local_grad = spModel->gradient(x_array);
+    VecDbl local_grad = spModel->gradient(map_eval_vars(vars));
     for (unsigned i = 0; i < surfData->xSize(); i++)
       approxGradient[i] = local_grad[i];
   }
@@ -548,10 +568,7 @@ const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
 	   << std::endl;
       abort_handler(-1);
     }
-    RealArray x_array(sharedDataRep->numVars);
-    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-      vars_to_realarray(vars, x_array);
-    MtxDbl sm = spModel->hessian(x_array);
+    MtxDbl sm = spModel->hessian(map_eval_vars(vars));
     ///\todo Make this acceptably efficient
     for (size_t i = 0; i < num_cv; i++)
       for(size_t j = 0; j < num_cv; j++)
@@ -569,10 +586,7 @@ const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
 Real SurfpackApproximation::prediction_variance(const Variables& vars)
 {
   try {
-    RealArray x_array(sharedDataRep->numVars);
-    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-      vars_to_realarray(vars, x_array);
-    return spModel->variance(x_array);
+    return spModel->variance(map_eval_vars(vars));
   }
   catch (...) {
     Cerr << "Error: prediction_variance() not available for this "
@@ -580,6 +594,22 @@ Real SurfpackApproximation::prediction_variance(const Variables& vars)
     abort_handler(-1);
   }
 }
+
+
+RealArray SurfpackApproximation::map_eval_vars(const Variables& vars)
+{
+  if (modelIsImported)
+    return std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      imported_eval_vars<RealArray>(vars);
+  else {
+    // active or all variables
+    RealArray surr_vars(sharedDataRep->numVars);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      vars_to_realarray(vars, surr_vars);
+    return surr_vars;
+  }
+}
+
 
 Real SurfpackApproximation::value(const RealVector& c_vars)
 {
@@ -832,6 +862,10 @@ void SurfpackApproximation::import_model(const ProblemDescDB& problem_db)
   if (sharedDataRep->outputLevel >= NORMAL_OUTPUT)
     Cout << "Imported surrogate for response '" << approxLabel
 	 << "' from file '" << filename << "'." << std::endl;
+
+  modelIsImported = true;
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    varsMapIndices.clear();
 }
 
 
