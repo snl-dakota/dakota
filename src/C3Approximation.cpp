@@ -301,14 +301,6 @@ void C3Approximation::build()
 
     // run cross validation with ftr setup
     cross_validate_grid_opt(cv, cvgrid, ftr, optimizer);
-
-    // this is needed for advancement_available but does not persist to next
-    // build(), so store in C3FnTrainData (don't update SharedC3ApproxData).
-    // > Note: making this update conditional on adaptOrder avoids a copy in
-    //   the non-adaptive case, but induces the need for conditionals when
-    //   there is need to retrieve basis order data.
-    //recover_function_train_orders(data_rep->oneApproxOpts);
-
     // free the cross validation grid and cross validator
     cv_opt_grid_free(cvgrid); cross_validate_free(cv);
   }
@@ -316,21 +308,18 @@ void C3Approximation::build()
   // -------------------------------------------
   // Solve the regression problem to form the FT
   // -------------------------------------------
-  // > if CV active above, this uses the final CV config with the full data set
-
-  // Build FT model (using full data set, as compared to best config identified
-  // using partial fold data in CV)
-  // *** TO DO: how does adapt_r interact?  Are we cross-validating across ranks
-  //     again?  Most consistent approach is to use nested rank+order CV above
-  //     and then turn both off here.  If no adapt_o, then leave adapt_r on
-  //     (where it must still perform the final fit for full data set after CV)
-  //if (adapt_o && adapt_r) ft_regress_set_adapt(ftr, 0); // *** just use adapted values, don't repeat adapt rank again for selected order
+  // If CV grid is active above for adapt_order or adapt_{rank,order}, this
+  // regress_run uses the full data set with the best CV config found.  Note:
+  // if adaptive rank selection is active within the order-based CV grid, we
+  // perform this selection again here since (1) the data partition for rank
+  // CV is expanded from before (no order-based CV fold) and (2) rank-based
+  // selection involves more fine-grained adaptation (per variable).
   struct FunctionTrain * ft_soln
     = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
   // cache C3FTD recovered{Ranks,Orders} for regression_size()
+  std::vector<OneApproxOpts*>& a_opts = data_rep->oneApproxOpts;
   if (data_rep->adaptRank)  recover_function_train_ranks(ft_soln);
-  if (data_rep->adaptOrder)
-    recover_function_train_orders(data_rep->oneApproxOpts);
+  if (data_rep->adaptOrder) recover_function_train_orders(a_opts);
   // Important distinction among derivative cases:
   // > expansionCoeffGradFlag: expansions of derivs w.r.t. inactive/non-build/
   //   non-random vars (not yet supported, but would be managed here)
@@ -359,7 +348,6 @@ void C3Approximation::build()
       Cout << "(adapted with start = " << start_o << " kick = " << kick_o
 	   << " max = " << max_o << "):\n";
     else Cout << "(non-adapted):\n";
-    std::vector<OneApproxOpts*>& a_opts = data_rep->oneApproxOpts;
     for (i=0; i<num_v; ++i)
       Cout << "                     " << std::setw(write_precision+7)
 	   << one_approx_opts_get_nparams(a_opts[i]) - 1 << '\n';
@@ -368,10 +356,10 @@ void C3Approximation::build()
   }
 
   // Note: could set c3Max{Rank,Order}Advance after current build instead of
-  // before next build (using cached ranks,orders) if advancement_available()
+  // preceding next build (using cached ranks,orders) if advancement_available()
   // was the only concern.  However, regression_size() is another requirement
-  // prior to next build, so just cache the relevant data rather than a
-  // potentially growing list of results from that data.
+  // prior to next build, so just cache the relevant build data rather than a
+  // potentially growing list of inferences from that data.
   //if (shared_data_rep->c3AdvancementType & MAX_RANK_ADVANCEMENT) {
   //  if (test_ranks_without_requiring_cached_data)
   //    shared_data_rep->max_rank_advancement(true);
@@ -386,7 +374,7 @@ void C3Approximation::build()
   // each time, this may be Ok as a final step (roll-ups are not impacted, but
   // posthumous rank checks would be).
   if (apply_scaling) { // unscale the FT expansion: fn = y * range + min
-    // emulate c3axpy with epsilon=0 (no rounding needed for scale + constant)
+    // emulate c3axpy with epsilon=0 (no rounding applied for scale + constant)
     function_train_scale(ft_soln, range); // scaling applied in place
     struct FunctionTrain * ft_offset
       = function_train_constant(min_fn, data_rep->multiApproxOpts);
@@ -502,10 +490,20 @@ void C3Approximation::combine_coefficients()
   // accuracy gain in some numerical experiments (dakota_uq_heat_eq_mlft.in).
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  Real arith_tol = data_rep->statsRoundingTol;
+  Real rnd_tol = data_rep->statsRoundingTol;
   struct MultiApproxOpts* ma_opts = data_rep->multiApproxOpts;
-  for (; it!= levelApprox.end(); ++it)
-    c3axpy(1., it->second.function_train(), &y, arith_tol, ma_opts);
+  struct FunctionTrain *z;
+  for (; it!= levelApprox.end(); ++it) {
+    //c3axpy(1., it->second.function_train(), &y, arith_tol, ma_opts);
+
+    // Streamline c3axpy steps for this use case (avoid scale + its inner copy)
+    z = function_train_sum(it->second.function_train(), y);
+    function_train_free(y);
+    if (rnd_tol > 0.) // round scales as rank^3 so do each pass, not at end
+      { y = function_train_round(z, rnd_tol, ma_opts); function_train_free(z); }
+    else
+      y = z;
+  }
   combinedC3FTData.function_train(y);
 
   // Could also do this at the C3FnTrainData level with ft1d_array support:
