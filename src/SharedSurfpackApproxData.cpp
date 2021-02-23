@@ -161,6 +161,43 @@ copy_matrix(const RealSymMatrix& rsm, SurfpackMatrix<Real>& surfpack_matrix)
 }
 
 
+StringArray
+SharedSurfpackApproxData::variable_labels(const Variables& vars) const
+{
+  // order the variable labels the way the surrogate inputs are ordered
+  // check incoming vars for correct length (active or all views)
+  StringArray var_labels;
+  if (vars.cv() + vars.div() + vars.drv() == numVars) {
+    var_labels.insert(var_labels.end(),
+		      vars.continuous_variable_labels().begin(),
+		      vars.continuous_variable_labels().end());
+    var_labels.insert(var_labels.end(),
+		      vars.discrete_int_variable_labels().begin(),
+		      vars.discrete_int_variable_labels().end());
+    var_labels.insert(var_labels.end(),
+		      vars.discrete_real_variable_labels().begin(),
+		      vars.discrete_real_variable_labels().end());
+  }
+  else if (vars.acv() + vars.adiv() + vars.adrv() == numVars) {
+    var_labels.insert(var_labels.end(),
+		      vars.all_continuous_variable_labels().begin(),
+		      vars.all_continuous_variable_labels().end());
+    var_labels.insert(var_labels.end(),
+		      vars.all_discrete_int_variable_labels().begin(),
+		      vars.all_discrete_int_variable_labels().end());
+    var_labels.insert(var_labels.end(),
+		      vars.all_discrete_real_variable_labels().begin(),
+		      vars.all_discrete_real_variable_labels().end());
+  }
+  else {
+    Cerr << "Error: bad variable size in SharedSurfpackApproxData::"
+	 << "variable_labels()." << std::endl;
+    abort_handler(-1);
+  }
+  return var_labels;
+}
+
+
 void SharedSurfpackApproxData::
 validate_metrics(const std::set<std::string>& allowed_metrics)
 {
@@ -230,6 +267,12 @@ map_variable_labels(const Variables& dfsm_vars,
 
   bool vars_equal = (all_labels == approx_labels);
   if (!vars_equal) {
+    if (approx_labels.empty()) {
+      Cerr << "\nError: Imported surrogate has no variable labels; cannot "
+	   << "determine variable map." << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
+
     // each approx model var must be in the wrapping model's var set
     varsMapIndices.clear();
     varsMapIndices.reserve(approx_labels.size());

@@ -107,6 +107,9 @@ private:
   template<typename RealArrayType>
   void all_vars_to_realarray(const Variables& vars, RealArrayType& ra);
 
+  /// retrieve the active or all labels over which the surrogate was built
+  StringArray variable_labels(const Variables& vars) const;
+
   /// validate metric names and cross validation options
   void validate_metrics(const std::set<std::string>& allowed_metrics);
 

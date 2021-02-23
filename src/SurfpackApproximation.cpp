@@ -461,17 +461,9 @@ export_model(const Variables& vars, const String& fn_label,
 	     const String& export_prefix,
 	     const unsigned short export_format)
 {
-  // BMA TODO: This may not be right since surrogate can be over active or all...
-
-  // order the variable labels the way the surrogate inputs are ordered
-  StringArray var_labels(vars.continuous_variable_labels().begin(),
-			 vars.continuous_variable_labels().end());
-  var_labels.insert(var_labels.end(),
-		    vars.discrete_int_variable_labels().begin(),
-		    vars.discrete_int_variable_labels().end());
-  var_labels.insert(var_labels.end(),
-		    vars.discrete_real_variable_labels().begin(),
-		    vars.discrete_real_variable_labels().end());
+  StringArray var_labels =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    variable_labels(vars);
   export_model(var_labels, fn_label, export_prefix, export_format);
 }
 
@@ -481,7 +473,6 @@ export_model(const StringArray& var_labels, const String& fn_label,
 	     const String& export_prefix, const unsigned short export_format)
 {
   // TODO: This needs protection against empty model too (maybe)
-
   spModel->input_labels(var_labels);
 
   String without_extension;
