@@ -482,7 +482,7 @@ if(DAKOTA_MATLAB)
 endif()
 
 if(DAKOTA_PYTHON_DIRECT_INTERFACE)
-  list(APPEND interface_src PythonInterface.cpp)
+  list(APPEND interface_src PythonInterface.cpp Pybind11Interface.cpp)
 endif()
 
 if(DAKOTA_SCILAB)

@@ -78,7 +78,7 @@ def test_lib():
             lower_bounds  -10.0  -10.0  -10.0
             descriptors     'x1'  'x2'   'x3'
         interface,
-          python
+          pybind11
             analysis_driver = 'BAD_MODULE_NAME:BAD_FN_NAME'
         responses,
           num_objective_functions = 1
@@ -138,5 +138,5 @@ if __name__ == "__main__":
 
     # TODO: these encapsulate the objects so timing info is printed
     # with each test case; better manage destructors.
-    test_cmd()
+    #test_cmd()
     test_lib()

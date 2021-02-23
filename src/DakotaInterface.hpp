@@ -439,7 +439,7 @@ protected:
   String2DArray analysisComponents;
 
 #ifdef DAKOTA_PYBIND11
-  /// temporary placeholder until I can figure out how to vast down to a PythonInterface - RWH
+  /// temporary placeholder - RWH
   py::function py11CallBack;
   bool py11Active;
 #endif

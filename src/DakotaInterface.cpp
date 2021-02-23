@@ -33,6 +33,9 @@
 #ifdef DAKOTA_PYTHON
 #include "PythonInterface.hpp"
 #endif // DAKOTA_PYTHON
+#ifdef DAKOTA_PYBIND11
+#include "Pybind11Interface.hpp"
+#endif // DAKOTA_PYBIND11
 #ifdef DAKOTA_SCILAB
 #include "ScilabInterface.hpp"
 #endif // DAKOTA_SCILAB
@@ -255,6 +258,16 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
     return std::make_shared<PythonInterface>(problem_db);
 #else
     Cerr << "Direct Python interface requested, but not enabled in this "
+	 << "DAKOTA executable." << std::endl;
+    return std::shared_ptr<Interface>();
+#endif
+  }
+
+  else if (interface_type == PYBIND11_INTERFACE) {
+#ifdef DAKOTA_PYBIND11
+    return std::make_shared<Pybind11Interface>(problem_db);
+#else
+    Cerr << "Pybind11 interface requested, but not enabled in this "
 	 << "DAKOTA executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif

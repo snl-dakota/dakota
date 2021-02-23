@@ -25,11 +25,6 @@ struct _object;
 typedef _object PyObject;
 #endif
 
-//#ifdef DAKOTA_PYBIND11
-//#include <pybind11/pybind11.h>
-//namespace py = pybind11;
-//#endif
-
 namespace Dakota {
 
 /** Specialization of DirectApplicInterface to link to Python analysis 
@@ -49,11 +44,6 @@ protected:
 
   /// direct interface to Python via API, BMA 07/02/07
   int python_run(const String& ac_name);
-
-#ifdef DAKOTA_PYBIND11
-  /// direct interface to Pybind11 via API
-  int pybind11_run();
-#endif
 
   /// whether the user requested numpy data structures in the input file
   bool userNumpyFlag;
@@ -92,9 +82,6 @@ protected:
   /// [numpy array of double] to RealSymMatrixArray (for Hessians)
   bool python_convert(PyObject *pyma, RealSymMatrixArray &rma);
 
-//#ifdef DAKOTA_PYBIND11
-//  py::object callBack;
-//#endif
 };
 
 } // namespace Dakota
