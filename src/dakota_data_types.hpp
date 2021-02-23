@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -193,6 +194,8 @@ typedef std::list<ParallelConfiguration>::iterator ParConfigLIter;
 
 typedef IntSet::iterator                       ISIter;
 typedef IntSet::const_iterator                 ISCIter;
+typedef SizetSet::iterator                     StSIter;
+typedef SizetSet::const_iterator               StSCIter;
 typedef StringSet::iterator                    SSIter;
 typedef StringSet::const_iterator              SSCIter;
 typedef RealSet::iterator                      RSIter;

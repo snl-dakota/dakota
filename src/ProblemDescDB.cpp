@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -1334,60 +1335,66 @@ split_entry_name(const std::string& entry_name, const std::string& context_msg)
 }
 
 template <typename T>
-T ProblemDescDB::LookerUpper<T>::
-get(const std::string& entry_name,
+T& ProblemDescDB::
+get(const std::string& context_msg,
+    const std::map<std::string, T DataEnvironmentRep::*>& env_map,
+    const std::map<std::string, T DataMethodRep::*>& met_map,
+    const std::map<std::string, T DataModelRep::*>& mod_map,
+    const std::map<std::string, T DataVariablesRep::*>& var_map,
+    const std::map<std::string, T DataInterfaceRep::*>& int_map,
+    const std::map<std::string, T DataResponsesRep::*>& res_map,
+    const std::string& entry_name,
     const std::shared_ptr<ProblemDescDB>& db_rep) const
 {
   if (!db_rep)
-    Null_rep(contextMsg);
+    Null_rep(context_msg);
   
   std::string block, entry;
-  std::tie(block, entry) = split_entry_name(entry_name, contextMsg);
+  std::tie(block, entry) = split_entry_name(entry_name, context_msg);
 
   if (block == "environment") {
-    auto it = envMap.find(entry);
-    if (it != envMap.end())
-      return it->second(db_rep->environmentSpec.dataEnvRep);
+    auto it = env_map.find(entry);
+    if (it != env_map.end())
+      return (db_rep->environmentSpec.dataEnvRep).get()->*(it->second);
   }
   else if (block == "method") {
     if (db_rep->methodDBLocked)
       Locked_db();
-    auto it = metMap.find(entry);
-    if (it != metMap.end())
-      return it->second(db_rep->dataMethodIter->dataMethodRep);
+    auto it = met_map.find(entry);
+    if (it != met_map.end())
+      return (db_rep->dataMethodIter->dataMethodRep).get()->*(it->second);
   }
   else if (block == "model") {
     if (db_rep->modelDBLocked)
       Locked_db();
-    auto it = modMap.find(entry);
-    if (it != modMap.end())
-      return it->second(db_rep->dataModelIter->dataModelRep);
+    auto it = mod_map.find(entry);
+    if (it != mod_map.end())
+      return (db_rep->dataModelIter->dataModelRep).get()->*(it->second);
   }
   else if (block == "variables") {
     if (db_rep->variablesDBLocked)
       Locked_db();
-    auto it = varMap.find(entry);
-    if (it != varMap.end())
-      return it->second(db_rep->dataVariablesIter->dataVarsRep);
+    auto it = var_map.find(entry);
+    if (it != var_map.end())
+      return (db_rep->dataVariablesIter->dataVarsRep).get()->*(it->second);
   }
   else if (block == "interface") {
     if (db_rep->interfaceDBLocked)
       Locked_db();
-    auto it = intMap.find(entry);
-    if (it != intMap.end())
-      return it->second(db_rep->dataInterfaceIter->dataIfaceRep);
+    auto it = int_map.find(entry);
+    if (it != int_map.end())
+      return (db_rep->dataInterfaceIter->dataIfaceRep).get()->*(it->second);
   }
   else if (block == "responses") {
     if (db_rep->responsesDBLocked)
       Locked_db();
-    auto it = resMap.find(entry);
-    if (it != resMap.end())
-      return it->second(db_rep->dataResponsesIter->dataRespRep);
+    auto it = res_map.find(entry);
+    if (it != res_map.end())
+      return (db_rep->dataResponsesIter->dataRespRep).get()->*(it->second);
   }
-  Bad_name(entry_name, contextMsg);
-  return abort_handler_t<T>(PARSE_ERROR);
+  Bad_name(entry_name, context_msg);
+  return abort_handler_t<T&>(PARSE_ERROR);
 }
-
 
 // couldn't get const-correctness right with a simple forwarder...
 // template <typename T>
@@ -1409,39 +1416,11 @@ get(const std::string& entry_name,
 #define P_INT &DataInterfaceRep::
 #define P_RES &DataResponsesRep::
 
-// TEMPLATEs:
-//
-// static LookerUpper<const T&> lookup
-// { "get_T",
-//   { /* environment */ },
-//   { /* method */ },
-//   { /* model */ },
-//   { /* variables */ },
-//   { /* interface */ },
-//   { /* responses */ }
-// };
-//
-// return lookup.get(entry_name, dbRep);
-//
-
-// static LookerUpper<T&> lookup
-// { "set(T)",
-//   { /* environment */ },
-//   { /* method */ },
-//   { /* model */ },
-//   { /* variables */ },
-//   { /* interface */ },
-//   { /* responses */ }
-// };
-//
-// T& rep_t = lookup.get(entry_name, dbRep);
-// rep_t = t_in;
-
 
 const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 {
-  static LookerUpper<const RealMatrixArray&> lookup
-  { "get_rma()",
+  return get<RealMatrixArray>
+  ( "get_rma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1451,17 +1430,15 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
       {"discrete_design_set_str.adjacency_matrix", P_VAR discreteDesignSetStrAdj}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {  
-  static LookerUpper<const RealVector&> lookup
-  { "get_rv()",
+  return get<const RealVector>
+  ( "get_rv()",
     { /* environment */ },
     { /* method */
       {"concurrent.parameter_sets", P_MET concurrentParameterSets},
@@ -1495,46 +1472,46 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"beta_uncertain.upper_bounds", P_VAR betaUncUpperBnds},
       {"binomial_uncertain.prob_per_trial", P_VAR binomialUncProbPerTrial},
       {"continuous_aleatory_uncertain.initial_point",
-	  P_VAR continuousAleatoryUncVars},
+    	  P_VAR continuousAleatoryUncVars},
       {"continuous_aleatory_uncertain.lower_bounds",
-	  P_VAR continuousAleatoryUncLowerBnds},
+    	  P_VAR continuousAleatoryUncLowerBnds},
       {"continuous_aleatory_uncertain.upper_bounds",
-	  P_VAR continuousAleatoryUncUpperBnds},
+    	  P_VAR continuousAleatoryUncUpperBnds},
       {"continuous_design.initial_point", P_VAR continuousDesignVars},
       {"continuous_design.lower_bounds", P_VAR continuousDesignLowerBnds},
       {"continuous_design.scales", P_VAR continuousDesignScales},
       {"continuous_design.upper_bounds", P_VAR continuousDesignUpperBnds},
       {"continuous_epistemic_uncertain.initial_point",
-	  P_VAR continuousEpistemicUncVars},
+    	  P_VAR continuousEpistemicUncVars},
       {"continuous_epistemic_uncertain.lower_bounds",
-	  P_VAR continuousEpistemicUncLowerBnds},
+    	  P_VAR continuousEpistemicUncLowerBnds},
       {"continuous_epistemic_uncertain.upper_bounds",
-	  P_VAR continuousEpistemicUncUpperBnds},
+    	  P_VAR continuousEpistemicUncUpperBnds},
       {"continuous_state.initial_state", P_VAR continuousStateVars},
       {"continuous_state.lower_bounds", P_VAR continuousStateLowerBnds},
       {"continuous_state.upper_bounds", P_VAR continuousStateUpperBnds},
       {"discrete_aleatory_uncertain_real.initial_point",
-	  P_VAR discreteRealAleatoryUncVars},
+    	  P_VAR discreteRealAleatoryUncVars},
       {"discrete_aleatory_uncertain_real.lower_bounds",
-	  P_VAR discreteRealAleatoryUncLowerBnds},
+    	  P_VAR discreteRealAleatoryUncLowerBnds},
       {"discrete_aleatory_uncertain_real.upper_bounds",
-	  P_VAR discreteRealAleatoryUncUpperBnds},
+    	  P_VAR discreteRealAleatoryUncUpperBnds},
       {"discrete_design_set_real.initial_point", P_VAR discreteDesignSetRealVars},
       {"discrete_design_set_real.lower_bounds",
-	  P_VAR discreteDesignSetRealLowerBnds},
+    	  P_VAR discreteDesignSetRealLowerBnds},
       {"discrete_design_set_real.upper_bounds",
-	  P_VAR discreteDesignSetRealUpperBnds},
+    	  P_VAR discreteDesignSetRealUpperBnds},
       {"discrete_epistemic_uncertain_real.initial_point",
-	  P_VAR discreteRealEpistemicUncVars},
+    	  P_VAR discreteRealEpistemicUncVars},
       {"discrete_epistemic_uncertain_real.lower_bounds",
-	  P_VAR discreteRealEpistemicUncLowerBnds},
+    	  P_VAR discreteRealEpistemicUncLowerBnds},
       {"discrete_epistemic_uncertain_real.upper_bounds",
-	  P_VAR discreteRealEpistemicUncUpperBnds},
+    	  P_VAR discreteRealEpistemicUncUpperBnds},
       {"discrete_state_set_real.initial_state", P_VAR discreteStateSetRealVars},
       {"discrete_state_set_real.lower_bounds",
-	  P_VAR discreteStateSetRealLowerBnds},
+    	  P_VAR discreteStateSetRealLowerBnds},
       {"discrete_state_set_real.upper_bounds",
-	  P_VAR discreteStateSetRealUpperBnds},
+    	  P_VAR discreteStateSetRealUpperBnds},
       {"exponential_uncertain.betas", P_VAR exponentialUncBetas},
       {"frechet_uncertain.alphas", P_VAR frechetUncAlphas},
       {"frechet_uncertain.betas", P_VAR frechetUncBetas},
@@ -1560,7 +1537,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"loguniform_uncertain.lower_bounds", P_VAR loguniformUncLowerBnds},
       {"loguniform_uncertain.upper_bounds", P_VAR loguniformUncUpperBnds},
       {"negative_binomial_uncertain.prob_per_trial",
-	  P_VAR negBinomialUncProbPerTrial},
+    	  P_VAR negBinomialUncProbPerTrial},
       {"normal_uncertain.lower_bounds", P_VAR normalUncLowerBnds},
       {"normal_uncertain.means", P_VAR normalUncMeans},
       {"normal_uncertain.std_deviations", P_VAR normalUncStdDevs},
@@ -1591,17 +1568,15 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"primary_response_fn_scales", P_RES primaryRespFnScales},
       {"primary_response_fn_weights", P_RES primaryRespFnWeights},
       {"simulation_variance", P_RES simVariance}
-    }
-  };
-
-  return lookup.get(entry_name, dbRep);
+    },
+    entry_name, dbRep);
 }
 
 
 const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 {
-  static LookerUpper<const IntVector&> lookup
-  { "get_iv()",
+  return get<const IntVector>
+  ( "get_iv()",
     { /* environment */ },
     { /* method */
       {"fsu_quasi_mc.primeBase", P_MET primeBase},
@@ -1616,25 +1591,25 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     { /* variables */
       {"binomial_uncertain.num_trials", P_VAR binomialUncNumTrials},
       {"discrete_aleatory_uncertain_int.initial_point",
-	  P_VAR discreteIntAleatoryUncVars},
+    	  P_VAR discreteIntAleatoryUncVars},
       {"discrete_aleatory_uncertain_int.lower_bounds",
-	  P_VAR discreteIntAleatoryUncLowerBnds},
+    	  P_VAR discreteIntAleatoryUncLowerBnds},
       {"discrete_aleatory_uncertain_int.upper_bounds",
-	  P_VAR discreteIntAleatoryUncUpperBnds},
+    	  P_VAR discreteIntAleatoryUncUpperBnds},
       {"discrete_design_range.initial_point", P_VAR discreteDesignRangeVars},
       {"discrete_design_range.lower_bounds", P_VAR discreteDesignRangeLowerBnds},
       {"discrete_design_range.upper_bounds", P_VAR discreteDesignRangeUpperBnds},
       {"discrete_design_set_int.initial_point", P_VAR discreteDesignSetIntVars},
       {"discrete_design_set_int.lower_bounds",
-	  P_VAR discreteDesignSetIntLowerBnds},
+    	  P_VAR discreteDesignSetIntLowerBnds},
       {"discrete_design_set_int.upper_bounds",
-	  P_VAR discreteDesignSetIntUpperBnds},
+    	  P_VAR discreteDesignSetIntUpperBnds},
       {"discrete_epistemic_uncertain_int.initial_point",
-	  P_VAR discreteIntEpistemicUncVars},
+    	  P_VAR discreteIntEpistemicUncVars},
       {"discrete_epistemic_uncertain_int.lower_bounds",
-	  P_VAR discreteIntEpistemicUncLowerBnds},
+    	  P_VAR discreteIntEpistemicUncLowerBnds},
       {"discrete_epistemic_uncertain_int.upper_bounds",
-	  P_VAR discreteIntEpistemicUncUpperBnds},
+    	  P_VAR discreteIntEpistemicUncUpperBnds},
       {"discrete_state_range.initial_state", P_VAR discreteStateRangeVars},
       {"discrete_state_range.lower_bounds", P_VAR discreteStateRangeLowerBnds},
       {"discrete_state_range.upper_bounds", P_VAR discreteStateRangeUpperBnds},
@@ -1643,7 +1618,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
       {"discrete_state_set_int.upper_bounds", P_VAR discreteStateSetIntUpperBnds},
       {"hypergeometric_uncertain.num_drawn", P_VAR hyperGeomUncNumDrawn},
       {"hypergeometric_uncertain.selected_population",
-	  P_VAR hyperGeomUncSelectedPop},
+    	  P_VAR hyperGeomUncSelectedPop},
       {"hypergeometric_uncertain.total_population", P_VAR hyperGeomUncTotalPop},
       {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials}
     },
@@ -1651,17 +1626,15 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     { /* responses */
       {"lengths", P_RES fieldLengths},
       {"num_coordinates_per_field", P_RES numCoordsPerField}
-    }
-  };
-
-  return lookup.get(entry_name, dbRep);
+    },
+    entry_name, dbRep);
 }
 
 
 const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 {
-  static LookerUpper<const BitArray&> lookup
-  { "get_ba()",
+  return get<const BitArray>
+  ( "get_ba()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1678,25 +1651,23 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
       {"discrete_uncertain_set_real.categorical", P_VAR discreteUncSetRealCat},
       {"geometric_uncertain.categorical", P_VAR geometricUncCat},
       {"histogram_uncertain.point_int.categorical",
-	  P_VAR histogramUncPointIntCat},
+    	  P_VAR histogramUncPointIntCat},
       {"histogram_uncertain.point_real.categorical",
-	  P_VAR histogramUncPointRealCat},
+    	  P_VAR histogramUncPointRealCat},
       {"hypergeometric_uncertain.categorical", P_VAR hyperGeomUncCat},
       {"negative_binomial_uncertain.categorical", P_VAR negBinomialUncCat},
       {"poisson_uncertain.categorical", P_VAR poissonUncCat}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 {
-  static LookerUpper<const SizetArray&> lookup
-  { "get_sza()",
+  return get<const SizetArray>
+  ( "get_sza()",
     { /* environment */ },
     { /* method */
       {"nond.c3function_train.start_rank_sequence", P_MET startRankSeq},
@@ -1708,17 +1679,15 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     { /* model */ },
     { /* variables */ },
     { /* interface */ },
-    { /* responses */ }
-  };
-
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 {
-  static LookerUpper<const UShortArray&> lookup
-  { "get_usa()",
+  return get<const UShortArray>
+  ( "get_usa()",
     { /* environment */ },
     { /* method */
       {"nond.c3function_train.start_order_sequence", P_MET startOrderSeq},
@@ -1731,17 +1700,15 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
     { /* model */ },
     { /* variables */ },
     { /* interface */ },
-    { /* responses */ }
-  };
-
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 {
-  static LookerUpper<const RealSymMatrix&> lookup
-  { "get_rsm()",
+  return get<const RealSymMatrix>
+  ( "get_rsm()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1749,17 +1716,15 @@ const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
       { "uncertain.correlation_matrix", P_VAR uncertainCorrelations}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 {
-  static LookerUpper<const RealVectorArray&> lookup
-  { "get_rva()",
+  return get<const RealVectorArray>
+  ( "get_rva()",
     { /* environment */ },
     { /* method */
       {"nond.gen_reliability_levels", P_MET genReliabilityLevels},
@@ -1770,39 +1735,33 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
     { /* model */ },
     { /* variables */ },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 {
   // BMA: no current use cases
-  static LookerUpper<const IntVectorArray&> lookup
-  { "get_iva()",
+  return get<const IntVectorArray>
+  ( "get_iva()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
     { /* variables */ },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 {
-  static LookerUpper<const IntSet&> lookup
-  { "get_is()",
+  return get<const IntSet>
+  ( "get_is()",
     { /* environment */ },
     { /* method */ },
-    { /* model */
-      {"surrogate.function_indices", P_MOD surrogateFnIndices}
-    },
+    { /* model */ },
     { /* variables */ },
     { /* interface */ },
     { /* responses */
@@ -1811,17 +1770,15 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
       {"hessians.mixed.id_analytic", P_RES idAnalyticHessians},
       {"hessians.mixed.id_numerical", P_RES idNumericalHessians},
       {"hessians.mixed.id_quasi", P_RES idQuasiHessians}
-    }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    },
+    entry_name, dbRep);
 }
 
 
 const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 {
-  static LookerUpper<const IntSetArray&> lookup
-  { "get_isa()",
+  return get<const IntSetArray>
+  ( "get_isa()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1830,16 +1787,31 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
       {"discrete_state_set_int.values", P_VAR discreteStateSetInt}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
+
+
+const SizetSet& ProblemDescDB::get_szs(const String& entry_name) const
+{
+  return get<const SizetSet>
+  ( "get_szs()",
+    { /* environment */ },
+    { /* method */ },
+    { /* model */
+      {"surrogate.function_indices", P_MOD surrogateFnIndices}
+    },
+    { /* variables */ },
+    { /* interface */ },
+    { /* responses */ },
+    entry_name, dbRep);
+}
+
 
 const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 {
-  static LookerUpper<const StringSetArray&> lookup
-  { "get_ssa()",
+  return get <const StringSetArray>
+  ( "get_ssa()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1848,17 +1820,15 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
       {"discrete_state_set_string.values", P_VAR discreteStateSetStr}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 {
-  static LookerUpper<const RealSetArray&> lookup
-  { "get_rsa()",
+  return get<const RealSetArray>
+  ( "get_rsa()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -1867,117 +1837,105 @@ const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
       {"discrete_state_set_real.values", P_VAR discreteStateSetReal}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 {
-  static LookerUpper<const IntRealMapArray&> lookup
-  { "get_irma()",
+  return get<const IntRealMapArray>
+  ( "get_irma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
     { /* variables */
       {"discrete_uncertain_set_int.values_probs",
-	  P_VAR discreteUncSetIntValuesProbs},
+    	  P_VAR discreteUncSetIntValuesProbs},
       {"histogram_uncertain.point_int_pairs", P_VAR histogramUncPointIntPairs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) const
 {
-  static LookerUpper<const StringRealMapArray&> lookup
-  { "get_srma()",
+  return get<const StringRealMapArray>
+  ( "get_srma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
     { /* variables */
       {"discrete_uncertain_set_string.values_probs",
-	  P_VAR discreteUncSetStrValuesProbs},
+    	  P_VAR discreteUncSetStrValuesProbs},
       {"histogram_uncertain.point_string_pairs", P_VAR histogramUncPointStrPairs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 {
- static LookerUpper<const RealRealMapArray&> lookup
-  { "get_rrma()",
+  return get<const RealRealMapArray>
+  ( "get_rrma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
     { /* variables */
       {"discrete_uncertain_set_real.values_probs",
-	  P_VAR discreteUncSetRealValuesProbs},
+    	  P_VAR discreteUncSetRealValuesProbs},
       {"histogram_uncertain.bin_pairs",   P_VAR histogramUncBinPairs},
       {"histogram_uncertain.point_real_pairs", P_VAR histogramUncPointRealPairs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const RealRealPairRealMapArray& ProblemDescDB::
 get_rrrma(const String& entry_name) const
 {
- static LookerUpper<const RealRealPairRealMapArray&> lookup
-  { "get_rrrma()",
+  return get<const RealRealPairRealMapArray>
+  ( "get_rrrma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
     { /* variables */
       {"continuous_interval_uncertain.basic_probs",
-	  P_VAR continuousIntervalUncBasicProbs}
+    	  P_VAR continuousIntervalUncBasicProbs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const IntIntPairRealMapArray& ProblemDescDB::
 get_iirma(const String& entry_name) const
 {
- static LookerUpper<const IntIntPairRealMapArray&> lookup
-  { "get_iirma()",
+  return get<const IntIntPairRealMapArray>
+  ( "get_iirma()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
     { /* variables */
       {"discrete_interval_uncertain.basic_probs",
-	  P_VAR discreteIntervalUncBasicProbs}
+    	  P_VAR discreteIntervalUncBasicProbs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
-  static LookerUpper<const StringArray&> lookup
-  { "get_sa()",
+  return get<const StringArray>
+  ( "get_sa()",
     { /* environment */ },
     { /* method */
       {"coliny.misc_options", P_MET miscOptions},
@@ -1996,20 +1954,20 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
       {"continuous_design.labels", P_VAR continuousDesignLabels},
       {"continuous_design.scale_types", P_VAR continuousDesignScaleTypes},
       {"continuous_epistemic_uncertain.labels",
-	  P_VAR continuousEpistemicUncLabels},
+    	  P_VAR continuousEpistemicUncLabels},
       {"continuous_state.labels", P_VAR continuousStateLabels},
       {"discrete_aleatory_uncertain_int.labels",
-	  P_VAR discreteIntAleatoryUncLabels},
+    	  P_VAR discreteIntAleatoryUncLabels},
       {"discrete_aleatory_uncertain_real.labels",
-	  P_VAR discreteRealAleatoryUncLabels},
+    	  P_VAR discreteRealAleatoryUncLabels},
       {"discrete_aleatory_uncertain_string.initial_point",
-	  P_VAR discreteStrAleatoryUncVars},
+    	  P_VAR discreteStrAleatoryUncVars},
       {"discrete_aleatory_uncertain_string.labels",
-	  P_VAR discreteStrAleatoryUncLabels},
+    	  P_VAR discreteStrAleatoryUncLabels},
       {"discrete_aleatory_uncertain_string.lower_bounds",
-	  P_VAR discreteStrAleatoryUncLowerBnds},
+    	  P_VAR discreteStrAleatoryUncLowerBnds},
       {"discrete_aleatory_uncertain_string.upper_bounds",
-	  P_VAR discreteStrAleatoryUncUpperBnds},
+    	  P_VAR discreteStrAleatoryUncUpperBnds},
       {"discrete_design_range.labels", P_VAR discreteDesignRangeLabels},
       {"discrete_design_set_int.labels", P_VAR discreteDesignSetIntLabels},
       {"discrete_design_set_real.labels", P_VAR discreteDesignSetRealLabels},
@@ -2018,17 +1976,17 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
       {"discrete_design_set_string.lower_bounds", P_VAR discreteDesignSetStrLowerBnds},
       {"discrete_design_set_string.upper_bounds", P_VAR discreteDesignSetStrUpperBnds},
       {"discrete_epistemic_uncertain_int.labels",
-	  P_VAR discreteIntEpistemicUncLabels},
+    	  P_VAR discreteIntEpistemicUncLabels},
       {"discrete_epistemic_uncertain_real.labels",
-	  P_VAR discreteRealEpistemicUncLabels},
+    	  P_VAR discreteRealEpistemicUncLabels},
       {"discrete_epistemic_uncertain_string.initial_point",
-	  P_VAR discreteStrEpistemicUncVars},
+    	  P_VAR discreteStrEpistemicUncVars},
       {"discrete_epistemic_uncertain_string.labels",
-	  P_VAR discreteStrEpistemicUncLabels},
+    	  P_VAR discreteStrEpistemicUncLabels},
       {"discrete_epistemic_uncertain_string.lower_bounds",
-	  P_VAR discreteStrEpistemicUncLowerBnds},
+    	  P_VAR discreteStrEpistemicUncLowerBnds},
       {"discrete_epistemic_uncertain_string.upper_bounds",
-	  P_VAR discreteStrEpistemicUncUpperBnds},
+    	  P_VAR discreteStrEpistemicUncUpperBnds},
       {"discrete_state_range.labels", P_VAR discreteStateRangeLabels},
       {"discrete_state_set_int.labels", P_VAR discreteStateSetIntLabels},
       {"discrete_state_set_real.labels", P_VAR discreteStateSetRealLabels},
@@ -2052,17 +2010,15 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
       { "primary_response_fn_scale_types", P_RES primaryRespFnScaleTypes},
       { "primary_response_fn_sense", P_RES primaryRespFnSense},
       { "variance_type", P_RES varianceType}
-    }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    },
+    entry_name, dbRep);
 }
 
 
 const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 {
-  static LookerUpper<const String2DArray&> lookup
-  { "get_s2a()",
+  return get<const String2DArray>
+  ( "get_s2a()",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -2070,17 +2026,15 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
     { /* interface */
       {"application.analysis_components", P_INT analysisComponents}
     },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 const String& ProblemDescDB::get_string(const String& entry_name) const
 {
-  static LookerUpper<const String&> lookup
-  { "get_string()",
+  return get<const String>
+  ( "get_string()",
     { /* environment */
       {"error_file", P_ENV errorFile},
       {"output_file", P_ENV outputFile},
@@ -2138,7 +2092,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"nond.data_dist_filename", P_MET dataDistFile},
       {"nond.data_dist_type", P_MET dataDistType},
       {"nond.discrepancy_type", P_MET modelDiscrepancyType},
-	//{"nond.expansion_sample_type", P_MET expansionSampleType},
+    	//{"nond.expansion_sample_type", P_MET expansionSampleType},
       {"nond.export_corrected_model_file", P_MET exportCorrModelFile},
       {"nond.export_corrected_variance_file", P_MET exportCorrVarFile},
       {"nond.export_discrepancy_file", P_MET exportDiscrepFile},
@@ -2155,7 +2109,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"nond.proposal_covariance_type", P_MET proposalCovType},
       {"nond.reliability_integration", P_MET reliabilityIntegration},
       {"optpp.search_method", P_MET searchMethod},
-      {"pattern_search.synchronization", P_MET evalSynchronize},
       {"pstudy.import_file", P_MET pstudyFilename},
       {"random_number_generator", P_MET rngName},
       {"replacement_type", P_MET replacementType},
@@ -2212,17 +2165,15 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"method_source", P_RES methodSource},
       {"quasi_hessian_type", P_RES quasiHessianType},
       {"scalar_data_filename", P_RES scalarDataFileName}
-    }
-  };
-
-  return lookup.get(entry_name, dbRep);
+    },
+    entry_name, dbRep);
 }
 
 
 const Real& ProblemDescDB::get_real(const String& entry_name) const
 {
-  static LookerUpper<const Real&> lookup
-  { "get_real()",
+  return get<const Real>
+  ( "get_real()",
     { /* environment */ },
     { /* method */
       {"asynch_pattern_search.constraint_penalty", P_MET constrPenalty},
@@ -2288,7 +2239,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"active_subspace.cv.decrease_tolerance", P_MOD decreaseTolerance},
       {"active_subspace.cv.relative_tolerance", P_MOD relTolerance},
       {"active_subspace.truncation_method.energy.truncation_tolerance",
-	  P_MOD truncationTolerance},
+    	  P_MOD truncationTolerance},
       {"adapted_basis.collocation_ratio", P_MOD adaptedBasisCollocRatio},
       {"c3function_train.collocation_ratio", P_MOD collocationRatio},
       {"c3function_train.solver_rounding_tolerance", P_MOD solverRoundingTol},
@@ -2307,17 +2258,15 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     { /* interface */
       {"nearby_evaluation_cache_tolerance", P_INT nearbyEvalCacheTol}
     },
-    { /* responses */ }
-  };
-
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 int ProblemDescDB::get_int(const String& entry_name) const
 {
-  static LookerUpper<int> lookup
-  { "get_int()",
+  return get<int>
+  ( "get_int()",
     { /* environment */
       {"output_precision", P_ENV outputPrecision},
       {"stop_restart", P_ENV stopRestart}
@@ -2393,17 +2342,15 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"failure_capture.retry_limit", P_INT retryLimit},
       {"processors_per_evaluation", P_INT procsPerEval}
     },
-    { /* responses */ }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    { /* responses */ },
+    entry_name, dbRep);
 }
 
 
 short ProblemDescDB::get_short(const String& entry_name) const
 {
-  static LookerUpper<short> lookup
-  { "get_short()",
+  return get<short>
+  ( "get_short()",
     { /* environment */ },
     { /* method */
       {"iterator_scheduling", P_MET iteratorScheduling},
@@ -2435,6 +2382,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"sbl.merit_function", P_MET surrBasedLocalMeritFn},
       {"sbl.subproblem_constraints", P_MET surrBasedLocalSubProbCon},
       {"sbl.subproblem_objective", P_MET surrBasedLocalSubProbObj},
+      {"synchronization", P_MET evalSynchronize},
       {"wilks.sided_interval", P_MET wilksSidedInterval}
     },
     { /* model */
@@ -2467,17 +2415,15 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"evaluation_scheduling", P_INT evalScheduling},
       {"local_evaluation_scheduling", P_INT asynchLocalEvalScheduling}
     },
-    { /* responses */}
-  };
-
-  return lookup.get(entry_name, dbRep);
+    { /* responses */},
+    entry_name, dbRep);
 }
 
 
 unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 {
-  static LookerUpper<unsigned short> lookup
-  { "get_ushort()",
+  return get<unsigned short>
+  ( "get_ushort()",
     { /* environment */
       {"interface_evals_selection", P_ENV interfEvalsSelection},
       {"model_evals_selection", P_ENV modelEvalsSelection},
@@ -2542,10 +2488,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     },
     { /* responses */
       {"scalar_data_format", P_RES scalarDataFormat}
-    }
-  };
-
-  return lookup.get(entry_name, dbRep);
+    },
+    entry_name, dbRep);
 }
 
 
@@ -2583,8 +2527,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     // else fall through to normal queries
   }
 
-  static LookerUpper<size_t> lookup
-  { "get_sizet()",
+  return get<size_t>
+  ( "get_sizet()",
     { /* environment */ },
     { /* method */
       {"final_solutions", P_MET numFinalSolutions},
@@ -2669,17 +2613,15 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	  P_RES numScalarNonlinearIneqConstraints},
       {"num_scalar_objectives", P_RES numScalarObjectiveFunctions},
       {"num_scalar_responses", P_RES numScalarResponseFunctions}
-    }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    },
+    entry_name, dbRep);
 }
 
 
 bool ProblemDescDB::get_bool(const String& entry_name) const
 {
-  static LookerUpper<bool> lookup
-  { "get_bool()",
+  return get<bool>
+  ( "get_bool()",
     { /* environment */
       {"check", P_ENV checkFlag},
       {"graphics", P_ENV graphicsFlag},
@@ -2797,10 +2739,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"ignore_bounds", P_RES ignoreBounds},
       {"interpolate", P_RES interpolateFlag},
       {"read_field_coordinates", P_RES readFieldCoords}
-    }
-  };
-  
-  return lookup.get(entry_name, dbRep);
+    },
+    entry_name, dbRep);
 }
 
 /** This special case involving pointers doesn't use generic lookups */
@@ -2815,10 +2755,11 @@ void** ProblemDescDB::get_voidss(const String& entry_name) const
   return abort_handler_t<void**>(PARSE_ERROR);
 }
 
+
 void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 {
-  static LookerUpper<RealVector&> lookup
-  { "set(RealVector&)",
+  RealVector& rep_rv = get<RealVector>
+  ( "set(RealVector&)",
     { /* environment */ },
     { /* method */ },
     { /* model */
@@ -2916,18 +2857,17 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
       {"nonlinear_inequality_upper_bounds", P_RES nonlinearIneqUpperBnds},
       {"primary_response_fn_scales", P_RES primaryRespFnScales},
       {"primary_response_fn_weights", P_RES primaryRespFnWeights}
-    }
-  };
+    },
+    entry_name, dbRep);
 
-  RealVector& rep_rv = lookup.get(entry_name, dbRep);
   rep_rv = rv;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 {
-  static LookerUpper<IntVector&> lookup
-  { "set(IntVector&)",
+  IntVector& rep_iv = get<IntVector>
+  ( "set(IntVector&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -2960,18 +2900,17 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
       {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  IntVector& rep_iv = lookup.get(entry_name, dbRep);
   rep_iv = iv;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 {
-  static LookerUpper<BitArray&> lookup
-  { "set(BitArray&)",
+  BitArray& rep_ba = get<BitArray>
+  ( "set(BitArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -2996,18 +2935,17 @@ void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
       {"poisson_uncertain.categorical", P_VAR poissonUncCat}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  BitArray& rep_ba = lookup.get(entry_name, dbRep);
   rep_ba = ba;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 {
-  static LookerUpper<RealSymMatrix&> lookup
-  { "set(RealSymMatrix&)",
+  RealSymMatrix& rep_rsm = get<RealSymMatrix>
+  ( "set(RealSymMatrix&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -3015,18 +2953,17 @@ void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
       {"uncertain.correlation_matrix", P_VAR uncertainCorrelations}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  RealSymMatrix& rep_rsm = lookup.get(entry_name, dbRep);
   rep_rsm = rsm;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 {
-  static LookerUpper<RealVectorArray&> lookup
-  { "set(RealVectorArray&)",
+  RealVectorArray& rep_rva = get<RealVectorArray>
+  ( "set(RealVectorArray&)",
     { /* environment */ },
     { /* method */
       {"nond.gen_reliability_levels", P_MET genReliabilityLevels},
@@ -3037,35 +2974,33 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
     { /* model */ },
     { /* variables */ },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  RealVectorArray& rep_rva = lookup.get(entry_name, dbRep);
   rep_rva = rva;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
 {
-  static LookerUpper<IntVectorArray&> lookup
-  { "set(IntVectorArray&)",
+  IntVectorArray& rep_iva = get<IntVectorArray>
+  ( "set(IntVectorArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
     { /* variables */ },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  IntVectorArray& rep_iva = lookup.get(entry_name, dbRep);
   rep_iva = iva;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 {
-  static LookerUpper<IntSetArray&> lookup
-  { "set(IntSetArray&)",
+  IntSetArray& rep_isa = get<IntSetArray>
+  ( "set(IntSetArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -3074,18 +3009,17 @@ void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
       {"discrete_state_set_int.values",  P_VAR discreteStateSetInt}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  IntSetArray& rep_isa = lookup.get(entry_name, dbRep);
   rep_isa = isa;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 {
-  static LookerUpper<RealSetArray&> lookup
-  { "set(RealSetArray&)",
+  RealSetArray& rep_rsa = get<RealSetArray>
+  ( "set(RealSetArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -3094,18 +3028,17 @@ void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
       {"discrete_state_set_real.values",  P_VAR discreteStateSetReal}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  RealSetArray& rep_rsa = lookup.get(entry_name, dbRep);
   rep_rsa = rsa;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 {
-  static LookerUpper<IntRealMapArray&> lookup
-  { "set(IntRealMapArray&)",
+  IntRealMapArray& rep_irma = get<IntRealMapArray>
+  ( "set(IntRealMapArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -3115,18 +3048,17 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
       {"histogram_uncertain.point_int_pairs", P_VAR histogramUncPointIntPairs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  IntRealMapArray& rep_irma = lookup.get(entry_name, dbRep);
   rep_irma = irma;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma)
 {
-  static LookerUpper<StringRealMapArray&> lookup
-  { "set(StringRealMapArray&)",
+  StringRealMapArray& rep_srma = get<StringRealMapArray>
+  ( "set(StringRealMapArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -3134,18 +3066,17 @@ void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma
       {"histogram_uncertain.point_string_pairs", P_VAR histogramUncPointStrPairs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  StringRealMapArray& rep_srma = lookup.get(entry_name, dbRep);
   rep_srma = srma;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 {
-  static LookerUpper<RealRealMapArray&> lookup
-  { "set(RealRealMapArray&)",
+  RealRealMapArray& rep_rrma = get<RealRealMapArray>
+  ( "set(RealRealMapArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -3154,18 +3085,17 @@ void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 	  P_VAR discreteUncSetRealValuesProbs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  RealRealMapArray& rep_rrma = lookup.get(entry_name, dbRep);
   rep_rrma = rrma;
 }
 
 void ProblemDescDB::
 set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 {
-  static LookerUpper<RealRealPairRealMapArray&> lookup
-  { "set(RealRealPairRealMapArray&)",
+  RealRealPairRealMapArray& rep_rrrma = get<RealRealPairRealMapArray>
+  ( "set(RealRealPairRealMapArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -3174,18 +3104,17 @@ set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 	  P_VAR continuousIntervalUncBasicProbs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  RealRealPairRealMapArray& rep_rrrma = lookup.get(entry_name, dbRep);
   rep_rrrma = rrrma;
 }
 
 void ProblemDescDB::
 set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 {
-  static LookerUpper<IntIntPairRealMapArray&> lookup
-  { "set(IntIntPairRealMapArray&)",
+  IntIntPairRealMapArray& rep_iirma = get<IntIntPairRealMapArray>
+  ( "set(IntIntPairRealMapArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */ },
@@ -3194,18 +3123,17 @@ set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 	  P_VAR discreteIntervalUncBasicProbs}
     },
     { /* interface */ },
-    { /* responses */ }
-  };
+    { /* responses */ },
+    entry_name, dbRep);
 
-  IntIntPairRealMapArray& rep_iirma = lookup.get(entry_name, dbRep);
   rep_iirma = iirma;
 }
 
 
 void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 {
-  static LookerUpper<StringArray&> lookup
-  { "set(StringArray&)",
+  StringArray& rep_sa = get<StringArray>
+  ( "set(StringArray&)",
     { /* environment */ },
     { /* method */ },
     { /* model */
@@ -3244,10 +3172,9 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
       {"nonlinear_equality_scale_types", P_RES nonlinearEqScaleTypes },
       {"nonlinear_inequality_scale_types", P_RES nonlinearIneqScaleTypes },
       {"primary_response_fn_scale_types", P_RES primaryRespFnScaleTypes }
-    }
-  };
+    },
+    entry_name, dbRep);
 
-  StringArray& rep_sa = lookup.get(entry_name, dbRep);
   rep_sa = sa;
 }
 

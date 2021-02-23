@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -97,7 +98,8 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_BOX_BEHNKEN,     SUBMETHOD_CENTRAL_COMPOSITE,
        SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
        // Bayesian inference algorithms:
-       SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_MUQ, SUBMETHOD_QUESO, SUBMETHOD_WASABI,
+       SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_MUQ, SUBMETHOD_QUESO,
+       SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBO,
        // verification approaches:
@@ -113,6 +115,10 @@ enum { NO_RESULTS=0,        // suppress all results
        REFINEMENT_RESULTS,  // results following a (minor) refinement iteration
        INTERMEDIATE_RESULTS,// results following a (major) alg stage/model level
        FINAL_RESULTS };     // final UQ results (throttled if subIterator)
+
+// define special values for method synchronization (COLINY, APPS, EGO)
+enum { DEFAULT_SYNCHRONIZATION=0, BLOCKING_SYNCHRONIZATION,
+       NONBLOCKING_SYNCHRONIZATION };
 
 // define special values for Iterator and Interface scheduling
 enum { DEFAULT_SCHEDULING, MASTER_SCHEDULING, PEER_SCHEDULING,
@@ -605,7 +611,7 @@ public:
 
   /// the \c synchronization setting for parallel pattern search
   /// methods in \ref MethodSCOLIBPS and \ref MethodAPPS
-  String evalSynchronize;
+  short evalSynchronize;
 
   // JEGA
 

@@ -1,7 +1,8 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -725,11 +726,11 @@ if(HAVE_NPSOL)
   list(APPEND iterator_src SOLBase.cpp NPSOLOptimizer.cpp NLSSOLLeastSq.cpp)
 
   if(NOT APPLE)
-    list(APPEND Dakota_src_fortran npoptn_wrapper.f)
+    list(APPEND Dakota_src_fortran sol_optn_wrapper.f)
   else()
-    # ToDo: Debug unusual Mac build error when npoptn_wrapper.f is appended
+    # ToDo: Debug unusual Mac build error when sol_optn_wrapper.f is appended
     #       to the Dakota_src_fortran list rather than the iterator_src list
-    list(APPEND iterator_src npoptn_wrapper.f)
+    list(APPEND iterator_src sol_optn_wrapper.f)
   endif()
 endif(HAVE_NPSOL)
 

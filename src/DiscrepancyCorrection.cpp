@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -29,7 +30,7 @@ namespace Dakota {
 extern PRPCache data_pairs; // global container
 
 void DiscrepancyCorrection::
-initialize(Model& surr_model, const IntSet& surr_fn_indices, short corr_type,
+initialize(Model& surr_model, const SizetSet& surr_fn_indices, short corr_type,
 	   short corr_order)
 {
   surrModel = surr_model; // shallow copy
@@ -44,7 +45,7 @@ initialize(Model& surr_model, const IntSet& surr_fn_indices, short corr_type,
 
 
 void DiscrepancyCorrection::
-initialize(const IntSet& surr_fn_indices, size_t num_fns, size_t num_vars,
+initialize(const SizetSet& surr_fn_indices, size_t num_fns, size_t num_vars,
 	   short corr_type, short corr_order)
 {
   surrogateFnIndices = surr_fn_indices;
@@ -60,7 +61,7 @@ initialize(const IntSet& surr_fn_indices, size_t num_fns, size_t num_vars,
 
 
 void DiscrepancyCorrection::
-initialize(const IntSet& surr_fn_indices, size_t num_fns, size_t num_vars,
+initialize(const SizetSet& surr_fn_indices, size_t num_fns, size_t num_vars,
 	   short corr_type, short corr_order, const String& approx_type)
 {
   surrogateFnIndices = surr_fn_indices;
@@ -96,7 +97,7 @@ void DiscrepancyCorrection::initialize_corrections()
   case 0: default: dataOrder = 1; break;
   }
 
-  ISIter it;
+  StSIter it;
   if (approxType.empty()) 
     sharedData = SharedApproxData("local_taylor", approx_order, numVars,
 				  dataOrder, NORMAL_OUTPUT);
@@ -141,7 +142,7 @@ compute(const Variables& vars, const Response& truth_response,
   // require additional fn evaluation of previous pt on current surrogate.
   // This could combine with DB lookups within apply_multiplicative()
   // (approx re-evaluated if not found in DB search).
-  int index; size_t j, k; ISIter it;
+  int index; size_t j, k; StSIter it;
   if (correctionType == COMBINED_CORRECTION && correctionComputed) {
     approxFnsPrevCenter = approxFnsCenter;
     truthFnsPrevCenter  = truthFnsCenter;
@@ -321,7 +322,7 @@ compute(//const Variables& vars,
   // require additional fn evaluation of previous pt on current surrogate.
   // This could combine with DB lookups within apply_multiplicative()
   // (approx re-evaluated if not found in DB search).
-  int index; size_t j, k; ISIter it;
+  int index; size_t j, k; StSIter it;
   //if (correctionType == COMBINED_CORRECTION && correctionComputed) {
   //  correctionPrevCenterPt = correctionCenterPt;
   //  approxFnsPrevCenter    = approxFnsCenter;
@@ -430,7 +431,7 @@ compute(const VariablesArray& vars_array, const ResponseArray&
   // it is not necessary to back out a previous correction, and the
   // computation of the new correction is straightforward.
 
-  int i, index; ISIter it;
+  int i, index; StSIter it;
   
   for (i=0; i < vars_array.size(); i++)
     compute(vars_array[i], truth_response_array[i], approx_response_array[i], 
@@ -611,7 +612,7 @@ check_multiplicative(const RealVector& truth_fns, const RealVector& approx_fns)
   // In either case, automatically transition to additive correction.  Current
   // logic transitions back to multiplicative as soon as the response fns are
   // no longer near zero.
-  bool bad_scaling = false; int index; ISIter it;
+  bool bad_scaling = false; int index; StSIter it;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
     if ( std::fabs(approx_fns[index]) < Pecos::SMALL_NUMBER ||
@@ -648,7 +649,7 @@ apply(const Variables& vars, Response& approx_response, bool quiet_flag)
     apply_multiplicative(vars, mult_response);
 
     // compute convex combination of add_response and mult_response
-    ISIter it; int index; size_t j, k;
+    StSIter it; int index; size_t j, k;
     const ShortArray& asv = approx_response.active_set_request_vector();
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
@@ -686,7 +687,7 @@ apply(const Variables& vars, Response& approx_response, bool quiet_flag)
 void DiscrepancyCorrection::
 apply_additive(const Variables& vars, Response& approx_response)
 {
-  size_t index; ISIter it;
+  size_t index; StSIter it;
   const ShortArray& asv = approx_response.active_set_request_vector();
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
@@ -716,7 +717,7 @@ apply_multiplicative(const Variables& vars, Response& approx_response)
   // active data being corrected.
   bool fn_db_search = false, grad_db_search = false;
   const ShortArray& asv = approx_response.active_set_request_vector();
-  ShortArray fn_db_asv, grad_db_asv; ISIter it; size_t j, k, index;
+  ShortArray fn_db_asv, grad_db_asv; StSIter it; size_t j, k, index;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
     if ( !(asv[index] & 1) && ( ((asv[index] & 2) && correctionOrder >= 1) ||
@@ -832,7 +833,7 @@ void DiscrepancyCorrection::
 compute_variance(const VariablesArray& vars_array, RealMatrix& approx_variance,
     		 bool quiet_flag)
 {
-  int index; ISIter it;
+  int index; StSIter it;
   RealVector pred_var(vars_array.size());
   //Cout << "Vars array size = " << vars_array.size();
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {

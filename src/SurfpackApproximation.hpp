@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -121,10 +122,11 @@ protected:
 		  const SurfData& data);
 
   /// compute and print all requested diagnostics and cross-validation 
-  void primary_diagnostics(int fn_index) override;
+  void primary_diagnostics(size_t fn_index) override;
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
-  void challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+  void challenge_diagnostics(size_t fn_index,
+			     const RealMatrix& challenge_points,
                              const RealVector& challenge_responses) override;
 
   /// compute and return cross-validation for metric_type with num_folds

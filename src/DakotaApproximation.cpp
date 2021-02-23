@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -279,6 +280,19 @@ void Approximation::rebuild()
     approxRep->rebuild();
   else
     build(); // if no incremental rebuild(), fall back on full build()
+}
+
+
+void Approximation::replace(const IntResponsePair& response_pr, size_t fn_index)
+{
+  if (approxRep)
+    approxRep->replace(response_pr, fn_index);
+  else {
+    Pecos::SurrogateDataResp sdr
+      = response_to_sdr(response_pr.second, fn_index);// *** Note: SHALLOW_COPY *** the referenced responses will be cleared from the Model queue but *may* persist in the eval cache; this is what ApproximationInterface::cache_lookup() manages ...
+    approxData.replace(/*sharedDataRep->approxDataKeys,*/
+		       sdr, response_pr.first);
+  }
 }
 
 
@@ -850,7 +864,7 @@ cv_diagnostic(const StringArray& metric_types, unsigned num_folds)
 }
 
 
-void Approximation::primary_diagnostics(int fn_index)
+void Approximation::primary_diagnostics(size_t fn_index)
 {
   if (approxRep)
     approxRep->primary_diagnostics(fn_index);
@@ -875,7 +889,7 @@ challenge_diagnostic(const StringArray& metric_types,
 
 
 void Approximation::
-challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+challenge_diagnostics(size_t fn_index, const RealMatrix& challenge_points,
                       const RealVector& challenge_resps)
 {
   if (approxRep)
@@ -1106,35 +1120,41 @@ add(const Variables& vars, bool anchor_flag, bool deep_copy,
 }
 
 
+Pecos::SurrogateDataResp Approximation::
+response_to_sdr(const Response& response, size_t fn_index)
+{
+  short asv_val = response.active_set_request_vector()[fn_index];
+  switch (asv_val) {
+  case 0: // should not happen: ASV dropouts managed at higher level
+    return Pecos::SurrogateDataResp(); break;
+  case 1: // special case with lightweight ctor
+    return Pecos::SurrogateDataResp(response.function_value(fn_index));
+    break;
+  default: {
+    // general ASV: use empty vectors/matrices if data is not active.
+    Real fn_val = (asv_val & 1) ? response.function_value(fn_index) : 0.;
+    RealVector fn_grad;  RealSymMatrix fn_hess;
+    if (asv_val & 2) fn_grad = response.function_gradient_view(fn_index);
+    if (asv_val & 4) fn_hess = response.function_hessian_view(fn_index);
+    // deep_copy requests are managed in add(SurrogateDataResp)
+    return Pecos::SurrogateDataResp(fn_val, fn_grad, fn_hess, asv_val,
+				    Pecos::SHALLOW_COPY);
+    break;
+  }
+  }
+}
+
+
 void Approximation::
-add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy,
+add(const Response& response, size_t fn_index, bool anchor_flag, bool deep_copy,
     size_t key_index)
 {
   if (approxRep)
     approxRep->add(response, fn_index, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
-    short asv_val = response.active_set_request_vector()[fn_index];
-    switch (asv_val) {
-    case 0:
-      return; break; // should not happen: ASV dropouts managed at higher level
-    case 1: { // special case with lightweight ctor
-      Pecos::SurrogateDataResp sdr(response.function_value(fn_index));
-      add(sdr, anchor_flag, deep_copy, key_index);
-      break;
-    }
-    default: {
-      // general ASV: use empty vectors/matrices if data is not active.
-      Real fn_val = (asv_val & 1) ? response.function_value(fn_index) : 0.;
-      RealVector fn_grad;  RealSymMatrix fn_hess;
-      if (asv_val & 2) fn_grad = response.function_gradient_view(fn_index);
-      if (asv_val & 4) fn_hess = response.function_hessian_view(fn_index);
-      // deep_copy requests are applied downstream in add(SurrogateDataResp)
-      Pecos::SurrogateDataResp
-	sdr(fn_val, fn_grad, fn_hess, asv_val, Pecos::SHALLOW_COPY);
+    Pecos::SurrogateDataResp sdr = response_to_sdr(response, fn_index);
+    if (!sdr.is_null())
       add(sdr, anchor_flag, deep_copy, key_index); // deep copy applied here
-      break;
-    }
-  }
   }
 }
 

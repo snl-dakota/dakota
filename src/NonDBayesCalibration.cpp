@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -1337,9 +1338,9 @@ void NonDBayesCalibration::build_scalar_discrepancy()
   } 
 
   // Initialize DiscrepancyCorrection class
-  IntSet fn_indices;
+  SizetSet fn_indices;
   // Hardcode for now, call id_surrogates eventually? See SurrogateModel.cpp 
-  for (int i = 0; i < numFunctions; ++i)
+  for (size_t i = 0; i < numFunctions; ++i)
     fn_indices.insert(i);
   DiscrepancyCorrection modelDisc;
   short corr_type = ADDITIVE_CORRECTION; 

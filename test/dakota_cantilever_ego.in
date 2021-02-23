@@ -9,7 +9,7 @@
 # s5: s0 with experimental gaussian process
 
 method,
-    efficient_global				#s0,#s1,#s2,#s3,#s4,#s5,#p0,#p1
+    efficient_global
       gaussian_process dakota			#s0,#s4,#p0,#p1
 #     gaussian_process surfpack			#s1
 #       convergence_tolerance 1.0e-3		#s3
@@ -21,8 +21,7 @@ method,
       seed = 123457
 #     batch_size = 4				#s4,#p0
 #     batch_size = 6                        	#p1
-#     exploration = 2                       	#p1
-#     max_iterations = 26                   	#p1
+#       exploration = 2                       	#p1
 
 variables,
     continuous_design = 2

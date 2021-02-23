@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -712,7 +713,7 @@ Real SurfpackApproximation::diagnostic(const String& metric_type,
 }
 
 
-void SurfpackApproximation::primary_diagnostics(int fn_index)
+void SurfpackApproximation::primary_diagnostics(size_t fn_index)
 {
   String func_description = approxLabel.empty() ?
     "function " + std::to_string(fn_index+1) : approxLabel;
@@ -774,7 +775,7 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
 
 
 void SurfpackApproximation::
-challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+challenge_diagnostics(size_t fn_index, const RealMatrix& challenge_points,
                       const RealVector& challenge_responses)
 {
   if (!model) { 

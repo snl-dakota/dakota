@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -92,6 +93,9 @@ public:
 
   /// rebuilds the approximation incrementally
   virtual void rebuild();
+
+  /// replace the response data 
+  virtual void replace(const IntResponsePair& response_pr, size_t fn_index);
   /// removes entries from end of SurrogateData::{vars,resp}Data
   /// (last points appended, or as specified in args)
   virtual void pop_coefficients(bool save_data);
@@ -202,14 +206,14 @@ public:
   virtual RealArray cv_diagnostic(const StringArray& metric_types,
 				  unsigned num_folds);
   /// compute and print all requested diagnostics and cross-validation 
-  virtual void primary_diagnostics(int fn_index);
+  virtual void primary_diagnostics(size_t fn_index);
   /// compute requested diagnostics for user provided challenge pts
   virtual RealArray challenge_diagnostic(const StringArray& metric_types,
 			    const RealMatrix& challenge_points,
                             const RealVector& challenge_responses);
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
-  virtual void challenge_diagnostics(int fn_index, 
+  virtual void challenge_diagnostics(size_t fn_index, 
 				     const RealMatrix& challenge_points, 
                                      const RealVector& challenge_responses);
   // TODO: private implementation of cross-validation:
@@ -300,8 +304,10 @@ public:
   void add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag,
 	   bool deep_copy, size_t key_index = _NPOS);
   /// adds a new data point by appending to SurrogateData::respData
-  void add(const Response& response, int fn_index, bool anchor_flag,
+  void add(const Response& response, size_t fn_index, bool anchor_flag,
 	   bool deep_copy, size_t key_index = _NPOS);
+  /// tracks a new data point by appending to SurrogateData::dataIdentifiers
+  void add(int eval_id, size_t key_index = _NPOS);
 
   /// add surrogate data from the provided sample and response data,
   /// assuming continuous variables and function values only
@@ -403,7 +409,13 @@ private:
 
   /// Used only by the alternate envelope constructor to initialize
   /// approxRep to the appropriate derived type.
-  std::shared_ptr<Approximation> get_approx(const SharedApproxData& shared_data);
+  std::shared_ptr<Approximation>
+  get_approx(const SharedApproxData& shared_data);
+
+  /// create a SurrogateDataResp instance from the response data for a
+  /// particular QoI
+  Pecos::SurrogateDataResp response_to_sdr(const Response& response,
+					   size_t fn_index);
 
   //
   //- Heading: Data
@@ -513,6 +525,24 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag, bool deep_copy,
       if (anchor_flag) approxData.anchor_response(sdr);
       else             approxData.push_back(sdr);
     }
+  }
+}
+
+
+inline void Approximation::add(int eval_id, size_t key_index)
+{
+  if (approxRep)
+    approxRep->add(eval_id, key_index);
+  else { // not virtual: all derived classes use following definition
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    if (key_index == _NPOS) key_index = 0; // make front() the default
+    if (key_index >= keys.size()) {
+      Cerr << "Error: index out of range in Approximation::add()" << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
+
+    approxData.active_key(keys[key_index]);// no-op if key already active
+    approxData.push_back(eval_id);
   }
 }
 

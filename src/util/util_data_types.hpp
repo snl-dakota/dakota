@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -9,15 +10,16 @@
 #ifndef DAKOTA_UTIL_DATA_TYPES_HPP
 #define DAKOTA_UTIL_DATA_TYPES_HPP
 
-// TODO: Consider organizing typedefs by purpose / category, including what's needed
+// TODO: Consider organizing typedefs by purpose / category, including what's
+// needed
 
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "Teuchos_SerialDenseVector.hpp"
 
 // extend Eigen matrices with Boost serialization
-#include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
+#include <boost/serialization/serialization.hpp>
 #define EIGEN_MATRIX_PLUGIN "util_eigen_plugins.hpp"
 #include "Eigen/Dense"
 
@@ -26,7 +28,7 @@ namespace dakota {
 
 /// namespace for new %Dakota utilities module
 namespace util {
-  // empty
+// empty
 }
 
 // The following are in dakota namespace since shared across util and
@@ -35,8 +37,9 @@ namespace util {
 // TODO: determine proper variadic template syntax for const &
 /// silence unused parameter warning; use to indicate those parameters
 /// are intentionally unused
-template <typename ... Ts> void silence_unused_args(const Ts ...)
-{  /* empty body */  }
+template <typename... Ts>
+void silence_unused_args(const Ts...) { /* empty body */
+}
 
 // TODO: May want to have distinct Dakota names such as EigMatrixXd
 
@@ -65,7 +68,7 @@ using ParameterList = Teuchos::ParameterList;
 using StringArray = std::vector<std::string>;
 
 /// Double precision difference tolerance
-const double near_zero = std::abs(10.0*std::numeric_limits<double>::min());
+const double near_zero = std::abs(10.0 * std::numeric_limits<double>::min());
 
 }  // namespace dakota
 

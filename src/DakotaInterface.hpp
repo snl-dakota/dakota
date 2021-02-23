@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -134,7 +135,8 @@ public:
   virtual void clear_model_keys();
 
   /// set the (currently active) approximation function index set
-  virtual void approximation_function_indices(const IntSet& approx_fn_indices);
+  virtual void
+    approximation_function_indices(const SizetSet& approx_fn_indices);
 
   // link together more than one SurrogateData instance within an
   // ApproximationInterface
@@ -159,6 +161,17 @@ public:
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const VariablesArray& vars_array,
 				    const IntResponseMap& resp_map);
+  /// appends multiple points to an existing approximation
+  virtual void append_approximation(const IntVariablesMap& vars_map,
+				    const IntResponseMap&  resp_map);
+
+  /// replace the response for a single point within an existing approximation
+  virtual void replace_approximation(const IntResponsePair& response_pr);
+  /// replace responses for multiple points within an existing approximation
+  virtual void replace_approximation(const IntResponseMap& resp_map);
+  /// assigns trackEvalIds to activate tracking of evaluation ids within
+  /// surrogate data, enabling id-based lookups for data replacement
+  virtual void track_evaluation_ids(bool track);
 
   /// builds the approximation
   virtual void build_approximation(const RealVector& c_l_bnds,

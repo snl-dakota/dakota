@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -76,7 +77,7 @@ SurrogatesBaseApprox::cv_diagnostic(const StringArray& metric_types,
 }
 
 
-void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
+void SurrogatesBaseApprox::primary_diagnostics(size_t fn_index)
 {
   // BMA TODO: Check for null in case not yet built?!?
   String func_description = approxLabel.empty() ?
@@ -124,7 +125,7 @@ void SurrogatesBaseApprox::primary_diagnostics(int fn_index)
 
 
 void SurrogatesBaseApprox::
-challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+challenge_diagnostics(size_t fn_index, const RealMatrix& challenge_points,
 		      const RealVector& challenge_responses)
 {
   String func_description = approxLabel.empty() ?

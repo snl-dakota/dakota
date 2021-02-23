@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -286,7 +287,7 @@ protected:
 
   /// update the subModel's surrogate response function indices
   /// (DataFitSurrModel::surrogateFnIndices)
-  void surrogate_function_indices(const IntSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// update the subModel's surrogate response mode
   /// (SurrogateModel::responseMode)
@@ -816,7 +817,7 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 
 
 inline void RecastModel::
-surrogate_function_indices(const IntSet& surr_fn_indices)
+surrogate_function_indices(const SizetSet& surr_fn_indices)
 { subModel.surrogate_function_indices(surr_fn_indices); }
 
 

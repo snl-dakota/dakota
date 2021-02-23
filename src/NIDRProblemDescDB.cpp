@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -1417,17 +1418,6 @@ model_int(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-model_intsetm1(const char *keyname, Values *val, void **g, void *v)
-{
-  IntSet *is = &((*(Mod_Info**)g)->dmo->**(IntSet DataModelRep::**)v);
-  int *z = val->i;
-  size_t i, n = val->n;
-
-  for(i = 0; i < n; i++)
-    is->insert(z[i] - 1); // model converts ids -> indices
-}
-
-void NIDRProblemDescDB::
 model_lit(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_lit*)v)->sp = ((Model_mp_lit*)v)->lit;
@@ -1499,6 +1489,22 @@ model_sizet(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(size_t DataModelRep::**)v = n;
 }
 
+void NIDRProblemDescDB::
+model_id_to_index_set(const char *keyname, Values *val, void **g, void *v)
+{
+  SizetSet *ss = &((*(Mod_Info**)g)->dmo->**(SizetSet DataModelRep::**)v);
+  int *z = val->i; // extract as int ptr, prior to storage as SizetSet
+  size_t i, n = val->n, s;
+
+  for(i = 0; i < n; i++) {
+    if (z[i] > 0) {
+      s = z[i] - 1; // model converts ids -> indices
+      ss->insert(s);
+    }
+    else
+      botch("%s must be positive", keyname);      
+  }
+}
 
 void NIDRProblemDescDB::
 model_start(const char *keyname, Values *val, void **g, void *v)
@@ -6618,8 +6624,6 @@ static Method_mp_lit
         MP2(dataDistCovInputType,matrix),
       //MP2(dataDistType,gaussian),
       //MP2(dataDistType,user),
-	MP2(evalSynchronize,blocking),
-	MP2(evalSynchronize,nonblocking),
       //MP2(expansionSampleType,incremental_lhs),
 	MP2(exploratoryMoves,adaptive),
 	MP2(exploratoryMoves,multi_step),
@@ -7004,6 +7008,8 @@ static Method_mp_type
 	MP2s(emulatorType,PCE_EMULATOR),
 	MP2s(emulatorType,SC_EMULATOR),
 	MP2s(emulatorType,VPS_EMULATOR),
+	MP2s(evalSynchronize,BLOCKING_SYNCHRONIZATION),
+	MP2s(evalSynchronize,NONBLOCKING_SYNCHRONIZATION),
 	MP2p(expansionBasisType,ADAPTED_BASIS_EXPANDING_FRONT),
 	MP2p(expansionBasisType,ADAPTED_BASIS_GENERALIZED),
 	MP2p(expansionBasisType,HIERARCHICAL_INTERPOLANT),
@@ -7275,7 +7281,7 @@ static Method_mp_utype
 #define MP2s(x,y) model_mp_##x##_##y = {&DataModelRep::x,y}
 #define MP2p(x,y) model_mp_##x##_##y = {&DataModelRep::x,Pecos::y}
 
-static IntSet
+static SizetSet
 	MP_(surrogateFnIndices);
 
 static Model_mp_lit

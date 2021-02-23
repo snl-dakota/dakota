@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -42,7 +43,7 @@ namespace Dakota {
     Print Level = 10), "Verify Level", "Function Precision", and
     "Linesearch Tolerance" parameters, respectively, using NPSOL's
     npoptn() subroutine (as wrapped by npoptn2() from the
-    npoptn_wrapper.f file). Refer to [Gill, P.E., Murray, W.,
+    sol_optn_wrapper.f file). Refer to [Gill, P.E., Murray, W.,
     Saunders, M.A., and Wright, M.H., 1986] for information on NPSOL's
     optional input parameters and the npoptn() subroutine. */
 
@@ -144,6 +145,10 @@ public:
   void core_run();
 
   void declare_sources();
+
+protected:
+  void send_sol_option(std::string sol_option) override;
+
 private:
 
   //

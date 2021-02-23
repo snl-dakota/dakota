@@ -13,7 +13,7 @@ be satisfied at convergence of the algorithm. However, if the value is
 set too small the algorithm may terminate with one or more constraints
 being violated.
 
-Dakota's \c convergence_tolerance settings maps to NPSOL's feasbility
+Dakota's \c constraint_tolerance settings maps to NPSOL's feasbility
 tolerance which is an absolute tolerance on the constraints.
 
 Topics::

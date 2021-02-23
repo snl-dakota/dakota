@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -108,16 +109,34 @@ private:
   /// synchronous batch-sequential implementation: main function
   void batch_asynchronous_ego();
 
-  /// construct batch acquisition
-  void construct_batch_acquisition();
-  /// construct batch exploration
-  void construct_batch_exploration();
+  /// construct a batch of points from performing acquisition cycles
+  void construct_batch_acquisition(size_t new_acq,  size_t new_batch);
+  /// construct a batch of points from performing exploration cycles
+  void construct_batch_exploration(size_t new_expl, size_t new_batch);
 
   /// evaluate batch in parallel and replace liar responses
-  void evaluate_batch();
+  void evaluate_batch(bool rebuild);
+  /// perform nonblocking synchronization for parallel evaluation of
+  /// truth responses and replace liar responses for any completions
+  bool query_batch(bool rebuild);
+  /// backfill any completed truth response evaluations in case of
+  /// nonblocking synchronization
+  void backfill_batch(size_t new_acq, size_t new_expl);
+
+  /// launch all jobs in the variables map queues
+  void launch_batch();
+  /// launch a single job
+  void launch_single(const Variables& vars_star);
+
+  /// update approximation data and constraint penalties/multipliers
+  /// based on new truth data
+  void process_truth_response_map(const IntResponseMap& truth_resp_map,
+				  bool rebuild);
+  /// update variable map queues based on completed jobs
+  void update_variable_maps(const IntResponseMap& truth_resp_map);
 
   /// check convergence indicators to assess if EGO has converged
-  bool assess_convergence();
+  bool converged();
 
   /// post-processing: retrieve and export best samples and responses
   void retrieve_final_results();
@@ -134,18 +153,30 @@ private:
 
   /// delete all liar responses
   void pop_liar_responses();
-  /// delete a particular liar response
-  void pop_liar_response(int liar_id);
+  // delete a particular liar response
+  //void pop_liar_response(int liar_id);
   /// evaluate and append a liar response
-  void append_liar(const Variables& vars_star, int liar_id);
+  void append_liar(const Variables& vars_star, int liar_id, bool rebuild);
 
-  /// determine best solution from among the dataset
-  void get_best_sample();
+  /// manage special value when iterator has advanced to end
+  int extract_id(IntVarsMCIter it, const IntVariablesMap& map);
+
+  /// determine meritFnStar from among the GP build data for use in EIF
+  void compute_best_sample();
+  /// extract best solution from among the GP build data for final results
+  void extract_best_sample();
+  /// extra response function build data from across the set of QoI
+  void extract_qoi_build_data(size_t data_index, RealVector& fn_vals);
 
   /// helper for evaluating the value of the augmented Lagrangian merit fn
   Real augmented_lagrangian(const RealVector& mean);
-  /// update constraint penalties and multipliers
+  /// update constraint penalties and multipliers for a single response
   void update_constraints(const RealVector& fn_vals);
+  /// update constraint penalties and multipliers for a set of responses
+  void update_constraints(const IntResponseMap& truth_resp_map);
+
+  /// helper for checking queued jobs in vars{Acquisition,Exploration}Map
+  bool empty_queues() const;
 
   /// probability improvement (PI) function for the EGO
   /// PI acquisition function implementation
@@ -234,12 +265,11 @@ private:
      of available {variables,response} updates can be pushed to the GP
      irregardless of acquisition type. */
 
-  /// minimum penalized response from among true function evaluations
+  /// minimum penalized response from among truth build data
   Real meritFnStar;
-  /// true function values corresponding to the minimum penalized response
-  RealVector truthFnStar;
-  /// point that corresponds to the optimal value meritFnStar
-  RealVector varsStar;
+
+  /// previous solution to EIF approximation sub-problem
+  RealVector prevSubProbSoln;
 
   /// order of the data used for surrogate construction, in ActiveSet
   /// request vector 3-bit format; user may override responses spec
@@ -253,11 +283,17 @@ private:
   int batchSizeAcquisition;
   /// number of new sampling points defined from maximizing posterior variance
   int batchSizeExploration;
+  /// counter for incrementing evaluation ids to allow synchronization with
+  /// iteratedModel ids across acquisition and exploration job queues
+  int batchEvalId;
 
-  /// placeholder for batch input (before querying the batch)
-  VariablesArray varsArrayBatch;
+  /// variable sets for batch evaluation of truth model, accumulated by
+  /// construct_batch_acquisition()
+  IntVariablesMap varsAcquisitionMap;
+  /// variable sets for batch evaluation of truth model, accumulated by
+  /// construct_batch_exploration()
+  IntVariablesMap varsExplorationMap;
 
-  /// check model parallelism
   /// bool flag if model supports asynchronous parallelism
   bool parallelFlag;
   /// algorithm option for fully asynchronous batch updating of the GP
@@ -276,8 +312,6 @@ private:
   unsigned short distConvergenceLimit;
   /// counter for global iteration
   unsigned short globalIterCount;
-  /// previous best-so-far sample
-  RealVector prevCvStar;
 };
 
 
@@ -333,6 +367,15 @@ inline void EffGlobalMinimizer::update_constraints(const RealVector& fn_vals)
 
 
 inline void EffGlobalMinimizer::
+update_constraints(const IntResponseMap& truth_resp_map)
+{
+  for (IntRespMCIter r_cit = truth_resp_map.begin();
+       r_cit != truth_resp_map.end(); ++r_cit)
+    update_constraints(r_cit->second.function_values());
+}
+
+
+inline void EffGlobalMinimizer::
 update_convergence_counters(const Variables& vars_star,
 			    const Response&  resp_star)
 {
@@ -341,12 +384,24 @@ update_convergence_counters(const Variables& vars_star,
 }
 
 
+inline bool EffGlobalMinimizer::empty_queues() const
+{ return (varsAcquisitionMap.empty() && varsExplorationMap.empty()); }
+
+
+inline int EffGlobalMinimizer::
+extract_id(IntVarsMCIter cit, const IntVariablesMap& map)
+{ return (cit == map.end()) ? INT_MAX : cit->first; }
+
+
 inline void EffGlobalMinimizer::pop_liar_responses()
 {
+  // Pop counts are 1 for append_approximation() calls in append_liar()
+  // (only {evaluate/query}_batch() appends multiple in truth_resp_map),
+  // so here we call pop_approximation() repeatedly for each liar.
   for (size_t i=0; i<batchSize; i++) {
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "\nParallel EGO: deleting liar response...\n";
-    fHatModel.pop_approximation(false); // TO DO: add option based on liar_id
+    fHatModel.pop_approximation(false); // defer rebuild until truth append
   }
   //numDataPts = fHatModel.approximation_data(0).points();
   if (outputLevel >= DEBUG_OUTPUT)
@@ -354,6 +409,8 @@ inline void EffGlobalMinimizer::pop_liar_responses()
 }
 
 
+/* Don't want to remove and then append (changes order, incurs more overhead);
+   prefer to update in place.
 inline void EffGlobalMinimizer::pop_liar_response(int liar_id)
 {
   if (outputLevel >= DEBUG_OUTPUT)
@@ -363,6 +420,7 @@ inline void EffGlobalMinimizer::pop_liar_response(int liar_id)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nParallel EGO: liar response deleted.\n";
 }
+*/
 
 
 inline void EffGlobalMinimizer::debug_print_values(const Variables& vars)

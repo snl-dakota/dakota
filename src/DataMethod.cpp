@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -90,6 +91,8 @@ DataMethodRep::DataMethodRep():
   expansionFlag(true), // default = on, no_expansion spec turns off
   expandAfterSuccess(0), contractAfterFail(0), mutationRange(-9999),
   randomizeOrderFlag(false), //betaSolverName(""),
+  // COLINY + APPSPACK
+  evalSynchronize(DEFAULT_SYNCHRONIZATION),
   // JEGA
   numCrossPoints(2), numParents(2), numOffspring(2), //convergenceType(""),
   percentChange(0.1), numGenerations(15), fitnessLimit(6.0),
@@ -169,8 +172,7 @@ DataMethodRep::DataMethodRep():
   exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
   mutualInfoKSG2(false),
   importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(-1.),
-  batchSize(1),
-  batchSizeExplore(0), // EGO batch exploration default
+  batchSize(1), batchSizeExplore(0),
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),

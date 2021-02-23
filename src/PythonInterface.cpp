@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -153,11 +154,13 @@ int PythonInterface::python_run(const String& ac_name)
 
   // convert DAKOTA data types to Python objects (lists and/or numpy arrays)
   PyObject *cv, *cv_labels, *div, *div_labels, *drv, *drv_labels,
-    *av, *av_labels, *asv, *dvv, *an_comps;
+    *dsv, *dsv_labels, *av, *av_labels, *asv, *dvv, *an_comps;
   python_convert(xC, &cv);
   python_convert_strlist(xCLabels, &cv_labels);
   python_convert_int(xDI, xDI.length(), &div);
   python_convert_strlist(xDILabels, &div_labels);
+  python_convert_strlist(xDS, &dsv); // TODO: support NumPy array of bytes_ too
+  python_convert_strlist(xDSLabels, &dsv_labels);
   python_convert(xDR, &drv);
   python_convert_strlist(xDRLabels, &drv_labels);
   python_convert(xC, xDI, xDR, &av);
@@ -180,6 +183,8 @@ int PythonInterface::python_run(const String& ac_name)
   PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("cv_labels"), cv_labels);
   PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("div"), div);
   PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("div_labels"), div_labels);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("dsv"), dsv);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("dsv_labels"), dsv_labels);
   PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("drv"), drv);
   PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("drv_labels"), drv_labels);
   PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("av"), av);

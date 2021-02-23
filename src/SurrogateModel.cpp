@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -29,7 +30,7 @@ namespace Dakota {
 
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
-  surrogateFnIndices(problem_db.get_is("model.surrogate.function_indices")),
+  surrogateFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
   surrModelEvalCntr(0), approxBuilds(0)
 {
@@ -39,7 +40,7 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 
   // process surrogateFnIndices. IntSets are sorted and unique.
   if (surrogateFnIndices.empty()) // default: all fns are approximated
-    for (int i=0; i<numFns; ++i)
+    for (size_t i=0; i<numFns; ++i)
       surrogateFnIndices.insert(i);
   else {
     // check for out of range values
@@ -69,7 +70,7 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
 
   // set up surrogateFnIndices to use default (all fns are approximated)
-  for (int i=0; i<numFns; ++i)
+  for (size_t i=0; i<numFns; ++i)
     surrogateFnIndices.insert(i);
 }
 
@@ -473,7 +474,7 @@ asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
     // else response set is mixed:
     else if (build_flag) { // construct mode: define actual_asv
       actual_asv.assign(num_qoi, 0);
-      for (ISIter it=surrogateFnIndices.begin();
+      for (StSIter it=surrogateFnIndices.begin();
 	   it!=surrogateFnIndices.end(); ++it)
 	actual_asv[*it] = orig_asv[*it];
     }

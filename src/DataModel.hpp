@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -127,7 +128,7 @@ public:
   // surrogate models
 
   /// array specifying the response function set that is approximated
-  IntSet surrogateFnIndices;
+  SizetSet surrogateFnIndices;
   /// the selected surrogate type: local_taylor, multipoint_tana,
   /// global_(neural_network,mars,orthogonal_polynomial,gaussian,
   /// polynomial,kriging), or hierarchical

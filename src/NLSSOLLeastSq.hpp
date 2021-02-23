@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -75,10 +76,10 @@ class NLSSOLLeastSqTraits: public TraitsBase
     Print Level" (\c verbose: Major Print Level = 20; \c quiet: Major
     Print Level = 10), "Verify Level", "Function Precision", and
     "Linesearch Tolerance" parameters, respectively, using NLSSOL's
-    npoptn() subroutine (as wrapped by npoptn2() from the
-    npoptn_wrapper.f file). Refer to [Gill, P.E., Murray, W.,
+    nloptn() subroutine (as wrapped by nloptn2() from the
+    sol_optn_wrapper.f file). Refer to [Gill, P.E., Murray, W.,
     Saunders, M.A., and Wright, M.H., 1986] for information on NLSSOL's
-    optional input parameters and the npoptn() subroutine. */
+    optional input parameters and the nloptn() subroutine. */
 class NLSSOLLeastSq: public LeastSq, public SOLBase
 {
 public:
@@ -99,6 +100,9 @@ public:
   //
 
   void core_run();
+
+protected:
+  void send_sol_option(std::string sol_option) override;
 
 private:
 
