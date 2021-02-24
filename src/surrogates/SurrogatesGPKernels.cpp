@@ -20,16 +20,9 @@ SquaredExponentialKernel::~SquaredExponentialKernel() {}
 
 MatrixXd SquaredExponentialKernel::compute_gram(
     const std::vector<MatrixXd>& dists2, const VectorXd& theta_values) {
-  MatrixXd gram;
-  const int num_variables = dists2.size();
-  for (int k = 0; k < num_variables; k++) {
-    if (k == 0)
-      gram = dists2[k] * exp(-2.0 * theta_values(k + 1));
-    else
-      gram += dists2[k] * exp(-2.0 * theta_values(k + 1));
-  }
-  gram = exp(2.0 * theta_values(0)) *
-         (-0.5 * compute_Dbar(dists2, theta_values, false).array()).exp();
+  MatrixXd gram =
+      exp(2.0 * theta_values(0)) *
+      (-0.5 * compute_Dbar(dists2, theta_values, false).array()).exp();
   return gram;
 }
 

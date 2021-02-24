@@ -450,8 +450,6 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version) {
   archive& objectiveFunctionHistory;
   archive& objectiveGradientHistory;
   archive& thetaHistory;
-  // if (Archive::is_loading::value)
-  //  kernel.reset(new Kernel());
   archive& kernel_type;
   if (Archive::is_loading::value) {
     kernel = kernel_factory(kernel_type);

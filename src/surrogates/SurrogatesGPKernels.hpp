@@ -81,6 +81,7 @@ class Kernel {
       const VectorXd& theta_values, const int index_i, const int index_j) = 0;
 };
 
+/// Stationary kernel with C^\infty smooth realizations.
 class SquaredExponentialKernel : public Kernel {
  public:
   SquaredExponentialKernel();
@@ -104,6 +105,7 @@ class SquaredExponentialKernel : public Kernel {
       const int index_j) override;
 };
 
+/// Stationary kernel with C^1 smooth realizations.
 class Matern32Kernel : public Kernel {
  public:
   Matern32Kernel();
@@ -130,6 +132,7 @@ class Matern32Kernel : public Kernel {
   const double sqrt3 = sqrt(3.);
 };
 
+/// Stationary kernel with C^2 smooth realizations.
 class Matern52Kernel : public Kernel {
  public:
   Matern52Kernel();
