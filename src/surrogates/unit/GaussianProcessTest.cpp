@@ -787,7 +787,7 @@ TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
   grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
   hessian_drop = log10(hessian_fd_error(0, 0) / hessian_fd_error.minCoeff());
 
-  TEST_ASSERT(grad_drop > 7.0)
+  TEST_ASSERT(grad_drop > 6.0)
   TEST_ASSERT(hessian_drop > 3.0)
 
   /* 2D GP tests */
