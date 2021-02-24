@@ -14,7 +14,7 @@
 
 #include "ExecutableEnvironment.hpp"
 #include "LibraryEnvironment.hpp"
-#include "PythonInterface.hpp"
+#include "Pybind11Interface.hpp"
 
 //#include "Eigen/Dense"
 
@@ -166,8 +166,9 @@ PYBIND11_MODULE(dakpy, m) {
 
             auto p_libEnv = new Dakota::LibraryEnvironment(opts);
 
-            Dakota::Interface & nonconst_interface = *(p_libEnv->problem_description_db().interface_list().begin());
-            nonconst_interface.register_pybind11_callback_fn(callback);
+            auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+                                p_libEnv->problem_description_db().interface_list().begin()->interface_rep());
+            py11_int->register_pybind11_callback_fn(callback);
 
 	    return p_libEnv;
 	  })

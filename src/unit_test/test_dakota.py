@@ -138,5 +138,5 @@ if __name__ == "__main__":
 
     # TODO: these encapsulate the objects so timing info is printed
     # with each test case; better manage destructors.
-    #test_cmd()
+    test_cmd()
     test_lib()

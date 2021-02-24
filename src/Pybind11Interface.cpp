@@ -12,49 +12,14 @@
 //- Owner:        Russell Hooper
 
 
-//// This hacks around lack of a packaged Python debug lib by default on Windows.
-//#if defined(_DEBUG) && defined(_MSC_VER)
-//#undef _DEBUG
-//#include <Python.h>
-//#define _DEBUG
-//#else
-//#include <Python.h>
-//#endif
-//
 //#ifdef DAKOTA_PYTHON_NUMPY
 //#include <numpy/arrayobject.h>
 //#endif
 
-#ifdef DAKOTA_PYBIND11
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 namespace py = pybind11;
 using namespace pybind11::literals; // to bring in the `_a` literal
-#endif
-
-// Python 2/3 compatibility layer
-// BMA: Using preprocessor defines (only in this compilation unit) per
-// submitted patch since not likely to support Python 2 for long and
-// then they'll go away
-#if PY_MAJOR_VERSION >= 3
-#define DAKPY_PYSTR_FROMSTR PyUnicode_FromString
-#define DAKPY_PYSTR_ASSTR PyUnicode_AsUTF8
-#define DAKPY_PYINT_FROMLONG PyLong_FromLong
-#define DAKPY_PYINT_ASLONG PyLong_AsLong
-#define DAKPY_PYINT_CHECK PyLong_Check
-#ifdef DAKOTA_PYTHON_NUMPY
-#define DAKPY_IMPORT_ARRAY import_array1
-#endif
-#else
-#define DAKPY_PYSTR_FROMSTR PyString_FromString
-#define DAKPY_PYSTR_ASSTR PyString_AsString
-#define DAKPY_PYINT_FROMLONG PyInt_FromLong
-#define DAKPY_PYINT_ASLONG PyInt_AsLong
-#define DAKPY_PYINT_CHECK PyInt_Check
-#ifdef DAKOTA_PYTHON_NUMPY
-#define DAKPY_IMPORT_ARRAY import_array
-#endif
-#endif
 
 #include "Pybind11Interface.hpp"
 #include "dakota_global_defs.hpp"
@@ -67,7 +32,8 @@ namespace Dakota {
 Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db)
   : DirectApplicInterface(problem_db),
     userNumpyFlag(problem_db.get_bool("interface.python.numpy")),
-    ownPython(false)
+    ownPython(false),
+    py11Active(false)
 {
   if (!Py_IsInitialized()) {
     Py_Initialize();
@@ -98,7 +64,6 @@ Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db)
   // This assumes any directory changing in the driver is reversed
   // between function evaluations
   PyRun_SimpleString("import sys\nsys.path.insert(0,\"\")");
-
 }
 
 

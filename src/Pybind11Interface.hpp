@@ -17,13 +17,10 @@
 #ifndef PYBIND11_INTERFACE_H
 #define PYBIND11_INTERFACE_H
 
-#include "DirectApplicInterface.hpp"
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
 
-// The following to forward declare, but avoid clash with include
-#ifndef PyObject_HEAD
-struct _object;
-typedef _object PyObject;
-#endif
+#include "DirectApplicInterface.hpp"
 
 namespace Dakota {
 
@@ -32,28 +29,37 @@ namespace Dakota {
 class Pybind11Interface: public DirectApplicInterface
 {
 
-public:
+  public:
 
-  Pybind11Interface(const ProblemDescDB& problem_db); ///< constructor
-  ~Pybind11Interface();                               ///< destructor
+    Pybind11Interface(const ProblemDescDB& problem_db); ///< constructor
+    ~Pybind11Interface();                               ///< destructor
 
-protected:
+    /// register a python callback function
+    void register_pybind11_callback_fn(py::function callback);
 
-  /// execute an analysis code portion of a direct evaluation invocation
-  virtual int derived_map_ac(const String& ac_name);
+  protected:
 
-  /// direct interface to Pybind11 via API
-  int pybind11_run();
+    /// execute an analysis code portion of a direct evaluation invocation
+    virtual int derived_map_ac(const String& ac_name);
 
-  /// whether the user requested numpy data structures in the input file
-  bool userNumpyFlag;
-  /// true if this class created the interpreter instance
-  bool ownPython;
+    /// direct interface to Pybind11 via API
+    int pybind11_run();
 
-//#ifdef DAKOTA_PYBIND11
-//  py::object callBack;
-//#endif
+    /// whether the user requested numpy data structures in the input file
+    bool userNumpyFlag;
+    /// true if this class created the interpreter instance
+    bool ownPython;
+    ///  callback function fo ranalysis driver
+    py::function py11CallBack;
+    bool py11Active;
 };
+
+
+inline void Pybind11Interface::register_pybind11_callback_fn(py::function callback)
+{
+  py11CallBack = callback;
+  py11Active = true;
+}
 
 } // namespace Dakota
 

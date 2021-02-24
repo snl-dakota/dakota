@@ -25,11 +25,6 @@
 // always declare ASL rather than have a conditionally included class member
 struct ASL;
 
-#ifdef DAKOTA_PYBIND11
-#include <pybind11/pybind11.h>
-namespace py = pybind11;
-#endif
-
 namespace Pecos { class SurrogateData; }
 
 namespace Dakota {
@@ -304,13 +299,11 @@ public:
   /// function to check interfaceRep (does this envelope contain a letter?)
   bool is_null() const;
 
+  /// function to return the letter
+  std::shared_ptr<Interface> interface_rep();
+
   /// set the evaluation tag prefix (does not recurse)
   void eval_tag_prefix(const String& eval_id_str, bool append_iface_id = true);
-
-#ifdef DAKOTA_PYBIND11
-  /// assign the pybind11 callback Python function
-  void register_pybind11_callback_fn(py::function );
-#endif
 
 protected:
 
@@ -437,13 +430,6 @@ protected:
 
   /// Analysis components for interface types that support them
   String2DArray analysisComponents;
-
-#ifdef DAKOTA_PYBIND11
-  /// temporary placeholder - RWH
-  py::function py11CallBack;
-  bool py11Active;
-#endif
-
 private:
 
   //
@@ -527,18 +513,9 @@ inline bool Interface::iterator_eval_dedicated_master() const
 inline bool Interface::is_null() const
 { return (interfaceRep) ? false : true; }
 
-#ifdef DAKOTA_PYBIND11
-inline void Interface::register_pybind11_callback_fn(py::function callback)
-{
-  if(interfaceRep)
-    interfaceRep->register_pybind11_callback_fn(callback);
-  else
-  {
-    py11CallBack = callback;
-    py11Active = true;
-  }
-}
-#endif
+inline std::shared_ptr<Interface> Interface::interface_rep()
+{ return interfaceRep; }
+
 
 /// global comparison function for Interface
 inline bool interface_id_compare(const Interface& interface_in, const void* id)
