@@ -13,11 +13,12 @@
 //-               pybind11 API
 //-               finalize of Python for the whole set of function evaluations.
 //- Owner:        Russell Hooper
-//- Version: $Id$
+
 #ifndef PYBIND11_INTERFACE_H
 #define PYBIND11_INTERFACE_H
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 namespace py = pybind11;
 
 #include "DirectApplicInterface.hpp"
@@ -52,6 +53,14 @@ class Pybind11Interface: public DirectApplicInterface
     ///  callback function fo ranalysis driver
     py::function py11CallBack;
     bool py11Active;
+
+    /// copy Dakota arrays to pybind11 lists via std::vector<> copy
+    template<class ArrayT, typename T>
+    py::list copy_array_to_pybind11(const ArrayT & src);
+
+    /// specialized copy Dakota arrays to pybind11 lists via std::vector<> copy
+    template<typename OrdinalType, typename ScalarType> 
+    py::list copy_array_to_pybind11(const Teuchos::SerialDenseVector<OrdinalType,ScalarType> & src);
 };
 
 
