@@ -1,5 +1,6 @@
 # Dakota CMake helpers to find system TPLs
 # (These are initially macros in case of unexpected dependencies on variables they set.)
+include(DakotaDarwinBoostLibs)
 
 macro(dakota_find_boost)
   if(WIN32)
@@ -25,6 +26,14 @@ macro(dakota_find_boost)
         does not set Boost_LIBRARY_DIRS. Please notify the Dakota development team.")
     endif()
     set(DAKOTA_Boost_LIB_DIR "${Boost_LIBRARY_DIRS}" CACHE PATH "Dakota-added Boost lib path")
+
+    if(DAKOTA_APPLE_FIX_BOOSTLIBS)
+      dakota_copy_boost_libs("${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
+      dakota_fix_libboost_filesystem("${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
+      set(CMAKE_BUILD_RPATH
+        "${CMAKE_CURRENT_BINARY_DIR}/boostlibs;${CMAKE_BUILD_RPATH}")
+    endif()
+
   endif()
 endmacro()
 

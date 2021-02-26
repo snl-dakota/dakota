@@ -938,11 +938,23 @@ endif()
 add_executable(dakota main.cpp)
 add_executable(dakota_restart_util restart_util.cpp)
 add_executable(dakota_library_mode library_mode.cpp)
+
+if(DAKOTA_APPLE_FIX_BOOSTLIBS)
+  dakota_prepend_boost_rpath(dakota)
+  dakota_prepend_boost_rpath(dakota_restart_util)
+  dakota_prepend_boost_rpath(dakota_library_mode)
+endif()
+
 if (DAKOTA_HAVE_MPI)
   add_executable(dakota_library_split library_split.cpp)
   target_link_libraries(dakota_library_split ${DAKOTA_ALL_LIBS})
   DakotaApplyMPISettings(dakota_library_split)
   install(TARGETS dakota_library_split DESTINATION bin)
+
+  if(DAKOTA_APPLE_FIX_BOOSTLIBS)
+    dakota_prepend_boost_rpath(dakota_library_split)
+  endif()
+
 endif()
 
 #add_executable(test_sv test_stringvars.cpp)
@@ -961,6 +973,11 @@ if(DAKOTA_DLL_API)
     # likely not needed due to CMake dependency management of dakota_dll_api library
     target_link_libraries(dll_tester PHXCppApi)
   endif()
+
+  if(DAKOTA_APPLE_FIX_BOOSTLIBS)
+    dakota_prepend_boost_rpath(dll_tester)
+  endif()
+
 endif()
 
   
