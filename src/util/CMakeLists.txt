@@ -67,6 +67,10 @@ target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)
 target_link_libraries(dakota_util PRIVATE Boost::boost
   PUBLIC Boost::serialization)
 
+if(DAKOTA_APPLE_FIX_BOOSTLIBS)
+  dakota_prepend_boost_rpath(dakota_util)
+endif()
+
 dakota_strict_warnings(dakota_util)
 dakota_gcov_target(dakota_util)
 

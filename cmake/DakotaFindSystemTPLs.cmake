@@ -3,15 +3,36 @@
 include(DakotaDarwinBoostLibs)
 
 macro(dakota_find_boost)
+
+  # Main option
+  option(DAKOTA_APPLE_FIX_BOOSTLIBS "Fix up Boost libraries on Mac" TRUE)
+  # Two alternate sub-options
+  # TODO: With both, need to make sure there's room in the binary for the install_name edit
+  option(DAKOTA_APPLE_FIX_RPATH "Adjust embedded @rpath on libraries/executables" FALSE)
+  option(DAKOTA_APPLE_BOOST_ABSPATH "Copy Boost libs to build; embed absolute paths" TRUE)  
+
   if(WIN32)
     # BMA TODO: Relax this and document
     set(Boost_USE_STATIC_LIBS TRUE)
   endif()
+
   # Dakota requires the specified compiled Boost library components
   # Dakota requires Boost 1.58 or newer (1.69 recommended);
   # enforce for all libs in the build
-  find_package(Boost 1.58 REQUIRED
-    COMPONENTS filesystem program_options regex serialization system)
+  set(dakota_boost_libs filesystem program_options regex serialization system)
+
+  if(DAKOTA_APPLE_FIX_BOOSTLIBS AND DAKOTA_APPLE_BOOST_ABSPATH)
+    dakota_copy_specific_boost_dylibs("$ENV{SEMS_BOOST_LIBRARY_PATH}"
+      "${dakota_boost_libs}" "${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
+    dakota_boost_abs_install_names("${CMAKE_CURRENT_BINARY_DIR}/boostlibs"
+      "${dakota_boost_libs}")
+
+    set(BOOST_ROOT)
+    set(BOOST_INCLUDEDIR "$ENV{SEMS_BOOST_INCLUDE_PATH}")
+    set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
+  endif()
+
+  find_package(Boost 1.58 REQUIRED COMPONENTS ${dakota_boost_libs})
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
 
@@ -27,7 +48,7 @@ macro(dakota_find_boost)
     endif()
     set(DAKOTA_Boost_LIB_DIR "${Boost_LIBRARY_DIRS}" CACHE PATH "Dakota-added Boost lib path")
 
-    if(DAKOTA_APPLE_FIX_BOOSTLIBS)
+    if(DAKOTA_APPLE_FIX_BOOSTLIBS AND DAKOTA_APPLE_FIX_RPATH)
       dakota_copy_boost_libs("${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
       dakota_fix_libboost_filesystem("${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
       set(CMAKE_BUILD_RPATH

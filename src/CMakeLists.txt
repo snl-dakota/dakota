@@ -887,6 +887,10 @@ if(DAKOTA_MODULE_SURROGATES)
   list(APPEND DAKOTA_LIBS dakota_surrogates dakota_util)
 endif()
 
+if(DAKOTA_APPLE_FIX_BOOSTLIBS)
+  dakota_prepend_boost_rpath(dakota_src)
+endif()
+
 DakotaApplyMPISettings(dakota_src)
 if(HAVE_AMPL)
   # Enforce AMPL config header creation prior to compiling dakota sources
