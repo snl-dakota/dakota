@@ -230,34 +230,23 @@ void C3Approximation::build()
   // Pack FT training data
   // ---------------------
 
-  const Pecos::SDVArray& sdv_array = approxData.variables_data();
-  const Pecos::SDRArray& sdr_array = approxData.response_data();
   size_t ndata = approxData.points();
 
   // Manage scaling in a localized manner for now: scale the data here and then
   // unscale the FT at bottom.  Scaling is important for FT regression with
   // absolute tolerances, especially for small ML/MF discrepancy expansions.
-  Real fn, min_fn, max_fn, range; bool apply_scaling = false;
-  if (data_rep->respScaling && ndata > 1) { // scale resp to [0,1]
-    min_fn = max_fn = sdr_array[0].response_function();
-    for (i=1; i<ndata; ++i) {
-      fn = sdr_array[i].response_function();
-      if      (fn > max_fn) max_fn = fn;
-      else if (fn < min_fn) min_fn = fn;
-    }
-    range = max_fn - min_fn;
-    if (range > 0.) apply_scaling = true;
-  }
+  bool apply_scaling = (data_rep->respScaling) ?
+    approxData.compute_response_function_scaling() : false;
 
   // Training data for 1 QoI: transfer data from approxData to double* for C3
   double* xtrain = (double*)calloc(num_v*ndata, sizeof(double)); // vars
   double* ytrain = (double*)calloc(ndata,       sizeof(double)); // QoI
   for (i=0; i<ndata; ++i) {
-    const RealVector& c_vars = sdv_array[i].continuous_variables();
+    const RealVector& c_vars = approxData.continuous_variables(i);
     for (j=0; j<num_v; j++)
       xtrain[j + i*num_v] = c_vars[j];
-    fn = sdr_array[i].response_function();
-    ytrain[i] = (apply_scaling) ? (fn - min_fn)/range : fn;
+    ytrain[i] = (apply_scaling) ? approxData.scaled_response_function(i) :
+      approxData.response_function(i);
   }
 #ifdef DEBUG
   RealMatrix  in(Teuchos::View, xtrain, num_v, num_v, ndata);
@@ -316,7 +305,7 @@ void C3Approximation::build()
   // selection involves more fine-grained adaptation (per variable).
   struct FunctionTrain * ft_soln
     = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
-  // cache C3FTD recovered{Ranks,Orders} for regression_size()
+  // cache C3FTD recovered{Ranks,Orders} prior to any transformation (unscaling)
   std::vector<OneApproxOpts*>& a_opts = data_rep->oneApproxOpts;
   if (data_rep->adaptRank)  recover_function_train_ranks(ft_soln);
   if (data_rep->adaptOrder) recover_function_train_orders(a_opts);
@@ -336,7 +325,7 @@ void C3Approximation::build()
   //  ftd.ft_gradient(ftg_soln);
   //  ftd.ft_hessian(ft1d_array_jacobian(ftg_soln));
   //}
-  if (data_rep->outputLevel > SILENT_OUTPUT) {
+  //if (data_rep->outputLevel > SILENT_OUTPUT) {
     Cout << "\nFunction train build() results:\n  Ranks ";
     if (adapt_r)
       Cout << "(adapted with start = " << start_r << " kick = " << kick_r
@@ -351,9 +340,10 @@ void C3Approximation::build()
     for (i=0; i<num_v; ++i)
       Cout << "                     " << std::setw(write_precision+7)
 	   << one_approx_opts_get_nparams(a_opts[i]) - 1 << '\n';
-    Cout << "  C3 regression size:  " << function_train_get_nparams(ft_soln)
-	 << "  Response scaling:  "   << apply_scaling << std::endl;
-  }
+    Cout << "  C3 regression size:  " << function_train_get_nparams(ft_soln);
+    if (apply_scaling) Cout << "  Response scaling on";
+    Cout << std::endl;
+  //}
 
   // Note: could set c3Max{Rank,Order}Advance after current build instead of
   // preceding next build (using cached ranks,orders) if advancement_available()
@@ -375,9 +365,10 @@ void C3Approximation::build()
   // posthumous rank checks would be).
   if (apply_scaling) { // unscale the FT expansion: fn = y * range + min
     // emulate c3axpy with epsilon=0 (no rounding applied for scale + constant)
-    function_train_scale(ft_soln, range); // scaling applied in place
+    const RealRealPair& factors = approxData.response_function_scaling();
+    function_train_scale(ft_soln, factors.second); // scaling applied in place
     struct FunctionTrain * ft_offset
-      = function_train_constant(min_fn, data_rep->multiApproxOpts);
+      = function_train_constant(factors.first, data_rep->multiApproxOpts);
     // this operation will increase the FT rank by 1:
     struct FunctionTrain * sum_ft = function_train_sum(ft_soln, ft_offset);
     ftd.function_train(sum_ft); // store result
