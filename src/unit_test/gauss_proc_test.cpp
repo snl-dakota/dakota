@@ -92,7 +92,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
   data_pairs.clear();
 }
 
-TEUCHOS_UNIT_TEST(surrogates_gp,xml_read)
+TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read)
 {
   // Dakota input string:
   static const char dakota_input[] =
@@ -113,7 +113,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,xml_read)
     "    global \n"
     "      actual_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
-    "        options_file 'gauss_proc_test_files/GP_test_parameterlist_1.xml' \n"
+    "        options_file 'gauss_proc_test_files/GP_test_parameterlist_1.yaml' \n"
     "      import_points_file 'gauss_proc_test_files/gauss_proc_build_points.dat' \n"
     "        annotated \n"
     "variables \n"
@@ -165,10 +165,10 @@ TEUCHOS_UNIT_TEST(surrogates_gp,xml_read)
   data_pairs.clear();
 }
 
-TEUCHOS_UNIT_TEST(surrogates_gp,xml_read_alternate_parameters)
+TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read_alternate_parameters)
 {
   // This test uses the gold values from the surrogates_gp test above.
-  // It is expected to get the same output result, despite using an XML
+  // It is expected to get the same output result, despite using an Yaml
   // ParameterList import instead of Dakota-configured parameters.
 
   // Dakota input string:
@@ -190,7 +190,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,xml_read_alternate_parameters)
     "    global \n"
     "      actual_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
-    "        options_file 'gauss_proc_test_files/GP_test_parameterlist_2.xml' \n"
+    "        options_file 'gauss_proc_test_files/GP_test_parameterlist_2.yaml' \n"
     "      import_points_file 'gauss_proc_test_files/gauss_proc_build_points.dat' \n"
     "        annotated \n"
     "variables \n"

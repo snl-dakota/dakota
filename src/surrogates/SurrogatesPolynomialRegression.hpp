@@ -48,11 +48,11 @@ class PolynomialRegression : public Surrogate {
    * \brief Constructor for the PolynomialRegression class that sets
    * configOptions but does not build the surrogate.
    *
-   * \param[in] param_list_xml_filename A ParameterList file (relative to the
+   * \param[in] param_list_yaml_filename A ParameterList file (relative to the
    * location of the Dakota input file) that overrides entries in
    * defaultConfigOptions.
    */
-  PolynomialRegression(const std::string& param_list_xml_filename);
+  PolynomialRegression(const std::string& param_list_yaml_filename);
 
   /**
    * \brief Constructor sets configOptions and builds the Polynomial Regression
@@ -74,12 +74,12 @@ class PolynomialRegression : public Surrogate {
    * \param[in] samples Matrix of data for surrogate construction - (num_samples
    * by num_features) \param[in] response Vector of targets for surrogate
    * construction - (num_samples by num_qoi = 1; only 1 response is supported
-   * currently). \param[in] param_list_xml_filename A ParameterList file
+   * currently). \param[in] param_list_yaml_filename A ParameterList file
    * (relative to the location of the Dakota input file) that overrides entries
    * in defaultConfigOptions.
    */
   PolynomialRegression(const MatrixXd& samples, const MatrixXd& response,
-                       const std::string& param_list_xml_filename);
+                       const std::string& param_list_yaml_filename);
 
   /// Default destructor
   ~PolynomialRegression();

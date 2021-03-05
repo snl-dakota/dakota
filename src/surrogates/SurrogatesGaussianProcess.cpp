@@ -13,7 +13,7 @@
 #include "ROL_Bounds.hpp"
 #include "ROL_LineSearchStep.hpp"
 #include "SurrogatesGPObjective.hpp"
-#include "Teuchos_XMLParameterListCoreHelpers.hpp"
+#include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #include "Teuchos_oblackholestream.hpp"
 #include "util_math_tools.hpp"
 
@@ -29,9 +29,9 @@ GaussianProcess::GaussianProcess(const ParameterList& param_list) {
 }
 
 // Constructor that sets user-defined params but does not build.
-GaussianProcess::GaussianProcess(const std::string& param_list_xml_filename) {
+GaussianProcess::GaussianProcess(const std::string& param_list_yaml_filename) {
   default_options();
-  auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
+  auto param_list = Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
   configOptions = *param_list;
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
@@ -48,9 +48,9 @@ GaussianProcess::GaussianProcess(const MatrixXd& samples,
 
 GaussianProcess::GaussianProcess(const MatrixXd& samples,
                                  const MatrixXd& response,
-                                 const std::string& param_list_xml_filename) {
+                                 const std::string& param_list_yaml_filename) {
   default_options();
-  auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
+  auto param_list = Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
   configOptions = *param_list;
   build(samples, response);
 }

@@ -1,7 +1,0 @@
-<ParameterList name="Polynomial Test Parameters">
-  <Parameter name="max degree" type="int" value="3"/>
-  <Parameter name="reduced basis" type="bool" value="false"/>
-  <Parameter name="p-norm" type="double" value="1.00000000000000000e+00"/>
-  <Parameter name="scaler type" type="string" value="none"/>
-  <Parameter name="regression solver type" type="string" value="SVD"/>
-</ParameterList>

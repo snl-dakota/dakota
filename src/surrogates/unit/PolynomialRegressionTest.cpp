@@ -310,7 +310,7 @@ void PolynomialRegressionSurrogate_parameter_list_import() {
   cubic_bivariate_function(samples, responses);
 
   PolynomialRegression pr(samples, responses,
-                          "pr_test_data/pr_parameter_list.xml");
+                          "pr_test_data/pr_parameter_list.yaml");
 
   MatrixXd gradient, hessian;
   gradient = pr.gradient(samples.topRows(2));

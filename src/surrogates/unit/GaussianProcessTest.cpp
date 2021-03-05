@@ -865,7 +865,8 @@ TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
 
 TEUCHOS_UNIT_TEST(surrogates, gp_read_from_parameterlist) {
   std::string test_parameterlist_file =
-      "gp_test_data/GP_test_parameterlist.xml";
+      "gp_test_data/GP_test_parameterlist.yaml";
+      //"gp_test_data/GP_test_parameterlist.xml";
   GaussianProcess gp(test_parameterlist_file);
 
   ParameterList plist;

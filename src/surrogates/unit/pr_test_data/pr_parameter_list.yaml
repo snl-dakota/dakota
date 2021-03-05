@@ -1,0 +1,6 @@
+Polynomial Test Parameters:
+  max degree: 3
+  reduced basis: false
+  p-norm: 1.0
+  scaler type: "none"
+  regression solver type: "SVD"

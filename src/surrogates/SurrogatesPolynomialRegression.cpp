@@ -9,7 +9,7 @@
 
 #include "SurrogatesPolynomialRegression.hpp"
 
-#include "Teuchos_XMLParameterListCoreHelpers.hpp"
+#include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #include "surrogates_tools.hpp"
 
 namespace dakota {
@@ -29,9 +29,9 @@ PolynomialRegression::PolynomialRegression(const ParameterList& param_list) {
 }
 
 PolynomialRegression::PolynomialRegression(
-    const std::string& param_list_xml_filename) {
+    const std::string& param_list_yaml_filename) {
   default_options();
-  auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
+  auto param_list = Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
   configOptions = *param_list;
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
@@ -46,9 +46,9 @@ PolynomialRegression::PolynomialRegression(const MatrixXd& samples,
 
 PolynomialRegression::PolynomialRegression(
     const MatrixXd& samples, const MatrixXd& response,
-    const std::string& param_list_xml_filename) {
+    const std::string& param_list_yaml_filename) {
   default_options();
-  auto param_list = Teuchos::getParametersFromXmlFile(param_list_xml_filename);
+  auto param_list = Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
   configOptions = *param_list;
   build(samples, response);
 }
