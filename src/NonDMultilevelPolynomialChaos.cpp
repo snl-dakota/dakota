@@ -847,9 +847,9 @@ compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
   std::shared_ptr<SharedPecosApproxData> data_rep =
     std::static_pointer_cast<SharedPecosApproxData>
     (uSpaceModel.shared_approximation().data_rep());
-  const std::map<UShortArray, UShort2DArray>& mi_map
+  const std::map<Pecos::ActiveKey, UShort2DArray>& mi_map
     = data_rep->multi_index_map();
-  std::map<UShortArray, UShort2DArray>::const_iterator cit;
+  std::map<Pecos::ActiveKey, UShort2DArray>::const_iterator cit;
   Real s_l;  size_t card_l, lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);
   for (lev=0, cit=mi_map.begin(); lev<num_lev; ++lev, ++cit) {

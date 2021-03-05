@@ -21,7 +21,7 @@
 #ifdef HAVE_SURFPACK
 #include "SharedSurfpackApproxData.hpp"
 #endif // HAVE_SURFPACK
-#include "DiscrepancyCalculator.hpp"
+#include "ActiveKey.hpp"
 
 //#define DEBUG
 
@@ -87,9 +87,6 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
     // restore the specification
     problem_db.set_db_model_nodes(model_index);
   }
-
-  // initialize sequence of one empty key for Approximation::approxData
-  approxDataKeys.resize(1);
 }
 
 
@@ -130,9 +127,6 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
       Cerr << "Warning: use_derivatives is not currently supported by "
 	   << approxType << " for Hessian incorporation.\n\n";
   }
-
-  // initialize sequence of one empty key for first Approximation::approxData
-  approxDataKeys.resize(1);
 }
 
 
@@ -277,9 +271,8 @@ SharedApproxData::~SharedApproxData()
 { /* empty dtor */ }
 
 
-void SharedApproxData::active_model_key(const UShortArray& key)
+void SharedApproxData::active_model_key(const Pecos::ActiveKey& key)
 {
-  // approxDataKeys are organized in a 2D array: {truth,surrogate,combined} keys
   // > AGGREGATED_MODELS uses {HF,LF} order, as does ApproxInterface::*_add()
   // > When managing distinct sets of paired truth,surrogate data (e.g., one set
   //   of data for Q_l - Q_lm1 and another for Q_lm1 - Q_lm2, it is important to
@@ -287,37 +280,14 @@ void SharedApproxData::active_model_key(const UShortArray& key)
   //   pre-pend in {truth,surrogate,combined} keys.
 
   if (dataRep) dataRep->active_model_key(key);
-  else {
-    // update activeKey
-    activeKey = key;
-    // update approxDataKeys
-    if (Pecos::DiscrepancyCalculator::aggregated_key(key)) {
-      UShortArray hf_key, lf_key;
-      Pecos::DiscrepancyCalculator::extract_keys(key, hf_key, lf_key);
-      if (discrepancy_type()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREP
-	approxDataKeys.resize(3); // 3 keys: HF, LF, aggregate
-	approxDataKeys[2] = key;
-      }
-      // data from HF,LF with no discrepancy combination: this case is not
-      // currently used, but approxDataKeys logic would be to enumerate these
-      // two keys without a third key (no corresponding discrepancy to process)
-      else
-	approxDataKeys.resize(2); // 2 keys: HF, LF (no aggregation defined)
-      approxDataKeys[0] = hf_key;
-      approxDataKeys[1] = lf_key;
-    }
-    else { // no HF vs. LF distinction; just a single key w/o pairing
-      approxDataKeys.resize(1); // prune trailing entries
-      approxDataKeys[0] = key;
-    }
-  }
+  else activeKey = key;//.copy();
 }
 
 
 void SharedApproxData::clear_model_keys()
 {
   if (dataRep) dataRep->clear_model_keys();
-  else { activeKey.clear(); approxDataKeys.clear(); }
+  else activeKey.clear();
 }
 
 
@@ -328,8 +298,8 @@ void SharedApproxData::link_multilevel_surrogate_data()
   //else no-op (no linkage required for derived SharedApproxData)
 
   //else
-  //  switch (discrepancy_type()) {
-  //  case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP:
+  //  switch (discrepancy_reduction()) {
+  //  case Pecos::DISTINCT_DISCREPANCY: case Pecos::RECURSIVE_DISCREPANCY:
   //    approxDataKeys.resize(3); // HF, LF, discrep
   //    break;
   //  default: // default ctor linkages are sufficient
@@ -350,10 +320,10 @@ void SharedApproxData::integration_iterator(const Iterator& iterator)
 }
 
 
-short SharedApproxData::discrepancy_type() const
+short SharedApproxData::discrepancy_reduction() const
 {
-  if (dataRep) return dataRep->discrepancy_type();
-  else         return Pecos::NO_DISCREP; // this enum is 0
+  if (dataRep) return dataRep->discrepancy_reduction();
+  else         return Pecos::NO_DISCREPANCY; // this enum is 0
 }
 
 
@@ -390,7 +360,7 @@ bool SharedApproxData::push_available()
 }
 
 
-size_t SharedApproxData::push_index(const UShortArray& key)
+size_t SharedApproxData::push_index(const Pecos::ActiveKey& key)
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
     Cerr << "Error: push_index() not available for this approximation type."
@@ -418,7 +388,7 @@ void SharedApproxData::post_push()
 }
 
 
-size_t SharedApproxData::finalize_index(size_t i, const UShortArray& key)
+size_t SharedApproxData::finalize_index(size_t i, const Pecos::ActiveKey& key)
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
     Cerr << "Error: finalize_index() not available for this approximation type."
@@ -535,7 +505,7 @@ bool SharedApproxData::formulation_updated() const
 {
   if (dataRep) return dataRep->formulation_updated();
   else { // not virtual
-    std::map<UShortArray, bool>::const_iterator cit
+    std::map<Pecos::ActiveKey, bool>::const_iterator cit
       = formUpdated.find(activeKey);
     return (cit == formUpdated.end()) ? false : cit->second;
   }

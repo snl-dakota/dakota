@@ -20,7 +20,7 @@
 #include "DakotaResponse.hpp"
 #include "NonDMultilevelSampling.hpp"
 #include "ProblemDescDB.hpp"
-#include "DiscrepancyCalculator.hpp"
+#include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
 #ifdef HAVE_NPSOL
@@ -203,9 +203,9 @@ void NonDMultilevelSampling::core_run()
     }
     else { // multiple model forms (only) --> CVMC
       // use nominal value from user input, ignoring solution_level_control
-      UShortArray hf_lf_key;  unsigned short lev = USHRT_MAX;
-      Pecos::DiscrepancyCalculator::
-	form_key(0, hf_form, lev, lf_form, lev, hf_lf_key);
+      Pecos::ActiveKey hf_lf_key;
+      size_t lev = std::numeric_limits<size_t>::max();
+      hf_lf_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
       control_variate_mc(hf_lf_key);
     }
   }
@@ -220,7 +220,7 @@ void NonDMultilevelSampling::core_run()
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
-void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
+void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short form)
 {
   // Formulate as a coordinated progression towards convergence, where, e.g.,
   // time step is inferred from the spatial discretization (NOT an additional
@@ -253,14 +253,15 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
   // 2. Better: select N_l based on convergence in aggregated variance.
 
   // assign truth model form (solution level assignment is deferred until loop)
-  UShortArray truth_key;
-  unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-  Pecos::DiscrepancyCalculator::form_key(0, model_form, lev, truth_key);
+  Pecos::ActiveKey truth_key;
+  short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
+  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
+  truth_key.form_key(0, form, lev);
   iteratedModel.active_model_key(truth_key);
   Model& truth_model = iteratedModel.truth_model();
 
   size_t qoi, num_steps = truth_model.solution_levels();// 1 model form
-  unsigned short& step = (true) ? lev : model_form; // option not active
+  size_t& step = lev;//(true) ? lev : form; // model form option not active
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
@@ -279,7 +280,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_l(num_steps, 0);
   RealVectorArray mu_hat(num_steps);
-  Sizet2DArray& N_l = NLev[model_form];
+  Sizet2DArray& N_l = NLev[form];
 
   // now converge on sample counts per level (N_l)
   mlmfIter = 0;
@@ -288,7 +289,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     sum_sqrt_var_cost = 0.;
     for (step=0; step<num_steps; ++step) { // step is reference to lev
 
-      configure_indices(step, model_form, lev, seq_index);
+      configure_indices(step, form, lev, seq_type);
       lev_cost = level_cost(cost, step);
 
       // set the number of current samples from the defined increment
@@ -307,7 +308,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 	// export separate output files for each data set.  truth_model()
 	// has the correct data when in bypass-surrogate mode.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, step);
+	  export_all_samples("ml_", truth_model, mlmfIter, step);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -557,17 +558,18 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
-void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
+void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
 {
     // assign truth model form (solution level assignment is deferred until loop)
-    UShortArray truth_key;
-    unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-    Pecos::DiscrepancyCalculator::form_key(0, model_form, lev, truth_key);
+    Pecos::ActiveKey truth_key;
+    short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
+    size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
+    truth_key.form_key(0, form, lev);
     iteratedModel.active_model_key(truth_key);
     Model& truth_model = iteratedModel.truth_model();
 
     size_t qoi, num_steps = truth_model.solution_levels();//1 model form
-    unsigned short& step = (true) ? lev : model_form; // option not active
+    size_t& step = lev;//(true) ? lev : form; // model form option not active
 
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
     Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost, place_holder;
@@ -605,7 +607,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
     // raw eval counts are accumulation of allSamples irrespective of resp faults
     SizetArray raw_N_l(num_steps, 0);
     RealVectorArray mu_hat(num_steps);
-    Sizet2DArray &N_l = NLev[model_form];
+    Sizet2DArray &N_l = NLev[form];
 
     // Safe guard.
     for(qoi = 0; qoi < numFunctions; ++qoi) {
@@ -627,7 +629,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
       }
       for (step=0; step<num_steps; ++step) {
 
-        configure_indices(step, model_form, lev, seq_index);
+        configure_indices(step, form, lev, seq_type);
         lev_cost = level_cost(cost, step);
         level_cost_vec[step] = lev_cost;
 
@@ -1028,7 +1030,7 @@ void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, R
 /** This function performs control variate MC across two combinations of 
     model form and discretization level. */
 void NonDMultilevelSampling::
-control_variate_mc(const UShortArray& active_key)
+control_variate_mc(const Pecos::ActiveKey& active_key)
 {
   // Current implementation performs pilot + shared increment + LF increment,
   // where these increments are targeting a prescribed MSE reduction.
@@ -1043,8 +1045,8 @@ control_variate_mc(const UShortArray& active_key)
   Model& surr_model  = iteratedModel.surrogate_model();
 
   // retrieve active index
-  //unsigned short lf_lev_index =  surr_model.solution_level_cost_index(),
-  //               hf_lev_index = truth_model.solution_level_cost_index();
+  //size_t lf_lev_index =  surr_model.solution_level_cost_index(),
+  //       hf_lev_index = truth_model.solution_level_cost_index();
   // retrieve cost estimates across model forms for a particular soln level
   Real lf_cost =  surr_model.solution_level_cost(),
        hf_cost = truth_model.solution_level_cost(),
@@ -1060,11 +1062,12 @@ control_variate_mc(const UShortArray& active_key)
   load_pilot_sample(pilotSamples, NLev, delta_N_l);
 
   // NLev allocations currently enforce truncation to #HF levels (1)
-  UShortArray hf_key, lf_key;
-  Pecos::DiscrepancyCalculator::extract_keys(active_key, hf_key, lf_key);
-  unsigned short hf_model_form = hf_key[1], lf_model_form = lf_key[1];
-  SizetArray& N_lf = NLev[lf_model_form][0];//[lf_lev_index];
-  SizetArray& N_hf = NLev[hf_model_form][0];//[hf_lev_index];
+  Pecos::ActiveKey hf_key, lf_key;
+  active_key.extract_keys(hf_key, lf_key);
+  unsigned short hf_form = hf_key.retrieve_model_form(),
+                 lf_form = lf_key.retrieve_model_form();
+  SizetArray& N_lf = NLev[lf_form][0];//[lf_lev_index];
+  SizetArray& N_hf = NLev[hf_form][0];//[hf_lev_index];
   size_t raw_N_lf = 0, raw_N_hf = 0;
   RealVector mu_hat;
 
@@ -1075,7 +1078,7 @@ control_variate_mc(const UShortArray& active_key)
   mlmfIter = 0;
 
   // Initialize for pilot sample (shared sample count discarding any excess)
-  numSamples = std::min(delta_N_l[lf_model_form], delta_N_l[hf_model_form]);
+  numSamples = std::min(delta_N_l[lf_form], delta_N_l[hf_form]);
   shared_increment(mlmfIter, 0);
   accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 		     sum_HH, mu_hat, N_lf, N_hf);
@@ -1146,21 +1149,21 @@ control_variate_mc(const UShortArray& active_key)
     across two model forms to exploit correlation in the discrepancies
     at each level (Y_l). */
 void NonDMultilevelSampling::
-multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
-				    unsigned short hf_model_form)
+multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
+				    unsigned short hf_form)
 {
   // assign model forms (solution level assignments are deferred until loop)
-  UShortArray active_key;
-  unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-  Pecos::DiscrepancyCalculator::
-    form_key(0, hf_model_form, lev, lf_model_form, lev, active_key);
+  Pecos::ActiveKey active_key;
+  short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
+  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
+  active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
 
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
-  unsigned short& group = lev; // no alias switch for this algorithm
+  size_t& group = lev; // no alias switch for this algorithm
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
@@ -1180,11 +1183,11 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
   RealVector Lambda(num_cv_lev, false), avg_rho2_LH(num_cv_lev, false);
   
   // Initialize for pilot sample
-  Sizet2DArray&       N_lf =      NLev[lf_model_form];
-  Sizet2DArray&       N_hf =      NLev[hf_model_form];
+  Sizet2DArray&       N_lf =      NLev[lf_form];
+  Sizet2DArray&       N_hf =      NLev[hf_form];
   Sizet2DArray  delta_N_l;   load_pilot_sample(pilotSamples, NLev, delta_N_l);
-  //SizetArray& delta_N_lf = delta_N_l[lf_model_form];
-  SizetArray&   delta_N_hf = delta_N_l[hf_model_form]; 
+  //SizetArray& delta_N_lf = delta_N_l[lf_form];
+  SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
@@ -1197,7 +1200,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
 
-      configure_indices(group, hf_model_form, lev, seq_index);
+      configure_indices(group, hf_form, lev, seq_type);
       hf_lev_cost = level_cost(hf_cost, lev);
 
       // set the number of current samples from the defined increment
@@ -1214,7 +1217,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
 	// export separate output files for each data set.  Note that
-	// truth_model() is indexed with hf_model_form at this stage for
+	// truth_model() is indexed with hf_form at this stage for
 	// all levels.  The exported discretization level (e.g., state variable
 	// value) can't capture a level discrepancy for lev>0 and will reflect
 	// the most recent evaluation state.
@@ -1238,7 +1241,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
-	  configure_indices(group, lf_model_form, lev, seq_index);
+	  configure_indices(group, lf_form, lev, seq_type);
 	  lf_lev_cost = level_cost(lf_cost, lev);
 	  // compute allResp w/ LF model form reusing allVars from MLMC step
 	  evaluate_parameter_sets(iteratedModel, true, false);
@@ -1307,7 +1310,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
     // All CV lf_increment() calls now follow all ML level evals:
     for (lev=0; lev<num_cv_lev; ++lev) {
       if (delta_N_hf[lev]) {
-	configure_indices(group, lf_model_form, lev, seq_index);//augment LF grp
+	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
 	// execute additional LF sample increment, if needed
 	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],
@@ -1374,21 +1377,21 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
     to separately target correlations for each QoI level embedded
     within the level discrepancies. */
 void NonDMultilevelSampling::
-multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
-				    unsigned short hf_model_form)
+multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
+				    unsigned short hf_form)
 {
   // assign model forms (solution level assignments are deferred until loop)
-  UShortArray active_key;
-  unsigned short seq_index = 2, lev = USHRT_MAX; // lev updated in loop below
-  Pecos::DiscrepancyCalculator::
-    form_key(0, hf_model_form, lev, lf_model_form, lev, active_key);
+  Pecos::ActiveKey active_key;
+  short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
+  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
+  active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
 
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
-  unsigned short& group = lev; // no alias switch for this algorithm
+  size_t& group = lev; // no alias switch for this algorithm
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
@@ -1419,11 +1422,11 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
   RealVector Lambda(num_cv_lev, false), avg_rho_dot2_LH(num_cv_lev, false);
   
   // Initialize for pilot sample
-  Sizet2DArray&       N_lf =      NLev[lf_model_form];
-  Sizet2DArray&       N_hf =      NLev[hf_model_form]; 
+  Sizet2DArray&       N_lf =      NLev[lf_form];
+  Sizet2DArray&       N_hf =      NLev[hf_form]; 
   Sizet2DArray  delta_N_l; load_pilot_sample(pilotSamples, NLev, delta_N_l);
-  //SizetArray& delta_N_lf = delta_N_l[lf_model_form];
-  SizetArray&   delta_N_hf = delta_N_l[hf_model_form]; 
+  //SizetArray& delta_N_lf = delta_N_l[lf_form];
+  SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
@@ -1436,7 +1439,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
 
-      configure_indices(group, hf_model_form, lev, seq_index);
+      configure_indices(group, hf_form, lev, seq_type);
       hf_lev_cost = level_cost(hf_cost, lev);
 
       // set the number of current samples from the defined increment
@@ -1453,7 +1456,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
 	// export separate output files for each data set.  Note that
-	// truth_model() is indexed with hf_model_form at this stage for
+	// truth_model() is indexed with hf_form at this stage for
 	// all levels.  The exported discretization level (e.g., state variable
 	// value) can't capture a level discrepancy for lev>0 and will reflect
 	// the most recent evaluation state.
@@ -1477,7 +1480,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
-	  configure_indices(group, lf_model_form, lev, seq_index);
+	  configure_indices(group, lf_form, lev, seq_type);
 	  lf_lev_cost = level_cost(lf_cost, lev);
 	  // eval allResp w/ LF model reusing allVars from ML step above
 	  evaluate_parameter_sets(iteratedModel, true, false);
@@ -1559,7 +1562,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
     //   similar Model eval sets for aggregated scheduling
     for (lev=0; lev<num_cv_lev; ++lev) {
       if (delta_N_hf[lev]) {
-	configure_indices(group, lf_model_form, lev, seq_index);//augment LF grp
+	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
 	// now execute additional LF sample increment, if needed
 	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],
@@ -1627,7 +1630,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 
 void NonDMultilevelSampling::
 configure_indices(unsigned short group, unsigned short form,
-		  unsigned short lev,   unsigned short s_index)
+		  size_t lev,           short seq_type)
 {
   // Notes:
   // > could consolidate with NonDExpansion::configure_indices() with a passed
@@ -1635,20 +1638,22 @@ configure_indices(unsigned short group, unsigned short form,
   // > group index is assigned based on step in model form/resolution sequence
   // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
 
-  UShortArray hf_key;
-  Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
+  Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, lev);
 
-  if (hf_key[s_index] == 0) { // step 0 in the sequence
+  if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
+       (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0)) {
+    // step 0 in the sequence
     bypass_surrogate_mode();
-    iteratedModel.active_model_key(hf_key);          // one active fidelity
+    iteratedModel.active_model_key(hf_key);      // one active fidelity
   }
-  else { //if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
+  else {
     aggregated_models_mode();
 
-    UShortArray lf_key(hf_key), aggregate_key;
-    Pecos::DiscrepancyCalculator::decrement_key(lf_key, s_index);    
-    Pecos::DiscrepancyCalculator::aggregate_keys(hf_key, lf_key, aggregate_key);
-    iteratedModel.active_model_key(aggregate_key); // two active fidelities
+    Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
+    lf_key.decrement_key(seq_type); // seq_index defaults to 0
+    // For MLMC/MFMC/MLMFMC, we aggregate levels but don't reduce them
+    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
+    iteratedModel.active_model_key(discrep_key); // two active fidelities
   }
 }
 

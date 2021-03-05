@@ -74,7 +74,7 @@ protected:
   /// functionSurfaces
   int recommended_points(bool constraint_flag) const;
 
-  void active_model_key(const UShortArray& key);
+  void active_model_key(const Pecos::ActiveKey& key);
   void clear_model_keys();
 
   void approximation_function_indices(const SizetSet& approx_fn_indices);
@@ -188,8 +188,8 @@ private:
   void check_id(int id1, int id2);
 
   /// following Approximation::add() and Approximation::pop_count() operations,
-  /// which may enumerate multiple approxDataKeys, restore the active
-  /// approxData to the nominal key
+  /// which may enumerate multiple embedded keys, restore the active approxData
+  /// to the nominal key
   void restore_data_key();
 
   /// Load approximation test points from user challenge points file
@@ -291,7 +291,8 @@ recommended_points(bool constraint_flag) const
 }
 
 
-inline void ApproximationInterface::active_model_key(const UShortArray& key)
+inline void ApproximationInterface::
+active_model_key(const Pecos::ActiveKey& key)
 {
   sharedData.active_model_key(key);
 
@@ -318,9 +319,20 @@ inline void ApproximationInterface::clear_model_keys()
 /** Restore active key in approxData using shared key. */
 inline void ApproximationInterface::restore_data_key()
 {
-  const UShortArray& active_key = sharedData.active_model_key();
-  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].active_model_key(active_key);
+  const Pecos::ActiveKey& active_key = sharedData.active_model_key();
+  bool reduce_key = (active_key.aggregated() &&
+		     active_key.raw_with_reduction_data());
+  for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    Approximation& fn_surf = functionSurfaces[*it];
+    fn_surf.active_model_key(active_key); // reassign aggregate key
+    // In addition to restoring the original (aggregate) key, we synchronize
+    // the data size for this key with the data size for the embedded keys
+    // (which have been enumerated prior to restore_data_key()).  This allows
+    // proper use of points() in downstream checks for the top-level key, prior
+    // to processing the reductions (e.g., in Pecos::PolynomialApproximation::
+    // synchronize_surrogate_data()).
+    if (reduce_key) fn_surf.surrogate_data().synchronize_reduction_size();
+  }
 }
 
 
@@ -355,7 +367,7 @@ inline void ApproximationInterface::pop_approximation(bool save_data)
 
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData (pop for 1 or more approxDataKeys)
+    // Approximation::approxData (pop for top and potentially embedded keys)
     fn_surf.pop_data(save_data);
     // Approximation coefficients
     fn_surf.pop_coefficients(save_data);
@@ -371,7 +383,7 @@ inline void ApproximationInterface::push_approximation()
 
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData (push for 1 or more approxDataKeys)
+    // Approximation::approxData (push for top and potentially embedded keys)
     fn_surf.push_data(); // uses shared restoration index
     // Approximation coefficients
     fn_surf.push_coefficients();
@@ -392,7 +404,7 @@ inline void ApproximationInterface::finalize_approximation()
   size_t fn_index, key_index, num_keys;
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData (finalize for 1 or more approxDataKeys)
+    // Approximation::approxData (finalize for top & potentially embedded keys)
     fn_surf.finalize_data(); // uses shared finalization index
     // Approximation coefficients
     fn_surf.finalize_coefficients();

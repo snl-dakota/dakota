@@ -317,7 +317,7 @@ protected:
   /// format options for corrected model variance output
   unsigned short exportCorrVarFormat;
   /// specify polynomial or trend order for discrepancy correction
-  short approxCorrectionOrder;
+  short discrepPolyOrder;
   /// number of prediction configurations at which to calculate model 
   /// discrepancy
   size_t numPredConfigs;

@@ -1947,7 +1947,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
       {"metrics", P_MOD diagMetrics},
       {"nested.primary_variable_mapping", P_MOD primaryVarMaps},
       {"nested.secondary_variable_mapping", P_MOD secondaryVarMaps},
-      {"surrogate.ordered_model_pointers", P_MOD orderedModelPointers}
+      {"surrogate.ensemble_model_pointers", P_MOD ensembleModelPointers}
     },
     { /* variables */
       {"continuous_aleatory_uncertain.labels", P_VAR continuousAleatoryUncLabels},
@@ -2356,7 +2356,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"iterator_scheduling", P_MET iteratorScheduling},
       {"nond.allocation_target", P_MET allocationTarget},
       {"nond.c3function_train.advancement_type", P_MET c3AdvanceType},
-      {"nond.correction_order", P_MET approxCorrectionOrder},
+      {"nond.model_discrepancy.polynomial_order", P_MET polynomialOrder},
       {"nond.covariance_control", P_MET covarianceControl},
       {"nond.distribution", P_MET distributionType},
       {"nond.emulator", P_MET emulatorType},

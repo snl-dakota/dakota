@@ -65,9 +65,9 @@ protected:
   /// return active cost estimate from solnCntlCostMap
   Real solution_level_cost() const;
   /// activate entry in solnCntlCostMap
-  void solution_level_cost_index(unsigned short cost_index);
+  void solution_level_cost_index(size_t cost_index);
   /// return active entry in solnCntlCostMap
-  unsigned short solution_level_cost_index() const;
+  size_t solution_level_cost_index() const;
 
   /// return solnCntlVarType
   short solution_control_variable_type() const;

@@ -21,6 +21,7 @@
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "HierarchSurrModel.hpp"
+#include "NonHierarchSurrModel.hpp"
 #include "ActiveSubspaceModel.hpp"
 #include "AdaptedBasisModel.hpp"
 #include "RandomFieldModel.hpp"
@@ -312,10 +313,13 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
   else if ( model_type == "nested")
     return std::make_shared<NestedModel>(problem_db);
   else if ( model_type == "surrogate") {
-    if (problem_db.get_string("model.surrogate.type") == "hierarchical")
-      return std::make_shared<HierarchSurrModel>(problem_db); // hierarchical approx
-    else
-      return std::make_shared<DataFitSurrModel>(problem_db);  // local/multipt/global approx
+    const String& surr_type = problem_db.get_string("model.surrogate.type");
+    if (surr_type == "hierarchical")
+      return std::make_shared<HierarchSurrModel>(problem_db);
+    else if (surr_type == "non_hierarchical")
+      return std::make_shared<NonHierarchSurrModel>(problem_db);
+    else // all other surrogates (local/multipt/global) managed by DataFitSurr
+      return std::make_shared<DataFitSurrModel>(problem_db);
   }
   else if ( model_type == "active_subspace" )
     return std::make_shared<ActiveSubspaceModel>(problem_db);
@@ -3316,10 +3320,10 @@ Model& Model::subordinate_model()
 }
 
 
-void Model::active_model_key(const UShortArray& mi_key)
+void Model::active_model_key(const Pecos::ActiveKey& key)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->active_model_key(mi_key);
+    modelRep->active_model_key(key);
   else {
     Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
 	 << "function.\n       model key activation is not supported by this "
@@ -3501,11 +3505,11 @@ size_t Model::solution_levels(bool lwr_bnd) const
 
 
 /** activate a particular level within a solution / discretization hierarchy. */
-void Model::solution_level_cost_index(unsigned short index)
+void Model::solution_level_cost_index(size_t index)
 {
   if (modelRep)
     modelRep->solution_level_cost_index(index); // envelope fwd to letter
-  else if (index != USHRT_MAX) {
+  else if (index != _NPOS) {
     // letter lacking redefinition of virtual fn (for case that requires fwd)
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
 	 << "cost_index() function.\n       solution_level_cost_index is not "
@@ -3515,10 +3519,10 @@ void Model::solution_level_cost_index(unsigned short index)
 }
 
 
-unsigned short Model::solution_level_cost_index() const
+size_t Model::solution_level_cost_index() const
 {
   if (modelRep) return modelRep->solution_level_cost_index(); // fwd to letter
-  else          return USHRT_MAX; // not defined (default)
+  else          return _NPOS; // not defined (default)
 }
 
 
@@ -4304,7 +4308,7 @@ void Model::correction_type(short corr_type)
 
 
 void Model::single_apply(const Variables& vars, Response& resp,
-			 const UShortArray& paired_key)
+			 const Pecos::ActiveKey& paired_key)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->single_apply(vars, resp, paired_key);

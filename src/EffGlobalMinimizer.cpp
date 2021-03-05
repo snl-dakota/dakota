@@ -643,7 +643,7 @@ update_variable_maps(const IntResponseMap& truth_resp_map)
 
 
 /** Extract the best merit function from build data through evaluaton
-    of points on fHatModel.  This merit fnb value is used within the
+    of points on fHatModel.  This merit fn value is used within the
     EIF during an approximate sub-problem solve. */
 void EffGlobalMinimizer::compute_best_sample()
 {

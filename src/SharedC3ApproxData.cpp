@@ -27,7 +27,7 @@ namespace Dakota {
 
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
-  SharedApproxData(BaseConstructor(), problem_db, num_vars),
+  SharedApproxData(BaseConstructor(), problem_db, num_vars), respScaling(true),
   kickOrder(problem_db.get_ushort("model.c3function_train.kick_order")),
   maxOrder(problem_db.get_ushort("model.c3function_train.max_order")),
   adaptOrder(problem_db.get_bool("model.c3function_train.adapt_order")),
@@ -68,8 +68,8 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars, data_order,
 		   output_level),
   // default values overridden by set_parameter
-  startOrders(approx_order), kickOrder(1), maxOrder(USHRT_MAX),
-  adaptOrder(false), startRank(2), kickRank(1),
+  respScaling(true), startOrders(approx_order), kickOrder(1),
+  maxOrder(USHRT_MAX), adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
@@ -332,7 +332,7 @@ void SharedC3ApproxData::decrement_order()
 void SharedC3ApproxData::pre_combine()
 {
   combinedOrders.assign(numVars, 0);
-  std::map<UShortArray, UShortArray>::const_iterator cit;  size_t i;
+  std::map<Pecos::ActiveKey, UShortArray>::const_iterator cit;  size_t i;
   for (cit=startOrdersMap.begin(); cit!=startOrdersMap.end(); ++cit) {
     const UShortArray& so = cit->second;
     for (i=0; i<numVars; ++i)

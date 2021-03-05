@@ -83,7 +83,7 @@ public:
   /// get active Pecos::SharedOrthogPolyApproxData::multiIndex
   const UShort2DArray& multi_index() const;
   /// get Pecos::SharedOrthogPolyApproxData::multiIndex
-  const std::map<UShortArray, UShort2DArray>& multi_index_map() const;
+  const std::map<Pecos::ActiveKey, UShort2DArray>& multi_index_map() const;
 
   /// return Pecos::SharedPolyApproxData::sobolIndexMap
   const Pecos::BitArrayULongMap& sobol_index_map() const;
@@ -115,14 +115,14 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void active_model_key(const UShortArray& key);
+  void active_model_key(const Pecos::ActiveKey& key);
   void clear_model_keys();
 
   void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
 
   void integration_iterator(const Iterator& iterator);
 
-  short discrepancy_type() const;
+  short discrepancy_reduction() const;
 
   void build();
   void rebuild();
@@ -130,11 +130,11 @@ protected:
   void pop(bool save_surr_data);
 
   bool push_available();
-  size_t push_index(const UShortArray& key);
+  size_t push_index(const Pecos::ActiveKey& key);
   void pre_push();
   void post_push();
 
-  size_t finalize_index(size_t i, const UShortArray& key);
+  size_t finalize_index(size_t i, const Pecos::ActiveKey& key);
   void pre_finalize();
   void post_finalize();
 
@@ -180,7 +180,7 @@ inline SharedPecosApproxData::~SharedPecosApproxData()
 { }
 
 
-inline void SharedPecosApproxData::active_model_key(const UShortArray& key)
+inline void SharedPecosApproxData::active_model_key(const Pecos::ActiveKey& key)
 {
   SharedApproxData::active_model_key(key);
   pecosSharedDataRep->active_key(key);
@@ -194,8 +194,8 @@ inline void SharedPecosApproxData::clear_model_keys()
 }
 
 
-inline short SharedPecosApproxData::discrepancy_type() const
-{ return pecosSharedDataRep->discrepancy_type(); }
+inline short SharedPecosApproxData::discrepancy_reduction() const
+{ return pecosSharedDataRep->discrepancy_reduction(); }
 
 
 inline void SharedPecosApproxData::build()
@@ -222,7 +222,7 @@ inline bool SharedPecosApproxData::push_available()
     a consistent (flattened) representation.  Dakota, however, does not
     make this distinction and uses {push,finalize}_index() semantics
     for consistency with {push,finalize}_data(). */
-inline size_t SharedPecosApproxData::push_index(const UShortArray& key)
+inline size_t SharedPecosApproxData::push_index(const Pecos::ActiveKey& key)
 { return pecosSharedDataRep->restore_index(key); }
 
 
@@ -235,7 +235,7 @@ inline void SharedPecosApproxData::post_push()
 
 
 inline size_t SharedPecosApproxData::
-finalize_index(size_t i, const UShortArray& key)
+finalize_index(size_t i, const Pecos::ActiveKey& key)
 { return pecosSharedDataRep->finalize_index(i, key); }
 
 
@@ -323,7 +323,7 @@ inline const UShort2DArray& SharedPecosApproxData::multi_index() const
 }
 
 
-inline const std::map<UShortArray, UShort2DArray>& SharedPecosApproxData::
+inline const std::map<Pecos::ActiveKey, UShort2DArray>& SharedPecosApproxData::
 multi_index_map() const
 {
   return std::static_pointer_cast<Pecos::SharedOrthogPolyApproxData>

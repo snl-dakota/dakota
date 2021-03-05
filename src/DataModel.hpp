@@ -137,10 +137,11 @@ public:
   /// used in constructing surrogates (from the \c actual_model_pointer
   /// specification in \ref ModelSurrL and \ref ModelSurrMP)
   String actualModelPointer;
-  /// an ordered list of model pointers (low to high) corresponding to a
-  /// hierarchy of modeling fidelity (from the \c ordered_model_fidelities
-  /// specification in \ref ModelSurrH)
-  StringArray orderedModelPointers;
+  /// an ordered (low to high) or unordered (peer) set of model pointers
+  /// corresponding to a ensemble of modeling fidelities (from the \c
+  /// ordered_model_fidelities specification in \ref ModelSurrH or the
+  /// \c unordered_model_fidelities specification in \ref ModelSurrNonH)
+  StringArray ensembleModelPointers;
 
   // controls for number of points with which to build the model
 

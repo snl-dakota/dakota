@@ -1099,9 +1099,9 @@ public:
   unsigned short importPredConfigFormat;
   /// type of model discrepancy emulation
   String modelDiscrepancyType;
-  /// correction order for either gaussian process or polynomial model
-  /// discrepancy calculations: 0 (=constant), 1 (=linear), 2 (=quadratic)
-  short approxCorrectionOrder;
+  /// polynomial order for model discrepancy calculations: either gaussian
+  /// process trend order or polynomial basis order
+  short polynomialOrder;
   /// specify the name of file to which corrected model (model+discrepancy)
   /// calculations are output
   String exportCorrModelFile;

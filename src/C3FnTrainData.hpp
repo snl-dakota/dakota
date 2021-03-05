@@ -74,10 +74,25 @@ public:
   // allocated downstream in compute_all_sobol_indices() for storing indices
   struct C3SobolSensitivity * ft_sobol;
 
+  // when training data is scaled to [0,1], the resulting ft is unscaled
+  // using ft * scalingMultiplier + scalingOffset
+  //Real scalingMultiplier;
+  // when training data is scaled to [0,1], the resulting ft is unscaled
+  // using ft * scalingMultiplier + scalingOffset
+  //Real scalingOffset;
+
   /// moment vector retrieved from ft_derived_fns
   RealVector primaryMoments;
-  /// set of polynomial basis orders recovered following cross validation
-  UShortArray recoveredBasisOrders;
+  /// set of polynomial basis orders recovered following order selection
+  /// based on cross validation; these values precede any scaling or other
+  /// post-processing of the regression result (which may be reflected in the
+  /// stored ft), keeping them consistent with {start,kick,max} order controls
+  UShortArray recoveredOrders;
+  /// set of expansion ranks recovered following rank selection based on cross
+  /// validation; these values precede any scaling or other post-processing
+  /// of the regression result (which may be reflected in the stored ft),
+  /// keeping them consistent with {start,kick,max} rank controls
+  SizetVector recoveredRanks;
 };
 
 
@@ -192,8 +207,13 @@ public:
   /// set pointer to the Sobol' indices object
   void sobol(struct C3SobolSensitivity * ss);
 
-  const UShortArray& ft_orders() const;
-  UShortArray& ft_orders();
+  const UShortArray& recovered_orders() const;
+  UShortArray& recovered_orders();
+  void recovered_orders(const UShortArray& ft_orders);
+
+  const SizetVector& recovered_ranks() const;
+  SizetVector& recovered_ranks();
+  void recovered_ranks(const SizetVector& ft_ranks);
 
   const RealVector& moments() const;
   RealVector& moments();
@@ -279,12 +299,28 @@ inline void C3FnTrainData::sobol(struct C3SobolSensitivity * ss)
 { ftdRep->ft_sobol = ss; }
 
 
-inline const UShortArray& C3FnTrainData::ft_orders() const
-{ return ftdRep->recoveredBasisOrders; }
+inline const UShortArray& C3FnTrainData::recovered_orders() const
+{ return ftdRep->recoveredOrders; }
 
 
-inline UShortArray& C3FnTrainData::ft_orders()
-{ return ftdRep->recoveredBasisOrders; }
+inline UShortArray& C3FnTrainData::recovered_orders()
+{ return ftdRep->recoveredOrders; }
+
+
+inline void C3FnTrainData::recovered_orders(const UShortArray& ft_orders)
+{ ftdRep->recoveredOrders = ft_orders; }
+
+
+inline const SizetVector& C3FnTrainData::recovered_ranks() const
+{ return ftdRep->recoveredRanks; }
+
+
+inline SizetVector& C3FnTrainData::recovered_ranks()
+{ return ftdRep->recoveredRanks; }
+
+
+inline void C3FnTrainData::recovered_ranks(const SizetVector& ft_ranks)
+{ ftdRep->recoveredRanks = ft_ranks; }
 
 
 inline const RealVector& C3FnTrainData::moments() const

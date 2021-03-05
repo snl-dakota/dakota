@@ -844,7 +844,7 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   }           
   for (int i = 0; i < num_signif_Pcomps; ++i) {
     RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
-    gpApproximations[i].add_array(allSamples, factor_i);
+    gpApproximations[i].add_array(allSamples, false, factor_i, true);
     gpApproximations[i].build();
     std::stringstream ss;
     ss << i;

@@ -118,7 +118,7 @@ inline TANA3Approximation::~TANA3Approximation()
 inline void TANA3Approximation::clear_current_active_data()
 {
   approxData.clear_anchor_index();
-  approxData.history_target(1, sharedDataRep->approxDataKeys);
+  approxData.history_target(1, sharedDataRep->activeKey);
 
   /*
   // demote from anchor to regular/previous data

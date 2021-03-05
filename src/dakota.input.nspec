@@ -5378,16 +5378,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
       [ discrepancy_type {0}
-        gaussian_process ALIAS kriging {N_mdm(lit,modelDiscrepancyType_global_kriging)}
+        ( gaussian_process ALIAS kriging {N_mdm(lit,modelDiscrepancyType_global_kriging)}
+          [ trend_order INTEGER >= 0 {N_mdm(shint,polynomialOrder)} ]
+         )
         |
-        polynomial {N_mdm(lit,modelDiscrepancyType_global_polynomial)}
-        [ correction_order {0}
-          constant {N_mdm(order,approxCorrectionOrder_0)}
-          |
-          linear {N_mdm(order,approxCorrectionOrder_1)}
-          |
-          quadratic {N_mdm(order,approxCorrectionOrder_2)}
-         ]
+        ( polynomial {N_mdm(lit,modelDiscrepancyType_global_polynomial)}
+          [ basis_order INTEGER >= 0 {N_mdm(shint,polynomialOrder)} ]
+         )
        ]
       [ num_prediction_configs INTEGER >= 0 {N_mdm(sizet,numPredConfigs)} ]
       [ prediction_configs REALLIST {N_mdm(RealDL,predictionConfigList)} ]
@@ -6043,7 +6040,7 @@ KEYWORD model {N_mom3(start,0,stop)}
            ]
          )
         |
-        actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+        actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
        ]
       [ reuse_points ALIAS reuse_samples {0}
         all {N_mom(lit,approxPointReuse_all)}
@@ -6130,16 +6127,16 @@ KEYWORD model {N_mom3(start,0,stop)}
       tana {N_mom(lit,surrogateType_multipoint_tana)}
       |
       qmea {N_mom(lit,surrogateType_multipoint_qmea)}
-      actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
      )
     |
     ( local {N_mom(lit,surrogateType_local_taylor)}
       taylor_series {0}
-      actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
      )
     |
     ( hierarchical {N_mom(lit,surrogateType_hierarchical)}
-      ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,orderedModelPointers)}
+      ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,ensembleModelPointers)}
       [ correction {0}
         zeroth_order {N_mom(order,approxCorrectionOrder_0)}
         |
@@ -6152,6 +6149,11 @@ KEYWORD model {N_mom3(start,0,stop)}
         |
         combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
        ]
+     )
+    |
+    ( non_hierarchical ALIAS model_ensemble {N_mom(lit,surrogateType_non_hierarchical)}
+      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)}
      )
    )
   |

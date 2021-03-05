@@ -248,7 +248,7 @@ void RandomFieldModel::identify_field_model()
       gpApproximations.push_back(Approximation(sharedData));
     for (int i = 0; i < actualReducedRank; ++i) {
       RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
-      gpApproximations[i].add_array(rfBuildVars, factor_i);
+      gpApproximations[i].add_array(rfBuildVars, false, factor_i, true);//shallow,deep
       gpApproximations[i].build();
       const String gp_string = std::to_string(i);
       const String gp_prefix = "PCA_GP";

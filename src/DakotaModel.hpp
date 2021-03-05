@@ -29,6 +29,7 @@
 namespace Pecos { /* forward declarations */
 class SurrogateData;
 class ProbabilityTransformation;
+class ActiveKey;
 }
 
 namespace Dakota {
@@ -100,13 +101,13 @@ public:
   /// dive through model recursions that may bypass some components.
   virtual Model& subordinate_model();
 
-  /// set the active multi-index key within surrogate data, grid driver,
+  /// set the active model key within surrogate data, grid driver,
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
-  virtual void active_model_key(const UShortArray& mi_key);
-  /// reset by removing all multi-index keys within surrogate data, grid
-  /// driver, and approximation classes that support the management of
-  /// multiple approximation states within surrogate models
+  virtual void active_model_key(const Pecos::ActiveKey& key);
+  /// reset by removing all model keys within surrogate data, grid driver,
+  /// and approximation classes that support the management of multiple
+  /// approximation states within surrogate models
   virtual void clear_model_keys();
 
   /// return number of unique response functions (managing any aggregations)
@@ -153,10 +154,10 @@ public:
   virtual size_t solution_levels(bool lwr_bnd = true) const;
   /// activate a particular level within the solution level control
   /// (SimulationModel)
-  virtual void solution_level_cost_index(unsigned short index);
+  virtual void solution_level_cost_index(size_t index);
   /// return currently active level within the solution level control
   /// (SimulationModel)
-  virtual unsigned short solution_level_cost_index() const;
+  virtual size_t solution_level_cost_index() const;
   /// return ordered cost estimates across solution levels (SimulationModel)
   virtual RealVector solution_level_costs() const;
   /// return currently active cost estimate from solution level
@@ -395,7 +396,7 @@ public:
   /// apply a DiscrepancyCorrection to correct an approximation within
   /// a HierarchSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
-			    const UShortArray& paired_key);
+			    const Pecos::ActiveKey& paired_key);
   /// apply a sequence of DiscrepancyCorrections to recursively correct an 
   /// approximation within a HierarchSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);

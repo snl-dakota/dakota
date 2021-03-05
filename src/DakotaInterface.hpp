@@ -25,7 +25,7 @@
 // always declare ASL rather than have a conditionally included class member
 struct ASL;
 
-namespace Pecos { class SurrogateData; }
+namespace Pecos { class SurrogateData; class ActiveKey; }
 
 namespace Dakota {
 
@@ -124,8 +124,8 @@ public:
   /// ApproximationInterface (used by DataFitSurrModels).
   virtual int recommended_points(bool constraint_flag) const;
 
-  /// activate an approximation state based on its multi-index key
-  virtual void active_model_key(const UShortArray& mi_key);
+  /// activate an approximation state based on its key
+  virtual void active_model_key(const Pecos::ActiveKey& key);
   /// reset initial state by removing all model keys for an approximation
   virtual void clear_model_keys();
 

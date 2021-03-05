@@ -340,7 +340,21 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 
 void DataFitSurrModel::check_submodel_compatibility(const Model& sub_model)
 {
-  bool error_flag = false;
+  bool err1 = check_active_variables(sub_model), err2 = false, err3 = false;
+
+  // cases not covered by the SurrogateModel check are disallowed for DFSModel
+  short active_view = currentVariables.view().first,
+     sm_active_view = sub_model.current_variables().view().first;
+  if ( !( active_view == sm_active_view ||
+	( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
+	  active_view >= RELAXED_DESIGN ) ||
+	( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
+	  sm_active_view >= RELAXED_DESIGN ) ) ) {
+    Cerr << "Error: unsupported variable view differences between approximate "
+	 << "and actual models within DataFitSurrModel." << std::endl;
+    err2 = true;
+  }
+
   // Check for compatible array sizing between sub_model and currentResponse.
   // HierarchSurrModel creates aggregations and DataFitSurrModel consumes them.
   // For now, allow either a factor of 2 or 1 from aggregation or not.  In the
@@ -353,38 +367,24 @@ void DataFitSurrModel::check_submodel_compatibility(const Model& sub_model)
 	 << "response function sets\n       within DataFitSurrModel: " << numFns
 	 << " approximate and " << sm_qoi << " actual functions.\n       "
 	 << "Check consistency of responses specifications." << std::endl;
-    error_flag = true;
+    err3 = true;
   }
 
-  // check view-based variable counts:
-  SurrogateModel::check_submodel_compatibility(sub_model);
-  // cases not covered by the SurrogateModel check are disallowed for DFSModel
-  short active_view = currentVariables.view().first,
-     sm_active_view = sub_model.current_variables().view().first;
-  if ( !( active_view == sm_active_view ||
-	( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
-	  active_view >= RELAXED_DESIGN ) ||
-	( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
-	  sm_active_view >= RELAXED_DESIGN ) ) ) {
-    Cerr << "Error: unsupported variable view differences between "
-   	     << "approximate and actual models within DataFitSurrModel."
-   	     << std::endl;
-    error_flag = true;
-  }
-
-  if (error_flag)
-    abort_handler(-1);
+  if (err1 || err2 || err3)
+    abort_handler(MODEL_ERROR);
 }
 
 
 bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
 {
   Model::initialize_mapping(pl_iter);
-  actualModel.initialize_mapping(pl_iter);
 
-  // push data that varies per iterator execution rather than per-evaluation
-  // from currentVariables and userDefinedConstraints into actualModel
-  init_model(actualModel);
+  if (!actualModel.is_null()) {
+    actualModel.initialize_mapping(pl_iter);
+    // push data that varies per iterator execution rather than per-evaluation
+    // from currentVariables and userDefinedConstraints into actualModel
+    init_model(actualModel);
+  }
 
   return false; // no change to problem size
 }
@@ -396,10 +396,39 @@ bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
     execution within Model::initialize_mapping(). */
 bool DataFitSurrModel::finalize_mapping()
 {
-  actualModel.finalize_mapping();
+  if (!actualModel.is_null()) actualModel.finalize_mapping();
   Model::finalize_mapping();
 
   return false; // no change to problem size
+}
+
+
+void DataFitSurrModel::init_model(Model& model)
+{
+  init_model_constraints(model);
+  init_model_labels(model);
+  // This push down of vars data can disrupt subsequent calls to
+  // update_from_subordinate_model() in surrogate-based methods with local
+  // DataFit instantiations, such as local reliability, expansion UQ, SBO, etc.
+  // For this reason, we override the SurrogateModel::init_model() default.
+  //init_model_inactive_variables(model);
+}
+
+
+void DataFitSurrModel::update_model(Model& model)
+{
+  if (model.is_null()) return;
+  update_model_active_variables(model);
+  update_model_distributions(model);
+}
+
+
+void DataFitSurrModel::update_from_model(const Model& model)
+{
+  if (model.is_null()) return;
+  update_variables_from_model(model);
+  update_distributions_from_model(model);
+  update_response_from_model(model);
 }
 
 
@@ -1107,8 +1136,8 @@ void DataFitSurrModel::build_global()
     // an ApplicationInterface).  To compare with DataFitSurrModel values and
     // bounds, any recastings within the model recursion must be managed.
     String am_interface_id;
-    if (!actualModel.is_null()) am_interface_id = actualModel.interface_id();
-    if(am_interface_id.empty()) am_interface_id = "NO_ID";
+    if (!actualModel.is_null())  am_interface_id = actualModel.interface_id();
+    if (am_interface_id.empty()) am_interface_id = "NO_ID";
     ModelLRevIter ml_rit; PRPCacheCIter prp_iter;
     Variables db_vars; Response db_resp;
     bool map_to_iter_space = recastings();
@@ -2268,366 +2297,6 @@ void DataFitSurrModel::component_parallel_mode(short mode)
   */
 
   componentParallelMode = mode;
-}
-
-
-/** Update variables and constraints data within model using
-    values and labels from currentVariables and bound/linear/nonlinear
-    constraints from userDefinedConstraints. */
-void DataFitSurrModel::init_model(Model& model)
-{
-  if (model.is_null())
-    return;
-
-  // linear constraints
-
-  if (userDefinedConstraints.num_linear_ineq_constraints()) {
-    // the views don't necessarily have to be the same, but the number of
-    // active continuous and active discrete variables have to be consistent.
-    if (currentVariables.cv()  == model.cv()  &&
-	currentVariables.div() == model.div() &&
-	currentVariables.drv() == model.drv()) {
-      model.linear_ineq_constraint_coeffs(
-        userDefinedConstraints.linear_ineq_constraint_coeffs());
-      model.linear_ineq_constraint_lower_bounds(
-        userDefinedConstraints.linear_ineq_constraint_lower_bounds());
-      model.linear_ineq_constraint_upper_bounds(
-        userDefinedConstraints.linear_ineq_constraint_upper_bounds());
-    }
-    else {
-      Cerr << "Error: cannot update linear inequality constraints in "
-	   << "DataFitSurrModel::init_model() due to inconsistent active "
-	   << "variables." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-  }
-  if (userDefinedConstraints.num_linear_eq_constraints()) {
-    // the views don't necessarily have to be the same, but the number of
-    // active continuous and active discrete variables have to be consistent.
-    if (currentVariables.cv()  == model.cv()  &&
-	currentVariables.div() == model.div() &&
-	currentVariables.drv() == model.drv()) {
-      model.linear_eq_constraint_coeffs(
-        userDefinedConstraints.linear_eq_constraint_coeffs());
-      model.linear_eq_constraint_targets(
-        userDefinedConstraints.linear_eq_constraint_targets());
-    }
-    else {
-      Cerr << "Error: cannot update linear equality constraints in "
-	   << "DataFitSurrModel::init_model() due to inconsistent active "
-	   << "variables." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-  }
-
-  // nonlinear constraints
-
-  if (userDefinedConstraints.num_nonlinear_ineq_constraints()) {
-    model.nonlinear_ineq_constraint_lower_bounds(
-      userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds());
-    model.nonlinear_ineq_constraint_upper_bounds(
-      userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds());
-  }
-  if (userDefinedConstraints.num_nonlinear_eq_constraints())
-    model.nonlinear_eq_constraint_targets(
-      userDefinedConstraints.nonlinear_eq_constraint_targets());
-
-  // labels: update model with current{Variables,Response} descriptors
-
-  if (!approxBuilds) {
-    model.response_labels(currentResponse.function_labels());
-
-    short approx_active_view = currentVariables.view().first,
-          actual_active_view = model.current_variables().view().first;
-    if (approx_active_view == actual_active_view) {
-      // update active model vars with active currentVariables data
-      model.continuous_variable_labels(
-        currentVariables.continuous_variable_labels());
-      model.discrete_int_variable_labels(
-        currentVariables.discrete_int_variable_labels());
-      model.discrete_real_variable_labels(
-        currentVariables.discrete_real_variable_labels());
-      if (approx_active_view >= RELAXED_DESIGN) {
-	model.inactive_continuous_variable_labels(
-          currentVariables.inactive_continuous_variable_labels());
-	model.inactive_discrete_int_variable_labels(
-          currentVariables.inactive_discrete_int_variable_labels());
-	model.inactive_discrete_real_variable_labels(
-          currentVariables.inactive_discrete_real_variable_labels());
-      }
-    }
-    else if ( approx_active_view >= RELAXED_DESIGN &&
-	      ( actual_active_view == RELAXED_ALL ||
-		actual_active_view == MIXED_ALL ) ) {
-      // update active model vars using "All" view of currentVariables data
-      model.continuous_variable_labels(
-        currentVariables.all_continuous_variable_labels());
-      model.discrete_int_variable_labels(
-        currentVariables.all_discrete_int_variable_labels());
-      model.discrete_real_variable_labels(
-        currentVariables.all_discrete_real_variable_labels());
-    }
-    else if ( actual_active_view >= RELAXED_DESIGN &&
-	      ( approx_active_view == RELAXED_ALL ||
-		approx_active_view == MIXED_ALL ) ) {
-      // update "All" view of model vars using active currentVariables data
-      model.all_continuous_variable_labels(
-        currentVariables.continuous_variable_labels());
-      model.all_discrete_int_variable_labels(
-        currentVariables.discrete_int_variable_labels());
-      model.all_discrete_real_variable_labels(
-        currentVariables.discrete_real_variable_labels());
-    }
-  }
-}
-
-
-/** Update variables and constraints data within model using
-    values and labels from currentVariables and bound/linear/nonlinear
-    constraints from userDefinedConstraints. */
-void DataFitSurrModel::update_model(Model& model)
-{
-  if (model.is_null())
-    return;
-
-  // vars/bounds/labels
-
-  short approx_active_view = currentVariables.view().first,
-        actual_active_view = model.current_variables().view().first;
-  // Update model variables, bounds, and labels in all view cases.
-  // Note 1: bounds updating isn't strictly required for local/multipoint, but
-  // is needed for global and could be relevant in cases where model
-  // involves additional surrogates/nestings.
-  // Note 2: label updating eliminates the need to replicate variable
-  // descriptors, e.g., in SBOUU input files.  It only needs to be performed
-  // once (as opposed to the update of vars and bounds).  However, performing
-  // this updating in the constructor does not propagate properly for multiple
-  // surrogates/nestings since the sub-model construction (and therefore any
-  // sub-sub-model constructions) must finish before calling any set functions
-  // on it.  That is, after-the-fact updating in constructors only propagates
-  // one level, whereas before-the-fact updating in compute/build functions
-  // propagates multiple levels.
-  if (approx_active_view == actual_active_view) {
-    // update active model vars/cons with active currentVariables data
-    model.continuous_variables(currentVariables.continuous_variables());
-    model.discrete_int_variables(
-      currentVariables.discrete_int_variables());
-    model.discrete_real_variables(
-      currentVariables.discrete_real_variables());
-    model.continuous_lower_bounds(
-      userDefinedConstraints.continuous_lower_bounds());
-    model.continuous_upper_bounds(
-      userDefinedConstraints.continuous_upper_bounds());
-    model.discrete_int_lower_bounds(
-      userDefinedConstraints.discrete_int_lower_bounds());
-    model.discrete_int_upper_bounds(
-      userDefinedConstraints.discrete_int_upper_bounds());
-    model.discrete_real_lower_bounds(
-      userDefinedConstraints.discrete_real_lower_bounds());
-    model.discrete_real_upper_bounds(
-      userDefinedConstraints.discrete_real_upper_bounds());
-  }
-  else if ( approx_active_view >= RELAXED_DESIGN &&
-	    ( actual_active_view == RELAXED_ALL ||
-	      actual_active_view == MIXED_ALL ) ) {
-    // update active model vars/cons using "All" view of
-    // currentVariables/userDefinedConstraints data.
-    model.continuous_variables(
-      currentVariables.all_continuous_variables());
-    model.discrete_int_variables(
-      currentVariables.all_discrete_int_variables());
-    model.discrete_real_variables(
-      currentVariables.all_discrete_real_variables());
-    model.continuous_lower_bounds(
-      userDefinedConstraints.all_continuous_lower_bounds());
-    model.continuous_upper_bounds(
-      userDefinedConstraints.all_continuous_upper_bounds());
-    model.discrete_int_lower_bounds(
-      userDefinedConstraints.all_discrete_int_lower_bounds());
-    model.discrete_int_upper_bounds(
-      userDefinedConstraints.all_discrete_int_upper_bounds());
-    model.discrete_real_lower_bounds(
-      userDefinedConstraints.all_discrete_real_lower_bounds());
-    model.discrete_real_upper_bounds(
-      userDefinedConstraints.all_discrete_real_upper_bounds());
-  }
-  else if ( actual_active_view >= RELAXED_DESIGN &&
-	    ( approx_active_view == RELAXED_ALL ||
-	      approx_active_view == MIXED_ALL ) ) {
-    // update "All" view of model vars/cons using active
-    // currentVariables/userDefinedConstraints data.
-    model.all_continuous_variables(
-      currentVariables.continuous_variables());
-    model.all_discrete_int_variables(
-      currentVariables.discrete_int_variables());
-    model.all_discrete_real_variables(
-      currentVariables.discrete_real_variables());
-    model.all_continuous_lower_bounds(
-      userDefinedConstraints.continuous_lower_bounds());
-    model.all_continuous_upper_bounds(
-      userDefinedConstraints.continuous_upper_bounds());
-    model.all_discrete_int_lower_bounds(
-      userDefinedConstraints.discrete_int_lower_bounds());
-    model.all_discrete_int_upper_bounds(
-      userDefinedConstraints.discrete_int_upper_bounds());
-    model.all_discrete_real_lower_bounds(
-      userDefinedConstraints.discrete_real_lower_bounds());
-    model.all_discrete_real_upper_bounds(
-      userDefinedConstraints.discrete_real_upper_bounds());
-  }
-  // TO DO: extend for aleatory/epistemic uncertain views
-  else {
-    Cerr << "Error: unsupported variable view differences in "
-	 << "DataFitSurrModel::update_model()" << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
-  // uncertain variable distribution data (dependent on label updates above)
-
-  // Note: Variables instances defined from the same variablesId are not shared
-  // (see ProblemDescDB::get_variables()), so we propagate any distribution
-  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
-  // differing variablesId, we assume that the distribution information can be
-  // mapped when a variable label is matched, but this precludes the case
-  // where the distribution for the same variable differs between that used to
-  // build and that used to evaluate.   More careful logic could involve
-  // matching both variable label and distribution type (presumably the dist
-  // params would be consistent when the dist type is the same), and this could
-  // be implemented at the lower (MultivariateDistribution) level.
-  // > currentVariables may have different active view from incoming model
-  //   vars, but MultivariateDistribution updates can be performed for all
-  //   vars (independent of view)
-  // > when model is a ProbabilityTransformModel, its mvDist is in u-space.
-  //   DataFit operates in and pushes updates to this transformed space for
-  //   parameterized std distribs (e.g. {JACOBI,GEN_LAGUERE,NUM_GEN}_ORTHOG).
-  // > it is sufficient to pull parameters at initialize_mapping() time, as
-  //   this data varies per iterator execution rather than per-evaluation
-  const SharedVariablesData&   svd =          currentVariables.shared_data();
-  const SharedVariablesData& m_svd = model.current_variables().shared_data();
-  if (svd.id() == m_svd.id()) // same set of variables
-    model.multivariate_distribution().pull_distribution_parameters(mvDist);
-  else { // map between related sets of variables based on labels
-    StringArray pull_labels;    svd.assemble_all_labels(pull_labels);
-    StringArray push_labels;  m_svd.assemble_all_labels(push_labels);
-    model.multivariate_distribution().
-      pull_distribution_parameters(mvDist, pull_labels, push_labels);
-  }
-}
-
-
-/** Update values and labels in currentVariables and
-    bound/linear/nonlinear constraints in userDefinedConstraints from
-    variables and constraints data within model. */
-void DataFitSurrModel::update_from_model(const Model& model)
-{
-  // vars/bounds/labels
-
-  // update vars/bounds/labels with model data using All view for both
-  // (since approx arrays are sized but otherwise uninitialized)
-  currentVariables.all_continuous_variables(
-    model.all_continuous_variables());
-  currentVariables.all_discrete_int_variables(
-    model.all_discrete_int_variables());
-  currentVariables.all_discrete_string_variables(
-    model.all_discrete_string_variables());
-  currentVariables.all_discrete_real_variables(
-    model.all_discrete_real_variables());
-  userDefinedConstraints.all_continuous_lower_bounds(
-    model.all_continuous_lower_bounds());
-  userDefinedConstraints.all_continuous_upper_bounds(
-    model.all_continuous_upper_bounds());
-  userDefinedConstraints.all_discrete_int_lower_bounds(
-    model.all_discrete_int_lower_bounds());
-  userDefinedConstraints.all_discrete_int_upper_bounds(
-    model.all_discrete_int_upper_bounds());
-  userDefinedConstraints.all_discrete_real_lower_bounds(
-    model.all_discrete_real_lower_bounds());
-  userDefinedConstraints.all_discrete_real_upper_bounds(
-    model.all_discrete_real_upper_bounds());
-  if (!approxBuilds) {
-    currentVariables.all_continuous_variable_labels(
-      model.all_continuous_variable_labels());
-    currentVariables.all_discrete_int_variable_labels(
-      model.all_discrete_int_variable_labels());
-    currentVariables.all_discrete_string_variable_labels(
-      model.all_discrete_string_variable_labels());
-    currentVariables.all_discrete_real_variable_labels(
-      model.all_discrete_real_variable_labels());
-    currentResponse.function_labels(model.response_labels());
-  }
-
-  // uncertain variable distribution data (dependent on label updates above)
-
-  // See notes in init_model() above, with the difference that these
-  // updates are performed once at lightweight construct time.
-  const SharedVariablesData&   svd =          currentVariables.shared_data();
-  const SharedVariablesData& m_svd = model.current_variables().shared_data();
-  if (svd.id() == m_svd.id()) // same variables specification
-    mvDist.pull_distribution_parameters(model.multivariate_distribution());
-  else{ // map between related sets of variables based on labels
-    StringArray pull_labels;  m_svd.assemble_all_labels(pull_labels);
-    StringArray push_labels;    svd.assemble_all_labels(push_labels);
-    mvDist.pull_distribution_parameters(model.multivariate_distribution(),
-					pull_labels, push_labels);
-  }
-
-  // linear constraints
-
-  if (model.num_linear_ineq_constraints()) {
-    // the views don't necessarily have to be the same, but the number of
-    // active continuous and active discrete variables have to be consistent.
-    if (model.cv()  == currentVariables.cv()  &&
-	model.div() == currentVariables.div() &&
-	model.drv() == currentVariables.drv()) {
-      userDefinedConstraints.linear_ineq_constraint_coeffs(
-        model.linear_ineq_constraint_coeffs());
-      userDefinedConstraints.linear_ineq_constraint_lower_bounds(
-        model.linear_ineq_constraint_lower_bounds());
-      userDefinedConstraints.linear_ineq_constraint_upper_bounds(
-        model.linear_ineq_constraint_upper_bounds());
-    }
-    else {
-      Cerr << "Error: cannot update linear inequality constraints in "
-	   << "DataFitSurrModel::update_from_model() due to inconsistent "
-	   << "active variables." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-  }
-  if (model.num_linear_eq_constraints()) {
-    // the views don't necessarily have to be the same, but the number of
-    // active continuous and active discrete variables have to be consistent.
-    if (model.cv()  == currentVariables.cv()  &&
-	model.div() == currentVariables.div() &&
-	model.drv() == currentVariables.drv()) {
-      userDefinedConstraints.linear_eq_constraint_coeffs(
-        model.linear_eq_constraint_coeffs());
-      userDefinedConstraints.linear_eq_constraint_targets(
-        model.linear_eq_constraint_targets());
-    }
-    else {
-      Cerr << "Error: cannot update linear equality constraints in "
-	   << "DataFitSurrModel::update_from_model() due to inconsistent "
-	   << "active variables." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-  }
-
-  // weights and sense for primary response functions
-
-  primaryRespFnWts   = model.primary_response_fn_weights();
-  primaryRespFnSense = model.primary_response_fn_sense();
-
-  // nonlinear constraints
-
-  if (model.num_nonlinear_ineq_constraints()) {
-    userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds(
-      model.nonlinear_ineq_constraint_lower_bounds());
-    userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds(
-      model.nonlinear_ineq_constraint_upper_bounds());
-  }
-  if (model.num_nonlinear_eq_constraints())
-    userDefinedConstraints.nonlinear_eq_constraint_targets(
-      model.nonlinear_eq_constraint_targets());
 }
 
 

@@ -956,10 +956,10 @@ int Interface::recommended_points(bool constraint_flag) const
 }
 
 
-void Interface::active_model_key(const UShortArray& mi_key)
+void Interface::active_model_key(const Pecos::ActiveKey& key)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->active_model_key(mi_key);
+    interfaceRep->active_model_key(key);
   // else: default implementation is no-op
 }
 

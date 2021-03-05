@@ -30,50 +30,48 @@ namespace Dakota {
 extern PRPCache data_pairs; // global container
 
 void DiscrepancyCorrection::
-initialize(Model& surr_model, const SizetSet& surr_fn_indices, short corr_type,
-	   short corr_order)
+initialize(Model& surr_model, const SizetSet& surr_fn_indices,
+	   short    corr_type, short   corr_order,
+	   String approx_type, short approx_order)
 {
   surrModel = surr_model; // shallow copy
-  surrogateFnIndices = surr_fn_indices;
   numFns = surr_model.qoi(); numVars = surr_model.cv();
-  correctionType = corr_type; correctionOrder = corr_order;
 
-  initialize_corrections();
+  surrogateFnIndices = surr_fn_indices;
+  // = surrModel.surrogate_function_indices() would work for DataFitSurrModel,
+  // but not for HierarchSurrModel's surrogate
 
-  initializedFlag = true;
+  initialize(corr_type, corr_order, approx_type, approx_order);
 }
 
 
 void DiscrepancyCorrection::
 initialize(const SizetSet& surr_fn_indices, size_t num_fns, size_t num_vars,
-	   short corr_type, short corr_order)
+	   short    corr_type, short   corr_order,
+	   String approx_type, short approx_order)
 {
+  // in this case, surrModel is null and must be protected
+
   surrogateFnIndices = surr_fn_indices;
   numFns = num_fns; numVars = num_vars;
-  correctionType = corr_type; correctionOrder = corr_order;
 
-  initialize_corrections();
-
-  initializedFlag = true;
-
-  // in this case, surrModel is null and must be protected
+  initialize(corr_type, corr_order, approx_type, approx_order);
 }
 
 
 void DiscrepancyCorrection::
-initialize(const SizetSet& surr_fn_indices, size_t num_fns, size_t num_vars,
-	   short corr_type, short corr_order, const String& approx_type)
+initialize(short    corr_type, short   corr_order,
+	   String approx_type, short approx_order)
 {
-  surrogateFnIndices = surr_fn_indices;
-  numFns = num_fns; numVars = num_vars;
-  correctionType = corr_type; correctionOrder = corr_order;
-  approxType = approx_type;
+  correctionType  = corr_type;
+  correctionOrder = corr_order;
+  approxOrder = (approx_order == SHRT_MAX) ? correctionOrder : approx_order;
+  approxType  = (approx_type.empty()) ? "local_taylor" : approx_type;
+  addAnchor   = !strbegins(approxType, "global_"); // local, multipoint
 
   initialize_corrections();
 
   initializedFlag = true;
-
-  // in this case, surrModel is null and must be protected
 }
 
 
@@ -90,22 +88,16 @@ void DiscrepancyCorrection::initialize_corrections()
     combineFactors.resize(numFns);
     combineFactors = 1.; // used on 1st cycle prior to existence of prev pt.
   }
-  UShortArray approx_order(numVars, correctionOrder);
+  UShortArray approx_orders(numVars, approxOrder);
   switch (correctionOrder) {
   case 2: dataOrder = 7; break;
   case 1: dataOrder = 3; break;
   case 0: default: dataOrder = 1; break;
   }
+  sharedData = SharedApproxData(approxType, approx_orders, numVars,
+				dataOrder, NORMAL_OUTPUT);
 
   StSIter it;
-  if (approxType.empty()) 
-    sharedData = SharedApproxData("local_taylor", approx_order, numVars,
-				  dataOrder, NORMAL_OUTPUT);
-  else { 
-    dataOrder = 1; // for GP and poly, do not need grad or hessian info
-    sharedData = SharedApproxData(approxType, approx_order, numVars,
-				  dataOrder, NORMAL_OUTPUT);
-  }
   if (computeAdditive) {
     addCorrections.resize(numFns);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
@@ -186,6 +178,7 @@ compute(const Variables& vars, const Response& truth_response,
   Pecos::SurrogateDataVars sdv(vars.continuous_variables(),
     vars.discrete_int_variables(), vars.discrete_real_variables(),
     Pecos::DEEP_COPY);
+  int eval_id = INT_MAX; // suppress eval id tracking for this use case
   if (computeAdditive || badScalingFlag) {
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
@@ -208,14 +201,9 @@ compute(const Variables& vars, const Response& truth_response,
 	Cout << "\nAdditive correction computed:\n" << sdr;
 
       // shallow copy of vars/resp into the active SurrogateData instance
-      if (approxType.empty()) { // update anchor data
-        addCorrections[index].add(sdv, true, false); // anchor, shallow
-        addCorrections[index].add(sdr, true, false); // anchor, shallow
-      }
-      else {
-        addCorrections[index].add(sdv, false, false); // not anchor, shallow
-        addCorrections[index].add(sdr, false, false); // not anchor, shallow
-      }
+      Approximation& add_corr = addCorrections[index];
+      if (addAnchor) add_corr.clear_current_active_data(); // Taylor,TANA,QMEA
+      add_corr.add(sdv, false, sdr, false, addAnchor, eval_id);// shallow x2
     }
   }
 
@@ -246,8 +234,9 @@ compute(const Variables& vars, const Response& truth_response,
 	Cout << "\nMultiplicative correction computed:\n" << sdr;
 
       // update anchor data; shallow cp of vars/resp into active SurrogateData
-      multCorrections[index].add(sdv, true, false); // anchor, shallow
-      multCorrections[index].add(sdr, true, false); // anchor, shallow
+      Approximation& mult_corr = multCorrections[index];
+      if (addAnchor) mult_corr.clear_current_active_data(); // Taylor,TANA,QMEA
+      mult_corr.add(sdv, false, sdr, false, addAnchor, eval_id);// shallow x2
     }
   }
 
@@ -431,20 +420,18 @@ compute(const VariablesArray& vars_array, const ResponseArray&
   // it is not necessary to back out a previous correction, and the
   // computation of the new correction is straightforward.
 
-  int i, index; StSIter it;
+  size_t i, index; StSIter it;
   
-  for (i=0; i < vars_array.size(); i++)
+  for (i=0; i<vars_array.size(); i++)
     compute(vars_array[i], truth_response_array[i], approx_response_array[i], 
 	    quiet_flag);
 
-  if (!approxType.empty()) {
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-      index = *it;
-      addCorrections[index].build();
-      //const String GPstring = "modDiscrep";
-      //const String GPPrefix = "GP";
-      //addCorrections[index].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
-    }
+  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+    index = *it;
+    addCorrections[index].build();
+    //const String GPstring = "modDiscrep";
+    //const String GPPrefix = "GP";
+    //addCorrections[index].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
   }
 }
 
@@ -829,6 +816,7 @@ apply_multiplicative(const Variables& vars, Response& approx_response)
   }
 }
 
+
 void DiscrepancyCorrection::
 compute_variance(const VariablesArray& vars_array, RealMatrix& approx_variance,
     		 bool quiet_flag)
@@ -849,6 +837,7 @@ compute_variance(const VariablesArray& vars_array, RealMatrix& approx_variance,
   //if (!quiet_flag)
     //Cout << "\nCorrection variances computed:\n" << approx_variance;
 }
+
 
 const Response& DiscrepancyCorrection::
 search_db(const Variables& search_vars, const ShortArray& search_asv)

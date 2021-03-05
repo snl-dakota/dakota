@@ -77,7 +77,7 @@ protected:
   /// return truth_model()
   Model& subordinate_model();
 
-  void active_model_key(const UShortArray& key);
+  void active_model_key(const Pecos::ActiveKey& key);
 
   /// return responseMode
   short surrogate_response_mode() const;
@@ -92,27 +92,59 @@ protected:
   //- Heading: New virtual functions
   //
 
-  /// distributes the incoming orig_asv among actual_asv and approx_asv
-  virtual void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
-			 ShortArray& approx_asv, bool build_flag);
-
   /// verify compatibility between SurrogateModel attributes and
   /// attributes of the submodel (DataFitSurrModel::actualModel or
   /// HierarchSurrModel::highFidelityModel)
-  virtual void check_submodel_compatibility(const Model& sub_model);
+  virtual void check_submodel_compatibility(const Model& sub_model) = 0;
+  /// initialize model with data that could change once per set of evaluations
+  /// (e.g., an outer iterator execution), including active variable labels,
+  /// inactive variable values/bounds/labels, and linear/nonlinear constraint
+  /// coeffs/bounds
+  virtual void init_model(Model& model);
+  /// update model with data that could change per function evaluation
+  /// (active variable values/bounds)
+  virtual void update_model(Model& model);
+  /// update current variables/labels/bounds/targets with data from model
+  virtual void update_from_model(const Model& model);
 
   //
   //- Heading: Member functions
   //
 
-  /// define truth and surrogate keys from incoming active key
-  void extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
-			  UShortArray& surr_key);
+  /// check sub_model for consistency in active variable counts
+  bool check_active_variables(const Model& sub_model);
+  /// check sub_model for consistency in inactive variable counts
+  bool check_inactive_variables(const Model& sub_model);
+  /// check sub_model for consistency in response QoI counts
+  bool check_response_qoi(const Model& sub_model);
 
-  /// return the level index from active low fidelity model key
-  unsigned short surrogate_level_index() const;
-  /// return the level index from active high fidelity model key
-  unsigned short truth_level_index() const;
+  /// distributes the incoming orig_asv among actual_asv and approx_asv
+  void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
+		 ShortArray& approx_asv, bool build_flag);
+  /// distributes the incoming orig_asv among actual_asv and approx_asv
+  void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
+
+  /// initialize model with linear/nonlinear constraint data that could change
+  /// once per set of evaluations (e.g., an outer iterator execution)
+  void init_model_constraints(Model& model);
+  /// initialize model with active/inactive variable label data that could
+  /// change once per set of evaluations (e.g., an outer iterator execution)
+  void init_model_labels(Model& model);
+  /// initialize model with inactive variable values/bounds data that could
+  /// change once per set of evaluations (e.g., an outer iterator execution)
+  void init_model_inactive_variables(Model& model);
+
+  /// update model with active variable values/bounds data
+  void update_model_active_variables(Model& model);
+  /// update model with random variable distribution data
+  void update_model_distributions(Model& model);
+
+  /// update current variables/bounds with data from model
+  void update_variables_from_model(const Model& model);
+  /// update current random variable distributions with data from model
+  void update_distributions_from_model(const Model& model);
+  /// update response/constraints with data from model
+  void update_response_from_model(const Model& model);
 
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;
@@ -128,9 +160,16 @@ protected:
   void response_combine(const Response& actual_response,
                         const Response& approx_response,
                         Response& combined_response);
+
   /// aggregate {HF,LF} response data to create a new response with 2x size
   void aggregate_response(const Response& hf_resp, const Response& lf_resp,
 			  Response& agg_resp);
+  /// aggregate response array to create a new response with accumulated size
+  void aggregate_response(const ResponseArray& resp_array, Response& agg_resp);
+  /// insert a single response into an aggregated response in the
+  /// specified position
+  void insert_response(const Response& response, size_t position,
+		       Response& agg_response);
 
   //
   //- Heading: Data
@@ -147,23 +186,10 @@ protected:
   short responseMode;
 
   /// array of indices that identify the currently active model key
-  UShortArray activeKey;
-  /// array of indices that identify the surrogate (e.g., low fidelity) model
-  /// (trailing portion of activeKey, if aggregated models)
-  UShortArray surrModelKey;
-  /// array of indices that identify the truth (e.g., high fidelity) model
-  /// (leading portion of activeKey, if aggregated models)
-  UShortArray truthModelKey;
+  Pecos::ActiveKey activeKey;
 
   /// type of correction: additive, multiplicative, or combined
   short corrType;
-
-  /// map from actualModel/highFidelityModel evaluation ids to
-  /// DataFitSurrModel/HierarchSurrModel ids
-  IntIntMap truthIdMap;
-  /// map from approxInterface/lowFidelityModel evaluation ids to
-  /// DataFitSurrModel/HierarchSurrModel ids
-  IntIntMap surrIdMap;
 
   /// counter for calls to derived_evaluate()/derived_evaluate_nowait();
   /// used to key response maps from SurrogateModels
@@ -171,14 +197,6 @@ protected:
   /// map of surrogate responses returned by derived_synchronize() and
   /// derived_synchronize_nowait()
   IntResponseMap surrResponseMap;
-  /// map of approximate responses retrieved in derived_synchronize_nowait()
-  /// that could not be returned since corresponding truth model response
-  /// portions were still pending.
-  IntResponseMap cachedApproxRespMap;
-  /// map of raw continuous variables used by apply_correction().
-  /// Model::varsList cannot be used for this purpose since it does
-  /// not contain lower level variables sets from finite differencing.
-  IntVariablesMap rawVarsMap;
 
   /// number of calls to build_approximation()
   /** used as a flag to automatically build the approximation if one of the
@@ -226,6 +244,15 @@ protected:
   RealVector referenceIDRVars;
 
 private:
+
+  //
+  //- Heading: convenience functions
+  //
+
+  /// update all current variables/bounds/labels with data from model
+  void update_all_variables_from_model(const Model& model);
+  /// update complement of active variables/bounds with data from model
+  void update_complement_variables_from_model(const Model& model);
 
   //
   //- Heading: Data
@@ -286,38 +313,10 @@ inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 
-inline unsigned short SurrogateModel::surrogate_level_index() const
-{ return (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[2]; }
-
-
-inline unsigned short SurrogateModel::truth_level_index() const
-{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
-
-
-inline void SurrogateModel::
-extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
-		   UShortArray& surr_key)
-{
-  if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
-    Pecos::DiscrepancyCalculator::extract_keys(active_key, truth_key, surr_key);
-  else // single key: assign to truth or surr key based on responseMode
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
-      surr_key  = active_key;  truth_key.clear();  break;
-    default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
-      truth_key = active_key;   surr_key.clear();  break;
-    }
-}
-
-
-inline void SurrogateModel::active_model_key(const UShortArray& key)
+inline void SurrogateModel::active_model_key(const Pecos::ActiveKey& key)
 {
   // base implementation (augmented in derived SurrogateModels)
-
-  // update activeKey
-  activeKey = key;
-  // update {truth,surr}ModelKey
-  extract_model_keys(key, truthModelKey, surrModelKey);
+  activeKey = key;//.copy(); // share representations except for entering data into DB storage (reduce overhead of short-term activations)
 }
 
 
@@ -337,6 +336,18 @@ inline void SurrogateModel::check_key(int key1, int key2) const
     abort_handler(MODEL_ERROR);
   }
 }
+
+
+/*
+inline const UShortArray& SurrogateModel::
+model_indices(const Pecos::ActiveKeyData& data) const
+{ return data.model_indices(); }
+
+
+inline void SurrogateModel::
+model_indices(Pecos::ActiveKeyData& data, const UShortArray& indices)
+{ data.model_indices(indices); }
+*/
 
 
 /** return the SurrogateModel evaluation id counter.  Due to possibly
