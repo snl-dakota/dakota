@@ -206,6 +206,10 @@ public:
   /// flags the use of derivatives in building global approximations
   /// (from the \c use_derivatives specification in \ref ModelSurrG)
   bool modelUseDerivsFlag;
+  /// flag to indicate bounds-based scaling of current response data set
+  /// prior to surrogate build; important for data fits of decaying
+  /// discrepancy data using regression with absolute tolerances
+  bool respScalingFlag;
   /// scalar integer indicating the order of the polynomial approximation
   /// (1=linear, 2=quadratic, 3=cubic; from the \c polynomial specification
   /// in \ref ModelSurrG)

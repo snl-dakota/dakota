@@ -835,6 +835,11 @@ public:
   /// Wilks sided interval type
   short wilksSidedInterval;
 
+  /// flag to indicate bounds-based scaling of current response data set
+  /// prior to build in surrogate-based methods; important for ML/MF data fits
+  /// of decaying discrepancy data using regression with absolute tolerances
+  bool respScalingFlag;
+
   /// a sub-specification of vbdFlag: interaction order limit for
   /// calculation/output of component VBD indices
   unsigned short vbdOrder;

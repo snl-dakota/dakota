@@ -2671,6 +2671,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"nond.normalized", P_MET normalizedCoeffs},
       {"nond.piecewise_basis", P_MET piecewiseBasis},
       {"nond.relative_convergence_metric", P_MET relativeConvMetric},
+      {"nond.response_scaling", P_MET respScalingFlag},
       {"nond.standardized_space", P_MET standardizedSpace},
       {"nond.tensor_grid", P_MET tensorGridFlag},
       {"posterior_stats.kde", P_MET posteriorStatsKDE},
@@ -2710,7 +2711,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"surrogate.import_build_active_only", P_MOD importBuildActive},
       {"surrogate.import_use_variable_labels", P_MOD importUseVariableLabels},
       {"surrogate.point_selection", P_MOD pointSelection},
-      {"surrogate.press", P_MOD pressFlag}
+      {"surrogate.press", P_MOD pressFlag},
+      {"surrogate.response_scaling", P_MOD respScalingFlag}
     },
     { /* variables */
       {"uncertain.initial_point_flag", P_VAR uncertainVarsInitPt}

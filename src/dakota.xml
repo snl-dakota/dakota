@@ -814,6 +814,7 @@
 	     <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mdm(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
 	       <param type="REAL" />
 	     </keyword>
+	     <keyword  id="response_scaling" name="response_scaling" code="{N_mdm(true,respScalingFlag)}" label="Scale response data prior to build" help="" minOccurs="0" default="use original data"/>
 	     <!-- <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only"/> -->
 	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" minOccurs="0" default="regression with random sample set" />
 	     ' >
@@ -945,6 +946,7 @@
 	     <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
 	       <param type="REAL" />
 	     </keyword>
+	     <keyword  id="response_scaling" name="response_scaling" code="{N_mom(true,respScalingFlag)}" label="Scale response data prior to build" minOccurs="0" default="use original data"/>
 	     <!-- <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mom(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only"/> -->
 	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mom(true,tensorGridFlag)}" label="tensor_grid"  minOccurs="0" default="regression with random sample set" />
 	     ' >

@@ -130,8 +130,9 @@ DataMethodRep::DataMethodRep():
   percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
   wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED_UPPER),
   // NonD
-  vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE), rngName("mt19937"),
-  refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
+  respScalingFlag(false), vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE),
+  rngName("mt19937"), refinementType(Pecos::NO_REFINEMENT),
+  refinementControl(Pecos::NO_CONTROL),
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
@@ -293,13 +294,13 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << vbdOrder << covarianceControl << rngName << refinementType
-    << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << expansionBasisType << quadratureOrderSeq
-    << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
-    << expansionSamplesSeq << quadratureOrder << sparseGridLevel
-    << expansionOrder << collocationPoints << expansionSamples
-  //<< expansionSampleType
+  s << respScalingFlag << vbdOrder << covarianceControl << rngName
+    << refinementType << refinementControl << nestingOverride << growthOverride
+    << expansionType << piecewiseBasis << expansionBasisType
+    << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
+    << collocationPointsSeq << expansionSamplesSeq << quadratureOrder
+    << sparseGridLevel << expansionOrder << collocationPoints
+    << expansionSamples //<< expansionSampleType
     << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType
     << regressionNoiseTol << regressionL2Penalty << crossValidation
@@ -459,13 +460,13 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> wilksConfidenceLevel >> wilksSidedInterval;
 
   // NonD
-  s >> vbdOrder >> covarianceControl >> rngName >> refinementType
-    >> refinementControl >> nestingOverride >> growthOverride >> expansionType
-    >> piecewiseBasis >> expansionBasisType >> quadratureOrderSeq
-    >> sparseGridLevelSeq >> expansionOrderSeq >> collocationPointsSeq
-    >> expansionSamplesSeq >> quadratureOrder >> sparseGridLevel
-    >> expansionOrder >> collocationPoints >> expansionSamples
-  //>> expansionSampleType
+  s >> respScalingFlag >> vbdOrder >> covarianceControl >> rngName
+    >> refinementType >> refinementControl >> nestingOverride >> growthOverride
+    >> expansionType >> piecewiseBasis >> expansionBasisType
+    >> quadratureOrderSeq >> sparseGridLevelSeq >> expansionOrderSeq
+    >> collocationPointsSeq >> expansionSamplesSeq >> quadratureOrder
+    >> sparseGridLevel >> expansionOrder >> collocationPoints
+    >> expansionSamples //>> expansionSampleType
     >> anisoDimPref >> cubIntOrder >> collocationRatio
     >> collocRatioTermsOrder >> regressionType >> lsRegressionType
     >> regressionNoiseTol >> regressionL2Penalty >> crossValidation
@@ -625,13 +626,13 @@ void DataMethodRep::write(std::ostream& s) const
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << vbdOrder << covarianceControl << rngName << refinementType
-    << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << expansionBasisType << quadratureOrderSeq
-    << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
-    << expansionSamplesSeq << quadratureOrder << sparseGridLevel
-    << expansionOrder << collocationPoints << expansionSamples
-  //<< expansionSampleType
+  s << respScalingFlag << vbdOrder << covarianceControl << rngName
+    << refinementType << refinementControl << nestingOverride << growthOverride
+    << expansionType << piecewiseBasis << expansionBasisType
+    << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
+    << collocationPointsSeq << expansionSamplesSeq << quadratureOrder
+    << sparseGridLevel << expansionOrder << collocationPoints
+    << expansionSamples //<< expansionSampleType
     << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType
     << regressionNoiseTol << regressionL2Penalty << crossValidation

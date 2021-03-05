@@ -26,7 +26,8 @@ namespace Dakota {
 
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
-  SharedApproxData(BaseConstructor(), problem_db, num_vars), respScaling(true),
+  SharedApproxData(BaseConstructor(), problem_db, num_vars),
+  respScaling(problem_db.get_bool("model.surrogate.response_scaling")),
   kickOrder(problem_db.get_ushort("model.c3function_train.kick_order")),
   maxOrder(problem_db.get_ushort("model.c3function_train.max_order")),
   adaptOrder(problem_db.get_bool("model.c3function_train.adapt_order")),
@@ -67,7 +68,7 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars, data_order,
 		   output_level),
   // default values overridden by set_parameter
-  respScaling(true), startOrders(approx_order), kickOrder(1),
+  respScaling(false), startOrders(approx_order), kickOrder(1),
   maxOrder(USHRT_MAX), adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq

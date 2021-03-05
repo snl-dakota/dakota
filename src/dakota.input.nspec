@@ -1179,6 +1179,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
     [ max_cross_iterations INTEGER >= 0 {N_mdm(int,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTol)} ]
+    [ response_scaling {N_mdm(true,respScalingFlag)} ]
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
     |
@@ -1337,6 +1338,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
     [ max_cross_iterations INTEGER >= 0 {N_mdm(int,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTol)} ]
+    [ response_scaling {N_mdm(true,respScalingFlag)} ]
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     [ collocation_points_sequence ALIAS pilot_samples INTEGERLIST {N_mdm(szarray,collocationPointsSeq)} ]
     [ collocation_ratio REAL {N_mdm(Realp,collocationRatio)} ]
@@ -1478,6 +1480,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
     [ max_cross_iterations INTEGER >= 0 {N_mdm(int,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTol)} ]
+    [ response_scaling {N_mdm(true,respScalingFlag)} ]
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     [ collocation_points_sequence ALIAS pilot_samples INTEGERLIST {N_mdm(szarray,collocationPointsSeq)} ]
     [ collocation_ratio REAL {N_mdm(Realp,collocationRatio)} ]
@@ -5935,6 +5938,7 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ max_solver_iterations INTEGER >= 0 {N_mom(int,maxSolverIterations)} ]
         [ max_cross_iterations INTEGER >= 0 {N_mom(int,maxCrossIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTol)} ]
+        [ response_scaling {N_mom(true,respScalingFlag)} ]
         [ tensor_grid {N_mom(true,tensorGridFlag)} ]
         [ rounding_tolerance REAL {N_mom(Real,solverRoundingTol)} ]
         [ arithmetic_tolerance REAL {N_mom(Real,statsRoundingTol)} ]
