@@ -1,15 +1,16 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
 #include "util_common.hpp"
 #include "util_data_types.hpp"
-#include "util_metrics.hpp"
 #include "util_math_tools.hpp"
+#include "util_metrics.hpp"
 
 #include <Teuchos_UnitTestHarness.hpp>
 
@@ -28,8 +29,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
 
   /* SUM_SQUARED */
   mval = 0.0;
-  for (int i = 0; i < N; i++)
-    mval += std::pow(diff(i), 2);
+  for (int i = 0; i < N; i++) mval += std::pow(diff(i), 2);
 
   metric = compute_metric(p, d, "sum_squared");
 
@@ -37,8 +37,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
 
   /* MEAN_SQUARED */
   mval = 0.0;
-  for (int i = 0; i < N; i++)
-    mval += std::pow(diff(i), 2);
+  for (int i = 0; i < N; i++) mval += std::pow(diff(i), 2);
   mval /= N;
 
   metric = compute_metric(p, d, "mean_squared");
@@ -47,8 +46,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
 
   /* RMS */
   mval = 0.0;
-  for (int i = 0; i < N; i++)
-    mval += std::pow(diff(i), 2);
+  for (int i = 0; i < N; i++) mval += std::pow(diff(i), 2);
   mval /= N;
   mval = std::sqrt(mval);
 
@@ -58,8 +56,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
 
   /* SUM_ABS */
   mval = 0.0;
-  for (int i = 0; i < N; i++)
-    mval += std::abs(diff(i));
+  for (int i = 0; i < N; i++) mval += std::abs(diff(i));
 
   metric = compute_metric(p, d, "sum_abs");
 
@@ -67,8 +64,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
 
   /* MEAN_ABS */
   mval = 0.0;
-  for (int i = 0; i < N; i++)
-    mval += std::abs(diff(i));
+  for (int i = 0; i < N; i++) mval += std::abs(diff(i));
   mval /= N;
 
   metric = compute_metric(p, d, "mean_abs");
@@ -77,8 +73,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
 
   /* MAX_ABS */
   mval = 0.0;
-  for (int i = 0; i < N; i++)
-    mval = std::max(std::abs(diff(i)), mval);
+  for (int i = 0; i < N; i++) mval = std::max(std::abs(diff(i)), mval);
 
   metric = compute_metric(p, d, "max_abs");
 
@@ -86,8 +81,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
 
   /* ABS_PERCENTAGE_ERROR */
   mval = 0.0;
-  for (int i = 0; i < N; i++)
-    mval += std::abs(diff(i)/d(i));
+  for (int i = 0; i < N; i++) mval += std::abs(diff(i) / d(i));
 
   metric = compute_metric(p, d, "ape");
 
@@ -95,8 +89,7 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
 
   /* MEAN_ABS_PERCENTAGE_ERROR */
   mval = 0.0;
-  for (int i = 0; i < N; i++)
-    mval += std::abs(diff(i)/d(i));
+  for (int i = 0; i < N; i++) mval += std::abs(diff(i) / d(i));
   mval /= N;
 
   metric = compute_metric(p, d, "mape");
@@ -106,18 +99,17 @@ TEUCHOS_UNIT_TEST(util, metrics_verification) {
   /* R_SQUARED */
   double dbar = 0.0, numer = 0.0, denom = 0.0;
   mval = 0.0;
-  for (int i = 0; i < N; i++)
-    dbar += d(i);
+  for (int i = 0; i < N; i++) dbar += d(i);
   dbar /= N;
   for (int i = 0; i < N; i++) {
     numer += std::pow(p(i) - dbar, 2);
-    denom += std::pow(d(i) - dbar, 2); 
+    denom += std::pow(d(i) - dbar, 2);
   }
-  mval = numer/denom;
+  mval = numer / denom;
 
   metric = compute_metric(p, d, "rsquared");
 
   TEST_ASSERT(std::abs(mval - metric) < atol);
 }
 
-}
+}  // namespace

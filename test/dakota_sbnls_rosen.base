@@ -49,14 +49,14 @@ Test Number 4 succeeded
                       3.8187130780e-07
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 70 total (70 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 61 total (61 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000000000e+00 x1
-                      1.0000000000e+00 x2
+                      9.9999690460e-01 x1
+                      9.9999375735e-01 x2
 <<<<< Best residual terms =
-                      1.1102230246e-15
-                      3.1086244690e-15
+                     -5.1857539152e-07
+                      3.0954012098e-06
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 70 total (70 new, 0 duplicate)

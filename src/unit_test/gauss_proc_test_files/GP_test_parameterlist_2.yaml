@@ -1,0 +1,7 @@
+GP Test Parameters:
+  scaler name: "standardization"
+  num restarts: 10
+  gp seed: 42
+  Nugget:
+    fixed nugget: 0.0
+    estimate nugget: true

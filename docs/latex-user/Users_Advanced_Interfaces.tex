@@ -561,12 +561,14 @@ functions  & number of functions (responses, constraints) \\
 variables  & total number of variables \\
 cv         & list/array of continuous variable values \\
 div        & list/array of discrete integer variable values \\
+dsv        & list of discrete string variable values (NumPy not supported)\\
 drv        & list/array of discrete real variable values \\
-av         & single list/array of all variable values \\
+av         & single list/array of all numeric variable values (omits string variables) \\
 cv\_labels  & continuous variable labels \\
 div\_labels & discrete integer variable labels \\
+dsv\_labels & discrete string variable labels \\
 drv\_labels & discrete real variable labels \\
-av\_labels  & all variable labels \\
+av\_labels  & all numeric variable labels \\
 asv        & active set vector \\
 dvv        & derivative variables vector \\
 analysis\_components & list of analysis components as strings \\

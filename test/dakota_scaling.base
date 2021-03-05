@@ -205,33 +205,33 @@ Confidence Intervals on Calibrated Parameters:
             x1: [ 1.6648211379e-01, 9.0068520925e-01 ]
             x2: [ -5.2374565360e-01, 1.6242985880e+00 ]
 Test Number 16 succeeded
-<<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
+<<<<< Function evaluation summary: 7 total (7 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.1956805932e-01 x1
-                      5.0969013102e-01 x2
+                      5.1956813564e-01 x1
+                      5.0969016871e-01 x2
 <<<<< Best residual terms =
-                      1.1106946630e-01
-                      1.5105902752e-02
+                      1.1106941467e-01
+                      1.5105963224e-02
 <<<<< Best constraint values   =
-                      1.6653345369e-15
-<<<<< Best data captured at function evaluation 9
+                      2.5277308024e-10
+<<<<< Best data captured at function evaluation 7
 Confidence Intervals on Calibrated Parameters:
-            x1: [ -5.9963790099e-01, 1.6387740196e+00 ]
-            x2: [ -1.6981490228e+00, 2.7175292848e+00 ]
+            x1: [ -5.9963802121e-01, 1.6387742925e+00 ]
+            x2: [ -1.6981497216e+00, 2.7175300590e+00 ]
 Test Number 17 succeeded
-<<<<< Function evaluation summary: 282 total (280 new, 2 duplicate)
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
 <<<<< Best parameters          =
-                      5.3351424779e-01 x1
-                      5.1648575221e-01 x2
+                      5.3351451397e-01 x1
+                      5.1648548603e-01 x2
 <<<<< Best residual terms =
-                      1.0200956498e-01
-                      2.6394576488e-02
+                      1.0200957725e-01
+                      2.6394993601e-02
 <<<<< Best constraint values   =
-                      4.0834314752e-07
-<<<<< Best data captured at function evaluation 248
+                      2.9556401770e-10
+<<<<< Best data captured at function evaluation 10
 Confidence Intervals on Calibrated Parameters:
-            x1: [ -6.3894895477e-01, 1.7059774503e+00 ]
-            x2: [ -1.7410444753e+00, 2.7740159798e+00 ]
+            x1: [ -6.3895097102e-01, 1.7059799990e+00 ]
+            x2: [ -1.7410491694e+00, 2.7740201414e+00 ]
 Test Number 18 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
 <<<<< Best parameters          =

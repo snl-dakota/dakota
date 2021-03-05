@@ -1340,8 +1340,8 @@
 	     <keyword  id="seed4" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
                <param type="INTEGER" constraint="> 0" />
 	     </keyword>
-	     <keyword  id="show_misc_options" name="show_misc_options" code="{N_mdm(true,showMiscOptions)}" label="show_misc_options"  minOccurs="0" default="no dump of specification options" />
-	     <keyword  id="misc_options" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options"  minOccurs="0" default="no misc options" >
+	     <keyword  id="show_misc_options" name="show_misc_options" code="{N_mdm(true,showMiscOptions)}" label="show_misc_options"  minOccurs="0" default="no dump of specification options"  complexity="1"/>
+	     <keyword  id="misc_options" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options"  minOccurs="0" default="no misc options" complexity="1" >
                <param type="STRINGLIST" />
 	     </keyword>
 	     &method_max_iterations;

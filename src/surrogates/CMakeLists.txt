@@ -1,7 +1,8 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -10,6 +11,7 @@
 set(surrogates_sources
   SurrogatesBase.cpp
   SurrogatesGaussianProcess.cpp 
+  SurrogatesGPKernels.cpp
   SurrogatesGPObjective.cpp
   SurrogatesPolynomialRegression.cpp
   surrogates_tools.cpp
@@ -18,6 +20,7 @@ set(surrogates_sources
 set(surrogates_headers
   SurrogatesBase.hpp
   SurrogatesGaussianProcess.hpp
+  SurrogatesGPKernels.hpp
   SurrogatesGPObjective.hpp
   SurrogatesPolynomialRegression.hpp
   surrogates_tools.hpp

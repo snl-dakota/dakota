@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -15,22 +16,24 @@ namespace dakota {
 namespace util {
 
 /// Enumeration for supported metric types.
-enum class METRIC_TYPE { SUM_SQUARED,
-                         MEAN_SQUARED,
-                         ROOT_MEAN_SQUARED,
-                         SUM_ABS,
-                         MEAN_ABS,
-                         MAX_ABS,
-                         ABS_PERCENTAGE_ERROR,
-                         MEAN_ABS_PERCENTAGE_ERROR,
-                         R_SQUARED };
+enum class METRIC_TYPE {
+  SUM_SQUARED,
+  MEAN_SQUARED,
+  ROOT_MEAN_SQUARED,
+  SUM_ABS,
+  MEAN_ABS,
+  MAX_ABS,
+  ABS_PERCENTAGE_ERROR,
+  MEAN_ABS_PERCENTAGE_ERROR,
+  R_SQUARED
+};
 
 /**
  *  \brief Convert the metric from string to enum.
  *  \param[in] metric_name metric
  *  \returns converted metric
-*/
-METRIC_TYPE metric_type(const std::string &metric_name);
+ */
+METRIC_TYPE metric_type(const std::string& metric_name);
 
 /**
  *  \brief Computes the difference between prediction and data vectors
@@ -38,10 +41,11 @@ METRIC_TYPE metric_type(const std::string &metric_name);
  *  \param[in] d data vector.
  *  \param[in] metric_name metric to compute.
  *  \returns the value of the computed metric.
-*/
-double compute_metric(const VectorXd &p, const VectorXd &d, const std::string &metric_name);
+ */
+double compute_metric(const VectorXd& p, const VectorXd& d,
+                      const std::string& metric_name);
 
-} // namespace util
-} // namespace dakota
+}  // namespace util
+}  // namespace dakota
 
-#endif // include guard
+#endif  // include guard
