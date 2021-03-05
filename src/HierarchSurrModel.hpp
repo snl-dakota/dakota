@@ -527,8 +527,9 @@ inline void HierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
   // assign same{Model,Interface}Instance
   check_model_interface_instance();
 
-  // If model forms are distinct (multifidelity), can activate soln level
-  // index now; else (multilevel) must defer until run-time.
+  // If model forms are distinct (multifidelity case), can activate soln level
+  // indices now and will persist; else (multilevel case) soln level is managed
+  // for LF & HF contributions in derived_evaluate().
   if (!sameModelInstance) {
     assign_truth_key();
     assign_surrogate_key();
@@ -540,6 +541,15 @@ inline void HierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
     // locally-managed Model recursions).
     //update_from_model(orderedModels[hf_form]);
   }
+  // Special case: multilevel data import in DataFitSurrModel::consistent()
+  // requires correct state prior to evaluations in order to find level data.
+  else
+    switch (responseMode) {
+    case BYPASS_SURROGATE:      case NO_SURROGATE:
+      assign_truth_key();     break;
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      assign_surrogate_key(); break;
+    }
 
   switch (responseMode) {
   case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE: {

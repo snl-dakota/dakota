@@ -1135,8 +1135,8 @@ void DataFitSurrModel::build_global()
     // an ApplicationInterface).  To compare with DataFitSurrModel values and
     // bounds, any recastings within the model recursion must be managed.
     String am_interface_id;
-    if (!actualModel.is_null()) am_interface_id = actualModel.interface_id();
-    if(am_interface_id.empty()) am_interface_id = "NO_ID";
+    if (!actualModel.is_null())  am_interface_id = actualModel.interface_id();
+    if (am_interface_id.empty()) am_interface_id = "NO_ID";
     ModelLRevIter ml_rit; PRPCacheCIter prp_iter;
     Variables db_vars; Response db_resp;
     bool map_to_iter_space = recastings();
