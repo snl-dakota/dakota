@@ -9,7 +9,6 @@
 
 #include "SurrogatesPolynomialRegression.hpp"
 
-#include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #include "surrogates_tools.hpp"
 
 namespace dakota {

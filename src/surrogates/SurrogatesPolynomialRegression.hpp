@@ -11,6 +11,7 @@
 #define DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 
 #include "SurrogatesBase.hpp"
+#include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #include "UtilDataScaler.hpp"
 #include "UtilLinearSolvers.hpp"
 #include "util_data_types.hpp"
@@ -218,6 +219,8 @@ void PolynomialRegression::serialize(Archive& archive,
   archive& polynomialCoeffs;
   archive& polynomialIntercept;
   archive& verbosity;
+  if (Archive::is_saving::value)
+    writeParameterListToYamlFile(configOptions, "PolynomialRegression.yaml");
 }
 
 }  // namespace surrogates

@@ -13,7 +13,6 @@
 #include "ROL_Bounds.hpp"
 #include "ROL_LineSearchStep.hpp"
 #include "SurrogatesGPObjective.hpp"
-#include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #include "Teuchos_oblackholestream.hpp"
 #include "util_math_tools.hpp"
 

@@ -13,6 +13,7 @@
 #include "SurrogatesBase.hpp"
 #include "SurrogatesGPKernels.hpp"
 #include "SurrogatesPolynomialRegression.hpp"
+#include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #include "UtilDataScaler.hpp"
 
 #include <boost/serialization/base_object.hpp>
@@ -466,6 +467,8 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version) {
   // DTS: Set false so that the Cholesky factorization is recomputed after load
   hasBestCholFact = false;
   archive& hasBestCholFact;
+  if (Archive::is_saving::value)
+    writeParameterListToYamlFile(configOptions, "GaussianProcess.yaml");
 }
 
 }  // namespace surrogates
