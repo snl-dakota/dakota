@@ -137,3 +137,76 @@ def three_hump_camel(**kwargs):
         retval['fns'] = f
 
     return retval
+
+def rosenbrock(**kwargs):
+    """
+    arbitrary dimensionality
+    input space: [-5, 10]**d or [-2.048, 2.048]**d
+    min at (1)**d
+    min value = 0
+    """
+
+    x, ASV = unpack_inputs(kwargs)
+    retval = {}
+
+    if (ASV[0] & 1):
+        d = len(x) # d: dimensionality
+        tmp_sum = 0
+        for ii in range(d-2):
+            xi = xx[ii]
+            xnext = xx[ii+1]
+            new = 100*(xnext-xi**2)**2 + (xi-1)**2
+            tmp_sum += new;
+        f = tmp_sum
+        retval['fns'] = f
+
+    return retval
+
+def rotated_hyper_ellipsoid(**kwargs):
+    """
+    arbitrary dimensionality
+    input space: [-65.536, 65.536]**d
+    min at (0)**d
+    min value = 0
+    """
+
+    x, ASV = unpack_inputs(kwargs)
+    retval = {}
+
+    if (ASV[0] & 1):
+        d = len(x) # d: dimensionality
+        outer = 0
+        for ii in range(d):
+            inner = 0
+            for jj in range(ii):
+                xj = xx[jj]
+                inner = inner + xj**2;
+            end
+            outer += inner;
+        end
+        f = outer
+        retval['fns'] = f
+
+    return retval
+
+def sphere(**kwargs):
+    """
+    arbitrary dimensionality
+    input space: [-5.12, 5.12]**d
+    min at (0)**d
+    min value = 0
+    """
+
+    x, ASV = unpack_inputs(kwargs)
+    retval = {}
+
+    if (ASV[0] & 1):
+        d = len(x) # d: dimensionality
+        tmp_sum = 0
+        for ii in range(d):
+            xi = xx[ii]
+            tmp_sum += xi**2
+        retval['fns'] = f
+
+    return retval
+
