@@ -618,6 +618,7 @@ Real ExperimentCovariance::apply_experiment_covariance( const RealVector &vector
 
 void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt( 
 		  const RealVector &vector, RealVector &result ) const{
+
   if ( vector.length() != num_dof() )
     throw(std::runtime_error("apply_covariance_inverse_sqrt: vector is inconsistent with covariance matrix"));
 

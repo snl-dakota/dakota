@@ -133,7 +133,7 @@ void ExperimentData::initialize(const StringArray& variance_types,
   else
     {
       experimentLengths.sizeUninitialized(1);
-      experimentLengths[0] = srd.num_functions();
+      experimentLengths[0] = srd.num_primary_functions();
       expOffsets.size(1); // init to 0
     }
 }
@@ -155,22 +155,23 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
   sigma_map["matrix"] = MATRIX_SIGMA;
 
   // expand sigma if 0 or 1 given, without validation
-  size_t num_resp_groups = simulationSRD.num_response_groups();
+  size_t num_pri_resp_groups = simulationSRD.num_scalar_primary() +
+    simulationSRD.num_field_response_groups();  // omits secondary
   size_t num_scalar = simulationSRD.num_scalar_primary();
-  varianceTypes.resize(num_resp_groups, NO_SIGMA);
+  varianceTypes.resize(num_pri_resp_groups, NO_SIGMA);
   if (sigma_types.size() == 1) {
     // assign all sigmas to the specified one
     if (sigma_map.find(sigma_types[0]) != sigma_map.end())
-      varianceTypes.assign(num_resp_groups, sigma_map[sigma_types[0]]);
+      varianceTypes.assign(num_pri_resp_groups, sigma_map[sigma_types[0]]);
     else {
       Cerr << "\nError: invalid sigma_type '" << sigma_types[0] 
 	   << "' specified." << std::endl;
       abort_handler(PARSE_ERROR);
     }
   }
-  else if (sigma_types.size() == num_resp_groups) {
+  else if (sigma_types.size() == num_pri_resp_groups) {
     // initialize one sigma type per 
-    for (size_t resp_ind = 0; resp_ind < num_resp_groups; ++resp_ind) {
+    for (size_t resp_ind = 0; resp_ind < num_pri_resp_groups; ++resp_ind) {
       if (sigma_map.find(sigma_types[resp_ind]) != sigma_map.end())
 	varianceTypes[resp_ind] = sigma_map[sigma_types[resp_ind]];
       else {
@@ -706,7 +707,7 @@ void ExperimentData::per_exp_length(IntVector& per_length) const
   //Cout << "num experiments " << num_experiments();
 
   for (size_t i=0; i<num_experiments(); i++) 
-    per_length(i)= allExperiments[i].function_values().length();
+    per_length(i) = allExperiments[i].shared_data().num_primary_functions();
   //Cout << "per length " << per_length;
 }
 
@@ -737,8 +738,10 @@ const Response& ExperimentData::response(size_t experiment)
 size_t ExperimentData::num_total_exppoints() const
 {
   size_t res_size = 0;
-  for (size_t i=0; i<num_experiments(); i++) 
-    res_size += allExperiments[i].function_values().length();
+  for (size_t i=0; i<num_experiments(); i++) {
+    // this omits constraints:
+    res_size += allExperiments[i].shared_data().num_primary_functions();
+  }
   return res_size;
 }
 
@@ -899,7 +902,7 @@ void ExperimentData::apply_simulation_error(const RealVector& simulation_error,
 {
   Response exp_response = allExperiments[experiment];
   const RealVector& exp_vals = exp_response.function_values();
-  for (size_t i = 0; i < allExperiments[experiment].num_functions(); i++)
+  for (size_t i = 0; i < allExperiments[experiment].shared_data().num_primary_functions(); i++)
     exp_response.function_value(exp_vals[i] + simulation_error[i], i);
 }
 
@@ -1277,7 +1280,7 @@ recover_model(size_t num_pri_fns, RealVector& best_fns) const
     abort_handler(-1);
   }
   const Response& experiment0 = allExperiments[0];
-  if (num_pri_fns != experiment0.num_functions()) {
+  if (num_pri_fns != experiment0.shared_data().num_primary_functions()) {
     Cerr << "Error: incompatible sizes in recover_model()\n";
     abort_handler(-1);
   }
@@ -1692,7 +1695,7 @@ residuals_per_multiplier(unsigned short multiplier_mode) const
   case CALIBRATE_PER_EXPER: {
     resid_per_mult.resize(numExperiments, 0);
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
-      size_t fns_this_exp = allExperiments[exp_ind].num_functions();
+      size_t fns_this_exp = allExperiments[exp_ind].shared_data().num_primary_functions();
       resid_per_mult[exp_ind] = fns_this_exp;
     }
     break;
@@ -1764,7 +1767,7 @@ void ExperimentData::generate_multipliers(const RealVector& multipliers,
     assert(multipliers.length() == numExperiments);
     size_t resid_offset = 0;
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
-      size_t fns_this_exp = allExperiments[exp_ind].num_functions();
+      size_t fns_this_exp = allExperiments[exp_ind].shared_data().num_primary_functions();
       for (size_t fn_ind = 0; fn_ind < fns_this_exp; ++fn_ind)
         expanded_multipliers[resid_offset++] = multipliers[exp_ind];
     }
@@ -1856,7 +1859,7 @@ void ExperimentData::resid2mult_map(unsigned short multiplier_mode,
   case CALIBRATE_PER_EXPER: {
     size_t resid_offset = 0;
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
-      size_t fns_this_exp = allExperiments[exp_ind].num_functions();
+      size_t fns_this_exp = allExperiments[exp_ind].shared_data().num_primary_functions();
       for (size_t fn_ind = 0; fn_ind < fns_this_exp; ++fn_ind)
         resid2mult_indices[resid_offset++] = exp_ind;
     }
