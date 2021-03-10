@@ -38,20 +38,26 @@ class Pybind11Interface: public DirectApplicInterface
     /// register a python callback function
     void register_pybind11_callback_fn(py::function callback);
 
+    /// register a collection of python callback functions
+    void register_pybind11_callback_fns(const std::map<String, py::function>& callbacks);
+
   protected:
 
     /// execute an analysis code portion of a direct evaluation invocation
     virtual int derived_map_ac(const String& ac_name);
 
     /// direct interface to Pybind11 via API
-    int pybind11_run();
+    int pybind11_run(const String& ac_name);
 
     /// whether the user requested numpy data structures in the input file
     bool userNumpyFlag;
     /// true if this class created the interpreter instance
     bool ownPython;
-    ///  callback function fo ranalysis driver
+    /// callback function for analysis driver
     py::function py11CallBack;
+    /// collection of callback functions for candidate analysis driver
+    std::map<String, py::function> py11CallBacks;
+
     bool py11Active;
 
     /// copy Dakota arrays to pybind11 lists via std::vector<> copy
@@ -67,6 +73,12 @@ class Pybind11Interface: public DirectApplicInterface
 inline void Pybind11Interface::register_pybind11_callback_fn(py::function callback)
 {
   py11CallBack = callback;
+  py11Active = true;
+}
+
+inline void Pybind11Interface::register_pybind11_callback_fns(const std::map<String, py::function>& callbacks)
+{
+  py11CallBacks = callbacks;
   py11Active = true;
 }
 

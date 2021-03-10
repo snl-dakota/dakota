@@ -80,7 +80,7 @@ int Pybind11Interface::derived_map_ac(const String& ac_name)
          << " within Pybind11Interface." << std::endl;
 #endif // MPI_DEBUG
 
-  int fail_code = pybind11_run();
+  int fail_code = pybind11_run(ac_name);
 
   // Failure capturing
   if (fail_code) {
@@ -93,7 +93,7 @@ int Pybind11Interface::derived_map_ac(const String& ac_name)
 }
 
 
-int Pybind11Interface::pybind11_run()
+int Pybind11Interface::pybind11_run(const String& ac_name)
 {
   // minimal error checking for now (or actually none ... but should be)
   int fail_code = 0;
@@ -101,6 +101,16 @@ int Pybind11Interface::pybind11_run()
   assert( py11Active );
 
   assert( Py_IsInitialized() );
+
+  std::string callback_name = "";
+  if( !ac_name.empty() ) {
+    callback_name = ac_name;
+    if( py11CallBacks.find(callback_name) == py11CallBacks.end() ) {
+      Cerr << "\nError: invalid Pybind11 analysis_driver '" << ac_name << std::endl;
+      abort_handler(INTERFACE_ERROR);
+    }
+  }
+
 
   py::list cv           = copy_array_to_pybind11(xC);
   py::list cv_labels    = copy_array_to_pybind11<StringMultiArray,String>(xCLabels);
@@ -132,7 +142,11 @@ int Pybind11Interface::pybind11_run()
       "analysis_components"_a   = an_comps,
       "currEvalId"_a            = currEvalId );
 
-  py::dict ret_val = py11CallBack(kwargs);
+  py::dict ret_val;
+  if( !callback_name.empty() )
+    ret_val = py11CallBacks[callback_name](kwargs);
+  else
+    ret_val = py11CallBack(kwargs);
 
   for (auto item : ret_val)
   {

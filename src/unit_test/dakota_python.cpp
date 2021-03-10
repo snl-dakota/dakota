@@ -91,7 +91,19 @@ namespace python {
     const Response& resp  = env.response_results();
     return resp.function_value(0);
   }
-    
+  
+  Dakota::LibraryEnvironment* create_libEnv( const std::string& input_string) {
+
+      assert(!input_string.empty());
+
+      Dakota::ProgramOptions opts;
+      opts.echo_input(false);
+      opts.input_string(input_string);
+
+      auto p_libEnv = new Dakota::LibraryEnvironment(opts);
+
+      return p_libEnv;
+    }
 }
 }
 
@@ -158,14 +170,7 @@ PYBIND11_MODULE(dakpy, m) {
 	 ([](py::object callback,
 	     const std::string& input_string)
 	  {
-	    assert(!input_string.empty());
-
-	    Dakota::ProgramOptions opts;
-	    opts.echo_input(false);
-	    opts.input_string(input_string);
-
-            auto p_libEnv = new Dakota::LibraryEnvironment(opts);
-
+            auto p_libEnv = Dakota::python::create_libEnv(input_string);
             auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
                                 p_libEnv->problem_description_db().interface_list().begin()->interface_rep());
             py11_int->register_pybind11_callback_fn(callback);
@@ -173,6 +178,21 @@ PYBIND11_MODULE(dakpy, m) {
 	    return p_libEnv;
 	  })
 	 , py::arg("callback"), py::arg("input_string"))
+
+    .def(py::init
+	 ([]( py::dict callbacks,
+	     const std::string& input_string)
+	  {
+	    assert(!input_string.empty());
+            auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
+            auto p_libEnv = Dakota::python::create_libEnv(input_string);
+            auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+                                p_libEnv->problem_description_db().interface_list().begin()->interface_rep());
+            py11_int->register_pybind11_callback_fns(callbacks_map);
+
+	    return p_libEnv;
+	  })
+	 , py::arg("callbacks"), py::arg("input_string"))
 
     .def("execute", &Dakota::LibraryEnvironment::execute)
     .def("variables_results", &Dakota::LibraryEnvironment::variables_results)

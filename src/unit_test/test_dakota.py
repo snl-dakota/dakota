@@ -47,6 +47,16 @@ def text_book(kwargs):
     return(retval)
 
 
+def text_book_fn_only(kwargs):
+
+    retval = dict([])
+
+    all_vals = text_book(kwargs)
+    retval['fns'] = all_vals['fns']
+
+    return(retval)
+
+
 import dakpy
 
 
@@ -79,14 +89,22 @@ def test_lib():
             descriptors     'x1'  'x2'   'x3'
         interface,
           pybind11
-            analysis_driver = 'BAD_MODULE_NAME:BAD_FN_NAME'
+            analysis_driver = 'interface_id_2'
         responses,
           num_objective_functions = 1
           no_gradients
           no_hessians
 """
     print("\n+++ Constructing LibEnv...\n")
-    daklib = dakpy.LibEnv(callback=text_book, input_string = text_book_input)
+    
+    #### Need to test this use case too - RWH ####
+    #daklib = dakpy.LibEnv(callback=text_book, input_string = text_book_input)
+
+    # Try a collection of callbacks
+    multiple_callbacks = { "interface_id_1" : text_book,
+                           "interface_id_2" : text_book_fn_only
+                         }
+    daklib = dakpy.LibEnv(callbacks=multiple_callbacks, input_string = text_book_input)
     print("\n+++ Running LibEnv...\n")
     daklib.execute()
     print("\n+++ Final Functions:\n")
