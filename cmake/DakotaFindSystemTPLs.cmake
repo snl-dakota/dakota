@@ -1,15 +1,9 @@
 # Dakota CMake helpers to find system TPLs
 # (These are initially macros in case of unexpected dependencies on variables they set.)
-include(DakotaDarwinBoostLibs)
+
+include(DakotaAppleBoostLibs)
 
 macro(dakota_find_boost)
-
-  # Main option
-  option(DAKOTA_APPLE_FIX_BOOSTLIBS "Fix up Boost libraries on Mac" TRUE)
-  # Two alternate sub-options
-  # TODO: With both, need to make sure there's room in the binary for the install_name edit
-  option(DAKOTA_APPLE_FIX_RPATH "Adjust embedded @rpath on libraries/executables" FALSE)
-  option(DAKOTA_APPLE_BOOST_ABSPATH "Copy Boost libs to build; embed absolute paths" TRUE)  
 
   if(WIN32)
     # BMA TODO: Relax this and document
@@ -21,15 +15,14 @@ macro(dakota_find_boost)
   # enforce for all libs in the build
   set(dakota_boost_libs filesystem program_options regex serialization system)
 
-  if(DAKOTA_APPLE_FIX_BOOSTLIBS AND DAKOTA_APPLE_BOOST_ABSPATH)
-    dakota_copy_specific_boost_dylibs("$ENV{SEMS_BOOST_LIBRARY_PATH}"
-      "${dakota_boost_libs}" "${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
-    dakota_boost_abs_install_names("${CMAKE_CURRENT_BINARY_DIR}/boostlibs"
-      "${dakota_boost_libs}")
-
+  if(DAKOTA_APPLE_FIX_BOOSTLIBS)
+    # This approach requires separate include and lib dirs
+    # Macro publishes _dakota_boost_includedir
+    dakota_fix_boost_dylibs("${dakota_boost_libs}"
+      "${CMAKE_CURRENT_BINARY_DIR}/boost_libs")
     set(BOOST_ROOT)
-    set(BOOST_INCLUDEDIR "$ENV{SEMS_BOOST_INCLUDE_PATH}")
-    set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
+    set(BOOST_INCLUDEDIR "${_dakota_boost_includedir}")
+    set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/boost_libs")
   endif()
 
   find_package(Boost 1.58 REQUIRED COMPONENTS ${dakota_boost_libs})
@@ -47,14 +40,6 @@ macro(dakota_find_boost)
         does not set Boost_LIBRARY_DIRS. Please notify the Dakota development team.")
     endif()
     set(DAKOTA_Boost_LIB_DIR "${Boost_LIBRARY_DIRS}" CACHE PATH "Dakota-added Boost lib path")
-
-    if(DAKOTA_APPLE_FIX_BOOSTLIBS AND DAKOTA_APPLE_FIX_RPATH)
-      dakota_copy_boost_libs("${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
-      dakota_fix_libboost_filesystem("${CMAKE_CURRENT_BINARY_DIR}/boostlibs")
-      set(CMAKE_BUILD_RPATH
-        "${CMAKE_CURRENT_BINARY_DIR}/boostlibs;${CMAKE_BUILD_RPATH}")
-    endif()
-
   endif()
 endmacro()
 
