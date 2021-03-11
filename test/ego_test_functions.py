@@ -24,9 +24,9 @@ def branin(**kwargs):
 
 
     if (ASV[0] & 1):
-        f = [a*(x[1] - b*x[0]*x[0] + c*x[0] - r)**2 \
-          + s*(1. - t)*np.cos(x[0]) + s]
-        retval['fns'] = f
+        f = a*(x[1] - b*x[0]*x[0] + c*x[0] - r)**2 \
+          + s*(1. - t)*np.cos(x[0]) + s
+        retval['fns'] = np.array([f])
 
     return retval
 
@@ -62,8 +62,8 @@ def hartmann_3d(**kwargs):
 
 
     if (ASV[0] & 1):
-        f = [-alpha.dot(np.exp(v))]
-        retval['fns'] = f
+        f = -alpha.dot(np.exp(v))
+        retval['fns'] = np.array([f])
 
     return retval
 
@@ -100,8 +100,8 @@ def hartmann_6d(**kwargs):
 
 
     if (ASV[0] & 1):
-        f = [-alpha.dot(np.exp(v))]
-        retval['fns'] = f
+        f = -alpha.dot(np.exp(v))
+        retval['fns'] = np.array([f])
 
     return retval
 
@@ -116,9 +116,9 @@ def six_hump_camel(**kwargs):
     retval = {}
 
     if (ASV[0] & 1):
-        f = [(4. - 2.1*x[0]**2 + x[0]**4/3.)*x[0]**2 + x[0]*x[1] \
-          + (-4. + 4.*x[1]**2)*x[1]**2]
-        retval['fns'] = f
+        f = (4. - 2.1*x[0]**2 + x[0]**4/3.)*x[0]**2 + x[0]*x[1] \
+          + (-4. + 4.*x[1]**2)*x[1]**2
+        retval['fns'] = np.array([f])
 
     return retval
 
@@ -133,8 +133,8 @@ def three_hump_camel(**kwargs):
     retval = {}
 
     if (ASV[0] & 1):
-        f = [2.*x[0]**2 - 1.05*x[0]**4 + x[0]**6/6. + x[0]*x[1] + x[1]**2]
-        retval['fns'] = f
+        f = 2.*x[0]**2 - 1.05*x[0]**4 + x[0]**6/6. + x[0]*x[1] + x[1]**2
+        retval['fns'] = np.array([f])
 
     return retval
 
@@ -158,7 +158,7 @@ def rosenbrock(**kwargs):
             new = 100*(xnext-xi**2)**2 + (xi-1)**2
             tmp_sum += new;
         f = tmp_sum
-        retval['fns'] = f
+        retval['fns'] = np.array([f])
 
     return retval
 
@@ -185,7 +185,7 @@ def rotated_hyper_ellipsoid(**kwargs):
             outer += inner;
         end
         f = outer
-        retval['fns'] = f
+        retval['fns'] = np.array([f])
 
     return retval
 
@@ -206,7 +206,7 @@ def sphere(**kwargs):
         for ii in range(d):
             xi = xx[ii]
             tmp_sum += xi**2
-        retval['fns'] = f
+        # DTS: looks like f is not defined yet
+        retval['fns'] = np.array([f])
 
     return retval
-

@@ -20,6 +20,7 @@ variables,
 
 interface,
     python
+        numpy
         analysis_drivers = 'ego_test_functions:branin' #s0,#s1
 #        analysis_drivers = 'ego_test_functions:three_hump_camel' #s2,#s3
 
