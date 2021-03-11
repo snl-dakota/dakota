@@ -66,6 +66,10 @@ public:
   void pack(const long* data, const int num = 1);
   /// Pack one or more \b unsigned \b long's
   void pack(const u_long* data, const int num = 1);
+  /// Pack one or more long long's
+  void pack(const long long* data, const int num = 1);
+  /// Pack one or more unsigned long long's
+  void pack(const unsigned long long* data, const int num = 1);
   /// Pack one or more \b short's
   void pack(const short* data, const int num = 1);
   /// Pack one or more \b unsigned \b short's
@@ -89,6 +93,10 @@ public:
   void pack(const long& data) 		{ pack(&data); }
   /// Pack a \b unsigned \b long
   void pack(const u_long& data)		{ pack(&data); }
+  /// Pack a long long
+  void pack(const long long& data) { pack(&data); }
+  /// Pack a unsigned long long
+  void pack(const unsigned long long& data) { pack(&data); }
   /// Pack a \b short
   void pack(const short& data) 		{ pack(&data); }
   /// Pack a \b unsigned \b short
@@ -129,6 +137,12 @@ inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const long& data)
 { buff.pack(data); return buff; }
 /// insert a u_long
 inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const u_long& data)
+{ buff.pack(data); return buff; }
+/// insert a long long
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const long long& data)
+{ buff.pack(data); return buff; }
+/// insert a unsigned long long
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const unsigned long long& data)
 { buff.pack(data); return buff; }
 /// insert a short
 inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const short& data)
@@ -204,6 +218,10 @@ public:
   void unpack(long* data, const int num = 1);
   /// Unpack one or more \b unsigned \b long's
   void unpack(u_long* data, const int num = 1);
+  /// Unpack one or more long long's
+  void unpack(long long* data, const int num = 1);
+  /// Unpack one or more unsigned long long's
+  void unpack(unsigned long long* data, const int num = 1);
   /// Unpack one or more \b short's
   void unpack(short* data, const int num = 1);
   /// Unpack one or more \b unsigned \b short's
@@ -227,6 +245,10 @@ public:
   void unpack(long& data) 		{ unpack(&data); }
   /// Unpack a \b unsigned \b long
   void unpack(u_long& data)		{ unpack(&data); }
+  /// Unpack a long long
+  void unpack(long long& data) { unpack(&data); }
+  /// Unpack a unsigned long long
+  void unpack(unsigned long long& data) { unpack(&data); }
   /// Unpack a \b short
   void unpack(short& data) 		{ unpack(&data); }
   /// Unpack a \b unsigned \b short
@@ -267,6 +289,12 @@ inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, long& data)
 /// extract a u_long
 inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, u_long& data)
 { buff.unpack(data); return buff; }
+/// extract a long long
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, long long& data)
+{ buff.unpack(data); return buff; }
+/// extract an unsigned long long
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, unsigned long long& data)
+{ buff.unpack(data); return buff; }
 /// extract a short
 inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, short& data)
 { buff.unpack(data); return buff; }
@@ -304,6 +332,10 @@ int MPIPackSize(const u_int& data, const int num = 1);
 int MPIPackSize(const long& data, const int num = 1);
 /// return packed size of a u_long
 int MPIPackSize(const u_long& data, const int num = 1);
+/// return packed size of a long long
+int MPIPackSize(const long long& data, const int num = 1);
+/// return packed size of an unsigned long long
+int MPIPackSize(const unsigned long long& data, const int num = 1);
 /// return packed size of a short
 int MPIPackSize(const short& data, const int num = 1);
 /// return packed size of a u_short
