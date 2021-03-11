@@ -52,10 +52,6 @@ target_include_directories(dakota_surrogates SYSTEM PRIVATE
 # Rationale: Boost serialization is referenced in API headers
 target_link_libraries(dakota_surrogates PUBLIC Boost::serialization)
 
-if(DAKOTA_APPLE_FIX_BOOSTLIBS)
-  dakota_prepend_boost_rpath(dakota_surrogates)
-endif()
-
 # BMA TODO: Consider using a utility to add Dakota targets and do this
 dakota_strict_warnings(dakota_surrogates)
 dakota_gcov_target(dakota_surrogates)
