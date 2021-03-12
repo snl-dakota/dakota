@@ -58,7 +58,6 @@ namespace python {
 
 #ifdef DAKOTA_PYTHON_NUMPY
   // This version requires numpy
-  blah;
   py::array_t<double> get_variables_values_numpy(const Dakota::LibraryEnvironment & env)
   {
     const Variables& vars = env.variables_results();
