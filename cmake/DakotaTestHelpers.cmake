@@ -191,10 +191,10 @@ function(dakota_app_test _input_name _last_subtest)
 
   # Circumvent SIP on OSX by running dakota and other test executables
   # with custom generated .sh scripts.
-  set(binext "")
-  if(APPLE)
-    set(binext "--bin-ext=.sh")
-  endif()
+##  set(binext "")
+##  if(APPLE)
+##    set(binext "--bin-ext=.sh")
+##  endif()
 
   if (DAKOTA_EXPAND_SUBTESTS)
     # Add the 0th serial test. Don't create custom target for copied files.
@@ -209,7 +209,7 @@ function(dakota_app_test _input_name _last_subtest)
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
           --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}
           --bin-dir=${bin_dir}
-          ${binext}
+##          ${binext}
           ${_test_input_file} 0
       UNIQUE_DIRECTORY
       NO_TARGET
@@ -226,7 +226,7 @@ function(dakota_app_test _input_name _last_subtest)
             ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
               --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}
               --bin-dir=${bin_dir}
-              ${binext}
+##              ${binext}
               ${_test_input_file} ${st_num}
     	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}"
     	NO_TARGET
@@ -249,7 +249,7 @@ function(dakota_app_test _input_name _last_subtest)
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
           --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_ctest_name}
           --bin-dir=${bin_dir}
-          ${binext}
+##          ${binext}
           ./${_test_input_file}
       UNIQUE_DIRECTORY
       NO_TARGET
