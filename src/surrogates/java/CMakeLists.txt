@@ -60,7 +60,13 @@ add_jar(jni_test
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/exp_poly.s12.response_fn_1.txt"
   "${CMAKE_CURRENT_BINARY_DIR}/exp_poly.s12.response_fn_1.txt")
 
-add_test(NAME jni_dakota_surrogates
+add_test(NAME dakota_surrogates_jni
   COMMAND ${Java_JAVA_EXECUTABLE} -classpath jni_test.jar
   gov.sandia.dakota.jni.test.DakotaJniTest
+  )
+# This test uses the polynomial surrogates exported by PolynomialRegressionTest
+# ../unit/poly_test.surr.*
+set_tests_properties(dakota_surrogates_jni PROPERTIES
+  DEPENDS PolynomialRegressionTest
+  LABELS UnitTest
   )
