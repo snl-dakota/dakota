@@ -1,12 +1,12 @@
-/*******************************************************************************
- * Dakota Graphical User Interface (Dakota GUI)
- * Copyright 2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
- * Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
- * certain rights in this software.
- *    
- * This software is distributed under the Eclipse Public License.  For more information,
- * see the files copyright.txt and license.txt included with the software.
- ******************************************************************************/
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 package gov.sandia.dakota.jni.test;
 
 import java.io.File;
