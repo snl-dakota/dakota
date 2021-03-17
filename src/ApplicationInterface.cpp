@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -549,7 +550,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       if(batchEval) Cout << "(Batch job ";
       else Cout << "(Asynchronous job "; 
       Cout << evalIdCntr;
-      if (interfaceId.empty() || interfaceId == "NO_ID") Cout << " added to queue)\n";
+      if (interfaceId.empty() || interfaceId == "NO_ID")
+	Cout << " added to queue)\n";
       else Cout << " added to " << interfaceId << " queue)\n";
     }
   }
@@ -564,7 +566,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	Cout << "\nActive response data retrieved from database";
       else {
 	Cout << "\nActive response data for ";
-	if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
+	if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+	  Cout << interfaceId << ' ';
 	Cout << "evaluation " << evalIdCntr;
       }
       Cout << ":\n" << response << std::endl;

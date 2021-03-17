@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -70,6 +71,7 @@ typedef std::vector<RealArray>      Real2DArray;
 typedef std::vector<int>            IntArray;
 typedef std::vector<IntArray>       Int2DArray;
 typedef std::vector<short>          ShortArray;
+typedef std::vector<ShortArray>     Short2DArray;
 typedef std::vector<unsigned int>   UIntArray;
 typedef std::vector<unsigned short> UShortArray;
 typedef std::vector<UShortArray>    UShort2DArray;
@@ -150,6 +152,7 @@ typedef std::map<Real, Real>           RealRealMap;
 typedef std::map<String, Real>         StringRealMap;
 typedef std::multimap<Real, int>       RealIntMultiMap;
 typedef std::vector<RealRealPair>      RealRealPairArray;
+typedef std::vector<IntIntMap>         IntIntMapArray;
 typedef std::vector<IntRealMap>        IntRealMapArray;
 typedef std::vector<RealRealMap>       RealRealMapArray;
 typedef std::vector<StringRealMap>     StringRealMapArray;
@@ -158,6 +161,7 @@ typedef std::map<int, RealMatrix>      IntRealMatrixMap;
 typedef std::map<int, ActiveSet>       IntActiveSetMap;
 typedef std::map<int, Variables>       IntVariablesMap;
 typedef std::map<int, Response>        IntResponseMap;
+typedef std::vector<IntResponseMap>    IntResponseMapArray;
 typedef std::map<IntArray, size_t>     IntArraySizetMap;
 typedef std::map<IntIntPair, Real>     IntIntPairRealMap;
 typedef std::map<IntIntPair, RealMatrix> IntIntPairRealMatrixMap;

@@ -1,18 +1,16 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
- 
 #ifndef MPI_PACK_BUFFER_H
 #define MPI_PACK_BUFFER_H
 
 #include "dakota_system_defs.hpp"
-#include "dakota_data_types.hpp"
-
 
 namespace Dakota {
 
@@ -21,6 +19,7 @@ typedef unsigned short u_short;
 typedef unsigned int u_int;
 typedef unsigned long u_long;
 typedef long long long_long;
+
 
 //---------------------------------------------------------------------
 //
@@ -34,9 +33,11 @@ typedef long long long_long;
     the MPI_Pack facility. The \c MPIPackBuffer class dynamically
     resizes the internal buffer to contain enough memory to pack the
     entire object.  When deleted, the \c MPIPackBuffer object deletes
-    this internal buffer.  This class is based on the
-    Dakota_Version_3_0 version of utilib::PackBuffer from
-    utilib/src/io/PackBuf.[cpp,h] */
+    this internal buffer.  This class is based on the Dakota_Version_3_0
+    version of utilib::PackBuffer from utilib/src/io/PackBuf.[cpp,h].
+    This snapshot preceded the introduction of templatization on data
+    type, which was problematic at that time (would be more reliable now).
+*/
 
 class MPIPackBuffer {
 
@@ -65,6 +66,10 @@ public:
   void pack(const long* data, const int num = 1);
   /// Pack one or more \b unsigned \b long's
   void pack(const u_long* data, const int num = 1);
+  /// Pack one or more long long's
+  void pack(const long long* data, const int num = 1);
+  /// Pack one or more unsigned long long's
+  void pack(const unsigned long long* data, const int num = 1);
   /// Pack one or more \b short's
   void pack(const short* data, const int num = 1);
   /// Pack one or more \b unsigned \b short's
@@ -88,6 +93,10 @@ public:
   void pack(const long& data) 		{ pack(&data); }
   /// Pack a \b unsigned \b long
   void pack(const u_long& data)		{ pack(&data); }
+  /// Pack a long long
+  void pack(const long long& data) { pack(&data); }
+  /// Pack a unsigned long long
+  void pack(const unsigned long long& data) { pack(&data); }
   /// Pack a \b short
   void pack(const short& data) 		{ pack(&data); }
   /// Pack a \b unsigned \b short
@@ -128,6 +137,12 @@ inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const long& data)
 { buff.pack(data); return buff; }
 /// insert a u_long
 inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const u_long& data)
+{ buff.pack(data); return buff; }
+/// insert a long long
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const long long& data)
+{ buff.pack(data); return buff; }
+/// insert a unsigned long long
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const unsigned long long& data)
 { buff.pack(data); return buff; }
 /// insert a short
 inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const short& data)
@@ -203,6 +218,10 @@ public:
   void unpack(long* data, const int num = 1);
   /// Unpack one or more \b unsigned \b long's
   void unpack(u_long* data, const int num = 1);
+  /// Unpack one or more long long's
+  void unpack(long long* data, const int num = 1);
+  /// Unpack one or more unsigned long long's
+  void unpack(unsigned long long* data, const int num = 1);
   /// Unpack one or more \b short's
   void unpack(short* data, const int num = 1);
   /// Unpack one or more \b unsigned \b short's
@@ -226,6 +245,10 @@ public:
   void unpack(long& data) 		{ unpack(&data); }
   /// Unpack a \b unsigned \b long
   void unpack(u_long& data)		{ unpack(&data); }
+  /// Unpack a long long
+  void unpack(long long& data) { unpack(&data); }
+  /// Unpack a unsigned long long
+  void unpack(unsigned long long& data) { unpack(&data); }
   /// Unpack a \b short
   void unpack(short& data) 		{ unpack(&data); }
   /// Unpack a \b unsigned \b short
@@ -266,6 +289,12 @@ inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, long& data)
 /// extract a u_long
 inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, u_long& data)
 { buff.unpack(data); return buff; }
+/// extract a long long
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, long long& data)
+{ buff.unpack(data); return buff; }
+/// extract an unsigned long long
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, unsigned long long& data)
+{ buff.unpack(data); return buff; }
 /// extract a short
 inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, short& data)
 { buff.unpack(data); return buff; }
@@ -289,96 +318,6 @@ inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, bool& data)
 { buff.unpack(data); return buff; }
 
 
-/// Read a generic container (vector<T>, list<T>) from MPIUnpackBuffer, s
-// WJB ToDo: consider std::set<T> too (currently in data_io.hpp)
-// MSE 10/26/2018: fine for non-contiguous deque<T> and list<T>, but inefficient
-//   for vector<T> (reallocation + copying).  Should especially avoid for
-//   nested vectors (e.g., UShort{2,3,4,5}DArray) --> MPI pack/unpack for
-//   std::vector<T> readded to dakota_data_io.hpp.
-#ifdef DAKOTA_HAVE_MPI
-template <class ContainerT>
-inline void container_read(ContainerT& c, MPIUnpackBuffer& s)
-{
-  c.clear();
-  typename ContainerT::size_type len;
-  s >> len;
-  for (typename ContainerT::size_type i=0; i<len; ++i) {
-    // fresh allocation needed in case T is ref-counted
-    typename ContainerT::value_type data;
-    s >> data;
-    c.push_back(data);
-  }
-}
-
-
-/// Write a generic container to MPIPackBuffer, s
-template <class ContainerT>
-inline void container_write(const ContainerT& c, MPIPackBuffer& s)
-{
-  typename ContainerT::size_type len = c.size();
-  s << len;
-  for(const typename ContainerT::value_type& entry : c)
-    s << entry;
-}
-#endif
-
-
-/// stream insertion for BitArray
-template <typename Block, typename Allocator>
-inline MPIPackBuffer& 
-operator<<(MPIPackBuffer& s, const boost::dynamic_bitset<Block, Allocator>& bs)
-{ 
-  size_t size = bs.size();
-  s << size;
-
-  // create a vector of blocks and insert it it
-  std::vector<Block> vec_block(bs.num_blocks());
-  to_block_range(bs, vec_block.begin());
-  s << vec_block;
-
-  return s; 
-}
-
-
-/// stream extraction for BitArray
-template <typename Block, typename Allocator>
-inline MPIUnpackBuffer& 
-operator>>(MPIUnpackBuffer& s, boost::dynamic_bitset<Block, Allocator>& bs)
-{ 
-  size_t size;
-  s >> size;
-
-  bs.resize(size);
-
-  // Load vector
-  std::vector<Block> vec_block;
-  s >> vec_block;
-
-  // Convert vector into a bitset
-  from_block_range(vec_block.begin(), vec_block.end(), bs);
-
-  return s;
-}
-
-
-/// global MPIUnpackBuffer extraction operator for generic container
-template <class ContainerT>
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ContainerT& data)
-#ifdef DAKOTA_HAVE_MPI
-{ container_read(data, s); return s; }
-#else
-{  return s; }
-#endif
-
-/// global MPIPackBuffer insertion operator for generic container
-template <class ContainerT>
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const ContainerT& data)
-#ifdef DAKOTA_HAVE_MPI
-{ container_write(data, s); return s; }
-#else
-{  return s; }
-#endif
-
 //---------------------------------------------------------------------
 //
 // MPIPackSize
@@ -393,6 +332,10 @@ int MPIPackSize(const u_int& data, const int num = 1);
 int MPIPackSize(const long& data, const int num = 1);
 /// return packed size of a u_long
 int MPIPackSize(const u_long& data, const int num = 1);
+/// return packed size of a long long
+int MPIPackSize(const long long& data, const int num = 1);
+/// return packed size of an unsigned long long
+int MPIPackSize(const unsigned long long& data, const int num = 1);
 /// return packed size of a short
 int MPIPackSize(const short& data, const int num = 1);
 /// return packed size of a u_short

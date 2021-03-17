@@ -1,0 +1,14 @@
+GP Test Parameters:
+  scaler name: "standardization"
+  num restarts: 10
+  gp seed: 42
+  Nugget:
+    fixed nugget: 1.0e-14
+    estimate nugget: false
+  Trend:
+    estimate trend: false
+    Options:
+      max degree: 2
+      p-norm: 1.0
+      scaler type: "none"
+      regression solver type: "SVD"

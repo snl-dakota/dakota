@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -316,7 +317,7 @@ protected:
   /// format options for corrected model variance output
   unsigned short exportCorrVarFormat;
   /// specify polynomial or trend order for discrepancy correction
-  short approxCorrectionOrder;
+  short discrepPolyOrder;
   /// number of prediction configurations at which to calculate model 
   /// discrepancy
   size_t numPredConfigs;

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -955,10 +956,10 @@ int Interface::recommended_points(bool constraint_flag) const
 }
 
 
-void Interface::active_model_key(const UShortArray& mi_key)
+void Interface::active_model_key(const Pecos::ActiveKey& key)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->active_model_key(mi_key);
+    interfaceRep->active_model_key(key);
   // else: default implementation is no-op
 }
 

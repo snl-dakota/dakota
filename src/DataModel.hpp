@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -136,10 +137,11 @@ public:
   /// used in constructing surrogates (from the \c actual_model_pointer
   /// specification in \ref ModelSurrL and \ref ModelSurrMP)
   String actualModelPointer;
-  /// an ordered list of model pointers (low to high) corresponding to a
-  /// hierarchy of modeling fidelity (from the \c ordered_model_fidelities
-  /// specification in \ref ModelSurrH)
-  StringArray orderedModelPointers;
+  /// an ordered (low to high) or unordered (peer) set of model pointers
+  /// corresponding to a ensemble of modeling fidelities (from the \c
+  /// ordered_model_fidelities specification in \ref ModelSurrH or the
+  /// \c unordered_model_fidelities specification in \ref ModelSurrNonH)
+  StringArray ensembleModelPointers;
 
   // controls for number of points with which to build the model
 
@@ -205,6 +207,10 @@ public:
   /// flags the use of derivatives in building global approximations
   /// (from the \c use_derivatives specification in \ref ModelSurrG)
   bool modelUseDerivsFlag;
+  /// flag to indicate bounds-based scaling of current response data set
+  /// prior to surrogate build; important for data fits of decaying
+  /// discrepancy data using regression with absolute tolerances
+  bool respScalingFlag;
   /// scalar integer indicating the order of the polynomial approximation
   /// (1=linear, 2=quadratic, 3=cubic; from the \c polynomial specification
   /// in \ref ModelSurrG)

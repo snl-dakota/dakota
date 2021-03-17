@@ -1,7 +1,8 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -427,9 +428,9 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ProbabilityTransformModel.cpp
   ScalingModel.cpp ScalingOptions.cpp WeightingModel.cpp SurrogateModel.cpp
-  DataFitSurrModel.cpp HierarchSurrModel.cpp RandomFieldModel.cpp
-  SubspaceModel.cpp ActiveSubspaceModel.cpp AdaptedBasisModel.cpp
-  DiscrepancyCorrection.cpp)
+  DataFitSurrModel.cpp HierarchSurrModel.cpp NonHierarchSurrModel.cpp
+  RandomFieldModel.cpp SubspaceModel.cpp ActiveSubspaceModel.cpp
+  AdaptedBasisModel.cpp DiscrepancyCorrection.cpp)
 
 ## Constraint sources.
 set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp

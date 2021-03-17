@@ -1,16 +1,31 @@
 # Dakota CMake helpers to find system TPLs
 # (These are initially macros in case of unexpected dependencies on variables they set.)
 
+include(DakotaAppleBoostLibs)
+
 macro(dakota_find_boost)
+
   if(WIN32)
     # BMA TODO: Relax this and document
     set(Boost_USE_STATIC_LIBS TRUE)
   endif()
+
   # Dakota requires the specified compiled Boost library components
   # Dakota requires Boost 1.58 or newer (1.69 recommended);
   # enforce for all libs in the build
-  find_package(Boost 1.58 REQUIRED
-    COMPONENTS filesystem program_options regex serialization system)
+  set(dakota_boost_libs filesystem program_options regex serialization system)
+
+  if(DAKOTA_APPLE_FIX_BOOSTLIBS)
+    # This approach requires separate include and lib dirs
+    # Macro publishes _dakota_boost_includedir
+    dakota_fix_boost_dylibs("${dakota_boost_libs}"
+      "${CMAKE_CURRENT_BINARY_DIR}/boost_libs")
+    set(BOOST_ROOT)
+    set(BOOST_INCLUDEDIR "${_dakota_boost_includedir}")
+    set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/boost_libs")
+  endif()
+
+  find_package(Boost 1.58 REQUIRED COMPONENTS ${dakota_boost_libs})
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
 

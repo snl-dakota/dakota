@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -70,7 +71,7 @@ private:
   /// particular model form using QoI accumulators (sum_Q)
   void multilevel_mc_Qsum(unsigned short model_form);
   /// Perform control variate Monte Carlo across two model forms
-  void control_variate_mc(const UShortArray& active_key);
+  void control_variate_mc(const Pecos::ActiveKey& active_key);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Y (LH correlations for level discrepancies)
@@ -97,7 +98,7 @@ private:
   void uncorrected_surrogate_mode();
 
   /// return (aggregate) level cost
-  Real level_cost(const RealVector& cost, unsigned short step);
+  Real level_cost(const RealVector& cost, size_t step);
 
   /// advance any sequence specifications
   void assign_specification_sequence(size_t index);
@@ -108,7 +109,7 @@ private:
   /// s_index is the sequence index that defines the active dimension for a
   /// model sequence.
   void configure_indices(unsigned short group, unsigned short form,
-			 unsigned short lev,   unsigned short s_index);
+			 size_t lev,           short seq_type);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -572,7 +573,7 @@ inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
 
 
 inline Real NonDMultilevelSampling::
-level_cost(const RealVector& cost, unsigned short step)
+level_cost(const RealVector& cost, size_t step)
 {
   // discrepancies incur two level costs
   return (step) ?

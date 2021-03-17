@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -74,8 +75,8 @@ public:
   size_t regression_size(const SizetVector& ranks,  size_t max_rank,
 			 const UShortArray& orders, unsigned short max_order);
 
-  void recover_function_train_ranks(SizetVector& ft_ranks);
-  void recover_function_train_orders(UShortArray& ft_orders);
+  void recover_function_train_ranks(struct FunctionTrain * ft);
+  void recover_function_train_orders(const std::vector<OneApproxOpts*>& a_opts);
 
   //size_t average_rank();
   //size_t maximum_rank();
@@ -143,7 +144,7 @@ public:
   /// to the level key preceding active key; for use in surplus estimation
   /// for new level data relative to a previous level's surrogate prediction
   void generate_synthetic_data(Pecos::SurrogateData& surr_data,
-			       const UShortArray& active_key,
+			       const Pecos::ActiveKey& active_key,
 			       short combine_type);
 
 protected:
@@ -152,7 +153,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void active_model_key(const UShortArray& key);
+  void active_model_key(const Pecos::ActiveKey& key);
   void clear_model_keys();
 
   //void link_multilevel_surrogate_data();
@@ -183,7 +184,7 @@ private:
   bool max_rank_advancement_available();
   bool max_order_advancement_available();
 
-  Real stored_value(const RealVector& c_vars, const UShortArray& key);
+  Real stored_value(const RealVector& c_vars, const Pecos::ActiveKey& key);
 
   void compute_derived_statistics(C3FnTrainData& ftd, size_t num_mom,
 				  bool overwrite = false);
@@ -221,15 +222,15 @@ private:
   //
 
   /// set of pointers to QoI approximation data for each model key
-  std::map<UShortArray, C3FnTrainData> levelApprox;
+  std::map<Pecos::ActiveKey, C3FnTrainData> levelApprox;
   /// iterator to active levelApprox
-  std::map<UShortArray, C3FnTrainData>::iterator levApproxIter;
+  std::map<Pecos::ActiveKey, C3FnTrainData>::iterator levApproxIter;
 
   /// the previous approximation, cached for restoration
   C3FnTrainData prevC3FTData;
   /// bookkeeping for previously evaluated FT approximations that may
   /// be restored
-  std::map<UShortArray, std::deque<C3FnTrainData> > poppedLevelApprox;
+  std::map<Pecos::ActiveKey, std::deque<C3FnTrainData> > poppedLevelApprox;
   /// the combined approximation, summed across model keys
   C3FnTrainData combinedC3FTData;
 
@@ -245,7 +246,7 @@ private:
 };
 
 
-inline void C3Approximation::active_model_key(const UShortArray& key)
+inline void C3Approximation::active_model_key(const Pecos::ActiveKey& key)
 {
   // sets approxData keys
   // Note: this may be required even if levApproxIter->first is consistent
@@ -260,7 +261,7 @@ inline void C3Approximation::active_model_key(const UShortArray& key)
   levApproxIter = levelApprox.find(key);
   if (levApproxIter == levelApprox.end()) {
     // Note: C3FT pointers not allocated until build()
-    std::pair<UShortArray, C3FnTrainData> ftd_pair(key, C3FnTrainData());
+    std::pair<Pecos::ActiveKey, C3FnTrainData> ftd_pair(key, C3FnTrainData());
     levApproxIter = levelApprox.insert(ftd_pair).first;
   }
 }

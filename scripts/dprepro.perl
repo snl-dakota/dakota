@@ -3,9 +3,14 @@
 # See documentation at end, or run dprepro --man
 #  dprepro [options] parameters_file template_input_file new_input_file
 
-# Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
-# This software is distributed with DAKOTA under the GNU LGPL.
-# For more information, see the README file in the top Dakota directory.
+#  _______________________________________________________________________
+#
+#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  This software is distributed under the GNU Lesser General Public License.
+#  For more information, see the README file in the top Dakota directory.
+#  _______________________________________________________________________
 
 use Getopt::Long;
 use Pod::Usage;

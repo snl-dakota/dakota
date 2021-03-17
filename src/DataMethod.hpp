@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -835,6 +836,11 @@ public:
   /// Wilks sided interval type
   short wilksSidedInterval;
 
+  /// flag to indicate bounds-based scaling of current response data set
+  /// prior to build in surrogate-based methods; important for ML/MF data fits
+  /// of decaying discrepancy data using regression with absolute tolerances
+  bool respScalingFlag;
+
   /// a sub-specification of vbdFlag: interaction order limit for
   /// calculation/output of component VBD indices
   unsigned short vbdOrder;
@@ -1098,9 +1104,9 @@ public:
   unsigned short importPredConfigFormat;
   /// type of model discrepancy emulation
   String modelDiscrepancyType;
-  /// correction order for either gaussian process or polynomial model
-  /// discrepancy calculations: 0 (=constant), 1 (=linear), 2 (=quadratic)
-  short approxCorrectionOrder;
+  /// polynomial order for model discrepancy calculations: either gaussian
+  /// process trend order or polynomial basis order
+  short polynomialOrder;
   /// specify the name of file to which corrected model (model+discrepancy)
   /// calculations are output
   String exportCorrModelFile;

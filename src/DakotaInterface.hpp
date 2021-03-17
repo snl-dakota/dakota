@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -24,7 +25,7 @@
 // always declare ASL rather than have a conditionally included class member
 struct ASL;
 
-namespace Pecos { class SurrogateData; }
+namespace Pecos { class SurrogateData; class ActiveKey; }
 
 namespace Dakota {
 
@@ -123,8 +124,8 @@ public:
   /// ApproximationInterface (used by DataFitSurrModels).
   virtual int recommended_points(bool constraint_flag) const;
 
-  /// activate an approximation state based on its multi-index key
-  virtual void active_model_key(const UShortArray& mi_key);
+  /// activate an approximation state based on its key
+  virtual void active_model_key(const Pecos::ActiveKey& key);
   /// reset initial state by removing all model keys for an approximation
   virtual void clear_model_keys();
 

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -136,7 +137,7 @@ private:
 
   /// activate model forms and, optionally, discretization levels within
   /// the HierarchSurrModel associated with trustRegions[tr_index]
-  void set_model_states(size_t tr_index);
+  void set_active_model(size_t tr_index);
 
   /// update trust region bounds, recurring top-down from tr_index_start
   void update_trust_region(size_t tr_index_start);
@@ -182,15 +183,8 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 { return trustRegions[minimizeIndex]; }
 
 
-inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
-{
-  SurrBasedLevelData& tr = trustRegions[tr_index];
-  UShortArray hf_lf_key;
-  Pecos::DiscrepancyCalculator::
-    form_key(tr.data_group(), tr.truth_model_form(), tr.truth_model_level(),
-	     tr.approx_model_form(), tr.approx_model_level(), hf_lf_key);
-  iteratedModel.active_model_key(hf_lf_key);
-}
+inline void HierarchSurrBasedLocalMinimizer::set_active_model(size_t tr_index)
+{ iteratedModel.active_model_key(trustRegions[tr_index].paired_key()); }
 
 
 inline void HierarchSurrBasedLocalMinimizer::update_trust_region()

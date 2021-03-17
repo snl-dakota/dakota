@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -54,8 +55,9 @@ class ProblemDescDB
   friend class Model;
   /// SimulationModel requires access to get_interface()
   friend class SimulationModel;
-  /// HierarchSurrModel requires access to get_model()
+  /// HierarchSurrModel and NonHierarchSurrModel require access to get_model()
   friend class HierarchSurrModel;
+  friend class NonHierarchSurrModel;
   /// DataFitSurrModel requires access to get_iterator() and get_model()
   friend class DataFitSurrModel;
   /// NestedModel requires access to get_interface(), get_response(),

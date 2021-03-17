@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -92,6 +93,10 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
+  void init_model(Model& model);
+  void update_model(Model& model);
+  void update_from_model(const Model& model);
+
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
 				const SizetArray& ds_index1,
@@ -129,7 +134,7 @@ protected:
   Iterator& subordinate_iterator();
 
   /// set active model key within approxInterface
-  void active_model_key(const UShortArray& mi_key);
+  void active_model_key(const Pecos::ActiveKey& key);
   /// remove all model keys within approxInterface
   void clear_model_keys();
 
@@ -395,13 +400,6 @@ private:
   /// build the approxInterface surrogate, passing variable bounds
   void build_approx_interface();
 
-  /// update actualModel with data from constraints/labels/sets
-  void init_model(Model& model);
-  /// update actualModel with data from current variables/bounds
-  void update_model(Model& model);
-  /// update current variables/labels/bounds/targets with data from actualModel
-  void update_from_model(const Model& model);
-
   /// test if inactive state is consistent
   bool consistent(const Variables& vars) const;
   /// test if active vars are within [l_bnds, u_bnds]
@@ -418,6 +416,23 @@ private:
   /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
   /// order to reproduce high fidelity data.
   DiscrepancyCorrection deltaCorr;
+
+  /// map from actualModel/highFidelityModel evaluation ids to
+  /// DataFitSurrModel/HierarchSurrModel ids
+  IntIntMap truthIdMap;
+  /// map from approxInterface/lowFidelityModel evaluation ids to
+  /// DataFitSurrModel/HierarchSurrModel ids
+  IntIntMap surrIdMap;
+
+  /// map of approximate responses retrieved in derived_synchronize_nowait()
+  /// that could not be returned since corresponding truth model response
+  /// portions were still pending.
+  IntResponseMap cachedApproxRespMap;
+
+  /// map of raw continuous variables used by apply_correction().
+  /// Model::varsList cannot be used for this purpose since it does
+  /// not contain lower level variables sets from finite differencing.
+  IntVariablesMap rawVarsMap;
 
   /// total points the user specified to construct the surrogate
   int pointsTotal;
@@ -499,12 +514,18 @@ inline short DataFitSurrModel::query_distribution_parameter_derivatives() const
 
 inline size_t DataFitSurrModel::qoi() const
 {
-  switch (responseMode) {
   // Response inflation from aggregation does not proliferate above
   // this Model recursion level
-  case AGGREGATED_MODELS:  return actualModel.qoi();  break;
-  default:                 return response_size();    break;
-  }
+  return (responseMode == AGGREGATED_MODELS && !actualModel.is_null()) ?
+    actualModel.qoi() : response_size();
+
+  //switch (responseMode) {
+  //case AGGREGATED_MODELS:
+  //  if (actualModel.is_null()) return response_size();
+  //  else                       return actualModel.qoi();
+  //  break;
+  //default:                     return response_size();    break;
+  //}
 }
 
 
@@ -565,14 +586,14 @@ inline Iterator& DataFitSurrModel::subordinate_iterator()
 { return daceIterator; }
 
 
-inline void DataFitSurrModel::active_model_key(const UShortArray& key)
+inline void DataFitSurrModel::active_model_key(const Pecos::ActiveKey& key)
 {
-  // assign activeKey and extract {surr,truth}ModelKey
+  // assign activeKey
   SurrogateModel::active_model_key(key);
 
   // recur both components: (actualModel could be hierarchical)
   approxInterface.active_model_key(key);
-  actualModel.active_model_key(key);
+  if (!actualModel.is_null()) actualModel.active_model_key(key);
 }
 
 
@@ -696,6 +717,11 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
     }
     break;
   case BYPASS_SURROGATE:
+    if (actualModel.is_null()) {
+      Cerr << "Error: actualModel must be defined for mode BYPASS_SURROGATE."
+	   << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
     actualModel.surrogate_response_mode(mode); // recurse in this case
     //approxInterface.deactivate_multilevel_approximation_data();
     break;
@@ -962,7 +988,7 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 inline void DataFitSurrModel::warm_start_flag(const bool flag)
 {
   warmStartFlag = flag;
-  actualModel.warm_start_flag(flag);
+  if (!actualModel.is_null()) actualModel.warm_start_flag(flag);
 }
 
 } // namespace Dakota

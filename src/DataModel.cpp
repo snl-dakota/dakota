@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -29,16 +30,16 @@ DataModelRep::DataModelRep():
   exportApproxFormat(TABULAR_ANNOTATED),
   exportApproxVarianceFormat(TABULAR_ANNOTATED), numRestarts(10),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
-  modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
-  krigingNugget(0.0), krigingFindNugget(0), mlsWeightFunction(0),
-  rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0),
-  marsMaxBases(0), annRandomWeight(0), annNodes(0), annRange(0.0), 
-  domainDecomp(false), decompCellType("voronoi"), decompSupportLayers(0),
-  decompDiscontDetect(false), discontJumpThresh(0.0), discontGradThresh(0.0),
-  trendOrder("reduced_quadratic"), pointSelection(false),
-  crossValidateFlag(false), numFolds(0), percentFold(0.0), pressFlag(false),
-  importChallengeFormat(TABULAR_ANNOTATED), importChalUseVariableLabels(false),
-  importChallengeActive(false),
+  modelUseDerivsFlag(false), respScalingFlag(false), polynomialOrder(2),
+  krigingMaxTrials(0), krigingNugget(0.0), krigingFindNugget(0),
+  mlsWeightFunction(0), rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0),
+  rbfMinPartition(0), marsMaxBases(0), annRandomWeight(0), annNodes(0),
+  annRange(0.), domainDecomp(false), decompCellType("voronoi"),
+  decompSupportLayers(0), decompDiscontDetect(false), discontJumpThresh(0.0),
+  discontGradThresh(0.0), trendOrder("reduced_quadratic"),
+  pointSelection(false), crossValidateFlag(false), numFolds(0), percentFold(0.),
+  pressFlag(false), importChallengeFormat(TABULAR_ANNOTATED),
+  importChalUseVariableLabels(false), importChallengeActive(false),
   identityRespMap(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING), initialSamples(0),
@@ -70,7 +71,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << hierarchicalTags << subMethodPointer
     << solutionLevelControl << solutionLevelCost << surrogateFnIndices
-    << surrogateType << actualModelPointer << orderedModelPointers
+    << surrogateType << actualModelPointer << ensembleModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
     << modelExportPrefix << modelExportFormat << importUseVariableLabels
@@ -78,10 +79,10 @@ void DataModelRep::write(MPIPackBuffer& s) const
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat
     << exportApproxVarianceFile << exportApproxVarianceFormat
-    << numRestarts
-    << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
-    << polynomialOrder << krigingCorrelations << krigingOptMethod
-    << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
+    << numRestarts << approxCorrectionType << approxCorrectionOrder
+    << modelUseDerivsFlag << respScalingFlag << polynomialOrder
+    << krigingCorrelations << krigingOptMethod << krigingMaxTrials
+    << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsWeightFunction
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
     << marsMaxBases << marsInterpolation << annRandomWeight << annNodes
@@ -118,7 +119,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
     >> responsesPointer >> hierarchicalTags >> subMethodPointer
     >> solutionLevelControl >> solutionLevelCost >> surrogateFnIndices
-    >> surrogateType >> actualModelPointer >> orderedModelPointers
+    >> surrogateType >> actualModelPointer >> ensembleModelPointers
     >> pointsTotal >> pointsManagement >> approxPointReuse
     >> importBuildPtsFile >> importBuildFormat >> exportSurrogate
     >> modelExportPrefix >> modelExportFormat >> importUseVariableLabels
@@ -126,10 +127,10 @@ void DataModelRep::read(MPIUnpackBuffer& s)
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat
     >> exportApproxVarianceFile >> exportApproxVarianceFormat
-    >> numRestarts
-    >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
-    >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
-    >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
+    >> numRestarts >> approxCorrectionType >> approxCorrectionOrder
+    >> modelUseDerivsFlag >> respScalingFlag >> polynomialOrder
+    >> krigingCorrelations >> krigingOptMethod >> krigingMaxTrials
+    >> krigingMaxCorrelations >> krigingMinCorrelations
     >> krigingNugget >> krigingFindNugget >> mlsWeightFunction
     >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition
     >> marsMaxBases >> marsInterpolation >> annRandomWeight >> annNodes
@@ -166,7 +167,7 @@ void DataModelRep::write(std::ostream& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << hierarchicalTags << subMethodPointer
     << solutionLevelControl << solutionLevelCost << surrogateFnIndices
-    << surrogateType << actualModelPointer << orderedModelPointers
+    << surrogateType << actualModelPointer << ensembleModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
     << modelExportPrefix << modelExportFormat << importUseVariableLabels
@@ -174,10 +175,10 @@ void DataModelRep::write(std::ostream& s) const
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat
     << exportApproxVarianceFile << exportApproxVarianceFormat
-    << numRestarts
-    << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
-    << polynomialOrder << krigingCorrelations << krigingOptMethod
-    << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
+    << numRestarts << approxCorrectionType << approxCorrectionOrder
+    << modelUseDerivsFlag << respScalingFlag << polynomialOrder
+    << krigingCorrelations << krigingOptMethod << krigingMaxTrials
+    << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsWeightFunction
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
     << marsMaxBases << marsInterpolation << annRandomWeight << annNodes

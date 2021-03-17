@@ -814,6 +814,7 @@
 	     <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mdm(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
 	       <param type="REAL" />
 	     </keyword>
+	     <keyword  id="response_scaling" name="response_scaling" code="{N_mdm(true,respScalingFlag)}" label="Scale response data prior to build" help="" minOccurs="0" default="use original data"/>
 	     <!-- <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only"/> -->
 	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" minOccurs="0" default="regression with random sample set" />
 	     ' >
@@ -945,6 +946,7 @@
 	     <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
 	       <param type="REAL" />
 	     </keyword>
+	     <keyword  id="response_scaling" name="response_scaling" code="{N_mom(true,respScalingFlag)}" label="Scale response data prior to build" minOccurs="0" default="use original data"/>
 	     <!-- <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mom(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only"/> -->
 	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mom(true,tensorGridFlag)}" label="tensor_grid"  minOccurs="0" default="regression with random sample set" />
 	     ' >
@@ -1338,8 +1340,8 @@
 	     <keyword  id="seed4" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
                <param type="INTEGER" constraint="> 0" />
 	     </keyword>
-	     <keyword  id="show_misc_options" name="show_misc_options" code="{N_mdm(true,showMiscOptions)}" label="show_misc_options"  minOccurs="0" default="no dump of specification options" />
-	     <keyword  id="misc_options" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options"  minOccurs="0" default="no misc options" >
+	     <keyword  id="show_misc_options" name="show_misc_options" code="{N_mdm(true,showMiscOptions)}" label="show_misc_options"  minOccurs="0" default="no dump of specification options"  complexity="1"/>
+	     <keyword  id="misc_options" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options"  minOccurs="0" default="no misc options" complexity="1" >
                <param type="STRINGLIST" />
 	     </keyword>
 	     &method_max_iterations;
@@ -3327,18 +3329,28 @@
 	  <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
 	    <keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Model Discrepancy Type"  minOccurs="0" default="gaussian process" >
     	      <oneOf label="Discrepancy Model">
-    	        <keyword  id="gaussian_process" name="gaussian_process" code="{N_mdm(lit,modelDiscrepancyType_global_kriging)}" label="Discrepancy Type Gaussian Processes"   >
+    	        <keyword  id="gaussian_process" name="gaussian_process" code="{N_mdm(lit,modelDiscrepancyType_global_kriging)}" label="Discrepancy Type Gaussian Process" >
                   <alias name="kriging"/>
+                  <keyword  id="trend_order" name="trend_order" code="{N_mdm(shint,polynomialOrder)}" label="GP trend polynomial order" minOccurs="0" default="2" >
+                    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
 		</keyword>
-		<keyword  id="polynomial" name="polynomial" code="{N_mdm(lit,modelDiscrepancyType_global_polynomial)}" label="Discrepancy Type Polynomial"   />
+		<keyword  id="polynomial" name="polynomial" code="{N_mdm(lit,modelDiscrepancyType_global_polynomial)}" label="Discrepancy Type Polynomial" >
+                  <keyword  id="basis_order" name="basis_order" code="{N_mdm(shint,polynomialOrder)}" label="Polynomial basis order" minOccurs="0" default="2" >
+                    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <!--
+                  <oneOf label="Basis Order">
+                    <keyword  id="basis_order" name="basis_order" code="{N_mdm(shint,polynomialOrder)}" label="Polynomial basis order"  >
+                      <param type="INTEGER" constraint=">= 0" />
+		    </keyword>
+		    <keyword  id="constant" name="constant" code="{N_mdm(order,polynomialOrder_0)}" label="Polynomial Order 0"  />
+                    <keyword  id="linear" name="linear" code="{N_mdm(order,polynomialOrder_1)}" label="Linear Polynomial"   />
+                    <keyword  id="quadratic" name="quadratic" code="{N_mdm(order,polynomialOrder_2)}" label="Quadratic Polynomial"   />
+                  </oneOf>
+		  -->
+    	        </keyword>
     	      </oneOf>
-              <keyword  id="correction_order" name="correction_order" code="{0}" label="Model discrepancy correction"  minOccurs="0" default="2">
-                <oneOf label="Correction Order">
-		  <keyword  id="constant" name="constant" code="{N_mdm(order,approxCorrectionOrder_0)}" label="Polynomial Order 0"  />
-                  <keyword  id="linear" name="linear" code="{N_mdm(order,approxCorrectionOrder_1)}" label="Linear"   />
-                  <keyword  id="quadratic" name="quadratic" code="{N_mdm(order,approxCorrectionOrder_2)}" label="Quadratic"   />
-                </oneOf>
-              </keyword>
     	    </keyword>
             <keyword  id="num_prediction_configs" name="num_prediction_configs" code="{N_mdm(sizet,numPredConfigs)}" label="Number of Prediction Configurations"  minOccurs="0" default="0" >
               <param type="INTEGER" constraint=">= 0" />
@@ -3999,7 +4011,8 @@
 		      <!-- TODO: soft convergence limit / tolerance, challenge points -->
 		    </keyword>
 		  </keyword>
-			  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
+		  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
+                    <alias name="truth_model_pointer"/>
                     <param type="STRING" in_taglist="model" />
 		  </keyword>
 		</oneOf>
@@ -4118,33 +4131,27 @@
               </keyword>
             </keyword>
             <keyword  id="multipoint" name="multipoint" code="{0}" label="Multipoint Approximation"  complexity="1">
-            <oneOf label="Multipoint Surrogate" >
-              <keyword  id="tana" name="tana" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Two-point adaptive nonlinear approximation "   />
-              <keyword  id="qmea" name="qmea" code="{N_mom(lit,surrogateType_multipoint_qmea)}" label="Quadratic multipoint exponential approximation "   />
-            </oneOf>
-           	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
-              <param type="STRING" in_taglist="model" />
-            </keyword>
+              <oneOf label="Multipoint Surrogate" >
+                <keyword  id="tana" name="tana" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Two-point adaptive nonlinear approximation "   />
+                <keyword  id="qmea" name="qmea" code="{N_mom(lit,surrogateType_multipoint_qmea)}" label="Quadratic multipoint exponential approximation "   />
+              </oneOf>
+              <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
+                <alias name="truth_model_pointer"/>
+                <param type="STRING" in_taglist="model" />
+              </keyword>
             </keyword>
             <keyword  id="local" name="local" code="{N_mom(lit,surrogateType_local_taylor)}" label="Local Approximation"  complexity="1">
               <keyword  id="taylor_series" name="taylor_series" code="{0}" label="Taylor Series Local Approximation "   />
-        	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
-            	<param type="STRING" in_taglist="model" />
-          	  </keyword>
-            </keyword>
-            <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical Approximation "  >
-              <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,orderedModelPointers)}" label="Model Pointers (Ordered by Fidelity)"   >
+        	<keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
+                  <alias name="truth_model_pointer"/>
+            	  <param type="STRING" in_taglist="model" />
+          	</keyword>
+              </keyword>
+            <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical Approximation"  >
+              <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (Ordered by Fidelity)"   >
                 <alias name="model_fidelity_sequence"/>
                 <param type="STRINGLIST" in_taglist="model" />
               </keyword>
-	      <!--
-	      <keyword  id="low_fidelity_model_pointer" name="low_fidelity_model_pointer" code="{N_mom(str,lowFidelityModelPointer)}" label="Pointer to the low fidelity model specification"   >
-                <param type="STRING" in_taglist="model" />
-              </keyword>
-              <keyword  id="high_fidelity_model_pointer" name="high_fidelity_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Pointer to the high fidelity model specification"   >
-                <param type="STRING" in_taglist="model" />
-		</keyword>
-	      -->
               <keyword  id="correction1" name="correction" code="{0}" label="Surrogate Correction Approach"  minOccurs="0" default="no surrogate correction" >
                 <oneOf label="Correction Order">
                   <keyword  id="zeroth_order1" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="Zeroth Order"   />
@@ -4156,6 +4163,17 @@
                   <keyword  id="multiplicative1" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="Multiplicative"   />
                   <keyword  id="combined1" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="Combined"   />
                 </oneOf>
+              </keyword>
+            </keyword>
+            <keyword  id="non_hierarchical" name="non_hierarchical" code="{N_mom(lit,surrogateType_non_hierarchical)}" label="Nonhierarchical Approximation"  >
+	      <alias name="model_ensemble"/>
+              <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Truth Model Pointer"   >
+		<alias name="actual_model_pointer"/>
+            	<param type="STRING" in_taglist="model" />
+              </keyword>
+              <keyword  id="unordered_model_fidelities" name="unordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (unordered peer models)"   >
+                <alias name="approximation_models"/>
+                <param type="STRINGLIST" in_taglist="model" />
               </keyword>
             </keyword>
           </oneOf>

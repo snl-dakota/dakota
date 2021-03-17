@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -6708,10 +6709,10 @@ static Method_mp_slit2
 static Method_mp_utype_lit
         MP3s(methodName,dlDetails,DL_SOLVER); // struct order: ip, sp, utype
 
-static Method_mp_ord
-	MP2s(approxCorrectionOrder,0),
-	MP2s(approxCorrectionOrder,1),
-	MP2s(approxCorrectionOrder,2);
+//static Method_mp_ord
+// 	MP2s(polynomialOrder,0),
+// 	MP2s(polynomialOrder,1),
+// 	MP2s(polynomialOrder,2);
 
 static Real
 	MP_(absConvTol),
@@ -6907,6 +6908,7 @@ static bool
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
 	MP_(relativeConvMetric),
+	MP_(respScalingFlag),
 	MP_(showAllEval),
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
@@ -6919,8 +6921,9 @@ static bool
 	MP_(volQualityFlag),
 	MP_(wilksFlag);
 
-/* It seems these are redundant with Method_mp_type:
 static short
+	MP_(polynomialOrder);
+/* It seems these are redundant with Method_mp_type:
 	MP_(c3AdvanceType),
         MP_(expansionType),
         MP_(nestingOverride),
@@ -7296,6 +7299,7 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,non_hierarchical),
 	MP2(surrogateType,global_exp_gauss_proc),
 	MP2(surrogateType,global_exp_poly),
 	MP2(surrogateType,global_function_train),
@@ -7440,7 +7444,7 @@ static String
 
 static StringArray
         MP_(diagMetrics),
-	MP_(orderedModelPointers),
+	MP_(ensembleModelPointers),
 	MP_(primaryVarMaps),
         MP_(secondaryVarMaps);
 
@@ -7462,6 +7466,7 @@ static bool
         MP_(domainDecomp),
         MP_(pointSelection),
         MP_(pressFlag),
+        MP_(respScalingFlag),
         MP_(subspaceIdBingLi),
         MP_(subspaceIdConstantine),
         MP_(subspaceIdEnergy),

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -124,6 +125,8 @@ public:
   /// return active maximum value for expansion rank (mutable)
   size_t& max_rank();
 
+  void assign_start_ranks(SizetVector& start_ranks) const;
+
   // return c3AdvancementType
   //short advancement_type() const;
 
@@ -141,12 +144,12 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void active_model_key(const UShortArray& key);
+  void active_model_key(const Pecos::ActiveKey& key);
   //void clear_model_keys();
 
   void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
 
-  short discrepancy_type() const;
+  short discrepancy_reduction() const;
 
   // Activate as additional features (and basis types) come online
   
@@ -170,7 +173,7 @@ protected:
 
   void   pop(bool save_surr_data);
   bool   push_available();
-  size_t push_index(const UShortArray& key);
+  size_t push_index(const Pecos::ActiveKey& key);
   void   post_push();
 
   void pre_combine();
@@ -194,12 +197,15 @@ protected:
   /// n-D approximation options, augmenting one-D options
   MultiApproxOpts* multiApproxOpts;
 
+  /// option to scale response data prior to regression
+  bool respScaling;
+
   /// starting user specification for polynomial orders (from start_order
   /// scalar plus anisotropic dimension preference)
   UShortArray startOrders;
   /// starting values for polynomial order (prior to adaptive refinement);
   /// for each model key, there is an array of polynomial orders per variable
-  std::map<UShortArray, UShortArray> startOrdersMap;
+  std::map<Pecos::ActiveKey, UShortArray> startOrdersMap;
   /// user specification for increment in order used within adapt_order
   unsigned short kickOrder;
   /// maximum value for polynomial order from user spec
@@ -207,7 +213,7 @@ protected:
   /// user specification for maximum order used within adapt_order;
   /// usually a scalar specification but can be adapted per model key
   /// for MAX_{ORDER,RANK_ORDER}_ADVANCEMENT refine types
-  std::map<UShortArray, unsigned short> maxOrderMap;
+  std::map<Pecos::ActiveKey, unsigned short> maxOrderMap;
   /// C3 FT can support CV over polynomial order in addition to adapt_rank
   bool adaptOrder;
 
@@ -223,7 +229,7 @@ protected:
   /// starting values for rank (note: adapt_rank currently covers refinement);
   /// for each model index key, there is a scalar starting rank (recovered
   /// rank in C3FnrainPtrs can vary per core/variable and per QoI)
-  std::map<UShortArray, size_t> startRankMap;
+  std::map<Pecos::ActiveKey, size_t> startRankMap;
   /// user specification for increment in rank used within adapt_rank
   size_t kickRank;
   /// scalar user specification for maximum allowable rank when adapting
@@ -231,7 +237,7 @@ protected:
   /// user specification for maximum rank used within adapt_rank;
   /// usually a scalar specification but can be adapted per model key
   /// for MAX_{RANK,RANK_ORDER}_ADVANCEMENT refine types
-  std::map<UShortArray, size_t> maxRankMap;
+  std::map<Pecos::ActiveKey, size_t> maxRankMap;
   /// internal C3 adaptation that identifies the best rank representation
   /// for a set of sample data based on cross validation
   bool adaptRank;
@@ -262,7 +268,7 @@ protected:
   /// type of discrepancy calculation: additive, multiplicative, or both
   short combineType;
   /// type of multilevel discrepancy emulation: distinct or recursive
-  short discrepancyType;
+  short discrepReduction;
   /// type of multilevel strategy for sample allocation: ESTIMATOR_VARIANCE,
   /// RANK_SAMPLING, GREEDY
   short allocControl;
@@ -274,10 +280,10 @@ protected:
 
   /// flag indicating availability of rank advancement (accumulated from
   /// C3Approximation::advancement_available())
-  std::map<UShortArray, bool> c3MaxRankAdvance;
+  std::map<Pecos::ActiveKey, bool> c3MaxRankAdvance;
   /// flag indicating availability of order advancement (accumulated from
   /// C3Approximation::advancement_available())
-  std::map<UShortArray, bool> c3MaxOrderAdvance;
+  std::map<Pecos::ActiveKey, bool> c3MaxOrderAdvance;
 
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
@@ -287,7 +293,7 @@ protected:
 
   /// number of instances within the popped arrays (mostly a placeholder for
   /// supporting push_available())
-  std::map<UShortArray, size_t> poppedCounts;
+  std::map<Pecos::ActiveKey, size_t> poppedCounts;
 
 private:
 
@@ -306,9 +312,9 @@ inline SharedC3ApproxData::SharedC3ApproxData()
 { }
 
 
-inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
+inline void SharedC3ApproxData::active_model_key(const Pecos::ActiveKey& key)
 {
-  // set activeKey and approxDataKeys
+  // set activeKey
   SharedApproxData::active_model_key(key);
 
   // these aren't used enough to warrant active iterators
@@ -327,17 +333,28 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
 }
 
 
+inline void SharedC3ApproxData::
+assign_start_ranks(SizetVector& start_ranks) const
+{
+  size_t v, num_vp1 = numVars + 1, start_r = start_rank();
+  if (start_ranks.length() != num_vp1)
+    start_ranks.sizeUninitialized(num_vp1);
+  start_ranks[0] = start_ranks[numVars] = 1;
+  for (v=1; v<numVars; ++v) start_ranks[v] = start_r;
+}
+
+
 inline void SharedC3ApproxData::update_basis()
 { update_basis(start_orders(), max_order()); }
 
 
-inline short SharedC3ApproxData::discrepancy_type() const
-{ return discrepancyType; }
+inline short SharedC3ApproxData::discrepancy_reduction() const
+{ return discrepReduction; }
 
 
 inline const UShortArray& SharedC3ApproxData::start_orders() const
 {
-  std::map<UShortArray, UShortArray>::const_iterator cit
+  std::map<Pecos::ActiveKey, UShortArray>::const_iterator cit
     = startOrdersMap.find(activeKey);
   return (cit == startOrdersMap.end()) ? startOrders : cit->second;
 }
@@ -345,7 +362,7 @@ inline const UShortArray& SharedC3ApproxData::start_orders() const
 
 inline UShortArray& SharedC3ApproxData::start_orders()
 {
-  std::map<UShortArray, UShortArray>::iterator it
+  std::map<Pecos::ActiveKey, UShortArray>::iterator it
     = startOrdersMap.find(activeKey);
   return (it == startOrdersMap.end()) ? startOrders : it->second;
 }
@@ -353,7 +370,7 @@ inline UShortArray& SharedC3ApproxData::start_orders()
 
 inline unsigned short SharedC3ApproxData::max_order() const
 {
-  std::map<UShortArray, unsigned short>::const_iterator cit
+  std::map<Pecos::ActiveKey, unsigned short>::const_iterator cit
     = maxOrderMap.find(activeKey);
   return (cit == maxOrderMap.end()) ? maxOrder : cit->second;
 }
@@ -361,7 +378,7 @@ inline unsigned short SharedC3ApproxData::max_order() const
 
 inline unsigned short& SharedC3ApproxData::max_order()
 {
-  std::map<UShortArray, unsigned short>::iterator it
+  std::map<Pecos::ActiveKey, unsigned short>::iterator it
     = maxOrderMap.find(activeKey);
   return (it == maxOrderMap.end()) ? maxOrder : it->second;
 }
@@ -369,7 +386,7 @@ inline unsigned short& SharedC3ApproxData::max_order()
 
 inline size_t SharedC3ApproxData::start_rank() const
 {
-  std::map<UShortArray, size_t>::const_iterator cit
+  std::map<Pecos::ActiveKey, size_t>::const_iterator cit
     = startRankMap.find(activeKey);
   return (cit == startRankMap.end()) ? startRank : cit->second;
 }
@@ -377,14 +394,15 @@ inline size_t SharedC3ApproxData::start_rank() const
 
 inline size_t& SharedC3ApproxData::start_rank()
 {
-  std::map<UShortArray, size_t>::iterator it = startRankMap.find(activeKey);
+  std::map<Pecos::ActiveKey, size_t>::iterator it
+    = startRankMap.find(activeKey);
   return (it == startRankMap.end()) ? startRank : it->second;
 }
 
 
 inline size_t SharedC3ApproxData::max_rank() const
 {
-  std::map<UShortArray, size_t>::const_iterator cit
+  std::map<Pecos::ActiveKey, size_t>::const_iterator cit
     = maxRankMap.find(activeKey);
   return (cit == maxRankMap.end()) ? maxRank : cit->second;
 }
@@ -392,7 +410,7 @@ inline size_t SharedC3ApproxData::max_rank() const
 
 inline size_t& SharedC3ApproxData::max_rank()
 {
-  std::map<UShortArray, size_t>::iterator it = maxRankMap.find(activeKey);
+  std::map<Pecos::ActiveKey, size_t>::iterator it = maxRankMap.find(activeKey);
   return (it == maxRankMap.end()) ? maxRank : it->second;
 }
 
@@ -538,8 +556,9 @@ inline void SharedC3ApproxData::set_parameter(String var, size_t val)
 
 inline void SharedC3ApproxData::set_parameter(String var, bool val)
 {
-  if (var.compare("adapt_rank") == 0)           adaptRank  = val;
-  else if (var.compare("adapt_order") == 0)     adaptOrder = val;
+  if (var.compare("adapt_rank") == 0)             adaptRank  = val;
+  else if (var.compare("adapt_order") == 0)       adaptOrder = val;
+  else if (var.compare("response_scaling") == 0) respScaling = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
@@ -547,7 +566,7 @@ inline void SharedC3ApproxData::set_parameter(String var, bool val)
 inline void SharedC3ApproxData::set_parameter(String var, short val)
 {
   if      (var.compare("regress_type")      == 0)       regressType = val;
-  else if (var.compare("discrepancy_type")  == 0)   discrepancyType = val;
+  else if (var.compare("discrepancy_type")  == 0)  discrepReduction = val;
   else if (var.compare("alloc_control")     == 0)      allocControl = val;
   else if (var.compare("combine_type")      == 0)       combineType = val;
   else if (var.compare("advancement_type")  == 0) c3AdvancementType = val;
@@ -648,7 +667,8 @@ inline void SharedC3ApproxData::build()
 
 inline void SharedC3ApproxData::pop(bool save_surr_data)
 {
-  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(activeKey);
+  std::map<Pecos::ActiveKey, size_t>::iterator it
+    = poppedCounts.find(activeKey);
   if (it == poppedCounts.end())
     poppedCounts[activeKey] = 1;
   else
@@ -658,14 +678,15 @@ inline void SharedC3ApproxData::pop(bool save_surr_data)
 
 inline bool SharedC3ApproxData::push_available()
 {
-  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(activeKey);
+  std::map<Pecos::ActiveKey, size_t>::iterator it
+    = poppedCounts.find(activeKey);
   return (it != poppedCounts.end() && it->second > 0);
 }
 
 
-inline size_t SharedC3ApproxData::push_index(const UShortArray& key)
+inline size_t SharedC3ApproxData::push_index(const Pecos::ActiveKey& key)
 {
-  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(key);
+  std::map<Pecos::ActiveKey, size_t>::iterator it = poppedCounts.find(key);
   if (it == poppedCounts.end() || it->second == 0) {
     Cerr << "Error: bad lookup in SharedC3ApproxData::push_index(key)"
 	 << std::endl;
@@ -680,7 +701,8 @@ inline size_t SharedC3ApproxData::push_index(const UShortArray& key)
 
 inline void SharedC3ApproxData::post_push()
 {
-  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(activeKey);
+  std::map<Pecos::ActiveKey, size_t>::iterator it
+    = poppedCounts.find(activeKey);
   if (it != poppedCounts.end() && it->second > 0)
     --it->second; // decrement count
 }

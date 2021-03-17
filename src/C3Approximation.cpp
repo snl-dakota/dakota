@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -11,6 +12,7 @@
 #include "ProblemDescDB.hpp"
 #include "SharedC3ApproxData.hpp"
 #include "DiscrepancyCalculator.hpp"
+#include "ActiveKey.hpp"
 
 // NOTE: only include this header in isolated compilation units
 #include "dakota_c3_include.hpp"
@@ -42,34 +44,37 @@ C3Approximation::~C3Approximation()
 { } // FT memory deallocations managed by C3FnTrainData
 
 
-void C3Approximation::recover_function_train_ranks(SizetVector& ft_ranks)
+void C3Approximation::recover_function_train_ranks(struct FunctionTrain * ft)
 {
   // returns the recovered ranks, reflecting the latest CV if adapt_rank
 
   // Note: this recovery uses active levApproxIter and can be used anytime
 
-  ft_ranks = SizetVector(Teuchos::View,
-    function_train_get_ranks(levApproxIter->second.function_train()),
-    sharedDataRep->numVars + 1);
+  SizetVector ft_ranks(Teuchos::Copy, function_train_get_ranks(ft),
+		       sharedDataRep->numVars + 1);
+
+  levApproxIter->second.recovered_ranks(ft_ranks);
 }
 
 
 /** returns the recovered orders, reflecting the latest CV if adapt_order */
-void C3Approximation::recover_function_train_orders(UShortArray& ft_orders)
+void C3Approximation::
+recover_function_train_orders(const std::vector<OneApproxOpts*>& a_opts)
 {
   // returns the recovered orders, reflecting the latest CV if adapt_order
 
   // Note: this recovery is not keyed and must transfer results from
-  // one_approx_opts_get_nparams() to keyed C3FnTrainData::recoveredBasisOrders
+  // one_approx_opts_get_nparams() to keyed C3FnTrainData::recoveredOrders
   // within build() immediately following the regression solve
 
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   size_t v, num_v = data_rep->numVars;
-  ft_orders.resize(num_v);
-  std::vector<OneApproxOpts*>& a_opts = data_rep->oneApproxOpts;
+  UShortArray ft_orders(num_v);
   for (v=0; v<num_v; ++v)
     ft_orders[v] = one_approx_opts_get_nparams(a_opts[v]) - 1;
+
+  levApproxIter->second.recovered_orders(ft_orders);
 }
 
 
@@ -108,9 +113,9 @@ bool C3Approximation::max_rank_advancement_available()
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   size_t max_r = shared_data_rep->max_rank(), // adapted value
       v, num_v = shared_data_rep->numVars;
-  SizetVector ft_ranks;  recover_function_train_ranks(ft_ranks);
+  const SizetVector& ft_ranks = levApproxIter->second.recovered_ranks();
   for (v=1; v<num_v; ++v) // ranks len = num_v+1 with 1's @ ends
-    if (ft_ranks[v] == max_r) // recovery potentially limited by bound
+    if (ft_ranks[v] >= max_r) // recovery potentially limited by bound
       return true;
   return false;
 }
@@ -121,10 +126,10 @@ bool C3Approximation::max_order_advancement_available()
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
   unsigned short max_o = shared_data_rep->max_order(); // adapted value
-  const UShortArray& ft_ords = levApproxIter->second.ft_orders();
+  const UShortArray& ft_ords = levApproxIter->second.recovered_orders();
   size_t v, num_v = shared_data_rep->numVars;
   for (v=0; v<num_v; ++v) // ords len = num_v
-    if (ft_ords[v] == max_o) // recovery potentially limited by curr bnd
+    if (ft_ords[v] >= max_o) // recovery potentially limited by curr bnd
       return true;
   return false;
 }
@@ -183,9 +188,9 @@ void C3Approximation::build()
   // this should precede any solves, including the cross-validation loop(s)
   ft_regress_set_seed(ftr, data_rep->randomSeed);
 
-  size_t r_adapt = data_rep->adaptRank ? 1 : 0;
-  ft_regress_set_adapt(ftr, r_adapt);
-  if (r_adapt) {
+  size_t adapt_r = (data_rep->adaptRank && max_r > start_r) ? 1 : 0;
+  ft_regress_set_adapt(ftr, adapt_r);
+  if (adapt_r) {
     ft_regress_set_kickrank(ftr, kick_r); // default is 1
 
     // if not user-specified, use internal C3 default (in src/lib_superlearn/
@@ -226,18 +231,23 @@ void C3Approximation::build()
   // Pack FT training data
   // ---------------------
 
-  const Pecos::SDVArray& sdv_array = approxData.variables_data();
-  const Pecos::SDRArray& sdr_array = approxData.response_data();
   size_t ndata = approxData.points();
+
+  // Manage scaling in a localized manner for now: scale the data here and then
+  // unscale the FT at bottom.  Scaling is important for FT regression with
+  // absolute tolerances, especially for small ML/MF discrepancy expansions.
+  bool apply_scaling = (data_rep->respScaling) ?
+    approxData.compute_response_function_scaling() : false;
 
   // Training data for 1 QoI: transfer data from approxData to double* for C3
   double* xtrain = (double*)calloc(num_v*ndata, sizeof(double)); // vars
   double* ytrain = (double*)calloc(ndata,       sizeof(double)); // QoI
   for (i=0; i<ndata; ++i) {
-    const RealVector& c_vars = sdv_array[i].continuous_variables();
+    const RealVector& c_vars = approxData.continuous_variables(i);
     for (j=0; j<num_v; j++)
       xtrain[j + i*num_v] = c_vars[j];
-    ytrain[i] = sdr_array[i].response_function();
+    ytrain[i] = (apply_scaling) ? approxData.scaled_response_function(i) :
+      approxData.response_function(i);
   }
 #ifdef DEBUG
   RealMatrix  in(Teuchos::View, xtrain, num_v, num_v, ndata);
@@ -250,8 +260,10 @@ void C3Approximation::build()
   // ---------------------------------------
   // > separate from adapt_rank inner loop: one/both/neither can be used
 
-  unsigned short start_o, kick_o, max_o;
-  if (data_rep->adaptOrder) { // CV for basis orders, with/without adapt_rank
+  unsigned short max_o = data_rep->max_order(), kick_o,
+    start_o = find_max(data_rep->start_orders()); // flatten dim_pref
+  bool adapt_o = (data_rep->adaptOrder && max_o > start_o);
+  if (adapt_o) { // CV for basis orders, with/without adapt_rank
 
     // initialize cross validation options
     size_t kfold = (ndata > 5) ? 5 : ndata; // ndata = max folds = leave-one-out
@@ -267,8 +279,7 @@ void C3Approximation::build()
     struct CVOptGrid * cvgrid = cv_opt_grid_init(1); // allocate a 1D grid
     cv_opt_grid_set_verbose(cvgrid, cvverbose);
     // define a scalar range of (isotropic) basis orders
-    start_o = find_max(data_rep->start_orders()); // flatten dim_pref
-    kick_o  = data_rep->kickOrder;  max_o = data_rep->max_order();
+    kick_o = data_rep->kickOrder;
     size_t num_opts = 1 + (max_o - start_o) / kick_o;
     SizetArray np_opts(num_opts);
     np_opts[0] = start_o + 1; // offset by 1 for nparams
@@ -280,14 +291,6 @@ void C3Approximation::build()
 
     // run cross validation with ftr setup
     cross_validate_grid_opt(cv, cvgrid, ftr, optimizer);
-
-    // this is needed for advancement_available but does not persist to next
-    // build(), so store in C3FnTrainData (don't update SharedC3ApproxData).
-    // > Note: making this update conditional on adaptOrder avoids a copy in
-    //   the non-adaptive case, but induces the need for conditionals when
-    //   there is need to retrieve basis order data.
-    recover_function_train_orders(levApproxIter->second.ft_orders());
-
     // free the cross validation grid and cross validator
     cv_opt_grid_free(cvgrid); cross_validate_free(cv);
   }
@@ -295,13 +298,18 @@ void C3Approximation::build()
   // -------------------------------------------
   // Solve the regression problem to form the FT
   // -------------------------------------------
-  // > if CV active above, this uses the final CV config with the full data set
-
-  // Build FT model (using full data set, as compared to best config identified
-  // using partial fold data in CV)
-  struct FunctionTrain * ft
+  // If CV grid is active above for adapt_order or adapt_{rank,order}, this
+  // regress_run uses the full data set with the best CV config found.  Note:
+  // if adaptive rank selection is active within the order-based CV grid, we
+  // perform this selection again here since (1) the data partition for rank
+  // CV is expanded from before (no order-based CV fold) and (2) rank-based
+  // selection involves more fine-grained adaptation (per variable).
+  struct FunctionTrain * ft_soln
     = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
-  ftd.function_train(ft);
+  // cache C3FTD recovered{Ranks,Orders} prior to any transformation (unscaling)
+  std::vector<OneApproxOpts*>& a_opts = data_rep->oneApproxOpts;
+  if (data_rep->adaptRank)  recover_function_train_ranks(ft_soln);
+  if (data_rep->adaptOrder) recover_function_train_orders(a_opts);
   // Important distinction among derivative cases:
   // > expansionCoeffGradFlag: expansions of derivs w.r.t. inactive/non-build/
   //   non-random vars (not yet supported, but would be managed here)
@@ -314,29 +322,64 @@ void C3Approximation::build()
   //      on flags / potential for future deriv evals, compute derivative
   //      expansions on demand using helper fns within evaluators
   //if (...supportDerivEvals...) {
-  //  struct FT1DArray * ftg = function_train_gradient(ft);
-  //  ftd.ft_gradient(ftg);
-  //  ftd.ft_hessian(ft1d_array_jacobian(ftg));
+  //  struct FT1DArray * ftg_soln = function_train_gradient(ft_soln);
+  //  ftd.ft_gradient(ftg_soln);
+  //  ftd.ft_hessian(ft1d_array_jacobian(ftg_soln));
   //}
-  if (data_rep->outputLevel > SILENT_OUTPUT) {
+  //if (data_rep->outputLevel > SILENT_OUTPUT) {
     Cout << "\nFunction train build() results:\n  Ranks ";
-    if (data_rep->adaptRank)
+    if (adapt_r)
       Cout << "(adapted with start = " << start_r << " kick = " << kick_r
 	   << " max = " << max_r << "):\n";
     else Cout << "(non-adapted):\n";
-    write_data(Cout, function_train_get_ranks(ft), num_v+1);
+    write_data(Cout, function_train_get_ranks(ft_soln), num_v+1);
     Cout << "  Polynomial order ";
-    if (data_rep->adaptOrder)
+    if (adapt_o)
       Cout << "(adapted with start = " << start_o << " kick = " << kick_o
 	   << " max = " << max_o << "):\n";
     else Cout << "(non-adapted):\n";
-    std::vector<OneApproxOpts*>& a_opts = data_rep->oneApproxOpts;
     for (i=0; i<num_v; ++i)
       Cout << "                     " << std::setw(write_precision+7)
 	   << one_approx_opts_get_nparams(a_opts[i]) - 1 << '\n';
-    Cout << "  C3 regression size:  " << function_train_get_nparams(ft)
-	 << std::endl;
+    Cout << "  C3 regression size:  " << function_train_get_nparams(ft_soln);
+    if (apply_scaling) Cout << "  Response scaling on";
+    Cout << std::endl;
+  //}
+
+  // Note: could set c3Max{Rank,Order}Advance after current build instead of
+  // preceding next build (using cached ranks,orders) if advancement_available()
+  // was the only concern.  However, regression_size() is another requirement
+  // prior to next build, so just cache the relevant build data rather than a
+  // potentially growing list of inferences from that data.
+  //if (shared_data_rep->c3AdvancementType & MAX_RANK_ADVANCEMENT) {
+  //  if (test_ranks_without_requiring_cached_data)
+  //    shared_data_rep->max_rank_advancement(true);
+  //}
+  //if (shared_data_rep->c3AdvancementType & MAX_ORDER_ADVANCEMENT) {
+  //  if (test_orders_without_requiring_cached_data)
+  //    shared_data_rep->max_order_advancement(true);
+  //}
+
+  // NOTE: function_train_sum will increment the rank by 1 which can interfere
+  // with the adaptation logic, but since the [start,max] range is reinitialized
+  // each time, this may be Ok as a final step (roll-ups are not impacted, but
+  // posthumous rank checks would be).
+  if (apply_scaling) { // unscale the FT expansion: fn = y * range + min
+    // emulate c3axpy with epsilon=0 (no rounding applied for scale + constant)
+    const RealRealPair& factors = approxData.response_function_scaling();
+    function_train_scale(ft_soln, factors.second); // scaling applied in place
+    struct FunctionTrain * ft_offset
+      = function_train_constant(factors.first, data_rep->multiApproxOpts);
+    // this operation will increase the FT rank by 1:
+    struct FunctionTrain * sum_ft = function_train_sum(ft_soln, ft_offset);
+    ftd.function_train(sum_ft); // store result
+    function_train_free(ft_soln);  function_train_free(ft_offset);
   }
+  else
+    ftd.function_train(ft_soln); // store result
+
+  // store the current scaling values
+  //ftd.scaling_factors(range, min_fn); // multiplicative,additive factors
 
   // free approximation stuff
   free(xtrain);          xtrain    = NULL;
@@ -359,7 +402,7 @@ void C3Approximation::rebuild()
 
 void C3Approximation::pop_coefficients(bool save_data)
 {
-  const UShortArray& key = sharedDataRep->activeKey;
+  const Pecos::ActiveKey& key = sharedDataRep->activeKey;
 
   // likely overkill, but multilevel roll up after increment modifies and
   // then restores active key
@@ -382,7 +425,7 @@ void C3Approximation::push_coefficients()
 {
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  const UShortArray& key = data_rep->activeKey;
+  const Pecos::ActiveKey& key = data_rep->activeKey;
 
   // synchronize expansionCoeff{s,Grads} and approxData
   active_model_key(key);
@@ -392,7 +435,7 @@ void C3Approximation::push_coefficients()
   prevC3FTData = active_ftd.copy(); // deep copy
 
   // retrieve a previously popped state
-  std::map<UShortArray, std::deque<C3FnTrainData> >::iterator prv_it
+  std::map<Pecos::ActiveKey, std::deque<C3FnTrainData> >::iterator prv_it
     = poppedLevelApprox.find(key);
   bool err_flag = false;
   if (prv_it == poppedLevelApprox.end())
@@ -430,7 +473,7 @@ void C3Approximation::combine_coefficients()
 
   // Option 1: adds x to y and overwrites y (I allocate x and y)
   combinedC3FTData.free_ft();
-  std::map<UShortArray, C3FnTrainData>::iterator it = levelApprox.begin();
+  std::map<Pecos::ActiveKey, C3FnTrainData>::iterator it = levelApprox.begin();
   struct FunctionTrain * y = function_train_copy(it->second.function_train());
   ++it;
   // Note: the FT rounding tolerance is relative and default (1.e-8) is too
@@ -439,10 +482,20 @@ void C3Approximation::combine_coefficients()
   // accuracy gain in some numerical experiments (dakota_uq_heat_eq_mlft.in).
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  Real arith_tol = data_rep->statsRoundingTol;
+  Real rnd_tol = data_rep->statsRoundingTol;
   struct MultiApproxOpts* ma_opts = data_rep->multiApproxOpts;
-  for (; it!= levelApprox.end(); ++it)
-    c3axpy(1., it->second.function_train(), &y, arith_tol, ma_opts);
+  struct FunctionTrain *z;
+  for (; it!= levelApprox.end(); ++it) {
+    //c3axpy(1., it->second.function_train(), &y, arith_tol, ma_opts);
+
+    // Streamline c3axpy steps for this use case (avoid scale + its inner copy)
+    z = function_train_sum(it->second.function_train(), y);
+    function_train_free(y);
+    if (rnd_tol > 0.) // round scales as rank^3 so do each pass, not at end
+      { y = function_train_round(z, rnd_tol, ma_opts); function_train_free(z); }
+    else
+      y = z;
+  }
   combinedC3FTData.function_train(y);
 
   // Could also do this at the C3FnTrainData level with ft1d_array support:
@@ -487,7 +540,7 @@ void C3Approximation::combined_to_active_coefficients(bool clear_combined)
 
 void C3Approximation::clear_inactive_coefficients()
 {
-  std::map<UShortArray, C3FnTrainData>::iterator it = levelApprox.begin();
+  std::map<Pecos::ActiveKey, C3FnTrainData>::iterator it = levelApprox.begin();
   while (it != levelApprox.end())
     if (it == levApproxIter) // preserve active
       ++it;
@@ -506,11 +559,11 @@ void C3Approximation::link_multilevel_surrogate_data()
 
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  switch (data_rep->discrepancyType) {
-  case Pecos::DISTINCT_DISCREP:  case Pecos::RECURSIVE_DISCREP: {
+  switch (data_rep->discrepReduction) {
+  case Pecos::DISTINCT_DISCREPANCY:  case Pecos::RECURSIVE_DISCREPANCY: {
     // push another SurrogateData instance for modSurrData
     // (allows consolidation of Approximation::push/pop operations)
-    const UShortArray& key = approxData.back().active_key();
+    const Pecos::ActiveKey& key = approxData.back().active_key();
     Pecos::SurrogateData mod_surr(key); // new instance
     approxData.push_back(mod_surr);
     // Note: {orig,mod}SurrDataIndex set to {0,1} in SharedC3ApproxData::
@@ -528,7 +581,7 @@ void C3Approximation::synchronize_surrogate_data()
 {
   std::shared_ptr<SharedC3ApproxData> data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
-  const UShortArray& active_key = data_rep->activeKey;
+  const Pecos::ActiveKey& active_key = data_rep->activeKey;
   if (active_key != approxData.active_key()) {
     PCerr << "Error: active key mismatch in C3Approximation::"
 	  << "synchronize_surrogate_data()." << std::endl;
@@ -536,14 +589,14 @@ void C3Approximation::synchronize_surrogate_data()
   }
 
   // level 0: approxData non-aggregated key stores raw data
-  short discrep_type = data_rep->discrepancyType,
+  short discrep_type = data_rep->discrepReduction,
         combine_type = data_rep->combineType;
-  if (!discrep_type ||
-      !Pecos::DiscrepancyCalculator::aggregated_key(active_key))
+  if (!discrep_type || !active_key.aggregated() ||
+      !active_key.raw_with_reduction_data())
     return;
 
   switch (discrep_type) {
-  case Pecos::RECURSIVE_DISCREP:
+  case Pecos::RECURSIVE_DISCREPANCY:
     // When using a recursive discrepancy with additive/multiplicative corr,
     // we will subtract/divide the current polynomial approx prediction from
     // the new surrData so that we form an expansion on the surplus.  Prior
@@ -551,7 +604,7 @@ void C3Approximation::synchronize_surrogate_data()
     // will be stored within surrData in a format that compute() can utilize.
     generate_synthetic_data(approxData, active_key, combine_type);
     break;
-  //case Pecos::DISTINCT_DISCREP:
+  //case Pecos::DISTINCT_DISCREPANCY:
     // When using a distinct discrepancy with additive/multiplicative corr,
     // we will subtract/divide the HF,LF pairs.  In this case, the data is
     // already provided within surrData and specific pairings are identified
@@ -564,13 +617,13 @@ void C3Approximation::synchronize_surrogate_data()
 
 void C3Approximation::
 generate_synthetic_data(Pecos::SurrogateData& surr_data,
-			const UShortArray& active_key, short combine_type)
+			const Pecos::ActiveKey& active_key, short combine_type)
 {
   // Modeled after Pecos::PolynomialApproximation::generate_synthetic_data()
 
-  UShortArray hf_key, lf0_key, lf_hat_key; // LF-hat in surplus case
-  Pecos::DiscrepancyCalculator::extract_keys(active_key, hf_key, lf_hat_key);
-  lf0_key = surr_data.filtered_key(Pecos::RAW_DATA_FILTER, 0);
+  Pecos::ActiveKey hf_key, lf0_key, lf_hat_key; // LF-hat in surplus case
+  active_key.extract_keys(hf_key, lf_hat_key);
+  lf0_key = surr_data.filtered_key(Pecos::SINGLETON_FILTER, 0); // *** Note: ActiveKey first sorts on group id
 
   // initialize surr_data[lf_hat_key]
   surr_data.active_key(lf_hat_key); // active key restored at fn end
@@ -585,9 +638,9 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
 
   // extract all discrepancy data sets (which have expansions supporting
   // stored_{value,gradient} evaluations)
-  const std::map<UShortArray, Pecos::SDRArray>& discrep_resp_map
-    = surr_data.filtered_response_data_map(Pecos::AGGREGATED_DATA_FILTER);
-  std::map<UShortArray, Pecos::SDRArray>::const_iterator cit;
+  const std::map<Pecos::ActiveKey, Pecos::SDRArray>& discrep_resp_map =
+    surr_data.filtered_response_data_map(Pecos::RAW_WITH_REDUCTION_DATA_FILTER);
+  std::map<Pecos::ActiveKey, Pecos::SDRArray>::const_iterator cit;
   size_t i, num_pts = hf_sdr_array.size();
   switch (combine_type) {
   case Pecos::MULT_COMBINE: {
@@ -961,7 +1014,7 @@ const RealSymMatrix& C3Approximation::hessian(const Variables& vars)
 
 // used for stored contributions to synthetic data:
 Real C3Approximation::
-stored_value(const RealVector& c_vars, const UShortArray& key)
+stored_value(const RealVector& c_vars, const Pecos::ActiveKey& key)
 {
   return function_train_eval(levelApprox[key].function_train(),
 			     c_vars.values());
@@ -971,7 +1024,7 @@ stored_value(const RealVector& c_vars, const UShortArray& key)
 /* TO DO: synthetic data can utilize *_nonbasis_variables() derivative cases,
    but code below differentiates the FT w.r.t. the basis vars
 const RealVector& C3Approximation::
-gradient(const Variables& vars, const UShortArray& key)
+gradient(const Variables& vars, const Pecos::ActiveKey& key)
 {
   check_function_gradient(key); // compute on demand
 
@@ -1002,28 +1055,33 @@ size_t C3Approximation::regression_size()
   unsigned short max_o = data_rep->max_order();
   switch (data_rep->c3AdvancementType) {
   case START_RANK_ADVANCEMENT: { // use start ranks + recovered orders
-    size_t v, num_v = data_rep->numVars, start_r = data_rep->start_rank();
-    SizetVector start_ranks(num_v + 1, false);
-    start_ranks[0] = start_ranks[num_v] = 1;
-    for (v=1; v<num_v; ++v) start_ranks[v] = start_r;
-    const UShortArray& ft_orders = (data_rep->adaptOrder) ?
-      levApproxIter->second.ft_orders() : data_rep->start_orders();
-    return regression_size(start_r, max_r, ft_orders, max_o);  break;
+    SizetVector start_r;  data_rep->assign_start_ranks(start_r);
+    const UShortArray& ft_o = (data_rep->adaptOrder) ?
+      levApproxIter->second.recovered_orders() : data_rep->start_orders();
+    return regression_size(start_r, max_r, ft_o, max_o);  break;
   }
   case START_ORDER_ADVANCEMENT: { // use start orders + recovered ranks
     const UShortArray& start_o = data_rep->start_orders(); // anisotropic is OK
-    SizetVector ft_ranks; recover_function_train_ranks(ft_ranks);
-    return regression_size(ft_ranks, max_r, start_o, max_o);  break;
+    if (data_rep->adaptRank)
+      return regression_size(levApproxIter->second.recovered_ranks(),
+			     max_r, start_o, max_o);
+    else {
+      SizetVector start_r;  data_rep->assign_start_ranks(start_r);
+      return regression_size(start_r, max_r, start_o, max_o);
+    }
+    break;
   }
   default: { // use recovered orders + recovered ranks
-
-    // Simpler approach (not used to retain consistency with above)
-    //return function_train_get_nparams(ftd.function_train());
-
-    SizetVector ft_ranks; recover_function_train_ranks(ft_ranks);
-    const UShortArray& ft_orders = (data_rep->adaptOrder) ?
-      levApproxIter->second.ft_orders() : data_rep->start_orders();
-    return regression_size(ft_ranks, max_r, ft_orders, max_o);  break;
+    const UShortArray& ft_o = (data_rep->adaptOrder) ?
+      levApproxIter->second.recovered_orders() : data_rep->start_orders();
+    if (data_rep->adaptRank)
+      return regression_size(levApproxIter->second.recovered_ranks(),
+			     max_r, ft_o, max_o);
+    else {
+      SizetVector start_r;  data_rep->assign_start_ranks(start_r);
+      return regression_size(start_r, max_r, ft_o, max_o);
+    }
+    break;
   }
   }
 }
