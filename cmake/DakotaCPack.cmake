@@ -6,9 +6,15 @@ macro(dakota_cpack_initialize)
 
   set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
   if(WIN32)
-    # We always build 32-bit Windows binaries and don't want to confuse users
-    # with the processor name from a 64-bit build host
-    set(local_arch "${CMAKE_SYSTEM_NAME}.x86")
+    # CMAKE_SYSTEM_PROCESSOR might be AMD64 on Windows which might cause confusion
+    # consider adopting more CMake standard package names
+    if(CMAKE_VS_PLATFORM_NAME)
+      if(CMAKE_VS_PLATFORM_NAME STREQUAL "Win32")
+        set(local_arch "${CMAKE_SYSTEM_NAME}.x86")
+      else()
+        set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_VS_PLATFORM_NAME}")
+      endif()
+    endif()
   endif()
 
   # TODO: insert distribution type into package names, i.e., instead of 
