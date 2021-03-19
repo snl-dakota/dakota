@@ -206,7 +206,7 @@ def sphere(**kwargs):
         for ii in range(d):
             xi = xx[ii]
             tmp_sum += xi**2
-        # DTS: looks like f is not defined yet
+        f = tmp_sum
         retval['fns'] = np.array([f])
 
     return retval
