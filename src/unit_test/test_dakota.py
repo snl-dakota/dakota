@@ -10,55 +10,56 @@
 # Tests of top-level Dakota Python interface
 
 import sys
-#import numpy as np
+#import numpy as np # DTS: looks like numpy is already imported if Dakota
+# is built with Numpy because get_variables_values_np(daklib) works fine
+# when this import is commented out
+
+import dakpy # DTS: moving import to top of file
 
 # Optionally append a path to the python library, passed as argv[1]
 if len(sys.argv) > 1:
     dakpy_lib_path = sys.argv[1]
     sys.path.append(dakpy_lib_path)
 
+# DTS: changed input variable dictionary name from kwargs to params
+# because it is a dict that contains the contents of the Dakota
+# parameters file and not an arbitrary list of keyword arguments.
+def text_book(params):
 
-def text_book(kwargs):
+    num_fns = params['functions']
+    x = params['cv']
+    ASV = params['asv']
 
-    num_fns = kwargs['functions']
-    x = kwargs['cv']
-    ASV = kwargs['asv']
-
-    retval = dict([])
+    retval = {}
 
     if (ASV[0] & 1): # **** f:
         fn = 0.0
         for val in x:
-            fn += pow(val-1.0, 4)
-        f = [fn]
-        retval['fns'] = f
+            fn += pow(val - 1.0, 4)
+        retval['fns'] = [fn]
 
     # The gradient format causes Dakota to complain that the matrix must have 1 row ...
-    #   I think it does. ? 
+    # I think it does. ? 
     if (ASV[0] & 2): # **** df/dx:
         g = []
         for val in x:
-            g.append( 4.0*pow(val-1.0, 3) )
+            g.append(4.0 * pow(val - 1.0, 3))
         retval['fnGrads'] = [g]
 
     if (ASV[0] & 4): # **** d^2f/dx^2:
         raise("Hessians not currently supported for this driver.")
 
-    return(retval)
+    return retval
 
 
-def text_book_fn_only(kwargs):
+def text_book_fn_only(params):
 
-    retval = dict([])
+    retval = {}
 
-    all_vals = text_book(kwargs)
+    all_vals = text_book(params)
     retval['fns'] = all_vals['fns']
 
-    return(retval)
-
-
-import dakpy
-
+    return retval
 
 # Probably don't want / need this...
 def test_cmd():
@@ -95,47 +96,61 @@ def test_lib():
           no_gradients
           no_hessians
 """
+
     print("\n+++ Constructing LibEnv...\n")
     
     #### Need to test this use case too - RWH ####
+    # DTS: This works fine.
     #daklib = dakpy.LibEnv(callback=text_book, input_string = text_book_input)
 
     # Try a collection of callbacks
-    multiple_callbacks = { "interface_id_1" : text_book,
-                           "interface_id_2" : text_book_fn_only
-                         }
-    daklib = dakpy.LibEnv(callbacks=multiple_callbacks, input_string = text_book_input)
+    multiple_callbacks = {"interface_id_1": text_book,
+                          "interface_id_2": text_book_fn_only}
+
+    daklib = dakpy.LibEnv(callbacks=multiple_callbacks,
+                          input_string=text_book_input)
+
     print("\n+++ Running LibEnv...\n")
     daklib.execute()
+
     print("\n+++ Final Functions:\n")
-    print("\tUsing free fn: "+str(dakpy.get_response_fn_val(daklib)))
+    print("\tUsing free fn: " + str(dakpy.get_response_fn_val(daklib)))
     resp_res = daklib.response_results()
-    print("\tUsing wrapped objs: "+str(resp_res.function_value(0)))
+    print("\tUsing wrapped objs: " + str(resp_res.function_value(0)))
     assert(resp_res.function_value(0) < 1.e-20)
+
     vars_res = daklib.variables_results()
-    #print("\tNumber active continuous variables: "+str(vars_res.num_active_cv()))
+    print("\tNumber active continuous variables: " + str(vars_res.num_active_cv()))
     assert(vars_res.num_active_cv() == 3)
+
     # --- Requires numpy
+    # DTS: numpy variable read working -- commenting out for those who are not
+    # building Dakota with Numpy
     #dak_vars = dakpy.get_variable_values_np(daklib)
     #print(dak_vars)
-    # --- Default: uses python arrays
+
+    # --- Default: uses python arrays # DTS: this is a list
     dak_vars2 = dakpy.get_variable_values(daklib)
-    #print(dak_vars2)
+    print("Python object dak_vars2 is a " + str(type(dak_vars2)) + ".")
+    print(dak_vars2)
+
     target = 1.0;
     max_tol = 1.e-4;
     assert(abs((dak_vars2[0] - target)/target) < max_tol)
     assert(abs((dak_vars2[1] - target)/target) < max_tol)
     assert(abs((dak_vars2[2] - target)/target) < max_tol)
+
     print("\n+++ Done LibEnv.\n")
 
     # Conditionally test values written to the h5 file if h5py is available
     test_dakota_has_h5py = True
     try:
         import h5py
+        print("Module h5py imported.\n")
         # This variant did not seem to work ...
         #__import__(h5py)
     except ImportError:
-        print("Module h5py not found. Skipping check of hdf5 file values.")
+        print("Module h5py not found. Skipping check of hdf5 file values.\n")
         test_dakota_has_h5py = False
 
     if test_dakota_has_h5py:
@@ -146,8 +161,6 @@ def test_lib():
             assert(abs((hvars[0] - target)/target) < max_tol)
             assert(abs((hvars[1] - target)/target) < max_tol)
             assert(abs((hvars[2] - target)/target) < max_tol)
-
-
 
 if __name__ == "__main__":
 
