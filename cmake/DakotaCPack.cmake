@@ -39,6 +39,7 @@ macro(dakota_cpack_prune_distro)
     ".*\\\\.git/" ".*\\\\.git.*"
     "^${Dakota_SOURCE_DIR}/packages/external/fftw/"
     "^${Dakota_SOURCE_DIR}/packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/"
+    "^${Dakota_SOURCE_DIR}/dakota-examples"
     )
 
   # Only internal full (developer version) has these things

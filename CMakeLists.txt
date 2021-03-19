@@ -246,7 +246,7 @@ add_subdirectory(src)
 if(DAKOTA_ENABLE_TESTS)
   add_subdirectory(test)
   if(DAKOTA_TEST_EXAMPLES_REPO)
-    add_subdirectory(test/examples_repo)
+    add_subdirectory(dakota-examples)
   endif()
 endif()
 
