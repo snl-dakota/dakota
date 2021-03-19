@@ -1,9 +1,51 @@
 import numpy as np
+import os
+import time
+import datetime
 
 def unpack_inputs(params):
     x = params['cv']
     ASV = params['asv']
     return x, ASV
+
+### define utils function
+
+## workflow:
+# update_counter()
+# start_diary(counter)
+# random_wait()
+# stop_diary(counter)
+
+def update_counter():
+    if os.path.isfile('counter.log'):
+        counter = np.loadtxt('counter.log')
+        counter += 1 
+        f = open('counter.log', 'w') # overwrite
+        f.write('%d\n' % int(counter))
+        f.close()
+    else:
+        f = open('counter.log', 'w') # overwrite
+        f.write('%d\n' % int(1))
+        f.close()
+    return None
+
+def random_wait(lower_bound, upper_bound):
+    wait_time = np.random.uniform(low=lower_bound, high=upper_bound)
+    time.sleep(wait_time)
+    return None
+
+def start_diary(counter):
+    f = open('diary.log', 'a') # append
+    currentTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    f.write('Start querying counter %d at %s\n' % (counter, currentTime))
+    f.close()
+
+def stop_diary(counter):
+    f = open('diary.log', 'a') # append
+    currentTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    f.write('Stop querying counter %d at %s\n' % (counter, currentTime))
+    f.close()
+
 
 def branin(**kwargs):
     """
