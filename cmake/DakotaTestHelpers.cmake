@@ -384,6 +384,9 @@ function(dakota_add_regression_tests suite_name src_dir)
       set(dest_file_fq
 	"${CMAKE_CURRENT_BINARY_DIR}/${suite_name}-${input_name}/${file}")
       add_file_copy_command("${src_file_fq}" "${dest_file_fq}")
+      file(COPY
+        "${Dakota_SOURCE_DIR}/interfaces/Python/dakota"
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${suite_name}-${input_name})
       list(APPEND suite_copied_files "${dest_file_fq}")
     endforeach()
 
