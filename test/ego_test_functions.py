@@ -267,3 +267,29 @@ def sphere(**kwargs):
 
     counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
+
+def griewank(**kwargs):
+    """
+    arbitrary dimensionality
+    input space: [-600, 600]**d
+    min at (0)**d
+    min value = 0
+    """
+
+    x, ASV = unpack_inputs(kwargs)
+    retval = {}
+
+    if (ASV[0] & 1):
+        d = len(x)
+        tmp_sum = 0
+        prod = 1
+        for ii in range(d):
+            xi = xx[ii]
+            tmp_sum += xi**2/4000
+            prod *= np.cos(xi/np.sqrt(ii))
+        f = tmp_sum - prod + 1
+        retval['fns'] = np.array([f])
+
+    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+    return retval
+
