@@ -71,7 +71,7 @@ def branin(**kwargs):
           + s*(1. - t)*np.cos(x[0]) + s
         retval['fns'] = np.array([f])
 
-    counter = update_counter() - 1; start_diary(); random_wait(10,300); stop_diary();
+    counter = update_counter() - 1; start_diary(counter); random_wait(10,300); stop_diary(counter);
     return retval
 
 def hartmann_3d(**kwargs):
@@ -109,7 +109,7 @@ def hartmann_3d(**kwargs):
         f = -alpha.dot(np.exp(v))
         retval['fns'] = np.array([f])
 
-    counter = update_counter() - 1; start_diary(); random_wait(10,300); stop_diary();
+    counter = update_counter() - 1; start_diary(counter); random_wait(10,300); stop_diary(counter);
     return retval
 
 def hartmann_6d(**kwargs):
@@ -148,7 +148,7 @@ def hartmann_6d(**kwargs):
         f = -alpha.dot(np.exp(v))
         retval['fns'] = np.array([f])
 
-    counter = update_counter() - 1; start_diary(); random_wait(10,300); stop_diary();
+    counter = update_counter() - 1; start_diary(counter); random_wait(10,300); stop_diary(counter);
     return retval
 
 def six_hump_camel(**kwargs):
@@ -166,7 +166,7 @@ def six_hump_camel(**kwargs):
           + (-4. + 4.*x[1]**2)*x[1]**2
         retval['fns'] = np.array([f])
 
-    counter = update_counter() - 1; start_diary(); random_wait(10,300); stop_diary();
+    counter = update_counter() - 1; start_diary(counter); random_wait(10,300); stop_diary(counter);
     return retval
 
 def three_hump_camel(**kwargs):
@@ -183,7 +183,7 @@ def three_hump_camel(**kwargs):
         f = 2.*x[0]**2 - 1.05*x[0]**4 + x[0]**6/6. + x[0]*x[1] + x[1]**2
         retval['fns'] = np.array([f])
 
-    counter = update_counter() - 1; start_diary(); random_wait(10,300); stop_diary();
+    counter = update_counter() - 1; start_diary(counter); random_wait(10,300); stop_diary(counter);
     return retval
 
 def rosenbrock(**kwargs):
@@ -208,7 +208,7 @@ def rosenbrock(**kwargs):
         f = tmp_sum
         retval['fns'] = np.array([f])
 
-    counter = update_counter() - 1; start_diary(); random_wait(10,300); stop_diary();
+    counter = update_counter() - 1; start_diary(counter); random_wait(10,300); stop_diary(counter);
     return retval
 
 def rotated_hyper_ellipsoid(**kwargs):
@@ -236,7 +236,7 @@ def rotated_hyper_ellipsoid(**kwargs):
         f = outer
         retval['fns'] = np.array([f])
 
-    counter = update_counter() - 1; start_diary(); random_wait(10,300); stop_diary();
+    counter = update_counter() - 1; start_diary(counter); random_wait(10,300); stop_diary(counter);
     return retval
 
 def sphere(**kwargs):
@@ -259,5 +259,5 @@ def sphere(**kwargs):
         f = tmp_sum
         retval['fns'] = np.array([f])
 
-    counter = update_counter() - 1; start_diary(); random_wait(10,300); stop_diary();
+    counter = update_counter() - 1; start_diary(counter); random_wait(10,300); stop_diary(counter);
     return retval
