@@ -1,12 +1,20 @@
 #@ s*: ReqFiles=ego_test_functions.py
 
+environment
+  tabular_data
+    tabular_data_file = 'dakota_ego_benchmarks.dat'
+
 method,
     efficient_global
         gaussian_process surfpack #s0,#s2
 #        gaussian_process experimental #s1,#s3
         seed = 123457
-        initial_samples = 10
-    max_iterations = 50
+        initial_samples = 6
+        batch_size = 4
+        exploration = 2
+        # blocking synchronization
+        # nonblocking synchronization
+    max_iterations = 20
 
 variables,
     continuous_design = 2
