@@ -308,6 +308,6 @@ def ackley(**kwargs):
         term1 = -a * np.exp(-b * np.sqrt(sum1/d))
         term2 = -np.exp(sum2/d)
         f = term1 + term2 + a + np.exp(1)
-        retval['fns'] = f
+        retval['fns'] = np.array([f])
         counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
