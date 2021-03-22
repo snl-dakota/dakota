@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import os
 import time
 import datetime
@@ -76,8 +77,7 @@ def branin(**kwargs):
         f = a*(x[1] - b*x[0]*x[0] + c*x[0] - r)**2 \
           + s*(1. - t)*np.cos(x[0]) + s
         retval['fns'] = np.array([f])
-
-    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
 
 def hartmann_3d(**kwargs):
@@ -114,8 +114,7 @@ def hartmann_3d(**kwargs):
     if (ASV[0] & 1):
         f = -alpha.dot(np.exp(v))
         retval['fns'] = np.array([f])
-
-    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
 
 def hartmann_6d(**kwargs):
@@ -153,8 +152,7 @@ def hartmann_6d(**kwargs):
     if (ASV[0] & 1):
         f = -alpha.dot(np.exp(v))
         retval['fns'] = np.array([f])
-
-    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
 
 def six_hump_camel(**kwargs):
@@ -171,8 +169,7 @@ def six_hump_camel(**kwargs):
         f = (4. - 2.1*x[0]**2 + x[0]**4/3.)*x[0]**2 + x[0]*x[1] \
           + (-4. + 4.*x[1]**2)*x[1]**2
         retval['fns'] = np.array([f])
-
-    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
 
 def three_hump_camel(**kwargs):
@@ -188,8 +185,7 @@ def three_hump_camel(**kwargs):
     if (ASV[0] & 1):
         f = 2.*x[0]**2 - 1.05*x[0]**4 + x[0]**6/6. + x[0]*x[1] + x[1]**2
         retval['fns'] = np.array([f])
-
-    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
 
 def rosenbrock(**kwargs):
@@ -213,8 +209,7 @@ def rosenbrock(**kwargs):
             tmp_sum += new;
         f = tmp_sum
         retval['fns'] = np.array([f])
-
-    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
 
 def rotated_hyper_ellipsoid(**kwargs):
@@ -241,8 +236,7 @@ def rotated_hyper_ellipsoid(**kwargs):
         end
         f = outer
         retval['fns'] = np.array([f])
-
-    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
 
 def sphere(**kwargs):
@@ -264,8 +258,7 @@ def sphere(**kwargs):
             tmp_sum += xi**2
         f = tmp_sum
         retval['fns'] = np.array([f])
-
-    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
 
 def griewank(**kwargs):
@@ -275,7 +268,6 @@ def griewank(**kwargs):
     min at (0)**d
     min value = 0
     """
-
     x, ASV = unpack_inputs(kwargs)
     retval = {}
 
@@ -289,7 +281,31 @@ def griewank(**kwargs):
             prod *= np.cos(xi/np.sqrt(ii))
         f = tmp_sum - prod + 1
         retval['fns'] = np.array([f])
-
-    counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
 
+def ackley(**kwargs):
+    """
+    arbitrary dimensionality
+    input space: [-32.768, 32.768]**d
+    min at (0)**d
+    min value = 0
+    """
+    if (ASV[0] & 1):
+        d = len(xx)
+        c = 2 * math.pi
+        b = 0.2
+        a = 20
+        sum1 = 0
+        sum2 = 0
+        for ii in range(d):
+            xi = xx[ii]
+            sum1 += xi^2
+            sum2 += np.cos(c*xi)
+
+        term1 = -a * np.exp(-b * np.sqrt(sum1/d))
+        term2 = -np.exp(sum2/d)
+        f = term1 + term2 + a + np.exp(1)
+        retval['fns'] = np.array([f])
+        counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
+    return retval
