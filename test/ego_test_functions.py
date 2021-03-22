@@ -203,8 +203,8 @@ def rosenbrock(**kwargs):
         d = len(x) # d: dimensionality
         tmp_sum = 0
         for ii in range(d-2):
-            xi = xx[ii]
-            xnext = xx[ii+1]
+            xi = x[ii]
+            xnext = x[ii+1]
             new = 100*(xnext-xi**2)**2 + (xi-1)**2
             tmp_sum += new;
         f = tmp_sum
@@ -229,7 +229,7 @@ def rotated_hyper_ellipsoid(**kwargs):
         for ii in range(d):
             inner = 0
             for jj in range(ii):
-                xj = xx[jj]
+                xj = x[jj]
                 inner = inner + xj**2;
             end
             outer += inner;
@@ -254,7 +254,7 @@ def sphere(**kwargs):
         d = len(x) # d: dimensionality
         tmp_sum = 0
         for ii in range(d):
-            xi = xx[ii]
+            xi = x[ii]
             tmp_sum += xi**2
         f = tmp_sum
         retval['fns'] = np.array([f])
@@ -276,7 +276,7 @@ def griewank(**kwargs):
         tmp_sum = 0
         prod = 1
         for ii in range(d):
-            xi = xx[ii]
+            xi = x[ii]
             tmp_sum += xi**2/4000
             prod *= np.cos(xi/np.sqrt(ii))
         f = tmp_sum - prod + 1
@@ -292,14 +292,14 @@ def ackley(**kwargs):
     min value = 0
     """
     if (ASV[0] & 1):
-        d = len(xx)
+        d = len(x)
         c = 2 * math.pi
         b = 0.2
         a = 20
         sum1 = 0
         sum2 = 0
         for ii in range(d):
-            xi = xx[ii]
+            xi = x[ii]
             sum1 += xi^2
             sum2 += np.cos(c*xi)
 
