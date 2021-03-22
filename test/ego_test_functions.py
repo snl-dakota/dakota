@@ -291,6 +291,8 @@ def ackley(**kwargs):
     min at (0)**d
     min value = 0
     """
+    x, ASV = unpack_inputs(kwargs)
+    retval = {}
     if (ASV[0] & 1):
         d = len(x)
         c = 2 * math.pi
@@ -300,12 +302,12 @@ def ackley(**kwargs):
         sum2 = 0
         for ii in range(d):
             xi = x[ii]
-            sum1 += xi^2
+            sum1 += xi**2
             sum2 += np.cos(c*xi)
 
         term1 = -a * np.exp(-b * np.sqrt(sum1/d))
         term2 = -np.exp(sum2/d)
         f = term1 + term2 + a + np.exp(1)
-        retval['fns'] = np.array([f])
+        retval['fns'] = f
         counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
     return retval
