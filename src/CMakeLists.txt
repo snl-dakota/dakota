@@ -324,6 +324,10 @@ if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   add_definitions("-DDAKOTA_PYTHON")
   list(APPEND EXT_TPL_LIBS ${Python_LIBRARIES})
 
+  # Pybind11 is also included alongside older Python interface
+  list(APPEND EXT_TPL_INCDIRS ${pybind11_INCLUDE_DIR})
+  add_definitions("-DDAKOTA_PYBIND11")
+
   if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
     message(STATUS "Dakota Python direct interface using NumPy:\n"
       "     Include dirs: ${Python_NumPy_INCLUDE_DIRS}")
@@ -332,10 +336,6 @@ if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   endif()
 
 endif()
-
-# Hard-coded hack to try pybind11
-list(APPEND EXT_TPL_INCDIRS ${pybind11_INCLUDE_DIR})
-add_definitions("-DDAKOTA_PYBIND11")
 
 if(DAKOTA_MODELCENTER)
   add_definitions("-DDAKOTA_MODELCENTER")
