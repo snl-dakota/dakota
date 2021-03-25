@@ -14,12 +14,12 @@ import sys
 # is built with Numpy because get_variables_values_np(daklib) works fine
 # when this import is commented out
 
-import dakpy # DTS: moving import to top of file
 
 # Optionally append a path to the python library, passed as argv[1]
 if len(sys.argv) > 1:
     dakpy_lib_path = sys.argv[1]
     sys.path.append(dakpy_lib_path)
+import dakpy
 
 # DTS: changed input variable dictionary name from kwargs to params
 # because it is a dict that contains the contents of the Dakota
