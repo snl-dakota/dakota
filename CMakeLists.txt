@@ -290,6 +290,6 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "*.f" EXCLUDE 
   )
 
-# Final CPack settings (depends on DAKOTA_GIT_checkout)
+# Final CPack settings
 dakota_cpack_finalize()
 include(CPack)
