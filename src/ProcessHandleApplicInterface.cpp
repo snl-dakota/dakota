@@ -18,6 +18,9 @@
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
 #include <algorithm>
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h> // for wait process status macros (Posix only)
+#endif
 
 namespace Dakota {
 
