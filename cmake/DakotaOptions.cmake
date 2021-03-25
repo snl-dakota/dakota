@@ -88,6 +88,10 @@ option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
 
 # Does not yet exist and needs a better name:
 ##option(DAKOTA_PYTHON_TOP_INTERFACE "Top-level Dakota Python interface" OFF)
+if(DAKOTA_PYTHON_DIRECT_INTERFACE)
+  set(DAKOTA_PYBIND11 ON CACHE BOOL
+    "Dakota using Pybind11 for interfaces.")
+endif()
 
 # Requires Pybind11; default OFF to avoid default library dependencies
 option(DAKOTA_PYTHON_SURROGATES

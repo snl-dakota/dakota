@@ -5235,6 +5235,7 @@
           </keyword>
 	      <!-- TODO: processors per analysis? -->
 	      <keyword id="matlab" name="matlab" code="{N_ifm(type,interfaceType_MATLAB_INTERFACE)}" label="Matlab Interface "  complexity="1"/>
+              <keyword id="pybind11" name="pybind11" code="{N_ifm(type,interfaceType_PYBIND11_INTERFACE)}" label="Pybind11 Interface "  complexity="1"/>
 	      <!-- #	  | modelcenter {N_ifm(type,interfaceType_MC_INTERFACE)}
                #	  | plugin {N_ifm(type,interfaceType_PLUGIN_INTERFACE)}
 	      -->

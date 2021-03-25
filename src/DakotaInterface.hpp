@@ -299,6 +299,9 @@ public:
   /// function to check interfaceRep (does this envelope contain a letter?)
   bool is_null() const;
 
+  /// function to return the letter
+  std::shared_ptr<Interface> interface_rep();
+
   /// set the evaluation tag prefix (does not recurse)
   void eval_tag_prefix(const String& eval_id_str, bool append_iface_id = true);
 
@@ -509,6 +512,9 @@ inline bool Interface::iterator_eval_dedicated_master() const
 
 inline bool Interface::is_null() const
 { return (interfaceRep) ? false : true; }
+
+inline std::shared_ptr<Interface> Interface::interface_rep()
+{ return interfaceRep; }
 
 
 /// global comparison function for Interface

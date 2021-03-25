@@ -34,7 +34,7 @@ macro(dakota_find_python)
     # TODO: fine-grained error messages
     # if(DAKOTA_PYTHON_DIRECT_INTERFACE and NOT Python_Development_FOUND)
 
-    if(DAKOTA_PYTHON_SURROGATES)
+    if(DAKOTA_PYBIND11)
       # This add_subdirectory must be done at top-level so pybind11's
       # CMake functions are pulled in for src/ and below
       add_subdirectory(packages/external/pybind11)

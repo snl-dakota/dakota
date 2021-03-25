@@ -6519,6 +6519,7 @@ static Iface_mp_utype
 	MP2s(interfaceType,GRID_INTERFACE),
 	MP2s(interfaceType,MATLAB_INTERFACE),
 	MP2s(interfaceType,PYTHON_INTERFACE),
+	MP2s(interfaceType,PYBIND11_INTERFACE),
 	MP2s(interfaceType,SCILAB_INTERFACE),
 	MP2s(interfaceType,SYSTEM_INTERFACE),
 	//MP2s(resultsFileFormat,FLEXIBLE_RESULTS), // re-enable when more formats added?
