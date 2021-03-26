@@ -19,7 +19,10 @@ import sys
 if len(sys.argv) > 1:
     dakpy_lib_path = sys.argv[1]
     sys.path.append(dakpy_lib_path)
-import dakpy
+
+# NOTE: users would see:
+#   import dakota.environment as dakenv
+import environment as dakenv
 
 # DTS: changed input variable dictionary name from kwargs to params
 # because it is a dict that contains the contents of the Dakota
@@ -64,7 +67,7 @@ def text_book_fn_only(params):
 # Probably don't want / need this...
 def test_cmd():
     print("\n+++ Constructing CommandLine...\n")
-    dakcmd = dakpy.CommandLine("test_dakota.in")
+    dakcmd = dakenv.CommandLine("test_dakota.in")
     print("\n+++ Running CommandLine...\n")
     dakcmd.execute()
     print("\n+++ Done CommandLine.\n")
@@ -97,24 +100,24 @@ def test_lib():
           no_hessians
 """
 
-    print("\n+++ Constructing LibEnv...\n")
+    print("\n+++ Constructing dakota.environment.study...\n")
     
     #### Need to test this use case too - RWH ####
     # DTS: This works fine.
-    #daklib = dakpy.LibEnv(callback=text_book, input_string = text_book_input)
+    #daklib = dakenv.study(callback=text_book, input_string = text_book_input)
 
     # Try a collection of callbacks
     multiple_callbacks = {"interface_id_1": text_book,
                           "interface_id_2": text_book_fn_only}
 
-    daklib = dakpy.LibEnv(callbacks=multiple_callbacks,
-                          input_string=text_book_input)
+    daklib = dakenv.study(callbacks=multiple_callbacks,
+                               input_string=text_book_input)
 
-    print("\n+++ Running LibEnv...\n")
+    print("\n+++ Running dakota.environment.study...\n")
     daklib.execute()
 
     print("\n+++ Final Functions:\n")
-    print("\tUsing free fn: " + str(dakpy.get_response_fn_val(daklib)))
+    print("\tUsing free fn: " + str(dakenv.get_response_fn_val(daklib)))
     resp_res = daklib.response_results()
     print("\tUsing wrapped objs: " + str(resp_res.function_value(0)))
     assert(resp_res.function_value(0) < 1.e-20)
@@ -126,11 +129,11 @@ def test_lib():
     # --- Requires numpy
     # DTS: numpy variable read working -- commenting out for those who are not
     # building Dakota with Numpy
-    #dak_vars = dakpy.get_variable_values_np(daklib)
+    #dak_vars = dakenv.get_variable_values_np(daklib)
     #print(dak_vars)
 
     # --- Default: uses python arrays # DTS: this is a list
-    dak_vars2 = dakpy.get_variable_values(daklib)
+    dak_vars2 = dakenv.get_variable_values(daklib)
     print("Python object dak_vars2 is a " + str(type(dak_vars2)) + ".")
     print(dak_vars2)
 
@@ -165,7 +168,7 @@ def test_lib():
 if __name__ == "__main__":
 
     print("\n+++ Dakota version:\n")
-    dakpy.version()
+    dakenv.version()
 
     # TODO: these encapsulate the objects so timing info is printed
     # with each test case; better manage destructors.

@@ -110,7 +110,7 @@ namespace python {
 /// Define a Python module that wraps a few top-level dakota functions
 /// Module name is really generic due to overly simple Python
 ///  packaging scheme we're using
-PYBIND11_MODULE(dakpy, m) {
+PYBIND11_MODULE(environment, m) {
 
   // demo a module-level function
   m.def("version",
@@ -164,7 +164,7 @@ PYBIND11_MODULE(dakpy, m) {
     ;
 
   // demo a library environment that models opt_tpl_test semantics
-  py::class_<Dakota::LibraryEnvironment>(m, "LibEnv")
+  py::class_<Dakota::LibraryEnvironment>(m, "study")
     .def(py::init
 	 ([](py::object callback,
 	     const std::string& input_string)
