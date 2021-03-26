@@ -189,6 +189,8 @@ protected:
   /// flag to restrict cross-validation to only estimate the noise
   /// tolerance in order to manage computational cost
   bool crossValidNoiseOnly;
+  /// flag for scaling response data to [0,1] for alignment with regression tols
+  bool respScaling;
 
   /// user-specified file for importing build points
   String importBuildPointsFile;

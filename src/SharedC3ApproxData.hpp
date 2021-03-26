@@ -184,6 +184,15 @@ protected:
   void max_order_advancement(bool o_advance);
 
   //
+  //- Heading: Convenience functions
+  //
+
+  bool increment_max_rank();
+  bool increment_max_order();
+  //bool decrement_start_rank();
+  //bool decrement_start_order();
+
+  //
   //- Heading: Data
   //
 
@@ -285,6 +294,10 @@ protected:
   /// C3Approximation::advancement_available())
   std::map<Pecos::ActiveKey, bool> c3MaxOrderAdvance;
 
+  /// restrict the number of CV candidates (by increasing the start rank/order
+  /// when needed as the max rank/order is advanced)
+  unsigned short maxCrossValCand;
+
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
   //BitArray ranVarsKey; // stored locally rather than passed to library (Pecos)
@@ -296,10 +309,6 @@ protected:
   std::map<Pecos::ActiveKey, size_t> poppedCounts;
 
 private:
-
-  //
-  //- Heading: Convenience functions
-  //
 
   //
   //- Heading: Data
@@ -539,8 +548,9 @@ set_parameter(String var, const UShortArray& val)
 
 inline void SharedC3ApproxData::set_parameter(String var, unsigned short val)
 {
-  if (var.compare("kick_order")     == 0)        kickOrder = val;
-  else if (var.compare("max_order") == 0)         maxOrder = val;
+  if (var.compare("kick_order")     == 0)          kickOrder = val;
+  else if (var.compare("max_order") == 0)           maxOrder = val;
+  else if (var.compare("max_cv_range") == 0) maxCrossValCand = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
