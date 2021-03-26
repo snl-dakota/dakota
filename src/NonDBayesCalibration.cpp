@@ -694,7 +694,6 @@ void NonDBayesCalibration::pre_run()
   construct_map_optimizer();
 }
 
-
 void NonDBayesCalibration::core_run()
 {
   nonDBayesInstance = this;
@@ -702,7 +701,6 @@ void NonDBayesCalibration::core_run()
   specify_prior();
   initialize_model();
   specify_likelihood();
-  //init_bayesian_solver();
   specify_posterior();  
   init_bayesian_solver();
 
@@ -720,7 +718,6 @@ void NonDBayesCalibration::core_run()
     build_model_discrepancy();
     //print_discrepancy_results();
 }
-
 
 void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 {
@@ -820,7 +817,6 @@ void NonDBayesCalibration::map_pre_solve(){
   // warm start from previous map soln computed from previous emulator
   negLogPostModel.current_variables().continuous_variables(mapSoln);
 
-  // Perform optimization
   mapOptimizer.run();
   //negLogPostModel.print_evaluation_summary(Cout);
   //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
@@ -1054,6 +1050,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
      - Use hierarchical surrogate eval modes
   */
 
+  // TODO? Make a struct?
   const RealVector initial_point(Teuchos::Copy, 
       				 mcmcModel.continuous_variables().values(), 
 				 mcmcModel.continuous_variables().length());
@@ -1095,16 +1092,17 @@ void NonDBayesCalibration::calibrate_to_hifi()
     eval_hi2lo_stop(stop_metric, prev_MI, MI_vec, 
         num_hifi, max_hifi, design_matrix.numCols());
 
-    // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
-    mcmcModel.continuous_variables(initial_point);
-    // TNP TODO: make this more lightweight instead of reconstructing
-    // DataTransformModel supports instantiation and assignment
-    // separately. Move this construction out of while loop and
-    // update/assign instead.
+    // TODO: Make function update_calibration_data() or something
     residualModel.assign_rep(std::make_shared<DataTransformModel>
 			     (mcmcModel, expData, numHyperparams,
 			      obsErrorMultiplierMode, mcmcDerivOrder));
+    // This doesn't do anything:
+    // TNP TODO: Reimplement map model reconstruct and test
+    // construct_map_model(); // TODO: Ask Kathryn why this wasn't being called.
+    // construct_map_optimizer(); // This was what was there
 
+    // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
+    mcmcModel.continuous_variables(initial_point);
     // TNP TODO: expose opt_for_map() and run_chain() 
     calibrate();
 
@@ -1138,7 +1136,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
       }
       num_it++;
 
-      //if (outputLevel >= NORMAL_OUTPUT) 
       print_hi2lo_selected(num_it, optimal_config_matrix, MI_vec);
       print_hi2lo_file(out_file, num_it, optimal_config_matrix, 
           MI_vec, resp_matrix); 
@@ -1369,8 +1366,7 @@ void NonDBayesCalibration::choose_batch_from_mutual_info( int random_seed,
       if (sim_error_matrix.numRows() > 0)
         lofi_resp_matrix += sim_error_matrix;
 
-      // TNP NOTE: Commented this out because it didn't seem to be
-      // used anywhere.
+      // TNP ? What is this for? 
       //RealMatrix optimal_obs
       //  (Teuchos::View, Xmatrix, numFunctions, num_filtered,
       //   numContinuousVars + (batch_n-1)*numFunctions, 0);
@@ -1558,7 +1554,6 @@ void NonDBayesCalibration::build_designs(RealMatrix& design_matrix)
     des_mat_generated.assign(lhs_iterator2.all_samples());
   }
 }
-
 	  
 void NonDBayesCalibration::build_hi2lo_xmatrix(RealMatrix& Xmatrix, int i, 
     			   const RealMatrix& mi_chain, RealMatrix& 
@@ -3202,9 +3197,6 @@ print_variables(std::ostream& s, const RealVector& c_vars)
       << c_vars[numContinuousVars+j] << ' '
       << combined_labels[numContinuousVars + j] << '\n';
 }
-
-
-
 
 void NonDBayesCalibration::kl_post_prior(RealMatrix& acceptanceChain)
 {
