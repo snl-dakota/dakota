@@ -195,9 +195,9 @@ void C3Approximation::build()
   // Set up C3 FT regression
   // -----------------------
 
-  size_t i, j, num_v = sharedDataRep->numVars,
-    max_cv_cand = data_rep->maxCrossValCand, kick_r,
-    max_r   = data_rep->max_rank(), // bounds CV candidates for adapt_rank
+  size_t i, j, SZ_MAX = std::numeric_limits<size_t>::max(),
+    num_v = sharedDataRep->numVars, max_cv_cand = data_rep->maxCrossValCand,
+    kick_r, max_r = data_rep->max_rank(), // upper bound for adapt_rank
     start_r = std::min(data_rep->start_rank(), max_r),
     adapt_r = (data_rep->adaptRank && max_r > start_r) ? 1 : 0;
   unsigned short max_o = data_rep->max_order(), kick_o,
@@ -227,7 +227,8 @@ void C3Approximation::build()
     if (start_r < start_cand)  start_r = start_cand;
     // take care to not prune access to a previouly recovered solution
     const SizetVector& recov_ranks = ftd.recovered_ranks();
-    size_t min_recov_r = find_min(&recov_ranks[1], num_v-1); // skip first,last
+    size_t min_recov_r = (recov_ranks.empty()) ? SZ_MAX :
+      find_min(&recov_ranks[1], num_v-1); // skip 1's @ first,last
     if (start_r > min_recov_r) start_r = min_recov_r; // include prev recovery
   }
   for (i=1; i<num_v; ++i)
@@ -279,7 +280,7 @@ void C3Approximation::build()
     // if not user-specified, use internal C3 default (in src/lib_superlearn/
     // regress.c, maxrank = 10 assigned in ft_regress_alloc())
     // > default could become an issue for START_RANK_ADVANCEMENT
-    if (max_r != std::numeric_limits<size_t>::max())
+    if (max_r != SZ_MAX)
       ft_regress_set_maxrank(ftr, max_r);
 
     ft_regress_set_kfold(ftr, 5);//kfold);//match Alex's Python (C3 default=3)
