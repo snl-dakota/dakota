@@ -8,10 +8,4 @@
 #  _______________________________________________________________________
 
 add_subdirectory(advanced)
-if(DAKOTA_ENABLE_TESTS)
-  add_subdirectory(users)
-else()
-  message(WARNING 
-    "Users Manual examples will not be built; requires DAKOTA_ENABLE_TESTS")
-endif()
 add_subdirectory(script_interfaces/generic)

@@ -1,4 +1,8 @@
+# This gets built in test/ so can be packaged in binaries even when
+# not building docs
+
 # Extract files for examples/users
+
 include(AddFileCopyCommand)
 
 set(test_path ${Dakota_SOURCE_DIR}/test)
@@ -60,6 +64,17 @@ foreach(generated_input ${users_test_inputs})
   endif()
 
 endforeach()
+
+
+# AMPL examples in Users_Interface.tex
+set(ampl_files dakota_ampl_fma.mod dakota_ampl_fma.nl dakota_ampl_fma.col
+  dakota_ampl_fma.row dakota_ampl_tb.mod)
+foreach (file ${ampl_files})
+  add_file_copy_command(${test_path}/${file}
+    ${CMAKE_CURRENT_BINARY_DIR}/${file})
+  list(APPEND all_generated_files ${CMAKE_CURRENT_BINARY_DIR}/${file})
+endforeach()
+
 
 add_custom_target(examples-users ALL DEPENDS ${all_generated_files})
 

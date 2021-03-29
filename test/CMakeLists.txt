@@ -155,6 +155,10 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     COMMENT "Concatenate all dakota_[p]diffs.out files from test/ subdirs."
     )
 
+  # This gets built in test/ so can be packaged in binaries even when
+  # not building docs
+  add_subdirectory(examples-users)
+
 endif() # BUILD_TESTING AND DAKOTA_ENABLE_TESTS
 
 
