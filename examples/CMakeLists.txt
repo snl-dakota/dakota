@@ -8,7 +8,6 @@
 #  _______________________________________________________________________
 
 add_subdirectory(advanced)
-add_subdirectory(cantilever)
 if(DAKOTA_ENABLE_TESTS)
   add_subdirectory(users)
 else()

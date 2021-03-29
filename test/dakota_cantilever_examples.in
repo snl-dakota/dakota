@@ -1,5 +1,5 @@
 #@ s*: Label=FastTest
-# Cantilever examples used in Dakota training classes
+# Cantilever examples used in 2012--2013 Dakota training classes
 #  s0 vector parameter study over all 6 vars
 #  s1 centered parameter study over all 6 vars
 #  s2 grid parameter study over 2 design vars
