@@ -109,20 +109,22 @@ endif()
 # Generat DakotaBuildInfo.src if needed
 
 set(DAKOTA_BUILDINFO_PATH)
-file( WRITE ${Dakota_BINARY_DIR}/generated/src/DakotaBuildInfo.cpp
-  "// -- AUTO GENERATED FILE; DO NOT EDIT --
-  #include \"DakotaBuildInfo.hpp\"
-  std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
-  std::string Dakota::DakotaBuildInfo::revision=\"${Dakota_GIT_REV}\";
-  std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
-  " )
+if(NOT DAKOTA_VERSION_FOUND)
+  file( WRITE ${Dakota_BINARY_DIR}/generated/src/DakotaBuildInfo.cpp
+    "// -- AUTO GENERATED FILE; DO NOT EDIT --
+    #include \"DakotaBuildInfo.hpp\"
+    std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
+    std::string Dakota::DakotaBuildInfo::revision=\"${Dakota_GIT_REV}\";
+    std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
+    " )
 
-set(DAKOTA_BUILDINFO_PATH "${Dakota_BINARY_DIR}/generated/src/")
+  set(DAKOTA_BUILDINFO_PATH "${Dakota_BINARY_DIR}/generated/src/")
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp)
-  message(STATUS
-    "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp in the source tree; please remove!")
-endif() # incorrect location DakotaBuildInfo.cpp
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp)
+    message(STATUS
+      "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp in the source tree; please remove!")
+  endif() # incorrect location DakotaBuildInfo.cpp
+endif()
 
 # -----------------
 
