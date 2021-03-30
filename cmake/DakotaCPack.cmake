@@ -39,7 +39,6 @@ macro(dakota_cpack_prune_distro)
     ".*\\\\.git/" ".*\\\\.git.*"
     "^${Dakota_SOURCE_DIR}/packages/external/fftw/"
     "^${Dakota_SOURCE_DIR}/packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/"
-    "^${Dakota_SOURCE_DIR}/dakota-examples"
     )
 
   # Only internal full (developer version) has these things
@@ -76,6 +75,10 @@ macro(dakota_cpack_finalize)
       "${Dakota_BINARY_DIR}/generated/src/;/src")
     LIST(APPEND CPACK_SOURCE_INSTALLED_DIRECTORIES
       "${Dakota_BINARY_DIR}/generated/VERSION/;/")
+  endif()
+
+  if(DAKOTA_EXAMPLES_CPACK_SOURCE_IGNORE)
+    list(APPEND CPACK_SOURCE_IGNORE_FILES ${DAKOTA_EXAMPLES_CPACK_SOURCE_IGNORE})
   endif()
 
   if(WIN32)
