@@ -196,11 +196,12 @@ void C3Approximation::build()
   // -----------------------
 
   size_t i, j, SZ_MAX = std::numeric_limits<size_t>::max(),
-    num_v = sharedDataRep->numVars, max_cv_cand = data_rep->maxCrossValCand,
-    kick_r, max_r = data_rep->max_rank(), // upper bound for adapt_rank
+    num_v = sharedDataRep->numVars, kick_r,
+    max_r = data_rep->max_rank(), // upper bound for adapt_rank
     start_r = std::min(data_rep->start_rank(), max_r),
     adapt_r = (data_rep->adaptRank && max_r > start_r) ? 1 : 0;
-  unsigned short max_o = data_rep->max_order(), kick_o,
+  unsigned short max_cv_cand = data_rep->maxCrossValCand,
+    max_o   = data_rep->max_order(), kick_o,
     start_o = find_max(data_rep->start_orders()); // flatten dim_pref
   bool adapt_o = (data_rep->adaptOrder && max_o > start_o);
   SizetVector start_ranks(num_v+1);  start_ranks[0] = start_ranks[num_v] = 1;
@@ -216,39 +217,55 @@ void C3Approximation::build()
   // the previous solution for any of them.  In this case, the max rank/order
   // is shared but the start rank/order is managed per QoI.
 
-  if (adapt_r) { // pull up start rank to restrict number of CV candidates
-    int start_cand = max_r;  i = 0;  kick_r = data_rep->kickRank;
-    while ( start_cand > start_r && i < max_cv_cand )
-      { start_cand -= kick_r;  ++i; }
-    // couple of options for dealing with possible overshoot due to kick > 1:
-    // > remove overshot candidate (respect max over start)
-    // > repair overshot candidate to start (include start/max, violate kick)
-    // > shift to respect start over max (chosen option)
-    if (start_r < start_cand)  start_r = start_cand;
-    // take care to not prune access to a previouly recovered solution
-    const SizetVector& recov_ranks = ftd.recovered_ranks();
-    size_t min_recov_r = (recov_ranks.empty()) ? SZ_MAX :
-      find_min(&recov_ranks[1], num_v-1); // skip 1's @ first,last
-    if (start_r > min_recov_r) start_r = min_recov_r; // include prev recovery
+  if (adapt_r) {
+    kick_r = data_rep->kickRank;
+    if (max_r == SZ_MAX) // default upper bound -> define appropriate range
+      max_r = start_r + (max_cv_cand - 1) * kick_r;
+    else { // pull up start rank based on max number of CV candidates
+      // use signed operands to avoid erroneous type coercion for unsigned
+      int start_cand = max_r, start_lb = start_r;  i = 0;
+      while ( start_cand > start_lb && i < max_cv_cand )
+	{ start_cand -= kick_r;  ++i; }
+      // couple of options for dealing with possible overshoot due to kick > 1:
+      // > remove overshot candidate (respect max over start)
+      // > repair overshot candidate to start (include start/max, violate kick)
+      // > shift to respect start over max (chosen option)
+      if (start_cand > start_lb) start_r = start_cand;
+      // take care to not prune access to a previouly recovered solution
+      const SizetVector& recov_ranks = ftd.recovered_ranks();
+      size_t min_recov_r = (recov_ranks.empty()) ? SZ_MAX :
+	find_min(&recov_ranks[1], num_v-1); // skip 1's @ first,last
+      if (start_r > min_recov_r) start_r = min_recov_r; // include prev recovery
+    }
   }
   for (i=1; i<num_v; ++i)
     start_ranks[i] = start_r;
+  //Cout << "rank start = " << start_r << " kick = " << kick_r
+  //     << " max = " << max_r << "; start_ranks:\n" << start_ranks;
 
-  if (adapt_o) { // pull up start order to restrict number of CV candidates
-    int start_cand = max_o;  i = 0;  kick_o = data_rep->kickOrder;
-    while ( start_cand > start_o && i < max_cv_cand )
-      { start_cand -= kick_o;  ++i; }
-    // couple of options for dealing with possible overshoot due to kick > 1:
-    // > remove overshot candidate (respect max over start)
-    // > repair overshot candidate to start (include start/max, violate kick)
-    // > shift to respect start over max (chosen option)
-    if (start_o < start_cand)  start_o = start_cand;
-    // take care to not prune access to a previouly recovered solution
-    unsigned short min_recov_o = find_min(ftd.recovered_orders());
-    if (start_o > min_recov_o) start_o = min_recov_o; // include prev recovery
+  if (adapt_o) {
+    kick_o = data_rep->kickOrder;
+    if (max_o == USHRT_MAX) // default upper bound -> define appropriate range
+      max_o = start_o + (max_cv_cand - 1) * kick_o;
+    else { // pull up start order based on max number of CV candidates
+      // use signed operands to avoid erroneous type coercion for unsigned
+      int start_cand = max_o, start_lb = start_o;  i = 0;
+      while ( start_cand > start_lb && i < max_cv_cand )
+	{ start_cand -= kick_o;  ++i; }
+      // couple of options for dealing with possible overshoot due to kick > 1:
+      // > remove overshot candidate (respect max over start)
+      // > repair overshot candidate to start (include start/max, violate kick)
+      // > shift to respect start over max (chosen option)
+      if (start_cand > start_lb) start_o = start_cand;
+      // take care to not prune access to a previouly recovered solution
+      unsigned short min_recov_o = find_min(ftd.recovered_orders());
+      if (start_o > min_recov_o) start_o = min_recov_o; // include prev recovery
+    }
   }
   for (i=0; i<num_v; ++i)
     start_orders[i] = start_o;
+  //Cout << "order start = " << start_o << " kick = " << kick_o
+  //     << " max = " << max_o << "; start_orders:\n" << start_orders;
 
   // opts are shared data since poly type, bounds, etc. are invariant,
   // but a subset of this data (nparams, maxnum) vary per QoI

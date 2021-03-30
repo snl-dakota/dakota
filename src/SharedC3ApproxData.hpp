@@ -125,6 +125,9 @@ public:
   /// return active maximum value for expansion rank (mutable)
   size_t& max_rank();
 
+  /// return maxCrossValCand
+  unsigned short max_cv_candidates() const;
+
   void assign_start_ranks(SizetVector& start_ranks) const;
 
   // return c3AdvancementType
@@ -422,6 +425,10 @@ inline size_t& SharedC3ApproxData::max_rank()
   std::map<Pecos::ActiveKey, size_t>::iterator it = maxRankMap.find(activeKey);
   return (it == maxRankMap.end()) ? maxRank : it->second;
 }
+
+
+inline unsigned short SharedC3ApproxData::max_cv_candidates() const
+{ return maxCrossValCand; }
 
 
 //inline short SharedC3ApproxData::advancement_type() const
