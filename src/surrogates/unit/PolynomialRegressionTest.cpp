@@ -356,10 +356,13 @@ void PolynomialRegression_SaveLoad() {
   // test serialization through pointers
   auto pr3 = std::make_shared<PolynomialRegression>(samples, responses,
                                                     param_list_partial);
+  pr3->variable_labels({"poly_x1", "poly_x2"});
+  pr3->response_labels({"poly_f"});
 
   // Initially modelling what save/load functions would do for binary/text
   for (bool binary : {true, false}) {
     std::string filename("poly_test.surr");
+    filename += binary ? ".bin" : ".txt";
 
     boost::filesystem::remove(filename);
     Surrogate::save(std::dynamic_pointer_cast<Surrogate>(pr3), filename,
