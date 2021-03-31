@@ -77,11 +77,8 @@ protected:
   //
 
   void calibrate();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-
-  /// convenience function to print calibration parameters, e.g., for
-  /// MAP / best parameters
-  void print_variables(std::ostream& s, const RealVector& c_vars);
+  void print_results(std::ostream& s, short 
+      results_state = FINAL_RESULTS) override;
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
   void init_queso_environment();
@@ -89,9 +86,13 @@ protected:
   /// initialize the ASV value for preconditioned cases
   void init_precond_request_value();
   
+  /// intialize the QUESO parameter space, min, max, initial, domain, and prior
   /// define solver options, likelihood callback, posterior RV, and
   /// inverse problem
-  virtual void init_queso_solver();
+  void specify_prior() override; 
+  void specify_likelihood() override;
+  void init_bayesian_solver() override;
+  void specify_posterior() override;
 
   /// use derivative information from the emulator to define the proposal
   /// covariance (inverse of misfit Hessian)
@@ -100,7 +101,7 @@ protected:
   /// perform the MCMC process
   void run_queso_solver();
 
-  void map_pre_solve();
+  void map_pre_solve() override;
 
   /// short term option to restart the MCMC chain with updated proposal
   /// density computed from the emulator at a new starting point
@@ -115,27 +116,14 @@ protected:
   /// extract batchSize points from the MCMC chain and store final
   /// aggregated set within allSamples; unique points with best
   /// conditioning are selected, as determined by pivoted LU
-  void filter_chain_by_conditioning();
-
-  /// copy bestSamples to allSamples to use in surrogate update
-  void best_to_all();
-
-  /// evaluates allSamples on iteratedModel and update the mcmcModel emulator
-  /// with all{Samples,Responses}
-  void update_model();
-
-  /// compute the L2 norm of the change in emulator coefficients
-  Real assess_emulator_convergence();
-
-  /// intialize the QUESO parameter space, min, max, initial, and domain
-  void init_parameter_domain();
+  void filter_chain_by_conditioning() override;
 
   void init_proposal_covariance();
 
   /// use covariance of prior distribution for setting proposal covariance
   void prior_proposal_covariance();
 
-  /// set proposal covariance from user-provided diagonal or matrix
+  /// Set proposal covariance from user-provided diagonal or matrix
   void user_proposal_covariance(const String& input_fmt, 
 				const RealVector& cov_data, 
 				const String& cov_filename);
@@ -143,9 +131,9 @@ protected:
   // perform sanity checks on proposalCovMatrix
   void validate_proposal();
 
-  /// set inverse problem options calIpOptionsValues common to all solvers
+  /// Set inverse problem options calIpOptionsValues common to all solvers
   void set_ip_options(); 
-  /// set MH-specific inverse problem options calIpMhOptionsValues
+  /// Set MH-specific inverse problem options calIpMhOptionsValues
   void set_mh_options();
   /// update MH-specific inverse problem options calIpMhOptionsValues
   void update_chain_size(unsigned int size);
@@ -188,8 +176,6 @@ protected:
   String mcmcType;
   /// period (number of accepted chain samples) for proposal covariance update
   int propCovUpdatePeriod;
-  /// number of points to add to surrogate at each iteration
-  unsigned int batchSize;
   /// the active set request value to use in proposal preconditioning
   short precondRequestValue;
   /// flag indicating user activation of logit transform option
@@ -259,9 +245,6 @@ private:
   // - Heading: Data
   // 
   
-  /// cache previous expansion coefficients for assessing convergence of
-  /// emulator refinement process
-  RealVectorArray prevCoeffs;
 };
 
 } // namespace Dakota
