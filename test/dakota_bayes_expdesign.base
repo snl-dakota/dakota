@@ -129,9 +129,6 @@ Mutual information = 4.4271258867e+00
 Optimal design:
                       5.8666167716e+01
 Mutual information = 1.8572086339e+00
-Optimal design:
-                      5.8666167716e+01
-Mutual information = 1.8572086339e+00
 <<<<< Function evaluation summary (lofi_IF): 12718 total (11715 new, 1003 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 5 total (5 new, 0 duplicate)
 <<<<< Best parameters          =
