@@ -67,6 +67,8 @@ protected:
   // that meets user-specified criteria
   void compute_subspace();
 
+  /// use the truncation methods to identify the size of a reduced subspace
+  void truncate_rotation();
 
   // ---
   // Problem transformation functions
