@@ -47,19 +47,26 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
   //adaptConstruct(false),
-  c3AdvancementType(NO_C3_ADVANCEMENT), maxCrossValCand(4)//(USHRT_MAX)
+  c3AdvancementType(NO_C3_ADVANCEMENT),
+  maxCVRankCandidates(
+    problem_db.get_sizet("model.c3function_train.max_cv_rank_candidates")),
+  maxCVOrderCandidates(
+    problem_db.get_ushort("model.c3function_train.max_cv_order_candidates"))
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
 
   RealVector dim_pref_spec; // isotropic for now, prior to XML support
-  NonDIntegration::dimension_preference_to_anisotropic_order(
-    problem_db.get_ushort("model.c3function_train.start_order"),
+  unsigned short start_o
+    = problem_db.get_ushort("model.c3function_train.start_order");
+  NonDIntegration::dimension_preference_to_anisotropic_order(start_o,
     dim_pref_spec,//problem_db.get_rv("model.dimension_preference"),
     numVars, startOrders);
 
   multiApproxOpts = multi_approx_opts_alloc(num_vars);
   oneApproxOpts.assign(num_vars, NULL);
+
+  //infer_max_cross_validation_ranges();
 }
 
 
@@ -75,7 +82,8 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
   maxSolverIterations(-1), crossMaxIter(5), //adaptConstruct(false),
-  c3AdvancementType(NO_C3_ADVANCEMENT), maxCrossValCand(4)//(USHRT_MAX)
+  c3AdvancementType(NO_C3_ADVANCEMENT), maxCVOrderCandidates(USHRT_MAX),
+  maxCVRankCandidates(std::numeric_limits<size_t>::max())
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)
@@ -95,6 +103,48 @@ SharedC3ApproxData::~SharedC3ApproxData()
     if (a_opts) one_approx_opts_free_deep(&a_opts); //a_opts = NULL;
   }
 }
+
+
+/* Just use default = Inf and rely on spec for overrides
+   > Simplest approach and most intuitive/consistent
+   > Retain per-QoI logic (e.g. extension of range to include previous recovery)
+void SharedC3ApproxData::infer_max_cross_validation_ranges()
+{
+  // infer max CV candidates when it can be inferred from start,max spec.
+  // Note: in the case where we want to grow the range (e.g., from 1 with
+  // start initially == max), we will need to specify { start, max, max CV }.
+  if (adaptRank) {
+    size_t SZ_MAX = std::numeric_limits<size_t>::max();
+    bool no_max_r = (maxRank == SZ_MAX);
+    if (maxCVRankCandidates == SZ_MAX) {
+      if (no_max_r)
+	maxCVRankCandidates = 5; // default of 5
+      else {
+	size_t max_cv = (maxRank - startRank) / kickRank + 1;
+	maxCVRankCandidates = std::max(max_cv, (size_t)3); // lower bound of 3
+      }
+    }
+    // Note: C3Approx::build() can be dynamic whereas this is only at init time
+    //if (no_max_r)
+    //  maxRank = startRank + kickRank * (maxCVRankCandidates - 1);
+  }
+  if (adaptOrder) {
+    bool no_max_o = (maxOrder == USHRT_MAX);
+    if (maxCVOrderCandidates == USHRT_MAX) {
+      if (no_max_o)
+	maxCVOrderCandidates = 5; // default of 5
+      else {
+	unsigned short start_o = find_max(startOrders),
+	  max_cv = (maxOrder - start_o) / kickOrder + 1;
+	maxCVOrderCandidates = std::max(max_cv, (unsigned short)3);// low bnd=3
+      }
+    }
+    // Note: C3Approx::build() can be dynamic whereas this is only at init time
+    //if (no_max_o)
+    //  maxOrder = find_max(startOrders) + kickOrder * (maxCVOrderCandidates-1);
+  }
+}
+*/
 
 
 void SharedC3ApproxData::
@@ -242,7 +292,7 @@ void SharedC3ApproxData::increment_order()
   }
   // Rather than shared management of start rank/order decrements as for
   // max rank/order increments, limit the CV range for each QoI using
-  // maxCrossValCand within C3Approximation::build().
+  // maxCV{Rank,Order}Candidates within C3Approximation::build().
   case MAX_RANK_ADVANCEMENT:
     if (increment_max_rank())// || decrement_start_rank())
       formUpdated[activeKey] = true;

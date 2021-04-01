@@ -2443,6 +2443,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"nond.adapted_basis.advancements", P_MET adaptedBasisAdvancements},
 	//{"nond.adapted_basis.initial_level", P_MET adaptedBasisInitLevel},
       {"nond.c3function_train.kick_order", P_MET kickOrder},
+      {"nond.c3function_train.max_cv_order_candidates",
+       P_MET maxCVOrderCandidates},
       {"nond.c3function_train.max_order", P_MET maxOrder},
       {"nond.c3function_train.start_order", P_MET startOrder},
       {"nond.calibrate_error_mode", P_MET calibrateErrorMode},
@@ -2471,6 +2473,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"adapted_basis.expansion_order", P_MOD adaptedBasisExpOrder},
       {"adapted_basis.sparse_grid_level", P_MOD adaptedBasisSparseGridLev},
       {"c3function_train.kick_order", P_MOD kickOrder},
+      {"c3function_train.max_cv_order_candidates", P_MOD maxCVOrderCandidates},
       {"c3function_train.max_order", P_MOD maxOrder},
       {"c3function_train.start_order", P_MOD startOrder},
       {"rf.analytic_covariance", P_MOD analyticCovIdForm},
@@ -2538,6 +2541,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
       {"jega.num_offspring", P_MET numOffspring},
       {"jega.num_parents", P_MET numParents},
       {"nond.c3function_train.kick_rank", P_MET kickRank},
+      {"nond.c3function_train.max_cv_rank_candidates",
+       P_MET maxCVRankCandidates},
       {"nond.c3function_train.max_rank", P_MET maxRank},
       {"nond.c3function_train.start_rank", P_MET startRank},
       {"nond.collocation_points", P_MET collocationPoints},
@@ -2549,6 +2554,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     { /* model */
       {"c3function_train.collocation_points", P_MOD collocationPoints},
       {"c3function_train.kick_rank", P_MOD kickRank},
+      {"c3function_train.max_cv_rank_candidates", P_MOD maxCVRankCandidates},
       {"c3function_train.max_rank", P_MOD maxRank},
       {"c3function_train.start_rank", P_MOD startRank}//,
       //{"c3function_train.verbosity", P_MOD verbosity}

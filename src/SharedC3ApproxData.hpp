@@ -125,8 +125,12 @@ public:
   /// return active maximum value for expansion rank (mutable)
   size_t& max_rank();
 
-  /// return maxCrossValCand
-  unsigned short max_cv_candidates() const;
+  /// return maxCVRankCandidates
+  size_t max_cross_validation_rank_candidates() const;
+  /// return maxCVOrderCandidates
+  unsigned short max_cross_validation_order_candidates() const;
+  // infer maxCV{Rank,Order}Candidates from user spec
+  //void infer_max_cross_validation_ranges();
 
   void assign_start_ranks(SizetVector& start_ranks) const;
 
@@ -297,9 +301,12 @@ protected:
   /// C3Approximation::advancement_available())
   std::map<Pecos::ActiveKey, bool> c3MaxOrderAdvance;
 
-  /// restrict the number of CV candidates (by increasing the start rank/order
-  /// when needed as the max rank/order is advanced)
-  unsigned short maxCrossValCand;
+  /// restrict the number of candidates within cross validation for order
+  /// (by increasing start order when needed as max order is advanced)
+  unsigned short maxCVOrderCandidates;
+  /// restrict the number of candidates within cross validation for rank
+  /// (by increasing start rank when needed as max rank is advanced)
+  size_t maxCVRankCandidates;
 
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
@@ -427,8 +434,13 @@ inline size_t& SharedC3ApproxData::max_rank()
 }
 
 
-inline unsigned short SharedC3ApproxData::max_cv_candidates() const
-{ return maxCrossValCand; }
+inline size_t SharedC3ApproxData::max_cross_validation_rank_candidates() const
+{ return maxCVRankCandidates; }
+
+
+inline unsigned short SharedC3ApproxData::
+max_cross_validation_order_candidates() const
+{ return maxCVOrderCandidates; }
 
 
 //inline short SharedC3ApproxData::advancement_type() const
@@ -555,18 +567,19 @@ set_parameter(String var, const UShortArray& val)
 
 inline void SharedC3ApproxData::set_parameter(String var, unsigned short val)
 {
-  if (var.compare("kick_order")     == 0)          kickOrder = val;
-  else if (var.compare("max_order") == 0)           maxOrder = val;
-  else if (var.compare("max_cv_range") == 0) maxCrossValCand = val;
+  if (var.compare("kick_order")     == 0)               kickOrder = val;
+  else if (var.compare("max_order") == 0)                maxOrder = val;
+  else if (var.compare("max_cv_order") == 0) maxCVOrderCandidates = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
 inline void SharedC3ApproxData::set_parameter(String var, size_t val)
 {
-  if (var.compare("start_rank")     == 0)        startRank = val;
-  else if (var.compare("kick_rank") == 0)         kickRank = val;
-  else if (var.compare("max_rank")  == 0)          maxRank = val;
+  if (var.compare("start_rank")     == 0)             startRank = val;
+  else if (var.compare("kick_rank") == 0)              kickRank = val;
+  else if (var.compare("max_rank")  == 0)               maxRank = val;
+  else if (var.compare("max_cv_rank") == 0) maxCVRankCandidates = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 

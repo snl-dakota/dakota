@@ -196,12 +196,11 @@ void C3Approximation::build()
   // -----------------------
 
   size_t i, j, SZ_MAX = std::numeric_limits<size_t>::max(),
-    num_v = sharedDataRep->numVars, kick_r,
+    num_v = sharedDataRep->numVars, kick_r, max_cv_r,
     max_r = data_rep->max_rank(), // upper bound for adapt_rank
     start_r = std::min(data_rep->start_rank(), max_r),
     adapt_r = (data_rep->adaptRank && max_r > start_r) ? 1 : 0;
-  unsigned short max_cv_cand = data_rep->maxCrossValCand,
-    max_o   = data_rep->max_order(), kick_o,
+  unsigned short max_o = data_rep->max_order(), kick_o, max_cv_o,
     start_o = find_max(data_rep->start_orders()); // flatten dim_pref
   bool adapt_o = (data_rep->adaptOrder && max_o > start_o);
   SizetVector start_ranks(num_v+1);  start_ranks[0] = start_ranks[num_v] = 1;
@@ -218,13 +217,15 @@ void C3Approximation::build()
   // is shared but the start rank/order is managed per QoI.
 
   if (adapt_r) {
-    kick_r = data_rep->kickRank;
+    kick_r   = data_rep->kickRank;
+    max_cv_r = data_rep->max_cross_validation_rank_candidates();
     if (max_r == SZ_MAX) // default upper bound -> define appropriate range
-      max_r = start_r + (max_cv_cand - 1) * kick_r;
+      max_r = (max_cv_r == SZ_MAX) ? start_r + 4 * kick_r : // 5 candidates
+	start_r + (max_cv_r - 1) * kick_r;
     else { // pull up start rank based on max number of CV candidates
       // use signed operands to avoid erroneous type coercion for unsigned
       int start_cand = max_r, start_lb = start_r;  i = 0;
-      while ( start_cand > start_lb && i < max_cv_cand )
+      while ( start_cand > start_lb && i < max_cv_r )
 	{ start_cand -= kick_r;  ++i; }
       // couple of options for dealing with possible overshoot due to kick > 1:
       // > remove overshot candidate (respect max over start)
@@ -244,13 +245,15 @@ void C3Approximation::build()
   //     << " max = " << max_r << "; start_ranks:\n" << start_ranks;
 
   if (adapt_o) {
-    kick_o = data_rep->kickOrder;
+    kick_o   = data_rep->kickOrder;
+    max_cv_o = data_rep->max_cross_validation_order_candidates();
     if (max_o == USHRT_MAX) // default upper bound -> define appropriate range
-      max_o = start_o + (max_cv_cand - 1) * kick_o;
+      max_o = (max_cv_o == SZ_MAX) ? start_o + 4 * kick_o : // 5 candidates
+	start_o + (max_cv_o - 1) * kick_o;
     else { // pull up start order based on max number of CV candidates
       // use signed operands to avoid erroneous type coercion for unsigned
       int start_cand = max_o, start_lb = start_o;  i = 0;
-      while ( start_cand > start_lb && i < max_cv_cand )
+      while ( start_cand > start_lb && i < max_cv_o )
 	{ start_cand -= kick_o;  ++i; }
       // couple of options for dealing with possible overshoot due to kick > 1:
       // > remove overshot candidate (respect max over start)

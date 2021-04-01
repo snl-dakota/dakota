@@ -424,6 +424,10 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
+  /// maximum number of cross-validation candidates for adaptRank
+  size_t maxCVRankCandidates;
+  ///maximum number of cross-validation candidates for adaptOrder
+  unsigned short maxCVOrderCandidates;
   /// quantity to increment (start rank, start order, max rank, max order,
   /// max rank + max order) for FT (uniform) p-refinement
   short c3AdvanceType;

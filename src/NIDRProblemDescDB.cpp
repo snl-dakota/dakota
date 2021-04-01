@@ -6799,6 +6799,7 @@ static unsigned short
 	MP_(cubIntOrder),
         MP_(expansionOrder),
         MP_(kickOrder),
+        MP_(maxCVOrderCandidates),
         MP_(maxOrder),
         MP_(quadratureOrder),
 	MP_(softConvLimit),
@@ -6977,6 +6978,7 @@ static size_t
 	MP_(collocationPoints),
         MP_(expansionSamples),
         MP_(kickRank),
+        MP_(maxCVRankCandidates),
         MP_(maxRank),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
@@ -7479,6 +7481,7 @@ static unsigned short
 	MP_(adaptedBasisSparseGridLev),
 	MP_(adaptedBasisExpOrder),
 	MP_(kickOrder),
+        MP_(maxCVOrderCandidates),
 	MP_(maxOrder),
 	MP_(startOrder);
 
@@ -7517,6 +7520,7 @@ static int
 static size_t
 	MP_(collocationPoints),
 	MP_(kickRank),
+        MP_(maxCVRankCandidates),
 	MP_(maxRank),
 	MP_(startRank);
 //	MP_(verbosity);
