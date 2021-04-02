@@ -90,30 +90,34 @@ if(DAKOTA_JAVA_SURROGATES)
 	  # We're in the external project
 	  add_subdirectory(java)
 	  install(FILES "$<TARGET_FILE:blas>" "$<TARGET_FILE:lapack>" DESTINATION bin)
-	  include(InstallRequiredSystemLibraries)
+	  ##include(InstallRequiredSystemLibraries)
 	else()
-	  # We're configuring top level
-    ExternalProject_Add(DakotaJavaSurrogatesDLL
-	  PREFIX ${Dakota_BINARY_DIR}/DjsDll
-	  BINARY_DIR ${Dakota_BINARY_DIR}/DjsDll/build
-	  STAMP_DIR ${Dakota_BINARY_DIR}/DjsDll/stamp
-	  SOURCE_DIR "${Dakota_SOURCE_DIR}"
-	  CMAKE_ARGS
-#	  -D CMAKE_BUILD_TYPE:STRING=RELEASE
-#     -D CMAKE_CONFIGURATION_TYPES:STRING=Release
-      -D CMAKE_INSTALL_PREFIX:PATH=${Dakota_BINARY_DIR}/DjsDll/install
-	  -D DAKOTA_JAVA_SURROGATES_EXTPROJ:BOOL=TRUE
-	  -D BUILD_SHARED_LIBS:BOOL=TRUE
-	  -D CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS:BOOL=TRUE
-	  -D DAKOTA_MODULE_DAKOTA:BOOL=FALSE
-	  -D DAKOTA_JAVA_SURROGATES:BOOL=TRUE
-	  -D JAVA_HOME=${JAVA_HOME}
-      # Assumes separate include and library dir
-	  -D BOOST_INCLUDEDIR=${Boost_INCLUDE_DIR}
-	  -D BOOST_LIBRARYDIR=${Boost_LIBRARY_DIR}
-      #    Consider DAKOTA_LAPACK_DLL_DIR variable?
-      -D LAPACK_DIR=C:/local/64bit/lapack/3.9.0/dll/lib/cmake/lapack-3.9.0
-	  )
+	  # We're configuring top level and want the external DLL project
+	  ExternalProject_Add(DakotaJavaSurrogatesDLL
+	    PREFIX ${Dakota_BINARY_DIR}/DjsDll
+	    BINARY_DIR ${Dakota_BINARY_DIR}/DjsDll/build
+	    STAMP_DIR ${Dakota_BINARY_DIR}/DjsDll/stamp
+	    SOURCE_DIR "${Dakota_SOURCE_DIR}"
+	    CMAKE_ARGS
+        ##-D CMAKE_BUILD_TYPE:STRING=RELEASE
+        ##-D CMAKE_CONFIGURATION_TYPES:STRING=Release
+        -D CMAKE_INSTALL_PREFIX:PATH=${Dakota_BINARY_DIR}/DjsDll/install
+	    -D DAKOTA_JAVA_SURROGATES_EXTPROJ:BOOL=TRUE
+	    -D BUILD_SHARED_LIBS:BOOL=TRUE
+	    -D CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS:BOOL=TRUE
+	    -D DAKOTA_MODULE_DAKOTA:BOOL=FALSE
+	    -D DAKOTA_JAVA_SURROGATES:BOOL=TRUE
+	    -D JAVA_HOME=${JAVA_HOME}
+        # Assumes separate include and library dir
+	    -D BOOST_INCLUDEDIR=${Boost_INCLUDE_DIR}
+	    -D BOOST_LIBRARYDIR=${Boost_LIBRARY_DIR}
+        -D LAPACK_DIR=${DAKOTA_LAPACK_DLL_DIR}
+	    )
+	  #ExternalProject_Get_property(DakotaJavaSurrogatesDLL INSTALL_DIR)
+	  #install(DIRECTORY ${INSTALL_DIR}/bin TYPE BIN
+	  #install(DIRECTORY ${Dakota_BINARY_DIR}/DjsDll/install/bin TYPE BIN
+	  #  FILES_MATCHING PATTERN "*.dll")
+	  install(DIRECTORY ${Dakota_BINARY_DIR}/DjsDll/install/bin/ DESTINATION bin)
 	endif()
   else()
     # To get this working, need care w.r.t. imported BLAS/LAPACK targets
