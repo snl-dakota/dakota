@@ -223,7 +223,7 @@ void C3Approximation::build()
       max_r = (max_cv_r == SZ_MAX) ? start_r + 4 * kick_r : // 5 candidates
 	start_r + (max_cv_r - 1) * kick_r;
     else { // pull up start rank based on max number of CV candidates
-      // use signed operands to avoid erroneous type coercion for unsigned
+      // use signed operands to avoid type coercion error in comparing unsigned
       int start_cand = max_r, start_lb = start_r;  i = 0;
       while ( start_cand > start_lb && i < max_cv_r )
 	{ start_cand -= kick_r;  ++i; }
@@ -251,7 +251,7 @@ void C3Approximation::build()
       max_o = (max_cv_o == SZ_MAX) ? start_o + 4 * kick_o : // 5 candidates
 	start_o + (max_cv_o - 1) * kick_o;
     else { // pull up start order based on max number of CV candidates
-      // use signed operands to avoid erroneous type coercion for unsigned
+      // use signed operands to avoid type coercion error in comparing unsigned
       int start_cand = max_o, start_lb = start_o;  i = 0;
       while ( start_cand > start_lb && i < max_cv_o )
 	{ start_cand -= kick_o;  ++i; }

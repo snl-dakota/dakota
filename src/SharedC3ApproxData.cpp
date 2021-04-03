@@ -107,7 +107,8 @@ SharedC3ApproxData::~SharedC3ApproxData()
 
 /* Just use default = Inf and rely on spec for overrides
    > Simplest approach and most intuitive/consistent
-   > Retain per-QoI logic (e.g. extension of range to include previous recovery)
+   > Don't preclude per-QoI customization (e.g. extension of range to include
+     a previous recovery) with override logic at init time
 void SharedC3ApproxData::infer_max_cross_validation_ranges()
 {
   // infer max CV candidates when it can be inferred from start,max spec.
