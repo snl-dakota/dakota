@@ -32,8 +32,10 @@ method,
 #	  p_refinement uniform increment_max_rank	#s9,#s13
 #	  p_refinement uniform increment_max_order	#s10,#s14
 #	  p_refinement uniform increment_max_rank_order	#s11,#s15
-#	    adapt_rank	kick_rank  = 1  max_rank  = 3	#s9,#s11,#s13,#s15
-#	    adapt_order	kick_order = 1  max_order = 3	#s10,#s11,#s14,#s15
+#	    adapt_rank	kick_rank   = 1  max_rank  = 3	#s9,#s11,#s13,#s15
+#	    max_cv_rank_candidates  = 4		    	#s9,#s11,#s13,#s15
+#	    adapt_order	kick_order  = 1  max_order = 3	#s10,#s11,#s14,#s15
+#	    max_cv_order_candidates = 4			#s10,#s11,#s14,#s15
 #	  max_refinement_iterations = 5			#s8,#s9,#s10,#s11
 #	  allocation_control greedy			#s12,#s13,#s14,#s15
 #	  max_refinement_iterations = 25		#s12,#s13,#s14,#s15

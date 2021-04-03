@@ -122,7 +122,8 @@ DataMethodRep::DataMethodRep():
   statsRoundingTol(1.e-10), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
   adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
-  c3AdvanceType(NO_C3_ADVANCEMENT),
+  maxCVRankCandidates(std::numeric_limits<size_t>::max()),
+  maxCVOrderCandidates(USHRT_MAX), c3AdvanceType(NO_C3_ADVANCEMENT),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -285,8 +286,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // C3 FT
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank  << kickRank  << maxRank  << adaptRank
-    << c3AdvanceType << startOrderSeq << startRankSeq;
+    << startRank  << kickRank  << maxRank  << adaptRank << maxCVRankCandidates
+    << maxCVOrderCandidates << c3AdvanceType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
@@ -451,8 +452,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // C3 FT
   s >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
     >> startOrder >> kickOrder >> maxOrder >> adaptOrder
-    >> startRank  >> kickRank  >> maxRank  >> adaptRank
-    >> c3AdvanceType >> startOrderSeq >> startRankSeq;
+    >> startRank  >> kickRank  >> maxRank  >> adaptRank >> maxCVRankCandidates
+    >> maxCVOrderCandidates >> c3AdvanceType >> startOrderSeq >> startRankSeq;
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
@@ -617,8 +618,8 @@ void DataMethodRep::write(std::ostream& s) const
   // C3 FT
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank  << kickRank  << maxRank  << adaptRank
-    << c3AdvanceType << startOrderSeq << startRankSeq;
+    << startRank  << kickRank  << maxRank  << adaptRank << maxCVRankCandidates
+    << maxCVOrderCandidates << c3AdvanceType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag

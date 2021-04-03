@@ -56,7 +56,8 @@ DataModelRep::DataModelRep():
   tensorGridFlag(false), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
   adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
-  c3AdvanceType(NO_C3_ADVANCEMENT),
+  maxCVRankCandidates(std::numeric_limits<size_t>::max()),
+  maxCVOrderCandidates(USHRT_MAX), c3AdvanceType(NO_C3_ADVANCEMENT),
   collocationPoints(std::numeric_limits<size_t>::max()), collocationRatio(0.),
   autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
@@ -102,8 +103,9 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
-    << collocationPoints << collocationRatio
+    << startRank << kickRank << maxRank << adaptRank
+    << maxCVRankCandidates << maxCVOrderCandidates
+    << c3AdvanceType << collocationPoints << collocationRatio
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
@@ -150,8 +152,9 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> regressionType >> regressionL2Penalty >> maxSolverIterations
     >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
     >> tensorGridFlag >> startOrder >> kickOrder >> maxOrder >> adaptOrder
-    >> startRank >> kickRank >> maxRank >> adaptRank >> c3AdvanceType
-    >> collocationPoints >> collocationRatio
+    >> startRank >> kickRank >> maxRank >> adaptRank
+    >> maxCVRankCandidates >> maxCVOrderCandidates
+    >> c3AdvanceType >> collocationPoints >> collocationRatio
     >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
     >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
     >> adaptedBasisCollocRatio >> propagationModelPointer >> truncationTolerance
@@ -198,8 +201,9 @@ void DataModelRep::write(std::ostream& s) const
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
-    << collocationPoints << collocationRatio
+    << startRank << kickRank << maxRank << adaptRank
+    << maxCVRankCandidates << maxCVOrderCandidates
+    << c3AdvanceType << collocationPoints << collocationRatio
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance

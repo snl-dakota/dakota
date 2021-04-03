@@ -1189,13 +1189,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ start_order ALIAS order INTEGER >= 0 {N_mdm(ushint,startOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
-    [ adapt_order {N_mdm(true,adaptOrder)} ]
+    [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
     [ start_rank ALIAS rank INTEGER >= 0 {N_mdm(sizet,startRank)} ]
+    [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
-    [ adapt_rank {N_mdm(true,adaptRank)} ]
+    [ max_cv_rank_candidates INTEGER >= 0 {N_mdm(sizet,maxCVRankCandidates)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -1345,13 +1347,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
-    [ adapt_order {N_mdm(true,adaptOrder)} ]
+    [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
+    [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
-    [ adapt_rank {N_mdm(true,adaptRank)} ]
+    [ max_cv_rank_candidates INTEGER >= 0 {N_mdm(sizet,maxCVRankCandidates)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -1487,13 +1491,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
-    [ adapt_order {N_mdm(true,adaptOrder)} ]
+    [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
+    [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
-    [ adapt_rank {N_mdm(true,adaptRank)} ]
+    [ max_cv_rank_candidates INTEGER >= 0 {N_mdm(sizet,maxCVRankCandidates)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -5945,13 +5951,15 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ start_order ALIAS order INTEGER >= 0 {N_mom(ushint,startOrder)}
           [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
          ]
+        [ adapt_order {N_mom(true,adaptOrder)} ]
         [ kick_order INTEGER > 0 {N_mom(ushint,kickOrder)} ]
         [ max_order INTEGER >= 0 {N_mom(ushint,maxOrder)} ]
-        [ adapt_order {N_mom(true,adaptOrder)} ]
+        [ max_cv_order_candidates INTEGER >= 0 {N_mom(ushint,maxCVOrderCandidates)} ]
         [ start_rank ALIAS rank INTEGER >= 0 {N_mom(sizet,startRank)} ]
+        [ adapt_rank {N_mom(true,adaptRank)} ]
         [ kick_rank INTEGER > 0 {N_mom(sizet,kickRank)} ]
         [ max_rank INTEGER >= 0 {N_mom(sizet,maxRank)} ]
-        [ adapt_rank {N_mom(true,adaptRank)} ]
+        [ max_cv_rank_candidates INTEGER >= 0 {N_mom(sizet,maxCVRankCandidates)} ]
        )
       |
       ( neural_network {N_mom(lit,surrogateType_global_neural_network)}

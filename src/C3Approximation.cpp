@@ -78,33 +78,70 @@ recover_function_train_orders(const std::vector<OneApproxOpts*>& a_opts)
 }
 
 
-bool C3Approximation::advancement_available()
+bool C3Approximation::advancement_available() // *** TO DO: change name to range_update_available()
 {
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
 
-  bool r_advance = false, o_advance = false;
+  bool m_r_advance = false, m_o_advance = false;
+     //s_r_reduce  = false, s_o_reduce  = false;
   switch (shared_data_rep->c3AdvancementType) {
 
   // these options query recovered ranks/orders for each C3Approximation
   case MAX_RANK_ADVANCEMENT: // check adapted FT ranks against maxRank
-    r_advance = max_rank_advancement_available();   break;
+    //s_r_reduce  = start_rank_reduction_available();
+    m_r_advance = max_rank_advancement_available();  break;
   case MAX_ORDER_ADVANCEMENT:
-    o_advance = max_order_advancement_available();  break;
+    //s_o_reduce  = start_order_reduction_available();
+    m_o_advance = max_order_advancement_available(); break;
   case MAX_RANK_ORDER_ADVANCEMENT:
-    r_advance = max_rank_advancement_available();
-    o_advance = max_order_advancement_available();  break;
+    //s_r_reduce  =  start_rank_reduction_available();
+    m_r_advance =  max_rank_advancement_available();
+    //s_o_reduce  = start_order_reduction_available();
+    m_o_advance = max_order_advancement_available(); break;
   }
   // Need available advancements in Shared increment_order() to advance only
   // the unsaturated bounds (CV remains active over both rank/order but only
   // one or both bounds may change).  Therefore, we accumulate the available
   // advancement types in SharedC3, communicated back from C3Approx instances
   // for use in {increment,decrement}_order().
-  if (r_advance) shared_data_rep->max_rank_advancement(r_advance);
-  if (o_advance) shared_data_rep->max_order_advancement(o_advance);
+  //if (s_r_reduce)  shared_data_rep->start_rank_reduction(s_r_reduce);
+  if (m_r_advance) shared_data_rep->max_rank_advancement(m_r_advance);
+  //if (s_o_reduce)  shared_data_rep->start_order_reduction(s_o_reduce);
+  if (m_o_advance) shared_data_rep->max_order_advancement(m_o_advance);
 
-  return (r_advance || o_advance);
+  return (m_r_advance || m_o_advance);// || s_r_reduce || s_o_reduce);
 }
+
+
+/*
+bool C3Approximation::start_rank_reduction_available()
+{
+  std::shared_ptr<SharedC3ApproxData> shared_data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
+  size_t start_r  = shared_data_rep->start_rank(), // adapted value
+         v, num_v = shared_data_rep->numVars;
+  const SizetVector& ft_ranks = levApproxIter->second.recovered_ranks();
+  for (v=1; v<num_v; ++v) // ranks len = num_v+1 with 1's @ ends
+    if (ft_ranks[v] <= start_r) // recovery potentially limited by lower bound
+      return true;
+  return false;
+}
+
+
+bool C3Approximation::start_order_reduction_available()
+{
+  std::shared_ptr<SharedC3ApproxData> shared_data_rep =
+    std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);
+  unsigned short start_o = shared_data_rep->start_order(); // adapted value
+  const UShortArray& ft_ords = levApproxIter->second.recovered_orders();
+  size_t v, num_v = shared_data_rep->numVars;
+  for (v=0; v<num_v; ++v) // ords len = num_v
+    if (ft_ords[v] <= start_o) // recovery potentially limited by lower bound
+      return true;
+  return false;
+}
+*/
 
 
 bool C3Approximation::max_rank_advancement_available()
@@ -115,7 +152,7 @@ bool C3Approximation::max_rank_advancement_available()
       v, num_v = shared_data_rep->numVars;
   const SizetVector& ft_ranks = levApproxIter->second.recovered_ranks();
   for (v=1; v<num_v; ++v) // ranks len = num_v+1 with 1's @ ends
-    if (ft_ranks[v] >= max_r) // recovery potentially limited by bound
+    if (ft_ranks[v] >= max_r) // recovery potentially limited by upper bound
       return true;
   return false;
 }
@@ -129,7 +166,7 @@ bool C3Approximation::max_order_advancement_available()
   const UShortArray& ft_ords = levApproxIter->second.recovered_orders();
   size_t v, num_v = shared_data_rep->numVars;
   for (v=0; v<num_v; ++v) // ords len = num_v
-    if (ft_ords[v] >= max_o) // recovery potentially limited by curr bnd
+    if (ft_ords[v] >= max_o) // recovery potentially limited by upper bound
       return true;
   return false;
 }
@@ -158,21 +195,89 @@ void C3Approximation::build()
   // Set up C3 FT regression
   // -----------------------
 
-  size_t i, j, num_v = sharedDataRep->numVars, kick_r = data_rep->kickRank,
-    max_r = data_rep->max_rank(), // bounds CV candidates for adapt_rank
-    start_r = std::min(data_rep->start_rank(), max_r);
-  SizetVector start_ranks(num_v+1);
-  start_ranks[0] = start_ranks[num_v] = 1;
-  for (i=1; i<num_v; ++i) start_ranks[i] = start_r;
+  size_t i, j, SZ_MAX = std::numeric_limits<size_t>::max(),
+    num_v = sharedDataRep->numVars, kick_r, max_cv_r,
+    max_r = data_rep->max_rank(), // upper bound for adapt_rank
+    start_r = std::min(data_rep->start_rank(), max_r),
+    adapt_r = (data_rep->adaptRank && max_r > start_r) ? 1 : 0;
+  unsigned short max_o = data_rep->max_order(), kick_o, max_cv_o,
+    start_o = find_max(data_rep->start_orders()); // flatten dim_pref
+  bool adapt_o = (data_rep->adaptOrder && max_o > start_o);
+  SizetVector start_ranks(num_v+1);  start_ranks[0] = start_ranks[num_v] = 1;
+  UShortArray start_orders(num_v);
+  C3FnTrainData& ftd = levApproxIter->second;
+
+  // This simple approach uses an upper bound on the number of candidates per
+  // CV dimension, rather than adapting the range in both directions (it does
+  // not adapt when the range based on whether the best CV
+  // solution is active on its lower bound.  We also check recovered values:
+  // while at least one QoI must be active on the upper bound to prevent a
+  // saturation condition; other QoI may be lower and we don't want to exclude
+  // the previous solution for any of them.  In this case, the max rank/order
+  // is shared but the start rank/order is managed per QoI.
+
+  if (adapt_r) {
+    kick_r   = data_rep->kickRank;
+    max_cv_r = data_rep->max_cross_validation_rank_candidates();
+    if (max_r == SZ_MAX) // default upper bound -> define appropriate range
+      max_r = (max_cv_r == SZ_MAX) ? start_r + 4 * kick_r : // 5 candidates
+	start_r + (max_cv_r - 1) * kick_r;
+    else { // pull up start rank based on max number of CV candidates
+      // use signed operands to avoid type coercion error in comparing unsigned
+      int start_cand = max_r, start_lb = start_r;  i = 0;
+      while ( start_cand > start_lb && i < max_cv_r )
+	{ start_cand -= kick_r;  ++i; }
+      // couple of options for dealing with possible overshoot due to kick > 1:
+      // > remove overshot candidate (respect max over start)
+      // > repair overshot candidate to start (include start/max, violate kick)
+      // > shift to respect start over max (chosen option)
+      if (start_cand > start_lb) start_r = start_cand;
+      // take care to not prune access to a previouly recovered solution
+      const SizetVector& recov_ranks = ftd.recovered_ranks();
+      size_t min_recov_r = (recov_ranks.empty()) ? SZ_MAX :
+	find_min(&recov_ranks[1], num_v-1); // skip 1's @ first,last
+      if (start_r > min_recov_r) start_r = min_recov_r; // include prev recovery
+    }
+  }
+  for (i=1; i<num_v; ++i)
+    start_ranks[i] = start_r;
+  //Cout << "rank start = " << start_r << " kick = " << kick_r
+  //     << " max = " << max_r << "; start_ranks:\n" << start_ranks;
+
+  if (adapt_o) {
+    kick_o   = data_rep->kickOrder;
+    max_cv_o = data_rep->max_cross_validation_order_candidates();
+    if (max_o == USHRT_MAX) // default upper bound -> define appropriate range
+      max_o = (max_cv_o == SZ_MAX) ? start_o + 4 * kick_o : // 5 candidates
+	start_o + (max_cv_o - 1) * kick_o;
+    else { // pull up start order based on max number of CV candidates
+      // use signed operands to avoid type coercion error in comparing unsigned
+      int start_cand = max_o, start_lb = start_o;  i = 0;
+      while ( start_cand > start_lb && i < max_cv_o )
+	{ start_cand -= kick_o;  ++i; }
+      // couple of options for dealing with possible overshoot due to kick > 1:
+      // > remove overshot candidate (respect max over start)
+      // > repair overshot candidate to start (include start/max, violate kick)
+      // > shift to respect start over max (chosen option)
+      if (start_cand > start_lb) start_o = start_cand;
+      // take care to not prune access to a previouly recovered solution
+      unsigned short min_recov_o = find_min(ftd.recovered_orders());
+      if (start_o > min_recov_o) start_o = min_recov_o; // include prev recovery
+    }
+  }
+  for (i=0; i<num_v; ++i)
+    start_orders[i] = start_o;
+  //Cout << "order start = " << start_o << " kick = " << kick_o
+  //     << " max = " << max_o << "; start_orders:\n" << start_orders;
 
   // opts are shared data since poly type, bounds, etc. are invariant,
   // but a subset of this data (nparams, maxnum) vary per QoI
   // > retain as shared data but update approx opts on every build()
   // > recovered QoI rank data is stored in C3FnTrainData
-  //
+  data_rep->update_basis(start_orders, max_o);
   // reassigns active orders from SharedC3 start,max maps; does not start
   // from a previous adapt_order recovery
-  data_rep->update_basis();
+  //data_rep->update_basis();
 
   struct FTRegress * ftr
     = ft_regress_alloc(num_v, data_rep->multiApproxOpts, start_ranks.values());
@@ -188,7 +293,6 @@ void C3Approximation::build()
   // this should precede any solves, including the cross-validation loop(s)
   ft_regress_set_seed(ftr, data_rep->randomSeed);
 
-  size_t adapt_r = (data_rep->adaptRank && max_r > start_r) ? 1 : 0;
   ft_regress_set_adapt(ftr, adapt_r);
   if (adapt_r) {
     ft_regress_set_kickrank(ftr, kick_r); // default is 1
@@ -196,7 +300,7 @@ void C3Approximation::build()
     // if not user-specified, use internal C3 default (in src/lib_superlearn/
     // regress.c, maxrank = 10 assigned in ft_regress_alloc())
     // > default could become an issue for START_RANK_ADVANCEMENT
-    if (max_r != std::numeric_limits<size_t>::max())
+    if (max_r != SZ_MAX)
       ft_regress_set_maxrank(ftr, max_r);
 
     ft_regress_set_kfold(ftr, 5);//kfold);//match Alex's Python (C3 default=3)
@@ -224,7 +328,6 @@ void C3Approximation::build()
     c3opt_set_verbose(optimizer, 1); // per opt iter diagnostics (a bit much)
 
   // free if previously built
-  C3FnTrainData& ftd = levApproxIter->second;
   ftd.free_all();
 
   // ---------------------
@@ -260,9 +363,6 @@ void C3Approximation::build()
   // ---------------------------------------
   // > separate from adapt_rank inner loop: one/both/neither can be used
 
-  unsigned short max_o = data_rep->max_order(), kick_o,
-    start_o = find_max(data_rep->start_orders()); // flatten dim_pref
-  bool adapt_o = (data_rep->adaptOrder && max_o > start_o);
   if (adapt_o) { // CV for basis orders, with/without adapt_rank
 
     // initialize cross validation options
@@ -279,7 +379,6 @@ void C3Approximation::build()
     struct CVOptGrid * cvgrid = cv_opt_grid_init(1); // allocate a 1D grid
     cv_opt_grid_set_verbose(cvgrid, cvverbose);
     // define a scalar range of (isotropic) basis orders
-    kick_o = data_rep->kickOrder;
     size_t num_opts = 1 + (max_o - start_o) / kick_o;
     SizetArray np_opts(num_opts);
     np_opts[0] = start_o + 1; // offset by 1 for nparams

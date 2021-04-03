@@ -843,13 +843,16 @@
 	     ' >
 
     <!ENTITY ft_method_order_scalars '
+		  <keyword  id="adapt_order" name="adapt_order" code="{N_mdm(true,adaptOrder)}" label="Adapt polynomial basis order using cross validation" help="" minOccurs="0" default="false" />
 		  <keyword  id="kick_order" name="kick_order" code="{N_mdm(ushint,kickOrder)}" label="Increment when adapting polynomial basis order" help="" minOccurs="0" default="1">
 		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="max_order" name="max_order" code="{N_mdm(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="unsigned short max">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="adapt_order" name="adapt_order" code="{N_mdm(true,adaptOrder)}" label="Adapt polynomial basis order using cross validation" help="" minOccurs="0" default="false" />
+		  <keyword  id="max_cv_order_candidates" name="max_cv_order_candidates" code="{N_mdm(ushint,maxCVOrderCandidates)}" label="Maximum number of cross-validation candidates for adapt_order" help="" minOccurs="0" default="ushort max">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
 	     ' >
 
     <!ENTITY ft_method_order '
@@ -871,13 +874,16 @@
 	     ' >
 
     <!ENTITY ft_method_rank_scalars '
+		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mdm(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false" />
 		  <keyword  id="kick_rank" name="kick_rank" code="{N_mdm(sizet,kickRank)}" label="Rank increment for adaptive schemes" help="" minOccurs="0" default="1">
 		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="max_rank" name="max_rank" code="{N_mdm(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="size_t max">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mdm(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false" />
+		  <keyword  id="max_cv_rank_candidates" name="max_cv_rank_candidates" code="{N_mdm(sizet,maxCVRankCandidates)}" label="Maximum number of cross-validation candidates for adapt_rank" help="" minOccurs="0" default="size_t max">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
 	     ' >
 
     <!ENTITY ft_method_rank '
@@ -978,13 +984,16 @@
 		    <param type="INTEGER" constraint=">= 0" />
 		    &expansion_dim_pref;
 		  </keyword>
+		  <keyword  id="adapt_order" name="adapt_order" code="{N_mom(true,adaptOrder)}" label="Adapt polynomial basis order using cross validation" help="" minOccurs="0" default="false" />
 		  <keyword  id="kick_order" name="kick_order" code="{N_mom(ushint,kickOrder)}" label="Increment when adapting polynomial basis order" help="" minOccurs="0" default="1">
 		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="max_order" name="max_order" code="{N_mom(ushint,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="adapt_order" name="adapt_order" code="{N_mom(true,adaptOrder)}" label="Adapt polynomial basis order using cross validation" help="" minOccurs="0" default="false" />
+		  <keyword  id="max_cv_order_candidates" name="max_cv_order_candidates" code="{N_mom(ushint,maxCVOrderCandidates)}" label="Maximum number of cross-validation candidates for adapt_order" help="" minOccurs="0" default="ushort max">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
 	     ' >
 
     <!ENTITY ft_model_rank '
@@ -992,13 +1001,16 @@
 		    <alias name="rank"/>
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
+		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mom(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false"/>
 		  <keyword  id="kick_rank" name="kick_rank" code="{N_mom(sizet,kickRank)}" label="Rank increment for adaptive schemes" help="" minOccurs="0" default="2">
 		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="max_rank" name="max_rank" code="{N_mom(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mom(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false"/>
+		  <keyword  id="max_cv_rank_candidates" name="max_cv_rank_candidates" code="{N_mom(sizet,maxCVRankCandidates)}" label="Maximum number of cross-validation candidates for adapt_rank" help="" minOccurs="0" default="size_t max">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
 	     ' >
 
     <!ENTITY bayes_seed_rng '

@@ -125,6 +125,13 @@ public:
   /// return active maximum value for expansion rank (mutable)
   size_t& max_rank();
 
+  /// return maxCVRankCandidates
+  size_t max_cross_validation_rank_candidates() const;
+  /// return maxCVOrderCandidates
+  unsigned short max_cross_validation_order_candidates() const;
+  // infer maxCV{Rank,Order}Candidates from user spec
+  //void infer_max_cross_validation_ranges();
+
   void assign_start_ranks(SizetVector& start_ranks) const;
 
   // return c3AdvancementType
@@ -182,6 +189,15 @@ protected:
   bool advancement_available();
   void max_rank_advancement(bool r_advance);
   void max_order_advancement(bool o_advance);
+
+  //
+  //- Heading: Convenience functions
+  //
+
+  bool increment_max_rank();
+  bool increment_max_order();
+  //bool decrement_start_rank();
+  //bool decrement_start_order();
 
   //
   //- Heading: Data
@@ -285,6 +301,13 @@ protected:
   /// C3Approximation::advancement_available())
   std::map<Pecos::ActiveKey, bool> c3MaxOrderAdvance;
 
+  /// restrict the number of candidates within cross validation for order
+  /// (by increasing start order when needed as max order is advanced)
+  unsigned short maxCVOrderCandidates;
+  /// restrict the number of candidates within cross validation for rank
+  /// (by increasing start rank when needed as max rank is advanced)
+  size_t maxCVRankCandidates;
+
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
   //BitArray ranVarsKey; // stored locally rather than passed to library (Pecos)
@@ -296,10 +319,6 @@ protected:
   std::map<Pecos::ActiveKey, size_t> poppedCounts;
 
 private:
-
-  //
-  //- Heading: Convenience functions
-  //
 
   //
   //- Heading: Data
@@ -413,6 +432,15 @@ inline size_t& SharedC3ApproxData::max_rank()
   std::map<Pecos::ActiveKey, size_t>::iterator it = maxRankMap.find(activeKey);
   return (it == maxRankMap.end()) ? maxRank : it->second;
 }
+
+
+inline size_t SharedC3ApproxData::max_cross_validation_rank_candidates() const
+{ return maxCVRankCandidates; }
+
+
+inline unsigned short SharedC3ApproxData::
+max_cross_validation_order_candidates() const
+{ return maxCVOrderCandidates; }
 
 
 //inline short SharedC3ApproxData::advancement_type() const
@@ -539,17 +567,19 @@ set_parameter(String var, const UShortArray& val)
 
 inline void SharedC3ApproxData::set_parameter(String var, unsigned short val)
 {
-  if (var.compare("kick_order")     == 0)        kickOrder = val;
-  else if (var.compare("max_order") == 0)         maxOrder = val;
+  if (var.compare("kick_order")     == 0)               kickOrder = val;
+  else if (var.compare("max_order") == 0)                maxOrder = val;
+  else if (var.compare("max_cv_order") == 0) maxCVOrderCandidates = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
 
 inline void SharedC3ApproxData::set_parameter(String var, size_t val)
 {
-  if (var.compare("start_rank")     == 0)        startRank = val;
-  else if (var.compare("kick_rank") == 0)         kickRank = val;
-  else if (var.compare("max_rank")  == 0)          maxRank = val;
+  if (var.compare("start_rank")     == 0)             startRank = val;
+  else if (var.compare("kick_rank") == 0)              kickRank = val;
+  else if (var.compare("max_rank")  == 0)               maxRank = val;
+  else if (var.compare("max_cv_rank") == 0) maxCVRankCandidates = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
