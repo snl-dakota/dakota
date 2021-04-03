@@ -278,7 +278,7 @@ def griewank(**kwargs):
         for ii in range(d):
             xi = x[ii]
             tmp_sum += xi**2/4000
-            prod *= np.cos(xi/np.sqrt(ii))
+            prod *= np.cos(xi/np.sqrt(ii+1))
         f = tmp_sum - prod + 1
         retval['fns'] = np.array([f])
         counter = update_counter(); start_diary(counter); random_wait(5,15,counter); stop_diary(counter);
