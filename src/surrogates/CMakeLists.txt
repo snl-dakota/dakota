@@ -83,16 +83,18 @@ if(DAKOTA_PYTHON_SURROGATES)
 endif()
 
 if(DAKOTA_JAVA_SURROGATES)
-  # TODO: Move to helper file
-  # Prevent infinite recursion
+  # On Windows, top-level Dakota must still be built static,
+  # but we build the surrogates JNI only as a DLL via external project.
+  # Assumes sub-project uses LAPACK_DIR and its specified DLLs
+  # Assumes separate Boost include and library dir are given
   if(WIN32)
+    # This variable prevents infinite recursion
     if(DAKOTA_JAVA_SURROGATES_EXTPROJ)
-	  # We're in the external project
+	  # We're in the external surrogates JNI DLL project
 	  add_subdirectory(java)
 	  install(FILES "$<TARGET_FILE:blas>" "$<TARGET_FILE:lapack>" DESTINATION bin)
-	  ##include(InstallRequiredSystemLibraries)
 	else()
-	  # We're configuring top level and want the external DLL project
+	  # We're configuring top level and want to build the external DLL project
 	  ExternalProject_Add(DakotaJavaSurrogatesDLL
 	    PREFIX ${Dakota_BINARY_DIR}/DjsDll
 	    BINARY_DIR ${Dakota_BINARY_DIR}/DjsDll/build
@@ -108,19 +110,14 @@ if(DAKOTA_JAVA_SURROGATES)
 	    -D DAKOTA_MODULE_DAKOTA:BOOL=FALSE
 	    -D DAKOTA_JAVA_SURROGATES:BOOL=TRUE
 	    -D JAVA_HOME=${JAVA_HOME}
-        # Assumes separate include and library dir
-	    -D BOOST_INCLUDEDIR=${Boost_INCLUDE_DIR}
+        -D BOOST_INCLUDEDIR=${Boost_INCLUDE_DIR}
 	    -D BOOST_LIBRARYDIR=${Boost_LIBRARY_DIR}
         -D LAPACK_DIR=${DAKOTA_LAPACK_DLL_DIR}
 	    )
-	  #ExternalProject_Get_property(DakotaJavaSurrogatesDLL INSTALL_DIR)
-	  #install(DIRECTORY ${INSTALL_DIR}/bin TYPE BIN
-	  #install(DIRECTORY ${Dakota_BINARY_DIR}/DjsDll/install/bin TYPE BIN
-	  #  FILES_MATCHING PATTERN "*.dll")
-	  install(DIRECTORY ${Dakota_BINARY_DIR}/DjsDll/install/bin/ DESTINATION bin)
+	  install(DIRECTORY ${Dakota_BINARY_DIR}/DjsDll/install/bin/ DESTINATION bin
+	    FILES_MATCHING PATTERN "*.dll")
 	endif()
   else()
-    # To get this working, need care w.r.t. imported BLAS/LAPACK targets
     add_subdirectory(java)
   endif()
 endif()
