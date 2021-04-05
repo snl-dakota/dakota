@@ -97,6 +97,8 @@ namespace python {
 
       Dakota::ProgramOptions opts;
       opts.echo_input(false);
+      // avoid calling std::exit and taking down the Python instance too
+      opts.exit_mode("throw");
       opts.input_string(input_string);
 
       auto p_libEnv = new Dakota::LibraryEnvironment(opts);
