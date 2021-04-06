@@ -482,7 +482,7 @@ inline bool ApproximationInterface::advancement_available()
   if (sharedData.advancement_available()) return true; // check Shared first
   else {
     bool refine = false;
-    for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
+    for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
       if (functionSurfaces[*it].advancement_available())
 	refine = true; // no break; accumulate advancement types across fns
     return refine;

@@ -31,6 +31,7 @@
 #include "dakota_tabular_io.hpp"
 #include "ParallelLibrary.hpp"
 #include "NatafTransformation.hpp"
+#include "pecos_math_util.hpp"
 
 //#define DEBUG
 //#define CONVERGENCE_DATA
@@ -560,8 +561,8 @@ configure_expansion_orders(unsigned short exp_order, const RealVector& dim_pref,
   if (exp_order == USHRT_MAX)
     exp_orders.clear();
   else
-    NonDIntegration::dimension_preference_to_anisotropic_order(exp_order,
-      dim_pref, numContinuousVars, exp_orders);
+    Pecos::dimension_preference_to_anisotropic_order(exp_order, dim_pref,
+      numContinuousVars, exp_orders);
 }
 
 

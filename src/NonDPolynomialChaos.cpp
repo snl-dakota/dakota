@@ -27,6 +27,7 @@
 #include "CubatureDriver.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
+#include "pecos_math_util.hpp"
 #include "nested_sampling.hpp"
 #include "math_tools.hpp"
 
@@ -563,7 +564,7 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
       // convert aniso vector to scalar + dim_pref.  If iso, dim_pref is
       // empty; if aniso, it differs from exp_order aniso due to offset.
       unsigned short quad_order; RealVector dim_pref;
-      NonDIntegration::anisotropic_order_to_dimension_preference(dim_quad_order,
+      Pecos::anisotropic_order_to_dimension_preference(dim_quad_order,
 	quad_order, dim_pref);
       // use alternate NonDQuad ctor to filter (deprecated) or sub-sample
       // quadrature points (uSpaceModel.build_approximation() invokes

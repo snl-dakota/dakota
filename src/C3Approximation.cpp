@@ -78,7 +78,7 @@ recover_function_train_orders(const std::vector<OneApproxOpts*>& a_opts)
 }
 
 
-bool C3Approximation::advancement_available() // *** TO DO: change name to range_update_available()
+bool C3Approximation::advancement_available()
 {
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(sharedDataRep);

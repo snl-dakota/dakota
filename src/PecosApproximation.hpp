@@ -304,6 +304,8 @@ protected:
   void combined_to_active_coefficients(bool clear_combined = true);
   void clear_inactive_coefficients();
 
+  bool advancement_available();
+
   void print_coefficients(std::ostream& s, bool normalized);
 
   /// return expansion coefficients in a form consistent with the
@@ -791,6 +793,10 @@ inline void PecosApproximation::clear_computed_bits()
 
 inline void PecosApproximation::clear_inactive_coefficients()
 { pecosBasisApprox.clear_inactive(); }
+
+
+inline bool PecosApproximation::advancement_available()
+{ return pecosBasisApprox.advancement_available(); }
 
 
 inline void PecosApproximation::

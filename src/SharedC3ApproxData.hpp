@@ -526,8 +526,8 @@ inline size_t SharedC3ApproxData::max_rank_regression_size()
 inline size_t SharedC3ApproxData::max_order_regression_size()
 {
   //UShortArray max_orders; RealVector dim_pref;//isotropic for now: no XML spec
-  //NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
-  //  dim_pref, numVars, max_orders);
+  //Pecos::dimension_preference_to_anisotropic_order(max_o, dim_pref,
+  //  numVars, max_orders);
 
   unsigned short max_o = max_order();
   UShortArray max_orders(numVars, max_o);// no dim_pref; adaptOrder is isotropic
@@ -539,8 +539,8 @@ inline size_t SharedC3ApproxData::max_order_regression_size()
 inline size_t SharedC3ApproxData::max_regression_size()
 {
   //UShortArray max_orders; RealVector dim_pref;//isotropic for now: no XML spec
-  //NonDIntegration::dimension_preference_to_anisotropic_order(max_o,
-  //  dim_pref, numVars, max_orders);
+  //Pecos::dimension_preference_to_anisotropic_order(max_o, dim_pref,
+  //  numVars, max_orders);
 
   size_t max_r = max_rank();  unsigned short max_o = max_order();
   UShortArray max_orders(numVars, max_o);// no dim_pref; adaptOrder is isotropic
