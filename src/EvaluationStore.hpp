@@ -99,6 +99,16 @@ class EvaluationStore {
     /// Create the root scale group
     String create_scale_root(const String &root_group);
 
+    /// Declare the source of an iterator
+    void declare_iterator_source(const String owner_id, const String source_id, const String source_type);
+
+    /// Update the listing of active source models
+    void update_source_models(const String owner_id, const String source_id);
+
+    /// Declare the source of a model
+    void declare_model_source(const String owner_id, const String owner_type,
+                              const String source_id, const String source_type);
+
     /// Create the root model group
     String create_model_root(const String &model_id, const String &model_type);
 

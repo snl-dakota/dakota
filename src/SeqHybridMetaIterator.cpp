@@ -540,7 +540,7 @@ update_local_results(PRPArray& prp_results, int job_id)
 
 void SeqHybridMetaIterator::declare_sources() {
   for(const auto & si : selectedIterators)
-    evaluationsDB.declare_source(method_id(), "metaiterator",
+    evaluationsDB.declare_source(method_id(), "iterator",
         si.method_id(), "iterator");
 }
 
