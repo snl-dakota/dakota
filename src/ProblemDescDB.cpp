@@ -2136,6 +2136,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"surrogate.kriging_opt_method", P_MOD krigingOptMethod},
       {"surrogate.mars_interpolation", P_MOD marsInterpolation},
       {"surrogate.model_export_prefix", P_MOD modelExportPrefix},
+      {"surrogate.model_import_prefix", P_MOD modelImportPrefix},
       {"surrogate.point_reuse", P_MOD approxPointReuse},
       {"surrogate.refine_cv_metric", P_MOD refineCVMetric},
       {"surrogate.trend_order", P_MOD trendOrder},
@@ -2482,7 +2483,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"surrogate.export_approx_format", P_MOD exportApproxFormat},
       {"surrogate.export_approx_variance_format", P_MOD exportApproxVarianceFormat},
       {"surrogate.import_build_format", P_MOD importBuildFormat},
-      {"surrogate.model_export_format", P_MOD modelExportFormat}
+      {"surrogate.model_export_format", P_MOD modelExportFormat},
+      {"surrogate.model_import_format", P_MOD modelImportFormat}
     },
     { /* variables */ },
     { /* interface */
@@ -2715,6 +2717,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"surrogate.domain_decomp", P_MOD domainDecomp},
       {"surrogate.export_surrogate", P_MOD exportSurrogate},
       {"surrogate.import_build_active_only", P_MOD importBuildActive},
+      {"surrogate.import_surrogate", P_MOD importSurrogate},
       {"surrogate.import_use_variable_labels", P_MOD importUseVariableLabels},
       {"surrogate.point_selection", P_MOD pointSelection},
       {"surrogate.press", P_MOD pressFlag},

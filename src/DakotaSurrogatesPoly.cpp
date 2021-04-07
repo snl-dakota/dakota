@@ -65,6 +65,11 @@ SurrogatesPolyApprox::min_coefficients() const
 void
 SurrogatesPolyApprox::build()
 {
+  // clear any imported model mapping
+  modelIsImported = false;
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    varsMapIndices.clear();
+
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp);
 

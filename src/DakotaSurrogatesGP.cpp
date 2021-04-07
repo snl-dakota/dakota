@@ -21,7 +21,6 @@ using dakota::MatrixXd;
 
 namespace Dakota {
 
-
 SurrogatesGPApprox::
 SurrogatesGPApprox(const ProblemDescDB& problem_db,
 		   const SharedApproxData& shared_data,
@@ -76,6 +75,9 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   shared_surf_data_rep->validate_metrics(allowed_metrics);
+
+  if (problem_db.get_bool("model.surrogate.import_surrogate"))
+    import_model(problem_db);
 }
 
 
@@ -123,6 +125,11 @@ SurrogatesGPApprox::min_coefficients() const
 void
 SurrogatesGPApprox::build()
 {
+  // clear any imported model mapping
+  modelIsImported = false;
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    varsMapIndices.clear();
+
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp);
 
@@ -159,10 +166,7 @@ SurrogatesGPApprox::build()
 
 Real SurrogatesGPApprox::prediction_variance(const Variables& vars)
 {
-  RealVector x_rv(sharedDataRep->numVars);
-  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-    vars_to_realarray(vars, x_rv);
-  return prediction_variance(x_rv);
+  return prediction_variance(map_eval_vars(vars));
 }
 
 Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
@@ -173,8 +177,7 @@ Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
     abort_handler(-1);
   }
 
-  const int num_vars = c_vars.length();
-  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), c_vars.length());
 
   auto gp_model =
       std::static_pointer_cast<dakota::surrogates::GaussianProcess>(model);
