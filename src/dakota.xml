@@ -515,6 +515,7 @@
 	     <keyword  id="ratio_order" name="ratio_order" code="{N_mdm(Realp,collocRatioTermsOrder)}" label="ratio_order"  minOccurs="0" default="1." >
 	       <param type="REAL" />
 	     </keyword>
+	     <keyword  id="response_scaling" name="response_scaling" code="{N_mdm(true,respScalingFlag)}" label="Scale response data prior to build" help="" minOccurs="0" default="use original data"/>
 	     <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only"/>
 	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid"  minOccurs="0" default="regression with LHS sample set (point collocation)" />
 	     <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points"  minOccurs="0" default="no sample reuse in coefficient estimation" >
