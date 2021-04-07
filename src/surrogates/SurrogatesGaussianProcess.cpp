@@ -71,10 +71,22 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
           "Invalid verbosity int for GaussianProcess surrogate"));
   }
 
+  /* Standardize the response */
+  bool standardize_response = configOptions.get<bool>("standardize response");
+  if (standardize_response) {
+    auto responseScaler = util::scaler_factory(
+        util::DataScaler::scaler_type("standardization"),
+        response);
+    targetValues = responseScaler->scale_samples(response);
+    responseOffset = responseScaler->get_scaler_features_offsets()(0);
+    responseScaleFactor = responseScaler->get_scaler_features_scale_factors()(0);
+  }
+  else
+    targetValues = response;
+
   numQOI = response.cols();
   numSamples = samples.rows();
   numVariables = samples.cols();
-  targetValues = response;
   eyeMatrix = MatrixXd::Identity(numSamples, numSamples);
   hasBestCholFact = false;
   kernel_type = configOptions.get<std::string>("kernel type");
@@ -321,7 +333,7 @@ VectorXd GaussianProcess::value(const MatrixXd& eval_points, const int qoi) {
     MatrixXd z = CholFact.solve(basisMatrix);
     approx_values += (pred_basis_matrix * betaValues);
   }
-  return approx_values;
+  return responseScaleFactor * approx_values.array() + responseOffset;
 }
 
 MatrixXd GaussianProcess::gradient(const MatrixXd& eval_points, const int qoi) {
@@ -370,7 +382,7 @@ MatrixXd GaussianProcess::gradient(const MatrixXd& eval_points, const int qoi) {
     MatrixXd poly_grad_pred_pts;
     gradient += polyRegression->gradient(scaled_pred_pts);
   }
-  return gradient;
+  return responseScaleFactor * gradient;
 }
 
 MatrixXd GaussianProcess::hessian(const MatrixXd& eval_point, const int qoi) {
@@ -418,7 +430,7 @@ MatrixXd GaussianProcess::hessian(const MatrixXd& eval_point, const int qoi) {
     hessian += polyRegression->hessian(scaled_pred_point);
   }
 
-  return hessian;
+  return responseScaleFactor * hessian;
 }
 
 MatrixXd GaussianProcess::covariance(const MatrixXd& eval_points,
@@ -469,7 +481,7 @@ MatrixXd GaussianProcess::covariance(const MatrixXd& eval_points,
     covariance += (R_mat * (h_mat.ldlt().solve(R_mat.transpose())));
   }
 
-  return covariance;
+  return pow(responseScaleFactor, 2) * covariance;
 }
 
 VectorXd GaussianProcess::variance(const MatrixXd& eval_points, const int qoi) {
@@ -577,6 +589,8 @@ void GaussianProcess::default_options() {
                            "local optimizer number of initial iterates");
   defaultConfigOptions.set("gp seed", 42,
                            "random seed for initial iterate generation");
+  defaultConfigOptions.set("standardize response", false,
+                           "Make the response zero mean and unit variance");
   /* Verbosity levels
      2 - maximum level: print out config options and building notification
      1 - minimum level: print out building notification

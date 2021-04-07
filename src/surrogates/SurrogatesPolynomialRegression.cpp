@@ -94,11 +94,24 @@ void PolynomialRegression::build(const MatrixXd& samples,
   int max_degree = configOptions.get<int>("max degree");
   double p_norm = configOptions.get<double>("p-norm");
   bool use_reduced_basis = configOptions.get<bool>("reduced basis");
+  bool standardize_response = configOptions.get<bool>("standardize response");
   if (use_reduced_basis)
     compute_reduced_indices(numVariables, max_degree, basisIndices);
   else
     compute_hyperbolic_indices(numVariables, max_degree, p_norm, basisIndices);
   numTerms = basisIndices.cols();
+
+  /* Standardize the response */
+  MatrixXd scaled_response;
+  if (standardize_response) {
+    SCALER_TYPE responseScalerType = util::DataScaler::scaler_type("standardization");
+    auto responseScaler = util::scaler_factory(responseScalerType, response);
+    scaled_response = responseScaler->scale_samples(response);
+    responseOffset = responseScaler->get_scaler_features_offsets()(0);
+    responseScaleFactor = responseScaler->get_scaler_features_scale_factors()(0);
+  }
+  else
+    scaled_response = response;
 
   /* Construct the basis matrix */
   MatrixXd unscaled_basis_matrix;
@@ -115,11 +128,11 @@ void PolynomialRegression::build(const MatrixXd& samples,
   SOLVER_TYPE solverType = util::LinearSolverBase::solver_type(
       configOptions.get<std::string>("regression solver type"));
   linearSolver = util::solver_factory(solverType);
-  linearSolver->solve(scaled_basis_matrix, response, polynomialCoeffs);
+  linearSolver->solve(scaled_basis_matrix, scaled_response, polynomialCoeffs);
 
   /* Compute the intercept */
   polynomialIntercept =
-      response.mean() - (scaled_basis_matrix * polynomialCoeffs).mean();
+      scaled_response.mean() - (scaled_basis_matrix * polynomialCoeffs).mean();
 }
 
 VectorXd PolynomialRegression::value(const MatrixXd& eval_points,
@@ -141,7 +154,8 @@ VectorXd PolynomialRegression::value(const MatrixXd& eval_points,
 
   /* Compute the prediction values*/
   approx_values = scaled_eval_pts_basis_matrix * polynomialCoeffs;
-  approx_values = (approx_values.array() + polynomialIntercept).matrix();
+  approx_values = (approx_values.array() + polynomialIntercept) 
+                * responseScaleFactor + responseOffset;
   return approx_values;
 }
 
@@ -152,6 +166,8 @@ void PolynomialRegression::default_options() {
   defaultConfigOptions.set("scaler type", "none", "Type of data scaling");
   defaultConfigOptions.set("regression solver type", "SVD",
                            "Type of regression solver");
+  defaultConfigOptions.set("standardize response", false,
+                           "Make the response zero mean and unit variance");
   /* Verbosity levels
      2 - maximum level: print out config options and building notification
      1 - minimum level: print out building notification
@@ -197,7 +213,7 @@ MatrixXd PolynomialRegression::gradient(const MatrixXd& eval_points,
                            scaled_eval_pts_basis_matrix);
 
   /* Compute the gradient */
-  return scaled_eval_pts_basis_matrix * deriv_coeffs;
+  return scaled_eval_pts_basis_matrix * deriv_coeffs * responseScaleFactor;
 }
 
 MatrixXd PolynomialRegression::hessian(const MatrixXd& eval_point,
@@ -252,7 +268,7 @@ MatrixXd PolynomialRegression::hessian(const MatrixXd& eval_point,
       }
     }
   }
-  return hessian;
+  return hessian * responseScaleFactor;
 }
 
 const MatrixXd& PolynomialRegression::get_polynomial_coeffs() const {
