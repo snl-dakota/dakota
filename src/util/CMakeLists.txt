@@ -71,6 +71,6 @@ dakota_strict_warnings(dakota_util)
 dakota_gcov_target(dakota_util)
 
 install(FILES ${util_headers} DESTINATION "include")
-install(TARGETS dakota_util EXPORT ${ExportTarget} DESTINATION lib)
+install(TARGETS dakota_util EXPORT ${ExportTarget})
 
 add_subdirectory(unit)

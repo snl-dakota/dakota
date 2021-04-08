@@ -58,7 +58,7 @@ public:
   /// alternate constructor
   SurfpackApproximation(const SharedApproxData& shared_data);
   /// destructor
-  ~SurfpackApproximation();
+  ~SurfpackApproximation() { }
 
 protected:
 
@@ -73,6 +73,10 @@ protected:
   /// SurfData object will be created from Dakota's SurrogateData,
   /// and the appropriate Surfpack build method will be invoked
   void build() override;
+
+
+  /// validate imported labels and initialize map if needed
+  void map_variable_labels(const Variables& vars);
 
   /// export the Surpack model to disk or console
   void export_model(const StringArray& var_labels, const String& fn_label,
@@ -144,14 +148,20 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// copy from SurrogateData to SurfPoint/SurfData
-  SurfData* surrogates_to_surf_data();
+  /// construct-time only import of serialized surrogate
+  void import_model(const ProblemDescDB& problem_db);
+
+  /// copy from SurrogateData to SurfPoint/SurfData in surfData
+  void surrogates_to_surf_data();
 
   /// set the anchor point (including gradient and hessian if present)
   /// into surf_data
   void add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
 				   const Pecos::SurrogateDataResp& anchor_resp,
-				   short fail_code, SurfData& surf_data);
+				   short fail_code);
+
+  /// extract active or all view as vector, mapping if needed for import
+  RealArray map_eval_vars(const Variables& vars);
 
   //
   //- Heading: Data
@@ -163,19 +173,21 @@ private:
   //RealVector coefficients;
 
   /// The native Surfpack approximation
-  SurfpackModel* model;
+  std::shared_ptr<SurfpackModel> spModel;
   /// factory for the SurfpackModel instance
-  SurfpackModelFactory* factory;
+  std::shared_ptr<SurfpackModelFactory> spFactory;
   /// The data used to build the approximation, in Surfpack format
-  SurfData* surfData;
+  std::shared_ptr<SurfData> surfData;
 
   // convenience pointer to shared data representation
   //std::shared_ptr<SharedSurfpackApproxData> sharedSurfDataRep;
+
+  /// whether model serialized in from disk
+  bool modelIsImported;
 };
 
 
-inline SurfpackApproximation::SurfpackApproximation():
-  surfData(NULL), model(NULL), factory(NULL)//, sharedDataRep(NULL)
+inline SurfpackApproximation::SurfpackApproximation() // : sharedDataRep(NULL)
 { }
 
 

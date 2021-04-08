@@ -175,6 +175,12 @@ class Surrogate {
   /// DataScaler class for a Surrogate's build samples.
   util::DataScaler dataScaler;
 
+  /// Response offset
+  double responseOffset = 0.;
+
+  /// Response scale factor
+  double responseScaleFactor = 1.;
+
   /// serialize Surrogate to file (typically through
   /// shared_ptr<Surrogate>, but Derived& or Derived* okay too)
   template <typename SurrHandle>
@@ -328,6 +334,8 @@ void Surrogate::serialize(Archive& archive, const unsigned int version) {
   archive& numVariables;
   archive& variableLabels;
   archive& responseLabels;
+  archive& responseOffset;
+  archive& responseScaleFactor;
   // archive & configOptions;
 }
 

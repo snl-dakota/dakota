@@ -9,7 +9,7 @@ method,
 	sampling
 	  samples = 5000 seed = 5
 	  sample_type lhs
-	  response_levels = 2.e-5 3.e-5 4.e-5		#s0,#s1,#s2,#s3,#s6,#s7
+	  response_levels = 2.e-5 3.e-5 4.e-5		#s0,#s1,#s2,#s3,#s6,#s7,#s8
 
 model,
 	id_model = 'UQ_M'
@@ -17,9 +17,13 @@ model,
 	  dace_method_pointer = 'DACE'
 	  polynomial quadratic		#s0
 # 	  neural_network		#s1
-#	  gaussian_process surfpack	#s2,#s4,#s5,#s6,#s7
-#           export_model                #s2
-#           filename_prefix = 'exported_GP'  formats = algebraic_file binary_archive #s2
+#	  gaussian_process surfpack	#s2,#s4,#s5,#s6,#s7,#s8
+#           export_model				#s2
+#             filename_prefix = 'exported_GP'		#s2
+#             formats = algebraic_file binary_archive	#s2
+#           import_model                		#s8
+#             filename_prefix = 'exported_GP'		#s8
+#	      binary_archive				#s8
 #	  mars				#s3
 
 # Test 2 with a samples file, free-form or annotated
@@ -28,11 +32,11 @@ model,
 #	  freeform     						 #s7
 
 variables,
-	lognormal_uncertain =  2		#s0,#s1,#s2,#s3,#s4,#s6,#s7
-	  means             =  1.0  1.0		#s0,#s1,#s2,#s3,#s4,#s6,#s7
+	lognormal_uncertain =  2		#s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8
+	  means             =  1.0  1.0		#s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8
 #	  std_deviations    =  0.5  0.5		# Alternative to err factors
-	  error_factors     =  1.1  1.1		#s0,#s1,#s2,#s3,#s4,#s6,#s7
-	  descriptors       =  'TF1ln' 'TF2ln'	#s0,#s1,#s2,#s3,#s4,#s6,#s7
+	  error_factors     =  1.1  1.1		#s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8
+	  descriptors       =  'TF1ln' 'TF2ln'	#s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8
 #	discrete_uncertain_set integer = 1				#s4
 #	  set_probs  = .1 .2 .4 .2 .1					#s4
 #	  set_values =  1  2  3  4  5					#s4
@@ -43,6 +47,12 @@ variables,
 #	            0.200 2.166 4.133 6.100 8.067 10.033 12.000		#s5
 #	  counts    1     1     1     1     1     1      1		#s5
 #	            1     1     1     1     1     1      1		#s5
+# Add two extra variables that don't map to the imported surrogate to test
+# reordering:
+#       continuous_design = 1	      	    	  	 		#s8
+#         initial_point = -1.0						#s8
+#       continuous_state = 1	      	    	  	 		#s8
+#         initial_state = 1.0						#s8
 
 responses,
 	response_functions = 1

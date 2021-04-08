@@ -194,19 +194,28 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
 
 Real SurrogatesBaseApprox::value(const Variables& vars)
 {
-  RealVector x_rv(sharedDataRep->numVars);
-  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-    vars_to_realarray(vars, x_rv);
-  return value(x_rv);
+  return value(map_eval_vars(vars));
 }
 
 
 const RealVector& SurrogatesBaseApprox::gradient(const Variables& vars)
 {
-  RealVector x_rv(sharedDataRep->numVars);
-  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-    vars_to_realarray(vars, x_rv);
-  return gradient(x_rv);
+  return gradient(map_eval_vars(vars));
+}
+
+
+RealVector SurrogatesBaseApprox::map_eval_vars(const Variables& vars)
+{
+  if (modelIsImported)
+    return std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      imported_eval_vars<RealVector>(vars);
+  else {
+    // active or all variables
+    RealVector surr_vars(sharedDataRep->numVars);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+      vars_to_realarray(vars, surr_vars);
+    return surr_vars;
+  }
 }
 
 
@@ -219,9 +228,7 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
     abort_handler(-1);
   }
 
-  const int num_vars = c_vars.length();
-  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
-
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), c_vars.length());
   return model->value(eval_point)(0);
 }
     
@@ -246,18 +253,55 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
 
 
 void SurrogatesBaseApprox::
+import_model(const ProblemDescDB& problem_db)
+{
+  auto import_prefix =
+    problem_db.get_string("model.surrogate.model_import_prefix");
+  auto import_format =
+    problem_db.get_ushort("model.surrogate.model_import_format");
+  bool is_binary = import_format & BINARY_ARCHIVE;
+  std::string filename = import_prefix + "." + approxLabel +
+    (is_binary ? ".bin" : ".txt");
+
+  model = dakota::surrogates::Surrogate::load(filename, is_binary);
+
+  if (sharedDataRep->outputLevel >= NORMAL_OUTPUT)
+    Cout << "Imported surrogate for response '" << approxLabel
+	 << "' from file '" << filename << "'." << std::endl;
+
+  if (sharedDataRep->outputLevel >= SILENT_OUTPUT &&
+      !model->response_labels().empty()) {
+    auto imported_label = model->response_labels()[0];
+    if (imported_label != approxLabel)
+      Cout << "\nWarning: Surrogate imported from file " << filename
+	   << "\nhas response label '" << imported_label << "'; expected '"
+	   << approxLabel << "'." << std::endl;
+  }
+
+  modelIsImported = true;
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    varsMapIndices.clear();
+}
+
+
+void
+SurrogatesBaseApprox::map_variable_labels(const Variables& dfsm_vars)
+{
+  // When importing, always map from all variables to the
+  // subset needed by the surrogate...
+  const auto& approx_labels = model->variable_labels();
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    map_variable_labels(dfsm_vars, approx_labels);
+}
+
+
+void SurrogatesBaseApprox::
 export_model(const Variables& vars, const String& fn_label,
 	     const String& export_prefix, const unsigned short export_format)
 {
-  // order the variable labels the way the surrogate inputs are ordered
-  StringArray var_labels(vars.continuous_variable_labels().begin(),
-			 vars.continuous_variable_labels().end());
-  var_labels.insert(var_labels.end(),
-		    vars.discrete_int_variable_labels().begin(),
-		    vars.discrete_int_variable_labels().end());
-  var_labels.insert(var_labels.end(),
-		    vars.discrete_real_variable_labels().begin(),
-		    vars.discrete_real_variable_labels().end());
+  StringArray var_labels =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    variable_labels(vars);
   export_model(var_labels, fn_label, export_prefix, export_format);
 }
 

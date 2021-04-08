@@ -260,6 +260,9 @@ public:
   /// that invalidates previous results
   virtual void clear_computed_bits();
 
+  /// if needed, map passed all variable labels to approximation's labels
+  virtual void map_variable_labels(const Variables& dfsm_vars);
+
   //
   //- Heading: Member functions
   //

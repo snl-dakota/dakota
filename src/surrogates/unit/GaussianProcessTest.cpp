@@ -810,7 +810,7 @@ TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
   gp_2D.get_options(current_opts);
   current_opts.set("kernel type", kernel_type);
   current_opts.sublist("Nugget").set("fixed nugget", 0.0);
-  param_list.set("num restarts", 20);
+  current_opts.set("num restarts", 20);
   gp_2D.set_options(current_opts);
 
   gp_2D.build(samples, response);

@@ -162,6 +162,43 @@ copy_matrix(const RealSymMatrix& rsm, SurfpackMatrix<Real>& surfpack_matrix)
 }
 
 
+StringArray
+SharedSurfpackApproxData::variable_labels(const Variables& vars) const
+{
+  // order the variable labels the way the surrogate inputs are ordered
+  // check incoming vars for correct length (active or all views)
+  StringArray var_labels;
+  if (vars.cv() + vars.div() + vars.drv() == numVars) {
+    var_labels.insert(var_labels.end(),
+		      vars.continuous_variable_labels().begin(),
+		      vars.continuous_variable_labels().end());
+    var_labels.insert(var_labels.end(),
+		      vars.discrete_int_variable_labels().begin(),
+		      vars.discrete_int_variable_labels().end());
+    var_labels.insert(var_labels.end(),
+		      vars.discrete_real_variable_labels().begin(),
+		      vars.discrete_real_variable_labels().end());
+  }
+  else if (vars.acv() + vars.adiv() + vars.adrv() == numVars) {
+    var_labels.insert(var_labels.end(),
+		      vars.all_continuous_variable_labels().begin(),
+		      vars.all_continuous_variable_labels().end());
+    var_labels.insert(var_labels.end(),
+		      vars.all_discrete_int_variable_labels().begin(),
+		      vars.all_discrete_int_variable_labels().end());
+    var_labels.insert(var_labels.end(),
+		      vars.all_discrete_real_variable_labels().begin(),
+		      vars.all_discrete_real_variable_labels().end());
+  }
+  else {
+    Cerr << "Error: bad variable size in SharedSurfpackApproxData::"
+	 << "variable_labels()." << std::endl;
+    abort_handler(-1);
+  }
+  return var_labels;
+}
+
+
 void SharedSurfpackApproxData::
 validate_metrics(const std::set<std::string>& allowed_metrics)
 {
@@ -215,6 +252,60 @@ validate_metrics(const std::set<std::string>& allowed_metrics)
 }
 
 
+void SharedSurfpackApproxData::
+map_variable_labels(const Variables& dfsm_vars,
+		    const StringArray& approx_labels)
+{
+  // When importing, always map from all variables to the
+  // subset needed by the surrogate...
+  // the surrogate was built over active or all cont, int, real
+  const auto& cv_labels = dfsm_vars.all_continuous_variable_labels();
+  StringArray all_labels(cv_labels.begin(), cv_labels.end());
+  const auto& div_labels = dfsm_vars.all_discrete_int_variable_labels();
+  all_labels.insert(all_labels.end(), div_labels.begin(), div_labels.end());
+  const auto& drv_labels = dfsm_vars.all_discrete_real_variable_labels();
+  all_labels.insert(all_labels.end(), drv_labels.begin(), drv_labels.end());
+
+  bool vars_equal = (all_labels == approx_labels);
+  if (!vars_equal) {
+    if (approx_labels.empty()) {
+      Cerr << "\nError: Imported surrogate has no variable labels; cannot "
+	   << "determine variable map." << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
+
+    // each approx model var must be in the wrapping model's var set
+    varsMapIndices.clear();
+    varsMapIndices.reserve(approx_labels.size());
+    StringArray missing_labels;
+    for (const auto& approx_label : approx_labels) {
+      size_t ind = find_index(all_labels, approx_label);
+      if (ind == _NPOS)
+	missing_labels.push_back(approx_label);
+      else
+	varsMapIndices.push_back(ind);
+    }
+    if (!missing_labels.empty()) {
+      Cerr << "\nError: Imported surrogate includes variable labels\n"
+	   << missing_labels << "\nnot present in model's variables:\n"
+	   << all_labels << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
+
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Info: mapping model's variables to imported surrogate."
+	   << std::endl;
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "Model all_vars by domain type\n" << all_labels << std::endl;
+      Cout << "Indices s.t. surr_vars[i] = all_vars[index[i]]\n"
+	   << varsMapIndices << std::endl;
+      Cout << "Imported surrogate labels\n" << approx_labels << std::endl;
+      Cout << "Model all_vars mapped to surrogate\n";
+      for (size_t i=0; i<varsMapIndices.size(); ++i)
+	Cout << all_labels[varsMapIndices[i]] << "\n";
+    }
+  }
+}
 
 
 } // namespace Dakota
