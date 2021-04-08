@@ -124,7 +124,7 @@ declare_source(const String &owner_id, const String &owner_type,
 #endif
 }
 
-
+#ifdef DAKOTA_HAVE_HDF5
 void EvaluationStore::declare_iterator_source(const String owner_id, const String source_id, const String source_type) {
   
   String link_location = String("/methods/") + owner_id + "/sources/" + source_id;
@@ -138,13 +138,6 @@ void EvaluationStore::declare_iterator_source(const String owner_id, const Strin
       hdf5Stream->create_softlink(link_location, source_location);
     }
   } 
-}
-
-
-void EvaluationStore::update_source_models(const String owner_id, const String source_id) {
-    if( (modelSelection == MODEL_EVAL_STORE_TOP_METHOD && owner_id == topLevelMethodId) || 
-         modelSelection == MODEL_EVAL_STORE_ALL_METHODS )
-      sourceModels.emplace(source_id);
 }
 
 
@@ -162,6 +155,14 @@ void EvaluationStore::declare_model_source(const String owner_id, const String o
     String source_location = String("/models/") + source_type + "/" + source_id;
     hdf5Stream->create_softlink(link_location, source_location);
   }
+}
+#endif
+
+
+void EvaluationStore::update_source_models(const String owner_id, const String source_id) {
+    if( (modelSelection == MODEL_EVAL_STORE_TOP_METHOD && owner_id == topLevelMethodId) || 
+         modelSelection == MODEL_EVAL_STORE_ALL_METHODS )
+      sourceModels.emplace(source_id);
 }
 
 
