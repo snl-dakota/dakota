@@ -49,10 +49,10 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
   //adaptConstruct(false),
   c3AdvancementType(NO_C3_ADVANCEMENT),
-  maxCVRankCandidates(
-    problem_db.get_sizet("model.c3function_train.max_cv_rank_candidates")),
-  maxCVOrderCandidates(
-    problem_db.get_ushort("model.c3function_train.max_cv_order_candidates"))
+  maxCVRankCandidates(problem_db.get_sizet(
+    "model.c3function_train.cross_validation.max_rank_candidates")),
+  maxCVOrderCandidates(problem_db.get_ushort(
+    "model.c3function_train.cross_validation.max_order_candidates"))
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)

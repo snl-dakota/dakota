@@ -1683,6 +1683,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+          [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
          ]
         [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -1723,6 +1724,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+          [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
          ]
         [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -1974,6 +1976,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+          [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
          ]
         [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -2188,6 +2191,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+          [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
          ]
         [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -3417,6 +3421,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -3457,6 +3462,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -3577,6 +3583,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -3726,6 +3733,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -4164,6 +4172,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -4204,6 +4213,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -4324,6 +4334,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -4473,6 +4484,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -4810,6 +4822,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -4850,6 +4863,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -4970,6 +4984,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]
@@ -5119,6 +5134,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ response_scaling {N_mdm(true,respScalingFlag)} ]

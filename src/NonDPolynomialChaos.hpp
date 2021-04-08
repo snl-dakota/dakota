@@ -189,6 +189,9 @@ protected:
   /// flag to restrict cross-validation to only estimate the noise
   /// tolerance in order to manage computational cost
   bool crossValidNoiseOnly;
+  /// maximum number of expansion order candidates for cross-validation
+  /// in regression-based PCE
+  unsigned short maxCVOrderCandidates;
   /// flag for scaling response data to [0,1] for alignment with regression tols
   bool respScaling;
 

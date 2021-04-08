@@ -41,6 +41,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
+  maxCVOrderCandidates(
+    problem_db.get_bool("method.nond.cross_validation.max_order_candidates")),
   respScaling(problem_db.get_bool("method.nond.response_scaling")),
   noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
   l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
@@ -162,9 +164,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		refine_type, refine_control, covar_control, 0., rule_nest,
 		rule_growth, piecewise_basis, use_derivs), 
   // Note: non-zero seed would be needed for expansionSampler, if defined
-  crossValidation(false), crossValidNoiseOnly(false), respScaling(false),
-  l2Penalty(0.), numAdvance(3), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type)
+  crossValidation(false), crossValidNoiseOnly(false),
+  maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   // ----------------
@@ -241,9 +243,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		refine_type, refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs), 
-  crossValidation(cv_flag), crossValidNoiseOnly(false), respScaling(false),
-  importBuildPointsFile(import_build_pts_file), l2Penalty(0.), numAdvance(3),
-  expOrderSpec(exp_order), collocPtsSpec(colloc_pts),
+  crossValidation(cv_flag), crossValidNoiseOnly(false),
+  maxCVOrderCandidates(USHRT_MAX), respScaling(false),
+  importBuildPointsFile(import_build_pts_file), l2Penalty(0.),
+  numAdvance(3), expOrderSpec(exp_order), collocPtsSpec(colloc_pts),
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false)
 {
@@ -307,6 +310,8 @@ NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
+  maxCVOrderCandidates(
+    problem_db.get_bool("method.nond.cross_validation.max_order_candidates")),
   respScaling(problem_db.get_bool("method.nond.response_scaling")),
   noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
   l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
@@ -340,9 +345,9 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
   NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
 		refine_type, refine_control, covar_control, 0., rule_nest,
 		rule_growth, piecewise_basis, use_derivs), 
-  crossValidation(false), crossValidNoiseOnly(false), respScaling(false),
-  l2Penalty(0.), numAdvance(3), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type)
+  crossValidation(false), crossValidNoiseOnly(false),
+  maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   multilevAllocControl     = ml_alloc_control;
@@ -366,9 +371,10 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		refine_type, refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs),
-  crossValidation(cv_flag), crossValidNoiseOnly(false), respScaling(false),
-  l2Penalty(0.), numAdvance(3), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type) //resizedFlag(false), callResize(false)
+  crossValidation(cv_flag), crossValidNoiseOnly(false),
+  maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  //resizedFlag(false), callResize(false)
 {
   multilevAllocControl     = ml_alloc_control;
   multilevDiscrepEmulation = ml_discrep;
@@ -841,9 +847,9 @@ void NonDPolynomialChaos::initialize_u_space_model()
     // user spec) as well as seed progressions for varyPattern.  Coordinate
     // with JDJ on whether Dakota or CV should own these features.
     Pecos::RegressionConfigOptions
-      rc_options(crossValidation, crossValidNoiseOnly, respScaling,
-		 random_seed(), noiseTols, l2Penalty, false, 0/*initSGLevel*/,
-		 2, numAdvance);
+      rc_options(crossValidation, crossValidNoiseOnly, maxCVOrderCandidates,
+		 respScaling, random_seed(), noiseTols, l2Penalty, false,
+		 0/*initSGLevel*/, 2, numAdvance);
     shared_data_rep->configuration_options(rc_options);
 
     // updates for automatic order adaptation

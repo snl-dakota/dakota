@@ -451,9 +451,9 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
   shared_data_rep->set_parameter("advancement_type", c3AdvancementType);
 
   shared_data_rep->set_parameter("max_cv_rank",  probDescDB.get_sizet(
-    "method.nond.c3function_train.max_cv_rank_candidates"));
+    "method.nond.cross_validation.max_rank_candidates"));
   shared_data_rep->set_parameter("max_cv_order", probDescDB.get_ushort(
-    "method.nond.c3function_train.max_cv_order_candidates"));
+    "method.nond.cross_validation.max_order_candidates"));
   //shared_data_rep->infer_max_cross_validation_ranges();
 }
 
