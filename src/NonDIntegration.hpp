@@ -76,15 +76,6 @@ public:
   /// return IntegrationDriver::polynomialBasis
   std::vector<Pecos::BasisPolynomial>& polynomial_basis();
 
-  /// convert scalar_order_spec and vector dim_pref_spec to vector aniso_order
-  static void dimension_preference_to_anisotropic_order(
-    unsigned short scalar_order_spec, const RealVector& dim_pref_spec,
-    size_t num_v, UShortArray& aniso_order);
-  /// convert vector aniso_order to scalar_order and vector dim_pref
-  static void anisotropic_order_to_dimension_preference(
-    const UShortArray& aniso_order, unsigned short& scalar_order,
-    RealVector& dim_pref);
-
   /// return numIntDriver
   const Pecos::IntegrationDriver& driver() const;
 

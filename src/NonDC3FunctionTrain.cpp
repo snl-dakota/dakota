@@ -22,6 +22,8 @@
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
+#include "pecos_math_util.hpp"
+
 //#define DEBUG
 
 
@@ -318,7 +320,7 @@ config_regression(size_t colloc_pts, size_t regress_size, int seed,
     // convert aniso vector to scalar + dim_pref.  If iso, dim_pref is
     // empty; if aniso, it differs from exp_order aniso due to offset.
     unsigned short quad_order; RealVector dim_pref;
-    NonDIntegration::anisotropic_order_to_dimension_preference(dim_quad_order,
+    Pecos::anisotropic_order_to_dimension_preference(dim_quad_order,
       quad_order, dim_pref);
     // use alternate NonDQuad ctor to filter (deprecated) or sub-sample
     // quadrature points (uSpaceModel.build_approximation() invokes

@@ -142,6 +142,8 @@ protected:
   void post_combine();
   void combined_to_active(bool clear_combined = true);
 
+  bool advancement_available();
+
   void clear_inactive();
 
   void increment_order();
@@ -366,6 +368,14 @@ inline void SharedPecosApproxData::expansion_order(const UShortArray& order)
     data_rep->expansion_order(order);
     formUpdated[activeKey] = true;    
   }
+}
+
+
+inline bool SharedPecosApproxData::advancement_available()
+{
+  // delegate this fn rather than use multiple forwards, since also
+  // implementing in RegressOrthogPolyApproximation
+  return pecosSharedDataRep->advancement_available();
 }
 
 
