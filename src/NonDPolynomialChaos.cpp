@@ -42,7 +42,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
   maxCVOrderCandidates(
-    problem_db.get_bool("method.nond.cross_validation.max_order_candidates")),
+    problem_db.get_ushort("method.nond.cross_validation.max_order_candidates")),
   respScaling(problem_db.get_bool("method.nond.response_scaling")),
   noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
   l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
@@ -311,7 +311,7 @@ NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
   maxCVOrderCandidates(
-    problem_db.get_bool("method.nond.cross_validation.max_order_candidates")),
+    problem_db.get_ushort("method.nond.cross_validation.max_order_candidates")),
   respScaling(problem_db.get_bool("method.nond.response_scaling")),
   noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
   l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
