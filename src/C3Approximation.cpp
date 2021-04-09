@@ -241,8 +241,6 @@ void C3Approximation::build()
   }
   for (i=1; i<num_v; ++i)
     start_ranks[i] = start_r;
-  //Cout << "rank start = " << start_r << " kick = " << kick_r
-  //     << " max = " << max_r << "; start_ranks:\n" << start_ranks;
 
   if (adapt_o) {
     kick_o   = data_rep->kickOrder;
@@ -267,8 +265,6 @@ void C3Approximation::build()
   }
   for (i=0; i<num_v; ++i)
     start_orders[i] = start_o;
-  //Cout << "order start = " << start_o << " kick = " << kick_o
-  //     << " max = " << max_o << "; start_orders:\n" << start_orders;
 
   // opts are shared data since poly type, bounds, etc. are invariant,
   // but a subset of this data (nparams, maxnum) vary per QoI
@@ -425,7 +421,7 @@ void C3Approximation::build()
   //  ftd.ft_gradient(ftg_soln);
   //  ftd.ft_hessian(ft1d_array_jacobian(ftg_soln));
   //}
-  //if (data_rep->outputLevel > SILENT_OUTPUT) {
+  if (data_rep->outputLevel >= QUIET_OUTPUT) {
     Cout << "\nFunction train build() results:\n  Ranks ";
     if (adapt_r)
       Cout << "(adapted with start = " << start_r << " kick = " << kick_r
@@ -443,7 +439,7 @@ void C3Approximation::build()
     Cout << "  C3 regression size:  " << function_train_get_nparams(ft_soln);
     if (apply_scaling) Cout << "  Response scaling on";
     Cout << std::endl;
-  //}
+  }
 
   // Note: could set c3Max{Rank,Order}Advance after current build instead of
   // preceding next build (using cached ranks,orders) if advancement_available()

@@ -18,7 +18,7 @@ method,
 #         discrepancy_emulation recursive	#s4,#s5,#s6,#s7
 #         metric_scale          relative
 #         statistics_mode       combined
-	output silent
+	output quiet
 
 model,
 	id_model = 'HIERARCH'
