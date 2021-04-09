@@ -1324,7 +1324,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -1468,7 +1468,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       absolute {N_mdm(false,relativeConvMetric)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -1905,7 +1905,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -2143,7 +2143,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       absolute {N_mdm(false,relativeConvMetric)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -2544,7 +2544,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -3535,7 +3535,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -3662,7 +3662,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -3891,7 +3891,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -4286,7 +4286,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -4413,7 +4413,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -4642,7 +4642,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -4936,7 +4936,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -5063,7 +5063,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -5292,7 +5292,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
