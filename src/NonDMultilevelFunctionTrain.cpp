@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -302,11 +303,14 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
     case DEFAULT_MLMF_CONTROL: // define MLFT-specific default
       multilevAllocControl = RANK_SAMPLING; break;
     case RANK_SAMPLING: {
-      // ensure adaptRank is on (cross-validation is not yet supported)
+      // ensure adaptRank is on since RANK_SAMPLING seeks to discover
+      // the underlying low-rank structure of the QoI
       std::shared_ptr<SharedC3ApproxData> shared_data_rep =
 	std::static_pointer_cast<SharedC3ApproxData>(
 	uSpaceModel.shared_approximation().data_rep());
       shared_data_rep->set_parameter("adapt_rank", true);
+      // Note: C3Approximation::build() defines an appropriate range in the
+      //       case of unspecified max rank: [start_r, start_r+max_cv*kick_r]
       break;
     }
     case ESTIMATOR_VARIANCE:

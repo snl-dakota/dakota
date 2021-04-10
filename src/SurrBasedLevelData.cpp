@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -12,7 +13,7 @@
 //- Checked by:
 
 #include "SurrBasedLevelData.hpp"
-#include "DiscrepancyCalculator.hpp"
+#include "ActiveKey.hpp"
 
 namespace Dakota {
 
@@ -42,29 +43,6 @@ initialize_data(const Variables& vars, const Response& approx_resp,
     responseStarTruthUncorrected    = truth_resp.copy();
     responseCenterTruthUncorrected  = truth_resp.copy();
   }
-}
-
-
-void SurrBasedLevelData::
-initialize_keys(unsigned short group,
-		unsigned short truth_form,  unsigned short approx_form,
-		unsigned short truth_level, unsigned short approx_level)
-{
-  truthModelKey.resize(3);  approxModelKey.resize(3);
-  truthModelKey[0]  = approxModelKey[0] = group;
-  truthModelKey[1]  =  truth_form;  truthModelKey[2]  =  truth_level;
-  approxModelKey[1] = approx_form;  approxModelKey[2] = approx_level;
-
-  Pecos::DiscrepancyCalculator::
-    aggregate_keys(truthModelKey, approxModelKey, pairedModelKey);
-}
-
-
-void SurrBasedLevelData::initialize_keys(const UShortArray& aggregate_key)
-{
-  pairedModelKey = aggregate_key;
-  Pecos::DiscrepancyCalculator::
-    extract_keys(aggregate_key, truthModelKey, approxModelKey);
 }
 
 

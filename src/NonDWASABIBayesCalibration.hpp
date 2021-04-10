@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -69,8 +70,10 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void calibrate();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void calibrate() override;
+  void print_results(std::ostream& s, 
+      short results_state = FINAL_RESULTS) override;
+  void compute_statistics() override {}
 
   /// Extract a subset of samples for posterior eval according to the
   /// indices in points_to_keep

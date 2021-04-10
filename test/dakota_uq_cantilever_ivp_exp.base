@@ -1,0 +1,128 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 294 total (294 new, 0 duplicate)
+         weight: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Surrogate quality metrics at build (training) points for function 1:
+   root_mean_squared  1.4771586504e-12
+            mean_abs  1.0480505352e-12
+            rsquared  1.0000000000e+00
+Surrogate quality metrics at build (training) points for function 2:
+   root_mean_squared  7.5569361774e-14
+            mean_abs  6.6687396346e-14
+            rsquared  1.0000000000e+00
+Surrogate quality metrics at build (training) points for function 3:
+   root_mean_squared  4.1939600176e-13
+            mean_abs  4.0952426635e-13
+            rsquared  1.0000000000e+00
+<<<<< Function evaluation summary (ALEAT_I): 3724 total (3724 new, 0 duplicate)
+         weight: 637 val (637 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 1911 val (1911 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+ccdf_beta_s:  Min = -1.0278944801e+01  Max = 1.9532427486e+01
+ccdf_beta_d:  Min = -9.6345245456e+00  Max = 1.4095788060e+03
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
+         weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Surrogate quality metrics at build (training) points for function 1:
+   root_mean_squared  2.1690047143e-12
+            mean_abs  1.9902598088e-12
+            rsquared  1.0000000000e+00
+Surrogate quality metrics at build (training) points for function 2:
+   root_mean_squared  7.7767101085e-14
+            mean_abs  6.9222405585e-14
+            rsquared  1.0000000000e+00
+Surrogate quality metrics at build (training) points for function 3:
+   root_mean_squared  1.4959589589e-13
+            mean_abs  1.3115434664e-13
+            rsquared  1.0000000000e+00
+<<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
+         weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+ccdf_beta_s:  Min = -1.3732302901e+01  Max = 1.9817629800e+01
+ccdf_beta_d:  Min = -1.4545757332e+01  Max = 8.8086849531e+02
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 294 total (294 new, 0 duplicate)
+         weight: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Surrogate quality metrics at build (training) points for function 1:
+   root_mean_squared  1.2486567223e-12
+            mean_abs  1.0924594562e-12
+            rsquared  1.0000000000e+00
+Surrogate quality metrics at build (training) points for function 2:
+   root_mean_squared  8.3351652607e-14
+            mean_abs  7.0166095156e-14
+            rsquared  1.0000000000e+00
+Surrogate quality metrics at build (training) points for function 3:
+   root_mean_squared  4.0303764727e-13
+            mean_abs  3.2951419371e-13
+            rsquared  1.0000000000e+00
+<<<<< Function evaluation summary (ALEAT_I): 3724 total (3724 new, 0 duplicate)
+         weight: 637 val (637 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 1911 val (1911 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+ccdf_beta_s:  Min = -1.0278944801e+01  Max = 1.9532427486e+01
+ccdf_beta_d:  Min = -9.6345266678e+00  Max = 1.4095791165e+03
+Test Number 3 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
+         weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Surrogate quality metrics at build (training) points for function 1:
+   root_mean_squared  1.0242572735e-12
+            mean_abs  8.7337544604e-13
+            rsquared  1.0000000000e+00
+Surrogate quality metrics at build (training) points for function 2:
+   root_mean_squared  8.6502073037e-14
+            mean_abs  6.8685797790e-14
+            rsquared  1.0000000000e+00
+Surrogate quality metrics at build (training) points for function 3:
+   root_mean_squared  1.0683184960e+35
+            mean_abs  8.8269046595e+34
+            rsquared  1.0000000000e+00
+<<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
+         weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+ccdf_beta_s:  Min = -1.5469449835e+01  Max = 2.0054892583e+01
+ccdf_beta_d:  Min = -5.3492243196e+00  Max = 1.0000000000e+50
+Test Number 4 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 1078 total (931 new, 147 duplicate)
+         weight: 196 val (147 n, 49 d), 196 grad (147 n, 49 d), 0 Hess (0 n, 0 d)
+         stress: 686 val (637 n, 49 d), 686 grad (637 n, 49 d), 0 Hess (0 n, 0 d)
+          displ: 196 val (147 n, 49 d), 196 grad (147 n, 49 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
+ccdf_beta_s:  Min = -1.0282470041e+01  Max = 1.9532428718e+01
+ccdf_beta_d:  Min = -9.6345293531e+00  Max = 1.4095836134e+03
+Test Number 5 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 7143 total (7143 new, 0 duplicate)
+         weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
+ccdf_beta_s:  Min = -1.3732375197e+01  Max = 1.9232872904e+01
+ccdf_beta_d:  Min = -1.4546006621e+01  Max = 1.2503582210e+03
+Test Number 6 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 1078 total (931 new, 147 duplicate)
+         weight: 196 val (147 n, 49 d), 196 grad (147 n, 49 d), 0 Hess (0 n, 0 d)
+         stress: 686 val (637 n, 49 d), 686 grad (637 n, 49 d), 0 Hess (0 n, 0 d)
+          displ: 196 val (147 n, 49 d), 196 grad (147 n, 49 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
+ccdf_beta_s:  Min = -1.0282470041e+01  Max = 1.9532428718e+01
+ccdf_beta_d:  Min = -9.6345314753e+00  Max = 1.4095839239e+03
+Test Number 7 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 7143 total (7143 new, 0 duplicate)
+         weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
+ccdf_beta_s:  Min = -1.5469550461e+01  Max = 2.0065482841e+01
+ccdf_beta_d:  Min = -1.6055969854e+01  Max = 1.0000000000e+50

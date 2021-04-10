@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -45,9 +46,6 @@ protected:
   ///  Do the build
   void build() override;
 
-  // DTS: I think you'll want to implement both Variables and
-  // RealVector APIs to be safe. See pattern I used in value() for
-  // same.
   Real prediction_variance(const Variables& vars) override;
 
   Real prediction_variance(const RealVector& c_vars) override;

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -643,28 +644,56 @@ void Variables::read_tabular(std::istream& s, unsigned short vars_part)
   }
 }
 
+
 void Variables::write_tabular(std::ostream& s, unsigned short vars_part) const
 {
   if (variablesRep)
     variablesRep->write_tabular(s, vars_part); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write_tabular "
-          << "function.\nNo default defined at base class." << std::endl;
+	 << "function.\nNo default defined at base class." << std::endl;
     abort_handler(-1);
   }
 }
 
 
-/** Tabular output is always in input specification order, so can
-    write labels independent of Mixed vs. Relaxed */
+void Variables::
+write_tabular_partial(std::ostream& s, size_t start_index,
+		      size_t num_items) const
+{
+  if (variablesRep)
+    variablesRep->write_tabular_partial(s, start_index, num_items);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: Letter lacking redefinition of virtual write_tabular_"
+	 << "partial function.\nNo default defined at base class." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 void Variables::
 write_tabular_labels(std::ostream& s, unsigned short vars_part) const
 {
   if (variablesRep)
     variablesRep->write_tabular_labels(s, vars_part); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual write_tabular_labels "
-          << "function.\nNo default defined at base class." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual write_tabular_labels"
+	 << " function.\nNo default defined at base class." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Variables::
+write_tabular_partial_labels(std::ostream& s, size_t start_index,
+			     size_t num_items) const
+{
+  if (variablesRep)
+    variablesRep->write_tabular_partial_labels(s, start_index, num_items);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: Letter lacking redefinition of virtual write_tabular_"
+	 << "partial_labels function.\nNo default defined at base class."
+	 << std::endl;
     abort_handler(-1);
   }
 }

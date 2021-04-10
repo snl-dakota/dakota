@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -54,8 +55,9 @@ class ProblemDescDB
   friend class Model;
   /// SimulationModel requires access to get_interface()
   friend class SimulationModel;
-  /// HierarchSurrModel requires access to get_model()
+  /// HierarchSurrModel and NonHierarchSurrModel require access to get_model()
   friend class HierarchSurrModel;
+  friend class NonHierarchSurrModel;
   /// DataFitSurrModel requires access to get_iterator() and get_model()
   friend class DataFitSurrModel;
   /// NestedModel requires access to get_interface(), get_response(),
@@ -217,6 +219,8 @@ public:
   const IntSet& get_is(const String& entry_name) const;
   /// get an IntSetArray out of the database based on an identifier string
   const IntSetArray& get_isa(const String& entry_name) const;
+  /// get a SizetSet out of the database based on an identifier string
+  const SizetSet& get_szs(const String& entry_name) const;
   /// get an StringSetArray out of the database based on an identifier string
   const StringSetArray& get_ssa(const String& entry_name) const;
   /// get a RealSetArray out of the database based on an identifier string
@@ -399,6 +403,26 @@ protected:
   size_t environmentCntr;
 
 private:
+
+  // helpers to map keys to class member data values
+
+  /// Encapsulate lookups across Data*Rep types: given lookup tables
+  /// mapping strings to pointers to Data*Rep members, and an
+  /// entry_name = block.entry_key, return the corresponding member
+  /// value from the appropriate Data*Rep in the ProblemDescDB rep.
+  template<typename T>
+  T& get(const std::string& context_msg,
+	 const std::map<std::string, T DataEnvironmentRep::*>& env_map,
+	 const std::map<std::string, T DataMethodRep::*>& met_map,
+	 const std::map<std::string, T DataModelRep::*>& mod_map,
+	 const std::map<std::string, T DataVariablesRep::*>& var_map,
+	 const std::map<std::string, T DataInterfaceRep::*>& int_map,
+	 const std::map<std::string, T DataResponsesRep::*>& res_map,
+	 const std::string& entry_name,
+	 const std::shared_ptr<ProblemDescDB>& db_rep) const;
+
+//     void set(const std::string& entry_name,
+// 	     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const;
 
   //
   //- Heading: Private convenience functions

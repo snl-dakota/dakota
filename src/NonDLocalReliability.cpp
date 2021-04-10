@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -526,8 +527,7 @@ void NonDLocalReliability::initialize_graphics(int iterator_server_id)
     // For graphics, limit (currently) to server id 1, for both ded master
     // (parent partition rank 1) and peer partitions (parent partition rank 0)
     if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
-      dakota_graphics.create_plots_2d(iteratedModel.current_variables(),
-				      iteratedModel.current_response());
+      iteratedModel.create_2d_plots();
       // Visualize mostProbPointX in the vars windows and CDF/CCDF
       // probability/reliability-response level pairs in the response windows.
       dakota_graphics.set_x_labels2d("Response Level");
@@ -542,9 +542,7 @@ void NonDLocalReliability::initialize_graphics(int iterator_server_id)
     // For output/restart/tabular data, all Iterator masters stream output
     if (mgr.tabularDataFlag) { // initialize the tabular data file
       dakota_graphics.tabular_counter_label("z");
-      dakota_graphics.create_tabular_datastream(
-        iteratedModel.current_variables(), iteratedModel.current_response(),
-        );
+      iteratedModel.create_tabular_datastream();
     }
     */
   }
@@ -1390,7 +1388,7 @@ void NonDLocalReliability::initialize_level_data()
   // Create the initial Taylor series approximation used by AMV/AMV+/TANA
   if (mppSearchType < NO_APPROX) {
     // restrict the approximation index set
-    IntSet surr_fn_indices;
+    SizetSet surr_fn_indices;
     surr_fn_indices.insert(respFnCount);
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
     // construct the approximation

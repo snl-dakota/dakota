@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -112,25 +113,34 @@ double MUQPrior::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const
   return log_prior;
 }
 
-/** Perform the uncertainty quantification */
-void NonDMUQBayesCalibration::calibrate()
+void NonDMUQBayesCalibration::specify_prior()
 {
-  size_t i, num_cv = numContinuousVars;
+  nonDMUQInstance = this;
+  distPtr = std::make_shared<muq::Modeling::Distribution>(numContinuousVars);
+  MUQPriorPtr = std::make_shared<MUQPrior>(nonDMUQInstance, distPtr);
+}
+
+void NonDMUQBayesCalibration::specify_likelihood()
+{
+  MUQLikelihoodPtr = std::make_shared<MUQLikelihood>(nonDMUQInstance, distPtr);
+}
+
+void NonDMUQBayesCalibration::init_bayesian_solver()
+{
 
   // instantiate QUESO objects and execute
-  nonDMUQInstance = this;
+  //nonDMUQInstance = this;
 
   // build the emulator and initialize transformations, as needed
-  initialize_model();
+  //initialize_model();
 
-  distPtr = std::make_shared<muq::Modeling::Distribution>(numContinuousVars);
-
+  //distPtr = std::make_shared<muq::Modeling::Distribution>(numContinuousVars);
 
   parameterPtr = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
   workGraph = std::make_shared<muq::Modeling::WorkGraph>();
-  MUQPriorPtr = std::make_shared<MUQPrior>(nonDMUQInstance, distPtr);
-  MUQLikelihoodPtr = std::make_shared<MUQLikelihood>(nonDMUQInstance, distPtr);
-  posteriorPtr = std::make_shared<muq::Modeling::DensityProduct>(2);
+  //MUQPriorPtr = std::make_shared<MUQPrior>(nonDMUQInstance, distPtr);
+  //MUQLikelihoodPtr = std::make_shared<MUQLikelihood>(nonDMUQInstance, distPtr);
+  //posteriorPtr = std::make_shared<muq::Modeling::DensityProduct>(2);
 
   workGraph->AddNode(parameterPtr,      "Parameters");
   workGraph->AddNode(MUQLikelihoodPtr,  "Likelihood");
@@ -177,6 +187,21 @@ void NonDMUQBayesCalibration::calibrate()
 
   mcmc = std::make_shared<muq::SamplingAlgorithms::SingleChainMCMC>(pt,problem);
 
+}
+
+
+void NonDMUQBayesCalibration::specify_posterior()
+{
+  posteriorPtr = std::make_shared<muq::Modeling::DensityProduct>(2);
+}
+
+
+
+/** Perform the uncertainty quantification */
+void NonDMUQBayesCalibration::calibrate()
+{
+  int N =  (chainSamples > 0) ? chainSamples : 1000;
+  size_t i, num_cv = numContinuousVars;
   const RealVector& init_point = nonDMUQInstance->mcmcModel.continuous_variables();
   Eigen::VectorXd init_pt(num_cv);
   for (i=0; i<num_cv; ++i)
@@ -201,7 +226,7 @@ void NonDMUQBayesCalibration::calibrate()
   cache_chain();
 
   // Generate useful stats from the posterior samples
-  compute_statistics();
+  //compute_statistics();
 }
 
 void NonDMUQBayesCalibration::log_best()

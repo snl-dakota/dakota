@@ -1,0 +1,48 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.0722719458e+00 intake_dia
+                      1.7685568331e+00 flatness
+<<<<< Best objective functions =
+                     -2.4391450384e+00
+                     -2.6570146761e-01
+                     -3.3471647504e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 36
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.9314431669e+00 intake_dia
+                      1.7685568331e+00 flatness
+<<<<< Best objective functions =
+                     -2.3776813051e+00
+                     -4.4086848028e-01
+                     -3.3471647504e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 21
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 1725 total (320 new, 1405 duplicate)
+<<<<< Best parameters          =
+                      2.0722719859e+00 intake_dia
+                      1.7685568299e+00 flatness
+<<<<< Best objective functions =
+                     -2.4391450564e+00
+                     -2.6570134505e-01
+                     -3.3471647551e-01
+<<<<< Best constraint values   =
+                      5.2751314428e-10
+<<<<< Best data captured at function evaluation 1681
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 5010 total (955 new, 4055 duplicate)
+<<<<< Best parameters          =
+                      1.9314431827e+00 intake_dia
+                      1.7685568177e+00 flatness
+<<<<< Best objective functions =
+                     -2.3776813143e+00
+                     -4.4086847330e-01
+                     -3.3471647734e-01
+<<<<< Best constraint values   =
+                      2.5792832314e-09
+<<<<< Best data captured at function evaluation 4966

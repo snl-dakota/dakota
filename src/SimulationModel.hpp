@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -55,17 +56,32 @@ protected:
   /// return userDefinedInterface
   Interface& derived_interface();
 
-  /// return size of solnControlCostMap, optionally enforcing lower bound
+  /// return size of solnCntlCostMap, optionally enforcing lower bound
   /// of 1 solution level
   size_t solution_levels(bool lwr_bnd = true) const;
-  /// activate entry in solnControlCostMap
-  void solution_level_index(unsigned short lev_index);
-  /// return active entry in solnControlCostMap
-  unsigned short solution_level_index() const;
-  /// return all cost estimates from solnControlCostMap
+
+  /// return all cost estimates from solnCntlCostMap
   RealVector solution_level_costs() const;
-  /// return active cost estimate from solnControlCostMap
+  /// return active cost estimate from solnCntlCostMap
   Real solution_level_cost() const;
+  /// activate entry in solnCntlCostMap
+  void solution_level_cost_index(size_t cost_index);
+  /// return active entry in solnCntlCostMap
+  size_t solution_level_cost_index() const;
+
+  /// return solnCntlVarType
+  short solution_control_variable_type() const;
+  /// return solnCntlAVIndex
+  size_t solution_control_variable_index() const;
+  /// return solnCntlADVIndex
+  size_t solution_control_discrete_variable_index() const;
+
+  /// return a discrete int variable value corresponding to solnCntlADVIndex
+  int    solution_level_int_value() const;
+  /// return a discrete string variable value corresponding to solnCntlADVIndex
+  String solution_level_string_value() const;
+  /// return a discrete real variable value corresponding to solnCntlADVIndex
+  Real   solution_level_real_value() const;
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs userDefinedInterface.map()/
@@ -159,8 +175,8 @@ private:
   //- Heading: Convenience member functions
   //
 
-  /// process the solution level inputs to define solnControlVarIndex,
-  /// solnControlVarType, and solnControlCostMap
+  /// process the solution level inputs to define solnCntlVarType,
+  /// solnCntlCostMap, and solnCntl{AV,ADV}Index
   void initialize_solution_control(const String& control,
 				   const RealVector& cost);
 
@@ -177,9 +193,9 @@ private:
   /// index of the discrete variable (within all view) that controls the
   /// set/range of solution levels
   size_t solnCntlADVIndex;
-  /// index of the discrete set variable (within aggregated array of
-  /// RandomVariables) that controls the set/range of solution levels
-  size_t solnCntlRVIndex;
+  /// index of the discrete variable (within all variables / RandomVariables
+  /// array) that controls the set/range of solution levels
+  size_t solnCntlAVIndex;
   /// sorted array of relative costs associated with a set of solution levels
   std::map<Real, size_t> solnCntlCostMap;
 
@@ -207,9 +223,21 @@ inline Interface& SimulationModel::derived_interface()
    solution control is provided */ 
 inline size_t SimulationModel::solution_levels(bool lwr_bnd) const
 {
-  size_t map_len = solnCntlCostMap.size(), min_len = 1;
-  return (lwr_bnd) ? std::max(min_len, map_len) : map_len;
+  size_t map_len = solnCntlCostMap.size(), lwr = 1;
+  return (lwr_bnd) ? std::max(lwr, map_len) : map_len;
 }
+
+
+inline short SimulationModel::solution_control_variable_type() const
+{ return solnCntlVarType; }
+
+
+inline size_t SimulationModel::solution_control_variable_index() const
+{ return solnCntlAVIndex; }
+
+
+inline size_t SimulationModel::solution_control_discrete_variable_index() const
+{ return solnCntlADVIndex; }
 
 
 inline void SimulationModel::derived_evaluate(const ActiveSet& set)
@@ -217,13 +245,15 @@ inline void SimulationModel::derived_evaluate(const ActiveSet& set)
   // store/set/restore ParallelLibrary::currPCIter to simplify recursion
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
-
   ++simModelEvalCntr;
+
   if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
           interface_id(), "simulation", currentVariables, currentResponse, 
           default_interface_active_set(), userDefinedInterface.analysis_components());
+
   userDefinedInterface.map(currentVariables, set, currentResponse);
+
   if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
     evaluationsDB.store_interface_variables(modelId, interface_id(),
         userDefinedInterface.evaluation_id(), set, currentVariables);
@@ -238,14 +268,18 @@ inline void SimulationModel::derived_evaluate(const ActiveSet& set)
 inline void SimulationModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++simModelEvalCntr;
+
   if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
     interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, interface_id(),
         "simulation", currentVariables, currentResponse, default_interface_active_set(), 
         userDefinedInterface.analysis_components());
+
   userDefinedInterface.map(currentVariables, set, currentResponse, true);
+
   if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) 
       evaluationsDB.store_interface_variables(modelId, interface_id(),
       userDefinedInterface.evaluation_id(), set, currentVariables);
+
   // Even though each evaluate on SimulationModel results in a corresponding
   // Interface mapping, we utilize an id mapping to protect against the case
   // where multiple Models use the same Interface instance, for which this

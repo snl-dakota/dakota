@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -210,10 +211,8 @@ void APPSOptimizer::set_apps_parameters()
     // A null string is the DB default and nonblocking is the HOPS default, so
     // the flag is true only for an explicit blocking user specification.
 
-    const bool blocking_synch
-      = (probDescDB.get_string("method.pattern_search.synchronization") ==
-	 "blocking");
-    if (blocking_synch) {
+    if (probDescDB.get_short("method.synchronization") ==
+	BLOCKING_SYNCHRONIZATION) {
       mediatorParams->setParameter("Synchronous Evaluations", true);
       citizenParams->setParameter("Use Random Order", false);
       evalMgr->set_blocking_synch(true);

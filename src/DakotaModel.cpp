@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -20,6 +21,7 @@
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "HierarchSurrModel.hpp"
+#include "NonHierarchSurrModel.hpp"
 #include "ActiveSubspaceModel.hpp"
 #include "AdaptedBasisModel.hpp"
 #include "RandomFieldModel.hpp"
@@ -311,10 +313,13 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
   else if ( model_type == "nested")
     return std::make_shared<NestedModel>(problem_db);
   else if ( model_type == "surrogate") {
-    if (problem_db.get_string("model.surrogate.type") == "hierarchical")
-      return std::make_shared<HierarchSurrModel>(problem_db); // hierarchical approx
-    else
-      return std::make_shared<DataFitSurrModel>(problem_db);  // local/multipt/global approx
+    const String& surr_type = problem_db.get_string("model.surrogate.type");
+    if (surr_type == "hierarchical")
+      return std::make_shared<HierarchSurrModel>(problem_db);
+    else if (surr_type == "non_hierarchical")
+      return std::make_shared<NonHierarchSurrModel>(problem_db);
+    else // all other surrogates (local/multipt/global) managed by DataFitSurr
+      return std::make_shared<DataFitSurrModel>(problem_db);
   }
   else if ( model_type == "active_subspace" )
     return std::make_shared<ActiveSubspaceModel>(problem_db);
@@ -1170,10 +1175,10 @@ void Model::evaluate()
     modelRep->evaluate();
   else { // letter
     ++modelEvalCntr;
-    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-     modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
-          currentVariables, mvDist, currentResponse, default_active_set());
-      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+    if (modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
+        currentVariables, mvDist, currentResponse, default_active_set());
+      if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }
     
@@ -1183,7 +1188,7 @@ void Model::evaluate()
 
     if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
-          temp_set, currentVariables);
+					  temp_set, currentVariables);
 
     if (derived_master_overload()) {
       // prevents error of trying to run a multiproc. direct job on the master
@@ -1193,13 +1198,12 @@ void Model::evaluate()
     else // perform a normal synchronous map
       derived_evaluate(temp_set);
 
-    if (modelAutoGraphicsFlag) {
-      OutputManager& output_mgr = parallelLib.output_manager();
-      output_mgr.add_datapoint(currentVariables, interface_id(), 
-			       currentResponse);
-    }
-    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
-      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr, currentResponse);
+    if (modelAutoGraphicsFlag)
+      derived_auto_graphics(currentVariables, currentResponse);
+
+    if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr,
+					 currentResponse);
   }
 }
 
@@ -1211,16 +1215,16 @@ void Model::evaluate(const ActiveSet& set)
   else { // letter
     ++modelEvalCntr;
 
-    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
-          currentVariables, mvDist, currentResponse, default_active_set());
-      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+    if (modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
+        currentVariables, mvDist, currentResponse, default_active_set());
+      if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }
 
-    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+    if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
-          set, currentVariables);
+					  set, currentVariables);
 
     // Derivative estimation support goes here and is not replicated in the
     // default asv version of evaluate -> a good reason for using an
@@ -1253,13 +1257,12 @@ void Model::evaluate(const ActiveSet& set)
       // Perform synchronous eval
       derived_evaluate(set);
 
-    if (modelAutoGraphicsFlag) {
-      OutputManager& output_mgr = parallelLib.output_manager();
-      output_mgr.add_datapoint(currentVariables, interface_id(), 
-			       currentResponse);
-    }
-    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
-      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr, currentResponse);
+    if (modelAutoGraphicsFlag)
+      derived_auto_graphics(currentVariables, currentResponse);
+
+    if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr,
+					 currentResponse);
 
   }
 }
@@ -1272,7 +1275,7 @@ void Model::evaluate_nowait()
   else { // letter
     ++modelEvalCntr;
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
           currentVariables, mvDist, currentResponse, default_active_set());
       if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
@@ -1306,7 +1309,7 @@ void Model::evaluate_nowait(const ActiveSet& set)
     ++modelEvalCntr;
 
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
           currentVariables, mvDist, currentResponse, default_active_set());
       if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
@@ -1432,10 +1435,9 @@ const IntResponseMap& Model::synchronize()
 
     // update graphics
     if (modelAutoGraphicsFlag) {
-      OutputManager& output_mgr = parallelLib.output_manager();
       for (r_cit = responseMap.begin(); r_cit != responseMap.end(); ++r_cit) {
 	v_it = varsMap.find(r_cit->first);
-	output_mgr.add_datapoint(v_it->second, interface_id(), r_cit->second);
+	derived_auto_graphics(v_it->second, r_cit->second);
 	varsMap.erase(v_it);
       }
     }
@@ -1449,7 +1451,8 @@ const IntResponseMap& Model::synchronize()
 
     if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
       for(const auto  &id_r : responseMap)
-        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first,
+					   id_r.second); 
     }
     // return final map
     return responseMap;
@@ -1506,8 +1509,7 @@ const IntResponseMap& Model::synchronize_nowait()
       // search for next response set(s) in sequence
       bool found = true;
       while (found) {
-	OutputManager& output_mgr = parallelLib.output_manager();
-	int graphics_cntr = output_mgr.graphics_counter();
+	int graphics_cntr = parallelLib.output_manager().graphics_counter();
 	// find() is not really necessary due to Map ordering
 	//g_it = graphicsRespMap.begin();
 	//if (g_it == graphicsRespMap.end() || g_it->first != graphics_cntr)
@@ -1516,7 +1518,7 @@ const IntResponseMap& Model::synchronize_nowait()
 	  found = false;
 	else {
 	  IntVarsMIter v_it = varsMap.find(graphics_cntr);
-	  output_mgr.add_datapoint(v_it->second, interface_id(), g_it->second);
+	  derived_auto_graphics(v_it->second, g_it->second);
 	  varsMap.erase(v_it); graphicsRespMap.erase(g_it);
 	}
       }
@@ -1530,7 +1532,8 @@ const IntResponseMap& Model::synchronize_nowait()
     cachedResponseMap.clear();
     if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
       for(const auto  &id_r : responseMap)
-        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second);
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first,
+					   id_r.second);
     }
     return responseMap;
   }
@@ -3261,6 +3264,38 @@ bool Model::derived_master_overload() const
 }
 
 
+void Model::create_2d_plots()
+{
+  if (modelRep) // should not occur: protected fn only used by the letter
+    modelRep->create_2d_plots(); // fwd to letter
+  else // default implementation (overridden by hierarch/nonhierarch surr)
+    parallelLib.output_manager().graphics().create_plots_2d(currentVariables,
+							    currentResponse);
+}
+
+
+void Model::create_tabular_datastream()
+{
+  if (modelRep) // should not occur: protected fn only used by the letter
+    modelRep->create_tabular_datastream(); // fwd to letter
+  else { // default implementation (overridden by hierarch/nonhierarch surr)
+    OutputManager& mgr = parallelLib.output_manager();
+    mgr.open_tabular_datastream();
+    mgr.create_tabular_header(currentVariables, currentResponse);
+  }
+}
+
+
+void Model::
+derived_auto_graphics(const Variables& vars, const Response& resp)
+{
+  if (modelRep) // should not occur: protected fn only used by the letter
+    modelRep->derived_auto_graphics(vars, resp); // fwd to letter
+  else // default implementation (overridden by hierarch/nonhierarch surr)
+    parallelLib.output_manager().add_tabular_data(vars, interface_id(), resp);
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
@@ -3285,10 +3320,10 @@ Model& Model::subordinate_model()
 }
 
 
-void Model::active_model_key(const UShortArray& mi_key)
+void Model::active_model_key(const Pecos::ActiveKey& key)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->active_model_key(mi_key);
+    modelRep->active_model_key(key);
   else {
     Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
 	 << "function.\n       model key activation is not supported by this "
@@ -3362,6 +3397,47 @@ const Model& Model::truth_model() const
 }
 
 
+bool Model::multifidelity() const
+{
+  if (modelRep) return modelRep->multifidelity();
+  else          return false; // default
+}
+
+
+bool Model::multilevel() const
+{
+  if (modelRep) return modelRep->multilevel();
+  else          return false; // default
+}
+
+
+bool Model::multilevel_multifidelity() const
+{
+  if (modelRep) return modelRep->multilevel_multifidelity();
+  else          return false; // default
+}
+
+
+bool Model::multifidelity_precedence() const
+{
+  if (modelRep) return modelRep->multifidelity_precedence();
+  else          return true; // default
+}
+
+
+void Model::multifidelity_precedence(bool mf_prec, bool update_default)
+{
+  if (modelRep)
+    modelRep->multifidelity_precedence(mf_prec, update_default);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual multifidelity_"
+	 << "precedence() function.\n       multifidelity_precedence is not "
+	 << "supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /** since modelList is built with list insertions (using envelope
     copies), these models may not be used for model.assign_rep() since
     this operation must be performed on the original envelope object.
@@ -3429,24 +3505,24 @@ size_t Model::solution_levels(bool lwr_bnd) const
 
 
 /** activate a particular level within a solution / discretization hierarchy. */
-void Model::solution_level_index(unsigned short index)
+void Model::solution_level_cost_index(size_t index)
 {
   if (modelRep)
-    modelRep->solution_level_index(index); // envelope fwd to letter
-  else if (index != USHRT_MAX) {
+    modelRep->solution_level_cost_index(index); // envelope fwd to letter
+  else if (index != _NPOS) {
     // letter lacking redefinition of virtual fn (for case that requires fwd)
-    Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
-         << "() function.\n       solution_level_index is not supported by this"
-	 << " Model class." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "cost_index() function.\n       solution_level_cost_index is not "
+	 << "supported by this Model class." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
 
 
-unsigned short Model::solution_level_index() const
+size_t Model::solution_level_cost_index() const
 {
-  if (modelRep) return modelRep->solution_level_index(); // fwd to letter
-  else          return USHRT_MAX; // not defined (default)
+  if (modelRep) return modelRep->solution_level_cost_index(); // fwd to letter
+  else          return _NPOS; // not defined (default)
 }
 
 
@@ -3476,6 +3552,85 @@ Real Model::solution_level_cost() const
 }
 
 
+short Model::solution_control_variable_type() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
+	 << "variable_type() function.\n       solution_control_variable_"
+	 << "type() is not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_control_variable_type(); // envelope fwd to letter
+}
+
+
+size_t Model::solution_control_variable_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
+	 << "variable_index() function.\n       solution_control_variable_"
+	 << "index() is not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_control_variable_index(); // envelope fwd to letter
+}
+
+
+size_t Model::solution_control_discrete_variable_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
+	 << "discrete_variable_index() function.\n       solution_control_"
+	 << "discrete_variable_index() is not supported by this Model class."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_control_discrete_variable_index(); // envelope fwd
+}
+
+
+int Model::solution_level_int_value() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "int_value() function.\n       solution_level_int_value is not "
+	 << "supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_int_value(); // envelope fwd to letter
+}
+
+
+String Model::solution_level_string_value() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "string_value() function.\n       solution_level_string_value is "
+	 << "not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_string_value(); // envelope fwd to letter
+}
+
+
+Real Model::solution_level_real_value() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+	 << "real_value() function.\n       solution_level_real_value is not "
+	 << "supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_real_value(); // envelope fwd to letter
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
@@ -3498,7 +3653,7 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-void Model::surrogate_function_indices(const IntSet& surr_fn_indices)
+void Model::surrogate_function_indices(const SizetSet& surr_fn_indices)
 {
   if (modelRep)
     modelRep->surrogate_function_indices(surr_fn_indices); // fwd to letter
@@ -3582,7 +3737,6 @@ bool Model::initialize_mapping(ParLevLIter pl_iter)
     }
 
     mappingInitialized = true;
-
     return false; // size did not change
   }
 }
@@ -3642,6 +3796,32 @@ void Model::rebuild_approximation()
     modelRep->rebuild_approximation();
   else
     build_approximation(); // default: build from scratch
+}
+
+
+void Model::rebuild_approximation(const IntResponsePair& response_pr)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation(response_pr);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+	 << "approximation(IntResponsePair) function.\nThis model does not "
+	 << "support approximation rebuilding." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::rebuild_approximation(const IntResponseMap& resp_map)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation(resp_map);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+	 << "approximation(IntResponseMap) function.\nThis model does not "
+	 << "support approximation rebuilding." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 }
 
 
@@ -3732,6 +3912,21 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 
 
 void Model::
+append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
+		     bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "support approximation appending." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
 append_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
@@ -3747,15 +3942,56 @@ append_approximation(const VariablesArray& vars_array,
 
 
 void Model::
-append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
+append_approximation(const IntVariablesMap& vars_map,
+		     const IntResponseMap&  resp_map, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+    modelRep->append_approximation(vars_map, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "(IntVariablesMap, IntResponseMap) function.\nThis model does not "
          << "support approximation appending." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+replace_approximation(const IntResponsePair& response_pr, bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->replace_approximation(response_pr, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+         << "approximation(IntResponsePair) function.\nThis model does not "
+	 << "support approximation data replacement." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->replace_approximation(resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+         << "approximation(IntResponseMap) function.\nThis model does not "
+         << "support approximation data replacement." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::track_evaluation_ids(bool track)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->track_evaluation_ids(track);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
+	 << "ids() function.\n       This model does not support evaluation "
+	 << "tracking." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
@@ -3766,9 +4002,9 @@ void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
   if (modelRep) // envelope fwd to letter
     modelRep->pop_approximation(save_surr_data, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual\n       "
-	 << "pop_approximation(bool, bool) function.  This model does not\n"
-	 << "       support approximation data removal." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
+	 << "(bool, bool) function.\n       This model does not support "
+	 << "approximation data removal." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
@@ -4072,7 +4308,7 @@ void Model::correction_type(short corr_type)
 
 
 void Model::single_apply(const Variables& vars, Response& resp,
-			 const UShortArray& paired_key)
+			 const Pecos::ActiveKey& paired_key)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->single_apply(vars, resp, paired_key);

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -177,15 +178,23 @@ public:
   /// optionally specifying which partition (all/active/inactive)
   virtual void read_tabular(std::istream& s,
 			    unsigned short vars_part = ALL_VARS);
+
   /// write a variables object in tabular format to an std::ostream,
   /// optionally specifying which partition (all/active/inactive)
   virtual void write_tabular(std::ostream& s,
 			     unsigned short vars_part = ALL_VARS) const;
+  /// write range of variables in tabular format to an std::ostream
+  virtual void write_tabular_partial(std::ostream& s, size_t start_index,
+				     size_t num_items) const;
+                                   //unsigned short vars_part = ALL_VARS) const;
 
   /// write the labels in input spec order to a std::ostream,
   /// optionally specifying which partition (all/active/inactive)
   virtual void write_tabular_labels(std::ostream& s,
 				    unsigned short vars_part = ALL_VARS) const;
+  /// write range of variable labels in input spec order to a std::ostream
+  virtual void write_tabular_partial_labels(std::ostream& s, size_t start_index,
+					    size_t num_items) const;
 
   /// read a variables object from a packed MPI buffer
   virtual void read(MPIUnpackBuffer& s);

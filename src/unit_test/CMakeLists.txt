@@ -1,7 +1,8 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -233,6 +234,19 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   endif()
 
 endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
+
+
+# Test top-level dakota.dakota module
+if(DAKOTA_PYBIND11)
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/test_dakota.in"
+    dakota_unit_test_copied_files
+    )
+  add_test(NAME dakota_python
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.py
+    $<TARGET_FILE_DIR:environment>
+    )
+endif()
 
 
 

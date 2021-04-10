@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -216,17 +217,6 @@ void NonDGPMSABayesCalibration::calibrate()
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << ">>>>> GPMSA: Setting up calibration." << std::endl;
 
-  // no emulators will be setup, but need to initialize the prob transforms
-  initialize_model();
-
-  // paramSpace, paramMins/paramMaxs, paramDomain, paramInitials, priorRV
-  // Note: The priorRV is only defined over the calibration parameters
-  // (and any Dakota-managed hyper-parameters)
-  init_parameter_domain();
-
-  // proposal may depend on the parameter space properties
-  init_proposal_covariance();
-
   // GPMSA scenario space = configuration space. GPMSA requires at least 1
   // configuration variable, set to 0.5 for all scenarios if needed
   configSpace = std::make_shared<QUESO::VectorSpace<GslVector, GslMatrix>>
@@ -334,7 +324,7 @@ void NonDGPMSABayesCalibration::calibrate()
   }
 
   cache_acceptance_chain();
-  compute_statistics();
+  //compute_statistics();
 }
 
 

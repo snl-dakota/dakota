@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -62,12 +63,16 @@ protected:
   void allocate_workspace(int num_cv, int num_nln_con, int num_lin_con,
 			  int num_lsq);
 
-  /// Sets SOL method options using calls to npoptn2.
+  /// Sets SOL method options using calls to npoptn2 / nloptn2.
   void set_options(bool speculative_flag, bool vendor_num_grad_flag, 
 		   short output_lev, int verify_lev, Real fn_prec,
 		   Real linesrch_tol, int max_iter, Real constr_tol,
 		   Real conv_tol, const std::string& grad_type,
 		   const RealVector& fdss);
+
+  /// Resize and send option to NPSOL (npoptn) or NLSSOL (nloptn) via
+  /// derived implementation.
+  virtual void send_sol_option(std::string sol_option) = 0;
 
   /// augments variable bounds with linear and nonlinear constraint bounds.
   void augment_bounds(RealVector& augmented_l_bnds, 

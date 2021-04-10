@@ -1,0 +1,240 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.7893892864e-01 x1
+                      5.7495736388e-01 x2
+                      1.3050171516e+00 x3
+<<<<< Best objective function  =
+                      7.2726686137e-02
+<<<<< Best constraint values   =
+                      4.7691601150e-02
+                      4.1106505960e-02
+<<<<< Best data captured at function evaluation 68
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.7893892864e-01 x1
+                      5.7495736388e-01 x2
+                      1.3050171516e+00 x3
+<<<<< Best objective function  =
+                      7.2726686137e-02
+<<<<< Best constraint values   =
+                      4.7691601150e-02
+                      4.1106505960e-02
+<<<<< Best data captured at function evaluation 68
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000857053e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      5.5511151231e-17
+                     -1.1102230246e-16
+<<<<< Best data captured at function evaluation 60
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000857053e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      5.5511151231e-17
+                     -1.1102230246e-16
+<<<<< Best data captured at function evaluation 60
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 353 total (353 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.2294873749e-01 x1
+                      2.0525326424e-01 x2
+                      9.9984758421e-01 x3
+<<<<< Best objective function  =
+                      9.9064456572e-01
+<<<<< Best constraint values   =
+                     -8.7510240069e-02
+                     -1.9345466264e-02
+<<<<< Best data captured at function evaluation 322
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 353 total (353 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.2294873749e-01 x1
+                      2.0525326424e-01 x2
+                      9.9984758421e-01 x3
+<<<<< Best objective function  =
+                      9.9064456572e-01
+<<<<< Best constraint values   =
+                     -8.7510240069e-02
+                     -1.9345466264e-02
+<<<<< Best data captured at function evaluation 322
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -4.5229303672e-02 x1
+                     -1.6890680891e-01 x2
+                      1.1832626589e+00 x3
+<<<<< Best objective function  =
+                      3.0615871485e+00
+<<<<< Best constraint values   =
+                      8.6499094365e-02
+                      5.1144161932e-02
+<<<<< Best data captured at function evaluation 485
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -4.5229303672e-02 x1
+                     -1.6890680891e-01 x2
+                      1.1832626589e+00 x3
+<<<<< Best objective function  =
+                      3.0615871485e+00
+<<<<< Best constraint values   =
+                      8.6499094365e-02
+                      5.1144161932e-02
+<<<<< Best data captured at function evaluation 485
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 12 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 13 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 14 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 15 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 16 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 17 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 18 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 19 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132

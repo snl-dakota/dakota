@@ -1,0 +1,75 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
+         stress: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  3.1932708741e+07  1.0878726752e+07  3.9862467226e+00  1.7003063305e+01
+             w  2.5777916650e+00  4.1953778033e-01  6.6307552073e+00  5.7511312263e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+        stress  1.8548142032e+03  4.9777055359e+03 -1.4181669704e+00  2.9684235740e+01
+  displacement  1.2316103212e-01  4.8814569814e-01 -6.1232648271e-01  2.0989533080e+01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                 -1.5433287784e+04  5.0000000000e-02
+                  5.6291112506e+03  9.5000000000e-01
+                 -8.5232667997e+03  1.0000000000e-01
+                  4.7504004093e+03  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                 -1.3851937129e+00  5.0000000000e-02
+                  3.7547645839e-01  9.5000000000e-01
+                 -1.0708422247e+00  1.0000000000e-01
+                  3.4295224499e-01  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                 -1.6093109001e+04  5.0000000000e-02
+                  5.6856814882e+03  9.5000000000e-01
+                 -8.5258958868e+03  1.0000000000e-01
+                  4.7355175593e+03  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                 -1.3991610109e+00  5.0000000000e-02
+                  4.0258041378e-01  9.5000000000e-01
+                 -1.0438428269e+00  1.0000000000e-01
+                  3.6869326655e-01  9.0000000000e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+         stress: 17 val (17 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 17 val (17 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+         stress: 17 val (17 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 17 val (17 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  4.8237374009e+07  2.2561359632e+07 -3.2596044705e-03 -1.3114985762e+00
+             w  4.9473955640e+00  2.0521059579e+00  6.2154174615e-01 -1.0318248612e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+        stress -1.1156097496e+04  1.3159394989e+04  2.0638453652e+00  1.0065404145e+01
+  displacement  8.9597898204e-01  3.5587731473e+00  3.2969859663e+00  2.2995983951e+01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                 -2.4204959652e+04  5.0000000000e-02
+                  3.6460230486e+04  9.5000000000e-01
+                 -2.2319335237e+04  1.0000000000e-01
+                 -3.8283253774e+03  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                 -1.4207565247e+00  5.0000000000e-02
+                  1.1844670917e+01  9.5000000000e-01
+                 -1.4083063744e+00  1.0000000000e-01
+                  3.6772786955e+00  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                 -2.4275923094e+04  5.0000000000e-02
+                  3.6354971190e+04  9.5000000000e-01
+                 -2.2639978425e+04  1.0000000000e-01
+                 -3.3748297962e+03  9.0000000000e-01
+                  Response Level    Probability Level
+                  ----------------- -----------------
+                 -1.4377676578e+00  5.0000000000e-02
+                  1.1822373163e+01  9.5000000000e-01
+                 -1.3820033310e+00  1.0000000000e-01
+                  3.6680602749e+00  9.0000000000e-01

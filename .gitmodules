@@ -20,3 +20,6 @@
 	path = local
 	url = git@cee-gitlab.sandia.gov:dakota/dakota
 	branch = devel
+[submodule "dakota-examples"]
+	path = dakota-examples
+	url = git@gitlab-ex.sandia.gov:dakota/dakota-examples

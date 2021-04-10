@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -127,7 +128,7 @@ public:
   // surrogate models
 
   /// array specifying the response function set that is approximated
-  IntSet surrogateFnIndices;
+  SizetSet surrogateFnIndices;
   /// the selected surrogate type: local_taylor, multipoint_tana,
   /// global_(neural_network,mars,orthogonal_polynomial,gaussian,
   /// polynomial,kriging), or hierarchical
@@ -136,10 +137,11 @@ public:
   /// used in constructing surrogates (from the \c actual_model_pointer
   /// specification in \ref ModelSurrL and \ref ModelSurrMP)
   String actualModelPointer;
-  /// an ordered list of model pointers (low to high) corresponding to a
-  /// hierarchy of modeling fidelity (from the \c ordered_model_fidelities
-  /// specification in \ref ModelSurrH)
-  StringArray orderedModelPointers;
+  /// an ordered (low to high) or unordered (peer) set of model pointers
+  /// corresponding to a ensemble of modeling fidelities (from the \c
+  /// ordered_model_fidelities specification in \ref ModelSurrH or the
+  /// \c unordered_model_fidelities specification in \ref ModelSurrNonH)
+  StringArray ensembleModelPointers;
 
   // controls for number of points with which to build the model
 
@@ -186,12 +188,17 @@ public:
 
   /// Option to turn on surrogate model export (export_model)
   bool exportSurrogate;
-
   /// the filename prefix for export_model
   String modelExportPrefix;
-
   /// Format selection for export_model
   unsigned short modelExportFormat;
+
+  /// Option to turn on surrogate model import (import_model)
+  bool importSurrogate;
+  /// the filename prefix for import_model
+  String modelImportPrefix;
+  /// Format selection for import_model
+  unsigned short modelImportFormat;
 
   /// correction type for global and hierarchical approximations:
   /// NO_CORRECTION, ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
@@ -205,6 +212,10 @@ public:
   /// flags the use of derivatives in building global approximations
   /// (from the \c use_derivatives specification in \ref ModelSurrG)
   bool modelUseDerivsFlag;
+  /// flag to indicate bounds-based scaling of current response data set
+  /// prior to surrogate build; important for data fits of decaying
+  /// discrepancy data using regression with absolute tolerances
+  bool respScalingFlag;
   /// scalar integer indicating the order of the polynomial approximation
   /// (1=linear, 2=quadratic, 3=cubic; from the \c polynomial specification
   /// in \ref ModelSurrG)
@@ -418,6 +429,10 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
+  /// maximum number of cross-validation candidates for adaptRank
+  size_t maxCVRankCandidates;
+  ///maximum number of cross-validation candidates for adaptOrder
+  unsigned short maxCVOrderCandidates;
   /// quantity to increment (start rank, start order, max rank, max order,
   /// max rank + max order) for FT (uniform) p-refinement
   short c3AdvanceType;

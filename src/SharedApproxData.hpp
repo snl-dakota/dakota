@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -15,6 +16,7 @@
 #define SHARED_APPROX_DATA_H
 
 #include "dakota_data_util.hpp"
+#include "ActiveKey.hpp"
 
 namespace Pecos {
 class MultivariateDistribution;
@@ -90,7 +92,7 @@ public:
   //
 
   /// activate an approximation state based on its multi-index key
-  virtual void active_model_key(const UShortArray& key);
+  virtual void active_model_key(const Pecos::ActiveKey& key);
   /// reset initial state by clearing all model keys for an approximation
   virtual void clear_model_keys();
 
@@ -102,7 +104,7 @@ public:
   virtual void integration_iterator(const Iterator& iterator);
 
   /// return the discrepancy type for approximations that support MLMF
-  virtual short discrepancy_type() const;
+  virtual short discrepancy_reduction() const;
 
   /// builds the shared approximation data from scratch
   virtual void build();
@@ -114,13 +116,13 @@ public:
   /// queries availability of pushing data associated with a trial set
   virtual bool push_available();
   /// return index for restoring trial set within stored data sets
-  virtual size_t push_index(const UShortArray& key);
+  virtual size_t push_index(const Pecos::ActiveKey& key);
   /// push a previous state of the shared approximation data 
   virtual void pre_push();
   /// clean up popped bookkeeping following push 
   virtual void post_push();
   /// return index of i-th trial set within restorable bookkeeping sets
-  virtual size_t finalize_index(size_t i, const UShortArray& key);
+  virtual size_t finalize_index(size_t i, const Pecos::ActiveKey& key);
   /// finalize the shared approximation data following a set of increments
   virtual void pre_finalize();
   /// clean up popped bookkeeping following aggregation
@@ -180,7 +182,7 @@ public:
   //int num_variables() const;
 
   /// return active multi-index key
-  const UShortArray& active_model_key() const;
+  const Pecos::ActiveKey& active_model_key() const;
 
   /// query whether the form of an approximation has been updated
   bool formulation_updated() const;
@@ -237,12 +239,11 @@ protected:
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
-  /// multi-index key indicating the active model or model-pair used
-  /// for approximation data
-  UShortArray activeKey;
-  /// set of multi-index model keys to enumerate when updating the
-  /// SurrogateData for each Approximation
-  UShort2DArray approxDataKeys;
+  /// key indicating the active model or model-pair used for approximation data
+  Pecos::ActiveKey activeKey;
+  // set of multi-index model keys to enumerate when updating the
+  // SurrogateData for each Approximation
+  //UShort2DArray approxDataKeys;
 
   /// Prefix for model export files
   String modelExportPrefix;
@@ -266,7 +267,7 @@ protected:
 
   /// tracker for changes in order,rank configuration since last build
   /// (used by DataFitSurrModel::rebuild_approximation())
-  std::map<UShortArray, bool> formUpdated;
+  std::map<Pecos::ActiveKey, bool> formUpdated;
 
 private:
 
@@ -298,7 +299,7 @@ private:
 //{ return (dataRep) ? dataRep->numVars : numVars; }
 
 
-inline const UShortArray& SharedApproxData::active_model_key() const
+inline const Pecos::ActiveKey& SharedApproxData::active_model_key() const
 { return (dataRep) ? dataRep->activeKey : activeKey; }
 
 

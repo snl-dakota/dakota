@@ -1,7 +1,8 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -70,6 +71,6 @@ dakota_strict_warnings(dakota_util)
 dakota_gcov_target(dakota_util)
 
 install(FILES ${util_headers} DESTINATION "include")
-install(TARGETS dakota_util EXPORT ${ExportTarget} DESTINATION lib)
+install(TARGETS dakota_util EXPORT ${ExportTarget})
 
 add_subdirectory(unit)

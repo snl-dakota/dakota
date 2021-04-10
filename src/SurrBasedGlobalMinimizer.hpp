@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -113,6 +114,13 @@ private:
   /// than continuing to append, during construction of the next surrogate
   bool replacePoints;
 };
+
+
+/** This just specializes the Iterator implementation to perform
+    default tabulation on the truth model instead of surrogate model. */
+inline void SurrBasedGlobalMinimizer::
+initialize_graphics(int iterator_server_id)
+{ initialize_model_graphics(iteratedModel.truth_model(), iterator_server_id); }
 
 
 inline bool SurrBasedGlobalMinimizer::returns_multiple_points() const

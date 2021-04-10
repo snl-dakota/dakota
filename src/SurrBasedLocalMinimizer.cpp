@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -293,7 +294,7 @@ void SurrBasedLocalMinimizer::initialize_multipliers()
 
 
 /** Surrogate-based local (data-fit) specializes graphics to output
-    trust region centers. See add_datapoint in
+    trust region centers. See OutputManager::add_tabular_data in
     DataFitSurrBasedLocalMinimizer. Other children don't do any output */
 void SurrBasedLocalMinimizer::initialize_graphics(int iterator_server_id)
 {
@@ -305,23 +306,20 @@ void SurrBasedLocalMinimizer::initialize_graphics(int iterator_server_id)
   Model& truth_model = (methodName == SURROGATE_BASED_LOCAL) ?
     iteratedModel.truth_model() : iteratedModel;
   OutputManager& mgr = parallelLib.output_manager();
-  Graphics& dakota_graphics = mgr.graphics();
-  const Variables& vars = truth_model.current_variables();
-  const Response&  resp = truth_model.current_response();
 
   // For graphics, limit (currently) to server id 1, for both ded master
   // (parent partition rank 1) and peer partitions (parent partition rank 0)
   if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
     mgr.graphics_counter(0); // starting point is iteration 0
-    dakota_graphics.create_plots_2d(vars, resp);
-    dakota_graphics.set_x_labels2d("Surr-Based Iteration No.");
+    truth_model.create_2d_plots();
+    mgr.graphics().set_x_labels2d("Surr-Based Iteration No.");
   }
 
   // For output/restart/tabular data, all Iterator masters stream output
   if (mgr.tabularDataFlag) { // initialize data tabulation
     mgr.graphics_counter(0); // starting point is iteration 0
     mgr.tabular_counter_label("iter_no");
-    mgr.create_tabular_datastream(vars, resp);
+    truth_model.create_tabular_datastream();
   }
 
   //}
@@ -463,8 +461,8 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   unsigned short form = tr_data.approx_model_form();
   if (form != USHRT_MAX) {
     Cout << " (form "  << form + 1;
-    unsigned short lev = tr_data.approx_model_level();
-    if (lev != USHRT_MAX) Cout << ", level " << lev + 1;
+    size_t lev = tr_data.approx_model_level();
+    if (lev != std::numeric_limits<size_t>::max()) Cout << ", level " << lev+1;
     Cout << ")";
   }
   Cout << "\n                 ";

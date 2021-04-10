@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -302,6 +303,8 @@ protected:
   void combine_coefficients();
   void combined_to_active_coefficients(bool clear_combined = true);
   void clear_inactive_coefficients();
+
+  bool advancement_available();
 
   void print_coefficients(std::ostream& s, bool normalized);
 
@@ -790,6 +793,10 @@ inline void PecosApproximation::clear_computed_bits()
 
 inline void PecosApproximation::clear_inactive_coefficients()
 { pecosBasisApprox.clear_inactive(); }
+
+
+inline bool PecosApproximation::advancement_available()
+{ return pecosBasisApprox.advancement_available(); }
 
 
 inline void PecosApproximation::

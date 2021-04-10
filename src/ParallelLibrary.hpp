@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -16,12 +17,8 @@
 #ifndef PARALLEL_LIBRARY_H
 #define PARALLEL_LIBRARY_H
 
-#include "dakota_system_defs.hpp"
-#include "dakota_global_defs.hpp"  // for Cout
-#include "dakota_data_types.hpp"
-#include "MPIPackBuffer.hpp"
-#include "MPIManager.hpp"
 #include "ProgramOptions.hpp"
+#include "MPIManager.hpp"
 #include "OutputManager.hpp"
 
 
@@ -1013,7 +1010,7 @@ private:
   //
   //- Heading: Data
   //
-  
+
   /// reference to the MPI manager with Dakota's MPI options
   const MPIManager& mpiManager;
   /// programOptions is non-const due to updates from broadcast

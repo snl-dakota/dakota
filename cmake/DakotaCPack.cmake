@@ -6,9 +6,15 @@ macro(dakota_cpack_initialize)
 
   set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
   if(WIN32)
-    # We always build 32-bit Windows binaries and don't want to confuse users
-    # with the processor name from a 64-bit build host
-    set(local_arch "${CMAKE_SYSTEM_NAME}.x86")
+    # CMAKE_SYSTEM_PROCESSOR might be AMD64 on Windows which might cause confusion
+    # consider adopting more CMake standard package names
+    if(CMAKE_VS_PLATFORM_NAME)
+      if(CMAKE_VS_PLATFORM_NAME STREQUAL "Win32")
+        set(local_arch "${CMAKE_SYSTEM_NAME}.x86")
+      else()
+        set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_VS_PLATFORM_NAME}")
+      endif()
+    endif()
   endif()
 
   # TODO: insert distribution type into package names, i.e., instead of 
@@ -63,12 +69,14 @@ endmacro()
 macro(dakota_cpack_finalize)
 
   # Create Add generated files to source package
-  if(DAKOTA_GIT_checkout)
-    SET(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};/") 
-    LIST(APPEND CPACK_SOURCE_INSTALLED_DIRECTORIES
-      "${Dakota_BINARY_DIR}/generated/src/;/src")
-    LIST(APPEND CPACK_SOURCE_INSTALLED_DIRECTORIES
-      "${Dakota_BINARY_DIR}/generated/VERSION/;/")
+  SET(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};/") 
+  LIST(APPEND CPACK_SOURCE_INSTALLED_DIRECTORIES
+    "${Dakota_BINARY_DIR}/generated/src/;/src")
+  LIST(APPEND CPACK_SOURCE_INSTALLED_DIRECTORIES
+    "${Dakota_BINARY_DIR}/generated/VERSION/;/")
+
+  if(DAKOTA_EXAMPLES_CPACK_SOURCE_IGNORE)
+    list(APPEND CPACK_SOURCE_IGNORE_FILES ${DAKOTA_EXAMPLES_CPACK_SOURCE_IGNORE})
   endif()
 
   if(WIN32)

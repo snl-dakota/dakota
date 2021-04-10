@@ -1,0 +1,10 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 93 total (93 new, 0 duplicate)
+weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
+displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 160 total (145 new, 15 duplicate)
+weight:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
+stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
+displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01

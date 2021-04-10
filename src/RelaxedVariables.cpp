@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -150,17 +151,17 @@ void RelaxedVariables::read(std::istream& s)
 { read_core(s, GeneralReader(), ALL_VARS); }
 
 
+/** Presumes variables object is appropriately sized to receive data */
+void RelaxedVariables::read_tabular(std::istream& s, unsigned short vars_part)
+{ read_core(s, TabularReader(), vars_part); }
+
+
 void RelaxedVariables::write(std::ostream& s, unsigned short vars_part) const
 { write_core(s, GeneralWriter(), vars_part); }
 
 
 void RelaxedVariables::write_aprepro(std::ostream& s) const
 { write_core(s, ApreproWriter(), ALL_VARS); }
-
-
-/** Presumes variables object is appropriately sized to receive data */
-void RelaxedVariables::read_tabular(std::istream& s, unsigned short vars_part)
-{ read_core(s, TabularReader(), vars_part); }
 
 
 void RelaxedVariables::
@@ -171,6 +172,72 @@ write_tabular(std::ostream& s, unsigned short vars_part) const
 void RelaxedVariables::
 write_tabular_labels(std::ostream& s, unsigned short vars_part) const
 { write_core(s, LabelsWriter(), vars_part); }
+
+
+void RelaxedVariables::
+write_tabular_partial(std::ostream& s, size_t start_index,
+		      size_t num_items) const//, unsigned short vars_part) const
+{
+  // assume ALL_VARS; don't consider vars_part for now
+
+  const SizetArray& vc_totals = sharedVarsData.components_totals(); // ALL_VARS
+  size_t end_index = start_index + num_items, av_cntr = 0,
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+
+  if (write_partial_core(s, TabularWriter(), start_index, end_index, acv_offset,
+			 adiv_offset, adsv_offset, adrv_offset, av_cntr,
+			 vc_totals[TOTAL_CDV],  vc_totals[TOTAL_DDIV],
+			 vc_totals[TOTAL_DDSV], vc_totals[TOTAL_DDRV]))
+    return;
+  if (write_partial_core(s, TabularWriter(), start_index, end_index, acv_offset,
+			 adiv_offset, adsv_offset, adrv_offset, av_cntr,
+			 vc_totals[TOTAL_CAUV],  vc_totals[TOTAL_DAUIV],
+			 vc_totals[TOTAL_DAUSV], vc_totals[TOTAL_DAURV]))
+    return;
+  if (write_partial_core(s, TabularWriter(), start_index, end_index, acv_offset,
+			 adiv_offset, adsv_offset, adrv_offset, av_cntr,
+			 vc_totals[TOTAL_CEUV],  vc_totals[TOTAL_DEUIV],
+			 vc_totals[TOTAL_DEUSV], vc_totals[TOTAL_DEURV]))
+    return;
+  if (write_partial_core(s, TabularWriter(), start_index, end_index, acv_offset,
+			 adiv_offset, adsv_offset, adrv_offset, av_cntr,
+			 vc_totals[TOTAL_CSV],  vc_totals[TOTAL_DSIV],
+			 vc_totals[TOTAL_DSSV], vc_totals[TOTAL_DSRV]))
+    return;
+}
+
+
+void RelaxedVariables::
+write_tabular_partial_labels(std::ostream& s, size_t start_index,
+			     size_t num_items) const
+{
+  // assume ALL_VARS; don't consider vars_part for now
+
+  const SizetArray& vc_totals = sharedVarsData.components_totals(); // ALL_VARS
+  size_t end_index = start_index + num_items, av_cntr = 0,
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+
+  if (write_partial_core(s, LabelsWriter(), start_index, end_index, acv_offset,
+			 adiv_offset, adsv_offset, adrv_offset, av_cntr,
+			 vc_totals[TOTAL_CDV],  vc_totals[TOTAL_DDIV],
+			 vc_totals[TOTAL_DDSV], vc_totals[TOTAL_DDRV]))
+    return;
+  if (write_partial_core(s, LabelsWriter(), start_index, end_index, acv_offset,
+			 adiv_offset, adsv_offset, adrv_offset, av_cntr,
+			 vc_totals[TOTAL_CAUV],  vc_totals[TOTAL_DAUIV],
+			 vc_totals[TOTAL_DAUSV], vc_totals[TOTAL_DAURV]))
+    return;
+  if (write_partial_core(s, LabelsWriter(), start_index, end_index, acv_offset,
+			 adiv_offset, adsv_offset, adrv_offset, av_cntr,
+			 vc_totals[TOTAL_CEUV],  vc_totals[TOTAL_DEUIV],
+			 vc_totals[TOTAL_DEUSV], vc_totals[TOTAL_DEURV]))
+    return;
+  if (write_partial_core(s, LabelsWriter(), start_index, end_index, acv_offset,
+			 adiv_offset, adsv_offset, adrv_offset, av_cntr,
+			 vc_totals[TOTAL_CSV],  vc_totals[TOTAL_DSIV],
+			 vc_totals[TOTAL_DSSV], vc_totals[TOTAL_DSRV]))
+    return;
+}
 
 
 /** Reordering is required in all read/write cases that will be
@@ -389,6 +456,66 @@ void RelaxedVariables::write_core(std::ostream& s, Writer write_handler,
       write_handler(s,  acv_offset++, len, allContinuousVars, acv_labels);
     else
       write_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
+}
+
+
+template<typename Writer>
+bool RelaxedVariables::
+write_partial_core(std::ostream& s, Writer write_handler, size_t start_index,
+		   size_t end_index, size_t& acv_offset, size_t& adiv_offset,
+		   size_t& adsv_offset, size_t& adrv_offset, size_t& av_cntr,
+		   size_t num_cv, size_t num_div, size_t num_dsv,
+		   size_t num_drv) const
+{
+  const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
+  const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
+  size_t i, ardi_cntr = 0, ardr_cntr = 0;
+
+  // write continuous variables
+  StringMultiArrayView acv_labels = all_continuous_variable_labels();
+  for (i=0; i<num_cv; ++i, ++av_cntr, ++acv_offset)
+    if (av_cntr >= start_index && av_cntr < end_index)
+      write_handler(s, acv_offset, 1, allContinuousVars, acv_labels);
+    else if (av_cntr >= end_index)
+      return true;
+
+  // write discrete int variables (potentially relaxed)
+  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
+  for (i=0; i<num_div; ++i, ++ardi_cntr, ++av_cntr) {
+    bool relax = all_relax_di[ardi_cntr];
+    if (av_cntr >= start_index && av_cntr < end_index) {
+      if (relax) write_handler(s, acv_offset, 1, allContinuousVars, acv_labels);
+      else write_handler(s, adiv_offset, 1, allDiscreteIntVars, adiv_labels);
+    }
+    else if (av_cntr >= end_index)
+      return true;
+    if (relax) ++acv_offset;
+    else      ++adiv_offset;
+  }
+
+  // write discrete string variables
+  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
+  for (i=0; i<num_dsv; ++i, ++av_cntr, ++adsv_offset)
+    if (av_cntr >= start_index && av_cntr < end_index)
+      write_handler(s, adsv_offset, 1, allDiscreteStringVars, adsv_labels);
+    else if (av_cntr >= end_index)
+      return true;
+
+  // write discrete real variables (potentially relaxed)
+  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
+  for (i=0; i<num_drv; ++i, ++ardr_cntr, ++av_cntr) {
+    bool relax = all_relax_dr[ardr_cntr];
+    if (av_cntr >= start_index && av_cntr < end_index) {
+      if (relax) write_handler(s, acv_offset, 1, allContinuousVars, acv_labels);
+      else write_handler(s, adrv_offset, 1, allDiscreteRealVars, adrv_labels);
+    }
+    else if (av_cntr >= end_index)
+      return true;
+    if (relax) ++acv_offset;
+    else      ++adrv_offset;
+  }
+
+  return false;
 }
 
 } // namespace Dakota

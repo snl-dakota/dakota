@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -404,6 +405,10 @@ protected:
   static void gnewton_set_recast(const Variables& recast_vars,
 				 const ActiveSet& recast_set,
 				 ActiveSet& sub_model_set);
+
+  /// helper function that encapsulates initialization operations,
+  /// modular on incoming Model instance
+  void initialize_model_graphics(Model& model, int iterator_server_id);
 
   /// export final surrogates generated, e.g., GP in EGO and friends
   void export_final_surrogates(Model& data_fit_surr_model);

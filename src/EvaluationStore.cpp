@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -112,44 +113,58 @@ declare_source(const String &owner_id, const String &owner_type,
 #ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
-  // Location of source model or interface evals or method results
-  String source_location;
-  // Location of the link to the source
-  String link_location;
-  // TODO: Report/raise some kind of error for invalid owner or source strings
 
   if(owner_type == "iterator") {
-    link_location = String("/methods/") + owner_id + "/sources/" + source_id;
-    if(source_type == "iterator") { // always link iterator sources
-      source_location = String("/methods/") + source_id;
-      hdf5Stream->create_softlink(link_location, source_location);
-    } else { // source is a model
-      if( (modelSelection == MODEL_EVAL_STORE_TOP_METHOD && owner_id == topLevelMethodId) || 
-           modelSelection == MODEL_EVAL_STORE_ALL_METHODS )
-        sourceModels.emplace(source_id);
-      if(model_active(source_id)) { // Only link if evals for this model will be stored
-        source_location = String("/models/") + source_type + "/" + source_id; 
-        hdf5Stream->create_softlink(link_location, source_location);
-      }
-    } 
-  } else { // owner is a model. Assume it should be stored.
-    link_location = String("/models/") + owner_type + "/" + owner_id + "/sources/" + source_id;
-    if(source_type == "iterator") {
-      source_location = String("/methods/") + source_id;
-      hdf5Stream->create_softlink(link_location, source_location);
-    } else if(source_type == "interface" && interface_active(source_type)) {
-      source_location = String("/interfaces/") + source_id + "/" + owner_id;
-      hdf5Stream->create_softlink(link_location, source_location);
-    }
-    else if(model_active(source_id)) { // source is a model
-      source_location = String("/models/") + source_type + "/" + source_id;
-      hdf5Stream->create_softlink(link_location, source_location);
-    }
+    declare_iterator_source(owner_id, source_id, source_type);
+  } else { // owner is one of the model types.
+    declare_model_source(owner_id, owner_type, source_id, source_type);
   }
 #else
   return;
 #endif
 }
+
+#ifdef DAKOTA_HAVE_HDF5
+void EvaluationStore::declare_iterator_source(const String owner_id, const String source_id, const String source_type) {
+  
+  String link_location = String("/methods/") + owner_id + "/sources/" + source_id;
+  if(source_type == "iterator") {
+     String source_location = String("/methods/") + source_id;
+     hdf5Stream->create_softlink(link_location, source_location);
+  } else { // source is a model
+    update_source_models(owner_id, source_id);
+    if(model_active(source_id)) {
+      String source_location = String("/models/") + source_type + "/" + source_id; 
+      hdf5Stream->create_softlink(link_location, source_location);
+    }
+  } 
+}
+
+
+void EvaluationStore::declare_model_source(const String owner_id, const String owner_type, 
+                                     const String source_id, const String source_type) {
+  String link_location = String("/models/") + owner_type + "/" + owner_id + "/sources/" + source_id;
+  if(source_type == "iterator") {
+    String source_location = String("/methods/") + source_id;
+    hdf5Stream->create_softlink(link_location, source_location);
+  } else if(source_type == "interface" && interface_active(source_type)) {
+    String source_location = String("/interfaces/") + source_id + "/" + owner_id;
+    hdf5Stream->create_softlink(link_location, source_location);
+  }
+  else if(model_active(source_id)) { // source is a model
+    String source_location = String("/models/") + source_type + "/" + source_id;
+    hdf5Stream->create_softlink(link_location, source_location);
+  }
+}
+#endif
+
+
+void EvaluationStore::update_source_models(const String owner_id, const String source_id) {
+    if( (modelSelection == MODEL_EVAL_STORE_TOP_METHOD && owner_id == topLevelMethodId) || 
+         modelSelection == MODEL_EVAL_STORE_ALL_METHODS )
+      sourceModels.emplace(source_id);
+}
+
 
 EvaluationsDBState EvaluationStore::iterator_allocate(const String &iterator_id,
     const bool &top_level) {

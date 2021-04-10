@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -539,7 +540,7 @@ update_local_results(PRPArray& prp_results, int job_id)
 
 void SeqHybridMetaIterator::declare_sources() {
   for(const auto & si : selectedIterators)
-    evaluationsDB.declare_source(method_id(), "metaiterator",
+    evaluationsDB.declare_source(method_id(), "iterator",
         si.method_id(), "iterator");
 }
 

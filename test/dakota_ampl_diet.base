@@ -1,0 +1,19 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 Buy[Sausage_McMuffin]
+                      0.0000000000e+00 Buy[Orange_Juice]
+                      1.2814718545e-15 Buy[Big_Mac]
+                      1.0000000000e+00 Buy[Filet-O-Fish]
+                     -1.3092274301e-15 Buy[Quarter_Pounder_w_Cheese]
+                      1.0000000000e+00 Buy[1%_Lowfat_Milk]
+                      1.0000000000e+00 Buy[Fries,_small]
+                      0.0000000000e+00 Buy[McGrilled_Chicken]
+                      0.0000000000e+00 Buy[McLean_Deluxe_w_Cheese]
+<<<<< Best objective function  =
+                      2.8100000000e+00
+<<<<< Best constraint values   =
+                      1.0000000000e+00
+                      1.0000000000e+00
+                      1.0000000000e+00
+<<<<< Best data not found in evaluation cache

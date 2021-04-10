@@ -1,0 +1,100 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 49 total (49 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 61 total (61 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+<<<<< Best residual terms =
+                      0.0000000000e+00
+                     -6.6613381478e-16
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 88 total (88 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 28 total (28 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+<<<<< Best residual terms =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 44 total (44 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+<<<<< Best residual terms =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 42 total (42 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+<<<<< Best residual terms =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data not found in evaluation cache
+Test Number 4 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 71 total (71 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999961813e-01 x1
+                      9.9999923433e-01 x2
+<<<<< Best residual terms =
+                     -1.9294524867e-08
+                      3.8187130780e-07
+<<<<< Best data not found in evaluation cache
+Test Number 5 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 61 total (61 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999690460e-01 x1
+                      9.9999375735e-01 x2
+<<<<< Best residual terms =
+                     -5.1857539152e-07
+                      3.0954012098e-06
+<<<<< Best data not found in evaluation cache
+Test Number 6 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 70 total (70 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999995014e-01 x1
+                      9.9999979735e-01 x2
+<<<<< Best residual terms =
+                     -1.0292703034e-06
+                      4.9862252105e-08
+<<<<< Best data not found in evaluation cache
+Test Number 7 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 248 total (248 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999974386e-01 x1
+                      9.9999948680e-01 x2
+<<<<< Best residual terms =
+                     -9.3317986671e-09
+                      2.5613516541e-07
+<<<<< Best data not found in evaluation cache
+Test Number 8 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 925 total (925 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 441 total (441 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9989107260e-01 x1
+                      9.9978175594e-01 x2
+<<<<< Best residual terms =
+                     -4.0113214217e-06
+                      1.0892739685e-04
+<<<<< Best data not found in evaluation cache
+Test Number 9 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 377 total (377 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 39 total (39 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9991298983e-01 x1
+                      9.9982563771e-01 x2
+<<<<< Best residual terms =
+                     -3.4951878336e-06
+                      8.7010172147e-05
+<<<<< Best data not found in evaluation cache

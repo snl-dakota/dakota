@@ -1,0 +1,120 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+   oscB_scalar1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999998715e-01 x1
+                      1.9999999925e-01 x2
+<<<<< Best model responses =
+                      4.1049160372e-01
+                     -1.7343831827e-02
+                     -2.4559254262e-01
+                      1.1096681088e-02
+                     -5.4913566802e-02
+                      1.6649057101e-01
+                     -1.1245429715e-01
+<<<<< Best residual terms =
+                     -1.5896162164e-10
+                     -3.9016742476e-09
+                     -1.1420191598e-08
+                     -6.1848928236e-10
+                      4.5129533791e-09
+                      5.8022790461e-09
+                     -1.1145922935e-09
+<<<<< Best residual terms =
+                     -1.5896162164e-10
+                     -3.9016742476e-09
+                     -1.1420191598e-08
+                     -6.1848928236e-10
+                      4.5129533791e-09
+                      5.8022790461e-09
+                     -1.1145922935e-09
+<<<<< Best data captured at function evaluation 16
+Confidence Intervals on Calibrated Parameters:
+            x1: [ 2.9999997138e-01, 3.0000000291e-01 ]
+            x2: [ 1.9999999391e-01, 2.0000000460e-01 ]
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 24 total (22 new, 2 duplicate)
+   oscB_scalar1: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_1: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_2: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_3: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_4: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_5: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999999977e-01 x1
+                      1.9999999995e-01 x2
+<<<<< Best model responses =
+                      4.1049160393e-01
+                     -1.7343827912e-02
+                     -2.4559253139e-01
+                      1.1096681635e-02
+                     -5.4913571273e-02
+                      1.6649056533e-01
+                     -1.1245429602e-01
+<<<<< Best residual terms =
+                      4.5460191167e-11
+                      1.3437358864e-11
+                     -1.9421109165e-10
+                     -7.1386488734e-11
+                      4.1846331955e-11
+                      1.1550826962e-10
+                      2.0394380629e-11
+<<<<< Best residual terms =
+                      4.5460191167e-11
+                      1.3437358864e-11
+                     -1.9421109165e-10
+                     -7.1386488734e-11
+                      4.1846331955e-11
+                      1.1550826962e-10
+                      2.0394380629e-11
+<<<<< Best data captured at function evaluation 20
+Confidence Intervals on Calibrated Parameters:
+            x1: [ 2.9999999950e-01, 3.0000000004e-01 ]
+            x2: [ 1.9999999982e-01, 2.0000000008e-01 ]
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 24 total (22 new, 2 duplicate)
+   oscB_scalar1: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_1: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_2: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_3: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_4: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_5: 24 val (22 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999999977e-01 x1
+                      1.9999999995e-01 x2
+<<<<< Best model responses =
+                      4.1049160393e-01
+                     -1.7343827912e-02
+                     -2.4559253139e-01
+                      1.1096681635e-02
+                     -5.4913571273e-02
+                      1.6649056533e-01
+                     -1.1245429602e-01
+<<<<< Best residual terms =
+                      4.5460191167e-11
+                      1.3437358864e-11
+                     -1.9421109165e-10
+                     -7.1386488734e-11
+                      4.1846331955e-11
+                      1.1550826962e-10
+                      2.0394380629e-11
+<<<<< Best residual terms =
+                      4.5460191167e-11
+                      1.3437358864e-11
+                     -1.9421109165e-10
+                     -7.1386488734e-11
+                      4.1846331955e-11
+                      1.1550826962e-10
+                      2.0394380629e-11
+<<<<< Best data captured at function evaluation 20
+Confidence Intervals on Calibrated Parameters:
+            x1: [ 2.9999999950e-01, 3.0000000004e-01 ]
+            x2: [ 1.9999999982e-01, 2.0000000008e-01 ]

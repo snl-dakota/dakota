@@ -1,7 +1,8 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -49,13 +50,13 @@ set(Dakota_VERSION_PATCH 0)
 # --- Release time toggles
 
 # Toggle this to append to the version number for stable
-set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
-#set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
+#set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
+set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # If empty, the build date will be used as the release date (could consider 
 # using the Git rev date); use format Mmm dd yyyy, as in asctime()
-set(Dakota_RELEASE_DATE "Nov. 16 2020")    # Versioned release date Mmm dd yyyy
-#set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
+#set(Dakota_RELEASE_DATE "Nov. 16 2020")    # Versioned release date Mmm dd yyyy
+set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
 
 # Define convenience variables used here and in subdirs, such as
 #   Dakota_VERSION_{PAIR, TRIPLE, STRING, SRC}
@@ -85,7 +86,15 @@ execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
 # Conditionally include Git revision in version info and create VERSION file.
 # Sets several convenience variables
 # NOTE: depends on presence of generated source directories
-dakota_version_from_git()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION)
+  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/DakotaBuildInfo.cpp)
+    message(FATAL_ERROR "VERSION file exists but no corresponding
+                         src/DakotaBuildInfo.cpp exists.")
+  endif()
+  set(DAKOTA_VERSION_FOUND TRUE)
+else()
+  dakota_version_from_git()
+endif()
 
 
 # More widely distributed packages exclude more content
@@ -244,6 +253,9 @@ add_subdirectory(src)
 # Build the executables in the test directory even if BUILD_TESTING is OFF
 if(DAKOTA_ENABLE_TESTS)
   add_subdirectory(test)
+  if(DAKOTA_TEST_EXAMPLES_REPO)
+    add_subdirectory(dakota-examples)
+  endif()
 endif()
 
 if(ENABLE_DAKOTA_DOCS)
@@ -286,6 +298,6 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "*.f" EXCLUDE 
   )
 
-# Final CPack settings (depends on DAKOTA_GIT_checkout)
+# Final CPack settings
 dakota_cpack_finalize()
 include(CPack)

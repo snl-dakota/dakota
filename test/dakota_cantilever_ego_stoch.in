@@ -1,0 +1,35 @@
+#@ s*: TimeoutDelay=120
+#@ s*: Label=StochDiff
+
+# DAKOTA INPUT FILE : dakota_cantilever_ego_stoch.in
+# These tests are not reproducible due to nonblocking synchronization
+
+method,
+    efficient_global
+      gaussian_process dakota
+      seed = 123457
+      batch_size = 4				#s0
+#     batch_size = 6                        	#s1
+#       exploration = 2                       	#s1
+	nonblocking synchronization
+  max_iteration = 15
+
+variables,
+    continuous_design = 2
+      initial_point    4.0          4.0
+      upper_bounds    10.0         10.0
+      lower_bounds     1.0          1.0
+      descriptors     'w' 't'
+    continuous_state = 4
+      initial_state   40000.  29.E+6  500.  1000.
+      descriptors       'R'    'E'    'X'    'Y'
+
+interface,
+    fork asynchronous
+      analysis_driver = 'cantilever'
+
+responses,
+    objective_functions = 1
+    nonlinear_inequality_constraints = 2
+    no_gradients
+    no_hessians

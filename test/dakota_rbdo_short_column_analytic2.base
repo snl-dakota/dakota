@@ -1,0 +1,144 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 93 total (72 new, 21 duplicate)
+  response_fn_1: 22 val (12 n, 10 d), 29 grad (19 n, 10 d), 22 Hess (12 n, 10 d)
+  response_fn_2: 79 val (58 n, 21 d), 86 grad (65 n, 21 d), 79 Hess (58 n, 21 d)
+<<<<< Best parameters          =
+                      8.6785934434e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1696483608e+02
+<<<<< Best constraint values   =
+                      5.8474560976e-03
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 93 total (72 new, 21 duplicate)
+  response_fn_1: 22 val (12 n, 10 d), 29 grad (19 n, 10 d), 22 Hess (12 n, 10 d)
+  response_fn_2: 79 val (58 n, 21 d), 86 grad (65 n, 21 d), 79 Hess (58 n, 21 d)
+<<<<< Best parameters          =
+                      8.6785934236e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1696483559e+02
+<<<<< Best constraint values   =
+                      5.8474563275e-03
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 187 total (154 new, 33 duplicate)
+  response_fn_1: 22 val (12 n, 10 d), 29 grad (19 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 129 val (112 n, 17 d), 158 grad (135 n, 23 d), 22 Hess (16 n, 6 d)
+<<<<< Best parameters          =
+                      8.6785934219e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1696483555e+02
+<<<<< Best constraint values   =
+                      5.8474563473e-03
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 64 total (43 new, 21 duplicate)
+  response_fn_1: 15 val (7 n, 8 d), 20 grad (12 n, 8 d), 15 Hess (7 n, 8 d)
+  response_fn_2: 54 val (33 n, 21 d), 59 grad (38 n, 21 d), 54 Hess (33 n, 21 d)
+<<<<< Best parameters          =
+                      8.6491021608e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1622755402e+02
+<<<<< Best constraint values   =
+                      2.5005758086e+00
+<<<<< Best data not found in evaluation cache
+Test Number 4 succeeded
+<<<<< Function evaluation summary (UQ_I): 64 total (45 new, 19 duplicate)
+  response_fn_1: 15 val (7 n, 8 d), 20 grad (12 n, 8 d), 15 Hess (7 n, 8 d)
+  response_fn_2: 54 val (35 n, 19 d), 59 grad (40 n, 19 d), 54 Hess (35 n, 19 d)
+<<<<< Best parameters          =
+                      8.6491021609e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1622755402e+02
+<<<<< Best constraint values   =
+                      2.5005758087e+00
+<<<<< Best data not found in evaluation cache
+Test Number 5 succeeded
+<<<<< Function evaluation summary (UQ_I): 108 total (85 new, 23 duplicate)
+  response_fn_1: 15 val (7 n, 8 d), 20 grad (12 n, 8 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 68 val (60 n, 8 d), 88 grad (73 n, 15 d), 15 Hess (8 n, 7 d)
+<<<<< Best parameters          =
+                      8.6491021605e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1622755401e+02
+<<<<< Best constraint values   =
+                      2.5005758084e+00
+<<<<< Best data not found in evaluation cache
+Test Number 6 succeeded
+<<<<< Function evaluation summary (UQ_I): 84 total (56 new, 28 duplicate)
+  response_fn_1: 20 val (12 n, 8 d), 26 grad (18 n, 8 d), 20 Hess (12 n, 8 d)
+  response_fn_2: 72 val (44 n, 28 d), 78 grad (50 n, 28 d), 72 Hess (44 n, 28 d)
+<<<<< Best parameters          =
+                      8.6477817206e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1619454302e+02
+<<<<< Best constraint values   =
+                     -8.4633155232e-05
+<<<<< Best data not found in evaluation cache
+Test Number 7 succeeded
+<<<<< Function evaluation summary (UQ_I): 84 total (60 new, 24 duplicate)
+  response_fn_1: 20 val (12 n, 8 d), 26 grad (18 n, 8 d), 20 Hess (12 n, 8 d)
+  response_fn_2: 72 val (48 n, 24 d), 78 grad (54 n, 24 d), 72 Hess (48 n, 24 d)
+<<<<< Best parameters          =
+                      8.6477817420e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1619454355e+02
+<<<<< Best constraint values   =
+                     -8.4629325590e-05
+<<<<< Best data not found in evaluation cache
+Test Number 8 succeeded
+<<<<< Function evaluation summary (UQ_I): 3015 total (2995 new, 20 duplicate)
+  response_fn_1: 20 val (12 n, 8 d), 26 grad (18 n, 8 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 2983 val (2971 n, 12 d), 2989 grad (2977 n, 12 d), 2983 Hess (2971 n, 12 d)
+<<<<< Best parameters          =
+                      8.6477783626e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1619445907e+02
+<<<<< Best constraint values   =
+                     -8.4553781526e-05
+<<<<< Best data not found in evaluation cache
+Test Number 9 succeeded
+<<<<< Function evaluation summary (UQ_I): 84 total (56 new, 28 duplicate)
+  response_fn_1: 20 val (12 n, 8 d), 26 grad (18 n, 8 d), 20 Hess (12 n, 8 d)
+  response_fn_2: 72 val (44 n, 28 d), 78 grad (50 n, 28 d), 72 Hess (44 n, 28 d)
+<<<<< Best parameters          =
+                      8.6478089966e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1619522492e+02
+<<<<< Best constraint values   =
+                     -8.4627450146e-05
+<<<<< Best data not found in evaluation cache
+Test Number 10 succeeded
+<<<<< Function evaluation summary (UQ_I): 84 total (60 new, 24 duplicate)
+  response_fn_1: 20 val (12 n, 8 d), 26 grad (18 n, 8 d), 20 Hess (12 n, 8 d)
+  response_fn_2: 72 val (48 n, 24 d), 78 grad (54 n, 24 d), 72 Hess (48 n, 24 d)
+<<<<< Best parameters          =
+                      8.6478086631e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1619521658e+02
+<<<<< Best constraint values   =
+                     -8.4687353958e-05
+<<<<< Best data not found in evaluation cache
+Test Number 11 succeeded
+<<<<< Function evaluation summary (UQ_I): 3292 total (3271 new, 21 duplicate)
+  response_fn_1: 20 val (12 n, 8 d), 26 grad (18 n, 8 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 3260 val (3247 n, 13 d), 3266 grad (3253 n, 13 d), 3260 Hess (3247 n, 13 d)
+<<<<< Best parameters          =
+                      8.6478058122e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.1619514531e+02
+<<<<< Best constraint values   =
+                     -8.4517006436e-05
+<<<<< Best data not found in evaluation cache

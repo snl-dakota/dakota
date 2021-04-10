@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -100,13 +101,19 @@ public:
   const ActiveSet& active_set() const;
   /// set the active set
   void active_set(const ActiveSet& set);
+
   /// return the active set request vector
   const ShortArray& active_set_request_vector() const;
+  /// return the active set request vector
+  ShortArray& active_set_request_vector();
   /// set the active set request vector and verify consistent number
   /// of response functions
   void active_set_request_vector(const ShortArray& asrv);
+
   /// return the active set derivative vector
   const SizetArray& active_set_derivative_vector() const;
+  /// return the active set derivative vector
+  SizetArray& active_set_derivative_vector();
   /// set the active set derivative vector and reshape
   /// functionGradients/functionHessians if needed
   void active_set_derivative_vector(const SizetArray& asdv);
@@ -849,7 +856,21 @@ inline const ShortArray& Response::active_set_request_vector() const
 }
 
 
+inline ShortArray& Response::active_set_request_vector()
+{
+  if (responseRep) return responseRep->responseActiveSet.request_vector();
+  else             return responseActiveSet.request_vector();
+}
+
+
 inline const SizetArray& Response::active_set_derivative_vector() const
+{
+  if (responseRep) return responseRep->responseActiveSet.derivative_vector();
+  else             return responseActiveSet.derivative_vector();
+}
+
+
+inline SizetArray& Response::active_set_derivative_vector()
 {
   if (responseRep) return responseRep->responseActiveSet.derivative_vector();
   else             return responseActiveSet.derivative_vector();

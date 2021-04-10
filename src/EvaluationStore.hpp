@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -97,6 +98,19 @@ class EvaluationStore {
 
     /// Create the root scale group
     String create_scale_root(const String &root_group);
+
+#ifdef DAKOTA_HAVE_HDF5
+    /// Declare the source of an iterator
+    void declare_iterator_source(const String owner_id, const String source_id, const String source_type);
+
+    /// Declare the source of a model
+    void declare_model_source(const String owner_id, const String owner_type,
+                              const String source_id, const String source_type);
+#endif
+
+    /// Update the listing of active source models
+    void update_source_models(const String owner_id, const String source_id);
+
 
     /// Create the root model group
     String create_model_root(const String &model_id, const String &model_type);

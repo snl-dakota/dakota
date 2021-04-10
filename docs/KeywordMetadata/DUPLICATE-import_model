@@ -1,0 +1,95 @@
+Blurb::
+Import surrogate model from archive file
+
+Description::
+
+Imports a surrogate model from a file in \c binary_archive or \c
+text_archive format, typically instead of constructing it from
+generated or imported data. Importing can result in significant time
+savings with some models, such as Gaussian processes. The file from
+which to import is further specified with the child keywords \c
+filename_prefix and \c binary_archive or \c text_archive.
+
+<b> Default Behavior </b>
+
+When used in the context of an iteratively adapted or rebuilt
+surrogate, the imported model will only replace the initial surrogate
+model. Subsequent surrogate model builds require imported build points
+or a design of experiments method specified through \c
+dace_method_pointer.
+
+<b> Usage Tips </b>
+
+When importing a surrogate model, <em>it is crucial</em> that the \ref
+model-surrogate-global surrogate model part of the Dakota input file
+be identical for export and import, except for changing \c
+export_model and its child keywords to those needed for \c
+import_model. Any other keywords such as specifying a dace_iterator or
+imported points must remain intact to satisfy internal surrogate
+constructor requirements.
+
+All variables over which the surrogate model was built (typically the
+active variables) when exported must be present in the %Dakota study
+that imports it. The variables in the importing study will be matched
+by descriptor to those in the surrogate model. This allows the order
+and type of variables to change between export and import, for example
+to fix unimportant parameters as state variables even if they were
+previously active design variables.
+
+For example, suppose the original %Dakota study for the surrogate
+build had active uniform uncertain variables: a, b, c, d, and inactive
+state variables s, t, and the surrogate gets built over a, b, c,
+d. The follow-on study could perform design optimization over active
+design variables b and d, with inactive state variables a, c, s, t,
+held at fixed \c initial_state values. In this case the values of a,
+b, c, d will get mapped to the surrogate and s, t dropped when
+evaluating it. So it is important the state values for s and t haven't
+changed in some way that invalidates the surrogate.
+
+While it might be possible to import surrogates externally-generated
+using the \c surfpack binary or the experimental \c dakota.surrogates
+Python module, it is untested and not the primary use case for this
+capability.
+
+Topics::
+
+Examples::
+
+The following model block exports a Gaussian process after it's built:
+
+\verbatim
+model
+  id_model = 'SURR_M'
+  surrogate global
+    dace_method_pointer = 'DACE'
+    experimental_gaussian_process
+      metrics 'root_mean_squared'
+        cross_validation folds 5
+      export_model
+        filename_prefix = 'gp_export'
+        formats = binary_archive
+      export_approx_points_file 'gp_values.dat'
+      export_approx_variance_file 'gp_variance.dat'
+\endverbatim
+
+And this model block imports it using a nearly identical model
+specification:
+
+\verbatim
+model
+  id_model = 'SURR_M'
+  surrogate global
+    dace_method_pointer = 'DACE'
+    experimental_gaussian_process
+      metrics 'root_mean_squared'
+        cross_validation folds 5
+      import_model
+        filename_prefix = 'gp_export'
+ 	  binary_archive
+      export_approx_points_file 'gp_values.dat'
+      export_approx_variance_file 'gp_variance.dat'
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

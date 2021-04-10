@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -1247,6 +1248,31 @@ template <typename ScalarType>
 inline ScalarType find_min(const std::vector<ScalarType>& vec)
 {
   size_t i, len = vec.size();
+  ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
+  for (i=1; i<len; ++i)
+    if (vec[i] < min)
+      min = vec[i];
+  return min;
+}
+
+
+template <typename OrdinalType, typename ScalarType>
+inline ScalarType find_min(
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec)
+{
+  size_t i, len = vec.length();
+  ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
+  for (i=1; i<len; ++i)
+    if (vec[i] < min)
+      min = vec[i];
+  return min;
+}
+
+
+template <typename ScalarType>
+inline ScalarType find_min(const ScalarType* vec, size_t len)
+{
+  size_t i;
   ScalarType min = (len) ? vec[0] : std::numeric_limits<ScalarType>::max();
   for (i=1; i<len; ++i)
     if (vec[i] < min)

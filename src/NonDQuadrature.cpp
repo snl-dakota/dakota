@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -21,6 +22,7 @@
 #include "PolynomialApproximation.hpp"
 #include "LHSDriver.hpp"
 #include "dakota_stat_util.hpp"
+#include "pecos_math_util.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDQuadrature.cpp,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
 
@@ -210,8 +212,8 @@ initialize_dimension_quadrature_order(unsigned short quad_order_spec,
 {
   // Update ref_quad_order from quad_order_spec and dim_pref_spec
   UShortArray ref_quad_order;
-  dimension_preference_to_anisotropic_order(quad_order_spec,   dim_pref_spec,
-					    numContinuousVars, ref_quad_order);
+  Pecos::dimension_preference_to_anisotropic_order(quad_order_spec,
+    dim_pref_spec, numContinuousVars, ref_quad_order);
 
   // Update Pecos::TensorProductDriver::quadOrder from ref_quad_order
   tpqDriver->reference_quadrature_order(ref_quad_order, nestedRules);

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -28,6 +29,7 @@
 namespace Pecos { /* forward declarations */
 class SurrogateData;
 class ProbabilityTransformation;
+class ActiveKey;
 }
 
 namespace Dakota {
@@ -99,13 +101,13 @@ public:
   /// dive through model recursions that may bypass some components.
   virtual Model& subordinate_model();
 
-  /// set the active multi-index key within surrogate data, grid driver,
+  /// set the active model key within surrogate data, grid driver,
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
-  virtual void active_model_key(const UShortArray& mi_key);
-  /// reset by removing all multi-index keys within surrogate data, grid
-  /// driver, and approximation classes that support the management of
-  /// multiple approximation states within surrogate models
+  virtual void active_model_key(const Pecos::ActiveKey& key);
+  /// reset by removing all model keys within surrogate data, grid driver,
+  /// and approximation classes that support the management of multiple
+  /// approximation states within surrogate models
   virtual void clear_model_keys();
 
   /// return number of unique response functions (managing any aggregations)
@@ -119,6 +121,21 @@ public:
   virtual Model& truth_model();
   /// return the active truth sub-model in surrogate models
   virtual const Model& truth_model() const;
+
+  /// identify if hierarchy is across model forms
+  virtual bool multifidelity() const;
+  /// identify if hierarchy is across resolution levels
+  virtual bool multilevel() const;
+  /// identify if hierarchy is across both model forms and resolution levels
+  virtual bool multilevel_multifidelity() const;
+
+  /// return precedence for hierarchy definition, model forms or
+  /// resolution levels
+  virtual bool multifidelity_precedence() const;
+  /// assign precedence for hierarchy definition (model forms or
+  /// resolution levels) as determined from algorithm context
+  virtual void multifidelity_precedence(bool mf_prec,
+					bool update_default = false);
 
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -136,16 +153,30 @@ public:
   /// number of discrete levels within solution control (SimulationModel)
   virtual size_t solution_levels(bool lwr_bnd = true) const;
   /// activate a particular level within the solution level control
-  /// and return the cost estimate (SimulationModel)
-  virtual void solution_level_index(unsigned short index);
+  /// (SimulationModel)
+  virtual void solution_level_cost_index(size_t index);
   /// return currently active level within the solution level control
   /// (SimulationModel)
-  virtual unsigned short solution_level_index() const;
+  virtual size_t solution_level_cost_index() const;
   /// return ordered cost estimates across solution levels (SimulationModel)
   virtual RealVector solution_level_costs() const;
   /// return currently active cost estimate from solution level
   /// control (SimulationModel)
   virtual Real solution_level_cost() const;
+
+  /// return type of solution control variable
+  virtual short solution_control_variable_type() const;
+  /// return index of solution control variable within all variables
+  virtual size_t solution_control_variable_index() const;
+  /// return index of solution control variable within all discrete variables
+  virtual size_t solution_control_discrete_variable_index() const;
+
+  /// return the active (integer) value of the solution control
+  virtual int    solution_level_int_value() const;
+  /// return the active (string) value of the solution control
+  virtual String solution_level_string_value() const;
+  /// return the active (real) value of the solution control
+  virtual Real   solution_level_real_value() const;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
@@ -153,7 +184,7 @@ public:
 					   bool recurse_flag = true);
 
   /// set the (currently active) surrogate function index set
-  virtual void surrogate_function_indices(const IntSet& surr_fn_indices);
+  virtual void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// return probability transformation employed by the Model (forwarded along
   /// to ProbabilityTransformModel recasting)
@@ -216,8 +247,13 @@ public:
   /// anchor response at vars; rebuild if needed
   virtual bool build_approximation(const Variables& vars,
 				   const IntResponsePair& response_pr);
-  /// update an existing SurrogateModel approximation
+
+  /// incremental rebuild of an existing SurrogateModel approximation
   virtual void rebuild_approximation();
+  /// incremental rebuild of an existing SurrogateModel approximation
+  virtual void rebuild_approximation(const IntResponsePair& response_pr);
+  /// incremental rebuild of an existing SurrogateModel approximation
+  virtual void rebuild_approximation(const IntResponseMap& resp_map);
 
   /// replace the approximation data within an existing surrogate
   /// based on data updates propagated elsewhere
@@ -243,13 +279,29 @@ public:
 				    const IntResponsePair& response_pr,
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
+  virtual void append_approximation(const RealMatrix& samples,
+				    const IntResponseMap& resp_map,
+				    bool rebuild_flag);
+  /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const VariablesArray& vars_array,
 				    const IntResponseMap& resp_map,
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
-  virtual void append_approximation(const RealMatrix& samples,
-				    const IntResponseMap& resp_map,
+  virtual void append_approximation(const IntVariablesMap& vars_map,
+				    const IntResponseMap&  resp_map,
 				    bool rebuild_flag);
+
+  /// replace the response for a single point (based on eval id from
+  /// response_pr) within an existing surrogate's data
+  virtual void replace_approximation(const IntResponsePair& response_pr,
+				     bool rebuild_flag);
+  /// replace the responses for a set of points (based on eval ids from
+  /// resp_map) within an existing surrogate's data
+  virtual void replace_approximation(const IntResponseMap& resp_map,
+				     bool rebuild_flag);
+  /// assigns a flag to track evaluation ids within surrogate data,
+  /// enabling id-based lookups for data replacement
+  virtual void track_evaluation_ids(bool track);
 
   /// remove the previous data set addition to a surrogate (e.g., due
   /// to a previous append_approximation() call); flag manages storing
@@ -344,7 +396,7 @@ public:
   /// apply a DiscrepancyCorrection to correct an approximation within
   /// a HierarchSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
-			    const UShortArray& paired_key);
+			    const Pecos::ActiveKey& paired_key);
   /// apply a sequence of DiscrepancyCorrections to recursively correct an 
   /// approximation within a HierarchSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
@@ -383,6 +435,15 @@ public:
   /// in synchronous evaluate functions to prevent the error
   /// of trying to run a multiprocessor job on the master.
   virtual bool derived_master_overload() const;
+
+  /// create 2D graphics plots for automatic logging of vars/response data
+  virtual void create_2d_plots();
+  /// create a tabular output stream for automatic logging of vars/response data
+  virtual void create_tabular_datastream();
+
+  /// Update tabular/graphics data with latest variables/response data
+  virtual void derived_auto_graphics(const Variables& vars,
+				     const Response& resp);
 
   /// update the Model's inactive view based on higher level (nested) context
   virtual void inactive_view(short view, bool recurse_flag = true);

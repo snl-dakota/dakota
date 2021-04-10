@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -49,7 +50,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   propCovUpdatePeriod(probDescDB.get_int("method.nond.prop_cov_update_period")),
-  batchSize(1), precondRequestValue(0),
+  precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
   priorPropCovMult(probDescDB.get_real("method.prior_prop_cov_mult")),
   advancedOptionsFile(probDescDB.get_string("method.advanced_options_file"))
@@ -77,14 +78,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
       propCovUpdatePeriod >= chainSamples) {
     Cout << "\nWarning: QUESO proposal covariance update_period >= chain_samples;"
 	 << "\n         no updates will occur." << std::endl;
-  }
-
-  // assign default maxIterations (DataMethod default is -1)
-  if (adaptPosteriorRefine) {
-    // BMA --> MSE: Why 5? Fix magic constant
-    batchSize = 5;
-    if (maxIterations < 0)
-      maxIterations = 25;
   }
 
   if (!advancedOptionsFile.empty()) {
@@ -120,108 +113,26 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 /** Perform the uncertainty quantification */
 void NonDQUESOBayesCalibration::calibrate()
 {
-  // instantiate QUESO objects and execute
-  nonDQUESOInstance = this;
-  tk_factory_dipc.set_callback(nonDQUESOInstance);
-  tk_factory_dipclogit.set_callback(nonDQUESOInstance);
-
-  // initialize the ASV request value for preconditioning and
-  // construct a Response for use in residual computation
-  if (proposalCovarType == "derivatives")
-    init_precond_request_value();
-
-  // BMA TODO: make sure Recast is setup properly to have the right request val
-  // likelihood needs fn_vals; preconditioning may need derivs
-  //  short request_value_needed = 1 | precondRequestValue;
-  //  init_residual_response(request_value_needed);
-
-  // pull vars data prior to emulator build
-  init_parameter_domain();
-
-  // build the emulator and initialize transformations, as needed
-  initialize_model();
-
-  // may pull Hessian data from emulator
-  init_proposal_covariance();
-
-  // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
-  init_queso_solver();
-
+ 
   // generate the sample chain that defines the joint posterior distribution
-  if (adaptPosteriorRefine) {
-    if (!emulatorType) { // current spec prevents this
-      Cerr << "Error: adaptive posterior refinement requires emulator model."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    compactMode = true; // update_model() uses all{Samples,Responses}
-    Real adapt_metric = DBL_MAX; unsigned short int num_mcmc = 0;
-    while (adapt_metric > convergenceTol && num_mcmc <= maxIterations) {
+  map_pre_solve();
+  run_chain();
 
-      // TO DO: treat this like cross-validation as there is likely a sweet
-      // spot prior to degradation of conditioning (too much refinement data)
-
-      // place update block here so that chain is always run for initial or
-      // updated emulator; placing block at loop end could result in emulator
-      // convergence w/o final chain.
-      if (num_mcmc) {
-	// update the emulator surrogate data with new truth evals and
-	// reconstruct surrogate (e.g., via PCE sparse recovery)
-	update_model();
-	// assess posterior convergence via convergence of the emulator coeffs
-	adapt_metric = assess_emulator_convergence();
-      }
-
-      map_pre_solve();
-      run_chain();
-      ++num_mcmc;
-
-      // assess convergence of the posterior via sample-based K-L divergence:
-      //adapt_metric = assess_posterior_convergence();
-    }
-  }
-  else {
-    map_pre_solve();
-    run_chain();
-  }
-
-  // Generate useful stats from the posterior samples
-  compute_statistics();
 }
-
 
 void NonDQUESOBayesCalibration::map_pre_solve()
 {
-  // Management of pre_solve spec options occurs in NonDBayesCalibration ctor,
-  // manifesting here as a valid mapOptimizer instance.
+
+  // doing a double check here to avoid a double copy if not optimizing 
+  // for MAP (this check happens again in base class map_pre_solve()). 
   if (mapOptimizer.is_null()) return;
-  
-  // Pre-solve for MAP point using optimization prior to MCMC.
-
-  Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
-       << std::endl;
-  // set initial point pulled from mcmcModel at construct time or
-  // warm start from previous map soln computed from previous emulator
-  negLogPostModel.current_variables().continuous_variables(mapSoln);
-
-  // Perform optimization
-  mapOptimizer.run();
-  //negLogPostModel.print_evaluation_summary(Cout);
-  //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
-  Cout << "Maximum a posteriori probability (MAP) point from pre-solve"
-       << "\n(will be used as initial point for MCMC chain):\n";
-  const RealVector& map_c_vars
-    = mapOptimizer.variables_results().continuous_variables();
-  print_variables(Cout, map_c_vars);
-  Cout << std::endl;
+  NonDBayesCalibration::map_pre_solve();
 
   // propagate MAP to paramInitials for starting point of MCMC chain.  
-  // Note: init_parameter_domain() happens once per calibrate(),
+  // Note: specify_prior() happens once per calibrate(),
   // upstream of map_pre_solve()
-  copy_gsl(map_c_vars, *paramInitials);
-  // if multiple pre-solves, propagate MAP as initial guess for next pre-solve
-  if (adaptPosteriorRefine || adaptExpDesign)
-    copy_data(map_c_vars, mapSoln); // deep copy of view
+  //copy_gsl(map_c_vars, *paramInitials);
+  copy_gsl(mapSoln, *paramInitials);
 }
 
 
@@ -242,13 +153,6 @@ void NonDQUESOBayesCalibration::run_chain()
 
   // always update bestSamples with highest posterior probability points
   log_best();
-  if (adaptPosteriorRefine) {
-    // populate allSamples for surrogate updating
-    if (emulatorType == PCE_EMULATOR)
-      filter_chain_by_conditioning();
-    else
-      best_to_all();
-  }
   // populate acceptanceChain, acceptedFnVals
   cache_chain();
 }
@@ -319,6 +223,9 @@ void NonDQUESOBayesCalibration::init_queso_environment()
 
 void NonDQUESOBayesCalibration::init_precond_request_value()
 {
+  // TNP 11/23/20 - seems like could be moved to the base class entirely, 
+  // if MUQ would use this too
+  
   // Gauss-Newton approximate Hessian requires gradients of residuals (rv=2)
   // full Hessian requires values/gradients/Hessians of residuals (rv=7)
   precondRequestValue = 0;
@@ -339,32 +246,63 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
   }
 }
 
-
-void NonDQUESOBayesCalibration::init_queso_solver()
-{
+void NonDQUESOBayesCalibration::specify_likelihood(){
   // Instantiate the likelihood function object that computes [ln(function)]
   likelihoodFunctionObj = std::make_shared
     <QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>>
     ("like_", *paramDomain, &dakotaLogLikelihood, (void *)nullptr, true);
+}
 
+void NonDQUESOBayesCalibration::init_bayesian_solver(){
+  // TNP TODO: Would we ever need to update the proposal covariance stuff? May
+  // want to move that into the posterior call....
+
+  nonDQUESOInstance = this;
+
+  // Sets proposal covariance options, ip options, mh options.
+  tk_factory_dipc.set_callback(nonDQUESOInstance);
+  tk_factory_dipclogit.set_callback(nonDQUESOInstance);
+  
+  // initialize the ASV request value for preconditioning and
+  // construct a Response for use in residual computation
+  if (proposalCovarType == "derivatives")
+    init_precond_request_value();
+
+  // may pull Hessian data from emulator
+  init_proposal_covariance();
+
+  // initialize proposal covariance (must follow parameter domain init)
+  // This is the leading sub-matrix in the case of calibrating sigma terms
+  if (proposalCovarType == "user") // either filename OR data values defined
+    user_proposal_covariance(proposalCovarInputType, proposalCovarData,
+			     proposalCovarFilename);
+  else if (proposalCovarType == "prior")
+    prior_proposal_covariance(); // prior selection or default for no emulator
+  else // misfit Hessian-based proposal with prior preconditioning
+    prior_cholesky_factorization();
+
+  // define calIpOptionsValues
+  set_ip_options();
+  // Set options specific to MH algorithm
+  set_mh_options();
+
+}
+
+void NonDQUESOBayesCalibration::specify_posterior(){
+  // Create a pointer for the posterior RV and generate a QUESO IP
+  // Must have called init_bayesian_solver at least once. 
+ 
   // Instantiate the inverse problem
-
   postRv =
     std::make_shared<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>>
     ("post_", *paramSpace);
   // Q: are Prior/posterior RVs copied by StatInvProblem, such that these
   //    instances can be local and allowed to go out of scope?
-
-  // define calIpOptionsValues
-  set_ip_options();
-  // set options specific to MH algorithm
-  set_mh_options();
   // Inverse problem: instantiate it (posterior rv is instantiated internally)
   inverseProb = std::make_shared
     <QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>>
     ("", calIpOptionsValues.get(), *priorRv, *likelihoodFunctionObj, *postRv);
 }
-
 
 void NonDQUESOBayesCalibration::precondition_proposal(unsigned int chain_index)
 {
@@ -697,170 +635,13 @@ void NonDQUESOBayesCalibration::filter_chain_by_conditioning()
 }
 
 
-void NonDQUESOBayesCalibration::best_to_all()
-{
-  if (outputLevel >= NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
-
-  int num_best = bestSamples.size();
-  if (allSamples.numCols() != num_best)
-    allSamples.shapeUninitialized(numContinuousVars, num_best);
-
-  std::/*multi*/map<Real, RealVector>::const_iterator
-    bs_it = bestSamples.begin(), bs_end = bestSamples.end();
-  for (int i=0; bs_it != bs_end; ++bs_it, ++i) {
-    Teuchos::setCol(bs_it->second, i, allSamples);
-    if (outputLevel >= NORMAL_OUTPUT) {
-      Cout << "Best point " << i+1 << ": Log posterior = " << bs_it->first
-	   << " Sample:";
-      // BMA TODO: vector writer?
-      //      Cout << bs_it->second;
-      write_col_vector_trans(Cout, (int)i, allSamples, false, false, true);
-    }
-  }
-}
-
-
-void NonDQUESOBayesCalibration::update_model()
-{
-  if (!emulatorType) {
-    Cerr << "Error: NonDQUESOBayesCalibration::update_model() requires an "
-	 << "emulator model." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  // perform truth evals (in parallel) for selected points
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "Updating emulator: evaluating " << allSamples.numCols()
-	 << " best points." << std::endl;
-  // bypass surrogate but preserve transformations to standardized space
-  short orig_resp_mode = mcmcModel.surrogate_response_mode(); // store mode
-  mcmcModel.surrogate_response_mode(BYPASS_SURROGATE); // actual model evals
-  switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
-  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    nondInstance = (NonD*)stochExpIterator.iterator_rep().get();
-    evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
-    nondInstance = this; // restore
-    break;
-  case GP_EMULATOR: case KRIGING_EMULATOR:
-    if (standardizedSpace)
-      nondInstance = (NonD*)mcmcModel.subordinate_iterator().iterator_rep().get();
-    evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
-    if (standardizedSpace)
-      nondInstance = this; // restore
-    break;
-  }
-  mcmcModel.surrogate_response_mode(orig_resp_mode); // restore mode
-
-  // update mcmcModel with new data from iteratedModel
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "Updating emulator: appending " << allResponses.size()
-	 << " new data sets." << std::endl;
-  switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
-  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
-    // Adapt the expansion in sync with the dataset using a top-down design
-    // (more explicit than embedded logic w/i mcmcModel.append_approximation).
-    std::shared_ptr<NonDExpansion> se_iterator =
-      std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
-    se_iterator->append_expansion(allSamples, allResponses);
-    // TO DO: order increment places addtnl reqmts on emulator conv assessment
-    break;
-  }
-  case GP_EMULATOR: case KRIGING_EMULATOR:
-    mcmcModel.append_approximation(allSamples, allResponses, true); // rebuild
-    break;
-  }
-}
-
-
-Real NonDQUESOBayesCalibration::assess_emulator_convergence()
-{
-  // coeff reference point not yet available; force another iteration rather
-  // than use norm of current coeffs (stopping on small norm is not meaningful)
-  if (prevCoeffs.empty()) {
-    switch (emulatorType) {
-    case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR:
-      prevCoeffs = mcmcModel.approximation_coefficients(true);  break;
-    case SC_EMULATOR: case MF_SC_EMULATOR:
-      prevCoeffs = mcmcModel.approximation_coefficients(false); break;
-    case GP_EMULATOR: case KRIGING_EMULATOR:
-      Cerr << "Warning: convergence norm not yet defined for GP emulators in "
-	   << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
-	   << std::endl;
-      break;
-    }
-    return DBL_MAX;
-  }
-
-  Real l2_norm_delta_coeffs = 0., delta_coeff_ij;
-  switch (emulatorType) {
-  case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: {
-    // normalized coeffs:
-    const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(true);
-    size_t i, j, num_qoi = coeffs.size(),
-      num_curr_coeffs, num_prev_coeffs, num_coeffs;
-
-    // This approach assumes a well-ordered progression in multiIndex, which is
-    // acceptable for regression PCE using consistently incremented (candidate)
-    // expansion definitions.  Sparsity is not a concern as returned coeffs are
-    // inflated to be dense w.r.t. SharedOrthogPolyApproxData::multiIndex.
-    // Could implement as resize (inflat smaller w/ 0's) + vector difference +
-    // Frobenious norm, but current approach should have lower overhead.
-    for (i=0; i<num_qoi; ++i) {
-      const RealVector&      coeffs_i =     coeffs[i];
-      const RealVector& prev_coeffs_i = prevCoeffs[i];
-      num_curr_coeffs = coeffs_i.length();
-      num_prev_coeffs = prev_coeffs_i.length();
-      num_coeffs = std::max(num_curr_coeffs, num_prev_coeffs);
-      for (j=0; j<num_coeffs; ++j) {
-	delta_coeff_ij = 0.;
-	if (j<num_curr_coeffs) delta_coeff_ij += coeffs_i[j];
-	if (j<num_prev_coeffs) delta_coeff_ij -= prev_coeffs_i[j];
-	l2_norm_delta_coeffs += delta_coeff_ij * delta_coeff_ij;
-      }
-    }
-
-    prevCoeffs = coeffs;
-    break;
-  }
-  case SC_EMULATOR: case MF_SC_EMULATOR: {
-    // Interpolation could use a similar concept with the expansion coeffs,
-    // although adaptation would imply differences in the grid.
-    const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(false);
-
-    Cerr << "Warning: convergence norm not yet defined for SC emulator in "
-	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
-	 << std::endl;
-    //abort_handler(METHOD_ERROR);
-    return DBL_MAX;
-    break;
-  }
-  case GP_EMULATOR: case KRIGING_EMULATOR:
-    // Consider use of correlation lengths.
-    // TO DO: define SurfpackApproximation::approximation_coefficients()...
-    Cerr << "Warning: convergence norm not yet defined for GP emulators in "
-	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
-	 << std::endl;
-    //abort_handler(METHOD_ERROR);
-    return DBL_MAX;
-    break;
-  }
-
-  if (outputLevel >= NORMAL_OUTPUT) {
-    Real norm = std::sqrt(l2_norm_delta_coeffs);
-    Cout << "Assessing emulator convergence: l2 norm = " << norm << std::endl;
-    return norm;
-  }
-  else
-    return std::sqrt(l2_norm_delta_coeffs);
-}
-
-
 /** Initialize the calibration parameter domain (paramSpace,
     paramMins/paramMaxs, paramDomain, paramInitials, priorRV) */
-void NonDQUESOBayesCalibration::init_parameter_domain()
+void NonDQUESOBayesCalibration::specify_prior()
 {
+ 
+  nonDQUESOInstance = this;
+
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
   paramSpace = std::make_shared
@@ -905,7 +686,6 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   ("prior_", *paramDomain, nonDQUESOInstance);
 
 }
-
 
 void NonDQUESOBayesCalibration::init_proposal_covariance()
 {
@@ -1279,37 +1059,6 @@ print_results(std::ostream& s, short results_state)
   // Print final stats for variables and responses 
   NonDBayesCalibration::print_results(s, results_state);
 }
-
-
-void NonDQUESOBayesCalibration::
-print_variables(std::ostream& s, const RealVector& c_vars)
-{
-  StringMultiArrayConstView cv_labels =
-    iteratedModel.continuous_variable_labels();
-  // the residualModel includes any hyper-parameters
-  StringArray combined_labels;
-  copy_data(residualModel.continuous_variable_labels(), combined_labels);
-
-  size_t wpp7 = write_precision+7;
-
-  // print MAP for continuous random variables
-  if (standardizedSpace) {
-    RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
-    RealVector x_rv;
-    mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
-    write_data(Cout, x_rv, cv_labels);
-  }
-  else
-    for (size_t j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(wpp7) << c_vars[j]
-	<< ' ' << cv_labels[j] << '\n';
-  // print MAP for hyper-parameters (e.g., observation error params)
-  for (size_t j=0; j<numHyperparams; ++j)
-    s << "                     " << std::setw(wpp7)
-      << c_vars[numContinuousVars+j] << ' '
-      << combined_labels[numContinuousVars + j] << '\n';
-}
-
 
 double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   const QUESO::GslVector& paramValues, const QUESO::GslVector* paramDirection,

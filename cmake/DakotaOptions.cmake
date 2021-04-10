@@ -88,6 +88,10 @@ option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
 
 # Does not yet exist and needs a better name:
 ##option(DAKOTA_PYTHON_TOP_INTERFACE "Top-level Dakota Python interface" OFF)
+if(DAKOTA_PYTHON_DIRECT_INTERFACE)
+  set(DAKOTA_PYBIND11 ON CACHE BOOL
+    "Dakota using Pybind11 for interfaces.")
+endif()
 
 # Requires Pybind11; default OFF to avoid default library dependencies
 option(DAKOTA_PYTHON_SURROGATES
@@ -102,6 +106,18 @@ if(DAKOTA_PYTHON_SURROGATES)
       "DAKOTA_MODULE_SURROGATES=${DAKOTA_MODULE_SURROGATES}")
     set(DAKOTA_PYTHON_SURROGATES OFF CACHE BOOL
       "Python surrogate wrappers disabled as surrogate module is off.")
+  endif()
+endif()
+
+option(DAKOTA_JAVA_SURROGATES
+  "Dakota Java interface to surrogate module; default OFF" OFF)
+
+if(DAKOTA_JAVA_SURROGATES)
+  if(NOT DAKOTA_MODULE_SURROGATES)
+    message(STATUS "Disabling DAKOTA_JAVA_SURROGATES as "
+      "DAKOTA_MODULE_SURROGATES=${DAKOTA_MODULE_SURROGATES}")
+    set(DAKOTA_JAVA_SURROGATES OFF CACHE BOOL
+      "Java surrogate wrappers disabled as surrogate module is off.")
   endif()
 endif()
 

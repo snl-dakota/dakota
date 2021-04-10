@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -26,6 +27,7 @@
 #include "CubatureDriver.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
+#include "pecos_math_util.hpp"
 #include "nested_sampling.hpp"
 #include "math_tools.hpp"
 
@@ -39,6 +41,9 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
+  maxCVOrderCandidates(
+    problem_db.get_ushort("method.nond.cross_validation.max_order_candidates")),
+  respScaling(problem_db.get_bool("method.nond.response_scaling")),
   noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
   l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
 //initSGLevel(problem_db.get_ushort("method.nond.adapted_basis.initial_level")),
@@ -160,8 +165,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		rule_growth, piecewise_basis, use_derivs), 
   // Note: non-zero seed would be needed for expansionSampler, if defined
   crossValidation(false), crossValidNoiseOnly(false),
-  l2Penalty(0.), numAdvance(3), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type)
+  maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
+  numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   // ----------------
@@ -239,6 +244,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs), 
   crossValidation(cv_flag), crossValidNoiseOnly(false),
+  maxCVOrderCandidates(USHRT_MAX), respScaling(false),
   importBuildPointsFile(import_build_pts_file), l2Penalty(0.),
   numAdvance(3), expOrderSpec(exp_order), collocPtsSpec(colloc_pts),
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
@@ -304,6 +310,9 @@ NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
+  maxCVOrderCandidates(
+    problem_db.get_ushort("method.nond.cross_validation.max_order_candidates")),
+  respScaling(problem_db.get_bool("method.nond.response_scaling")),
   noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
   l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
 //initSGLevel(problem_db.get_ushort("method.nond.adapted_basis.initial_level")),
@@ -336,7 +345,8 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
   NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
 		refine_type, refine_control, covar_control, 0., rule_nest,
 		rule_growth, piecewise_basis, use_derivs), 
-  crossValidation(false), crossValidNoiseOnly(false), l2Penalty(0.),
+  crossValidation(false), crossValidNoiseOnly(false),
+  maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
   numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
@@ -361,7 +371,8 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		refine_type, refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs),
-  crossValidation(cv_flag), crossValidNoiseOnly(false), l2Penalty(0.),
+  crossValidation(cv_flag), crossValidNoiseOnly(false),
+  maxCVOrderCandidates(USHRT_MAX), respScaling(false), l2Penalty(0.),
   numAdvance(3), normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false)
 {
@@ -559,7 +570,7 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
       // convert aniso vector to scalar + dim_pref.  If iso, dim_pref is
       // empty; if aniso, it differs from exp_order aniso due to offset.
       unsigned short quad_order; RealVector dim_pref;
-      NonDIntegration::anisotropic_order_to_dimension_preference(dim_quad_order,
+      Pecos::anisotropic_order_to_dimension_preference(dim_quad_order,
 	quad_order, dim_pref);
       // use alternate NonDQuad ctor to filter (deprecated) or sub-sample
       // quadrature points (uSpaceModel.build_approximation() invokes
@@ -836,8 +847,9 @@ void NonDPolynomialChaos::initialize_u_space_model()
     // user spec) as well as seed progressions for varyPattern.  Coordinate
     // with JDJ on whether Dakota or CV should own these features.
     Pecos::RegressionConfigOptions
-      rc_options(crossValidation, crossValidNoiseOnly, random_seed(), noiseTols,
-		 l2Penalty, false, 0/*initSGLevel*/, 2, numAdvance);
+      rc_options(crossValidation, crossValidNoiseOnly, maxCVOrderCandidates,
+		 respScaling, random_seed(), noiseTols, l2Penalty, false,
+		 0/*initSGLevel*/, 2, numAdvance);
     shared_data_rep->configuration_options(rc_options);
 
     // updates for automatic order adaptation

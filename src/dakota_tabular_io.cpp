@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -140,44 +141,120 @@ void close_file(std::ofstream& data_stream, const std::string& output_filename,
 //- Utilities for tabular write
 //
 
+
 void write_header_tabular(std::ostream& tabular_ostream, 
-			  const Variables& vars, const Response& response,
-			  const std::string& counter_label,
+			  const std::string& eval_label,
+			  const std::string& iface_label,
 			  unsigned short tabular_format)
 {
-  if ( !(tabular_format & TABULAR_HEADER) )
-    return;
+  if ( !(tabular_format & TABULAR_HEADER) ) return;
 
-  // headers use Matlab comment syntax
-  tabular_ostream << "%";
-
+  tabular_ostream << "%"; // headers use Matlab comment syntax
   if (tabular_format & TABULAR_EVAL_ID)
-    tabular_ostream << counter_label << ' ';
+    tabular_ostream << std::setw(8) << std::left <<  eval_label << ' ';
   if (tabular_format & TABULAR_IFACE_ID)
-    tabular_ostream << "interface ";
-  vars.write_tabular_labels(tabular_ostream);
-  response.write_tabular_labels(tabular_ostream);
+    tabular_ostream << std::setw(9) << std::left << iface_label << ' ';
+}
+
+
+void write_header_tabular(std::ostream& tabular_ostream, 
+			  const std::string& eval_label,
+			  const StringArray& iface_labels,
+			  unsigned short tabular_format)
+{
+  if ( !(tabular_format & TABULAR_HEADER) ) return;
+
+  tabular_ostream << "%"; // headers use Matlab comment syntax
+  if (tabular_format & TABULAR_EVAL_ID)
+    tabular_ostream << std::setw(8) << std::left << eval_label << ' ';
+  if (tabular_format & TABULAR_IFACE_ID) {
+    size_t i, num_labels = iface_labels.size();
+    for (i=0; i<num_labels; ++i)
+      tabular_ostream << std::setw(9) << std::left << iface_labels[i] << ' ';
+  }
+}
+
+
+void write_header_tabular(std::ostream& tabular_ostream, 
+			  const Variables& vars, const Response& response,
+			  const std::string& eval_label,
+			  const std::string& interface_label,
+			  unsigned short tabular_format)
+{
+  write_header_tabular(tabular_ostream, eval_label, interface_label,
+		       tabular_format);
+  append_header_tabular(tabular_ostream, vars,     tabular_format);
+  append_header_tabular(tabular_ostream, response, tabular_format);
 }
 
 
 void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars, 
 			  const StringArray& addtnl_labels,
-			  const std::string& counter_label,
+			  const std::string& eval_label,
+			  const std::string& interface_label,
 			  unsigned short tabular_format)
 {
-  if ( !(tabular_format & TABULAR_HEADER) )
-    return;
-
-  // headers use Matlab comment syntax
-  tabular_ostream << "%";
-
-  if (tabular_format & TABULAR_EVAL_ID)
-    tabular_ostream << counter_label << ' ';
-  if (tabular_format & TABULAR_IFACE_ID)
-    tabular_ostream << "interface ";
-  vars.write_tabular_labels(tabular_ostream);
+  write_header_tabular(tabular_ostream, eval_label, interface_label,
+		       tabular_format);
+  append_header_tabular(tabular_ostream, vars, tabular_format);
   Dakota::write_data_tabular(tabular_ostream, addtnl_labels);
   tabular_ostream << std::endl; // table row completed
+}
+
+
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const Variables& vars, unsigned short tabular_format)
+{
+  if ( !(tabular_format & TABULAR_HEADER) ) return;
+  vars.write_tabular_labels(tabular_ostream);
+}
+
+
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const Variables& vars, size_t start_index,
+			   size_t num_items, unsigned short tabular_format)
+{
+  if ( !(tabular_format & TABULAR_HEADER) ) return;
+  vars.write_tabular_partial_labels(tabular_ostream, start_index, num_items);
+}
+
+
+void append_header_tabular(std::ostream& tabular_ostream, 
+			   const StringArray& labels,
+			   unsigned short tabular_format)
+{
+  if ( !(tabular_format & TABULAR_HEADER) ) return;
+  Dakota::write_data_tabular(tabular_ostream, labels);
+}
+
+
+void append_header_tabular(std::ostream& tabular_ostream, 
+			  const Response& response,
+			  unsigned short tabular_format)
+{
+  if ( !(tabular_format & TABULAR_HEADER) ) return;
+  response.write_tabular_labels(tabular_ostream);
+}
+
+
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id)
+{
+  // align left to make eval_id consistent w/ whitespace-delimited header row
+  std::ios_base::fmtflags before_left_align = tabular_ostream.flags();
+  tabular_ostream << std::setw(8) << std::left << eval_id << ' ';
+  tabular_ostream.flags(before_left_align);
+}
+
+
+void write_leading_columns(std::ostream& tabular_ostream,
+			   const String& iface_id)
+{
+  // write the interface ID string, NO_ID for empty
+  // (Dakota 6.1 used EMPTY for missing ID)
+  if (iface_id.empty())
+    tabular_ostream << std::setw(9) << std::left << "NO_ID"  << ' ';
+  else
+    tabular_ostream << std::setw(9) << std::left << iface_id << ' ';
 }
 
 
@@ -186,21 +263,38 @@ void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id,
 			   unsigned short tabular_format)
 {
   // conditionally write evaluation ID and/or interface ID
-  if (tabular_format & TABULAR_EVAL_ID) {
-    // align left to make eval_id consistent w/ whitespace-delimited header row
-    std::ios_base::fmtflags before_left_align = tabular_ostream.flags();
-    tabular_ostream << std::setw(8) << std::left << eval_id << ' ';
-    tabular_ostream.flags(before_left_align);
-  }
+  if (tabular_format & TABULAR_EVAL_ID)
+    write_leading_columns(tabular_ostream, eval_id);
+  if (tabular_format & TABULAR_IFACE_ID)
+    write_leading_columns(tabular_ostream, iface_id);
+}
+
+
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
+			   const StringArray& iface_ids,
+			   unsigned short tabular_format)
+{
+  if (tabular_format & TABULAR_EVAL_ID)
+    write_leading_columns(tabular_ostream, eval_id);
   if (tabular_format & TABULAR_IFACE_ID) {
-    // write the interface ID string, NO_ID for empty
-    // (Dakota 6.1 used EMPTY for missing ID)
-    if (iface_id.empty())
-      tabular_ostream << std::setw(9) << "NO_ID" << ' ';
-    else 
-      tabular_ostream << std::setw(9) << iface_id << ' ';
+    size_t i, num_ids = iface_ids.size();
+    for (i=0; i<num_ids; ++i)
+      write_leading_columns(tabular_ostream, iface_ids[i]);
   }
 }
+
+
+void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars)
+{ vars.write_tabular(tabular_ostream); } // no EOL
+
+
+void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
+			size_t start_index, size_t num_items)
+{ vars.write_tabular_partial(tabular_ostream, start_index, num_items); }
+
+
+void write_data_tabular(std::ostream& tabular_ostream, const Response& response)
+{ response.write_tabular(tabular_ostream); } // includes EOL
 
 
 void write_data_tabular(std::ostream& tabular_ostream, 

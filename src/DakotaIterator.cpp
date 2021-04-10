@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -1202,8 +1203,8 @@ void Iterator::set_communicators(ParLevLIter pl_iter)
     std::map<size_t, ParConfigLIter>::iterator map_iter
       = methodPCIterMap.find(pl_index);
     if (map_iter == methodPCIterMap.end()) { // this config does not exist
-      Cerr << "Error: failure in parallel configuration lookup in "
-           << "Iterator::set_communicators() for pl_index = " << pl_index << "." << std::endl;
+      Cerr << "Error: failure in parallel configuration lookup in Iterator::"
+           << "set_communicators() for pl_index = " << pl_index << std::endl;
       abort_handler(METHOD_ERROR);
     }
     else
@@ -1465,6 +1466,26 @@ gnewton_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
 }
 
 
+/** This is a helper function that provides modularity on incoming Model. */
+void Iterator::initialize_model_graphics(Model& model, int iterator_server_id)
+{
+  OutputManager& mgr = parallelLib.output_manager();
+  bool auto_log = false;
+
+  // For graphics, limit (currently) to server id 1, for both ded master
+  // (parent partition rank 1) and peer partitions (parent partition rank 0)
+  if (mgr.graph2DFlag && iterator_server_id == 1) // initialize the 2D plots
+    { model.create_2d_plots();           auto_log = true; }
+
+  // initialize the tabular data file on all iterator masters
+  if (mgr.tabularDataFlag)
+    { model.create_tabular_datastream(); auto_log = true; }
+
+  if (auto_log) // turn out automatic graphics logging
+    model.auto_graphics(true);
+}
+
+
 /** This is a convenience function for encapsulating graphics
     initialization operations. It is overridden by derived classes
     that specialize the graphics display. */
@@ -1472,29 +1493,8 @@ void Iterator::initialize_graphics(int iterator_server_id)
 {
   if (iteratorRep)
     iteratorRep->initialize_graphics(iterator_server_id);
-  else { // no redefinition of virtual fn., use default initialization
-    OutputManager& mgr = parallelLib.output_manager();
-    Graphics& dakota_graphics = mgr.graphics();
-    const Variables& vars = iteratedModel.current_variables();
-    const Response&  resp = iteratedModel.current_response();
-    bool auto_log = false;
-
-    // For graphics, limit (currently) to server id 1, for both ded master
-    // (parent partition rank 1) and peer partitions (parent partition rank 0)
-    if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
-      dakota_graphics.create_plots_2d(vars, resp);
-      auto_log = true;
-    }
-
-    // initialize the tabular data file on all iterator masters
-    if (mgr.tabularDataFlag) {
-      mgr.create_tabular_datastream(vars, resp);
-      auto_log = true;
-    }
-
-    if (auto_log) // turn out automatic graphics logging
-      iteratedModel.auto_graphics(true);
-  }
+  else
+    initialize_model_graphics(iteratedModel, iterator_server_id);
 }
 
 

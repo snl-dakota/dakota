@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -90,6 +91,8 @@ DataMethodRep::DataMethodRep():
   expansionFlag(true), // default = on, no_expansion spec turns off
   expandAfterSuccess(0), contractAfterFail(0), mutationRange(-9999),
   randomizeOrderFlag(false), //betaSolverName(""),
+  // COLINY + APPSPACK
+  evalSynchronize(DEFAULT_SYNCHRONIZATION),
   // JEGA
   numCrossPoints(2), numParents(2), numOffspring(2), //convergenceType(""),
   percentChange(0.1), numGenerations(15), fitnessLimit(6.0),
@@ -119,7 +122,8 @@ DataMethodRep::DataMethodRep():
   statsRoundingTol(1.e-10), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
   adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
-  c3AdvanceType(NO_C3_ADVANCEMENT),
+  maxCVRankCandidates(std::numeric_limits<size_t>::max()),
+  maxCVOrderCandidates(USHRT_MAX), c3AdvanceType(NO_C3_ADVANCEMENT),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -128,8 +132,9 @@ DataMethodRep::DataMethodRep():
   percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
   wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED_UPPER),
   // NonD
-  vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE), rngName("mt19937"),
-  refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
+  respScalingFlag(false), vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE),
+  rngName("mt19937"), refinementType(Pecos::NO_REFINEMENT),
+  refinementControl(Pecos::NO_CONTROL),
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
@@ -164,14 +169,12 @@ DataMethodRep::DataMethodRep():
   lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
   burnInSamples(0), subSamplingPeriod(1), calModelDiscrepancy(false),
   numPredConfigs(0), importPredConfigFormat(TABULAR_ANNOTATED),
-  modelDiscrepancyType("global_kriging"),
-  approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
+  modelDiscrepancyType("global_kriging"), polynomialOrder(2),
+  exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
   exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
-  mutualInfoKSG2(false),
-  importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(-1.),
-  batchSize(1),
-  batchSizeExplore(0), // EGO batch exploration default
+  mutualInfoKSG2(false), importCandFormat(TABULAR_ANNOTATED),
+  numCandidates(0), maxHifiEvals(-1.), batchSize(1), batchSizeExplore(0),
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),
@@ -284,8 +287,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // C3 FT
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank  << kickRank  << maxRank  << adaptRank
-    << c3AdvanceType << startOrderSeq << startRankSeq;
+    << startRank  << kickRank  << maxRank  << adaptRank << maxCVRankCandidates
+    << maxCVOrderCandidates << c3AdvanceType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
@@ -294,13 +297,13 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << vbdOrder << covarianceControl << rngName << refinementType
-    << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << expansionBasisType << quadratureOrderSeq
-    << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
-    << expansionSamplesSeq << quadratureOrder << sparseGridLevel
-    << expansionOrder << collocationPoints << expansionSamples
-  //<< expansionSampleType
+  s << respScalingFlag << vbdOrder << covarianceControl << rngName
+    << refinementType << refinementControl << nestingOverride << growthOverride
+    << expansionType << piecewiseBasis << expansionBasisType
+    << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
+    << collocationPointsSeq << expansionSamplesSeq << quadratureOrder
+    << sparseGridLevel << expansionOrder << collocationPoints
+    << expansionSamples //<< expansionSampleType
     << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType
     << regressionNoiseTol << regressionL2Penalty << crossValidation
@@ -329,7 +332,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << burnInSamples << subSamplingPeriod << evidenceSamples
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
-    << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
+    << polynomialOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
     << importCandFormat << numCandidates << maxHifiEvals
@@ -450,8 +453,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // C3 FT
   s >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
     >> startOrder >> kickOrder >> maxOrder >> adaptOrder
-    >> startRank  >> kickRank  >> maxRank  >> adaptRank
-    >> c3AdvanceType >> startOrderSeq >> startRankSeq;
+    >> startRank  >> kickRank  >> maxRank  >> adaptRank >> maxCVRankCandidates
+    >> maxCVOrderCandidates >> c3AdvanceType >> startOrderSeq >> startRankSeq;
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
@@ -460,13 +463,13 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> wilksConfidenceLevel >> wilksSidedInterval;
 
   // NonD
-  s >> vbdOrder >> covarianceControl >> rngName >> refinementType
-    >> refinementControl >> nestingOverride >> growthOverride >> expansionType
-    >> piecewiseBasis >> expansionBasisType >> quadratureOrderSeq
-    >> sparseGridLevelSeq >> expansionOrderSeq >> collocationPointsSeq
-    >> expansionSamplesSeq >> quadratureOrder >> sparseGridLevel
-    >> expansionOrder >> collocationPoints >> expansionSamples
-  //>> expansionSampleType
+  s >> respScalingFlag >> vbdOrder >> covarianceControl >> rngName
+    >> refinementType >> refinementControl >> nestingOverride >> growthOverride
+    >> expansionType >> piecewiseBasis >> expansionBasisType
+    >> quadratureOrderSeq >> sparseGridLevelSeq >> expansionOrderSeq
+    >> collocationPointsSeq >> expansionSamplesSeq >> quadratureOrder
+    >> sparseGridLevel >> expansionOrder >> collocationPoints
+    >> expansionSamples //>> expansionSampleType
     >> anisoDimPref >> cubIntOrder >> collocationRatio
     >> collocRatioTermsOrder >> regressionType >> lsRegressionType
     >> regressionNoiseTol >> regressionL2Penalty >> crossValidation
@@ -495,7 +498,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> burnInSamples >> subSamplingPeriod >> evidenceSamples
     >> calModelDiscrepancy >> numPredConfigs >> predictionConfigList
     >> importPredConfigs >> importPredConfigFormat >> modelDiscrepancyType
-    >> approxCorrectionOrder >> exportCorrModelFile >> exportCorrModelFormat
+    >> polynomialOrder >> exportCorrModelFile >> exportCorrModelFormat
     >> exportCorrVarFile >> exportCorrVarFormat >> exportDiscrepFile
     >> exportDiscrepFormat >> adaptExpDesign >> importCandPtsFile
     >> importCandFormat >> numCandidates >> maxHifiEvals
@@ -616,8 +619,8 @@ void DataMethodRep::write(std::ostream& s) const
   // C3 FT
   s << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank  << kickRank  << maxRank  << adaptRank
-    << c3AdvanceType << startOrderSeq << startRankSeq;
+    << startRank  << kickRank  << maxRank  << adaptRank << maxCVRankCandidates
+    << maxCVOrderCandidates << c3AdvanceType << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
@@ -626,13 +629,13 @@ void DataMethodRep::write(std::ostream& s) const
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << vbdOrder << covarianceControl << rngName << refinementType
-    << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << expansionBasisType << quadratureOrderSeq
-    << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
-    << expansionSamplesSeq << quadratureOrder << sparseGridLevel
-    << expansionOrder << collocationPoints << expansionSamples
-  //<< expansionSampleType
+  s << respScalingFlag << vbdOrder << covarianceControl << rngName
+    << refinementType << refinementControl << nestingOverride << growthOverride
+    << expansionType << piecewiseBasis << expansionBasisType
+    << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
+    << collocationPointsSeq << expansionSamplesSeq << quadratureOrder
+    << sparseGridLevel << expansionOrder << collocationPoints
+    << expansionSamples //<< expansionSampleType
     << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType
     << regressionNoiseTol << regressionL2Penalty << crossValidation
@@ -661,7 +664,7 @@ void DataMethodRep::write(std::ostream& s) const
     << burnInSamples << subSamplingPeriod << evidenceSamples
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
-    << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
+    << polynomialOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
     << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
     << importCandFormat << numCandidates << maxHifiEvals

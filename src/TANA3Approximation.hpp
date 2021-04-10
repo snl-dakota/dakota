@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -117,7 +118,7 @@ inline TANA3Approximation::~TANA3Approximation()
 inline void TANA3Approximation::clear_current_active_data()
 {
   approxData.clear_anchor_index();
-  approxData.history_target(1, sharedDataRep->approxDataKeys);
+  approxData.history_target(1, sharedDataRep->activeKey);
 
   /*
   // demote from anchor to regular/previous data

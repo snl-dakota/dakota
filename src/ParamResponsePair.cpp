@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -63,11 +64,11 @@ void ParamResponsePair::write_tabular(std::ostream& s,
 
 /** When the eval id or interface isn't needed, directly appeal to
     Variables and Response write_tabular_labels... */
-void ParamResponsePair::write_tabular_labels(std::ostream& s,
-					     unsigned short tabular_format) const
+void ParamResponsePair::
+write_tabular_labels(std::ostream& s, unsigned short tabular_format) const
 {
-  TabularIO::
-    write_header_tabular(s, prpVariables, prpResponse, "eval_id", tabular_format);
+  TabularIO::write_header_tabular(s, prpVariables, prpResponse, "eval_id",
+				  "interface", tabular_format);
 }
 
 
