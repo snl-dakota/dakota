@@ -4344,7 +4344,6 @@
 	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="Adapted Basis"  >
 	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  >
 	    <param type="STRING" in_taglist="model" />
-	  </keyword>
 	  <oneOf label="Expansion Basis Control">
 	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(ushint,adaptedBasisSparseGridLev)}" label="Adapted Basis Sparse Grid Level" >
 	      <param type="INTEGER" />
@@ -4360,6 +4359,16 @@
 	  <keyword  id="dimension" name="dimension" label="Dimension" code="{N_mom(int,subspaceDimension)}" minOccurs="0">
             <param type="INTEGER" />
 	  </keyword>
+          <keyword  id="rotation_method" name="rotation_method" code="{0}" label="Rule of obtaining rotation matrix for Basis Adaptation"  minOccurs="0" default="norm" >
+		<oneOf label="Rotation Method">
+		<keyword  id="linear" name="linear" code="{N_mom(type,method_rotation_ROTATION_METHOD_LINEAR)}" label="Linear sensitivity"   />
+		<keyword  id="norm" name="norm" code="{N_mom(type,method_rotation_ROTATION_METHOD_LINEARNORM)}" label="Normalized linear sensitivity"   />
+		</oneOf>
+                </keyword>
+	  </keyword>
+          <keyword  id="truncation_tolerance" name="truncation_tolerance" label="Truncation Tolerance" code="{N_mom(Real,adaptedBasisTruncationTolerance)}"  minOccurs="0" default="0.8" >
+              <param type="REAL" />
+          </keyword>
 	</keyword>
 	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random Field"  complexity="1">
 	  <keyword id="build_source" name="build_source" code="{0}" label="Build Source" minOccurs="0">

@@ -22,6 +22,9 @@ namespace Dakota {
 
 AdaptedBasisModel::
 AdaptedBasisModel(ProblemDescDB& problem_db):
+  method_rotation(problem_db.get_short("model.adapted_basis.rotation_method")),
+  adaptedBasisTruncationTolerance(probDescDB.get_real(
+    "model.adapted_basis.truncation_tolerance")),
   SubspaceModel(problem_db, get_sub_model(problem_db))
 {
   // BMA: can't do this in get_sub_model as Iterator envelope hasn't
@@ -33,13 +36,14 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   modelType = "adapted_basis";
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
-
+    
   if (!reducedRank)  // no user spec
     reducedRank = 1; // subspace-specific default
 
   validate_inputs();
 
   offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
+  
 }
 
 
@@ -109,12 +113,13 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   // initialization.  Therefore, we initialize pcePilotExpRepPtr above and then
   // assign it into pcePilotExpansion in the AdaptedBasisModel initializer list.
   //pcePilotExpansion.assign_rep(pce_rep);
-
+    
   problem_db.set_db_model_nodes(model_index); // restore
 
   Model u_space_model(pcePilotExpRepPtr->algorithm_space_model());
   // Consider option of using PCE surrogate for all subsequent computations:
   //return u_space_model;
+
 
   // Return transformed model subordinate to the DataFitSurrModel:
   return u_space_model.subordinate_model();
@@ -250,8 +255,22 @@ void AdaptedBasisModel::compute_subspace()
   int lwork;
   lwork = numFullspaceVars;
   int info;
-
-  int method=1;
+  
+  int method = -1;
+    
+  // Select the desired rotation method
+  if (method_rotation==ROTATION_METHOD_LINEAR){
+   
+      method = 0;
+      std::cout << "Proceeding with the Linear Rotation Method" << std::endl;
+      
+  } else if (method_rotation==ROTATION_METHOD_LINEARNORM) {
+  
+      method = 1;
+      std::cout << "Proceeding with the Linear Normalized Rotation Method" << std::endl;
+          
+  }
+      
 
   for (i=0; i<numFns; ++i) {
     A_i.putScalar(0.);
@@ -418,11 +437,14 @@ void AdaptedBasisModel::compute_subspace()
 void AdaptedBasisModel::truncate_rotation()
 {
   reducedRank = 1; // initialize reducedRank
-  double threshold_ratio = 0.8; 
+  double threshold_ratio = adaptedBasisTruncationTolerance;  // default value 0.8
+  
+  std::cout << "Threshold Ratio: " << adaptedBasisTruncationTolerance << std::endl;
   
   // use the first order information to determine the dimension of
   // the reduce space
 
+  // NEED TO BE REPLACED WITH A DAKOTA FRIENDLY VERSION 
   // standard normal distribution generator
   int seed = 12345;
   std::default_random_engine generator (seed);

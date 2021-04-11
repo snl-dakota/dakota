@@ -86,6 +86,15 @@ protected:
   /// submodel variables (linear transformation)
   static void variables_mapping(const Variables& recast_xi_vars,
 				Variables& sub_model_x_vars);
+  
+  
+  /// store the rotation_method input specification, prior to run-time
+  /// Options right now:
+  ///   - linear = use the linear PCE coefficients
+  ///   - norm = use normalized sensitivity along each direction
+  short method_rotation;
+  // Threshold level for the selection of the rank in the basis adaptation
+  Real adaptedBasisTruncationTolerance;
 
   // ---
   // Member data

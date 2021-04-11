@@ -2254,7 +2254,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"surrogate.nugget", P_MOD krigingNugget},
       {"surrogate.percent", P_MOD percentFold},
       {"surrogate.regression_penalty", P_MOD regressionL2Penalty},
-      {"truncation_tolerance", P_MOD truncationTolerance}
+      {"truncation_tolerance", P_MOD truncationTolerance},
+      {"adapted_basis.truncation_tolerance", P_MOD adaptedBasisTruncationTolerance}
     },
     { /* variables */ },
     { /* interface */
@@ -2390,6 +2391,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"wilks.sided_interval", P_MET wilksSidedInterval}
     },
     { /* model */
+      {"adapted_basis.rotation_method", P_MOD method_rotation},
       {"c3function_train.advancement_type", P_MOD c3AdvanceType},
       //{"c3function_train.refinement_control", P_MOD refinementControl},
       //{"c3function_train.refinement_type", P_MOD refinementType},

@@ -65,7 +65,9 @@ DataModelRep::DataModelRep():
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
-  analyticCovIdForm(NOCOVAR)
+  analyticCovIdForm(NOCOVAR),
+  method_rotation(ROTATION_METHOD_LINEAR),
+  adaptedBasisTruncationTolerance(0.9)
 { }
 
 
@@ -115,7 +117,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance
     << decreaseTolerance << subspaceCVMaxRank << subspaceCVIncremental
-    << subspaceIdCVMethod;
+    << subspaceIdCVMethod << method_rotation << adaptedBasisTruncationTolerance;
 }
 
 
@@ -165,7 +167,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> rfDataFileName >> randomFieldIdForm >> analyticCovIdForm
     >> subspaceSampleType >> subspaceIdCV >> relTolerance
     >> decreaseTolerance >> subspaceCVMaxRank >> subspaceCVIncremental
-    >> subspaceIdCVMethod;
+    >> subspaceIdCVMethod >> method_rotation >> adaptedBasisTruncationTolerance;
 }
 
 
@@ -215,7 +217,7 @@ void DataModelRep::write(std::ostream& s) const
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance
     << decreaseTolerance << subspaceCVMaxRank << subspaceCVIncremental
-    << subspaceIdCVMethod;
+    << subspaceIdCVMethod << method_rotation << adaptedBasisTruncationTolerance;
 }
 
 

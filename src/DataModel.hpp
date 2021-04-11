@@ -44,6 +44,12 @@ enum { NOCOVAR=0, EXP_L2, EXP_L1 };
 enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
        SUBSPACE_NORM_MEAN_GRAD, SUBSPACE_NORM_LOCAL_GRAD }; 
 
+// -----------------------
+// AdaptedBasis
+// -----------------------
+// define special values for generating the basis adaptation rotation matrix
+enum {ROTATION_METHOD_LINEAR, ROTATION_METHOD_LINEARNORM};    
+
 /// define special values for componentParallelMode
 /// (active model for parallel scheduling)
 enum { NO_PARALLEL_MODE=0, SURROGATE_MODEL_MODE, TRUTH_MODEL_MODE,
@@ -466,6 +472,9 @@ public:
   /// collocation ratio for low-order PCE used to compute rotation
   /// matrix within adapted basis approach to dimension reduction
   Real adaptedBasisCollocRatio;
+  
+  short method_rotation;
+  Real adaptedBasisTruncationTolerance;
 
   // random field models
 
