@@ -1703,7 +1703,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			for (size_t qoi = 1; qoi < nb_aggregation_qois; ++qoi) {
 				max_qoi_idx = delta_N_l_qoi(qoi, step) > delta_N_l_qoi(max_qoi_idx, step) ? qoi : max_qoi_idx;
 			}
-			max_qoi_idx = 1;
+			//max_qoi_idx = 1;
 			delta_N_l[step] = delta_N_l_qoi(max_qoi_idx, step);
 	   }
 	}else{
