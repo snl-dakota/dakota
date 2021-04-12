@@ -624,7 +624,7 @@ private:
 
   void assign_static_member(Real &conv_tol, size_t &qoi, size_t &qoi_aggregation, size_t &num_functions, RealVector &level_cost_vec, IntRealMatrixMap &sum_Ql,
                             IntRealMatrixMap &sum_Qlm1, IntIntPairRealMatrixMap &sum_QlQlm1,
-                            RealVector &pilot_samples) const;
+                            RealVector &pilot_samples, RealMatrix &scalarization_response_mapping) const;
 
   void assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, Real &mu_four_L_exact, Real &mu_four_H_exact, Real &Ax, RealVector &level_cost_vec) const;
 
@@ -703,6 +703,11 @@ private:
   unsigned short exportSamplesFormat;
 
 
+  /// "scalarization" response_mapping matrix applied to the mlmc sample allocation
+  /// when a scalarization, i.e. alpha_1 * mean + alpha_2 * sigma, is the target. 
+  RealMatrix scalarization_response_mapping;
+
+  /// Helper data structure to store intermedia sample allocations
   RealMatrix N_target_qoi;
   RealMatrix N_target_qoi_FN;
 };
@@ -1116,13 +1121,10 @@ inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRea
 
 	var_of_mean_l = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
 	var_of_sigma_l = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
-  upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l); //TODO
-  //var_of_scalarization_l = alpha_mean_scalarization[step][qoi]*alpha_mean_scalarization[step][qoi]*var_of_mean_l 
-  //												+ alpha_sigma_scalarization[step][qoi]*alpha_sigma_scalarization[step][qoi]*var_of_sigma_l 
-  //												+ 2.0 * alpha_mean_scalarization[step][qoi] * alpha_sigma_scalarization[step][qoi] * cov_of_mean_sigma;
-  var_of_scalarization_l = 1. * 1. * var_of_mean_l 
-  												+ 3. * 3. * var_of_sigma_l;
-  												+ 2.0 * 1. * 3. * upper_bound_cov_of_mean_sigma;
+  upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l);
+  var_of_scalarization_l = scalarization_response_mapping(qoi, 0) * scalarization_response_mapping(qoi, 0) * var_of_mean_l 
+  												+ scalarization_response_mapping(qoi, 1) * scalarization_response_mapping(qoi, 1) * var_of_sigma_l;
+  												+ 2.0 * scalarization_response_mapping(qoi, 0) * scalarization_response_mapping(qoi, 1) * upper_bound_cov_of_mean_sigma;
 
 	return var_of_scalarization_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile is already done in submethods
 }
@@ -1425,7 +1427,8 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			nonlin_eq_targets.size(1); //init to 0
 			nonlin_eq_targets[0] = eps_sq_div_2[qoi]; //convergenceTol;
 
-			assign_static_member(nonlin_eq_targets[0], qoi_copy, qoiAggregation_copy, numFunctions_copy, level_cost_vec, sum_Ql, sum_Qlm1, sum_QlQlm1, pilot_samples);
+			assign_static_member(nonlin_eq_targets[0], qoi_copy, qoiAggregation_copy, numFunctions_copy, level_cost_vec, sum_Ql, 
+													 sum_Qlm1, sum_QlQlm1, pilot_samples, scalarization_response_mapping);
 
 			std::unique_ptr<Iterator> optimizer;
 

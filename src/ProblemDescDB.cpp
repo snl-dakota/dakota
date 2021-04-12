@@ -1452,6 +1452,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"nond.prediction_configs", P_MET predictionConfigList},
       {"nond.proposal_covariance_data", P_MET proposalCovData},
       {"nond.regression_noise_tolerance", P_MET regressionNoiseTol},
+      {"nond.scalarization_response_mapping", P_MET scalarizationRespCoeffs},
       {"parameter_study.final_point", P_MET finalPoint},
       {"parameter_study.list_of_points", P_MET listOfPoints},
       {"parameter_study.step_vector", P_MET stepVector},
@@ -2666,7 +2667,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"nl2sol.regression_diagnostics", P_MET regressDiag},
       {"nond.adapt_exp_design", P_MET adaptExpDesign},
       {"nond.adaptive_posterior_refinement", P_MET adaptPosteriorRefine},
-      {"nond.allocation_target.variance.optimization", P_MET useTargetVarianceOptimizationFlag},
+      {"nond.allocation_target.optimization", P_MET useTargetVarianceOptimizationFlag},
       {"nond.c3function_train.adapt_order", P_MET adaptOrder},
       {"nond.c3function_train.adapt_rank", P_MET adaptRank},
       {"nond.cross_validation", P_MET crossValidation},
@@ -2775,7 +2776,9 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
   RealVector& rep_rv = get<RealVector>
   ( "set(RealVector&)",
     { /* environment */ },
-    { /* method */ },
+    { /* method */ 
+      {"nond.scalarization_response_mapping", P_MET scalarizationRespCoeffs}
+    },
     { /* model */
       {"nested.primary_response_mapping", P_MOD primaryRespCoeffs},
       {"nested.secondary_response_mapping", P_MOD secondaryRespCoeffs}

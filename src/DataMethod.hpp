@@ -200,16 +200,16 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
 // define special values for qoi aggregation norm for sample allocation over levels and QoIs
-enum {QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM};
+enum { QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM };
 
 // target variance for fitting sample allocation
-enum {TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION};
+enum { TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION };
 
 // define special values for computation of convergence tolerance, either absolute or relative 
-enum {CONVERGENCE_TOLERANCE_TYPE_RELATIVE, CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE};
+enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE, CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
 
 // define optimization formulation for MLMC sample allocation by specifing equality constraint, either variance or cost 
-enum {CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT, CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT};
+enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT, CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
 
 // ---------------
 // NonDReliability
@@ -755,6 +755,8 @@ public:
   int randomSeed;
   /// the \c seed_sequence specification for multilevel UQ methods
   SizetArray randomSeedSeq;
+  /// the \c coefficient mapping for the scalarization term for multilevel UQ methods
+  RealVector scalarizationRespCoeffs;
 
   // MADS
   /// the \c initMeshSize choice for NOMAD in \ref MethodNOMADDC

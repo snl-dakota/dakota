@@ -6785,7 +6785,8 @@ static RealVector
 	MP_(predictionConfigList),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
-        MP_(stepVector),
+  MP_(scalarizationRespCoeffs),
+  MP_(stepVector),
 	MP_(trustRegionInitSize);
 
 static RealVectorArray

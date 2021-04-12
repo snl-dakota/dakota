@@ -2901,6 +2901,9 @@
 		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
 		</keyword>
 		<keyword  id="scalarization" name="scalarization" code="{N_mdm(type,allocationTarget_TARGET_SCALARIZATION)}" label="scalarization">
+		  <keyword  id="scalarization_response_mapping" name="scalarization_response_mapping" code="{N_mdm(RealDL,scalarizationRespCoeffs)}" label="Scalarization Response Mappings"  minOccurs="0" default="default scalarized contribution to mlmc sample allocation (1 Mean, 3 Sigma)" >
+	       <param type="REALLIST" />
+	      </keyword>
 		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
 		</keyword>
 		</oneOf>

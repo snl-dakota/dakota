@@ -343,7 +343,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
-    << allocationTarget << convergenceToleranceType << useTargetVarianceOptimizationFlag;
+    << allocationTarget << convergenceToleranceType << useTargetVarianceOptimizationFlag
+    << scalarizationRespCoeffs;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -509,7 +510,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
     >> generatePosteriorSamples >> evaluatePosteriorDensity >> qoiAggregation 
-    >> allocationTarget >> convergenceToleranceType >> useTargetVarianceOptimizationFlag;
+    >> allocationTarget >> convergenceToleranceType >> useTargetVarianceOptimizationFlag
+    >> scalarizationRespCoeffs;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -675,7 +677,7 @@ void DataMethodRep::write(std::ostream& s) const
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
-    << allocationTarget << useTargetVarianceOptimizationFlag;
+    << allocationTarget << useTargetVarianceOptimizationFlag << scalarizationRespCoeffs;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

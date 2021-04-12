@@ -38,10 +38,10 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
   mlmfIter(0),
   allocationTarget(problem_db.get_short("method.nond.allocation_target")),
+  useTargetVarianceOptimizationFlag(problem_db.get_bool("method.nond.allocation_target.optimization")),
   qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
   convergenceTolType(problem_db.get_short("method.nond.convergence_tolerance_type")),
   convergenceTolTarget(problem_db.get_short("method.nond.convergence_tolerance_target")),
-  useTargetVarianceOptimizationFlag(problem_db.get_bool("method.nond.allocation_target.variance.optimization")),
   finalCVRefinement(true),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
@@ -132,6 +132,30 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   // For testing multilevel_mc_Qsum():
   //subIteratorFlag = true;
+
+  if(allocationTarget == TARGET_SCALARIZATION){
+    // Retrieve the variable mapping inputs
+    const RealVector& scalarization_response_vector
+      = probDescDB.get_rv("method.nond.scalarization_response_mapping");
+    scalarization_response_mapping.reshape(numFunctions, 2);
+    if (scalarization_response_vector.empty() || scalarization_response_vector.length() != numFunctions*2 ) {
+    Cerr << "\n Warning: no or incomplete mappings provided for scalarization mapping in "
+   << "multilevel sampling initialization. Revert to default case (1 * Mean + 3 * Sigma)" << std::endl;
+    for(size_t i = 0; i < numFunctions; ++i){
+      scalarization_response_mapping(i, 0) = 1.;
+      scalarization_response_mapping(i, 1) = 3.;
+    }
+    }else{
+    Cout << "scalarization_response_vector: " << scalarization_response_vector << std::endl;
+    Cout << scalarization_response_vector.length() << std::endl;
+    size_t vec_ctr = 0;
+    for(size_t i = 0; i < numFunctions; ++i){
+      scalarization_response_mapping(i, 0) = scalarization_response_vector[vec_ctr++];
+      scalarization_response_mapping(i, 1) = scalarization_response_vector[vec_ctr++];
+    }
+    }
+  }
+ 
 }
 
 
@@ -413,8 +437,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
       sum_sqrt_var_cost_qoi(numFunctions), sum_sqrt_var_cost_var_qoi(numFunctions), sum_sqrt_var_cost_mean_qoi(numFunctions),
        agg_var_l_qoi(numFunctions), level_cost_vec(num_steps);
     RealMatrix agg_var_qoi(numFunctions, num_steps), agg_var_mean_qoi(numFunctions, num_steps),
-       agg_var_var_qoi(numFunctions, num_steps), N_target_qoi(numFunctions, num_steps);
-    RealMatrix N_target_qoi_FN(numFunctions, num_steps);
+       agg_var_var_qoi(numFunctions, num_steps);
 
     // For moment estimation, we accumulate telescoping sums for Q^i using
     // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -573,7 +596,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
     }
 
     //For testing
-    //std::ofstream myfile;  
+    std::ofstream myfile;  
     /* Cantilever
     myfile.open("cantilever_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
     myfile         << w                     << "\t" << t     
@@ -584,13 +607,13 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
            << "\t" << N_target_qoi_FN(2, 0) << "\t" << (N_target_qoi_FN(2, 1)) 
            << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
     */
-    /* Problem18
+     //Problem18
     myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
     myfile << N_l[0][0]             << "\t" << N_l[1][0] 
            << "\t" << N_target_qoi(1, 0)    << "\t" << (N_target_qoi(1, 1))
            << "\t" << N_target_qoi_FN(1, 0) << "\t" << (N_target_qoi_FN(1, 1)) << "\n";
     myfile.close();
-    */
+    
     ////
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
 
@@ -2882,12 +2905,13 @@ static size_t  *static_qoiAggregation(NULL);
 static IntRealMatrixMap *static_sum_Ql(NULL);
 static IntRealMatrixMap *static_sum_Qlm1(NULL);
 static IntIntPairRealMatrixMap *static_sum_QlQlm1(NULL);
+static RealMatrix *static_scalarization_response_mapping(NULL);
 
 void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, size_t &qoi_aggregation, 
               size_t &num_functions, RealVector &level_cost_vec,
               IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
               IntIntPairRealMatrixMap &sum_QlQlm1,
-              RealVector &pilot_samples) const
+              RealVector &pilot_samples, RealMatrix &scalarization_response_mapping) const
 {
     static_lev_cost_vec= &level_cost_vec;
     static_qoi = &qoi;
@@ -2898,6 +2922,7 @@ void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, s
     static_sum_QlQlm1 = &sum_QlQlm1;
     static_eps_sq_div_2 = &conv_tol;
     static_Nlq_pilot = &pilot_samples;
+    static_scalarization_response_mapping = &scalarization_response_mapping;
 }
 
 static Real *static_mu_four_L(NULL);
@@ -3903,21 +3928,15 @@ void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode
   RealMatrix alpha_mean_scalarization(nb_qois, nb_qois);
   RealMatrix alpha_sigma_scalarization(nb_qois, nb_qois);
 
-  //Real g_tmp = alpha_mean_scalarization[qoi][qoi]*alpha_mean_scalarization[qoi][qoi]*g_mean 
-  //      + alpha_sigma_scalarization[qoi][qoi]*alpha_sigma_scalarization[qoi][qoi]*g_sigma 
-  //      + 2.0 * alpha_mean_scalarization[qoi][qoi] * alpha_sigma_scalarization[qoi][qoi] * g_cov;
-  Real g_tmp = 1.*1.*g_mean 
-        + 3.*3.*g_sigma;
-        + 2.0 * 1. * 3. * g_upper_bound_cov;
+  Real g_tmp = (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 0)*g_mean 
+        + (*static_scalarization_response_mapping)(qoi, 1) * (*static_scalarization_response_mapping)(qoi, 1)*g_sigma;
+        + 2.0 * (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 1) * g_upper_bound_cov;
   g[0] = g_tmp > 0 ? g_tmp : 0;
   if(compute_gradient){
     for (lev = 0; lev < num_lev; ++lev) {
-      //grad_g[0][lev] = alpha_mean_scalarization[qoi][qoi]*alpha_mean_scalarization[qoi][qoi]*grad_g_mean[lev] 
-      //  + alpha_sigma_scalarization[qoi][qoi]*alpha_sigma_scalarization[qoi][qoi]*grad_g_sigma[lev] 
-      //  + 2.0 * alpha_mean_scalarization[qoi][qoi] * alpha_sigma_scalarization[qoi][qoi] * grad_g_cov[lev] ;
-      grad_g[0][lev] = 1. * 1. *grad_g_mean[lev] 
-        + 3. * 3. * grad_g_sigma[lev];
-        + 2.0 * 1. * 3. * grad_g_upper_bound_cov[lev] ;
+      grad_g[0][lev] = (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 0) *grad_g_mean[lev] 
+        + (*static_scalarization_response_mapping)(qoi, 1) * (*static_scalarization_response_mapping)(qoi, 1) * grad_g_sigma[lev];
+        + 2.0 * (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 1) * grad_g_upper_bound_cov[lev] ;
     }
   }
 }
@@ -4017,21 +4036,15 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
   RealMatrix alpha_mean_scalarization(nb_qois, nb_qois);
   RealMatrix alpha_sigma_scalarization(nb_qois, nb_qois);
 
-  //Real g_tmp = alpha_mean_scalarization[qoi][qoi]*alpha_mean_scalarization[qoi][qoi]*g_mean 
-  //      + alpha_sigma_scalarization[qoi][qoi]*alpha_sigma_scalarization[qoi][qoi]*g_sigma 
-  //      + 2.0 * alpha_mean_scalarization[qoi][qoi] * alpha_sigma_scalarization[qoi][qoi] * g_cov;
-  Real f_tmp = 1.*1.*f_mean 
-        + 3.*3.*f_sigma 
-        + 2.0 * 1. * 3. * f_upper_bound_cov;
+  Real f_tmp = (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 0) * f_mean 
+        + (*static_scalarization_response_mapping)(qoi, 1) * (*static_scalarization_response_mapping)(qoi, 1) * f_sigma 
+        + 2.0 * (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 1) * f_upper_bound_cov;
   f = f_tmp > 0 ? f_tmp : 0;
   if(compute_gradient){
     for (lev = 0; lev < num_lev; ++lev) {
-      //grad_g[0][lev] = alpha_mean_scalarization[qoi][qoi]*alpha_mean_scalarization[qoi][qoi]*grad_g_mean[lev] 
-      //  + alpha_sigma_scalarization[qoi][qoi]*alpha_sigma_scalarization[qoi][qoi]*grad_g_sigma[lev] 
-      //  + 2.0 * alpha_mean_scalarization[qoi][qoi] * alpha_sigma_scalarization[qoi][qoi] * grad_g_cov[lev] ;
-      grad_f[lev] = 1. * 1. *grad_f_mean[lev] 
-        + 3. * 3. * grad_f_sigma[lev] 
-        + 2.0 * 1. * 3. * grad_f_upper_bound_cov[lev] ;
+      grad_f[lev] = (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 0) * grad_f_mean[lev] 
+        + (*static_scalarization_response_mapping)(qoi, 1) * (*static_scalarization_response_mapping)(qoi, 1) * grad_f_sigma[lev] 
+        + 2.0 * (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 1) * grad_f_upper_bound_cov[lev] ;
     }
   }
 }
