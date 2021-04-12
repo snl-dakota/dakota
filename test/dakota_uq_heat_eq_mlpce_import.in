@@ -11,9 +11,9 @@ method,
 # counts if you want import only.
 	  pilot_samples = 100 40 20 10
 #	  pilot_samples = 0
-# Distinct option does not support data imports (yet)
+# Paired discrepancy option does not support data imports (yet)
 	  discrepancy_emulation recursive
-#	  discrepancy_emulation distinct
+#	  discrepancy_emulation paired
 # Starting point / lower bound for exp order -- this gets incremented as
 # sample levels increase in order to meet the collocation ratio target
 	  expansion_order = 2
