@@ -395,7 +395,7 @@ void Minimizer::data_transform_model()
       abort_handler(-1);
   }
   // TODO: verify: we don't want to weight by missing sigma: all = 1.0
-  expData.load_data("Least Squares");
+  expData.load_data("Least Squares", iteratedModel.current_variables());
 
   iteratedModel.
     assign_rep(std::make_shared<DataTransformModel>(iteratedModel, expData));

@@ -290,6 +290,8 @@ public:
 
   /// copy the active cv/div/dsv/drv variables from vars
   void active_variables(const Variables& vars);
+  /// copy the inactive cv/div/dsv/drv variables from vars
+  void inactive_variables(const Variables& vars);
   /// copy all cv/div/dsv/drv variables from vars
   void all_variables(const Variables& vars);
 
@@ -897,6 +899,24 @@ inline void Variables::active_variables(const Variables& vars)
     if (vars.div()) discrete_int_variables(vars.discrete_int_variables());
     if (vars.dsv()) discrete_string_variables(vars.discrete_string_variables());
     if (vars.drv()) discrete_real_variables(vars.discrete_real_variables());
+  }
+}
+
+
+inline void Variables::inactive_variables(const Variables& vars)
+{
+  // Set inactive variables only, leaving remainder of data unchanged
+  if (variablesRep)
+    variablesRep->inactive_variables(vars);
+  else {
+    if (vars.icv())
+      inactive_continuous_variables(vars.inactive_continuous_variables());
+    if (vars.idiv())
+      inactive_discrete_int_variables(vars.inactive_discrete_int_variables());
+    if (vars.idsv())
+      inactive_discrete_string_variables(vars.inactive_discrete_string_variables());
+    if (vars.idrv())
+      inactive_discrete_real_variables(vars.inactive_discrete_real_variables());
   }
 }
 

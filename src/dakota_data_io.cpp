@@ -10,6 +10,7 @@
 #include "dakota_data_io.hpp"
 #include "dakota_data_util.hpp"
 #include "dakota_tabular_io.hpp"
+#include "DakotaVariables.hpp"
 
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -105,21 +106,19 @@ read_unsized_data(std::istream& s,
 
 // This version uses multiple configuration files
 void 
-read_config_vars_multifile(const std::string& basename, int num_expts, int ncv, RealVectorArray& config_vars){
-
-  config_vars.resize(num_expts);
-
+read_config_vars_multifile(const std::string& basename, int num_expts, int ncv,
+			   std::vector<Variables>& config_vars){
+  assert(num_expts == config_vars.size());
   for( int i = 0; i < num_expts; ++i ) {
-    std::ifstream s;
-    std::string filename = basename + "." + convert_to_string(i+1) + ".config";
-    boost::filesystem::path filepath = basename + "." + convert_to_string(i+1) + ".config";
-    if( !boost::filesystem::exists(filepath) )
+    std::string filename = basename + "." + std::to_string(i+1) + ".config";
+    if( !boost::filesystem::exists(filename) )
       throw std::runtime_error("Could not find expected experiment config file \""
-          + filepath.string() + "\".");
+          + filename + "\".");
+
+    // BMA TODO: try/catch with better messages
+    std::ifstream s;
     TabularIO::open_file(s, filename, "read_config_vars_multifile");
-    RealVector & var = config_vars[i];
-    var.sizeUninitialized(ncv);
-    read_data_tabular(s, var);
+    config_vars[i].read_tabular(s, INACTIVE_VARS);
   }
 }
 
@@ -127,12 +126,19 @@ read_config_vars_multifile(const std::string& basename, int num_expts, int ncv, 
 
 // This version uses a single configuration file adhering to an expected num_expts X ncv format
 void 
-read_config_vars_singlefile(const std::string& basename, int num_expts, int ncv, RealVectorArray& config_vars){
-
-  std::ifstream s;
+read_config_vars_singlefile(const std::string& basename, int num_expts, int ncv,
+			    std::vector<Variables>& config_vars){
+  assert(num_expts == config_vars.size());
   std::string filename = basename + ".config";
+  if( !boost::filesystem::exists(filename) )
+    throw std::runtime_error("Could not find expected experiment config file \""
+			     + filename + "\".");
+
+  // BMA TODO: try/catch
+  std::ifstream s;
   TabularIO::open_file(s, filename, "read_config_vars_singlefile");
-  read_sized_data(s, config_vars, num_expts, ncv);
+  for( int i = 0; i < num_expts; ++i )
+    config_vars[i].read_tabular(s, INACTIVE_VARS);
 }
 
 //----------------------------------------------------------------

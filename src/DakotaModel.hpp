@@ -608,6 +608,8 @@ public:
 
   /// set the active variables in currentVariables
   void active_variables(const Variables& vars);
+  /// set the inactive variables in currentVariables
+  void inactive_variables(const Variables& vars);
 
   /// return the active continuous variables from currentVariables
   const RealVector& continuous_variables() const;
@@ -1765,6 +1767,13 @@ inline void Model::active_variables(const Variables& vars)
 {
   if (modelRep) modelRep->currentVariables.active_variables(vars);
   else          currentVariables.active_variables(vars);
+}
+
+
+inline void Model::inactive_variables(const Variables& vars)
+{
+  if (modelRep) modelRep->currentVariables.inactive_variables(vars);
+  else          currentVariables.inactive_variables(vars);
 }
 
 

@@ -102,7 +102,8 @@ public:
   //
  
   /// Load experiments from data files (simple scalar or field)
-  void load_data(const std::string& context_message);
+  void load_data(const std::string& context_message,
+		 const Variables& vars_with_state_as_config);
   /// Add one data point to the experimental data set
   void add_data(const RealVector& one_configvars, const Response& one_response);
 
@@ -120,11 +121,13 @@ public:
   /// retrieve the number of fields (applies to all experiments)
   size_t num_fields() const;
 
-  /// number of onfiguration variables
+  /// number of configuration variables
   size_t num_config_vars() const;
 
   /// values of the configuration variables, 1 RealVector per experiment
   const std::vector<RealVector>& config_vars() const;
+
+  const std::vector<Variables>& configuration_variables() const;
 
   /// return contiguous vector of all data (scalar, followed by field)
   /// for the specified experiment
@@ -460,10 +463,9 @@ private:
   /// observed data and error (sigma/covariance) for each experiment.
   std::vector<Response> allExperiments;
   
-  // TODO: migrate this to a vector of Variables?
   /// Vector of numExperiments configurations at which data were
   /// gathered; empty if no configurations specified.
-  std::vector<RealVector> allConfigVars;
+  std::vector<Variables> allConfigVars;
 
   /// Length of each experiment
   IntVector experimentLengths;

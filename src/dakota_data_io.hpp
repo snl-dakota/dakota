@@ -224,13 +224,13 @@ void read_unsized_data(std::istream& s,
 void read_config_vars_multifile(const std::string& basename,
                                 int num_expts,
                                 int ncv,
-                                RealVectorArray& config_vars);
+				std::vector<Variables>& config_vars);
 
 /// file reader for configuration data supplied via a single file
 void read_config_vars_singlefile(const std::string& basename,
                                  int num_expts,
                                  int ncv,
-                                 RealVectorArray& config_vars);
+				 std::vector<Variables>& config_vars);
 
 /// file reader for vector field (response) data
 void read_field_values(const std::string& basename,
@@ -490,9 +490,12 @@ void read_data_partial_tabular(std::istream& s,
 	 << "exceeds length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
+  s >> std::ws;
   for (i=start_index; i<end; ++i) {
-    if (s)
+    if (s && !s.eof()) {
       s >> v[i];
+      s >> std::ws;
+    }
     else {
       std::string err =
 	"At EOF: insufficient tabular data for SerialDenseVector[" + 

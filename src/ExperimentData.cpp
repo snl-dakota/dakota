@@ -10,6 +10,7 @@
 #include "ExperimentData.hpp"
 #include "DataMethod.hpp"
 #include "ProblemDescDB.hpp"
+#include "DakotaVariables.hpp"
 
 namespace Dakota {
 
@@ -66,14 +67,20 @@ ExperimentData(size_t num_experiments, const SharedResponseData& srd,
   scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
   readSimFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
 {
+  // BMA TODO: Review NonDBayes for this use case; also prediction configs
   simulationSRD = srd.copy();
+  // BMA TODO: need a shared variables data and mode
   allConfigVars.resize(numExperiments);
   for (size_t i=0; i<numExperiments; ++i) {
-    allConfigVars[i] =
-      Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(config_vars),
-                      (int) i);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " allConfigVars i " << allConfigVars[i] << '\n';
+    // BMA TODO: Can we assume state only? And are they inactive for
+    // this use case?
+    allConfigVars[i].inactive_continuous_variables
+      (Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(config_vars),
+		       (int) i));
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "allConfigVars[" << i << "] = \n";
+      allConfigVars[i].write(Cout, INACTIVE_VARS);
+    }
   }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Number of config vars " << numConfigVars << '\n';
@@ -219,17 +226,23 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 void ExperimentData::
 add_data(const RealVector& one_configvars, const Response& one_response)
 {
+  // BMA TODO: Review NonDBayes for this use case; also prediction configs
+
   // BMA TODO: This doesn't make an object of type ExperimentResponse!
   numExperiments += 1;
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "numExperiments in add_data " << numExperiments << '\n';
 
-  allConfigVars.push_back(one_configvars);
+  // BMA: this will break... need adapter to indices?
+  // could set inactive_continuous_variables()?
+  // BMA TODO: need a shared vars data
+  //  allConfigVars.push_back(one_configvars);
   allExperiments.push_back(one_response);
 }
 
 
-void ExperimentData::load_data(const std::string& context_message)
+void ExperimentData::load_data(const std::string& context_message,
+			       const Variables& vars_with_state_as_config)
 {
   // TODO: complete scalar and field cases
 
@@ -255,8 +268,16 @@ void ExperimentData::load_data(const std::string& context_message)
     exp_resp.write(Cout);
   }
 
-  if (numConfigVars > 0)
-    allConfigVars.resize(numExperiments);
+  if (numConfigVars > 0) {
+    // copy SVD to avoid changing object passed in
+    auto svd = vars_with_state_as_config.shared_data().copy();
+    svd.inactive_view(MIXED_STATE);
+    // make a distinct Variables letter for each config, don't copy
+    // the envelope; okay to share the SVD
+    allConfigVars.reserve(numExperiments);
+    for(size_t i=0; i<numExperiments; ++i)
+      allConfigVars.push_back(Variables(svd));
+  }
 
   size_t num_scalars = simulationSRD.num_scalar_primary();
 
@@ -335,7 +356,6 @@ void ExperimentData::load_data(const std::string& context_message)
 
     // Need to decide what to do if both scalar_data_file and "experiment.#" files exist - RWH
     if ( (numConfigVars > 0) && scalar_data_file ) {
-      allConfigVars[exp_index].sizeUninitialized(numConfigVars);
       // TODO: try/catch
       scalar_data_stream >> std::ws;
       if ( scalar_data_stream.eof() ) {
@@ -345,7 +365,7 @@ void ExperimentData::load_data(const std::string& context_message)
           << std::endl;
         abort_handler(-1);
       }
-      scalar_data_stream >> allConfigVars[exp_index];
+      allConfigVars[exp_index].read_tabular(scalar_data_stream, INACTIVE_VARS);
     }
     // TODO: else validate scalar vs. field configs?
 
@@ -379,9 +399,10 @@ void ExperimentData::load_data(const std::string& context_message)
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Experiment data summary:\n\n";
     for (size_t i=0; i<numExperiments; ++i) {
-      if (numConfigVars > 0)
-	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n"
-	     << allConfigVars[i];
+      if (numConfigVars > 0) {
+	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n";
+	allConfigVars[i].write(Cout, INACTIVE_VARS);
+      }
       Cout << "  Experiment " << i+1 << " data values:"<< "\n"
 	   << allExperiments[i].function_values() << '\n';
     }
@@ -696,6 +717,13 @@ size_t ExperimentData::num_config_vars() const
 
 
 const std::vector<RealVector>& ExperimentData::config_vars() const
+{
+  throw std::runtime_error("No no config vars");
+  //  return allConfigVars;
+}
+
+
+const std::vector<Variables>& ExperimentData::configuration_variables() const
 {
   return allConfigVars;
 }
