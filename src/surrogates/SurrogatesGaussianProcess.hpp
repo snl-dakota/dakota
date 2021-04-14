@@ -215,6 +215,19 @@ class GaussianProcess : public Surrogate {
                                         double& obj_value,
                                         VectorXd& obj_gradient);
 
+  /**
+   *  \brief Initialize the hyperparameter bounds for MLE from
+   *  values in configOptions.
+   *  \param[out] sigma_bounds Bounds for the sigma (i.e. scale) hyperparameter.
+   *  \param[out] length_scale_bounds Bounds for the anisotropic length-scale
+   *              hyperparameters.
+   *  \param[out] nugget_bounds Bounds for the estimated nugget
+   *              hyperparameter.
+   */
+  void setup_hyperparameter_bounds(VectorXd& sigma_bounds,
+                                   MatrixXd& length_scale_bounds,
+                                   VectorXd& nugget_bounds);
+
   /* Get/set functions */
 
   /**

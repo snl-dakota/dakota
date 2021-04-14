@@ -117,7 +117,7 @@ PYBIND11_MODULE(surrogates, m) {
       //    .def(py::init([](const std::string& filename, bool binary)
       //	  {
       //	    return dakota::surrogates::Surrogate::load(filename,
-      //binary);
+      // binary);
       //	  }),
       //	  py::arg("filename"), py::arg("binary")
       //	)
