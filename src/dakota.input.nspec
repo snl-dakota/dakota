@@ -6331,13 +6331,20 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( adapted_basis {N_mom(lit,modelType_adapted_basis)}
-    actual_model_pointer STRING {N_mom(str,actualModelPointer)}
-    sparse_grid_level INTEGER {N_mom(ushint,adaptedBasisSparseGridLev)}
-    |
-    ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}
-      collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
+    ( actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      sparse_grid_level INTEGER {N_mom(ushint,adaptedBasisSparseGridLev)}
+      |
+      ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}
+        collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
+       )
+      [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
+      [ rotation_method {0}
+        linear {N_mom(type,method_rotation_ROTATION_METHOD_LINEAR)}
+        |
+        norm {N_mom(type,method_rotation_ROTATION_METHOD_LINEARNORM)}
+       ]
      )
-    [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
+    [ truncation_tolerance REAL {N_mom(Real,adaptedBasisTruncationTolerance)} ]
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}
