@@ -386,6 +386,9 @@ sample_to_variables(const Real* sample_vars, Variables& vars, Model& model)
   // sample_vars are in RandomVariable order, which mirrors the XML spec
   // vars updates utilize all continuous,discrete {int,string,real} indexing
 
+  if (vars.is_null())
+    vars = Variables(model.current_variables().shared_data());
+
   const SharedVariablesData& svd = vars.shared_data();
   short vars_mode;
   switch (samplingVarsMode) {
