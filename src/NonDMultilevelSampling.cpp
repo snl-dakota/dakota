@@ -112,7 +112,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   if( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples), [](int i){ return i > 0; }) ){
     Cerr << "\nError: Some levels have pilot samples of size 0 in "
        << method_enum_to_string(methodName) << "." << std::endl;
-    abort_handler(INTERFACE_ERROR);
+    abort_handler(METHOD_ERROR);
   }
 
   switch (pilot_size) {
@@ -137,22 +137,18 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     // Retrieve the variable mapping inputs
     const RealVector& scalarization_response_vector
       = probDescDB.get_rv("method.nond.scalarization_response_mapping");
-    scalarization_response_mapping.reshape(numFunctions, 2);
     if (scalarization_response_vector.empty() || scalarization_response_vector.length() != numFunctions*2 ) {
-    Cerr << "\n Warning: no or incomplete mappings provided for scalarization mapping in "
-   << "multilevel sampling initialization. Revert to default case (1 * Mean + 3 * Sigma)" << std::endl;
-    for(size_t i = 0; i < numFunctions; ++i){
-      scalarization_response_mapping(i, 0) = 1.;
-      scalarization_response_mapping(i, 1) = 3.;
-    }
+      Cerr << "\n Warning: no or incomplete mappings provided for scalarization mapping in "
+     << "multilevel sampling initialization. Checking for nested model." << std::endl;
     }else{
-    Cout << "scalarization_response_vector: " << scalarization_response_vector << std::endl;
-    Cout << scalarization_response_vector.length() << std::endl;
-    size_t vec_ctr = 0;
-    for(size_t i = 0; i < numFunctions; ++i){
-      scalarization_response_mapping(i, 0) = scalarization_response_vector[vec_ctr++];
-      scalarization_response_mapping(i, 1) = scalarization_response_vector[vec_ctr++];
-    }
+      scalarizationCoeffs.reshape(numFunctions, 2);
+      Cout << "scalarization_response_vector: " << scalarization_response_vector << std::endl;
+      Cout << scalarization_response_vector.length() << std::endl;
+      size_t vec_ctr = 0;
+      for(size_t i = 0; i < numFunctions; ++i){
+        scalarizationCoeffs(i, 0) = scalarization_response_vector[vec_ctr++];
+        scalarizationCoeffs(i, 1) = scalarization_response_vector[vec_ctr++];
+      }
     }
   }
  
@@ -237,8 +233,16 @@ void NonDMultilevelSampling::core_run()
     }
   }
   else { // multiple solutions levels (only) --> traditional ML-MC
-    if (true) //(subIteratorFlag)
+    if (true){ //(subIteratorFlag)
+      if(allocationTarget == TARGET_SCALARIZATION){
+        if (scalarizationCoeffs.empty()) {
+          Cerr << "\n Warning: no or incomplete mappings provided for scalarization mapping in "
+         << "multilevel sampling initialization. Has to be specified via scalarization_response_mapping or nested model." << std::endl;
+          abort_handler(METHOD_ERROR);
+        }
+      }
       multilevel_mc_Qsum(hf_form); // w/ error est, unbiased central moments
+    }
     else
       multilevel_mc_Ysum(hf_form); // lighter weight
   }
@@ -607,13 +611,13 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
            << "\t" << N_target_qoi_FN(2, 0) << "\t" << (N_target_qoi_FN(2, 1)) 
            << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
     */
-     //Problem18
+    /* //Problem18
     myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
     myfile << N_l[0][0]             << "\t" << N_l[1][0] 
            << "\t" << N_target_qoi(1, 0)    << "\t" << (N_target_qoi(1, 1))
            << "\t" << N_target_qoi_FN(1, 0) << "\t" << (N_target_qoi_FN(1, 1)) << "\n";
     myfile.close();
-    
+    */
     ////
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
 

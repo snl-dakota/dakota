@@ -827,6 +827,7 @@ void NestedModel::init_sub_iterator()
     copy_data(secondary_resp_coeffs, secondaryRespCoeffs, 0,(int)numSubIterFns);
     subIterMappedSec = secondaryRespCoeffs.numRows();
   }
+  subIterator.nested_response_mappings(primaryRespCoeffs, secondaryRespCoeffs);
 }
 
 

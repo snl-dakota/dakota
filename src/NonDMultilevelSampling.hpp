@@ -63,6 +63,8 @@ protected:
   void post_run(std::ostream& s);
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
+  void nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs);
+
 private:
 
   //
@@ -705,13 +707,32 @@ private:
 
   /// "scalarization" response_mapping matrix applied to the mlmc sample allocation
   /// when a scalarization, i.e. alpha_1 * mean + alpha_2 * sigma, is the target. 
-  RealMatrix scalarization_response_mapping;
+  RealMatrix scalarizationCoeffs;
 
   /// Helper data structure to store intermedia sample allocations
   RealMatrix N_target_qoi;
   RealMatrix N_target_qoi_FN;
 };
 
+
+inline void NonDMultilevelSampling::nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs)
+{
+	Cout << "In NonDMultilevelSampling::nested_response_mappings \n";
+	Cout << "\t\t\t Primary: " << primary_coeffs << std::endl;
+	Cout << "\t\t\t Secondary: " << secondary_coeffs << std::endl;
+	Cout << "In NonDMultilevelSampling::nested_response_mappings \n";
+	Cout << "\t\t\t scalarizationCoeffs: " << scalarizationCoeffs << std::endl;
+	if(scalarizationCoeffs.empty()){
+    scalarizationCoeffs.reshape(numFunctions, 2);
+		scalarizationCoeffs(0, 0) = primary_coeffs(0, 0);
+		scalarizationCoeffs(0, 1) = primary_coeffs(0, 1);
+		for(size_t qoi = 1; qoi < numFunctions; ++qoi){
+			scalarizationCoeffs(qoi, 0) = secondary_coeffs(qoi-1, 2*qoi);
+			scalarizationCoeffs(qoi, 1) = secondary_coeffs(qoi-1, 2*qoi+1);
+		}
+	}
+	Cout << "\t\t\t scalarizationCoeffs After: " << scalarizationCoeffs << std::endl;
+}
 
 inline void NonDMultilevelSampling::aggregated_models_mode()
 {
@@ -1122,9 +1143,9 @@ inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRea
 	var_of_mean_l = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
 	var_of_sigma_l = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
   upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l);
-  var_of_scalarization_l = scalarization_response_mapping(qoi, 0) * scalarization_response_mapping(qoi, 0) * var_of_mean_l 
-  												+ scalarization_response_mapping(qoi, 1) * scalarization_response_mapping(qoi, 1) * var_of_sigma_l;
-  												+ 2.0 * scalarization_response_mapping(qoi, 0) * scalarization_response_mapping(qoi, 1) * upper_bound_cov_of_mean_sigma;
+  var_of_scalarization_l = scalarizationCoeffs(qoi, 0) * scalarizationCoeffs(qoi, 0) * var_of_mean_l 
+  												+ scalarizationCoeffs(qoi, 1) * scalarizationCoeffs(qoi, 1) * var_of_sigma_l;
+  												+ 2.0 * scalarizationCoeffs(qoi, 0) * scalarizationCoeffs(qoi, 1) * upper_bound_cov_of_mean_sigma;
 
 	return var_of_scalarization_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile is already done in submethods
 }
@@ -1428,7 +1449,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			nonlin_eq_targets[0] = eps_sq_div_2[qoi]; //convergenceTol;
 
 			assign_static_member(nonlin_eq_targets[0], qoi_copy, qoiAggregation_copy, numFunctions_copy, level_cost_vec, sum_Ql, 
-													 sum_Qlm1, sum_QlQlm1, pilot_samples, scalarization_response_mapping);
+													 sum_Qlm1, sum_QlQlm1, pilot_samples, scalarizationCoeffs);
 
 			std::unique_ptr<Iterator> optimizer;
 
