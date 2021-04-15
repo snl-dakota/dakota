@@ -27,8 +27,8 @@ method,
 #     allocation_target = standard_deviation #s6
 #	  allocation_target = scalarization #s7
 #         optimization 
-#		  scalarization_response_mapping = 1. 0. #s7 
-#										   1. 3. #s7
+#		  scalarization_response_mapping = 1. 0. 0. 0. #s7 
+#										   0. 0. 1. 3. #s7
 	  qoi_aggregation = max
      convergence_tolerance = 1                   	#s0
 #     convergence_tolerance = 0.1                   #s1
