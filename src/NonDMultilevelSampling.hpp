@@ -479,7 +479,7 @@ private:
   /// QoI using discrepancy sums based on allocation target
   void aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, 
 						  const Sizet2DArray& N_l, const size_t& step, RealVector& estimator_var0_qoi);
-  
+  /*
   /// sum up Monte Carlo estimates for mean squared error (MSE) for
   /// QoI using discrepancy sums based on allocation target
   void aggregate_mse_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
@@ -510,7 +510,7 @@ private:
                           const Real* sum_QlQl,     const Real* sum_QlQlm1,
                           const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
                           const size_t& lev, const size_t& qoi);
-
+	*/
   /// compute epsilon^2/2 term for each qoi based on reference estimator_var0 and relative convergence tolereance
   void set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, const RealVector& convergenceTolVec, RealVector& eps_sq_div_2_qoi);
 
@@ -717,21 +717,19 @@ private:
 
 inline void NonDMultilevelSampling::nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs)
 {
-	Cout << "In NonDMultilevelSampling::nested_response_mappings \n";
-	Cout << "\t\t\t Primary: " << primary_coeffs << std::endl;
-	Cout << "\t\t\t Secondary: " << secondary_coeffs << std::endl;
-	Cout << "In NonDMultilevelSampling::nested_response_mappings \n";
-	Cout << "\t\t\t scalarizationCoeffs: " << scalarizationCoeffs << std::endl;
 	if(scalarizationCoeffs.empty()){
-    scalarizationCoeffs.reshape(numFunctions, 2);
-		scalarizationCoeffs(0, 0) = primary_coeffs(0, 0);
-		scalarizationCoeffs(0, 1) = primary_coeffs(0, 1);
+    scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
+    for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
+    	scalarizationCoeffs(0, row_qoi*2) = primary_coeffs(0, row_qoi*2);
+    	scalarizationCoeffs(0, row_qoi*2+1) = primary_coeffs(0, row_qoi*2+1);
+    }
 		for(size_t qoi = 1; qoi < numFunctions; ++qoi){
-			scalarizationCoeffs(qoi, 0) = secondary_coeffs(qoi-1, 2*qoi);
-			scalarizationCoeffs(qoi, 1) = secondary_coeffs(qoi-1, 2*qoi+1);
+    	for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
+				scalarizationCoeffs(qoi, row_qoi*2) = secondary_coeffs(qoi-1, row_qoi*2);
+				scalarizationCoeffs(qoi, row_qoi*2+1) = secondary_coeffs(qoi-1, row_qoi*2+1);
+			}
 		}
 	}
-	Cout << "\t\t\t scalarizationCoeffs After: " << scalarizationCoeffs << std::endl;
 }
 
 inline void NonDMultilevelSampling::aggregated_models_mode()
@@ -1136,17 +1134,19 @@ inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRea
 	Real var_of_mean_l = 0.;
 	Real var_of_sigma_l = 0;
 	Real var_of_scalarization_l = 0;
-	size_t numFormulations = 2;
-	RealMatrix alpha_mean_scalarization(numFormulations, numFunctions);
-	RealMatrix alpha_sigma_scalarization(numFormulations, numFunctions);
+	size_t cur_qoi_offset = 0;
 
-	var_of_mean_l = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
-	var_of_sigma_l = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi);
-  upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l);
-  var_of_scalarization_l = scalarizationCoeffs(qoi, 0) * scalarizationCoeffs(qoi, 0) * var_of_mean_l 
-  												+ scalarizationCoeffs(qoi, 1) * scalarizationCoeffs(qoi, 1) * var_of_sigma_l;
-  												+ 2.0 * scalarizationCoeffs(qoi, 0) * scalarizationCoeffs(qoi, 1) * upper_bound_cov_of_mean_sigma;
-
+	/// For TARGET_SCALARIZATION we have the special case that we can also combine scalarization over multiple qoi
+	/// This is respresented in the scalarization response mapping stored in scalarizationCoeffs
+	for(size_t cur_qoi = 0; cur_qoi < numFunctions; ++cur_qoi){
+		cur_qoi_offset = cur_qoi*2;
+		var_of_mean_l = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, cur_qoi);
+		var_of_sigma_l = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, cur_qoi);
+	  upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l);
+	  var_of_scalarization_l += scalarizationCoeffs(qoi, cur_qoi_offset) * scalarizationCoeffs(qoi, cur_qoi_offset) * var_of_mean_l 
+	  												+ scalarizationCoeffs(qoi, cur_qoi_offset+1) * scalarizationCoeffs(qoi, cur_qoi_offset+1) * var_of_sigma_l;
+	  												+ 2.0 * scalarizationCoeffs(qoi, cur_qoi_offset) * scalarizationCoeffs(qoi, cur_qoi_offset+1) * upper_bound_cov_of_mean_sigma;
+  }									
 	return var_of_scalarization_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile is already done in submethods
 }
 
@@ -1180,7 +1180,7 @@ aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi,
 		estimator_var0_qoi[qoi] += agg_var_qoi(qoi, step)/N_l[step][qoi];
 	}
 }
-
+/*
 inline void NonDMultilevelSampling::
 aggregate_mse_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
 													IntIntPairRealMatrixMap sum_QlQlm1, 
@@ -1271,7 +1271,7 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 
   return agg_mse;
 }
-
+*/
 inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, const RealVector& convergenceTolVec, RealVector& eps_sq_div_2_qoi)
 {
 	// compute epsilon target based on relative tolerance: total MSE = eps^2

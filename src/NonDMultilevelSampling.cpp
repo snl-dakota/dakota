@@ -134,20 +134,25 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   //subIteratorFlag = true;
 
   if(allocationTarget == TARGET_SCALARIZATION){
+    if(qoiAggregation == QOI_AGGREGATION_SUM){
+      Cerr << "\n Error: Scalarization not available with setting qoi_aggregation=sum. "
+     << "Use qoi_aggregation=max instead." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
     // Retrieve the variable mapping inputs
     const RealVector& scalarization_response_vector
       = probDescDB.get_rv("method.nond.scalarization_response_mapping");
-    if (scalarization_response_vector.empty() || scalarization_response_vector.length() != numFunctions*2 ) {
+    if (scalarization_response_vector.empty() || scalarization_response_vector.length() != numFunctions*(2*numFunctions) ) {
       Cerr << "\n Warning: no or incomplete mappings provided for scalarization mapping in "
      << "multilevel sampling initialization. Checking for nested model." << std::endl;
     }else{
-      scalarizationCoeffs.reshape(numFunctions, 2);
-      Cout << "scalarization_response_vector: " << scalarization_response_vector << std::endl;
-      Cout << scalarization_response_vector.length() << std::endl;
+      scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
       size_t vec_ctr = 0;
       for(size_t i = 0; i < numFunctions; ++i){
-        scalarizationCoeffs(i, 0) = scalarization_response_vector[vec_ctr++];
-        scalarizationCoeffs(i, 1) = scalarization_response_vector[vec_ctr++];
+        for(size_t j = 0; j < numFunctions; ++j){
+          scalarizationCoeffs(i, 2*j) = scalarization_response_vector[vec_ctr++];
+          scalarizationCoeffs(i, 2*j+1) = scalarization_response_vector[vec_ctr++];
+        }
       }
     }
   }
@@ -234,13 +239,6 @@ void NonDMultilevelSampling::core_run()
   }
   else { // multiple solutions levels (only) --> traditional ML-MC
     if (true){ //(subIteratorFlag)
-      if(allocationTarget == TARGET_SCALARIZATION){
-        if (scalarizationCoeffs.empty()) {
-          Cerr << "\n Warning: no or incomplete mappings provided for scalarization mapping in "
-         << "multilevel sampling initialization. Has to be specified via scalarization_response_mapping or nested model." << std::endl;
-          abort_handler(METHOD_ERROR);
-        }
-      }
       multilevel_mc_Qsum(hf_form); // w/ error est, unbiased central moments
     }
     else
@@ -421,6 +419,13 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short form)
     with multiple discretization levels. */
 void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
 {
+    if(allocationTarget == TARGET_SCALARIZATION){
+      if (scalarizationCoeffs.empty()) {
+        Cerr << "\n Warning: no or incomplete mappings provided for scalarization mapping in "
+       << "multilevel sampling initialization. Has to be specified via scalarization_response_mapping or nested model." << std::endl;
+        abort_handler(METHOD_ERROR);
+      }
+    }
     // assign truth model form (solution level assignment is deferred until loop)
     Pecos::ActiveKey truth_key;
     short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
@@ -3457,7 +3462,6 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_logscale_optpp(
 void NonDMultilevelSampling::target_var_constraint_eval_optpp(int mode, int n, const RealVector &x, RealVector &g,
                                                               RealMatrix &grad_g, int &result_mode) 
 {
-
   bool compute_gradient = false;
 #ifdef HAVE_NPSOL
   compute_gradient = mode; //if mode == 0, NPSOL ignores gradients
@@ -3470,60 +3474,21 @@ void NonDMultilevelSampling::target_var_constraint_eval_optpp(int mode, int n, c
     result_mode = OPTPP::NLPGradient;
   }
 #endif
-
-  // std error in variance or std deviation estimate
-  size_t lev = 0;
-  Real Nlq = x[lev];
-  size_t Nlq_pilot = (*static_Nlq_pilot)[lev];
-  size_t qoi = *static_qoi;
-  size_t nb_qois = *static_numFunctions;
-  short  qoiAggregation = *static_qoiAggregation;
-  size_t num_lev = n;
-  RealVector agg_estim_var_l;
-  agg_estim_var_l.size(num_lev);
-  Real agg_estim_var = 0;
-
-
-  if (qoiAggregation==QOI_AGGREGATION_SUM) {
-    agg_estim_var_l[0] = 0;
-    for(size_t qoi = 0; qoi < nb_qois; ++qoi){
-      agg_estim_var_l[0] = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
-                                       compute_gradient, grad_g[0][0]);
-      agg_estim_var += agg_estim_var_l[0];
-      for (lev = 1; lev < num_lev; ++lev) {
-        Nlq = x[lev];
-        Nlq_pilot = (*static_Nlq_pilot)[lev];
-
-        agg_estim_var_l[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
-                                         compute_gradient, grad_g[0][lev]);
-        agg_estim_var += agg_estim_var_l[lev];
-      }
+  double g_to_f = 0;
+  RealVector grad_g_to_grad_f;
+  grad_g_to_grad_f.resize(n);
+  target_var_objective_eval_optpp(mode, n, x, g_to_f, grad_g_to_grad_f, result_mode);
+  g[0] = g_to_f;
+  if(compute_gradient){
+    for (size_t lev = 0; lev < n; ++lev) {
+      grad_g[0][lev] = grad_g_to_grad_f[lev];
     }
   }
-  else if(qoiAggregation==QOI_AGGREGATION_MAX){
-    agg_estim_var_l[0] = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
-                                   compute_gradient, grad_g[0][0]);
-    agg_estim_var += agg_estim_var_l[0];
-    for (lev = 1; lev < num_lev; ++lev) {
-      Nlq = x[lev];
-      Nlq_pilot = (*static_Nlq_pilot)[lev];
-
-      agg_estim_var_l[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
-                                       compute_gradient, grad_g[0][lev]);
-      agg_estim_var += agg_estim_var_l[lev];
-    }
-  }else{
-    Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: qoiAggregation is not known.\n";
-    abort_handler(INTERFACE_ERROR);
-  }
-
-  g[0] = agg_estim_var;
 }
 
 void NonDMultilevelSampling::target_var_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
                                         RealVector& grad_f, int& result_mode)
 {
-
   bool compute_gradient = false;
 #ifdef HAVE_NPSOL
   compute_gradient = mode; //if mode == 0, NPSOL ignores gradients
@@ -3590,126 +3555,28 @@ void NonDMultilevelSampling::target_sigma_constraint_eval_optpp(int mode, int n,
 {
 
   bool compute_gradient = false;
-#ifdef HAVE_NPSOL
-  compute_gradient = mode; //if mode == 0, NPSOL ignores gradients
-#elif HAVE_OPTPP
-  if(mode & OPTPP::NLPFunction) {
-    result_mode = OPTPP::NLPFunction;
+  #ifdef HAVE_NPSOL
+    compute_gradient = mode; //if mode == 0, NPSOL ignores gradients
+  #elif HAVE_OPTPP
+    if(mode & OPTPP::NLPFunction) {
+      result_mode = OPTPP::NLPFunction;
+    }
+    if(mode & OPTPP::NLPGradient){
+      compute_gradient = true;
+      result_mode = OPTPP::NLPGradient;
+    }
+  #endif
+
+  double g_to_f = 0;
+  RealVector grad_g_to_grad_f;
+  grad_g_to_grad_f.resize(n);
+  target_sigma_objective_eval_optpp(mode, n, x, g_to_f, grad_g_to_grad_f, result_mode);
+  g[0] = g_to_f;
+  if(compute_gradient){
+    for (size_t lev = 0; lev < n; ++lev) {
+      grad_g[0][lev] = grad_g_to_grad_f[lev];
+    }
   }
-  if(mode & OPTPP::NLPGradient){
-    compute_gradient = true;
-    result_mode = OPTPP::NLPGradient;
-  }
-#endif
-
-  // std error in variance or std deviation estimate
-  size_t lev = 0;
-  Real Nlq = x[lev];
-  size_t Nlq_pilot = (*static_Nlq_pilot)[lev];
-  size_t qoi = *static_qoi;
-  size_t nb_qois = *static_numFunctions;
-  short  qoiAggregation = *static_qoiAggregation;
-  size_t num_lev = n;
-  RealVector agg_estim_var_of_var_l, agg_estim_var_l, grad_var, grad_var_var;
-  agg_estim_var_of_var_l.size(num_lev);
-  agg_estim_var_l.size(num_lev);
-  grad_var.size(num_lev);
-  grad_var_var.size(num_lev);
-  RealVector grad_test;
-  grad_test.size(num_lev);
-  Real agg_estim_var_of_var = 0;
-  Real agg_estim_var = 0;
-  Real gradient_var = 0;
-  Real gradient_var_var = 0;
-
-  IntIntPair pr11(1, 1);
-
-  if (qoiAggregation==QOI_AGGREGATION_SUM) {
-    //safe initialization
-    for (lev = 0; lev < num_lev; ++lev) {
-      agg_estim_var_of_var_l[lev] = 0;
-      agg_estim_var_l[lev] = 0;
-    }
-    for(size_t qoi = 0; qoi < nb_qois; ++qoi){
-      agg_estim_var_of_var_l[0] = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
-                                       compute_gradient, gradient_var_var);
-      agg_estim_var_of_var += agg_estim_var_of_var_l[0];
-
-      agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
-                                       compute_gradient, gradient_var);
-      agg_estim_var += agg_estim_var_l[0];
-
-      if(compute_gradient){
-      grad_g[0][0] += agg_estim_var_l[0] > 0 ? 1./4. * 
-                    ( 
-                      -1./(agg_estim_var_l[0] * agg_estim_var_l[0]) * gradient_var * agg_estim_var_of_var_l[0] 
-                      +
-                      1./agg_estim_var_l[0] * gradient_var_var
-                    ) : 0;
-      }
-
-      for (lev = 1; lev < num_lev; ++lev) {
-        Nlq = x[lev];
-        Nlq_pilot = (*static_Nlq_pilot)[lev];
-
-        agg_estim_var_of_var_l[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
-                                         compute_gradient, gradient_var_var);
-        agg_estim_var_of_var += agg_estim_var_of_var_l[lev];
-
-        agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi],
-                               (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
-        agg_estim_var += agg_estim_var_l[lev];
-
-        if(compute_gradient){
-          grad_g[0][lev] += agg_estim_var_l[0] > 0 ? 1./4. * 
-                        ( 
-                          -1./(agg_estim_var_l[lev] * agg_estim_var_l[lev]) * gradient_var * agg_estim_var_of_var_l[lev] 
-                          +
-                          1./agg_estim_var_l[lev] * gradient_var_var
-                        ) : 0;
-        }
-      }
-    }
-  }else if(qoiAggregation==QOI_AGGREGATION_MAX){
-    agg_estim_var_of_var_l[0] = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
-                                   compute_gradient, gradient_var_var);
-    agg_estim_var_of_var += agg_estim_var_of_var_l[0];
-    grad_var_var[0] = gradient_var_var;
-
-    agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
-                                       compute_gradient, gradient_var); 
-    grad_var[0] = gradient_var;
-
-    agg_estim_var += agg_estim_var_l[0];
-
-    for (lev = 1; lev < num_lev; ++lev) {
-      Nlq = x[lev];
-      Nlq_pilot = (*static_Nlq_pilot)[lev];
-
-      agg_estim_var_of_var_l[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
-                                       compute_gradient, gradient_var_var);
-      agg_estim_var_of_var += agg_estim_var_of_var_l[lev];
-      grad_var_var[lev] = gradient_var_var;
-
-      agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
-      agg_estim_var += agg_estim_var_l[lev];
-      grad_var[lev] = gradient_var;
-    }
-    if(compute_gradient){
-      for (lev = 0; lev < num_lev; ++lev) {
-        grad_g[0][lev] = agg_estim_var > 0 ? 
-                          1./4. * ( (grad_var_var[lev] * agg_estim_var - agg_estim_var_of_var * grad_var[lev])/(agg_estim_var*agg_estim_var) ) 
-                          : 0;
-      }
-    }
-  }else{
-    Cout << "NonDMultilevelSampling::target_sigma_constraint_eval_optpp: qoiAggregation is not known.\n";
-    abort_handler(INTERFACE_ERROR);
-  }
-
-  g[0] = agg_estim_var > 0 ? 1./4. * agg_estim_var_of_var/agg_estim_var : 0; // - (*static_eps_sq_div_2);
-
 }
 
 void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
@@ -3843,104 +3710,27 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
 void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode, int n, const RealVector &x, RealVector &g,
                                                               RealMatrix &grad_g, int &result_mode) 
 {
-
   bool compute_gradient = false;
-#ifdef HAVE_NPSOL
-  compute_gradient = mode; //if mode == 0, NPSOL ignores gradients
-#elif HAVE_OPTPP
-  if(mode & OPTPP::NLPFunction) {
-    result_mode = OPTPP::NLPFunction;
-  }
-  if(mode & OPTPP::NLPGradient){
-    compute_gradient = true;
-    result_mode = OPTPP::NLPGradient;
-  }
-#endif
-
-  // std error in variance or std deviation estimate
-  size_t lev = 0;
-  Real Nlq = x[lev];
-  size_t Nlq_pilot = (*static_Nlq_pilot)[lev];
-  size_t qoi = *static_qoi;
-  size_t nb_qois = *static_numFunctions;
-  short  qoiAggregation = *static_qoiAggregation;
-  size_t num_lev = n;
-  IntIntPair pr11(1, 1);
-
-  //Mean
-  Real g_mean = 0;
-  Real g_var = 0;
-  Real cur_grad_var = 0;
-  RealVector grad_g_mean;
-  grad_g_mean.resize(num_lev);
-  if (qoiAggregation==QOI_AGGREGATION_SUM) {
-    for(size_t qoi = 0; qoi < nb_qois; ++qoi){
-      for (lev = 0; lev < num_lev; ++lev) {
-        Nlq = x[lev];
-        Nlq_pilot = (*static_Nlq_pilot)[lev];
-
-        g_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
-                                       compute_gradient, cur_grad_var) :
-                           variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                                       (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
-        g_mean += g_var/Nlq;
-        if(compute_gradient){
-          grad_g_mean[lev] += (Nlq * cur_grad_var - g_var)/(Nlq*Nlq);
-        }
-      }
+  #ifdef HAVE_NPSOL
+    compute_gradient = mode; //if mode == 0, NPSOL ignores gradients
+  #elif HAVE_OPTPP
+    if(mode & OPTPP::NLPFunction) {
+      result_mode = OPTPP::NLPFunction;
     }
-  }else if(qoiAggregation==QOI_AGGREGATION_MAX){
-    for (lev = 0; lev < num_lev; ++lev) {
-      Nlq = x[lev];
-      Nlq_pilot = (*static_Nlq_pilot)[lev];
-
-      g_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
-                                       compute_gradient, cur_grad_var) :
-                          variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                                      (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
-      
-      g_mean += g_var/Nlq;
-      if(compute_gradient){
-        grad_g_mean[lev] = (Nlq * cur_grad_var - g_var)/(Nlq*Nlq);
-      }
+    if(mode & OPTPP::NLPGradient){
+      compute_gradient = true;
+      result_mode = OPTPP::NLPGradient;
     }
-  }else{
-    Cout << "NonDMultilevelSampling::target_scalarization_constraint_eval_optpp: qoiAggregation is not known.\n";
-    abort_handler(INTERFACE_ERROR);
-  }
+  #endif
 
-  //Sigma
-  Real g_sigma;
-  RealVector grad_g_sigma;
-  grad_g_sigma.resize(num_lev);
-  target_sigma_constraint_eval_optpp(mode, n, x, g, grad_g, result_mode);
-  g_sigma = g[0];
-  for (lev = 0; lev < num_lev; ++lev) {
-    grad_g_sigma[lev] = grad_g[0][lev];
-  }
-
-  //Cov
-  Real g_upper_bound_cov = std::sqrt(g_mean * g_sigma);
-  RealVector grad_g_upper_bound_cov;
-  grad_g_upper_bound_cov.resize(num_lev);
+  double g_to_f = 0;
+  RealVector grad_g_to_grad_f;
+  grad_g_to_grad_f.resize(n);
+  target_scalarization_objective_eval_optpp(mode, n, x, g_to_f, grad_g_to_grad_f, result_mode);
+  g[0] = g_to_f;
   if(compute_gradient){
-    for (lev = 0; lev < num_lev; ++lev) {
-      grad_g_upper_bound_cov[lev] = 1./(2.*g_upper_bound_cov)*(grad_g_mean[lev]*g_sigma + g_mean*grad_g_sigma[lev]);
-    }
-  }
-
-  RealMatrix alpha_mean_scalarization(nb_qois, nb_qois);
-  RealMatrix alpha_sigma_scalarization(nb_qois, nb_qois);
-
-  Real g_tmp = (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 0)*g_mean 
-        + (*static_scalarization_response_mapping)(qoi, 1) * (*static_scalarization_response_mapping)(qoi, 1)*g_sigma;
-        + 2.0 * (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 1) * g_upper_bound_cov;
-  g[0] = g_tmp > 0 ? g_tmp : 0;
-  if(compute_gradient){
-    for (lev = 0; lev < num_lev; ++lev) {
-      grad_g[0][lev] = (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 0) *grad_g_mean[lev] 
-        + (*static_scalarization_response_mapping)(qoi, 1) * (*static_scalarization_response_mapping)(qoi, 1) * grad_g_sigma[lev];
-        + 2.0 * (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 1) * grad_g_upper_bound_cov[lev] ;
+    for (size_t lev = 0; lev < n; ++lev) {
+      grad_g[0][lev] = grad_g_to_grad_f[lev];
     }
   }
 }
@@ -3963,94 +3753,98 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
 #endif
 
   // std error in variance or std deviation estimate
-  size_t lev = 0;
-  Real Nlq = x[lev];
-  size_t Nlq_pilot = (*static_Nlq_pilot)[lev];
+  size_t lev, Nlq_pilot;
+  Real Nlq;
   size_t qoi = *static_qoi;
   size_t nb_qois = *static_numFunctions;
   short  qoiAggregation = *static_qoiAggregation;
   size_t num_lev = n;
   IntIntPair pr11(1, 1);
+  
+  f = 0;
+  for (lev = 0; lev < num_lev; ++lev) {
+    grad_f[lev] = 0;
+  }
+  size_t cur_qoi_offset = 0;
+  for(size_t cur_qoi = 0; cur_qoi < nb_qois; ++cur_qoi){
+    cur_qoi_offset = cur_qoi*2;
 
-  //Mean
-  Real f_mean = 0;
-  Real f_var = 0;
-  Real cur_grad_var = 0;
-  RealVector grad_f_mean;
-  grad_f_mean.resize(num_lev);
-  if (qoiAggregation==QOI_AGGREGATION_SUM) {
-    for(size_t qoi = 0; qoi < nb_qois; ++qoi){
+    //Mean
+    Real f_mean = 0;
+    Real f_var = 0;
+    Real cur_grad_var = 0;
+    RealVector grad_f_mean;
+    grad_f_mean.resize(num_lev);
+    if (qoiAggregation==QOI_AGGREGATION_SUM) {
+      for(size_t sum_qoi = 0; sum_qoi < nb_qois; ++sum_qoi){
+        for (lev = 0; lev < num_lev; ++lev) {
+          Nlq = x[lev];
+          Nlq_pilot = (*static_Nlq_pilot)[lev];
+
+          f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][sum_qoi], (*static_sum_Ql)[2][0][sum_qoi], Nlq_pilot, Nlq,
+                                         compute_gradient, cur_grad_var) :
+                      variance_Qsum_static((*static_sum_Ql)[1][lev][sum_qoi], (*static_sum_Qlm1)[1][lev][sum_qoi], (*static_sum_Ql)[2][lev][sum_qoi], 
+                        (*static_sum_QlQlm1)[pr11][lev][sum_qoi], (*static_sum_Qlm1)[2][lev][sum_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+          
+          f_mean += f_var/Nlq;
+
+          if(compute_gradient){
+            grad_f_mean[lev] += (Nlq * cur_grad_var - f_var)/(Nlq*Nlq);
+          }
+        }
+      }
+    }else if(qoiAggregation==QOI_AGGREGATION_MAX){
       for (lev = 0; lev < num_lev; ++lev) {
         Nlq = x[lev];
         Nlq_pilot = (*static_Nlq_pilot)[lev];
-
-        f_var = 0 ? variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
-                                       compute_gradient, cur_grad_var) :
-                    variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                      (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
-        
+        f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][cur_qoi], (*static_sum_Ql)[2][0][cur_qoi], Nlq_pilot, Nlq,
+                                         compute_gradient, cur_grad_var) :
+                             variance_Qsum_static((*static_sum_Ql)[1][lev][cur_qoi], (*static_sum_Qlm1)[1][lev][cur_qoi], (*static_sum_Ql)[2][lev][cur_qoi], 
+                                         (*static_sum_QlQlm1)[pr11][lev][cur_qoi], (*static_sum_Qlm1)[2][lev][cur_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
         f_mean += f_var/Nlq;
-
+        
         if(compute_gradient){
-          grad_f_mean[lev] += (Nlq * cur_grad_var - f_var)/(Nlq*Nlq);
+          grad_f_mean[lev] = (Nlq * cur_grad_var - f_var)/(Nlq*Nlq);
         }
       }
+    }else{
+      Cout << "NonDMultilevelSampling::target_scalarization_objective_eval_optpp: qoiAggregation is not known.\n";
+      abort_handler(INTERFACE_ERROR);
     }
-  }else if(qoiAggregation==QOI_AGGREGATION_MAX){
-    for (lev = 0; lev < num_lev; ++lev) {
-      Nlq = x[lev];
-      Nlq_pilot = (*static_Nlq_pilot)[lev];
 
-      f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
-                                       compute_gradient, cur_grad_var) :
-                           variance_Qsum_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                                       (*static_sum_QlQlm1)[pr11][lev][qoi], (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
-        
-      f_mean += f_var/Nlq;
-      
-      if(compute_gradient){
-        grad_f_mean[lev] = (Nlq * cur_grad_var - f_var)/(Nlq*Nlq);
+    //Sigma
+    Real f_sigma = 0;
+    RealVector grad_f_sigma;
+    grad_f_sigma.resize(num_lev);
+    for (lev = 0; lev < num_lev; ++lev) {
+      grad_f_sigma[lev] = 0;
+    }
+    *static_qoi = cur_qoi;
+    target_sigma_objective_eval_optpp(mode, n, x, f_sigma, grad_f_sigma, result_mode);
+    *static_qoi = qoi; //Reset pointer
+
+    //Cov
+    Real f_upper_bound_cov = std::sqrt(f_mean * f_sigma);
+    RealVector grad_f_upper_bound_cov;
+    grad_f_upper_bound_cov.resize(num_lev);
+    if(compute_gradient){
+      for (lev = 0; lev < num_lev; ++lev) {
+        grad_f_upper_bound_cov[lev] = f_upper_bound_cov > 0. ? 1./(2.*f_upper_bound_cov)*(grad_f_mean[lev]*f_sigma + f_mean*grad_f_sigma[lev]) : 0;
       }
     }
-  }else{
-    Cout << "NonDMultilevelSampling::target_scalarization_objective_eval_optpp: qoiAggregation is not known.\n";
-    abort_handler(INTERFACE_ERROR);
-  }
 
-  //Sigma
-  Real f_sigma;
-  RealVector grad_f_sigma;
-  grad_f_sigma.resize(num_lev);
-  target_sigma_objective_eval_optpp(mode, n, x, f, grad_f, result_mode);
-  f_sigma = f;
-  for (lev = 0; lev < num_lev; ++lev) {
-    grad_f_sigma[lev] = grad_f[lev];
-  }
-
-  //Cov
-  Real f_upper_bound_cov = std::sqrt(f_mean * f_sigma);
-  RealVector grad_f_upper_bound_cov;
-  grad_f_upper_bound_cov.resize(num_lev);
-  if(compute_gradient){
-    for (lev = 0; lev < num_lev; ++lev) {
-      grad_f_upper_bound_cov[lev] = 1./(2.*f_upper_bound_cov)*(grad_f_mean[lev]*f_sigma + f_mean*grad_f_sigma[lev]);
+    Real f_tmp = (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * f_mean 
+          + (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * f_sigma 
+          + 2.0 * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * f_upper_bound_cov;
+    f += f_tmp > 0 ? f_tmp : 0;
+    if(compute_gradient){
+      for (lev = 0; lev < num_lev; ++lev) {
+        grad_f[lev] += (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * grad_f_mean[lev] 
+          + (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * grad_f_sigma[lev] 
+          + 2.0 * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * grad_f_upper_bound_cov[lev] ;
+      }
     }
-  }
-
-  RealMatrix alpha_mean_scalarization(nb_qois, nb_qois);
-  RealMatrix alpha_sigma_scalarization(nb_qois, nb_qois);
-
-  Real f_tmp = (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 0) * f_mean 
-        + (*static_scalarization_response_mapping)(qoi, 1) * (*static_scalarization_response_mapping)(qoi, 1) * f_sigma 
-        + 2.0 * (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 1) * f_upper_bound_cov;
-  f = f_tmp > 0 ? f_tmp : 0;
-  if(compute_gradient){
-    for (lev = 0; lev < num_lev; ++lev) {
-      grad_f[lev] = (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 0) * grad_f_mean[lev] 
-        + (*static_scalarization_response_mapping)(qoi, 1) * (*static_scalarization_response_mapping)(qoi, 1) * grad_f_sigma[lev] 
-        + 2.0 * (*static_scalarization_response_mapping)(qoi, 0) * (*static_scalarization_response_mapping)(qoi, 1) * grad_f_upper_bound_cov[lev] ;
-    }
-  }
+  }   
 }
 
 void NonDMultilevelSampling::target_var_constraint_eval_optpp_problem18(int mode, int n, const RealVector &x, RealVector &g,
