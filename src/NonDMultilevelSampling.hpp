@@ -717,7 +717,14 @@ private:
 
 inline void NonDMultilevelSampling::nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs)
 {
+	
 	if(scalarizationCoeffs.empty()){
+		if(primary_coeffs.numCols() != 2*numFunctions || primary_coeffs.numRows() != 1 
+			|| secondary_coeffs.numCols() != 2*numFunctions || secondary_coeffs.numRows() != numFunctions-1){
+			Cerr << "\nWrong size for primary or secondary_response_mapping. If you are sure, they are the right size, e.g.,"
+					 << " you are interested in quantiles, you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
+			abort_handler(METHOD_ERROR);
+		}
     scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
     for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
     	scalarizationCoeffs(0, row_qoi*2) = primary_coeffs(0, row_qoi*2);
@@ -1138,6 +1145,10 @@ inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRea
 
 	/// For TARGET_SCALARIZATION we have the special case that we can also combine scalarization over multiple qoi
 	/// This is respresented in the scalarization response mapping stored in scalarizationCoeffs
+	/// This is for now neglecting cross terms for covariance terms inbetween different qois, e.g.
+	/// V[mu_1 + 2 sigma_1 + 3 mu_2] = 
+	/// V[mu_1] + V[2 sigma_1] + 2 Cov[mu_1, 2 sigma_1] + V[3 mu_2] + 2 Cov[2 mu_1, 3 mu_2] + 2 Cov[2 sigma_1, 3 mu_2]
+	/// \approx V[mu_1] + V[2 sigma_1] + 2 Cov[mu_1, 2 sigma_1] + V[3 mu_2] (What we do)
 	for(size_t cur_qoi = 0; cur_qoi < numFunctions; ++cur_qoi){
 		cur_qoi_offset = cur_qoi*2;
 		var_of_mean_l = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, cur_qoi);
