@@ -722,10 +722,26 @@ size_t ExperimentData::num_config_vars() const
 }
 
 
-const std::vector<RealVector>& ExperimentData::config_vars() const
+/** Skips string vars rather than converting to indices */
+std::vector<RealVector> ExperimentData::config_vars_as_real() const
 {
-  throw std::runtime_error("No no config vars");
-  //  return allConfigVars;
+  std::vector<RealVector> all_config_vars_real;
+  for (const auto& config_vars : allConfigVars) {
+    size_t cv = config_vars.icv(), div = config_vars.idiv(),
+      drv = config_vars.idrv(), total_config_vars = cv + div + drv;
+
+    RealVector real_config_vars(total_config_vars);
+
+    copy_data_partial(config_vars.inactive_continuous_variables(),
+		      real_config_vars, 0);
+    merge_data_partial(config_vars.inactive_discrete_int_variables(),
+		       real_config_vars, cv);
+    copy_data_partial(config_vars.inactive_discrete_real_variables(),
+		      real_config_vars, cv + div);
+
+    all_config_vars_real.push_back(real_config_vars);
+  }
+  return all_config_vars_real;
 }
 
 

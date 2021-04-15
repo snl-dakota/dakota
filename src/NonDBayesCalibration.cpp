@@ -1638,10 +1638,11 @@ void NonDBayesCalibration::build_scalar_discrepancy()
   mcmcModel.continuous_variables(ave_params);
   
   int num_exp = expData.num_experiments();
-  size_t num_configvars = expData.config_vars()[0].length();
+  size_t num_configvars = expData.num_config_vars();
+  std::vector<RealVector> config_vars = expData.config_vars_as_real();
   RealMatrix allConfigInputs(num_configvars,num_exp);
   for (int i = 0; i < num_exp; i++) {
-    RealVector config_vec = expData.config_vars()[i];
+    const RealVector& config_vec = config_vars[i];
     Teuchos::setCol(config_vec, i, allConfigInputs);
   } 
 
@@ -1803,7 +1804,8 @@ void NonDBayesCalibration::build_field_discrepancy()
   //mcmcModel.evaluate();
  
   int num_exp = expData.num_experiments();
-  size_t num_configvars = expData.config_vars()[0].length();
+  size_t num_configvars = expData.num_config_vars();
+  std::vector<RealVector> config_vars = expData.config_vars_as_real();
   // KAM TODO: add catch when num_config_vars == 0. Trying to retrieve
   // this length will seg fault
 
@@ -1821,7 +1823,7 @@ void NonDBayesCalibration::build_field_discrepancy()
       int num_indepvars = vars_mat.numRows();
       int dim_indepvars = vars_mat.numCols();
       vars_mat.reshape(num_indepvars, dim_indepvars + num_configvars);
-      RealVector config_vec = expData.config_vars()[j];
+      const RealVector& config_vec = config_vars[j];
       col_vec.resize(num_indepvars);
       for (int k = 0; k < num_configvars; k++) {
         col_vec.putScalar(config_vec[k]);
@@ -1856,7 +1858,7 @@ void NonDBayesCalibration::build_field_discrepancy()
   RealVector concat_disc;
   for (int i = 0; i < num_exp; i++) {
     const IntVector field_lengths = expData.field_lengths(i);
-    RealVector config_vec = expData.config_vars()[i];
+    const RealVector& config_vec = config_vars[i];
     Model::inactive_variables(config_vec, mcmcModel);
     mcmcModel.evaluate();
     for (int j = 0; j < field_lengths.length(); j++) {
@@ -1921,7 +1923,7 @@ void NonDBayesCalibration::build_field_discrepancy()
     for (int j = 0; j < num_exp; j++) {
       num_pred = num_exp;
       configpred_mat.shapeUninitialized(num_configvars, num_exp);
-      RealVector config_vec = expData.config_vars()[j];
+      const RealVector& config_vec = config_vars[j];
       Teuchos::setCol(config_vec, j, configpred_mat);
     }
   }

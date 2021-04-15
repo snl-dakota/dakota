@@ -133,7 +133,8 @@ public:
   size_t num_config_vars() const;
 
   /// values of the configuration variables, 1 RealVector per experiment
-  const std::vector<RealVector>& config_vars() const;
+  /// omits string variables as historically used in NonDBayes
+  std::vector<RealVector> config_vars_as_real() const;
 
   const std::vector<Variables>& configuration_variables() const;
 
