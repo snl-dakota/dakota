@@ -57,26 +57,30 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
   initialize(variance_types, srd);
 }
 
+
+/** Used in Hi2Lo Bayesian experimental design; passed config vars are
+    active, but stored here as inactive. */
 ExperimentData::
-ExperimentData(size_t num_experiments, const SharedResponseData& srd,
-               const RealMatrix& config_vars,
+ExperimentData(size_t num_experiments, 
+	       const SharedVariablesData& svd,
+	       const SharedResponseData& srd,
+               const VariablesArray& config_vars,
                const IntResponseMap& all_responses, short output_level):
   calibrationDataFlag(false), numExperiments(num_experiments),
-  numConfigVars(config_vars.numRows()),
+  numConfigVars(config_vars[0].total_active()),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
   scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
   readSimFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
 {
   // BMA TODO: Review NonDBayes for this use case; also prediction configs
   simulationSRD = srd.copy();
-  // BMA TODO: need a shared variables data and mode
-  allConfigVars.resize(numExperiments);
+  // BMA TODO: Consider caching the SVD?
+  auto svd_copy = svd.copy();
+  svd_copy.inactive_view(MIXED_STATE);
+  size_and_fill(svd_copy, numExperiments, allConfigVars);
+
   for (size_t i=0; i<numExperiments; ++i) {
-    // BMA TODO: Can we assume state only? And are they inactive for
-    // this use case?
-    allConfigVars[i].inactive_continuous_variables
-      (Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(config_vars),
-		       (int) i));
+    allConfigVars[i].inactive_from_active(config_vars[i]);
     if (outputLevel >= DEBUG_OUTPUT) {
       Cout << "allConfigVars[" << i << "] = \n";
       allConfigVars[i].write(Cout, INACTIVE_VARS);
@@ -224,19 +228,23 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 }
 
 void ExperimentData::
-add_data(const RealVector& one_configvars, const Response& one_response)
+add_data(const SharedVariablesData& svd, const Variables& one_configvars,
+	 const Response& one_response)
 {
   // BMA TODO: Review NonDBayes for this use case; also prediction configs
+  // The inbound vars have the config vars as active
 
   // BMA TODO: This doesn't make an object of type ExperimentResponse!
   numExperiments += 1;
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "numExperiments in add_data " << numExperiments << '\n';
 
-  // BMA: this will break... need adapter to indices?
-  // could set inactive_continuous_variables()?
-  // BMA TODO: need a shared vars data
-  //  allConfigVars.push_back(one_configvars);
+  // probably store the modified SVD and use throughout
+  auto svd_copy = svd.copy();
+  svd_copy.inactive_view(MIXED_STATE);
+
+  allConfigVars.push_back(Variables(svd_copy));
+  allConfigVars.back().inactive_from_active(one_configvars);
   allExperiments.push_back(one_response);
 }
 
@@ -274,9 +282,7 @@ void ExperimentData::load_data(const std::string& context_message,
     svd.inactive_view(MIXED_STATE);
     // make a distinct Variables letter for each config, don't copy
     // the envelope; okay to share the SVD
-    allConfigVars.reserve(numExperiments);
-    for(size_t i=0; i<numExperiments; ++i)
-      allConfigVars.push_back(Variables(svd));
+    size_and_fill(svd, numExperiments, allConfigVars);
   }
 
   size_t num_scalars = simulationSRD.num_scalar_primary();
