@@ -580,27 +580,25 @@ void GaussianProcess::set_opt_params(const std::vector<double>& opt_params) {
 }
 
 void GaussianProcess::default_options() {
-  // BMA TODO: with both approaches, how to publish a list of all valid options?
-
   // Scalar values for bound used by default. Advanced users can specify
-  // an Eigen matrix in C++ or Pybind11 with Numpy.
+  // ansiotropic legnth-scale bounds with an Eigen matrix in C++ or
+  // Pybind11 with Numpy.
   double sigma_lower_bound, sigma_upper_bound, length_scale_lower_bounds,
       length_scale_upper_bounds, nugget_lower_bound, nugget_upper_bound;
 
-  // bound constraints -- will be converted to log-scale
+  // Note: bound constraints will be converted to log-scale
 
   // sigma bounds - lower and upper
   sigma_lower_bound = 1.0e-2;
   sigma_upper_bound = 1.0e2;
-  // length scale bounds - can be num_vars x 2 if specified in a PL
-  // this way.
-  // Otherwise these are bounds for all length-scales
-  // and length scale bounds is 1 x 2
+  // length scale bounds - can be anisotropic (num_vars x 2 dimensions)
+  // if given as a matrix to the ParameterList.
+  // Otherwise these are bounds for all length-scales (i.e. isotropic)
   length_scale_lower_bounds = 1.0e-2;
   length_scale_upper_bounds = 1.0e2;
 
-  /* results in a nugget**2 betwen 1.0e-15 and 1.0e-8 */
-  nugget_lower_bound = 3.17e-8;
+  // results in a nugget**2 betwen 1.0e-10 and 1.0e-4
+  nugget_lower_bound = 1.0e-5;
   nugget_upper_bound = 1.0e-2;
 
   // Eigen containers are only used when they are non-empty
@@ -630,7 +628,7 @@ void GaussianProcess::default_options() {
                            "local optimizer number of initial iterates");
   defaultConfigOptions.set("gp seed", 42,
                            "random seed for initial iterate generation");
-  defaultConfigOptions.set("standardize response", false,
+  defaultConfigOptions.set("standardize response", true,
                            "Make the response zero mean and unit variance");
   /* Verbosity levels
      2 - maximum level: print out config options and building notification
@@ -638,7 +636,7 @@ void GaussianProcess::default_options() {
      0 - no output */
   defaultConfigOptions.set("verbosity", 1, "console output verbosity");
   /* Nugget */
-  defaultConfigOptions.sublist("Nugget").set("fixed nugget", 0.0,
+  defaultConfigOptions.sublist("Nugget").set("fixed nugget", 1.0e-10,
                                              "fixed nugget term");
   defaultConfigOptions.sublist("Nugget").set("estimate nugget", false,
                                              "estimate a nugget term");
