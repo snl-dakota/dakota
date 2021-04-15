@@ -309,8 +309,9 @@ void SharedC3ApproxData::increment_order()
     // > could also consider only advancing one when both bounds are active:
     //   least saturated first with tie break to max rank (recovered ranks are
     //   heterogeneous anyway)
-    if (increment_max_rank()   || increment_max_order()) // ||
-      //decrement_start_rank() || decrement_start_order())
+    bool incr_mr = increment_max_rank(),   incr_mo = increment_max_order();
+    //   decr_sr = decrement_start_rank(), decr_so = decrement_start_order();
+    if (incr_mr || incr_mo) // || decr_sr || decr_so)
       formUpdated[activeKey] = true;
     break;
   }
