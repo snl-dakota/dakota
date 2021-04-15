@@ -15,6 +15,7 @@
 #include "NonDPolynomialChaos.hpp"
 #include "SharedPecosApproxData.hpp"
 #include <random>
+#include "LHSDriver.hpp"
 #define N 2
 
 namespace Dakota {
@@ -39,8 +40,8 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
     
-  if (subspaceDimension == 0)  // no user spec
-     subspaceDimension = 1; // subspace-specific default
+  // if (subspaceDimension == 0)  // no user spec
+  //    subspaceDimension = 1; // subspace-specific default
 
   validate_inputs();
 
@@ -282,12 +283,12 @@ void AdaptedBasisModel::compute_subspace()
   if (method_rotation==ROTATION_METHOD_LINEAR){
    
       method = 0;
-      std::cout << "Proceeding with the Linear Rotation Method" << std::endl;
+      std::cout << "\nProceeding with the Linear Rotation Method" << std::endl;
       
   } else if (method_rotation==ROTATION_METHOD_LINEARNORM) {
   
       method = 1;
-      std::cout << "Proceeding with the Linear Normalized Rotation Method" << std::endl;
+      std::cout << "\nProceeding with the Linear Normalized Rotation Method" << std::endl;
           
   }
       
@@ -296,9 +297,8 @@ void AdaptedBasisModel::compute_subspace()
     A_i.putScalar(0.);
 
     if (method==0){
-      // *** USC:
       // Step 1a. linear PCE: use the alpha_i's as first row in A and then apply
-      //          Gramm-Schmidt (BLAS/LAPACK?).
+      //          Gramm-Schmidt
       //          [Can neglect constant term/expansion mean]
       for (j=0; j<numFullspaceVars; ++j)
         A_i(0,j) = pce_coeffs[i][first_ord_index[j]]; // offset by 1 to neglect constant/mean
@@ -311,7 +311,7 @@ void AdaptedBasisModel::compute_subspace()
       //          (relative sensitivities)
       for (j=0; j<numFullspaceVars; ++j)
         A_i(0,j) = pce_coeffs[i][first_ord_index[j]]; // offset by 1 to neglect constant/mean
-      // sort the first order PC coefficients by absolute values
+      // rank the first order PC coefficients by absolute values
       RealVector pce_coeffs_lin_abs(numFullspaceVars);
       for (j=0; j<numFullspaceVars; ++j){
         pce_coeffs_lin_abs(j) = std::abs(pce_coeffs[i][first_ord_index[j]]);
@@ -328,11 +328,10 @@ void AdaptedBasisModel::compute_subspace()
         int index = pce_coeffs_pair[numFullspaceVars-j].second;
         A_i(j,index) = pce_coeffs[i][first_ord_index[index]];
       }
-      Cout << "\n Rotation Matrix before Gram-Schmidt\n" << A_i << std::endl;
     }
 
     else {
-      Cout << "\n Basis adaptation method not supported!!" << std::endl;
+      Cout << "\nBasis adaptation method not supported!!" << std::endl;
     }
 
     // Gram-Schmidt for each rotation matrix:
@@ -354,17 +353,14 @@ void AdaptedBasisModel::compute_subspace()
   }
   
   reducedBasis = A_q;
-  Cout << "\n Rotation Matrix \n" << reducedBasis << std::endl;
+  // Cout << "\nreducedBasis:\n" << reducedBasis << std::endl;
 
   if ( !subspaceDimension )
       truncate_rotation();
   else
       reducedRank = subspaceDimension;
-      
-  
-//   truncate_rotation();
 
-  Cout << "\n reducedRank = " << reducedRank << std::endl;
+  Cout << "\nreducedRank = " << reducedRank << std::endl;
 
   // TO DO
 
@@ -465,29 +461,36 @@ void AdaptedBasisModel::truncate_rotation()
   reducedRank = 1; // initialize reducedRank
   double threshold_ratio = adaptedBasisTruncationTolerance;  // default value 0.8
   
-  std::cout << "Threshold Ratio: " << adaptedBasisTruncationTolerance << std::endl;
+  std::cout << "\nThreshold Ratio: " << adaptedBasisTruncationTolerance << std::endl;
   
   // use the first order information to determine the dimension of
   // the reduce space
 
-  // NEED TO BE REPLACED WITH A DAKOTA FRIENDLY VERSION 
   // standard normal distribution generator
   int seed = 12345;
-  std::default_random_engine generator (seed);
-  std::normal_distribution<double> normal_dist (0.0,1.0);
-  int nsamples = 100;
-  RealMatrix xi(numFullspaceVars, nsamples, false);
-
+  int nsamples = 200;
+  if (nsamples < numFullspaceVars*2 +1)
+    nsamples = numFullspaceVars*2 +1;
   size_t i, j, k;
-
-  for (i=0; i < numFullspaceVars; ++i){
-    for (j=0; j< nsamples; j++)
-      xi(i, j) = normal_dist(generator);
-  }
-  // Cout << "\n normal_samples \n" << xi << std::endl;
-
-
-
+  RealVector means_vec(numFullspaceVars), std_deviations(numFullspaceVars),
+             lower_bnds(numFullspaceVars), upper_bnds(numFullspaceVars);
+  means_vec.putScalar(0.0);
+  std_deviations.putScalar(1.0);
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
+  lower_bnds.putScalar(-dbl_inf);
+  upper_bnds.putScalar( dbl_inf);
+  RealMatrix xi;
+  RealSymMatrix correl_matrix;
+  correl_matrix.shape(numFullspaceVars);
+  for (i=0; i<numFullspaceVars; i++)
+      correl_matrix(i,i) = 1.;
+  short sample_ranks_mode = 0; //IGNORE RANKS
+  Pecos::LHSDriver lhsDriver; // the C++ wrapper for the F90 LHS library
+  lhsDriver.seed(seed);
+  lhsDriver.initialize("lhs", sample_ranks_mode, true);
+  lhsDriver.generate_normal_samples(means_vec, std_deviations, lower_bnds,
+              upper_bnds, correl_matrix, nsamples, xi);
+  
   // map the full dimension \xi variable to the rotated variables \eta
   const RealMatrix A(Teuchos::Copy, reducedBasis, numFullspaceVars, numFullspaceVars);
   int m = A.numRows(), n = A.numCols();
@@ -497,8 +500,6 @@ void AdaptedBasisModel::truncate_rotation()
   teuchos_blas.GEMM(Teuchos::NO_TRANS, Teuchos::NO_TRANS, numFullspaceVars, nsamples, numFullspaceVars,
                     alpha, A.values(), numFullspaceVars, xi.values(), numFullspaceVars,
                     beta, eta.values(), numFullspaceVars);
-  // Cout << "\n eta \n" << eta << std::endl;
-
 
 
   // 1) map \eta of reduced dimensions to the full dimensional space as \xi_trans
@@ -507,7 +508,6 @@ void AdaptedBasisModel::truncate_rotation()
 
   RealVector w(numFullspaceVars);
   RealVector ratio_w(numFullspaceVars);
-
   for (i=0; i<numFullspaceVars; i++)
   {
     // Reduced dimension = i
@@ -517,14 +517,12 @@ void AdaptedBasisModel::truncate_rotation()
       for (k=0; k<nsamples; k++)
           eta_extd(j, k) = eta(j, k);
     }
-    // Cout << "\n eta_extd \n" << eta_extd << std::endl;
 
     // matrix multiplication: \hat \xi = A^T * \eta_{ex}
     RealMatrix xi_trans(numFullspaceVars, nsamples, false);
     teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, numFullspaceVars, nsamples, numFullspaceVars,
                       alpha, A.values(), numFullspaceVars, eta_extd.values(), numFullspaceVars,
                       beta, xi_trans.values(), numFullspaceVars);
-    // Cout << "\n xi_trans \n" << xi_trans << std::endl;
 
     // compute the weighted \xi and \xi_{trans}
     // compute the 2 norm of (\xi_weigt - \xi_trans_weigt)
@@ -543,7 +541,7 @@ void AdaptedBasisModel::truncate_rotation()
     }
     w(i) /= nsamples;
   }
-  Cout << "\n w \n" << w << std::endl;
+  Cout << "\nDimension reduction metric by first order info: \n" << w << std::endl;
   
   // compute the cumulative difference of w
   RealVector w_diff(numFullspaceVars);
@@ -554,7 +552,7 @@ void AdaptedBasisModel::truncate_rotation()
     cumsum_w_diff(j) = cumsum_w_diff(j-1) + w_diff(j);
     ratio_w(j) = cumsum_w_diff(j) / w(0);
   }
-  Cout << "\n ratio_w \n" << ratio_w << std::endl;
+  Cout << "\nRatio of the metric: \n" << ratio_w << std::endl;
 
   for (j=0; j<numFullspaceVars; j++){
     if (ratio_w(j) >= threshold_ratio) {
