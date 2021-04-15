@@ -25,6 +25,8 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   method_rotation(problem_db.get_short("model.adapted_basis.rotation_method")),
   adaptedBasisTruncationTolerance(probDescDB.get_real(
     "model.adapted_basis.truncation_tolerance")),
+  subspaceDimension(probDescDB.get_int(
+    "model.subspace.dimension")),  
   SubspaceModel(problem_db, get_sub_model(problem_db))
 {
   // BMA: can't do this in get_sub_model as Iterator envelope hasn't
@@ -37,8 +39,8 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
     
-  if (!reducedRank)  // no user spec
-    reducedRank = 1; // subspace-specific default
+  if (subspaceDimension == 0)  // no user spec
+     subspaceDimension = 1; // subspace-specific default
 
   validate_inputs();
 
@@ -175,6 +177,24 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
+void AdaptedBasisModel::validate_inputs()
+{
+  SubspaceModel::validate_inputs();
+
+  bool error_flag = false;
+
+  // validate reduced dimension
+  if (subspaceDimension > numFullspaceVars) {
+    error_flag = true;
+    Cerr << "\nError (dimension): Required rotation dimension larger than the full problem dimension;"
+         << "\n                        Please select dimension < number of variables\n" << std::endl;
+  }
+
+  if (error_flag)
+    abort_handler(-1);
+}
+
+
 void AdaptedBasisModel::compute_subspace()
 {
   ////////////////////////////////////////////////////
@@ -216,8 +236,8 @@ void AdaptedBasisModel::compute_subspace()
   // first index is term, second index is variable
   const UShort2DArray& pce_multi_index = data_rep->multi_index();
 
-  Cout << "\npce_multi_index = \n" << pce_multi_index << std::endl;
-  Cout <<"\npce_coeffs = \n"<<pce_coeffs<<std::endl;
+//   Cout << "\npce_multi_index = \n" << pce_multi_index << std::endl;
+//   Cout <<"\npce_coeffs = \n"<<pce_coeffs<<std::endl;
   
 
   // find the indices of the first order PCE terms
@@ -336,7 +356,13 @@ void AdaptedBasisModel::compute_subspace()
   reducedBasis = A_q;
   Cout << "\n Rotation Matrix \n" << reducedBasis << std::endl;
 
-  truncate_rotation();
+  if ( !subspaceDimension )
+      truncate_rotation();
+  else
+      reducedRank = subspaceDimension;
+      
+  
+//   truncate_rotation();
 
   Cout << "\n reducedRank = " << reducedRank << std::endl;
 

@@ -8,11 +8,15 @@ model
   adapted_basis
     actual_model_pointer = 'FULLSPACE'
     sparse_grid_level = 1	#s0,#s1,#s2,#s3
-#   expansion_order = 1		#s4
-#   collocation_ratio = 2.	#s4
-#   dimension = 1		#s1,#s4
-#   dimension = 2		#s2
-#   dimension = 3		#s3
+#   expansion_order = 1		#s4,#s5,#s6,#s7
+#   collocation_ratio = 1.	#s4,#s7
+#   collocation_ratio = 2.	#s5,#s6
+#   dimension = 1		#s4
+#   dimension = 3		#s3,#s5
+#    rotation_method = linear   #s1,#s2,#s6
+#    rotation_method = norm     #s7
+#    truncation_tolerance = 0.5 #s1
+#    truncation_tolerance = 0.9 #s2,#s6
 
 model
   single

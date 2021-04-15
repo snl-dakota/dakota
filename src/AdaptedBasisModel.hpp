@@ -77,6 +77,8 @@ protected:
   /// translate the characterization of uncertain variables in the
   /// native_model to the reduced space of the transformed model
   void uncertain_vars_to_subspace();
+  
+  void validate_inputs();
 
   // ---
   // Callback functions that perform data transform during the Recast operations
@@ -95,6 +97,8 @@ protected:
   short method_rotation;
   // Threshold level for the selection of the rank in the basis adaptation
   Real adaptedBasisTruncationTolerance;
+  
+  int subspaceDimension;
 
   // ---
   // Member data
