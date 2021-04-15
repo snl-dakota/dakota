@@ -137,7 +137,10 @@ TEUCHOS_UNIT_TEST(surrogates, cross_validate) {
   gp_opts.sublist("Nugget").set("fixed nugget", 0.0);
   gp_opts.set("gp seed", 42);
   gp_opts.sublist("Nugget").set("estimate nugget", true);
-  gp_opts.sublist("Nugget").set("nugget bounds", nugget_bounds);
+  gp_opts.sublist("Nugget").sublist("Bounds").set("lower bound",
+                                                  nugget_bounds(0));
+  gp_opts.sublist("Nugget").sublist("Bounds").set("upper bound",
+                                                  nugget_bounds(1));
   gp_opts.set("num restarts", 20);
   GaussianProcess gp_cv(gp_opts);
 

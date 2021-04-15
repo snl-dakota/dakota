@@ -30,7 +30,8 @@ GaussianProcess::GaussianProcess(const ParameterList& param_list) {
 // Constructor that sets user-defined params but does not build.
 GaussianProcess::GaussianProcess(const std::string& param_list_yaml_filename) {
   default_options();
-  auto param_list = Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
+  auto param_list =
+      Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
   configOptions = *param_list;
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
@@ -49,7 +50,8 @@ GaussianProcess::GaussianProcess(const MatrixXd& samples,
                                  const MatrixXd& response,
                                  const std::string& param_list_yaml_filename) {
   default_options();
-  auto param_list = Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
+  auto param_list =
+      Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
   configOptions = *param_list;
   build(samples, response);
 }
@@ -75,13 +77,12 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
   bool standardize_response = configOptions.get<bool>("standardize response");
   if (standardize_response) {
     auto responseScaler = util::scaler_factory(
-        util::DataScaler::scaler_type("standardization"),
-        response);
+        util::DataScaler::scaler_type("standardization"), response);
     targetValues = responseScaler->scale_samples(response);
     responseOffset = responseScaler->get_scaler_features_offsets()(0);
-    responseScaleFactor = responseScaler->get_scaler_features_scale_factors()(0);
-  }
-  else
+    responseScaleFactor =
+        responseScaler->get_scaler_features_scale_factors()(0);
+  } else
     targetValues = response;
 
   numQOI = response.cols();
@@ -95,16 +96,9 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
   kernel = kernel_factory(kernel_type);
 
   /* Optimization-related data*/
-  VectorXd sigma_bounds = configOptions.get<VectorXd>("sigma bounds");
-  MatrixXd length_scale_bounds =
-      configOptions.get<MatrixXd>("length-scale bounds");
-
-  /* Optional data*/
-  estimateTrend = configOptions.sublist("Trend").get<bool>("estimate trend");
-  estimateNugget = configOptions.sublist("Nugget").get<bool>("estimate nugget");
-  MatrixXd beta_bounds;
-  VectorXd nugget_bounds;
-
+  VectorXd sigma_bounds(2), nugget_bounds(2);
+  MatrixXd length_scale_bounds;
+  setup_hyperparameter_bounds(sigma_bounds, length_scale_bounds, nugget_bounds);
   const int num_restarts = configOptions.get<int>("num restarts");
 
   /* Scale the data and compute build squared distances */
@@ -115,6 +109,8 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
   dataScaler.scale_samples(samples, scaledBuildPoints);
   compute_build_dists();
 
+  MatrixXd beta_bounds;
+  estimateTrend = configOptions.sublist("Trend").get<bool>("estimate trend");
   if (estimateTrend) {
     polyRegression = std::make_shared<PolynomialRegression>(
         scaledBuildPoints, targetValues,
@@ -138,15 +134,10 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
     GramMatrixDerivs[k].resize(numSamples, numSamples);
   }
 
-  fixedNuggetValue =
-      configOptions.sublist("Nugget").get<double>("fixed nugget");
   /* DTS: if the nugget is being estimated, should the fixed value be set to
    * zero? */
-  if (estimateNugget) {
-    nugget_bounds =
-        configOptions.sublist("Nugget").get<VectorXd>("nugget bounds");
-    numNuggetTerms = 1;
-  }
+  fixedNuggetValue =
+      configOptions.sublist("Nugget").get<double>("fixed nugget");
 
   /* set up the initial guesses */
   // srand(configOptions.get<int>("gp seed"));
@@ -538,6 +529,38 @@ void GaussianProcess::negative_marginal_log_likelihood(bool compute_grad,
   }
 }
 
+void GaussianProcess::setup_hyperparameter_bounds(VectorXd& sigma_bounds,
+                                                  MatrixXd& length_scale_bounds,
+                                                  VectorXd& nugget_bounds) {
+  sigma_bounds(0) =
+      configOptions.sublist("Sigma Bounds").get<double>("lower bound");
+  sigma_bounds(1) =
+      configOptions.sublist("Sigma Bounds").get<double>("upper bound");
+
+  if (length_scale_bounds.rows() == numVariables &&
+      length_scale_bounds.cols() == 2)
+    length_scale_bounds = configOptions.get<MatrixXd>("length-scale bounds");
+  else if (length_scale_bounds.size() == 0) {
+    length_scale_bounds.resize(1, 2);
+    length_scale_bounds(0, 0) =
+        configOptions.sublist("Length-scale Bounds").get<double>("lower bound");
+    length_scale_bounds(0, 1) =
+        configOptions.sublist("Length-scale Bounds").get<double>("upper bound");
+  } else
+    throw(std::runtime_error("Length-scale bounds incorrectly specified."));
+
+  estimateNugget = configOptions.sublist("Nugget").get<bool>("estimate nugget");
+  if (estimateNugget) {
+    numNuggetTerms = 1;
+    nugget_bounds(0) =
+        configOptions.sublist("Nugget").sublist("Bounds").get<double>(
+            "lower bound");
+    nugget_bounds(1) =
+        configOptions.sublist("Nugget").sublist("Bounds").get<double>(
+            "upper bound");
+  }
+}
+
 int GaussianProcess::get_num_opt_variables() {
   return numVariables + 1 + numPolyTerms + numNuggetTerms;
 }
@@ -559,30 +582,48 @@ void GaussianProcess::set_opt_params(const std::vector<double>& opt_params) {
 void GaussianProcess::default_options() {
   // BMA TODO: with both approaches, how to publish a list of all valid options?
 
+  // Scalar values for bound used by default. Advanced users can specify
+  // an Eigen matrix in C++ or Pybind11 with Numpy.
+  double sigma_lower_bound, sigma_upper_bound, length_scale_lower_bounds,
+      length_scale_upper_bounds, nugget_lower_bound, nugget_upper_bound;
+
   // bound constraints -- will be converted to log-scale
+
   // sigma bounds - lower and upper
-  VectorXd sigma_bounds(2);
-  sigma_bounds(0) = 1.0e-2;
-  sigma_bounds(1) = 1.0e2;
+  sigma_lower_bound = 1.0e-2;
+  sigma_upper_bound = 1.0e2;
   // length scale bounds - can be num_vars x 2 if specified in a PL
   // this way.
   // Otherwise these are bounds for all length-scales
   // and length scale bounds is 1 x 2
-  MatrixXd length_scale_bounds(1, 2);
-  length_scale_bounds(0, 0) = 1.0e-2;
-  length_scale_bounds(0, 1) = 1.0e2;
+  length_scale_lower_bounds = 1.0e-2;
+  length_scale_upper_bounds = 1.0e2;
 
   /* results in a nugget**2 betwen 1.0e-15 and 1.0e-8 */
-  VectorXd nugget_bounds(2);
-  nugget_bounds(0) = 3.17e-8;
-  nugget_bounds(1) = 1.0e-2;
+  nugget_lower_bound = 3.17e-8;
+  nugget_upper_bound = 1.0e-2;
+
+  // Eigen containers are only used when they are non-empty
+  // (i.e. user-supplied).
+  VectorXd sigma_bounds, nugget_bounds;
+  MatrixXd length_scale_bounds;
 
   defaultConfigOptions.set("kernel type", "squared exponential",
                            "kernel function specification");
-  defaultConfigOptions.set("sigma bounds", sigma_bounds, "sigma [lb, ub]");
-  // BMA: Do we want to allow 1 x 2 always as a fallback?
-  defaultConfigOptions.set("length-scale bounds", length_scale_bounds,
-                           "length scale num_vars x [lb, ub]");
+  defaultConfigOptions.sublist("Sigma Bounds")
+      .set("lower bound", sigma_lower_bound, "sigma term lower bound");
+  defaultConfigOptions.sublist("Sigma Bounds")
+      .set("upper bound", sigma_upper_bound, "sigma term lower bound");
+  defaultConfigOptions.sublist("Length-scale Bounds")
+      .set("lower bound", length_scale_lower_bounds,
+           "length-scale lower bounds");
+  defaultConfigOptions.sublist("Length-scale Bounds")
+      .set("upper bound", length_scale_upper_bounds,
+           "length-scale upper bounds");
+  defaultConfigOptions.set("anisotropic length-scale bounds",
+                           length_scale_bounds,
+                           "Eigen Matrix of length-scale bounds: num_vars x "
+                           "[lb, ub]. Will overide isotropic bounds settings.");
   defaultConfigOptions.set("scaler name", "standardization",
                            "scaler for variables");
   defaultConfigOptions.set("num restarts", 10,
@@ -601,8 +642,10 @@ void GaussianProcess::default_options() {
                                              "fixed nugget term");
   defaultConfigOptions.sublist("Nugget").set("estimate nugget", false,
                                              "estimate a nugget term");
-  defaultConfigOptions.sublist("Nugget").set("nugget bounds", nugget_bounds,
-                                             "nugget term [lb, ub]");
+  defaultConfigOptions.sublist("Nugget").sublist("Bounds").set(
+      "lower bound", nugget_lower_bound, "nugget term lower bound");
+  defaultConfigOptions.sublist("Nugget").sublist("Bounds").set(
+      "upper bound", nugget_upper_bound, "nugget term upper bound");
   /* Polynomial Trend */
   defaultConfigOptions.sublist("Trend").set("estimate trend", false,
                                             "estimate a trend term");

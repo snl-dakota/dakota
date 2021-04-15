@@ -30,7 +30,8 @@ PolynomialRegression::PolynomialRegression(const ParameterList& param_list) {
 PolynomialRegression::PolynomialRegression(
     const std::string& param_list_yaml_filename) {
   default_options();
-  auto param_list = Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
+  auto param_list =
+      Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
   configOptions = *param_list;
   configOptions.validateParametersAndSetDefaults(defaultConfigOptions);
 }
@@ -47,7 +48,8 @@ PolynomialRegression::PolynomialRegression(
     const MatrixXd& samples, const MatrixXd& response,
     const std::string& param_list_yaml_filename) {
   default_options();
-  auto param_list = Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
+  auto param_list =
+      Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
   configOptions = *param_list;
   build(samples, response);
 }
@@ -104,13 +106,14 @@ void PolynomialRegression::build(const MatrixXd& samples,
   /* Standardize the response */
   MatrixXd scaled_response;
   if (standardize_response) {
-    SCALER_TYPE responseScalerType = util::DataScaler::scaler_type("standardization");
+    SCALER_TYPE responseScalerType =
+        util::DataScaler::scaler_type("standardization");
     auto responseScaler = util::scaler_factory(responseScalerType, response);
     scaled_response = responseScaler->scale_samples(response);
     responseOffset = responseScaler->get_scaler_features_offsets()(0);
-    responseScaleFactor = responseScaler->get_scaler_features_scale_factors()(0);
-  }
-  else
+    responseScaleFactor =
+        responseScaler->get_scaler_features_scale_factors()(0);
+  } else
     scaled_response = response;
 
   /* Construct the basis matrix */
@@ -154,8 +157,9 @@ VectorXd PolynomialRegression::value(const MatrixXd& eval_points,
 
   /* Compute the prediction values*/
   approx_values = scaled_eval_pts_basis_matrix * polynomialCoeffs;
-  approx_values = (approx_values.array() + polynomialIntercept) 
-                * responseScaleFactor + responseOffset;
+  approx_values =
+      (approx_values.array() + polynomialIntercept) * responseScaleFactor +
+      responseOffset;
   return approx_values;
 }
 
