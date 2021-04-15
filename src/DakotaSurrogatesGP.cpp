@@ -96,7 +96,8 @@ SurrogatesGPApprox(const SharedApproxData& shared_data):
   // allow larger bounds for functions with high variability
   VectorXd sig_bnds(2);
   sig_bnds << 1.0e-2, 1.0e4;
-  surrogateOpts.set("sigma bounds", sig_bnds);
+  surrogateOpts.sublist("Sigma Bounds").set("lower bound", sig_bnds(0));
+  surrogateOpts.sublist("Sigma Bounds").set("upper bound", sig_bnds(1));
 
   // use same verbosity level for polynomial trend
   surrogateOpts.sublist("Trend").sublist("Options").set("verbosity",
@@ -109,7 +110,10 @@ SurrogatesGPApprox(const SharedApproxData& shared_data):
   // nugget bounded by [1.0e-15, 1.0e-8]
   VectorXd nugget_bounds(2);
   nugget_bounds << 3.17e-8, 1.0e-4;
-  surrogateOpts.sublist("Nugget").set("nugget bounds", nugget_bounds);
+  surrogateOpts.sublist("Nugget").sublist("Bounds")
+    .set("lower bound", nugget_bounds(0));
+  surrogateOpts.sublist("Nugget").sublist("Bounds")
+    .set("upper bound", nugget_bounds(1));
 }
 
 int

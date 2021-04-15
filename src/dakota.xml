@@ -704,7 +704,9 @@
     <!ENTITY discrep_emulation '
       	     <keyword  id="discrepancy_emulation" name="discrepancy_emulation" code="{0}" label="Multilevel-multifidelity discrepancy emulation approach"  minOccurs="0" default="distinct" >
 	       <oneOf label="Discrepancy Emulation Approach">
-		 <keyword  id="distinct" name="distinct" code="{N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}" label="distinct"   />
+		 <keyword  id="distinct" name="distinct" code="{N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}" label="distinct" >
+	           <alias name="paired" />
+	         </keyword>
 		 <keyword  id="recursive" name="recursive" code="{N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}" label="recursive"   />
 	       </oneOf>
 	     </keyword>

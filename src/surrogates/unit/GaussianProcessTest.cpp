@@ -66,8 +66,9 @@ void get_gp_hyperparameter_bounds(const int nvars, VectorXd& sigma_bounds,
 ParameterList get_gp_config_options(const VectorXd& sigma_bounds,
                                     const MatrixXd& length_scale_bounds) {
   ParameterList param_list("GP Test Parameters");
-  param_list.set("sigma bounds", sigma_bounds);
-  param_list.set("length-scale bounds", length_scale_bounds);
+  param_list.sublist("Sigma Bounds").set("lower bound", sigma_bounds(0));
+  param_list.sublist("Sigma Bounds").set("upper bound", sigma_bounds(1));
+  param_list.set("anisotropic length-scale bounds", length_scale_bounds);
   param_list.set("scaler name", "standardization");
   param_list.set("num restarts", 10);
   param_list.sublist("Nugget").set("fixed nugget", 1.0e-12);
@@ -866,7 +867,7 @@ TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
 TEUCHOS_UNIT_TEST(surrogates, gp_read_from_parameterlist) {
   std::string test_parameterlist_file =
       "gp_test_data/GP_test_parameterlist.yaml";
-      //"gp_test_data/GP_test_parameterlist.xml";
+  //"gp_test_data/GP_test_parameterlist.xml";
   GaussianProcess gp(test_parameterlist_file);
 
   ParameterList plist;
