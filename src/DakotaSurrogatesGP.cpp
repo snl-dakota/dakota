@@ -94,26 +94,26 @@ SurrogatesGPApprox(const SharedApproxData& shared_data):
   surrogateOpts.set("num restarts", 20);
 
   // allow larger bounds for functions with high variability
-  VectorXd sig_bnds(2);
-  sig_bnds << 1.0e-2, 1.0e4;
-  surrogateOpts.sublist("Sigma Bounds").set("lower bound", sig_bnds(0));
-  surrogateOpts.sublist("Sigma Bounds").set("upper bound", sig_bnds(1));
+  //VectorXd sig_bnds(2);
+  //sig_bnds << 1.0e-2, 1.0e4;
+  //surrogateOpts.sublist("Sigma Bounds").set("lower bound", sig_bnds(0));
+  //surrogateOpts.sublist("Sigma Bounds").set("upper bound", sig_bnds(1));
 
   // use same verbosity level for polynomial trend
-  surrogateOpts.sublist("Trend").sublist("Options").set("verbosity",
-      surrogateOpts.get<int>("verbosity"));
+  //surrogateOpts.sublist("Trend").sublist("Options").set("verbosity",
+  //    surrogateOpts.get<int>("verbosity"));
 
   // by default, estimate the nugget
-  surrogateOpts.sublist("Nugget").set("estimate nugget", true);
-  surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
+  //surrogateOpts.sublist("Nugget").set("estimate nugget", true);
+  //surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
 
   // nugget bounded by [1.0e-15, 1.0e-8]
-  VectorXd nugget_bounds(2);
-  nugget_bounds << 3.17e-8, 1.0e-4;
-  surrogateOpts.sublist("Nugget").sublist("Bounds")
-    .set("lower bound", nugget_bounds(0));
-  surrogateOpts.sublist("Nugget").sublist("Bounds")
-    .set("upper bound", nugget_bounds(1));
+  //VectorXd nugget_bounds(2);
+  //nugget_bounds << 3.17e-8, 1.0e-4;
+  //surrogateOpts.sublist("Nugget").sublist("Bounds")
+  //  .set("lower bound", nugget_bounds(0));
+  //surrogateOpts.sublist("Nugget").sublist("Bounds")
+  //  .set("upper bound", nugget_bounds(1));
 }
 
 int

@@ -174,16 +174,16 @@ protected:
 		             int num_candidates);
   /// print calibrate_to_hifi progress to file
   void print_hi2lo_file(std::ostream& out_file, int num_it, 
-                        RealMatrix& optimal_config_matrix, 
+                        const VariablesArray& optimal_config_matrix, 
                         const RealVector& MI_vec, RealMatrix& resp_matrix );
       //double max_MI);
   /// print calibrate_to_hifi progress
   void print_hi2lo_begin(int num_it);
-  void print_hi2lo_status(int num_it, int i, const RealVector& xi_i, double MI);
+  void print_hi2lo_status(int num_it, int i, const Variables& xi_i, double MI);
   void print_hi2lo_batch_status(int num_it, int batch_n, int batchEvals, 
-      			const RealVector& optimal_config, double max_MI);
+      			const Variables& optimal_config, double max_MI);
   void print_hi2lo_selected(int num_it, // int batchEvals, 
-                RealMatrix& optimal_config_matrix, 
+                const VariablesArray& optimal_config_matrix, 
                 const RealVector& MI_vec);
   void print_hi2lo_chain_moments();
   /// supplement high-fidelity data with LHS samples
@@ -193,8 +193,8 @@ protected:
                           int num_it, 
                           int max_hifi, int num_hifi, 
                           RealMatrix& mi_chain,
-                          RealMatrix& design_matrix, 
-                          RealMatrix& optimal_config_matrix, RealVector& MI_vec);
+                          VariablesArray& design_matrix, 
+                          VariablesArray& optimal_config_matrix, RealVector& MI_vec);
   /// apply simulation error vector
   void apply_hifi_sim_error(int& random_seed, int num_exp, int exp_offset=0 );
   void apply_error_vec(const RealVector& error_vec, int &seed, int experiment);
@@ -202,12 +202,13 @@ protected:
   void build_error_matrix(const RealVector& sim_error_vec, 
       			  RealMatrix& sim_error_matrix, int &seed);
   /// build matrix of candidate points
-  void build_designs(RealMatrix& design_matrix);
+  void build_designs(VariablesArray& design_matrix);
   /// build matrix to calculate mutual information for calibrate_to_hifi
   void build_hi2lo_xmatrix(RealMatrix& Xmatrix, int i, const RealMatrix& 
                            mi_chain, RealMatrix& sim_error_matrix);
   /// run high-fidelity model at several configs and add to experiment data 
-  void run_hifi(RealMatrix& optimal_config_matrix, RealMatrix& resp_matrix);
+  void run_hifi(const VariablesArray& optimal_config_matrix,
+		RealMatrix& resp_matrix);
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();

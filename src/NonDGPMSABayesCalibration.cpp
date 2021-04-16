@@ -550,7 +550,8 @@ void NonDGPMSABayesCalibration::fill_experiment_data()
   // to be differently sized from experiments?
 
   // Load the information on the experiments (scenarios and data)
-  const RealVectorArray& exp_config_vars = expData.config_vars();
+  // Scenarios omit string variables in this:
+  std::vector<RealVector> exp_config_vars = expData.config_vars_as_real();
   for (unsigned int i = 0; i < num_experiments; i++) {
 
     exp_scenarios[i] = std::make_shared<GslVector>(configSpace->zeroVector());

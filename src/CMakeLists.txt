@@ -933,30 +933,6 @@ if (DAKOTA_MODELCENTER)
 endif()
 
 
-# Top-level dakota.environment Python module
-if(DAKOTA_PYBIND11)
-  # NOTE: Library name "environment" is really generic due to overly
-  # simple Python packaging scheme we're using; revisit.
-  # TODO: Need to always compile libs PIC when using Python
-  # TODO: Consider -undefined dynamic_lookup link flag on Mac
-  pybind11_add_module(environment dakota_python.cpp)
-  # TODO: transitive includes when merging from devel
-#  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
-  target_link_libraries(environment PRIVATE dakota_src
-    ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
-    )
-  if (APPLE)
-    set_target_properties(environment PROPERTIES INSTALL_RPATH
-      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
-  elseif (UNIX)
-    set_target_properties(environment PROPERTIES INSTALL_RPATH
-      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../bin")
-  endif()
-  install(TARGETS environment EXPORT ${ExportTarget}
-    DESTINATION share/dakota/Python/dakota/environment/)
-  install(FILES __init__.py DESTINATION share/dakota/Python/dakota/environment)
-endif()
-
 #--- Add Dakota executables, with custom commands and properties
 
 add_executable(dakota main.cpp)
@@ -1074,6 +1050,31 @@ set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS} ${Boost_LIBRARIES}
  
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
 message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
+
+
+# Top-level dakota.environment Python module
+if(DAKOTA_PYBIND11)
+  # NOTE: Library name "environment" is really generic due to overly
+  # simple Python packaging scheme we're using; revisit.
+  # TODO: Need to always compile libs PIC when using Python
+  # TODO: Consider -undefined dynamic_lookup link flag on Mac
+  pybind11_add_module(environment dakota_python.cpp)
+  # TODO: transitive includes when merging from devel
+#  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
+  target_link_libraries(environment PRIVATE dakota_src
+    ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
+    )
+  if (APPLE)
+    set_target_properties(environment PROPERTIES INSTALL_RPATH
+      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
+  elseif (UNIX)
+    set_target_properties(environment PROPERTIES INSTALL_RPATH
+      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../bin")
+  endif()
+  install(TARGETS environment EXPORT ${ExportTarget}
+    DESTINATION share/dakota/Python/dakota/environment/)
+  install(FILES __init__.py DESTINATION share/dakota/Python/dakota/environment)
+endif()
 
 
 if (DAKOTA_API_JAVA)
