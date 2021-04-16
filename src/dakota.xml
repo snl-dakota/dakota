@@ -4359,7 +4359,7 @@
 	  <keyword  id="dimension" name="dimension" label="Dimension" code="{N_mom(int,subspaceDimension)}" minOccurs="0">
             <param type="INTEGER" />
 	  </keyword>
-          <keyword  id="rotation_method" name="rotation_method" code="{0}" label="Rule of obtaining rotation matrix for Basis Adaptation"  minOccurs="0" default="norm" >
+          <keyword  id="rotation_method" name="rotation_method" code="{0}" label="Rule for obtaining the rotation matrix in Basis Adaptation"  minOccurs="0" default="norm" >
 		<oneOf label="Rotation Method">
 		<keyword  id="unranked" name="unranked" code="{N_mom(type,method_rotation_ROTATION_METHOD_UNRANKED)}" label="Unranked Gaussian variables for rotation matrix construction"   />
 		<keyword  id="ranked" name="ranked" code="{N_mom(type,method_rotation_ROTATION_METHOD_RANKED)}" label="Ranked Gaussian variables for rotation matrix construction"   />
