@@ -290,8 +290,12 @@ public:
 
   /// copy the active cv/div/dsv/drv variables from vars
   void active_variables(const Variables& vars);
+  /// copy the inactive cv/div/dsv/drv variables from vars
+  void inactive_variables(const Variables& vars);
   /// copy all cv/div/dsv/drv variables from vars
   void all_variables(const Variables& vars);
+  /// copy the active cv/div/dsv/drv variables from vars to inactive on this
+  void inactive_from_active(const Variables& vars);
 
   /// return a mutable view of the active continuous variables
   RealVector& continuous_variables_view();
@@ -901,6 +905,24 @@ inline void Variables::active_variables(const Variables& vars)
 }
 
 
+inline void Variables::inactive_variables(const Variables& vars)
+{
+  // Set inactive variables only, leaving remainder of data unchanged
+  if (variablesRep)
+    variablesRep->inactive_variables(vars);
+  else {
+    if (vars.icv())
+      inactive_continuous_variables(vars.inactive_continuous_variables());
+    if (vars.idiv())
+      inactive_discrete_int_variables(vars.inactive_discrete_int_variables());
+    if (vars.idsv())
+      inactive_discrete_string_variables(vars.inactive_discrete_string_variables());
+    if (vars.idrv())
+      inactive_discrete_real_variables(vars.inactive_discrete_real_variables());
+  }
+}
+
+
 inline void Variables::all_variables(const Variables& vars) 
 {
   // Set all variables
@@ -915,6 +937,24 @@ inline void Variables::all_variables(const Variables& vars)
       all_discrete_string_variables(vars.all_discrete_string_variables());
     if (vars.adrv())
       all_discrete_real_variables(vars.all_discrete_real_variables());
+  }
+}
+
+
+inline void Variables::inactive_from_active(const Variables& vars)
+{
+  // Set inactive from inbound active variables
+  if (variablesRep)
+    variablesRep->inactive_from_active(vars);
+  else {
+    if (vars.cv())
+      inactive_continuous_variables(vars.continuous_variables());
+    if (vars.div())
+      inactive_discrete_int_variables(vars.discrete_int_variables());
+    if (vars.dsv())
+      inactive_discrete_string_variables(vars.discrete_string_variables());
+    if (vars.drv())
+      inactive_discrete_real_variables(vars.discrete_real_variables());
   }
 }
 
@@ -1750,6 +1790,20 @@ inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
   //cv_cntr  += num_csv;  div_cntr += num_dsiv;
   //dsv_cntr += num_dssv; drv_cntr += num_dsrv;
 }
+
+
+// Variables-related free function
+/// Reinitialize var_array to contain array_size freshly constructed
+/// Variables, sharing provided SVD
+inline void size_and_fill(const SharedVariablesData& svd, size_t array_size,
+			  VariablesArray& vars_array) {
+  // Don't let std library call copy (e.g., assign) due to letter/envelope
+  vars_array.clear();
+  vars_array.reserve(array_size);
+  for(size_t i=0; i<array_size; ++i)
+    vars_array.push_back(Variables(svd));
+}
+
 
 } // namespace Dakota
 

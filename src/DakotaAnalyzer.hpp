@@ -247,7 +247,8 @@ inline int Analyzer::num_samples() const
 
 inline const VariablesArray& Analyzer::all_variables()
 {
-  //  if (compactMode) samples_to_variables_array(allSamples, allVariables);
+  // BMA TODO: Consider different accessor or option parameter for conversion
+  if (compactMode) samples_to_variables_array(allSamples, allVariables);
   return allVariables;
 }
 

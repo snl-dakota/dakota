@@ -10,6 +10,7 @@
 #include "ExperimentData.hpp"
 #include "DataMethod.hpp"
 #include "ProblemDescDB.hpp"
+#include "DakotaVariables.hpp"
 
 namespace Dakota {
 
@@ -56,24 +57,34 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
   initialize(variance_types, srd);
 }
 
+
+/** Used in Hi2Lo Bayesian experimental design; passed config vars are
+    active, but stored here as inactive. */
 ExperimentData::
-ExperimentData(size_t num_experiments, const SharedResponseData& srd,
-               const RealMatrix& config_vars,
+ExperimentData(size_t num_experiments, 
+	       const SharedVariablesData& svd,
+	       const SharedResponseData& srd,
+               const VariablesArray& config_vars,
                const IntResponseMap& all_responses, short output_level):
   calibrationDataFlag(false), numExperiments(num_experiments),
-  numConfigVars(config_vars.numRows()),
+  numConfigVars(config_vars[0].total_active()),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
   scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
   readSimFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
 {
+  // BMA TODO: Review NonDBayes for this use case; also prediction configs
   simulationSRD = srd.copy();
-  allConfigVars.resize(numExperiments);
+  // BMA TODO: Consider caching the SVD?
+  auto svd_copy = svd.copy();
+  svd_copy.inactive_view(MIXED_STATE);
+  size_and_fill(svd_copy, numExperiments, allConfigVars);
+
   for (size_t i=0; i<numExperiments; ++i) {
-    allConfigVars[i] =
-      Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(config_vars),
-                      (int) i);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " allConfigVars i " << allConfigVars[i] << '\n';
+    allConfigVars[i].inactive_from_active(config_vars[i]);
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "allConfigVars[" << i << "] = \n";
+      allConfigVars[i].write(Cout, INACTIVE_VARS);
+    }
   }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Number of config vars " << numConfigVars << '\n';
@@ -217,19 +228,29 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 }
 
 void ExperimentData::
-add_data(const RealVector& one_configvars, const Response& one_response)
+add_data(const SharedVariablesData& svd, const Variables& one_configvars,
+	 const Response& one_response)
 {
+  // BMA TODO: Review NonDBayes for this use case; also prediction configs
+  // The inbound vars have the config vars as active
+
   // BMA TODO: This doesn't make an object of type ExperimentResponse!
   numExperiments += 1;
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "numExperiments in add_data " << numExperiments << '\n';
 
-  allConfigVars.push_back(one_configvars);
+  // probably store the modified SVD and use throughout
+  auto svd_copy = svd.copy();
+  svd_copy.inactive_view(MIXED_STATE);
+
+  allConfigVars.push_back(Variables(svd_copy));
+  allConfigVars.back().inactive_from_active(one_configvars);
   allExperiments.push_back(one_response);
 }
 
 
-void ExperimentData::load_data(const std::string& context_message)
+void ExperimentData::load_data(const std::string& context_message,
+			       const Variables& vars_with_state_as_config)
 {
   // TODO: complete scalar and field cases
 
@@ -255,8 +276,14 @@ void ExperimentData::load_data(const std::string& context_message)
     exp_resp.write(Cout);
   }
 
-  if (numConfigVars > 0)
-    allConfigVars.resize(numExperiments);
+  if (numConfigVars > 0) {
+    // copy SVD to avoid changing object passed in
+    auto svd = vars_with_state_as_config.shared_data().copy();
+    svd.inactive_view(MIXED_STATE);
+    // make a distinct Variables letter for each config, don't copy
+    // the envelope; okay to share the SVD
+    size_and_fill(svd, numExperiments, allConfigVars);
+  }
 
   size_t num_scalars = simulationSRD.num_scalar_primary();
 
@@ -335,7 +362,6 @@ void ExperimentData::load_data(const std::string& context_message)
 
     // Need to decide what to do if both scalar_data_file and "experiment.#" files exist - RWH
     if ( (numConfigVars > 0) && scalar_data_file ) {
-      allConfigVars[exp_index].sizeUninitialized(numConfigVars);
       // TODO: try/catch
       scalar_data_stream >> std::ws;
       if ( scalar_data_stream.eof() ) {
@@ -345,7 +371,7 @@ void ExperimentData::load_data(const std::string& context_message)
           << std::endl;
         abort_handler(-1);
       }
-      scalar_data_stream >> allConfigVars[exp_index];
+      allConfigVars[exp_index].read_tabular(scalar_data_stream, INACTIVE_VARS);
     }
     // TODO: else validate scalar vs. field configs?
 
@@ -379,9 +405,10 @@ void ExperimentData::load_data(const std::string& context_message)
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Experiment data summary:\n\n";
     for (size_t i=0; i<numExperiments; ++i) {
-      if (numConfigVars > 0)
-	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n"
-	     << allConfigVars[i];
+      if (numConfigVars > 0) {
+	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n";
+	allConfigVars[i].write(Cout, INACTIVE_VARS);
+      }
       Cout << "  Experiment " << i+1 << " data values:"<< "\n"
 	   << allExperiments[i].function_values() << '\n';
     }
@@ -695,7 +722,30 @@ size_t ExperimentData::num_config_vars() const
 }
 
 
-const std::vector<RealVector>& ExperimentData::config_vars() const
+/** Skips string vars rather than converting to indices */
+std::vector<RealVector> ExperimentData::config_vars_as_real() const
+{
+  std::vector<RealVector> all_config_vars_real;
+  for (const auto& config_vars : allConfigVars) {
+    size_t cv = config_vars.icv(), div = config_vars.idiv(),
+      drv = config_vars.idrv(), total_config_vars = cv + div + drv;
+
+    RealVector real_config_vars(total_config_vars);
+
+    copy_data_partial(config_vars.inactive_continuous_variables(),
+		      real_config_vars, 0);
+    merge_data_partial(config_vars.inactive_discrete_int_variables(),
+		       real_config_vars, cv);
+    copy_data_partial(config_vars.inactive_discrete_real_variables(),
+		      real_config_vars, cv + div);
+
+    all_config_vars_real.push_back(real_config_vars);
+  }
+  return all_config_vars_real;
+}
+
+
+const std::vector<Variables>& ExperimentData::configuration_variables() const
 {
   return allConfigVars;
 }

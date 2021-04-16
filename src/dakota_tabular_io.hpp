@@ -311,6 +311,13 @@ size_t read_data_tabular(const std::string& input_filename,
 			 unsigned short tabular_format,
 			 bool active_only, Variables vars);
 
+/// Read up to max_configs configuration variables into config_array.
+std::pair<size_t, bool>
+read_data_tabular(const std::string& input_filename, 
+		  const std::string& context_message,
+		  size_t max_configs, VariablesArray& config_array,
+		  unsigned short tabular_format);
+
 } // namespace TabularIO
 
 } // namespace Dakota

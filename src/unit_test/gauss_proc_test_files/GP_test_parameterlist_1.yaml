@@ -1,5 +1,6 @@
 GP Test Parameters:
   scaler name: "standardization"
+  standardize response: false
   num restarts: 10
   gp seed: 42
   Nugget:

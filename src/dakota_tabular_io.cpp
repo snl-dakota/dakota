@@ -1099,6 +1099,62 @@ size_t read_data_tabular(const std::string& input_filename,
 }
 
 
+/** Read configuration variables from tabular file into active entries
+    in the passed array, up to max_configs. Return number read and
+    whether data remains in file. */
+std::pair<size_t, bool> read_data_tabular(const std::string& input_filename, 
+					  const std::string& context_message,
+					  size_t max_configs,
+					  VariablesArray& config_array,
+					  unsigned short tabular_format)
+{
+  assert(max_configs <= config_array.size());
+  size_t configs_read = 0;
+  std::ifstream input_stream;
+  open_file(input_stream, input_filename, context_message);
+ 
+  try {
+
+    read_header_tabular(input_stream, tabular_format);
+
+    input_stream >> std::ws;  // advance to next readable input
+    while (configs_read < max_configs &&
+	   input_stream.good() && !input_stream.eof()) {
+      // discard the row labels (typically eval and iface ID)
+      read_leading_columns(input_stream, tabular_format);
+
+      config_array[configs_read].read_tabular(input_stream, ACTIVE_VARS);
+      ++configs_read;
+      
+      input_stream >> std::ws;  // advance to next readable input
+    }
+  }
+  catch (const std::ios_base::failure& failorbad_except) {
+    Cerr << "\nError (" << context_message << "): could not read file " 
+	 << input_filename << ".";
+    print_expected_format(Cerr, tabular_format, 0,
+			  config_array[0].total_active());
+    abort_handler(-1);
+  }
+  catch (const TabularDataTruncated& tdtrunc) {
+    // this will be thrown if Variables was truncated
+    Cerr << "\nError (" << context_message << "): could not read variables from "
+	 << "file " << input_filename << ";\n  " << tdtrunc.what() << std::endl;
+    abort_handler(-1);
+  }
+  catch(...) {
+    Cerr << "\nError (" << context_message << "): could not read file " 
+	 << input_filename << " (unknown error)." << std::endl;
+    abort_handler(-1);
+  }
+
+  bool more_data = exists_extra_data(input_stream);
+  close_file(input_stream, input_filename, context_message);
+
+  return std::make_pair(configs_read, more_data);
+}
+
+
 } // namespace TabularIO
 
 } // namespace Dakota
