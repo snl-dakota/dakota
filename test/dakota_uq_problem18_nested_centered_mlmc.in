@@ -25,10 +25,10 @@
  	  variables_pointer  = 'OPTIM_V'
  	  sub_method_pointer = 'UQ'
  	  responses_pointer  = 'OPTIM_R'
- #	  primary_response_mapping   = 1. 0. 0. 0.   #s0,#s1,#s2
- #	  secondary_response_mapping = 0. 0. 1.0 3.0 #s0,#s1,#s2
- #	  primary_response_mapping   = 1. 0. 1. 0.   #s4
- #	  secondary_response_mapping = 1. 0. 1.0 3.0 #s4
+	  primary_response_mapping   = 1. 0. 0. 0.   #s0,#s1,#s2
+ 	  secondary_response_mapping = 0. 0. 1.0 3.0 #s0,#s1,#s2
+#	  primary_response_mapping   = 1. 0. 1. 0.   #s3,#s4
+#	  secondary_response_mapping = 1. 0. 1.0 3.0 #s3,#s4
  
  variables,
  	id_variables = 'OPTIM_V'
@@ -55,6 +55,7 @@
  	model_pointer = 'HIERARCH'
        multilevel_sampling
  	  pilot_samples = 150 30
+          seed = 1237
  	  sample_type random # use MC error estimates
  	  final_moments standard
  	  max_iterations = 10
