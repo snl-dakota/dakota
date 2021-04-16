@@ -66,7 +66,7 @@ DataModelRep::DataModelRep():
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
   analyticCovIdForm(NOCOVAR),
-  method_rotation(ROTATION_METHOD_LINEAR),
+  method_rotation(ROTATION_METHOD_RANKED),
   adaptedBasisTruncationTolerance(0.9)
 { }
 

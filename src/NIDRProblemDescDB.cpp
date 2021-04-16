@@ -7354,8 +7354,8 @@ static Model_mp_type
 	MP2s(regressionType,FT_LS),
 	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),
-        MP2s(method_rotation,ROTATION_METHOD_LINEAR),
-	MP2s(method_rotation,ROTATION_METHOD_LINEARNORM),
+        MP2s(method_rotation,ROTATION_METHOD_UNRANKED),
+	MP2s(method_rotation,ROTATION_METHOD_RANKED),
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
 
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),

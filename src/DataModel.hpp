@@ -48,7 +48,7 @@ enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
 // AdaptedBasis
 // -----------------------
 // define special values for generating the basis adaptation rotation matrix
-enum {ROTATION_METHOD_LINEAR, ROTATION_METHOD_LINEARNORM};    
+enum {ROTATION_METHOD_UNRANKED, ROTATION_METHOD_RANKED};    
 
 /// define special values for componentParallelMode
 /// (active model for parallel scheduling)

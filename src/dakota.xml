@@ -4361,8 +4361,8 @@
 	  </keyword>
           <keyword  id="rotation_method" name="rotation_method" code="{0}" label="Rule of obtaining rotation matrix for Basis Adaptation"  minOccurs="0" default="norm" >
 		<oneOf label="Rotation Method">
-		<keyword  id="linear" name="linear" code="{N_mom(type,method_rotation_ROTATION_METHOD_LINEAR)}" label="Linear sensitivity"   />
-		<keyword  id="norm" name="norm" code="{N_mom(type,method_rotation_ROTATION_METHOD_LINEARNORM)}" label="Normalized linear sensitivity"   />
+		<keyword  id="unranked" name="unranked" code="{N_mom(type,method_rotation_ROTATION_METHOD_UNRANKED)}" label="Unranked Gaussian variables for rotation matrix construction"   />
+		<keyword  id="ranked" name="ranked" code="{N_mom(type,method_rotation_ROTATION_METHOD_RANKED)}" label="Ranked Gaussian variables for rotation matrix construction"   />
 		</oneOf>
                 </keyword>
 	  </keyword>

@@ -39,9 +39,6 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   modelType = "adapted_basis";
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
-    
-  // if (subspaceDimension == 0)  // no user spec
-  //    subspaceDimension = 1; // subspace-specific default
 
   validate_inputs();
 
@@ -280,15 +277,15 @@ void AdaptedBasisModel::compute_subspace()
   int method = -1;
     
   // Select the desired rotation method
-  if (method_rotation==ROTATION_METHOD_LINEAR){
+  if (method_rotation==ROTATION_METHOD_UNRANKED){
    
       method = 0;
-      std::cout << "\nProceeding with the Linear Rotation Method" << std::endl;
+      std::cout << "\nSelecting UNRANKED Gaussian for the rotation matrix construction" << std::endl;
       
-  } else if (method_rotation==ROTATION_METHOD_LINEARNORM) {
+  } else if (method_rotation==ROTATION_METHOD_RANKED) {
   
       method = 1;
-      std::cout << "\nProceeding with the Linear Normalized Rotation Method" << std::endl;
+      std::cout << "\nSelecting RANKED Gaussian for the rotation matrix construction" << std::endl;
           
   }
       
@@ -307,7 +304,7 @@ void AdaptedBasisModel::compute_subspace()
     }
 
     else if (method==1){
-      // Step 1b: same as 1a expect permuted location of 1's determined from q_i's
+      // Step 1b: same as 1a except permuted location of 1's determined from q_i's
       //          (relative sensitivities)
       for (j=0; j<numFullspaceVars; ++j)
         A_i(0,j) = pce_coeffs[i][first_ord_index[j]]; // offset by 1 to neglect constant/mean
