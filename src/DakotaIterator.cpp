@@ -1696,6 +1696,14 @@ nested_variable_mappings(const SizetArray& c_index1,
   //else no-op
 }
 
+void Iterator::
+nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs)
+{
+  if (iteratorRep)
+    iteratorRep->
+      nested_response_mappings(primary_coeffs,  secondary_coeffs);
+  //esee no-op
+}
 
 StrStrSizet Iterator::run_identifier() const
 {

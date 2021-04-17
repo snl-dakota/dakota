@@ -1,45 +1,72 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (UQ_I): 122 total (110 new, 12 duplicate)
-  response_fn_1: 122 val (110 n, 12 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 122 val (110 n, 12 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 2.2100000000e+01
+<<<<< Function evaluation summary (UQ_I): 424 total (200 new, 224 duplicate)
+  response_fn_1: 424 val (200 n, 224 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 424 val (200 n, 224 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.3240000000e+02
 Sample moment statistics for each response function:
-                            Mean          Variance        3rdCentral        4thCentral
- response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
- response_fn_2  1.3178284434e+00  1.4884209416e-03 -1.6483880336e-04  2.1230933133e-05
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  1.3142902065e-13  0.0000000000e+00
+ response_fn_2 -1.4126165484e+00  4.5839715270e-02 -2.8079985749e-02  1.3422285652e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary (UQ_I): 465 total (204 new, 261 duplicate)
-  response_fn_1: 465 val (204 n, 261 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 465 val (204 n, 261 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 1.6440000000e+02
+<<<<< Function evaluation summary (UQ_I): 2770 total (1962 new, 808 duplicate)
+  response_fn_1: 2770 val (1962 n, 808 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 2770 val (1962 n, 808 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 4.9840000000e+02
 Sample moment statistics for each response function:
-                            Mean          Variance        3rdCentral        4thCentral
- response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
- response_fn_2  1.3263640170e+00  1.7741418235e-03 -1.9962228068e-06  1.7237852612e-05
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.3862943611e+00  3.5521363270e-07 -2.4327302904e+07  1.9984923284e+14
+ response_fn_2 -1.4146161940e+00  4.6849384406e-02 -2.2422901745e-01  1.5920773180e+00
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 5508 total (2866 new, 2642 duplicate)
-  response_fn_1: 5508 val (2866 n, 2642 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 5508 val (2866 n, 2642 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 1.9575000000e+03
+<<<<< Function evaluation summary (UQ_I): 28482 total (21420 new, 7062 duplicate)
+  response_fn_1: 28482 val (21420 n, 7062 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 28482 val (21420 n, 7062 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 5.1900000000e+03
 Sample moment statistics for each response function:
-                            Mean          Variance        3rdCentral        4thCentral
- response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
- response_fn_2  1.3228189255e+00  2.1771890371e-03 -3.6413212072e-06  1.8637784730e-05
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.3862943611e+00  1.8468220418e-06 -1.3337681778e+06  3.6476378368e+12
+ response_fn_2 -1.4133336521e+00  4.7330711169e-02 -6.5478288391e-03  8.9652554869e-01
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 232 total (150 new, 82 duplicate)
-  response_fn_1: 232 val (150 n, 82 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 232 val (150 n, 82 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 8.2600000000e+01
+<<<<< Function evaluation summary (UQ_I): 24825 total (7463 new, 17362 duplicate)
+  response_fn_1: 24825 val (7463 n, 17362 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 24825 val (7463 n, 17362 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 6.2688000000e+03
 Sample moment statistics for each response function:
                             Mean          Variance        3rdCentral        4thCentral
- response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
- response_fn_2  1.3233730643e+00  1.3592617789e-03 -2.7621690778e-05  1.3272673834e-05
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  1.0183938995e-11  0.0000000000e+00
+ response_fn_2 -1.4139842185e+00  2.1839915955e-03 -2.5016148518e-06  1.8689396630e-05
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 2698 total (600 new, 2098 duplicate)
-  response_fn_1: 2698 val (600 n, 2098 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 2698 val (600 n, 2098 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Equivalent number of high fidelity evaluations: 1.2922000000e+03
+<<<<< Function evaluation summary (UQ_I): 527 total (298 new, 229 duplicate)
+  response_fn_1: 527 val (298 n, 229 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 527 val (298 n, 229 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.4270000000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  2.9580717300e-13  0.0000000000e+00
+ response_fn_2 -1.4099261428e+00  4.4177942374e-02  1.6304917291e-01  1.5591848563e+00
+Test Number 5 succeeded
+<<<<< Function evaluation summary (UQ_I): 587 total (190 new, 397 duplicate)
+  response_fn_1: 587 val (190 n, 397 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 587 val (190 n, 397 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.5590000000e+02
 Sample moment statistics for each response function:
                             Mean          Variance        3rdCentral        4thCentral
- response_fn_1  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
- response_fn_2  1.3156650780e+00  2.4736020303e-03 -8.1893477287e-05  2.6471996860e-05
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  3.3667261383e-13  0.0000000000e+00
+ response_fn_2 -1.4156610524e+00  1.7224527008e-03 -7.9652872408e-05  2.0102813859e-05
+Test Number 6 succeeded
+<<<<< Function evaluation summary (UQ_I): 5848 total (3608 new, 2240 duplicate)
+  response_fn_1: 5848 val (3608 n, 2240 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 5848 val (3608 n, 2240 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 8.4580000000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.3862943611e+00  0.0000000000e+00  1.8875657510e-12  0.0000000000e+00
+ response_fn_2 -1.4127811109e+00  4.4723761856e-02  2.9909174847e-02  1.4254465420e+00
+Test Number 7 succeeded
+<<<<< Function evaluation summary (UQ_I): 1278 total (199 new, 1079 duplicate)
+  response_fn_1: 1278 val (199 n, 1079 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1278 val (199 n, 1079 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 3.4380000000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.3862943611e+00  4.6867400927e-07 -9.0757658543e+06  9.1469769063e+13
+ response_fn_2 -1.4110248218e+00  4.0361693343e-02 -3.8949295786e-01  2.8769038440e+00

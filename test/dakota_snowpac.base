@@ -1,24 +1,24 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (UQ_I): 12500 total (12500 new, 0 duplicate)
-<<<<< Best parameters          =
-                      2.3628317232e+00 w
-                      3.3289027736e+00 t
-<<<<< Best objective function  =
-                      7.8656370123e+00
-<<<<< Best constraint values   =
-                     -2.1901030790e-02
-                      2.7227884296e-03
-<<<<< Best data not found in evaluation cache
-Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 12450 total (12450 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4798315892e+00 w
-                      3.7919093204e+00 t
+                      2.3617074192e+00 w
+                      3.3226379214e+00 t
 <<<<< Best objective function  =
-                      9.4032964786e+00
+                      7.8470985743e+00
 <<<<< Best constraint values   =
-                     -1.5529640580e-04
-                     -2.1620211846e-02
+                     -2.0675089380e-02
+                      1.8572571869e-05
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 12500 total (12500 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.4415860243e+00 w
+                      3.8525131633e+00 t
+<<<<< Best objective function  =
+                      9.4062422951e+00
+<<<<< Best constraint values   =
+                     -2.5529081260e-04
+                     -5.3099327898e-03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 12450 total (12450 new, 0 duplicate)
@@ -26,19 +26,19 @@ Test Number 2 succeeded
                       1.0000000000e+01 w
                       1.0000000000e+01 t
 <<<<< Best objective function  =
-                      6.1529566266e-01
+                      6.1514522958e-01
 <<<<< Best constraint values   =
-                     -9.7745291212e-01
-                     -9.9311088050e-01
+                     -9.7743550283e-01
+                     -9.9310453335e-01
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 12450 total (12450 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+01 w
-                      1.0000000000e+01 t
+                      9.9996779090e+00 t
 <<<<< Best objective function  =
-                      6.1535286047e-06
+                      6.1520783659e-06
 <<<<< Best constraint values   =
-                     -9.7745291195e-01
-                     -9.9311088060e-01
+                     -9.7743427973e-01
+                     -9.9310393692e-01
 <<<<< Best data not found in evaluation cache

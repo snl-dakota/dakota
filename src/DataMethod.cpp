@@ -143,7 +143,8 @@ DataMethodRep::DataMethodRep():
   collocationPoints(std::numeric_limits<size_t>::max()),
   expansionSamples(std::numeric_limits<size_t>::max()),
   allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
-  qoiAggregation(QOI_AGGREGATION_SUM),
+  qoiAggregation(QOI_AGGREGATION_SUM), convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
+  convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
   //expansionSampleType("lhs"),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
@@ -342,7 +343,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
-    << allocationTarget << useTargetVarianceOptimizationFlag;
+    << allocationTarget << convergenceToleranceType << useTargetVarianceOptimizationFlag
+    << scalarizationRespCoeffs;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -508,7 +510,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
     >> generatePosteriorSamples >> evaluatePosteriorDensity >> qoiAggregation 
-    >> allocationTarget >> useTargetVarianceOptimizationFlag;
+    >> allocationTarget >> convergenceToleranceType >> useTargetVarianceOptimizationFlag
+    >> scalarizationRespCoeffs;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -674,7 +677,7 @@ void DataMethodRep::write(std::ostream& s) const
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
-    << allocationTarget << useTargetVarianceOptimizationFlag;
+    << allocationTarget << useTargetVarianceOptimizationFlag << scalarizationRespCoeffs;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

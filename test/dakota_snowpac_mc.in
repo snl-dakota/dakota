@@ -11,7 +11,7 @@ method,
 	model_pointer = 'OPTIM_M'
 	snowpac
 	  seed = 25041981
-#	  max_iterations = 500
+	  max_iterations = 500
 #	  convergence_tolerance = 1e-4
 	  max_function_evaluations = 250
 	  trust_region

@@ -2899,6 +2899,15 @@
 		<keyword  id="variance" name="variance" code="{N_mdm(type,allocationTarget_TARGET_VARIANCE)}" label="variance">
 		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
 		</keyword>
+		<keyword  id="standard_deviation" name="standard_deviation" code="{N_mdm(type,allocationTarget_TARGET_SIGMA)}" label="standard_deviation">
+		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
+		</keyword>
+		<keyword  id="scalarization" name="scalarization" code="{N_mdm(type,allocationTarget_TARGET_SCALARIZATION)}" label="scalarization">
+		  <keyword  id="scalarization_response_mapping" name="scalarization_response_mapping" code="{N_mdm(RealDL,scalarizationRespCoeffs)}" label="Scalarization Response Mappings"  minOccurs="0" default="default scalarized contribution to mlmc sample allocation (1 Mean, 3 Sigma)" >
+	       <param type="REALLIST" />
+	      </keyword>
+		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
+		</keyword>
 		</oneOf>
 	   </keyword>
       <keyword  id="qoi_aggregation" name="qoi_aggregation" code="{0}" label="Rule of aggregating the variance and computing the sample allocation over qoi"  minOccurs="0" default="sum" >
@@ -2907,8 +2916,20 @@
 		<keyword  id="max" name="max" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}" label="max"   />
 		</oneOf>
 	   </keyword>
+	   &method_convergence_tolerance;
+       <keyword  id="convergence_tolerance_type" name="convergence_tolerance_type" code="{0}" label="Type of convergence tolerance"  minOccurs="0" default="relative" >
+        <oneOf label="Convergence tolerance type">
+		<keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}" label="relative"   />
+		<keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}" label="absolute"   />
+		</oneOf>
+       </keyword>
+       <keyword  id="convergence_tolerance_target" name="convergence_tolerance_target" code="{0}" label="Target of convergence tolerance"  minOccurs="0" default="variance_constraint" >
+        <oneOf label="Convergence tolerance target">
+		<keyword  id="variance_constraint" name="variance_constraint" code="{N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT)}" label="variance_constraint"   />
+		<keyword  id="cost_constraint" name="cost_constraint" code="{N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT)}" label="cost_constraint"   />
+		</oneOf>
+       </keyword>
 	  &method_max_iterations;
-	  &method_convergence_tolerance;
 	  &default_final_moments;
 	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
 	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
