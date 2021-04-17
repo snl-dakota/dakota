@@ -1,0 +1,54 @@
+#@ s0: ReqFiles=dcfc_scalar.dat,dcfc_field.1.dat,dcfc_field.2.dat,dcfc_field.3.dat
+
+# DP-497: Test calibration with fields, data, and nonlinear constraints
+
+# The data are generated with 0.25, 0.25 such that it oscillates +, -,
+# +, -, +, but is < 0 at last data point t_n. We calibrate with
+# constraints that t_{n-1} > 0, t_n = 0
+
+# Noise added for 3 experiments with constant coeff of variation noise
+# d_noisy = (1+0.1*np.random.randn(3,20)) * d
+
+method
+
+# For data generation
+#  list_parameter_study
+#    list_of_points
+#    0.25  0.25
+
+  optpp_g_newton
+
+variables
+  continuous_design = 2
+    upper_bounds   0.5   0.5
+    initial_point  0.2  0.35
+    lower_bounds   0.1   0.1 
+    descriptors    'x1'  'x2'
+
+interface
+  direct
+    analysis_driver = 'damped_oscillator'
+
+responses
+  response_descriptors
+    'dcfc_scalar1' 'dcfc_scalar2' 'dcfc_field' 'dcfc_ineq' 'dcfc_eq'
+
+  calibration_terms = 3
+    scalar_calibration_terms = 2
+    field_calibration_terms = 1
+      lengths = 16
+
+  calibration_data
+    num_experiments = 3
+    scalar_data_file 'dcfc_scalar.dat' freeform
+
+  nonlinear_inequality_constraints = 1
+    lower_bound = 0.0
+    upper_bound = inf
+
+  nonlinear_equality_constraints = 1  
+    target = 0.0
+
+  numerical_gradients
+  no_hessians
+
