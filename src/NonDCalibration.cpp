@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -36,7 +37,7 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   //if (outputLevel > NORMAL_OUTPUT)
   //  Cout << "Read data from file " << calibrationData << '\n';
   if (calibrationData)
-    expData.load_data("NonDCalibration");
+    expData.load_data("NonDCalibration", iteratedModel.current_variables());
   else if (outputLevel > SILENT_OUTPUT)
     Cout << "No experiment data from files.\nCalibration is assuming the "
 	 << "simulation is returning the residuals" << std::endl;

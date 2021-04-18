@@ -1,0 +1,43 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.8329528491e+00 cdv_1
+                      1.6669404741e+02 cdv_2
+                      9.0760615657e+02 cdv_3
+                      6.6977847926e+03 csv_1
+<<<<< Best objective function  =
+                      2.0119231521e+15
+<<<<< Best constraint values   =
+                     -4.9323684763e+01
+                      2.7783988964e+04
+<<<<< Best data captured at function evaluation 34
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  5.16495e-02  1.00000e+00 
+       cdv_3 -2.47895e-02 -3.56150e-03  1.00000e+00 
+       csv_1 -4.78156e-02 -2.35743e-02 -2.43766e-02  1.00000e+00 
+      obj_fn -4.51563e-02 -4.02317e-02 -6.34220e-02  8.67347e-01  1.00000e+00 
+nln_ineq_con_1  9.71409e-01  2.34782e-02 -3.06824e-02 -3.83224e-02 -3.83921e-02  1.00000e+00 
+nln_ineq_con_2  6.27356e-02  9.77608e-01 -1.82771e-02 -5.56380e-03 -2.25928e-02  3.66647e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -7.63913e-03  9.71743e-01  6.08126e-02 
+       cdv_2 -3.98253e-02 -1.12074e-01  9.77858e-01 
+       cdv_3 -8.53753e-02 -2.74523e-02 -6.70752e-02 
+       csv_1  8.67523e-01  3.13943e-02  8.45201e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  6.35714e-02  1.00000e+00 
+       cdv_3 -2.67347e-02  5.81633e-03  1.00000e+00 
+       csv_1 -4.62245e-02 -4.04082e-02 -2.90816e-02  1.00000e+00 
+      obj_fn -1.42857e-03 -1.15306e-02  1.21429e-02  9.90204e-01  1.00000e+00 
+nln_ineq_con_1  1.00000e+00  6.35714e-02 -2.67347e-02 -4.62245e-02 -1.42857e-03  1.00000e+00 
+nln_ineq_con_2  6.35714e-02  1.00000e+00  5.81633e-03 -4.04082e-02 -1.15306e-02  6.35714e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  3.36455e-01  1.00000e+00         -inf 
+       cdv_2  2.03558e-01  1.20751e-09  1.00000e+00 
+       cdv_3  3.23911e-01         -nan         -nan 
+       csv_1  9.92424e-01 -1.50860e-09 -1.70679e-09 

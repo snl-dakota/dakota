@@ -1,0 +1,42 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9991512536e-01 x1
+                      9.9973343023e-01 x2
+<<<<< Best misfit              =
+                      9.4476381485e-07
+<<<<< Best log prior           =
+                     -1.3862943611e+00
+<<<<< Best log posterior       =
+                     -2.5310251917e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  7.7496170561e-01  3.7545319340e-01 -4.2746331081e-01 -7.7186365326e-01
+            x2  7.1915791865e-01  5.4806446851e-01  3.0224343853e-01 -9.8688294658e-01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+            f1 -2.2302344395e-01  7.3243886033e-01 -7.8991184313e-02 -2.4912824383e-01
+            f2  2.2503829439e-01  3.7545319340e-01  4.2746331081e-01 -7.7186365326e-01
+Information gained from prior to posterior = 5.0049245705e+00
+Test Number 1 succeeded
+Model evidence (Monte Carlo) = 5.4439141944e-03
+Model evidence (Laplace) = 6.1903418610e-03
+<<<<< Function evaluation summary: 4290 total (4288 new, 2 duplicate)
+<<<<< Best parameters          =
+                      9.9991512536e-01 x1
+                      9.9973343023e-01 x2
+<<<<< Best misfit              =
+                      9.4476381507e-07
+<<<<< Best log prior           =
+                     -2.7725887222e+00
+<<<<< Best log posterior       =
+                     -3.9173195529e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  5.0659506143e-01  4.7344444221e-01 -4.4162546229e-01 -6.4463529586e-01
+            x2  4.7015699325e-01  4.5046332147e-01  7.7862506973e-01 -4.3751549380e-01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+            f1 -1.0519128048e-01  6.3577660675e-01 -2.7072523893e-01 -2.2021726067e-02
+            f2  4.9340493857e-01  4.7344444221e-01  4.4162546229e-01 -6.4463529586e-01
+Information gained from prior to posterior = 2.2738476145e+00

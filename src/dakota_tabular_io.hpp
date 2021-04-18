@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -309,6 +310,13 @@ size_t read_data_tabular(const std::string& input_filename,
 			 StringMulti2DArray& dsva, RealVectorArray& drva,
 			 unsigned short tabular_format,
 			 bool active_only, Variables vars);
+
+/// Read up to max_configs configuration variables into config_array.
+std::pair<size_t, bool>
+read_data_tabular(const std::string& input_filename, 
+		  const std::string& context_message,
+		  size_t max_configs, VariablesArray& config_array,
+		  unsigned short tabular_format);
 
 } // namespace TabularIO
 

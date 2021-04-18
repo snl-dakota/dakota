@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -205,20 +206,20 @@ update_lagrange_multipliers(const RealVector& fn_vals,
       Real c_var = c_vars[i], l_bnd = lower_bnds[i], u_bnd = upper_bnds[i];
       // Determine if the calculated gradient component dg/dx_i is directed into
       // an active bound constraint.
-	   Cout << "c_var=" << c_var << "\n";
+      //Cout << "c_var=" << c_var << "\n";
       bool active_lower_bnd = ( (l_bnd == 0.0 && std::fabs(c_var) < 1.e-10) ||
         (l_bnd != 0.0 && std::fabs(1.0 - c_var/l_bnd) < 1.e-10) );
       bool active_upper_bnd = ( (u_bnd == 0.0 && std::fabs(c_var) < 1.e-10) ||
         (u_bnd != 0.0 && std::fabs(1.0 - c_var/u_bnd) < 1.e-10) );
       if ( !( (active_lower_bnd && m_grad_f[i] > 0.0) ||
-	           (active_upper_bnd && m_grad_f[i] < 0.0) ) ) {
-		  Cout << "active variable, i=" << i << ", n=" << n << "\n";
+	      (active_upper_bnd && m_grad_f[i] < 0.0) ) ) {
+	//Cout << "active variable, i=" << i << ", n=" << n << "\n";
         for (j=0, iter=active_lag_ineq.begin(); j<num_active_lag_ineq; j++, iter++){
           int ineq_id = *iter;
           size_t index = numUserPrimaryFns + std::abs(ineq_id) - 1;
           const Real* grad_g = fn_grads[index];
           // form [A]
-          Cout << "constraint, j=" << j << "\n";
+          //Cout << "constraint, j=" << j << "\n";
           A[j+n*num_active_lag] = (ineq_id > 0) ? grad_g[i] : -grad_g[i];
         }
         for (j=0; j<numNonlinearEqConstraints; j++) {
@@ -232,8 +233,8 @@ update_lagrange_multipliers(const RealVector& fn_vals,
     }
     num_free_continuous_vars = n;
 #ifdef DEBUG
-	 Cout << "number of free variables, n = " << num_free_continuous_vars << "\n";
-    Cout << "[A]:\n" << A << "-{grad_f}:\n" << m_grad_f;
+    Cout << "number of free variables, n = " << num_free_continuous_vars
+	 << "\n[A]:\n" << A << "-{grad_f}:\n" << m_grad_f;
 #endif
 
     // solve bound-constrained least squares using Lawson & Hanson routines:
@@ -274,7 +275,7 @@ update_lagrange_multipliers(const RealVector& fn_vals,
 	abort_handler(-1);
       }
     }
-//  Cout << "{lambda}:\n" << lambda << "res_norm: " << res_norm << '\n';
+    //Cout << "{lambda}:\n" << lambda << "res_norm: " << res_norm << '\n';
 
     // update lagrangeMult from least squares solution
     cntr = 0;

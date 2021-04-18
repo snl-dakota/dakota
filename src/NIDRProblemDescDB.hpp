@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -197,11 +198,11 @@ public:
   KWH(model_ivec);
   KWH(model_false);
   KWH(model_int);
-  KWH(model_intsetm1);
   KWH(model_lit);
   KWH(model_order);
   KWH(model_shint);
   KWH(model_sizet);
+  KWH(model_id_to_index_set);
   KWH(model_start);
   KWH(model_stop);
   KWH(model_str);

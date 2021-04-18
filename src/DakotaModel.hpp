@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -28,6 +29,7 @@
 namespace Pecos { /* forward declarations */
 class SurrogateData;
 class ProbabilityTransformation;
+class ActiveKey;
 }
 
 namespace Dakota {
@@ -99,13 +101,13 @@ public:
   /// dive through model recursions that may bypass some components.
   virtual Model& subordinate_model();
 
-  /// set the active multi-index key within surrogate data, grid driver,
+  /// set the active model key within surrogate data, grid driver,
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
-  virtual void active_model_key(const UShortArray& mi_key);
-  /// reset by removing all multi-index keys within surrogate data, grid
-  /// driver, and approximation classes that support the management of
-  /// multiple approximation states within surrogate models
+  virtual void active_model_key(const Pecos::ActiveKey& key);
+  /// reset by removing all model keys within surrogate data, grid driver,
+  /// and approximation classes that support the management of multiple
+  /// approximation states within surrogate models
   virtual void clear_model_keys();
 
   /// return number of unique response functions (managing any aggregations)
@@ -152,10 +154,10 @@ public:
   virtual size_t solution_levels(bool lwr_bnd = true) const;
   /// activate a particular level within the solution level control
   /// (SimulationModel)
-  virtual void solution_level_cost_index(unsigned short index);
+  virtual void solution_level_cost_index(size_t index);
   /// return currently active level within the solution level control
   /// (SimulationModel)
-  virtual unsigned short solution_level_cost_index() const;
+  virtual size_t solution_level_cost_index() const;
   /// return ordered cost estimates across solution levels (SimulationModel)
   virtual RealVector solution_level_costs() const;
   /// return currently active cost estimate from solution level
@@ -182,7 +184,7 @@ public:
 					   bool recurse_flag = true);
 
   /// set the (currently active) surrogate function index set
-  virtual void surrogate_function_indices(const IntSet& surr_fn_indices);
+  virtual void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// return probability transformation employed by the Model (forwarded along
   /// to ProbabilityTransformModel recasting)
@@ -245,8 +247,13 @@ public:
   /// anchor response at vars; rebuild if needed
   virtual bool build_approximation(const Variables& vars,
 				   const IntResponsePair& response_pr);
-  /// update an existing SurrogateModel approximation
+
+  /// incremental rebuild of an existing SurrogateModel approximation
   virtual void rebuild_approximation();
+  /// incremental rebuild of an existing SurrogateModel approximation
+  virtual void rebuild_approximation(const IntResponsePair& response_pr);
+  /// incremental rebuild of an existing SurrogateModel approximation
+  virtual void rebuild_approximation(const IntResponseMap& resp_map);
 
   /// replace the approximation data within an existing surrogate
   /// based on data updates propagated elsewhere
@@ -272,13 +279,29 @@ public:
 				    const IntResponsePair& response_pr,
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
+  virtual void append_approximation(const RealMatrix& samples,
+				    const IntResponseMap& resp_map,
+				    bool rebuild_flag);
+  /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const VariablesArray& vars_array,
 				    const IntResponseMap& resp_map,
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
-  virtual void append_approximation(const RealMatrix& samples,
-				    const IntResponseMap& resp_map,
+  virtual void append_approximation(const IntVariablesMap& vars_map,
+				    const IntResponseMap&  resp_map,
 				    bool rebuild_flag);
+
+  /// replace the response for a single point (based on eval id from
+  /// response_pr) within an existing surrogate's data
+  virtual void replace_approximation(const IntResponsePair& response_pr,
+				     bool rebuild_flag);
+  /// replace the responses for a set of points (based on eval ids from
+  /// resp_map) within an existing surrogate's data
+  virtual void replace_approximation(const IntResponseMap& resp_map,
+				     bool rebuild_flag);
+  /// assigns a flag to track evaluation ids within surrogate data,
+  /// enabling id-based lookups for data replacement
+  virtual void track_evaluation_ids(bool track);
 
   /// remove the previous data set addition to a surrogate (e.g., due
   /// to a previous append_approximation() call); flag manages storing
@@ -373,7 +396,7 @@ public:
   /// apply a DiscrepancyCorrection to correct an approximation within
   /// a HierarchSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
-			    const UShortArray& paired_key);
+			    const Pecos::ActiveKey& paired_key);
   /// apply a sequence of DiscrepancyCorrections to recursively correct an 
   /// approximation within a HierarchSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
@@ -585,6 +608,8 @@ public:
 
   /// set the active variables in currentVariables
   void active_variables(const Variables& vars);
+  /// set the inactive variables in currentVariables
+  void inactive_variables(const Variables& vars);
 
   /// return the active continuous variables from currentVariables
   const RealVector& continuous_variables() const;
@@ -1140,9 +1165,16 @@ public:
   static void inactive_variables(const RealVector& config_vars, Model& model,
 				 Variables& updated_vars);
 
-  /// Bulk synchronously evaluate the model for each column in the
-  /// samples matrix and return as columns of the response matrix
+  /// Bulk synchronously evaluate the model for each column (of active
+  /// variables) in the samples matrix and return as columns of the
+  /// response matrix
   static void evaluate(const RealMatrix& samples_matrix,
+		       Model& model, RealMatrix& resp_matrix);
+
+  /// Bulk synchronously evaluate the model for each entry (of active
+  /// variables) in the samples vector and return as columns of the
+  /// response matrix
+  static void evaluate(const VariablesArray& sample_vars,
 		       Model& model, RealMatrix& resp_matrix);
 
   /// Return the model ID of the "innermost" model. 
@@ -1742,6 +1774,13 @@ inline void Model::active_variables(const Variables& vars)
 {
   if (modelRep) modelRep->currentVariables.active_variables(vars);
   else          currentVariables.active_variables(vars);
+}
+
+
+inline void Model::inactive_variables(const Variables& vars)
+{
+  if (modelRep) modelRep->currentVariables.inactive_variables(vars);
+  else          currentVariables.inactive_variables(vars);
 }
 
 

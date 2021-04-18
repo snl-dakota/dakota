@@ -1,0 +1,5 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  3.5153590493e+00

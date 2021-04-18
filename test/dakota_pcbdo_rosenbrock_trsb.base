@@ -1,0 +1,40 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 3 total (3 new, 0 duplicate)
+         obj_fn: 3 val (3 n, 0 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 15 total (15 new, 0 duplicate)
+  response_fn_1: 15 val (15 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                     -2.0000000000e+00 x1
+<<<<< Best objective function  =
+                     -2.0913244317e+00
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 3 total (3 new, 0 duplicate)
+         obj_fn: 3 val (3 n, 0 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 15 total (15 new, 0 duplicate)
+  response_fn_1: 15 val (15 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                     -2.0000000000e+00 x1
+<<<<< Best objective function  =
+                     -2.0913244317e+00
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 3 total (3 new, 0 duplicate)
+         obj_fn: 3 val (3 n, 0 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 9 total (9 new, 0 duplicate)
+  response_fn_1: 9 val (9 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                     -2.0000000000e+00 x1
+<<<<< Best objective function  =
+                     -2.0913244317e+00
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 3 total (3 new, 0 duplicate)
+         obj_fn: 3 val (3 n, 0 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 9 total (9 new, 0 duplicate)
+  response_fn_1: 9 val (9 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                     -2.0000000000e+00 x1
+<<<<< Best objective function  =
+                     -2.0913244317e+00
+<<<<< Best data not found in evaluation cache

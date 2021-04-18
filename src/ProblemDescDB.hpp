@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -54,8 +55,9 @@ class ProblemDescDB
   friend class Model;
   /// SimulationModel requires access to get_interface()
   friend class SimulationModel;
-  /// HierarchSurrModel requires access to get_model()
+  /// HierarchSurrModel and NonHierarchSurrModel require access to get_model()
   friend class HierarchSurrModel;
+  friend class NonHierarchSurrModel;
   /// DataFitSurrModel requires access to get_iterator() and get_model()
   friend class DataFitSurrModel;
   /// NestedModel requires access to get_interface(), get_response(),
@@ -217,6 +219,8 @@ public:
   const IntSet& get_is(const String& entry_name) const;
   /// get an IntSetArray out of the database based on an identifier string
   const IntSetArray& get_isa(const String& entry_name) const;
+  /// get a SizetSet out of the database based on an identifier string
+  const SizetSet& get_szs(const String& entry_name) const;
   /// get an StringSetArray out of the database based on an identifier string
   const StringSetArray& get_ssa(const String& entry_name) const;
   /// get a RealSetArray out of the database based on an identifier string
@@ -400,61 +404,25 @@ protected:
 
 private:
 
-  // inner classes to help with mapping keys to class member data values
+  // helpers to map keys to class member data values
 
-  /// Retrieve member of type T from class R (Data*Rep) when passed a
-  /// pointer to the rep (instantiate template with T& if the return
-  /// type needs to be T&, similar const T&)
-  template <typename T, class Rep>
-  using RepGetter = std::function<T(std::shared_ptr<Rep>&)>;
-
-  /// Encapsulate lookups across Data*Rep types
-  template <typename T>
-  class LookerUpper
-  {
-  public:
-
-    /// the lookup class must be initialized with all 6 maps from keys
-    /// to values, but any of them can be an empty map
-    LookerUpper
-    (const std::string& context_msg,
-     const std::map<std::string, RepGetter<T, DataEnvironmentRep>>& env_map,
-     const std::map<std::string, RepGetter<T, DataMethodRep>>& met_map,
-     const std::map<std::string, RepGetter<T, DataModelRep>>& mod_map,
-     const std::map<std::string, RepGetter<T, DataVariablesRep>>& var_map,
-     const std::map<std::string, RepGetter<T, DataInterfaceRep>>& int_map,
-     const std::map<std::string, RepGetter<T, DataResponsesRep>>& res_map
-     ):
-      contextMsg(context_msg), envMap(env_map), metMap(met_map),
-      modMap(mod_map), varMap(var_map), intMap(int_map), resMap(res_map)
-    { }
-
-    /// given an entry_name = block.entry_key, return the
-    /// corresponding member value from the appropriate Data*Rep in
-    /// the passed ProblemDescDB rep.
-    T get(const std::string& entry_name,
-	  const std::shared_ptr<ProblemDescDB>& db_rep) const;
+  /// Encapsulate lookups across Data*Rep types: given lookup tables
+  /// mapping strings to pointers to Data*Rep members, and an
+  /// entry_name = block.entry_key, return the corresponding member
+  /// value from the appropriate Data*Rep in the ProblemDescDB rep.
+  template<typename T>
+  T& get(const std::string& context_msg,
+	 const std::map<std::string, T DataEnvironmentRep::*>& env_map,
+	 const std::map<std::string, T DataMethodRep::*>& met_map,
+	 const std::map<std::string, T DataModelRep::*>& mod_map,
+	 const std::map<std::string, T DataVariablesRep::*>& var_map,
+	 const std::map<std::string, T DataInterfaceRep::*>& int_map,
+	 const std::map<std::string, T DataResponsesRep::*>& res_map,
+	 const std::string& entry_name,
+	 const std::shared_ptr<ProblemDescDB>& db_rep) const;
 
 //     void set(const std::string& entry_name,
 // 	     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const;
-
-  private:
-    /// message to print if lookup key not found or other error
-    std::string contextMsg;
-    /// environment: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataEnvironmentRep>> envMap;
-    /// method: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataMethodRep>> metMap;
-    /// model: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataModelRep>> modMap;
-    /// variables: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataVariablesRep>> varMap;
-    /// interface: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataInterfaceRep>> intMap;
-    /// responses: map from entry key to Data*Rep member getter
-    std::map<std::string, RepGetter<T, DataResponsesRep>> resMap;
-  };
-
 
   //
   //- Heading: Private convenience functions

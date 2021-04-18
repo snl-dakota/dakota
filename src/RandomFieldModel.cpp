@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -247,7 +248,7 @@ void RandomFieldModel::identify_field_model()
       gpApproximations.push_back(Approximation(sharedData));
     for (int i = 0; i < actualReducedRank; ++i) {
       RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
-      gpApproximations[i].add_array(rfBuildVars, factor_i);
+      gpApproximations[i].add_array(rfBuildVars, false, factor_i, true);//shallow,deep
       gpApproximations[i].build();
       const String gp_string = std::to_string(i);
       const String gp_prefix = "PCA_GP";

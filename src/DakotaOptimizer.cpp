@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -216,7 +217,7 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   for (i=0; i<num_best; ++i) {
     // output best variables
     const Variables& best_vars = bestVariablesArray[i];
-    if (expData.config_vars().size() == 0) {
+    if (expData.num_config_vars() == 0) {
       s << "<<<<< Best parameters          ";
       if (num_best > 1) s << "(set " << i+1 << ") ";
       s << "=\n" << best_vars;
@@ -627,6 +628,7 @@ void Optimizer::post_run(std::ostream& s)
       scale_model_rep->resp_scaled2native(best_vars, best_resp);
     }
   }
+
   Minimizer::post_run(s);
 }
 

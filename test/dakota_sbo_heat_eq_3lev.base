@@ -1,0 +1,60 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 237 total (180 new, 57 duplicate)
+         obj_fn: 237 val (180 n, 57 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 237 total (180 new, 57 duplicate)
+         obj_fn: 237 val (180 n, 57 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 237 total (180 new, 57 duplicate)
+         obj_fn: 237 val (180 n, 57 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                     -4.9999977531e-01 cdv_1
+                     -1.2461122224e-09 cdv_2
+                      0.0000000000e+00 cdv_3
+                     -1.0000000000e+00 cdv_4
+                      2.5000000000e-01 cdv_5
+                      2.5000000000e-01 cdv_6
+                      2.5000000000e-01 cdv_7
+                                   200 N_x
+                                    21 N_mod
+<<<<< Best objective function  =
+                     -8.9965332302e+00
+<<<<< Best data captured at function evaluation 229
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 416 total (291 new, 125 duplicate)
+         obj_fn: 416 val (291 n, 125 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 416 total (291 new, 125 duplicate)
+         obj_fn: 416 val (291 n, 125 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 416 total (291 new, 125 duplicate)
+         obj_fn: 416 val (291 n, 125 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                     -4.9999903012e-01 cdv_1
+                     -4.6509133649e-08 cdv_2
+                      0.0000000000e+00 cdv_3
+                     -1.0000000000e+00 cdv_4
+                      2.5000000000e-01 cdv_5
+                      2.5000000000e-01 cdv_6
+                      2.5000000000e-01 cdv_7
+                                   200 N_x
+                                    21 N_mod
+<<<<< Best objective function  =
+                     -8.9965332302e+00
+<<<<< Best data captured at function evaluation 408
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 302 total (245 new, 57 duplicate)
+         obj_fn: 302 val (245 n, 57 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 302 total (245 new, 57 duplicate)
+         obj_fn: 302 val (245 n, 57 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 302 total (245 new, 57 duplicate)
+         obj_fn: 302 val (245 n, 57 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                     -4.9999922803e-01 cdv_1
+                     -6.3143425726e-08 cdv_2
+                      0.0000000000e+00 cdv_3
+                     -1.0000000000e+00 cdv_4
+                      2.4999779996e-01 cdv_5
+                      2.4999779996e-01 cdv_6
+                      2.4999779996e-01 cdv_7
+                                   200 N_x
+                                    21 N_mod
+<<<<< Best objective function  =
+                     -8.9965332302e+00
+<<<<< Best data captured at function evaluation 294

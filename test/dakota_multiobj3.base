@@ -1,0 +1,80 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 109 total (109 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.0722659375e+00 intake_dia
+                      7.8125000000e-05 flatness
+<<<<< Best objective functions =
+                     -2.7044142223e+00
+                     -2.6571982250e-01
+                     -5.9998828125e-01
+                      3.4998242196e-01
+<<<<< Best data captured at function evaluation 107
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 102 total (102 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.1639939062e+00 intake_dia
+                      7.8125000000e-05 flatness
+<<<<< Best objective functions =
+                     -2.7444482512e+00
+                      6.9238792685e-01
+                     -5.9998828125e-01
+                      3.4998242196e-01
+<<<<< Best data captured at function evaluation 102
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 2000 total (1990 new, 10 duplicate)
+<<<<< Best parameters          =
+                      2.1632817538e+00 intake_dia
+                      7.3003465776e-05 flatness
+<<<<< Best objective functions =
+                     -2.7441382055e+00
+                      6.7142191175e-01
+                     -5.9998904948e-01
+                      3.4998357430e-01
+<<<<< Best data captured at function evaluation 861
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
+<<<<< Best parameters          (set 1) =
+                      2.0012830000e+00 intake_dia
+                      1.2531160000e+00 flatness
+<<<<< Best objective functions (set 1) =
+                     -2.4854785356e+00
+                     -3.9339850641e-01
+                     -4.1203260000e-01
+                      9.1445774799e-02
+<<<<< Best data captured at function evaluation 820
+<<<<< Best parameters          (set 2) =
+                      2.0097190000e+00 intake_dia
+                      1.2011409737e+00 flatness
+<<<<< Best objective functions (set 2) =
+                     -2.4969566226e+00
+                     -3.8433580133e-01
+                     -4.1982885394e-01
+                      1.0118244643e-01
+<<<<< Best data captured at function evaluation 844
+<<<<< Best parameters          (set 3) =
+                      2.0211380860e+00 intake_dia
+                      1.0997602596e+00 flatness
+<<<<< Best objective functions (set 3) =
+                     -2.5171475098e+00
+                     -3.7025662325e-01
+                     -4.3503596106e-01
+                      1.2043508402e-01
+<<<<< Best data captured at function evaluation 861
+<<<<< Best parameters          (set 4) =
+                      2.0291880000e+00 intake_dia
+                      1.1000099729e+00 flatness
+<<<<< Best objective functions (set 4) =
+                     -2.5206233813e+00
+                     -3.5884930821e-01
+                     -4.3499850407e-01
+                      1.2038724285e-01
+<<<<< Best data captured at function evaluation 311
+<<<<< Best parameters          (set 5) =
+                      1.9768718800e+00 intake_dia
+                      1.5025569205e+00 flatness
+<<<<< Best objective functions (set 5) =
+                     -2.4374083353e+00
+                     -4.1463213668e-01
+                     -3.7461646192e-01
+                      4.6008826740e-02
+<<<<< Best data captured at function evaluation 780

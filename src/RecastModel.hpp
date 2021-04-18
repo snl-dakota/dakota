@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -243,7 +244,7 @@ protected:
   Model& subordinate_model();
 
   /// set key in subModel
-  void active_model_key(const UShortArray& mi_key);
+  void active_model_key(const Pecos::ActiveKey& key);
   /// remove keys in subModel
   void clear_model_keys();
 
@@ -271,9 +272,9 @@ protected:
   /// return size of subModel::solnControlCostMap
   size_t solution_levels() const;
   /// activate entry in subModel::solnControlCostMap
-  void solution_level_cost_index(unsigned short cost_index);
+  void solution_level_cost_index(size_t cost_index);
   /// return active entry in subModel::solnControlCostMap
-  unsigned short solution_level_cost_index() const;
+  size_t solution_level_cost_index() const;
   /// return cost estimates from subModel::solnControlCostMap
   RealVector solution_level_costs() const;
   /// return active cost estimate from subModel::solnControlCostMap
@@ -286,7 +287,7 @@ protected:
 
   /// update the subModel's surrogate response function indices
   /// (DataFitSurrModel::surrogateFnIndices)
-  void surrogate_function_indices(const IntSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// update the subModel's surrogate response mode
   /// (SurrogateModel::responseMode)
@@ -710,8 +711,8 @@ inline Model& RecastModel::subordinate_model()
 { return subModel; }
 
 
-inline void RecastModel::active_model_key(const UShortArray& mi_key)
-{ subModel.active_model_key(mi_key); }
+inline void RecastModel::active_model_key(const Pecos::ActiveKey& key)
+{ subModel.active_model_key(key); }
 
 
 inline void RecastModel::clear_model_keys()
@@ -790,11 +791,11 @@ inline size_t RecastModel::solution_levels() const
 { return subModel.solution_levels(); }
 
 
-inline void RecastModel::solution_level_cost_index(unsigned short cost_index)
+inline void RecastModel::solution_level_cost_index(size_t cost_index)
 { subModel.solution_level_cost_index(cost_index); }
 
 
-inline unsigned short RecastModel::solution_level_cost_index() const
+inline size_t RecastModel::solution_level_cost_index() const
 { return subModel.solution_level_cost_index(); }
 
 
@@ -816,7 +817,7 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 
 
 inline void RecastModel::
-surrogate_function_indices(const IntSet& surr_fn_indices)
+surrogate_function_indices(const SizetSet& surr_fn_indices)
 { subModel.surrogate_function_indices(surr_fn_indices); }
 
 

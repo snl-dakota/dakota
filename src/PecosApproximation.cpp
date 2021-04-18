@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -77,7 +78,7 @@ PecosApproximation(ProblemDescDB& problem_db,
 /*
 void PecosApproximation::link_multilevel_surrogate_data()
 {
-  // Manage {surr,modSurr}Data instances (approxDataKeys and original/modified
+  // Manage {surr,modSurr}Data instances (activeKey and original/modified
   // approxData indices are managed in SharedPecosApproxData).
   // > SurrogateModel::aggregate_response() uses order of HF,LF
   // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
@@ -85,8 +86,8 @@ void PecosApproximation::link_multilevel_surrogate_data()
 
   SharedPecosApproxData* shared_data_rep
     = (SharedPecosApproxData*)sharedDataRep;
-  switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
-  case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP: {
+  switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_reduction()) {
+  case Pecos::DISTINCT_DISCREPANCY: case Pecos::RECURSIVE_DISCREPANCY: {
     // push another SurrogateData instance for modSurrData
     // (allows consolidation of Approximation::push/pop operations)
     const UShortArray& key = approxData.back().active_key();

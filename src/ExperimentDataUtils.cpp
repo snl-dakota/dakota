@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -617,6 +618,7 @@ Real ExperimentCovariance::apply_experiment_covariance( const RealVector &vector
 
 void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt( 
 		  const RealVector &vector, RealVector &result ) const{
+
   if ( vector.length() != num_dof() )
     throw(std::runtime_error("apply_covariance_inverse_sqrt: vector is inconsistent with covariance matrix"));
 

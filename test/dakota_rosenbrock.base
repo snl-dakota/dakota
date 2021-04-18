@@ -1,0 +1,184 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0013529993e+00 x1
+                      1.0026805414e+00 x2
+<<<<< Best objective function  =
+                      1.9050696338e-06
+<<<<< Best data captured at function evaluation 38
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9794883625e-01 x1
+                      9.9572819760e-01 x2
+<<<<< Best objective function  =
+                      7.2238223384e-06
+<<<<< Best data captured at function evaluation 54
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 23 total (23 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -8.6064674053e-01 x1
+                      7.3943464518e-01 x2
+<<<<< Best objective function  =
+                      3.4621696641e+00
+<<<<< Best data captured at function evaluation 22
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 197 total (197 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9586771499e-01 x1
+                      9.9173958950e-01 x2
+<<<<< Best objective function  =
+                      1.7092462372e-05
+<<<<< Best data captured at function evaluation 195
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 255 total (255 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9330130384e-01 x1
+                      9.8659118539e-01 x2
+<<<<< Best objective function  =
+                      4.5189440954e-05
+<<<<< Best data captured at function evaluation 255
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 588 total (588 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9712893993e-01 x1
+                      9.9424471095e-01 x2
+<<<<< Best objective function  =
+                      8.2888328512e-06
+<<<<< Best data captured at function evaluation 586
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9972719897e-01 x1
+                      9.9941343413e-01 x2
+<<<<< Best objective function  =
+                      2.4283400701e-07
+<<<<< Best data captured at function evaluation 73
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 29 total (29 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999668139e-01 x1
+                      9.9999334619e-01 x2
+<<<<< Best residual terms =
+                     -1.6598357466e-07
+                      3.3186106982e-06
+<<<<< Best data captured at function evaluation 29
+Confidence Intervals on Calibrated Parameters:
+            x1: [ 9.9995446173e-01, 1.0000389010e+00 ]
+            x2: [ 9.9990880168e-01, 1.0000778907e+00 ]
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 291 total (260 new, 31 duplicate)
+<<<<< Best parameters          =
+                      1.0609605921e+00 x1
+                      1.1251390353e+00 x2
+<<<<< Best objective function  =
+                      3.7410283391e-03
+<<<<< Best data captured at function evaluation 276
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 52 total (52 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9903033780e-01 x1
+                      9.9804857586e-01 x2
+<<<<< Best residual terms =
+                     -1.3039986529e-04
+                      9.6966219971e-04
+<<<<< Best data captured at function evaluation 52
+Confidence Intervals on Calibrated Parameters:
+            x1: [ 9.8659870172e-01, 1.0114619739e+00 ]
+            x2: [ 9.7317832287e-01, 1.0229188288e+00 ]
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 130 total (130 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      9.9995626394e-01 x2
+<<<<< Best residual terms =
+                     -4.3736061737e-04
+                     -2.6645352591e-15
+<<<<< Best data captured at function evaluation 128
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+<<<<< Best residual terms =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 14
+Confidence Intervals on Calibrated Parameters:
+            x1: [ 1.0000000000e+00, 1.0000000000e+00 ]
+            x2: [ 1.0000000000e+00, 1.0000000000e+00 ]
+Test Number 12 succeeded
+<<<<< Function evaluation summary: 38 total (38 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+<<<<< Best residual terms =
+                     -1.2212453271e-14
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 36
+Test Number 13 succeeded
+<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+<<<<< Best residual terms =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 14
+Confidence Intervals on Calibrated Parameters:
+            x1: [ 1.0000000000e+00, 1.0000000000e+00 ]
+            x2: [ 1.0000000000e+00, 1.0000000000e+00 ]
+Test Number 14 succeeded
+<<<<< Function evaluation summary: 38 total (38 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+<<<<< Best residual terms =
+                     -1.2212453271e-14
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 36
+Test Number 15 succeeded
+<<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0013529993e+00 x1
+                      1.0026805414e+00 x2
+<<<<< Best residual terms =
+                     -2.7287821042e-04
+                     -1.3529993038e-03
+<<<<< Best data captured at function evaluation 39
+Test Number 16 succeeded
+<<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999713984e-01 x1
+                      9.9999402239e-01 x2
+<<<<< Best residual terms =
+                     -2.5729995123e-06
+                      2.8601579213e-06
+<<<<< Best data captured at function evaluation 34
+Test Number 17 succeeded
+<<<<< Function evaluation summary: 188 total (188 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9992982162e-01 x1
+                      9.9983657273e-01 x2
+<<<<< Best residual terms =
+                     -2.3075437253e-04
+                      7.0178380575e-05
+<<<<< Best data captured at function evaluation 188
+Test Number 18 succeeded
+<<<<< Function evaluation summary: 58 total (44 new, 14 duplicate)
+<<<<< Best parameters          =
+                      9.9999668139e-01 x1
+                      9.9999334619e-01 x2
+<<<<< Best residual terms =
+                     -1.6598357466e-07
+                      3.3186106982e-06
+<<<<< Best data captured at function evaluation 58
+Test Number 19 succeeded
+<<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9972719897e-01 x1
+                      9.9941343413e-01 x2
+<<<<< Best residual terms =
+                     -4.1038226569e-04
+                      2.7280103193e-04
+<<<<< Best data captured at function evaluation 74

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -356,15 +357,13 @@ void Minimizer::finalize_run()
   // Finalize an initialized mapping.  This will correspond to the first
   // finalize_run() with an uninitialized mapping, such as the inner-iterator
   // in a recursion.
-  if (iteratedModel.mapping_initialized()) {
+  if (!iteratedModel.is_null() && iteratedModel.mapping_initialized()) {
     // paired to matching call to Model.initialize_mapping() in
     // initialize_run() above
     bool var_size_changed = iteratedModel.finalize_mapping();
     if (var_size_changed)
       /*bool reinit_comms =*/ resize(); // ignore return value
   }
-
-  Iterator::finalize_run(); // included for completeness
 }
 
 
@@ -396,7 +395,7 @@ void Minimizer::data_transform_model()
       abort_handler(-1);
   }
   // TODO: verify: we don't want to weight by missing sigma: all = 1.0
-  expData.load_data("Least Squares");
+  expData.load_data("Least Squares", iteratedModel.current_variables());
 
   iteratedModel.
     assign_rep(std::make_shared<DataTransformModel>(iteratedModel, expData));

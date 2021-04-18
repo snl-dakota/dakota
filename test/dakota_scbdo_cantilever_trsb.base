@@ -1,0 +1,72 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 15 total (15 new, 0 duplicate)
+         obj_fn: 15 val (15 n, 0 d), 15 grad (15 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 15 val (15 n, 0 d), 15 grad (15 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 15 val (15 n, 0 d), 15 grad (15 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 810 total (810 new, 0 duplicate)
+  response_fn_1: 810 val (810 n, 0 d), 405 grad (405 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 810 val (810 n, 0 d), 405 grad (405 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 810 val (810 n, 0 d), 405 grad (405 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.3143958845e+00 w
+                      4.0034434891e+00 t
+<<<<< Best objective function  =
+                      9.2655531351e+00
+<<<<< Best constraint values   =
+                      2.5877431945e+00
+                      2.2745132363e+00
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 167 total (167 new, 0 duplicate)
+         obj_fn: 167 val (167 n, 0 d), 167 grad (167 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 167 val (167 n, 0 d), 167 grad (167 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 167 val (167 n, 0 d), 167 grad (167 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1458 total (1458 new, 0 duplicate)
+  response_fn_1: 1458 val (1458 n, 0 d), 729 grad (729 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1458 val (1458 n, 0 d), 729 grad (729 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 1458 val (1458 n, 0 d), 729 grad (729 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4459720935e+00 w
+                      3.8922141352e+00 t
+<<<<< Best objective function  =
+                      9.5202471565e+00
+<<<<< Best constraint values   =
+                      2.9999999805e+00
+                      3.2769530510e+00
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 18 total (18 new, 0 duplicate)
+         obj_fn: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 490 total (490 new, 0 duplicate)
+  response_fn_1: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.3146986637e+00 w
+                      4.0030479050e+00 t
+<<<<< Best objective function  =
+                      9.2658496364e+00
+<<<<< Best constraint values   =
+                      2.5882551170e+00
+                      2.2765581403e+00
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 159 total (159 new, 0 duplicate)
+         obj_fn: 159 val (159 n, 0 d), 159 grad (159 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 159 val (159 n, 0 d), 159 grad (159 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 159 val (159 n, 0 d), 159 grad (159 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 882 total (882 new, 0 duplicate)
+  response_fn_1: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4459719203e+00 w
+                      3.8922144107e+00 t
+<<<<< Best objective function  =
+                      9.5202471563e+00
+<<<<< Best constraint values   =
+                      2.9999999802e+00
+                      3.2768981783e+00
+<<<<< Best data not found in evaluation cache

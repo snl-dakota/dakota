@@ -1,0 +1,72 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 19 total (19 new, 0 duplicate)
+         obj_fn: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 300 total (300 new, 0 duplicate)
+  response_fn_1: 300 val (300 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 300 val (300 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 300 val (300 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.3244046734e+00 w
+                      3.9906959928e+00 t
+<<<<< Best objective function  =
+                      9.2759924158e+00
+<<<<< Best constraint values   =
+                      2.6056030951e+00
+                      2.3271721506e+00
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 167 total (167 new, 0 duplicate)
+         obj_fn: 167 val (167 n, 0 d), 167 grad (167 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 167 val (167 n, 0 d), 167 grad (167 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 167 val (167 n, 0 d), 167 grad (167 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 540 total (540 new, 0 duplicate)
+  response_fn_1: 540 val (540 n, 0 d), 270 grad (270 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 540 val (540 n, 0 d), 270 grad (270 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 540 val (540 n, 0 d), 270 grad (270 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4459753998e+00 w
+                      3.8922088752e+00 t
+<<<<< Best objective function  =
+                      9.5202471597e+00
+<<<<< Best constraint values   =
+                      2.9999999857e+00
+                      3.2644321910e+00
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 16 total (16 new, 0 duplicate)
+         obj_fn: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 490 total (490 new, 0 duplicate)
+  response_fn_1: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.3146947430e+00 w
+                      4.0030527646e+00 t
+<<<<< Best objective function  =
+                      9.2658451900e+00
+<<<<< Best constraint values   =
+                      2.5882475368e+00
+                      2.2765348096e+00
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 159 total (159 new, 0 duplicate)
+         obj_fn: 159 val (159 n, 0 d), 159 grad (159 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 159 val (159 n, 0 d), 159 grad (159 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 159 val (159 n, 0 d), 159 grad (159 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 882 total (882 new, 0 duplicate)
+  response_fn_1: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4459719209e+00 w
+                      3.8922144097e+00 t
+<<<<< Best objective function  =
+                      9.5202471563e+00
+<<<<< Best constraint values   =
+                      2.9999999802e+00
+                      3.2769008978e+00
+<<<<< Best data not found in evaluation cache

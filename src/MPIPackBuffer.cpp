@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -54,6 +55,8 @@ PACKBUF(int,MPI_INT)
 PACKBUF(u_int,MPI_UNSIGNED)
 PACKBUF(long,MPI_LONG)
 PACKBUF(u_long,MPI_UNSIGNED_LONG)
+PACKBUF(long long, MPI_LONG_LONG)
+PACKBUF(unsigned long long, MPI_UNSIGNED_LONG_LONG)
 PACKBUF(short,MPI_SHORT)
 PACKBUF(u_short,MPI_UNSIGNED_SHORT)
 PACKBUF(char,MPI_CHAR)
@@ -117,6 +120,8 @@ UNPACKBUF(int,MPI_INT)
 UNPACKBUF(u_int,MPI_UNSIGNED)
 UNPACKBUF(long,MPI_LONG)
 UNPACKBUF(u_long,MPI_UNSIGNED_LONG)
+UNPACKBUF(long long, MPI_LONG_LONG)
+UNPACKBUF(unsigned long long, MPI_UNSIGNED_LONG_LONG)
 UNPACKBUF(short,MPI_SHORT)
 UNPACKBUF(u_short,MPI_UNSIGNED_SHORT)
 UNPACKBUF(char,MPI_CHAR)
@@ -162,6 +167,8 @@ PACKSIZE(int,MPI_INT)
 PACKSIZE(u_int,MPI_UNSIGNED)
 PACKSIZE(long,MPI_LONG)
 PACKSIZE(u_long,MPI_UNSIGNED_LONG)
+PACKSIZE(long long, MPI_LONG_LONG)
+PACKSIZE(unsigned long long, MPI_UNSIGNED_LONG_LONG)
 PACKSIZE(short,MPI_SHORT)
 PACKSIZE(u_short,MPI_UNSIGNED_SHORT)
 PACKSIZE(char,MPI_CHAR)

@@ -527,9 +527,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ variable_tolerance REAL {N_mdm(Real,threshStepLength)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
     [ synchronization {0}
-      blocking {N_mdm(lit,evalSynchronize_blocking)}
+      blocking {N_mdm(type,evalSynchronize_BLOCKING_SYNCHRONIZATION)}
       |
-      nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
+      nonblocking {N_mdm(type,evalSynchronize_NONBLOCKING_SYNCHRONIZATION)}
      ]
     [ merit_function {0}
       merit_max {N_mdm(lit,meritFunction_merit_max)}
@@ -782,9 +782,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
       basic_pattern {N_mdm(lit,exploratoryMoves_simple)}
      ]
     [ synchronization {0}
-      blocking {N_mdm(lit,evalSynchronize_blocking)}
+      blocking {N_mdm(type,evalSynchronize_BLOCKING_SYNCHRONIZATION)}
       |
-      nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
+      nonblocking {N_mdm(type,evalSynchronize_NONBLOCKING_SYNCHRONIZATION)}
      ]
     [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
     [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
@@ -988,6 +988,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ batch_size INTEGER >= 1 {N_mdm(int,batchSize)}
       [ exploration INTEGER >= 0 {N_mdm(int,batchSizeExplore)} ]
+      [ synchronization {0}
+        blocking {N_mdm(type,evalSynchronize_BLOCKING_SYNCHRONIZATION)}
+        |
+        nonblocking {N_mdm(type,evalSynchronize_NONBLOCKING_SYNCHRONIZATION)}
+       ]
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
@@ -1174,6 +1179,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
     [ max_cross_iterations INTEGER >= 0 {N_mdm(int,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTol)} ]
+    [ response_scaling {N_mdm(true,respScalingFlag)} ]
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
     |
@@ -1183,13 +1189,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ start_order ALIAS order INTEGER >= 0 {N_mdm(ushint,startOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
-    [ adapt_order {N_mdm(true,adaptOrder)} ]
+    [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
     [ start_rank ALIAS rank INTEGER >= 0 {N_mdm(sizet,startRank)} ]
+    [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
-    [ adapt_rank {N_mdm(true,adaptRank)} ]
+    [ max_cv_rank_candidates INTEGER >= 0 {N_mdm(sizet,maxCVRankCandidates)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -1316,7 +1324,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -1332,19 +1340,22 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
     [ max_cross_iterations INTEGER >= 0 {N_mdm(int,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTol)} ]
+    [ response_scaling {N_mdm(true,respScalingFlag)} ]
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     [ collocation_points_sequence ALIAS pilot_samples INTEGERLIST {N_mdm(szarray,collocationPointsSeq)} ]
     [ collocation_ratio REAL {N_mdm(Realp,collocationRatio)} ]
     [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
-    [ adapt_order {N_mdm(true,adaptOrder)} ]
+    [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
+    [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
-    [ adapt_rank {N_mdm(true,adaptRank)} ]
+    [ max_cv_rank_candidates INTEGER >= 0 {N_mdm(sizet,maxCVRankCandidates)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -1457,7 +1468,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       absolute {N_mdm(false,relativeConvMetric)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -1473,19 +1484,22 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ max_solver_iterations INTEGER >= 0 {N_mdm(int,maxSolverIterations)} ]
     [ max_cross_iterations INTEGER >= 0 {N_mdm(int,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTol)} ]
+    [ response_scaling {N_mdm(true,respScalingFlag)} ]
     [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
     [ collocation_points_sequence ALIAS pilot_samples INTEGERLIST {N_mdm(szarray,collocationPointsSeq)} ]
     [ collocation_ratio REAL {N_mdm(Realp,collocationRatio)} ]
     [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(usharray,startOrderSeq)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
      ]
+    [ adapt_order {N_mdm(true,adaptOrder)} ]
     [ kick_order INTEGER > 0 {N_mdm(ushint,kickOrder)} ]
     [ max_order INTEGER >= 0 {N_mdm(ushint,maxOrder)} ]
-    [ adapt_order {N_mdm(true,adaptOrder)} ]
+    [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
     [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
+    [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ kick_rank INTEGER > 0 {N_mdm(sizet,kickRank)} ]
     [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
-    [ adapt_rank {N_mdm(true,adaptRank)} ]
+    [ max_cv_rank_candidates INTEGER >= 0 {N_mdm(sizet,maxCVRankCandidates)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -1669,8 +1683,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+          [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
          ]
         [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+        [ response_scaling {N_mdm(true,respScalingFlag)} ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -1708,8 +1724,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+          [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
          ]
         [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+        [ response_scaling {N_mdm(true,respScalingFlag)} ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -1887,7 +1905,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -1958,8 +1976,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+          [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
          ]
         [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+        [ response_scaling {N_mdm(true,respScalingFlag)} ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -2123,7 +2143,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       absolute {N_mdm(false,relativeConvMetric)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -2171,8 +2191,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+          [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
          ]
         [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+        [ response_scaling {N_mdm(true,respScalingFlag)} ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -2522,7 +2544,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
     [ discrepancy_emulation {0}
-      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
      ]
@@ -2764,14 +2786,33 @@ KEYWORD method {N_mdm3(start,0,stop)}
       ( variance {N_mdm(type,allocationTarget_TARGET_VARIANCE)}
         [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
        )
+      |
+      ( standard_deviation {N_mdm(type,allocationTarget_TARGET_SIGMA)}
+        [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
+       )
+      |
+      ( scalarization {N_mdm(type,allocationTarget_TARGET_SCALARIZATION)}
+        [ scalarization_response_mapping REALLIST {N_mdm(RealDL,scalarizationRespCoeffs)} ]
+        [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
+       )
      ]
     [ qoi_aggregation {0}
       sum {N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}
       |
       max {N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_tolerance_type {0}
+      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+      |
+      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+     ]
+    [ convergence_tolerance_target {0}
+      variance_constraint {N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT)}
+      |
+      cost_constraint {N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT)}
+     ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
       |
@@ -3399,8 +3440,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -3438,8 +3481,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -3509,7 +3554,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -3557,8 +3602,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -3634,7 +3681,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -3705,8 +3752,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -3861,7 +3910,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -4142,8 +4191,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -4181,8 +4232,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -4252,7 +4305,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -4300,8 +4353,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -4377,7 +4432,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -4448,8 +4503,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -4604,7 +4661,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -4784,8 +4841,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -4823,8 +4882,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -4894,7 +4955,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -4942,8 +5003,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -5019,7 +5082,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -5090,8 +5153,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
                ]
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                [ max_cv_order_candidates INTEGER >= 0 {N_mdm(ushint,maxCVOrderCandidates)} ]
                ]
               [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ response_scaling {N_mdm(true,respScalingFlag)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -5246,7 +5311,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
            ]
           [ discrepancy_emulation {0}
-            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |
             recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
            ]
@@ -5373,16 +5438,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
       [ discrepancy_type {0}
-        gaussian_process ALIAS kriging {N_mdm(lit,modelDiscrepancyType_global_kriging)}
+        ( gaussian_process ALIAS kriging {N_mdm(lit,modelDiscrepancyType_global_kriging)}
+          [ trend_order INTEGER >= 0 {N_mdm(shint,polynomialOrder)} ]
+         )
         |
-        polynomial {N_mdm(lit,modelDiscrepancyType_global_polynomial)}
-        [ correction_order {0}
-          constant {N_mdm(order,approxCorrectionOrder_0)}
-          |
-          linear {N_mdm(order,approxCorrectionOrder_1)}
-          |
-          quadratic {N_mdm(order,approxCorrectionOrder_2)}
-         ]
+        ( polynomial {N_mdm(lit,modelDiscrepancyType_global_polynomial)}
+          [ basis_order INTEGER >= 0 {N_mdm(shint,polynomialOrder)} ]
+         )
        ]
       [ num_prediction_configs INTEGER >= 0 {N_mdm(sizet,numPredConfigs)} ]
       [ prediction_configs REALLIST {N_mdm(RealDL,predictionConfigList)} ]
@@ -5796,7 +5858,7 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( surrogate {N_mom(lit,modelType_surrogate)}
-    [ id_surrogates INTEGERLIST {N_mom(intsetm1,surrogateFnIndices)} ]
+    [ id_surrogates INTEGERLIST {N_mom(id_to_index_set,surrogateFnIndices)} ]
     ( global {0}
       ( experimental_gaussian_process {N_mom(lit,surrogateType_global_exp_gauss_proc)}
         [ trend {0}
@@ -5836,6 +5898,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
             [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
       |
@@ -5878,6 +5946,12 @@ KEYWORD model {N_mom3(start,0,stop)}
               [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
              )
            ]
+          [ import_model {N_mom(true,importSurrogate)}
+            [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+            text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+            |
+            binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
+           ]
          )
         [ export_approx_variance_file STRING {N_mom(str,exportApproxVarianceFile)}
           [ 
@@ -5908,6 +5982,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
          ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
+         ]
        )
       |
       ( moving_least_squares {N_mom(lit,surrogateType_global_moving_least_squares)}
@@ -5919,6 +5999,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
             [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
       |
@@ -5933,19 +6019,22 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ max_solver_iterations INTEGER >= 0 {N_mom(int,maxSolverIterations)} ]
         [ max_cross_iterations INTEGER >= 0 {N_mom(int,maxCrossIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTol)} ]
+        [ response_scaling {N_mom(true,respScalingFlag)} ]
         [ tensor_grid {N_mom(true,tensorGridFlag)} ]
         [ rounding_tolerance REAL {N_mom(Real,solverRoundingTol)} ]
         [ arithmetic_tolerance REAL {N_mom(Real,statsRoundingTol)} ]
         [ start_order ALIAS order INTEGER >= 0 {N_mom(ushint,startOrder)}
           [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
          ]
+        [ adapt_order {N_mom(true,adaptOrder)} ]
         [ kick_order INTEGER > 0 {N_mom(ushint,kickOrder)} ]
         [ max_order INTEGER >= 0 {N_mom(ushint,maxOrder)} ]
-        [ adapt_order {N_mom(true,adaptOrder)} ]
+        [ max_cv_order_candidates INTEGER >= 0 {N_mom(ushint,maxCVOrderCandidates)} ]
         [ start_rank ALIAS rank INTEGER >= 0 {N_mom(sizet,startRank)} ]
+        [ adapt_rank {N_mom(true,adaptRank)} ]
         [ kick_rank INTEGER > 0 {N_mom(sizet,kickRank)} ]
         [ max_rank INTEGER >= 0 {N_mom(sizet,maxRank)} ]
-        [ adapt_rank {N_mom(true,adaptRank)} ]
+        [ max_cv_rank_candidates INTEGER >= 0 {N_mom(sizet,maxCVRankCandidates)} ]
        )
       |
       ( neural_network {N_mom(lit,surrogateType_global_neural_network)}
@@ -5960,6 +6049,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ algebraic_file {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)} ]
             [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
            )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
       |
@@ -5976,6 +6071,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ algebraic_file {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)} ]
             [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
            )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
       |
@@ -5996,6 +6097,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
            )
          ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
+         ]
        )
       |
       ( experimental_polynomial {N_mom(lit,surrogateType_global_exp_poly)}
@@ -6007,6 +6114,12 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
             [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
       [ domain_decomposition {N_mom(true,domainDecomp)}
@@ -6038,7 +6151,7 @@ KEYWORD model {N_mom3(start,0,stop)}
            ]
          )
         |
-        actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+        actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
        ]
       [ reuse_points ALIAS reuse_samples {0}
         all {N_mom(lit,approxPointReuse_all)}
@@ -6125,16 +6238,16 @@ KEYWORD model {N_mom3(start,0,stop)}
       tana {N_mom(lit,surrogateType_multipoint_tana)}
       |
       qmea {N_mom(lit,surrogateType_multipoint_qmea)}
-      actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
      )
     |
     ( local {N_mom(lit,surrogateType_local_taylor)}
       taylor_series {0}
-      actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      actual_model_pointer ALIAS truth_model_pointer STRING {N_mom(str,actualModelPointer)}
      )
     |
     ( hierarchical {N_mom(lit,surrogateType_hierarchical)}
-      ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,orderedModelPointers)}
+      ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,ensembleModelPointers)}
       [ correction {0}
         zeroth_order {N_mom(order,approxCorrectionOrder_0)}
         |
@@ -6147,6 +6260,11 @@ KEYWORD model {N_mom3(start,0,stop)}
         |
         combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
        ]
+     )
+    |
+    ( non_hierarchical ALIAS model_ensemble {N_mom(lit,surrogateType_non_hierarchical)}
+      truth_model_pointer ALIAS actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      unordered_model_fidelities ALIAS approximation_models STRINGLIST {N_mom(strL,ensembleModelPointers)}
      )
    )
   |
@@ -6213,13 +6331,20 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( adapted_basis {N_mom(lit,modelType_adapted_basis)}
-    actual_model_pointer STRING {N_mom(str,actualModelPointer)}
-    sparse_grid_level INTEGER {N_mom(ushint,adaptedBasisSparseGridLev)}
-    |
-    ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}
-      collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
+    ( actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      sparse_grid_level INTEGER {N_mom(ushint,adaptedBasisSparseGridLev)}
+      |
+      ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}
+        collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
+       )
+      [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
+      [ rotation_method {0}
+        unranked {N_mom(type,method_rotation_ROTATION_METHOD_UNRANKED)}
+        |
+        ranked {N_mom(type,method_rotation_ROTATION_METHOD_RANKED)}
+       ]
      )
-    [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
+    [ truncation_tolerance REAL {N_mom(Real,adaptedBasisTruncationTolerance)} ]
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}
@@ -6582,6 +6707,8 @@ KEYWORD interface {N_ifm3(start,0,stop)}
      )
     |
     matlab {N_ifm(type,interfaceType_MATLAB_INTERFACE)}
+    |
+    pybind11 {N_ifm(type,interfaceType_PYBIND11_INTERFACE)}
     |
     ( python {N_ifm(type,interfaceType_PYTHON_INTERFACE)}
       [ numpy {N_ifm(true,numpyFlag)} ]

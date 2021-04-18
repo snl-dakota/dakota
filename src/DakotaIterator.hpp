@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -122,6 +123,11 @@ public:
 					const ShortArray& di_target2,
 					const ShortArray& ds_target2,
 					const ShortArray& dr_target2);
+
+  /// set primaryResponseCoefficients, secondaryResponseCoefficients
+  /// within derived Iterators; Necessary for scalarization case in 
+  /// MLMC NonDMultilevelSampling to map scalarization in nested context
+  virtual void nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs);
 
   /// used by IteratorScheduler to set the starting data for a run
   virtual void initialize_iterator(int job_index);

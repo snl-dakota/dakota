@@ -1,7 +1,8 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -108,7 +109,7 @@ endif()
 # Generat DakotaBuildInfo.src if needed
 
 set(DAKOTA_BUILDINFO_PATH)
-if(DAKOTA_GIT_checkout)
+if(NOT DAKOTA_VERSION_FOUND)
   file( WRITE ${Dakota_BINARY_DIR}/generated/src/DakotaBuildInfo.cpp
     "// -- AUTO GENERATED FILE; DO NOT EDIT --
     #include \"DakotaBuildInfo.hpp\"
@@ -123,11 +124,6 @@ if(DAKOTA_GIT_checkout)
     message(STATUS
       "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp in the source tree; please remove!")
   endif() # incorrect location DakotaBuildInfo.cpp
-
-else() # source tree NOT a Git repo
-
-  message(STATUS "EXPECTED - DakotaBuildInfo.cpp found in the src tree.")
-
 endif()
 
 # -----------------
@@ -323,6 +319,10 @@ if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   add_definitions("-DDAKOTA_PYTHON")
   list(APPEND EXT_TPL_LIBS ${Python_LIBRARIES})
 
+  # Pybind11 is also included alongside older Python interface
+  list(APPEND EXT_TPL_INCDIRS ${pybind11_INCLUDE_DIR})
+  add_definitions("-DDAKOTA_PYBIND11")
+
   if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
     message(STATUS "Dakota Python direct interface using NumPy:\n"
       "     Include dirs: ${Python_NumPy_INCLUDE_DIRS}")
@@ -331,6 +331,7 @@ if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   endif()
 
 endif()
+
 
 if(DAKOTA_MODELCENTER)
   add_definitions("-DDAKOTA_MODELCENTER")
@@ -427,9 +428,9 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ProbabilityTransformModel.cpp
   ScalingModel.cpp ScalingOptions.cpp WeightingModel.cpp SurrogateModel.cpp
-  DataFitSurrModel.cpp HierarchSurrModel.cpp RandomFieldModel.cpp
-  SubspaceModel.cpp ActiveSubspaceModel.cpp AdaptedBasisModel.cpp
-  DiscrepancyCorrection.cpp)
+  DataFitSurrModel.cpp HierarchSurrModel.cpp NonHierarchSurrModel.cpp
+  RandomFieldModel.cpp SubspaceModel.cpp ActiveSubspaceModel.cpp
+  AdaptedBasisModel.cpp DiscrepancyCorrection.cpp)
 
 ## Constraint sources.
 set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
@@ -477,7 +478,7 @@ if(DAKOTA_MATLAB)
 endif()
 
 if(DAKOTA_PYTHON_DIRECT_INTERFACE)
-  list(APPEND interface_src PythonInterface.cpp)
+  list(APPEND interface_src PythonInterface.cpp Pybind11Interface.cpp)
 endif()
 
 if(DAKOTA_SCILAB)
@@ -721,11 +722,11 @@ if(HAVE_NPSOL)
   list(APPEND iterator_src SOLBase.cpp NPSOLOptimizer.cpp NLSSOLLeastSq.cpp)
 
   if(NOT APPLE)
-    list(APPEND Dakota_src_fortran npoptn_wrapper.f)
+    list(APPEND Dakota_src_fortran sol_optn_wrapper.f)
   else()
-    # ToDo: Debug unusual Mac build error when npoptn_wrapper.f is appended
+    # ToDo: Debug unusual Mac build error when sol_optn_wrapper.f is appended
     #       to the Dakota_src_fortran list rather than the iterator_src list
-    list(APPEND iterator_src npoptn_wrapper.f)
+    list(APPEND iterator_src sol_optn_wrapper.f)
   endif()
 endif(HAVE_NPSOL)
 
@@ -1049,6 +1050,31 @@ set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS} ${Boost_LIBRARIES}
  
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
 message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
+
+
+# Top-level dakota.environment Python module
+if(DAKOTA_PYBIND11)
+  # NOTE: Library name "environment" is really generic due to overly
+  # simple Python packaging scheme we're using; revisit.
+  # TODO: Need to always compile libs PIC when using Python
+  # TODO: Consider -undefined dynamic_lookup link flag on Mac
+  pybind11_add_module(environment dakota_python.cpp)
+  # TODO: transitive includes when merging from devel
+#  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
+  target_link_libraries(environment PRIVATE dakota_src
+    ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
+    )
+  if (APPLE)
+    set_target_properties(environment PROPERTIES INSTALL_RPATH
+      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
+  elseif (UNIX)
+    set_target_properties(environment PROPERTIES INSTALL_RPATH
+      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../bin")
+  endif()
+  install(TARGETS environment EXPORT ${ExportTarget}
+    DESTINATION share/dakota/Python/dakota/environment/)
+  install(FILES __init__.py DESTINATION share/dakota/Python/dakota/environment)
+endif()
 
 
 if (DAKOTA_API_JAVA)

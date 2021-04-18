@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -92,6 +93,10 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
+  void init_model(Model& model);
+  void update_model(Model& model);
+  void update_from_model(const Model& model);
+
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
 				const SizetArray& ds_index1,
@@ -129,7 +134,7 @@ protected:
   Iterator& subordinate_iterator();
 
   /// set active model key within approxInterface
-  void active_model_key(const UShortArray& mi_key);
+  void active_model_key(const Pecos::ActiveKey& key);
   /// remove all model keys within approxInterface
   void clear_model_keys();
 
@@ -168,7 +173,7 @@ protected:
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   /// and ApproximationInterface::approxFnIndices
-  void surrogate_function_indices(const IntSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points
@@ -187,7 +192,7 @@ protected:
   void rebuild_approximation(const IntResponsePair& response_pr);
   /// Rebuilds the local/multipoint/global approximation using
   /// the passed response data for a set of samples
-  void rebuild_approximation(const IntResponseMap& all_resp);
+  void rebuild_approximation(const IntResponseMap& resp_map);
 
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
@@ -212,25 +217,29 @@ protected:
   void append_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
 			    bool rebuild_flag);
-  /// appends an array of points to a global approximation and rebuilds it
-  /// if requested
-  void append_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
   /// appends a matrix of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const RealMatrix& samples,
 			    const IntResponseMap& resp_map, bool rebuild_flag);
+  /// appends an array of points to a global approximation and rebuilds it
+  /// if requested
+  void append_approximation(const VariablesArray& vars_array,
+			    const IntResponseMap& resp_map, bool rebuild_flag);
+  /// appends an map of points to a global approximation and rebuilds it
+  /// if requested
+  void append_approximation(const IntVariablesMap& vars_map,
+			    const IntResponseMap&  resp_map, bool rebuild_flag);
 
-  /// remove approximation data added on previous append_approximation() call
-  /// or a specified number of points
+  void replace_approximation(const IntResponsePair& response_pr,
+			     bool rebuild_flag);
+  void replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag);
+  void track_evaluation_ids(bool track);
+
   void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
 
-  /// retrieve a previous approximation data state
   void push_approximation();
-  /// query for whether a trial increment can be retrieved
   bool push_available();
 
-  /// finalize data fit by applying all previous trial increments
   void finalize_approximation();
 
   /// combine all level approximations into a separate composite approximation
@@ -391,13 +400,6 @@ private:
   /// build the approxInterface surrogate, passing variable bounds
   void build_approx_interface();
 
-  /// update actualModel with data from constraints/labels/sets
-  void init_model(Model& model);
-  /// update actualModel with data from current variables/bounds
-  void update_model(Model& model);
-  /// update current variables/labels/bounds/targets with data from actualModel
-  void update_from_model(const Model& model);
-
   /// test if inactive state is consistent
   bool consistent(const Variables& vars) const;
   /// test if active vars are within [l_bnds, u_bnds]
@@ -414,6 +416,23 @@ private:
   /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
   /// order to reproduce high fidelity data.
   DiscrepancyCorrection deltaCorr;
+
+  /// map from actualModel/highFidelityModel evaluation ids to
+  /// DataFitSurrModel/HierarchSurrModel ids
+  IntIntMap truthIdMap;
+  /// map from approxInterface/lowFidelityModel evaluation ids to
+  /// DataFitSurrModel/HierarchSurrModel ids
+  IntIntMap surrIdMap;
+
+  /// map of approximate responses retrieved in derived_synchronize_nowait()
+  /// that could not be returned since corresponding truth model response
+  /// portions were still pending.
+  IntResponseMap cachedApproxRespMap;
+
+  /// map of raw continuous variables used by apply_correction().
+  /// Model::varsList cannot be used for this purpose since it does
+  /// not contain lower level variables sets from finite differencing.
+  IntVariablesMap rawVarsMap;
 
   /// total points the user specified to construct the surrogate
   int pointsTotal;
@@ -495,12 +514,18 @@ inline short DataFitSurrModel::query_distribution_parameter_derivatives() const
 
 inline size_t DataFitSurrModel::qoi() const
 {
-  switch (responseMode) {
   // Response inflation from aggregation does not proliferate above
   // this Model recursion level
-  case AGGREGATED_MODELS:  return actualModel.qoi();  break;
-  default:                 return response_size();    break;
-  }
+  return (responseMode == AGGREGATED_MODELS && !actualModel.is_null()) ?
+    actualModel.qoi() : response_size();
+
+  //switch (responseMode) {
+  //case AGGREGATED_MODELS:
+  //  if (actualModel.is_null()) return response_size();
+  //  else                       return actualModel.qoi();
+  //  break;
+  //default:                     return response_size();    break;
+  //}
 }
 
 
@@ -561,14 +586,14 @@ inline Iterator& DataFitSurrModel::subordinate_iterator()
 { return daceIterator; }
 
 
-inline void DataFitSurrModel::active_model_key(const UShortArray& key)
+inline void DataFitSurrModel::active_model_key(const Pecos::ActiveKey& key)
 {
-  // assign activeKey and extract {surr,truth}ModelKey
+  // assign activeKey
   SurrogateModel::active_model_key(key);
 
   // recur both components: (actualModel could be hierarchical)
   approxInterface.active_model_key(key);
-  actualModel.active_model_key(key);
+  if (!actualModel.is_null()) actualModel.active_model_key(key);
 }
 
 
@@ -692,6 +717,11 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
     }
     break;
   case BYPASS_SURROGATE:
+    if (actualModel.is_null()) {
+      Cerr << "Error: actualModel must be defined for mode BYPASS_SURROGATE."
+	   << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
     actualModel.surrogate_response_mode(mode); // recurse in this case
     //approxInterface.deactivate_multilevel_approximation_data();
     break;
@@ -707,7 +737,7 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
 
 
 inline void DataFitSurrModel::
-surrogate_function_indices(const IntSet& surr_fn_indices)
+surrogate_function_indices(const SizetSet& surr_fn_indices)
 {
   surrogateFnIndices = surr_fn_indices;
   approxInterface.approximation_function_indices(surr_fn_indices);
@@ -777,18 +807,22 @@ rebuild_approximation(const IntResponsePair& response_pr)
 
 
 inline void DataFitSurrModel::
-rebuild_approximation(const IntResponseMap& all_resp)
+rebuild_approximation(const IntResponseMap& resp_map)
 {
   // decide which surrogates to rebuild based on resp_map content
   BitArray rebuild_fns(numFns); // init to false
   for (size_t i=0; i<numFns; ++i)
-    for (IntRespMCIter r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it)
+    for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
       if (r_it->second.active_set_request_vector()[i])
 	{ rebuild_fns.set(i); break; }
   // rebuild the designated surrogates
   approxInterface.rebuild_approximation(rebuild_fns);
   ++approxBuilds;
 }
+
+
+inline void DataFitSurrModel::track_evaluation_ids(bool track)
+{ approxInterface.track_evaluation_ids(track); }
 
 
 inline const RealVector& DataFitSurrModel::
@@ -954,7 +988,7 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 inline void DataFitSurrModel::warm_start_flag(const bool flag)
 {
   warmStartFlag = flag;
-  actualModel.warm_start_flag(flag);
+  if (!actualModel.is_null()) actualModel.warm_start_flag(flag);
 }
 
 } // namespace Dakota

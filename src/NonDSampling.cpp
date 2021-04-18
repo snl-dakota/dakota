@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -384,6 +385,9 @@ sample_to_variables(const Real* sample_vars, Variables& vars, Model& model)
 {
   // sample_vars are in RandomVariable order, which mirrors the XML spec
   // vars updates utilize all continuous,discrete {int,string,real} indexing
+
+  if (vars.is_null())
+    vars = Variables(model.current_variables().shared_data());
 
   const SharedVariablesData& svd = vars.shared_data();
   short vars_mode;

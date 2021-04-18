@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -246,7 +247,8 @@ inline int Analyzer::num_samples() const
 
 inline const VariablesArray& Analyzer::all_variables()
 {
-  //  if (compactMode) samples_to_variables_array(allSamples, allVariables);
+  // BMA TODO: Consider different accessor or option parameter for conversion
+  if (compactMode) samples_to_variables_array(allSamples, allVariables);
   return allVariables;
 }
 

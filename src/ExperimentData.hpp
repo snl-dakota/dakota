@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -88,8 +89,12 @@ public:
                  short output_level,
                  std::string scalarDataFilename = "");
  
-  ExperimentData(size_t num_experiments, const SharedResponseData& srd,
-                 const RealMatrix& configVars, 
+  /// Bayesian experimental design constructor. Passed SVD has
+  /// calibration parameters as active and config vars as inactive
+  /// variables. Passed configVars have config vars as active.
+  ExperimentData(size_t num_experiments, const SharedVariablesData& svd,
+		 const SharedResponseData& srd,
+                 const VariablesArray& configVars, 
                  const IntResponseMap& all_responses, short output_level); 
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor
@@ -101,9 +106,14 @@ public:
   //
  
   /// Load experiments from data files (simple scalar or field)
-  void load_data(const std::string& context_message);
-  /// Add one data point to the experimental data set
-  void add_data(const RealVector& one_configvars, const Response& one_response);
+  void load_data(const std::string& context_message,
+		 const Variables& vars_with_state_as_config);
+  /// Add one data point to the experimental data set. Used for
+  /// Bayesian experimental design. Passed SVD has calibration
+  /// parameters as active and config vars as inactive
+  /// variables. Passed configVars have config vars as active.
+  void add_data(const SharedVariablesData& svd,
+		const Variables& one_configvars, const Response& one_response);
 
   /// retrieve the number of experiments
   size_t num_experiments() const
@@ -119,11 +129,14 @@ public:
   /// retrieve the number of fields (applies to all experiments)
   size_t num_fields() const;
 
-  /// number of onfiguration variables
+  /// number of configuration variables
   size_t num_config_vars() const;
 
   /// values of the configuration variables, 1 RealVector per experiment
-  const std::vector<RealVector>& config_vars() const;
+  /// omits string variables as historically used in NonDBayes
+  std::vector<RealVector> config_vars_as_real() const;
+
+  const std::vector<Variables>& configuration_variables() const;
 
   /// return contiguous vector of all data (scalar, followed by field)
   /// for the specified experiment
@@ -459,10 +472,10 @@ private:
   /// observed data and error (sigma/covariance) for each experiment.
   std::vector<Response> allExperiments;
   
-  // TODO: migrate this to a vector of Variables?
   /// Vector of numExperiments configurations at which data were
-  /// gathered; empty if no configurations specified.
-  std::vector<RealVector> allConfigVars;
+  /// gathered; empty if no configurations specified. The inactive
+  /// state variables are used to store the configuration settings.
+  std::vector<Variables> allConfigVars;
 
   /// Length of each experiment
   IntVector experimentLengths;

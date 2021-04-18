@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -9,6 +10,7 @@
 #include "ExperimentData.hpp"
 #include "DataMethod.hpp"
 #include "ProblemDescDB.hpp"
+#include "DakotaVariables.hpp"
 
 namespace Dakota {
 
@@ -55,24 +57,34 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
   initialize(variance_types, srd);
 }
 
+
+/** Used in Hi2Lo Bayesian experimental design; passed config vars are
+    active, but stored here as inactive. */
 ExperimentData::
-ExperimentData(size_t num_experiments, const SharedResponseData& srd,
-               const RealMatrix& config_vars,
+ExperimentData(size_t num_experiments, 
+	       const SharedVariablesData& svd,
+	       const SharedResponseData& srd,
+               const VariablesArray& config_vars,
                const IntResponseMap& all_responses, short output_level):
   calibrationDataFlag(false), numExperiments(num_experiments),
-  numConfigVars(config_vars.numRows()),
+  numConfigVars(config_vars[0].total_active()),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
   scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
   readSimFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
 {
+  // BMA TODO: Review NonDBayes for this use case; also prediction configs
   simulationSRD = srd.copy();
-  allConfigVars.resize(numExperiments);
+  // BMA TODO: Consider caching the SVD?
+  auto svd_copy = svd.copy();
+  svd_copy.inactive_view(MIXED_STATE);
+  size_and_fill(svd_copy, numExperiments, allConfigVars);
+
   for (size_t i=0; i<numExperiments; ++i) {
-    allConfigVars[i] =
-      Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(config_vars),
-                      (int) i);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " allConfigVars i " << allConfigVars[i] << '\n';
+    allConfigVars[i].inactive_from_active(config_vars[i]);
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "allConfigVars[" << i << "] = \n";
+      allConfigVars[i].write(Cout, INACTIVE_VARS);
+    }
   }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Number of config vars " << numConfigVars << '\n';
@@ -132,7 +144,7 @@ void ExperimentData::initialize(const StringArray& variance_types,
   else
     {
       experimentLengths.sizeUninitialized(1);
-      experimentLengths[0] = srd.num_functions();
+      experimentLengths[0] = srd.num_primary_functions();
       expOffsets.size(1); // init to 0
     }
 }
@@ -154,22 +166,23 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
   sigma_map["matrix"] = MATRIX_SIGMA;
 
   // expand sigma if 0 or 1 given, without validation
-  size_t num_resp_groups = simulationSRD.num_response_groups();
+  size_t num_pri_resp_groups = simulationSRD.num_scalar_primary() +
+    simulationSRD.num_field_response_groups();  // omits secondary
   size_t num_scalar = simulationSRD.num_scalar_primary();
-  varianceTypes.resize(num_resp_groups, NO_SIGMA);
+  varianceTypes.resize(num_pri_resp_groups, NO_SIGMA);
   if (sigma_types.size() == 1) {
     // assign all sigmas to the specified one
     if (sigma_map.find(sigma_types[0]) != sigma_map.end())
-      varianceTypes.assign(num_resp_groups, sigma_map[sigma_types[0]]);
+      varianceTypes.assign(num_pri_resp_groups, sigma_map[sigma_types[0]]);
     else {
       Cerr << "\nError: invalid sigma_type '" << sigma_types[0] 
 	   << "' specified." << std::endl;
       abort_handler(PARSE_ERROR);
     }
   }
-  else if (sigma_types.size() == num_resp_groups) {
+  else if (sigma_types.size() == num_pri_resp_groups) {
     // initialize one sigma type per 
-    for (size_t resp_ind = 0; resp_ind < num_resp_groups; ++resp_ind) {
+    for (size_t resp_ind = 0; resp_ind < num_pri_resp_groups; ++resp_ind) {
       if (sigma_map.find(sigma_types[resp_ind]) != sigma_map.end())
 	varianceTypes[resp_ind] = sigma_map[sigma_types[resp_ind]];
       else {
@@ -215,19 +228,29 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 }
 
 void ExperimentData::
-add_data(const RealVector& one_configvars, const Response& one_response)
+add_data(const SharedVariablesData& svd, const Variables& one_configvars,
+	 const Response& one_response)
 {
+  // BMA TODO: Review NonDBayes for this use case; also prediction configs
+  // The inbound vars have the config vars as active
+
   // BMA TODO: This doesn't make an object of type ExperimentResponse!
   numExperiments += 1;
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "numExperiments in add_data " << numExperiments << '\n';
 
-  allConfigVars.push_back(one_configvars);
+  // probably store the modified SVD and use throughout
+  auto svd_copy = svd.copy();
+  svd_copy.inactive_view(MIXED_STATE);
+
+  allConfigVars.push_back(Variables(svd_copy));
+  allConfigVars.back().inactive_from_active(one_configvars);
   allExperiments.push_back(one_response);
 }
 
 
-void ExperimentData::load_data(const std::string& context_message)
+void ExperimentData::load_data(const std::string& context_message,
+			       const Variables& vars_with_state_as_config)
 {
   // TODO: complete scalar and field cases
 
@@ -253,8 +276,14 @@ void ExperimentData::load_data(const std::string& context_message)
     exp_resp.write(Cout);
   }
 
-  if (numConfigVars > 0)
-    allConfigVars.resize(numExperiments);
+  if (numConfigVars > 0) {
+    // copy SVD to avoid changing object passed in
+    auto svd = vars_with_state_as_config.shared_data().copy();
+    svd.inactive_view(MIXED_STATE);
+    // make a distinct Variables letter for each config, don't copy
+    // the envelope; okay to share the SVD
+    size_and_fill(svd, numExperiments, allConfigVars);
+  }
 
   size_t num_scalars = simulationSRD.num_scalar_primary();
 
@@ -333,7 +362,6 @@ void ExperimentData::load_data(const std::string& context_message)
 
     // Need to decide what to do if both scalar_data_file and "experiment.#" files exist - RWH
     if ( (numConfigVars > 0) && scalar_data_file ) {
-      allConfigVars[exp_index].sizeUninitialized(numConfigVars);
       // TODO: try/catch
       scalar_data_stream >> std::ws;
       if ( scalar_data_stream.eof() ) {
@@ -343,7 +371,7 @@ void ExperimentData::load_data(const std::string& context_message)
           << std::endl;
         abort_handler(-1);
       }
-      scalar_data_stream >> allConfigVars[exp_index];
+      allConfigVars[exp_index].read_tabular(scalar_data_stream, INACTIVE_VARS);
     }
     // TODO: else validate scalar vs. field configs?
 
@@ -377,9 +405,10 @@ void ExperimentData::load_data(const std::string& context_message)
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Experiment data summary:\n\n";
     for (size_t i=0; i<numExperiments; ++i) {
-      if (numConfigVars > 0)
-	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n"
-	     << allConfigVars[i];
+      if (numConfigVars > 0) {
+	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n";
+	allConfigVars[i].write(Cout, INACTIVE_VARS);
+      }
       Cout << "  Experiment " << i+1 << " data values:"<< "\n"
 	   << allExperiments[i].function_values() << '\n';
     }
@@ -693,7 +722,30 @@ size_t ExperimentData::num_config_vars() const
 }
 
 
-const std::vector<RealVector>& ExperimentData::config_vars() const
+/** Skips string vars rather than converting to indices */
+std::vector<RealVector> ExperimentData::config_vars_as_real() const
+{
+  std::vector<RealVector> all_config_vars_real;
+  for (const auto& config_vars : allConfigVars) {
+    size_t cv = config_vars.icv(), div = config_vars.idiv(),
+      drv = config_vars.idrv(), total_config_vars = cv + div + drv;
+
+    RealVector real_config_vars(total_config_vars);
+
+    copy_data_partial(config_vars.inactive_continuous_variables(),
+		      real_config_vars, 0);
+    merge_data_partial(config_vars.inactive_discrete_int_variables(),
+		       real_config_vars, cv);
+    copy_data_partial(config_vars.inactive_discrete_real_variables(),
+		      real_config_vars, cv + div);
+
+    all_config_vars_real.push_back(real_config_vars);
+  }
+  return all_config_vars_real;
+}
+
+
+const std::vector<Variables>& ExperimentData::configuration_variables() const
 {
   return allConfigVars;
 }
@@ -705,7 +757,7 @@ void ExperimentData::per_exp_length(IntVector& per_length) const
   //Cout << "num experiments " << num_experiments();
 
   for (size_t i=0; i<num_experiments(); i++) 
-    per_length(i)= allExperiments[i].function_values().length();
+    per_length(i) = allExperiments[i].shared_data().num_primary_functions();
   //Cout << "per length " << per_length;
 }
 
@@ -736,8 +788,10 @@ const Response& ExperimentData::response(size_t experiment)
 size_t ExperimentData::num_total_exppoints() const
 {
   size_t res_size = 0;
-  for (size_t i=0; i<num_experiments(); i++) 
-    res_size += allExperiments[i].function_values().length();
+  for (size_t i=0; i<num_experiments(); i++) {
+    // this omits constraints:
+    res_size += allExperiments[i].shared_data().num_primary_functions();
+  }
   return res_size;
 }
 
@@ -898,7 +952,7 @@ void ExperimentData::apply_simulation_error(const RealVector& simulation_error,
 {
   Response exp_response = allExperiments[experiment];
   const RealVector& exp_vals = exp_response.function_values();
-  for (size_t i = 0; i < allExperiments[experiment].num_functions(); i++)
+  for (size_t i = 0; i < allExperiments[experiment].shared_data().num_primary_functions(); i++)
     exp_response.function_value(exp_vals[i] + simulation_error[i], i);
 }
 
@@ -1276,7 +1330,7 @@ recover_model(size_t num_pri_fns, RealVector& best_fns) const
     abort_handler(-1);
   }
   const Response& experiment0 = allExperiments[0];
-  if (num_pri_fns != experiment0.num_functions()) {
+  if (num_pri_fns != experiment0.shared_data().num_primary_functions()) {
     Cerr << "Error: incompatible sizes in recover_model()\n";
     abort_handler(-1);
   }
@@ -1691,7 +1745,7 @@ residuals_per_multiplier(unsigned short multiplier_mode) const
   case CALIBRATE_PER_EXPER: {
     resid_per_mult.resize(numExperiments, 0);
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
-      size_t fns_this_exp = allExperiments[exp_ind].num_functions();
+      size_t fns_this_exp = allExperiments[exp_ind].shared_data().num_primary_functions();
       resid_per_mult[exp_ind] = fns_this_exp;
     }
     break;
@@ -1763,7 +1817,7 @@ void ExperimentData::generate_multipliers(const RealVector& multipliers,
     assert(multipliers.length() == numExperiments);
     size_t resid_offset = 0;
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
-      size_t fns_this_exp = allExperiments[exp_ind].num_functions();
+      size_t fns_this_exp = allExperiments[exp_ind].shared_data().num_primary_functions();
       for (size_t fn_ind = 0; fn_ind < fns_this_exp; ++fn_ind)
         expanded_multipliers[resid_offset++] = multipliers[exp_ind];
     }
@@ -1855,7 +1909,7 @@ void ExperimentData::resid2mult_map(unsigned short multiplier_mode,
   case CALIBRATE_PER_EXPER: {
     size_t resid_offset = 0;
     for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
-      size_t fns_this_exp = allExperiments[exp_ind].num_functions();
+      size_t fns_this_exp = allExperiments[exp_ind].shared_data().num_primary_functions();
       for (size_t fn_ind = 0; fn_ind < fns_this_exp; ++fn_ind)
         resid2mult_indices[resid_offset++] = exp_ind;
     }

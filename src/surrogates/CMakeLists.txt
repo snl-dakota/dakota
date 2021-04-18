@@ -1,15 +1,18 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
+include(ExternalProject)
 
 set(surrogates_sources
   SurrogatesBase.cpp
   SurrogatesGaussianProcess.cpp 
+  SurrogatesGPKernels.cpp
   SurrogatesGPObjective.cpp
   SurrogatesPolynomialRegression.cpp
   surrogates_tools.cpp
@@ -18,6 +21,7 @@ set(surrogates_sources
 set(surrogates_headers
   SurrogatesBase.hpp
   SurrogatesGaussianProcess.hpp
+  SurrogatesGPKernels.hpp
   SurrogatesGPObjective.hpp
   SurrogatesPolynomialRegression.hpp
   surrogates_tools.hpp
@@ -54,7 +58,7 @@ dakota_strict_warnings(dakota_surrogates)
 dakota_gcov_target(dakota_surrogates)
 
 install(FILES ${surrogates_headers} DESTINATION "include")
-install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
+install(TARGETS dakota_surrogates EXPORT ${ExportTarget})
 
 if(DAKOTA_PYTHON_SURROGATES)
   # NOTE: Library name is really generic due to overly simple Python
@@ -76,6 +80,46 @@ if(DAKOTA_PYTHON_SURROGATES)
   install(TARGETS surrogates EXPORT ${ExportTarget}
     DESTINATION share/dakota/Python/dakota/surrogates/)
   install(FILES __init__.py DESTINATION share/dakota/Python/dakota/surrogates)
+endif()
+
+if(DAKOTA_JAVA_SURROGATES)
+  # On Windows, top-level Dakota must still be built static,
+  # but we build the surrogates JNI only as a DLL via external project.
+  # Assumes sub-project uses LAPACK_DIR and its specified DLLs
+  # Assumes separate Boost include and library dir are given
+  if(WIN32)
+    # This variable prevents infinite recursion
+    if(DAKOTA_JAVA_SURROGATES_EXTPROJ)
+	  # We're in the external surrogates JNI DLL project
+	  add_subdirectory(java)
+	  install(FILES "$<TARGET_FILE:blas>" "$<TARGET_FILE:lapack>" DESTINATION bin)
+	else()
+	  # We're configuring top level and want to build the external DLL project
+	  ExternalProject_Add(DakotaJavaSurrogatesDLL
+	    PREFIX ${Dakota_BINARY_DIR}/DjsDll
+	    BINARY_DIR ${Dakota_BINARY_DIR}/DjsDll/build
+	    STAMP_DIR ${Dakota_BINARY_DIR}/DjsDll/stamp
+	    SOURCE_DIR "${Dakota_SOURCE_DIR}"
+	    CMAKE_ARGS
+        ##-D CMAKE_BUILD_TYPE:STRING=RELEASE
+        ##-D CMAKE_CONFIGURATION_TYPES:STRING=Release
+        -D CMAKE_INSTALL_PREFIX:PATH=${Dakota_BINARY_DIR}/DjsDll/install
+	    -D DAKOTA_JAVA_SURROGATES_EXTPROJ:BOOL=TRUE
+	    -D BUILD_SHARED_LIBS:BOOL=TRUE
+	    -D CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS:BOOL=TRUE
+	    -D DAKOTA_MODULE_DAKOTA:BOOL=FALSE
+	    -D DAKOTA_JAVA_SURROGATES:BOOL=TRUE
+	    -D JAVA_HOME=${JAVA_HOME}
+        -D BOOST_INCLUDEDIR=${Boost_INCLUDE_DIR}
+	    -D BOOST_LIBRARYDIR=${Boost_LIBRARY_DIR}
+        -D LAPACK_DIR=${DAKOTA_LAPACK_DLL_DIR}
+	    )
+	  install(DIRECTORY ${Dakota_BINARY_DIR}/DjsDll/install/bin/ DESTINATION bin
+	    FILES_MATCHING PATTERN "*.dll")
+	endif()
+  else()
+    add_subdirectory(java)
+  endif()
 endif()
 
 add_subdirectory(unit)

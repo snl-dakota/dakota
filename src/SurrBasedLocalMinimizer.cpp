@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -460,8 +461,8 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   unsigned short form = tr_data.approx_model_form();
   if (form != USHRT_MAX) {
     Cout << " (form "  << form + 1;
-    unsigned short lev = tr_data.approx_model_level();
-    if (lev != USHRT_MAX) Cout << ", level " << lev + 1;
+    size_t lev = tr_data.approx_model_level();
+    if (lev != std::numeric_limits<size_t>::max()) Cout << ", level " << lev+1;
     Cout << ")";
   }
   Cout << "\n                 ";

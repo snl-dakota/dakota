@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -861,9 +862,7 @@ namespace Dakota
                 size_t neighbor = cell_index;
                 if (j > 0) neighbor = _vps_ext_neighbors[cell_index][j];
                 
-                gpApproximations[cell_index].add(training_vars[neighbor], false, false); // not anchor, shallow
-                
-                gpApproximations[cell_index].add(training_resp[neighbor], false, false); // not anchor, shallow
+                gpApproximations[cell_index].add(training_vars[neighbor], false, training_resp[neighbor], false, false, INT_MAX); // shallow, shallow, not anchor,no eval id tracking
             }
             gpApproximations[cell_index].build();
         }

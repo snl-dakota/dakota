@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -188,6 +189,11 @@ protected:
   /// flag to restrict cross-validation to only estimate the noise
   /// tolerance in order to manage computational cost
   bool crossValidNoiseOnly;
+  /// maximum number of expansion order candidates for cross-validation
+  /// in regression-based PCE
+  unsigned short maxCVOrderCandidates;
+  /// flag for scaling response data to [0,1] for alignment with regression tols
+  bool respScaling;
 
   /// user-specified file for importing build points
   String importBuildPointsFile;

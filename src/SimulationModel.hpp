@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -64,9 +65,9 @@ protected:
   /// return active cost estimate from solnCntlCostMap
   Real solution_level_cost() const;
   /// activate entry in solnCntlCostMap
-  void solution_level_cost_index(unsigned short cost_index);
+  void solution_level_cost_index(size_t cost_index);
   /// return active entry in solnCntlCostMap
-  unsigned short solution_level_cost_index() const;
+  size_t solution_level_cost_index() const;
 
   /// return solnCntlVarType
   short solution_control_variable_type() const;

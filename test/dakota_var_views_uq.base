@@ -1,0 +1,210 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+response_fn_1:  Min = 4.0001587710e+00  Max = 1.7263104988e+02
+response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
+response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
+Simple Correlation Matrix among all inputs and outputs:
+                       x3           x4           x5           x6 response_fn_1 response_fn_2 response_fn_3 
+          x3  1.00000e+00 
+          x4  4.72940e-03  1.00000e+00 
+          x5  1.99878e-02  4.97057e-02  1.00000e+00 
+          x6  2.86994e-02 -3.14326e-02 -5.18934e-02  1.00000e+00 
+response_fn_1 -4.28992e-01 -4.01469e-01 -4.22266e-01 -3.61440e-01  1.00000e+00 
+response_fn_2         -nan         -nan         -nan         -nan         -nan         -nan 
+response_fn_3         -nan         -nan         -nan         -nan         -nan         -nan         -nan 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x3 -5.64944e-01         -nan         -nan 
+          x4 -5.48337e-01         -nan         -nan 
+          x5 -5.70443e-01         -nan         -nan 
+          x6 -5.40759e-01         -nan         -nan 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x3           x4           x5           x6 response_fn_1 response_fn_2 response_fn_3 
+          x3  1.00000e+00 
+          x4  2.73627e-03  1.00000e+00 
+          x5  1.82178e-02  5.37774e-02  1.00000e+00 
+          x6  2.71827e-02 -3.11671e-02 -5.29613e-02  1.00000e+00 
+response_fn_1 -4.44380e-01 -4.18242e-01 -4.68083e-01 -3.40522e-01  1.00000e+00 
+response_fn_2         -nan         -nan         -nan         -nan         -nan         -nan 
+response_fn_3         -nan         -nan         -nan         -nan         -nan         -nan         -nan 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x3 -6.10721e-01         -nan         -nan 
+          x4 -5.90642e-01         -nan         -nan 
+          x5 -6.38295e-01         -nan         -nan 
+          x6 -5.52457e-01         -nan         -nan 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 4 total (3 new, 1 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0882812500e+01   5.8802633938e-01  -2.2247090368e-01  -2.2247090368e-01
+   1.6800000000e+02   1.0000000000e+00  -1.2637465622e+01  -1.0000000000e+50
+   1.6800000000e+02   1.0000000000e+00  -1.4142135624e+01  -1.0000000000e+50
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 47 total (44 new, 3 duplicate)
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   5.9800828689e+00   1.0000000000e+01   8.7668243750e-02
+   1.0000000000e+01   4.0000000000e+01   1.1642329314e-02
+   4.0000000000e+01   1.0000000000e+02   4.6123202283e-03
+   1.0000000000e+02   1.6724582847e+02   3.2079063449e-04
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e+01   3.5241907490e-01                      3.7879762683e-01
+   4.0000000000e+01   7.0168895432e-01                     -5.2926433708e-01
+   1.0000000000e+02   9.7842816802e-01                     -2.0223165110e+00
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   3.0400000000e+01   P0   P0
+  -2.7200000000e+01   P1   P0
+   2.5142857143e+01   P2   P0
+  -1.2800000000e+01   P3   P0
+   3.6571428571e+00   P4   P0
+  -2.7200000000e+01   P0   P1
+  -1.2490009027e-15   P1   P1
+  -1.2490009027e-15   P2   P1
+  -5.8286708793e-16   P3   P1
+   1.8172963134e-14   P4   P1
+   2.5142857143e+01   P0   P2
+  -2.0816681712e-15   P1   P2
+  -1.0408340856e-15   P2   P2
+   9.7144514655e-16   P3   P2
+  -8.2746309804e-15   P4   P2
+  -1.2800000000e+01   P0   P3
+   1.8943180358e-15   P1   P3
+  -6.3143934526e-15   P2   P3
+  -6.9701189265e-15   P3   P3
+   6.8851174762e-15   P4   P3
+   3.6571428571e+00   P0   P4
+   1.7423562593e-14   P1   P4
+  -7.4940054162e-15   P2   P4
+   1.0163744846e-14   P3   P4
+   7.7281930855e-15   P4   P4
+Coefficients of Polynomial Chaos Expansion for response_fn_2:
+   0.0000000000e+00   P0   P0
+   0.0000000000e+00   P1   P0
+   0.0000000000e+00   P2   P0
+   0.0000000000e+00   P3   P0
+   0.0000000000e+00   P4   P0
+   0.0000000000e+00   P0   P1
+   0.0000000000e+00   P1   P1
+   0.0000000000e+00   P2   P1
+   0.0000000000e+00   P3   P1
+   0.0000000000e+00   P4   P1
+   0.0000000000e+00   P0   P2
+   0.0000000000e+00   P1   P2
+   0.0000000000e+00   P2   P2
+   0.0000000000e+00   P3   P2
+   0.0000000000e+00   P4   P2
+   0.0000000000e+00   P0   P3
+   0.0000000000e+00   P1   P3
+   0.0000000000e+00   P2   P3
+   0.0000000000e+00   P3   P3
+   0.0000000000e+00   P4   P3
+   0.0000000000e+00   P0   P4
+   0.0000000000e+00   P1   P4
+   0.0000000000e+00   P2   P4
+   0.0000000000e+00   P3   P4
+   0.0000000000e+00   P4   P4
+Coefficients of Polynomial Chaos Expansion for response_fn_3:
+   0.0000000000e+00   P0   P0
+   0.0000000000e+00   P1   P0
+   0.0000000000e+00   P2   P0
+   0.0000000000e+00   P3   P0
+   0.0000000000e+00   P4   P0
+   0.0000000000e+00   P0   P1
+   0.0000000000e+00   P1   P1
+   0.0000000000e+00   P2   P1
+   0.0000000000e+00   P3   P1
+   0.0000000000e+00   P4   P1
+   0.0000000000e+00   P0   P2
+   0.0000000000e+00   P1   P2
+   0.0000000000e+00   P2   P2
+   0.0000000000e+00   P3   P2
+   0.0000000000e+00   P4   P2
+   0.0000000000e+00   P0   P3
+   0.0000000000e+00   P1   P3
+   0.0000000000e+00   P2   P3
+   0.0000000000e+00   P3   P3
+   0.0000000000e+00   P4   P3
+   0.0000000000e+00   P0   P4
+   0.0000000000e+00   P1   P4
+   0.0000000000e+00   P2   P4
+   0.0000000000e+00   P3   P4
+   0.0000000000e+00   P4   P4
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.0400000000e+01  2.8211266465e+01
+  integration:  3.0400000000e+01  2.8211266465e+01  1.2617004194e+00  9.4478593618e-01
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.0400000000e+01  2.8211266465e+01  1.2617004194e+00  9.4478593618e-01
+  integration:  3.0400000000e+01  2.8211266465e+01  1.2617004194e+00  9.4478593618e-01
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 12 total (8 new, 4 duplicate)
+response_fn_1:  Min = 6.0000000000e+00  Max = 1.6800000000e+02
+response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
+response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 63 total (61 new, 2 duplicate)
+response_fn_1:  Min = 6.0000000251e+00  Max = 1.6799918712e+02
+response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
+response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 17 total (14 new, 3 duplicate)
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+response_fn_1:  Min = 1.8499472779e+00  Max = 2.8223545488e+02
+response_fn_2:  Min = -8.7335335136e-01  Max = 4.5546526772e+00
+response_fn_3:  Min = -9.5422312957e-01  Max = 4.2966681552e+00
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2           x3           x4           x5           x6           x7           x8 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2  2.79023e-02  1.00000e+00 
+          x3 -4.72443e-02 -3.64658e-02  1.00000e+00 
+          x4 -3.32844e-02 -9.84567e-03 -2.57212e-02  1.00000e+00 
+          x5  1.34284e-02  3.58569e-02 -4.58656e-02 -6.49920e-03  1.00000e+00 
+          x6 -3.14375e-02 -2.11963e-02  6.58893e-03  5.56392e-03  1.46850e-02  1.00000e+00 
+          x7 -6.34660e-02  1.21313e-02  5.11755e-02 -1.56808e-02 -2.80844e-02  4.36648e-03  1.00000e+00 
+          x8 -1.21062e-04  5.38863e-02  8.87164e-03  6.51936e-03  1.14851e-02  1.35487e-02  5.43264e-02  1.00000e+00 
+response_fn_1 -3.33503e-01 -1.99163e-01 -2.35752e-01 -3.63100e-01 -3.05544e-01 -2.47055e-01 -2.93489e-01 -2.83972e-01  1.00000e+00 
+response_fn_2 -1.23277e-02 -3.59929e-01 -2.53555e-02  9.61525e-03  6.56203e-02 -1.18491e-01 -6.86878e-02 -1.02840e-01  2.80310e-01  1.00000e+00 
+response_fn_3 -3.15506e-01 -1.52057e-02  1.29437e-01 -9.77281e-02  2.57092e-02  1.59678e-01  8.28840e-02  5.01626e-02  1.64657e-01 -9.68521e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -5.52580e-01 -1.31968e-02 -3.14167e-01 
+          x2 -3.01244e-01 -3.66162e-01 -5.21802e-03 
+          x3 -4.22720e-01 -3.36506e-02  1.17578e-01 
+          x4 -5.65086e-01  6.22940e-03 -1.13394e-01 
+          x5 -4.80533e-01  8.53424e-02  3.59070e-02 
+          x6 -4.03270e-01 -1.36518e-01  1.59078e-01 
+          x7 -4.68986e-01 -6.11510e-02  5.83756e-02 
+          x8 -3.97834e-01 -8.60625e-02  4.84157e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2           x3           x4           x5           x6           x7           x8 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2  2.87789e-02  1.00000e+00 
+          x3 -4.82688e-02 -3.58836e-02  1.00000e+00 
+          x4 -3.31113e-02 -1.08131e-02 -2.49025e-02  1.00000e+00 
+          x5  1.24932e-02  3.46115e-02 -4.47765e-02 -8.90489e-03  1.00000e+00 
+          x6 -3.04710e-02 -2.22622e-02  4.22442e-03  5.05251e-03  1.22772e-02  1.00000e+00 
+          x7 -6.30063e-02  1.23372e-02  5.17132e-02 -1.57096e-02 -2.80228e-02  4.08041e-03  1.00000e+00 
+          x8 -1.42814e-03  5.47975e-02  9.45695e-03  5.08851e-03  9.04890e-03  1.48815e-02  5.52895e-02  1.00000e+00 
+response_fn_1 -2.86529e-01 -2.13549e-01 -2.76016e-01 -3.21788e-01 -3.46091e-01 -2.58362e-01 -2.91017e-01 -2.57438e-01  1.00000e+00 
+response_fn_2 -3.53555e-02 -3.77846e-01  1.82418e-02 -2.81428e-02  7.20672e-02 -1.00834e-01 -8.84128e-02 -9.52655e-02  2.71815e-01  1.00000e+00 
+response_fn_3 -3.45611e-01 -1.25893e-02  1.52631e-01 -1.05335e-01  3.41434e-02  1.31881e-01  9.27573e-02  3.12271e-02  2.16442e-01 -1.80978e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -4.93320e-01 -3.79251e-02 -3.44910e-01 
+          x2 -3.20817e-01 -3.82758e-01 -3.77220e-04 
+          x3 -4.64887e-01  1.24135e-02  1.42509e-01 
+          x4 -5.14794e-01 -3.59352e-02 -1.22609e-01 
+          x5 -5.22239e-01  9.35752e-02  4.74176e-02 
+          x6 -4.10799e-01 -1.20037e-01  1.31158e-01 
+          x7 -4.53366e-01 -8.77191e-02  6.80505e-02 
+          x8 -3.53068e-01 -7.58402e-02  2.67836e-02 

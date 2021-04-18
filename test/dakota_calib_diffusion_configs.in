@@ -1,0 +1,77 @@
+# This test verifies reading discrete configuration variables for calibration
+#
+# Test s0 generates the data at 13 configs with all design at 0.5
+# Test s1 uses the noiseless data to recover the values = 0.5
+
+environment
+  tabular_data
+    tabular_data_file 'dakota_calib_diffusion.dat'
+
+method
+# Seg faults and then generates invalid set values
+#  sampling
+#    sample_type lhs
+#    samples 13
+
+  list_parameter_study      #s0
+    list_of_points	    #s0
+      0  0  0  1  1  0  0   #s0
+      3  0  1  0  0  0  0   #s0
+      1  1  1  0  1  0  0   #s0
+      4  1  1  1  0  0  0   #s0
+      2  1  1  0  1  0  0   #s0
+      0  0  0  1  0  0  0   #s0
+      3  1  1  0  1  0  0   #s0
+      1  1  1  1  1  0  0   #s0
+      4  1  1  1  1  0  0   #s0
+      2  0  0  0  0  0  0   #s0
+      0  0  0  1  0  0  0   #s0
+      4  0  1  1  1  0  0   #s0
+      2  1  1  0  1  0  0   #s0
+
+#  nl2sol      	     	    #s1
+#    output debug 	    #s1
+
+variables
+  active state		   #s0
+  continuous_design = 9
+    lower_bounds  9* -1.
+    initial_point 9*  0.5  #s0
+#   initial_point 9*  0.0  #s1
+    upper_bounds  9*  1.
+  
+  discrete_state_set
+  integer = 1 # even poly degree for odd mesh pts including boundary
+    descriptors = 'mesh_size'
+    set_values = 4 8 16 32 64
+  
+  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+    descriptors = 'kernel_type' 'positivity'
+    elements_per_variable = 2 2
+    set_values = 'cosine' 'exponential'
+                  'off' 'on'
+    initial_state = 'cosine' 'off'
+
+  real = 4
+    descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+    elements_per_variable = 2 2 1 1
+    set_values = 0.1 1 # field mean
+                 0.5 4 # field std dev
+                 1     # kernel order
+                 0.2   # kernel length
+    initial_state = 1 4 1 0.2
+  
+
+interface
+  direct
+    analysis_driver = 'steady_state_diffusion_1d'
+
+responses
+  response_functions = 10                                             #s0
+  no_gradients		 					      #s0
+# calibration_terms = 10                                              #s1
+#   calibration_data_file = 'dakota_calib_diffusion_configs.exp.dat'  #s1
+#   num_experiments 13						      #s1
+#   num_config_variables 7  					      #s1
+# numerical_gradients						      #s1
+  no_hessians

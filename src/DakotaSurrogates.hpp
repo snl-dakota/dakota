@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -54,9 +55,10 @@ public:
   RealArray cv_diagnostic(const StringArray& metric_types,
 			  unsigned num_folds) override;
 
-  void primary_diagnostics(int fn_index) override;
+  void primary_diagnostics(size_t fn_index) override;
 
-  void challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
+  void challenge_diagnostics(size_t fn_index,
+			     const RealMatrix& challenge_points,
                              const RealVector& challenge_responses) override;
 
   // Modify configuration options through the parameterList (non-const)
@@ -78,6 +80,15 @@ protected:
   /// set the surrogate's verbosity level according to Dakota's verbosity
   void set_verbosity();
 
+  /// construct-time only import of serialized surrogate
+  void import_model(const ProblemDescDB& problem_db);
+
+  /// validate imported labels and initialize map if needed
+  void map_variable_labels(const Variables& vars);
+
+  /// extract active or all view as vector, mapping if needed for import
+  RealVector map_eval_vars(const Variables& vars);
+
   /// export the model to disk
   void
   export_model(const StringArray& var_labels, const String& fn_label,
@@ -98,6 +109,8 @@ protected:
   /// Advanced configurations options filename
   String advanced_options_file;
 
+  /// whether model serialized in from disk
+  bool modelIsImported;
 };
 
 } // namespace Dakota

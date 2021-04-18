@@ -1,0 +1,67 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 10 total (10 new, 0 duplicate)
+<<<<< Function evaluation summary (I1): 121 total (121 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1494673044e-01  4.7320981054e-01  1.5672669855e+00  2.5282892656e+00
+ response_fn_2  8.8571611745e-02  3.3077098867e-01 -3.0339486527e-01 -1.2328583468e+00
+ response_fn_3  9.7015843987e-02  3.6361915017e-01  1.0008435673e+00  6.3903982082e-02
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  7.6432824498e-02  7.5346063639e-01  3.2549036787e-01  8.6389664859e-01
+ response_fn_2 -1.4804769930e-01  3.2519092279e-01  2.2751593138e-01  6.0385888500e-01
+ response_fn_3 -1.6310162623e-01  3.5713331421e-01  2.5011005334e-01  6.6382682312e-01
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.0010733674e-02   1.0000000000e-01   3.6360088388e+00
+   1.0000000000e-01   2.0000000000e-01   0.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   7.5000000000e-01
+   6.0000000000e-01   1.5169944355e+00   3.2715574750e-01
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -4.0176034180e-01   1.0000000000e-01   9.9649166813e-01
+   1.0000000000e-01   2.0000000000e-01   1.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   1.0000000000e+00
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -3.1016031572e-01   1.0000000000e-01   1.4628426422e+00
+   1.0000000000e-01   2.0000000000e-01   0.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   7.5000000000e-01
+   6.0000000000e-01   8.0768278089e-01   4.8150356794e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   4.0000000000e-01
+   2.0000000000e-01   4.0000000000e-01
+   6.0000000000e-01   7.0000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   5.0000000000e-01
+   2.0000000000e-01   6.0000000000e-01
+   6.0000000000e-01   1.0000000000e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   6.0000000000e-01
+   2.0000000000e-01   6.0000000000e-01
+   6.0000000000e-01   9.0000000000e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2  1.11135e-01  1.00000e+00 
+response_fn_1 -7.30602e-01 -5.98778e-01  1.00000e+00 
+response_fn_2  8.59620e-01 -3.35742e-01 -3.03078e-01  1.00000e+00 
+response_fn_3 -4.07188e-01  8.40792e-01 -1.19385e-01 -7.34022e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -8.34291e-01  9.58139e-01 -9.30530e-01 
+          x2 -7.62751e-01 -8.49354e-01  9.76157e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2  9.09091e-02  1.00000e+00 
+response_fn_1 -7.57576e-01 -6.12121e-01  1.00000e+00 
+response_fn_2  8.78788e-01 -2.60606e-01 -4.54545e-01  1.00000e+00 
+response_fn_3 -4.18182e-01  8.06061e-01 -1.63636e-01 -6.12121e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -8.91349e-01  9.38667e-01 -8.33856e-01 
+          x2 -8.35713e-01 -7.16477e-01  9.33092e-01 

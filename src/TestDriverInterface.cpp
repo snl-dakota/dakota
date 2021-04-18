@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -800,11 +801,11 @@ int TestDriverInterface::cantilever_ml()
 
     // **** c1:
     if (directFnASV[c1i] & 1)
-      fnVals[c1i] = stress/R - 1.;
+      fnVals[c1i] = stress - R; //stress/R - 1.;
 
     // **** c2:
     if (directFnASV[c2i] & 1)
-      fnVals[c2i] = displ/D0 - 1.;
+      fnVals[c2i] = displ - D0; //displ/D0 - 1.;
 
     // **** df/dx:
     if (objective && (directFnASV[0] & 2))
@@ -4603,7 +4604,7 @@ double TestDriverInterface::problem18_f(const double &x){
 }
 
 double TestDriverInterface::problem18_g(const double &x){
-  return (2. * std::log(3.5 - 2))/(3.5 - 1) * x + 1 - (2. *std::log(3.5 - 2))/(3.5 - 1);
+  return (2. * std::log(3.5 - 2))/(3.5 - 1) * x + 0 - (2. *std::log(3.5 - 2))/(3.5 - 1);
 }
 
 double TestDriverInterface::problem18_Ax(const double &A, const double &x){

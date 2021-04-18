@@ -1,0 +1,468 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+least_sq_term_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999999904e-01 x1
+                      1.9999999991e-01 x2
+<<<<< Best model responses =
+                      3.2274897440e-01
+                     -2.9210752395e-01
+                     -1.6244810308e-02
+                      1.3309207686e-01
+                     -1.1245429608e-01
+<<<<< Best residual terms =
+                      2.2937818311e-11
+                     -8.0486622922e-10
+                      6.1228900422e-11
+                      3.8669956126e-10
+                     -4.4476949901e-11
+<<<<< Best residual terms =
+                      2.2937818311e-11
+                     -8.0486622922e-10
+                      6.1228900422e-11
+                      3.8669956126e-10
+                     -4.4476949901e-11
+<<<<< Best data captured at function evaluation 16
+Confidence Intervals on Calibrated Parameters:
+            x1: [ -7.0489662453e-01, 1.3048966226e+00 ]
+            x2: [ -1.6244142761e-01, 5.6244142743e-01 ]
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
+least_sq_term_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      3.0000000000e-01 x1
+                      2.0000000001e-01 x2
+<<<<< Best model responses =
+                      3.2274897436e-01
+                     -2.9210752315e-01
+                     -1.6244810360e-02
+                      1.3309207647e-01
+                     -1.1245429604e-01
+<<<<< Best residual terms =
+                     -2.2102191541e-11
+                     -4.3655458765e-12
+                      1.7244708891e-11
+                      7.5095416869e-12
+                     -3.0295859709e-12
+<<<<< Best residual terms =
+                     -2.2102191541e-11
+                     -4.3655458765e-12
+                      1.7244708891e-11
+                      7.5095416869e-12
+                     -3.0295859709e-12
+<<<<< Best data captured at function evaluation 19
+Confidence Intervals on Calibrated Parameters:
+            x1: [ -2.8515476568e-01, 8.8515476569e-01 ]
+            x2: [ 9.8334011115e-04, 3.9901665990e-01 ]
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
+   oscillator_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      3.0000000000e-01 x1
+                      2.0000000001e-01 x2
+<<<<< Best model responses =
+                      3.2274897436e-01
+                     -2.9210752315e-01
+                     -1.6244810360e-02
+                      1.3309207647e-01
+                     -1.1245429604e-01
+<<<<< Best residual terms =
+                     -2.2102191541e-11
+                     -4.3655458765e-12
+                      1.7244708891e-11
+                      7.5095416869e-12
+                     -3.0295859709e-12
+<<<<< Best residual terms =
+                     -2.2102191541e-11
+                     -4.3655458765e-12
+                      1.7244708891e-11
+                      7.5095416869e-12
+                     -3.0295859709e-12
+<<<<< Best data captured at function evaluation 19
+Confidence Intervals on Calibrated Parameters:
+            x1: [ -2.8515476568e-01, 8.8515476569e-01 ]
+            x2: [ 9.8334011115e-04, 3.9901665990e-01 ]
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+  oscillatorA_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999999901e-01 x1
+                      1.9999999991e-01 x2
+<<<<< Best model responses =
+                      3.2274897439e-01
+                     -2.9210752398e-01
+                     -1.6244810296e-02
+                      1.3309207687e-01
+                     -1.1245429609e-01
+<<<<< Best residual terms =
+                      1.2785328352e-11
+                     -1.1804981447e-09
+                      6.3120890650e-10
+                      9.9364836675e-10
+                      4.4740178609e-11
+<<<<< Best residual terms =
+                      1.2785328352e-11
+                     -1.1804981447e-09
+                      6.3120890650e-10
+                      9.9364836675e-10
+                      4.4740178609e-11
+<<<<< Best data captured at function evaluation 16
+Confidence Intervals on Calibrated Parameters:
+            x1: [ -2.5268721799e-01, 8.5268721600e-01 ]
+            x2: [ -1.3625407894e-03, 4.0136254061e-01 ]
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+  oscillatorA_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_2: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_3: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_4: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_5: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  2.8341207626e-01  1.2001755341e-01  4.2490870138e-01 -1.1411823700e+00
+            x2  2.8960030210e-01  9.6700886776e-02  2.6388320678e-01 -8.3241777558e-01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ oscillatorA_1  1.8423880557e-01  1.4467713339e-01  2.1616573073e-01 -7.5996228807e-01
+ oscillatorA_2 -2.7694111366e-01  1.1846028463e-01 -3.3089137602e-01 -8.7569254199e-01
+ oscillatorA_3  6.9421997345e-02  1.0617729835e-01 -8.2837060238e-02 -4.0680855011e-01
+ oscillatorA_4  9.9280618320e-02  7.7509602202e-02  3.1783610786e-01 -7.2350476075e-01
+ oscillatorA_5 -1.3776238320e-01  6.0784012262e-02 -9.4179590819e-01  2.4146664583e+00
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+  oscillatorB_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_6: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_7: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_8: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_9: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_10: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_11: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_12: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_13: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_14: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_15: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_16: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_17: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_18: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_19: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_20: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_21: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_22: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_23: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_24: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_25: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_26: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_27: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_28: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_29: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_30: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_31: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_32: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_33: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_34: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_35: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_36: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_37: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_38: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_39: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_40: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_41: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_42: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_43: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_44: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_45: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_46: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_47: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_48: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_49: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_50: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      3.0306909304e-01 x1
+                      2.0341011157e-01 x2
+<<<<< Best model responses =
+                      4.9322877539e-01
+                      4.7798356262e-01
+                      4.6054689437e-01
+                      4.4486509993e-01
+                      4.3219500479e-01
+                      4.2121819013e-01
+                      4.0859031237e-01
+                      3.8982507631e-01
+                      3.6036073073e-01
+                      3.1662950573e-01
+                      2.5695150016e-01
+                      1.8210391413e-01
+                      9.5469501389e-02
+                      2.7362671606e-03
+                     -8.8807053587e-02
+                     -1.7126982577e-01
+                     -2.3729485367e-01
+                     -2.8114962424e-01
+                     -2.9959873913e-01
+                     -2.9241649109e-01
+                     -2.6245468043e-01
+                     -2.1525050993e-01
+                     -1.5823172339e-01
+                     -9.9639632361e-02
+                     -4.7335267866e-02
+                     -7.6725396349e-03
+                      1.5387981634e-02
+                      2.0788624873e-02
+                      1.0430474329e-02
+                     -1.1230426281e-02
+                     -3.7980455083e-02
+                     -6.2911737817e-02
+                     -7.9582342969e-02
+                     -8.3089503940e-02
+                     -7.0886243779e-02
+                     -4.3212726046e-02
+                     -3.0748609345e-03
+                      4.4225508930e-02
+                      9.1933471268e-02
+                      1.3292250123e-01
+                      1.6084226700e-01
+                      1.7115000065e-01
+                      1.6186102575e-01
+                      1.3389841405e-01
+                      9.0985115957e-02
+                      3.9094261369e-02
+                     -1.4456771327e-02
+                     -6.2126513817e-02
+                     -9.7307789924e-02
+                     -1.1534209915e-01
+<<<<< Best residual terms =
+                     -2.8049952088e-03
+                      8.7867077608e-03
+                     -4.2222389573e-03
+                      4.6647321339e-03
+                      3.7529596069e-03
+<<<<< Best residual terms =
+                     -2.8049952088e-03
+                      8.7867077608e-03
+                     -4.2222389573e-03
+                      4.6647321339e-03
+                      3.7529596069e-03
+<<<<< Best data not found in evaluation cache
+Confidence Intervals on Calibrated Parameters:
+            x1: [ 2.7753712927e-01, 3.2860105682e-01 ]
+            x2: [ 1.9568388811e-01, 2.1113633503e-01 ]
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+  oscillatorB_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_6: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_7: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_8: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_9: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_10: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_11: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_12: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_13: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_14: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_15: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_16: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_17: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_18: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_19: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_20: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_21: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_22: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_23: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_24: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_25: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_26: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_27: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_28: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_29: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_30: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_31: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_32: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_33: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_34: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_35: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_36: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_37: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_38: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_39: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_40: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_41: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_42: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_43: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_44: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_45: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_46: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_47: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_48: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_49: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_50: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      3.0161281314e-01 x1
+                      2.0141900483e-01 x2
+<<<<< Best model responses =
+                      4.9330358228e-01
+                      4.7826338965e-01
+                      4.6113373594e-01
+                      4.4583496387e-01
+                      4.3360044413e-01
+                      4.2309016716e-01
+                      4.1093884270e-01
+                      3.9263857633e-01
+                      3.6360444387e-01
+                      3.2024373350e-01
+                      2.6085055381e-01
+                      1.8617670012e-01
+                      9.9582460187e-02
+                      6.7390328554e-03
+                     -8.5073356061e-02
+                     -1.6796220166e-01
+                     -2.3455694777e-01
+                     -2.7910037218e-01
+                     -2.9832251534e-01
+                     -2.9195600441e-01
+                     -2.6280756945e-01
+                     -2.1637013731e-01
+                     -1.6003212864e-01
+                     -1.0200405581e-01
+                     -5.0127188831e-02
+                     -1.0747850044e-02
+                      1.2169170634e-02
+                      1.7551952937e-02
+                      7.2801927737e-03
+                     -1.4215040865e-02
+                     -4.0745012108e-02
+                     -6.5423390306e-02
+                     -8.1824077769e-02
+                     -8.5053266119e-02
+                     -7.2566215698e-02
+                     -4.4599988271e-02
+                     -4.1543741991e-03
+                      4.3475096151e-02
+                      9.1537195265e-02
+                      1.3290414481e-01
+                      1.6121803520e-01
+                      1.7192199589e-01
+                      1.6301177221e-01
+                      1.3538753800e-01
+                      9.2748961271e-02
+                      4.1048759391e-02
+                     -1.2410177616e-02
+                     -6.0092587065e-02
+                     -9.5387945403e-02
+                     -1.1362489620e-01
+<<<<< Best residual terms =
+                     -1.3995558730e-03
+                      1.2879580154e-02
+                     -1.8286599774e-03
+                      1.8728111692e-03
+                      1.3762659625e-03
+                     -7.1204198460e-03
+                     -9.5600441249e-04
+                      2.5605617852e-03
+<<<<< Best residual terms =
+                     -1.3995558730e-03
+                      1.2879580154e-02
+                     -1.8286599774e-03
+                      1.8728111692e-03
+                      1.3762659625e-03
+                     -7.1204198460e-03
+                     -9.5600441249e-04
+                      2.5605617852e-03
+<<<<< Best data not found in evaluation cache
+Confidence Intervals on Calibrated Parameters:
+            x1: [ 2.8890155508e-01, 3.1432407121e-01 ]
+            x2: [ 1.9742872047e-01, 2.0540928919e-01 ]
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
+   oscB_scalar1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999999999e-01 x1
+                      2.0000000001e-01 x2
+<<<<< Best model responses =
+                      3.2274897436e-01
+                     -2.9210752316e-01
+                     -1.6244810355e-02
+                      1.3309207648e-01
+                     -1.1245429604e-01
+<<<<< Best residual terms =
+                     -2.7422763856e-11
+                     -1.3484047212e-11
+                      1.3647506736e-11
+                      1.8554646451e-11
+                     -1.1317434998e-11
+<<<<< Best residual terms =
+                     -2.7422763856e-11
+                     -1.3484047212e-11
+                      1.3647506736e-11
+                      1.8554646451e-11
+                     -1.1317434998e-11
+<<<<< Best data captured at function evaluation 19
+Confidence Intervals on Calibrated Parameters:
+            x1: [ -4.4713038537e-01, 1.0471303854e+00 ]
+            x2: [ -3.0119848898e-02, 4.3011984891e-01 ]
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+   oscB_scalar1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999998715e-01 x1
+                      1.9999999925e-01 x2
+<<<<< Best model responses =
+                      4.1049160372e-01
+                     -1.7343831827e-02
+                     -2.4559254262e-01
+                      1.1096681088e-02
+                     -5.4913566802e-02
+                      1.6649057101e-01
+                     -1.1245429715e-01
+<<<<< Best residual terms =
+                     -1.5896162164e-10
+                     -3.9016742476e-09
+                     -1.1420191598e-08
+                     -6.1848928236e-10
+                      4.5129533791e-09
+                      5.8022790461e-09
+                     -1.1145922935e-09
+<<<<< Best residual terms =
+                     -1.5896162164e-10
+                     -3.9016742476e-09
+                     -1.1420191598e-08
+                     -6.1848928236e-10
+                      4.5129533791e-09
+                      5.8022790461e-09
+                     -1.1145922935e-09
+<<<<< Best data captured at function evaluation 16
+Confidence Intervals on Calibrated Parameters:
+            x1: [ -2.8008058831e-01, 8.8008056261e-01 ]
+            x2: [ 3.1911835732e-03, 3.9680881494e-01 ]

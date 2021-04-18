@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -1202,8 +1203,8 @@ void Iterator::set_communicators(ParLevLIter pl_iter)
     std::map<size_t, ParConfigLIter>::iterator map_iter
       = methodPCIterMap.find(pl_index);
     if (map_iter == methodPCIterMap.end()) { // this config does not exist
-      Cerr << "Error: failure in parallel configuration lookup in "
-           << "Iterator::set_communicators() for pl_index = " << pl_index << "." << std::endl;
+      Cerr << "Error: failure in parallel configuration lookup in Iterator::"
+           << "set_communicators() for pl_index = " << pl_index << std::endl;
       abort_handler(METHOD_ERROR);
     }
     else
@@ -1695,6 +1696,14 @@ nested_variable_mappings(const SizetArray& c_index1,
   //else no-op
 }
 
+void Iterator::
+nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs)
+{
+  if (iteratorRep)
+    iteratorRep->
+      nested_response_mappings(primary_coeffs,  secondary_coeffs);
+  //esee no-op
+}
 
 StrStrSizet Iterator::run_identifier() const
 {

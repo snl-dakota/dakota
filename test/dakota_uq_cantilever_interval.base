@@ -1,0 +1,25 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 93 total (93 new, 0 duplicate)
+weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
+displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)
+weight:  Min = 1.1306872827e+00  Max = 9.9563170091e+01
+stress:  Min = -9.7734547948e-01  Max = 1.7672247371e+01
+displ:  Min = -9.9308971684e-01  Max = 5.2099970952e+01
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 32 total (29 new, 3 duplicate)
+weight:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
+stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
+displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 170 total (161 new, 9 duplicate)
+weight:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
+stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
+displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 104 total (104 new, 0 duplicate)
+weight:  Min = 1.0000508059e+00  Max = 9.9999830649e+01
+stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
+displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01

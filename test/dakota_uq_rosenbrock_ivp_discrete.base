@@ -1,0 +1,12 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 210 total (210 new, 0 duplicate)
+mean:  Min = 3.4615198127e+02  Max = 1.1533050900e+03
+std_dev:  Min = 1.0052201478e+03  Max = 2.5527136417e+03
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 504 total (483 new, 21 duplicate)
+mean:  Min = 3.0164037312e+02  Max = 1.6010000000e+03
+std_dev:  Min = 7.7604644231e+02  Max = 3.1217946761e+03
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 44205 total (43404 new, 801 duplicate)
+mean:  Min = 3.0200260044e+02  Max = 1.6050000000e+03
+std_dev:  Min = 7.7655370647e+02  Max = 3.1243588142e+03

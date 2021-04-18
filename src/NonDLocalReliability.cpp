@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -1387,7 +1388,7 @@ void NonDLocalReliability::initialize_level_data()
   // Create the initial Taylor series approximation used by AMV/AMV+/TANA
   if (mppSearchType < NO_APPROX) {
     // restrict the approximation index set
-    IntSet surr_fn_indices;
+    SizetSet surr_fn_indices;
     surr_fn_indices.insert(respFnCount);
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
     // construct the approximation

@@ -1,0 +1,30 @@
+#@ s0: DakotaConfig=HAVE_ROL
+#@ s0: UserMan=workdir_textbook
+# Minimal example with common work directory specifications #s0
+
+method
+  rol
+    max_iterations = 60,
+    variable_tolerance = 1e-6
+    constraint_tolerance = 1e-6
+
+variables
+  continuous_design = 2
+    initial_point    0.9    1.1
+    upper_bounds     5.8    2.9
+    lower_bounds     0.5   -2.9
+    descriptors      'x1'   'x2'
+
+interface
+  # text_book driver must be in run directory or on PATH
+  fork analysis_driver = 'text_book'
+    parameters_file = 'params.in'
+    results_file    = 'results.out'
+  work_directory named 'tb_work'
+    directory_tag directory_save file_save
+
+responses
+  objective_functions = 1
+  nonlinear_inequality_constraints = 2
+  analytic_gradients
+  no_hessians

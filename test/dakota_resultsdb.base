@@ -1,0 +1,85 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0013529993e+00 x1
+                      1.0026805414e+00 x2
+<<<<< Best objective function  =
+                      1.9050696338e-06
+<<<<< Best data captured at function evaluation 38
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5540183516e+02  5.3682678089e+02  1.6661798252e+00  2.7925726822e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.8054757609e+02  5.3025609422e+02  4.8886795789e+02  5.9530059589e+02
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   1.1623549854e-01   1.0000000000e+02   3.4039566059e-03
+   1.0000000000e+02   2.7101710856e+03   2.5285698843e-04
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e+02   3.4000000000e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2 -5.85097e-03  1.00000e+00 
+response_fn_1 -9.57746e-02 -5.08193e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -1.14659e-01 
+          x2 -5.11111e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2 -6.03315e-03  1.00000e+00 
+response_fn_1 -1.15360e-01 -5.04661e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -1.37154e-01 
+          x2 -5.08762e-01 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+   9.1695238095e+02   P2   P0
+  -5.5955240441e-14   P3   P0
+   3.6571428571e+02   P4   P0
+  -5.3333333333e+02   P0   P1
+  -4.7961634664e-14   P1   P1
+  -1.0666666667e+03   P2   P1
+  -8.3932860662e-14   P3   P1
+   1.1151080059e-12   P4   P1
+   2.6666666667e+02   P0   P2
+   6.6613381478e-14   P1   P2
+   2.2204460493e-13   P2   P2
+   7.7715611724e-15   P3   P2
+  -4.9960036108e-13   P4   P2
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  integration:  4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   1.2557292886e-02   1.0000000000e-01   2.0584907071e-02
+   1.0000000000e-01   1.0000000000e+00   1.3222222222e-02
+   1.0000000000e+00   5.0000000000e+01   4.6612244898e-03
+   5.0000000000e+01   1.0000000000e+02   2.0220000000e-03
+   1.0000000000e+02   5.0000000000e+02   9.2950000000e-04
+   5.0000000000e+02   1.0000000000e+03   2.8060000000e-04
+   1.0000000000e+03   3.3580401847e+03   6.1364518271e-05
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.8000000000e-03
+   1.0000000000e+00   1.3700000000e-02
+   5.0000000000e+01   2.4210000000e-01
+   1.0000000000e+02   3.4320000000e-01
+   5.0000000000e+02   7.1500000000e-01
+   1.0000000000e+03   8.5530000000e-01

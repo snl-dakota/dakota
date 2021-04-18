@@ -1,0 +1,353 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
+ response_fn_2  4.7188739007e-01  1.5802617284e-01 -5.1340596904e-01  9.2447608436e-01
+ response_fn_3  8.1482677252e-01  1.7229246977e-01 -5.8722668746e-02 -5.0064796208e-02
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  4.3070554513e-01  5.1306923501e-01  1.3377447200e-01  1.9310067150e-01
+ response_fn_3  7.6992711035e-01  8.5972643468e-01  1.4585137233e-01  2.1053342626e-01
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_1:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   6.2500000000e+00        59
+   9.5000000000e-01   6.2500000000e+00        59
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_2:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   7.8033288513e-01        59
+   9.5000000000e-01   7.8033288513e-01        59
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_3:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   1.1954396016e+00        59
+   9.5000000000e-01   1.1954396016e+00        59
+Simple Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E -1.57239e-02  1.00000e+00 
+           X  2.37426e-02  1.35097e-02  1.00000e+00 
+           Y  2.20007e-02  6.39525e-02  6.63957e-02  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -5.39810e-01  4.99035e-02  6.39920e-01  5.56679e-01         -nan  1.00000e+00 
+response_fn_3  1.61780e-02 -4.71056e-01  4.64965e-01  7.39982e-01         -nan  6.68557e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -9.92624e-01 -2.65683e-01 
+           E         -nan -1.62866e-02 -9.91869e-01 
+           X         -nan  9.93782e-01  9.87560e-01 
+           Y         -nan  9.91475e-01  9.95933e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E  4.24898e-02  1.00000e+00 
+           X -6.25365e-03 -5.21917e-02  1.00000e+00 
+           Y  6.44652e-02  3.76973e-02  2.29106e-02  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -5.11222e-01 -3.64115e-02  5.92987e-01  5.13735e-01         -nan  1.00000e+00 
+response_fn_3  4.08533e-02 -5.51607e-01  4.27586e-01  6.74459e-01         -nan  5.98364e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -8.57201e-01  8.87219e-02 
+           E         -nan -1.05948e-02 -9.09054e-01 
+           X         -nan  8.71206e-01  8.31657e-01 
+           Y         -nan  8.54452e-01  9.36773e-01 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 124 total (124 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
+ response_fn_2  4.4479793808e-01  1.6457013908e-01  5.4331672329e-01  1.7575855019e+00
+ response_fn_3  7.4062340827e-01  1.8112421401e-01  1.6365091118e-01  2.7628823612e-02
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  4.1554414082e-01  4.7405173534e-01  1.4632342807e-01  1.8805711436e-01
+ response_fn_3  7.0842697783e-01  7.7281983870e-01  1.6104207026e-01  2.0697373908e-01
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_1:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   6.2500000000e+00        124
+   9.5000000000e-01   6.2500000000e+00        124
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_2:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   7.7148480377e-01        124
+   9.5000000000e-01   7.7148480377e-01        124
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_3:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   1.1352802811e+00        124
+   9.5000000000e-01   1.1352802811e+00        124
+Simple Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E  2.16267e-02  1.00000e+00 
+           X -3.16889e-02  7.97391e-03  1.00000e+00 
+           Y -5.24710e-03 -1.70204e-02  7.68315e-03  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -5.30031e-01 -1.21295e-02  5.93049e-01  6.23702e-01         -nan  1.00000e+00 
+response_fn_3 -3.29803e-02 -4.53962e-01  3.87897e-01  8.08491e-01         -nan  7.35156e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -9.87779e-01 -1.09700e-01 
+           E         -nan  5.98044e-02 -9.89916e-01 
+           X         -nan  9.90303e-01  9.86697e-01 
+           Y         -nan  9.91643e-01  9.96856e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E -1.54839e-03  1.00000e+00 
+           X  6.73485e-03 -1.32809e-02  1.00000e+00 
+           Y  4.31786e-02  4.10386e-03 -1.42628e-02  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -4.48724e-01  1.03289e-02  5.85637e-01  5.94593e-01         -nan  1.00000e+00 
+response_fn_3  5.29788e-02 -4.32629e-01  3.79651e-01  7.88614e-01         -nan  7.06776e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -8.85038e-01  7.71037e-02 
+           E         -nan  5.92732e-02 -9.08025e-01 
+           X         -nan  9.21451e-01  8.88664e-01 
+           Y         -nan  9.27030e-01  9.70110e-01 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 208 total (208 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
+ response_fn_2  4.3957101730e-01  1.5343625253e-01 -8.5397698437e-02 -3.1172991644e-01
+ response_fn_3  7.6070665314e-01  1.7877278451e-01  6.2746905151e-01  1.3404853918e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  4.1859654804e-01  4.6054548656e-01  1.3997212364e-01  1.6978876982e-01
+ response_fn_3  7.3626872395e-01  7.8514458233e-01  1.6308535880e-01  1.9782555074e-01
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_1:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   9.5000000000e-01  6.2500000000e+00   6.2500000000e+00        208
+   9.5000000000e-01  6.2500000000e+00   6.2500000000e+00        208
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_2:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   9.5000000000e-01  1.0838723590e-01   7.4725145294e-01        208
+   9.5000000000e-01  1.0838723590e-01   7.4725145294e-01        208
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_3:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   9.5000000000e-01  4.2524321768e-01   1.2847319917e+00        208
+   9.5000000000e-01  4.2524321768e-01   1.2847319917e+00        208
+Simple Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E  1.61992e-02  1.00000e+00 
+           X -1.17516e-03 -1.01370e-02  1.00000e+00 
+           Y  5.96059e-03  3.52644e-03 -3.76232e-03  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -4.95535e-01 -1.15779e-02  6.16000e-01  6.04952e-01         -nan  1.00000e+00 
+response_fn_3  2.84415e-03 -4.88923e-01  3.86807e-01  7.76937e-01         -nan  7.11457e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -9.93379e-01  8.07251e-02 
+           E         -nan  1.05208e-02 -9.86536e-01 
+           X         -nan  9.95674e-01  9.78624e-01 
+           Y         -nan  9.95569e-01  9.94670e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E -3.43970e-02  1.00000e+00 
+           X  2.92869e-02  3.06364e-02  1.00000e+00 
+           Y  2.32300e-03 -2.30700e-04 -7.12103e-04  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -4.67789e-01  2.43475e-02  6.01808e-01  5.84496e-01         -nan  1.00000e+00 
+response_fn_3  6.86232e-03 -4.48501e-01  3.63662e-01  7.68596e-01         -nan  6.88778e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -8.95806e-01 -8.54938e-02 
+           E         -nan -4.61929e-02 -8.75021e-01 
+           X         -nan  9.30980e-01  8.29841e-01 
+           Y         -nan  9.24488e-01  9.49306e-01 
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 473 total (473 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
+ response_fn_2  4.4248193262e-01  1.5970898894e-01  3.0294855642e-01 -1.2138313549e-01
+ response_fn_3  7.6255794687e-01  1.8309744212e-01  1.1291155560e-01 -1.2835671828e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  4.2805207864e-01  4.5691178659e-01  1.5013880653e-01  1.7059219734e-01
+ response_fn_3  7.4601492465e-01  7.7910096909e-01  1.7212576212e-01  1.9557443313e-01
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   8.0653736245e-02   5.4804488561e-01   1.6046516949e+00
+   5.4804488561e-01   5.7576372399e-01   1.8038273939e+00
+   5.7576372399e-01   6.0583662108e-01   1.6626266453e+00
+   6.0583662108e-01   6.5749698210e-01   9.6786005770e-01
+   6.5749698210e-01   7.1719632130e-01   8.3753020834e-01
+   7.1719632130e-01   9.7524537428e-01   1.9376161014e-01
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   2.5516513928e-01   8.5372557908e-01   1.1694725436e+00
+   8.5372557908e-01   8.8215747811e-01   1.7585881246e+00
+   8.8215747811e-01   9.1540242581e-01   1.5039879276e+00
+   9.1540242581e-01   9.5139875277e-01   1.3890306103e+00
+   9.5139875277e-01   1.0040064008e+00   9.5043214930e-01
+   1.0040064008e+00   1.0735085782e+00   7.1940192197e-01
+   1.0735085782e+00   1.1992375037e+00   3.1814476925e-01
+   1.1992375037e+00   1.2704501987e+00   1.4042440051e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   6.2500000000e+00   8.0000000000e-01
+   6.2500000000e+00   9.0000000000e-01
+   6.2500000000e+00   9.9000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   5.4804488561e-01   7.5000000000e-01
+   5.7576372399e-01   8.0000000000e-01
+   6.0583662108e-01   8.5000000000e-01
+   6.5749698210e-01   9.0000000000e-01
+   7.1719632130e-01   9.5000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   8.5372557908e-01   7.0000000000e-01
+   8.8215747811e-01   7.5000000000e-01
+   9.1540242581e-01   8.0000000000e-01
+   9.5139875277e-01   8.5000000000e-01
+   1.0040064008e+00   9.0000000000e-01
+   1.0735085782e+00   9.5000000000e-01
+   1.1992375037e+00   9.9000000000e-01
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_1:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   8.0000000000e-01  6.2500000000e+00   6.2500000000e+00        22
+   8.0000000000e-01  6.2500000000e+00   6.2500000000e+00        22
+   9.0000000000e-01  6.2500000000e+00   6.2500000000e+00        46
+   9.9000000000e-01  6.2500000000e+00   6.2500000000e+00        473
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_2:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   7.5000000000e-01  2.7251870739e-01   7.4256237312e-01        18
+   7.5000000000e-01  2.7251870739e-01   7.4256237312e-01        18
+   8.0000000000e-01  2.7251870739e-01   7.4256237312e-01        22
+   8.5000000000e-01  2.4814302167e-01   7.4256237312e-01        30
+   9.0000000000e-01  1.2184335511e-01   9.7524537428e-01        46
+   9.5000000000e-01  8.3745753904e-02   9.7524537428e-01        93
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_3:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   7.0000000000e-01  5.1537944917e-01   1.1364283319e+00        14
+   7.0000000000e-01  5.1537944917e-01   1.1364283319e+00        14
+   7.5000000000e-01  5.1357842320e-01   1.1364283319e+00        18
+   8.0000000000e-01  5.1357842320e-01   1.2704501987e+00        22
+   8.5000000000e-01  5.1357842320e-01   1.2704501987e+00        30
+   9.0000000000e-01  4.5272986934e-01   1.2704501987e+00        46
+   9.5000000000e-01  2.9269805986e-01   1.2704501987e+00        93
+   9.9000000000e-01  2.5516513928e-01   1.2704501987e+00        473
+Simple Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E -5.50640e-03  1.00000e+00 
+           X -2.29997e-03 -8.23125e-03  1.00000e+00 
+           Y -1.34705e-03  4.82907e-03 -6.58016e-03  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -4.68946e-01 -7.17293e-04  6.29903e-01  6.14346e-01         -nan  1.00000e+00 
+response_fn_3  3.07047e-03 -4.83566e-01  3.99317e-01  7.71997e-01         -nan  7.29013e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -9.93396e-01  3.00857e-02 
+           E         -nan -1.96863e-02 -9.86991e-01 
+           X         -nan  9.96393e-01  9.81165e-01 
+           Y         -nan  9.96217e-01  9.94891e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E -2.03017e-02  1.00000e+00 
+           X  3.00933e-02 -1.32668e-02  1.00000e+00 
+           Y -1.56677e-02 -2.51046e-02  7.74997e-03  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -4.38021e-01  1.02634e-02  5.98978e-01  6.20856e-01         -nan  1.00000e+00 
+response_fn_3  1.15715e-02 -4.68984e-01  3.81225e-01  7.80794e-01         -nan  7.13065e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -8.73919e-01  1.51067e-02 
+           E         -nan  9.85551e-02 -8.89982e-01 
+           X         -nan  9.25853e-01  8.51016e-01 
+           Y         -nan  9.26246e-01  9.58578e-01 
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
+ response_fn_2  4.7188739007e-01  1.5802617284e-01 -5.1340596904e-01  9.2447608436e-01
+ response_fn_3  8.1482677252e-01  1.7229246977e-01 -5.8722668746e-02 -5.0064796208e-02
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  4.3070554513e-01  5.1306923501e-01  1.3377447200e-01  1.9310067150e-01
+ response_fn_3  7.6992711035e-01  8.5972643468e-01  1.4585137233e-01  2.1053342626e-01
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -3.8857106870e-02   7.1410749976e-01   1.2616794888e+00
+   7.1410749976e-01   7.8033288513e-01   7.5499749414e-01
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   3.8169879691e-01   1.1004050436e+00   1.3218195951e+00
+   1.1004050436e+00   1.1954396016e+00   5.2612440242e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   6.2500000000e+00   9.5000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   7.1410749976e-01   9.5000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.1004050436e+00   9.5000000000e-01
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_1:
+    Coverage Level       Lower Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   6.2500000000e+00        59
+   9.5000000000e-01   6.2500000000e+00        59
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_2:
+    Coverage Level       Lower Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   -3.8857106870e-02        59
+   9.5000000000e-01   -3.8857106870e-02        59
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_3:
+    Coverage Level       Lower Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   3.8169879691e-01        59
+   9.5000000000e-01   3.8169879691e-01        59
+Simple Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E -1.57239e-02  1.00000e+00 
+           X  2.37426e-02  1.35097e-02  1.00000e+00 
+           Y  2.20007e-02  6.39525e-02  6.63957e-02  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -5.39810e-01  4.99035e-02  6.39920e-01  5.56679e-01         -nan  1.00000e+00 
+response_fn_3  1.61780e-02 -4.71056e-01  4.64965e-01  7.39982e-01         -nan  6.68557e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -9.92624e-01 -2.65683e-01 
+           E         -nan -1.62866e-02 -9.91869e-01 
+           X         -nan  9.93782e-01  9.87560e-01 
+           Y         -nan  9.91475e-01  9.95933e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
+           R  1.00000e+00 
+           E  4.24898e-02  1.00000e+00 
+           X -6.25365e-03 -5.21917e-02  1.00000e+00 
+           Y  6.44652e-02  3.76973e-02  2.29106e-02  1.00000e+00 
+response_fn_1         -nan         -nan         -nan         -nan         -nan 
+response_fn_2 -5.11222e-01 -3.64115e-02  5.92987e-01  5.13735e-01         -nan  1.00000e+00 
+response_fn_3  4.08533e-02 -5.51607e-01  4.27586e-01  6.74459e-01         -nan  5.98364e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+           R         -nan -8.57201e-01  8.87219e-02 
+           E         -nan -1.05948e-02 -9.09054e-01 
+           X         -nan  8.71206e-01  8.31657e-01 
+           Y         -nan  8.54452e-01  9.36773e-01 

@@ -1,0 +1,11 @@
+GP Test Parameters:
+  scaler name: "standardization"
+  standardize response: false
+  num restarts: 10
+  gp seed: 42
+  Nugget:
+    fixed nugget: 0.0
+    estimate nugget: true
+    Bounds:
+      lower bound: 3.17e-8
+      upper bound: 1.0e-2

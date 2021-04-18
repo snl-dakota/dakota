@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -23,22 +24,24 @@ DataModelRep::DataModelRep():
   hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), exportSurrogate(false),
   modelExportPrefix("exported_surrogate"), modelExportFormat(NO_MODEL_FORMAT),
+  importSurrogate(false),
+  modelImportPrefix("exported_surrogate"), modelImportFormat(NO_MODEL_FORMAT),
   importBuildFormat(TABULAR_ANNOTATED),  importUseVariableLabels(false),
   importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
   exportApproxVarianceFormat(TABULAR_ANNOTATED), numRestarts(10),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
-  modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
-  krigingNugget(0.0), krigingFindNugget(0), mlsWeightFunction(0),
-  rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0),
-  marsMaxBases(0), annRandomWeight(0), annNodes(0), annRange(0.0), 
-  domainDecomp(false), decompCellType("voronoi"), decompSupportLayers(0),
-  decompDiscontDetect(false), discontJumpThresh(0.0), discontGradThresh(0.0),
-  trendOrder("reduced_quadratic"), pointSelection(false),
-  crossValidateFlag(false), numFolds(0), percentFold(0.0), pressFlag(false),
-  importChallengeFormat(TABULAR_ANNOTATED), importChalUseVariableLabels(false),
-  importChallengeActive(false),
+  modelUseDerivsFlag(false), respScalingFlag(false), polynomialOrder(2),
+  krigingMaxTrials(0), krigingNugget(0.0), krigingFindNugget(0),
+  mlsWeightFunction(0), rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0),
+  rbfMinPartition(0), marsMaxBases(0), annRandomWeight(0), annNodes(0),
+  annRange(0.), domainDecomp(false), decompCellType("voronoi"),
+  decompSupportLayers(0), decompDiscontDetect(false), discontJumpThresh(0.0),
+  discontGradThresh(0.0), trendOrder("reduced_quadratic"),
+  pointSelection(false), crossValidateFlag(false), numFolds(0), percentFold(0.),
+  pressFlag(false), importChallengeFormat(TABULAR_ANNOTATED),
+  importChalUseVariableLabels(false), importChallengeActive(false),
   identityRespMap(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING), initialSamples(0),
@@ -55,13 +58,16 @@ DataModelRep::DataModelRep():
   tensorGridFlag(false), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
   adaptOrder(false), startRank(2), kickRank(1),
   maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
-  c3AdvanceType(NO_C3_ADVANCEMENT),
+  maxCVRankCandidates(std::numeric_limits<size_t>::max()),
+  maxCVOrderCandidates(USHRT_MAX), c3AdvanceType(NO_C3_ADVANCEMENT),
   collocationPoints(std::numeric_limits<size_t>::max()), collocationRatio(0.),
   autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
-  analyticCovIdForm(NOCOVAR)
+  analyticCovIdForm(NOCOVAR),
+  method_rotation(ROTATION_METHOD_RANKED),
+  adaptedBasisTruncationTolerance(0.9)
 { }
 
 
@@ -70,18 +76,19 @@ void DataModelRep::write(MPIPackBuffer& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << hierarchicalTags << subMethodPointer
     << solutionLevelControl << solutionLevelCost << surrogateFnIndices
-    << surrogateType << actualModelPointer << orderedModelPointers
+    << surrogateType << actualModelPointer << ensembleModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importUseVariableLabels
+    << modelExportPrefix << modelExportFormat << importSurrogate
+    << modelImportPrefix << modelImportFormat << importUseVariableLabels
     << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat
     << exportApproxVarianceFile << exportApproxVarianceFormat
-    << numRestarts
-    << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
-    << polynomialOrder << krigingCorrelations << krigingOptMethod
-    << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
+    << numRestarts << approxCorrectionType << approxCorrectionOrder
+    << modelUseDerivsFlag << respScalingFlag << polynomialOrder
+    << krigingCorrelations << krigingOptMethod << krigingMaxTrials
+    << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsWeightFunction
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
     << marsMaxBases << marsInterpolation << annRandomWeight << annNodes
@@ -101,15 +108,16 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
-    << collocationPoints << collocationRatio
+    << startRank << kickRank << maxRank << adaptRank
+    << maxCVRankCandidates << maxCVOrderCandidates
+    << c3AdvanceType << collocationPoints << collocationRatio
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance
     << decreaseTolerance << subspaceCVMaxRank << subspaceCVIncremental
-    << subspaceIdCVMethod;
+    << subspaceIdCVMethod << method_rotation << adaptedBasisTruncationTolerance;
 }
 
 
@@ -118,18 +126,19 @@ void DataModelRep::read(MPIUnpackBuffer& s)
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
     >> responsesPointer >> hierarchicalTags >> subMethodPointer
     >> solutionLevelControl >> solutionLevelCost >> surrogateFnIndices
-    >> surrogateType >> actualModelPointer >> orderedModelPointers
+    >> surrogateType >> actualModelPointer >> ensembleModelPointers
     >> pointsTotal >> pointsManagement >> approxPointReuse
     >> importBuildPtsFile >> importBuildFormat >> exportSurrogate
-    >> modelExportPrefix >> modelExportFormat >> importUseVariableLabels
+    >> modelExportPrefix >> modelExportFormat >> importSurrogate
+    >> modelImportPrefix >> modelImportFormat >> importUseVariableLabels
     >> importBuildActive
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat
     >> exportApproxVarianceFile >> exportApproxVarianceFormat
-    >> numRestarts
-    >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
-    >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
-    >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
+    >> numRestarts >> approxCorrectionType >> approxCorrectionOrder
+    >> modelUseDerivsFlag >> respScalingFlag >> polynomialOrder
+    >> krigingCorrelations >> krigingOptMethod >> krigingMaxTrials
+    >> krigingMaxCorrelations >> krigingMinCorrelations
     >> krigingNugget >> krigingFindNugget >> mlsWeightFunction
     >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition
     >> marsMaxBases >> marsInterpolation >> annRandomWeight >> annNodes
@@ -149,15 +158,16 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> regressionType >> regressionL2Penalty >> maxSolverIterations
     >> maxCrossIterations >> solverTol >> solverRoundingTol >> statsRoundingTol
     >> tensorGridFlag >> startOrder >> kickOrder >> maxOrder >> adaptOrder
-    >> startRank >> kickRank >> maxRank >> adaptRank >> c3AdvanceType
-    >> collocationPoints >> collocationRatio
+    >> startRank >> kickRank >> maxRank >> adaptRank
+    >> maxCVRankCandidates >> maxCVOrderCandidates
+    >> c3AdvanceType >> collocationPoints >> collocationRatio
     >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
     >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
     >> adaptedBasisCollocRatio >> propagationModelPointer >> truncationTolerance
     >> rfDataFileName >> randomFieldIdForm >> analyticCovIdForm
     >> subspaceSampleType >> subspaceIdCV >> relTolerance
     >> decreaseTolerance >> subspaceCVMaxRank >> subspaceCVIncremental
-    >> subspaceIdCVMethod;
+    >> subspaceIdCVMethod >> method_rotation >> adaptedBasisTruncationTolerance;
 }
 
 
@@ -166,18 +176,19 @@ void DataModelRep::write(std::ostream& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << hierarchicalTags << subMethodPointer
     << solutionLevelControl << solutionLevelCost << surrogateFnIndices
-    << surrogateType << actualModelPointer << orderedModelPointers
+    << surrogateType << actualModelPointer << ensembleModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importUseVariableLabels
+    << modelExportPrefix << modelExportFormat << importSurrogate
+    << modelImportPrefix << modelImportFormat << importUseVariableLabels
     << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat
     << exportApproxVarianceFile << exportApproxVarianceFormat
-    << numRestarts
-    << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
-    << polynomialOrder << krigingCorrelations << krigingOptMethod
-    << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
+    << numRestarts << approxCorrectionType << approxCorrectionOrder
+    << modelUseDerivsFlag << respScalingFlag << polynomialOrder
+    << krigingCorrelations << krigingOptMethod << krigingMaxTrials
+    << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsWeightFunction
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
     << marsMaxBases << marsInterpolation << annRandomWeight << annNodes
@@ -197,15 +208,16 @@ void DataModelRep::write(std::ostream& s) const
     << regressionType << regressionL2Penalty << maxSolverIterations
     << maxCrossIterations << solverTol << solverRoundingTol << statsRoundingTol
     << tensorGridFlag << startOrder << kickOrder << maxOrder << adaptOrder
-    << startRank << kickRank << maxRank << adaptRank << c3AdvanceType
-    << collocationPoints << collocationRatio
+    << startRank << kickRank << maxRank << adaptRank
+    << maxCVRankCandidates << maxCVOrderCandidates
+    << c3AdvanceType << collocationPoints << collocationRatio
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance
     << decreaseTolerance << subspaceCVMaxRank << subspaceCVIncremental
-    << subspaceIdCVMethod;
+    << subspaceIdCVMethod << method_rotation << adaptedBasisTruncationTolerance;
 }
 
 

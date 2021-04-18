@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -78,9 +79,19 @@ private:
   /// experimental operator== for use in unit testing
   bool operator==(const SharedResponseDataRep& other);
 
-  /// build/update the unrolled field labels based on fieldLabels and
+  /// populate functionLabels with scalar and unrolled field labels
+  /// based on fieldLabels and group lengths
+  void build_field_labels(const StringArray& labels_per_group);
+
+  void resize_field_labels(const StringArray& old_full_labels,
+			   size_t old_field_elements);
+
+  /// update functionLabels with unrolled field labels based on fieldLabels and
   /// group lengths
-  void build_field_labels();
+  void update_field_labels();
+
+  /// the primary function type as a friendly string, e.g., "objective_functions"
+  std::string primary_fn_name() const;
 
   //
   //- Heading: Data
@@ -105,7 +116,7 @@ private:
   /// simulation variance
   RealVector simulationVariance;
   
-  /// number of scalar responses
+  /// number of scalar responses (scalar primary + scalar constraints)
   size_t numScalarResponses = 0;
 
   /// number of scalar primary reponses (secondary computed from difference)
@@ -196,8 +207,12 @@ public:
   /// total number of primary field functions (elements);
   /// 1-norm of priFieldLengths
   size_t num_field_functions() const;
-  /// total number of response functions (scalars + 1-norm of
-  /// priFieldLengths)
+
+  /// number of primary functions (pri scalars + 1-norm of priFieldLengths)
+  size_t num_primary_functions() const;
+
+  /// total number of response functions (pri scalars + 1-norm of
+  /// priFieldLengths + secondary scalars)
   size_t num_functions() const;
 
   /// length of each primary field
@@ -321,6 +336,10 @@ inline size_t SharedResponseData::num_response_groups() const
 
 inline size_t SharedResponseData::num_field_functions() const
 { return srdRep->priFieldLengths.normOne(); }
+
+
+inline size_t SharedResponseData::num_primary_functions() const
+{ return srdRep->numScalarPrimary + srdRep->priFieldLengths.normOne(); }
 
 
 inline size_t SharedResponseData::num_functions() const

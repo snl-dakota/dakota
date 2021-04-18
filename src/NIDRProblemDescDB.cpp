@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -1417,17 +1418,6 @@ model_int(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-model_intsetm1(const char *keyname, Values *val, void **g, void *v)
-{
-  IntSet *is = &((*(Mod_Info**)g)->dmo->**(IntSet DataModelRep::**)v);
-  int *z = val->i;
-  size_t i, n = val->n;
-
-  for(i = 0; i < n; i++)
-    is->insert(z[i] - 1); // model converts ids -> indices
-}
-
-void NIDRProblemDescDB::
 model_lit(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_lit*)v)->sp = ((Model_mp_lit*)v)->lit;
@@ -1499,6 +1489,22 @@ model_sizet(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(size_t DataModelRep::**)v = n;
 }
 
+void NIDRProblemDescDB::
+model_id_to_index_set(const char *keyname, Values *val, void **g, void *v)
+{
+  SizetSet *ss = &((*(Mod_Info**)g)->dmo->**(SizetSet DataModelRep::**)v);
+  int *z = val->i; // extract as int ptr, prior to storage as SizetSet
+  size_t i, n = val->n, s;
+
+  for(i = 0; i < n; i++) {
+    if (z[i] > 0) {
+      s = z[i] - 1; // model converts ids -> indices
+      ss->insert(s);
+    }
+    else
+      botch("%s must be positive", keyname);      
+  }
+}
 
 void NIDRProblemDescDB::
 model_start(const char *keyname, Values *val, void **g, void *v)
@@ -6513,6 +6519,7 @@ static Iface_mp_utype
 	MP2s(interfaceType,GRID_INTERFACE),
 	MP2s(interfaceType,MATLAB_INTERFACE),
 	MP2s(interfaceType,PYTHON_INTERFACE),
+	MP2s(interfaceType,PYBIND11_INTERFACE),
 	MP2s(interfaceType,SCILAB_INTERFACE),
 	MP2s(interfaceType,SYSTEM_INTERFACE),
 	//MP2s(resultsFileFormat,FLEXIBLE_RESULTS), // re-enable when more formats added?
@@ -6618,8 +6625,6 @@ static Method_mp_lit
         MP2(dataDistCovInputType,matrix),
       //MP2(dataDistType,gaussian),
       //MP2(dataDistType,user),
-	MP2(evalSynchronize,blocking),
-	MP2(evalSynchronize,nonblocking),
       //MP2(expansionSampleType,incremental_lhs),
 	MP2(exploratoryMoves,adaptive),
 	MP2(exploratoryMoves,multi_step),
@@ -6705,10 +6710,10 @@ static Method_mp_slit2
 static Method_mp_utype_lit
         MP3s(methodName,dlDetails,DL_SOLVER); // struct order: ip, sp, utype
 
-static Method_mp_ord
-	MP2s(approxCorrectionOrder,0),
-	MP2s(approxCorrectionOrder,1),
-	MP2s(approxCorrectionOrder,2);
+//static Method_mp_ord
+// 	MP2s(polynomialOrder,0),
+// 	MP2s(polynomialOrder,1),
+// 	MP2s(polynomialOrder,2);
 
 static Real
 	MP_(absConvTol),
@@ -6780,7 +6785,8 @@ static RealVector
 	MP_(predictionConfigList),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
-        MP_(stepVector),
+  MP_(scalarizationRespCoeffs),
+  MP_(stepVector),
 	MP_(trustRegionInitSize);
 
 static RealVectorArray
@@ -6795,6 +6801,7 @@ static unsigned short
 	MP_(cubIntOrder),
         MP_(expansionOrder),
         MP_(kickOrder),
+        MP_(maxCVOrderCandidates),
         MP_(maxOrder),
         MP_(quadratureOrder),
 	MP_(softConvLimit),
@@ -6904,6 +6911,7 @@ static bool
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
 	MP_(relativeConvMetric),
+	MP_(respScalingFlag),
 	MP_(showAllEval),
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
@@ -6916,8 +6924,9 @@ static bool
 	MP_(volQualityFlag),
 	MP_(wilksFlag);
 
-/* It seems these are redundant with Method_mp_type:
 static short
+	MP_(polynomialOrder);
+/* It seems these are redundant with Method_mp_type:
 	MP_(c3AdvanceType),
         MP_(expansionType),
         MP_(nestingOverride),
@@ -6971,6 +6980,7 @@ static size_t
 	MP_(collocationPoints),
         MP_(expansionSamples),
         MP_(kickRank),
+        MP_(maxCVRankCandidates),
         MP_(maxRank),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
@@ -6985,12 +6995,18 @@ static size_t
 
 static Method_mp_type
 	MP2s(allocationTarget,TARGET_MEAN),
+  MP2s(allocationTarget,TARGET_SCALARIZATION),
+  MP2s(allocationTarget,TARGET_SIGMA),
 	MP2s(allocationTarget,TARGET_VARIANCE),
-	MP2s(c3AdvanceType,MAX_ORDER_ADVANCEMENT),
-	MP2s(c3AdvanceType,MAX_RANK_ADVANCEMENT),
-	MP2s(c3AdvanceType,MAX_RANK_ORDER_ADVANCEMENT),
-	MP2s(c3AdvanceType,START_ORDER_ADVANCEMENT),
-	MP2s(c3AdvanceType,START_RANK_ADVANCEMENT),
+  MP2s(c3AdvanceType,MAX_ORDER_ADVANCEMENT),
+  MP2s(c3AdvanceType,MAX_RANK_ADVANCEMENT),
+  MP2s(c3AdvanceType,MAX_RANK_ORDER_ADVANCEMENT),
+  MP2s(c3AdvanceType,START_ORDER_ADVANCEMENT),
+  MP2s(c3AdvanceType,START_RANK_ADVANCEMENT),
+  MP2s(convergenceToleranceTarget,CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT),
+  MP2s(convergenceToleranceTarget,CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
+  MP2s(convergenceToleranceType,CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE),
+  MP2s(convergenceToleranceType,CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
@@ -7004,6 +7020,8 @@ static Method_mp_type
 	MP2s(emulatorType,PCE_EMULATOR),
 	MP2s(emulatorType,SC_EMULATOR),
 	MP2s(emulatorType,VPS_EMULATOR),
+	MP2s(evalSynchronize,BLOCKING_SYNCHRONIZATION),
+	MP2s(evalSynchronize,NONBLOCKING_SYNCHRONIZATION),
 	MP2p(expansionBasisType,ADAPTED_BASIS_EXPANDING_FRONT),
 	MP2p(expansionBasisType,ADAPTED_BASIS_GENERALIZED),
 	MP2p(expansionBasisType,HIERARCHICAL_INTERPOLANT),
@@ -7039,8 +7057,8 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
+  MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
-	MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_SOBOL),      // Pecos
@@ -7275,7 +7293,7 @@ static Method_mp_utype
 #define MP2s(x,y) model_mp_##x##_##y = {&DataModelRep::x,y}
 #define MP2p(x,y) model_mp_##x##_##y = {&DataModelRep::x,Pecos::y}
 
-static IntSet
+static SizetSet
 	MP_(surrogateFnIndices);
 
 static Model_mp_lit
@@ -7291,6 +7309,7 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,non_hierarchical),
 	MP2(surrogateType,global_exp_gauss_proc),
 	MP2(surrogateType,global_exp_poly),
 	MP2(surrogateType,global_function_train),
@@ -7335,7 +7354,10 @@ static Model_mp_type
 	MP2s(regressionType,FT_LS),
 	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),
+        MP2s(method_rotation,ROTATION_METHOD_UNRANKED),
+	MP2s(method_rotation,ROTATION_METHOD_RANKED),
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
+
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),
       //MP2s(subMethodScheduling,PEER_STATIC_SCHEDULING),
 
@@ -7372,6 +7394,8 @@ static Model_mp_utype
         MP2s(modelExportFormat,BINARY_ARCHIVE),
         MP2s(modelExportFormat,ALGEBRAIC_FILE),
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
+        MP2s(modelImportFormat,TEXT_ARCHIVE),
+        MP2s(modelImportFormat,BINARY_ARCHIVE),
         MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
         MP2s(randomFieldIdForm,RF_PCA_GP),
 	MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_VALUE),
@@ -7398,7 +7422,8 @@ static Real
 	MP_(solverRoundingTol),
 	MP_(solverTol),
 	MP_(statsRoundingTol),
-	MP_(truncationTolerance);
+	MP_(truncationTolerance),
+	MP_(adaptedBasisTruncationTolerance);
 
 static RealVector
 	MP_(krigingCorrelations),
@@ -7424,6 +7449,7 @@ static String
 	MP_(interfacePointer),
 	MP_(krigingOptMethod),
 	MP_(modelExportPrefix),
+	MP_(modelImportPrefix),
 	MP_(optionalInterfRespPointer),
 	MP_(propagationModelPointer),
 	MP_(refineCVMetric),
@@ -7435,7 +7461,7 @@ static String
 
 static StringArray
         MP_(diagMetrics),
-	MP_(orderedModelPointers),
+	MP_(ensembleModelPointers),
 	MP_(primaryVarMaps),
         MP_(secondaryVarMaps);
 
@@ -7446,6 +7472,7 @@ static bool
 	MP_(crossValidateFlag),
 	MP_(decompDiscontDetect),
 	MP_(exportSurrogate),
+	MP_(importSurrogate),
 	MP_(hierarchicalTags),
         MP_(identityRespMap),
       //MP_(importApproxActive),
@@ -7457,6 +7484,7 @@ static bool
         MP_(domainDecomp),
         MP_(pointSelection),
         MP_(pressFlag),
+        MP_(respScalingFlag),
         MP_(subspaceIdBingLi),
         MP_(subspaceIdConstantine),
         MP_(subspaceIdEnergy),
@@ -7469,6 +7497,7 @@ static unsigned short
 	MP_(adaptedBasisSparseGridLev),
 	MP_(adaptedBasisExpOrder),
 	MP_(kickOrder),
+        MP_(maxCVOrderCandidates),
 	MP_(maxOrder),
 	MP_(startOrder);
 
@@ -7507,6 +7536,7 @@ static int
 static size_t
 	MP_(collocationPoints),
 	MP_(kickRank),
+        MP_(maxCVRankCandidates),
 	MP_(maxRank),
 	MP_(startRank);
 //	MP_(verbosity);

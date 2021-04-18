@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -283,8 +284,9 @@ C3FnTrainData C3FnTrainData::copy() const
   // ft_derived_fns,ft_sobol have been assigned NULL and can be allocated
   // downsteam when needed for stats,indices
 
-  ftd.ftdRep->primaryMoments       = ftdRep->primaryMoments;
-  ftd.ftdRep->recoveredBasisOrders = ftdRep->recoveredBasisOrders;
+  ftd.ftdRep->primaryMoments  = ftdRep->primaryMoments;
+  ftd.ftdRep->recoveredOrders = ftdRep->recoveredOrders;
+  ftd.ftdRep->recoveredRanks  = ftdRep->recoveredRanks;
 
   return ftd;
 }

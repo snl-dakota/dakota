@@ -1,0 +1,95 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.9770000000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1972245773e+00  0.0000000000e+00  2.2773793036e-12  0.0000000000e+00
+ response_fn_2 -1.8971950986e+00  4.6533570306e-02  1.3625267743e-01  5.1603112914e-01
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e+00 x
+<<<<< Best objective function  =
+                      3.1972245773e+00
+<<<<< Best constraint values   =
+                     -1.7575943877e+00
+<<<<< Best data captured at function evaluation 1
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.9770000000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1972245773e+00  0.0000000000e+00  2.2773793036e-12  0.0000000000e+00
+ response_fn_2 -1.8971950986e+00  4.6533570306e-02  1.3625267743e-01  5.1603112914e-01
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e+00 x
+<<<<< Best objective function  =
+                      3.1972245773e+00
+<<<<< Best constraint values   =
+                     -1.7575943877e+00
+<<<<< Best data captured at function evaluation 1
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.9770000000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1972245773e+00  0.0000000000e+00  2.2773793036e-12  0.0000000000e+00
+ response_fn_2 -1.8971950986e+00  4.6533570306e-02  1.3625267743e-01  5.1603112914e-01
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e+00 x
+<<<<< Best objective function  =
+                      3.1972245773e+00
+<<<<< Best constraint values   =
+                     -1.7575943877e+00
+<<<<< Best data captured at function evaluation 1
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.9770000000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1972245773e+00  0.0000000000e+00  2.2773793036e-12  0.0000000000e+00
+ response_fn_2 -1.8971950986e+00  4.6533570306e-02  1.3625267743e-01  5.1603112914e-01
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e+00 x
+<<<<< Best objective function  =
+                      1.3000294787e+00
+<<<<< Best constraint values   =
+                      1.4396301896e+00
+<<<<< Best data captured at function evaluation 1
+Test Number 4 succeeded
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Equivalent number of high fidelity evaluations: 1.9770000000e+02
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1972245773e+00  0.0000000000e+00  2.2773793036e-12  0.0000000000e+00
+ response_fn_2 -1.8971950986e+00  4.6533570306e-02  1.3625267743e-01  5.1603112914e-01
+<<<<< Function evaluation summary (UQ_I): 879 total (879 new, 0 duplicate)
+  response_fn_1: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 879 val (879 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e+00 x
+<<<<< Best objective function  =
+                      1.3000294787e+00
+<<<<< Best constraint values   =
+                      1.4396301896e+00
+<<<<< Best data captured at function evaluation 1

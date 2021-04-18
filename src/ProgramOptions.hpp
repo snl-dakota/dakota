@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -14,8 +15,7 @@
 #ifndef DAKOTA_PROGRAM_OPTIONS_H
 #define DAKOTA_PROGRAM_OPTIONS_H
 
-#include "dakota_data_types.hpp"
-#include "MPIPackBuffer.hpp"
+#include "dakota_data_io.hpp"
 
 // ProgramOptions is currently default constructible and we pass it by
 // value to the Environment constructors.  If it becomes larger or more 
@@ -192,8 +192,6 @@ public:
 
   /// helper function for writing some class data to MPI buffer
   void write(MPIPackBuffer& s) const;
- 
-
 
 private:
 
@@ -270,16 +268,16 @@ private:
 
 
 /// MPIUnpackBuffer extraction operator
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ProgramOptions& progopt)
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ProgramOptions& p_opt)
 { 
-  progopt.read(s);
+  p_opt.read(s);
   return s; 
 }
 
 /// MPIPackBuffer insertion operator
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const ProgramOptions& progopt)
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const ProgramOptions& p_opt)
 { 
-  progopt.write(s);
+  p_opt.write(s);
   return s; 
 }
 

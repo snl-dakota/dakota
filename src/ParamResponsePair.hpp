@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -137,6 +138,9 @@ public:
   /// set the response object
   void response(const Response& resp);
 
+  /// return evaluation id and response as a std::pair
+  IntResponsePair response_pair() const;
+
   /// return the active set object from the response object
   const ActiveSet& active_set() const;
   /// set the active set object within the response object
@@ -264,6 +268,10 @@ inline Response& ParamResponsePair::response()
 
 inline void ParamResponsePair::response(const Response& resp)
 { prpResponse = resp; }
+
+
+inline IntResponsePair ParamResponsePair::response_pair() const
+{ return IntResponsePair(evalInterfaceIds.first, prpResponse); }
 
 
 inline const ActiveSet& ParamResponsePair::active_set() const

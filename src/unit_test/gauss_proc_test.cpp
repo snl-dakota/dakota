@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -77,13 +78,13 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
 
   // Verify equality of gold data
   double gold_values[NUM_COLS][NUM_ROWS] =
-    {{ 0.2, -0.3, 0.4, -0.25 },  //x1
-     { 0.45, -0.7, -0.1, 0.33 }, //x2
-     { 0.77985942, 0.84671183, 0.7445029, 0.74654101 }}; //herbie
+    {{0.2, -0.3, 0.4, -0.25},  //x1
+     {0.45, -0.7, -0.1, 0.33}, //x2
+     {0.779863, 0.846376, 0.744602, 0.746568}}; //herbie
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
+      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-6 );
     }
   }
 
@@ -91,7 +92,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
   data_pairs.clear();
 }
 
-TEUCHOS_UNIT_TEST(surrogates_gp,xml_read)
+TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read)
 {
   // Dakota input string:
   static const char dakota_input[] =
@@ -112,7 +113,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,xml_read)
     "    global \n"
     "      actual_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
-    "        options_file 'gauss_proc_test_files/GP_test_parameterlist_1.xml' \n"
+    "        options_file 'gauss_proc_test_files/GP_test_parameterlist_1.yaml' \n"
     "      import_points_file 'gauss_proc_test_files/gauss_proc_build_points.dat' \n"
     "        annotated \n"
     "variables \n"
@@ -164,10 +165,10 @@ TEUCHOS_UNIT_TEST(surrogates_gp,xml_read)
   data_pairs.clear();
 }
 
-TEUCHOS_UNIT_TEST(surrogates_gp,xml_read_alternate_parameters)
+TEUCHOS_UNIT_TEST(surrogates_gp,yaml_read_alternate_parameters)
 {
   // This test uses the gold values from the surrogates_gp test above.
-  // It is expected to get the same output result, despite using an XML
+  // It is expected to get the same output result, despite using an Yaml
   // ParameterList import instead of Dakota-configured parameters.
 
   // Dakota input string:
@@ -189,7 +190,7 @@ TEUCHOS_UNIT_TEST(surrogates_gp,xml_read_alternate_parameters)
     "    global \n"
     "      actual_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
-    "        options_file 'gauss_proc_test_files/GP_test_parameterlist_2.xml' \n"
+    "        options_file 'gauss_proc_test_files/GP_test_parameterlist_2.yaml' \n"
     "      import_points_file 'gauss_proc_test_files/gauss_proc_build_points.dat' \n"
     "        annotated \n"
     "variables \n"
@@ -304,13 +305,13 @@ TEUCHOS_UNIT_TEST(surrogates_gp, reduced_quadratic)
 
   // Verify equality of gold data
   double gold_values[NUM_COLS][NUM_ROWS] =
-    {{ 0.2, -0.3, 0.4, -0.25 },  //x1
-     { 0.45, -0.7, -0.1, 0.33 }, //x2
-     { 0.7798753385, 0.8471677755, 0.7443797333, 0.7465426593 }}; //herbie
+    {{0.2, -0.3, 0.4, -0.25},  //x1
+     {0.45, -0.7, -0.1, 0.33}, //x2
+     {0.779875, 0.847168, 0.74438, 0.746543}}; //herbie
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
+      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-6 );
     }
   }
 }

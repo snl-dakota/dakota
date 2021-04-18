@@ -1,0 +1,144 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 53 total (53 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9525016348e+01 x1
+                      1.9621829244e+01 x2
+<<<<< Best objective function  =
+                     -3.1636802084e+01
+<<<<< Best constraint values   =
+                      3.8824487729e-01
+                      2.2580899324e-06
+                      3.8008327069e-01
+<<<<< Best data captured at function evaluation 53
+Test Number 1 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 95 total (95 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9530633018e+01 x1
+                      1.9626195224e+01 x2
+<<<<< Best objective function  =
+                     -3.1636863161e+01
+<<<<< Best constraint values   =
+                      3.8871124742e-01
+                     -1.4726659837e-05
+                      3.7996594059e-01
+<<<<< Best data captured at function evaluation 94
+Test Number 2 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 133 total (90 new, 43 duplicate)
+<<<<< Best parameters          =
+                      4.9532999226e+01 x1
+                      1.9626695234e+01 x2
+<<<<< Best objective function  =
+                     -3.1637867035e+01
+<<<<< Best constraint values   =
+                      3.8881297122e-01
+                     -2.8977287572e-04
+                      3.7994905850e-01
+<<<<< Best data captured at function evaluation 89
+Test Number 3 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9526211852e+01 x1
+                      1.9622774144e+01 x2
+<<<<< Best objective function  =
+                     -3.1636803947e+01
+<<<<< Best constraint values   =
+                      3.8834524200e-01
+                      1.7722193415e-06
+                      3.8005791657e-01
+<<<<< Best data captured at function evaluation 10
+Test Number 4 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 23 total (23 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9526279127e+01 x1
+                      1.9622818561e+01 x2
+<<<<< Best objective function  =
+                     -3.1636810441e+01
+<<<<< Best constraint values   =
+                      3.8835027043e-01
+                     -6.6012453281e-09
+                      3.8005670263e-01
+<<<<< Best data captured at function evaluation 22
+Test Number 5 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 9 total (9 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9526284876e+01 x1
+                      1.9622823134e+01 x2
+<<<<< Best objective function  =
+                     -3.1636810428e+01
+<<<<< Best constraint values   =
+                      3.8835075512e-01
+                     -2.9806264124e-09
+                      3.8005658000e-01
+<<<<< Best data captured at function evaluation 9
+Test Number 6 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 36 total (36 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9520896445e+01 x1
+                      1.9623015107e+01 x2
+<<<<< Best objective function  =
+                     -3.1633553205e+01
+<<<<< Best constraint values   =
+                      3.8821328433e-01
+                      8.9232583409e-04
+                      3.8006269159e-01
+<<<<< Best data captured at function evaluation 36
+Test Number 7 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 72 total (72 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9562757354e+01 x1
+                      1.9651393692e+01 x2
+<<<<< Best objective function  =
+                     -3.1636986674e+01
+<<<<< Best constraint values   =
+                      3.9139608174e-01
+                     -6.8328137431e-05
+                      3.7928964723e-01
+<<<<< Best data captured at function evaluation 55
+Test Number 8 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 117 total (58 new, 59 duplicate)
+<<<<< Best parameters          =
+                      4.9516054665e+01 x1
+                      1.9614060576e+01 x2
+<<<<< Best objective function  =
+                     -3.1637283023e+01
+<<<<< Best constraint values   =
+                      3.8744413670e-01
+                     -1.3135607230e-04
+                      3.8029001654e-01
+<<<<< Best data captured at function evaluation 57
+Test Number 9 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 12 total (12 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9526285859e+01 x1
+                      1.9622833732e+01 x2
+<<<<< Best objective function  =
+                     -3.1636803258e+01
+<<<<< Best constraint values   =
+                      3.8835153255e-01
+                      1.9609059425e-06
+                      3.8005632047e-01
+<<<<< Best data captured at function evaluation 12
+Test Number 10 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 24 total (24 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9526287655e+01 x1
+                      1.9622825351e+01 x2
+<<<<< Best objective function  =
+                     -3.1636810417e+01
+<<<<< Best constraint values   =
+                      3.8835098992e-01
+                     -9.9698027611e-13
+                      3.8005652055e-01
+<<<<< Best data captured at function evaluation 23
+Test Number 11 succeeded
+<<<<< Function evaluation summary (TRUE_FN): 13 total (13 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9526258053e+01 x1
+                      1.9622801668e+01 x2
+<<<<< Best objective function  =
+                     -3.1636810581e+01
+<<<<< Best constraint values   =
+                      3.8834848451e-01
+                     -4.5123194070e-08
+                      3.8005715528e-01
+<<<<< Best data captured at function evaluation 13

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -19,7 +20,6 @@ using dakota::VectorXd;
 using dakota::MatrixXd;
 
 namespace Dakota {
-
 
 SurrogatesGPApprox::
 SurrogatesGPApprox(const ProblemDescDB& problem_db,
@@ -75,6 +75,9 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   shared_surf_data_rep->validate_metrics(allowed_metrics);
+
+  if (problem_db.get_bool("model.surrogate.import_surrogate"))
+    import_model(problem_db);
 }
 
 
@@ -91,22 +94,26 @@ SurrogatesGPApprox(const SharedApproxData& shared_data):
   surrogateOpts.set("num restarts", 20);
 
   // allow larger bounds for functions with high variability
-  VectorXd sig_bnds(2);
-  sig_bnds << 1.0e-2, 1.0e4;
-  surrogateOpts.set("sigma bounds", sig_bnds);
+  //VectorXd sig_bnds(2);
+  //sig_bnds << 1.0e-2, 1.0e4;
+  //surrogateOpts.sublist("Sigma Bounds").set("lower bound", sig_bnds(0));
+  //surrogateOpts.sublist("Sigma Bounds").set("upper bound", sig_bnds(1));
 
   // use same verbosity level for polynomial trend
-  surrogateOpts.sublist("Trend").sublist("Options").set("verbosity",
-      surrogateOpts.get<int>("verbosity"));
+  //surrogateOpts.sublist("Trend").sublist("Options").set("verbosity",
+  //    surrogateOpts.get<int>("verbosity"));
 
   // by default, estimate the nugget
-  surrogateOpts.sublist("Nugget").set("estimate nugget", true);
-  surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
+  //surrogateOpts.sublist("Nugget").set("estimate nugget", true);
+  //surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
 
   // nugget bounded by [1.0e-15, 1.0e-8]
-  VectorXd nugget_bounds(2);
-  nugget_bounds << 3.17e-8, 1.0e-4;
-  surrogateOpts.sublist("Nugget").set("nugget bounds", nugget_bounds);
+  //VectorXd nugget_bounds(2);
+  //nugget_bounds << 3.17e-8, 1.0e-4;
+  //surrogateOpts.sublist("Nugget").sublist("Bounds")
+  //  .set("lower bound", nugget_bounds(0));
+  //surrogateOpts.sublist("Nugget").sublist("Bounds")
+  //  .set("upper bound", nugget_bounds(1));
 }
 
 int
@@ -122,6 +129,11 @@ SurrogatesGPApprox::min_coefficients() const
 void
 SurrogatesGPApprox::build()
 {
+  // clear any imported model mapping
+  modelIsImported = false;
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    varsMapIndices.clear();
+
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp);
 
@@ -158,10 +170,7 @@ SurrogatesGPApprox::build()
 
 Real SurrogatesGPApprox::prediction_variance(const Variables& vars)
 {
-  RealVector x_rv(sharedDataRep->numVars);
-  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-    vars_to_realarray(vars, x_rv);
-  return prediction_variance(x_rv);
+  return prediction_variance(map_eval_vars(vars));
 }
 
 Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
@@ -172,8 +181,7 @@ Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
     abort_handler(-1);
   }
 
-  const int num_vars = c_vars.length();
-  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), num_vars);
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), c_vars.length());
 
   auto gp_model =
       std::static_pointer_cast<dakota::surrogates::GaussianProcess>(model);

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -97,7 +98,8 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_BOX_BEHNKEN,     SUBMETHOD_CENTRAL_COMPOSITE,
        SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
        // Bayesian inference algorithms:
-       SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_MUQ, SUBMETHOD_QUESO, SUBMETHOD_WASABI,
+       SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_MUQ, SUBMETHOD_QUESO,
+       SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBO,
        // verification approaches:
@@ -113,6 +115,10 @@ enum { NO_RESULTS=0,        // suppress all results
        REFINEMENT_RESULTS,  // results following a (minor) refinement iteration
        INTERMEDIATE_RESULTS,// results following a (major) alg stage/model level
        FINAL_RESULTS };     // final UQ results (throttled if subIterator)
+
+// define special values for method synchronization (COLINY, APPS, EGO)
+enum { DEFAULT_SYNCHRONIZATION=0, BLOCKING_SYNCHRONIZATION,
+       NONBLOCKING_SYNCHRONIZATION };
 
 // define special values for Iterator and Interface scheduling
 enum { DEFAULT_SCHEDULING, MASTER_SCHEDULING, PEER_SCHEDULING,
@@ -194,10 +200,17 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
 // define special values for qoi aggregation norm for sample allocation over levels and QoIs
-enum {QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM};
+enum { QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM };
 
 // target variance for fitting sample allocation
-enum {TARGET_MEAN, TARGET_VARIANCE};
+enum { TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION };
+
+// define special values for computation of convergence tolerance, either absolute or relative 
+enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE, CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
+
+// define optimization formulation for MLMC sample allocation by specifing equality constraint, either variance or cost 
+enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT, CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
+
 // ---------------
 // NonDReliability
 // ---------------
@@ -605,7 +618,7 @@ public:
 
   /// the \c synchronization setting for parallel pattern search
   /// methods in \ref MethodSCOLIBPS and \ref MethodAPPS
-  String evalSynchronize;
+  short evalSynchronize;
 
   // JEGA
 
@@ -742,6 +755,8 @@ public:
   int randomSeed;
   /// the \c seed_sequence specification for multilevel UQ methods
   SizetArray randomSeedSeq;
+  /// the \c coefficient mapping for the scalarization term for multilevel UQ methods
+  RealVector scalarizationRespCoeffs;
 
   // MADS
   /// the \c initMeshSize choice for NOMAD in \ref MethodNOMADDC
@@ -788,6 +803,10 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
+  /// maximum number of cross-validation candidates for adaptRank
+  size_t maxCVRankCandidates;
+  ///maximum number of cross-validation candidates for adaptOrder
+  unsigned short maxCVOrderCandidates;
   /// quantity to increment (start rank, start order, max rank, max order,
   /// max rank + max order) for FT (uniform) p-refinement
   short c3AdvanceType;
@@ -829,6 +848,11 @@ public:
   Real wilksConfidenceLevel;
   /// Wilks sided interval type
   short wilksSidedInterval;
+
+  /// flag to indicate bounds-based scaling of current response data set
+  /// prior to build in surrogate-based methods; important for ML/MF data fits
+  /// of decaying discrepancy data using regression with absolute tolerances
+  bool respScalingFlag;
 
   /// a sub-specification of vbdFlag: interaction order limit for
   /// calculation/output of component VBD indices
@@ -973,6 +997,10 @@ public:
   bool useTargetVarianceOptimizationFlag;
   /// the |c qoi_aggregation_norm selection in \ref MethodMultilevelMC
   short qoiAggregation;
+  /// the |c convergence_tolerance_type selection in \ref MethodMultilevelMC
+  short convergenceToleranceType;
+  /// the |c convergence_tolerance_type selection in \ref MethodMultilevelMC
+  short convergenceToleranceTarget;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
   short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE
@@ -1093,9 +1121,9 @@ public:
   unsigned short importPredConfigFormat;
   /// type of model discrepancy emulation
   String modelDiscrepancyType;
-  /// correction order for either gaussian process or polynomial model
-  /// discrepancy calculations: 0 (=constant), 1 (=linear), 2 (=quadratic)
-  short approxCorrectionOrder;
+  /// polynomial order for model discrepancy calculations: either gaussian
+  /// process trend order or polynomial basis order
+  short polynomialOrder;
   /// specify the name of file to which corrected model (model+discrepancy)
   /// calculations are output
   String exportCorrModelFile;

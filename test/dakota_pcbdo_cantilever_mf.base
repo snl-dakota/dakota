@@ -1,0 +1,144 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 720 total (720 new, 0 duplicate)
+  response_fn_1: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 720 total (720 new, 0 duplicate)
+  response_fn_1: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      1.4840350209e+00 w
+                      4.6620322477e+00 t
+<<<<< Best objective function  =
+                      6.9186191242e+00
+<<<<< Best constraint values   =
+                     -1.2123616967e+00
+                     -2.5886682572e+00
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 720 total (720 new, 0 duplicate)
+  response_fn_1: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 720 total (720 new, 0 duplicate)
+  response_fn_1: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 720 val (720 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.6482306730e+00 w
+                      1.9677649658e+00 t
+<<<<< Best objective function  =
+                      5.2110955397e+00
+<<<<< Best constraint values   =
+                     -5.3248786046e+00
+                     -6.4197728769e+00
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 234 total (225 new, 9 duplicate)
+  response_fn_1: 234 val (225 n, 9 d), 174 grad (165 n, 9 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 234 val (225 n, 9 d), 174 grad (165 n, 9 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 234 val (225 n, 9 d), 174 grad (165 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 234 total (225 new, 9 duplicate)
+  response_fn_1: 234 val (225 n, 9 d), 174 grad (165 n, 9 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 234 val (225 n, 9 d), 174 grad (165 n, 9 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 234 val (225 n, 9 d), 174 grad (165 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4459903007e+00 w
+                      3.8921849983e+00 t
+<<<<< Best objective function  =
+                      9.5202467543e+00
+<<<<< Best constraint values   =
+                      2.9999993422e+00
+                      3.2645012624e+00
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 1758 total (1632 new, 126 duplicate)
+  response_fn_1: 1758 val (1632 n, 126 d), 1578 grad (1512 n, 66 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1758 val (1632 n, 126 d), 1578 grad (1512 n, 66 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 1758 val (1632 n, 126 d), 1578 grad (1512 n, 66 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1758 total (1632 new, 126 duplicate)
+  response_fn_1: 1758 val (1632 n, 126 d), 1578 grad (1512 n, 66 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1758 val (1632 n, 126 d), 1578 grad (1512 n, 66 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 1758 val (1632 n, 126 d), 1578 grad (1512 n, 66 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4453471127e+00 w
+                      3.8932089844e+00 t
+<<<<< Best objective function  =
+                      9.5202473491e+00
+<<<<< Best constraint values   =
+                      2.9999998748e+00
+                      3.2614909911e+00
+<<<<< Best data not found in evaluation cache
+Test Number 4 succeeded
+<<<<< Function evaluation summary (UQ_I): 3263 total (3263 new, 0 duplicate)
+  response_fn_1: 3263 val (3263 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 3263 val (3263 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 3263 val (3263 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 3263 total (3263 new, 0 duplicate)
+  response_fn_1: 3263 val (3263 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 3263 val (3263 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 3263 val (3263 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4491201708e+00 w
+                      3.8872045670e+00 t
+<<<<< Best objective function  =
+                      9.5202311131e+00
+<<<<< Best constraint values   =
+                      2.9999647491e+00
+                      3.2915706611e+00
+<<<<< Best data not found in evaluation cache
+Test Number 5 succeeded
+<<<<< Function evaluation summary (UQ_I): 3018 total (3018 new, 0 duplicate)
+  response_fn_1: 3018 val (3018 n, 0 d), 343 grad (343 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 3018 val (3018 n, 0 d), 343 grad (343 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 3018 val (3018 n, 0 d), 343 grad (343 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 3018 total (3018 new, 0 duplicate)
+  response_fn_1: 3018 val (3018 n, 0 d), 343 grad (343 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 3018 val (3018 n, 0 d), 343 grad (343 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 3018 val (3018 n, 0 d), 343 grad (343 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4460001072e+00 w
+                      3.8921695610e+00 t
+<<<<< Best objective function  =
+                      9.5202471632e+00
+<<<<< Best constraint values   =
+                      2.9999999915e+00
+                      3.2770328337e+00
+<<<<< Best data not found in evaluation cache
+Test Number 6 succeeded
+<<<<< Function evaluation summary (UQ_I): 329 total (318 new, 11 duplicate)
+  response_fn_1: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 329 total (318 new, 11 duplicate)
+  response_fn_1: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4459903007e+00 w
+                      3.8921849983e+00 t
+<<<<< Best objective function  =
+                      9.5202467543e+00
+<<<<< Best constraint values   =
+                      2.9999993422e+00
+                      3.2769862718e+00
+<<<<< Best data not found in evaluation cache
+Test Number 7 succeeded
+<<<<< Function evaluation summary (UQ_I): 4910 total (4878 new, 32 duplicate)
+  response_fn_1: 4910 val (4878 n, 32 d), 4665 grad (4638 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 4910 val (4878 n, 32 d), 4665 grad (4638 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 4910 val (4878 n, 32 d), 4665 grad (4638 n, 27 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 4910 total (4878 new, 32 duplicate)
+  response_fn_1: 4910 val (4878 n, 32 d), 4665 grad (4638 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 4910 val (4878 n, 32 d), 4665 grad (4638 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 4910 val (4878 n, 32 d), 4665 grad (4638 n, 27 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4458761440e+00 w
+                      3.8923668799e+00 t
+<<<<< Best objective function  =
+                      9.5202472953e+00
+<<<<< Best constraint values   =
+                      3.0000001883e+00
+                      3.2764527951e+00
+<<<<< Best data not found in evaluation cache

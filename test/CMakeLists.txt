@@ -1,19 +1,17 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Copyright 2014-2020
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
 # CMakeLists.txt for DAKOTA tests
 
-include(AddApplicationTest)
 include(AddFileCopyCommand)
-include(CheckIncludeFile)
-include(CMakeParseArguments)
 include(DakotaCopyTarget)
-include(ListFilterEmacsBackups)
+include(DakotaTestHelpers)
 include(ModifyTargetRpath)
 
 # Configured input files: These files will be configured into the
@@ -26,190 +24,6 @@ set(dakota_test_configured_inputs
   dakota_workdir_windows
   )
 
-# Macro: dakota_get_test_properties; macro so can set in parent context.
-#
-# Input: 
-#   test_name (without .in extension), "serial" or "parallel",
-#   variable containing all test properties to parse
-# Output: 
-#   add_this_test = FALSE if test disallowed by DakotaConfig
-#   last_test: last subtest found, -1 if none
-#   test_labels: appended with any labels from the test file
-#   test_req_files: auxilliary files this test requires
-macro(dakota_get_test_properties test_name serpar_str test_props)
-  # TODO: strip whitespace from parsed values?
-
-  if (test_props)
-    #message("DEBUG: ${test_props} ")
-
-    # DakotaConfig: required configuration for this test
-    string(REGEX MATCH 
-      "${test_name}:${serpar_str}: DakotaConfig=[A-Za-z0-9_,]+" 
-      dc_match ${test_props}
-      )
-    if (dc_match)
-      string(REPLACE "${test_name}:${serpar_str}: DakotaConfig=" "" 
-	test_props_dc ${dc_match})
-      # Get tokens by comma
-      string(REGEX MATCHALL "[A-Za-z0-9_]+" prop_dc_list ${test_props_dc})
-      foreach (req_config ${prop_dc_list})
-	# if this CMake variable is not true, omit the test
-	if (NOT "${${req_config}}")
-	  message(STATUS 
-	    "Omitting test ${test_name}, ${serpar_str}; requires config: "
-	    "${req_config}")
-	  set(add_this_test FALSE)
-	endif()
-      endforeach()
-    endif()
-
-    # add CTest labels
-    string(REGEX MATCH 
-      "${test_name}:${serpar_str}: Label=[A-Za-z0-9_,]+" 
-      label_match ${test_props})
-    if (label_match)
-      string(REPLACE "${test_name}:${serpar_str}: Label=" "" 
-	test_props_labels ${label_match})
-      # Get tokens by comma
-      string(REGEX MATCHALL "[A-Za-z0-9_]+" props_labels_list 
-	${test_props_labels})
-      list(APPEND test_labels "${props_labels_list}")
-    endif()
-
-    # test dependency files
-    string(REGEX MATCH 
-      "${test_name}:${serpar_str}: ReqFiles=[A-Za-z0-9_,\\.]+" 
-      rf_match ${test_props})
-    if (rf_match)
-      string(REPLACE "${test_name}:${serpar_str}: ReqFiles=" "" 
-	test_props_rf ${rf_match})
-      # Get tokens by comma
-      string(REGEX MATCHALL "[A-Za-z0-9_\\.]+" props_rf_list 
-	${test_props_rf})
-      # TODO: strip whitespace?
-      foreach (req_file ${props_rf_list})
-	list(APPEND test_req_files "${req_file}")
-      endforeach()
-    endif()
-
-    # TODO: Could also consider use of
-    # WILL_FAIL property on individual tests.
-
-    # Find the number of the highest serial and parallel test.  Set
-    # last_subtest as output variable.
-    string(REGEX MATCH "${test_name}:${serpar_str}: Count=(-?[0-9]+)"
-      count_match ${test_props})
-    if (count_match)
-      set(last_subtest ${CMAKE_MATCH_1})
-      if(last_subtest LESS 0)
-	#message(STATUS 
-	#  "Omitting test ${test_name}, ${serpar_str}; no subtests found")
-	set(add_this_test FALSE)
-      endif()
-    endif()
-
-  endif()
-endmacro()
-
-
-# Add CTest tests for a single Dakota input file.  Will create a
-# subdirectory for each file and either run all tests as a single
-# dakota_test.perl, or optionally register and run subtests
-# 0.._last_subtest in succession in that directory.
-function(dakota_app_test _test_name _last_subtest)
-  # Parse options
-  set(_option_args PARALLEL)
-  set(_multi_value_keyword_args FILE_DEPENDENCIES CONFIGURE_FILES LABELS)
-  cmake_parse_arguments(
-    _dat
-    "${_option_args}"
-    "${_one_value_keyword_args}"
-    "${_multi_value_keyword_args}"
-    ${ARGN}
-    )
-
-  # Default values and parallel overrides
-  set(_test_input_file "${_test_name}.in")
-  set(_diffs_filename dakota_diffs.out)
-  set(_par_clopt "")
-  set(_par_mark "")
-  if (_dat_PARALLEL)
-    set(_test_name "p${_test_name}")
-    set(_diffs_filename dakota_pdiffs.out)
-    set(_par_clopt "--parallel")
-    set(_par_mark "p")
-  endif()
-  
-  # Circumvent SIP on OSX by running dakota and other test executables
-  # with custom generated .sh scripts.
-  set(binext "")
-  if(APPLE)
-    set(binext "--bin-ext=.sh")
-  endif()
-
-  if (DAKOTA_EXPAND_SUBTESTS)
-    # Add the 0th serial test. Don't create custom target for copied files.
-    # Create the unique work directory here.
-    add_application_test(
-      ${_test_name}
-      SUBTEST 0
-      FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
-      CONFIGURE_FILES "${_dat_CONFIGURE_FILES}"
-      PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
-      APPLICATION COMMAND ${PERL_EXECUTABLE}
-        ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
-          --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
-          --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
-          ${binext}
-          ${_test_input_file} 0
-      UNIQUE_DIRECTORY
-      NO_TARGET
-      LABELS ${_dat_LABELS}
-      )
-    # Now add any subtests in the file, with dep on previous number,
-    # running in same directory
-    if (_last_subtest GREATER 0)
-      foreach(st_num RANGE 1 ${_last_subtest})
-        add_application_test(
-    	${_test_name}
-  	SUBTEST ${st_num}
-	APPLICATION COMMAND ${PERL_EXECUTABLE}
-            ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
-              --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
-              --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
-              ${binext}
-              ${test_input_file} ${st_num}
-    	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_test_name}"
-    	NO_TARGET
-    	LABELS ${test_labels}
-    	)
-        math(EXPR prev_st "${st_num}-1")
-        set_tests_properties("${_test_name}:${st_num}" PROPERTIES 
-  	  DEPENDS "${_test_name}:${prev_st}")
-      endforeach()
-    endif()
-  else()
-    # Add a single test for the whole file. Don't create custom target
-    # for copied files.
-    add_application_test(
-      ${_test_name}
-      FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
-      CONFIGURE_FILES "${_dat_CONFIGURE_FILES}"
-      PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
-      APPLICATION COMMAND ${PERL_EXECUTABLE}
-        ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
-          --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
-          --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
-          ${binext}
-          ./${_test_input_file}
-      UNIQUE_DIRECTORY
-      NO_TARGET
-      LABELS ${_dat_LABELS}
-      )
-  endif()
-endfunction()
-
-
 include_directories(
   ${Dakota_SOURCE_DIR}/src
   ${Teuchos_INCLUDE_DIRS}
@@ -217,6 +31,7 @@ include_directories(
 
 remove_definitions("-DHAVE_CONFIG_H")
 
+# Generate regression tests for all dakota_*.in in this directory
 if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
   # list of all destination files copied into test/ or subdirs test/dakota_*
@@ -238,30 +53,14 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
 
 
-  # Create one CTest per DAKOTA input file, in a protected subdirectory
+  # Create one CTest per Dakota input file, each in a protected subdirectory
 
   file(GLOB dakota_test_input_files 
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
-     
-  # Generate the test properties to a file by parsing test input
-  # files.  This can be slow, so do once, then parse the output.  Work
-  # in the source tree to avoid having to manage fully-qualified paths
-  # to binary tree.
-  execute_process(COMMAND "${PERL_EXECUTABLE}" 
-    "${CMAKE_CURRENT_SOURCE_DIR}/dakota_test.perl" 
-    "--test-properties=${CMAKE_CURRENT_BINARY_DIR}" 
-    "dakota_*.in" 
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    OUTPUT_VARIABLE test_props_output  # Let errors go to the console
-    RESULT_VARIABLE test_props_code
-    )
-  if ( (NOT test_props_code EQUAL 0) OR 
-       (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/dakota_tests.props") )
-    message(FATAL_ERROR "Could not get test properties.  Exit code: "
-      "${test_props_code}; output:\n" ${test_props_output})
-  endif()
 
-  file(READ "${CMAKE_CURRENT_BINARY_DIR}/dakota_tests.props" test_props)
+  # Parse dakota_*.in to generate test properties to file and test_props var
+  dakota_generate_test_properties(${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR} test_props)
 
   # Iterate the list of test files and create tests for each
   foreach(test_input_file ${dakota_test_input_files})
@@ -270,16 +69,13 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
     # Glob up all files associated with this test input file
     # These get copied by add_application_test into test/dakota_*/
-    file(GLOB test_all_files
-      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*" "${test_name}-*"
-      )
-    list_filter_emacs_backups(test_all_files)
-    # All files associated with the test, less the input file itself
-    set(test_aux_files ${test_all_files})
-    list(REMOVE_ITEM test_aux_files ${test_input_file})
+    dakota_test_dependent_files(${CMAKE_CURRENT_SOURCE_DIR} ${test_name}
+      test_all_files test_aux_files)
 
     # Copy (or configure) ALL test-associated files into test/ to
     # support direct testing with Perl
+    # TODO: consider a property to specify whether it's configured...
+    # TODO: should these include ReqFiles specified in the dakota_*.in
     if(${test_name} IN_LIST dakota_test_configured_inputs)
       set(test_copied_files ${test_aux_files})
       configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${test_input_file}
@@ -288,84 +84,22 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       set(test_copied_files ${test_all_files})
     endif()
 
-    # TODO: apply properties on on a per-subtest basis
+    # All required aux files parsed from test properties
+    set(test_all_req_files)
 
     # --- Add serial test ---
-    # test properties may disable a specific test based on configuration
-    set(add_this_test TRUE)
-    set(last_subtest -1)
-    set(test_labels DakotaTest SerialTest)
-    set(test_req_files)  # files mentioned in input file ReqFiles=
-    # updates above 4 variables
-    dakota_get_test_properties("${test_name}" "serial" "${test_props}")
-    if (add_this_test)
-
-      # Add either one test with all, or the 0-th test, followed by all sub-tests
-      if(${test_name} IN_LIST dakota_test_configured_inputs)
-	dakota_app_test(${test_name} ${last_subtest}
-	  FILE_DEPENDENCIES "${test_aux_files}" "${test_req_files}"
-	  CONFIGURE_FILES ${test_name}.in
-	  LABELS ${test_labels}
-	  )
-      else()
-	dakota_app_test(${test_name} ${last_subtest}
-	  FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
-	  LABELS ${test_labels}
-	  )
-      endif()
-
-      # the test add makes a copy command without target, now track all
-      # the copied files for later addition to a custom target
-      foreach(file ${test_copied_files} ${test_req_files})
-	set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/${test_name}/${file}")
-	list(APPEND copied_test_files_abs "${copied_file}")
-      endforeach()
-
-      set(test_req_files_serial ${test_req_files})
-
-    endif()  # add_this_test
+    dakota_regression_test("${test_name}" "serial" "${test_props}"
+      "${test_aux_files}")
 
     # --- Add parallel test when MPI enabled, and file contains #p<int> ---
     if (DAKOTA_HAVE_MPI)
+      dakota_regression_test("${test_name}" "parallel" "${test_props}"
+	"${test_aux_files}")
+    endif()
 
-      # test properties may disable a specific test based on configuration
-      set(add_this_test TRUE)
-      set(last_subtest -1)
-      set(test_labels DakotaTest ParallelTest)
-      set(test_req_files)  # files mentioned in the input file ReqFiles=
-      # updates above 4 variables
-      dakota_get_test_properties("${test_name}" "parallel" "${test_props}")
-
-      if (add_this_test)
-	if(${test_name} IN_LIST dakota_test_configured_inputs)
-	  dakota_app_test(${test_name} ${last_subtest} PARALLEL
-	    FILE_DEPENDENCIES "${test_aux_files}" "${test_req_files}"
-	    CONFIGURE_FILES ${test_name}.in
-	    LABELS ${test_labels}
-	    )
-	else()
-	  dakota_app_test(${test_name} ${last_subtest} PARALLEL
-	    FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
-	    LABELS ${test_labels}
-	    )
-	endif()
-
-	# the test add makes a copy command without target, now track all
-	# the copied files for later addition to a custom target
-	foreach(file ${test_copied_files} ${test_req_files})
-	  set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/p${test_name}/${file}")
-	  list(APPEND copied_test_files_abs "${copied_file}")
-	endforeach()
-	set(test_req_files_parallel ${test_req_files})
-
-      endif()
-
-    endif() # MPI enabled
-
-    # Copy (or configure) ALL test-associated files into test/ to
+    # Copy ALL test-associated files into bindir/test/ to
     # support direct testing with Perl
-    list(APPEND test_copied_files
-      ${test_req_files_serial} ${test_req_files_parallel})
+    list(APPEND test_copied_files ${test_all_req_files})
     list(REMOVE_DUPLICATES test_copied_files)
     foreach(file ${test_copied_files})
       add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file}
@@ -420,6 +154,10 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       -P "${Dakota_SOURCE_DIR}/cmake/utilities/DakotaConcatDiffs.cmake"
     COMMENT "Concatenate all dakota_[p]diffs.out files from test/ subdirs."
     )
+
+  # This gets built in test/ so can be packaged in binaries even when
+  # not building docs
+  add_subdirectory(examples-users)
 
 endif() # BUILD_TESTING AND DAKOTA_ENABLE_TESTS
 

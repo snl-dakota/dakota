@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -356,7 +357,7 @@ gen_primary_resp_map(const SharedResponseData& srd,
 void DataTransformModel::derived_evaluate(const ActiveSet& set)
 {
   // If no configuration variables, use base class implementation
-  if (expData.config_vars().empty()) 
+  if (expData.num_config_vars() == 0)
     RecastModel::derived_evaluate(set);
   else {
     ++recastModelEvalCntr;
@@ -381,7 +382,7 @@ void DataTransformModel::derived_evaluate(const ActiveSet& set)
     size_t num_exp = expData.num_experiments();
     for (size_t i=0; i<num_exp; ++i) {
       // augment the active variables with the configuration variables
-      Model::inactive_variables(expData.config_vars()[i], subModel);
+      subModel.inactive_variables(expData.configuration_variables()[i]);
 
       if (subModel.asynch_flag()) {
         subModel.evaluate_nowait(sub_model_set);
@@ -436,7 +437,7 @@ void DataTransformModel::derived_evaluate_nowait(const ActiveSet& set)
   // BMA ask MSE: Is it possible RecastModel is asynch, but not subModel?
 
   // If no configuration variables, use base class implementation
-  if (expData.config_vars().empty())
+  if (expData.num_config_vars() == 0)
     RecastModel::derived_evaluate_nowait(set);
   else {
     ++recastModelEvalCntr;
@@ -459,7 +460,7 @@ void DataTransformModel::derived_evaluate_nowait(const ActiveSet& set)
     size_t num_exp = expData.num_experiments();
     for (size_t i=0; i<num_exp; ++i) {
       // augment the active variables with the configuration variables
-      Model::inactive_variables(expData.config_vars()[i], subModel);
+      subModel.inactive_variables(expData.configuration_variables()[i]);
 
       subModel.evaluate_nowait(sub_model_set);
 
@@ -487,7 +488,7 @@ void DataTransformModel::derived_evaluate_nowait(const ActiveSet& set)
     we force the subModel to synch and have all needed data. */
 const IntResponseMap& DataTransformModel::derived_synchronize()
 {
-  if (expData.config_vars().empty())
+  if (expData.num_config_vars() == 0)
     return RecastModel::derived_synchronize();
   else {
     // We don't even really need the recast ID lookup nor the cached
@@ -511,7 +512,7 @@ const IntResponseMap& DataTransformModel::derived_synchronize()
     force the subModel to synch. */
 const IntResponseMap& DataTransformModel::derived_synchronize_nowait()
 {
-  if (expData.config_vars().empty())
+  if (expData.num_config_vars() == 0)
     return RecastModel::derived_synchronize_nowait();
   else {
     // need deep copy in case all the configurations aren't yet complete
@@ -900,7 +901,7 @@ print_best_responses(std::ostream& s,
   s << "Original (as-posed) response:\n";
 
   // print the original userModel Responses
-  if (expData.config_vars().size() == 0) {
+  if (expData.num_config_vars() == 0) {
     const RealVector& best_fns = best_submodel_resp.function_values();
     Minimizer::print_model_resp(subModel.num_primary_fns(), best_fns, num_best,
                                 best_ind, s);
@@ -939,7 +940,7 @@ recover_submodel_responses(std::ostream& s,
                            size_t num_best, size_t best_ind,
                            Response& residual_resp)
 {
-  if (subModel.num_primary_fns() > 1 || expData.config_vars().size() > 1)
+  if (subModel.num_primary_fns() > 1 || expData.num_config_vars() > 1)
     s << "<<<<< Best model responses ";
   else
     s << "<<<<< Best model response ";
@@ -966,8 +967,7 @@ recover_submodel_responses(std::ostream& s,
   size_t num_exp = expData.num_experiments();
   for (size_t i=0; i<num_exp; ++i) {
 
-    //      Model::inactive_variables(expData.config_vars()[i], subModel);
-    Model::inactive_variables(expData.config_vars()[i], subModel, lookup_vars);
+    lookup_vars.inactive_variables(expData.configuration_variables()[i]);
 
     // TODO: use user-provided experiment numbers if given
     s << "<<<<< Best configuration variables (experiment " << i+1 << ") =\n";
@@ -1108,8 +1108,7 @@ archive_submodel_responses(const ResultsManager &results_db,
   size_t num_exp = expData.num_experiments();
   for (size_t i=0; i<num_exp; ++i) {
 
-    //      Model::inactive_variables(expData.config_vars()[i], subModel);
-    Model::inactive_variables(expData.config_vars()[i], subModel, lookup_vars);
+    lookup_vars.inactive_variables(expData.configuration_variables()[i]);
 
     bool lookup_failure = false;
     // BMA: why is this necessary?  Should have a reference to same object as PRP
@@ -1174,7 +1173,7 @@ archive_best_responses(const ResultsManager &results_db,
   residual_resp.active_set(fn_only_as);
 
   // print the original userModel Responses
-  if (expData.config_vars().size() == 0) {
+  if (expData.num_config_vars() == 0) {
     const RealVector& best_fns = best_submodel_resp.function_values();
     archive_best_original(results_db, iterator_id, best_fns, 0, num_best, best_ind);
     // form residuals from model responses and apply covariance

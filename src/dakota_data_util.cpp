@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -273,6 +274,5 @@ void iround(const RealVector& input_vec, IntVector& rounded_vec)
   for (int i=0; i<len; ++i)
     rounded_vec[i] = boost::math::iround(input_vec[i]);
 }
-
 
 } // namespace Dakota

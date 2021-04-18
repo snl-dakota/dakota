@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -843,7 +844,7 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   }           
   for (int i = 0; i < num_signif_Pcomps; ++i) {
     RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
-    gpApproximations[i].add_array(allSamples, factor_i);
+    gpApproximations[i].add_array(allSamples, false, factor_i, true);
     gpApproximations[i].build();
     std::stringstream ss;
     ss << i;

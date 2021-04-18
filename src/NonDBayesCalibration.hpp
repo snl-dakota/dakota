@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -96,13 +97,26 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  virtual void print_results(std::ostream& s, 
+      short results_state = FINAL_RESULTS);
+  /// convenience function to print calibration parameters, e.g., for
+  /// MAP / best parameters
+  void print_variables(std::ostream& s, const RealVector& c_vars);
+
 
   const Model& algorithm_space_model() const;
 
   //
   //- Heading: New virtual functions
   //
+
+  /// Methods for instantiating a Bayesian inverse problem.
+  /// No-ops in the base class that can be specialized by child
+  /// classes.
+  virtual void specify_prior(){}
+  virtual void specify_likelihood(){}
+  virtual void init_bayesian_solver(){}
+  virtual void specify_posterior(){}
 
   /// Perform Bayesian calibration (all derived classes must implement)
   virtual void calibrate() = 0;
@@ -125,44 +139,76 @@ protected:
   /// construct the MAP optimizer for minimization of negLogPostModel
   void construct_map_optimizer();
 
+  virtual void map_pre_solve();
+
   /// initialize emulator model and probability space transformations
   void initialize_model();
+
+  /// Run calibration, looping to refine emulator around posterior mode.
+  void calibrate_with_adaptive_emulator(); 
+  /// Filter mcmc chain for PCE adaptive emulator.
+  /// extract batchSize points from the MCMC chain and store final
+  /// aggregated set within allSamples; unique points with best
+  /// conditioning are selected, as determined by pivoted LU
+  virtual void filter_chain_by_conditioning(){ 
+    Cerr << "Error: filter_chain_by_conditioning() has not been"
+      << "implemented in the child class." << std::endl;
+      abort_handler(METHOD_ERROR);
+  }
+  /// copy bestSamples to allSamples to use in surrogate update
+  void best_to_all();
+  /// evaluates allSamples on iteratedModel and update the mcmcModel emulator
+  /// with all{Samples,Responses}
+  void update_model();
+  /// compute the L2 norm of the change in emulator coefficients
+  Real assess_emulator_convergence();
 
   /// calibrate the model to a high-fidelity data source, using mutual
   /// information-guided design of experiments (adaptive experimental
   /// design)
   void calibrate_to_hifi();
   /// evaluate stopping criteria for calibrate_to_hifi
-  bool eval_hi2lo_stop(bool stop_metric, double prev_MI, double max_MI, 
-      		       int num_it, int num_hifi, int max_hifi, 
-		       int num_candidates);
+  void eval_hi2lo_stop(bool& stop_metric, double& prev_MI, 
+                 const RealVector& MI_vec, 
+                 int num_hifi, int max_hifi, 
+		             int num_candidates);
   /// print calibrate_to_hifi progress to file
-  void print_hi2lo_file(std::ostream& out_file, int num_it, int batchEvals, 
-                        RealMatrix& optimal_config_matrix, const RealVector& 
-			MI_vec, int max_hifi, RealMatrix& resp_matrix, const 
-			RealVector& optimal_config, double max_MI);
+  void print_hi2lo_file(std::ostream& out_file, int num_it, 
+                        const VariablesArray& optimal_config_matrix, 
+                        const RealVector& MI_vec, RealMatrix& resp_matrix );
+      //double max_MI);
   /// print calibrate_to_hifi progress
   void print_hi2lo_begin(int num_it);
-  void print_hi2lo_status(int num_it, int i, const RealVector& xi_i, double MI);
+  void print_hi2lo_status(int num_it, int i, const Variables& xi_i, double MI);
   void print_hi2lo_batch_status(int num_it, int batch_n, int batchEvals, 
-      			const RealVector& optimal_config, double max_MI);
-  void print_hi2lo_selected(int num_it, int batchEvals, RealMatrix& 
-      			    optimal_config_matrix, const RealVector& 
-			    optimal_config, double max_MI);
+      			const Variables& optimal_config, double max_MI);
+  void print_hi2lo_selected(int num_it, // int batchEvals, 
+                const VariablesArray& optimal_config_matrix, 
+                const RealVector& MI_vec);
+  void print_hi2lo_chain_moments();
   /// supplement high-fidelity data with LHS samples
   void add_lhs_hifi_data();
+  /// calculate the optimal points to add for a given batch
+  void choose_batch_from_mutual_info( int random_seed,
+                          int num_it, 
+                          int max_hifi, int num_hifi, 
+                          RealMatrix& mi_chain,
+                          VariablesArray& design_matrix, 
+                          VariablesArray& optimal_config_matrix, RealVector& MI_vec);
   /// apply simulation error vector
+  void apply_hifi_sim_error(int& random_seed, int num_exp, int exp_offset=0 );
   void apply_error_vec(const RealVector& error_vec, int &seed, int experiment);
   /// build matrix of errors 
   void build_error_matrix(const RealVector& sim_error_vec, 
       			  RealMatrix& sim_error_matrix, int &seed);
   /// build matrix of candidate points
-  void build_designs(RealMatrix& design_matrix);
+  void build_designs(VariablesArray& design_matrix);
   /// build matrix to calculate mutual information for calibrate_to_hifi
   void build_hi2lo_xmatrix(RealMatrix& Xmatrix, int i, const RealMatrix& 
                            mi_chain, RealMatrix& sim_error_matrix);
   /// run high-fidelity model at several configs and add to experiment data 
-  void run_hifi(RealMatrix& optimal_config_matrix, RealMatrix& resp_matrix);
+  void run_hifi(const VariablesArray& optimal_config_matrix,
+		RealMatrix& resp_matrix);
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();
@@ -233,6 +279,10 @@ protected:
   /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR,
   /// SC_EMULATOR, ML_PCE_EMULATOR, MF_PCE_EMULATOR, or MF_SC_EMULATOR
   short emulatorType;
+  /// cache previous expansion coefficients for assessing convergence of
+  /// emulator refinement process
+  RealVectorArray prevCoeffs;
+
   /// Model instance employed in the likelihood function; provides response
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
   /// or direct access to simulations (no surrogate option)
@@ -265,6 +315,10 @@ protected:
   int chainSamples;
   /// random seed for MCMC process
   int randomSeed;
+
+  /// number of points to add to surrogate at each iteration of
+  /// calibrate_with_adaptive_emulator
+  unsigned int batchSize;
 
   /// order of derivatives used in MCMC process (bitwise like ASV)
   short mcmcDerivOrder;
@@ -316,7 +370,7 @@ protected:
   /// format options for corrected model variance output
   unsigned short exportCorrVarFormat;
   /// specify polynomial or trend order for discrepancy correction
-  short approxCorrectionOrder;
+  short discrepPolyOrder;
   /// number of prediction configurations at which to calculate model 
   /// discrepancy
   size_t numPredConfigs;
@@ -433,7 +487,7 @@ protected:
   static NonDBayesCalibration* nonDBayesInstance;
 
   /// Compute final stats for MCMC chains
-  void compute_statistics();
+  virtual void compute_statistics();
   RealMatrix chainStats;
   RealMatrix fnStats;
 

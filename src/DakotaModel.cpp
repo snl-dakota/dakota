@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -20,6 +21,7 @@
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "HierarchSurrModel.hpp"
+#include "NonHierarchSurrModel.hpp"
 #include "ActiveSubspaceModel.hpp"
 #include "AdaptedBasisModel.hpp"
 #include "RandomFieldModel.hpp"
@@ -311,10 +313,13 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
   else if ( model_type == "nested")
     return std::make_shared<NestedModel>(problem_db);
   else if ( model_type == "surrogate") {
-    if (problem_db.get_string("model.surrogate.type") == "hierarchical")
-      return std::make_shared<HierarchSurrModel>(problem_db); // hierarchical approx
-    else
-      return std::make_shared<DataFitSurrModel>(problem_db);  // local/multipt/global approx
+    const String& surr_type = problem_db.get_string("model.surrogate.type");
+    if (surr_type == "hierarchical")
+      return std::make_shared<HierarchSurrModel>(problem_db);
+    else if (surr_type == "non_hierarchical")
+      return std::make_shared<NonHierarchSurrModel>(problem_db);
+    else // all other surrogates (local/multipt/global) managed by DataFitSurr
+      return std::make_shared<DataFitSurrModel>(problem_db);
   }
   else if ( model_type == "active_subspace" )
     return std::make_shared<ActiveSubspaceModel>(problem_db);
@@ -3315,10 +3320,10 @@ Model& Model::subordinate_model()
 }
 
 
-void Model::active_model_key(const UShortArray& mi_key)
+void Model::active_model_key(const Pecos::ActiveKey& key)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->active_model_key(mi_key);
+    modelRep->active_model_key(key);
   else {
     Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
 	 << "function.\n       model key activation is not supported by this "
@@ -3500,11 +3505,11 @@ size_t Model::solution_levels(bool lwr_bnd) const
 
 
 /** activate a particular level within a solution / discretization hierarchy. */
-void Model::solution_level_cost_index(unsigned short index)
+void Model::solution_level_cost_index(size_t index)
 {
   if (modelRep)
     modelRep->solution_level_cost_index(index); // envelope fwd to letter
-  else if (index != USHRT_MAX) {
+  else if (index != _NPOS) {
     // letter lacking redefinition of virtual fn (for case that requires fwd)
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
 	 << "cost_index() function.\n       solution_level_cost_index is not "
@@ -3514,10 +3519,10 @@ void Model::solution_level_cost_index(unsigned short index)
 }
 
 
-unsigned short Model::solution_level_cost_index() const
+size_t Model::solution_level_cost_index() const
 {
   if (modelRep) return modelRep->solution_level_cost_index(); // fwd to letter
-  else          return USHRT_MAX; // not defined (default)
+  else          return _NPOS; // not defined (default)
 }
 
 
@@ -3648,7 +3653,7 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-void Model::surrogate_function_indices(const IntSet& surr_fn_indices)
+void Model::surrogate_function_indices(const SizetSet& surr_fn_indices)
 {
   if (modelRep)
     modelRep->surrogate_function_indices(surr_fn_indices); // fwd to letter
@@ -3732,7 +3737,6 @@ bool Model::initialize_mapping(ParLevLIter pl_iter)
     }
 
     mappingInitialized = true;
-
     return false; // size did not change
   }
 }
@@ -3792,6 +3796,32 @@ void Model::rebuild_approximation()
     modelRep->rebuild_approximation();
   else
     build_approximation(); // default: build from scratch
+}
+
+
+void Model::rebuild_approximation(const IntResponsePair& response_pr)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation(response_pr);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+	 << "approximation(IntResponsePair) function.\nThis model does not "
+	 << "support approximation rebuilding." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::rebuild_approximation(const IntResponseMap& resp_map)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation(resp_map);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+	 << "approximation(IntResponseMap) function.\nThis model does not "
+	 << "support approximation rebuilding." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 }
 
 
@@ -3882,6 +3912,21 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 
 
 void Model::
+append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
+		     bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "support approximation appending." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
 append_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
@@ -3897,15 +3942,56 @@ append_approximation(const VariablesArray& vars_array,
 
 
 void Model::
-append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
+append_approximation(const IntVariablesMap& vars_map,
+		     const IntResponseMap&  resp_map, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+    modelRep->append_approximation(vars_map, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "(IntVariablesMap, IntResponseMap) function.\nThis model does not "
          << "support approximation appending." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+replace_approximation(const IntResponsePair& response_pr, bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->replace_approximation(response_pr, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+         << "approximation(IntResponsePair) function.\nThis model does not "
+	 << "support approximation data replacement." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->replace_approximation(resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual replace_"
+         << "approximation(IntResponseMap) function.\nThis model does not "
+         << "support approximation data replacement." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::track_evaluation_ids(bool track)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->track_evaluation_ids(track);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
+	 << "ids() function.\n       This model does not support evaluation "
+	 << "tracking." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
@@ -3916,9 +4002,9 @@ void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
   if (modelRep) // envelope fwd to letter
     modelRep->pop_approximation(save_surr_data, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual\n       "
-	 << "pop_approximation(bool, bool) function.  This model does not\n"
-	 << "       support approximation data removal." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
+	 << "(bool, bool) function.\n       This model does not support "
+	 << "approximation data removal." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
@@ -4222,7 +4308,7 @@ void Model::correction_type(short corr_type)
 
 
 void Model::single_apply(const Variables& vars, Response& resp,
-			 const UShortArray& paired_key)
+			 const Pecos::ActiveKey& paired_key)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->single_apply(vars, resp, paired_key);
@@ -5762,6 +5848,36 @@ void Model::evaluate(const RealMatrix& samples_matrix,
       Teuchos::setCol(r_cit->second.function_values(), i, resp_matrix);
   }
 }
+
+
+void Model::evaluate(const VariablesArray& sample_vars,
+		     Model& model, RealMatrix& resp_matrix)
+{
+  // TODO: option for setting its active or inactive variables
+
+  RealMatrix::ordinalType i, num_evals = sample_vars.size();
+  resp_matrix.shape(model.response_size(), num_evals);
+
+  for (i=0; i<num_evals; ++i) {
+    model.active_variables(sample_vars[i]);
+    if (model.asynch_flag())
+      model.evaluate_nowait();
+    else {
+      model.evaluate();
+      const RealVector& fn_vals = model.current_response().function_values();
+      Teuchos::setCol(fn_vals, i, resp_matrix);
+    }
+  }
+
+  // synchronize asynchronous evaluations
+  if (model.asynch_flag()) {
+    const IntResponseMap& resp_map = model.synchronize();
+    IntRespMCIter r_cit;
+    for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+      Teuchos::setCol(r_cit->second.function_values(), i, resp_matrix);
+  }
+}
+
 
 // Called from rekey_response_map to allow Models to store their interfaces asynchronous
 // evaluations. When the meta_object is a model, no action is performed.

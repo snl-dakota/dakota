@@ -1,0 +1,32 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873426619e+00  Max = 1.1590040921e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873457070e+00  Max = 1.1590048509e+01
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 496 total (434 new, 62 duplicate)
+mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
+cdf_beta:  Min = -2.1873457813e+00  Max = 1.1590066274e+01
+Test Number 3 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 496 total (434 new, 62 duplicate)
+mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
+cdf_beta:  Min = -2.1873488264e+00  Max = 1.1590073862e+01
+Test Number 4 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 341 total (341 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873426619e+00  Max = 1.1590040921e+01
+Test Number 5 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 279 total (279 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873426619e+00  Max = 1.1590040921e+01
+Test Number 6 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 341 total (341 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873426619e+00  Max = 1.1590040921e+01
+Test Number 7 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 0 total (0 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873426619e+00  Max = 1.1590040921e+01

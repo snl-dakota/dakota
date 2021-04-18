@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -168,6 +169,28 @@ int cast_from_unsignedint_to_int(const Any& src, Any& dest)
      ? 0 : utilib::Type_Manager::CastWarning::ValueOutOfRange;
 }
 
+/// Cast from int to unsigned long long.
+/// Added to support Windows 64-bit builds, where got a runtime type casting
+/// error from int to unsigned __int64
+int cast_from_int_to_unsignedlonglong(const Any& src, Any& dest)
+{
+  const int& tmp = src.expose<int>();
+  unsigned long long& ans = dest.set<unsigned long long>();
+  ans = tmp;
+  return static_cast<int>(ans) == tmp
+    ? 0 : utilib::Type_Manager::CastWarning::ValueOutOfRange;
+}
+
+int cast_from_unsignedlonglong_to_int(const Any& src, Any& dest)
+{
+  const unsigned long long& tmp = src.expose<unsigned long long>();
+  int& ans = dest.set<int>();
+  ans = tmp;
+  return static_cast<unsigned long long>(ans) == tmp
+    ? 0 : utilib::Type_Manager::CastWarning::ValueOutOfRange;
+}
+
+
   /// Cast from char const* to std::string.
 
 int cast_from_charconst_to_string(const Any& src, Any& dest)
@@ -198,8 +221,14 @@ bool register_dakota_cast(){
     ( typeid(int), typeid(unsigned int), 
       &cast_from_int_to_unsignedint);
   TypeManager()->register_lexical_cast
+    ( typeid(int), typeid(unsigned long long),
+      &cast_from_int_to_unsignedlonglong);
+  TypeManager()->register_lexical_cast
     ( typeid(unsigned int), typeid(int), 
       &cast_from_unsignedint_to_int);
+  TypeManager()->register_lexical_cast
+    ( typeid(unsigned long long), typeid(int),
+      &cast_from_unsignedlonglong_to_int);
   TypeManager()->register_lexical_cast
     ( typeid(char const*), typeid(string), 
       &cast_from_charconst_to_string);
@@ -770,9 +799,8 @@ void COLINOptimizer::set_solver_parameters()
     // specification.
 
     // default is blocking (most solvers) unless explicit override for PS
-    blockingSynch =
-      (probDescDB.get_string("method.pattern_search.synchronization") ==
-       "nonblocking") ? false : true;
+    blockingSynch = (probDescDB.get_short("method.synchronization") !=
+		     NONBLOCKING_SYNCHRONIZATION);
 
     const Real& contraction_factor
       = probDescDB.get_real("method.coliny.contraction_factor");

@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -57,7 +58,7 @@ TEUCHOS_UNIT_TEST(stat_utils, kl_divergence)
   // Function being tested
   Real kl_est = NonDBayesCalibration::knn_kl_div(dist1, dist2, 1);
 
-  Real gold_kl = 0.024596;
+  Real gold_kl = 0.02459600677;
   TEST_FLOATING_EQUALITY(kl_est, gold_kl, 1.e-5);
 }
 
@@ -78,7 +79,7 @@ TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg1)
   // Function being tested
   Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 0);
 
-  Real gold_mi = -0.0218954;
+  Real gold_mi = -0.02189544513;
   TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 1.e-5);
 }
 
@@ -99,8 +100,8 @@ TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg2)
   // Function being tested
   Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 1);
 
-  Real gold_mi = -0.0561375;
-  TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 1.e-5);
+  Real gold_mi = -0.0561375052;
+  TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 5.e-3);
 }
 
 //------------------------------------

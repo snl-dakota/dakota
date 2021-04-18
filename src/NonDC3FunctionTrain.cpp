@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -21,6 +22,8 @@
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
+#include "pecos_math_util.hpp"
+
 //#define DEBUG
 
 
@@ -317,7 +320,7 @@ config_regression(size_t colloc_pts, size_t regress_size, int seed,
     // convert aniso vector to scalar + dim_pref.  If iso, dim_pref is
     // empty; if aniso, it differs from exp_order aniso due to offset.
     unsigned short quad_order; RealVector dim_pref;
-    NonDIntegration::anisotropic_order_to_dimension_preference(dim_quad_order,
+    Pecos::anisotropic_order_to_dimension_preference(dim_quad_order,
       quad_order, dim_pref);
     // use alternate NonDQuad ctor to filter (deprecated) or sub-sample
     // quadrature points (uSpaceModel.build_approximation() invokes
@@ -411,7 +414,6 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
     std::static_pointer_cast<SharedC3ApproxData>(
     uSpaceModel.shared_approximation().data_rep());
 
-  // These are pulled from the DB as they are always scalars:
   shared_data_rep->set_parameter("kick_order",
     probDescDB.get_ushort("method.nond.c3function_train.kick_order"));
   shared_data_rep->set_parameter("adapt_order",
@@ -420,6 +422,7 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
     probDescDB.get_sizet("method.nond.c3function_train.kick_rank"));
   shared_data_rep->set_parameter("adapt_rank",
     probDescDB.get_bool("method.nond.c3function_train.adapt_rank"));
+
   shared_data_rep->set_parameter("regress_type",
     probDescDB.get_short("method.nond.regression_type"));
   shared_data_rep->set_parameter("regularization_parameter",
@@ -434,6 +437,8 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
     probDescDB.get_int("method.nond.c3function_train.max_cross_iterations"));
   shared_data_rep->set_parameter("max_solver_iterations",
     probDescDB.get_int("method.nond.max_solver_iterations"));
+  shared_data_rep->set_parameter("response_scaling",
+    probDescDB.get_bool("method.nond.response_scaling"));
 
   short comb_type = Pecos::ADD_COMBINE;// for now; pass short (enum = ambiguous)
   shared_data_rep->set_parameter("combine_type",     comb_type);
@@ -443,7 +448,13 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
   shared_data_rep->set_parameter("random_seed",      randomSeed);
   shared_data_rep->set_parameter("discrepancy_type", multilevDiscrepEmulation);
   shared_data_rep->set_parameter("alloc_control",    multilevAllocControl);
-  shared_data_rep->set_parameter("advancement_type", c3AdvancementType); 
+  shared_data_rep->set_parameter("advancement_type", c3AdvancementType);
+
+  shared_data_rep->set_parameter("max_cv_rank",  probDescDB.get_sizet(
+    "method.nond.cross_validation.max_rank_candidates"));
+  shared_data_rep->set_parameter("max_cv_order", probDescDB.get_ushort(
+    "method.nond.cross_validation.max_order_candidates"));
+  //shared_data_rep->infer_max_cross_validation_ranges();
 }
 
 

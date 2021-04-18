@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -75,6 +76,13 @@ protected:
   /// log at most batchSize best chain points into bestSamples
   void log_best();
 
+  /// initialize the MUQ parameter space, min, max, initial, domain, and prior
+  /// define solver options, likelihood callback, posterior RV, and inverse problem
+  void specify_prior() override;
+  void specify_likelihood() override;
+  void init_bayesian_solver() override;
+  void specify_posterior() override;
+
 
   //
   //- Heading: Data
@@ -105,7 +113,8 @@ private:
 
   //
   // - Heading: Data
-  // 
+  //
+  
 
 };
 

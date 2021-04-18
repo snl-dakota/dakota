@@ -1,0 +1,46 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 2000 total (1500 new, 500 duplicate)
+  response_fn_1: 2000 val (1500 n, 500 d), 2000 grad (1500 n, 500 d), 0 Hess (0 n, 0 d)
+     Response Level  Belief Prob Level   Plaus Prob Level
+     --------------  -----------------   ----------------
+   1.0000000000e+00   0.0000000000e+00   2.5000000000e-01
+   5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
+   1.0000000000e+02   5.0000000000e-01   7.5000000000e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 300 total (300 new, 0 duplicate)
+  response_fn_1: 300 val (300 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 15800 total (14800 new, 1000 duplicate)
+  response_fn_1: 15800 val (14800 n, 1000 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+     Response Level  Belief Prob Level   Plaus Prob Level
+     --------------  -----------------   ----------------
+   1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
+   5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
+   1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 300 total (300 new, 0 duplicate)
+  response_fn_1: 300 val (300 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Surrogate quality metrics at build (training) points for function 1:
+   root_mean_squared  8.2046407952e-15
+            mean_abs  4.7369515717e-15
+            rsquared  1.0000000000e+00
+<<<<< Function evaluation summary (ALEAT_I): 5300 total (5100 new, 200 duplicate)
+  response_fn_1: 5300 val (5100 n, 200 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+     Response Level  Belief Prob Level   Plaus Prob Level
+     --------------  -----------------   ----------------
+   1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
+   5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
+   1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
+Test Number 3 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 1000 total (1000 new, 0 duplicate)
+  response_fn_1: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Surrogate quality metrics at build (training) points for function 1:
+   root_mean_squared  1.8346134549e-14
+            mean_abs  1.4210854715e-14
+            rsquared  1.0000000000e+00
+<<<<< Function evaluation summary (ALEAT_I): 1000 total (1000 new, 0 duplicate)
+  response_fn_1: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+     Response Level  Belief Prob Level   Plaus Prob Level
+     --------------  -----------------   ----------------
+   1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
+   5.0000000000e+00   0.0000000000e+00   7.5000000000e-01
+   1.0000000000e+02   2.5000000000e-01   1.0000000000e+00

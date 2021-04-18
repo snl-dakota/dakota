@@ -1,7 +1,8 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2020
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -194,13 +195,11 @@ void Analyzer::finalize_run()
   // Finalize an initialized mapping.  This will correspond to the first
   // finalize_run() with an uninitialized mapping, such as the inner-iterator
   // in a recursion.
-  if (iteratedModel.mapping_initialized()) {
+  if (!iteratedModel.is_null() && iteratedModel.mapping_initialized()) {
     bool var_size_changed = iteratedModel.finalize_mapping();
     if (var_size_changed)
       /*bool reinit_comms =*/ resize(); // Ignore return value
   }
-
-  Iterator::finalize_run(); // included for completeness
 }
 
 
