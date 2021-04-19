@@ -94,6 +94,14 @@ ExperimentData(size_t num_experiments,
   IntRespMCIter resp_end = all_responses.end();
   for ( ; resp_it != resp_end; ++resp_it)
      allExperiments.push_back(resp_it->second);
+
+  // store the lengths (number of functions) of each experiment
+  per_exp_length(experimentLengths);
+  size_t i, num_exp = allExperiments.size();
+  expOffsets.sizeUninitialized(num_exp);
+  expOffsets(0) = 0;
+  for (i=1; i<num_exp; i++)
+    expOffsets(i) = experimentLengths(i-1) + expOffsets(i-1);
 }
 
 
@@ -246,6 +254,14 @@ add_data(const SharedVariablesData& svd, const Variables& one_configvars,
   allConfigVars.push_back(Variables(svd_copy));
   allConfigVars.back().inactive_from_active(one_configvars);
   allExperiments.push_back(one_response);
+
+  // store the lengths (number of functions) of each experiment
+  per_exp_length(experimentLengths);
+  size_t i, num_exp = allExperiments.size();
+  expOffsets.sizeUninitialized(num_exp);
+  expOffsets(0) = 0;
+  for (i=1; i<num_exp; i++)
+    expOffsets(i) = experimentLengths(i-1) + expOffsets(i-1);
 }
 
 
