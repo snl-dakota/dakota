@@ -282,8 +282,11 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
-  
+
   // redocumenting these since they use Pecos:: qualification
+
+  /// assign active key in approxData and update_active_iterators()
+  void active_model_key(const Pecos::ActiveKey& key);
 
   /// retrieve the approximate function value for a given parameter vector
   Real                        value(const Variables& vars);
@@ -354,6 +357,22 @@ inline PecosApproximation::PecosApproximation()
 
 inline PecosApproximation::~PecosApproximation()
 { }
+
+
+inline void PecosApproximation::active_model_key(const Pecos::ActiveKey& key)
+{
+  // sets approxData keys
+  Approximation::active_model_key(key);
+
+  // Almost all approximation operations can simply update active iterators
+  // using the shared data active key when computing/updating coeffs, but a few
+  // operations (NonDExpansion::reduce_{total_sobol,decay_rate}_sets()) access
+  // a previous state prior to computing a new one, such that updating iterators
+  // in allocate_arrays() is not early enough.  Therefore, ensure all iterators
+  // are updated at initial key assignment.
+  // *** TO DO: retire other redundant calls to update_active_iterators()
+  polyApproxRep->update_active_iterators(key);
+}
 
 
 inline void PecosApproximation::expansion_coefficient_flag(bool coeff_flag)
