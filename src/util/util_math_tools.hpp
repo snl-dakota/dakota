@@ -95,10 +95,18 @@ void create_cv_folds(const int num_folds, const int num_pts,
 
 /// Generate a real-valued matrix of uniformly distributed random values.
 MatrixXd create_uniform_random_double_matrix(const int rows, const int cols,
-                                             const unsigned int seed = 22,
-                                             bool transform = false,
-                                             const double low = 0.0,
-                                             const double high = 1.0);
+                                             const unsigned int seed,
+                                             bool transform,
+                                             const double low,
+                                             const double high);
+
+/// Generate a real-valued matrix of uniformly distributed random values.
+MatrixXd create_uniform_random_double_matrix(const int rows, const int cols,
+                                             const unsigned int seed);
+
+/// Generate a real-valued matrix of uniformly distributed random values.
+MatrixXd create_uniform_random_double_matrix(const int rows, const int cols);
+
 
 }  // namespace util
 }  // namespace dakota
