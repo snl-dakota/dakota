@@ -19,6 +19,7 @@
 #include "NonDLHSSampling.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaIterator.hpp"
+#include "DakotaSurrogatesGP.hpp"
 #include "RecastModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "ProblemDescDB.hpp"
@@ -138,6 +139,13 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
        probDescDB.get_bool("method.import_build_active_only"),
        probDescDB.get_string("method.export_approx_points_file"),
        probDescDB.get_ushort("method.export_approx_format")));
+
+    if (approx_type == "global_exp_gauss_proc") {
+      String advanced_options_file
+          = problem_db.get_string("method.advanced_options_file");
+      if (!advanced_options_file.empty())
+        set_model_gp_options(fHatModel, advanced_options_file);
+    }
 
     // Following this ctor, IteratorScheduler::init_iterator() initializes the
     // parallel configuration for NonDGlobalInterval + iteratedModel using

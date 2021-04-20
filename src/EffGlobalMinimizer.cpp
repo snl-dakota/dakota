@@ -21,6 +21,7 @@
 #include "RecastModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "DakotaApproximation.hpp"
+#include "DakotaSurrogatesGP.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaGraphics.hpp"
 #ifdef HAVE_NCSU
@@ -128,7 +129,14 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
     probDescDB.get_ushort("method.export_approx_format")));
-  
+
+  if (approx_type == "global_exp_gauss_proc") {
+    String advanced_options_file
+        = problem_db.get_string("method.advanced_options_file");
+    if (!advanced_options_file.empty())
+      set_model_gp_options(fHatModel, advanced_options_file);
+  }
+
   // Following this ctor, IteratorScheduler::init_iterator() initializes the
   // parallel configuration for EffGlobalMinimizer + iteratedModel using
   // EffGlobalMinimizer's maxEvalConcurrency.  During fHatModel construction

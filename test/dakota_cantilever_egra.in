@@ -1,5 +1,6 @@
 #@ s1: TimeoutAbsolute=2400
 #@ s0: TimeoutAbsolute=2400
+#@ s1: ReqFiles=gp_options.yaml
 #@ s0: TimeoutDelay=900
 #@ s1: TimeoutDelay=900
 
