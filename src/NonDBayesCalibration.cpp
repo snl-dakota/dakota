@@ -647,7 +647,6 @@ void NonDBayesCalibration::construct_map_model()
      nonlinear_resp_map, neg_log_post_resp_mapping, nullptr));
 }
 
-
 void NonDBayesCalibration::construct_map_optimizer() 
 {
   // Note: this fn may get invoked repeatedly but assign_rep() manages the
@@ -1078,7 +1077,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
   RealMatrix resp_matrix; // array that will contain new hifi model evals 
   RealVector MI_vec(batchEvals); // mutual information for design point batches
 
-
   // Get initial set of hifi model evaluations
   add_lhs_hifi_data();
   num_exp = expData.num_experiments();
@@ -1099,15 +1097,13 @@ void NonDBayesCalibration::calibrate_to_hifi()
     
     eval_hi2lo_stop(stop_metric, prev_MI, MI_vec, 
 		    num_hifi, max_hifi, design_matrix.size());
-
+    
     // TODO: Make function update_calibration_data() or something
     residualModel.assign_rep(std::make_shared<DataTransformModel>
 			     (mcmcModel, expData, numHyperparams,
 			      obsErrorMultiplierMode, mcmcDerivOrder));
-    // This doesn't do anything:
-    // TNP TODO: Reimplement map model reconstruct and test
-    // construct_map_model(); // TODO: Ask Kathryn why this wasn't being called.
-    // construct_map_optimizer(); // This was what was there
+    construct_map_model();
+    construct_map_optimizer(); 
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
     mcmcModel.continuous_variables(initial_point);

@@ -27,17 +27,18 @@ method,
 #          #output debug						#s1
        bayes_calibration queso
           dram
+#       pre_solve nip #s6
 	  seed = 34785				
           chain_samples = 500
           experimental_design
           initial_samples = 2
-	  num_candidates = 2				#s0,#s1,#s2,#s3,#s4
+	  num_candidates = 2				#s0,#s1,#s2,#s3,#s4,#s6
 #	  num_candidates = 5				#s5
 # 	  batch_size = 2				#s5
 #	  import_candidate_points_file = 'dakota_bayes_expdesign.cand.dat' #s2 
 #		freeform						#s2
 #	  #ksg2						#s2
-	  max_hifi_evaluations = 1			#s0,#s1,#s2,#s3,#s4
+	  max_hifi_evaluations = 1			#s0,#s1,#s2,#s3,#s4,#s6
 #	  max_hifi_evaluations = 3			#s5
           model_pointer = 'HIERARCH'
  
@@ -83,18 +84,19 @@ interface,
         id_interface = 'hifi_IF'
         analysis_drivers = 'expdesign_high'
           fork
-        asynchronous evaluation_concurrency=2              #s0,#s3,#s4,#s5
+        asynchronous evaluation_concurrency=2              #s0,#s3,#s4,#s5,#s6
 
 interface,
         id_interface = 'lofi_IF'
         analysis_drivers = 'expdesign_low'
           fork 
-        asynchronous evaluation_concurrency=4              #s0,#s3,#s4,#s5
+        asynchronous evaluation_concurrency=4              #s0,#s3,#s4,#s5,#s6
 
 responses,
  	id_responses = 'lofi_resp'
         calibration_terms = 1
-	no_gradients	
+	no_gradients #s0,#s1,#s2,#s3,#s4,#s5
+#  numerical_gradients #s6 
 	no_hessians
 #	simulation_variance = 130			#s3
 

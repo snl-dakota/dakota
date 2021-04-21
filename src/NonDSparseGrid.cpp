@@ -286,20 +286,14 @@ void NonDSparseGrid::increment_grid()
 }
 
 
-void NonDSparseGrid::decrement_grid()
-{
-  // adaptive increment logic is not reversible, so use ssgLevelPrev
-  // (assumes no change in active key between increment-decrement pairs)
-  ssgDriver->level(ssgLevelPrev);
-}
-
-
 void NonDSparseGrid::increment_grid_weights(const RealVector& aniso_wts)
 {
   // Pecos::SparseGridDriver manages active keys; pull current level from Driver
   size_t ssg_lev = ssgDriver->level();
   int orig_size  = ssgDriver->grid_size();
-  ssgDriver->update_axis_lower_bounds();
+  ssgLevelPrev   = ssg_lev; // for restoration in decrement_grid()
+
+  ssgDriver->update_axis_lower_bounds(); // defined pre-increment
   // initial increment and anisotropy update
   ssgDriver->level(++ssg_lev);
   ssgDriver->anisotropic_weights(aniso_wts); // enforce axis LB's --> wt UB's
@@ -310,6 +304,14 @@ void NonDSparseGrid::increment_grid_weights(const RealVector& aniso_wts)
     ssgDriver->level(++ssg_lev);
     ssgDriver->anisotropic_weights(aniso_wts); // re-enforce LB's for new level
   }
+}
+
+
+void NonDSparseGrid::decrement_grid()
+{
+  // adaptive increment logic is not reversible, so use ssgLevelPrev
+  // (assumes no change in active key between increment-decrement pairs)
+  ssgDriver->level(ssgLevelPrev);
 }
 
 } // namespace Dakota

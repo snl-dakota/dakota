@@ -215,7 +215,7 @@ void NonDIntegration::increment_grid_preference(const RealVector& dim_pref)
   RealVector aniso_wts(num_pref);
   for (i=0; i<num_pref; ++i)
     aniso_wts[i] = 1./dim_pref[i];
-  increment_grid_weights(aniso_wts);
+  increment_grid_weights(aniso_wts); // this virtual fn must be redefined
 }
 
 
@@ -226,7 +226,7 @@ void NonDIntegration::increment_grid_preference()
   // default base class implementation of increment_grid_preference(pref) is
   // to convert pref to wts and invoke increment_grid_weights(wts)
 
-  increment_grid_weights();
+  increment_grid_weights(); // this virtual fn must be redefined
 }
 
 
@@ -234,14 +234,14 @@ void NonDIntegration::increment_grid_weights(const RealVector& aniso_wts)
 {
   // derived classes must provide at least one of increment_grid_preference()
   // or increment_grid_weights(), but need not provide both.  Therefore, the
-  // default base class implementation of increment_grid_weights(wts) is to
-  // convert wts to pref and invoke increment_grid_preference(pref)
+  // default base class implementation of increment_grid_weights() is to
+  // invoke increment_grid_preference()
 
   size_t i, num_wts = aniso_wts.length();
   RealVector dim_pref(num_wts);
   for (i=0; i<num_wts; ++i)
     dim_pref[i] = 1./aniso_wts[i];
-  increment_grid_preference(dim_pref);
+  increment_grid_preference(dim_pref); // this virtual fn must be redefined
 }
 
 
@@ -249,10 +249,10 @@ void NonDIntegration::increment_grid_weights()
 {
   // derived classes must provide at least one of increment_grid_preference()
   // or increment_grid_weights(), but need not provide both.  Therefore, the
-  // default base class implementation of increment_grid_weights(wts) is to
-  // convert wts to pref and invoke increment_grid_preference(pref)
+  // default base class implementation of increment_grid_weights() is to
+  // invoke increment_grid_preference()
 
-  increment_grid_preference();
+  increment_grid_preference(); // this virtual fn must be redefined
 }
 
 } // namespace Dakota

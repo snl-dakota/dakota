@@ -189,5 +189,16 @@ Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
   return gp_model->variance(eval_point)(0);
 }
 
+void set_model_gp_options(Model& model, String& options_file) {
+  auto custom_param_list = Teuchos::getParametersFromYamlFile(options_file);
+  std::vector<Approximation>& exp_gp_approxs = model.approximations();
+  for (int i = 0; i < exp_gp_approxs.size(); ++i) {
+    auto exp_gp_derived
+      = std::static_pointer_cast<SurrogatesGPApprox>(
+      exp_gp_approxs[i].approx_rep());
+    auto& gp_param_list = exp_gp_derived->getSurrogateOpts();
+    gp_param_list = *custom_param_list;
+  }
+}
 
 } // namespace Dakota

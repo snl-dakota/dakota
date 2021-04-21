@@ -1398,6 +1398,9 @@
                  </keyword>
 		 <keyword  id="dakota2" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
 		 <keyword  id="experimental2" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates"   >
+		   <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		     <param type="INPUT_FILE" />
+		   </keyword>
                  </keyword>
 	       </oneOf>
 	     </keyword>
@@ -1413,6 +1416,9 @@
 		 <keyword  id="dakota2" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
 		 <keyword  id="experimental2" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates"   >
                  &method_export_model;
+		   <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		     <param type="INPUT_FILE" />
+		   </keyword>
                  </keyword>
 	       </oneOf>
 	     </keyword>
@@ -3649,6 +3655,9 @@
               <keyword  id="dakota5" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
               <keyword  id="experimental5" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates" >
 		&method_export_model;
+		   <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		     <param type="INPUT_FILE" />
+		   </keyword>
 	      </keyword>
             </oneOf>
           </optional>

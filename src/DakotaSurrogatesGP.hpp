@@ -10,6 +10,7 @@
 #ifndef DAKOTA_SURROGATES_GP_H
 #define DAKOTA_SURROGATES_GP_H
 
+#include "DakotaModel.hpp"
 #include "DakotaSurrogates.hpp"
 
 
@@ -51,6 +52,10 @@ protected:
   Real prediction_variance(const RealVector& c_vars) override;
 
 };
+
+// free function for setting up experimental GPs with an
+// advanced options file
+void set_model_gp_options(Model& model, String& options_file);
 
 } // namespace Dakota
 #endif

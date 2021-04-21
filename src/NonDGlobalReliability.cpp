@@ -29,6 +29,7 @@
 #include "ProbabilityTransformModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "DakotaApproximation.hpp"
+#include "DakotaSurrogatesGP.hpp"
 #include "ProblemDescDB.hpp"
 #include "NormalRandomVariable.hpp"
 
@@ -200,6 +201,13 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
        probDescDB.get_ushort("method.export_approx_format")));
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
+    if (approx_type == "global_exp_gauss_proc") {
+      String advanced_options_file
+          = problem_db.get_string("method.advanced_options_file");
+      if (!advanced_options_file.empty())
+        set_model_gp_options(g_hat_x_model, advanced_options_file);
+    }
+
     // Recast g-hat(x) to G-hat(u); truncate dist bnds
     uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>
 			   (g_hat_x_model, STD_NORMAL_U, true, 5.));
@@ -250,6 +258,13 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
        probDescDB.get_string("method.export_approx_points_file"),
        probDescDB.get_ushort("method.export_approx_format")));
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
+
+    if (approx_type == "global_exp_gauss_proc") {
+      String advanced_options_file
+          = problem_db.get_string("method.advanced_options_file");
+      if (!advanced_options_file.empty())
+        set_model_gp_options(uSpaceModel, advanced_options_file);
+    }
   }
 
   // Following this ctor, IteratorScheduler::init_iterator() initializes the

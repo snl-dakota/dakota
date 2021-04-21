@@ -1018,6 +1018,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
          ]
+        [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
        )
      ]
     [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
@@ -3229,7 +3230,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
           |
           dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
           |
-          experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
+          ( experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
+            [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
+           )
          ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -3283,6 +3286,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                 [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
                )
              ]
+            [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
            )
          ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
@@ -5739,6 +5743,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
          ]
+        [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
        )
      ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
