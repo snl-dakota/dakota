@@ -226,6 +226,12 @@ MatrixXd PolynomialRegression::hessian(const MatrixXd& eval_point,
   silence_unused_args(qoi);
   assert(qoi == 0);
 
+  if (eval_point.rows() != 1) {
+    throw(std::runtime_error(
+        "Polynomial Hessian evaluation is for a single point."
+        "The input contains more than one sample."));
+  }
+
   MatrixXd hessian(numVariables, numVariables);
   MatrixXd basis_indices = basisIndices.cast<double>();
   basis_indices.transposeInPlace();
