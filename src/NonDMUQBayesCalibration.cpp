@@ -23,6 +23,10 @@
 #include "PRPMultiIndex.hpp"
 #include "MUQ/Utilities/RandomGenerator.h"
 #include "MUQ/Utilities/AnyHelpers.h"
+#include "MUQ/SamplingAlgorithms/MHProposal.h"
+#include "MUQ/SamplingAlgorithms/AMProposal.h"
+#include "MUQ/SamplingAlgorithms/MHKernel.h"
+#include "MUQ/SamplingAlgorithms/DRKernel.h"
 #include "WorkdirHelper.hpp"
 
 
@@ -43,8 +47,13 @@ NonDMUQBayesCalibration::
 NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   numBestSamples(1),
-  mcmcType(probDescDB.get_string("method.nond.mcmc_type"))
+  mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
+  priorPropCovMult(probDescDB.get_real("method.prior_prop_cov_mult"))
 {
+  // default initial proposal covariance choice
+  if (proposalCovarType.empty())
+    proposalCovarType = "prior";
+
 }
 
 
@@ -134,6 +143,9 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
   // build the emulator and initialize transformations, as needed
   //initialize_model();
 
+  // may pull Hessian data from emulator
+  init_proposal_covariance();
+
   //distPtr = std::make_shared<muq::Modeling::Distribution>(numContinuousVars);
 
   parameterPtr = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
@@ -164,29 +176,78 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
   int N =  (chainSamples > 0) ? chainSamples : 1000;
   pt.put("NumSamples", N); // number of Monte Carlo samples
   pt.put("PrintLevel",0);
+
   pt.put("KernelList", "Kernel1"); // the transition kernel
-  pt.put("Kernel1.Method","MHKernel");
+  if (mcmcType == "metropolis_hastings" || mcmcType == "adaptive_metropolis")
+    pt.put("Kernel1.Method","MHKernel");
+  else if (mcmcType == "delayed_rejection" || mcmcType == "dram")
+    pt.put("Kernel1.Method","DRKernel");
+
+  //delayed-rejection knobs, not user defined (for now)
+  int NumDRStages = 3;
+  std::string scaleDRType = "Power";
+  double scaleDR = 2.0;
+  if (mcmcType == "delayed_rejection" || mcmcType == "dram"){
+    pt.put("Kernel1.NumStages",NumDRStages);
+    pt.put("Kernel1.Scale",scaleDR);
+    pt.put("Kernel1.ScaleType",scaleDRType);
+  }
+
   pt.put("Kernel1.Proposal", "MyProposal"); // the proposal
+  // Metropolis-Hastings/DR with or without adaptivity
+  if (mcmcType == "metropolis_hastings" || mcmcType == "delayed_rejection")
+    pt.put("Kernel1.MyProposal.Method","MHProposal");
+  else if (mcmcType == "adaptive_metropolis" || mcmcType == "dram")
+    pt.put("Kernel1.MyProposal.Method","AMProposal");
 
-  // Metropolis-Hastings with or without adaptivity
-  if (mcmcType == "metropolis_hastings")
-      pt.put("Kernel1.MyProposal.Method","MHProposal");
-  else if (mcmcType == "adaptive_metropolis")
-      pt.put("Kernel1.MyProposal.Method","AMProposal");
+  // adaptive metropolis knobs, not user defined (for now)
+  if (mcmcType == "adaptive_metropolis" || mcmcType == "dram"){
+    pt.put("Kernel1.MyProposal.AdaptSteps",100);
+    pt.put("Kernel1.MyProposal.AdaptStart",100);
+    pt.put("Kernel1.MyProposal.AdaptScale",1.0);
+  }
 
-  // the variance (diagonal) of the isotropic MH proposal, set to an arbitrary small value
-  // due to current lack of ability to set MUQ's initial proposal covariance matrix
-  pt.put("Kernel1.MyProposal.ProposalVariance", 0.001);
-  pt.put("Kernel1.MyProposal.AdaptSteps",100);
-  pt.put("Kernel1.MyProposal.AdaptStart",100);
-  pt.put("Kernel1.MyProposal.AdaptScale",1.0);
+  boost::property_tree::ptree kernOpts = pt.get_child("Kernel1");
 
   auto dens = workGraph->CreateModPiece("Posterior");
 
   auto problem = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(dens);
 
-  mcmc = std::make_shared<muq::SamplingAlgorithms::SingleChainMCMC>(pt,problem);
+  Eigen::VectorXd propMu = Eigen::VectorXd::Zero(numContinuousVars);
+  auto propDist = std::make_shared<muq::Modeling::Gaussian>(propMu, proposalCovMatrix);
+  
+  // Use the Gaussian proposal distribution to define an MCMC proposal class
+  std::shared_ptr<muq::SamplingAlgorithms::MCMCProposal> proposal;
+  // boost::property_tree::ptree propOpts;
+  if (mcmcType == "metropolis_hastings" || mcmcType == "delayed_rejection")
+    proposal = std::make_shared<muq::SamplingAlgorithms::MHProposal>(kernOpts.get_child("MyProposal"), problem, propDist);
+  else if (mcmcType == "adaptive_metropolis" || mcmcType == "dram")
+    proposal = std::make_shared<muq::SamplingAlgorithms::AMProposal>(kernOpts.get_child("MyProposal"), problem, proposalCovMatrix);
 
+  // Construct the Metropolis-Hastings (MH) Markov transition kernel using the proposal
+  std::vector<std::shared_ptr<muq::SamplingAlgorithms::TransitionKernel>> kernels(1);
+
+  if (mcmcType == "metropolis_hastings" || mcmcType == "adaptive_metropolis")
+    kernels.at(0) = std::make_shared<muq::SamplingAlgorithms::MHKernel>(kernOpts, problem, proposal);
+  else if (mcmcType == "delayed_rejection" || mcmcType == "dram"){
+    std::vector<std::shared_ptr<muq::SamplingAlgorithms::MCMCProposal>> proposals;
+    proposals.resize(NumDRStages, proposal);
+
+    // scales for DR
+    std::vector<double> scales(NumDRStages,1.0);
+    if(scaleDRType=="Power"){
+      for(int i=0; i<NumDRStages; ++i)
+        scales.at(i) = scaleDR / std::pow(2.0, double(i));
+
+    } else if(scaleDRType=="Linear") {
+      for(int i=0; i<NumDRStages; ++i)
+        scales.at(i) = scaleDR / (double(i)+1.0);
+    }
+
+    kernels.at(0) = std::make_shared<muq::SamplingAlgorithms::DRKernel>(kernOpts, problem, proposals, scales);
+  }
+
+  mcmc = std::make_shared<muq::SamplingAlgorithms::SingleChainMCMC>(pt,kernels);
 }
 
 
@@ -428,6 +489,184 @@ void NonDMUQBayesCalibration::cache_chain()
   if (lookup_failures > 0 && outputLevel > SILENT_OUTPUT)
     Cout << "Warning: could not retrieve function values for " 
    << lookup_failures << " MCMC chain points." << std::endl;
+}
+
+void NonDMUQBayesCalibration::init_proposal_covariance()
+{
+  // Size our MUQ covariance matrix and initialize trailing diagonal if
+  // calibrating error hyperparams
+  proposalCovMatrix =
+    Eigen::MatrixXd::Zero(numContinuousVars+numHyperparams,numContinuousVars+numHyperparams);
+  if (numHyperparams > 0) {
+    // all hyperparams utilize inverse gamma priors, which may not
+    // have finite variance; use std_dev = 0.05 * mode
+    Real alpha;
+    for (int i=0; i<numHyperparams; ++i) {
+      invGammaDists[i].pull_parameter(Pecos::IGA_ALPHA, alpha);
+      proposalCovMatrix(numContinuousVars + i, numContinuousVars + i) = 
+  (alpha > 2.) ? invGammaDists[i].variance() :
+  std::pow(0.05*init_point[numContinuousVars + i], 2.);
+    }
+  }
+
+  // initialize proposal covariance (must follow parameter domain init)
+  // This is the leading sub-matrix in the case of calibrating sigma terms
+  if (proposalCovarType == "user") // either filename OR data values defined
+    user_proposal_covariance(proposalCovarInputType, proposalCovarData,
+           proposalCovarFilename);
+  else if (proposalCovarType == "prior")
+    prior_proposal_covariance(); // prior selection or default for no emulator
+  else {
+    Cerr << "\nError: MUQ init_proposal_covariance(): proposal covariance type, "
+      << proposalCovarType << ", not supported" << '\n';
+    abort_handler(METHOD_ERROR);
+  }
+
+  // validate that provided data is a valid covariance matrix
+  validate_proposal();
+}
+
+/** Must be called after paramMins/paramMaxs set above */
+void NonDMUQBayesCalibration::prior_proposal_covariance()
+{
+  // diagonal covariance from variance of prior marginals
+  RealVector dist_var = mcmcModel.multivariate_distribution().variances();
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  for (int i=0; i<numContinuousVars; ++i)
+    proposalCovMatrix(i,i) = priorPropCovMult * dist_var[i];
+
+  if (outputLevel > NORMAL_OUTPUT) {
+    //Cout << "Diagonal elements of the proposal covariance sent to QUESO";
+    //if (standardizedSpace) Cout << " (scaled space)";
+    //Cout << '\n' << covDiag << '\n';
+    Cout << "MUQ ProposalCovMatrix"; 
+    if (standardizedSpace) Cout << " (scaled space)";
+    Cout << '\n'; 
+    for (size_t i=0; i<numContinuousVars; ++i) {
+      for (size_t j=0; j<numContinuousVars; ++j) 
+  Cout <<  proposalCovMatrix(i,j) << "  "; 
+      Cout << '\n'; 
+    }
+  }
+}
+
+
+/** This function will convert user-specified cov_type = "diagonal" |
+    "matrix" data from either cov_data or cov_filename and populate a
+    full Eigen::MatrixXd in proposalCovMatrix with the covariance. */
+void NonDMUQBayesCalibration::
+user_proposal_covariance(const String& input_fmt, const RealVector& cov_data, 
+       const String& cov_filename)
+{
+  // TODO: transform user covariance for use in standardized probability space
+  if (standardizedSpace)
+    throw std::runtime_error("user-defined proposal covariance is invalid for use in transformed probability spaces.");
+  // Note: if instead a warning, then fallback to prior_proposal_covariance()
+
+  bool use_file = !cov_filename.empty();
+
+  // Sanity check
+  if( ("diagonal" != input_fmt) &&
+      ("matrix"   != input_fmt) )
+    throw std::runtime_error("User-specified covariance must have type of either \"diagonal\" of \"matrix\".  You have \""+input_fmt+"\".");
+
+  // Sanity check
+  if( cov_data.length() && use_file )
+    throw std::runtime_error("You cannot provide both covariance values and a covariance data filename.");
+     
+  // Read in a general way and then check that the data is consistent
+  RealVectorArray values_from_file;
+  if( use_file )
+  {
+    std::ifstream s;
+    TabularIO::open_file(s, cov_filename, "read_muq_covariance_data");
+    bool row_major = false;
+    read_unsized_data(s, values_from_file, row_major);
+  }
+
+  if( "diagonal" == input_fmt )
+  {
+    if( use_file ) {
+      // Allow either row or column data layout
+      bool row_data = false;
+      // Sanity checks
+      if( values_from_file.size() != 1 ) {
+        if( values_from_file.size() == numContinuousVars ) 
+          row_data = true;
+        else
+          throw std::runtime_error("\"diagonal\" MUQ covariance file data should have either 1 column (or row) and "
+              +convert_to_string(numContinuousVars)+" rows (or columns).");
+      }
+      if( row_data ) {
+        for( int i=0; i<numContinuousVars; ++i )
+          proposalCovMatrix(i,i) = values_from_file[i](0);
+      }
+      else {
+        if( values_from_file[0].length() != numContinuousVars )
+          throw std::runtime_error("\"diagonal\" MUQ covariance file data should have "
+              +convert_to_string(numContinuousVars)+" rows.  Found "
+              +convert_to_string(values_from_file[0].length())+" rows.");
+        for( int i=0; i<numContinuousVars; ++i )
+          proposalCovMatrix(i,i) = values_from_file[0](i);
+      }
+    }
+    else {
+      // Sanity check
+      if( numContinuousVars != cov_data.length() )
+        throw std::runtime_error("Expected num covariance values is "+convert_to_string(numContinuousVars)
+                                 +" but incoming vector provides "+convert_to_string(cov_data.length())+".");
+      for( int i=0; i<numContinuousVars; ++i )
+        proposalCovMatrix(i,i) = cov_data(i);
+    }
+  }
+  else // "matrix" == input_fmt
+  {
+    if( use_file ) {
+      // Sanity checks
+      if( values_from_file.size() != numContinuousVars ) 
+        throw std::runtime_error("\"matrix\" MUQ covariance file data should have "
+                                 +convert_to_string(numContinuousVars)+" columns.  Found "
+                                 +convert_to_string(values_from_file.size())+" columns.");
+      if( values_from_file[0].length() != numContinuousVars )
+        throw std::runtime_error("\"matrix\" MUQ covariance file data should have "
+                                 +convert_to_string(numContinuousVars)+" rows.  Found "
+                                 +convert_to_string(values_from_file[0].length())+" rows.");
+      for( int i=0; i<numContinuousVars; ++i )
+        for( int j=0; j<numContinuousVars; ++j )
+          proposalCovMatrix(i,j) = values_from_file[i](j);
+    }
+    else {
+      // Sanity check
+      if( numContinuousVars*numContinuousVars != cov_data.length() )
+        throw std::runtime_error("Expected num covariance values is "+convert_to_string(numContinuousVars*numContinuousVars)
+            +" but incoming vector provides "+convert_to_string(cov_data.length())+".");
+      int count = 0;
+      for( int i=0; i<numContinuousVars; ++i )
+        for( int j=0; j<numContinuousVars; ++j )
+          proposalCovMatrix(i,j) = cov_data[count++];
+    }
+  }
+}
+
+void NonDMUQBayesCalibration::validate_proposal()
+{
+  // validate that provided data is a valid covariance matrix
+  
+  if (outputLevel > NORMAL_OUTPUT ) { 
+    Cout << "Proposal Covariance " << '\n';
+    Cout << proposalCovMatrix << std::endl;
+  }
+
+  // test symmetry
+  Eigen::MatrixXd test_mat = proposalCovMatrix.transpose();
+  if (!proposalCovMatrix.isApprox(test_mat))
+    throw std::runtime_error("MUQ covariance matrix is not symmetric.");
+
+  // test PD part of SPD
+  Eigen::LLT<Eigen::MatrixXd> lltOfA(proposalCovMatrix); // compute the Cholesky decomposition of A
+  if(lltOfA.info() == Eigen::NumericalIssue)
+    throw std::runtime_error("MUQ covariance data is not SPD.");
 }
 
 } // namespace Dakota

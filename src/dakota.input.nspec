@@ -5382,9 +5382,34 @@ KEYWORD method {N_mdm3(start,0,stop)}
         rnum2 {N_mdm(lit,rngName_rnum2)}
        ]
       [ 
+        dram {N_mdm(lit,mcmcType_dram)}
+        |
+        delayed_rejection {N_mdm(lit,mcmcType_delayed_rejection)}
+        |
         adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
         |
         metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
+       ]
+      [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
+        ( prior {N_mdm(lit,proposalCovType_prior)}
+          [ multiplier REAL > 0.0 {N_mdm(Real,priorPropCovMult)} ]
+         )
+        |
+        ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
+          [ update_period INTEGER {N_mdm(int,proposalCovUpdatePeriod)} ]
+         )
+        |
+        ( values REALLIST {N_mdm(RealDL,proposalCovData)}
+          diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+          |
+          matrix {N_mdm(lit,proposalCovInputType_matrix)}
+         )
+        |
+        ( filename STRING {N_mdm(str,proposalCovFile)}
+          diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+          |
+          matrix {N_mdm(lit,proposalCovInputType_matrix)}
+         )
        ]
      )
     [ experimental_design {N_mdm(true,adaptExpDesign)}
