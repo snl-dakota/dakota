@@ -87,6 +87,22 @@ void create_cv_folds(const int num_folds, const int num_pts,
   }
 }
 
+
+MatrixXd create_uniform_random_double_matrix(const int num_rows,
+                                             const int num_cols)
+{
+  return create_uniform_random_double_matrix(num_rows, num_cols, 22);
+}
+
+
+MatrixXd create_uniform_random_double_matrix(const int num_rows,
+                                             const int num_cols,
+                                             const unsigned int seed)
+{
+  return create_uniform_random_double_matrix(num_rows, num_cols, seed, false, 0.0, 1.0);
+}
+
+
 MatrixXd create_uniform_random_double_matrix(const int num_rows,
                                              const int num_cols,
                                              const unsigned int seed,

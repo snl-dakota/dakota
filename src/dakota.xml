@@ -1398,6 +1398,9 @@
                  </keyword>
 		 <keyword  id="dakota2" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
 		 <keyword  id="experimental2" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates"   >
+		   <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		     <param type="INPUT_FILE" />
+		   </keyword>
                  </keyword>
 	       </oneOf>
 	     </keyword>
@@ -1413,6 +1416,9 @@
 		 <keyword  id="dakota2" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
 		 <keyword  id="experimental2" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates"   >
                  &method_export_model;
+		   <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		     <param type="INPUT_FILE" />
+		   </keyword>
                  </keyword>
 	       </oneOf>
 	     </keyword>
@@ -3304,10 +3310,13 @@
 	      &bayes_seed_rng;
 	      <optional>
 		<oneOf label="MCMC Algorithm" >
-		  <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="metropolis_hastings" />
-		  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="metropolis_hastings" />
+            <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
+            <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
+            <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
+            <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
 		</oneOf>
 	      </optional>
+          &bayes_proposal_covariance;
 	    </keyword>
 	  </oneOf>
 	  <keyword  id="experimental_design" name="experimental_design" code="{N_mdm(true,adaptExpDesign)}" label="Bayesian Experiment Design"  minOccurs="0" >
@@ -3646,6 +3655,9 @@
               <keyword  id="dakota5" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota"   />
               <keyword  id="experimental5" name="experimental" code="{N_mdm(type,emulatorType_EXPGP_EMULATOR)}" label="surrogates" >
 		&method_export_model;
+		   <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		     <param type="INPUT_FILE" />
+		   </keyword>
 	      </keyword>
             </oneOf>
           </optional>

@@ -773,7 +773,7 @@ if(HAVE_MUQ)
   set(iterator_src ${iterator_src} NonDMUQBayesCalibration.cpp)
   list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/include)
   list(APPEND DAKOTA_LIBDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/lib)
-  list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqSamplingAlgorithms)
+  list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqOptimization muqApproximation muqSamplingAlgorithms muqInference)
 endif()
 
 if(HAVE_ROL)

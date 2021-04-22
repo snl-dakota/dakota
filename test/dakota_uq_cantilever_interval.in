@@ -3,6 +3,7 @@
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=2
 #@ s0: UserMan=cantilever_uq_global_interval
+#@ s4: ReqFiles=gp_options.yaml
 # DAKOTA INPUT FILE - dakota_uq_cantilever_interval.in
 # Dakota Input File: cantilever_uq_global_interval.in         #s0,#s4
 
