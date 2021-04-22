@@ -4420,14 +4420,11 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.0000000000e+00  He1  He0
   -2.0000000000e+02  He0  He1
    6.0100000000e+02  He2  He0
-   5.3557158708e-13  He1  He1
+   3.9790393203e-13  He1  He1
+   1.2434497876e-13  He3  He0
    1.0000000000e+02  He0  He2
-  -4.9737991503e-14  He3  He0
   -2.0000000000e+02  He2  He1
-  -7.1054273576e-13  He1  He2
    1.0000000000e+02  He4  He0
-  -2.9487523534e-13  He3  He1
-  -3.1263880373e-13  He2  He2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
@@ -4438,7 +4435,7 @@ response_fn_1 Sobol' indices:
                       7.2568545527e-02 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   5.7369279313e-03   1.0000000000e-01   2.0156355594e-02
+   5.7369279307e-03   1.0000000000e-01   2.0156355594e-02
    1.0000000000e-01   1.0000000000e+00   2.2666666667e-02
    1.0000000000e+00   5.0000000000e+01   6.9795918367e-03
    5.0000000000e+01   1.0000000000e+02   2.6260000000e-03
@@ -4460,14 +4457,11 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -4.0000000000e+00   P1   P0
   -5.3333333333e+02   P0   P1
    9.1695238095e+02   P2   P0
-   1.1155520951e-12   P1   P1
+  -1.4210854715e-14   P1   P1
+   3.7658764995e-13   P3   P0
    2.6666666667e+02   P0   P2
-   6.8478556159e-13   P3   P0
   -1.0666666667e+03   P2   P1
-  -7.1054273576e-13   P1   P2
    3.6571428571e+02   P4   P0
-   4.5474735089e-13   P3   P1
-   1.1084466678e-12   P2   P2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.5566666667e+02  6.0656024184e+02
@@ -4501,13 +4495,10 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.6000000000e+03   L0   L1
    2.2720800000e+05   L2   L0
   -6.4000000000e+03   L1   L1
-   8.0000000000e+02   L0   L2
   -1.5360000000e+05   L3   L0
+   8.0000000000e+02   L0   L2
    3.2000000000e+03   L2   L1
-   3.7834979594e-10   L1   L2
    3.8400000000e+04   L4   L0
-  -5.7480065152e-10   L3   L1
-  -2.1464074962e-10   L2   L2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.6005000000e+04  3.1371446924e+05
@@ -4518,7 +4509,7 @@ response_fn_1 Sobol' indices:
                       5.2023655046e-04 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   1.3237711049e-03   1.0000000000e-01   3.4456120163e-02
+   1.3237710355e-03   1.0000000000e-01   3.4456120138e-02
    1.0000000000e-01   1.0000000000e+00   3.3000000000e-02
    1.0000000000e+00   5.0000000000e+01   3.8897959184e-03
    5.0000000000e+01   1.0000000000e+02   1.3560000000e-03
@@ -4541,13 +4532,10 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.5924551639e+02 Pab0 Pab1
    4.5240573805e+02 Pab2 Pab0
    9.4990723562e+01 Pab1 Pab1
-   1.2929292929e+02 Pab0 Pab2
   -6.0301803460e+01 Pab3 Pab0
+   1.2929292929e+02 Pab0 Pab2
   -2.9552669553e+02 Pab2 Pab1
-  -1.7763568394e-13 Pab1 Pab2
    1.5607525601e+02 Pab4 Pab0
-  -2.4158453016e-13 Pab3 Pab1
-  -8.1001871877e-13 Pab2 Pab2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.3706545835e+02  4.6075688193e+02
@@ -4558,7 +4546,7 @@ response_fn_1 Sobol' indices:
                       1.5451202640e-01 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   7.5742048259e-03   1.0000000000e-01   1.4065337469e-02
+   7.5742048262e-03   1.0000000000e-01   1.4065337469e-02
    1.0000000000e-01   1.0000000000e+00   1.2666666667e-02
    1.0000000000e+00   5.0000000000e+01   5.6387755102e-03
    5.0000000000e+01   1.0000000000e+02   2.3080000000e-03
@@ -4581,13 +4569,10 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.1200000000e+04  La0  La1
    4.6720800000e+05  La2  La0
   -1.1200000000e+04  La1  La1
-   8.0000000000e+02  La0  La2
   -2.1120000000e+05  La3  La0
+   8.0000000000e+02  La0  La2
    3.2000000000e+03  La2  La1
-   2.0372681320e-10  La1  La2
    3.8400000000e+04  La4  La0
-  -4.0745362639e-10  La3  La1
-  -2.3283064365e-10  La2  La2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.1502600000e+05  1.3982261168e+06
@@ -4598,7 +4583,7 @@ response_fn_1 Sobol' indices:
                       4.5830351694e-04 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   1.7817664396e-03   1.0000000000e-01   4.0725635709e-03
+   1.7817668268e-03   1.0000000000e-01   4.0725635870e-03
    1.0000000000e-01   1.0000000000e+00   2.6666666667e-03
    1.0000000000e+00   5.0000000000e+01   8.6530612245e-04
    5.0000000000e+01   1.0000000000e+02   3.8400000000e-04

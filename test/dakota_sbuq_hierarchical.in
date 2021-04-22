@@ -30,7 +30,8 @@ method,
 	multifidelity_polynomial_chaos			#s0,#s1,#s2,#s6,#s7,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#p0,#p1,#p2,#p3
 #	  expansion_order_sequence = 4 2		#s12,#s14,#s16,#s17,#s19
 #	  expansion_order_sequence = 5 3		#s13,#s18,#s20
-#	  dimension_preference = 2 1			#s17,#s18
+#	  dimension_preference = 2 1			#s17
+#	  dimension_preference = 5 3			#s18
 #	  uniform p_refinement				#s19,#s20
 #	  orthogonal_least_interpolation		#s15
 #	  collocation_ratio =  2			#s12,#s17,#s19
