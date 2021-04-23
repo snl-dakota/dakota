@@ -58,7 +58,12 @@ dakota_strict_warnings(dakota_surrogates)
 dakota_gcov_target(dakota_surrogates)
 
 install(FILES ${surrogates_headers} DESTINATION "include")
-install(TARGETS dakota_surrogates EXPORT ${ExportTarget})
+# Need to make sure DLLs end up in bin and prefer lib over lib64 (for now)
+install(TARGETS dakota_surrogates EXPORT ${ExportTarget}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
 
 if(DAKOTA_PYTHON_SURROGATES)
   # NOTE: Library name is really generic due to overly simple Python

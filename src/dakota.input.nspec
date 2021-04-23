@@ -1018,6 +1018,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
          ]
+        [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
        )
      ]
     [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
@@ -2786,14 +2787,33 @@ KEYWORD method {N_mdm3(start,0,stop)}
       ( variance {N_mdm(type,allocationTarget_TARGET_VARIANCE)}
         [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
        )
+      |
+      ( standard_deviation {N_mdm(type,allocationTarget_TARGET_SIGMA)}
+        [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
+       )
+      |
+      ( scalarization {N_mdm(type,allocationTarget_TARGET_SCALARIZATION)}
+        [ scalarization_response_mapping REALLIST {N_mdm(RealDL,scalarizationRespCoeffs)} ]
+        [ optimization {N_mdm(true,useTargetVarianceOptimizationFlag)} ]
+       )
      ]
     [ qoi_aggregation {0}
       sum {N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}
       |
       max {N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}
      ]
-    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_tolerance_type {0}
+      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+      |
+      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+     ]
+    [ convergence_tolerance_target {0}
+      variance_constraint {N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT)}
+      |
+      cost_constraint {N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT)}
+     ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
       |
@@ -3210,7 +3230,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
           |
           dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
           |
-          experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
+          ( experimental {N_mdm(type,emulatorType_EXPGP_EMULATOR)}
+            [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
+           )
          ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -3264,6 +3286,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
                 [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
                )
              ]
+            [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
            )
          ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
@@ -5363,9 +5386,34 @@ KEYWORD method {N_mdm3(start,0,stop)}
         rnum2 {N_mdm(lit,rngName_rnum2)}
        ]
       [ 
+        dram {N_mdm(lit,mcmcType_dram)}
+        |
+        delayed_rejection {N_mdm(lit,mcmcType_delayed_rejection)}
+        |
         adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
         |
         metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
+       ]
+      [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
+        ( prior {N_mdm(lit,proposalCovType_prior)}
+          [ multiplier REAL > 0.0 {N_mdm(Real,priorPropCovMult)} ]
+         )
+        |
+        ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
+          [ update_period INTEGER {N_mdm(int,proposalCovUpdatePeriod)} ]
+         )
+        |
+        ( values REALLIST {N_mdm(RealDL,proposalCovData)}
+          diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+          |
+          matrix {N_mdm(lit,proposalCovInputType_matrix)}
+         )
+        |
+        ( filename STRING {N_mdm(str,proposalCovFile)}
+          diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+          |
+          matrix {N_mdm(lit,proposalCovInputType_matrix)}
+         )
        ]
      )
     [ experimental_design {N_mdm(true,adaptExpDesign)}
@@ -5695,6 +5743,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
             [ binary_archive {N_mdm(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
          ]
+        [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
        )
      ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -6312,13 +6361,20 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( adapted_basis {N_mom(lit,modelType_adapted_basis)}
-    actual_model_pointer STRING {N_mom(str,actualModelPointer)}
-    sparse_grid_level INTEGER {N_mom(ushint,adaptedBasisSparseGridLev)}
-    |
-    ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}
-      collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
+    ( actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+      sparse_grid_level INTEGER {N_mom(ushint,adaptedBasisSparseGridLev)}
+      |
+      ( expansion_order INTEGER {N_mom(ushint,adaptedBasisExpOrder)}
+        collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
+       )
+      [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
+      [ rotation_method {0}
+        unranked {N_mom(type,method_rotation_ROTATION_METHOD_UNRANKED)}
+        |
+        ranked {N_mom(type,method_rotation_ROTATION_METHOD_RANKED)}
+       ]
      )
-    [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
+    [ truncation_tolerance REAL {N_mom(Real,adaptedBasisTruncationTolerance)} ]
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}

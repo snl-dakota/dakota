@@ -124,6 +124,11 @@ public:
 					const ShortArray& ds_target2,
 					const ShortArray& dr_target2);
 
+  /// set primaryResponseCoefficients, secondaryResponseCoefficients
+  /// within derived Iterators; Necessary for scalarization case in 
+  /// MLMC NonDMultilevelSampling to map scalarization in nested context
+  virtual void nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs);
+
   /// used by IteratorScheduler to set the starting data for a run
   virtual void initialize_iterator(int job_index);
   /// used by IteratorScheduler to pack starting data for an iterator run

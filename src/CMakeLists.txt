@@ -109,7 +109,7 @@ endif()
 # Generat DakotaBuildInfo.src if needed
 
 set(DAKOTA_BUILDINFO_PATH)
-if(DAKOTA_GIT_checkout)
+if(NOT DAKOTA_VERSION_FOUND)
   file( WRITE ${Dakota_BINARY_DIR}/generated/src/DakotaBuildInfo.cpp
     "// -- AUTO GENERATED FILE; DO NOT EDIT --
     #include \"DakotaBuildInfo.hpp\"
@@ -124,11 +124,6 @@ if(DAKOTA_GIT_checkout)
     message(STATUS
       "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp in the source tree; please remove!")
   endif() # incorrect location DakotaBuildInfo.cpp
-
-else() # source tree NOT a Git repo
-
-  message(STATUS "EXPECTED - DakotaBuildInfo.cpp found in the src tree.")
-
 endif()
 
 # -----------------
@@ -335,30 +330,6 @@ if(DAKOTA_PYTHON_DIRECT_INTERFACE)
     add_definitions("-DDAKOTA_PYTHON_NUMPY")
   endif()
 
-endif()
-
-# Top-level dakota.environment Python module
-if(DAKOTA_PYBIND11)
-  # NOTE: Library name "environment" is really generic due to overly
-  # simple Python packaging scheme we're using; revisit.
-  # TODO: Need to always compile libs PIC when using Python
-  # TODO: Consider -undefined dynamic_lookup link flag on Mac
-  pybind11_add_module(environment dakota_python.cpp)
-  # TODO: transitive includes when merging from devel
-#  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
-  target_link_libraries(environment PRIVATE dakota_src
-    ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
-    )
-  if (APPLE)
-    set_target_properties(environment PROPERTIES INSTALL_RPATH
-      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
-  elseif (UNIX)
-    set_target_properties(environment PROPERTIES INSTALL_RPATH
-      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../bin")
-  endif()
-  install(TARGETS environment EXPORT ${ExportTarget}
-    DESTINATION share/dakota/Python/dakota/environment/)
-  install(FILES __init__.py DESTINATION share/dakota/Python/dakota/environment)
 endif()
 
 
@@ -802,7 +773,7 @@ if(HAVE_MUQ)
   set(iterator_src ${iterator_src} NonDMUQBayesCalibration.cpp)
   list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/include)
   list(APPEND DAKOTA_LIBDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/lib)
-  list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqSamplingAlgorithms)
+  list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqOptimization muqApproximation muqSamplingAlgorithms muqInference)
 endif()
 
 if(HAVE_ROL)
@@ -1079,6 +1050,31 @@ set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS} ${Boost_LIBRARIES}
  
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
 message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
+
+
+# Top-level dakota.environment Python module
+if(DAKOTA_PYBIND11)
+  # NOTE: Library name "environment" is really generic due to overly
+  # simple Python packaging scheme we're using; revisit.
+  # TODO: Need to always compile libs PIC when using Python
+  # TODO: Consider -undefined dynamic_lookup link flag on Mac
+  pybind11_add_module(environment dakota_python.cpp)
+  # TODO: transitive includes when merging from devel
+#  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
+  target_link_libraries(environment PRIVATE dakota_src
+    ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
+    )
+  if (APPLE)
+    set_target_properties(environment PROPERTIES INSTALL_RPATH
+      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
+  elseif (UNIX)
+    set_target_properties(environment PROPERTIES INSTALL_RPATH
+      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../bin")
+  endif()
+  install(TARGETS environment EXPORT ${ExportTarget}
+    DESTINATION share/dakota/Python/dakota/environment/)
+  install(FILES __init__.py DESTINATION share/dakota/Python/dakota/environment)
+endif()
 
 
 if (DAKOTA_API_JAVA)

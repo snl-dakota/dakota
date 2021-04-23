@@ -217,7 +217,7 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   for (i=0; i<num_best; ++i) {
     // output best variables
     const Variables& best_vars = bestVariablesArray[i];
-    if (expData.config_vars().size() == 0) {
+    if (expData.num_config_vars() == 0) {
       s << "<<<<< Best parameters          ";
       if (num_best > 1) s << "(set " << i+1 << ") ";
       s << "=\n" << best_vars;

@@ -1452,6 +1452,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"nond.prediction_configs", P_MET predictionConfigList},
       {"nond.proposal_covariance_data", P_MET proposalCovData},
       {"nond.regression_noise_tolerance", P_MET regressionNoiseTol},
+      {"nond.scalarization_response_mapping", P_MET scalarizationRespCoeffs},
       {"parameter_study.final_point", P_MET finalPoint},
       {"parameter_study.list_of_points", P_MET listOfPoints},
       {"parameter_study.step_vector", P_MET stepVector},
@@ -2253,7 +2254,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"surrogate.nugget", P_MOD krigingNugget},
       {"surrogate.percent", P_MOD percentFold},
       {"surrogate.regression_penalty", P_MOD regressionL2Penalty},
-      {"truncation_tolerance", P_MOD truncationTolerance}
+      {"truncation_tolerance", P_MOD truncationTolerance},
+      {"adapted_basis.truncation_tolerance", P_MOD adaptedBasisTruncationTolerance}
     },
     { /* variables */ },
     { /* interface */
@@ -2357,6 +2359,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"iterator_scheduling", P_MET iteratorScheduling},
       {"nond.allocation_target", P_MET allocationTarget},
       {"nond.c3function_train.advancement_type", P_MET c3AdvanceType},
+      {"nond.convergence_tolerance_target", P_MET convergenceToleranceTarget},
+      {"nond.convergence_tolerance_type", P_MET convergenceToleranceType},
       {"nond.model_discrepancy.polynomial_order", P_MET polynomialOrder},
       {"nond.covariance_control", P_MET covarianceControl},
       {"nond.distribution", P_MET distributionType},
@@ -2387,6 +2391,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"wilks.sided_interval", P_MET wilksSidedInterval}
     },
     { /* model */
+      {"adapted_basis.rotation_method", P_MOD method_rotation},
       {"c3function_train.advancement_type", P_MOD c3AdvanceType},
       //{"c3function_train.refinement_control", P_MOD refinementControl},
       //{"c3function_train.refinement_type", P_MOD refinementType},
@@ -2664,7 +2669,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"nl2sol.regression_diagnostics", P_MET regressDiag},
       {"nond.adapt_exp_design", P_MET adaptExpDesign},
       {"nond.adaptive_posterior_refinement", P_MET adaptPosteriorRefine},
-      {"nond.allocation_target.variance.optimization", P_MET useTargetVarianceOptimizationFlag},
+      {"nond.allocation_target.optimization", P_MET useTargetVarianceOptimizationFlag},
       {"nond.c3function_train.adapt_order", P_MET adaptOrder},
       {"nond.c3function_train.adapt_rank", P_MET adaptRank},
       {"nond.cross_validation", P_MET crossValidation},
@@ -2773,7 +2778,9 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
   RealVector& rep_rv = get<RealVector>
   ( "set(RealVector&)",
     { /* environment */ },
-    { /* method */ },
+    { /* method */ 
+      {"nond.scalarization_response_mapping", P_MET scalarizationRespCoeffs}
+    },
     { /* model */
       {"nested.primary_response_mapping", P_MOD primaryRespCoeffs},
       {"nested.secondary_response_mapping", P_MOD secondaryRespCoeffs}

@@ -170,7 +170,7 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   // variables unless they are used as experiment configuration
   // variables since there's no "best" configuration.
   const Variables& best_vars = bestVariablesArray.front();
-  if (expData.config_vars().size() == 0)
+  if (expData.num_config_vars() == 0)
     s << "<<<<< Best parameters          =\n" << best_vars;
   else {
     s << "<<<<< Best parameters (experiment config variables omitted) =\n";

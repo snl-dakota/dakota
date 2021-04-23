@@ -86,9 +86,6 @@ if(DAKOTA_HAVE_HDF5 AND Python_Interpreter_FOUND AND
   execute_process(COMMAND ${Python_EXECUTABLE} -c "import h5py"
     RESULT_VARIABLE missing_h5py OUTPUT_QUIET ERROR_QUIET)
   if(NOT missing_h5py)
-    # Module to extract Dakota console output -- used by all h5py unit tests
-    dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/h5py_console_extract.py
-      ${CMAKE_CURRENT_BINARY_DIR}/h5py_console_extract.py dakota_unit_test_copied_files)
 
     # tests
     dakota_add_h5py_test(mixed_sampling)
@@ -246,6 +243,7 @@ if(DAKOTA_PYBIND11)
     COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota.py
     $<TARGET_FILE_DIR:environment>
     )
+  set_property(TEST dakota_python PROPERTY LABELS UnitTest)
 endif()
 
 

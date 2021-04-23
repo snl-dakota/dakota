@@ -78,13 +78,13 @@ TEUCHOS_UNIT_TEST(surrogates_gp,base_test)
 
   // Verify equality of gold data
   double gold_values[NUM_COLS][NUM_ROWS] =
-    {{ 0.2, -0.3, 0.4, -0.25 },  //x1
-     { 0.45, -0.7, -0.1, 0.33 }, //x2
-     { 0.77985942, 0.84671183, 0.7445029, 0.74654101 }}; //herbie
+    {{0.2, -0.3, 0.4, -0.25},  //x1
+     {0.45, -0.7, -0.1, 0.33}, //x2
+     {0.779863, 0.846376, 0.744602, 0.746568}}; //herbie
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
+      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-6 );
     }
   }
 
@@ -305,13 +305,13 @@ TEUCHOS_UNIT_TEST(surrogates_gp, reduced_quadratic)
 
   // Verify equality of gold data
   double gold_values[NUM_COLS][NUM_ROWS] =
-    {{ 0.2, -0.3, 0.4, -0.25 },  //x1
-     { 0.45, -0.7, -0.1, 0.33 }, //x2
-     { 0.7798753385, 0.8471677755, 0.7443797333, 0.7465426593 }}; //herbie
+    {{0.2, -0.3, 0.4, -0.25},  //x1
+     {0.45, -0.7, -0.1, 0.33}, //x2
+     {0.779875, 0.847168, 0.74438, 0.746543}}; //herbie
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-7 );
+      TEST_FLOATING_EQUALITY( tabular_data[i][j], gold_values[i][j], 1.e-6 );
     }
   }
 }

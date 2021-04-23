@@ -5849,6 +5849,36 @@ void Model::evaluate(const RealMatrix& samples_matrix,
   }
 }
 
+
+void Model::evaluate(const VariablesArray& sample_vars,
+		     Model& model, RealMatrix& resp_matrix)
+{
+  // TODO: option for setting its active or inactive variables
+
+  RealMatrix::ordinalType i, num_evals = sample_vars.size();
+  resp_matrix.shape(model.response_size(), num_evals);
+
+  for (i=0; i<num_evals; ++i) {
+    model.active_variables(sample_vars[i]);
+    if (model.asynch_flag())
+      model.evaluate_nowait();
+    else {
+      model.evaluate();
+      const RealVector& fn_vals = model.current_response().function_values();
+      Teuchos::setCol(fn_vals, i, resp_matrix);
+    }
+  }
+
+  // synchronize asynchronous evaluations
+  if (model.asynch_flag()) {
+    const IntResponseMap& resp_map = model.synchronize();
+    IntRespMCIter r_cit;
+    for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+      Teuchos::setCol(r_cit->second.function_values(), i, resp_matrix);
+  }
+}
+
+
 // Called from rekey_response_map to allow Models to store their interfaces asynchronous
 // evaluations. When the meta_object is a model, no action is performed.
 void Model::asynch_eval_store(const Model &model, const int &id, const Response &response) {

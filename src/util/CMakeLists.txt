@@ -71,6 +71,11 @@ dakota_strict_warnings(dakota_util)
 dakota_gcov_target(dakota_util)
 
 install(FILES ${util_headers} DESTINATION "include")
-install(TARGETS dakota_util EXPORT ${ExportTarget})
+# Need to make sure DLLs end up in bin and prefer lib over lib64 (for now)
+install(TARGETS dakota_util EXPORT ${ExportTarget}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
 
 add_subdirectory(unit)

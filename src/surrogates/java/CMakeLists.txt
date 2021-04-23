@@ -17,7 +17,11 @@ add_library(jni_dakota_surrogates SHARED
 target_include_directories(jni_dakota_surrogates PUBLIC ${JNI_INCLUDE_DIRS})
 target_link_libraries(jni_dakota_surrogates PUBLIC dakota_surrogates)
 
-install(TARGETS jni_dakota_surrogates EXPORT ${ExportTarget})
+install(TARGETS jni_dakota_surrogates EXPORT ${ExportTarget}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
 
 # For Windows testing, map DLLs into test directory
 if (WIN32)

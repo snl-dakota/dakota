@@ -50,26 +50,29 @@
 
 # 39 activate cross validation warning about only being able to construct under-determined systems even though system is determined
 
+# 40 cross validation using anisotropic expansion order candidates
+
 environment,
 	output_precision = 16
 
 method,
 	polynomial_chaos
- 	  expansion_order   = 6		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s26,#s27,#s28,#s30,#s33,#s34,#s35,#s16,#s32,#s37,#s38,#s39,
+	  expansion_order   = 6		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s26,#s27,#s28,#s30,#s33,#s34,#s35,#s16,#s32,#s37,#s38,#s39,#s40
 #	  expansion_order   = 7 	#s10,#s11,#s12,#s13,#s14,#s15,#s25,#s29,#s31,#s36
+#	  dimension_preference = 4 2	#s40
 	  cross_validation
 	  collocation_ratio = 3 	#s0,#s1,#s8,#s9,#s26,#s28,#s30,#s33,#s35,#s16,#s32,#s37,#s38
 #	  collocation_points = 18 	#s2,#s3,#s4,#s5,#s6,#s7,#s24,#s34
-	  
 # 	  collocation_points = 10       #s10,#s11,#s12,#s13,#s14,#s15,#s25,#s29,#s31,#s36
 #	  collocation_points = 15	#s39
+#	  collocation_points = 24	#s40
 #	  collocation_ratio = 2  	#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s27
 #	  least_squares	      		#s28,#s29,#s30,#s31,
 	  least_squares svd 		#s0,#s8,#s17,#s24,#s25,#s39
 #	  basis_pursuit	  		#s2,#s10,#s18,#s16
 # 	  basis_pursuit_denoising	#s3,#s11,#s19,#s32
 #	    noise_tolerance = 1.e-3	#s3,#s11,#s19,
-#	  orthogonal_matching_pursuit	#s4,#s12,#s20,#s26,#s27
+#	  orthogonal_matching_pursuit	#s4,#s12,#s20,#s26,#s27,#s40
 #	  least_absolute_shrinkage	#s5,#s13,#s21,#s1,#s7,#s9,#s15,#s23,#s38
 #	  least_angle_regression	#s6,#s14,#s22,#s37
 #	  l2_penalty = 0.01		#s1,#s7,#s9,#s15,#s23
@@ -89,6 +92,6 @@ interface,
 
 responses,
 	response_functions = 1
-	no_gradients			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s24,#s26,#s28,#s29,#s33,#s34,#s16,#s32,#s37,#s38,#s39
+	no_gradients			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s24,#s26,#s28,#s29,#s33,#s34,#s16,#s32,#s37,#s38,#s39,#s40
 #	analytic_gradients		#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s25,#s27,#s30,#s31,#s35,#s36
 	no_hessians

@@ -2570,18 +2570,30 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
     if (numFunctions > 1) avg_sobol += approx_i.total_sobol_indices();
     else                  avg_sobol  = approx_i.total_sobol_indices();
   }
-  if (numFunctions > 1)
-    avg_sobol.scale(1./(Real)numFunctions);
-
-  // manage small values that are not 0 (SGMGA has special handling for 0)
-  Real pref_tol = 1.e-2; // TO DO
+  // Trap case where there is no variance (yet) to attribute
+  bool zero_sobol = true;
   for (i=0; i<numContinuousVars; ++i)
-    if (std::abs(avg_sobol[i]) < pref_tol)
-      avg_sobol[i] = 0.;
+    if (std::abs(avg_sobol[i]) > 0.)
+      { zero_sobol = false; break; }
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nUpdating anisotropy from average of total Sobol indices:\n"
-	 << avg_sobol << std::endl;
+  if (zero_sobol) {
+    avg_sobol.sizeUninitialized(0);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nSobol' indices not yet defined: no anisotropy detected"
+	   << std::endl;
+  }
+  else {
+    if (numFunctions > 1)
+      avg_sobol.scale(1./(Real)numFunctions);
+    // enforce lower bound on avg Sobol (disallow negative/zero)
+    Real pref_tol = 1.e-2; // TO DO
+    for (i=0; i<numContinuousVars; ++i)
+      if (std::abs(avg_sobol[i]) < pref_tol)
+	avg_sobol[i] = pref_tol;
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nUpdating anisotropy from average of total Sobol indices (lower"
+	   << " bounded by " << pref_tol << "):\n" << avg_sobol << std::endl;
+  }
 }
 
 
@@ -2607,15 +2619,28 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
       if (decay_i[j] < min_decay[j])
 	min_decay[j] = decay_i[j];
   }
-  // enforce a lower bound on minimum decay (disallow negative/zero decay rates)
-  Real decay_tol = 1.e-2; // TO DO
-  for (j=0; j<numContinuousVars; ++j)
-    if (min_decay[j] < decay_tol)
-      min_decay[j] = decay_tol;
+  // Trap case where there is no decay (yet) to measure (mirror Sobol' logic)
+  bool zero_decay = true;
+  for (i=0; i<numContinuousVars; ++i)
+    if (std::abs(min_decay[i]) > 0.)
+      { zero_decay = false; break; }
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nUpdating anisotropy from minimum decay rates:\n" << min_decay
-	 << std::endl;
+  if (zero_decay) {
+    min_decay.sizeUninitialized(0);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nDecay rates not yet defined: no anisotropy detected"
+	   << std::endl;
+  }
+  else {
+    // enforce lower bound on minimum decay (disallow negative/zero)
+    Real decay_tol = 1.e-2; // TO DO
+    for (j=0; j<numContinuousVars; ++j)
+      if (min_decay[j] < decay_tol)
+	min_decay[j] = decay_tol;
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nUpdating anisotropy from minimum decay rates (lower "
+	   << "bounded by " << decay_tol << "):\n" << min_decay << std::endl;
+  }
 }
 
 

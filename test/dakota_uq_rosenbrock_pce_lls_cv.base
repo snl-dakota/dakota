@@ -929,3 +929,19 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666600e+02  6.0656024184257774e+02
+Test Number 40 succeeded
+<<<<< Function evaluation summary: 24 total (24 new, 0 duplicate)
+  response_fn_1: 24 val (24 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 24 total (24 new, 0 duplicate)
+  response_fn_1: 24 val (24 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  4.5566666666666691e+02   P0   P0
+  -3.9999999999999662e+00   P1   P0
+  -5.3333333333333348e+02   P0   P1
+  9.1695238095238119e+02   P2   P0
+  2.6666666666666686e+02   P0   P2
+  -1.0666666666666677e+03   P2   P1
+  3.6571428571428532e+02   P4   P0
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666666691e+02  6.0656024184257842e+02

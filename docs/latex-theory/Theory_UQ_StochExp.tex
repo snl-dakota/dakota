@@ -442,12 +442,15 @@ It is apparent from Eq.~\ref{eq:num_tp_terms} that the tensor-product
 expansion readily supports anisotropy in polynomial order for each
 dimension, since the polynomial order bounds for each dimension can be
 specified independently.  It is also feasible to support anisotropy
-with total-order expansions, through pruning polynomials that satisfy 
-the total-order bound 
+with total-order expansions, using a weighted multi-index constraint
+that is analogous to the one used for defining index sets in
+anisotropic sparse grids (Eq.~\ref{eq:aniso_smolyak_constr}).
+%through pruning polynomials that satisfy the total-order bound 
 %(potentially defined from the maximum of the per-dimension bounds)
-but violate individual per-dimension bounds (the number of these
-pruned polynomials would then be subtracted from
-Eq.~\ref{eq:num_to_terms}).  Finally, additional tailoring of the
+%but violate individual per-dimension bounds (the number of these
+%pruned polynomials would then be subtracted from
+%Eq.~\ref{eq:num_to_terms}).
+Finally, additional tailoring of the
 expansion form is used in the case of sparse grids (see
 Section~\ref{uq:expansion:spectral_sparse}) through the use of a
 summation of anisotropic tensor expansions.

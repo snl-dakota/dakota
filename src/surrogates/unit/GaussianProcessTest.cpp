@@ -46,7 +46,6 @@ void get_1D_gp_test_data(MatrixXd& samples, VectorXd& response,
   eval_pts << 0.0, 0.2, 0.4, 0.6, 0.8, 1.0;
 }
 
-// DTS: Looks like we do not have coverage for nugget bounds
 void get_gp_hyperparameter_bounds(const int nvars, VectorXd& sigma_bounds,
                                   MatrixXd& length_scale_bounds) {
   const double lb_val = 1.0e-2;
@@ -66,12 +65,14 @@ void get_gp_hyperparameter_bounds(const int nvars, VectorXd& sigma_bounds,
 ParameterList get_gp_config_options(const VectorXd& sigma_bounds,
                                     const MatrixXd& length_scale_bounds) {
   ParameterList param_list("GP Test Parameters");
-  param_list.set("sigma bounds", sigma_bounds);
-  param_list.set("length-scale bounds", length_scale_bounds);
+  param_list.sublist("Sigma Bounds").set("lower bound", sigma_bounds(0));
+  param_list.sublist("Sigma Bounds").set("upper bound", sigma_bounds(1));
+  param_list.set("anisotropic length-scale bounds", length_scale_bounds);
   param_list.set("scaler name", "standardization");
   param_list.set("num restarts", 10);
   param_list.sublist("Nugget").set("fixed nugget", 1.0e-12);
   param_list.set("gp seed", 42);
+  param_list.set("standardize response", false);
 
   return param_list;
 }
@@ -446,10 +447,18 @@ TEUCHOS_UNIT_TEST(surrogates, 2D_gp_with_trend_values_derivs_and_save_load) {
   ParameterList param_list =
       get_gp_config_options(sigma_bounds, length_scale_bounds);
   param_list.set("num restarts", 20);
+  param_list.set("standardize response", false);
   param_list.sublist("Nugget").set("fixed nugget", 0.0);
   param_list.sublist("Nugget").set("estimate nugget", true);
   param_list.sublist("Trend").set("estimate trend", true);
   param_list.sublist("Trend").sublist("Options").set("max degree", 2);
+
+  VectorXd nugget_bounds(2);
+  nugget_bounds << 3.17e-8, 1.0e-2;
+  param_list.sublist("Nugget").sublist("Bounds").set("lower bound",
+                                                  nugget_bounds(0));
+  param_list.sublist("Nugget").sublist("Bounds").set("upper bound",
+                                                  nugget_bounds(1));
 
   /* gold data for test */
   get_2D_gp_golds_no_trend(gold_mean, gold_std_dev, gold_cov, true);
@@ -866,7 +875,7 @@ TEUCHOS_UNIT_TEST(surrogates, matern_52_gp) {
 TEUCHOS_UNIT_TEST(surrogates, gp_read_from_parameterlist) {
   std::string test_parameterlist_file =
       "gp_test_data/GP_test_parameterlist.yaml";
-      //"gp_test_data/GP_test_parameterlist.xml";
+  //"gp_test_data/GP_test_parameterlist.xml";
   GaussianProcess gp(test_parameterlist_file);
 
   ParameterList plist;

@@ -6785,7 +6785,8 @@ static RealVector
 	MP_(predictionConfigList),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
-        MP_(stepVector),
+  MP_(scalarizationRespCoeffs),
+  MP_(stepVector),
 	MP_(trustRegionInitSize);
 
 static RealVectorArray
@@ -6994,12 +6995,18 @@ static size_t
 
 static Method_mp_type
 	MP2s(allocationTarget,TARGET_MEAN),
+  MP2s(allocationTarget,TARGET_SCALARIZATION),
+  MP2s(allocationTarget,TARGET_SIGMA),
 	MP2s(allocationTarget,TARGET_VARIANCE),
-	MP2s(c3AdvanceType,MAX_ORDER_ADVANCEMENT),
-	MP2s(c3AdvanceType,MAX_RANK_ADVANCEMENT),
-	MP2s(c3AdvanceType,MAX_RANK_ORDER_ADVANCEMENT),
-	MP2s(c3AdvanceType,START_ORDER_ADVANCEMENT),
-	MP2s(c3AdvanceType,START_RANK_ADVANCEMENT),
+  MP2s(c3AdvanceType,MAX_ORDER_ADVANCEMENT),
+  MP2s(c3AdvanceType,MAX_RANK_ADVANCEMENT),
+  MP2s(c3AdvanceType,MAX_RANK_ORDER_ADVANCEMENT),
+  MP2s(c3AdvanceType,START_ORDER_ADVANCEMENT),
+  MP2s(c3AdvanceType,START_RANK_ADVANCEMENT),
+  MP2s(convergenceToleranceTarget,CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT),
+  MP2s(convergenceToleranceTarget,CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
+  MP2s(convergenceToleranceType,CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE),
+  MP2s(convergenceToleranceType,CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
@@ -7050,8 +7057,8 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
+  MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
-	MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_SOBOL),      // Pecos
@@ -7347,7 +7354,10 @@ static Model_mp_type
 	MP2s(regressionType,FT_LS),
 	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),
+        MP2s(method_rotation,ROTATION_METHOD_UNRANKED),
+	MP2s(method_rotation,ROTATION_METHOD_RANKED),
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
+
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),
       //MP2s(subMethodScheduling,PEER_STATIC_SCHEDULING),
 
@@ -7412,7 +7422,8 @@ static Real
 	MP_(solverRoundingTol),
 	MP_(solverTol),
 	MP_(statsRoundingTol),
-	MP_(truncationTolerance);
+	MP_(truncationTolerance),
+	MP_(adaptedBasisTruncationTolerance);
 
 static RealVector
 	MP_(krigingCorrelations),

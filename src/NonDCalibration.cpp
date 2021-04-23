@@ -37,7 +37,7 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   //if (outputLevel > NORMAL_OUTPUT)
   //  Cout << "Read data from file " << calibrationData << '\n';
   if (calibrationData)
-    expData.load_data("NonDCalibration");
+    expData.load_data("NonDCalibration", iteratedModel.current_variables());
   else if (outputLevel > SILENT_OUTPUT)
     Cout << "No experiment data from files.\nCalibration is assuming the "
 	 << "simulation is returning the residuals" << std::endl;

@@ -40,6 +40,7 @@ TEUCHOS_UNIT_TEST(surrogates, eval_metrics_and_cross_validation) {
 
   ParameterList gp_param_list("GP Test Parameters");
   gp_param_list.set("scaler name", "standardization");
+  gp_param_list.set("standardize response", false);
   gp_param_list.set("num restarts", 10);
   gp_param_list.sublist("Nugget").set("fixed nugget", 1.0e-12);
   gp_param_list.set("gp seed", 42);
@@ -134,10 +135,14 @@ TEUCHOS_UNIT_TEST(surrogates, cross_validate) {
   nugget_bounds(0) = 1.0e-4;
   nugget_bounds(1) = 0.316;
   gp_opts.set("scaler name", "none");
+  gp_opts.set("standardize response", false);
   gp_opts.sublist("Nugget").set("fixed nugget", 0.0);
   gp_opts.set("gp seed", 42);
   gp_opts.sublist("Nugget").set("estimate nugget", true);
-  gp_opts.sublist("Nugget").set("nugget bounds", nugget_bounds);
+  gp_opts.sublist("Nugget").sublist("Bounds").set("lower bound",
+                                                  nugget_bounds(0));
+  gp_opts.sublist("Nugget").sublist("Bounds").set("upper bound",
+                                                  nugget_bounds(1));
   gp_opts.set("num restarts", 20);
   GaussianProcess gp_cv(gp_opts);
 

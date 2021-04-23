@@ -421,6 +421,7 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module0)
   plist.sublist("Nugget").set("fixed nugget", 1.0e-12);
   // need to override lightweight ctor defaults to get historical behavior
   plist.sublist("Nugget").set("estimate nugget", false);
+  plist.set("standardize response", false);
   gp_approx.build();
 
   // check the value of the surrogate
@@ -535,6 +536,7 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module1)
   plist.sublist("Nugget").set("estimate nugget", false);
   plist.sublist("Trend").set("estimate trend", false);
   plist.set("gp seed", 42);
+  plist.set("standardize response", false);
   gp_approx.build();
 
   // check the value of the surrogate

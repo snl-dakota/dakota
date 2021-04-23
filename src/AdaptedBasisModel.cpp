@@ -13,6 +13,9 @@
 #include "ParallelLibrary.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "NonDPolynomialChaos.hpp"
+#include "SharedPecosApproxData.hpp"
+#include <random>
+#include "LHSDriver.hpp"
 #define N 2
 
 namespace Dakota {
@@ -20,6 +23,11 @@ namespace Dakota {
 
 AdaptedBasisModel::
 AdaptedBasisModel(ProblemDescDB& problem_db):
+  method_rotation(problem_db.get_short("model.adapted_basis.rotation_method")),
+  adaptedBasisTruncationTolerance(probDescDB.get_real(
+    "model.adapted_basis.truncation_tolerance")),
+  subspaceDimension(probDescDB.get_int(
+    "model.subspace.dimension")),  
   SubspaceModel(problem_db, get_sub_model(problem_db))
 {
   // BMA: can't do this in get_sub_model as Iterator envelope hasn't
@@ -32,12 +40,10 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
 
-  if (!reducedRank)  // no user spec
-    reducedRank = 1; // subspace-specific default
-
   validate_inputs();
 
   offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
+  
 }
 
 
@@ -107,12 +113,13 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   // initialization.  Therefore, we initialize pcePilotExpRepPtr above and then
   // assign it into pcePilotExpansion in the AdaptedBasisModel initializer list.
   //pcePilotExpansion.assign_rep(pce_rep);
-
+    
   problem_db.set_db_model_nodes(model_index); // restore
 
   Model u_space_model(pcePilotExpRepPtr->algorithm_space_model());
   // Consider option of using PCE surrogate for all subsequent computations:
   //return u_space_model;
+
 
   // Return transformed model subordinate to the DataFitSurrModel:
   return u_space_model.subordinate_model();
@@ -168,6 +175,24 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
+void AdaptedBasisModel::validate_inputs()
+{
+  SubspaceModel::validate_inputs();
+
+  bool error_flag = false;
+
+  // validate reduced dimension
+  if (subspaceDimension > numFullspaceVars) {
+    error_flag = true;
+    Cerr << "\nError (dimension): Required rotation dimension larger than the full problem dimension;"
+         << "\n                        Please select dimension < number of variables\n" << std::endl;
+  }
+
+  if (error_flag)
+    abort_handler(-1);
+}
+
+
 void AdaptedBasisModel::compute_subspace()
 {
   ////////////////////////////////////////////////////
@@ -197,6 +222,38 @@ void AdaptedBasisModel::compute_subspace()
   Model pce_model(pcePilotExpansion.algorithm_space_model());
   const RealVectorArray& pce_coeffs = pce_model.approximation_coefficients();
 
+  // retrieve the underlying PCE approximation model
+  Model u_space_model(pcePilotExpRepPtr->algorithm_space_model());
+
+  // dive through the class layers to grab ptr to shared approx data:
+  std::shared_ptr<SharedPecosApproxData> data_rep =
+      std::static_pointer_cast<SharedPecosApproxData>
+      (u_space_model.shared_approximation().data_rep());
+
+  // retrieve the multi-index as a 2D array of unsigned short integers
+  // first index is term, second index is variable
+  const UShort2DArray& pce_multi_index = data_rep->multi_index();
+
+//   Cout << "\npce_multi_index = \n" << pce_multi_index << std::endl;
+//   Cout <<"\npce_coeffs = \n"<<pce_coeffs<<std::endl;
+  
+
+  // find the indices of the first order PCE terms
+  // which is used later for constunction of rotation matrix
+  UShortArray first_ord_index(numFullspaceVars);
+  size_t i;
+  int num_pce, num_ones, num_zeros, idx = 0;
+  num_pce = pce_multi_index.size();
+
+  for (i=0; i<num_pce; ++i) {
+    num_ones = std::count(std::begin(pce_multi_index[i]), std::end(pce_multi_index[i]), 1);
+    num_zeros = std::count(std::begin(pce_multi_index[i]), std::end(pce_multi_index[i]), 0);
+    if ( num_ones == 1 && (num_zeros == numFullspaceVars-1) ){
+      first_ord_index[idx] = i;
+      idx++;
+    }
+  }
+
   //////////////////////////////////////////////////////////////////////////////
 
   Cout << "\nAdapted Basis Model: Building A matrix for each QoI"  << std::endl;
@@ -212,36 +269,49 @@ void AdaptedBasisModel::compute_subspace()
   // Individual rotation matrix for each QoI
   RealMatrix A_i(numFullspaceVars, numFullspaceVars, false);
 
-  size_t i, j, k, row_cntr = 0;
+  size_t j, k, row_cntr = 0;
   int lwork;
   lwork = numFullspaceVars;
   int info;
-
-  int method=0;
+  
+  int method = -1;
+    
+  // Select the desired rotation method
+  if (method_rotation==ROTATION_METHOD_UNRANKED){
+   
+      method = 0;
+      std::cout << "\nSelecting UNRANKED Gaussian for the rotation matrix construction" << std::endl;
+      
+  } else if (method_rotation==ROTATION_METHOD_RANKED) {
+  
+      method = 1;
+      std::cout << "\nSelecting RANKED Gaussian for the rotation matrix construction" << std::endl;
+          
+  }
+      
 
   for (i=0; i<numFns; ++i) {
     A_i.putScalar(0.);
 
     if (method==0){
-      // *** USC:
       // Step 1a. linear PCE: use the alpha_i's as first row in A and then apply
-      //          Gramm-Schmidt (BLAS/LAPACK?).
+      //          Gramm-Schmidt
       //          [Can neglect constant term/expansion mean]
       for (j=0; j<numFullspaceVars; ++j)
-        A_i(0,j) = pce_coeffs[i][j+1]; // offset by 1 to neglect constant/mean
+        A_i(0,j) = pce_coeffs[i][first_ord_index[j]]; // offset by 1 to neglect constant/mean
       for (j=1; j<numFullspaceVars; ++j)
         A_i(j,j) = 1.;
     }
 
     else if (method==1){
-      // Step 1b: same as 1a expect permuted location of 1's determined from q_i's
+      // Step 1b: same as 1a except permuted location of 1's determined from q_i's
       //          (relative sensitivities)
       for (j=0; j<numFullspaceVars; ++j)
-        A_i(0,j) = pce_coeffs[i][j+1]; // offset by 1 to neglect constant/mean
-      // sort the first order PC coefficients by absolute values
+        A_i(0,j) = pce_coeffs[i][first_ord_index[j]]; // offset by 1 to neglect constant/mean
+      // rank the first order PC coefficients by absolute values
       RealVector pce_coeffs_lin_abs(numFullspaceVars);
       for (j=0; j<numFullspaceVars; ++j){
-        pce_coeffs_lin_abs(j) = std::abs(pce_coeffs[i][j+1]);
+        pce_coeffs_lin_abs(j) = std::abs(pce_coeffs[i][first_ord_index[j]]);
       }
       std::vector < std::pair<double, int> > pce_coeffs_pair;
       for (int j = 0; j < numFullspaceVars; ++j) {
@@ -253,12 +323,12 @@ void AdaptedBasisModel::compute_subspace()
       for (j=1; j<numFullspaceVars; ++j)
       {
         int index = pce_coeffs_pair[numFullspaceVars-j].second;
-        A_i(j,index) = pce_coeffs[i][index+1];
+        A_i(j,index) = pce_coeffs[i][first_ord_index[index]];
       }
     }
 
     else {
-      Cout << "\n Basis adaptation method not supported!!" << std::endl;
+      Cout << "\nBasis adaptation method not supported!!" << std::endl;
     }
 
     // Gram-Schmidt for each rotation matrix:
@@ -280,7 +350,14 @@ void AdaptedBasisModel::compute_subspace()
   }
   
   reducedBasis = A_q;
-  Cout << "\n Rotation Matrix \n" << reducedBasis << std::endl;
+  // Cout << "\nreducedBasis:\n" << reducedBasis << std::endl;
+
+  if ( !subspaceDimension )
+      truncate_rotation();
+  else
+      reducedRank = subspaceDimension;
+
+  Cout << "\nreducedRank = " << reducedRank << std::endl;
 
   // TO DO
 
@@ -375,6 +452,116 @@ void AdaptedBasisModel::compute_subspace()
 }
 
 
+
+void AdaptedBasisModel::truncate_rotation()
+{
+  reducedRank = 1; // initialize reducedRank
+  double threshold_ratio = adaptedBasisTruncationTolerance;  // default value 0.8
+  
+  std::cout << "\nThreshold Ratio: " << adaptedBasisTruncationTolerance << std::endl;
+  
+  // use the first order information to determine the dimension of
+  // the reduce space
+
+  // standard normal distribution generator
+  int seed = 12345;
+  int nsamples = 200;
+  if (nsamples < numFullspaceVars*2 +1)
+    nsamples = numFullspaceVars*2 +1;
+  size_t i, j, k;
+  RealVector means_vec(numFullspaceVars), std_deviations(numFullspaceVars),
+             lower_bnds(numFullspaceVars), upper_bnds(numFullspaceVars);
+  means_vec.putScalar(0.0);
+  std_deviations.putScalar(1.0);
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
+  lower_bnds.putScalar(-dbl_inf);
+  upper_bnds.putScalar( dbl_inf);
+  RealMatrix xi;
+  RealSymMatrix correl_matrix;
+  correl_matrix.shape(numFullspaceVars);
+  for (i=0; i<numFullspaceVars; i++)
+      correl_matrix(i,i) = 1.;
+  short sample_ranks_mode = 0; //IGNORE RANKS
+  Pecos::LHSDriver lhsDriver; // the C++ wrapper for the F90 LHS library
+  lhsDriver.seed(seed);
+  lhsDriver.initialize("lhs", sample_ranks_mode, true);
+  lhsDriver.generate_normal_samples(means_vec, std_deviations, lower_bnds,
+              upper_bnds, correl_matrix, nsamples, xi);
+  
+  // map the full dimension \xi variable to the rotated variables \eta
+  const RealMatrix A(Teuchos::Copy, reducedBasis, numFullspaceVars, numFullspaceVars);
+  int m = A.numRows(), n = A.numCols();
+  Real alpha = 1.0, beta = 0.0;
+  RealMatrix eta(numFullspaceVars, nsamples, false);
+  Teuchos::BLAS<int, Real> teuchos_blas;
+  teuchos_blas.GEMM(Teuchos::NO_TRANS, Teuchos::NO_TRANS, numFullspaceVars, nsamples, numFullspaceVars,
+                    alpha, A.values(), numFullspaceVars, xi.values(), numFullspaceVars,
+                    beta, eta.values(), numFullspaceVars);
+
+
+  // 1) map \eta of reduced dimensions to the full dimensional space as \xi_trans
+  // 2) compute the weighted difference between \xi and \xi_trans
+  // 3) compute metric w = 1/N \sum (\xi_weigt - \xi_trans_weigt)
+
+  RealVector w(numFullspaceVars);
+  RealVector ratio_w(numFullspaceVars);
+  for (i=0; i<numFullspaceVars; i++)
+  {
+    // Reduced dimension = i
+    // extend the reduced eta variables by zeros to make it full dimensional
+    RealMatrix eta_extd(n, nsamples); // init to 0
+    for (j=0; j<i+1; j++){
+      for (k=0; k<nsamples; k++)
+          eta_extd(j, k) = eta(j, k);
+    }
+
+    // matrix multiplication: \hat \xi = A^T * \eta_{ex}
+    RealMatrix xi_trans(numFullspaceVars, nsamples, false);
+    teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, numFullspaceVars, nsamples, numFullspaceVars,
+                      alpha, A.values(), numFullspaceVars, eta_extd.values(), numFullspaceVars,
+                      beta, xi_trans.values(), numFullspaceVars);
+
+    // compute the weighted \xi and \xi_{trans}
+    // compute the 2 norm of (\xi_weigt - \xi_trans_weigt)
+    // compute w = 1/N sum( || \xi_weigt - \xi_trans_weigt || )
+    RealMatrix xi_weigt(numFullspaceVars, nsamples, false);
+    RealMatrix xi_trans_weigt(numFullspaceVars, nsamples, false);
+    for (k=0; k< nsamples; k++){
+      double norm_xi_diff_sq = 0.;
+      for (j=0; j < numFullspaceVars; ++j){
+          xi_weigt(j, k) = xi(j,k) * A(0,j);
+          xi_trans_weigt(j, k) = xi_trans(j,k) * A(0,j);
+          norm_xi_diff_sq += pow(xi_weigt(j, k)-xi_trans_weigt(j, k), 2);
+        }
+      double norm_xi_diff = sqrt(norm_xi_diff_sq);
+      w(i) += norm_xi_diff;
+    }
+    w(i) /= nsamples;
+  }
+  Cout << "\nDimension reduction metric by first order info: \n" << w << std::endl;
+  
+  // compute the cumulative difference of w
+  RealVector w_diff(numFullspaceVars);
+  for (j=1; j<numFullspaceVars; j++)
+    w_diff(j) = w(j-1)-w(j);
+  RealVector cumsum_w_diff(numFullspaceVars);
+  for (j=1; j<numFullspaceVars; j++){
+    cumsum_w_diff(j) = cumsum_w_diff(j-1) + w_diff(j);
+    ratio_w(j) = cumsum_w_diff(j) / w(0);
+  }
+  Cout << "\nRatio of the metric: \n" << ratio_w << std::endl;
+
+  for (j=0; j<numFullspaceVars; j++){
+    if (ratio_w(j) >= threshold_ratio) {
+      reducedRank = j+1;
+      break;
+    }
+  }
+
+}
+
+
+
 /** Define the distribution of recast reduced dimension
     variables \eta. They are standard Gaussian in adapted 
     basis model. */
@@ -450,7 +637,8 @@ variables_mapping(const Variables& reduced_vars, Variables& full_vars)
   RealVector eta_ex(n); // init to 0
   for (int i=0; i<dim_eta; i++)
     eta_ex(i) = eta(i);
-  //  Calculate \xi = A^T \eta
+  //  y <-- alpha*A*x + beta*y
+  //  Calculate \xi = 1.0 * A^T \eta + + 0.0 * \xi
   Teuchos::BLAS<int, Real> teuchos_blas;
   teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, A.values(), m,
                     eta_ex.values(), incy, beta, xi.values(), incx);

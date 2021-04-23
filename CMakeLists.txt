@@ -86,7 +86,15 @@ execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
 # Conditionally include Git revision in version info and create VERSION file.
 # Sets several convenience variables
 # NOTE: depends on presence of generated source directories
-dakota_version_from_git()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION)
+  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/DakotaBuildInfo.cpp)
+    message(FATAL_ERROR "VERSION file exists but no corresponding
+                         src/DakotaBuildInfo.cpp exists.")
+  endif()
+  set(DAKOTA_VERSION_FOUND TRUE)
+else()
+  dakota_version_from_git()
+endif()
 
 
 # More widely distributed packages exclude more content
@@ -290,6 +298,6 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "*.f" EXCLUDE 
   )
 
-# Final CPack settings (depends on DAKOTA_GIT_checkout)
+# Final CPack settings
 dakota_cpack_finalize()
 include(CPack)

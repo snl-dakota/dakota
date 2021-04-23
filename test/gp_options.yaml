@@ -1,0 +1,31 @@
+%YAML 1.1
+---
+ANONYMOUS:
+  verbosity: 2
+  num restarts: 20
+  kernel type: squared exponential
+  Sigma Bounds: 
+    lower bound: 1.00000000000000002e-02
+    upper bound: 1.00000000000000000e+02
+  Length-scale Bounds: 
+    lower bound: 1.00000000000000002e-02
+    upper bound: 1.00000000000000000e+02
+  scaler name: standardization
+  gp seed: 42
+  standardize response: true
+  Nugget: 
+    fixed nugget: 1.00000000000000004e-10
+    estimate nugget: false
+    Bounds: 
+      lower bound: 1.00000000000000008e-05
+      upper bound: 1.00000000000000002e-02
+  Trend: 
+    estimate trend: false
+    Options: 
+      max degree: 2
+      reduced basis: false
+      p-norm: 1.00000000000000000e+00
+      scaler type: none
+      regression solver type: SVD
+      verbosity: 1
+...

@@ -83,6 +83,20 @@ protected:
   void init_bayesian_solver() override;
   void specify_posterior() override;
 
+  /// set the proposal covariance matrix
+  void init_proposal_covariance();
+
+  /// use covariance of prior distribution for setting proposal covariance
+  void prior_proposal_covariance();
+
+  /// set proposal covariance from user-provided diagonal or matrix
+  void user_proposal_covariance(const String& input_fmt, 
+        const RealVector& cov_data, 
+        const String& cov_filename);
+
+  // perform sanity checks on proposalCovMatrix
+  void validate_proposal();
+
 
   //
   //- Heading: Data
@@ -108,6 +122,15 @@ protected:
 
   /// number of best samples (max log_posterior values) to keep 
   unsigned int numBestSamples;
+
+  /// proposal covariance for MCMC
+  Eigen::MatrixXd proposalCovMatrix;
+
+  /// optional multiplier to scale prior-based proposal covariance 
+  double priorPropCovMult;
+
+  /// initial guess (user-specified or default initial values)
+  RealVector init_point;
 
 private:
 

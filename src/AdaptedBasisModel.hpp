@@ -67,6 +67,8 @@ protected:
   // that meets user-specified criteria
   void compute_subspace();
 
+  /// use the truncation methods to identify the size of a reduced subspace
+  void truncate_rotation();
 
   // ---
   // Problem transformation functions
@@ -75,6 +77,8 @@ protected:
   /// translate the characterization of uncertain variables in the
   /// native_model to the reduced space of the transformed model
   void uncertain_vars_to_subspace();
+  
+  void validate_inputs();
 
   // ---
   // Callback functions that perform data transform during the Recast operations
@@ -84,6 +88,17 @@ protected:
   /// submodel variables (linear transformation)
   static void variables_mapping(const Variables& recast_xi_vars,
 				Variables& sub_model_x_vars);
+  
+  
+  /// store the rotation_method input specification, prior to run-time
+  /// Options right now:
+  ///   - linear = use the linear PCE coefficients
+  ///   - norm = use normalized sensitivity along each direction
+  short method_rotation;
+  // Threshold level for the selection of the rank in the basis adaptation
+  Real adaptedBasisTruncationTolerance;
+  
+  int subspaceDimension;
 
   // ---
   // Member data
