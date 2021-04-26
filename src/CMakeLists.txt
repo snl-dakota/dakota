@@ -1064,6 +1064,15 @@ if(DAKOTA_PYBIND11)
   target_link_libraries(environment PRIVATE dakota_src
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
     )
+
+  # The generated link.txt has too long a single argument to RPATH
+  if(DAKOTA_SPLIT_ENVIRONMENT_LINK_TXT)
+    add_custom_command(TARGET environment PRE_LINK
+      COMMAND ${CMAKE_COMMAND}
+      ARGS -P ${Dakota_SOURCE_DIR}/cmake/DakotaSplitEnvironmentLinkTxt.cmake
+    )
+  endif()
+
   if (APPLE)
     set_target_properties(environment PROPERTIES INSTALL_RPATH
       "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
