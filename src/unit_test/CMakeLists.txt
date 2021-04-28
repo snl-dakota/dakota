@@ -81,27 +81,20 @@ dakota_add_unit_test(NAME leja_sampling
 target_link_libraries(leja_sampling Boost::boost)
 
 # Unit test: h5py_hdf5
-if(DAKOTA_HAVE_HDF5 AND Python_Interpreter_FOUND AND
-   Python_VERSION VERSION_GREATER 2.6)
-  execute_process(COMMAND ${Python_EXECUTABLE} -c "import h5py"
-    RESULT_VARIABLE missing_h5py OUTPUT_QUIET ERROR_QUIET)
-  if(NOT missing_h5py)
-
-    # tests
-    dakota_add_h5py_test(mixed_sampling)
-    dakota_add_h5py_test(incremental_sampling)
-    if(HAVE_NPSOL)
-      dakota_add_h5py_test(simple_calibration)
-    endif()
-    dakota_add_h5py_test(surrogate_sens)
-    dakota_add_h5py_test(discrete_vps)
-    dakota_add_h5py_test(multistart)
-    dakota_add_h5py_test(pareto)
-    dakota_add_h5py_test(dist_params)
-    dakota_add_h5py_test(mlmc)
-    #dakota_add_h5py_test(calibration_with_data)
-    #dakota_add_h5py_test(mutlisolution_opt)
+if(DAKOTA_H5PY_FOUND)
+  dakota_add_h5py_test(mixed_sampling)
+  dakota_add_h5py_test(incremental_sampling)
+  if(HAVE_NPSOL)
+    dakota_add_h5py_test(simple_calibration)
   endif()
+  dakota_add_h5py_test(surrogate_sens)
+  dakota_add_h5py_test(discrete_vps)
+  dakota_add_h5py_test(multistart)
+  dakota_add_h5py_test(pareto)
+  dakota_add_h5py_test(dist_params)
+  dakota_add_h5py_test(mlmc)
+  #dakota_add_h5py_test(calibration_with_data)
+  #dakota_add_h5py_test(mutlisolution_opt)
 endif()
 
 
