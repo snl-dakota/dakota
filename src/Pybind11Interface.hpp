@@ -18,6 +18,7 @@
 #define PYBIND11_INTERFACE_H
 
 #include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
 #include <pybind11/stl.h>
 namespace py = pybind11;
 
@@ -55,8 +56,6 @@ class Pybind11Interface: public DirectApplicInterface
     bool ownPython;
     /// callback function for analysis driver
     py::function py11CallBack;
-    /// collection of callback functions for candidate analysis driver
-    std::map<String, py::function> py11CallBacks;
 
     bool py11Active;
 
@@ -73,12 +72,6 @@ class Pybind11Interface: public DirectApplicInterface
 inline void Pybind11Interface::register_pybind11_callback_fn(py::function callback)
 {
   py11CallBack = callback;
-  py11Active = true;
-}
-
-inline void Pybind11Interface::register_pybind11_callback_fns(const std::map<String, py::function>& callbacks)
-{
-  py11CallBacks = callbacks;
   py11Active = true;
 }
 

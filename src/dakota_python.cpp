@@ -171,10 +171,18 @@ PYBIND11_MODULE(environment, m) {
 	 ([](py::object callback,
 	     const std::string& input_string)
 	  {
+	    assert(!input_string.empty());
             auto p_libEnv = Dakota::python::create_libEnv(input_string);
-            auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+
+            // Associate the single python callback with all Pybind11Interface interfaces
+            Dakota::InterfaceList & interfaces = p_libEnv->problem_description_db().interface_list();
+            for( auto & interface : interfaces )
+            {
+              auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
                                 p_libEnv->problem_description_db().interface_list().begin()->interface_rep());
-            py11_int->register_pybind11_callback_fn(callback);
+              if( py11_int )
+                py11_int->register_pybind11_callback_fn(callback);
+            }
 
 	    return p_libEnv;
 	  })
@@ -185,11 +193,29 @@ PYBIND11_MODULE(environment, m) {
 	     const std::string& input_string)
 	  {
 	    assert(!input_string.empty());
-            auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
             auto p_libEnv = Dakota::python::create_libEnv(input_string);
-            auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+
+            // Associate callbacks with interface specs
+            auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
+            Dakota::InterfaceList & interfaces = p_libEnv->problem_description_db().interface_list();
+            for( auto & interface : interfaces )
+            {
+              auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
                                 p_libEnv->problem_description_db().interface_list().begin()->interface_rep());
-            py11_int->register_pybind11_callback_fns(callbacks_map);
+              if( py11_int )
+              {
+                for( auto const & idrv : interface.analysis_drivers() )
+                {
+                  if( callbacks_map.count(idrv) > 0 )
+                    py11_int->register_pybind11_callback_fn(callbacks_map[idrv]);
+                  else {
+                    Cerr << "Error: Could not find a pybind11 callback \"" << idrv << "\" needed "
+                                   "by Dakota interface \"" << interface.interface_id() << "\".\n";
+                    Dakota::abort_handler(-1);
+                  }
+                }
+              }
+            }
 
 	    return p_libEnv;
 	  })
