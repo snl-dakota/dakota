@@ -196,6 +196,8 @@ endif()
 include(DakotaFindSystemTPLs)
 # Unconditionally find BLAS/LAPACK or equivalent
 dakota_find_linalg()
+# Unconditionally find Eigen3
+dakota_find_eigen3()
 # Conditionally find GSL; needed by both packages/ (QUESO) and src/
 dakota_find_gsl()
 # Conditionally find HDF5; needed by both src/ and test/

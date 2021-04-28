@@ -47,16 +47,6 @@ target_include_directories(dakota_util PUBLIC
 # more liberal than should be needed
 target_link_libraries(dakota_util PUBLIC ${Teuchos_LIBRARIES})
 
-# BMA TODO: CMake config at top-level per RWH example
-#set(EIGEN3_INCLUDE_DIRS
-#  "${Dakota_SOURCE_DIR}/packages/external/eigen3/include/eigen3")
-SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../../packages/external/eigen3/share/eigen3/cmake)
-find_package(Eigen3 3.3 REQUIRED CONFIG)
-if(TARGET Eigen3::Eigen)
-  message(STATUS "Eigen3 v${EIGEN3_VERSION_STRING} found in
-  ${EIGEN3_INCLUDE_DIR}")
-endif()
-
 # Rationale: restrict Eigen to MPL2-licensed components
 # Rationale: Eigen is referenced in API headers
 target_compile_definitions(dakota_util PUBLIC "EIGEN_MPL2_ONLY")

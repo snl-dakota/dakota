@@ -179,7 +179,6 @@ option(HAVE_DDACE "Build the DDACE package." ON)
 option(HAVE_DEMO_TPL "Build the Demo_TPL package." OFF)
 option(HAVE_DOT "Build the DOT package." ON)
 option(HAVE_DREAM "Build the DREAM package." ON)
-option(HAVE_EIGEN "Build the Eigen package." ON)
 
 # Formerly sub-packages of Pecos
 option(HAVE_FFT "Use either the fftw or dfftpack packages" ON)

@@ -79,18 +79,6 @@ if(HAVE_APPROXNN)
   add_subdirectory(external/approxnn/src)
 endif()
 
-#if(HAVE_EIGEN)
-# BMA TODO: Review why setting both here?
-SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
-SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
-find_package(Eigen3 3.3 REQUIRED CONFIG)
-message(STATUS "EIGEN3_FOUND = ${EIGEN3_FOUND}")
-message(STATUS "EIGEN3_INCLUDE_DIRS = ${EIGEN3_INCLUDE_DIRS}")
-message(STATUS "EIGEN3_INCLUDE_DIR = ${EIGEN3_INCLUDE_DIR}")
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/include/eigen3" DESTINATION include)
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3" DESTINATION share)
-#endif()
-
 
 if(HAVE_SURFPACK)
   add_subdirectory(surfpack)
@@ -191,7 +179,7 @@ endif(HAVE_NOMAD)
 if(HAVE_NOWPAC)
   if(NOT HAVE_EXTERNAL_NOWPAC)
     set(NOWPAC_EIGEN_INCLUDE_PATH
-      "${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/include/eigen3")
+      "${DAKOTA_EIGEN3_INCLUDE_DIR}")
 #      CACHE PATH "Dakota forcing NOWPAC to use Dakota's Eigen")
     add_subdirectory(external/snowpac)
   endif()
@@ -235,7 +223,7 @@ if(HAVE_MUQ)
     -DBOOST_INCLUDEDIR:PATH=${Boost_INCLUDE_DIRS}
     -DBOOST_LIBRARYDIR:PATH=${Boost_LIBRARY_DIRS}
     # BMA TODO: Flex this to allow external Eigen
-    -DMUQ_EIGEN3_DIR:STRING=${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/include/eigen3
+    -DMUQ_EIGEN3_DIR:STRING=${DAKOTA_EIGEN3_INCLUDE_DIR}
     # BMA TODO: Generalize this (not currently robust)
     -DMUQ_HDF5_DIR:STRING=${HDF5_INCLUDE_DIRS}/..
     # MUQ minimal opts

@@ -466,11 +466,13 @@ if(DAKOTA_MODULE_SURROGATES)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
   list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesGP.cpp
     DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
+  # TODO: Change so libraries in this dir depend on Eigen3::Eigen target
   list(APPEND DAKOTA_INCDIRS 
     ${Dakota_SOURCE_DIR}/src/util
     ${Dakota_SOURCE_DIR}/src/surrogates
-    ${EIGEN3_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS}
-    ${Dakota_SOURCE_DIR}/packages/external/eigen3/include/eigen3)
+    ${DAKOTA_EIGEN3_INCLUDE_DIR}
+    )
+  add_definitions("-DHAVE_EIGEN -DEIGEN_MPL2_ONLY")
 endif(DAKOTA_MODULE_SURROGATES)
 
 if(DAKOTA_MATLAB)
@@ -700,16 +702,13 @@ if(HAVE_NOWPAC)
   if( NOT DAKOTA_NOWPAC_NLOPT_ROOT)
     set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/snowpac/nowpac/external/nlopt")
   endif(NOT DAKOTA_NOWPAC_NLOPT_ROOT)
-  if( NOT DAKOTA_NOWPAC_EIGEN_ROOT )
-    #set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_SOURCE_DIR}/packages/external/snowpac/nowpac/external/eigen")
-    set(DAKOTA_NOWPAC_EIGEN_ROOT
-      "${Dakota_SOURCE_DIR}/packages/external/eigen3")
-  endif(NOT DAKOTA_NOWPAC_EIGEN_ROOT)
   message(STATUS "NOWPAC ROOT DIR ${DAKOTA_NOWPAC_ROOT_DIR}")
   message(STATUS "NOWPAC NLOPT DIR ${DAKOTA_NOWPAC_NLOPT_ROOT}")
-  message(STATUS "NOWPAC EIGEN DIR ${DAKOTA_NOWPAC_EIGEN_ROOT}")
-  list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT}/include/eigen3)
-  link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib) # ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include
+  list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include
+    ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_EIGEN3_INCLUDE_DIR})
+  link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib
+    ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib)
+  # ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include
  
   set(iterator_src ${iterator_src} NOWPACOptimizer.cpp)
   list(APPEND DAKOTA_PKG_LIBS nowpac nlopt)
@@ -745,15 +744,6 @@ if(HAVE_OPTPP)
   list(APPEND DAKOTA_PKG_LIBS optpp)
   list(APPEND EXPORT_TARGETS optpp)
 endif(HAVE_OPTPP)
-
-# Need to conditionally enable this based on HAVE_EIGEN and surrogate module enabled - RWH
-SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
-find_package(Eigen3 3.3 REQUIRED CONFIG)
-#message(STATUS "Here: EIGEN3_FOUND = ${EIGEN3_FOUND}")
-#message(STATUS "Here: EIGEN3_INCLUDE_DIRS = ${EIGEN3_INCLUDE_DIRS}")
-#message(STATUS "Here: EIGEN3_INCLUDE_DIR = ${EIGEN3_INCLUDE_DIR}")
-list(APPEND DAKOTA_INCDIRS ${EIGEN3_INCLUDE_DIRS})
-add_definitions("-DHAVE_EIGEN -DEIGEN_MPL2_ONLY")
 
 if(HAVE_MUQ)
   ##  #SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Dakota_SOURCE_DIR}/packages/external/muq2/CMake)
@@ -912,11 +902,9 @@ if(HAVE_ACRO)
 endif()
 
 if(HAVE_NOWPAC)
-  # Require Eigen and NLOPT ExternalProjects to be downloaded, built,
-  # and installed before building Dakota sources
+  # NLOPT ExternalProject to be downloaded, built, and installed
+  # before building Dakota sources
   if(NOT HAVE_EXTERNAL_NOWPAC)
-    # Dakota always needs Eigen anyway so use Dakota's
-    #add_dependencies(dakota_src EIGEN NLOPT)
     add_dependencies(dakota_src NLOPT)
   endif()
   # BMA: Why are we linking to something in a source dir?
