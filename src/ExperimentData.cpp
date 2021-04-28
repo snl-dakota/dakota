@@ -72,7 +72,6 @@ ExperimentData(size_t num_experiments,
   scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
   readSimFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
 {
-  // BMA TODO: Review NonDBayes for this use case; also prediction configs
   simulationSRD = srd.copy();
   // BMA TODO: Consider caching the SVD?
   auto svd_copy = svd.copy();
@@ -89,19 +88,15 @@ ExperimentData(size_t num_experiments,
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Number of config vars " << numConfigVars << '\n';
 
-  // BMA TODO: This doesn't make an object of type ExperimentResponse!
-  IntRespMCIter resp_it = all_responses.begin();
-  IntRespMCIter resp_end = all_responses.end();
-  for ( ; resp_it != resp_end; ++resp_it)
-     allExperiments.push_back(resp_it->second);
+  SharedResponseData exp_srd = simulationSRD.copy();
+  exp_srd.response_type(EXPERIMENT_RESPONSE);
+  Response exp_resp(exp_srd);
+  for (const auto& int_resp : all_responses) {
+    exp_resp.update(int_resp.second);
+    allExperiments.push_back(exp_resp.copy());
+  }
 
-  // store the lengths (number of functions) of each experiment
-  per_exp_length(experimentLengths);
-  size_t i, num_exp = allExperiments.size();
-  expOffsets.sizeUninitialized(num_exp);
-  expOffsets(0) = 0;
-  for (i=1; i<num_exp; i++)
-    expOffsets(i) = experimentLengths(i-1) + expOffsets(i-1);
+  update_data_properties();
 }
 
 
@@ -235,14 +230,37 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 
 }
 
+
+void ExperimentData::update_data_properties()
+{
+  // TODO: incrementally update for new data only
+
+  // store the lengths (number of functions) of each experiment
+  per_exp_length(experimentLengths);
+
+  size_t i, num_exp = allExperiments.size();
+  expOffsets.sizeUninitialized(num_exp);
+  expOffsets(0) = 0;
+  for (i=1; i<num_exp; i++)
+    expOffsets(i) = experimentLengths(i-1) + expOffsets(i-1);
+
+  // Precompute and cache experiment determinants
+  covarianceDeterminant = 1.0;
+  logCovarianceDeterminant = 0.0;
+  for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+    covarianceDeterminant *= allExperiments[exp_ind].covariance_determinant();
+    logCovarianceDeterminant +=
+      allExperiments[exp_ind].log_covariance_determinant();
+  }
+}
+
+
 void ExperimentData::
 add_data(const SharedVariablesData& svd, const Variables& one_configvars,
 	 const Response& one_response)
 {
-  // BMA TODO: Review NonDBayes for this use case; also prediction configs
   // The inbound vars have the config vars as active
 
-  // BMA TODO: This doesn't make an object of type ExperimentResponse!
   numExperiments += 1;
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "numExperiments in add_data " << numExperiments << '\n';
@@ -253,15 +271,15 @@ add_data(const SharedVariablesData& svd, const Variables& one_configvars,
 
   allConfigVars.push_back(Variables(svd_copy));
   allConfigVars.back().inactive_from_active(one_configvars);
-  allExperiments.push_back(one_response);
 
-  // store the lengths (number of functions) of each experiment
-  per_exp_length(experimentLengths);
-  size_t i, num_exp = allExperiments.size();
-  expOffsets.sizeUninitialized(num_exp);
-  expOffsets(0) = 0;
-  for (i=1; i<num_exp; i++)
-    expOffsets(i) = experimentLengths(i-1) + expOffsets(i-1);
+  SharedResponseData exp_srd = one_response.shared_data().copy();
+  exp_srd.response_type(EXPERIMENT_RESPONSE);
+  Response exp_resp(exp_srd);
+  exp_resp.update(one_response);
+  allExperiments.push_back(exp_resp.copy());
+
+  // TODO: incrementally update for new data only
+  update_data_properties();
 }
 
 
@@ -430,22 +448,7 @@ void ExperimentData::load_data(const std::string& context_message,
     }
   }
 
-  // store the lengths (number of functions) of each experiment
-  per_exp_length(experimentLengths);
-  size_t i, num_exp = allExperiments.size();
-  expOffsets.sizeUninitialized(num_exp);
-  expOffsets(0) = 0;
-  for (i=1; i<num_exp; i++) 
-    expOffsets(i) = experimentLengths(i-1) + expOffsets(i-1);
-
-  // Precompute and cache experiment determinants
-  covarianceDeterminant = 1.0;
-  logCovarianceDeterminant = 0.0;
-  for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
-    covarianceDeterminant *= allExperiments[exp_ind].covariance_determinant();
-    logCovarianceDeterminant += 
-      allExperiments[exp_ind].log_covariance_determinant();
-  }
+  update_data_properties();
 
   // Check and warn if extra data exists in scalar_data_stream
   if (scalar_data_file) {
