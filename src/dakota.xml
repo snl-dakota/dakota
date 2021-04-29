@@ -1204,7 +1204,6 @@
              &default_speculative;
              &method_max_function_evaluations;
              &default_scaling;
-             <!-- &default_linear_constraints; -->
 	     &method_optional_model_pointer;
 	     ' >
 
@@ -1215,7 +1214,6 @@
              &default_speculative;
              &method_max_function_evaluations;
              &default_scaling;
-             <!-- &default_linear_constraints; -->
 	     &method_optional_model_pointer;
 	     ' >
 
@@ -1235,7 +1233,6 @@
              &default_speculative;
              &method_max_function_evaluations;
              &default_scaling;
-             <!-- &default_linear_constraints; -->
 	     &method_optional_model_pointer;
 	     ' >
 
@@ -1275,7 +1272,6 @@
              &default_speculative;
              &method_max_function_evaluations;
              &default_scaling;
-             <!-- &default_linear_constraints; -->
 	     &method_optional_model_pointer;
 	     ' >
 
@@ -2046,7 +2042,6 @@
           &method_max_iterations;
           &method_convergence_tolerance;
           &default_constraint_tolerance;
-          <!-- &default_linear_constraints; -->
         </keyword>
 
         <keyword  id="surrogate_based_global" name="surrogate_based_global" code="{N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)}" label="surrogate_based_global"  group="Surrogate-based Methods" >
@@ -2097,7 +2092,6 @@
         <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver"   group="Optimization: Other" >
           <!-- store method name AND incoming STRING -->
           <param type="STRING" />
-          <!-- &default_linear_constraints; -->
           &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
@@ -2113,7 +2107,6 @@
         <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp"   group="Optimization: Local, Derivative-based" >
           &method_max_iterations;
           &method_convergence_tolerance;
-          <!-- &default_linear_constraints; -->
           &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
@@ -2217,7 +2210,6 @@
           <keyword  id="smoothing_factor" name="smoothing_factor" code="{N_mdm(Real,smoothFactor)}" label="Smoothing factor"  minOccurs="0" default="0.0" >
             <param type="REAL" />
           </keyword>
-          <!-- &default_linear_constraints; -->
           &default_constraint_tolerance;
           &method_max_function_evaluations;
           &default_scaling;
@@ -2336,7 +2328,6 @@
             </keyword>
           </keyword>
           &method_max_iterations;
-          <!-- &default_linear_constraints; -->
           &method_max_function_evaluations;
           &default_scaling;
 	  &method_jega_common_opts;
@@ -2377,7 +2368,6 @@
             </oneOf>
           </keyword>
           &method_max_iterations;
-          <!-- &default_linear_constraints; -->
           &method_max_function_evaluations;
           &default_scaling;
 	  &method_jega_common_opts;
