@@ -1041,7 +1041,6 @@ aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm
 			agg_var_qoi(qoi, step) = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
 		} else if (allocationTarget == TARGET_SCALARIZATION){
 			agg_var_qoi(qoi, step) = aggregate_variance_scalarization_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
-			//Cout << "\n\taggregate_variance_target_Qsum: " << qoi << ", " << step << ", with agg_var_qoi: " << agg_var_qoi(qoi, step) << std::endl;
 	  }else{
 		    Cout << "NonDMultilevelSampling::aggregate_variance_target_Qsum: allocationTarget is not known.\n";
 		    abort_handler(INTERFACE_ERROR);

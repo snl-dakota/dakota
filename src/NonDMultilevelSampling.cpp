@@ -471,92 +471,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
       convergenceTolVec[qoi] = convergenceTol;
     }
 
-    //// Cantilever
-    /*
-      Real w = iteratedModel.current_variables().all_continuous_variables()[0];
-      Real t = iteratedModel.current_variables().all_continuous_variables()[1];
-      
-      int num_resamples = 10000;
-      RealMatrix estimator_matrix;
-      estimator_matrix.shape(num_resamples, 2);
-      RealVector mean(3);
-      RealVector var(3);
-      for(int cur_resample = 0; cur_resample < num_resamples; ++cur_resample){  
-        IntRealMatrixMap sum_Ql_ref, sum_Qlm1_ref;
-        IntIntPairRealMatrixMap sum_QlQlm1_ref;
-        initialize_ml_Qsums(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, num_steps);
-        RealVectorArray mu_hat_ref(num_steps);
-
-        numSamples = 1000;
-        Sizet2DArray num_samples_array;
-        num_samples_array.resize(num_steps);
-        for (step = 0; step < num_steps; ++step) {
-          num_samples_array[step].resize(numFunctions);
-        }
-        for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-          num_samples_array[0][qoi] = 0;
-          num_samples_array[1][qoi] = numSamples;
-        }
-        
-        for (step = 0; step < num_steps; ++step) {
-          configure_indices(step, model_form, lev, seq_index);
-
-          if (numSamples) {
-            evaluate_sample_increment(step);
-
-            accumulate_sums(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, step, mu_hat_ref, num_samples_array);
-          }
-        }
-
-        //compute_moments(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, num_samples_array);
-      
-        double num_samples = numSamples;
-        mean[1] = sum_Ql_ref[1](1, num_steps-1)/num_samples;
-        var[1]  = sum_Ql_ref[2](1, num_steps-1)/(num_samples-1.) - num_samples/(num_samples-1.)*mean[1]*mean[1];
-
-        mean[2] = sum_Ql_ref[1](2, num_steps-1)/num_samples;
-        var[2]  = sum_Ql_ref[2](2, num_steps-1)/(num_samples-1.) - num_samples/(num_samples-1.)*mean[2]*mean[2];
-
-        if(allocationTarget==TARGET_MEAN){
-          estimator_matrix(cur_resample, 0) = mean[1];
-          estimator_matrix(cur_resample, 1) = mean[2];
-        }
-        if(allocationTarget==TARGET_SIGMA){
-          estimator_matrix(cur_resample, 0) = 3.*std::sqrt(var[1]);
-          estimator_matrix(cur_resample, 1) = 3.*std::sqrt(var[2]);
-        }
-        if(allocationTarget==TARGET_SCALARIZATION){
-          estimator_matrix(cur_resample, 0) = mean[1] + 3.*std::sqrt(var[1]);
-          estimator_matrix(cur_resample, 1) = mean[2] + 3.*std::sqrt(var[2]);
-        }
-      }
-      RealVector estim_mean(2);
-      RealVector estim_std(2);
-      for(size_t qoi = 0; qoi < 2; ++qoi){
-        estim_mean[qoi] = 0;
-        estim_std[qoi] = 0;
-      }
-      for(int cur_resample = 0; cur_resample < num_resamples; ++cur_resample){  
-        estim_mean[0] += estimator_matrix(cur_resample, 0);
-        estim_mean[1] += estimator_matrix(cur_resample, 1);
-      }
-      estim_mean[0] /= num_resamples;
-      estim_mean[1] /= num_resamples;
-      for(int cur_resample = 0; cur_resample < num_resamples; ++cur_resample){  
-        estim_std[0] += (estimator_matrix(cur_resample, 0) - estim_mean[0])*
-                        (estimator_matrix(cur_resample, 0) - estim_mean[0]);
-        estim_std[1] += (estimator_matrix(cur_resample, 1) - estim_mean[1])*
-                       (estimator_matrix(cur_resample, 1) - estim_mean[1]);
-     }
-      estim_std[0] = (1./(num_resamples-1.)*estim_std[0]);
-      estim_std[1] = (1./(num_resamples-1.)*estim_std[1]);
-      
-      convergenceTol = std::min(estim_std[0], estim_std[1]);
-      convergenceTolVec[1] = estim_std[0];
-      convergenceTolVec[2] = estim_std[1];
-      Cout << "Convergence Tol: " << convergenceTolVec << std::endl;
-      */
-
     // now converge on sample counts per level (N_l)
     mlmfIter = 0;
 
@@ -604,24 +518,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
     }
     //For testing
     std::ofstream myfile;  
-    /* Cantilever
-    myfile.open("cantilever_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
-    myfile         << w                     << "\t" << t     
-           << "\t" << N_l[0][0]             << "\t" << N_l[1][0] 
-           << "\t" << N_target_qoi(1, 0)    << "\t" << (N_target_qoi(1, 1))
-           << "\t" << N_target_qoi_FN(1, 0) << "\t" << (N_target_qoi_FN(1, 1))
-           << "\t" << N_target_qoi(2, 0)    << "\t" << (N_target_qoi(2, 1))
-           << "\t" << N_target_qoi_FN(2, 0) << "\t" << (N_target_qoi_FN(2, 1)) 
-           << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
-    */
-    //Problem18
-    /*
-    myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
-    myfile << N_l[0][0]             << "\t" << N_l[1][0] 
-           << "\t" << N_target_qoi(1, 0)    << "\t" << (N_target_qoi(1, 1))
-           << "\t" << N_target_qoi_FN(1, 0) << "\t" << (N_target_qoi_FN(1, 1)) << "\n";
-    myfile.close();
-    */
     
     ////
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
