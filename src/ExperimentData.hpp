@@ -380,6 +380,10 @@ private:
   /// parse user-provided sigma type strings and populate enums
   void parse_sigma_types(const StringArray& sigma_types);
 
+  /// After constructing or adding data, update properties like
+  /// experiment lengths, determinant, etc.
+  void update_data_properties();
+
   // data loading helpers
 
   /// Load a single experiment exp_index into exp_resp

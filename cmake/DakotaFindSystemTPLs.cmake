@@ -73,6 +73,33 @@ macro(dakota_find_linalg)
 endmacro()
 
 
+# Unconditionally find Eigen3, first on system, falling back on Dakota's
+# Can override with Eigen3_DIR and/or Eigen3_ROOT as needed
+#
+# NOTE: If this search order doesn't suffice, can consider additional
+# CMake variables to prefer Dakota's over system Eigen
+macro(dakota_find_eigen3)
+  find_package(Eigen3 3.3 QUIET)
+  if(NOT Eigen3_FOUND)
+    find_package(Eigen3 3.3 REQUIRED
+      HINTS "${Dakota_SOURCE_DIR}/packages/external/eigen3/share/eigen3/cmake")
+    # Only install if using our Eigen
+    install(DIRECTORY
+      "${Dakota_SOURCE_DIR}/packages/external/eigen3/include/eigen3"
+      DESTINATION include
+      )
+    install(DIRECTORY
+      "${Dakota_SOURCE_DIR}/packages/external/eigen3/share/eigen3"
+      DESTINATION share
+      )
+  endif()
+  get_target_property(DAKOTA_EIGEN3_INCLUDE_DIR Eigen3::Eigen
+    INTERFACE_INCLUDE_DIRECTORIES)
+  message(STATUS "Dakota using Eigen3::Eigen target with include directories\n"
+    "   ${DAKOTA_EIGEN3_INCLUDE_DIR}")
+endmacro()
+
+
 # Conditionally find GSL using Dakota copy of CMake probe
 # BMA TODO: Once require CMake 3.2 or newer, use CMake standard probe
 # BMA TODO: Document DAKOTA_CBLAS_LIBS

@@ -85,15 +85,31 @@ def test_lib():
           ncsu_direct
             min_boxsize_limit 1.e-20
             volume_boxsize_limit 1.e-20
+        model
+          single
+            interface_pointer = 'I2'
         variables,
           continuous_design = 3
             initial_point  -2.3    2.3   0.23
             upper_bounds   10.0   10.0   10.0
             lower_bounds  -10.0  -10.0  -10.0
             descriptors     'x1'  'x2'   'x3'
+
         interface,
+          id_interface = 'I1'
+          pybind11
+            analysis_driver = 'interface_id_1'
+
+        interface,
+          id_interface = 'I2'
           pybind11
             analysis_driver = 'interface_id_2'
+
+        interface,
+          id_interface = 'I3'
+          direct
+            analysis_driver = 'text_book'
+
         responses,
           num_objective_functions = 1
           no_gradients
@@ -134,8 +150,8 @@ def test_lib():
 
     # --- Default: uses python arrays # DTS: this is a list
     dak_vars2 = dakenv.get_variable_values(daklib)
-    print("Python object dak_vars2 is a " + str(type(dak_vars2)) + ".")
-    print(dak_vars2)
+    #print("Python object dak_vars2 is a " + str(type(dak_vars2)) + ".")
+    #print(dak_vars2)
 
     target = 1.0;
     max_tol = 1.e-4;

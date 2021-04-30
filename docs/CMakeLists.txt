@@ -31,7 +31,10 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DakotaDefs.tex.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/DakotaDefs.tex)
 
 # Doxygen reference dependencies
-file(GLOB ref_kw_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "KeywordMetadata/*")
+
+# BMA: Changed this to an absolute glob as relative was causing
+# DakotaKeywords.dox to depend on src/environment target
+file(GLOB ref_kw_md "KeywordMetadata/*")
 list_filter_emacs_backups(ref_kw_md)
 file(GLOB ref_topic_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "TopicMetadata/*")
 list_filter_emacs_backups(ref_topic_md)

@@ -47,9 +47,8 @@ PROJECT_BRIEF          = "Explore and Predict with Confidence"
 # exceed 55 pixels and the maximum width should not exceed 200 pixels.
 # Doxygen will copy the logo to the output directory.
 
-# Converted from branding element with:
-# convert DAKOTA_Arrow_Name.png -matte -bordercolor none -border 20 -resize x55 foo.png
-
+## Converted from branding element with:
+## convert DAKOTA_Arrow_Name.png -matte -bordercolor none -border 20 -resize x55 foo.png
 PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/images/DAKOTA_Arrow_Name_77x55.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
@@ -207,7 +206,7 @@ ALIASES                =
 # "class=itcl::class" will allow you to use the command class in the
 # itcl::class meaning.
 
-TCL_SUBST              =
+##TCL_SUBST              =
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C
 # sources only. Doxygen will then generate output that is more tailored for C.
@@ -737,10 +736,9 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             =  @CMAKE_CURRENT_SOURCE_DIR@/images \
-		          @CMAKE_CURRENT_SOURCE_DIR@/latex-user/images \
-		          @CMAKE_CURRENT_SOURCE_DIR@/latex-theory/images
-
+IMAGE_PATH             = @CMAKE_CURRENT_SOURCE_DIR@/images \
+                         @CMAKE_CURRENT_SOURCE_DIR@/latex-user/images \
+                         @CMAKE_CURRENT_SOURCE_DIR@/latex-theory/images
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -843,20 +841,6 @@ USE_HTAGS              = NO
 
 VERBATIM_HEADERS       = YES
 
-# If CLANG_ASSISTED_PARSING is set to YES, then doxygen will use the clang parser
-# for more acurate parsing at the cost of reduced performance. This can be
-# particularly helpful with template rich C++ code for which doxygen's built-in
-# parser lacks the necessairy type information.
-
-#CLANG_ASSISTED_PARSING = NO
-
-# If clang assisted parsing is enabled you can provide the compiler with command
-# line options that you would normally use when invoking the compiler. Note that
-# the include paths will already be set by doxygen for the files and directories
-# specified at INPUT and INCLUDE_PATH.
-
-#CLANG_OPTIONS          =
-
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index
 #---------------------------------------------------------------------------
@@ -946,17 +930,17 @@ HTML_EXTRA_STYLESHEET  = @CMAKE_CURRENT_SOURCE_DIR@/common/dox-stylesheet.css
 # files. In the HTML_STYLESHEET file, use the file name only. Also note that
 # the files will be copied as-is; there are no commands or markers available.
 
-HTML_EXTRA_FILES       = 
-#keyword-index.html
+HTML_EXTRA_FILES       =
+##keyword-index.html
 
-# The HUE, SAT are set to match Dakota color 295D72
-# DDECCA (light grayish green)
-# 75CBE0 (soft cyan): 191.8, 63.3% (161/255), lightness 66.9%
-# 00A6C5 (strong cyan): 189.4, 100.0% (255/255), lightness 38.6%
-# 448FAA (dark moderate blue): 195.9, 42.9% (109/255), lightness 46.7%
-# 295D72 (very dark blue): 197.3, 47.1% (120/255), lightness 30.4%
+## The HUE, SAT are set to match Dakota color 295D72
+## DDECCA (light grayish green)
+## 75CBE0 (soft cyan): 191.8, 63.3% (161/255), lightness 66.9%
+## 00A6C5 (strong cyan): 189.4, 100.0% (255/255), lightness 38.6%
+## 448FAA (dark moderate blue): 195.9, 42.9% (109/255), lightness 46.7%
+## 295D72 (very dark blue): 197.3, 47.1% (120/255), lightness 30.4%
 
-# The following must be integers...lest you get a default scheme
+## The following must be integers...lest you get a default scheme
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output.
 # Doxygen will adjust the colors in the style sheet and background images
@@ -981,7 +965,7 @@ HTML_COLORSTYLE_SAT    = 120
 # so 80 represents a gamma of 0.8, The value 220 represents a gamma of 2.2,
 # and 100 does not change the gamma.
 
-# 40 to 240, nominal 80
+## 40 to 240, nominal 80
 HTML_COLORSTYLE_GAMMA  = 100
 
 # If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
@@ -1354,7 +1338,8 @@ PAPER_TYPE             = a4
 # The EXTRA_PACKAGES tag can be to specify one or more names of LaTeX
 # packages that should be included in the LaTeX output.
 
-EXTRA_PACKAGES         = amsmath amsfonts
+EXTRA_PACKAGES         = amsmath \
+                         amsfonts
 
 # The LATEX_HEADER tag can be used to specify a personal LaTeX header for
 # the generated latex document. The header should contain everything until
@@ -1506,13 +1491,13 @@ XML_OUTPUT             = xml
 # which can be used by a validating XML parser to check the
 # syntax of the XML files.
 
-XML_SCHEMA             =
+##XML_SCHEMA             =
 
 # The XML_DTD tag can be used to specify an XML DTD,
 # which can be used by a validating XML parser to check the
 # syntax of the XML files.
 
-XML_DTD                =
+##XML_DTD                =
 
 # If the XML_PROGRAMLISTING tag is set to YES Doxygen will
 # dump the program listings (including syntax highlighting
@@ -1666,7 +1651,7 @@ SKIP_FUNCTION_MACROS   = YES
 # NOT include the path). If a tag file is not located in the directory in which
 # doxygen is run, you must also specify the path to the tagfile here.
 
-# BMA TODO: Use the tag from developers if needed
+## BMA TODO: Use the tag from developers if needed
 TAGFILES               =
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create
@@ -1695,7 +1680,7 @@ EXTERNAL_PAGES         = YES
 # The PERL_PATH should be the absolute path and name of the perl script
 # interpreter (i.e. the result of `which perl').
 
-PERL_PATH              = /usr/bin/perl
+##PERL_PATH              = /usr/bin/perl
 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool
@@ -1716,7 +1701,7 @@ CLASS_DIAGRAMS         = YES
 # the mscgen tool resides. If left empty the tool is assumed to be found in the
 # default search path.
 
-MSCGEN_PATH            =
+##MSCGEN_PATH            =
 
 # If set to YES, the inheritance and collaboration graphs will hide
 # inheritance and usage relations if the target is undocumented

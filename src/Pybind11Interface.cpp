@@ -32,7 +32,7 @@ Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db)
     py11Active(false)
 {
   if (!Py_IsInitialized()) {
-    Py_Initialize();
+    py::initialize_interpreter();
     ownPython = true;
     if (Py_IsInitialized()) {
       if (outputLevel >= NORMAL_OUTPUT)
@@ -65,7 +65,7 @@ Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db)
 
 Pybind11Interface::~Pybind11Interface() {
   if (ownPython && Py_IsInitialized()) {
-    Py_Finalize();
+    py::finalize_interpreter();
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Python interpreter terminated." << std::endl;
   }
@@ -99,18 +99,7 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
   int fail_code = 0;
 
   assert( py11Active );
-
   assert( Py_IsInitialized() );
-
-  std::string callback_name = "";
-  if( !ac_name.empty() ) {
-    callback_name = ac_name;
-    if( py11CallBacks.find(callback_name) == py11CallBacks.end() ) {
-      Cerr << "\nError: invalid Pybind11 analysis_driver '" << ac_name << std::endl;
-      abort_handler(INTERFACE_ERROR);
-    }
-  }
-
 
   py::list cv           = copy_array_to_pybind11(xC);
   py::list cv_labels    = copy_array_to_pybind11<StringMultiArray,String>(xCLabels);
@@ -142,11 +131,7 @@ int Pybind11Interface::pybind11_run(const String& ac_name)
       "analysis_components"_a   = an_comps,
       "currEvalId"_a            = currEvalId );
 
-  py::dict ret_val;
-  if( !callback_name.empty() )
-    ret_val = py11CallBacks[callback_name](kwargs);
-  else
-    ret_val = py11CallBack(kwargs);
+  py::dict ret_val = py11CallBack(kwargs);
 
   for (auto item : ret_val)
   {

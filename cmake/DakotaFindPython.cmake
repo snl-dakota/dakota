@@ -40,6 +40,19 @@ macro(dakota_find_python)
       add_subdirectory(packages/external/pybind11)
     endif()
 
+    # If building with HDF5 support was requested, check for h5py available.
+    if(DAKOTA_HAVE_HDF5)
+      execute_process(COMMAND ${Python_EXECUTABLE} -c "import h5py"
+      RESULT_VARIABLE missing_h5py OUTPUT_QUIET ERROR_QUIET)
+      if(NOT missing_h5py)
+        set(DAKOTA_H5PY_FOUND ON CACHE BOOL "h5py probe successful")
+        message(STATUS "Python h5py module found")
+      else()
+        set(DAKOTA_H5PY_FOUND OFF CACHE BOOL "h5py probe failed")
+        message(WARNING "HDF5 requested, but Python h5py module not found. HDF5 tests that require h5py will be disabled.")
+      endif()
+    endif()
+
   else()
 
     # Disable some components that definitely won't work

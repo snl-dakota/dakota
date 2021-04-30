@@ -3,7 +3,7 @@
 
 \page keywords Keywords Area
 
-This page summarizes the overall input file structure, syntac, and the
+This page summarizes the overall input file structure, syntax, and the
 six types of blocks that may appear in Dakota input.  Some are
 optional and some may appear multiple times:
 

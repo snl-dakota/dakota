@@ -8,4 +8,3 @@
 #  _______________________________________________________________________
 
 add_subdirectory(advanced)
-add_subdirectory(script_interfaces/generic)

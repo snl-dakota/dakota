@@ -107,35 +107,38 @@ if ($ARGV[0] eq "--reference") {
   $texfile = "latex-ref/keywords.tex";
   $newtexfile = $texfile . "_";
 
-  open (INPUT,'<',"$texfile")    || die "cannot open original file $texfile\n$!";
-  print "Processing $texfile\n";
-  # Find the first example of the arithmetic expression,
-  # then rewind the file
-  while (my $line = <INPUT>) {
-    if ($line  =~ /p\{(.*?)\}/) {
-      $arwidth = $1;
-      last;
+  # BMA: This workaround may not be needed with newer Doxygen/LaTeX
+  if (-e $texfile) {
+    open (INPUT,'<',"$texfile")    || die "cannot open original file $texfile\n$!";
+    print "Processing $texfile\n";
+    # Find the first example of the arithmetic expression,
+    # then rewind the file
+    while (my $line = <INPUT>) {
+      if ($line  =~ /p\{(.*?)\}/) {
+        $arwidth = $1;
+        last;
+      }
     }
-  }
-  # Make sure keywords.tex hasn't already been modified. This is indicated
-  # by the presence of \kludgelength in the file.
-  if( $arwidth ne "\\kludgelength") {
-    seek(INPUT,0,0); 
-    # Write out header to replacement keywords.tex file
-    open (OUTPUT,'>', "$newtexfile") || die "cannot open new file $newtexfile\n$!";
-    print OUTPUT "\\newlength{\\kludgelength}\n";
-    print OUTPUT "\\setlength{\\kludgelength}\n    {$arwidth}\n";
-    while ($line = <INPUT>) {
-	  $line =~ s/p\{\Q$arwidth\E\}/p{\\kludgelength}/;
-	  print OUTPUT $line;
+    # Make sure keywords.tex hasn't already been modified. This is indicated
+    # by the presence of \kludgelength in the file.
+    if( $arwidth ne "\\kludgelength") {
+      seek(INPUT,0,0); 
+      # Write out header to replacement keywords.tex file
+      open (OUTPUT,'>', "$newtexfile") || die "cannot open new file $newtexfile\n$!";
+      print OUTPUT "\\newlength{\\kludgelength}\n";
+      print OUTPUT "\\setlength{\\kludgelength}\n    {$arwidth}\n";
+      while ($line = <INPUT>) {
+  	  $line =~ s/p\{\Q$arwidth\E\}/p{\\kludgelength}/;
+  	  print OUTPUT $line;
+      }
+  
+      close(INPUT);
+      close(OUTPUT);
+      rename $newtexfile, $texfile;
+    } else {
+      print "..keywords.tex already modified. Skipping.\n";
+      close(INPUT);
     }
-
-    close(INPUT);
-    close(OUTPUT);
-    rename $newtexfile, $texfile;
-  } else {
-    print "..keywords.tex already modified. Skipping.\n";
-    close(INPUT);
   }
 
 } elsif ($ARGV[0] eq "--developers") {

@@ -1,7 +1,0 @@
-Load[name = eval_points, file = 'eval_points.dat', 
-     n_predictors = 2, n_responses = 0 ]
-
-Load[name = textbook_gp, file = 'sp_gp_model.textbook.sps']
-
-Evaluate[surface = textbook_gp, data = eval_points]
-Save[data = eval_points, file = 'sp_surrogate_evals.dat']
