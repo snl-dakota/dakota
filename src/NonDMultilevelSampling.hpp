@@ -1041,7 +1041,7 @@ aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm
 			agg_var_qoi(qoi, step) = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
 		} else if (allocationTarget == TARGET_SCALARIZATION){
 			agg_var_qoi(qoi, step) = aggregate_variance_scalarization_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, qoi); 
-			Cout << "\n\taggregate_variance_target_Qsum: " << qoi << ", " << step << ", with agg_var_qoi: " << agg_var_qoi(qoi, step) << std::endl;
+			//Cout << "\n\taggregate_variance_target_Qsum: " << qoi << ", " << step << ", with agg_var_qoi: " << agg_var_qoi(qoi, step) << std::endl;
 	  }else{
 		    Cout << "NonDMultilevelSampling::aggregate_variance_target_Qsum: allocationTarget is not known.\n";
 		    abort_handler(INTERFACE_ERROR);
@@ -1140,6 +1140,7 @@ inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRea
 	Real upper_bound_cov_of_mean_sigma = 0;
 	Real var_of_mean_l = 0.;
 	Real var_of_sigma_l = 0;
+	Real var_of_scalarization_cur = 0;
 	Real var_of_scalarization_l = 0;
 	size_t cur_qoi_offset = 0;
 
@@ -1149,14 +1150,16 @@ inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRea
 	/// V[mu_1 + 2 sigma_1 + 3 mu_2] = 
 	/// V[mu_1] + V[2 sigma_1] + 2 Cov[mu_1, 2 sigma_1] + V[3 mu_2] + 2 Cov[2 mu_1, 3 mu_2] + 2 Cov[2 sigma_1, 3 mu_2]
 	/// \approx V[mu_1] + V[2 sigma_1] + 2 Cov[mu_1, 2 sigma_1] + V[3 mu_2] (What we do)
+	Real cov_scaling = 1.0;
 	for(size_t cur_qoi = 0; cur_qoi < numFunctions; ++cur_qoi){
 		cur_qoi_offset = cur_qoi*2;
 		var_of_mean_l = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, cur_qoi);
 		var_of_sigma_l = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, cur_qoi);
-	  upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l);
-	  var_of_scalarization_l += scalarizationCoeffs(qoi, cur_qoi_offset) * scalarizationCoeffs(qoi, cur_qoi_offset) * var_of_mean_l 
-	  												+ scalarizationCoeffs(qoi, cur_qoi_offset+1) * scalarizationCoeffs(qoi, cur_qoi_offset+1) * var_of_sigma_l;
-	  												+ 2.0 * scalarizationCoeffs(qoi, cur_qoi_offset) * scalarizationCoeffs(qoi, cur_qoi_offset+1) * upper_bound_cov_of_mean_sigma;
+	  upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l); // * N_l[step][cur_qoi];
+	  var_of_scalarization_cur = scalarizationCoeffs(qoi, cur_qoi_offset) * scalarizationCoeffs(qoi, cur_qoi_offset) * var_of_mean_l 
+	  												+ scalarizationCoeffs(qoi, cur_qoi_offset+1) * scalarizationCoeffs(qoi, cur_qoi_offset+1) * var_of_sigma_l
+	  												+ cov_scaling * 2.0 * std::abs(scalarizationCoeffs(qoi, cur_qoi_offset)) * std::abs(scalarizationCoeffs(qoi, cur_qoi_offset+1)) * upper_bound_cov_of_mean_sigma;
+	  var_of_scalarization_l += var_of_scalarization_cur;
   }									
 	return var_of_scalarization_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile is already done in submethods
 }
@@ -1428,7 +1431,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			pilot_samples.size(num_steps);
 			for (size_t step = 0; step < num_steps; ++step) {
 				pilot_samples[step] = N_l[step][qoi];
-				initial_point[step] = N_target_qoi(qoi, step); //N_l[step][qoi];//8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); 
+				initial_point[step] = 8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); 
 			}
 
 			RealVector var_lower_bnds, var_upper_bnds, lin_ineq_lower_bnds, lin_ineq_upper_bnds, lin_eq_targets,
@@ -1582,7 +1585,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 			if(std::abs(1. - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) > 1.0e-5){
 				if (outputLevel == DEBUG_OUTPUT) Cout << "Relative Constraint violation violated: Switching to log scale " << std::endl;
 				for (size_t step = 0; step < num_steps; ++step) {
-				  initial_point[step] = N_target_qoi(qoi, step); //N_target_qoi(qoi, step); //N_l[step][qoi]; //8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); //optimizer->variables_results().continuous_variable(step) > pilot_samples[step] ? optimizer->variables_results().continuous_variable(step) : pilot_samples[step];
+				  initial_point[step] = 8. > N_target_qoi(qoi, step) ? 8 : N_target_qoi(qoi, step); //optimizer->variables_results().continuous_variable(step) > pilot_samples[step] ? optimizer->variables_results().continuous_variable(step) : pilot_samples[step];
 				}
 				nonlin_eq_targets[0] = std::log(eps_sq_div_2[qoi]); //std::log(convergenceTol);
 				#ifdef HAVE_NPSOL
