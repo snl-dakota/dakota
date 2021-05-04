@@ -604,6 +604,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short form)
     }
     //For testing
     std::ofstream myfile;  
+
     /* Cantilever
     myfile.open("cantilever_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
     myfile         << w                     << "\t" << t     

@@ -280,32 +280,32 @@ applications.
 The \path{dakota/share/dakota/examples/script_interfaces/generic}
 directory contains four important files:
 \path{dakota_rosenbrock.in} (the Dakota input file),
-\path{simulator_script} (the simulation driver script),
+\path{simulator_script.sh} (the simulation driver script),
 \path{dprepro} (a pre-processing utility), and
 \path{templatedir/ros.template} (a template simulation input file).
 
 The file \path{dakota_rosenbrock.in} specifies the study that
 Dakota will perform and, in the interface section, describes the
 components to be used in performing function evaluations. In
-particular, it identifies \path{simulator_script} as its
+particular, it identifies \path{simulator_script.sh} as its
 \texttt{analysis\_driver}, as shown in Figure~\ref{advint:figure01}.
 \begin{figure}
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{../../test/examples-users/dakota_rosenbrock.in}
+      \verbatimtabinput[8]{dakota_rosenbrock.in}
     \end{small}
   \end{bigbox}
   \caption{The \protect\path{dakota_rosenbrock.in} input file.}
   \label{advint:figure01}
 \end{figure}
 
-The \path{simulator_script} listed in Figure~\ref{advint:figure02}
+The \path{simulator_script.sh} listed in Figure~\ref{advint:figure02}
 is a short driver shell script that Dakota executes to perform each
 function evaluation. The names of the parameters and results files are
 passed to the script on its command line; they are
 referenced in the script by \texttt{\$1}
-and \texttt{\$2}, respectively. The \path{simulator_script}
+and \texttt{\$2}, respectively. The \path{simulator_script.sh}
 is divided into three parts: pre-processing, analysis, and post-processing.
 % is divided into five parts: set up, pre-processing, analysis,
 % post-processing, and clean up.
@@ -314,10 +314,10 @@ is divided into three parts: pre-processing, analysis, and post-processing.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{../../test/examples-users/simulator_script}
+      \verbatimtabinput[8]{simulator_script.sh}
     \end{small}
   \end{bigbox}
-  \caption{The \protect\path{simulator_script} sample driver script.}
+  \caption{The \protect\path{simulator_script.sh} sample driver script.}
   \label{advint:figure02}
 \end{figure}
 
@@ -336,7 +336,7 @@ is divided into three parts: pre-processing, analysis, and post-processing.
 % %files are no longer necessary, and for this reason, the tagged parameters
 % %file is moved to a more convenient name of ``\path{dakota_vars}''.
 
-In the pre-processing portion, the \path{simulator_script} uses
+In the pre-processing portion, the \path{simulator_script.sh} uses
 \path{dprepro}, a template processing utility, to extract the
 current variable values from a parameters file (\texttt{\$1})
 and combine them with the simulator template input file
@@ -373,7 +373,7 @@ template process. The \texttt{dprepro} script will search the
 simulator template input file for fields marked with curly
 brackets and then create a new file (\path{ros.in}) by replacing
 these targets with the corresponding numerical values for the
-variables. As shown in \path{simulator_script}, the names for the Dakota
+variables. As shown in \path{simulator_script.sh}, the names for the Dakota
 parameters file (\texttt{\$1}), template file
 (\path{ros.template}), and generated input file (\path{ros.in})
 must be specified in the \texttt{dprepro} command line arguments.
@@ -382,7 +382,7 @@ must be specified in the \texttt{dprepro} command line arguments.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{../../test/examples-users/ros.template}
+      \verbatimtabinput[8]{ros.template}
     \end{small}
   \end{bigbox}
   \caption{Listing of the \protect\path{ros.template} file}
@@ -416,12 +416,12 @@ conditions (see Section~\ref{parallel:SLP:local:system}).
 Because the Dakota input file \path{dakota_rosenbrock.in}
 (Figure~\ref{advint:figure01}) specifies
 \texttt{work\_directory} and \texttt{directory\_tag} in its interface
-section, each invocation of \path{simulator_script} wakes up in
+section, each invocation of \path{simulator_script.sh} wakes up in
 its own temporary directory, which Dakota has populated with the
 contents of directory \path{templatedir/}. Having a separate directory
-for each invocation of \path{simulator_script} simplifies the script
+for each invocation of \path{simulator_script.sh} simplifies the script
 when the Dakota input file specifies \texttt{asynchronous} (so
-several instances of \path{simulator_script} might run simultaneously),
+several instances of \path{simulator_script.sh} might run simultaneously),
 as fixed names such as \path{ros.in}, \path{ros.out}, and \path{results.tmp}
 can be used for intermediate files. If neither \texttt{asynchronous} nor
 \texttt{file\_tag} is specified, and if there is no need (e.g., for debugging)
@@ -429,13 +429,13 @@ to retain intermediate files having fixed names, then \texttt{directory\_tag}
 offers no benefit and can be omitted. An alternative to \texttt{directory\_tag}
 is to proceed as earlier versions of this chapter --- prior to Dakota 5.0's
 introduction of \texttt{work\_directory} --- recommended:  add two more
-steps to the \path{simulator_script},
+steps to the \path{simulator_script.sh},
 an initial one to create a temporary directory explicitly and
 copy \path{templatedir/} to it if needed, and a final step to remove the temporary
 directory and any files in it.
 
 When \texttt{work\_directory} is specified, Dakota adjusts the \texttt{\$PATH} seen
-by \path{simulator_script} so that simple program names
+by \path{simulator_script.sh} so that simple program names
 %in the \path{simulator_script}
 (i.e., names not containing a slash) that
 are visible in Dakota's directory will also be visible in the work directory.
@@ -514,7 +514,7 @@ file and generates the following output to the file \path{ros.out}:
 
 Next, the appropriate values are extracted from the raw simulator output
 and returned in the results file. This post-processing is relatively
-trivial in this case, and the \path{simulator_script} uses the
+trivial in this case, and the \path{simulator_script.sh} uses the
 \texttt{grep} and \texttt{cut} utilities to extract the value from the
 ``\texttt{Function value}" line of the \path{ros.out} output file and save it to
 \texttt{\$2}, which is the \path{results.out} file for this
@@ -566,19 +566,19 @@ need to be performed:
   simulation.
 
 \item Modify the \texttt{dprepro} arguments in
-  \path{simulator_script} to reflect names of the Dakota parameters
+  \path{simulator_script.sh} to reflect names of the Dakota parameters
   file (previously ``\texttt{\$1}''), template file name
   (previously ``\path{ros.template}'') and generated input file
   (previously ``\path{ros.in}''). Alternatively, use APREPRO,
   BPREPRO, or JPrePost to perform this step (and adapt the syntax
   accordingly).
 
-\item Modify the analysis section of \path{simulator_script} to
+\item Modify the analysis section of \path{simulator_script.sh} to
   replace the \path{rosenbrock_bb} function call with the new
   simulator name and command line syntax (typically including the
   input and output file names).
 
-\item Change the post-processing section in \path{simulator_script}
+\item Change the post-processing section in \path{simulator_script.sh}
   to reflect the revised extraction process. At a minimum, this would
   involve changing the \texttt{grep} command to reflect the name of
   the output file, the string to search for, and the characters to cut
