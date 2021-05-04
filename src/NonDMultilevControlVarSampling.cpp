@@ -711,6 +711,7 @@ initialize_mlcv_sums(IntRealMatrixMap& sum_L_shared,
   sum_HH.insert(empty_pr).first->second.shape(numFunctions, num_ml_lev);
 }
 
+
 void NonDMultilevControlVarSampling::
 initialize_mlcv_sums(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
 		     IntRealMatrixMap& sum_Ll_refined,

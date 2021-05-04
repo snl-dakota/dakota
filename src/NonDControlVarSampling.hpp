@@ -69,9 +69,6 @@ private:
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
   void shared_increment(size_t iter, size_t lev);
-  /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
-		    const SizetArray& N_hf, size_t iter, size_t lev);
 
   /// return (aggregate) level cost
   Real level_cost(const RealVector& cost, size_t step);

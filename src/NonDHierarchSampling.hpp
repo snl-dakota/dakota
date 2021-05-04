@@ -60,6 +60,14 @@ protected:
 
   void nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs);
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// perform final LF sample increment as indicated by the evaluation ratio
+  bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
+		    const SizetArray& N_hf, size_t iter, size_t lev);
+
 private:
 
   //
