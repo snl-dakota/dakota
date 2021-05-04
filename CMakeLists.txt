@@ -255,16 +255,18 @@ add_subdirectory(src)
 # Build the executables in the test directory even if BUILD_TESTING is OFF
 if(DAKOTA_ENABLE_TESTS)
   add_subdirectory(test)
-  if(DAKOTA_TEST_EXAMPLES_REPO)
-    add_subdirectory(dakota-examples)
-  endif()
 endif()
 
 if(ENABLE_DAKOTA_DOCS)
   add_subdirectory(docs)
 endif()
 
+# Legacy examples
 add_subdirectory(examples)
+# New examples library
+if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dakota-examples")
+  add_subdirectory(dakota-examples)
+endif()
 
 add_subdirectory(interfaces)
 
