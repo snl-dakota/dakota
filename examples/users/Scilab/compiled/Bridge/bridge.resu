@@ -1,0 +1,77 @@
+                                        -- CODE_ASTER -- VERSION DE DEVELOPPEMENT 10.01.02 --
+
+                                                         VERSION SEQUENTIELLE
+
+                                                   COPYRIGHT  EDF-R&D 1991 - 2009
+
+                                               EXECUTION DU : MA-22-DECE-2009 22:25:08
+
+                                                   PLATE-FORME : CIRTACUS.INRIA.F
+
+                                                NB MAX PROC OpenMP:   1             
+
+                                                     SYSTEME : LINUX           
+
+                                                       CPU : X86_64          
+
+   
+   !------------------------------------------------------------------------------------!
+   ! <A> <SUPERVIS_1>                                                                   !
+   !                                                                                    !
+   !                                                                                    !
+   !  L'utilisation du mot-clé PAR_LOT='NON' permet d'accéder en lecture et en écriture !
+   !  au contenu des concepts Aster. De ce fait, votre étude est exclue du périmètre    !
+   !  qualifié de Code_Aster puisque toutes ses étapes ne peuvent être certifiées.      !
+   !                                                                                    !
+   !  Conseils :                                                                        !
+   !    - Il n'y a pas particulièrement de risque de résultat faux... sauf si votre     !
+   !      programmation l'introduit.                                                    !
+   !    - Distinguez le calcul lui-même (qui doit sans doute passer en PAR_LOT='OUI')   !
+   !      des post-traitements (qui nécessiteraient le mode PAR_LOT='NON') qui peuvent  !
+   !      être réalisés en POURSUITE.                                                   !
+   !                                                                                    !
+   !                                                                                    !
+   !                                                                                    !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                     !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                             !
+   !------------------------------------------------------------------------------------!
+   
+
+   !-----------------------------------------------------------------------!
+   !   Liste des alarmes émises lors de l'exécution du calcul.             !
+   !                                                                       !
+   !   Les alarmes que vous avez choisies d'ignorer sont précédées de (*). !
+   !   Nombre d'occurrences pour chacune des alarmes :                     !
+   !          SUPERVIS_1           émise    1 fois                         !
+   !-----------------------------------------------------------------------!
+
+ <I> <FIN> FERMETURE DE LA BASE "GLOBALE" EFFECTUEE.
+ <I> <FIN> ARRET NORMAL DANS "FIN" PAR APPEL A "JEFINI".
+
+ ********************************************************************************
+ * COMMAND                  :       USER :     SYSTEM :   USER+SYS :    ELAPSED *
+ ********************************************************************************
+ * init (jdc)               :       2.97 :       0.21 :       3.18 :       3.21 *
+ *  . compile               :       0.00 :       0.00 :       0.00 :       0.00 *
+ *  . exec_compile          :       1.80 :       0.12 :       1.92 :       1.94 *
+ * DEBUT                    :       0.02 :       0.03 :       0.05 :       0.06 *
+ * PRE_GMSH                 :       0.04 :       0.00 :       0.04 :       0.05 *
+ * LIRE_MAILLAGE            :       0.15 :       0.00 :       0.15 :       0.15 *
+ * AFFE_MODELE              :       0.00 :       0.00 :       0.00 :       0.01 *
+ * AFFE_CARA_ELEM           :       0.63 :       0.00 :       0.63 :       0.63 *
+ * DEFI_MATERIAU            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * AFFE_MATERIAU            :       0.01 :       0.00 :       0.01 :       0.00 *
+ * AFFE_CHAR_MECA           :       0.02 :       0.00 :       0.02 :       0.02 *
+ * MECA_STATIQUE            :       0.19 :       0.03 :       0.22 :       0.24 *
+ * CALC_ELEM                :       0.06 :       0.00 :       0.06 :       0.05 *
+ * IMPR_RESU                :       0.28 :       0.00 :       0.28 :       0.28 *
+ * IMPR_RESU                :       0.20 :       0.00 :       0.20 :       0.20 *
+ * POST_RELEVE_T            :       0.02 :       0.00 :       0.02 :       0.02 *
+ * POST_RELEVE_T            :       0.02 :       0.00 :       0.02 :       0.03 *
+ * FIN                      :       0.02 :       0.04 :       0.06 :       0.06 *
+ *  . part Superviseur      :       1.34 :       0.14 :       1.48 :       1.47 *
+ *  . part Fortran          :       1.63 :       0.07 :       1.70 :       1.74 *
+ ********************************************************************************
+ * TOTAL_JOB                :       2.97 :       0.21 :       3.18 :       3.21 *
+ ********************************************************************************
+

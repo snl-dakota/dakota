@@ -1,0 +1,27 @@
+# Minimize the Rosenbrock function through the Matlab direct interface 
+
+method,                                         			
+	conmin_mfd
+#	optpp_q_newton                 
+#	optpp_newton    		
+	  max_iterations = 50,                    			
+	  convergence_tolerance = 1e-4                          	
+
+variables,								
+	continuous_design = 2					
+	  cdv_initial_point   -1.2    1.0				
+	  cdv_lower_bounds    -2.0   -2.0    
+	  cdv_upper_bounds     2.0    2.0    
+	  cdv_descriptor       'x1'   'x2'
+
+interface,								
+	matlab								
+	  analysis_driver = 'rosenbrock.m'
+#	  analysis_components = 'anoptionalstring'
+
+responses,                                 
+	num_objective_functions = 1   		
+	analytic_gradients	 		
+	no_hessians
+#	analytic_hessians
+

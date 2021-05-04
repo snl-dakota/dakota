@@ -302,11 +302,11 @@ or add such a command to the .bashrc file. Then proceed with
 compiling as usual.
 
 Example files corresponding to the following tutorial are available in
-\path{dakota/share/dakota/examples/linked_interfaces/Matlab}.
+\path{share/dakota/examples/users/MATLAB/linked/}.
 
 \subsubsection{Dakota/Matlab input file specification}
 
-The Matlab direct interface is specified with {\tt direct, matlab}
+The Matlab direct interface is specified with {\tt matlab}
 keywords in an interface specification. The Matlab m-file which
 performs the analysis is specified through the {\tt analysis\_drivers}
 keyword. Here is a sample Dakota {\tt interface} specification:
@@ -506,7 +506,7 @@ for the Dakota/Matlab interface.\label{advint:figure:matlabrosen}}
 \subsection{Python}\label{advint:existingdirect:python} 
 
 Dakota's Python direct interface has been tested on Linux with Python
-2.x. When enabled, it allows Dakota to make function evaluation calls
+2 and 3. When enabled, it allows Dakota to make function evaluation calls
 directly to an analysis function in a user-provided Python module.
 Data may flow between Dakota and Python either in multiply-subscripted
 lists or NumPy arrays.
@@ -520,7 +520,7 @@ multiply-subscripted lists for data flow.
 
 An example of using the Python direct interface with both lists and
 arrays is included in
-\path{dakota/share/dakota/examples/linked_interfaces/Python}. The Python direct driver is
+\path{share/dakota/examples/official/drivers/Python/linked/}. The Python direct driver is
 selected with, for example,
 \begin{verbatim}
   interface,
@@ -591,7 +591,7 @@ Dakota/Scilab interface variants are described next.
 \subsection{Scilab Script Interface} 
 
 Dakota distributions include a directory
-\path{dakota/share/dakota/examples/script_interfaces/Scilab} which demonstrates
+\path{share/dakota/examples/users/Scilab/script/} which demonstrates
 script-based interfacing to Scilab. The {\tt Rosenbrock} subdirectory
 contains four notable files:
 \begin{itemize}
@@ -647,11 +647,10 @@ The linked interface is implemented in source files {\tt
 time when building Dakota from source by setting {\tt
   DAKOTA\_SCILAB:BOOL=ON}, and setting appropriate environment
 variables at compile and run time as described in \path{README.Scilab}
-in \path{dakota/share/dakota/examples/linked_interfaces/Scilab/}. This directory also
+in \path{share/dakota/examples/users/Scilab/linked/}. This directory also
 contains examples for the Rosenbrock and PID problems.
 
-These examples are similar to those in \path{dakota/share/dakota/examples/script_interfaces}, with
-a few notable exceptions:
+A few things to note about these examples:
 \begin{enumerate}
 \item There is no shell driver script
 \item The Dakota input file specifies the interface as 'scilab',
@@ -672,9 +671,9 @@ interface,
 In ``compiled interface'' mode, the Dakota analysis driver is a
 lightweight shim, which communicates with the running application code
 such as Scilab via named pipes. It is similar to that for Matlab in
-\path{dakota/share/dakota/examples/compiled_interfaces/Matlab}, whose README is likely
+\path{share/dakota/examples/users/MATLAB/compiled/}, whose README is likely
 instructive. An example of a Scilab compiled interface is included in \\
-\path{dakota/share/dakota/examples/compiled_interfaces/Scilab/Rosenbrock}.
+\path{share/dakota/examples/users/Scilab/compiled/Rosenbrock/}.
 
 As with the other Scilab examples, there are computation code and
 Dakota input files. Note the difference in the Dakota input file

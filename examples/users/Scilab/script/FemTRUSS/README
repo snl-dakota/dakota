@@ -1,0 +1,19 @@
+The Scilab/FemTRUSS example depends on the Scilab femtruss package.
+To install this package, you can proceed in one of two ways:
+
+  1. Start "Application -> Package manager ATOMS" which will open a
+     GUI that will allow you to install the package. Click on "all
+     modules" and then click on "install"
+
+  2. You can do this manually:
+     * atomsInstall('femtruss') // To install the femtruss package
+       (this package is composed only of scilab scripts). The package
+       will be loaded after the next startup of scilab.
+
+     * atomsLoad('femtruss') // To load the package just after
+       installation without having to restart scilab, enter this
+       command
+
+To check that the package has been installed: 
+ * atomsIsInstalled('femtruss') // returns %T if the package is installed.
+ * atomsIsLoaded('femtruss')    // returns %T if the package is loaded.

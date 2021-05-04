@@ -1,0 +1,43 @@
+# DAKOTA INPUT FILE - rosenbrock.in
+# derived from $DAKOTA/test/dakota_rosenbrock_hessians.in;
+# modified to use analysis_driver dakmatlab.
+
+# This sample Dakota input file optimizes the Rosenbrock function.
+# See p. 95 in Practical Optimization by Gill, Murray, and Wright.
+
+# This tester executes optpp_newton with a series of Hessian settings:
+# analytic, quasi BFGS, quasi SR1, 1st-order FD, and 2nd-order FD.
+
+method,
+	optpp_newton
+	  max_iterations = 50,
+	  convergence_tolerance = 1e-12
+#	  convergence_tolerance = 1e-4
+#	  output debug
+
+variables,
+	continuous_design = 2
+	  cdv_initial_point   -1.2    1.0
+	  cdv_lower_bounds    -2.0   -2.0
+	  cdv_upper_bounds     2.0    2.0
+	  cdv_descriptor       'x1'   'x2'
+
+interface,
+	fork
+	  analysis_driver = './dakmatlab',
+	  parameters_file = 'r.in'
+	  results_file = 'r.out'
+	  deactivate active_set_vector
+
+responses,
+	num_objective_functions = 1
+	analytic_gradients	 		#0,#1,#2,#3
+#	numerical_gradients	        	#4
+#	  method_source dakota	        	#4
+#	  interval_type central	        	#4
+#	  fd_gradient_step_size = 1.e-5 	#4
+	analytic_hessians			#0
+#	quasi_hessians damped bfgs		#1
+#	quasi_hessians sr1			#2
+#	numerical_hessians			#3,#4
+#	  fd_hessian_step_size = 1.e-5		#3,#4
