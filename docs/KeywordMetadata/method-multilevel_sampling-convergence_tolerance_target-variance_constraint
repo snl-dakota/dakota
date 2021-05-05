@@ -1,2 +1,2 @@
 Blurb::
-Uses the formulation of minimizing the cost while targeting a certain variance given in keyword convergence_tolerance.
+Minimizes the cost while targeting a certain variance given in keyword \c convergence_tolerance.
