@@ -1,0 +1,19 @@
+Blurb:: Perform bounds-scaling on response values prior to surrogate emulation
+
+Description::
+
+Particularly in multifidelity methods based on regression solutions at
+each level of a model hierarchy, scaling can be an issue since the
+magnitude of discrepancy data may decay rapidly and regression solvers
+may employ absolute tolerances in places.
+
+By activating \c response_scaling, the set of response data used
+for each recovery is scaled to [0,1] based on the minimum value
+and range of the data set.  This prevents loss of accuracy due to
+imbalances in scale across model levels.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	method-multifidelity_polynomial_chaos, method-multifidelity_function_train
