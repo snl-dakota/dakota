@@ -2498,11 +2498,12 @@ implementation of DiffeRential Evolution Adaptive Metropolis developed
 by John Burkardt.  The DREAM approach runs concurrent chains for
 global exploration, and automatically tunes the proposal covariance
 during the process by a self-adaptive randomized subspace
-sampling~\cite{Vrugt}.  MUQ uses components from the MIT 
-Uncertainty Quantification library and also implements Metropolis Hastings 
-and Adaptive Metropolis. The prototype WASABI method is an MCMC-free
-Bayesian calibration approach.  QUESO/DRAM
-and variants are the most well-developed within Dakota.
+sampling~\cite{Vrugt}. MUQ uses components from the MIT 
+Uncertainty Quantification library and also implements the Delayed Rejection
+and Adaptive Metropolis~\cite{Haario} (DRAM) algorithms, among others.
+The prototype WASABI method is an MCMC-free Bayesian calibration
+approach.  QUESO/DRAM and variants are the most well-developed within
+Dakota.
 
 \subsection{QUESO}\label{uq:bayesian:queso}
 The QUESO library includes several sampling algorithm variants.  One
@@ -2641,8 +2642,9 @@ Manual~\cite{RefMan} for more information.
 MUQ is the MIT Uncertainty Quantification library.  See
 \url{https://bitbucket.org/mituq/muq2/src/master/} and
 \url{https://mituq.bitbucket.io/index.html} for additional
-documentation.  Dakota currently exposes two MCMC approaches from MUQ:
-Metropolis-Hastings and Adaptive Metropolis. Dakota's MUQ integration
+documentation.  Dakota currently exposes four MCMC approaches from MUQ:
+Metropolis-Hastings, Adaptive Metropolis, Delayed Rejection, and
+Delayed-Rejection Adaptive Metropolis. Dakota's MUQ integration
 is preliminary, anticipated to extend to use MUQ components for
 Hamiltonian Monte Carlo and Langevin-based sampling.  MUQ is an
 experimental Dakota capability, and as such, it is not turned on by
@@ -2702,7 +2704,7 @@ Prior Distributions  &  Any continuous variable type
                      & Uniform only & Uniform only \\
 \hline
 Inference Type       & MCMC with DR, AM, DRAM, or MH
-                     & MCMC with MH or AM
+                     & MCMC with DR, AM, DRAM, or MH
                      & MCMC with DR, AM, DRAM, or MH
                      & MCMC with Differential Evolution Adaptive Metropolis & MCMC-free interval analysis \\
 \hline
