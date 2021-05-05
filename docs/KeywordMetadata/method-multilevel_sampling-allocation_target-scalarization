@@ -1,0 +1,18 @@
+method-multilevel_sampling-allocation_target-scalarization
+
+Blurb:: 
+Fit MLMC sample allocation to a mixture of terms of means and standard deviations. 
+
+Description:: 
+Fit MLMC sample allocation to control the variance of the estimator for a mixture of terms of means and standard deviations. The exact scalarized formulation is given by the keyword scalarization_response_mapping. 
+
+Topics::
+
+Examples::
+
+
+Theory::
+
+
+Faq::
+See_Also:: \ref method-multilevel_sampling-allocation_target-variance	

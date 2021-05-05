@@ -1,0 +1,18 @@
+Blurb::
+Convergence tolerance used to identify the (reduced) dimension of the rotation matrix 
+
+Description::
+This convergence tolerance controls the dimension of the rotation matrix after the truncation.  
+The metric controlled by this convergence tolerance is a quantity varying between [0,1].
+If a more aggressive dimension truncation is desired, the default value (0.8) can be reduced to a lower
+value.
+
+
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also::
+

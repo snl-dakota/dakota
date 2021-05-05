@@ -1,0 +1,2 @@
+Blurb::
+Uses the formulation of minimizing the variance of the estimator while targeting a certain cost given in keyword convergence_tolerance

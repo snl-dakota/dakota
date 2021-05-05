@@ -1,0 +1,14 @@
+Blurb::
+Use the unranked method to obtain the rotation matrix
+
+Description::
+In this case the construction of the rotation matrix is performed by using the value 1 instead of the value of the corresponding linear PCE coefficient. 
+
+Topics::
+
+Examples::
+Theory::
+
+
+Faq::
+See_Also::

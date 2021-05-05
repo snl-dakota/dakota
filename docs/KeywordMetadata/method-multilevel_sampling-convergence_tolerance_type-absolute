@@ -1,0 +1,5 @@
+Blurb::
+Absolute value for the convergence tolerance.
+
+Description::
+Expects an absolute value for the convergence tolerance which will be used as target. If keyword convergence_tolerance_target is equal to variance_constraint, this value is a target variance (\f$\epsilon^2\f$); if keyword convergence_tolerance_target is equal to cost_constraint, this value is a target cost.

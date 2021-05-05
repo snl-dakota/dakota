@@ -1,0 +1,14 @@
+Blurb::
+Use the ranked method to obtain the rotation matrix
+
+Description::
+In this case the construction of the rotation matrix is performed by using the linerar PCE coefficients value. 
+
+Topics::
+
+Examples::
+Theory::
+
+
+Faq::
+See_Also::

@@ -1,0 +1,20 @@
+Blurb::
+Method used to build the rotation matrix
+
+Description::
+The rotation matrix for the Adapted Basis method is built starting from a matrix which includes the linear PCE coefficients. Row after row, the largest coefficient is placed in the column that it occupies in the first row. All other terms are set to zero. This can be done by using either 1 (\ref model-adapted_basis-actual_model_pointer-rotation_method-unranked) or the coefficient value (\ref model-adapted_basis-actual_model_pointer-rotation_method-ranked).
+
+<b> Default Behavior </b>
+
+The default is to use the \ref
+model-adapted_basis-actual_model_pointer-rotation_method-ranked.
+
+<b> Usage Tips </b>
+
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also::
