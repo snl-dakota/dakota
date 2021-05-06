@@ -2,7 +2,7 @@ Blurb::
 Method used to build the rotation matrix
 
 Description::
-The rotation matrix for the Adapted Basis method is built starting from a matrix which includes the linear PCE coefficients. Row after row, the largest coefficient is placed in the column that it occupies in the first row. All other terms are set to zero. This can be done by using either 1 (\ref model-adapted_basis-actual_model_pointer-rotation_method-unranked) or the coefficient value (\ref model-adapted_basis-actual_model_pointer-rotation_method-ranked).
+The rotation matrix for the Adapted Basis method is built starting from a matrix which includes the linear PCE coefficients. The entries of the first row are the linear PCE coefficients. For all the other rows, each row has only one nonzero entry. Depending on the way used to construct all the rows, from the second to last one, there are two implemented methods, \ref model-adapted_basis-actual_model_pointer-rotation_method-unranked and \ref model-adapted_basis-actual_model_pointer-rotation_method-ranked. A followed Gram_schmidt process is applied on the resulting matrix to make it an isometry.
 
 <b> Default Behavior </b>
 
@@ -15,6 +15,19 @@ model-adapted_basis-actual_model_pointer-rotation_method-ranked.
 Topics::
 
 Examples::
+The following method block 
+
+\verbatim
+model
+  id_model = 'SUBSPACE'
+  adapted_basis
+    actual_model_pointer = 'FULLSPACE'
+    sparse_grid_level = 1	
+    rotation_method = unranked  
+\endverbatim
+
+changes the default method to the \ref model-adapted_basis-actual_model_pointer-rotation_method-unranked method.
+
 Theory::
 Faq::
 See_Also::

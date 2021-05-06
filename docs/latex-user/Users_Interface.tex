@@ -265,7 +265,7 @@ can be used. If the user prefers, the desired pre- and post-processing
 functionality may also be compiled or interpreted from any number of
 programming languages (C, C++, F77, F95, JAVA, Basic, etc.).
 
-In the \path{dakota/share/dakota/examples/script_interfaces/generic} directory,
+In the \path{dakota/share/dakota/examples/official/drivers/bash/} directory,
 a simple example uses the Rosenbrock test function as a mock
 engineering simulation code. Several scripts have been included to
 demonstrate ways to accomplish the pre- and post-processing
@@ -277,12 +277,12 @@ applications.
 
 \subsection{Generic Script Interface Files}\label{interfaces:generic}
 
-The \path{dakota/share/dakota/examples/script_interfaces/generic}
+The \path{dakota/share/dakota/examples/official/drivers/bash/}
 directory contains four important files:
 \path{dakota_rosenbrock.in} (the Dakota input file),
 \path{simulator_script.sh} (the simulation driver script),
-\path{dprepro} (a pre-processing utility), and
-\path{templatedir/ros.template} (a template simulation input file).
+\path{templatedir/ros.template} (a template simulation input file), and
+\path{templatedir/rosenbrock_bb.py} (the Rosenbrock simulator).
 
 The file \path{dakota_rosenbrock.in} specifies the study that
 Dakota will perform and, in the interface section, describes the
@@ -320,21 +320,6 @@ is divided into three parts: pre-processing, analysis, and post-processing.
   \caption{The \protect\path{simulator_script.sh} sample driver script.}
   \label{advint:figure02}
 \end{figure}
-
-% The set up portion strips the function evaluation number from
-% \texttt{\$argv[1]}and assigns it to the shell variable \texttt{\$num},
-% which is then used to create a tagged working directory for a
-% particular evaluation. For example, on the first evaluation,
-% ``\texttt{1}'' is stripped from ``\texttt{params.in.1}'' in order to
-% create ``\texttt{workdir.1}''. The primary reason for creating
-% separate working directories is so that the files associated with one
-% simulation do not conflict with those for another simulation. This is
-% particularly important when executing concurrent simulations in
-% parallel (to actually execute function evaluations concurrently,
-% uncomment the \texttt{asynchronous} line in \path{dakota_rosenbrock.in}).
-% %Once executing within the confines of the working directory, tags on the 
-% %files are no longer necessary, and for this reason, the tagged parameters
-% %file is moved to a more convenient name of ``\path{dakota_vars}''.
 
 In the pre-processing portion, the \path{simulator_script.sh} uses
 \path{dprepro}, a template processing utility, to extract the
@@ -389,12 +374,11 @@ must be specified in the \texttt{dprepro} command line arguments.
   \label{advint:figure04}
 \end{figure}
 
-The second part of the script executes the \path{rosenbrock_bb}
+The second part of the script executes the \path{rosenbrock_bb.py}
 simulator. The input and output file names, \path{ros.in} and
-\path{ros.out}, respectively, are hard-coded into the FORTRAN 77
-program \path{rosenbrock_bb.f}. When the \path{rosenbrock_bb}
-simulator is executed, the values for \texttt{x1} and \texttt{x2} are
-read in from \path{ros.in}, the Rosenbrock function is evaluated,
+\path{ros.out}, respectively, are hard-coded into the. When the 
+\path{./rosenbrock_bb.py} simulator is executed, the values for \texttt{x1} 
+and \texttt{x2} are read in from \path{ros.in}, the Rosenbrock function is evaluated,
 and the function value is written out to \path{ros.out}.
 
 The third part performs the post-processing and writes the response
@@ -441,7 +425,7 @@ by \path{simulator_script.sh} so that simple program names
 are visible in Dakota's directory will also be visible in the work directory.
 Relative path names ---
 involving an intermediate slash but not an initial one,
-such as \path{./rosenbrock_bb} or \path{a/bc/rosenbrock_bb} ---
+such as \path{./rosenbrock_bb.py} or \path{a/bc/rosenbrock_bb} ---
 will only be visible in the work directory if a \texttt{link\_files}
 or \texttt{copy\_files} specification (see \S\ref{interfaces:workdir})
 has made them visible there.
@@ -450,15 +434,16 @@ As an example of the data flow on a particular function evaluation,
 consider evaluation 60. The parameters file for this evaluation consists of:
 \begin{small}
 \begin{verbatim}
-    { DAKOTA_VARS     =                      2 }
-    { x1              =  1.638247697999295e-01 }
-    { x2              =  2.197298209103481e-02 }
-    { DAKOTA_FNS      =                      1 }
-    { ASV_1           =                      1 }
-    { DAKOTA_DER_VARS =                      2 }
-    { DVV_1           =                      1 }
-    { DVV_2           =                      2 }
-    { DAKOTA_AN_COMPS =                      0 }
+                                          2 variables
+                      4.664752623441543e-01 x1
+                      2.256400864298234e-01 x2
+                                          1 functions
+                                          3 ASV_1:obj_fn
+                                          2 derivative_variables
+                                          1 DVV_1:x1
+                                          2 DVV_2:x2
+                                          0 analysis_components
+                                         60 eval_id
 \end{verbatim}
 \end{small}
 
@@ -475,17 +460,17 @@ one response function (an objective function), followed by an active
 set vector (ASV) value of \texttt{1}. The ASV indicates the need to
 return the value of the objective function for these parameters (see
 Section~\ref{variables:asv}). The \path{dprepro} script reads the
-variable values from this file, namely \texttt{1.638247697999295e-01}
-and \texttt{2.197298209103481e-02} for \texttt{x1} and \texttt{x2}
+variable values from this file, namely \texttt{4.664752623441543e-01}
+and \texttt{2.256400864298234e-01} for \texttt{x1} and \texttt{x2}
 respectively, and substitutes them in the \texttt{\{x1\}} and
 \texttt{\{x2\}} fields of the \path{ros.template} file. The final
 three lines of the resulting input file (\path{ros.in}) then appear
 as follows:
 \begin{small}
 \begin{verbatim}
-    variable 1 1.638247697999295e-01
-    variable 2 2.197298209103481e-02
-    end
+variable 1 0.4664752623
+variable 2 0.2256400864
+end
 \end{verbatim}
 \end{small}
 
@@ -494,21 +479,21 @@ where all other lines are identical to the template file. The
 file and generates the following output to the file \path{ros.out}:
 \begin{small}
 \begin{verbatim}
-    Beginning execution of model: Rosenbrock black box
-    Set up complete.
-    Reading nodes.
-    Reading elements.
-    Reading materials.
-    Checking connectivity...OK
-    *****************************************************
+ Beginning execution of model: Rosenbrock black box
+ Set up complete.
+ Reading nodes.
+ Reading elements.
+ Reading materials.
+ Checking connectivity...OK
+ *****************************************************
 
-    Input value for x1 =  0.1638247697999295E+00
-    Input value for x2 =  0.2197298209103481E-01
+ Input value for x1 =  4.6647526230000003e-01
+ Input value for x2 =  2.2564008640000000e-01
 
-    Computing solution...Done
-    *****************************************************
-    Function value =  0.7015563957680092E+00
-    Function gradient = [ -0.1353509902591768E+01 -0.9731146217930163E+00 ]
+ Computing solution...Done
+ *****************************************************
+ Function value =   2.9111427884970176e-01
+ Function gradient = [ -2.5674048470887652e+00   1.6081832124292317e+00 ]
 \end{verbatim}
 \end{small}
 
@@ -517,12 +502,12 @@ and returned in the results file. This post-processing is relatively
 trivial in this case, and the \path{simulator_script.sh} uses the
 \texttt{grep} and \texttt{cut} utilities to extract the value from the
 ``\texttt{Function value}" line of the \path{ros.out} output file and save it to
-\texttt{\$2}, which is the \path{results.out} file for this
+\texttt{\$results}, which is the \path{results.out} file for this
 evaluation. This single value provides the objective function value
 requested by the ASV.
 
 After 132 of these function evaluations, the following Dakota output
-shows the final solution using the \path{rosenbrock_bb} simulator:
+shows the final solution using the \path{rosenbrock_bb.py} simulator:
 \begin{footnotesize}
 \begin{verbatim}
     Exit NPSOL - Optimal solution found.
@@ -617,7 +602,7 @@ Section~\ref{intro:coupling}.
 
 A variety of additional examples of black-box interfaces to simulation
 codes are maintained in the
-\path{dakota/share/dakota/examples/script_interfaces} directory.
+\path{dakota/share/dakota/examples/official/drivers/} directory.
 
 
 \section{Simulation Interface Components}\label{interfaces:components}
@@ -1918,7 +1903,7 @@ template engine.
 
 \subsection{dakota.interfacing Examples}
 
-In addition to those in this section, the \path{dakota/share/dakota/examples/script_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, \path{rosenbrock_bb.py}, parameters file parsing is performed manually. The other, \path{rosenbrock_bb_di.py}, demonstrates the\\{\tt dakota.interfacing} module.
+In addition to those in this section, the \path{dakota/share/dakota/examples/official/drivers/Python/di} folder contains a runnable example of a Python analysis driver. This example demonstrates the\\{\tt dakota.interfacing} module.
 
 For most applications, using {\tt dakota.interfacing} is straightforward. The first example, in Figure~\ref{diexample:simple}, is a mock analysis driver. Two variables with the descriptors {\tt x1} and {\tt x2} are read from the Dakota parameters file and used to evaluate the fictitious user function {\tt applic\_module.run()}. The result, stored in {\tt f}, is assigned to the {\tt function} value of the appropriate response. (A common error is leaving off the {\tt function} attribute, which is needed to distinguish the function value of the response from its gradient and Hessian.)
 

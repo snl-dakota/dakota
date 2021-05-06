@@ -61,7 +61,7 @@ a third-party library, for reading and writing HDF5 files. The HDF Group
 itself supports C/C++ and Java libraries. The Dakota Project suggests 
 the \c h5py module for Python. Examples that demonstrate using \c h5py
 to access and use Dakota HDF5 output may be found in the Dakota installation
-at \c share/dakota/examples/hdf5.
+at \c dakota/share/dakota/examples/official/hdf5.
 
 \section hdf5_results Organization of Results
 

@@ -11,8 +11,8 @@ Five MCMC algorithm variants are supported currently in QUESO: \c dram, \c
 delayed_rejection, \c adaptive_metropolis, \c metropolis_hastings, and
 \c multilevel.  The default is \c dram.
 
-Two MCMC algorithm variants are currently supported in MUQ: \c metropolis_hastings 
-and \c adaptive_metropolis.
+Four MCMC algorithm variants are currently supported in MUQ: \c dram, \c
+delayed_rejection, \c metropolis_hastings and \c adaptive_metropolis.
  
 <b> Usage Tips </b>
 
