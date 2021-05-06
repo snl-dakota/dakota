@@ -1,12 +1,14 @@
 Blurb::
-Query a batch of concurrent evaluations for completions are return a partial set to the algorithm
+A batch of concurrent evaluations are queried for completions and a partial set is returned to the algorithm
 
 Description::
 In the \c nonblocking case, the set of running evaluations is queried for completion and a partial set of results is returned to an asynchronous algorithm, which can then generate new evaluations based on these partial results.
 
-- In the specific context of parallel pattern search, all points in the pattern may not be evaluated.  The first improving point found becomes the next iterate.
+<!--
+- In the context of parallel pattern search, all points in the pattern may not be evaluated.  The first improving point found becomes the next iterate.
 
-- In the specific context of adaptive refinement of Gaussian process (GP) models, look-aheads are back-filled with new refinement candidates based on the latest updated state of the GP.
+- In the context of adaptive refinement of Gaussian process (GP) models, look-aheads are back-filled with new refinement candidates based on the latest updated state of the GP.
+-->
 
 In all cases, the algorithm steps will be subject to parallel timing variabilities / race conditions such that these runs will not generally be repeatable regardless of seed specification.
 
