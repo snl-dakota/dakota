@@ -1,0 +1,13 @@
+Blurb::
+Basis function order of the model discrepancy
+
+Description::
+
+The order of the polynomial for the model discrepancy may be specified using 
+the \c basis_order command, followed by either 0, for which a constant 
+polynomial will be used, 1, for which a linear polynomial will be used, or 2, 
+for which a quadratic polynomial will be used.
+
+<b> Default Behavior </b>
+
+By default, a quadratic polynomial is used.

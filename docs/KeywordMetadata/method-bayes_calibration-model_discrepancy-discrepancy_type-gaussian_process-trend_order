@@ -1,0 +1,13 @@
+Blurb::
+Trend function order of the model discrepancy
+
+Description::
+
+The order of the trend function may be specified using the \c trend_order
+command, followed by either 0, for which a constant trend function will
+be used, 1, for which a linear trend function will be used, or 2, for which
+a quadratic trend function will be used.
+
+<b> Default Behavior </b>
+
+By default, a quadratic trend function is used.
