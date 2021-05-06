@@ -16,10 +16,11 @@ derefinement), reduced element order (e.g., p- derefinement), or
 loosened convergence tolerances.  Unlike local, global, and multipoint
 surrogates, these approximations are not data-driven (no high-fidelity
 data required for construction) and are stand-alone simulation models
-in their own right.  For example, both model form and resolution are
-varied when an inviscid, incompressible Euler CFD model on a coarse
-discretization is used as a low-fidelity surrogate for a high-fidelity
-large eddy simulation CFD model on a fine discretization.
+in their own right.  As an example from computational fluid dynamics
+(CFD), both model form and resolution are varied when an inviscid,
+incompressible Euler model on a coarse discretization is used as a
+low-fidelity surrogate for a high-fidelity large eddy simulation model
+on a fine discretization.
 
 The required \c ordered_model_fidelities specification points to a
 sequence of model specifications of varying fidelity, ordered from
@@ -70,7 +71,7 @@ are tracked for purposes of decomposing variance across
 model/resolution levels or for constructing separate discrepancy
 emulators.  In this context, correction specifications are still valid
 for defining discrepancy emulation details but they are optional with
-the most common cases as defaults.
+the most common cases used as defaults.
 
 Topics::
 Examples::
