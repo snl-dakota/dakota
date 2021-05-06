@@ -104,7 +104,7 @@ a sufficiently fine resolution $M$. Since the numerical cost of a PDE is related
 the total cost of a MC simulation for a PDE can easily become intractable for complex multi-physics applications that are computationally 
 intensive.
 
-\subsection{Multilevel Monte Carlo for the estimator mean}
+\subsection{Multilevel Monte Carlo for the mean}
 
 The multilevel Monte Carlo (MLMC) algorithm has been introduced, starting from the control variate idea, for situation in which additional 
 %(with respect to the stochastic space) 
@@ -155,7 +155,7 @@ N_{\ell} = \frac{2}{\varepsilon^2} \left[ \, \sum_{k=0}^L \left( \mathbb{V}ar\le
 \end{equation}
 defining an optimal sample allocation per discretization level.
 
-\subsection{Extension to the estimator variance}
+\subsection{MLMC extension to the variance}
 Despite the original introduction of the MLMC approach for the computation of the mean estimator in \cite{Giles2008,Giles2015}, it is 
 possible to estimate higher-order moments with a MLMC sampling strategy, as for instance the variance.
 
@@ -268,6 +268,44 @@ The second approach uses numerical optimization directly on the non-linear optim
 
 Both approaches for finding the optimal sample allocation when allocating for the variance are currently implemented in Dakota. The analytical solution is employed by default while the optimization is enabled using a keyword. We refer to the reference manual for a discussion of the keywords to select these different options.
 
+
+\subsection{MLMC extension to the standard deviation}
+The extension of MLMC for the standard deviation is slightly more complicated by the presence of the square root, which prevents a straightforward expansion over levels. 
+
+One possible way of obtaining a biased estimator for the standard deviation is
+\begin{equation}
+\hat{\sigma}_L^{ML} = \sqrt{ \sum_{\ell=0}^L \hat{Q}_{\ell,2} - \hat{Q}_{\ell - 1,2} }.
+\end{equation}
+
+To estimate the variance of the standard deviation estimator, it is possible to leverage the result, derived in the previous section for the variance, and write the variance of the standard deviation as a function of the variance and its estimator variance. If we can estimate the variance $\hat{Q}_{L,2}$ and its estimator variance $\mathbb{V}ar\left[ \hat{Q}_{L,2} \right]$, the variance for the standard deviation $\hat{\sigma}_L^{ML}$ can be approximated as
+\begin{equation}
+ \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] \approx \frac{1}{4 \hat{Q}_{L,2}} \mathbb{V}ar\left[ \hat{Q}_{L,2} \right].
+\end{equation}
+
+Similarly to the variance case, a numerical optimization problem can be solved to obtain the sample allocation for the estimator of the standard deviation given a prescribed accuracy target. 
+
+
+\subsection{MLMC extension to the scalarization function}
+Often, especially in the context of optimization, it is necessary to estimate statistics of a metric defined as a linear combination of mean and standard deviation of a QoI. A classical reliability measure can be estimated, starting from ML statistics, as
+\begin{equation}
+ c^{ML}[Q] = \hat{Q}_{L}^{ML}  + \alpha \hat{\sigma}_L^{ML}.
+\end{equation}
+
+In this case, in order to obtain the variance of $c^{ML}[Q]$ it is necessary to employ an additional approximation:
+\begin{equation}
+\begin{split}
+ \mathbb{V}ar\left[ c^{ML}[Q] \right] &= \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] + \alpha^2 \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] 
+                                      + 2 \alpha \mathbb{C}ov\left[ \hat{Q}_{L}^{ML}, \hat{\sigma}_L^{ML} \right] \\
+                                      &= \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] + \alpha^2 \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] 
+                                      + 2 \alpha \rho\left[\hat{Q},\hat{\sigma}\right] \sqrt{ \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] }  \sqrt{ \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] } \\
+                                      &\leq \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] + \alpha^2 \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] 
+                                      + 2 |\alpha| \sqrt{ \mathbb{V}ar\left[ \hat{Q}_{L}^{ML} \right] }  \sqrt{ \mathbb{V}ar\left[ \hat{\sigma}_L^{ML} \right] },
+\end{split}
+\end{equation}
+
+which permits to bound the maximum value for the variance (assuming a very conservative approximation for the correlation between the estimators for the mean and the standard deviation, \textit{i.e.} $\left|\rho\left[\hat{Q},\hat{\sigma}\right]\right|=1$).
+
+All terms in the previous expression can be written as a function of the quantities derived in the previous sections, and, therefore, even for this case the allocation problem can be solved by resorting to a numerical optimization given a prescribed target.
 
 \section{A multilevel-multifidelity approach} \label{uq:sampling:mlmf}
 
