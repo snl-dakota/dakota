@@ -303,16 +303,17 @@ specific interpretation of the functions as for optimization and
 least squares).
 
 Within the variables specification, uncertain variable descriptions
-are employed to define the random variable distributions (see
+are employed to define the random variable distributions (refer to
 Section~\ref{variables:uncertain}). For Bayesian inference methods,
 these uncertain variable properties characterize the prior
 distribution to be updated and constrained by the observational data.
-Uncertain variables types are categorized as either aleatory or
-epistemic and as either continuous or discrete, where discrete types
-include integer ranges, integer sets, string sets, and real sets.  The
-continuous aleatory distribution types include: normal (Gaussian),
-lognormal, uniform, loguniform, triangular, exponential, beta, gamma,
-gumbel, frechet, weibull, and histogram bin. The discrete aleatory
+As enumerated in Section~\ref{variables:uncertain}, uncertain
+variables types are categorized as either aleatory or epistemic and as
+either continuous or discrete, where discrete types include integer
+ranges, integer sets, string sets, and real sets.  The continuous
+aleatory distribution types include: normal (Gaussian), lognormal,
+uniform, loguniform, triangular, exponential, beta, gamma, gumbel,
+frechet, weibull, and histogram bin. The discrete aleatory
 distribution types include: poisson, binomial, negative binomial,
 geometric, hypergeometric, and discrete histograms for integers,
 strings, and reals. The epistemic distribution types include
@@ -1377,8 +1378,8 @@ spectral projection scheme for the response.
 In non-intrusive PCE, simulations are used as black boxes and the
 calculation of chaos expansion coefficients for response metrics of
 interest is based on a set of simulation response evaluations. To
-calculate these response PCE coefficients, two primary classes of
-approaches have been proposed: spectral projection and regression. The
+calculate these response PCE coefficients, two classes of
+approaches are available: spectral projection and regression. The
 spectral projection approach projects the response against each basis
 function using inner products and employs the polynomial orthogonality
 properties to extract each coefficient. Each inner product involves a
@@ -1406,25 +1407,25 @@ integrated statistical quantities of interest, provided that the
 response functions are smooth with finite variance. The primary
 distinction is that, whereas PCE estimates coefficients for known
 multivariate orthogonal polynomial basis functions, SC forms
-multivariate interpolation polynomial bases for known coefficients.
-The interpolation polynomials may be either local or global and either
-value-based or gradient-enhanced (four combinations: Lagrange,
-Hermite, piecewise linear spline, and piecewise cubic spline), and may
-be used within nodal or hierarchical interpolation
-formulations. Interpolation is performed on structured grids such as
-tensor-product or sparse grids. Starting from a tensor-product
-multidimensional interpolation polynomial in the value-based case
-(Lagrange or piecewise linear spline), we have the feature that the
-$i^{th}$ interpolation polynomial has a value of 1 at collocation
-point $i$ and a value of 0 for all other collocation points, leading
-to the use of expansion coefficients that are just the response values
-at each of the collocation points. In the gradient-enhanced case
-(Hermite or piecewise cubic spline), SC includes both type 1 and type
-2 interpolation polynomials, where the former interpolate the values
-while producing zero gradients and the latter interpolate the
-gradients while producing zero values (refer to~\cite{TheoMan} for
-additional details). Sparse interpolants are weighted sums of these
-tensor interpolants;
+multivariate interpolation polynomial basis functions for known
+coefficients.  The interpolation polynomials may be either local or
+global and either value-based or gradient-enhanced (four combinations:
+Lagrange interpolation, Hermite interpolation, piecewise linear
+spline, and piecewise cubic spline), and may be used within nodal or
+hierarchical interpolation formulations. Interpolation is performed on
+structured grids such as tensor-product or sparse grids. Starting from
+a tensor-product multidimensional interpolation polynomial in the
+value-based case (Lagrange or piecewise linear spline), we have the
+feature that the $i^{th}$ interpolation polynomial has a value of 1 at
+collocation point $i$ and a value of 0 for all other collocation
+points, leading to the use of expansion coefficients that are just the
+response values at each of the collocation points. In the
+gradient-enhanced case (Hermite or piecewise cubic spline), SC
+includes both ``type 1'' and ``type 2'' interpolation polynomials,
+where the former interpolate the values while producing zero gradients
+and the latter interpolate the gradients while producing zero values
+(refer to~\cite{TheoMan} for additional details). Sparse interpolants
+are weighted sums of these tensor interpolants;
 %and retain the use of response values as expansion coefficients;
 however, they are only interpolatory for sparse grids based on fully 
 nested rules and will exhibit some interpolation error at the 
@@ -1443,6 +1444,34 @@ PCE is formed based on a weighted sum of tensor expansions~\cite{ConstSSG}.
 The Dakota Theory Manual~\cite{TheoMan} provides full algorithmic
 details for the PCE and SC methods.
 
+A recent addition is functional tensor train (FTT) expansions which
+leverage concepts from data/image compression using products of
+dimensional basis ``cores.''  When the response admits a ``low rank''
+representation, this means that the size of the cores required for an
+accurate recovery is not large and a compressed format for the
+expansion can be achieved based on a tensor train composition.  In
+Dakota, the basis functions used within the core for each random
+dimension are univariate orthogonal polynomials, similar to PCE.
+Solution for the expansion coefficients is based on regression and
+employs a numerical solution of a regularized nonlinear least squares
+problem.  Both the rank and polynomial order per dimension are
+resolution controls for the method, and cross-validation procedures
+are provided to automate the selection of the best settings for a
+given response data set.  Additional FTT theory will be provided in
+future releases as this capability is promoted to a default part of
+the Dakota software configuration.
+
+Finally, advanced multilevel and multifidelity approaches are
+provided for PCE, SC, and FT, as described in the Reference
+Manual~\cite{RefMan} (refer to {\tt multilevel\_polynomial\_chaos,
+  multifidelity\_polynomial\_chaos, multilevel\_function\_train,
+  multifidelity\_function\_train} and {\tt
+  multifidelity\_stoch\_collocation}).  These approaches decompose
+the input-output mapping and form multiple expansions in order to
+reduce reliance on the most expensive computational models
+by integrating information from low cost modeling alternatives.
+%rich information coming from low cost approximate models and sparse
+%information coming from expensive high-fidelity models.
 
 \subsection{Uncertainty Quantification Examples using Stochastic Expansions} \label{uq:stoch_exp:ex}
 
