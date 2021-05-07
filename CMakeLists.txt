@@ -263,8 +263,8 @@ endif()
 
 # Legacy examples
 add_subdirectory(examples)
-# New examples library
-if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dakota-examples")
+# New examples library, taking care to guard against empty directory
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dakota-examples/CMakeLists.txt")
   add_subdirectory(dakota-examples)
 endif()
 
