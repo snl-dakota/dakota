@@ -58,8 +58,6 @@ protected:
   void post_run(std::ostream& s);
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
-  void nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs);
-
   //
   //- Heading: Member functions
   //
@@ -67,12 +65,6 @@ protected:
   /// perform final LF sample increment as indicated by the evaluation ratio
   bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
 		    const SizetArray& N_hf, size_t iter, size_t lev);
-
-private:
-
-  //
-  //- Heading: Helper functions
-  //
 
   void evaluate_sample_increment(const unsigned short& step);
 
@@ -105,9 +97,6 @@ private:
   /// standardized moments
   void convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom);
 
-  // compute the equivalent number of HF evaluations (includes any sim faults)
-  void compute_equiv_HF_evals(const SizetArray& raw_N_l, const RealVector& cost);
-  
   /// convert uncentered (raw) moments to centered moments; biased estimators
   static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 			      Real& cm1, Real& cm2, Real& cm3, Real& cm4,
@@ -148,8 +137,6 @@ private:
   /// major iteration counter
   size_t mlmfIter;
 
-  /// mean squared error of mean estimator from pilot sample MC on HF model
-  RealVector mcMSEIter0;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
@@ -159,37 +146,14 @@ private:
   bool exportSampleSets;
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
+
+private:
+
+  //
+  //- Heading: Helper functions
+  //
+
 };
-
-
-inline void NonDHierarchSampling::
-nested_response_mappings(const RealMatrix& primary_coeffs,
-			 const RealMatrix& secondary_coeffs)
-{
-  if (scalarizationCoeffs.empty()){
-    if (primary_coeffs.numCols() != 2*numFunctions ||
-	primary_coeffs.numRows() != 1 ||
-	secondary_coeffs.numCols() != 2*numFunctions ||
-	secondary_coeffs.numRows() != numFunctions-1){
-      Cerr << "\nWrong size for primary or secondary_response_mapping. If you are sure, they are the right size, e.g.,"
-	   << " you are interested in quantiles, you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
-    for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
-      scalarizationCoeffs(0, row_qoi*2) = primary_coeffs(0, row_qoi*2);
-      scalarizationCoeffs(0, row_qoi*2+1) = primary_coeffs(0, row_qoi*2+1);
-    }
-    for(size_t qoi = 1; qoi < numFunctions; ++qoi){
-      for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
-	scalarizationCoeffs(qoi, row_qoi*2)
-	  = secondary_coeffs(qoi-1, row_qoi*2);
-	scalarizationCoeffs(qoi, row_qoi*2+1)
-	  = secondary_coeffs(qoi-1, row_qoi*2+1);
-      }
-    }
-  }
-}
 
 
 inline void NonDHierarchSampling::aggregated_models_mode()
@@ -244,17 +208,6 @@ inline int NonDHierarchSampling::random_seed(size_t index) const
   else if (mlmfIter == 0 && index < randomSeedSeqSpec.size()) // pilot iter only
     return randomSeedSeqSpec[index];
   else return 0; // seed sequence exhausted, do not update
-}
-
-
-inline void NonDHierarchSampling::
-compute_equiv_HF_evals(const SizetArray& raw_N_l, const RealVector& cost)
-{
-  size_t num_steps = raw_N_l.size();
-  equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
-  for (size_t step=1; step<num_steps; ++step)// subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_l[step] * (cost[step] + cost[step - 1]);
-  equivHFEvals /= cost[num_steps - 1]; // normalize into equivalent HF evals
 }
 
 

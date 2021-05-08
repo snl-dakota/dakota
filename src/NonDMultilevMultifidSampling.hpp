@@ -13,21 +13,21 @@
 //- Checked by:
 //- Version:
 
-#ifndef NOND_MULTILEVEL_CONTROL_VARIATE_SAMPLING_H
-#define NOND_MULTILEVEL_CONTROL_VARIATE_SAMPLING_H
+#ifndef NOND_MULTILEV_MULTIFID_SAMPLING_H
+#define NOND_MULTILEV_MULTIFID_SAMPLING_H
 
 #include "NonDHierarchSampling.hpp"
 #include "DataMethod.hpp"
 
 namespace Dakota {
 
-/// Performs MultilevControlVar Monte Carlo sampling for uncertainty quantification.
+/// Performs MultilevMultifid Monte Carlo sampling for uncertainty quantification.
 
-/** MultilevControlVar Monte Carlo (MLMC) is a variance-reduction technique
+/** MultilevMultifid Monte Carlo (MLMC) is a variance-reduction technique
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDMultilevControlVarSampling: public NonDHierarchSampling
+class NonDMultilevMultifidSampling: public NonDHierarchSampling
 {
 public:
 
@@ -36,9 +36,9 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevMultifidSampling(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDMultilevControlVarSampling();
+  ~NonDMultilevMultifidSampling();
 
   //
   //- Heading: Virtual function redefinitions

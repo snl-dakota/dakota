@@ -7,8 +7,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDControlVarSampling
-//- Description: Implementation code for NonDControlVarSampling class
+//- Class:	 NonDMultifidelitySampling
+//- Description: Implementation code for NonDMultifidelitySampling class
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
@@ -18,12 +18,12 @@
 #include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
-#include "NonDControlVarSampling.hpp"
+#include "NonDMultifidelitySampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
-static const char rcsId[]="@(#) $Id: NonDControlVarSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
+static const char rcsId[]="@(#) $Id: NonDMultifidelitySampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 
 namespace Dakota {
@@ -31,8 +31,8 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDControlVarSampling::
-NonDControlVarSampling(ProblemDescDB& problem_db, Model& model):
+NonDMultifidelitySampling::
+NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
   NonDHierarchSampling(problem_db, model)
 {
   // initialize scalars from sequence
@@ -54,7 +54,7 @@ NonDControlVarSampling(ProblemDescDB& problem_db, Model& model):
   if (iteratedModel.surrogate_type() == "hierarchical")
     aggregated_models_mode();
   else {
-    Cerr << "Error: ControlVar Monte Carlo requires a hierarchical "
+    Cerr << "Error: Multifidelity Monte Carlo requires a hierarchical "
 	 << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
@@ -120,11 +120,11 @@ NonDControlVarSampling(ProblemDescDB& problem_db, Model& model):
 }
 
 
-NonDControlVarSampling::~NonDControlVarSampling()
+NonDMultifidelitySampling::~NonDMultifidelitySampling()
 { }
 
 
-void NonDControlVarSampling::pre_run()
+void NonDMultifidelitySampling::pre_run()
 {
   NonDSampling::pre_run();
 
@@ -142,7 +142,7 @@ void NonDControlVarSampling::pre_run()
 /** The primary run function manages the general case: a hierarchy of model 
     forms (from the ordered model fidelities within a HierarchSurrModel), 
     each of which may contain multiple discretization levels. */
-void NonDControlVarSampling::core_run()
+void NonDMultifidelitySampling::core_run()
 {
   //model,
   //  surrogate hierarchical
@@ -158,7 +158,7 @@ void NonDControlVarSampling::core_run()
 
   // TO DO: this initial logic is limiting:
   // > allow MLMC and CVMC for either model forms or discretization levels
-  // > separate method specs that both map to NonDControlVarSampling ???
+  // > separate method specs that both map to NonDMultifidelitySampling ???
 
   // TO DO: following pilot sample across levels and fidelities in mixed case,
   // could pair models for CVMC based on estimation of rho2_LH.
@@ -183,7 +183,7 @@ void NonDControlVarSampling::core_run()
 
 /** This function performs control variate MC across two combinations of 
     model form and discretization level. */
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 control_variate_mc(const Pecos::ActiveKey& active_key)
 {
   // Current implementation performs pilot + shared increment + LF increment,
@@ -298,7 +298,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 initialize_cv_sums(IntRealVectorMap& sum_L_shared,
 		   IntRealVectorMap& sum_L_refined, IntRealVectorMap& sum_H,
 		   IntRealVectorMap& sum_LL,      //IntRealVectorMap& sum_HH,
@@ -320,7 +320,7 @@ initialize_cv_sums(IntRealVectorMap& sum_L_shared,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
 		   SizetArray& num_L)
 {
@@ -357,7 +357,7 @@ accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 		   IntRealVectorMap& sum_L_refined, IntRealVectorMap& sum_H,
 		   IntRealVectorMap& sum_LL, IntRealVectorMap& sum_LH,
@@ -440,7 +440,7 @@ accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 }
 
 
-void NonDControlVarSampling::shared_increment(size_t iter, size_t lev)
+void NonDMultifidelitySampling::shared_increment(size_t iter, size_t lev)
 {
   if (iter == _NPOS)  Cout << "\nCVMC sample increments: ";
   else if (iter == 0) Cout << "\nCVMC pilot sample: ";
@@ -461,7 +461,7 @@ void NonDControlVarSampling::shared_increment(size_t iter, size_t lev)
 }
 
 
-Real NonDControlVarSampling::
+Real NonDMultifidelitySampling::
 eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
 	   const RealVector& sum_LL, const RealVector& sum_LH,
 	   const RealVector& sum_HH, Real cost_ratio,
@@ -503,7 +503,7 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
 }
 
 
-Real NonDControlVarSampling::
+Real NonDMultifidelitySampling::
 eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
 	   RealMatrix& sum_LH, RealMatrix& sum_HH, Real cost_ratio, size_t lev,
 	   const SizetArray& N_shared, RealMatrix& var_H, RealMatrix& rho2_LH)
@@ -539,7 +539,7 @@ eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
 }
 
 
-Real NonDControlVarSampling::
+Real NonDMultifidelitySampling::
 eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
 	   RealMatrix& sum_Hlm1, RealMatrix& sum_Ll_Ll, RealMatrix& sum_Ll_Llm1,
 	   RealMatrix& sum_Llm1_Llm1, RealMatrix& sum_Hl_Ll,
@@ -590,7 +590,7 @@ eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
 }
 
 
-Real NonDControlVarSampling::
+Real NonDMultifidelitySampling::
 MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
 	  const RealVector& rho2_LH, size_t iter, const SizetArray& N_hf)
 {
@@ -619,7 +619,7 @@ MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
 	       IntRealVectorMap& sum_LL,       IntRealVectorMap& sum_LH,
 	       const SizetArray& N_shared,     IntRealVectorMap& sum_L_refined,
@@ -646,7 +646,7 @@ cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_H,
 	       IntRealMatrixMap& sum_LL,       IntRealMatrixMap& sum_LH,
 	       const SizetArray& N_shared,     IntRealMatrixMap& sum_L_refined,
@@ -674,7 +674,7 @@ cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_H,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
 	       IntRealMatrixMap& sum_Hl,        IntRealMatrixMap& sum_Hlm1,
 	       IntRealMatrixMap& sum_Ll_Ll,     IntRealMatrixMap& sum_Ll_Llm1,
@@ -717,7 +717,7 @@ cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 compute_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 		size_t N_shared, Real& beta)
 {
@@ -734,7 +734,7 @@ compute_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 compute_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH, Real sum_HH,
 		size_t N_shared, Real& var_H, Real& rho2_LH)
 {
@@ -753,7 +753,7 @@ compute_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH, Real sum_HH,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 compute_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
 		Real sum_Ll_Ll, Real sum_Ll_Llm1, Real sum_Llm1_Llm1,
 		Real sum_Hl_Ll, Real sum_Hl_Llm1, Real sum_Hlm1_Ll,
@@ -820,7 +820,7 @@ compute_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 apply_control(Real sum_H, Real sum_L_shared, size_t N_shared,
 	      Real sum_L_refined, size_t N_refined, Real beta, Real& H_raw_mom)
 {
@@ -831,7 +831,7 @@ apply_control(Real sum_H, Real sum_L_shared, size_t N_shared,
 }
 
 
-void NonDControlVarSampling::
+void NonDMultifidelitySampling::
 apply_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 	      size_t N_shared,  Real sum_Ll_refined, Real sum_Llm1_refined,
 	      size_t N_refined, Real beta_dot, Real gamma, Real& H_raw_mom)

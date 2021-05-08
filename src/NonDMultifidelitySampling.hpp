@@ -7,27 +7,27 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDSampling
-//- Description: Wrapper class for Fortran 90 LHS library
+//- Class:	 NonDMultifidelitySampling
+//- Description: Implementation of multifidelity Monte Carlo
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
 
-#ifndef NOND_CONTROL_VARIATE_SAMPLING_H
-#define NOND_CONTROL_VARIATE_SAMPLING_H
+#ifndef NOND_MULTIFIDELITY_SAMPLING_H
+#define NOND_MULTIFIDELITY_SAMPLING_H
 
 #include "NonDHierarchSampling.hpp"
 #include "DataMethod.hpp"
 
 namespace Dakota {
 
-/// Performs Control Variate Monte Carlo sampling for UQ.
+/// Performs Multifidelity Monte Carlo sampling for UQ.
 
-/** Control Variate Monte Carlo (CVMC) is a variance-reduction technique
+/** Multifidelity Monte Carlo (MFMC) is a variance-reduction technique
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDControlVarSampling: public NonDHierarchSampling
+class NonDMultifidelitySampling: public NonDHierarchSampling
 {
 public:
 
@@ -36,9 +36,9 @@ public:
   //
 
   /// standard constructor
-  NonDControlVarSampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDControlVarSampling();
+  ~NonDMultifidelitySampling();
 
   //
   //- Heading: Virtual function redefinitions
@@ -235,10 +235,13 @@ private:
   //- Heading: Data
   //
 
+  /// mean squared error of mean estimator from pilot sample MC on HF model
+  RealVector mcMSEIter0;
+
 };
 
 
-inline Real NonDControlVarSampling::
+inline Real NonDMultifidelitySampling::
 level_cost(const RealVector& cost, size_t step)
 {
   // discrepancies incur two level costs
@@ -248,7 +251,7 @@ level_cost(const RealVector& cost, size_t step)
 }
 
 
-inline void NonDControlVarSampling::
+inline void NonDMultifidelitySampling::
 compute_control(const RealVector& sum_L, const RealVector& sum_H,
 		const RealVector& sum_LL, const RealVector& sum_LH,
 		const SizetArray& N_shared, RealVector& beta)
@@ -259,7 +262,7 @@ compute_control(const RealVector& sum_L, const RealVector& sum_H,
 }
 
 
-inline void NonDControlVarSampling::
+inline void NonDMultifidelitySampling::
 compute_control(const RealVector& sum_L, const RealVector& sum_H,
 		const RealVector& sum_LL, const RealVector& sum_LH,
 		const RealVector& sum_HH, const SizetArray& N_shared,
@@ -271,7 +274,7 @@ compute_control(const RealVector& sum_L, const RealVector& sum_H,
 }
 
 
-inline void NonDControlVarSampling::
+inline void NonDMultifidelitySampling::
 compute_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
 		const RealMatrix& sum_LL, const RealMatrix& sum_LH,
 		const SizetArray& N_shared, size_t lev, RealVector& beta)
@@ -282,7 +285,7 @@ compute_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
 }
 
 
-inline void NonDControlVarSampling::
+inline void NonDMultifidelitySampling::
 compute_control(const RealMatrix& sum_Ll,        const RealMatrix& sum_Llm1,
 		const RealMatrix& sum_Hl,        const RealMatrix& sum_Hlm1,
 		const RealMatrix& sum_Ll_Ll,     const RealMatrix& sum_Ll_Llm1,
@@ -306,7 +309,7 @@ compute_control(const RealMatrix& sum_Ll,        const RealMatrix& sum_Llm1,
 }
 
 
-inline void NonDControlVarSampling::
+inline void NonDMultifidelitySampling::
 apply_control(const RealVector& sum_H, const RealVector& sum_L_shared,
 	      const SizetArray& N_shared,  const RealVector& sum_L_refined,
 	      const SizetArray& N_refined, const RealVector& beta,
@@ -323,7 +326,7 @@ apply_control(const RealVector& sum_H, const RealVector& sum_L_shared,
 }
 
 
-inline void NonDControlVarSampling::
+inline void NonDMultifidelitySampling::
 apply_control(const RealMatrix& sum_H, const RealMatrix& sum_L_shared,
 	      const SizetArray& N_shared,  const RealMatrix& sum_L_refined,
 	      const SizetArray& N_refined, size_t lev, const RealVector& beta,
@@ -340,7 +343,7 @@ apply_control(const RealMatrix& sum_H, const RealMatrix& sum_L_shared,
 }
 
 
-inline void NonDControlVarSampling::
+inline void NonDMultifidelitySampling::
 apply_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 	      const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 	      const SizetArray& N_shared,  const RealMatrix& sum_Ll_refined,

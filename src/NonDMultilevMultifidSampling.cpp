@@ -7,7 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDMultilevelSampling
+//- Class:	 NonDMultilevMultifidSampling
 //- Description: Implementation code for NonDMultilevelSampling class
 //- Owner:       Mike Eldred
 //- Checked by:
@@ -18,12 +18,12 @@
 #include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
-#include "NonDMultilevControlVarSampling.hpp"
+#include "NonDMultilevMultifidSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
-static const char rcsId[]="@(#) $Id: NonDMultilevControlVarSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
+static const char rcsId[]="@(#) $Id: NonDMultilevMultifidSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 
 namespace Dakota {
@@ -31,10 +31,9 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDMultilevControlVarSampling::
-NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
-  NonDHierarchSampling(problem_db, model),
-  finalCVRefinement(true)
+NonDMultilevMultifidSampling::
+NonDMultilevMultifidSampling(ProblemDescDB& problem_db, Model& model):
+  NonDHierarchSampling(problem_db, model), finalCVRefinement(true)
 {
   // initialize scalars from sequence
   seedSpec = randomSeed = random_seed(0);
@@ -55,7 +54,7 @@ NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
   if (iteratedModel.surrogate_type() == "hierarchical")
     aggregated_models_mode();
   else {
-    Cerr << "Error: MultilevControlVar Monte Carlo requires a hierarchical "
+    Cerr << "Error: MultilevMultifid Monte Carlo requires a hierarchical "
 	 << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
@@ -121,11 +120,11 @@ NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
 }
 
 
-NonDMultilevControlVarSampling::~NonDMultilevControlVarSampling()
+NonDMultilevMultifidSampling::~NonDMultilevMultifidSampling()
 { }
 
 
-bool NonDMultilevControlVarSampling::resize()
+bool NonDMultilevMultifidSampling::resize()
 {
   bool parent_reinit_comms = NonDSampling::resize();
 
@@ -137,7 +136,7 @@ bool NonDMultilevControlVarSampling::resize()
 }
 
 
-void NonDMultilevControlVarSampling::pre_run()
+void NonDMultilevMultifidSampling::pre_run()
 {
   NonDSampling::pre_run();
 
@@ -155,7 +154,7 @@ void NonDMultilevControlVarSampling::pre_run()
 /** The primary run function manages the general case: a hierarchy of model 
     forms (from the ordered model fidelities within a HierarchSurrModel), 
     each of which may contain multiple discretization levels. */
-void NonDMultilevControlVarSampling::core_run()
+void NonDMultilevMultifidSampling::core_run()
 {
   //model,
   //  surrogate hierarchical
@@ -171,7 +170,7 @@ void NonDMultilevControlVarSampling::core_run()
 
   // TO DO: this initial logic is limiting:
   // > allow MLMC and CVMC for either model forms or discretization levels
-  // > separate method specs that both map to NonDMultilevControlVarSampling ???
+  // > separate method specs that both map to NonDMultilevMultifidSampling ???
 
   // TO DO: following pilot sample across levels and fidelities in mixed case,
   // could pair models for CVMC based on estimation of rho2_LH.
@@ -198,7 +197,7 @@ void NonDMultilevControlVarSampling::core_run()
     levels for the high fidelity model form where CVMC si employed
     across two model forms to exploit correlation in the discrepancies
     at each level (Y_l). */
-void NonDMultilevControlVarSampling::
+void NonDMultilevMultifidSampling::
 multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
 				    unsigned short hf_form)
 {
@@ -428,7 +427,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
     across two model forms.  It generalizes the Y_l correlation case
     to separately target correlations for each QoI level embedded
     within the level discrepancies. */
-void NonDMultilevControlVarSampling::
+void NonDMultilevMultifidSampling::
 multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
 				    unsigned short hf_form)
 {
@@ -682,7 +681,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
 }
 
 
-void NonDMultilevControlVarSampling::
+void NonDMultilevMultifidSampling::
 initialize_mlcv_sums(IntRealMatrixMap& sum_L_shared,
 		     IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_H,
 		     IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
@@ -712,7 +711,7 @@ initialize_mlcv_sums(IntRealMatrixMap& sum_L_shared,
 }
 
 
-void NonDMultilevControlVarSampling::
+void NonDMultilevMultifidSampling::
 initialize_mlcv_sums(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
 		     IntRealMatrixMap& sum_Ll_refined,
 		     IntRealMatrixMap& sum_Llm1_refined,
@@ -757,7 +756,7 @@ initialize_mlcv_sums(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
 }
 
 
-void NonDMultilevControlVarSampling::
+void NonDMultilevMultifidSampling::
 accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		      size_t lev, const RealVector& offset, SizetArray& num_Q)
 {
@@ -812,7 +811,7 @@ accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 }
 
 
-void NonDMultilevControlVarSampling::
+void NonDMultilevMultifidSampling::
 accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
 		      const RealVector& offset, SizetArray& num_Y)
 {
@@ -861,7 +860,7 @@ accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
 }
 
 
-void NonDMultilevControlVarSampling::
+void NonDMultilevMultifidSampling::
 accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 		      const IntResponseMap& hf_resp_map,
 		      IntRealMatrixMap& sum_L_shared,
@@ -951,7 +950,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 }
 
 
-void NonDMultilevControlVarSampling::
+void NonDMultilevMultifidSampling::
 accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 		      const IntResponseMap& hf_resp_map,
 		      IntRealMatrixMap& sum_L_shared,
@@ -1066,7 +1065,7 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 }
 
 
-void NonDMultilevControlVarSampling::
+void NonDMultilevMultifidSampling::
 accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 		      const IntResponseMap& hf_resp_map,
 		      IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
@@ -1263,7 +1262,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 }
 
 
-void NonDMultilevControlVarSampling::post_run(std::ostream& s)
+void NonDMultilevMultifidSampling::post_run(std::ostream& s)
 {
   // Final moments are generated within core_run() by convert_moments().
   // No addtional stats are currently supported.
@@ -1278,7 +1277,7 @@ void NonDMultilevControlVarSampling::post_run(std::ostream& s)
 }
 
 
-void NonDMultilevControlVarSampling::print_results(std::ostream& s, short results_state)
+void NonDMultilevMultifidSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag) {
     print_multilevel_evaluation_summary(s, NLev);
