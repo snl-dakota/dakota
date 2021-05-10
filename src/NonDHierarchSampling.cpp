@@ -122,11 +122,6 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
       break;
     }
   }
-
-  max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  // For testing multilevel_mc_Qsum():
-  //subIteratorFlag = true;
- 
 }
 
 
@@ -305,67 +300,6 @@ void NonDHierarchSampling::print_results(std::ostream& s, short results_state)
 		  iteratedModel.truth_model().response_labels());
     archive_moments();
     archive_equiv_hf_evals(equivHFEvals); 
-  }
-}
-
-
-bool NonDHierarchSampling::
-lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
-	     const SizetArray& N_hf, size_t iter, size_t lev)
-{
-  // ----------------------------------------------
-  // Compute Final LF increment for control variate
-  // ----------------------------------------------
-
-  // update LF samples based on evaluation ratio
-  // r = m/n -> m = r*n -> delta = m-n = (r-1)*n
-  // or with inverse r  -> delta = m-n = n/inverse_r - n
-
-  numSamples = one_sided_delta(average(N_lf), average(N_hf) * avg_eval_ratio);
-  if (numSamples) {
-    Cout << "\nCVMC LF sample increment = " << numSamples;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
-	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
-    Cout << std::endl;
-
-    // generate new MC parameter sets
-    get_parameter_sets(iteratedModel);// pull dist params from any model
-    // export separate output files for each data set:
-    if (exportSampleSets)
-      export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
-
-    // Iteration 0 is defined as the pilot sample, and each subsequent iter
-    // can be defined as a CV increment followed by an ML increment.  In this
-    // case, terminating based on max_iterations results in a final ML increment
-    // without a corresponding CV refinement; thus the number of ML and CV
-    // refinements is consistent although the final sample profile is not
-    // self-consistent -- to override this and finish with a final CV increment
-    // corresponding to the final ML increment, the finalCVRefinement flag can
-    // be set.  Note: termination based on delta_N_hf=0 has a final ML increment
-    // of zero and corresponding final CV increment of zero.  Therefore, this
-    // iteration completes on the previous CV increment and is more consistent
-    // with finalCVRefinement=true.
-
-    if (iter < max_iter || finalCVRefinement) {
-      // hierarchical surrogate mode could be BYPASS_SURROGATE for CV or
-      // BYPASS_SURROGATE/AGGREGATED_MODELS for ML-CV
-      //bypass_surrogate_mode(); // set at calling level for CV or ML-CV
-
-      // compute allResponses from allVariables using hierarchical model
-      evaluate_parameter_sets(iteratedModel, true, false);
-      return true;
-    }
-    else
-      return false;
-  }
-  else {
-    Cout << "\nNo CVMC LF sample increment";
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
-	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
-    Cout << std::endl;
-    return false;
   }
 }
 

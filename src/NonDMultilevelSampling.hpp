@@ -33,7 +33,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDMultilevelSampling: public NonDHierarchSampling
+class NonDMultilevelSampling: public virtual NonDHierarchSampling
 {
 public:
 
@@ -46,25 +46,46 @@ public:
   /// destructor
   ~NonDMultilevelSampling();
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
-
-  bool resize();
-
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  //void pre_run();
   void core_run();
-  void post_run(std::ostream& s);
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  //void post_run(std::ostream& s);
+  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   void nested_response_mappings(const RealMatrix& primary_coeffs,
 				const RealMatrix& secondary_coeffs);
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// update accumulators for multilevel telescoping running sums
+  /// using set of model evaluations within allResponses
+  void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
+			   size_t lev, const RealVector& offset,
+			   SizetArray& num_Y);
+
+  /// update running QoI sums for one model (sum_Q) using set of model
+  /// evaluations within allResponses; used for level 0 from other accumulators
+  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
+			   const RealVector& offset, SizetArray& num_Q);
+
+  /// sum up variances across QoI (using sum_YY with means from sum_Y)
+  Real aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
+			       const SizetArray& N_l);
+
+  /// sum up Monte Carlo estimates for mean squared error (MSE) across
+  /// QoI using discrepancy variances
+  Real aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l);
+  /// sum up Monte Carlo estimates for mean squared error (MSE) across
+  /// QoI using discrepancy sums
+  Real aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY,
+			  const SizetArray& N_l);
 
 private:
 
@@ -96,18 +117,9 @@ private:
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
   void accumulate_sums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-			   IntIntPairRealMatrixMap& sum_QlQlm1, const size_t step,
-			   const RealVectorArray& offset, Sizet2DArray& N_l);
+		       IntIntPairRealMatrixMap& sum_QlQlm1, const size_t step,
+		       const RealVectorArray& offset, Sizet2DArray& N_l);
 
-  /// update running QoI sums for one model (sum_Q) using set of model
-  /// evaluations within allResponses; used for level 0 from other accumulators
-  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
-			   const RealVector& offset, SizetArray& num_Q);
-  /// update accumulators for multilevel telescoping running sums
-  /// using set of model evaluations within allResponses
-  void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, const RealVector& offset,
-			   SizetArray& num_Y);
   /// update running QoI sums for two models (sum_Ql, sum_Qlm1) using set of
   /// model evaluations within allResponses
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
@@ -147,10 +159,6 @@ private:
  									IntIntPairRealMatrixMap sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, RealMatrix& agg_var_qoi);
 
-  /// sum up variances across QoI (using sum_YY with means from sum_Y)
-  Real aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
-			       const SizetArray& N_l);
-
 
   /// wrapper for aggregate_variance_Qsum 
   Real aggregate_variance_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
@@ -180,14 +188,6 @@ private:
   Real aggregate_variance_scalarization_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
  									IntIntPairRealMatrixMap sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
-
-  /// sum up Monte Carlo estimates for mean squared error (MSE) across
-  /// QoI using discrepancy variances
-  Real aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l);
-  /// sum up Monte Carlo estimates for mean squared error (MSE) across
-  /// QoI using discrepancy sums
-  Real aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY,
-			  const SizetArray& N_l);
 
   /// sum up Monte Carlo estimates for mean squared error (MSE) for
   /// QoI using discrepancy sums based on allocation target
@@ -328,7 +328,6 @@ private:
   //
 
   unsigned short seq_index;
-  size_t max_iter;
 
   /// store the allocation_target input specification, prior to run-time
   /// Options right now:
@@ -820,7 +819,8 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
   										const RealMatrix& agg_var_qoi_in, const RealVector& cost, 
   										const Sizet2DArray& N_l, SizetArray& delta_N_l)
 {
-	size_t num_steps = agg_var_qoi_in.numCols();
+        size_t num_steps = agg_var_qoi_in.numCols(),
+	  max_iter = (maxIterations < 0) ? 25 : maxIterations;
 	RealVector level_cost_vec(num_steps);
 	RealVector sum_sqrt_var_cost;
 	RealMatrix delta_N_l_qoi;

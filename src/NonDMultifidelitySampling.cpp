@@ -33,7 +33,7 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
-  NonDHierarchSampling(problem_db, model)
+  NonDHierarchSampling(problem_db, model), finalCVRefinement(true)
 {
   // initialize scalars from sequence
   seedSpec = randomSeed = random_seed(0);
@@ -122,21 +122,6 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
 
 NonDMultifidelitySampling::~NonDMultifidelitySampling()
 { }
-
-
-void NonDMultifidelitySampling::pre_run()
-{
-  NonDSampling::pre_run();
-
-  // reset sample counters to 0
-  size_t i, j, num_mf = NLev.size(), num_lev;
-  for (i=0; i<num_mf; ++i) {
-    Sizet2DArray& Nl_i = NLev[i];
-    num_lev = Nl_i.size();
-    for (j=0; j<num_lev; ++j)
-      Nl_i[j].assign(numFunctions, 0);
-  }
-}
 
 
 /** The primary run function manages the general case: a hierarchy of model 
@@ -461,6 +446,67 @@ void NonDMultifidelitySampling::shared_increment(size_t iter, size_t lev)
 }
 
 
+bool NonDMultifidelitySampling::
+lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
+	     const SizetArray& N_hf, size_t iter, size_t lev)
+{
+  // ----------------------------------------------
+  // Compute Final LF increment for control variate
+  // ----------------------------------------------
+
+  // update LF samples based on evaluation ratio
+  // r = m/n -> m = r*n -> delta = m-n = (r-1)*n
+  // or with inverse r  -> delta = m-n = n/inverse_r - n
+
+  numSamples = one_sided_delta(average(N_lf), average(N_hf) * avg_eval_ratio);
+  if (numSamples) {
+    Cout << "\nCVMC LF sample increment = " << numSamples;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
+	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
+    Cout << std::endl;
+
+    // generate new MC parameter sets
+    get_parameter_sets(iteratedModel);// pull dist params from any model
+    // export separate output files for each data set:
+    if (exportSampleSets)
+      export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
+
+    // Iteration 0 is defined as the pilot sample, and each subsequent iter
+    // can be defined as a CV increment followed by an ML increment.  In this
+    // case, terminating based on max_iterations results in a final ML increment
+    // without a corresponding CV refinement; thus the number of ML and CV
+    // refinements is consistent although the final sample profile is not
+    // self-consistent -- to override this and finish with a final CV increment
+    // corresponding to the final ML increment, the finalCVRefinement flag can
+    // be set.  Note: termination based on delta_N_hf=0 has a final ML increment
+    // of zero and corresponding final CV increment of zero.  Therefore, this
+    // iteration completes on the previous CV increment and is more consistent
+    // with finalCVRefinement=true.
+    size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+    if (iter < max_iter || finalCVRefinement) {
+      // hierarchical surrogate mode could be BYPASS_SURROGATE for CV or
+      // BYPASS_SURROGATE/AGGREGATED_MODELS for ML-CV
+      //bypass_surrogate_mode(); // set at calling level for CV or ML-CV
+
+      // compute allResponses from allVariables using hierarchical model
+      evaluate_parameter_sets(iteratedModel, true, false);
+      return true;
+    }
+    else
+      return false;
+  }
+  else {
+    Cout << "\nNo CVMC LF sample increment";
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
+	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
+    Cout << std::endl;
+    return false;
+  }
+}
+
+
 Real NonDMultifidelitySampling::
 eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
 	   const RealVector& sum_LL, const RealVector& sum_LH,
@@ -471,8 +517,9 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
 
     Real& rho_sq = rho2_LH[qoi];
-    compute_control(sum_L_shared[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
-		    sum_HH[qoi], N_shared[qoi], var_H[qoi], rho_sq);
+    compute_mf_correlation(sum_L_shared[qoi], sum_H[qoi], sum_LL[qoi],
+			   sum_LH[qoi], sum_HH[qoi], N_shared[qoi],
+			   var_H[qoi], rho_sq);
 
     // compute evaluation ratio which determines increment for LF samples
     // > the sample increment optimizes the total computational budget and is
@@ -500,93 +547,6 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
     avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
 
   return avg_eval_ratio;
-}
-
-
-Real NonDMultifidelitySampling::
-eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
-	   RealMatrix& sum_LH, RealMatrix& sum_HH, Real cost_ratio, size_t lev,
-	   const SizetArray& N_shared, RealMatrix& var_H, RealMatrix& rho2_LH)
-{
-  Real eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-
-    Real& rho_sq = rho2_LH(qoi,lev);
-    compute_control(sum_L_shared(qoi,lev), sum_H(qoi,lev), sum_LL(qoi,lev),
-		    sum_LH(qoi,lev), sum_HH(qoi,lev), N_shared[qoi],
-		    var_H(qoi,lev), rho_sq);
-
-    if (rho_sq < 1.) { // protect against division by 0
-      eval_ratio = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
-      if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = " << cost_ratio
-	     << " rho_sq = " << rho_sq << " eval_ratio = " << eval_ratio
-	     << std::endl;
-      avg_eval_ratio += eval_ratio;
-      ++num_avg;
-    }
-  }
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "variance of HF Q[" << lev << "]:\n";
-    write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_H);
-  }
-
-  if (num_avg) avg_eval_ratio /= num_avg;
-  else // should not happen, but provide a reasonable upper bound
-    avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
-
-  return avg_eval_ratio;
-}
-
-
-Real NonDMultifidelitySampling::
-eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
-	   RealMatrix& sum_Hlm1, RealMatrix& sum_Ll_Ll, RealMatrix& sum_Ll_Llm1,
-	   RealMatrix& sum_Llm1_Llm1, RealMatrix& sum_Hl_Ll,
-	   RealMatrix& sum_Hl_Llm1,   RealMatrix& sum_Hlm1_Ll,
-	   RealMatrix& sum_Hlm1_Llm1, RealMatrix& sum_Hl_Hl,
-	   RealMatrix& sum_Hl_Hlm1,   RealMatrix& sum_Hlm1_Hlm1,
-	   Real cost_ratio, size_t lev, const SizetArray& N_shared,
-	   RealMatrix& var_YHl,       RealMatrix& rho_dot2_LH)
-{
-  if (lev == 0)
-    return eval_ratio(sum_Ll, sum_Hl, sum_Ll_Ll, sum_Hl_Ll, sum_Hl_Hl,
-		      cost_ratio, lev, N_shared, var_YHl, rho_dot2_LH);
-  else {
-    Real beta_dot, gamma, eval_ratio, avg_eval_ratio = 0.;
-    size_t qoi, num_avg = 0;
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      Real& rho_dot_sq = rho_dot2_LH(qoi,lev);
-      compute_control(sum_Ll(qoi,lev), sum_Llm1(qoi,lev), sum_Hl(qoi,lev),
-		      sum_Hlm1(qoi,lev), sum_Ll_Ll(qoi,lev),
-		      sum_Ll_Llm1(qoi,lev), sum_Llm1_Llm1(qoi,lev),
-		      sum_Hl_Ll(qoi,lev), sum_Hl_Llm1(qoi,lev),
-		      sum_Hlm1_Ll(qoi,lev), sum_Hlm1_Llm1(qoi,lev),
-		      sum_Hl_Hl(qoi,lev), sum_Hl_Hlm1(qoi,lev),
-		      sum_Hlm1_Hlm1(qoi,lev), N_shared[qoi], var_YHl(qoi,lev),
-		      rho_dot_sq, beta_dot, gamma);
-
-      if (rho_dot_sq < 1.) { // protect against division by 0
-	eval_ratio = std::sqrt(cost_ratio * rho_dot_sq / (1.-rho_dot_sq));
-	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = "
-	       << cost_ratio << " rho_dot_sq = " << rho_dot_sq
-	       << " eval_ratio = " << eval_ratio << std::endl;
-	avg_eval_ratio += eval_ratio;
-	++num_avg;
-      }
-    }
-    if (outputLevel >= DEBUG_OUTPUT) {
-      Cout << "variance of HF Y[" << lev << "]:\n";
-      write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_YHl);
-    }
-
-    if (num_avg) avg_eval_ratio /= num_avg;
-    else // should not happen, but provide a reasonable upper bound
-      avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
-
-    return avg_eval_ratio;
-  }
 }
 
 
@@ -636,217 +596,13 @@ cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
        //<< ", effectiveness ratio = " << std::setw(9) << rho2_LH[qoi] * cr1;
 
   for (int i=1; i<=4; ++i) {
-    compute_control(sum_L_shared[i], sum_H[i], sum_LL[i], sum_LH[i], N_shared,
-		    beta);
+    compute_mf_control(sum_L_shared[i], sum_H[i], sum_LL[i], sum_LH[i],
+		       N_shared, beta);
     Cout << "Moment " << i << ":\n";
     RealVector H_rm_col(Teuchos::View, H_raw_mom[i-1], numFunctions);
-    apply_control(sum_H[i], sum_L_shared[i], N_shared, sum_L_refined[i],
-		  N_refined, beta, H_rm_col);
+    apply_mf_control(sum_H[i], sum_L_shared[i], N_shared, sum_L_refined[i],
+		     N_refined, beta, H_rm_col);
   }
-}
-
-
-void NonDMultifidelitySampling::
-cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_H,
-	       IntRealMatrixMap& sum_LL,       IntRealMatrixMap& sum_LH,
-	       const SizetArray& N_shared,     IntRealMatrixMap& sum_L_refined,
-	       const SizetArray& N_refined,    const RealMatrix& rho2_LH,
-	       size_t lev,                     RealMatrix& H_raw_mom)
-{
-  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
-  RealVector beta(numFunctions, false);
-
-  // rho2_LH not stored for i > 1
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    Cout << "rho_LH (Pearson correlation) for QoI " << qoi+1 << " = "
-	 << std::setw(9) << std::sqrt(rho2_LH(qoi,lev)) << '\n';
-       //<< ", effectiveness ratio = " << std::setw(9) << rho2_LH(qoi,lev)*cr1;
-
-  for (int i=1; i<=4; ++i) {
-    compute_control(sum_L_shared[i], sum_H[i], sum_LL[i], sum_LH[i], N_shared,
-		    lev, beta);
-    Cout << "Moment " << i << ":\n";
-    RealVector H_rm_col(Teuchos::View, H_raw_mom[i-1], numFunctions);
-    apply_control(sum_H[i], sum_L_shared[i], N_shared, sum_L_refined[i],
-		  N_refined, lev, beta, H_rm_col);
-  }
-  Cout << '\n'; // for loop over levels
-}
-
-
-void NonDMultifidelitySampling::
-cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
-	       IntRealMatrixMap& sum_Hl,        IntRealMatrixMap& sum_Hlm1,
-	       IntRealMatrixMap& sum_Ll_Ll,     IntRealMatrixMap& sum_Ll_Llm1,
-	       IntRealMatrixMap& sum_Llm1_Llm1, IntRealMatrixMap& sum_Hl_Ll,
-	       IntRealMatrixMap& sum_Hl_Llm1,   IntRealMatrixMap& sum_Hlm1_Ll,
-	       IntRealMatrixMap& sum_Hlm1_Llm1, IntRealMatrixMap& sum_Hl_Hl,
-	       IntRealMatrixMap& sum_Hl_Hlm1,   IntRealMatrixMap& sum_Hlm1_Hlm1,
-	       const SizetArray& N_shared, IntRealMatrixMap& sum_Ll_refined,
-	       IntRealMatrixMap& sum_Llm1_refined, const SizetArray& N_refined,
-	       const RealMatrix& rho_dot2_LH, size_t lev, RealMatrix& H_raw_mom)
-{
-  if (lev == 0)
-    cv_raw_moments(sum_Ll, sum_Hl, sum_Ll_Ll, sum_Hl_Ll, N_shared,
-		   sum_Ll_refined, N_refined, rho_dot2_LH, lev, H_raw_mom);
-  else {
-    if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
-    RealVector beta_dot(numFunctions, false), gamma(numFunctions, false);
-
-    // rho_dot2_LH not stored for i > 1
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      Cout << "rho_dot_LH (Pearson correlation) for QoI " << qoi+1 << " = "
-	   << std::setw(9) << std::sqrt(rho_dot2_LH(qoi,lev)) << '\n';
-         //<< ", effectiveness ratio = " << rho_dot2_LH(qoi,lev) * cr1;
-
-    // aggregate expected value of estimators for E[Y] for Y=LF^k or Y=HF^k
-    for (int i=1; i<=4; ++i) {
-      compute_control(sum_Ll[i], sum_Llm1[i], sum_Hl[i], sum_Hlm1[i],
-		      sum_Ll_Ll[i], sum_Ll_Llm1[i], sum_Llm1_Llm1[i],
-		      sum_Hl_Ll[i], sum_Hl_Llm1[i], sum_Hlm1_Ll[i],
-		      sum_Hlm1_Llm1[i], sum_Hl_Hl[i], sum_Hl_Hlm1[i],
-		      sum_Hlm1_Hlm1[i], N_shared, lev, beta_dot, gamma);
-      Cout << "Moment " << i << ":\n";
-      RealVector H_rm_col(Teuchos::View, H_raw_mom[i-1], numFunctions);
-      apply_control(sum_Hl[i], sum_Hlm1[i], sum_Ll[i], sum_Llm1[i], N_shared,
-		    sum_Ll_refined[i], sum_Llm1_refined[i], N_refined, lev,
-		    beta_dot, gamma, H_rm_col);
-    }
-    Cout << '\n'; // for loop over levels
-  }
-}
-
-
-void NonDMultifidelitySampling::
-compute_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-		size_t N_shared, Real& beta)
-{
-  // unbiased mean estimator X-bar = 1/N * sum
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  //Real mu_L = sum_L / N_shared, mu_H = sum_H / N_shared;
-  //Real var_L = (sum_LL / N_shared - mu_L * mu_L) * bessel_corr,
-  //    cov_LH = (sum_LH / N_shared - mu_L * mu_H) * bessel_corr;
-
-  // Cancel repeated N_shared and bessel_corr within beta = cov_LH / var_L:
-  beta = (sum_LH - sum_L * sum_H / N_shared)
-       / (sum_LL - sum_L * sum_L / N_shared);
-}
-
-
-void NonDMultifidelitySampling::
-compute_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH, Real sum_HH,
-		size_t N_shared, Real& var_H, Real& rho2_LH)
-{
-  Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
-
-  // unbiased mean estimator X-bar = 1/N * sum
-  Real mu_L = sum_L / N_shared, mu_H = sum_H / N_shared;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  Real var_L = (sum_LL / N_shared - mu_L * mu_L) * bessel_corr,
-      cov_LH = (sum_LH / N_shared - mu_L * mu_H) * bessel_corr;
-  var_H      = (sum_HH / N_shared - mu_H * mu_H) * bessel_corr;
-
-  //beta  = cov_LH / var_L;
-  rho2_LH = cov_LH / var_L * cov_LH / var_H;
-}
-
-
-void NonDMultifidelitySampling::
-compute_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
-		Real sum_Ll_Ll, Real sum_Ll_Llm1, Real sum_Llm1_Llm1,
-		Real sum_Hl_Ll, Real sum_Hl_Llm1, Real sum_Hlm1_Ll,
-		Real sum_Hlm1_Llm1, Real sum_Hl_Hl, Real sum_Hl_Hlm1,
-		Real sum_Hlm1_Hlm1, size_t N_shared, Real& var_YH,
-		Real& rho_dot2_LH, Real& beta_dot, Real& gamma)
-{
-  Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
-
-  // means, variances, covariances for Q
-  // Note: sum_*[i][lm1] is not the same as sum_*lm1[i][lev] due to
-  //       discrepancy evaluations with different sample sets!
-  Real mu_Ll = sum_Ll / N_shared,  mu_Llm1 = sum_Llm1 / N_shared;
-  Real mu_Hl = sum_Hl / N_shared,  mu_Hlm1 = sum_Hlm1 / N_shared;
-
-  Real var_Ll   = (sum_Ll_Ll     / N_shared - mu_Ll   * mu_Ll)   * bessel_corr;
-  Real var_Llm1 = (sum_Llm1_Llm1 / N_shared - mu_Llm1 * mu_Llm1) * bessel_corr;
-  Real var_Hl   = (sum_Hl_Hl     / N_shared - mu_Hl   * mu_Hl)   * bessel_corr;
-  Real var_Hlm1 = (sum_Hlm1_Hlm1 / N_shared - mu_Hlm1 * mu_Hlm1) * bessel_corr;
-
-  Real cov_Hl_Ll   = (sum_Hl_Ll   / N_shared - mu_Hl   * mu_Ll)   * bessel_corr;
-  Real cov_Hl_Llm1 = (sum_Hl_Llm1 / N_shared - mu_Hl   * mu_Llm1) * bessel_corr;
-  Real cov_Hlm1_Ll = (sum_Hlm1_Ll / N_shared - mu_Hlm1 * mu_Ll)   * bessel_corr;
-  Real cov_Hlm1_Llm1
-    = (sum_Hlm1_Llm1 / N_shared - mu_Hlm1 * mu_Llm1) * bessel_corr;
-
-  Real cov_Ll_Llm1 = (sum_Ll_Llm1 / N_shared - mu_Ll * mu_Llm1) * bessel_corr;
-  Real cov_Hl_Hlm1 = (sum_Hl_Hlm1 / N_shared - mu_Hl * mu_Hlm1) * bessel_corr;
-
-  // quantities derived from Q moments
-  // gamma:
-  Real cov_YHl_Ll   = cov_Hl_Ll   - cov_Hlm1_Ll;
-  Real cov_YHl_Llm1 = cov_Hl_Llm1 - cov_Hlm1_Llm1;
-  gamma = (cov_YHl_Llm1 * cov_Ll_Llm1 - var_Llm1 * cov_YHl_Ll)
-        / (var_Ll * cov_YHl_Llm1 - cov_YHl_Ll * cov_Ll_Llm1);
-  // theta, tau, beta:
-  Real cov_YHl_YLldot = gamma * (cov_Hl_Ll - cov_Hlm1_Ll)
-                      - cov_Hl_Llm1 + cov_Hlm1_Llm1;
-  Real cov_YHl_YLl = cov_Hl_Ll - cov_Hlm1_Ll - cov_Hl_Llm1 + cov_Hlm1_Llm1;
-  Real var_YLldot  = gamma * (gamma * var_Ll - 2. * cov_Ll_Llm1) + var_Llm1;
-  Real var_YHl = var_Hl - 2. * cov_Hl_Hlm1 + var_Hlm1,
-       var_YLl = var_Ll - 2. * cov_Ll_Llm1 + var_Llm1,
-       theta   = cov_YHl_YLldot / cov_YHl_YLl, tau = var_YLldot / var_YLl;
-  // carry forwards:
-  var_YH   = var_Hl - 2. * cov_Hl_Hlm1 + var_Hlm1; // var(H_l - H_lm1)
-  beta_dot = cov_YHl_YLldot / var_YLldot;
-
-  // compute evaluation ratio which determines increment for LF samples
-  // > the sample increment optimizes the total computational budget and is
-  //   not treated as a worst case accuracy reqmt --> use the QoI average
-  // > refinement based only on QoI mean statistics
-  // Given use of 1/r in MSE_ratio, one approach would average 1/r, but
-  // this does not seem to behave as well in limited numerical experience.
-  Real rho2_LH = cov_YHl_YLl / var_YHl * cov_YHl_YLl / var_YLl,
-       ratio   = theta * theta / tau;
-  // variance reduction test
-  //if (ratio < 1.) ...switch to Ycorr-based control...
-  rho_dot2_LH  = rho2_LH * ratio;
-  //rho_dot2_LH = cov_YHl_YLldot / var_YHl * cov_YHl_YLldot / var_YLldot;
-
-  if (outputLevel == DEBUG_OUTPUT)
-    Cout << "compute_control(): var reduce ratio = " << ratio << " rho2_LH = "
-	 << rho2_LH << " rho_dot2_LH = " << rho_dot2_LH << std::endl;
-}
-
-
-void NonDMultifidelitySampling::
-apply_control(Real sum_H, Real sum_L_shared, size_t N_shared,
-	      Real sum_L_refined, size_t N_refined, Real beta, Real& H_raw_mom)
-{
-  // apply control for HF uncentered raw moment estimates:
-  H_raw_mom = sum_H / N_shared                    // mu_H from shared samples
-            - beta * (sum_L_shared  / N_shared -  // mu_L from shared samples
-		      sum_L_refined / N_refined); // refined_mu_L incl increment
-}
-
-
-void NonDMultifidelitySampling::
-apply_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
-	      size_t N_shared,  Real sum_Ll_refined, Real sum_Llm1_refined,
-	      size_t N_refined, Real beta_dot, Real gamma, Real& H_raw_mom)
-{
-  // updated LF expectations following final sample increment:
-  Real mu_Hl = sum_Hl / N_shared,  mu_Hlm1 = sum_Hlm1 / N_shared,
-       mu_Ll = sum_Ll / N_shared,  mu_Llm1 = sum_Llm1 / N_shared;
-  Real refined_mu_Ll   =   sum_Ll_refined / N_refined;
-  Real refined_mu_Llm1 = sum_Llm1_refined / N_refined;
-
-  // apply control for HF uncentered raw moment estimates:
-  Real mu_YH            = mu_Hl - mu_Hlm1;
-  Real mu_YLdot         = gamma *         mu_Ll -         mu_Llm1;
-  Real refined_mu_YLdot = gamma * refined_mu_Ll - refined_mu_Llm1;
-  H_raw_mom             = mu_YH - beta_dot * (mu_YLdot - refined_mu_YLdot);
 }
 
 } // namespace Dakota

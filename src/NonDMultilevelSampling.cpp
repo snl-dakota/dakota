@@ -98,7 +98,6 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     }
   }
 
-  max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   // For testing multilevel_mc_Qsum():
   //subIteratorFlag = true;
 
@@ -133,18 +132,7 @@ NonDMultilevelSampling::~NonDMultilevelSampling()
 { }
 
 
-bool NonDMultilevelSampling::resize()
-{
-  bool parent_reinit_comms = NonDSampling::resize();
-
-  Cerr << "\nError: Resizing is not yet supported in method "
-       << method_enum_to_string(methodName) << "." << std::endl;
-  abort_handler(METHOD_ERROR);
-
-  return parent_reinit_comms;
-}
-
-
+/*
 void NonDMultilevelSampling::pre_run()
 {
   NonDSampling::pre_run();
@@ -158,6 +146,7 @@ void NonDMultilevelSampling::pre_run()
       Nl_i[j].assign(numFunctions, 0);
   }
 }
+*/
 
 
 /** The primary run function manages the general case: a hierarchy of model 
@@ -499,9 +488,10 @@ void NonDMultilevelSampling::evaluate_sample_increment(const unsigned short& ste
 }
 
 
-void NonDMultilevelSampling::accumulate_sums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-         IntIntPairRealMatrixMap& sum_QlQlm1, const size_t step,
-         const RealVectorArray& offset, Sizet2DArray& N_l)
+void NonDMultilevelSampling::
+accumulate_sums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+		IntIntPairRealMatrixMap& sum_QlQlm1, const size_t step,
+		const RealVectorArray& offset, Sizet2DArray& N_l)
 {
   // process allResponses: accumulate new samples for each qoi and
   // update number of successful samples for each QoI
@@ -731,9 +721,9 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 
 
 void NonDMultilevelSampling::
-  compute_error_estimates(IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
-                          IntIntPairRealMatrixMap &sum_QlQlm1,
-                          Sizet2DArray &num_Q) 
+compute_error_estimates(IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
+			IntIntPairRealMatrixMap &sum_QlQlm1,
+			Sizet2DArray &num_Q) 
 {
   if (!finalMomentsType)
     return;
@@ -810,6 +800,7 @@ void NonDMultilevelSampling::
 }
 
 
+/*
 void NonDMultilevelSampling::post_run(std::ostream& s)
 {
   // Final moments are generated within core_run() by convert_moments().
@@ -839,6 +830,7 @@ void NonDMultilevelSampling::print_results(std::ostream& s, short results_state)
     archive_equiv_hf_evals(equivHFEvals); 
   }
 }
+*/
 
 
 static RealVector *static_lev_cost_vec(NULL);

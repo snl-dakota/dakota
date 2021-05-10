@@ -62,10 +62,6 @@ protected:
   //- Heading: Member functions
   //
 
-  /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
-		    const SizetArray& N_hf, size_t iter, size_t lev);
-
   void evaluate_sample_increment(const unsigned short& step);
 
   /// synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
