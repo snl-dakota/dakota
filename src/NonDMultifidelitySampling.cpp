@@ -76,6 +76,14 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
   if (err_flag)
     abort_handler(METHOD_ERROR);
   */
+
+  // For now...
+  size_t num_mf = NLev.size();
+  if (num_mf > 2) {
+    Cerr << "Warning: NonDMultifidelitySampling currently uses first and last "
+	 << "model in ordered sequence and ignores the rest." << std::endl;
+    //abort_handler(METHOD_ERROR);
+  }
 }
 
 

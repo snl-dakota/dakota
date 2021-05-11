@@ -2759,7 +2759,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( multilevel_sampling ALIAS multilevel_mc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
+  ( multilevel_sampling ALIAS multilevel_mc ALIAS mlmc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
@@ -2813,6 +2813,94 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       cost_constraint {N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT)}
      ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( multifidelity_sampling ALIAS multifidelity_mc ALIAS mfmc {N_mdm(utype,methodName_MULTIFIDELITY_SAMPLING)}
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
+      [ 
+        ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+          [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+          [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+         )
+        |
+        annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+        |
+        freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( multilevel_multifidelity_sampling ALIAS multilevel_multifidelity_mc ALIAS mlmfmc {N_mdm(utype,methodName_MULTILEVEL_MULTIFIDELITY_SAMPLING)}
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
+      [ 
+        ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+          [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+          [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+         )
+        |
+        annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+        |
+        freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(int,maxIterations)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
