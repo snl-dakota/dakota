@@ -158,7 +158,7 @@ void NonDHierarchSampling::pre_run()
 
 
 /*  ... Some early notes when there was one composite core_run() ...
-void NonDMultifidelitySampling::core_run()
+void NonDHierarchSampling::core_run()
 {
   // Future: include peer alternatives (1D list --> matrix)
   //         For MLMC, could seek adaptive selection of most correlated

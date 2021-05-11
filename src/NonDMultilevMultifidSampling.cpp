@@ -40,11 +40,14 @@ NonDMultilevMultifidSampling(ProblemDescDB& problem_db, Model& model):
   // *** TO DO: verify valid 2D hierarchy from NLev sizing ***
 
   // For now...
+  // *** Note: prior to MFMC for num_mf > 2, allow limiting ragged case
+  //           with num_hf_lev == 1
+  // *** Note: DIFFs since previously this case was delegated to MLMC
   size_t num_mf = NLev.size(), num_hf_lev = NLev.back().size();
   if (num_mf <= 1 || num_hf_lev <= 1) {
-    Cerr << "Error: NonDMultilevMultifidSampling requires multiple model forms "
-	 << " and multiple HF solution levels." << std::endl;
-    abort_handler(METHOD_ERROR);
+    Cerr << "Warning: NonDMultilevMultifidSampling assumes multiple model forms "
+	 << "and multiple HF solution levels." << std::endl;
+    //abort_handler(METHOD_ERROR);
   }
 }
 

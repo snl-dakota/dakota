@@ -9,7 +9,7 @@
 
 method,
 	model_pointer = 'HIERARCH'
-        multilevel_sampling				
+        multifidelity_sampling
 	  pilot_samples = 20 seed = 1237
 #	  max_iterations = 0
 	  convergence_tolerance =    .1			#s0,#s2,#s4,#p0,#p1,#p2,#p3
