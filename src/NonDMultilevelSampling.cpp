@@ -35,11 +35,17 @@ NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDHierarchSampling(problem_db, model),
   allocationTarget(problem_db.get_short("method.nond.allocation_target")),
-  useTargetVarianceOptimizationFlag(problem_db.get_bool("method.nond.allocation_target.optimization")),
+  useTargetVarianceOptimizationFlag(
+    problem_db.get_bool("method.nond.allocation_target.optimization")),
   qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
-  convergenceTolType(problem_db.get_short("method.nond.convergence_tolerance_type")),
-  convergenceTolTarget(problem_db.get_short("method.nond.convergence_tolerance_target"))
+  convergenceTolType(
+    problem_db.get_short("method.nond.convergence_tolerance_type")),
+  convergenceTolTarget(
+    problem_db.get_short("method.nond.convergence_tolerance_target"))
 {
+  /*
+  *** TO DO: allow either 1D hierarchy but select ML over MF by default: ***
+
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   size_t i, j, num_mf = ordered_models.size(), num_lev,
     prev_lev = std::numeric_limits<size_t>::max(),
@@ -77,54 +83,37 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   }
   if (err_flag)
     abort_handler(METHOD_ERROR);
-
-  if( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples), [](int i){ return i > 0; }) ){
-    Cerr << "\nError: Some levels have pilot samples of size 0 in "
-       << method_enum_to_string(methodName) << "." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  switch (pilot_size) {
-    case 0: maxEvalConcurrency *= 100;             break;
-    case 1: maxEvalConcurrency *= pilotSamples[0]; break;
-    default: {
-      size_t max_ps = 0;
-      for (i=0; i<pilot_size; ++i)
-        if (pilotSamples[i] > max_ps)
-  	max_ps = pilotSamples[i];
-      if (max_ps)
-        maxEvalConcurrency *= max_ps;
-      break;
-    }
-  }
+  */
 
   // For testing multilevel_mc_Qsum():
   //subIteratorFlag = true;
 
-  if(allocationTarget == TARGET_SCALARIZATION){
-    if(qoiAggregation == QOI_AGGREGATION_SUM){
-      Cerr << "\n Error: Scalarization not available with setting qoi_aggregation=sum. "
-     << "Use qoi_aggregation=max instead." << std::endl;
+  if (allocationTarget == TARGET_SCALARIZATION) {
+    if (qoiAggregation == QOI_AGGREGATION_SUM) {
+      Cerr << "\nError: Scalarization not available with setting qoi_"
+	   << "aggregation=sum. Use qoi_aggregation=max instead." << std::endl;
       abort_handler(METHOD_ERROR);
     }
     // Retrieve the variable mapping inputs
-    const RealVector& scalarization_response_vector
+    const RealVector& scalarization_resp_vector
       = probDescDB.get_rv("method.nond.scalarization_response_mapping");
-    if (scalarization_response_vector.empty() || scalarization_response_vector.length() != numFunctions*(2*numFunctions) ) {
-      Cerr << "\n Warning: no or incomplete mappings provided for scalarization mapping in "
-     << "multilevel sampling initialization. Checking for nested model." << std::endl;
-    }else{
+    if (scalarization_resp_vector.empty() ||
+	scalarization_resp_vector.length() != numFunctions*(2*numFunctions) ) {
+      Cerr << "\n Warning: no or incomplete mappings provided for scalarization"
+	   << " mapping in multilevel sampling initialization. Checking for "
+	   << "nested model." << std::endl;
+    }
+    else{
       scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
       size_t vec_ctr = 0;
       for(size_t i = 0; i < numFunctions; ++i){
         for(size_t j = 0; j < numFunctions; ++j){
-          scalarizationCoeffs(i, 2*j) = scalarization_response_vector[vec_ctr++];
-          scalarizationCoeffs(i, 2*j+1) = scalarization_response_vector[vec_ctr++];
+          scalarizationCoeffs(i, 2*j)   = scalarization_resp_vector[vec_ctr++];
+          scalarizationCoeffs(i, 2*j+1) = scalarization_resp_vector[vec_ctr++];
         }
       }
     }
   }
- 
 }
 
 
@@ -154,39 +143,21 @@ void NonDMultilevelSampling::pre_run()
     each of which may contain multiple discretization levels. */
 void NonDMultilevelSampling::core_run()
 {
-  //model,
-  //  surrogate hierarchical
-  //    ordered_model_fidelities = 'LF' 'MF' 'HF'
-  //
-  // Future: include peer alternatives (1D list --> matrix)
-  //         For MLMC, could seek adaptive selection of most correlated
-  //         alternative (or a convex combination of alternatives).
-
-  // TO DO: hierarchy incl peers (not peers each optionally incl hierarchy)
-  //   num_mf     = iteratedModel.model_hierarchy_depth();
-  //   num_peer_i = iteratedModel.model_peer_breadth(i);
-
-  // TO DO: this initial logic is limiting:
-  // > allow MLMC and CVMC for either model forms or discretization levels
-  // > separate method specs that both map to NonDMultilevelSampling ???
-
-  // TO DO: following pilot sample across levels and fidelities in mixed case,
-  // could pair models for CVMC based on estimation of rho2_LH.
+  // TO DO: allow MLMC for either model forms or discretization levels
 
   // For two-model control variate methods, select lowest,highest fidelities
   size_t num_mf = NLev.size();
   unsigned short lf_form = 0, hf_form = num_mf - 1; // ordered_models = low:high
-  if (num_mf > 1) {
-    size_t num_hf_lev = NLev.back().size();
+  //if (num_mf > 1) {
+  //  size_t num_hf_lev = NLev.back().size();
 
-  }
-  else { // multiple solutions levels (only) --> traditional ML-MC
-    if (true){ //(subIteratorFlag)
+  //}
+  //else { // multiple solutions levels (only) --> traditional ML-MC
+    if (true)//(subIteratorFlag)
       multilevel_mc_Qsum(hf_form); // w/ error est, unbiased central moments
-    }
     else
       multilevel_mc_Ysum(hf_form); // lighter weight
-  }
+  //}
 }
 
 

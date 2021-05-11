@@ -109,18 +109,18 @@ private:
 
   /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
-  void initialize_cv_sums(IntRealVectorMap& sum_L_shared,
+  void initialize_mf_sums(IntRealVectorMap& sum_L_shared,
 			  IntRealVectorMap& sum_L_refined,
 			  IntRealVectorMap& sum_H, IntRealVectorMap& sum_LL,
 			  IntRealVectorMap& sum_LH);
 
   /// update running sums for one model (sum_L) using set of model
   /// evaluations within allResponses
-  void accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
+  void accumulate_mf_sums(IntRealVectorMap& sum_L, const RealVector& offset,
 			  SizetArray& num_L);
   /// update running sums for two models (sum_L, sum_H, and sum_LH)
   /// from set of low/high fidelity model evaluations within allResponses
-  void accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
+  void accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
 			  IntRealVectorMap& sum_L_refined,
 			  IntRealVectorMap& sum_H,  IntRealVectorMap& sum_LL,
 			  IntRealVectorMap& sum_LH, RealVector& sum_HH,

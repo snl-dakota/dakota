@@ -35,29 +35,8 @@ NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
   NonDHierarchSampling(problem_db, model), finalCVRefinement(true)
 {
-  // initialize scalars from sequence
-  seedSpec = randomSeed = random_seed(0);
-
-  // Support multilevel LHS as a specification override.  The estimator variance
-  // is known/correct for MC and an assumption/approximation for LHS.  To get an
-  // accurate LHS estimator variance, one would need:
-  // (a) assumptions about separability -> analytic variance reduction by a
-  //     constant factor
-  // (b) similarly, assumptions about the form relative to MC (e.g., a constant
-  //     factor largely cancels out within the relative sample allocation.)
-  // (c) numerically-generated estimator variance (from, e.g., replicated LHS)
-  if (!sampleType) // SUBMETHOD_DEFAULT
-    sampleType = SUBMETHOD_RANDOM;
-
-  // check iteratedModel for model form hierarchy and/or discretization levels;
-  // set initial response mode for set_communicators() (precedes core_run()).
-  if (iteratedModel.surrogate_type() == "hierarchical")
-    aggregated_models_mode();
-  else {
-    Cerr << "Error: Multifidelity Monte Carlo requires a hierarchical "
-	 << "surrogate model specification." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  /*
+  *** TO DO: allow either 1D hierarchy but select MF over ML by default: ***
 
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   size_t i, j, num_mf = ordered_models.size(), num_lev,
@@ -96,27 +75,7 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
   }
   if (err_flag)
     abort_handler(METHOD_ERROR);
-
-  if( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples), [](int i){ return i > 0; }) ){
-    Cerr << "\nError: Some levels have pilot samples of size 0 in "
-       << method_enum_to_string(methodName) << "." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  switch (pilot_size) {
-    case 0: maxEvalConcurrency *= 100;             break;
-    case 1: maxEvalConcurrency *= pilotSamples[0]; break;
-    default: {
-      size_t max_ps = 0;
-      for (i=0; i<pilot_size; ++i)
-        if (pilotSamples[i] > max_ps)
-  	max_ps = pilotSamples[i];
-      if (max_ps)
-        maxEvalConcurrency *= max_ps;
-      break;
-    }
-  }
-
+  */
 }
 
 
@@ -129,40 +88,21 @@ NonDMultifidelitySampling::~NonDMultifidelitySampling()
     each of which may contain multiple discretization levels. */
 void NonDMultifidelitySampling::core_run()
 {
-  //model,
-  //  surrogate hierarchical
-  //    ordered_model_fidelities = 'LF' 'MF' 'HF'
-  //
-  // Future: include peer alternatives (1D list --> matrix)
-  //         For MLMC, could seek adaptive selection of most correlated
-  //         alternative (or a convex combination of alternatives).
-
-  // TO DO: hierarchy incl peers (not peers each optionally incl hierarchy)
-  //   num_mf     = iteratedModel.model_hierarchy_depth();
-  //   num_peer_i = iteratedModel.model_peer_breadth(i);
-
-  // TO DO: this initial logic is limiting:
-  // > allow MLMC and CVMC for either model forms or discretization levels
-  // > separate method specs that both map to NonDMultifidelitySampling ???
-
-  // TO DO: following pilot sample across levels and fidelities in mixed case,
-  // could pair models for CVMC based on estimation of rho2_LH.
-
   // For two-model control variate methods, select lowest,highest fidelities
   size_t num_mf = NLev.size();
   unsigned short lf_form = 0, hf_form = num_mf - 1; // ordered_models = low:high
-  size_t num_hf_lev = NLev.back().size();
-  if (num_hf_lev > 1) { // ML performed on HF with CV using available LF
+  //size_t num_hf_lev = NLev.back().size();
+  //if (num_hf_lev > 1) { // ML performed on HF with CV using available LF
     // multiple model forms + multiple solutions levels
       
-  }
-  else { // multiple model forms (only) --> CVMC
+  //}
+  //else { // multiple model forms (only) --> CVMC
     // use nominal value from user input, ignoring solution_level_control
     Pecos::ActiveKey hf_lf_key;
     size_t lev = std::numeric_limits<size_t>::max();
     hf_lf_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
     control_variate_mc(hf_lf_key);
-  }
+  //}
 }
 
 
@@ -192,7 +132,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     cost_ratio = hf_cost / lf_cost, avg_eval_ratio, avg_mse_ratio;
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
-  initialize_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
+  initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions), var_H(numFunctions, false),
             rho2_LH(numFunctions, false);
 
@@ -219,7 +159,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   // Initialize for pilot sample (shared sample count discarding any excess)
   numSamples = std::min(delta_N_l[lf_form], delta_N_l[hf_form]);
   shared_increment(mlmfIter, 0);
-  accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
+  accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 		     sum_HH, mu_hat, N_lf, N_hf);
   raw_N_lf += numSamples; raw_N_hf += numSamples;
 
@@ -247,7 +187,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 
     if (numSamples) {
       shared_increment(++mlmfIter, 0);
-      accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
+      accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 			 sum_HH, mu_hat, N_lf, N_hf);
       raw_N_lf += numSamples; raw_N_hf += numSamples;
       // update ratios:
@@ -267,7 +207,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   // to the augmentation, which could imply a future group segregation)
   iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
   if (lf_increment(avg_eval_ratio, N_lf, N_hf, ++mlmfIter, 0)) { // level 0
-    accumulate_cv_sums(sum_L_refined, mu_hat, N_lf);
+    accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
     raw_N_lf += numSamples;
   }
 
@@ -284,7 +224,7 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 
 
 void NonDMultifidelitySampling::
-initialize_cv_sums(IntRealVectorMap& sum_L_shared,
+initialize_mf_sums(IntRealVectorMap& sum_L_shared,
 		   IntRealVectorMap& sum_L_refined, IntRealVectorMap& sum_H,
 		   IntRealVectorMap& sum_LL,      //IntRealVectorMap& sum_HH,
 		   IntRealVectorMap& sum_LH)
@@ -306,7 +246,7 @@ initialize_cv_sums(IntRealVectorMap& sum_L_shared,
 
 
 void NonDMultifidelitySampling::
-accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
+accumulate_mf_sums(IntRealVectorMap& sum_L, const RealVector& offset,
 		   SizetArray& num_L)
 {
   // uses one set of allResponses in BYPASS_SURROGATE mode
@@ -343,7 +283,7 @@ accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
 
 
 void NonDMultifidelitySampling::
-accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
+accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
 		   IntRealVectorMap& sum_L_refined, IntRealVectorMap& sum_H,
 		   IntRealVectorMap& sum_LL, IntRealVectorMap& sum_LH,
 		   RealVector& sum_HH, const RealVector& offset,

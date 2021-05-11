@@ -55,8 +55,11 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   if (!sampleType) // SUBMETHOD_DEFAULT
     sampleType = SUBMETHOD_RANDOM;
 
-  // check iteratedModel for model form hierarchy and/or discretization levels;
-  // set initial response mode for set_communicators() (precedes core_run()).
+  // ensure iteratedModel is a hierarchical surrogate model and set initial
+  // response mode (for set_communicators() which precedes core_run()).
+  // Note: even though the hierarchy may be multilevel | multifidelity | both,
+  // we require a hierarchical model to manage aggregations, reductions, etc.
+  // (i.e. a SimulationModel with resolution hyper-parameters is insufficient).
   if (iteratedModel.surrogate_type() == "hierarchical")
     aggregated_models_mode();
   else {
@@ -103,20 +106,18 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   if (err_flag)
     abort_handler(METHOD_ERROR);
 
-  if( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples), [](int i){ return i > 0; }) ){
+  if ( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples),
+		     [](int i){ return i > 0; }) ) {
     Cerr << "\nError: Some levels have pilot samples of size 0 in "
-       << method_enum_to_string(methodName) << "." << std::endl;
+       << method_enum_to_string(methodName) << '.' << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   switch (pilot_size) {
     case 0: maxEvalConcurrency *= 100;             break;
-    case 1: maxEvalConcurrency *= pilotSamples[0]; break;
+  //case 1: maxEvalConcurrency *= pilotSamples[0]; break;
     default: {
-      size_t max_ps = 0;
-      for (i=0; i<pilot_size; ++i)
-        if (pilotSamples[i] > max_ps)
-  	max_ps = pilotSamples[i];
+      size_t max_ps = find_max(pilotSamples);
       if (max_ps)
         maxEvalConcurrency *= max_ps;
       break;
@@ -154,6 +155,27 @@ void NonDHierarchSampling::pre_run()
       Nl_i[j].assign(numFunctions, 0);
   }
 }
+
+
+/*  ... Some early notes when there was one composite core_run() ...
+void NonDMultifidelitySampling::core_run()
+{
+  // Future: include peer alternatives (1D list --> matrix)
+  //         For MLMC, could seek adaptive selection of most correlated
+  //         alternative (or a convex combination of alternatives).
+
+  // TO DO: hierarchy incl peers (not peers each optionally incl hierarchy)
+  //   num_mf     = iteratedModel.model_hierarchy_depth();
+  //   num_peer_i = iteratedModel.model_peer_breadth(i);
+
+  // TO DO: this initial logic is limiting:
+  // > allow MLMC and CVMC for either model forms or discretization levels
+  // > separate method specs that both map to NonDMultifidelitySampling ???
+
+  // TO DO: following pilot sample across levels and fidelities in mixed case,
+  // could pair models for CVMC based on estimation of rho2_LH.
+}
+*/
 
 
 void NonDHierarchSampling::

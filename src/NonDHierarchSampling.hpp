@@ -38,8 +38,9 @@ public:
 
   /// standard constructor
   NonDHierarchSampling(ProblemDescDB& problem_db, Model& model);
-  /// destructor
-  ~NonDHierarchSampling();
+  /// destructor (virtual declaration should be redundant with ~Iterator,
+  /// but this is top of MLMF diamond so doesn't hurt to be explicit)
+  virtual ~NonDHierarchSampling();
 
   //
   //- Heading: Virtual function redefinitions

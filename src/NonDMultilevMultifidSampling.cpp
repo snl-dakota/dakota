@@ -37,88 +37,15 @@ NonDMultilevMultifidSampling(ProblemDescDB& problem_db, Model& model):
   NonDMultifidelitySampling(problem_db, model),
   NonDHierarchSampling(problem_db, model) // top of virtual inheritance
 {
-  // initialize scalars from sequence
-  seedSpec = randomSeed = random_seed(0);
+  // *** TO DO: verify valid 2D hierarchy from NLev sizing ***
 
-  // Support multilevel LHS as a specification override.  The estimator variance
-  // is known/correct for MC and an assumption/approximation for LHS.  To get an
-  // accurate LHS estimator variance, one would need:
-  // (a) assumptions about separability -> analytic variance reduction by a
-  //     constant factor
-  // (b) similarly, assumptions about the form relative to MC (e.g., a constant
-  //     factor largely cancels out within the relative sample allocation.)
-  // (c) numerically-generated estimator variance (from, e.g., replicated LHS)
-  if (!sampleType) // SUBMETHOD_DEFAULT
-    sampleType = SUBMETHOD_RANDOM;
-
-  // check iteratedModel for model form hierarchy and/or discretization levels;
-  // set initial response mode for set_communicators() (precedes core_run()).
-  if (iteratedModel.surrogate_type() == "hierarchical")
-    aggregated_models_mode();
-  else {
-    Cerr << "Error: MultilevMultifid Monte Carlo requires a hierarchical "
-	 << "surrogate model specification." << std::endl;
+  // For now...
+  size_t num_mf = NLev.size(), num_hf_lev = NLev.back().size();
+  if (num_mf <= 1 || num_hf_lev <= 1) {
+    Cerr << "Error: NonDMultilevMultifidSampling requires multiple model forms "
+	 << " and multiple HF solution levels." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  size_t i, j, num_mf = ordered_models.size(), num_lev,
-    prev_lev = std::numeric_limits<size_t>::max(),
-    pilot_size = pilotSamples.size();
-  ModelLRevIter ml_rit; bool err_flag = false;
-  NLev.resize(num_mf);
-  for (i=num_mf-1, ml_rit=ordered_models.rbegin();
-       ml_rit!=ordered_models.rend(); --i, ++ml_rit) { // high fid to low fid
-    // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev = ml_rit->solution_levels(); // lower bound is 1 soln level
-
-    if (num_lev > prev_lev) {
-      Cerr << "\nWarning: unused solution levels in multilevel sampling for "
-	   << "model " << ml_rit->model_id() << ".\n         Ignoring "
-	   << num_lev - prev_lev << " of " << num_lev << " levels."<< std::endl;
-      num_lev = prev_lev;
-    }
-
-    // Ensure there is consistent cost data available as SimulationModel must
-    // be allowed to have empty solnCntlCostMap (when optional solution control
-    // is not specified).  Passing false bypasses lower bound of 1.
-    if (num_lev > ml_rit->solution_levels(false)) { // default is 0 soln costs
-      Cerr << "Error: insufficient cost data provided for multilevel sampling."
-	   << "\n       Please provide solution_level_cost estimates for model "
-	   << ml_rit->model_id() << '.' << std::endl;
-      err_flag = true;
-    }
-
-    //Sizet2DArray& Nl_i = NLev[i];
-    NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
-    //for (j=0; j<num_lev; ++j)
-    //  Nl_i[j].resize(numFunctions); // defer to pre_run()
-
-    prev_lev = num_lev;
-  }
-  if (err_flag)
-    abort_handler(METHOD_ERROR);
-
-  if( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples), [](int i){ return i > 0; }) ){
-    Cerr << "\nError: Some levels have pilot samples of size 0 in "
-       << method_enum_to_string(methodName) << "." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  switch (pilot_size) {
-    case 0: maxEvalConcurrency *= 100;             break;
-    case 1: maxEvalConcurrency *= pilotSamples[0]; break;
-    default: {
-      size_t max_ps = 0;
-      for (i=0; i<pilot_size; ++i)
-        if (pilotSamples[i] > max_ps)
-  	max_ps = pilotSamples[i];
-      if (max_ps)
-        maxEvalConcurrency *= max_ps;
-      break;
-    }
-  }
- 
 }
 
 
@@ -160,40 +87,19 @@ void NonDMultilevMultifidSampling::pre_run()
     each of which may contain multiple discretization levels. */
 void NonDMultilevMultifidSampling::core_run()
 {
-  //model,
-  //  surrogate hierarchical
-  //    ordered_model_fidelities = 'LF' 'MF' 'HF'
-  //
-  // Future: include peer alternatives (1D list --> matrix)
-  //         For MLMC, could seek adaptive selection of most correlated
-  //         alternative (or a convex combination of alternatives).
-
-  // TO DO: hierarchy incl peers (not peers each optionally incl hierarchy)
-  //   num_mf     = iteratedModel.model_hierarchy_depth();
-  //   num_peer_i = iteratedModel.model_peer_breadth(i);
-
-  // TO DO: this initial logic is limiting:
-  // > allow MLMC and CVMC for either model forms or discretization levels
-  // > separate method specs that both map to NonDMultilevMultifidSampling ???
-
-  // TO DO: following pilot sample across levels and fidelities in mixed case,
-  // could pair models for CVMC based on estimation of rho2_LH.
+  // multiple model forms (currently limited to 2) + multiple solutions levels
 
   // For two-model control variate methods, select lowest,highest fidelities
   size_t num_mf = NLev.size();
   unsigned short lf_form = 0, hf_form = num_mf - 1; // ordered_models = low:high
 
-    size_t num_hf_lev = NLev.back().size();
-    if (num_hf_lev > 1) { // ML performed on HF with CV using available LF
-      // multiple model forms + multiple solutions levels --> perform MLMC on
-      // HF model and bind 1:min(num_hf,num_lf) LF control variates starting
-      // at coarsest level (TO DO: validate case of unequal levels)
-      if (true) // reformulated approach using 1 new QoI correlation per level
-	multilevel_control_variate_mc_Qcorr(lf_form, hf_form);
-      else      // original approach using 1 discrepancy correlation per level
-	multilevel_control_variate_mc_Ycorr(lf_form, hf_form);
-    }
-
+  // ML performed on HF + CV applied per level using LF if available:
+  // perform MLMC on HF model and bind 1:min(num_hf,num_lf) LF control
+  // variates starting at coarsest level
+  if (true) // reformulated approach using 1 new QoI correlation per level
+    multilevel_control_variate_mc_Qcorr(lf_form, hf_form);
+  else      // original approach using 1 discrepancy correlation per level
+    multilevel_control_variate_mc_Ycorr(lf_form, hf_form);
 }
 
 
