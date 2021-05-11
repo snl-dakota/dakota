@@ -757,8 +757,13 @@ or for the optimization of the expected improvement function, which is
 currently performed by the NCSU DIRECT algorithm. The only item the
 user can specify is a seed which is used in the Latin Hypercube
 Sampling to generate the initial set of points which is used to
-construct the initial Gaussian process.  An example specification for
-the EGO algorithm is shown in Figure~\ref{opt:methods:gradientfree:global:example:egm_rosen}.
+construct the initial Gaussian process.  Parallel optimization with 
+multiple concurrent evaluations is possible by adjusting the batch 
+size, which is consisted of two smaller batches. The first batch 
+aims at maximizing the acquisition function, where the second batch 
+promotes the exploration by maximizing the variance. An example 
+specification for the EGO algorithm is shown in 
+Figure~\ref{opt:methods:gradientfree:global:example:egm_rosen}.
 \begin{figure}
   \begin{bigbox}
     \begin{small}

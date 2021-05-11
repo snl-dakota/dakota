@@ -1,0 +1,5 @@
+Blurb::
+Use a relative converge criterion.
+
+Description::
+Computes an initial tolerance \f$\epsilon^2_{init}\f$ using the pilot samples and applies the value of keyword convergence_tolerance \f$ c_t \f$ to compute the target convergence_tolerance as \f$ \epsilon^2_{target} = \epsilon^2_{init} \cdot c_t \f$. Similarly if convergence_tolerance_target is equal to cost_constraint. See description in current reference manual at method.multilevel_sampling.convergence_tolerance as reference as well.

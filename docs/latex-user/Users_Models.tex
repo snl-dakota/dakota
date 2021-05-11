@@ -1125,15 +1125,18 @@ surrogate model types.
 \subsection{Python Interface to the Surrogates Module}
 \label{models:surrogate:python}
 
-Dakota 6.13 uses Pybind11~\cite{pybind11} to provide a Python interface to the
-surrogates module \texttt{dakota.surrogates}, which currently contains
+Dakota 6.13 onwards uses Pybind11~\cite{pybind11} to provide a Python
+interface to the
+surrogates module\\
+\texttt{dakota.surrogates}, which currently contains
 polynomial and Gaussian process regression surrogates. In this section we
 describe how to enable the interface and provide a simple demonstration.
 
 After installing Dakota, \texttt{dakota.surrogates} may be used by setting the
 environment variable \texttt{PYTHONPATH} to include
-\texttt{\$DAK\_INSTALL/share/dakota/Python}. Note that doing so will also
-enable \texttt{dakota.interfacing} as described in
+\path{$DAK_INSTALL/share/dakota/Python}. Note that doing so will also
+enable\\
+\texttt{dakota.interfacing} as described in
 \ref{interfaces:dakota.interfacing}.
 
 The Python code snippet below shows how a Gaussian process surrogate can be
@@ -1158,15 +1161,15 @@ gp_eval_surr = gp.value(eval_samples)
 daksurr.save(gp, "gp.bin", True)
 \end{verbatim}
 
-The test \texttt{test\_surrogate.py} located in
-\texttt{\$DAK\_SRC/src/surrogates/unit} contains additional examples of
-surrogate build/save/load workflows and other Python-accessible methods
-(e.g. gradient and hessian evaluation, getting and setting of variable
-and response labels).
+The examples located in
+\path{$DAK_INSTALL/share/dakota/examples/official/surrogates/library}
+cover surrogate build/save/load workflows and other Python-accessible methods
+such as gradient and hessian evaluation.
 
 As a word of caution, the configuration options for a surrogate loaded from
 disk will be empty because the current implementation does not serialize
-them.
+them, although the save command will generate a YAML file \texttt{ClassName.yaml}
+of configuration options used by the surrogate for reference.
 
 
 \section{Nested Models} \label{models:nested}

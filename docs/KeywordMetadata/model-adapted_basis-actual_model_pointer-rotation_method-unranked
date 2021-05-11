@@ -1,0 +1,15 @@
+Blurb::
+Use the unranked method to obtain the rotation matrix
+
+Description::
+In this case the construction of the second to last rows of the rotation matrix is performed by using the value 1 in the diagonal terms and zeros elsewhere. 
+
+
+Topics::
+
+Examples::
+Theory::
+
+
+Faq::
+See_Also::

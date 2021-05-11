@@ -74,6 +74,13 @@ mixed scalar and field calibration terms, one may use the \ref
 responses-calibration_terms-calibration_data-scalar_data_file
 specification, which uses the format described on this page.
 
+\li <b>Attention:</b> In versions of Dakota prior to 6.14,
+string-valued configuration variables were specified in data files
+with 0-based indices into the admissible values. As of Dakota 6.14,
+strings must be specified by value. For example a string-valued
+configuration variable for an experimental condition might appear in
+the file as \c low_pressure vs. \c high_pressure.
+
 Topics::	
 
 Examples::

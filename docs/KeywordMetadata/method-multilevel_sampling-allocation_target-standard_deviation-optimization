@@ -1,0 +1,30 @@
+method-multilevel_sampling-allocation_target-standard_deviation-optimization
+
+Blurb:: 
+Solve the optimization problem for the sample allocation by numerical optimization in the case of sampling estimator targeting the standard_deviation.
+
+Description:: 
+Employ numerical optimization to solve the optimization problem for finding the optimal sample allocation when targeting the standard deviation. This option needs NPSOL (preferred choice) or OPTPP (alternative choice) installed.
+
+<b> Default Behavior </b>
+"off"
+
+Topics::
+
+Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  convergence_tolerance = .01
+	  allocation_target = standard_deviation
+	  	optimization
+\endverbatim
+
+uses the standard deviation as sample allocation target and solves the resulting optimization problem using numerical optimization.
+
+Theory::
+Faq::
+See_Also::

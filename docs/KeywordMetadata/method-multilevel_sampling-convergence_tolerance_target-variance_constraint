@@ -1,0 +1,2 @@
+Blurb::
+Minimizes the cost while targeting a certain variance given in keyword \c convergence_tolerance.

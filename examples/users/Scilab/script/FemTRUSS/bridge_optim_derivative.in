@@ -1,0 +1,34 @@
+# bridge_optim_derivative.in
+
+method,
+        optpp_q_newton
+          max_iterations = 40,
+          convergence_tolerance = 1.0e-6
+
+variables,
+        continuous_design = 18
+          cdv_initial_point  1.  1.  2.  1.  3.  1.  4.  1.  5.  1.  6.  1.  7.  1.  8.  1.  9.  1.
+          cdv_lower_bounds  -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10
+          cdv_upper_bounds   10  10  10  10  10  10  10  10  10  10  10  10  10  10  10  10  10  10
+          cdv_descriptor     'x1' 'x2' 'x3' 'x4' 'x5' 'x6' 'x7' 'x8' 'x9' 'x10' 'x11' 'x12' 'x13' 'x14' 'x15' 'x16' 'x17' 'x18' 
+
+interface,
+        fork
+          analysis_driver = 'scilab_rosen_bb_simulator.sh',
+          parameters_file = 'params.in'
+          results_file = 'results.out'
+          deactivate active_set_vector
+
+responses,
+        num_objective_functions = 1
+##      analytic_gradients                      #0,#1,#2,#3
+        numerical_gradients                     #4
+          method_source dakota                  #4
+          interval_type central                 #4
+          fd_gradient_step_size = 1.e-3         #4
+        no_hessians
+##      analytic_hessians                       #0
+#       quasi_hessians damped bfgs              #1
+#       quasi_hessians sr1                      #2
+##      numerical_hessians                      #3,#4
+##        fd_hessian_step_size = 1.e-5          #3,#4

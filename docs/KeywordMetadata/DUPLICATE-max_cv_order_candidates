@@ -1,0 +1,15 @@
+Blurb:: Limit the number of cross-validation candidates for basis order
+
+Description::
+
+When generating refinement candidates by advancing the upper bound used
+for a cross-validation range, the number of cross-validation can eventually
+become excessive and hamper algorithm progress.  This control limits the
+maximum number of candidates, which when active, will increase the lower
+bound for this range as the upper bound is advanced.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	method-function_train-p_refinement-uniform-increment_max_order, method-function_train-p_refinement-uniform-increment_max_rank_order, method-polynomial_chaos, method-multifidelity_polynomial_chaos, method-function_train, method-multifidelity_function_train

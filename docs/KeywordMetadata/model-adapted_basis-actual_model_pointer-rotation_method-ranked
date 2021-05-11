@@ -1,0 +1,16 @@
+Blurb::
+Use the ranked method to obtain the rotation matrix
+
+Description::
+In this case the construction of the \f$i\f$th row, with \f$i \geq 2\f$, of the rotation matrix is performed by putting the \f$(i-1)\f$th largest linear PCE coefficient in the column that it occupies in the first row.
+
+Topics::
+
+Examples::
+
+
+Theory::
+The first row of the rotation captures the complete Gaussian components and is suggested as the leading direction. By the construction in this method, the other rotated variables are the variables in the original space that have the greatest sensitivity in descending order. The particular construction makes sure that the importance of the adapted variables is in descending order, which permits the possibility of reduced representation.
+
+Faq::
+See_Also::

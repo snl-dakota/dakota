@@ -1,8 +1,12 @@
 Blurb::
-Select how Dakota schedules function evaluations in a pattern search
+Select how Dakota schedules a batch of concurrent function evaluations in a parallel algorithm
+
 Description::
 The \c synchronization specification can be used to specify
-the use of either \c blocking or \c nonblocking schedulers.
+the use of either \c blocking or \c nonblocking schedulers, where the
+former must block until all evaluations are completed and the latter
+does not block, returning only the partial set that has been completed
+for a particular call to the scheduler.
 
 Topics:: 	
 Examples::

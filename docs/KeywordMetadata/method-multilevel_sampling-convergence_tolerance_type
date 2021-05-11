@@ -1,0 +1,5 @@
+Blurb::
+Sets the type of the convergence tolerance. Can be absolute or relative.
+
+<b> Default Behavior </b>
+"relative"

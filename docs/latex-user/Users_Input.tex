@@ -176,7 +176,12 @@ Calibration data imports include the following information:
 \item {\bf Configuration variables (optional):} state variable values
   indicating the configuration at which this experiment was conducted;
   length must agree with the number of state variables active in the
-  study.
+  study. {\bf Attention:} In versions of Dakota prior to 6.14,
+  string-valued configuration variables were specified in data files
+  with 0-based indices into the admissible values. As of Dakota 6.14,
+  strings must be specified by value. For example a string-valued
+  configuration variable for an experimental condition might appear in
+  the file as {\tt low\_pressure} vs. {\tt high\_pressure}.
 \item {\bf Experimental observations (required):} experimental data
   values to difference with model responses; length equal to the total
   response length (number of scalars + sum(field lengths)).
@@ -185,7 +190,7 @@ Calibration data imports include the following information:
   observations
 \end{itemize}
 
-For specifics on specifying calibration data imports,
+For more on specifying calibration data imports,
 see~\ref{nls:examples} and the \texttt{responses} \textgreater 
 \texttt{calibration\_terms} keyword in the Dakota Reference
 Manual~\cite{RefMan}.
@@ -229,22 +234,30 @@ numerically from a known response expansion.  Refer to the Method
 Specification chapter in the Dakota Reference Manual~\cite{RefMan} for
 additional information on this specification.
 
-\subsection{Surrogate construction and evaluation data}
+\subsection{Surrogate Model Imports}
 
 Global data fit surrogates, including some stochastic expansions, may
 be constructed from a variety of data sources.  One of these sources
 is an auxiliary data file, as specified by the keyword
-\texttt{import\_build\_points\_file = \emph{STRING}}.  The file may be
-in annotated (default), custom\_annotated, or free-form format with
-columns corresponding to variables and responses.  Surfpack global
-surrogate models may also be evaluated at a user-provided file
-containing \texttt{challenge\_points}.  For global surrogates
-specified directly via \texttt{model surrogate global}, the
-\texttt{use\_variable\_labels} keyword will trigger validation and
+\dakotakw{import_build_points_file}.  The file may be in annotated
+(default), custom-annotated, or free-form format with columns
+corresponding to variables and responses.  For global surrogates
+specified directly via keywords \texttt{model surrogate global}, the
+\dakotakw{use_variable_labels} keyword will trigger validation and
 potential reordering of imported variable columns based on labels
-provided in the tabular header. Refer to the Model
-Specification chapter in the Dakota Reference Manual~\cite{RefMan} for
-additional information on these specifications.
+provided in the tabular header. Surfpack global surrogate models may
+also be evaluated at a user-provided file containing challenge (test)
+points. Refer to the \dakotakw{model} keyword in the Dakota Reference
+Manual~\cite{RefMan} for additional information on these
+specifications.
+
+Previously exported surfpack and experimental global surrogate models
+can be re-imported when used directly in the global surrogate model
+context. Importing from binary or text archive instead of building
+from data can sometimes result in significant time savings with models
+such as Gaussian processes. See the \dakotakw{import_model}
+documentation in the Reference Manual for important caveats on its
+use.
 
 \subsection{Variables/responses import to post-run}
 

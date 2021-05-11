@@ -1,0 +1,29 @@
+DAKOTA/Scilab linked interface
+Yann Chapalain 07/20/2011
+Brian M. Adams 10/01/2012 (update)
+==================================
+
+DAKOTA's Scilab interfaces were authored by Yann Collette and Yann Chapalain.
+
+The linked interface requires compilation of Dakota's direct/linked
+Scilan interface in src/ScilabInterface.C, enabled by setting
+DAKOTA_SCILAB:BOOL=ON in CMake, and Scilab headers/libraries, pointed
+to by the CMake variable SCILAB_USER_PATH.
+
+
+To use this capability in a Dakota input file, specify the scilab
+interface with an appropriate scilab analysis_driver file:
+
+interface
+  scilab
+    analysis_driver = 'rosenbrock.sci'
+
+
+Before running a Scilab direct interface, it is necessary to set up
+the environment, e.g.,
+
+  # Force Scilab to load the rosenbrock module:
+  export DAKOTA_SCILAB_STARTUP="exec rosenbrock.sci;"
+
+  # Find the Scilab environment:
+  export SCI=${SCILAB_INSTALL_PREFIX}/share/scilab

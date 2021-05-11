@@ -1,70 +1,82 @@
 Blurb::
-Hierarchical approximations use corrected results from a low fidelity
-model as an approximation to the results of a high fidelity "truth"
-model.
+Hierarchical surrogates use an ordered hierarchy of model fidelities
+and/or resolutions to trade accuracy versus cost.
+
 Description::
 
-Hierarchical approximations use corrected results from a low fidelity
-model as an approximation to the results of a high fidelity "truth"
-model. These approximations are also known as model hierarchy,
-multifidelity, variable fidelity, and variable complexity
-approximations. The required \c ordered_model_fidelities specification
-points to a sequence of model specifications of varying fidelity,
-ordered from lowest to highest fidelity.
-The highest fidelity model provides the truth model, and each of the
-lower fidelity alternatives provides different levels of approximation
-at different levels of cost.
+Multifidelity modeling
+<!-- (also known as variable fidelity or variable complexity modeling) -->
+involves the use of lower-fidelity physics-based models as surrogates
+for a high-fidelity "truth" model. These low-fidelity models can
+involve variations in model form, resolution, or both.  Model form
+variations for reduced fidelity may involve omitted physics or
+solution of approximated or averaged physics.  Resolution variations
+typically involve coarsened space-time discretizations (e.g., h-
+derefinement), reduced element order (e.g., p- derefinement), or
+loosened convergence tolerances.  Unlike local, global, and multipoint
+surrogates, these approximations are not data-driven (no high-fidelity
+data required for construction) and are stand-alone simulation models
+in their own right.  As an example from computational fluid dynamics
+(CFD), both model form and resolution are varied when an inviscid,
+incompressible Euler model on a coarse discretization is used as a
+low-fidelity surrogate for a high-fidelity large eddy simulation model
+on a fine discretization.
 
-In multifidelity optimization, the search algorithm relies primarily
-on the lower fidelity models, which are corrected for consistency with
-higher fidelity models.  The higher fidelity models are used primarily
-for verifying candidate steps based on solution of low fidelity
-approximate subproblems and updating for low fidelity corrections.  In
-multifidelity uncertainty quantification, resolution levels are
-tailored across the ordered model hierarchy with fine resolution of
-the lowest fidelity and then decreasing resolution for each level of
-model discrepancy.
+The required \c ordered_model_fidelities specification points to a
+sequence of model specifications of varying fidelity, ordered from
+lowest to highest fidelity.  The highest fidelity model provides the
+"truth" model, and each of the lower fidelity alternatives provides
+different levels of approximation at different levels of cost.  This
+specification defines the sequence of model forms, and each model
+specification identified in this ordered listing may identify a set of
+resolution controls.  Either or both of these sequences may be
+specified, and this is referred to as a "multilevel hierarchy" in the
+case of a hierarchy of resolutions (one entry in \c
+ordered_model_fidelities that includes active resolution control), a
+"multifidelity hierarchy" in the case of a hierarchy of model forms
+(multiple entries in \c ordered_model_fidelities without active
+resolution control), or a "multilevel-multifidelity hierarchy" in the
+case of two-dimensional hierarchy including both model forms and
+resolutions (multiple entries in \c ordered_model_fidelities with one
+or more including active resolution control).  Note that the
+multilevel-multifidelity case can be "ragged" in the sense that not
+all models need to provide the same number of (or any) resolution
+controls.
 
-The \c correction specification specifies which
-correction technique will be applied to the low fidelity results in
-order to match the high fidelity results at one or more points. In the
-hierarchical case (as compared to the global case), the \c correction
-specification is required, since the omission of a correction
-technique would effectively eliminate the purpose of the high fidelity
-model. If it is desired to use a low fidelity model without
-corrections, then a hierarchical approximation is not needed and a \c
-single model should be used. Refer to \ref model-surrogate-global for
-additional information on available correction approaches.
+The \c correction specification identifies what type (\c additive, \c
+multiplicative, \c combined) and order (\c zeroth_order, \c
+first_order, \c second_order) of correction technique will be applied
+to the low fidelity results in order to match high fidelity results
+(value and potentially gradient and Hessian) at one or more points. As
+described below, this is essential in the optimization context.
 
+<b> Use cases </b>
+
+In multifidelity surrogate-based optimization (SBO), the search
+algorithm relies primarily on the lower fidelity models, which are
+corrected for consistency with higher fidelity models.  The higher
+fidelity models are used primarily for verifying candidate steps based
+on solution of low fidelity approximate subproblems and for updating
+low fidelity corrections.  In the hierarchical SBO case (as compared
+to SBO with data fits), the \c correction specification is required,
+since the omission of a correction technique would effectively
+eliminate the purpose of the high fidelity model (to use a low
+fidelity model without corrections, then a \c single model can be used
+rather than a \c hierarchical model). Refer to \ref
+model-surrogate-global for additional information on available
+correction approaches.
+
+In multifidelity uncertainty quantification (UQ), response differences
+are tracked for purposes of decomposing variance across
+model/resolution levels or for constructing separate discrepancy
+emulators.  In this context, correction specifications are still valid
+for defining discrepancy emulation details but they are optional with
+the most common cases used as defaults.
 
 Topics::
 Examples::
-Theory::
-
-<b> Multifidelity Surrogates </b>: Multifidelity modeling involves the
-use of a low-fidelity physics-based model as a surrogate for the
-original high-fidelity model. The low-fidelity model typically
-involves a coarser mesh, looser convergence tolerances, reduced
-element order, or omitted physics. It is a separate model in its own
-right and does not require data from the high-fidelity model for
-construction. Rather, the primary need for high-fidelity evaluations
-is for defining correction functions that are applied to the
-low-fidelity results.
-
-
-<b> Multifidelity Surrogate Models </b>
-
-A second type of surrogate is the {\em model hierarchy} type (also
-called multifidelity, variable fidelity, variable complexity, etc.).
-In this case, a model that is still physics-based but is of lower
-fidelity (e.g., coarser discretization, reduced element order, looser
-convergence tolerances, omitted physics) is used as the surrogate in
-place of the high-fidelity model. For example, an inviscid,
-incompressible Euler CFD model on a coarse discretization could be
-used as a low-fidelity surrogate for a high-fidelity Navier-Stokes
-model on a fine discretization.
-
+Theory:
 
 
 Faq::
-See_Also::	model-surrogate-global, model-surrogate-local, model-surrogate-multipoint, method-multilevel_sampling, method-polynomial_chaos, method-stoch_collocation, method-surrogate_based_local
+See_Also::	model-surrogate-global, model-surrogate-local, model-surrogate-multipoint, method-multilevel_sampling, method-multilevel_polynomial_chaos, method-multifidelity_polynomial_chaos, method-multifidelity_stoch_collocation, method-multilevel_function_train, method-multifidelity_function_train, method-surrogate_based_local
