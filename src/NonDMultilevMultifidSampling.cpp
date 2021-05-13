@@ -68,6 +68,17 @@ void NonDMultilevMultifidSampling::pre_run()
     each of which may contain multiple discretization levels. */
 void NonDMultilevMultifidSampling::core_run()
 {
+  // Can potentially trap mis-specification of the MLMF method and delegate
+  // to inherited core_run() implementations
+  // Note: might not want the 2nd trap since CVMC does not currently iterate
+  ModelList& model_ensemble = iteratedModel.subordinate_models(false);
+  if (model_ensemble.size() <= 1)
+    { NonDMultilevelSampling::core_run(); return; }
+  ModelList::iterator last_m_it = --model_ensemble.end();
+  size_t num_hf_lev = last_m_it->solution_levels();
+  if (num_hf_lev <= 1)
+    { NonDMultifidelitySampling::core_run(); return; }
+
   // multiple model forms (currently limited to 2) + multiple solutions levels
 
   // remove default key (empty activeKey) since this interferes with approx

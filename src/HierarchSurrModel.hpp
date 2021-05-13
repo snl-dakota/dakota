@@ -118,6 +118,8 @@ protected:
 
   /// define the active model key and associated {truth,surr}ModelKey pairing
   void active_model_key(const Pecos::ActiveKey& key);
+  /// remove keys for any approximations underlying orderedModels
+  void clear_model_keys();
 
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -564,6 +566,14 @@ inline void HierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
     break;
   }
   }
+}
+
+
+inline void HierarchSurrModel::clear_model_keys()
+{
+  size_t i, num_models = orderedModels.size();
+  for (i=0; i<num_models; ++i)
+    orderedModels[i].clear_model_keys();
 }
 
 

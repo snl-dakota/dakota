@@ -74,8 +74,6 @@ void NonDMultifidelitySampling::control_variate_mc()
   size_t num_steps, form, lev, fixed_index;  short seq_type;
   configure_sequence(num_steps, fixed_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  // either lev varies and form is fixed, or vice versa:
-  //size_t& step = (multilev) ? lev : form;
   // For two-model control variate, select extreme fidelities/resolutions
   Pecos::ActiveKey active_key, hf_key, lf_key;
   unsigned short hf_form, lf_form;
@@ -108,13 +106,13 @@ void NonDMultifidelitySampling::control_variate_mc()
   else {
     Model& truth_model = iteratedModel.truth_model();
     Model&  surr_model = iteratedModel.surrogate_model();
-    hf_cost = truth_model.solution_level_cost();       // active
-    lf_cost =  surr_model.solution_level_cost();       // active
+    hf_cost       = truth_model.solution_level_cost();          // active
+    lf_cost       =  surr_model.solution_level_cost();          // active
+    hf_form_index = hf_form;  lf_form_index = lf_form;
     size_t raw_index = truth_model.solution_level_cost_index(); // active
     hf_lev_index  = (raw_index == SZ_MAX) ? 0 : raw_index;
     raw_index     =  surr_model.solution_level_cost_index();    // active
     lf_lev_index  = (raw_index == SZ_MAX) ? 0 : raw_index;
-    hf_form_index = hf_form;  lf_form_index = lf_form;
   }
   Real cost_ratio = hf_cost / lf_cost, avg_eval_ratio, avg_mse_ratio;
 
