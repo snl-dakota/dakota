@@ -178,6 +178,10 @@ private:
 };
 
 
+inline NonDMultifidelitySampling::~NonDMultifidelitySampling()
+{ }
+
+
 inline void NonDMultifidelitySampling::
 compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 		   size_t N_shared, Real& beta)

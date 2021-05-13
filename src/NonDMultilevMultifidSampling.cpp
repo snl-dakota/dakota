@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 //- Class:	 NonDMultilevMultifidSampling
-//- Description: Implementation code for NonDMultilevelSampling class
+//- Description: Implementation code for NonDMultilevMultifidSampling class
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
@@ -21,7 +21,6 @@
 #include "NonDMultilevMultifidSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
-#include "DakotaIterator.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDMultilevMultifidSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -37,35 +36,15 @@ NonDMultilevMultifidSampling(ProblemDescDB& problem_db, Model& model):
   NonDMultifidelitySampling(problem_db, model),
   NonDHierarchSampling(problem_db, model) // top of virtual inheritance
 {
-  // *** TO DO: verify valid 2D hierarchy from NLev sizing ***
-
   // For now...
   // *** Note: prior to MFMC for num_mf > 2, allow limiting ragged case
   //           with num_hf_lev == 1
   // *** Note: DIFFs since previously this case was delegated to MLMC
-  size_t num_mf = NLev.size(), num_hf_lev = NLev.back().size();
-  if (num_mf <= 1 || num_hf_lev <= 1) {
-    Cerr << "Warning: NonDMultilevMultifidSampling assumes multiple model forms "
-	 << "and multiple HF solution levels." << std::endl;
+  if ( !iteratedModel.multilevel_multifidelity() ) {
+    Cerr << "Warning: NonDMultilevMultifidSampling assumes multiple model "
+	 << "forms and multiple HF solution levels." << std::endl;
     //abort_handler(METHOD_ERROR);
   }
-}
-
-
-NonDMultilevMultifidSampling::~NonDMultilevMultifidSampling()
-{ }
-
-
-/*
-bool NonDMultilevMultifidSampling::resize()
-{
-  bool parent_reinit_comms = NonDSampling::resize();
-
-  Cerr << "\nError: Resizing is not yet supported in method "
-       << method_enum_to_string(methodName) << "." << std::endl;
-  abort_handler(METHOD_ERROR);
-
-  return parent_reinit_comms;
 }
 
 
@@ -82,7 +61,6 @@ void NonDMultilevMultifidSampling::pre_run()
       Nl_i[j].assign(numFunctions, 0);
   }
 }
-*/
 
 
 /** The primary run function manages the general case: a hierarchy of model 
@@ -92,17 +70,19 @@ void NonDMultilevMultifidSampling::core_run()
 {
   // multiple model forms (currently limited to 2) + multiple solutions levels
 
-  // For two-model control variate methods, select lowest,highest fidelities
-  size_t num_mf = NLev.size();
-  unsigned short lf_form = 0, hf_form = num_mf - 1; // ordered_models = low:high
+  // remove default key (empty activeKey) since this interferes with approx
+  // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
+  iteratedModel.clear_model_keys();
+  // prefer ML over MF if both available
+  //iteratedModel.multifidelity_precedence(false);
 
   // ML performed on HF + CV applied per level using LF if available:
   // perform MLMC on HF model and bind 1:min(num_hf,num_lf) LF control
   // variates starting at coarsest level
   if (true) // reformulated approach using 1 new QoI correlation per level
-    multilevel_control_variate_mc_Qcorr(lf_form, hf_form);
+    multilevel_control_variate_mc_Qcorr();
   else      // original approach using 1 discrepancy correlation per level
-    multilevel_control_variate_mc_Ycorr(lf_form, hf_form);
+    multilevel_control_variate_mc_Ycorr();
 }
 
 
@@ -110,10 +90,13 @@ void NonDMultilevMultifidSampling::core_run()
     levels for the high fidelity model form where CVMC si employed
     across two model forms to exploit correlation in the discrepancies
     at each level (Y_l). */
-void NonDMultilevMultifidSampling::
-multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
-				    unsigned short hf_form)
+void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 {
+  // For two-model control variate methods, select lowest,highest fidelities
+  size_t num_mf = NLev.size();
+  unsigned short group,
+    lf_form = 0, hf_form = num_mf - 1; // ordered_models = low:high
+
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
@@ -126,7 +109,6 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
 
-  size_t& group = lev; // no alias switch for this algorithm
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
 
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
@@ -162,7 +144,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
   while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= max_iter) {
 
     sum_sqrt_var_cost = 0.;
-    for (lev=0; lev<num_hf_lev; ++lev) {
+    for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
       configure_indices(group, hf_form, lev, seq_type);
       hf_lev_cost = level_cost(hf_cost, lev);
@@ -175,21 +157,8 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
       Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
       if (numSamples) {
 
-	// advance any sequence specifications (seed_sequence)
-	assign_specification_sequence(lev);
-	// generate new MC parameter sets
-	get_parameter_sets(iteratedModel);// pull dist params from any model
-
-	// export separate output files for each data set.  Note that
-	// truth_model() is indexed with hf_form at this stage for
-	// all levels.  The exported discretization level (e.g., state variable
-	// value) can't capture a level discrepancy for lev>0 and will reflect
-	// the most recent evaluation state.
-	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, lev);
-
-	// compute allResponses from allVariables using hierarchical model
-	evaluate_parameter_sets(iteratedModel, true, false);
+	// assign sequence, get samples, export, evaluate
+	evaluate_ml_sample_increment(lev);
 
 	// control variate betwen LF and HF for this discretization level:
 	// if unequal number of levels, loop over all HF levels for MLMC and
@@ -272,7 +241,7 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
     }
 
     // All CV lf_increment() calls now follow all ML level evals:
-    for (lev=0; lev<num_cv_lev; ++lev) {
+    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
       if (delta_N_hf[lev]) {
 	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
@@ -340,10 +309,13 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_form,
     across two model forms.  It generalizes the Y_l correlation case
     to separately target correlations for each QoI level embedded
     within the level discrepancies. */
-void NonDMultilevMultifidSampling::
-multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
-				    unsigned short hf_form)
+void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 {
+  // For two-model control variate methods, select lowest,highest fidelities
+  size_t num_mf = NLev.size();
+  unsigned short group,
+    lf_form = 0, hf_form = num_mf - 1; // ordered_models = low:high
+
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
@@ -356,7 +328,6 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
 
-  size_t& group = lev; // no alias switch for this algorithm
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
 
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
@@ -390,7 +361,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
   // Initialize for pilot sample
   Sizet2DArray&       N_lf =      NLev[lf_form];
   Sizet2DArray&       N_hf =      NLev[hf_form]; 
-  Sizet2DArray  delta_N_l; load_pilot_sample(pilotSamples, NLev, delta_N_l);
+  Sizet2DArray  delta_N_l;   load_pilot_sample(pilotSamples, NLev, delta_N_l);
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
@@ -403,7 +374,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
   while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= max_iter) {
 
     sum_sqrt_var_cost = 0.;
-    for (lev=0; lev<num_hf_lev; ++lev) {
+    for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
       configure_indices(group, hf_form, lev, seq_type);
       hf_lev_cost = level_cost(hf_cost, lev);
@@ -416,21 +387,8 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
       Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
       if (numSamples) {
 
-	// advance any sequence specifications (seed_sequence)
-	assign_specification_sequence(lev);
-	// generate new MC parameter sets
-	get_parameter_sets(iteratedModel);// pull dist params from any model
-
-	// export separate output files for each data set.  Note that
-	// truth_model() is indexed with hf_form at this stage for
-	// all levels.  The exported discretization level (e.g., state variable
-	// value) can't capture a level discrepancy for lev>0 and will reflect
-	// the most recent evaluation state.
-	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.truth_model(), mlmfIter, lev);
-
-	// compute allResponses from allVariables using hierarchical model
-	evaluate_parameter_sets(iteratedModel, true, false);
+	// assign sequence, get samples, export, evaluate
+	evaluate_ml_sample_increment(lev);
 
 	// control variate betwen LF and HF for this discretization level:
 	// if unequal number of levels, loop over all HF levels for MLMC and
@@ -526,7 +484,7 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_form,
     // > Incurs a bit more overhead: avg_eval_ratios array, mode resetting
     // > Could potentially have parallel scheduling benefits by grouping
     //   similar Model eval sets for aggregated scheduling
-    for (lev=0; lev<num_cv_lev; ++lev) {
+    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
       if (delta_N_hf[lev]) {
 	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
@@ -1419,39 +1377,5 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
     }
   }
 }
-
-
-/*
-void NonDMultilevMultifidSampling::post_run(std::ostream& s)
-{
-  // Final moments are generated within core_run() by convert_moments().
-  // No addtional stats are currently supported.
-  //if (statsFlag) // calculate statistics on allResponses
-  //  compute_statistics(allSamples, allResponses);
-
-  // NonD::update_aleatory_final_statistics() pushes momentStats into
-  // finalStatistics
-  update_final_statistics();
-
-  Analyzer::post_run(s);
-}
-
-
-void NonDMultilevMultifidSampling::
-print_results(std::ostream& s, short results_state)
-{
-  if (statsFlag) {
-    print_multilevel_evaluation_summary(s, NLev);
-    s << "<<<<< Equivalent number of high fidelity evaluations: "
-      << equivHFEvals << "\n\nStatistics based on multilevel sample set:\n";
-
-  //print_statistics(s);
-    print_moments(s, "response function",
-		  iteratedModel.truth_model().response_labels());
-    archive_moments();
-    archive_equiv_hf_evals(equivHFEvals); 
-  }
-}
-*/
 
 } // namespace Dakota

@@ -745,11 +745,11 @@ update_from_specification(bool update_exp, bool update_sampler,
 
 
 void NonDMultilevelPolynomialChaos::
-infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
+infer_pilot_sample(/*Real ratio, */size_t num_steps, SizetArray& pilot)
 {
-  size_t i, num_steps = pilot.size();
+  pilot.resize(num_steps);
   UShortArray exp_orders;
-  for (i=0; i<num_steps; ++i) {
+  for (size_t i=0; i<num_steps; ++i) {
     configure_expansion_orders(expansion_order(i), dimPrefSpec, exp_orders);
     size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
       Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders) :

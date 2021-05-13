@@ -64,12 +64,15 @@ protected:
   //- Heading: Member functions
   //
 
+  /// helper that consolidates sequence advancement, sample generation,
+  /// sample export, and sample evaluation
+  void evaluate_ml_sample_increment(unsigned short step);
+
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
 			   size_t lev, const RealVector& offset,
 			   SizetArray& num_Y);
-
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
@@ -95,12 +98,10 @@ private:
 
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using discrepancy accumulators (sum_Y)
-  void multilevel_mc_Ysum(unsigned short model_form);
+  void multilevel_mc_Ysum();
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using QoI accumulators (sum_Q)
-  void multilevel_mc_Qsum(unsigned short model_form);
-
-  void evaluate_sample_increment(const unsigned short& step);
+  void multilevel_mc_Qsum();
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -368,6 +369,10 @@ private:
   RealMatrix N_target_qoi;
   RealMatrix N_target_qoi_FN;
 };
+
+
+inline NonDMultilevelSampling::~NonDMultilevelSampling()
+{ }
 
 
 inline void NonDMultilevelSampling::

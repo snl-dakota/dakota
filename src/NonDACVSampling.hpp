@@ -81,8 +81,7 @@ private:
   /// manage response mode and active model key from {group,form,lev} triplet.
   /// s_index is the sequence index that defines the active dimension for a
   /// model sequence.
-  void configure_indices(unsigned short group, unsigned short form,
-			 size_t lev,           short seq_type);
+  void configure_indices(size_t group, size_t form, size_t lev, short seq_type);
 
   /// export allSamples to tagged tabular file
   void export_all_samples(String root_prepend, const Model& model,

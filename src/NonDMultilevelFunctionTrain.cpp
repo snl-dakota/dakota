@@ -393,10 +393,10 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 
 
 void NonDMultilevelFunctionTrain::
-infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
+infer_pilot_sample(/*Real ratio, */size_t num_steps, SizetArray& pilot)
 {
-  size_t i, num_steps = pilot.size();
-  for (i=0; i<num_steps; ++i)
+  pilot.resize(num_steps);
+  for (size_t i=0; i<num_steps; ++i)
     pilot[i] = (size_t)std::floor(collocRatio * (Real)regression_size(i) + .5);
 }
 

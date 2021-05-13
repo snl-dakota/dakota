@@ -35,48 +35,6 @@ NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
   NonDHierarchSampling(problem_db, model), finalCVRefinement(true)
 {
-  /*
-  *** TO DO: allow either 1D hierarchy but select MF over ML by default: ***
-
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  size_t i, j, num_mf = ordered_models.size(), num_lev,
-    prev_lev = std::numeric_limits<size_t>::max(),
-    pilot_size = pilotSamples.size();
-  ModelLRevIter ml_rit; bool err_flag = false;
-  NLev.resize(num_mf);
-  for (i=num_mf-1, ml_rit=ordered_models.rbegin();
-       ml_rit!=ordered_models.rend(); --i, ++ml_rit) { // high fid to low fid
-    // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev = ml_rit->solution_levels(); // lower bound is 1 soln level
-
-    if (num_lev > prev_lev) {
-      Cerr << "\nWarning: unused solution levels in multilevel sampling for "
-	   << "model " << ml_rit->model_id() << ".\n         Ignoring "
-	   << num_lev - prev_lev << " of " << num_lev << " levels."<< std::endl;
-      num_lev = prev_lev;
-    }
-
-    // Ensure there is consistent cost data available as SimulationModel must
-    // be allowed to have empty solnCntlCostMap (when optional solution control
-    // is not specified).  Passing false bypasses lower bound of 1.
-    if (num_lev > ml_rit->solution_levels(false)) { // default is 0 soln costs
-      Cerr << "Error: insufficient cost data provided for multilevel sampling."
-	   << "\n       Please provide solution_level_cost estimates for model "
-	   << ml_rit->model_id() << '.' << std::endl;
-      err_flag = true;
-    }
-
-    //Sizet2DArray& Nl_i = NLev[i];
-    NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
-    //for (j=0; j<num_lev; ++j)
-    //  Nl_i[j].resize(numFunctions); // defer to pre_run()
-
-    prev_lev = num_lev;
-  }
-  if (err_flag)
-    abort_handler(METHOD_ERROR);
-  */
-
   // For now...
   size_t num_mf = NLev.size();
   if (num_mf > 2) {
@@ -87,30 +45,44 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
 }
 
 
-NonDMultifidelitySampling::~NonDMultifidelitySampling()
-{ }
-
-
 /** The primary run function manages the general case: a hierarchy of model 
     forms (from the ordered model fidelities within a HierarchSurrModel), 
     each of which may contain multiple discretization levels. */
 void NonDMultifidelitySampling::core_run()
 {
+  // remove default key (empty activeKey) since this interferes with approx
+  // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
+  iteratedModel.clear_model_keys();
+  // prefer ML over MF if both available
+  iteratedModel.multifidelity_precedence(true);
+
+  ////////////////////////////////////
+
   // For two-model control variate methods, select lowest,highest fidelities
+  // infer the (two) model hierarchy and perform MFMC
+  //control_variate_mc();
+
+  ////////////////////////////////////
+
+  // For two-model control variate methods, select lowest,highest fidelities
+  Pecos::ActiveKey hf_lf_key;
   size_t num_mf = NLev.size();
-  unsigned short lf_form = 0, hf_form = num_mf - 1; // ordered_models = low:high
-  //size_t num_hf_lev = NLev.back().size();
-  //if (num_hf_lev > 1) { // ML performed on HF with CV using available LF
-    // multiple model forms + multiple solutions levels
-      
-  //}
-  //else { // multiple model forms (only) --> CVMC
+  if (num_mf > 1) {
+    unsigned short lf_form = 0, hf_form = num_mf - 1;// ordered_models=low:high
     // use nominal value from user input, ignoring solution_level_control
-    Pecos::ActiveKey hf_lf_key;
     size_t lev = std::numeric_limits<size_t>::max();
     hf_lf_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
-    control_variate_mc(hf_lf_key);
-  //}
+  }
+  else {
+    size_t num_hf_lev = NLev.back().size();
+    if (num_hf_lev > 1) // ML performed on HF with CV using available LF
+      hf_lf_key.form_key(0, 0, num_hf_lev-1, 0, 0, Pecos::RAW_DATA);
+    else {
+      PCerr << "Error: " << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  }
+  control_variate_mc(hf_lf_key);
 }
 
 
@@ -126,10 +98,21 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   // ***        until MSE target is met?
   // **********
 
+  /*
+  configure_sequence(num_steps, secondary_index, seq_type);
+  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  // either lev varies and form is fixed, or vice versa:
+  size_t& step = (multilev) ? lev : form;
+  if (multilev) form = secondary_index;
+  else          lev  = secondary_index;
+  */
+
+  //////////////////////////////////////
+
   aggregated_models_mode();
   iteratedModel.active_model_key(active_key); // data group 0
-  Model& truth_model = iteratedModel.truth_model();
-  Model& surr_model  = iteratedModel.surrogate_model();
+  Model& truth_model = iteratedModel.truth_model();     // ***
+  Model& surr_model  = iteratedModel.surrogate_model(); // ***
 
   // retrieve active index
   //size_t lf_lev_index =  surr_model.solution_level_cost_index(),
@@ -146,15 +129,15 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 
   // Initialize for pilot sample
   SizetArray delta_N_l;
-  load_pilot_sample(pilotSamples, NLev, delta_N_l);
+  load_pilot_sample(pilotSamples, 2, delta_N_l); // 2 models only for now
 
   // NLev allocations currently enforce truncation to #HF levels (1)
   Pecos::ActiveKey hf_key, lf_key;
   active_key.extract_keys(hf_key, lf_key);
   unsigned short hf_form = hf_key.retrieve_model_form(),
                  lf_form = lf_key.retrieve_model_form();
-  SizetArray& N_lf = NLev[lf_form][0];//[lf_lev_index];
-  SizetArray& N_hf = NLev[hf_form][0];//[hf_lev_index];
+  SizetArray& N_lf = NLev[lf_form][0];//[lf_lev_index]; // ***
+  SizetArray& N_hf = NLev[hf_form][0];//[hf_lev_index]; // ***
   size_t raw_N_lf = 0, raw_N_hf = 0;
   RealVector mu_hat;
 
@@ -177,6 +160,8 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
 			      sum_HH, cost_ratio, N_hf, var_H, rho2_LH);
   // compute the ratio of MC and CVMC mean squared errors (controls convergence)
   avg_mse_ratio  = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, mlmfIter, N_hf);
+
+  //while (Pecos::l1_norm(delta_N_l) && mlmfIter <= max_iter) {
 
   // ----------------------------------------------------------
   // Compute shared increment targeting specified MSE reduction
@@ -218,6 +203,11 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
     accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
     raw_N_lf += numSamples;
   }
+
+  //  ++mlmfIter;
+  //  Cout << "\nCVMC iteration " << mlmfIter << " sample increments:\n"
+  //       << delta_N_l << std::endl;
+  //} // end while
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);

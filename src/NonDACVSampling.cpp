@@ -172,8 +172,7 @@ void NonDACVSampling::core_run()
 
 
 void NonDACVSampling::
-configure_indices(unsigned short group, unsigned short form,
-		  size_t lev,           short seq_type)
+configure_indices(size_t group, size_t form, size_t lev, short seq_type)
 {
   // Notes:
   // > could consolidate with NonDExpansion::configure_indices() with a passed
@@ -181,7 +180,11 @@ configure_indices(unsigned short group, unsigned short form,
   // > group index is assigned based on step in model form/resolution sequence
   // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
 
-  Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, lev);
+  // preserve special values across type conversions
+  size_t SZ_MAX = std::numeric_limits<size_t>::max();
+  unsigned short grp = (group == SZ_MAX) ? USHRT_MAX : (unsigned short)group,
+                 frm = (form  == SZ_MAX) ? USHRT_MAX : (unsigned short)form;
+  Pecos::ActiveKey hf_key;  hf_key.form_key(grp, frm, lev);
 
   if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
        (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0)) {

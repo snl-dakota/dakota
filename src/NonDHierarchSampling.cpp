@@ -142,21 +142,6 @@ bool NonDHierarchSampling::resize()
 }
 
 
-void NonDHierarchSampling::pre_run()
-{
-  NonDSampling::pre_run();
-
-  // reset sample counters to 0
-  size_t i, j, num_mf = NLev.size(), num_lev;
-  for (i=0; i<num_mf; ++i) {
-    Sizet2DArray& Nl_i = NLev[i];
-    num_lev = Nl_i.size();
-    for (j=0; j<num_lev; ++j)
-      Nl_i[j].assign(numFunctions, 0);
-  }
-}
-
-
 /*  ... Some early notes when there was one composite core_run() ...
 void NonDHierarchSampling::core_run()
 {
@@ -180,7 +165,7 @@ void NonDHierarchSampling::core_run()
 
 void NonDHierarchSampling::
 configure_indices(unsigned short group, unsigned short form,
-		  size_t lev,           short seq_type)
+		  size_t lev, short seq_type)
 {
   // Notes:
   // > could consolidate with NonDExpansion::configure_indices() with a passed
@@ -261,7 +246,7 @@ convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom)
 
 void NonDHierarchSampling::
 export_all_samples(String root_prepend, const Model& model, size_t iter,
-		   size_t lev)
+		   size_t step)
 {
   String tabular_filename(root_prepend);
   const String& iface_id = model.interface_id();
@@ -269,7 +254,7 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
   if (iface_id.empty()) tabular_filename += "NO_ID_i";
   else                  tabular_filename += iface_id + "_i";
   tabular_filename += std::to_string(iter)     +  "_l"
-                   +  std::to_string(lev)      +  '_'
+                   +  std::to_string(step)     +  '_'
                    +  std::to_string(num_samp) + ".dat";
   Variables vars(model.current_variables().copy());
 

@@ -54,7 +54,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  //void pre_run();
   //void core_run();
   void post_run(std::ostream& s);
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -81,14 +81,15 @@ protected:
   int random_seed(size_t index) const;
 
   /// manage response mode and active model key from {group,form,lev} triplet.
-  /// s_index is the sequence index that defines the active dimension for a
-  /// model sequence.
+  /// seq_type defines the active dimension for a 1D model sequence.
   void configure_indices(unsigned short group, unsigned short form,
-			 size_t lev,           short seq_type);
+			 size_t lev, short seq_type);
+  /// convert group and form and call overload
+  void configure_indices(size_t group, size_t form, size_t lev, short seq_type);
 
   /// export allSamples to tagged tabular file
   void export_all_samples(String root_prepend, const Model& model,
-			  size_t iter, size_t lev);
+			  size_t iter, size_t step);
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
@@ -179,6 +180,17 @@ inline void NonDHierarchSampling::uncorrected_surrogate_mode()
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
     activeSet.reshape(numFunctions);// synch with model.response_size()
   }
+}
+
+
+inline void NonDHierarchSampling::
+configure_indices(size_t group, size_t form, size_t lev, short seq_type)
+{
+  // preserve special values across type conversions
+  size_t SZ_MAX = std::numeric_limits<size_t>::max();
+  unsigned short grp = (group == SZ_MAX) ? USHRT_MAX : (unsigned short)group,
+                 frm = (form  == SZ_MAX) ? USHRT_MAX : (unsigned short)form;
+  configure_indices(grp, frm, lev, seq_type);
 }
 
 

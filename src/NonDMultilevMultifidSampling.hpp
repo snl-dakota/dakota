@@ -7,8 +7,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDHierarchSampling
-//- Description: class for multilevel-control variate sampling
+//- Class:	 NonDMultilevMultifidSampling
+//- Description: class for multilevel-multifidelity sampling
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
@@ -22,11 +22,12 @@
 
 namespace Dakota {
 
-/// Performs MultilevMultifid Monte Carlo sampling for uncertainty quantification.
+/// Performs multilevel-multifidelity Monte Carlo sampling for
+/// uncertainty quantification.
 
-/** MultilevMultifid Monte Carlo (MLMC) is a variance-reduction technique
-    that utilitizes lower fidelity simulations that have response QoI
-    that are correlated with the high-fidelity response QoI. */
+/** Multilevel-multifidelity Monte Carlo (MLMFMC) combines variance
+    decay across model resolutions with variance reduction from a
+    control variate across model fidelities. */
 
 class NonDMultilevMultifidSampling: public NonDMultilevelSampling,
 				    public NonDMultifidelitySampling
@@ -48,7 +49,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
+  void pre_run();
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -62,13 +63,11 @@ private:
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Y (LH correlations for level discrepancies)
-  void multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
-					   unsigned short hf_model_form);
+  void multilevel_control_variate_mc_Ycorr();
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Q (LH correlations for QoI)
-  void multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
-					   unsigned short hf_model_form);
+  void multilevel_control_variate_mc_Qcorr();
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H,
@@ -247,6 +246,10 @@ private:
   //
 
 };
+
+
+inline NonDMultilevMultifidSampling::~NonDMultilevMultifidSampling()
+{ }
 
 
 inline void NonDMultilevMultifidSampling::

@@ -1262,71 +1262,17 @@ void NonDExpansion::merge_grid()
 
 
 void NonDExpansion::
-configure_sequence(size_t& num_steps, size_t& fixed_index, short& seq_type)
-{
-  // Allow either model forms or discretization levels, but not both
-  // (precedence determined by ML/MF calling algorithm)
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  ModelLIter m_iter = --ordered_models.end(); // HF model
-  size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
-
-  if (iteratedModel.multilevel()) {
-    seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-    num_steps = num_hf_lev;  fixed_index = num_mf - 1;
-    if (num_mf > 1)
-      Cerr << "Warning: multiple model forms will be ignored in "
-	   << "NonDExpansion::configure_sequence().\n";
-  }
-  else if (iteratedModel.multifidelity()) {
-    seq_type    = Pecos::MODEL_FORM_SEQUENCE;
-    num_steps   = num_mf;
-    fixed_index = std::numeric_limits<size_t>::max();//sync w/ active soln index
-    if (num_hf_lev > 1)
-      Cerr << "Warning: solution control levels will be ignored in "
-	   << "NonDExpansion::configure_sequence().\n";
-  }
-  else {
-    Cerr << "Error: no model hierarchy evident in NonDExpansion::"
-	 << "configure_sequence()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
-bool NonDExpansion::
-query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
-{
-  bool cost_defined = true;
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  ModelLIter m_iter;
-  if (multilevel) {
-    ModelLIter m_iter = --ordered_models.end(); // HF model
-    cost = m_iter->solution_level_costs();      // can be empty
-    if (cost.length() != num_steps)
-      cost_defined = false;
-  }
-  else  {
-    cost.sizeUninitialized(num_steps);
-    m_iter = ordered_models.begin();
-    for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
-      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
-      if (cost[i] <= 0.) cost_defined = false;
-    }
-  }
-  if (!cost_defined) cost.sizeUninitialized(0); // for compute_equivalent_cost()
-  return cost_defined;
-}
-
-
-void NonDExpansion::
-configure_indices(unsigned short group, unsigned short form,
-		  size_t lev,           short seq_type)
+configure_indices(size_t group, size_t form, size_t lev, short seq_type)
 {
   // Set active surrogate/truth models within the Hierarch,DataFit surrogates
   // (recursion from uSpaceModel to iteratedModel)
   // > group index is assigned based on step in model form/resolution sequence
 
-  Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, lev);
+  // preserve special values across type conversions
+  size_t SZ_MAX = std::numeric_limits<size_t>::max();
+  unsigned short grp = (group == SZ_MAX) ? USHRT_MAX : (unsigned short)group,
+                 frm = (form  == SZ_MAX) ? USHRT_MAX : (unsigned short)form;
+  Pecos::ActiveKey hf_key;  hf_key.form_key(grp, frm, lev);
 
   if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
        (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0) ||
@@ -1345,11 +1291,11 @@ configure_indices(unsigned short group, unsigned short form,
       //child_key[1] = USHRT_MAX; child_key[2] = SZ_MAX;
       break;
     }
-    Pecos::ActiveKey child_key(hf_key.copy()), discrep_key;
+    Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
     // using same child key for either LF or LF-hat
-    child_key.decrement_key(seq_type); // seq_index defaults to 0
+    lf_key.decrement_key(seq_type); // seq_index defaults to 0
     // For ML/MF PCE/SC/FT, we both aggregate raw levels and apply a reduction
-    discrep_key.aggregate_keys(hf_key, child_key, Pecos::RAW_WITH_REDUCTION);
+    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_WITH_REDUCTION);
     uSpaceModel.active_model_key(discrep_key);
   }
 }
@@ -1465,13 +1411,13 @@ void NonDExpansion::multifidelity_reference_expansion()
   refinement_statistics_mode(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps, form, lev, fixed_index; short seq_type;
-  configure_sequence(num_steps, fixed_index, seq_type);
+  size_t num_steps, form, lev, secondary_index; short seq_type;
+  configure_sequence(num_steps, secondary_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;  step = 0;
-  if (multilev) form = fixed_index;
-  else          lev  = fixed_index;
+  if (multilev) form = secondary_index;
+  else          lev  = secondary_index;
 
   // initial low fidelity/lowest discretization expansion
   configure_indices(step, form, lev, seq_type);
@@ -1528,13 +1474,13 @@ void NonDExpansion::multifidelity_reference_expansion()
 void NonDExpansion::multifidelity_individual_refinement()
 {
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps, form, lev, fixed_index; short seq_type;
-  configure_sequence(num_steps, fixed_index, seq_type);
+  size_t num_steps, form, lev, secondary_index; short seq_type;
+  configure_sequence(num_steps, secondary_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;  step = 0;
-  if (multilev) form = fixed_index;
-  else          lev  = fixed_index;
+  if (multilev) form = secondary_index;
+  else          lev  = secondary_index;
 
   bool print = (outputLevel > SILENT_OUTPUT);
   if (refineType) {//&& maxRefineIterations
@@ -1600,13 +1546,13 @@ void NonDExpansion::multifidelity_integrated_refinement()
        << "\nMultifidelity UQ: initiating greedy competition"
        << "\n-----------------------------------------------\n";
   // Initialize again (or must propagate settings from mf_expansion())
-  size_t num_steps, form, lev, fixed_index; short seq_type;
-  configure_sequence(num_steps, fixed_index, seq_type);
+  size_t num_steps, form, lev, secondary_index; short seq_type;
+  configure_sequence(num_steps, secondary_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
-  if (multilev) form = fixed_index;
-  else          lev  = fixed_index;
+  if (multilev) form = secondary_index;
+  else          lev  = secondary_index;
 
   RealVector cost;  configure_cost(num_steps, multilev, cost);
 
@@ -1697,13 +1643,13 @@ void NonDExpansion::multifidelity_integrated_refinement()
 void NonDExpansion::multilevel_regression()
 {
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps, form, lev, fixed_index; short seq_type;
-  configure_sequence(num_steps, fixed_index, seq_type);
+  size_t num_steps, form, lev, secondary_index; short seq_type;
+  configure_sequence(num_steps, secondary_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
-  if (multilev) form = fixed_index;
-  else          lev  = fixed_index;
+  if (multilev) form = secondary_index;
+  else          lev  = secondary_index;
 
   bool import_pilot;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations;
@@ -1718,11 +1664,11 @@ void NonDExpansion::multilevel_regression()
 
   // Initialize NLev and load the pilot sample from user specification
   NLev.assign(num_steps, 0);
-  SizetArray delta_N_l(num_steps);
+  SizetArray delta_N_l;
   if (collocPtsSeqSpec.empty() && collocRatio > 0.)
-    infer_pilot_sample(/*collocRatio, */delta_N_l);
+    infer_pilot_sample(/*collocRatio, */num_steps, delta_N_l);
   else
-    load_pilot_sample(collocPtsSeqSpec, delta_N_l);
+    load_pilot_sample(collocPtsSeqSpec, num_steps, delta_N_l);
 
   // now converge on sample counts per level (NLev)
   while ( mlmfIter <= max_iter &&
@@ -2488,7 +2434,8 @@ void NonDExpansion::aggregate_variance(Real& agg_var_l)
 
 
 /** Default implementation redefined by Multilevel derived classes. */
-void NonDExpansion::infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l)
+void NonDExpansion::
+infer_pilot_sample(/*Real ratio, */size_t num_steps, SizetArray& delta_N_l)
 {
   Cerr << "Error: no default implementation for infer_pilot_sample() used by "
        << "multilevel expansions." << std::endl;
