@@ -56,71 +56,73 @@ void NonDMultifidelitySampling::core_run()
   // prefer ML over MF if both available
   iteratedModel.multifidelity_precedence(true);
 
-  ////////////////////////////////////
-
   // For two-model control variate methods, select lowest,highest fidelities
   // infer the (two) model hierarchy and perform MFMC
-  //control_variate_mc();
-
-  ////////////////////////////////////
-
-  // For two-model control variate methods, select lowest,highest fidelities
-  Pecos::ActiveKey hf_lf_key;
-  size_t num_mf = NLev.size();
-  if (num_mf > 1) {
-    unsigned short lf_form = 0, hf_form = num_mf - 1;// ordered_models=low:high
-    // use nominal value from user input, ignoring solution_level_control
-    size_t lev = std::numeric_limits<size_t>::max();
-    hf_lf_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
-  }
-  else {
-    size_t num_hf_lev = NLev.back().size();
-    if (num_hf_lev > 1) // ML performed on HF with CV using available LF
-      hf_lf_key.form_key(0, 0, num_hf_lev-1, 0, 0, Pecos::RAW_DATA);
-    else {
-      PCerr << "Error: " << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-  }
-  control_variate_mc(hf_lf_key);
+  control_variate_mc();
 }
 
 
 /** This function performs control variate MC across two combinations of 
     model form and discretization level. */
-void NonDMultifidelitySampling::
-control_variate_mc(const Pecos::ActiveKey& active_key)
+void NonDMultifidelitySampling::control_variate_mc()
 {
   // Current implementation performs pilot + shared increment + LF increment,
   // where these increments are targeting a prescribed MSE reduction.
-  // **********
-  // *** TO DO: should CV MC iterate (new shared + LF increments)
-  // ***        until MSE target is met?
-  // **********
 
-  /*
-  configure_sequence(num_steps, secondary_index, seq_type);
+  // *** TO DO: iterate (new shared + LF increments) until MSE target is met?
+
+  size_t num_steps, form, lev, fixed_index;  short seq_type;
+  configure_sequence(num_steps, fixed_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
-  size_t& step = (multilev) ? lev : form;
-  if (multilev) form = secondary_index;
-  else          lev  = secondary_index;
-  */
-
-  //////////////////////////////////////
+  //size_t& step = (multilev) ? lev : form;
+  // For two-model control variate, select extreme fidelities/resolutions
+  Pecos::ActiveKey active_key, hf_key, lf_key;
+  unsigned short hf_form, lf_form;
+  size_t hf_lev, lf_lev, SZ_MAX = std::numeric_limits<size_t>::max();
+  if (multilev) {
+    hf_form = lf_form = (fixed_index == SZ_MAX) ? USHRT_MAX : fixed_index;
+    hf_lev  = num_steps-1;  lf_lev = 0;  // extremes of range
+  }
+  else {
+    hf_form = num_steps-1;  lf_form = 0; // extremes of range
+    hf_lev = lf_lev = fixed_index;
+  }
+  hf_key.form_key(0, hf_form, hf_lev);
+  lf_key.form_key(0, lf_form, lf_lev);
+  active_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
 
   aggregated_models_mode();
   iteratedModel.active_model_key(active_key); // data group 0
-  Model& truth_model = iteratedModel.truth_model();     // ***
-  Model& surr_model  = iteratedModel.surrogate_model(); // ***
 
-  // retrieve active index
-  //size_t lf_lev_index =  surr_model.solution_level_cost_index(),
-  //       hf_lev_index = truth_model.solution_level_cost_index();
   // retrieve cost estimates across model forms for a particular soln level
-  Real lf_cost =  surr_model.solution_level_cost(),
-       hf_cost = truth_model.solution_level_cost(),
-    cost_ratio = hf_cost / lf_cost, avg_eval_ratio, avg_mse_ratio;
+  Real lf_cost, hf_cost;
+  size_t hf_form_index, lf_form_index, hf_lev_index, lf_lev_index;
+  if (multilev) {
+    RealVector cost;  configure_cost(num_steps, multilev, cost);
+    hf_cost = cost[hf_lev];  hf_lev_index = hf_lev;
+    lf_cost = cost[lf_lev];  lf_lev_index = lf_lev;
+    hf_form_index = (hf_form == USHRT_MAX) ? 0 : hf_form; // should not happen
+    lf_form_index = (lf_form == USHRT_MAX) ? 0 : lf_form; // should not happen
+  }
+  else {
+    Model& truth_model = iteratedModel.truth_model();
+    Model&  surr_model = iteratedModel.surrogate_model();
+    hf_cost = truth_model.solution_level_cost();       // active
+    lf_cost =  surr_model.solution_level_cost();       // active
+    size_t raw_index = truth_model.solution_level_cost_index(); // active
+    hf_lev_index  = (raw_index == SZ_MAX) ? 0 : raw_index;
+    raw_index     =  surr_model.solution_level_cost_index();    // active
+    lf_lev_index  = (raw_index == SZ_MAX) ? 0 : raw_index;
+    hf_form_index = hf_form;  lf_form_index = lf_form;
+  }
+  Real cost_ratio = hf_cost / lf_cost, avg_eval_ratio, avg_mse_ratio;
+
+  SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
+  SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
+  N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
+  size_t raw_N_hf = 0, raw_N_lf = 0;
+  RealVector mu_hat;
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
@@ -130,16 +132,6 @@ control_variate_mc(const Pecos::ActiveKey& active_key)
   // Initialize for pilot sample
   SizetArray delta_N_l;
   load_pilot_sample(pilotSamples, 2, delta_N_l); // 2 models only for now
-
-  // NLev allocations currently enforce truncation to #HF levels (1)
-  Pecos::ActiveKey hf_key, lf_key;
-  active_key.extract_keys(hf_key, lf_key);
-  unsigned short hf_form = hf_key.retrieve_model_form(),
-                 lf_form = lf_key.retrieve_model_form();
-  SizetArray& N_lf = NLev[lf_form][0];//[lf_lev_index]; // ***
-  SizetArray& N_hf = NLev[hf_form][0];//[hf_lev_index]; // ***
-  size_t raw_N_lf = 0, raw_N_hf = 0;
-  RealVector mu_hat;
 
   // ---------------------
   // Compute Pilot Samples

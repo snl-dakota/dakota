@@ -101,7 +101,7 @@ private:
   //
 
   /// Perform control variate Monte Carlo across two model forms
-  void control_variate_mc(const Pecos::ActiveKey& active_key);
+  void control_variate_mc();
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio

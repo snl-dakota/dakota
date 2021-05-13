@@ -430,8 +430,8 @@ configure_sequence(//unsigned short hierarch_dim,
       seq_type  = Pecos::RESOLUTION_LEVEL_SEQUENCE;
       num_steps = num_hf_lev;  secondary_index = num_mf - 1;
       if (num_mf > 1)
-	Cerr << "Warning: multiple model forms will be ignored in "
-	     << "NonDExpansion::configure_sequence().\n";
+	Cerr << "Warning: multiple model forms will be ignored by "
+	     << "NonD::configure_sequence().\n";
     }
     else if (iteratedModel.multifidelity()) {
       seq_type  = Pecos::MODEL_FORM_SEQUENCE;
@@ -439,8 +439,8 @@ configure_sequence(//unsigned short hierarch_dim,
       // retain each model's active solution control index:
       secondary_index = std::numeric_limits<size_t>::max();
       if (num_hf_lev > 1)
-	Cerr << "Warning: solution control levels will be ignored by NonD::"
-	     << "configure_sequence().\n";
+	Cerr << "Warning: solution control levels will be ignored by "
+	     << "NonD::configure_sequence().\n";
     }
     else {
       Cerr << "Error: no model hierarchy evident in NonD::configure_sequence()."
