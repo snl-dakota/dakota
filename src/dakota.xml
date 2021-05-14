@@ -737,6 +737,26 @@
 	     <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
 	     ' >
 
+    <!ENTITY method_sample_type_lhs_mc '
+	     <keyword  id="sample_type" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
+	       <oneOf label="Sample Type">
+	         <keyword  id="lhs" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs"   />
+	         <keyword  id="random" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
+	       </oneOf>
+	     </keyword>
+	     ' >
+
+    <!ENTITY method_sample_type '
+	     <keyword  id="sample_type" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="lhs" >
+	       <oneOf label="Sample Type">
+	         <keyword  id="lhs" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs"   />
+	         <keyword  id="random" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
+	         <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="incremental_lhs"   default="no sample reuse in coefficient estimation" />
+	         <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="incremental_random"   />
+	       </oneOf>
+	     </keyword>
+	     ' >
+
     <!ENTITY samples_on_emulator_with_alias '
 	     <keyword  id="samples_on_emulator" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator"  minOccurs="0" >
 	       <alias name="samples" />
@@ -747,12 +767,7 @@
     <!ENTITY expansion_options '
       	     <!-- Old reference default; samples = 0 -->
 	     &samples_on_emulator_with_alias;
-	     <keyword  id="sample_type" name="sample_type" code="{0}" label="Sampling type"  minOccurs="0" default="lhs" >
-	       <oneOf label="Sample Type">
-		 <keyword  id="lhs" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs"   />
-		 <keyword  id="random1" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
-	       </oneOf>
-             </keyword>
+	     &method_sample_type_lhs_mc;
              &rng_options;
 	     <keyword  id="probability_refinement" name="probability_refinement" code="{0}" label="Importance sampling refinement"  minOccurs="0" default="no refinement">
 	       <!-- TODO: consider removing this alias: -->
@@ -2824,14 +2839,7 @@
 	       &method_max_iterations;
 	       &method_convergence_tolerance;
 	    -->
-	  <keyword  id="sample_type2" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="lhs" >
-	    <oneOf label="Sample Type">
-	      <keyword  id="lhs2" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs"   />
-	      <keyword  id="random3" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
-	      <keyword  id="incremental_lhs1" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="incremental_lhs"   default="no sample reuse in coefficient estimation" />
-	      <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="incremental_random"   />
-	    </oneOf>
-	  </keyword>
+	  &method_sample_type;
 	  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples"  minOccurs="0" >
 	    <param type="INTEGERLIST" />
 	  </keyword>
@@ -2878,53 +2886,87 @@
 
 	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
+	  <alias name="mlmc"/>
 	  &method_seed_sequence;
 	  &mc_pilot_samples;
-	  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
-	    <oneOf label="Sample Type">
-	      <keyword  id="lhs3" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs"   />
-	      <keyword  id="random4" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
-	    </oneOf>
-	  </keyword>
+	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
 	  </keyword>
 	  <keyword  id="allocation_target" name="allocation_target" code="{0}" label="Target for controlling sample allocation"  minOccurs="0" default="mean" >
-		<oneOf label="Allocation target">
-		<keyword  id="mean" name="mean" code="{N_mdm(type,allocationTarget_TARGET_MEAN)}" label="mean"  />
-		<keyword  id="variance" name="variance" code="{N_mdm(type,allocationTarget_TARGET_VARIANCE)}" label="variance">
-		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
-		</keyword>
-		<keyword  id="standard_deviation" name="standard_deviation" code="{N_mdm(type,allocationTarget_TARGET_SIGMA)}" label="standard_deviation">
-		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
-		</keyword>
-		<keyword  id="scalarization" name="scalarization" code="{N_mdm(type,allocationTarget_TARGET_SCALARIZATION)}" label="scalarization">
-		  <keyword  id="scalarization_response_mapping" name="scalarization_response_mapping" code="{N_mdm(RealDL,scalarizationRespCoeffs)}" label="Scalarization Response Mappings"  minOccurs="0" default="default scalarized contribution to mlmc sample allocation (1 Mean, 3 Sigma)" >
-	       <param type="REALLIST" />
+	    <oneOf label="Allocation target">
+	      <keyword  id="mean" name="mean" code="{N_mdm(type,allocationTarget_TARGET_MEAN)}" label="mean"  />
+	      <keyword  id="variance" name="variance" code="{N_mdm(type,allocationTarget_TARGET_VARIANCE)}" label="variance">
+		<keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
 	      </keyword>
-		  <keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
+	      <keyword  id="standard_deviation" name="standard_deviation" code="{N_mdm(type,allocationTarget_TARGET_SIGMA)}" label="standard_deviation">
+		<keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
+	      </keyword>
+	      <keyword  id="scalarization" name="scalarization" code="{N_mdm(type,allocationTarget_TARGET_SCALARIZATION)}" label="scalarization">
+		<keyword  id="scalarization_response_mapping" name="scalarization_response_mapping" code="{N_mdm(RealDL,scalarizationRespCoeffs)}" label="Scalarization Response Mappings"  minOccurs="0" default="default scalarized contribution to mlmc sample allocation (1 Mean, 3 Sigma)" >
+		  <param type="REALLIST" />
 		</keyword>
-		</oneOf>
-	   </keyword>
-      <keyword  id="qoi_aggregation" name="qoi_aggregation" code="{0}" label="Rule of aggregating the variance and computing the sample allocation over qoi"  minOccurs="0" default="sum" >
-		<oneOf label="Qoi Aggregation ">
-		<keyword  id="sum" name="sum" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}" label="sum"   />
-		<keyword  id="max" name="max" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}" label="max"   />
-		</oneOf>
-	   </keyword>
-	   &method_convergence_tolerance;
-       <keyword  id="convergence_tolerance_type" name="convergence_tolerance_type" code="{0}" label="Type of convergence tolerance"  minOccurs="0" default="relative" >
-        <oneOf label="Convergence tolerance type">
-		<keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}" label="relative"   />
-		<keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}" label="absolute"   />
-		</oneOf>
-       </keyword>
-       <keyword  id="convergence_tolerance_target" name="convergence_tolerance_target" code="{0}" label="Target of convergence tolerance"  minOccurs="0" default="variance_constraint" >
-        <oneOf label="Convergence tolerance target">
-		<keyword  id="variance_constraint" name="variance_constraint" code="{N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT)}" label="variance_constraint"   />
-		<keyword  id="cost_constraint" name="cost_constraint" code="{N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT)}" label="cost_constraint"   />
-		</oneOf>
-       </keyword>
+		<keyword  id="optimization" name="optimization" code="{N_mdm(true,useTargetVarianceOptimizationFlag)}" label="optimization"  minOccurs="0" />
+	      </keyword>
+	    </oneOf>
+	  </keyword>
+	  <keyword  id="qoi_aggregation" name="qoi_aggregation" code="{0}" label="Rule of aggregating the variance and computing the sample allocation over qoi"  minOccurs="0" default="sum" >
+	    <oneOf label="Qoi Aggregation ">
+	      <keyword  id="sum" name="sum" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_SUM)}" label="sum"   />
+	      <keyword  id="max" name="max" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}" label="max"   />
+	    </oneOf>
+	  </keyword>
+	  &method_convergence_tolerance;
+	  <keyword  id="convergence_tolerance_type" name="convergence_tolerance_type" code="{0}" label="Type of convergence tolerance"  minOccurs="0" default="relative" >
+            <oneOf label="Convergence tolerance type">
+	      <keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}" label="relative"   />
+	      <keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}" label="absolute"   />
+	    </oneOf>
+	  </keyword>
+	  <keyword  id="convergence_tolerance_target" name="convergence_tolerance_target" code="{0}" label="Target of convergence tolerance"  minOccurs="0" default="variance_constraint" >
+            <oneOf label="Convergence tolerance target">
+	      <keyword  id="variance_constraint" name="variance_constraint" code="{N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT)}" label="variance_constraint"   />
+	      <keyword  id="cost_constraint" name="cost_constraint" code="{N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT)}" label="cost_constraint"   />
+	    </oneOf>
+	  </keyword>
+	  &method_max_iterations;
+	  &default_final_moments;
+	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
+	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
+	  &distribution_cumul_compl;               <!-- inactive without mappings -->
+	  &rng_options;
+	  &method_optional_model_pointer;
+	</keyword>
+
+	<keyword  id="multifidelity_sampling" name="multifidelity_sampling" code="{N_mdm(utype,methodName_MULTIFIDELITY_SAMPLING)}" label="multifidelity_sampling"  group="Uncertainty Quantification" >
+	  <alias name="multifidelity_mc"/>
+	  <alias name="mfmc"/>
+	  &method_seed_sequence;
+	  &mc_pilot_samples;
+	  &method_sample_type_lhs_mc;
+	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
+	    &method_export_samples_format;
+	  </keyword>
+	  &method_convergence_tolerance;
+	  &method_max_iterations;
+	  &default_final_moments;
+	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
+	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
+	  &distribution_cumul_compl;               <!-- inactive without mappings -->
+	  &rng_options;
+	  &method_optional_model_pointer;
+	</keyword>
+
+	<keyword  id="multilevel_multifidelity_sampling" name="multilevel_multifidelity_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_MULTIFIDELITY_SAMPLING)}" label="multilevel_multifidelity_sampling"  group="Uncertainty Quantification" >
+	  <alias name="multilevel_multifidelity_mc"/>
+	  <alias name="mlmfmc"/>
+	  &method_seed_sequence;
+	  &mc_pilot_samples;
+	  &method_sample_type_lhs_mc;
+	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
+	    &method_export_samples_format;
+	  </keyword>
+	  &method_convergence_tolerance;
 	  &method_max_iterations;
 	  &default_final_moments;
 	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
