@@ -132,14 +132,25 @@ protected:
   /// update computed{Resp,Prob,Rel,GenRel}Levels from level_maps
   void push_level_mappings(const RealVector& level_maps, size_t offset);
 
-  /// distribute pilot sample specification across model levels
-  void load_pilot_sample(const SizetArray& pilot_spec, SizetArray& delta_N_l);
+  /// configure fidelity/level counts from model hierarchy
+  void configure_sequence(size_t& num_steps, size_t& fixed_index,
+			  short& seq_type);
+  /// extract cost estimates from model hierarchy (forms or resolutions)
+  void configure_cost(unsigned short num_steps, bool multilevel,
+		      RealVector& cost);
+  /// extract cost estimates from model hierarchy, if available
+  bool query_cost(unsigned short num_steps, bool multilevel, RealVector& cost);
+
   /// distribute pilot sample specification across model forms or levels
-  void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
+  void load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
 			 SizetArray& delta_N_l);
   /// distribute pilot sample specification across model forms and levels
   void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
 			 Sizet2DArray& delta_N_l);
+  /// update the relevant slice of N_l_3D from the final 2D multilevel
+  /// or 2D multifidelity sample profile
+  void inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
+			     size_t fixed_index, Sizet3DArray& N_l_3D);
 
   /// resizes finalStatistics::functionGradients based on finalStatistics ASV
   void resize_final_statistics_gradients();
@@ -316,6 +327,18 @@ private:
 
 inline NonD::~NonD()
 { }
+
+
+inline void NonD::
+configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
+{
+  bool cost_defined = query_cost(num_steps, multilevel, cost);
+  if (!cost_defined) {
+    Cerr << "Error: missing required simulation cost data in NonD::"
+	 << "configure_cost()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
 
 
 inline bool NonD::pdf_output() const

@@ -34,6 +34,8 @@
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevelSampling.hpp"
+#include "NonDMultifidelitySampling.hpp"
+#include "NonDMultilevMultifidSampling.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
 #include "NonDLHSEvidence.hpp"
@@ -496,7 +498,12 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case RANDOM_SAMPLING:
     return std::make_shared<NonDLHSSampling>(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
-    return std::make_shared<NonDMultilevelSampling>(problem_db, model); break;
+    return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
+  case MULTIFIDELITY_SAMPLING:
+    return std::make_shared<NonDMultifidelitySampling>(problem_db, model);break;
+  case MULTILEVEL_MULTIFIDELITY_SAMPLING:
+    return std::make_shared<NonDMultilevMultifidSampling>(problem_db, model);
+    break;
   case DATA_FIT_SURROGATE_BASED_LOCAL:
     return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
     break;
@@ -830,7 +837,9 @@ static UShortStrBimap method_map =
   (IMPORTANCE_SAMPLING,             "importance_sampling")
   (ADAPTIVE_SAMPLING,               "adaptive_sampling")
   (RANDOM_SAMPLING,                 "random_sampling")
-  (MULTILEVEL_SAMPLING,             "multilevel_sampling")
+  (MULTILEVEL_SAMPLING,               "multilevel_sampling")
+  (MULTIFIDELITY_SAMPLING,            "multifidelity_sampling")
+  (MULTILEVEL_MULTIFIDELITY_SAMPLING, "multilevel_multifidelity_sampling")
   (LIST_SAMPLING,                   "list_sampling")
   (SURROGATE_BASED_LOCAL,           "surrogate_based_local")
   (DATA_FIT_SURROGATE_BASED_LOCAL,  "data_fit_surrogate_based_local")
