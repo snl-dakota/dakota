@@ -197,6 +197,10 @@ protected:
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
   size_t one_sided_delta(Real current, Real target);
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
+  size_t one_sided_delta(const SizetArray& current, const RealVector& targets,
+			 size_t power);
 
   /// allocate results array storage for distribution mappings
   void archive_allocate_mappings();
@@ -402,6 +406,45 @@ inline bool NonD::homogeneous(const SizetArray& N_l) const
 
 inline size_t NonD::one_sided_delta(Real current, Real target)
 { return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
+
+
+inline size_t NonD::
+one_sided_delta(const SizetArray& current, const RealVector& targets,
+		size_t power)
+{
+  size_t i, len = current.size();
+  Real diff, pow_mean = 0.;
+  switch (power) {
+  case 1: // average
+    for (i=0; i<len; ++i) {
+      diff = targets[i] - current[i];
+      if (diff > 0.) pow_mean += diff;
+    }
+    pow_mean /= len;
+    break;
+  case 2:
+    for (i=0; i<len; ++i) {
+      diff = targets[i] - current[i];
+      if (diff > 0.) pow_mean += diff * diff;
+    }
+    pow_mean = std::sqrt(pow_mean/len);
+    break;
+  case std::numeric_limits<size_t>::max():
+    for (i=0; i<len; ++i) {
+      diff = targets[i] - current[i];
+      if (diff > pow_mean) pow_mean = diff;
+    }
+    break;
+  default:
+    for (i=0; i<len; ++i) {
+      diff = targets[i] - current[i];
+      if (diff > 0.) pow_mean += std::pow(diff, (Real)power);
+    }
+    pow_mean = std::pow(pow_mean / len, 1./(Real)power);
+    break;
+  }
+  return (size_t)std::floor(pow_mean + .5); // round
+}
 
 } // namespace Dakota
 
