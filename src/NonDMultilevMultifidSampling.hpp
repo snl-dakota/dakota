@@ -70,20 +70,22 @@ private:
   void multilevel_control_variate_mc_Qcorr();
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
-  Real eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H,
-		  RealMatrix& sum_LL, RealMatrix& sum_LH, RealMatrix& sum_HH,
-		  Real cost_ratio, size_t lev, const SizetArray& N_shared,
-		  RealMatrix& var_H, RealMatrix& rho2_LH);
+  void compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
+			   RealMatrix& sum_LL, RealMatrix& sum_LH,
+			   RealMatrix& sum_HH, Real cost_ratio, size_t lev,
+			   const SizetArray& N_shared, RealMatrix& var_H,
+			   RealMatrix& rho2_LH, RealVector& eval_ratios);
   /// compute the LF/HF evaluation ratio, averaged over the QoI
-  Real eval_ratio(RealMatrix& sum_Ll,          RealMatrix& sum_Llm1,
-		  RealMatrix& sum_Hl,          RealMatrix& sum_Hlm1,
-		  RealMatrix& sum_Ll_Ll,       RealMatrix& sum_Ll_Llm1,
-		  RealMatrix& sum_Llm1_Llm1,   RealMatrix& sum_Hl_Ll,
-		  RealMatrix& sum_Hl_Llm1,     RealMatrix& sum_Hlm1_Ll,
-		  RealMatrix& sum_Hlm1_Llm1,   RealMatrix& sum_Hl_Hl,
-		  RealMatrix& sum_Hl_Hlm1,     RealMatrix& sum_Hlm1_Hlm1,
-		  Real cost_ratio, size_t lev, const SizetArray& N_shared,
-		  RealMatrix& var_YHl,         RealMatrix& rho_dot2_LH);
+  void compute_eval_ratios(RealMatrix& sum_Ll,        RealMatrix& sum_Llm1,
+			   RealMatrix& sum_Hl,        RealMatrix& sum_Hlm1,
+			   RealMatrix& sum_Ll_Ll,     RealMatrix& sum_Ll_Llm1,
+			   RealMatrix& sum_Llm1_Llm1, RealMatrix& sum_Hl_Ll,
+			   RealMatrix& sum_Hl_Llm1,   RealMatrix& sum_Hlm1_Ll,
+			   RealMatrix& sum_Hlm1_Llm1, RealMatrix& sum_Hl_Hl,
+			   RealMatrix& sum_Hl_Hlm1,   RealMatrix& sum_Hlm1_Hlm1,
+			   Real cost_ratio, size_t lev,
+			   const SizetArray& N_shared, RealMatrix& var_YHl,
+			   RealMatrix& rho_dot2_LH, RealVector& eval_ratios);
 
   /// apply control variate parameters for MLMF MC to estimate raw
   /// moment contributions

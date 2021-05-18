@@ -56,7 +56,7 @@ protected:
   //
 
   /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
+  bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
 		    const SizetArray& N_hf, size_t iter, size_t lev);
 
   /// compute scalar control variate parameters
@@ -105,7 +105,17 @@ private:
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
-  void shared_increment(size_t iter, size_t lev);
+  void shared_increment(const Pecos::ActiveKey& agg_key,size_t iter,size_t lev);
+
+  /// perform final LF sample increment as indicated by the evaluation ratio
+  bool lf_increment(const Pecos::ActiveKey& lf_key,
+		    const RealVector& eval_ratios, const SizetArray& N_lf,
+		    const SizetArray& N_hf, size_t iter, size_t lev);
+  /// core parameter set definition and evaluation for LF sample increment
+  bool lf_increment(size_t iter, size_t lev);
+  /// output information header for LF sample increment
+  void lf_increment_samples(const RealVector& eval_ratios,
+			    const SizetArray& N_lf, const SizetArray& N_hf);
 
   /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -127,17 +137,19 @@ private:
 			  const RealVector& offset, SizetArray& num_L,
 			  SizetArray& num_H);
 
-  /// compute the LF/HF evaluation ratio, averaged over the QoI
-  Real eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
-		  const RealVector& sum_LL,	  const RealVector& sum_LH,
-		  const RealVector& sum_HH,       Real cost_ratio,
-		  const SizetArray& N_shared,	  RealVector& var_H,
-		  RealVector& rho2_LH);
+  /// compute the LF/HF evaluation ratios across the QoI vector
+  void compute_eval_ratios(const RealVector& sum_L_shared,
+			   const RealVector& sum_H,  const RealVector& sum_LL,
+			   const RealVector& sum_LH, const RealVector& sum_HH,
+			   Real cost_ratio, const SizetArray& N_shared,
+			   RealVector& var_H, RealVector& rho2_LH,
+			   RealVector& eval_ratios);
 
-  /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
-  Real MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
-		 const RealVector& rho2_LH, size_t iter,
-		 const SizetArray& N_hf);
+  /// compute ratios of MC and CVMC mean squared errors across the QoI vector
+  void compute_MSE_ratios(const RealVector& eval_ratios,
+			  const RealVector& var_H, const RealVector& rho2_LH,
+			  size_t iter, const SizetArray& N_hf,
+			  RealVector& mse_ratios);
 
   /// compute control variate parameters for CVMC and estimate raw moments
   void cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,

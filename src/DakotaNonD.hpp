@@ -197,6 +197,10 @@ protected:
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
   size_t one_sided_delta(Real current, Real target);
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
+  size_t one_sided_delta(const SizetArray& current, const RealVector& targets,
+			 size_t power);
 
   /// allocate results array storage for distribution mappings
   void archive_allocate_mappings();
@@ -402,6 +406,54 @@ inline bool NonD::homogeneous(const SizetArray& N_l) const
 
 inline size_t NonD::one_sided_delta(Real current, Real target)
 { return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
+
+
+inline size_t NonD::
+one_sided_delta(const SizetArray& current, const RealVector& targets,
+		size_t power)
+{
+  size_t i, len = current.size();
+  Real diff, pow_mean = 0.;
+  switch (power) {
+  case 1: // average difference same as difference of averages
+    for (i=0; i<len; ++i)
+      pow_mean += targets[i] - current[i];
+    pow_mean /= len;
+    break;
+  case std::numeric_limits<size_t>::max(): // find max difference
+    for (i=0; i<len; ++i) {
+      diff = targets[i] - current[i];
+      if (diff > pow_mean) pow_mean = diff;
+    }
+    break;
+  default:
+    Cerr << "Error: power " << power << " not supported in NonD::"
+	 << "one_sided_delta()." << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
+  /*
+  case 2: // RMS: norm of diff != difference of norms (use latter)
+    for (i=0; i<len; ++i) {
+      norm_t += targets[i] * targets[i];
+      norm_c += current[i] * current[i];
+    }
+    pow_mean = std::sqrt(norm_t / len) - std::sqrt(norm_c / len);
+    break;
+  default: {
+    for (i=0; i<len; ++i) {
+      norm_t += std::pow(targets[i], (Real)power);
+      norm_c += std::pow(current[i], (Real)power);
+    }
+    Real inv_p = 1./(Real)power;
+    pow_mean = std::pow(norm_t / len, inv_p) - std::pow(norm_c / len, inv_p);
+    break;
+  }
+  }
+  */
+
+  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+}
 
 } // namespace Dakota
 

@@ -66,12 +66,10 @@ void NonDMultifidelitySampling::core_run()
     model form and discretization level. */
 void NonDMultifidelitySampling::control_variate_mc()
 {
-  // Current implementation performs pilot + shared increment + LF increment,
-  // where these increments are targeting a prescribed MSE reduction.
+  // Performs pilot + LF increment and then iterates with additional shared
+  // increment + LF increment batches until prescribed MSE reduction is obtained
 
-  // *** TO DO: iterate (new shared + LF increments) until MSE target is met?
-
-  size_t num_steps, form, lev, fixed_index;  short seq_type;
+  size_t qoi, num_steps, form, lev, fixed_index;  short seq_type;
   configure_sequence(num_steps, fixed_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // For two-model control variate, select extreme fidelities/resolutions
@@ -114,90 +112,73 @@ void NonDMultifidelitySampling::control_variate_mc()
     raw_index     =  surr_model.solution_level_cost_index();    // active
     lf_lev_index  = (raw_index == SZ_MAX) ? 0 : raw_index;
   }
-  Real cost_ratio = hf_cost / lf_cost, avg_eval_ratio, avg_mse_ratio;
-
+  Real cost_ratio = hf_cost / lf_cost;
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
   size_t raw_N_hf = 0, raw_N_lf = 0;
-  RealVector mu_hat;
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions), var_H(numFunctions, false),
-            rho2_LH(numFunctions, false);
+    rho2_LH(numFunctions, false), mu_hat, eval_ratios, mse_ratios;
 
   // Initialize for pilot sample
   SizetArray delta_N_l;
   load_pilot_sample(pilotSamples, 2, delta_N_l); // 2 models only for now
-
-  // ---------------------
-  // Compute Pilot Samples
-  // ---------------------
+  size_t hf_sample_incr = std::min(delta_N_l[lf_form], delta_N_l[hf_form]);
+  numSamples = hf_sample_incr;
 
   mlmfIter = 0;
+  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+  while (hf_sample_incr && mlmfIter <= max_iter) {
 
-  // Initialize for pilot sample (shared sample count discarding any excess)
-  numSamples = std::min(delta_N_l[lf_form], delta_N_l[hf_form]);
-  shared_increment(mlmfIter, 0);
-  accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
-		     sum_HH, mu_hat, N_lf, N_hf);
-  raw_N_lf += numSamples; raw_N_hf += numSamples;
-
-  // Compute the LF/HF evaluation ratio, averaged over the QoI.
-  // This includes updating var_H and rho2_LH.
-  avg_eval_ratio = eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-			      sum_HH, cost_ratio, N_hf, var_H, rho2_LH);
-  // compute the ratio of MC and CVMC mean squared errors (controls convergence)
-  avg_mse_ratio  = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, mlmfIter, N_hf);
-
-  //while (Pecos::l1_norm(delta_N_l) && mlmfIter <= max_iter) {
-
-  // ----------------------------------------------------------
-  // Compute shared increment targeting specified MSE reduction
-  // ----------------------------------------------------------
-
-  // bypass refinement if maxIterations == 0 or convergenceTol already
-  // satisfied by pilot sample
-  if (maxIterations && avg_mse_ratio > convergenceTol) {
-
-    // Assuming rho_AB, evaluation_ratio and var_H to be relatively invariant,
-    // we seek a relative reduction in MSE using the convergence tol spec:
-    //   convTol = CV_mse / MC^0_mse = mse_ratio * N0 / N
-    //   delta_N = mse_ratio*N0/convTol - N0 = (mse_ratio/convTol - 1) * N0
-    Real incr = (avg_mse_ratio / convergenceTol - 1.) * numSamples;
-    numSamples = (size_t)std::floor(incr + .5); // round
+    // ----------------------------------------------------------
+    // Compute shared increment targeting specified MSE reduction
+    // ----------------------------------------------------------
+    if (mlmfIter) {
+      // CV MSE target = convTol * mcMSEIter0 = mse_ratio * var_H / N_hf
+      // N_hf = mse_ratio * var_H / convTol / mcMSEIter0
+      // Note: don't simplify further since mcMSEIter0 is based on pilot
+      //       estimate of var_H / N_hf
+      RealVector hf_targets = mse_ratios;
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	hf_targets[qoi] *= var_H[qoi] / mcMSEIter0[qoi] / convergenceTol;
+      // Power mean choice: average, max (desire would be to balance overshoot
+      // vs. additional iteration)
+      hf_sample_incr = numSamples = one_sided_delta(N_hf, hf_targets, 1); //avg
+    }
 
     if (numSamples) {
-      shared_increment(++mlmfIter, 0);
+      shared_increment(active_key, mlmfIter, 0);
       accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 			 sum_HH, mu_hat, N_lf, N_hf);
       raw_N_lf += numSamples; raw_N_hf += numSamples;
-      // update ratios:
-      avg_eval_ratio = eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1],
-				  sum_LH[1], sum_HH, cost_ratio, N_hf,
-				  var_H, rho2_LH);
-      avg_mse_ratio  = MSE_ratio(avg_eval_ratio, var_H, rho2_LH,mlmfIter,N_hf);
+      // Compute the LF/HF evaluation ratio using shared samples, averaged
+      // over QoI.  This includes updating var_H and rho2_LH.
+      compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
+			  sum_HH, cost_ratio, N_hf, var_H, rho2_LH,
+			  eval_ratios);
+      // Compute the ratio of MC and CVMC mean squared errors (for convergence).
+      // This ratio incorporates the anticipated variance reduction from the
+      // upcoming application of eval_ratios.
+      compute_MSE_ratios(eval_ratios, var_H, rho2_LH, mlmfIter, N_hf,
+			 mse_ratios);
+
+      // -------------------------------------------------------------------
+      // Compute new LF increment based on new evaluation ratio for new N_hf
+      // -------------------------------------------------------------------
+      // *** TO DO: how to allow user to stop after pilot only
+      // *** Note: lf_increment includes finalCVRefinement flag (=true)
+      // *** Consider maxFunctionEvals throttle (see also compute_eval_ratios)
+      if (lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {
+	accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
+	raw_N_lf += numSamples; //lf_sample_incr = numSamples;
+      }
     }
-  }
-
-  // --------------------------------------------------
-  // Compute LF increment based on the evaluation ratio
-  // --------------------------------------------------
-  uncorrected_surrogate_mode(); // also needed for assignment of lf_key below
-  // Group id in lf_key is not currently important, since no SurrogateData
-  // (correlations are computed based on the paired LF/HF data group, prior
-  // to the augmentation, which could imply a future group segregation)
-  iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
-  if (lf_increment(avg_eval_ratio, N_lf, N_hf, ++mlmfIter, 0)) { // level 0
-    accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
-    raw_N_lf += numSamples;
-  }
-
-  //  ++mlmfIter;
-  //  Cout << "\nCVMC iteration " << mlmfIter << " sample increments:\n"
-  //       << delta_N_l << std::endl;
-  //} // end while
+    //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
+    ++mlmfIter;
+  } // end while
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
@@ -353,95 +334,123 @@ accumulate_mf_sums(IntRealVectorMap& sum_L_shared,
 }
 
 
-void NonDMultifidelitySampling::shared_increment(size_t iter, size_t lev)
+void NonDMultifidelitySampling::
+shared_increment(const Pecos::ActiveKey& agg_key, size_t iter, size_t lev)
 {
   if (iter == _NPOS)  Cout << "\nCVMC sample increments: ";
   else if (iter == 0) Cout << "\nCVMC pilot sample: ";
   else Cout << "\nCVMC iteration " << iter << " sample increments: ";
   Cout << "LF = " << numSamples << " HF = " << numSamples << '\n';
 
-  //aggregated_models_mode(); // set at calling level for CV
-
-  // generate new MC parameter sets
-  get_parameter_sets(iteratedModel);// pull dist params from any model
-
-  // export separate output files for each data set:
-  if (exportSampleSets) // for HF+LF models, use the HF tags
-    export_all_samples("cv_", iteratedModel.truth_model(), iter, lev);
-
-  // compute allResponses from allVariables using hierarchical model
-  evaluate_parameter_sets(iteratedModel, true, false);
-}
-
-
-bool NonDMultifidelitySampling::
-lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
-	     const SizetArray& N_hf, size_t iter, size_t lev)
-{
-  // ----------------------------------------------
-  // Compute Final LF increment for control variate
-  // ----------------------------------------------
-
-  // update LF samples based on evaluation ratio
-  // r = m/n -> m = r*n -> delta = m-n = (r-1)*n
-  // or with inverse r  -> delta = m-n = n/inverse_r - n
-
-  numSamples = one_sided_delta(average(N_lf), average(N_hf) * avg_eval_ratio);
   if (numSamples) {
-    Cout << "\nCVMC LF sample increment = " << numSamples;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
-	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
-    Cout << std::endl;
+    aggregated_models_mode();
+    iteratedModel.active_model_key(agg_key);
 
     // generate new MC parameter sets
     get_parameter_sets(iteratedModel);// pull dist params from any model
+
     // export separate output files for each data set:
-    if (exportSampleSets)
-      export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
+    if (exportSampleSets) // for HF+LF models, use the HF tags
+      export_all_samples("cv_", iteratedModel.truth_model(), iter, lev);
 
-    // Iteration 0 is defined as the pilot sample, and each subsequent iter
-    // can be defined as a CV increment followed by an ML increment.  In this
-    // case, terminating based on max_iterations results in a final ML increment
-    // without a corresponding CV refinement; thus the number of ML and CV
-    // refinements is consistent although the final sample profile is not
-    // self-consistent -- to override this and finish with a final CV increment
-    // corresponding to the final ML increment, the finalCVRefinement flag can
-    // be set.  Note: termination based on delta_N_hf=0 has a final ML increment
-    // of zero and corresponding final CV increment of zero.  Therefore, this
-    // iteration completes on the previous CV increment and is more consistent
-    // with finalCVRefinement=true.
-    size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-    if (iter < max_iter || finalCVRefinement) {
-      // hierarchical surrogate mode could be BYPASS_SURROGATE for CV or
-      // BYPASS_SURROGATE/AGGREGATED_MODELS for ML-CV
-      //bypass_surrogate_mode(); // set at calling level for CV or ML-CV
-
-      // compute allResponses from allVariables using hierarchical model
-      evaluate_parameter_sets(iteratedModel, true, false);
-      return true;
-    }
-    else
-      return false;
-  }
-  else {
-    Cout << "\nNo CVMC LF sample increment";
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
-	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
-    Cout << std::endl;
-    return false;
+    // compute allResponses from allVariables using hierarchical model
+    evaluate_parameter_sets(iteratedModel, true, false);
   }
 }
 
 
-Real NonDMultifidelitySampling::
-eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
-	   const RealVector& sum_LL, const RealVector& sum_LH,
-	   const RealVector& sum_HH, Real cost_ratio,
-	   const SizetArray& N_shared, RealVector& var_H, RealVector& rho2_LH)
+/** version with LF key */
+bool NonDMultifidelitySampling::
+lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
+	     const SizetArray& N_lf, const SizetArray& N_hf,
+	     size_t iter, size_t lev)
 {
-  Real eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
+  lf_increment_samples(eval_ratios, N_lf, N_hf);
+  if (numSamples) {
+    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
+    iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
+
+    return lf_increment(iter, lev);
+  }
+  else
+    return false;
+}
+
+
+/** version without LF key */
+bool NonDMultifidelitySampling::
+lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
+	     const SizetArray& N_hf, size_t iter, size_t lev)
+{
+  lf_increment_samples(eval_ratios, N_lf, N_hf);
+  return (numSamples) ? lf_increment(iter, lev) : false;
+}
+
+
+/** shared helper */
+void NonDMultifidelitySampling::
+lf_increment_samples(const RealVector& eval_ratios, const SizetArray& N_lf,
+		     const SizetArray& N_hf)
+{
+  // update LF samples based on evaluation ratio
+  //   r = m/n -> m = r*n -> delta = m-n = (r-1)*n
+  //   or with inverse r  -> delta = m-n = n/inverse_r - n
+  RealVector lf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    lf_targets[qoi] = eval_ratios[qoi] * N_hf[qoi];
+  // Choose average, RMS, max of difference?
+  // Trade-off: Possible overshoot vs. more iteration...
+  numSamples = one_sided_delta(N_lf, lf_targets, 1); // average
+
+  if (numSamples) Cout << "\nCVMC LF sample increment = " << numSamples;
+  else            Cout << "\nNo CVMC LF sample increment";
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
+	 << average(N_hf) << ", avg eval_ratio = " << average(eval_ratios);
+  Cout << std::endl;
+}
+
+
+/** shared helper */
+bool NonDMultifidelitySampling::lf_increment(size_t iter, size_t lev)
+{
+  // ----------------------------------------
+  // Compute LF increment for control variate
+  // ----------------------------------------
+
+  // generate new MC parameter sets
+  get_parameter_sets(iteratedModel);// pull dist params from any model
+  // export separate output files for each data set:
+  if (exportSampleSets)
+    export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
+
+  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+  // Iteration 0 is defined as the pilot sample + initial CV increment, and
+  // each subsequent iter can be defined as a pair of ML + CV increments.  If
+  // it is desired to stop between the ML and CV components, finalCVRefinement
+  // can be hardwired to false (not currently part of input spec).
+  // Note: termination based on delta_N_hf=0 has final ML and CV increments
+  //       of zero, which is consistent with finalCVRefinement=true.
+  if (iter < max_iter || finalCVRefinement) {
+    // compute allResponses from allVariables using hierarchical model
+    evaluate_parameter_sets(iteratedModel, true, false);
+    return true;
+  }
+  else
+    return false;
+}
+
+
+void NonDMultifidelitySampling::
+compute_eval_ratios(const RealVector& sum_L_shared, const RealVector& sum_H,
+		    const RealVector& sum_LL, const RealVector& sum_LH,
+		    const RealVector& sum_HH, Real cost_ratio,
+		    const SizetArray& N_shared, RealVector& var_H,
+		    RealVector& rho2_LH, RealVector& eval_ratios)
+{
+  if (eval_ratios.empty()) eval_ratios.sizeUninitialized(numFunctions);
+
+  //Real eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
 
     Real& rho_sq = rho2_LH[qoi];
@@ -457,53 +466,70 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
     // this does not seem to behave as well in limited numerical experience.
     //if (rho_sq > Pecos::SMALL_NUMBER) {
     //  avg_inv_eval_ratio += std::sqrt((1. - rho_sq)/(cost_ratio * rho_sq));
-    if (rho_sq < 1.) { // protect against division by 0
-      eval_ratio = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+    if (rho_sq < 1.) { // protect against division by 0, sqrt(negative)
+      eval_ratios[qoi] = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = " << cost_ratio
-	     << " rho_sq = " << rho_sq << " eval_ratio = " << eval_ratio
-	     << std::endl;
-      avg_eval_ratio += eval_ratio;
-      ++num_avg;
+	Cout << "evaluation_ratios() QoI " << qoi+1 << ": cost_ratio = "
+	     << cost_ratio << " rho_sq = " << rho_sq << " eval_ratio = "
+	     << eval_ratios[qoi] << std::endl;
+      //avg_eval_ratio += eval_ratios[qoi];
+      //++num_avg;
     }
+    else // should not happen, but provide a reasonable upper bound
+      eval_ratios[qoi] = (Real)maxFunctionEvals / average(N_shared);
   }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "variance of HF Q:\n" << var_H;
 
-  if (num_avg) avg_eval_ratio /= num_avg;
-  else // should not happen, but provide a reasonable upper bound
-    avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
-
-  return avg_eval_ratio;
+  //if (num_avg) avg_eval_ratio /= num_avg;
+  //else         avg_eval_ratio  = (Real)maxFunctionEvals / average(N_shared);
+  //return avg_eval_ratio;
 }
 
 
-Real NonDMultifidelitySampling::
-MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
-	  const RealVector& rho2_LH, size_t iter, const SizetArray& N_hf)
+void NonDMultifidelitySampling::
+compute_MSE_ratios(const RealVector& eval_ratios, const RealVector& var_H,
+		   const RealVector& rho2_LH, size_t iter,
+		   const SizetArray& N_hf, RealVector& mse_ratios)
 {
-  if (iter == 0) mcMSEIter0.sizeUninitialized(numFunctions);
-
-  Real mc_mse, cvmc_mse, mse_ratio, avg_mse_ratio = 0.;//,avg_mse_iter_ratio=0.;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    // Compute ratio of MSE for high fidelity MC and multifidelity CVMC
-    mse_ratio = 1. - rho2_LH[qoi] * (1. - 1. / avg_eval_ratio); // Ng 2014
-    mc_mse = var_H[qoi] / N_hf[qoi]; cvmc_mse = mc_mse * mse_ratio;
-    Cout << "Mean square error for QoI " << qoi+1 << " reduced from " << mc_mse
-	 << " (MC) to " << cvmc_mse << " (CV); factor = " << mse_ratio << '\n';
-
-    if (iter == 0)
-      { mcMSEIter0[qoi] = mc_mse; avg_mse_ratio += mse_ratio; }
-    else
-      avg_mse_ratio += cvmc_mse / mcMSEIter0[qoi];
+  size_t qoi;
+  if (iter == 0) {
+    // Define mcMSEIter0 for use as a fixed reference (MC variance from pilot
+    // sample) for comparing against convergenceTol
+    mcMSEIter0.sizeUninitialized(numFunctions);
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      mcMSEIter0[qoi] = var_H[qoi] / N_hf[qoi];
   }
-  //avg_mse_iter_ratio /= numFunctions;
+
+  //Real curr_mc_mse, curr_cvmc_mse, curr_mse_ratio, avg_mse_ratio = 0.;
+  if (mse_ratios.empty()) mse_ratios.sizeUninitialized(numFunctions);
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    // Compute ratio of MSE for high fidelity MC and multifidelity CVMC
+    // > Estimator Var for MC = sigma_hf^2 / N_hf = MSE (neglect HF bias)
+    // > Estimator Var for CV = (1+r/w) [1-rho^2(1-1/r)] sigma_hf^2 / p
+    //   where p = (1+r/w)N_hf -> Var = [1-rho^2(1-1/r)] sigma_hf^2 / N_hf
+    // MSE ratio = Var_CV / Var_MC = [1-rho^2(1-1/r)]
+    mse_ratios[qoi] = 1. - rho2_LH[qoi] * (1. - 1. / eval_ratios[qoi]);//Ng 2014
+    Cout << "QoI " << qoi+1 << ": CV variance reduction factor = "
+	 << mse_ratios[qoi] << " for eval ratio " << eval_ratios[qoi] << '\n';
+    //curr_mc_mse   = var_H[qoi] / N_hf[qoi];
+    //curr_cvmc_mse = curr_mc_mse * curr_mse_ratio;
+    //Cout << "QoI " << qoi+1 << ": Mean square error estimated to reduce from "
+    //     << curr_mc_mse << " (MC) to " << curr_cvmc_mse
+    //     << " (CV) following upcoming LF increment\n";
+
+    //if (iter == 0) // initialize reference based on pilot
+    //  { mcMSEIter0[qoi] = curr_mc_mse; avg_mse_ratio += curr_mse_ratio; }
+    //else           // measure convergence to target based on pilot reference
+    //  avg_mse_ratio += curr_cvmc_mse / mcMSEIter0[qoi];
+  }
+
+  /*
   avg_mse_ratio /= numFunctions;
-  Cout //<< "Average MSE reduction factor from CV for iteration "
-       //<< std::setw(4) << iter << " = " << avg_mse_iter_ratio << '\n'
-       << "Average MSE reduction factor since pilot MC = " << avg_mse_ratio
-       << " targeting convergence tol = " << convergenceTol << "\n\n";
+  Cout << "Average MSE reduction factor since pilot MC = " << avg_mse_ratio
+       << " targeting convergence tol = " << convergenceTol << '\n';
   return avg_mse_ratio;
+  */
 }
 
 

@@ -1,12 +1,12 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 2912 total (2912 new, 0 duplicate)
-<<<<< Function evaluation summary: 2912 total (2912 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 8.1429687500e+01
+<<<<< Function evaluation summary: 3004 total (3004 new, 0 duplicate)
+<<<<< Function evaluation summary: 3004 total (3004 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 8.1573437500e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5638895038e-02  6.7797292002e-03  4.1932153614e-01 -2.7555448517e-01
- response_fn_2  1.2925299268e-01  1.4469413313e-02  2.6518201318e-01 -1.0083440574e+00
- response_fn_3  2.5376118561e-02  6.9922253556e-03  5.3804402029e-01 -9.1020660191e-01
+ response_fn_1  2.5941246453e-02  7.2361934110e-03  7.2139531089e-01  6.4555041241e-01
+ response_fn_2  1.2976018448e-01  1.5736588465e-02 -3.5179985256e-01  1.2012960166e+00
+ response_fn_3  2.5288495411e-02  7.5736401391e-03  8.4936020905e-01 -3.1263644126e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 21944 total (21944 new, 0 duplicate)
 <<<<< Function evaluation summary: 21944 total (21944 new, 0 duplicate)
