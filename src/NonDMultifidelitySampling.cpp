@@ -144,8 +144,8 @@ void NonDMultifidelitySampling::control_variate_mc()
       RealVector hf_targets = mse_ratios;
       for (qoi=0; qoi<numFunctions; ++qoi)
 	hf_targets[qoi] *= var_H[qoi] / mcMSEIter0[qoi] / convergenceTol;
-      // Power mean choice: average, RMS, max of difference?  Perhaps RMS
-      // provides a balance between overshoot vs. additional iteration.
+      // Power mean choice: average, max (desire would be to balance overshoot
+      // vs. additional iteration)
       hf_sample_incr = numSamples = one_sided_delta(N_hf, hf_targets, 1); //avg
     }
 
