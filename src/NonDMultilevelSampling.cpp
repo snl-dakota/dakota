@@ -468,11 +468,11 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
   */
   //Problem18
-  /*
+  /*std::ofstream myfile;
   myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
   myfile << N_l[0][0]             << "\t" << N_l[1][0] 
-         << "\t" << N_target_qoi(1, 0)    << "\t" << (N_target_qoi(1, 1))
-         << "\t" << N_target_qoi_FN(1, 0) << "\t" << (N_target_qoi_FN(1, 1)) << "\n";
+         << "\t" << N_target_qoi(0, 0)    << "\t" << (N_target_qoi(0, 1))
+         << "\t" << N_target_qoi_FN(0, 0) << "\t" << (N_target_qoi_FN(0, 1)) << "\n";
   myfile.close();
   */
 
