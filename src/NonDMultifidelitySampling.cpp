@@ -56,9 +56,19 @@ void NonDMultifidelitySampling::core_run()
   // prefer ML over MF if both available
   iteratedModel.multifidelity_precedence(true);
 
-  // For two-model control variate methods, select lowest,highest fidelities
-  // infer the (two) model hierarchy and perform MFMC
-  control_variate_mc();
+  // May retire control_variate_mc() in time, but retain for right now...
+  //size_t num_steps, fixed_index;  short seq_type;
+  //configure_sequence(num_steps, fixed_index, seq_type);
+  //if (num_steps == 2)
+  control_variate_mc();   // Ng and Willcox, 2014
+  //else
+  //  multifidelity_mc(); // Peherstorfer, Willcox, Gunzburger, 2016
+
+  // Note: MFMC uses a nested sampling pattern which does not mesh with the
+  // model pairing assumed in HierarchSurrModel --> either support MFMC under
+  // NonDEnsembleSampling or subsume HierarchSurrModel as a special case of
+  // NonHierarchSurrModel (in which case, SurrogateModel alignment becomes
+  // unimportant).
 }
 
 
@@ -129,9 +139,10 @@ void NonDMultifidelitySampling::control_variate_mc()
   size_t hf_sample_incr = std::min(delta_N_l[lf_form], delta_N_l[hf_form]);
   numSamples = hf_sample_incr;
 
-  mlmfIter = 0;
+  mlmfIter = 0;  equivHFEvals = 0.;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  while (hf_sample_incr && mlmfIter <= max_iter) {
+  while (hf_sample_incr  &&  mlmfIter <= max_iter  &&
+	 equivHFEvals <= maxFunctionEvals) {
 
     // ----------------------------------------------------------
     // Compute shared increment targeting specified MSE reduction
@@ -178,6 +189,8 @@ void NonDMultifidelitySampling::control_variate_mc()
     }
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
     ++mlmfIter;
+    // update equivalent number of HF evaluations (no credit for failed evals)
+    equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio;
   } // end while
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
@@ -186,10 +199,57 @@ void NonDMultifidelitySampling::control_variate_mc()
 		 rho2_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
-
-  // compute the equivalent number of HF evaluations
-  equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio;
 }
+
+
+/** This function performs control variate MC across two combinations of 
+    model form and discretization level.
+void NonDMultifidelitySampling::multifidelity_mc()
+{
+  // Performs pilot + LF increment and then iterates with additional shared
+  // increment + LF increment batches until prescribed MSE reduction is obtained
+
+  size_t qoi, num_steps, form, lev, fixed_index;  short seq_type;
+  configure_sequence(num_steps, fixed_index, seq_type);
+  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+
+  // 1D sequence: either lev varies and form is fixed, or vice versa:
+  size_t& step = (multilev) ? lev : form;
+  if (multilev) form = secondary_index;
+  else          lev  = secondary_index;
+
+  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+  // retrieve cost estimates across soln levels for a particular model form
+  RealVector cost; configure_cost(num_steps, multilev, cost);
+
+  // Initialize for pilot sample
+  SizetArray delta_N_l;
+  load_pilot_sample(pilotSamples, num_steps, delta_N_l);
+  size_t hf_sample_incr = delta_N_l[hf_form];
+  numSamples = hf_sample_incr;
+
+  mlmfIter = 0;  equivHFEvals = 0.;
+  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+  while (hf_sample_incr  &&  mlmfIter <= max_iter  &&
+	 equivHFEvals <= maxFunctionEvals) {
+
+   shared_increment(); // spans models {i, i+1, ..., M}
+   // to support with HierarchSurrModel, might be simplest to sample one model 
+   // at a time using a nested sample set...
+
+    ++mlmfIter;
+    // compute the equivalent number of HF evaluations
+    compute_equivalent_cost(raw_N_l, cost);
+  } // end while
+
+  // Compute/apply control variate parameter to estimate uncentered raw moments
+  RealMatrix H_raw_mom(numFunctions, 4);
+  cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined, N_lf,
+		 rho2_LH, H_raw_mom);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(H_raw_mom, momentStats);
+}
+*/
 
 
 void NonDMultifidelitySampling::

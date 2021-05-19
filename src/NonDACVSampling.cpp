@@ -168,6 +168,12 @@ void NonDACVSampling::core_run()
   case ACV_IS:
   case ACV_KL:
   }
+  // Notes on ACV + ensemble model classes:
+  // > HierarchSurrModel is limiting (see MFMC) such that we may want to
+  //   subsume it with NonHierarchSurrModel --> consider generalizations
+  //   that can be deployed across the algorithm set:
+  //   >> enhanced parallel usage --> avoid sync points in ACV clients
+  //   >> enable sampling over shared + distinct model variable sets
 }
 
 
