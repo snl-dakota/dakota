@@ -1407,7 +1407,8 @@ void HierarchSurrModel::component_parallel_mode(short par_mode)
   bool restart = false;
   if (componentParallelMode != par_mode || componentParallelKey != activeKey) {
     Pecos::ActiveKey old_hf_key, old_lf_key;
-    extract_model_keys(componentParallelKey, old_hf_key, old_lf_key);
+    extract_model_keys(componentParallelKey, old_hf_key, old_lf_key,
+		       componentParallelMode);
     switch (componentParallelMode) {
     case SURROGATE_MODEL_MODE:
       stop_model(old_lf_key.retrieve_model_form());  break;

@@ -122,12 +122,12 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
 
-  Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_costs(),
-    lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev),
-    avg_eval_ratios(num_cv_lev);
+    lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev);
+  RealVectorArray eval_ratios(num_cv_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -148,7 +148,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
-  RealVector mu_L_hat, mu_H_hat;
+  RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
   mlmfIter = 0;
@@ -203,13 +203,20 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
 	  // compute the average evaluation ratio and Lambda factor
-	  avg_eval_ratio = avg_eval_ratios[lev] =
-	    eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-		       sum_HH[1], hf_lev_cost/lf_lev_cost, lev, N_hf[lev],
-		       var_H, rho2_LH);
+	  RealVector& eval_ratios_l = eval_ratios[lev];
+	  compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
+			      sum_HH[1], hf_lev_cost/lf_lev_cost, lev,
+			      N_hf[lev], var_H, rho2_LH, eval_ratios_l);
+
+	  // defer averaging for Lambda
+	  for (qoi=0; qoi<numFunctions; ++qoi)
+	    lambda_l[qoi] = 1. - rho2_LH(qoi,lev)
+	                  * (eval_ratios_l[qoi] - 1.) / eval_ratios_l[qoi];
+	  Lambda[lev] = average(lambda_l);
 	  avg_rho2_LH[lev] = average(rho2_LH[lev], numFunctions);
-	  Lambda[lev] = 1. - avg_rho2_LH[lev]
-	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
+	  //Lambda[lev] = 1. - avg_rho2_LH[lev]
+	  //            * (avg_eval_ratio - 1.) / avg_eval_ratio;
+
 	  agg_var_hf_l = sum(var_H[lev], numFunctions);
 	}
 	else { // no LF model for this level; accumulate only multilevel sums
@@ -257,8 +264,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
 	// execute additional LF sample increment, if needed
-	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],
-			 mlmfIter, lev)) {
+	if (lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
 	  if (outputLevel == DEBUG_OUTPUT)
@@ -341,12 +347,12 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
 
-  Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_costs(),
-    lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev),
-    avg_eval_ratios(num_cv_lev);
+    lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev);
+  RealVectorArray eval_ratios(num_cv_lev);
 
   // CV requires cross-level covariance combinations in Qcorr approach
   IntRealMatrixMap sum_Ll, sum_Llm1,
@@ -378,7 +384,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
-  RealVector mu_L_hat, mu_H_hat;
+  RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
   mlmfIter = 0;
@@ -435,16 +441,23 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
 	  // compute the average evaluation ratio and Lambda factor
-	  avg_eval_ratio = avg_eval_ratios[lev] =
-	    eval_ratio(sum_Ll[1], sum_Llm1[1], sum_Hl[1], sum_Hlm1[1],
-		       sum_Ll_Ll[1], sum_Ll_Llm1[1], sum_Llm1_Llm1[1],
-		       sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
-		       sum_Hlm1_Llm1[1], sum_Hl_Hl[1], sum_Hl_Hlm1[1],
-		       sum_Hlm1_Hlm1[1], hf_lev_cost/lf_lev_cost, lev,
-		       N_hf[lev], var_Yl, rho_dot2_LH);
+	  RealVector& eval_ratios_l = eval_ratios[lev];
+	  compute_eval_ratios(sum_Ll[1], sum_Llm1[1], sum_Hl[1], sum_Hlm1[1],
+			      sum_Ll_Ll[1], sum_Ll_Llm1[1], sum_Llm1_Llm1[1],
+			      sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
+			      sum_Hlm1_Llm1[1], sum_Hl_Hl[1], sum_Hl_Hlm1[1],
+			      sum_Hlm1_Hlm1[1], hf_lev_cost/lf_lev_cost, lev,
+			      N_hf[lev], var_Yl, rho_dot2_LH, eval_ratios_l);
+
+	  // defer averaging for Lambda
+	  for (qoi=0; qoi<numFunctions; ++qoi)
+	    lambda_l[qoi] = 1. - rho_dot2_LH(qoi,lev)
+	                  * (eval_ratios_l[qoi] - 1.) / eval_ratios_l[qoi];
+	  Lambda[lev] = average(lambda_l);
 	  avg_rho_dot2_LH[lev] = average(rho_dot2_LH[lev], numFunctions);
-	  Lambda[lev] = 1. - avg_rho_dot2_LH[lev]
-	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
+	  //Lambda[lev] = 1. - avg_rho_dot2_LH[lev]
+	  //            * (avg_eval_ratio - 1.) / avg_eval_ratio;
+
 	  agg_var_hf_l = sum(var_Yl[lev], numFunctions);
 	}
 	else { // no LF model for this level; accumulate only multilevel
@@ -492,7 +505,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
     //   offline execution with data importing w/o undesirable seed progression)
     // > Improves application of max_iterations control in general: user
     //   specification results in consistent count for ML and CV refinements
-    // > Incurs a bit more overhead: avg_eval_ratios array, mode resetting
+    // > Incurs a bit more overhead: eval_ratios array, mode resetting
     // > Could potentially have parallel scheduling benefits by grouping
     //   similar Model eval sets for aggregated scheduling
     for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
@@ -500,8 +513,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
 	// now execute additional LF sample increment, if needed
-	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],
-			 mlmfIter, lev)) {
+	if (lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
 				N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
@@ -563,12 +575,16 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 }
 
 
-Real NonDMultilevMultifidSampling::
-eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
-	   RealMatrix& sum_LH, RealMatrix& sum_HH, Real cost_ratio, size_t lev,
-	   const SizetArray& N_shared, RealMatrix& var_H, RealMatrix& rho2_LH)
+void NonDMultilevMultifidSampling::
+compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
+		    RealMatrix& sum_LL, RealMatrix& sum_LH, RealMatrix& sum_HH,
+		    Real cost_ratio, size_t lev, const SizetArray& N_shared,
+		    RealMatrix& var_H, RealMatrix& rho2_LH,
+		    RealVector& eval_ratios)
 {
-  Real eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
+  if (eval_ratios.empty()) eval_ratios.sizeUninitialized(numFunctions);
+
+  //Real eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
 
     Real& rho_sq = rho2_LH(qoi,lev);
@@ -577,45 +593,49 @@ eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
 			   N_shared[qoi], var_H(qoi,lev), rho_sq);
 
     if (rho_sq < 1.) { // protect against division by 0
-      eval_ratio = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      eval_ratios[qoi] = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
       if (outputLevel >= DEBUG_OUTPUT)
 	Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = " << cost_ratio
-	     << " rho_sq = " << rho_sq << " eval_ratio = " << eval_ratio
+	     << " rho_sq = " << rho_sq << " eval_ratio = " << eval_ratios[qoi]
 	     << std::endl;
-      avg_eval_ratio += eval_ratio;
-      ++num_avg;
+      //avg_eval_ratio += eval_ratio;
+      //++num_avg;
     }
+    else // should not happen, but provide a reasonable upper bound
+      eval_ratios[qoi] = (Real)maxFunctionEvals / average(N_shared);
   }
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "variance of HF Q[" << lev << "]:\n";
     write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_H);
   }
 
-  if (num_avg) avg_eval_ratio /= num_avg;
-  else // should not happen, but provide a reasonable upper bound
-    avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
-
-  return avg_eval_ratio;
+  //if (num_avg) avg_eval_ratio /= num_avg;
+  //else         avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
+  //return avg_eval_ratio;
 }
 
 
-Real NonDMultilevMultifidSampling::
-eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
-	   RealMatrix& sum_Hlm1, RealMatrix& sum_Ll_Ll, RealMatrix& sum_Ll_Llm1,
-	   RealMatrix& sum_Llm1_Llm1, RealMatrix& sum_Hl_Ll,
-	   RealMatrix& sum_Hl_Llm1,   RealMatrix& sum_Hlm1_Ll,
-	   RealMatrix& sum_Hlm1_Llm1, RealMatrix& sum_Hl_Hl,
-	   RealMatrix& sum_Hl_Hlm1,   RealMatrix& sum_Hlm1_Hlm1,
-	   Real cost_ratio, size_t lev, const SizetArray& N_shared,
-	   RealMatrix& var_YHl,       RealMatrix& rho_dot2_LH)
+void NonDMultilevMultifidSampling::
+compute_eval_ratios(RealMatrix& sum_Ll,        RealMatrix& sum_Llm1,
+		    RealMatrix& sum_Hl,        RealMatrix& sum_Hlm1,
+		    RealMatrix& sum_Ll_Ll,     RealMatrix& sum_Ll_Llm1,
+		    RealMatrix& sum_Llm1_Llm1, RealMatrix& sum_Hl_Ll,
+		    RealMatrix& sum_Hl_Llm1,   RealMatrix& sum_Hlm1_Ll,
+		    RealMatrix& sum_Hlm1_Llm1, RealMatrix& sum_Hl_Hl,
+		    RealMatrix& sum_Hl_Hlm1,   RealMatrix& sum_Hlm1_Hlm1,
+		    Real cost_ratio, size_t lev, const SizetArray& N_shared,
+		    RealMatrix& var_YHl,       RealMatrix& rho_dot2_LH,
+		    RealVector& eval_ratios)
 {
   if (lev == 0)
-    return eval_ratio(sum_Ll, sum_Hl, sum_Ll_Ll, sum_Hl_Ll, sum_Hl_Hl,
-		      cost_ratio, lev, N_shared, var_YHl, rho_dot2_LH);
+    compute_eval_ratios(sum_Ll, sum_Hl, sum_Ll_Ll, sum_Hl_Ll, sum_Hl_Hl,
+			cost_ratio, lev, N_shared, var_YHl, rho_dot2_LH,
+			eval_ratios);
   else {
-    Real beta_dot, gamma, eval_ratio, avg_eval_ratio = 0.;
-    size_t qoi, num_avg = 0;
-    for (qoi=0; qoi<numFunctions; ++qoi) {
+    if (eval_ratios.empty()) eval_ratios.sizeUninitialized(numFunctions);
+    Real beta_dot, gamma;
+    //Real eval_ratio, avg_eval_ratio = 0.;  size_t num_avg = 0;
+    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
       Real& rho_dot_sq = rho_dot2_LH(qoi,lev);
       compute_mlmf_control(sum_Ll(qoi,lev), sum_Llm1(qoi,lev), sum_Hl(qoi,lev),
 			   sum_Hlm1(qoi,lev), sum_Ll_Ll(qoi,lev),
@@ -627,25 +647,25 @@ eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
 			   var_YHl(qoi,lev), rho_dot_sq, beta_dot, gamma);
 
       if (rho_dot_sq < 1.) { // protect against division by 0
-	eval_ratio = std::sqrt(cost_ratio * rho_dot_sq / (1.-rho_dot_sq));
+	eval_ratios[qoi] = std::sqrt(cost_ratio * rho_dot_sq / (1.-rho_dot_sq));
 	if (outputLevel >= DEBUG_OUTPUT)
 	  Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = "
 	       << cost_ratio << " rho_dot_sq = " << rho_dot_sq
-	       << " eval_ratio = " << eval_ratio << std::endl;
-	avg_eval_ratio += eval_ratio;
-	++num_avg;
+	       << " eval_ratio = " << eval_ratios[qoi] << std::endl;
+	//avg_eval_ratio += eval_ratio;
+	//++num_avg;
       }
+      else // should not happen, but provide a reasonable upper bound
+	eval_ratios[qoi] = (Real)maxFunctionEvals / average(N_shared);
     }
     if (outputLevel >= DEBUG_OUTPUT) {
       Cout << "variance of HF Y[" << lev << "]:\n";
       write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_YHl);
     }
 
-    if (num_avg) avg_eval_ratio /= num_avg;
-    else // should not happen, but provide a reasonable upper bound
-      avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
-
-    return avg_eval_ratio;
+    //if (num_avg) avg_eval_ratio /= num_avg;
+    //else         avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
+    //return avg_eval_ratio;
   }
 }
 

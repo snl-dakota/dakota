@@ -217,10 +217,16 @@ private:
   /// synchronize the LF model's solution level control with surrModelKey
   void assign_surrogate_key();
 
-  /// define truth and surrogate keys from incoming active key
+  /// define truth and surrogate keys from incoming active key.  In case of
+  /// singleton, use responseMode to disambiguate.
   void extract_model_keys(const Pecos::ActiveKey& active_key,
 			  Pecos::ActiveKey& truth_key,
 			  Pecos::ActiveKey& surr_key);
+  /// define truth and surrogate keys from incoming active key.  In case of
+  /// singleton, use component parallel mode to disambiguate.
+  void extract_model_keys(const Pecos::ActiveKey& active_key,
+			  Pecos::ActiveKey& truth_key,
+			  Pecos::ActiveKey& surr_key, short parallel_mode);
 
   /// helper to select among Variables::all_discrete_{int,string,real}_
   /// variable_labels() for exporting a solution control variable label
@@ -511,11 +517,28 @@ extract_model_keys(const Pecos::ActiveKey& active_key,
 {
   if (active_key.aggregated()) // AGGREGATED_MODELS, MODEL_DISCREPANCY
     active_key.extract_keys(truth_key, surr_key);
-  else // single key: assign to truth or surr key based on responseMode
+  else// single key: this version assigns to truth | surr based on responseMode
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
       surr_key  = active_key;  truth_key.clear();  break;
     default: // {BYPASS,NO}_SURROGATE
+      truth_key = active_key;   surr_key.clear();  break;
+    }
+}
+
+
+inline void HierarchSurrModel::
+extract_model_keys(const Pecos::ActiveKey& active_key,
+		   Pecos::ActiveKey& truth_key, Pecos::ActiveKey& surr_key,
+		   short parallel_mode)
+{
+  if (active_key.aggregated())
+    active_key.extract_keys(truth_key, surr_key);
+  else// single key: this version assigns to truth | surr based on parallel mode
+    switch (parallel_mode) {
+    case SURROGATE_MODEL_MODE:
+      surr_key  = active_key;  truth_key.clear();  break;
+    case TRUTH_MODEL_MODE:
       truth_key = active_key;   surr_key.clear();  break;
     }
 }
