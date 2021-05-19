@@ -90,6 +90,8 @@ protected:
 
   /// define the active model key
   void active_model_key(const Pecos::ActiveKey& key);
+  /// remove keys for any approximations underlying {truth,unordered}Models
+  void clear_model_keys();
 
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -425,6 +427,15 @@ inline void NonHierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
   // generally special case invocations from Iterator code (e.g., with
   // locally-managed Model recursions).
   //update_from_model(truthModel);
+}
+
+
+inline void NonHierarchSurrModel::clear_model_keys()
+{
+  size_t i, num_unordered_models = unorderedModels.size();
+  for (i=0; i<num_unordered_models; ++i)
+    unorderedModels[i].clear_model_keys();
+  truthModel.clear_model_keys();
 }
 
 

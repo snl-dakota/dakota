@@ -413,62 +413,103 @@ void NonD::push_level_mappings(const RealVector& level_maps, size_t offset)
 }
 
 
+/** A one-dimensional sequence is assumed in this case. */
 void NonD::
-load_pilot_sample(const SizetArray& pilot_spec, SizetArray& delta_N_l)
+configure_sequence(//unsigned short hierarch_dim,
+		   size_t& num_steps, size_t& secondary_index, short& seq_type)
 {
-  size_t pilot_size = pilot_spec.size(), delta_size = delta_N_l.size();
-  if (delta_size == pilot_size)
+  // Allow either model forms or discretization levels, but not both
+  // (precedence determined by ML/MF calling algorithm)
+  ModelList& ordered_models = iteratedModel.subordinate_models(false);
+  ModelLIter m_iter = --ordered_models.end(); // HF model
+  size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
+
+  //switch (hierarch_dim) {
+  //case 1:
+    if (iteratedModel.multilevel()) {
+      seq_type  = Pecos::RESOLUTION_LEVEL_SEQUENCE;
+      num_steps = num_hf_lev;  secondary_index = num_mf - 1;
+      if (num_mf > 1)
+	Cerr << "Warning: multiple model forms will be ignored by "
+	     << "NonD::configure_sequence().\n";
+    }
+    else if (iteratedModel.multifidelity()) {
+      seq_type  = Pecos::MODEL_FORM_SEQUENCE;
+      num_steps = num_mf;
+      // retain each model's active solution control index:
+      secondary_index = std::numeric_limits<size_t>::max();
+      if (num_hf_lev > 1)
+	Cerr << "Warning: solution control levels will be ignored by "
+	     << "NonD::configure_sequence().\n";
+    }
+    else {
+      Cerr << "Error: no model hierarchy evident in NonD::configure_sequence()."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  /*
+    break;
+  case 2:
+    if (iteratedModel.multilevel_multifidelity()) {
+      seq_type  = Pecos::MODEL_FORM_RESOLUTION_LEVEL_SEQUENCE;
+      num_steps = num_mf;
+      secondary_index = num_hf_lev; // use this field as secondary step count?
+    }
+    else {
+      Cerr << "Error: no compatible model hierarchy evident in NonDExpansion::"
+	   << "configure_sequence()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    break;
+  }
+  */
+}
+
+
+bool NonD::
+query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
+{
+  bool cost_defined = true;
+  ModelList& ordered_models = iteratedModel.subordinate_models(false);
+  ModelLIter m_iter;
+  if (multilevel) {
+    ModelLIter m_iter = --ordered_models.end(); // HF model
+    cost = m_iter->solution_level_costs();      // can be empty
+    if (cost.length() != num_steps)
+      cost_defined = false;
+  }
+  else  {
+    cost.sizeUninitialized(num_steps);
+    m_iter = ordered_models.begin();
+    for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
+      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
+      if (cost[i] <= 0.) cost_defined = false;
+    }
+  }
+  if (!cost_defined) cost.sizeUninitialized(0); // for compute_equivalent_cost()
+  return cost_defined;
+}
+
+
+void NonD::
+load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
+		  SizetArray& delta_N_l)
+{
+  size_t pilot_size = pilot_spec.size();
+  if (num_steps == pilot_size)
     delta_N_l = pilot_spec;
   else if (pilot_size <= 1) {
     size_t num_samp = (pilot_size) ? pilot_spec[0] : 100;
-    delta_N_l.assign(delta_size, num_samp);
+    delta_N_l.assign(num_steps, num_samp);
   }
   else {
     Cerr << "Error: inconsistent pilot sample size (" << pilot_size
-	 << ") in load_pilot_sample(SizetArray).  " << delta_size
+	 << ") in NonD::load_pilot_sample(SizetArray).  " << num_steps
 	 << " expected." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   Cout << "\nPilot sample:\n" << delta_N_l << std::endl;
-}
-
-
-void NonD::
-load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
-		  SizetArray& delta_N_l)
-{
-  size_t num_mf = N_l.size(), pilot_size = pilot_spec.size(), delta_size;
-
-  if (num_mf > 1) { // CV only case
-    delta_size = num_mf;
-    for (size_t i=0; i<num_mf; ++i)
-      if (N_l[i].size() > 1) {
-	Cerr << "Error: multidimensional N_l not expected in 1-dimensional "
-	     << "load_pilot_sample(SizetArray)" << std::endl;
-	abort_handler(METHOD_ERROR);
-      }
-    Cout << "\nMultifidelity pilot sample:\n";
-  }
-  else { // ML only case
-    delta_size = N_l[0].size();
-    Cout << "\nMultilevel pilot sample:\n";
-  }
-
-  if (delta_size == pilot_size)
-    delta_N_l = pilot_spec;
-  else if (pilot_size <= 1) {
-    size_t num_samp = (pilot_size) ? pilot_spec[0] : 100;
-    delta_N_l.assign(delta_size, num_samp);
-  }
-  else {
-    Cerr << "Error: inconsistent pilot sample size (" << pilot_size
-	 << ") in load_pilot_sample(SizetArray).  " << delta_size
-	 << " expected." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  Cout << delta_N_l << std::endl;
 }
 
 
@@ -480,6 +521,7 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
   delta_N_l.resize(num_mf);
 
   // allow several different pilot sample specifications
+  // This approach assumes MLMF: includes all model forms and resolution levels
   if (pilot_size <= 1) {
     num_samp = (pilot_size) ? pilot_spec[0] : 100;
     for (i=0; i<num_mf; ++i)
@@ -490,7 +532,6 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
     bool same_lev = true;
 
     for (i=0; i<num_mf; ++i) {
-      // for now, only SimulationModel supports solution_levels()
       num_lev = N_l[i].size();
       delta_N_l[i].resize(num_lev);
       if (i && num_lev != num_prev_lev) same_lev = false;
@@ -513,13 +554,43 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
     }
     else {
       Cerr << "Error: inconsistent pilot sample size (" << pilot_size
-	   << ") in load_pilot_sample(Sizet2DArray)." << std::endl;
+	   << ") in NonD::load_pilot_sample(Sizet2DArray)." << std::endl;
       abort_handler(METHOD_ERROR);
     }
   }
 
   Cout << "\nMultilevel-multifidelity pilot sample:\n";
   print_multilevel_evaluation_summary(Cout, delta_N_l);
+}
+
+
+void NonD::
+inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
+		      size_t fixed_index, Sizet3DArray& N_l_3D)
+{
+  // 2D array is num_steps x num_qoi
+  // 3D array is num_mf x num_lev x num_qoi which we slice as either:
+  // > MF case: 1:num_mf x active_lev x 1:num_qoi
+  // > ML case: active_mf x 1:num_lev x 1:num_qoi
+
+  size_t i, num_mf = N_l_3D.size();  
+  if (multilev) // ML case
+    N_l_3D[fixed_index] = N_l_2D;
+  else { // MF case
+    if (fixed_index == std::numeric_limits<size_t>::max()) {
+      ModelList& ordered_models = iteratedModel.subordinate_models(false);
+      ModelLIter m_iter = ordered_models.begin();
+      size_t m_soln_lev, active_lev;
+      for (i=0; i<num_mf && m_iter != ordered_models.end(); ++i, ++m_iter) {
+	m_soln_lev = m_iter->solution_level_cost_index();
+	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
+	N_l_3D[i][active_lev] = N_l_2D[i];  // assign vector of qoi samples
+      }
+    }
+    else // valid fixed_index
+      for (i=0; i<num_mf; ++i)
+	N_l_3D[i][fixed_index] = N_l_2D[i]; // assign vector of qoi samples
+  }
 }
 
 
@@ -1068,13 +1139,15 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
   size_t j, width = write_precision+7, num_lev = N_samp.size();
   for (j=0; j<num_lev; ++j) {
     const SizetArray& N_j = N_samp[j];
-    s << "                     " << std::setw(width) << N_j[0];
-    if (!homogeneous(N_j)) { // print all counts in this 1D array
-      size_t q, num_q = N_j.size();
-      for (size_t q=1; q<num_q; ++q)
-	s << ' ' << N_j[q];
+    if (!N_j.empty()) {
+      s << "                     " << std::setw(width) << N_j[0];
+      if (!homogeneous(N_j)) { // print all counts in this 1D array
+	size_t q, num_q = N_j.size();
+	for (size_t q=1; q<num_q; ++q)
+	  s << ' ' << N_j[q];
+      }
+      s << '\n';
     }
-    s << '\n';
   }
 }
 

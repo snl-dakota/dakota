@@ -239,5 +239,11 @@ If we define the vectors of the PCE coefficients $\tilde{\bm{Q}}_{coeff} := \{\t
 \label{eq19}
 \bm{\epsilon}_D = \frac{\left\| \bm{Q}_{coeff} - \tilde{\bm{Q}}_{coeff} \right\|_2} {\left\| \bm{Q}_{coeff} \right\|_2} \,.
 \end{equation}
-Note that although (\ref{eq19}) provides a way to compare the $r$-d adaptation with the full dimensional PCE, in practical, it is more convenient to compare two adaptations with successive dimensions, say, $r$-d and $(r+1)$-d, to check the convergence. The accuracy of basis adaptation increases with increase of $r$ and will recover full dimensional expansion with $r=d$. At this stage the implementation in Dakota of this strategy will use the full dimension of the original model, \textit{i.e.} the rotation matrix is not truncated and the model is expressed in a different variable set. Although the rotation matrix is explicitly reported and it can be used to obtain information about the significant directions of the model. 
+Note that although (\ref{eq19}) provides a way to compare the $r$-d adaptation with the full dimensional PCE, in practical, it is more convenient to compare two adaptations with successive dimensions, say, $r$-d and $(r+1)$-d, to check the convergence. The accuracy of basis adaptation increases with increase of $r$ and will recover full dimensional expansion with $r=d$. 
+
+In order to obtain a truncation of the rotation matrix, which is both efficient and based entirely on the pilot samples, the current Dakota implementation relies on the sample average of the weighted 2-norm of the difference between the physical coordinates of the pilot samples, $\xi^{(i)}$, and their approximation after the mapping through the reduced rotation matrix, $\tilde{\xi}^{(i)} = \bm{A}_r^{\mathrm{T}} \bm{\eta}_r^{(i)} = \bm{A}_r^{\mathrm{T}} \bm{A}_r \xi^{(i)}$:
+\begin{equation}
+\varpi = \frac{1}{N_p} \sum_{i=1}^{N_p} \parallel \bm{w} \odot \tilde{\bm{\xi}}^{(i)} - \bm{w} \odot {\bm{\xi}}^{(i)} \parallel_2.
+\end{equation}
+The weights $\bm{w}$ in this metrics are the $d$ first order coefficients, obtained after the pilot samples in the original space. Subsequent approximations for $\tilde{\xi}^{(i)}$ are considered for $r=1,\dots,d$ and the final truncation dimension is determined when the convergence criterion, specified by the user for this metric, is reached.  
 

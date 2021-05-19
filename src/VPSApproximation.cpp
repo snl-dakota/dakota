@@ -1825,10 +1825,11 @@ namespace Dakota
         
         cc = 1.0 / 9007199254740992.0; // inverse of 2^53rd power
         size_t i;
-        size_t qlen = indx = sizeof Q / sizeof Q[0];
+        size_t qlen = sizeof Q / sizeof Q[0];
+	indx = qlen;
         for (i = 0; i < qlen; i++) Q[i] = 0;
         
-        double c = 0.0; zc = 0.0;	/* current CSWB and SWB `borrow` */
+        c = 0.0; zc = 0.0;	/* current CSWB and SWB `borrow` */
         zx = 5212886298506819.0 / 9007199254740992.0;	/* SWB seed1 */
         zy = 2020898595989513.0 / 9007199254740992.0;	/* SWB seed2 */
         

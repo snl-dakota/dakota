@@ -20,13 +20,13 @@ add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/../Dakota.bib
                       ${CMAKE_CURRENT_BINARY_DIR}/../Dakota.bib)
 
 
-# "Generic" script interface examples in Users_Advanced_Interfaces.tex
+# "Generic" script interface examples in Users_Interface.tex
 # Directories in which inputs are found
-set(generic_path "${Dakota_SOURCE_DIR}/examples/script_interfaces/generic")
+set(generic_path "${Dakota_SOURCE_DIR}/dakota-examples/official/drivers/bash")
 add_file_copy_command("${generic_path}/dakota_rosenbrock.in" 
   "${CMAKE_CURRENT_BINARY_DIR}/dakota_rosenbrock.in")
-add_file_copy_command("${generic_path}/simulator_script"
-  "${CMAKE_CURRENT_BINARY_DIR}/simulator_script")
+add_file_copy_command("${generic_path}/simulator_script.sh"
+  "${CMAKE_CURRENT_BINARY_DIR}/simulator_script.sh")
 add_file_copy_command("${generic_path}/templatedir/ros.template"
   "${CMAKE_CURRENT_BINARY_DIR}/ros.template")
 add_custom_command(
@@ -38,7 +38,7 @@ add_custom_command(
 
 list(APPEND users_inputs_abs
   "${CMAKE_CURRENT_BINARY_DIR}/dakota_rosenbrock.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/simulator_script"
+  "${CMAKE_CURRENT_BINARY_DIR}/simulator_script.sh"
   "${CMAKE_CURRENT_BINARY_DIR}/dprepro_usage"
   "${CMAKE_CURRENT_BINARY_DIR}/ros.template"
   )

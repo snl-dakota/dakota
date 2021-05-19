@@ -1,0 +1,36 @@
+P profastk collette@localhost:/media/YANN/Aster/Poutre/poutre_flexion.astk
+P serveur localhost
+P noeud localhost
+P username collette
+P mclient localhost
+P uclient collette
+P version STA10.0
+P lang en
+P debug debug
+P mode interactif
+P ncpus 1
+P classe 
+P depart 
+P mem_aster 
+P nomjob poutre_flexion
+P origine ASTK 1.5.0
+P display localhost:0.0
+A args 
+A memjeveux 8.0
+A tpmax 60
+P memjob 32768
+P tpsjob 1
+P xterm /usr/bin/xterm -sb -si -geometry 90x32 -display localhost:0.0
+P nbmaxnook 5
+P cpresok RESNOOK
+P facmtps 1
+P corefilesize unlimited
+F comm /home/collette/Aster/Bridge/bridge.comm D 1
+F msh /home/collette/Aster/Bridge/bridge.msh D 19
+F resu /home/collette/Aster/Bridge/bridge.resu R 8
+F erre /home/collette/Aster/Bridge/bridge.erre R 9
+F pos /home/collette/Aster/Bridge/bridge_SIGMA.pos R 55
+F pos /home/collette/Aster/Bridge/bridge_DEPL.pos R 56
+P consbtc oui
+P soumbtc oui
+P actions make_etude

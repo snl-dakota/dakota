@@ -182,9 +182,10 @@ response of the building.
 
 \subsection{Aleatory Uncertain Variables}\label{variables:uncertain:auv}
 
-Aleatory uncertainties are irreducible variabilities inherent in
-nature.  They are characterized by having a sufficiently rich set of
-data as to allow modeling using probability distributions, and
+Aleatory uncertainties are irreducible variabilities inherent in nature.
+They are
+%characterized by having a sufficiently rich set of data as to allow modeling
+commonly modeled using probability distributions, and
 probabilistic methods are commonly used for propagating input aleatory
 uncertainties described by probability distribution specifications.
 The two following sections describe the continuous and discrete
@@ -284,10 +285,15 @@ The following types of discrete aleatory uncertain variables are available:
 \subsection{Epistemic Uncertain Variables}\label{variables:uncertain:euv}
 
 Epistemic uncertainties are reducible uncertainties resulting from a
-lack of knowledge.  For epistemic uncertainties, data is generally
-sparse, making the use of probability theory questionable and leading
-to nonprobabilistic methods based on interval or fuzzy specifications.  Dakota
-currently supports the following epistemic uncertain variable types.
+lack of knowledge.  For epistemic uncertainties,
+%data is generally sparse, making the use of probability theory
+%questionable and leading to nonprobabilistic methods based on
+%interval or fuzzy specifications.
+use of probability distributions is based on subjective prior
+knowledge rather than objective data, and we may alternatively explore
+non-probabilistic specifications based on intervals or Dempster-Shafer
+structures.  Dakota currently supports the following epistemic uncertain
+variable types.
 
 \subsubsection{Continuous Epistemic Uncertain Variables}\label{variables:uncertain:ceuv}
 

@@ -1,0 +1,29 @@
+Blurb::
+Interface directly to a Python simulation via pybind11 - requires
+special Dakota build
+
+Description::
+
+%Dakota supports a library-linked interface to Python using the
+pybind11 C++ API, but it must be explicitly enabled when compiling
+%Dakota from source.  This is an emerging capability currently
+intended to work with a top-level Dakota Python module instantiated
+from Python, together with one or more registered Python callback
+functions.  The name of the callback function used to map parameters
+to responses is the argument in the \ref interface-analysis_drivers
+specification.  List data structures are passed to the specified
+Python callback function with responses expected to be populated
+therein.
+
+<b> Usage Tips </b>
+This is a new capability which should be considered preliminary with
+limitations, e.g., poor handling of the Global Interpreter Lock can
+produce failures on Mac platforms.
+
+Topics::
+Examples::
+See \c dakota_src/src/unit_test/test_dakota.py
+
+Theory::
+Faq::
+See_Also::

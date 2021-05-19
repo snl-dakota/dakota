@@ -15,33 +15,32 @@ through the computational model to assess statistics or intervals on
 outputs. For an overview of these approaches for engineering
 applications, consult~\cite{Hal00}. Dakota also has emerging methods
 for inference or inverse UQ, such as Bayesian calibration. These
-methods help with (1) by obtaining a statistical characterization of
-input parameters based on provided data.
+methods help with (1) by inferring a statistical characterization of
+input parameters that is consistent with available observational data.
 
 UQ is related to sensitivity analysis in that the common goal is to
 gain an understanding of how variations in the parameters affect the
 response functions of the engineering design problem. However, for UQ,
-some or all of the components of the parameter vector, are considered
+some or all of the components of the parameter vector are considered
 to be uncertain as specified by particular probability distributions
-(e.g., normal, exponential, extreme value), or other uncertainty
-structures. By assigning specific distributional structure to the
+(e.g., normal, exponential, extreme value) or other uncertainty
+specifications. By assigning specific distributional structure to the
 inputs, distributional structure for the outputs (i.e, response
 statistics) can be inferred.  This migrates from an analysis that is
 more {\em qualitative} in nature, in the case of sensitivity analysis,
 to an analysis that is more rigorously {\em quantitative}.
 
-UQ methods are often distinguished by their ability to propagate
-aleatory or epistemic input uncertainty characterizations, where
-aleatory uncertainties are irreducible variabilities inherent in
-nature and epistemic uncertainties are reducible uncertainties
-resulting from a lack of knowledge. Since sufficient data is generally
-available for aleatory uncertainties, probabilistic methods are
-commonly used for computing response distribution statistics based on
-input probability distribution specifications. Conversely, for
-epistemic uncertainties, any use of probability distributions is based
-on subjective knowledge rather than objective data, and we may
-alternatively explore nonprobabilistic methods based on interval
-specifications.
+UQ methods can be distinguished by their ability to propagate aleatory
+or epistemic input uncertainty characterizations, where aleatory
+uncertainties are irreducible variabilities inherent in nature and
+epistemic uncertainties are reducible uncertainties resulting from a
+lack of knowledge. %Since sufficient data is generally available for
+For aleatory uncertainties, probabilistic methods are commonly used for
+computing response distribution statistics based on input probability
+distribution specifications. Conversely, for epistemic uncertainties,
+use of probability distributions is based on subjective prior
+knowledge rather than objective data, and we may alternatively explore
+nonprobabilistic methods based on interval specifications.
 
 \subsection{Summary of Dakota UQ Methods}\label{uq:overview:methods}
 
@@ -53,14 +52,14 @@ academia~\cite{Gha99,Gha91,Eld05,Tang10a}.
 The aleatory UQ methods in Dakota include various sampling-based
 approaches (e.g., Monte Carlo and Latin Hypercube sampling), local and
 global reliability methods, and stochastic expansion (polynomial chaos
-expansions and stochastic collocation) approaches. The epistemic UQ
-methods include local and global interval analysis and Dempster-Shafer
-evidence theory. These are summarized below and then described in more
-depth in subsequent sections of this chapter. Dakota additionally
-supports mixed aleatory/epistemic UQ via interval-valued probability,
-second-order probability, and Dempster-Shafer theory of
-evidence. These involve advanced model recursions and are described in
-Section~\ref{adv_models:mixed_uq}.
+expansions, stochastic collocation, and functional tensor train)
+approaches. The epistemic UQ methods include local and global interval
+analysis and Dempster-Shafer evidence theory. These are summarized
+below and then described in more depth in subsequent sections of this
+chapter. Dakota additionally supports mixed aleatory/epistemic UQ via
+interval-valued probability, second-order probability, and
+Dempster-Shafer theory of evidence. These involve advanced model
+recursions and are described in Section~\ref{adv_models:mixed_uq}.
 
 %In addition, future extensions to the DDACE package will make it 
 %applicable to general UQ problems, which will augment the Dakota/UQ 
@@ -174,28 +173,38 @@ probabilities using multimodal adaptive importance sampling.
 \textbf{Stochastic Expansion Methods}: %The objective of these
 %techniques is to characterize the response of systems whose governing
 %equations involve stochastic coefficients. 
-The development of these techniques mirrors that of deterministic
-finite element analysis utilizing the notions of projection,
-orthogonality, and weak convergence~\cite{Gha99},~\cite{Gha91}. Rather
-than estimating point probabilities, they form an approximation to the
-functional relationship between response functions and their random
-inputs, which provides a more complete uncertainty representation for
-use in multi-code simulations. Expansion methods include polynomial
-chaos expansions (PCE), which employ multivariate orthogonal
-polynomials that are tailored to representing particular input
-probability distributions, and stochastic collocation (SC), which
-employs multivariate interpolation polynomials.  For PCE, expansion
-coefficients may be evaluated using a spectral projection approach
-(based on sampling, tensor-product quadrature, Smolyak sparse grid, or
-cubature methods for numerical integration) or a regression approach
-(least squares or compressive sensing). For SC, interpolants are
-formed over tensor-product or sparse grids and may be local or global,
-value-based or gradient-enhanced, and nodal or hierarchical. In global
-value-based cases (Lagrange polynomials), the barycentric formulation
-is used~\cite{BerTref04,Klimke05,Higham04} to improve numerical
-efficiency and stability.  Both sets of methods provide analytic
-response moments and variance-based metrics; however, CDF/CCDF
-probabilities are evaluated numerically by sampling on the expansion.
+Theoretical development of these techniques mirrors that of
+deterministic finite element analysis utilizing the notions of
+projection, orthogonality, and weak convergence~\cite{Gha99},~\cite{Gha91}.
+
+Rather than focusing on estimating specific statistics (e.g., failure
+probability), they form an approximation to the functional
+relationship between response functions and their random inputs, which
+provides a more complete uncertainty representation for use in more
+advanced contexts, such as coupled multi-code simulations.  Expansion
+methods include polynomial chaos expansions (PCE), which expand in a
+basis of multivariate orthogonal polynomials (e.g., Hermite, Legendre)
+that are tailored to representing particular input probability
+distributions (e.g., normal, uniform); stochastic collocation (SC),
+which expand in a basis of multivariate interpolation polynomials
+(e.g., Lagrange); and functional tensor train (FTT), which leverages
+concepts from data compression to expand using low rank products of
+polynomial cores.  For PCE, expansion coefficients may be evaluated
+using a spectral projection approach (based on sampling,
+tensor-product quadrature, Smolyak sparse grid, or cubature methods
+for numerical integration) or a regression approach (least squares or
+compressive sensing). For SC, interpolants are formed over
+tensor-product or sparse grids and may be local or global, value-based
+or gradient-enhanced, and nodal or hierarchical. In global value-based
+cases (Lagrange polynomials), the barycentric formulation is
+used~\cite{BerTref04,Klimke05,Higham04} to improve numerical
+efficiency and stability.  For FTT, regression via regularized
+nonlinear least squares is employed for recovering low rank
+coefficients, and cross-validation schemes are available to determine
+the best rank and polynomial basis order settings.  Each of these
+methods provide analytic response moments and variance-based metrics;
+however, PDFs and CDF/CCDF mappings are computed numerically by
+sampling on the expansion.
 
 \textbf{Importance Sampling}: Importance sampling is a method that 
 allows one to estimate statistical quantities such as failure 
@@ -285,31 +294,41 @@ observational data.
 
 \subsection{Variables and Responses for UQ}\label{uq:overview:varsresp}
 
-Most of the UQ methods perform a forward uncertainty propagation in
-which probability or interval information for input parameters is
-mapped to probability or interval information for output response
-functions. The $m$ functions in the Dakota response data set are
-interpreted as $m$ general response functions by the Dakota methods
-(with no specific interpretation of the functions as for optimization
-and least squares).
+UQ methods that perform a forward uncertainty propagation map
+probability or interval information for input parameters into
+probability or interval information for output response functions.
+The $m$ functions in the Dakota response data set are interpreted
+as $m$ general response functions by the Dakota methods (with no
+specific interpretation of the functions as for optimization and
+least squares).
 
 Within the variables specification, uncertain variable descriptions
-are employed to define the parameter probability distributions (see
+are employed to define the random variable distributions (refer to
 Section~\ref{variables:uncertain}). For Bayesian inference methods,
 these uncertain variable properties characterize the prior
-distribution. The continuous aleatory distribution types include:
-normal (Gaussian), lognormal, uniform, loguniform, triangular,
-exponential, beta, gamma, gumbel, frechet, weibull, and histogram
-bin. The discrete aleatory distribution types include: poisson,
-binomial, negative binomial, geometric, hypergeometric, and histogram
-point. The epistemic distribution type is interval for continuous
-variables. For epistemic discrete variables, there are three types:
-integer range, integer set, and real set.  When gradient and/or
-Hessian information is used in an uncertainty assessment, derivative
-components are normally computed with respect to the active continuous
-variables, which could be aleatory uncertain, epistemic uncertain,
-aleatory and epistemic uncertain, or all continuous variables,
-depending on the active view (see Section~\ref{variables:mixed}).
+distribution to be updated and constrained by the observational data.
+As enumerated in Section~\ref{variables:uncertain}, uncertain
+variables types are categorized as either aleatory or epistemic and as
+either continuous or discrete, where discrete types include integer
+ranges, integer sets, string sets, and real sets.  The continuous
+aleatory distribution types include: normal (Gaussian), lognormal,
+uniform, loguniform, triangular, exponential, beta, gamma, gumbel,
+frechet, weibull, and histogram bin. The discrete aleatory
+distribution types include: poisson, binomial, negative binomial,
+geometric, hypergeometric, and discrete histograms for integers,
+strings, and reals. The epistemic distribution types include
+continuous intervals, discrete integer ranges, and discrete sets for
+integers, strings, and reals.  While many of the epistemic types
+appear similar to aleatory counterparts, a key difference is that the
+latter requires probabilities for each value within a range or set,
+whereas the former will use, at most, a subjective belief specification.
+
+When gradient and/or Hessian information is used in an uncertainty
+assessment, derivative components are normally computed with respect
+to the active continuous variables, which could be aleatory uncertain,
+epistemic uncertain, aleatory and epistemic uncertain, or all
+continuous variables, depending on the active view (see
+Section~\ref{variables:mixed}).
 
 \section{Sampling Methods}\label{uq:sampling}
 
@@ -1325,42 +1344,42 @@ multidimensional interpolation polynomial approximation, both formed
 in terms of standardized random variables. A distinguishing feature of
 these two methodologies is that the final solution is expressed as a
 functional mapping, and not merely as a set of statistics as is the
-case for many nondeterministic methodologies.  This makes these
-techniques particularly attractive for use in multi-physics
-applications which link different analysis packages.  The first
-stochastic expansion method is the polynomial chaos expansion
-(PCE)~\cite{Gha99,Gha91}. For smooth functions (i.e.,
+case for many other methodologies (sampling, reliability, et al.).
+This makes these techniques particularly attractive for use in
+multi-physics applications which link different analysis packages.
+The first stochastic expansion method is the polynomial chaos
+expansion (PCE)~\cite{Gha99,Gha91}. For smooth functions (i.e.,
 analytic, infinitely-differentiable) in $L^2$ (i.e., possessing finite
 variance), exponential convergence rates can be obtained under order
 refinement for integrated statistical quantities of interest such as
-mean, variance, and probability. Dakota implements the generalized
-PCE approach using the Wiener-Askey
-scheme~\cite{XiuKarn02}, in which Hermite, Legendre, Laguerre, Jacobi,
-and generalized Laguerre orthogonal polynomials are used for modeling
-the effect of continuous random variables described by normal,
-uniform, exponential, beta, and gamma probability distributions,
-respectively\footnote{Orthogonal polynomial selections also exist for
-  discrete probability distributions, but are not yet supported in
-  Dakota.}. These orthogonal polynomial selections are optimal for
-these distribution types since the inner product weighting function
-corresponds\footnote{Identical support range; weight differs by at
-  most a constant factor.} to the probability density functions for
-these continuous distributions. Orthogonal polynomials can be computed
-for any positive weight function, so these five classical orthogonal
-polynomials may be augmented with numerically-generated polynomials
-for other probability distributions (e.g., for lognormal, extreme
-value, and histogram distributions).  When independent standard random
-variables are used (or computed through transformation), the variable
-expansions are uncoupled, allowing the polynomial orthogonality
-properties to be applied on a per-dimension basis. This allows one to
-mix and match the polynomial basis used for each variable without
-interference with the spectral projection scheme for the response.
+mean, variance, and probability. Dakota implements the generalized PCE
+approach using the Wiener-Askey scheme~\cite{XiuKarn02}, in which
+Hermite, Legendre, Laguerre, Jacobi, and generalized Laguerre
+orthogonal polynomials are used for modeling the effect of continuous
+random variables described by normal, uniform, exponential, beta, and
+gamma probability distributions, respectively\footnote{Orthogonal
+polynomial selections also exist for discrete probability
+distributions, but are not yet supported in Dakota.}. These orthogonal
+polynomial selections are optimal for these distribution types since
+the inner product weighting function corresponds\footnote{Identical
+support range; weight differs by at most a constant factor.} to the
+probability density functions for these continuous
+distributions. Orthogonal polynomials can be computed for any positive
+weight function, so these five classical orthogonal polynomials may be
+augmented with numerically-generated polynomials for other probability
+distributions (e.g., for lognormal, extreme value, and histogram
+distributions).  When independent standard random variables are used
+(or computed through transformation), the variable expansions are
+uncoupled, allowing the polynomial orthogonality properties to be
+applied on a per-dimension basis. This allows one to mix and match the
+polynomial basis used for each variable without interference with the
+spectral projection scheme for the response.
 
 In non-intrusive PCE, simulations are used as black boxes and the
 calculation of chaos expansion coefficients for response metrics of
 interest is based on a set of simulation response evaluations. To
-calculate these response PCE coefficients, two primary classes of
-approaches have been proposed: spectral projection and regression. The
+calculate these response PCE coefficients, two classes of
+approaches are available: spectral projection and regression. The
 spectral projection approach projects the response against each basis
 function using inner products and employs the polynomial orthogonality
 properties to extract each coefficient. Each inner product involves a
@@ -1388,25 +1407,25 @@ integrated statistical quantities of interest, provided that the
 response functions are smooth with finite variance. The primary
 distinction is that, whereas PCE estimates coefficients for known
 multivariate orthogonal polynomial basis functions, SC forms
-multivariate interpolation polynomial bases for known coefficients.
-The interpolation polynomials may be either local or global and either
-value-based or gradient-enhanced (four combinations: Lagrange,
-Hermite, piecewise linear spline, and piecewise cubic spline), and may
-be used within nodal or hierarchical interpolation
-formulations. Interpolation is performed on structured grids such as
-tensor-product or sparse grids. Starting from a tensor-product
-multidimensional interpolation polynomial in the value-based case
-(Lagrange or piecewise linear spline), we have the feature that the
-$i^{th}$ interpolation polynomial has a value of 1 at collocation
-point $i$ and a value of 0 for all other collocation points, leading
-to the use of expansion coefficients that are just the response values
-at each of the collocation points. In the gradient-enhanced case
-(Hermite or piecewise cubic spline), SC includes both type 1 and type
-2 interpolation polynomials, where the former interpolate the values
-while producing zero gradients and the latter interpolate the
-gradients while producing zero values (refer to~\cite{TheoMan} for
-additional details). Sparse interpolants are weighted sums of these
-tensor interpolants;
+multivariate interpolation polynomial basis functions for known
+coefficients.  The interpolation polynomials may be either local or
+global and either value-based or gradient-enhanced (four combinations:
+Lagrange interpolation, Hermite interpolation, piecewise linear
+spline, and piecewise cubic spline), and may be used within nodal or
+hierarchical interpolation formulations. Interpolation is performed on
+structured grids such as tensor-product or sparse grids. Starting from
+a tensor-product multidimensional interpolation polynomial in the
+value-based case (Lagrange or piecewise linear spline), we have the
+feature that the $i^{th}$ interpolation polynomial has a value of 1 at
+collocation point $i$ and a value of 0 for all other collocation
+points, leading to the use of expansion coefficients that are just the
+response values at each of the collocation points. In the
+gradient-enhanced case (Hermite or piecewise cubic spline), SC
+includes both ``type 1'' and ``type 2'' interpolation polynomials,
+where the former interpolate the values while producing zero gradients
+and the latter interpolate the gradients while producing zero values
+(refer to~\cite{TheoMan} for additional details). Sparse interpolants
+are weighted sums of these tensor interpolants;
 %and retain the use of response values as expansion coefficients;
 however, they are only interpolatory for sparse grids based on fully 
 nested rules and will exhibit some interpolation error at the 
@@ -1425,6 +1444,34 @@ PCE is formed based on a weighted sum of tensor expansions~\cite{ConstSSG}.
 The Dakota Theory Manual~\cite{TheoMan} provides full algorithmic
 details for the PCE and SC methods.
 
+A recent addition is functional tensor train (FTT) expansions which
+leverage concepts from data/image compression using products of
+dimensional basis ``cores.''  When the response admits a ``low rank''
+representation, this means that the size of the cores required for an
+accurate recovery is not large and a compressed format for the
+expansion can be achieved based on a tensor train composition.  In
+Dakota, the basis functions used within the core for each random
+dimension are univariate orthogonal polynomials, similar to PCE.
+Solution for the expansion coefficients is based on regression and
+employs a numerical solution of a regularized nonlinear least squares
+problem.  Both the rank and polynomial order per dimension are
+resolution controls for the method, and cross-validation procedures
+are provided to automate the selection of the best settings for a
+given response data set.  Additional FTT theory will be provided in
+future releases as this capability is promoted to a default part of
+the Dakota software configuration.
+
+Finally, advanced multilevel and multifidelity approaches are
+provided for PCE, SC, and FT, as described in the Reference
+Manual~\cite{RefMan} (refer to {\tt multilevel\_polynomial\_chaos,
+  multifidelity\_polynomial\_chaos, multilevel\_function\_train,
+  multifidelity\_function\_train} and {\tt
+  multifidelity\_stoch\_collocation}).  These approaches decompose
+the input-output mapping and form multiple expansions in order to
+reduce reliance on the most expensive computational models
+by integrating information from low cost modeling alternatives.
+%rich information coming from low cost approximate models and sparse
+%information coming from expensive high-fidelity models.
 
 \subsection{Uncertainty Quantification Examples using Stochastic Expansions} \label{uq:stoch_exp:ex}
 
@@ -2356,7 +2403,7 @@ bounds. \texttt{global\_evidence} allows the user to specify either
 minimum and maximum of the samples within each cell as the bounds (no
 optimization is performed) or \texttt{ego}. In the case of
 \texttt{ego}, the efficient global optimization method is used to
-calculate bounds. The ego method is described in
+calculate bounds. The \texttt{ego} method is described in
 Section~\ref{opt:methods:gradientfree:global}.  Note that for a
 situation with many uncertain variables, each with a fairly
 complicated Dempster-Shafer structure described by many intervals,
@@ -2498,11 +2545,12 @@ implementation of DiffeRential Evolution Adaptive Metropolis developed
 by John Burkardt.  The DREAM approach runs concurrent chains for
 global exploration, and automatically tunes the proposal covariance
 during the process by a self-adaptive randomized subspace
-sampling~\cite{Vrugt}.  MUQ uses components from the MIT 
-Uncertainty Quantification library and also implements Metropolis Hastings 
-and Adaptive Metropolis. The prototype WASABI method is an MCMC-free
-Bayesian calibration approach.  QUESO/DRAM
-and variants are the most well-developed within Dakota.
+sampling~\cite{Vrugt}. MUQ uses components from the MIT 
+Uncertainty Quantification library and also implements the Delayed Rejection
+and Adaptive Metropolis~\cite{Haario} (DRAM) algorithms, among others.
+The prototype WASABI method is an MCMC-free Bayesian calibration
+approach.  QUESO/DRAM and variants are the most well-developed within
+Dakota.
 
 \subsection{QUESO}\label{uq:bayesian:queso}
 The QUESO library includes several sampling algorithm variants.  One
@@ -2641,8 +2689,9 @@ Manual~\cite{RefMan} for more information.
 MUQ is the MIT Uncertainty Quantification library.  See
 \url{https://bitbucket.org/mituq/muq2/src/master/} and
 \url{https://mituq.bitbucket.io/index.html} for additional
-documentation.  Dakota currently exposes two MCMC approaches from MUQ:
-Metropolis-Hastings and Adaptive Metropolis. Dakota's MUQ integration
+documentation.  Dakota currently exposes four MCMC approaches from MUQ:
+Metropolis-Hastings, Adaptive Metropolis, Delayed Rejection, and
+Delayed-Rejection Adaptive Metropolis. Dakota's MUQ integration
 is preliminary, anticipated to extend to use MUQ components for
 Hamiltonian Monte Carlo and Langevin-based sampling.  MUQ is an
 experimental Dakota capability, and as such, it is not turned on by
@@ -2702,7 +2751,7 @@ Prior Distributions  &  Any continuous variable type
                      & Uniform only & Uniform only \\
 \hline
 Inference Type       & MCMC with DR, AM, DRAM, or MH
-                     & MCMC with MH or AM
+                     & MCMC with DR, AM, DRAM, or MH
                      & MCMC with DR, AM, DRAM, or MH
                      & MCMC with Differential Evolution Adaptive Metropolis & MCMC-free interval analysis \\
 \hline

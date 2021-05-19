@@ -1,0 +1,30 @@
+method-multilevel_sampling-allocation_target-scalarization
+
+Blurb:: 
+Fit MLMC sample allocation to a mixture of terms of means and standard deviations. 
+
+Description:: 
+Fit MLMC sample allocation to control the variance of the estimator for a mixture of terms of means and standard deviations. The exact scalarized formulation is given by the keyword \c scalarization_response_mapping. 
+
+Topics::
+
+Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  convergence_tolerance = .01
+	  allocation_target = scalarization
+	  	scalarization_response_mapping = 1 0 0 0
+                                                 0 0 1 3
+\endverbatim
+
+uses the standard_deviation as sample allocation target by computing its variance. In this example, we assume a problem with two responses where the first line in scalarization_response_mapping refers to the first response, the second line to the second response. In the first line we only use 1 times the mean as quantity of interest. For the second response, we use 1 time the mean plus 3 times the standard devitation of the second quantity of interested. This behavior mimics the keywords \ref model-nested-sub_method_pointer-primary_response_mapping and \ref model-nested-sub_method_pointer-secondary_response_mapping.
+
+Theory::
+
+
+Faq::
+See_Also:: \ref method-multilevel_sampling-allocation_target-variance	

@@ -1,0 +1,19 @@
+                                        -- CODE_ASTER -- VERSION DE DEVELOPPEMENT 10.01.02 --
+
+                                                         VERSION SEQUENTIELLE
+
+                                                   COPYRIGHT  EDF-R&D 1991 - 2009
+
+                                               EXECUTION DU : MA-22-DECE-2009 22:25:08
+
+                                                   PLATE-FORME : CIRTACUS.INRIA.F
+
+                                                NB MAX PROC OpenMP:   1             
+
+                                                     SYSTEME : LINUX           
+
+                                                       CPU : X86_64          
+
+ <I> <FIN> FERMETURE DE LA BASE "GLOBALE" EFFECTUEE.
+ <I> <FIN> ARRET NORMAL DANS "FIN" PAR APPEL A "JEFINI".
+ <I>       FERMETURE DES BASES EFFECTUEE

@@ -1,0 +1,26 @@
+Blurb::
+Prescribe the number of active dimensions 
+
+Description::
+If a prescribed dimension for the rotation matrix is desired, this can be specified with the keywork \c dimension. In this case, the algorithm does not use the \c truncation_method or the \c truncation_tolerance to determine the truncation of the rotation matrix, but it just selects the first \f$d\f$ dimensions, where \f$d\f$ is assigned by \c dimension. 
+
+Topics::
+
+Examples::
+The following block  
+
+\verbatim
+model
+  id_model = 'SUBSPACE'
+  adapted_basis
+    actual_model_pointer = 'FULLSPACE'
+    sparse_grid_level = 1	
+    dimension = 3	
+\endverbatim
+
+prescribes the selection of the first three most important directions to build the rotation matrix and the reduced model representation.  
+
+Theory::
+
+Faq::
+See_Also::

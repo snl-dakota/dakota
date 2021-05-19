@@ -103,7 +103,8 @@ public:
   /// multilevel/multifidelity expansions
   virtual void assign_hierarchical_response_mode();
 
-  virtual void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
+  virtual void infer_pilot_sample(/*Real ratio, */size_t num_steps,
+				  SizetArray& delta_N_l);
 
   //
   //- Heading: Member functions
@@ -255,21 +256,12 @@ protected:
   /// optimal resource allocation across model forms/discretization levels
   void multilevel_regression();
 
-  /// configure fidelity/level counts from model hierarchy
-  void configure_sequence(size_t& num_steps, size_t& fixed_index,
-			  short& seq_type);
-  /// extract cost estimates from model hierarchy (forms or resolutions)
-  void configure_cost(unsigned short num_steps, bool multilevel,
-		      RealVector& cost);
-  /// extract cost estimates from model hierarchy, if available
-  bool query_cost(unsigned short num_steps, bool multilevel, RealVector& cost);
   /// configure response mode and active/truth/surrogate model keys within a
   /// hierarchical model.  seq_type is the type of sequence that defines the
   /// active dimension for traversing a model sequence.
-  void configure_indices(unsigned short group, unsigned short form,
-			 size_t lev,           short seq_type);
+  void configure_indices(size_t group, size_t form, size_t lev, short seq_type);
   /// return aggregate cost (one or more models) for a level sample
-  Real sequence_cost(unsigned short step, const RealVector& cost);
+  Real sequence_cost(size_t step, const RealVector& cost);
   /// compute equivHFEvals from samples per level and cost per evaluation
   void compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost);
 
@@ -705,18 +697,6 @@ inline const Model& NonDExpansion::algorithm_space_model() const
 { return uSpaceModel; }
 
 
-inline void NonDExpansion::
-configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
-{
-  bool cost_defined = query_cost(num_steps, multilevel, cost);
-  if (!cost_defined) {
-    Cerr << "Error: missing required simulation cost data in NonDExpansion::"
-	 << "configure_cost()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
 inline size_t NonDExpansion::collocation_points() const
 { return 0; }
 
@@ -745,8 +725,7 @@ inline void NonDExpansion::bypass_surrogate_mode()
 }
 
 
-inline Real NonDExpansion::
-sequence_cost(unsigned short step, const RealVector& cost)
+inline Real NonDExpansion::sequence_cost(size_t step, const RealVector& cost)
 {
   if (cost.empty())
     return 0.;

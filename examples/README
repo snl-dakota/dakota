@@ -1,5 +1,11 @@
+*** This examples/README largely been superseded by README.md
+*** corresponding to the new Examples Library. A few legacy example
+*** directories that remain in top-level dakota/examples are still
+*** documented here.
+
 The directory Dakota/examples is designed to help users get started
-using Dakota. The examples are grouped into the following directories:
+using Dakota. The remaining legacy examples are grouped into the
+following directories:
 
 examples/users: Examples found in the Dakota User's Manual. The
 examples in the Tutorial chapter demonstrate application of various
@@ -7,36 +13,11 @@ Dakota methods to simple analytic functions via both direct and
 system/fork interfaces to simulators. More in-depth examples of
 performing specific studies with various Dakota methods, including
 uncertainty quantification, least squares (calibration), and
-optimization appear throughout the manual. Also advanced examples
-such as optimization under uncertainty, second-order probability, and
-surrogate-based optimization. 
-
-examples/cantilever: Examples which all use the cantilever beam
-example problem which are often used in training.
+optimization appear throughout the manual. Also advanced examples such
+as optimization under uncertainty, second-order probability, and
+surrogate-based optimization.
 
 examples/advanced: Examples used in Advanced Topics training.
-
-examples/script_interfaces: Examples of linking Dakota to various
-applications. Of particular note is script_interfaces/generic/ which
-contains a demonstration of linking Dakota to a mock finite element
-analysis code through a black-box interface, as detailed in Chapter 16
-of the Dakota User's Manual (Advanced Simulation Code Interfaces).
-Here dprepro/aprepro is used to insert Dakota parameters into the
-simulation input file, the simulation is run, and results are
-extracted for return to Dakota. Includes both finite-difference and
-analytic gradients.
-Second example of note is an engineering example, which
-utilizes a simulation of displacement, strain, and stress responses
-to loading. It is meant as a proxy for a finite element code. The
-included Dakota examples are list parameter studies, LHS, and
-parameter calibration. The python and bash based driver scripts
-illustrate some relatively complex handling of the "physics code"
-responses.
-
-examples/linked_interfaces: Guidance for directly
-linking/close-coupling with or embedding Dakota with other software
-tools. This directory will grow to include examples of Dakota's
-"library mode" API, DLL service, ModelCenter, etc.
 
 examples/parallelism: A range of Dakota + application parallelism
 examples from massively serial (embarrassingly parallel) to parallel

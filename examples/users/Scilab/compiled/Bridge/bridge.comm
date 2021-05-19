@@ -1,0 +1,121 @@
+import os
+
+DEBUT(PAR_LOT='NON');
+
+PRE_GMSH();
+
+MAIL = LIRE_MAILLAGE();
+
+MOD = AFFE_MODELE(MAILLAGE = MAIL,
+                  AFFE     = (_F(GROUP_MA     = 'GM501',
+                                 PHENOMENE    = 'MECANIQUE',
+                                 MODELISATION = 'POU_D_T',),),);
+
+CARA_ELM = AFFE_CARA_ELEM(MODELE = MOD,
+                          POUTRE = (_F(GROUP_MA = 'GM501',
+                                     SECTION    = 'CERCLE',
+                                     CARA       = ('R','EP',),
+                                     VALE       = (4.0,4.0,),),),
+                          ORIENTATION = _F(GROUP_MA = ('GM501'),
+                                         CARA       = 'ANGL_VRIL',
+                                         VALE       = 0.0,),);
+                                    
+# Definition du materiau
+# Matériaux               Module d’Young (GPa)    Coefficient de Poisson      Masse Volumique (kg/dm 3)
+# Acier de construction   210                     0.285                       7.8
+# Acier Inox 18-12        203                     0.29                        7.9
+# Fonte grise             90 à 120                0.29                        7.1 à 7.2
+# Alliage TA6V            105                     0.25                        7.8
+# Aluminium               71                      0.34                        2.6
+# Zinc                    78                      0.21                        7.15
+# Titane                  105                     0.34                        4.5
+# Verre                   60                      0.25                        2.8
+# Béton en compression    10 à 13                 0.15                        2 à 2.4
+# Caoutchouc              0.2                     0.49                        1.8
+# Bois (pin)              7                       0.2                         0.4
+# Marbre                  26                      0.3                         2.8
+# Graphite                250 à 350               0.3 à 0.4                   1.75 à 1.92
+# Elastomère              0.2                     0.49                        1
+
+ACIER = DEFI_MATERIAU(ELAS = _F(E  = 210000,
+                                NU = 0.3,),);
+
+MATER = AFFE_MATERIAU(MAILLAGE = MAIL,
+                      AFFE     = _F(TOUT  = 'OUI',
+                                    MATER = ACIER,),);
+
+CL = AFFE_CHAR_MECA(MODELE   = MOD,
+                    DDL_IMPO = _F(GROUP_NO=('GM401','GM402','GM403','GM404','GM405','GM406','GM407','GM408',),
+                                  DX  = 0.0,
+                                  DY  = 0.0,
+                                  DZ  = 0.0,
+                                  DRX = 0.0,
+                                  DRY = 0.0,
+                                  DRZ = 0.0,),
+                    FORCE_NODALE = _F(GROUP_NO = ('GM409','GM410','GM411','GM412',
+ 		                                  'GM413','GM414','GM415','GM416',
+		   			          'GM417','GM418','GM419','GM420',
+		  			          'GM421','GM422',),
+                                      FY = -50000,),);
+
+CALC = MECA_STATIQUE(MODELE     = MOD,
+                     CHAM_MATER = MATER,
+                     CARA_ELEM  = CARA_ELM,
+                     EXCIT      = _F(CHARGE=CL,),);
+
+CALC = CALC_ELEM(reuse      = CALC,
+                 MODELE     = MOD,
+                 CHAM_MATER = MATER,
+                 CARA_ELEM  = CARA_ELM,
+                 RESULTAT   = CALC,
+                 OPTION     = 'SIGM_ELNO_DEPL',);
+
+IMPR_RESU(UNITE  = 55,
+          FORMAT = 'GMSH',
+          RESU   = _F(RESULTAT = CALC,
+                      NOM_CHAM = 'SIGM_ELNO_DEPL',
+                      NOM_CMP  = ('SIXX','SIYY','SIXY',),),);
+
+IMPR_RESU(UNITE  = 56,
+          FORMAT = 'GMSH',
+          RESU   = _F(RESULTAT = CALC,
+                      NOM_CHAM = 'DEPL',),);
+
+# See the CALC_ELEM documentation to get the meaning of each
+# field you can get via NOM_CHAM
+
+DEFX = POST_RELEVE_T(ACTION = _F(RESULTAT  = CALC,
+                                 INTITULE  = 'DISPLACEMENT',
+                                 NOM_CHAM  = 'DEPL',NUME_ORDRE = 1,
+                                 OPERATION = 'EXTRACTION',GROUP_NO = ('GM409','GM410','GM411','GM412',
+ 		                                                      'GM413','GM414','GM415','GM416',
+		   			                              'GM417','GM418','GM419','GM420',
+		  			                              'GM421','GM422'),
+                                 NOM_CMP   = ( 'DX',),),);
+                      
+DEFY = POST_RELEVE_T(ACTION = _F(RESULTAT  = CALC,
+                                 INTITULE  = 'DISPLACEMENT',
+                                 NOM_CHAM  = 'DEPL',NUME_ORDRE = 1,
+                                 OPERATION = 'EXTRACTION',GROUP_NO = ('GM409','GM410','GM411','GM412',
+ 		                                                      'GM413','GM414','GM415','GM416',
+		   			                              'GM417','GM418','GM419','GM420',
+		  			                              'GM421','GM422'),
+                                 NOM_CMP   = ( 'DY',),),);
+
+#IMPR_TABLE(TABLE = DEFX,
+#           TITRE = "Table de déformation suivant X");
+#IMPR_TABLE(TABLE = DEFY,
+#           TITRE = "Table de déformation suivant Y");
+
+DeformX = DEFX.EXTR_TABLE();
+DeformY = DEFY.EXTR_TABLE();
+
+# Now write the results in a file
+File_Result = open('/home/collette/Aster/Bridge/Bridge_Result.dat','w')
+
+for i in range(0,len(DeformX.DX)):
+   File_Result.write('%d %f %f\n' % (i, DeformX.DX[i], DeformY.DY[i]));
+
+File_Result.close()
+
+FIN();

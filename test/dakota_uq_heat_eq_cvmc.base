@@ -6,9 +6,9 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.6273299830e+01  1.1290904393e+02  1.8735804304e+00  5.1442980586e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 303026 total (303026 new, 0 duplicate)
-<<<<< Function evaluation summary: 303026 total (303026 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 9.2676191964e+01
+<<<<< Function evaluation summary: 268589 total (268589 new, 0 duplicate)
+<<<<< Function evaluation summary: 268589 total (268589 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 9.2599323661e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.3597879571e+01  1.0665641290e+02  2.0179271206e+00  6.3664721458e+00
+ response_fn_1  4.2550124924e+01  1.0915381673e+02  1.9895426873e+00  5.8343145012e+00

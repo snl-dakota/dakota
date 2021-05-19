@@ -3337,12 +3337,7 @@ void Model::clear_model_keys()
 {
   if (modelRep) // envelope fwd to letter
     modelRep->clear_model_keys();
-  else {
-    Cerr << "Error: Letter lacking redefinition of virtual clear_model_keys() "
-	 << "function.\n       model keys are not supported by this Model "
-	 << "class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
+  //else no-op (operation not required)
 }
 
 

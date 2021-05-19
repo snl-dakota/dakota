@@ -1,11 +1,16 @@
 Blurb::
-Evaluate all points in a pattern
-Description::
+Complete concurrent evaluation of all evaluations within a batch
 
-In the \c blocking case, all points in the pattern are evaluated (in parallel), 
-and if the best of these trial points is an improving point, then it becomes 
-the next iterate. These runs are reproducible, assuming use of the same seed 
-in the stochastic case. 
+Description::
+In the \c blocking case, all of the concurrent evaluations in the batch must be completed and all results are returned together to the algorithm.
+
+<!--
+- In the specific context of parallel pattern search, if the best of these trial points is an improving point, then it becomes the next iterate.
+
+- In the specific context of adaptive refinement of Gaussian process (GP) models, all look-aheads are replaced with truth data and a new set of refinement candidates can then be generated based on the updated state of the GP.
+-->
+
+These runs are reproducible, assuming use of the same seed in cases with random number generation.
 
 Topics::	
 Examples::

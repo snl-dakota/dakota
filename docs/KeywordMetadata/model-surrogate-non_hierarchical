@@ -1,0 +1,51 @@
+Blurb::
+Non-hierarchical surrogates employ an unordered set of lower-fidelity
+models to approximate a truth reference model at reduced cost.
+
+Description::
+
+Non-hierarchical surrogates employ an unordered set of lower-fidelity
+model approximations to compute compute response quantities that are
+correlated with truth reference values but can be obtained at reduced
+cost.  Unlike the \c hierarchical surrogate, there is no implied
+structure to this low-fidelity model ensemble other than there is a
+single "truth" reference model that the rest of the models seek to
+approximate.
+
+The required \c unordered_model_fidelities specification points to a
+set of specifications for model approximations and the \c
+truth_model_pointer specification points to the high-fidelity "truth" 
+model.  Each of these unordered model fidelities provides an
+approximation to the truth model, and the reduced cost relative to
+the truth model evaluations is specified as part of each model
+specification (see \c solution_level_cost for simulation models).
+
+Similar to the \c hierarchical surrogate, each of the approximation
+models may contain resolution hyper-parameters which can be targets
+for tuning the predictive value of each model approximation (see use
+cases below).
+
+Unlike the \c hierarchical surrogate, no \c correction specification is
+used as no model discrepancies are employed.
+
+<b> Use cases </b>
+
+In the context of optimization, capabilities for low-fidelity model
+tuning are under development.
+
+In multifidelity uncertainty quantification (UQ), non-hierarchical
+sampling approaches such as approximate control variates (ACV) are
+under development.
+
+In Bayesian inference, capabilities for low-fidelity model selection
+are under development.
+
+Description::
+
+
+Topics::
+Examples::
+Theory::
+
+Faq::
+See_Also::	model-surrogate-hierarchical 
