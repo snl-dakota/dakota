@@ -738,9 +738,9 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 
 
 void NonDMultilevelSampling::
-compute_error_estimates(IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
-			IntIntPairRealMatrixMap &sum_QlQlm1,
-			Sizet2DArray &num_Q) 
+compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1,
+			const IntIntPairRealMatrixMap& sum_QlQlm1,
+			const Sizet2DArray& num_Q) 
 {
   if (!finalMomentsType)
     return;
@@ -757,12 +757,12 @@ compute_error_estimates(IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
   size_t lev, qoi, cntr = 0, Nlq,
       num_lev = iteratedModel.truth_model().solution_levels();
   IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
-  RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
-      &sum_Q2l = sum_Ql[2], &sum_Q2lm1 = sum_Qlm1[2],
-      &sum_Q3l = sum_Ql[3], &sum_Q3lm1 = sum_Qlm1[3],
-      &sum_Q4l = sum_Ql[4], &sum_Q4lm1 = sum_Qlm1[4],
-      &sum_Q1lQ1lm1 = sum_QlQlm1[pr11], &sum_Q1lQ2lm1 = sum_QlQlm1[pr12],
-      &sum_Q2lQ1lm1 = sum_QlQlm1[pr21], &sum_Q2lQ2lm1 = sum_QlQlm1[pr22];
+  const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q1lm1 = sum_Qlm1.at(1),
+      &sum_Q2l = sum_Ql.at(2), &sum_Q2lm1 = sum_Qlm1.at(2),
+      &sum_Q3l = sum_Ql.at(3), &sum_Q3lm1 = sum_Qlm1.at(3),
+      &sum_Q4l = sum_Ql.at(4), &sum_Q4lm1 = sum_Qlm1.at(4),
+      &sum_Q1lQ1lm1 = sum_QlQlm1.at(pr11), &sum_Q1lQ2lm1 = sum_QlQlm1.at(pr12),
+      &sum_Q2lQ1lm1 = sum_QlQlm1.at(pr21), &sum_Q2lQ2lm1 = sum_QlQlm1.at(pr22);
   for (qoi = 0; qoi < numFunctions; ++qoi) {
 
     // std error in mean estimate
