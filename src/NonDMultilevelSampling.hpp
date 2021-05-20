@@ -156,14 +156,14 @@ private:
 	      Real sum_Qlm1Qlm1, size_t Nlq_pilot, size_t Nlq, bool compute_gradient, Real& grad);
 
   /// sum up variances for QoI (using sum_YY with means from sum_Y) based on allocation target
-  void aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
+  void aggregate_variance_target_Qsum(const IntRealMatrixMap&  sum_Ql, const IntRealMatrixMap&  sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, RealMatrix& agg_var_qoi);
 
 
   /// wrapper for aggregate_variance_Qsum 
-  Real aggregate_variance_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
+  Real aggregate_variance_mean_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
   /// sum up variances across QoI (using sum_YY with means from sum_Y)
   Real aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
@@ -176,18 +176,18 @@ private:
                                const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
                                const size_t& lev, const size_t& qoi);
   /// wrapper for var_of_var_ml 
-  Real aggregate_variance_variance_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
+  Real aggregate_variance_variance_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
 
   /// wrapper for var_of_sigma_ml 
-  Real aggregate_variance_sigma_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
+  Real aggregate_variance_sigma_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
 
   /// wrapper for var_of_scalarization_ml
-  Real aggregate_variance_scalarization_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
+  Real aggregate_variance_scalarization_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi);
 
   /// sum up Monte Carlo estimates for mean squared error (MSE) for
@@ -249,11 +249,11 @@ private:
                                                                      const Real& sumQ1sq, const Real& sumQ2sq,
                                                                      const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq);
 
-  static Real var_of_var_ml_l0(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g);
+  static Real var_of_var_ml_l0(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g);
 
-  static Real var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g);
+  static Real var_of_var_ml_lmax(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g);
 
-  static Real var_of_var_ml_l(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g);
+  static Real var_of_var_ml_l(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g);
 
   ///OPTPP definition
   static void target_cost_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
@@ -525,8 +525,8 @@ aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
 }
 
 inline void NonDMultilevelSampling::
-aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
-									IntIntPairRealMatrixMap sum_QlQlm1, 
+aggregate_variance_target_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 								const Sizet2DArray& N_l, const size_t& step, RealMatrix& agg_var_qoi)
 {
 	// compute estimator variance from current sample accumulation:
@@ -548,15 +548,15 @@ aggregate_variance_target_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm
 	}
 }
 
-inline Real NonDMultilevelSampling::aggregate_variance_mean_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
+inline Real NonDMultilevelSampling::aggregate_variance_mean_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
 {
   IntIntPair pr11(1, 1);
 	Real agg_var_l = 0.;
-	agg_var_l = aggregate_variance_Qsum(sum_Ql[1][step], sum_Qlm1[1][step],
-		                                                   sum_Ql[2][step], sum_QlQlm1[pr11][step],
-		                                                   sum_Qlm1[2][step],
+	agg_var_l = aggregate_variance_Qsum(sum_Ql.at(1)[step], sum_Qlm1.at(1)[step],
+		                                                   sum_Ql.at(2)[step], sum_QlQlm1.at(pr11)[step],
+		                                                   sum_Qlm1.at(2)[step],
                                                            N_l[step], step, qoi);
 
 	return agg_var_l;
@@ -597,8 +597,8 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
        return agg_var_l;
 }
 
-inline Real NonDMultilevelSampling::aggregate_variance_variance_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
+inline Real NonDMultilevelSampling::aggregate_variance_variance_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
 {
 	Real place_holder;
@@ -612,8 +612,8 @@ inline Real NonDMultilevelSampling::aggregate_variance_variance_Qsum(IntRealMatr
 	return agg_var_l;
 }
 
-inline Real NonDMultilevelSampling::aggregate_variance_sigma_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
+inline Real NonDMultilevelSampling::aggregate_variance_sigma_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
 {
 	Real place_holder;
@@ -625,14 +625,14 @@ inline Real NonDMultilevelSampling::aggregate_variance_sigma_Qsum(IntRealMatrixM
 	                                                         N_l[step][qoi], qoi, false, place_holder)
 	                                      : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[step][qoi],
 	                                                        N_l[step][qoi], qoi, step, false, place_holder)); 
- 	var_l = var_lev_l(sum_Ql[1][step][qoi], sum_Qlm1[1][step][qoi], sum_Ql[2][step][qoi], sum_Qlm1[2][step][qoi], N_l[step][qoi]);
+ 	var_l = var_lev_l(sum_Ql.at(1)[step][qoi], sum_Qlm1.at(1)[step][qoi], sum_Ql.at(2)[step][qoi], sum_Qlm1.at(2)[step][qoi], N_l[step][qoi]);
  	if(var_l <= 0)
  		return 0;
 	return 1./(4. * var_l) * agg_var_l * N_l[step][qoi]; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile
 }
 
-inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, 
+inline Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, 
 									const Sizet2DArray& N_l, const size_t& step, const size_t& qoi)
 {
 	Real upper_bound_cov_of_mean_sigma = 0;
@@ -1337,18 +1337,18 @@ inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
 }
 
 
-inline Real NonDMultilevelSampling::var_of_var_ml_l0(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
+inline Real NonDMultilevelSampling::var_of_var_ml_l0(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1,
                                                       const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g)
 {
   Real cm1l, cm2l, cm3l, cm4l, cm2l_sq, var_of_var;
 
   IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
-  RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
-      &sum_Q2l = sum_Ql[2], &sum_Q2lm1 = sum_Qlm1[2],
-      &sum_Q3l = sum_Ql[3], &sum_Q3lm1 = sum_Qlm1[3],
-      &sum_Q4l = sum_Ql[4], &sum_Q4lm1 = sum_Qlm1[4],
-      &sum_Q1lQ1lm1 = sum_QlQlm1[pr11], &sum_Q1lQ2lm1 = sum_QlQlm1[pr12],
-      &sum_Q2lQ1lm1 = sum_QlQlm1[pr21], &sum_Q2lQ2lm1 = sum_QlQlm1[pr22];
+  const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q1lm1 = sum_Qlm1.at(1), //.at() returns a const member
+      &sum_Q2l = sum_Ql.at(2), &sum_Q2lm1 = sum_Qlm1.at(2),
+      &sum_Q3l = sum_Ql.at(3), &sum_Q3lm1 = sum_Qlm1.at(3),
+      &sum_Q4l = sum_Ql.at(4), &sum_Q4lm1 = sum_Qlm1.at(4),
+      &sum_Q1lQ1lm1 = sum_QlQlm1.at(pr11), &sum_Q1lQ2lm1 = sum_QlQlm1.at(pr12),
+      &sum_Q2lQ1lm1 = sum_QlQlm1.at(pr21), &sum_Q2lQ2lm1 = sum_QlQlm1.at(pr22);
 
   uncentered_to_centered(sum_Q1l(qoi, 0) / Nlq_pilot, sum_Q2l(qoi, 0) / Nlq_pilot,
                          sum_Q3l(qoi, 0) / Nlq_pilot, sum_Q4l(qoi, 0) / Nlq_pilot,
@@ -1369,18 +1369,18 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(IntRealMatrixMap sum_Ql, In
 }
 
 
-inline Real NonDMultilevelSampling::var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
+inline Real NonDMultilevelSampling::var_of_var_ml_lmax(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1,
                                                      const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g)
 {
   Real cm1l, cm2l, cm3l, cm4l, cm2l_sq, var_of_var;
 
   IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
-  RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
-      &sum_Q2l = sum_Ql[2], &sum_Q2lm1 = sum_Qlm1[2],
-      &sum_Q3l = sum_Ql[3], &sum_Q3lm1 = sum_Qlm1[3],
-      &sum_Q4l = sum_Ql[4], &sum_Q4lm1 = sum_Qlm1[4],
-      &sum_Q1lQ1lm1 = sum_QlQlm1[pr11], &sum_Q1lQ2lm1 = sum_QlQlm1[pr12],
-      &sum_Q2lQ1lm1 = sum_QlQlm1[pr21], &sum_Q2lQ2lm1 = sum_QlQlm1[pr22];
+  const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q1lm1 = sum_Qlm1.at(1),
+      &sum_Q2l = sum_Ql.at(2), &sum_Q2lm1 = sum_Qlm1.at(2),
+      &sum_Q3l = sum_Ql.at(3), &sum_Q3lm1 = sum_Qlm1.at(3),
+      &sum_Q4l = sum_Ql.at(4), &sum_Q4lm1 = sum_Qlm1.at(4),
+      &sum_Q1lQ1lm1 = sum_QlQlm1.at(pr11), &sum_Q1lQ2lm1 = sum_QlQlm1.at(pr12),
+      &sum_Q2lQ1lm1 = sum_QlQlm1.at(pr21), &sum_Q2lQ2lm1 = sum_QlQlm1.at(pr22);
 
   uncentered_to_centered(sum_Q1l(qoi, 1) / Nlq_pilot, sum_Q2l(qoi, 1) / Nlq_pilot,
                          sum_Q3l(qoi, 1) / Nlq_pilot, sum_Q4l(qoi, 1) / Nlq_pilot,
@@ -1400,7 +1400,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, 
   return var_of_var;
 }
 
-inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
+inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, const IntIntPairRealMatrixMap& sum_QlQlm1,
                                                     const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g)
 {
   Real cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
@@ -1411,12 +1411,12 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, Int
       mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1, term, var_of_var;
 
   IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
-  const RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
-      &sum_Q2l = sum_Ql[2], &sum_Q2lm1 = sum_Qlm1[2],
-      &sum_Q3l = sum_Ql[3], &sum_Q3lm1 = sum_Qlm1[3],
-      &sum_Q4l = sum_Ql[4], &sum_Q4lm1 = sum_Qlm1[4],
-      &sum_Q1lQ1lm1 = sum_QlQlm1[pr11], &sum_Q1lQ2lm1 = sum_QlQlm1[pr12],
-      &sum_Q2lQ1lm1 = sum_QlQlm1[pr21], &sum_Q2lQ2lm1 = sum_QlQlm1[pr22];
+  const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q1lm1 = sum_Qlm1.at(1),
+      &sum_Q2l = sum_Ql.at(2), &sum_Q2lm1 = sum_Qlm1.at(2),
+      &sum_Q3l = sum_Ql.at(3), &sum_Q3lm1 = sum_Qlm1.at(3),
+      &sum_Q4l = sum_Ql.at(4), &sum_Q4lm1 = sum_Qlm1.at(4),
+      &sum_Q1lQ1lm1 = sum_QlQlm1.at(pr11), &sum_Q1lQ2lm1 = sum_QlQlm1.at(pr12),
+      &sum_Q2lQ1lm1 = sum_QlQlm1.at(pr21), &sum_Q2lQ2lm1 = sum_QlQlm1.at(pr22);
 
   mu_Q2l = sum_Q2l(qoi, lev) / Nlq_pilot;
   uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq_pilot, mu_Q2l,
