@@ -438,8 +438,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
       }
     }
     if (mlmfIter == 0) // eps^2 / 2 = var * relative factor
-      set_convergence_tol(estimator_var0_qoi, cost, convergenceTolVec,
-			  eps_sq_div_2_qoi);
+      set_convergence_tol(estimator_var0_qoi, cost, eps_sq_div_2_qoi);
 
     // update targets based on variance estimates
     //if(target_mean){
@@ -461,20 +460,20 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   myfile.open("cantilever_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
   myfile         << w                     << "\t" << t     
          << "\t" << N_l[0][0]             << "\t" << N_l[1][0] 
-         << "\t" << N_target_qoi(1, 0)    << "\t" << (N_target_qoi(1, 1))
-         << "\t" << N_target_qoi_FN(1, 0) << "\t" << (N_target_qoi_FN(1, 1))
-         << "\t" << N_target_qoi(2, 0)    << "\t" << (N_target_qoi(2, 1))
-         << "\t" << N_target_qoi_FN(2, 0) << "\t" << (N_target_qoi_FN(2, 1)) 
+         << "\t" << NTargetQoi(1, 0)    << "\t" << (NTargetQoi(1, 1))
+         << "\t" << NTargetQoiFN(1, 0) << "\t" << (NTargetQoiFN(1, 1))
+         << "\t" << NTargetQoi(2, 0)    << "\t" << (NTargetQoi(2, 1))
+         << "\t" << NTargetQoiFN(2, 0) << "\t" << (NTargetQoiFN(2, 1)) 
          << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
   */
   //Problem18
-  /*std::ofstream myfile;
+  std::ofstream myfile;
   myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
   myfile << N_l[0][0]             << "\t" << N_l[1][0] 
-         << "\t" << N_target_qoi(0, 0)    << "\t" << (N_target_qoi(0, 1))
-         << "\t" << N_target_qoi_FN(0, 0) << "\t" << (N_target_qoi_FN(0, 1)) << "\n";
+         << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))
+         << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1)) << "\n";
   myfile.close();
-  */
+  
 
   // roll up moment contributions
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
