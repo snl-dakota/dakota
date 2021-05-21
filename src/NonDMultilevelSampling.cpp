@@ -279,7 +279,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+  const size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost;  configure_cost(num_steps, multilev, cost);
@@ -839,13 +839,12 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
   return var_of_scalarization_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile is already done in submethods
 }
 
-void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
-                  IntIntPairRealMatrixMap sum_QlQlm1, const RealVector& eps_sq_div_2_in, 
+void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+                  const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2_in, 
                       const RealMatrix& agg_var_qoi_in, const RealVector& cost, 
                       const Sizet2DArray& N_l, SizetArray& delta_N_l)
 {
-        size_t num_steps = agg_var_qoi_in.numCols(),
-    max_iter = (maxIterations < 0) ? 25 : maxIterations;
+  const size_t num_steps = agg_var_qoi_in.numCols(), max_iter = (maxIterations < 0) ? 25 : maxIterations;
   RealVector level_cost_vec(num_steps);
   RealVector sum_sqrt_var_cost;
   RealMatrix delta_N_l_qoi;
@@ -1405,23 +1404,23 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 }
 
 
-static RealVector *static_lev_cost_vec(NULL);
+static const RealVector *static_lev_cost_vec(NULL);
 static size_t *static_qoi(NULL);
-static Real *static_eps_sq_div_2(NULL);
-static RealVector *static_Nlq_pilot(NULL);
-static size_t *static_numFunctions(NULL);
-static size_t  *static_qoiAggregation(NULL);
+static const Real *static_eps_sq_div_2(NULL);
+static const RealVector *static_Nlq_pilot(NULL);
+static const size_t *static_numFunctions(NULL);
+static const size_t  *static_qoiAggregation(NULL);
 
-static IntRealMatrixMap *static_sum_Ql(NULL);
-static IntRealMatrixMap *static_sum_Qlm1(NULL);
-static IntIntPairRealMatrixMap *static_sum_QlQlm1(NULL);
-static RealMatrix *static_scalarization_response_mapping(NULL);
+static const IntRealMatrixMap *static_sum_Ql(NULL);
+static const IntRealMatrixMap *static_sum_Qlm1(NULL);
+static const IntIntPairRealMatrixMap *static_sum_QlQlm1(NULL);
+static const RealMatrix *static_scalarization_response_mapping(NULL);
 
-void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, size_t &qoi_aggregation, 
-              size_t &num_functions, RealVector &level_cost_vec,
-              IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
-              IntIntPairRealMatrixMap &sum_QlQlm1,
-              RealVector &pilot_samples, RealMatrix &scalarization_response_mapping) const
+void NonDMultilevelSampling::assign_static_member(const Real &conv_tol, size_t &qoi, const size_t &qoi_aggregation, 
+              const size_t &num_functions, const RealVector &level_cost_vec,
+              const IntRealMatrixMap &sum_Ql, const IntRealMatrixMap &sum_Qlm1,
+              const IntIntPairRealMatrixMap &sum_QlQlm1,
+              const RealVector &pilot_samples, const RealMatrix &scalarization_response_mapping) const
 {
     static_lev_cost_vec= &level_cost_vec;
     static_qoi = &qoi;
@@ -1435,11 +1434,11 @@ void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, s
     static_scalarization_response_mapping = &scalarization_response_mapping;
 }
 
-static Real *static_mu_four_L(NULL);
-static Real *static_mu_four_H(NULL);
-static Real *static_var_L(NULL);
-static Real *static_var_H(NULL);
-static Real *static_Ax(NULL);
+static const Real *static_mu_four_L(NULL);
+static const Real *static_mu_four_H(NULL);
+static const Real *static_var_L(NULL);
+static const Real *static_var_H(NULL);
+static const Real *static_Ax(NULL);
 
 void NonDMultilevelSampling::assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, 
                                                             Real &mu_four_L_exact, Real &mu_four_H_exact, 
@@ -2130,7 +2129,7 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
                                        compute_gradient, gradient_var_var);
       agg_estim_var_of_var += agg_estim_var_of_var_l[0];
 
-      agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+      agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql).at(1)[0][qoi], (*static_sum_Ql).at(1)[0][qoi], Nlq_pilot, Nlq,
                                        compute_gradient, gradient_var); 
       agg_estim_var += agg_estim_var_l[0];
 
@@ -2151,8 +2150,8 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
                                          compute_gradient, gradient_var_var);
         agg_estim_var_of_var += agg_estim_var_of_var_l[lev];
 
-        agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+        agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql).at(1)[lev][qoi], (*static_sum_Qlm1).at(1)[lev][qoi], (*static_sum_Ql).at(2)[lev][qoi], 
+                    (*static_sum_Qlm1).at(2)[lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
         agg_estim_var += agg_estim_var_l[lev];
 
         if(compute_gradient){
@@ -2171,7 +2170,7 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
     agg_estim_var_of_var += agg_estim_var_of_var_l[0];
     grad_var_var[0] = gradient_var_var;
 
-    agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql)[1][0][qoi], (*static_sum_Ql)[2][0][qoi], Nlq_pilot, Nlq,
+    agg_estim_var_l[0] = variance_Ysum_static((*static_sum_Ql).at(1)[0][qoi], (*static_sum_Ql).at(2)[0][qoi], Nlq_pilot, Nlq,
                                        compute_gradient, gradient_var); 
     grad_var[0] = gradient_var;
 
@@ -2188,8 +2187,8 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
 
       grad_var_var[lev] = gradient_var_var;
 
-      agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql)[1][lev][qoi], (*static_sum_Qlm1)[1][lev][qoi], (*static_sum_Ql)[2][lev][qoi], 
-                    (*static_sum_Qlm1)[2][lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+      agg_estim_var_l[lev] = var_lev_l_static((*static_sum_Ql).at(1)[lev][qoi], (*static_sum_Qlm1).at(1)[lev][qoi], (*static_sum_Ql).at(2)[lev][qoi], 
+                    (*static_sum_Qlm1).at(2)[lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
       agg_estim_var += agg_estim_var_l[lev];
       grad_var[lev] = gradient_var;
     }
@@ -2282,10 +2281,10 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
           Nlq = x[lev];
           Nlq_pilot = (*static_Nlq_pilot)[lev];
 
-          f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][sum_qoi], (*static_sum_Ql)[2][0][sum_qoi], Nlq_pilot, Nlq,
+          f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql).at(1)[0][sum_qoi], (*static_sum_Ql).at(2)[0][sum_qoi], Nlq_pilot, Nlq,
                                          compute_gradient, cur_grad_var) :
-                      variance_Qsum_static((*static_sum_Ql)[1][lev][sum_qoi], (*static_sum_Qlm1)[1][lev][sum_qoi], (*static_sum_Ql)[2][lev][sum_qoi], 
-                        (*static_sum_QlQlm1)[pr11][lev][sum_qoi], (*static_sum_Qlm1)[2][lev][sum_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+                      variance_Qsum_static((*static_sum_Ql).at(1)[lev][sum_qoi], (*static_sum_Qlm1).at(1)[lev][sum_qoi], (*static_sum_Ql).at(2)[lev][sum_qoi], 
+                        (*static_sum_QlQlm1).at(pr11)[lev][sum_qoi], (*static_sum_Qlm1).at(2)[lev][sum_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
           
           f_mean += f_var/Nlq;
 
@@ -2298,10 +2297,10 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
       for (lev = 0; lev < num_lev; ++lev) {
         Nlq = x[lev];
         Nlq_pilot = (*static_Nlq_pilot)[lev];
-        f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql)[1][0][cur_qoi], (*static_sum_Ql)[2][0][cur_qoi], Nlq_pilot, Nlq,
+        f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql).at(1)[0][cur_qoi], (*static_sum_Ql).at(2)[0][cur_qoi], Nlq_pilot, Nlq,
                                          compute_gradient, cur_grad_var) :
-                             variance_Qsum_static((*static_sum_Ql)[1][lev][cur_qoi], (*static_sum_Qlm1)[1][lev][cur_qoi], (*static_sum_Ql)[2][lev][cur_qoi], 
-                                         (*static_sum_QlQlm1)[pr11][lev][cur_qoi], (*static_sum_Qlm1)[2][lev][cur_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+                             variance_Qsum_static((*static_sum_Ql).at(1)[lev][cur_qoi], (*static_sum_Qlm1).at(1)[lev][cur_qoi], (*static_sum_Ql).at(2)[lev][cur_qoi], 
+                        (*static_sum_QlQlm1).at(pr11)[lev][cur_qoi], (*static_sum_Qlm1).at(2)[lev][cur_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
         f_mean += f_var/Nlq;
         
         if(compute_gradient){

@@ -199,8 +199,8 @@ private:
   void set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi);
 
   /// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
-  void compute_sample_allocation_target(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, 
- 									IntIntPairRealMatrixMap sum_QlQlm1, const RealVector& eps_sq_div_2, const RealMatrix& agg_var_qoi, 
+  void compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
+ 									const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2, const RealMatrix& agg_var_qoi, 
   										const RealVector& cost, const Sizet2DArray& N_l, SizetArray& delta_N_l);
   
   // Roll up expected value estimators for central moments.  Final expected
@@ -283,9 +283,9 @@ private:
   static void target_scalarization_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
   static void target_scalarization_objective_eval_logscale_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
 
-  void assign_static_member(Real &conv_tol, size_t &qoi, size_t &qoi_aggregation, size_t &num_functions, RealVector &level_cost_vec, IntRealMatrixMap &sum_Ql,
-                            IntRealMatrixMap &sum_Qlm1, IntIntPairRealMatrixMap &sum_QlQlm1,
-                            RealVector &pilot_samples, RealMatrix &scalarization_response_mapping) const;
+  void assign_static_member(const Real &conv_tol, size_t &qoi, const size_t &qoi_aggregation, const size_t &num_functions, const RealVector &level_cost_vec, const IntRealMatrixMap &sum_Ql,
+                            const IntRealMatrixMap &sum_Qlm1, const IntIntPairRealMatrixMap &sum_QlQlm1,
+                            const RealVector &pilot_samples, const RealMatrix &scalarization_response_mapping) const;
 
   void assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, Real &mu_four_L_exact, Real &mu_four_H_exact, Real &Ax, RealVector &level_cost_vec) const;
 
