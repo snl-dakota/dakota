@@ -467,13 +467,14 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
   */
   //Problem18
+  /*
   std::ofstream myfile;
   myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
   myfile << N_l[0][0]             << "\t" << N_l[1][0] 
          << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))
          << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1)) << "\n";
   myfile.close();
-  
+  */
 
   // roll up moment contributions
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
