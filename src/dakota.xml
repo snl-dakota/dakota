@@ -201,19 +201,19 @@
 	     ' >
 
     <!ENTITY method_max_iterations '
-	     <keyword  id="max_iterations" name="max_iterations" code="{N_mdm(int,maxIterations)}" label="Maximum iterations"  minOccurs="0" default="100 (exceptions: fsu_cvt , local_reliability: 25; global_{reliability , interval_est , evidence} / efficient_global: 25*n)" >
+	     <keyword  id="max_iterations" name="max_iterations" code="{N_mdm(sizet,maxIterations)}" label="Maximum iterations"  minOccurs="0" default="100 (exceptions: fsu_cvt , local_reliability: 25; global_{reliability , interval_est , evidence} / efficient_global: 25*n)" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
 
     <!ENTITY method_max_solver_iterations '
-	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(int,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(sizet,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
 
     <!ENTITY method_max_refinement_iterations '
-	     <keyword  id="max_refinement_iterations" name="max_refinement_iterations" code="{N_mdm(int,maxRefineIterations)}" label="Maximum refinement iterations"  minOccurs="0" default="100" >
+	     <keyword  id="max_refinement_iterations" name="max_refinement_iterations" code="{N_mdm(sizet,maxRefineIterations)}" label="Maximum refinement iterations"  minOccurs="0" default="100" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
@@ -225,7 +225,7 @@
 	     ' >
 
     <!ENTITY method_max_function_evaluations '
-	     <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mdm(int,maxFunctionEvaluations)}" label="Maximum function evaluations"  minOccurs="0" default="1000" >
+	     <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mdm(sizet,maxFunctionEvals)}" label="Maximum function evaluations"  minOccurs="0" default="1000" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
@@ -977,7 +977,7 @@
                  <!-- <keyword id="rls1" name="rls1" code="{N_mom(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
 	       </oneOf>
 	     </keyword>
-	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(int,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(sizet,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
 	       <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(int,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
@@ -4104,10 +4104,10 @@
 		  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer"  default="no design of experiments data" >
                     <param type="STRING" in_taglist="method" />
 		    <keyword  id="auto_refinement" name="auto_refinement" code="{N_mom(true,autoRefine)}" label="Automatically Refine Surrogate"  minOccurs="0" default="no refinement" complexity="1">
-		      <keyword  id="max_iterations" name="max_iterations" code="{N_mom(int,maxIterations)}" label="Max Build Iterations"  minOccurs="0" default="100">
+		      <keyword  id="max_iterations" name="max_iterations" code="{N_mom(sizet,maxIterations)}" label="Max Build Iterations"  minOccurs="0" default="100">
 			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
-		      <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mom(int,maxFunctionEvals)}" label="Max Build Evaluations"  minOccurs="0" default="1000">
+		      <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mom(sizet,maxFunctionEvals)}" label="Max Build Evaluations"  minOccurs="0" default="1000">
 			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
 		      <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mom(Real,convergenceTolerance)}" label="Convergence Tolerance"  minOccurs="0" default="1.0e-4" >

@@ -61,8 +61,10 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
   update_from_model(iteratedModel); // variable/response counts & checks
 
   // Re-assign Iterator defaults specialized to Minimizer branch
-  if (maxIterations < 0) // DataMethod default set to -1
-    maxIterations = 100;
+  // DataMethod defaults are assigned a special value of SZ_MAX, for
+  // reassignment in different contexts
+  if (maxIterations    == SZ_MAX)    maxIterations =  100;
+  if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = 1000;
   // Minimizer default number of final solution is 1, unless a
   // multi-objective frontier-based method
   if (!numFinalSolutions && methodName != MOGA)

@@ -41,8 +41,10 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   iteratedModel = model;
   update_from_model(iteratedModel); // variable/response counts & checks
 
-  // historical default convergence tolerance
-  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+  // assign context-specific defaults
+  if (convergenceTol   < 0.) convergenceTol = 1.e-4; // historical default
+  //if (maxIterations    == SZ_MAX) maxIterations    = 100;
+  //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = 1000;
 
   if (model.primary_fn_type() == OBJECTIVE_FNS)
     numObjFns = model.num_primary_fns();

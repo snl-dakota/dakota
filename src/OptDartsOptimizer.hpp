@@ -202,7 +202,7 @@ namespace Dakota {
          int numTotalVars;
 	       
          // Parameters.
-         int randomSeed, maxBlackBoxEvals, maxIterations;
+       int randomSeed;//, maxBlackBoxEvals, maxIterations;
 	       
      }; // class OptDartsOptimizer
 }

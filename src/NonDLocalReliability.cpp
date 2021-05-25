@@ -154,7 +154,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   taylorOrder = (hess_type != "none" && mppSearchType <= AMV_PLUS_U) ? 2 : 1;
 
   // assign iterator-specific defaults for approximation-based MPP searches
-  if (maxIterations <  0          && // DataMethod default = -1
+  if (maxIterations == SZ_MAX     && // DataMethod default
       mppSearchType >= AMV_PLUS_X && mppSearchType < NO_APPROX) // approx-based
     maxIterations = 25;
 

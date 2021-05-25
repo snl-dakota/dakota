@@ -1121,12 +1121,12 @@ JEGAOptimizer::LoadTheParameterDatabase(
         );
     this->_theParamDB->AddSizeTypeParam(
         "method.max_iterations",
-        static_cast<size_t>(probDescDB.get_int("method.max_iterations"))
+        static_cast<size_t>(probDescDB.get_sizet("method.max_iterations"))
         );
     this->_theParamDB->AddSizeTypeParam(
         "method.max_function_evaluations",
         static_cast<size_t>(
-            probDescDB.get_int("method.max_function_evaluations")
+            probDescDB.get_sizet("method.max_function_evaluations")
             )
         );
 

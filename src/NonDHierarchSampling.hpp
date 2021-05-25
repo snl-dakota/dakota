@@ -187,7 +187,6 @@ inline void NonDHierarchSampling::
 configure_indices(size_t group, size_t form, size_t lev, short seq_type)
 {
   // preserve special values across type conversions
-  size_t SZ_MAX = std::numeric_limits<size_t>::max();
   unsigned short grp = (group == SZ_MAX) ? USHRT_MAX : (unsigned short)group,
                  frm = (form  == SZ_MAX) ? USHRT_MAX : (unsigned short)form;
   configure_indices(grp, frm, lev, seq_type);

@@ -126,12 +126,10 @@ protected:
 
   /// resize currentResponse if needed when one of the subordinate
   /// models has been resized
-  void resize_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void resize_from_subordinate_model(size_t depth = SZ_MAX);
   /// update currentVariables using non-active data from the passed model
   /// (one of the ordered models)
-  void update_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void update_from_subordinate_model(size_t depth = SZ_MAX);
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into LF/HF models
@@ -673,14 +671,14 @@ inline void HierarchSurrModel::resize_from_subordinate_model(size_t depth)
   // bottom-up data flow, so recurse first
   if (lf_resize) {
     Model& lf_model = surrogate_model();
-    if (depth == std::numeric_limits<size_t>::max())
+    if (depth == SZ_MAX)
       lf_model.resize_from_subordinate_model(depth);//retain special value (inf)
     else if (depth)
       lf_model.resize_from_subordinate_model(depth - 1);
   }
   if (hf_resize) {
     Model& hf_model = truth_model();
-    if (depth == std::numeric_limits<size_t>::max())
+    if (depth == SZ_MAX)
       hf_model.resize_from_subordinate_model(depth);//retain special value (inf)
     else if (depth)
       hf_model.resize_from_subordinate_model(depth - 1);
@@ -698,7 +696,7 @@ inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
   case AUTO_CORRECTED_SURROGATE: { // LF is active
     Model& lf_model = surrogate_model();
     // bottom-up data flow, so recurse first
-    if (depth == std::numeric_limits<size_t>::max())
+    if (depth == SZ_MAX)
       lf_model.update_from_subordinate_model(depth);//retain special value (inf)
     else if (depth)
       lf_model.update_from_subordinate_model(depth - 1);
@@ -710,7 +708,7 @@ inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
   case AGGREGATED_MODELS:  case MODEL_DISCREPANCY: { // prefer truth model
     Model& hf_model = truth_model();
     // bottom-up data flow, so recurse first
-    if (depth == std::numeric_limits<size_t>::max())
+    if (depth == SZ_MAX)
       hf_model.update_from_subordinate_model(depth);//retain special value (inf)
     else if (depth)
       hf_model.update_from_subordinate_model(depth - 1);

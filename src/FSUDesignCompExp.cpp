@@ -326,8 +326,8 @@ void FSUDesignCompExp::get_parameter_sets(Model& model, const int num_samples,
     if (numCVTTrials < num_samples)
       numCVTTrials = num_samples *10;
 
-    // assign default maxIterations (DataMethod default is -1)
-    if (maxIterations < 0)
+    // assign default maxIterations (DataMethod default is SZ_MAX)
+    if (maxIterations == SZ_MAX)
       maxIterations = 25;
 
     // Set seed value for input to CVT.  A user-specified seed gives you

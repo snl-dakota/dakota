@@ -42,7 +42,7 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
   randomSeed = probDescDB.get_int("method.random_seed");
           
   // Set Max # of BB Evaluations
-  maxBlackBoxEvals = probDescDB.get_int("method.max_function_evaluations");
+  //maxBlackBoxEvals = probDescDB.get_sizet("method.max_function_evaluations");
           
   // STATS_FILE -- File Output    
   outputFormat = 
@@ -58,7 +58,7 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
   epsilon = probDescDB.get_real("method.function_precision");
 
   // Maximum number of iterations.
-  maxIterations = probDescDB.get_int("method.max_iterations");
+  //maxIterations = probDescDB.get_sizet("method.max_iterations");
           
   // VNS = Variable Neighbor Search, it is used to escape local minima
   // if VNS >0.0, the NOMAD Parameter must be set with a Real number.
@@ -176,7 +176,7 @@ void NomadOptimizer::core_run()
   p.set_UPPER_BOUND(this->upperBound);
      
   // Set Max # of BB Evaluations
-  p.set_MAX_BB_EVAL (maxBlackBoxEvals);
+  p.set_MAX_BB_EVAL(maxFunctionEvals);//(maxBlackBoxEvals);
 
   // DISPLAY_STATS -- Standard Output
   // STATS_FILE -- File Output

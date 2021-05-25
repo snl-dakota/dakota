@@ -339,7 +339,7 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
   push_c3_active(start_orders); // push active {start,max}{order,rank}, seed
 
   size_t colloc_pts = collocation_points();
-  if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined
+  if (colloc_pts == SZ_MAX) { // seq not defined
     if (collocRatio > 0.)
       numSamplesOnModel
 	= terms_ratio_to_samples(regression_size(sequenceIndex), collocRatio);

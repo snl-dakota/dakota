@@ -84,8 +84,7 @@ void NonDMultifidelitySampling::control_variate_mc()
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // For two-model control variate, select extreme fidelities/resolutions
   Pecos::ActiveKey active_key, hf_key, lf_key;
-  unsigned short hf_form, lf_form;
-  size_t hf_lev, lf_lev, SZ_MAX = std::numeric_limits<size_t>::max();
+  unsigned short hf_form, lf_form;  size_t hf_lev, lf_lev;
   if (multilev) {
     hf_form = lf_form = (fixed_index == SZ_MAX) ? USHRT_MAX : fixed_index;
     hf_lev  = num_steps-1;  lf_lev = 0;  // extremes of range
@@ -140,8 +139,7 @@ void NonDMultifidelitySampling::control_variate_mc()
   numSamples = hf_sample_incr;
 
   mlmfIter = 0;  equivHFEvals = 0.;
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  while (hf_sample_incr  &&  mlmfIter <= max_iter  &&
+  while (hf_sample_incr && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
     // ----------------------------------------------------------
@@ -179,10 +177,12 @@ void NonDMultifidelitySampling::control_variate_mc()
       // -------------------------------------------------------------------
       // Compute new LF increment based on new evaluation ratio for new N_hf
       // -------------------------------------------------------------------
-      // *** TO DO: how to allow user to stop after pilot only
-      // *** Note: lf_increment includes finalCVRefinement flag (=true)
-      // *** Consider maxFunctionEvals throttle (see also compute_eval_ratios)
-      if (lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {
+      // How to allow user to stop after pilot only:
+      // > lf_increment() includes finalCVRefinement flag (hard-wired true)
+      // > maxFunctionEvals throttle
+      compute_equivalent_cost(raw_N_hf, raw_N_lf, cost_ratio);
+      if (equivHFEvals <= maxFunctionEvals &&
+	  lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {
 	accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
 	raw_N_lf += numSamples; //lf_sample_incr = numSamples;
       }
@@ -190,7 +190,7 @@ void NonDMultifidelitySampling::control_variate_mc()
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
     ++mlmfIter;
     // update equivalent number of HF evaluations (no credit for failed evals)
-    equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio;
+    compute_equivalent_cost(raw_N_hf, raw_N_lf, cost_ratio);
   } // end while
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
@@ -218,7 +218,6 @@ void NonDMultifidelitySampling::multifidelity_mc()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost; configure_cost(num_steps, multilev, cost);
 
@@ -229,8 +228,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
   numSamples = hf_sample_incr;
 
   mlmfIter = 0;  equivHFEvals = 0.;
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  while (hf_sample_incr  &&  mlmfIter <= max_iter  &&
+  while (hf_sample_incr && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
    shared_increment(); // spans models {i, i+1, ..., M}
@@ -484,14 +482,13 @@ bool NonDMultifidelitySampling::lf_increment(size_t iter, size_t lev)
   if (exportSampleSets)
     export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
 
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   // Iteration 0 is defined as the pilot sample + initial CV increment, and
   // each subsequent iter can be defined as a pair of ML + CV increments.  If
   // it is desired to stop between the ML and CV components, finalCVRefinement
   // can be hardwired to false (not currently part of input spec).
   // Note: termination based on delta_N_hf=0 has final ML and CV increments
   //       of zero, which is consistent with finalCVRefinement=true.
-  if (iter < max_iter || finalCVRefinement) {
+  if (iter < maxIterations || finalCVRefinement) {
     // compute allResponses from allVariables using hierarchical model
     evaluate_parameter_sets(iteratedModel, true, false);
     return true;

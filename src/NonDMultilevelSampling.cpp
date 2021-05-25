@@ -137,7 +137,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost, agg_var(num_steps);
@@ -164,7 +163,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 
   // now converge on sample counts per level (N_l)
   mlmfIter = 0;  equivHFEvals = 0.;
-  while (Pecos::l1_norm(delta_N_l)  &&  mlmfIter <= max_iter  &&
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
     sum_sqrt_var_cost = 0.;
@@ -276,7 +275,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost;  configure_cost(num_steps, multilev, cost);
@@ -320,7 +318,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 
   // now converge on sample counts per level (N_l)
   mlmfIter = 0;  equivHFEvals = 0.;
-  while (Pecos::l1_norm(delta_N_l)  &&  mlmfIter <= max_iter  &&
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
     for (step=0; step<num_steps; ++step) {
 

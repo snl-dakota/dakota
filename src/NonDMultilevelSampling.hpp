@@ -824,8 +824,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
   										const RealMatrix& agg_var_qoi_in, const RealVector& cost, 
   										const Sizet2DArray& N_l, SizetArray& delta_N_l)
 {
-        size_t num_steps = agg_var_qoi_in.numCols(),
-	  max_iter = (maxIterations < 0) ? 25 : maxIterations;
+        size_t num_steps = agg_var_qoi_in.numCols();
 	RealVector level_cost_vec(num_steps);
 	RealVector sum_sqrt_var_cost;
 	RealMatrix delta_N_l_qoi;
@@ -833,7 +832,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 	RealMatrix agg_var_qoi;
 
 	size_t nb_aggregation_qois = 0;
-	double underrelaxation_factor = static_cast<double>(mlmfIter + 1)/static_cast<double>(max_iter + 1);
+	double underrelaxation_factor = static_cast<double>(mlmfIter + 1)/static_cast<double>(maxIterations + 1);
   if (qoiAggregation==QOI_AGGREGATION_SUM) {
 		nb_aggregation_qois = 1;
 		eps_sq_div_2.size(nb_aggregation_qois);
@@ -1207,7 +1206,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		    if(allocationTarget == TARGET_MEAN){
 		      delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step));
 		    }else if (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA || allocationTarget == TARGET_SCALARIZATION){
-		    	if(max_iter==1){
+		    	if(maxIterations==1){
 		    		delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step));
 		    	}else{
 			      delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*3, one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step)));

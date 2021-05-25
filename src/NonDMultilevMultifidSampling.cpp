@@ -111,7 +111,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
+  size_t lev = SZ_MAX; // updated in loop below
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
@@ -119,8 +119,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
-
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
 
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
@@ -152,7 +150,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 
   // now converge on sample counts per level (N_hf)
   mlmfIter = 0;  equivHFEvals = 0.;
-  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= max_iter &&
+  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
     sum_sqrt_var_cost = 0.;
@@ -331,7 +329,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
+  size_t lev = SZ_MAX; // updated in loop below
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
@@ -339,8 +337,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
-
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
 
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
@@ -383,7 +379,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 
   // now converge on sample counts per level (N_hf)
   mlmfIter = 0;  equivHFEvals = 0.;
-  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= max_iter &&
+  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
     sum_sqrt_var_cost = 0.;
@@ -499,7 +495,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
     // All CV lf_increment() calls now follow all ML level evals:
     // > Provides separation of pilot sample from refinements (simplifying
     //   offline execution with data importing w/o undesirable seed progression)
-    // > Improves application of max_iterations control in general: user
+    // > Improves application of maxIterations control in general: user
     //   specification results in consistent count for ML and CV refinements
     // > Incurs a bit more overhead: eval_ratios array, mode resetting
     // > Could potentially have parallel scheduling benefits by grouping
