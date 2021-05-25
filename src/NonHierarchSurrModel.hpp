@@ -98,12 +98,10 @@ protected:
 
   /// resize currentResponse if needed when one of the subordinate
   /// models has been resized
-  void resize_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void resize_from_subordinate_model(size_t depth = SZ_MAX);
   /// update currentVariables using non-active data from the passed model
   /// (one of the ordered models)
-  void update_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void update_from_subordinate_model(size_t depth = SZ_MAX);
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into LF/HF models
@@ -498,14 +496,14 @@ inline void NonHierarchSurrModel::resize_from_subordinate_model(size_t depth)
     size_t i, num_approx_models = unorderedModels.size();
     for (i=0; i<num_approx_models; ++i) {
       Model& model_i = unorderedModels[i];
-      if (depth == std::numeric_limits<size_t>::max())
+      if (depth == SZ_MAX)
 	model_i.resize_from_subordinate_model(depth);// retain special val (inf)
       else if (depth)
 	model_i.resize_from_subordinate_model(depth - 1);
     }
   }
   if (truth_resize) {
-    if (depth == std::numeric_limits<size_t>::max())
+    if (depth == SZ_MAX)
       truthModel.resize_from_subordinate_model(depth);// retain special value
     else if (depth)
       truthModel.resize_from_subordinate_model(depth - 1);
@@ -519,7 +517,7 @@ inline void NonHierarchSurrModel::resize_from_subordinate_model(size_t depth)
 inline void NonHierarchSurrModel::update_from_subordinate_model(size_t depth)
 {
   // bottom-up data flow, so recurse first
-  if (depth == std::numeric_limits<size_t>::max())
+  if (depth == SZ_MAX)
     truthModel.update_from_subordinate_model(depth);//retain special value
   else if (depth)
     truthModel.update_from_subordinate_model(depth - 1);

@@ -64,8 +64,7 @@ void NonHierarchSurrModel::assign_default_keys()
 {
   // default key values, to be overridden at run time
   unsigned short id = 0;
-  size_t SZ_MAX = std::numeric_limits<size_t>::max(),
-    soln_lev = truthModel.solution_levels(),
+  size_t soln_lev = truthModel.solution_levels(),
     lev = (soln_lev) ? soln_lev - 1 : SZ_MAX;
   truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0, lev);// form, lev
 

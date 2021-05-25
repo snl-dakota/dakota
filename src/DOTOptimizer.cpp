@@ -464,7 +464,7 @@ void DOTOptimizer::core_run()
     }
   }
 
-  if (fn_eval_cntr==maxFunctionEvals+1)
+  if (fn_eval_cntr > maxFunctionEvals)
     Cout << "Iteration terminated: max_function_evaluations limit has been "
          << "met.\n";
 

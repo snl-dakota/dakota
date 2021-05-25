@@ -422,7 +422,7 @@ config_expectation(size_t exp_samples, unsigned short sample_type,
 		   int seed, const String& rng, Iterator& u_space_sampler,
 		   Model& g_u_model, String& approx_type)
 {
-  if (exp_samples == std::numeric_limits<size_t>::max())
+  if (exp_samples == SZ_MAX)
     return false;
 
   // expectation of PCE coefficients based on random sampling
@@ -497,7 +497,6 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
   else
     expansionCoeffsApproach = regress_type;
 
-  size_t SZ_MAX = std::numeric_limits<size_t>::max();
   switch (expansionCoeffsApproach) {
   case Pecos::ORTHOG_LEAST_INTERPOLATION:
     if (colloc_pts == SZ_MAX) {
@@ -684,7 +683,7 @@ bool NonDPolynomialChaos::resize()
 	break;
       }
     
-      if (collocPtsSpec != std::numeric_limits<size_t>::max()) // ratio from pts
+      if (collocPtsSpec != SZ_MAX) // ratio from pts
 	collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
       else if (collocRatio > 0.)     // define colloc pts from collocRatio
 	numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);

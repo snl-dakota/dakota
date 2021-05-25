@@ -44,7 +44,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
     problem_db.get_real("model.c3function_train.solver_rounding_tolerance")),
   statsRoundingTol(
     problem_db.get_real("model.c3function_train.stats_rounding_tolerance")),
-  maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
+  maxSolverIterations(problem_db.get_sizet("model.max_solver_iterations")),
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
   //adaptConstruct(false),
@@ -79,12 +79,12 @@ SharedC3ApproxData(const String& approx_type, const UShortArray& approx_order,
   // default values overridden by set_parameter
   respScaling(false), startOrders(approx_order), kickOrder(1),
   maxOrder(USHRT_MAX), adaptOrder(false), startRank(2), kickRank(1),
-  maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
+  maxRank(SZ_MAX), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), solverRoundingTol(1.e-10), statsRoundingTol(1.e-10),
-  maxSolverIterations(-1), crossMaxIter(5), //adaptConstruct(false),
+  maxSolverIterations(SZ_MAX), crossMaxIter(5), //adaptConstruct(false),
   c3AdvancementType(NO_C3_ADVANCEMENT), maxCVOrderCandidates(USHRT_MAX),
-  maxCVRankCandidates(std::numeric_limits<size_t>::max())
+  maxCVRankCandidates(SZ_MAX)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)
@@ -116,7 +116,6 @@ void SharedC3ApproxData::infer_max_cross_validation_ranges()
   // Note: in the case where we want to grow the range (e.g., from 1 with
   // start initially == max), we will need to specify { start, max, max CV }.
   if (adaptRank) {
-    size_t SZ_MAX = std::numeric_limits<size_t>::max();
     bool no_max_r = (maxRank == SZ_MAX);
     if (maxCVRankCandidates == SZ_MAX) {
       if (no_max_r)

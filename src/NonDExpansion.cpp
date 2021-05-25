@@ -72,8 +72,9 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   softConvLimit(problem_db.get_ushort("method.soft_convergence_limit")),
   numUncertainQuant(0),
   maxRefineIterations(
-    problem_db.get_int("method.nond.max_refinement_iterations")),
-  maxSolverIterations(problem_db.get_int("method.nond.max_solver_iterations")),
+    problem_db.get_sizet("method.nond.max_refinement_iterations")),
+  maxSolverIterations(
+    problem_db.get_sizet("method.nond.max_solver_iterations")),
   ruleNestingOverride(problem_db.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(problem_db.get_short("method.nond.growth_override")),
   vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
@@ -109,7 +110,7 @@ NonDExpansion(unsigned short method_name, Model& model,
   nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(refine_type), refineControl(refine_control),
   refineMetric(Pecos::NO_METRIC), softConvLimit(3), numUncertainQuant(0),
-  maxRefineIterations(100), maxSolverIterations(-1),
+  maxRefineIterations(SZ_MAX), maxSolverIterations(SZ_MAX),
   ruleNestingOverride(rule_nest), ruleGrowthOverride(rule_growth),
   vbdFlag(false), vbdOrderLimit(0), vbdDropTol(-1.),
   covarianceControl(covar_control)
@@ -996,11 +997,10 @@ void NonDExpansion::refine_expansion()
   // --------------------------------------
   // Uniform/adaptive refinement approaches
   // --------------------------------------
-  // DataMethod default for maxRefineIterations is -1, indicating no user spec.
-  // Assign a context-specific default in this case.
-  size_t SZ_MAX = std::numeric_limits<size_t>::max(), candidate, iter = 1,
-    max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
-  bool converged = (iter > max_refine_iter),
+  // DataMethod default for maxRefineIterations is SZ_MAX, indicating no user
+  // spec.  Iteration counts are unconstrained in this case.
+  size_t candidate, iter = 1;
+  bool converged = (iter > maxRefineIterations),
     print_metric = (outputLevel > SILENT_OUTPUT);
   Real metric;
 
@@ -1017,7 +1017,7 @@ void NonDExpansion::refine_expansion()
     else {
       Cout << "\n<<<<< Refinement iteration " << iter << " completed: "
 	   << "convergence metric = " << metric << '\n';
-      converged = (metric <= convergenceTol || ++iter > max_refine_iter);
+      converged = (metric <= convergenceTol || ++iter > maxRefineIterations);
     }
   }
 
@@ -1070,7 +1070,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // max{Order,Rank} or previous cross validation indicated better fit with
     // lower order), no candidates will be generated for this model key.
     if (!uSpaceModel.advancement_available())
-      { metric = 0.;  return std::numeric_limits<size_t>::max(); }
+      { metric = 0.;  return SZ_MAX; }
 
     RealVector stats_ref;
     if (revert) pull_reference(stats_ref);
@@ -1269,7 +1269,6 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
   // > group index is assigned based on step in model form/resolution sequence
 
   // preserve special values across type conversions
-  size_t SZ_MAX = std::numeric_limits<size_t>::max();
   unsigned short grp = (group == SZ_MAX) ? USHRT_MAX : (unsigned short)group,
                  frm = (form  == SZ_MAX) ? USHRT_MAX : (unsigned short)form;
   Pecos::ActiveKey hf_key;  hf_key.form_key(grp, frm, lev);
@@ -1566,15 +1565,13 @@ void NonDExpansion::multifidelity_integrated_refinement()
 
   // Integrated MF refinement mirrors individual adaptive refinement in
   // refine_expansion() in using the max_refinement_iterations specification.
-  // This differs from multilevel_regression(), which uses max_iterations and
-  // potentially max_solver_iterations.
-  size_t SZ_MAX = std::numeric_limits<size_t>::max(),
-    step_candidate, best_step, best_step_candidate,
-    max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
+  // This differs from multilevel_regression(), which uses maxIterations and
+  // potentially maxSolverIterations.
+  size_t step_candidate, best_step, best_step_candidate;
   Real step_metric, best_step_metric = DBL_MAX;
   RealVector best_stats_star;
   bool print_metric = (outputLevel > SILENT_OUTPUT);
-  while ( best_step_metric > convergenceTol && mlmfIter < max_refine_iter ) {
+  while (best_step_metric > convergenceTol && mlmfIter < maxRefineIterations) {
 
     ++mlmfIter;
     Cout << "\n>>>>> Begin iteration " << mlmfIter << ": competing candidates "
@@ -1652,7 +1649,6 @@ void NonDExpansion::multilevel_regression()
   else          lev  = secondary_index;
 
   bool import_pilot;
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations;
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
 
   // configure metrics and cost for each step in the sequence
@@ -1671,7 +1667,7 @@ void NonDExpansion::multilevel_regression()
     load_pilot_sample(collocPtsSeqSpec, num_steps, delta_N_l);
 
   // now converge on sample counts per level (NLev)
-  while ( mlmfIter <= max_iter &&
+  while ( mlmfIter <= maxIterations &&
 	  ( Pecos::l1_norm(delta_N_l) || (mlmfIter == 0 && import_pilot) ) ) {
 
     sum_root_var_cost = 0.;

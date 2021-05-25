@@ -526,7 +526,7 @@ void NonDAdaptImpSampling::converge_statistics(bool cov_flag)
   RealVectorArray var_samples_u(refineSamples);
   RealVector fn_samples(refineSamples);
   size_t total_samples = 0,
-    max_iter    = (maxIterations < 0) ? 100 : maxIterations, // default to 100
+    max_iter = (maxIterations == SZ_MAX) ? 100 : maxIterations,// default to 100
     max_samples = refineSamples * max_iter;
   Real sum_var = 0., cov, old_cov = 0., p, sum_p = 0.,
     old_p = (invertProb) ? 1. - probEstimate : probEstimate;

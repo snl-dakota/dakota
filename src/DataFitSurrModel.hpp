@@ -150,11 +150,9 @@ protected:
   /// return actualModel (and optionally its sub-models)
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// pass request to actualModel if recursing
-  void resize_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void resize_from_subordinate_model(size_t depth = SZ_MAX);
   /// pass request to actualModel if recursing and then update from it
-  void update_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void update_from_subordinate_model(size_t depth = SZ_MAX);
   /// return approxInterface
   Interface& derived_interface();
 
@@ -340,9 +338,9 @@ protected:
   /// whether to automatically refine the surrogate during the build phase
   const bool autoRefine;
   /// Maximum number of times to refine the surrogate
-  const int maxIterations;
+  const size_t maxIterations;
   /// Maximum number of evaluations while refining a surrogate
-  const int maxFuncEvals;
+  const size_t maxFuncEvals;
   /// Convergence criterion, compared to CV score for specified metric
   const Real convergenceTolerance;
   /// Max number of iterations for which there is no average improvement
@@ -641,7 +639,7 @@ inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
 {
   if (!actualModel.is_null() && depth) {
     // data flows from the bottom-up, so recurse first
-    if (depth == std::numeric_limits<size_t>::max())
+    if (depth == SZ_MAX)
       actualModel.resize_from_subordinate_model(depth); // retain special value
     else
       actualModel.resize_from_subordinate_model(depth - 1);
@@ -671,7 +669,7 @@ inline void DataFitSurrModel::update_from_subordinate_model(size_t depth)
 {
   if (!actualModel.is_null()) {
     // data flows from the bottom-up, so recurse first
-    if (depth == std::numeric_limits<size_t>::max())
+    if (depth == SZ_MAX)
       actualModel.update_from_subordinate_model(depth); // retain special value
     else if (depth)
       actualModel.update_from_subordinate_model(depth - 1);

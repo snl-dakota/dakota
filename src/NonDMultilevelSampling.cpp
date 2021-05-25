@@ -137,7 +137,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost, agg_var(num_steps);
@@ -163,8 +162,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     N_l[step].assign(numFunctions, 0);
 
   // now converge on sample counts per level (N_l)
-  mlmfIter = 0;
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= max_iter) {
+  mlmfIter = 0;  equivHFEvals = 0.;
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
+	 equivHFEvals <= maxFunctionEvals) {
 
     sum_sqrt_var_cost = 0.;
     for (step=0; step<num_steps; ++step) { // step is reference to lev
@@ -228,6 +228,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_l << std::endl;
+    // update equivalent number of HF evaluations (no credit for failed evals)
+    compute_equivalent_cost(raw_N_l, cost);
   }
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondary_index, NLev);
@@ -249,12 +251,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(Q_raw_mom, momentStats);
-
-  // compute the equivalent number of HF evaluations (includes any sim faults)
-  equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
-  for (step=1; step<num_steps; ++step) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_l[step] * (cost[step] + cost[step-1]);
-  equivHFEvals /= cost[num_steps-1]; // normalize into equivalent HF evals
 }
 
 
@@ -279,7 +275,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost;  configure_cost(num_steps, multilev, cost);
@@ -322,8 +317,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     convergenceTolVec[qoi] = convergenceTol;
 
   // now converge on sample counts per level (N_l)
-  mlmfIter = 0;
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= max_iter) {
+  mlmfIter = 0;  equivHFEvals = 0.;
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
+	 equivHFEvals <= maxFunctionEvals) {
     for (step=0; step<num_steps; ++step) {
 
       configure_indices(step, form, lev, seq_type);
@@ -367,6 +363,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_l << std::endl;
+    // update equivalent number of HF evaluations (includes any sim faults)
+    compute_equivalent_cost(raw_N_l, cost);
   }
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondary_index, NLev);
@@ -375,8 +373,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
-  // compute the equivalent number of HF evaluations (includes any sim faults)
-  compute_equiv_HF_evals(raw_N_l, cost);
 }
 
 

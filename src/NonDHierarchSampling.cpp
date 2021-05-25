@@ -55,6 +55,10 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   if (!sampleType) // SUBMETHOD_DEFAULT
     sampleType = SUBMETHOD_RANDOM;
 
+  // method-specific default: don't let allocator get stuck in fine-tuning
+  if (maxIterations == SZ_MAX) maxIterations = 25;
+  //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // inf is good
+
   // ensure iteratedModel is a hierarchical surrogate model and set initial
   // response mode (for set_communicators() which precedes core_run()).
   // Note: even though the hierarchy may be multilevel | multifidelity | both,
@@ -69,8 +73,7 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  size_t i, j, num_mf = ordered_models.size(), num_lev,
-    prev_lev = std::numeric_limits<size_t>::max(),
+  size_t i, j, num_mf = ordered_models.size(), num_lev, prev_lev = SZ_MAX,
     pilot_size = pilotSamples.size();
   ModelLRevIter ml_rit; bool err_flag = false;
   NLev.resize(num_mf);

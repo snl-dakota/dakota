@@ -27,7 +27,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDACVSampling: public NonDMLMFSampling
+class NonDACVSampling: public NonDSampling
 {
 public:
 

@@ -48,8 +48,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     problem_db.get_string("model.surrogate.export_approx_variance_file")),
   exportVarianceFormat(problem_db.get_ushort("model.surrogate.export_approx_variance_format")),
   autoRefine(problem_db.get_bool("model.surrogate.auto_refine")),
-  maxIterations(problem_db.get_int("model.max_iterations")),
-  maxFuncEvals(problem_db.get_int("model.max_function_evals")),
+  maxIterations(problem_db.get_sizet("model.max_iterations")),
+  maxFuncEvals(problem_db.get_sizet("model.max_function_evals")),
   convergenceTolerance(problem_db.get_real("model.convergence_tolerance")),
   softConvergenceLimit(problem_db.get_int("model.soft_convergence_limit")),
   refineCVMetric(problem_db.get_string("model.surrogate.refine_cv_metric")),
@@ -1263,7 +1263,7 @@ void DataFitSurrModel::rebuild_global()
   // *******************************************
   // Evaluate new data points using daceIterator
   // *******************************************
-  size_t pts_i, curr_points = std::numeric_limits<size_t>::max();
+  size_t pts_i, curr_points = SZ_MAX;
   StSIter it;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     pts_i = approxInterface.approximation_data(*it).points();
@@ -1353,9 +1353,8 @@ void DataFitSurrModel::refine_surrogate()
 
   // Disable the soft convergence limit by setting it to maxIterations if
   // the user didn't set it
-  int soft_conv_limit = maxIterations;
-  if(softConvergenceLimit != 0)
-    soft_conv_limit = softConvergenceLimit;
+  int soft_conv_limit = (softConvergenceLimit) ?
+    softConvergenceLimit : maxIterations;
 
   // accumulator for rolling average of length soft_conv_limit 
   using namespace boost::accumulators;

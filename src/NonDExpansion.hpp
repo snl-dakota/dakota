@@ -111,9 +111,9 @@ public:
   //
 
   /// return maxRefineIterations
-  int maximum_refinement_iterations() const;
+  size_t maximum_refinement_iterations() const;
   /// set maxRefineIterations
-  void maximum_refinement_iterations(int max_refine_iter);
+  void maximum_refinement_iterations(size_t max_refine_iter);
 
 protected:
 
@@ -617,10 +617,10 @@ private:
 
   /// maximum number of uniform/adaptive refinement iterations
   /// (specialization of maxIterations)
-  int maxRefineIterations;
+  size_t maxRefineIterations;
   /// maximum number of regression solver iterations (specialization
   /// of maxIterations)
-  int maxSolverIterations;
+  size_t maxSolverIterations;
   
   /// flag indicating the activation of variance-bsaed decomposition
   /// for computing Sobol' indices
@@ -654,7 +654,7 @@ nested_variable_mappings(const SizetArray& c_index1,
 
 inline size_t NonDExpansion::collocation_points(size_t index) const
 {
-  if (collocPtsSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  if (collocPtsSeqSpec.empty()) return SZ_MAX;
   else
     return (index < collocPtsSeqSpec.size()) ?
       collocPtsSeqSpec[index] : collocPtsSeqSpec.back();
@@ -685,11 +685,11 @@ inline int NonDExpansion::random_seed(size_t index) const
 }
 
 
-inline int NonDExpansion::maximum_refinement_iterations() const
+inline size_t NonDExpansion::maximum_refinement_iterations() const
 { return maxRefineIterations; }
 
 
-inline void NonDExpansion::maximum_refinement_iterations(int max_refine_iter)
+inline void NonDExpansion::maximum_refinement_iterations(size_t max_refine_iter)
 { maxRefineIterations = max_refine_iter; }
 
 

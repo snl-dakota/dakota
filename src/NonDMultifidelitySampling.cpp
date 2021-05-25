@@ -56,9 +56,19 @@ void NonDMultifidelitySampling::core_run()
   // prefer ML over MF if both available
   iteratedModel.multifidelity_precedence(true);
 
-  // For two-model control variate methods, select lowest,highest fidelities
-  // infer the (two) model hierarchy and perform MFMC
-  control_variate_mc();
+  // May retire control_variate_mc() in time, but retain for right now...
+  //size_t num_steps, fixed_index;  short seq_type;
+  //configure_sequence(num_steps, fixed_index, seq_type);
+  //if (num_steps == 2)
+  control_variate_mc();   // Ng and Willcox, 2014
+  //else
+  //  multifidelity_mc(); // Peherstorfer, Willcox, Gunzburger, 2016
+
+  // Note: MFMC uses a nested sampling pattern which does not mesh with the
+  // model pairing assumed in HierarchSurrModel --> either support MFMC under
+  // NonDEnsembleSampling or subsume HierarchSurrModel as a special case of
+  // NonHierarchSurrModel (in which case, SurrogateModel alignment becomes
+  // unimportant).
 }
 
 
@@ -74,8 +84,7 @@ void NonDMultifidelitySampling::control_variate_mc()
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   // For two-model control variate, select extreme fidelities/resolutions
   Pecos::ActiveKey active_key, hf_key, lf_key;
-  unsigned short hf_form, lf_form;
-  size_t hf_lev, lf_lev, SZ_MAX = std::numeric_limits<size_t>::max();
+  unsigned short hf_form, lf_form;  size_t hf_lev, lf_lev;
   if (multilev) {
     hf_form = lf_form = (fixed_index == SZ_MAX) ? USHRT_MAX : fixed_index;
     hf_lev  = num_steps-1;  lf_lev = 0;  // extremes of range
@@ -129,9 +138,9 @@ void NonDMultifidelitySampling::control_variate_mc()
   size_t hf_sample_incr = std::min(delta_N_l[lf_form], delta_N_l[hf_form]);
   numSamples = hf_sample_incr;
 
-  mlmfIter = 0;
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  while (hf_sample_incr && mlmfIter <= max_iter) {
+  mlmfIter = 0;  equivHFEvals = 0.;
+  while (hf_sample_incr && mlmfIter <= maxIterations &&
+	 equivHFEvals <= maxFunctionEvals) {
 
     // ----------------------------------------------------------
     // Compute shared increment targeting specified MSE reduction
@@ -168,12 +177,15 @@ void NonDMultifidelitySampling::control_variate_mc()
       // -------------------------------------------------------------------
       // Compute new LF increment based on new evaluation ratio for new N_hf
       // -------------------------------------------------------------------
-      // *** TO DO: how to allow user to stop after pilot only
-      // *** Note: lf_increment includes finalCVRefinement flag (=true)
-      // *** Consider maxFunctionEvals throttle (see also compute_eval_ratios)
-      if (lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {
+      // How to allow user to stop after pilot only:
+      // > lf_increment() includes finalCVRefinement flag (hard-wired true)
+      // > maxFunctionEvals throttle
+      compute_equivalent_cost(raw_N_hf, raw_N_lf, cost_ratio);
+      if (equivHFEvals <= maxFunctionEvals &&
+	  lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {
 	accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
 	raw_N_lf += numSamples; //lf_sample_incr = numSamples;
+	compute_equivalent_cost(raw_N_hf, raw_N_lf, cost_ratio); // updated LF
       }
     }
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
@@ -186,10 +198,55 @@ void NonDMultifidelitySampling::control_variate_mc()
 		 rho2_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
-
-  // compute the equivalent number of HF evaluations
-  equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio;
 }
+
+
+/** This function performs control variate MC across two combinations of 
+    model form and discretization level.
+void NonDMultifidelitySampling::multifidelity_mc()
+{
+  // Performs pilot + LF increment and then iterates with additional shared
+  // increment + LF increment batches until prescribed MSE reduction is obtained
+
+  size_t qoi, num_steps, form, lev, fixed_index;  short seq_type;
+  configure_sequence(num_steps, fixed_index, seq_type);
+  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+
+  // 1D sequence: either lev varies and form is fixed, or vice versa:
+  size_t& step = (multilev) ? lev : form;
+  if (multilev) form = secondary_index;
+  else          lev  = secondary_index;
+
+  // retrieve cost estimates across soln levels for a particular model form
+  RealVector cost; configure_cost(num_steps, multilev, cost);
+
+  // Initialize for pilot sample
+  SizetArray delta_N_l;
+  load_pilot_sample(pilotSamples, num_steps, delta_N_l);
+  size_t hf_sample_incr = delta_N_l[hf_form];
+  numSamples = hf_sample_incr;
+
+  mlmfIter = 0;  equivHFEvals = 0.;
+  while (hf_sample_incr && mlmfIter <= maxIterations &&
+	 equivHFEvals <= maxFunctionEvals) {
+
+   shared_increment(); // spans models {i, i+1, ..., M}
+   // to support with HierarchSurrModel, might be simplest to sample one model 
+   // at a time using a nested sample set...
+
+    ++mlmfIter;
+    // compute the equivalent number of HF evaluations
+    compute_equivalent_cost(raw_N_l, cost);
+  } // end while
+
+  // Compute/apply control variate parameter to estimate uncentered raw moments
+  RealMatrix H_raw_mom(numFunctions, 4);
+  cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined, N_lf,
+		 rho2_LH, H_raw_mom);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(H_raw_mom, momentStats);
+}
+*/
 
 
 void NonDMultifidelitySampling::
@@ -424,14 +481,13 @@ bool NonDMultifidelitySampling::lf_increment(size_t iter, size_t lev)
   if (exportSampleSets)
     export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
 
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   // Iteration 0 is defined as the pilot sample + initial CV increment, and
   // each subsequent iter can be defined as a pair of ML + CV increments.  If
   // it is desired to stop between the ML and CV components, finalCVRefinement
   // can be hardwired to false (not currently part of input spec).
   // Note: termination based on delta_N_hf=0 has final ML and CV increments
   //       of zero, which is consistent with finalCVRefinement=true.
-  if (iter < max_iter || finalCVRefinement) {
+  if (iter < maxIterations || finalCVRefinement) {
     // compute allResponses from allVariables using hierarchical model
     evaluate_parameter_sets(iteratedModel, true, false);
     return true;

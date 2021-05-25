@@ -184,7 +184,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     // preserve these EGO settings for now, but eventually map through
     // from spec (and update test baselines)
     convergenceTol = 1.e-12; distanceTol = 1.e-8;
-    if (maxIterations < 0) 
+    if (maxIterations == SZ_MAX) // default value
       maxIterations  = 25*numContinuousVars;
     
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;

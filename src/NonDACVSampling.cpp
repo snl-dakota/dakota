@@ -39,7 +39,7 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, Model& model):
-  NonDMLMFSampling(problem_db, model),
+  NonDSampling(problem_db, model),
   pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
   mlmfIter(0),
@@ -77,8 +77,7 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
-  size_t i, j, num_mf = model_ensemble.size(), num_lev,
-    prev_lev = std::numeric_limits<size_t>::max(),
+  size_t i, j, num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
     pilot_size = pilotSamples.size();
   ModelLRevIter ml_it; bool err_flag = false;
   NLev.resize(num_mf);
@@ -168,6 +167,12 @@ void NonDACVSampling::core_run()
   case ACV_IS:
   case ACV_KL:
   }
+  // Notes on ACV + ensemble model classes:
+  // > HierarchSurrModel is limiting (see MFMC) such that we may want to
+  //   subsume it with NonHierarchSurrModel --> consider generalizations
+  //   that can be deployed across the algorithm set:
+  //   >> enhanced parallel usage --> avoid sync points in ACV clients
+  //   >> enable sampling over shared + distinct model variable sets
 }
 
 
@@ -181,7 +186,6 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
   // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
 
   // preserve special values across type conversions
-  size_t SZ_MAX = std::numeric_limits<size_t>::max();
   unsigned short grp = (group == SZ_MAX) ? USHRT_MAX : (unsigned short)group,
                  frm = (form  == SZ_MAX) ? USHRT_MAX : (unsigned short)form;
   Pecos::ActiveKey hf_key;  hf_key.form_key(grp, frm, lev);

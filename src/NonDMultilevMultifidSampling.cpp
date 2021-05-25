@@ -111,7 +111,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
+  size_t lev = SZ_MAX; // updated in loop below
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
@@ -119,8 +119,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
-
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
 
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
@@ -151,8 +149,9 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
   RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
-  mlmfIter = 0;
-  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= max_iter) {
+  mlmfIter = 0;  equivHFEvals = 0.;
+  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations &&
+	 equivHFEvals <= maxFunctionEvals) {
 
     sum_sqrt_var_cost = 0.;
     for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
@@ -286,6 +285,8 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
     ++mlmfIter;
     Cout << "\nMLMF MC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_hf << std::endl;
+    // update equivalent number of HF evaluations (includes any sim faults)
+    compute_equivalent_cost(raw_N_hf, hf_cost, raw_N_lf, lf_cost);
   }
 
   // Iteration complete.  Now roll up raw moments from CVMC and MLMC estimators.
@@ -310,14 +311,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(Y_mlmc_mom, momentStats);
-
-  // compute the equivalent number of HF evaluations
-  equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
-  for (lev=1; lev<num_hf_lev; ++lev) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_hf[lev] * (hf_cost[lev] + hf_cost[lev-1]);
-  for (lev=1; lev<num_cv_lev; ++lev) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
-  equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equivalent HF evals
 }
 
 
@@ -336,7 +329,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
   // assign model forms (solution level assignments are deferred until loop)
   Pecos::ActiveKey active_key;
   short seq_type = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-  size_t lev = std::numeric_limits<size_t>::max(); // updated in loop below
+  size_t lev = SZ_MAX; // updated in loop below
   active_key.form_key(0, hf_form, lev, lf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
   Model& truth_model = iteratedModel.truth_model();
@@ -344,8 +337,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
-
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
 
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
@@ -387,8 +378,9 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
   RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
-  mlmfIter = 0;
-  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= max_iter) {
+  mlmfIter = 0;  equivHFEvals = 0.;
+  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations &&
+	 equivHFEvals <= maxFunctionEvals) {
 
     sum_sqrt_var_cost = 0.;
     for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
@@ -503,7 +495,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
     // All CV lf_increment() calls now follow all ML level evals:
     // > Provides separation of pilot sample from refinements (simplifying
     //   offline execution with data importing w/o undesirable seed progression)
-    // > Improves application of max_iterations control in general: user
+    // > Improves application of maxIterations control in general: user
     //   specification results in consistent count for ML and CV refinements
     // > Incurs a bit more overhead: eval_ratios array, mode resetting
     // > Could potentially have parallel scheduling benefits by grouping
@@ -536,6 +528,8 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
     ++mlmfIter;
     Cout << "\nMLMF MC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_hf << std::endl;
+    // update equivalent number of HF evaluations (includes any sim faults)
+    compute_equivalent_cost(raw_N_hf, hf_cost, raw_N_lf, lf_cost);
   }
 
   // Iteration complete. Now roll up raw moments from CVMC and MLMC estimators.
@@ -564,14 +558,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(Y_mlmc_mom, momentStats);
-
-  // compute the equivalent number of HF evaluations
-  equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
-  for (lev=1; lev<num_hf_lev; ++lev) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_hf[lev] * (hf_cost[lev] + hf_cost[lev-1]);
-  for (lev=1; lev<num_cv_lev; ++lev) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
-  equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equivalent HF evals
 }
 
 

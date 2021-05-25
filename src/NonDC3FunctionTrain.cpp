@@ -299,7 +299,7 @@ config_regression(size_t colloc_pts, size_t regress_size, int seed,
 
   // given regression size, either compute numSamplesOnModel from collocRatio
   // or vice versa
-  if (colloc_pts != std::numeric_limits<size_t>::max()) {
+  if (colloc_pts != SZ_MAX) {
     numSamplesOnModel = colloc_pts;
     if (collocRatio == 0.) // default (no user spec)
       collocRatio = 2.; // assign method-specific default for sample refinement
@@ -436,7 +436,7 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
   shared_data_rep->set_parameter("max_cross_iterations",
     probDescDB.get_int("method.nond.c3function_train.max_cross_iterations"));
   shared_data_rep->set_parameter("max_solver_iterations",
-    probDescDB.get_int("method.nond.max_solver_iterations"));
+    probDescDB.get_sizet("method.nond.max_solver_iterations"));
   shared_data_rep->set_parameter("response_scaling",
     probDescDB.get_bool("method.nond.response_scaling"));
 

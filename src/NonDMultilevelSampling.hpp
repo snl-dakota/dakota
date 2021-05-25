@@ -128,8 +128,8 @@ private:
 			   const RealVector& offset, SizetArray& num_Q);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
-  void compute_equiv_HF_evals(const SizetArray& raw_N_l,
-			      const RealVector& cost);
+  void compute_equivalent_cost(const SizetArray& raw_N_l,
+			       const RealVector& cost);
 
   /// populate finalStatErrors for MLMC based on Q sums
   void compute_error_estimates(IntRealMatrixMap& sum_Ql,
@@ -826,8 +826,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
   										const RealMatrix& agg_var_qoi_in, const RealVector& cost, 
   										const Sizet2DArray& N_l, SizetArray& delta_N_l)
 {
-        size_t num_steps = agg_var_qoi_in.numCols(),
-	  max_iter = (maxIterations < 0) ? 25 : maxIterations;
+        size_t num_steps = agg_var_qoi_in.numCols();
 	RealVector level_cost_vec(num_steps);
 	RealVector sum_sqrt_var_cost;
 	RealMatrix delta_N_l_qoi;
@@ -835,7 +834,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 	RealMatrix agg_var_qoi;
 
 	size_t nb_aggregation_qois = 0;
-	double underrelaxation_factor = static_cast<double>(mlmfIter + 1)/static_cast<double>(max_iter + 1);
+	double underrelaxation_factor = static_cast<double>(mlmfIter + 1)/static_cast<double>(maxIterations + 1);
   if (qoiAggregation==QOI_AGGREGATION_SUM) {
 		nb_aggregation_qois = 1;
 		eps_sq_div_2.size(nb_aggregation_qois);
@@ -1209,7 +1208,7 @@ inline void NonDMultilevelSampling::compute_sample_allocation_target(IntRealMatr
 		    if(allocationTarget == TARGET_MEAN){
 		      delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step));
 		    }else if (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA || allocationTarget == TARGET_SCALARIZATION){
-		    	if(max_iter==1){
+		    	if(maxIterations==1){
 		    		delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step));
 		    	}else{
 			      delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*3, one_sided_delta(N_l[step][qoi], N_target_qoi(qoi, step)));
@@ -1309,11 +1308,11 @@ inline void NonDMultilevelSampling::compute_moments(IntRealMatrixMap sum_Ql, Int
 
 
 inline void NonDMultilevelSampling::
-compute_equiv_HF_evals(const SizetArray& raw_N_l, const RealVector& cost)
+compute_equivalent_cost(const SizetArray& raw_N_l, const RealVector& cost)
 {
-  size_t num_steps = raw_N_l.size();
+  size_t step, num_steps = raw_N_l.size();
   equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
-  for (size_t step=1; step<num_steps; ++step)// subsequent levels incur 2 model costs
+  for (step=1; step<num_steps; ++step) // subsequent levels incur 2 model costs
     equivHFEvals += raw_N_l[step] * (cost[step] + cost[step - 1]);
   equivHFEvals /= cost[num_steps - 1]; // normalize into equivalent HF evals
 }

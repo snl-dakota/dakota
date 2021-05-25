@@ -126,8 +126,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
   int pl_rank = pl_iter->server_communicator_rank();
   IntIntPair ppi_pr_i, ppi_pr(INT_MAX, 0);
-  String empty_str;
-  size_t running_product = 1, sizet_max = std::numeric_limits<size_t>::max();
+  String empty_str;  size_t running_product = 1;
   bool sizet_max_replace = false;
   for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
@@ -154,7 +153,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
       if (the_iterator.returns_multiple_points()) {
 	size_t num_final = the_iterator.num_final_solutions();
 	// if unlimited final solns (e.g. MOGA), use a stand-in (e.g. pop_size)
-	if (num_final == sizet_max) {
+	if (num_final == SZ_MAX) {
 	  sizet_max_replace = true;
 	  running_product *= the_iterator.maximum_evaluation_concurrency();
 	}
@@ -227,7 +226,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   if (sizet_max_replace && iterSched.iteratorCommRank == 0)
     for (i=0; i<num_iterators; ++i) {
       Iterator& the_iterator = selectedIterators[i];
-      if (the_iterator.num_final_solutions() == sizet_max)
+      if (the_iterator.num_final_solutions() == SZ_MAX)
 	the_iterator.num_final_solutions(
 	  the_iterator.maximum_evaluation_concurrency());
     }

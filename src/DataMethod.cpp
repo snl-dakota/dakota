@@ -22,9 +22,9 @@
 namespace Dakota {
 
 DataMethodRep::DataMethodRep():
-  methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxRefineIterations(-1),
-  maxSolverIterations(-1), maxFunctionEvaluations(1000), speculativeFlag(false),
-  methodUseDerivsFlag(false),
+  methodOutput(NORMAL_OUTPUT), maxIterations(SZ_MAX),
+  maxRefineIterations(SZ_MAX), maxSolverIterations(SZ_MAX),
+  maxFunctionEvals(SZ_MAX), speculativeFlag(false), methodUseDerivsFlag(false),
   constraintTolerance(0.), methodScaling(false), numFinalSolutions(0),
   convergenceTolerance(-std::numeric_limits<double>::max()),
   relativeConvMetric(true), statsMetricMode(Pecos::DEFAULT_EXPANSION_STATS),
@@ -120,9 +120,8 @@ DataMethodRep::DataMethodRep():
   // C3 FT
   maxCrossIterations(1), solverTol(1.e-10), solverRoundingTol(1.e-10),
   statsRoundingTol(1.e-10), startOrder(2), kickOrder(1), maxOrder(USHRT_MAX),
-  adaptOrder(false), startRank(2), kickRank(1),
-  maxRank(std::numeric_limits<size_t>::max()), adaptRank(false),
-  maxCVRankCandidates(std::numeric_limits<size_t>::max()),
+  adaptOrder(false), startRank(2), kickRank(1), maxRank(SZ_MAX),
+  adaptRank(false), maxCVRankCandidates(SZ_MAX),
   maxCVOrderCandidates(USHRT_MAX), c3AdvanceType(NO_C3_ADVANCEMENT),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
@@ -139,11 +138,10 @@ DataMethodRep::DataMethodRep():
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
-  expansionOrder(USHRT_MAX),
-  collocationPoints(std::numeric_limits<size_t>::max()),
-  expansionSamples(std::numeric_limits<size_t>::max()),
-  allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
-  qoiAggregation(QOI_AGGREGATION_SUM), convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
+  expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
+  expansionSamples(SZ_MAX), allocationTarget(TARGET_MEAN),
+  useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
+  convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
   convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
   //expansionSampleType("lhs"),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
@@ -174,7 +172,7 @@ DataMethodRep::DataMethodRep():
   exportCorrVarFormat(TABULAR_ANNOTATED),
   exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
   mutualInfoKSG2(false), importCandFormat(TABULAR_ANNOTATED),
-  numCandidates(0), maxHifiEvals(-1.), batchSize(1), batchSizeExplore(0),
+  numCandidates(0), maxHifiEvals(-1), batchSize(1), batchSizeExplore(0),
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),
@@ -199,7 +197,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 {
   s << idMethod << modelPointer << lowFidModelPointer << methodOutput
     << maxIterations << maxRefineIterations << maxSolverIterations
-    << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
+    << maxFunctionEvals << speculativeFlag << methodUseDerivsFlag
     << constraintTolerance << methodScaling << numFinalSolutions
     << convergenceTolerance << relativeConvMetric << statsMetricMode
     << methodName << subMethod << subMethodName << subModelPointer
@@ -366,7 +364,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 {
   s >> idMethod >> modelPointer >> lowFidModelPointer >> methodOutput
     >> maxIterations >> maxRefineIterations >> maxSolverIterations
-    >> maxFunctionEvaluations >> speculativeFlag >> methodUseDerivsFlag
+    >> maxFunctionEvals >> speculativeFlag >> methodUseDerivsFlag
     >> constraintTolerance >> methodScaling >> numFinalSolutions
     >> convergenceTolerance >> relativeConvMetric >> statsMetricMode
     >> methodName >> subMethod >> subMethodName >> subModelPointer
@@ -533,7 +531,7 @@ void DataMethodRep::write(std::ostream& s) const
 {
   s << idMethod << modelPointer << lowFidModelPointer << methodOutput
     << maxIterations << maxRefineIterations << maxSolverIterations
-    << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
+    << maxFunctionEvals << speculativeFlag << methodUseDerivsFlag
     << constraintTolerance << methodScaling << numFinalSolutions
     << convergenceTolerance << relativeConvMetric << statsMetricMode
     << methodName << subMethod << subMethodName << subModelPointer

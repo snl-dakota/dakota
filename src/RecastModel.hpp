@@ -261,11 +261,9 @@ protected:
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// pass request to subModel if recursing and then resize from its results
-  void resize_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void resize_from_subordinate_model(size_t depth = SZ_MAX);
   /// pass request to subModel if recursing and then update from its results
-  void update_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void update_from_subordinate_model(size_t depth = SZ_MAX);
   /// return subModel interface
   Interface& derived_interface();
 
@@ -747,7 +745,7 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 inline void RecastModel::resize_from_subordinate_model(size_t depth)
 {
   // data flows from the bottom-up, so recurse first
-  if (depth == std::numeric_limits<size_t>::max())
+  if (depth == SZ_MAX)
     subModel.resize_from_subordinate_model(depth); // retain special value (inf)
   else if (depth)
     subModel.resize_from_subordinate_model(depth - 1); // decrement
@@ -772,7 +770,7 @@ inline void RecastModel::resize_from_subordinate_model(size_t depth)
 inline void RecastModel::update_from_subordinate_model(size_t depth)
 {
   // data flows from the bottom-up, so recurse first
-  if (depth == std::numeric_limits<size_t>::max())
+  if (depth == SZ_MAX)
     subModel.update_from_subordinate_model(depth); // retain special value (inf)
   else if (depth)
     subModel.update_from_subordinate_model(depth - 1); // decrement

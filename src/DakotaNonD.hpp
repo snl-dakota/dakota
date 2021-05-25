@@ -420,7 +420,7 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
       pow_mean += targets[i] - current[i];
     pow_mean /= len;
     break;
-  case std::numeric_limits<size_t>::max(): // find max difference
+  case SZ_MAX: // find max difference
     for (i=0; i<len; ++i) {
       diff = targets[i] - current[i];
       if (diff > pow_mean) pow_mean = diff;
