@@ -55,7 +55,7 @@ protected:
 
 // free function for setting up experimental GPs with an
 // advanced options file
-void set_model_gp_options(Model& model, String& options_file);
+void set_model_gp_options(Model& model, const String& options_file);
 
 } // namespace Dakota
 #endif

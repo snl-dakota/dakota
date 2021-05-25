@@ -71,7 +71,7 @@ public:
   /// standard constructor
   EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for instantiations "on the fly"
-  //EffGlobalMinimizer(Model& model, int max_iterations, int max_fn_evals);
+  //EffGlobalMinimizer(Model& model, size_t max_iter, size_t max_eval);
   ~EffGlobalMinimizer(); /// destructor
 
   //

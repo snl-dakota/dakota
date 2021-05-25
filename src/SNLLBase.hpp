@@ -98,8 +98,8 @@ protected:
   /// method instantiation
   void snll_post_instantiate(int num_cv, bool vendor_num_grad_flag,
 			     const String& finite_diff_type,
-			     const RealVector& fdss, int max_iter,
-			     int max_fn_evals, Real conv_tol, Real grad_tol,
+			     const RealVector& fdss, size_t max_iter,
+			     size_t max_eval, Real conv_tol, Real grad_tol,
 			     Real max_step, bool bound_constr_flag,
 			     int num_constr, short output_lev,
 			     OPTPP::OptimizeClass* the_optimizer, 

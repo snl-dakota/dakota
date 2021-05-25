@@ -62,7 +62,7 @@ PebbldMinimizer::PebbldMinimizer(Model &model)
 {//branchAndBound(model)
 };
 
-PebbldMinimizer::PebbldMinimizer(Model &model, int random_seed, int max_iter, int max_eval) 
+PebbldMinimizer::PebbldMinimizer(Model &model, int random_seed, size_t max_iter, size_t max_eval) 
        : Minimizer(BRANCH_AND_BOUND, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {//branchAndBound(model,random_seed, max_iter, max_eval)
 };

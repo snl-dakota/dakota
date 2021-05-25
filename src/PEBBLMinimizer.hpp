@@ -63,7 +63,8 @@ public:
 	    @param max_iter Maximum number of iterations
 	    @param max_eval Maximum number of Black Box Evaluations
 	    */
-	 PebbldMinimizer(Model &model, int random_seed, int max_iter, int max_eval);
+	 PebbldMinimizer(Model &model, int random_seed,
+			 size_t max_iter, size_t max_eval);
 	 /// Destructor
          ~PebbldMinimizer()
          { if (branchAndBound) delete branchAndBound; }

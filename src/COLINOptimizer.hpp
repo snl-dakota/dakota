@@ -94,7 +94,7 @@ public:
   COLINOptimizer(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for on-the-fly instantiations
   COLINOptimizer(const String& method_name, Model& model, int seed,
-		 int max_iter, int max_eval);
+		 size_t max_iter, size_t max_eval);
   /// alternate constructor for Iterator instantiations by name
   COLINOptimizer(const String& method_name, Model& model);
   /// destructor

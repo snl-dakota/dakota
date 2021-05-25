@@ -260,8 +260,9 @@ COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, Model& model):
 
 COLINOptimizer::
 COLINOptimizer(const String& method_string, Model& model, int seed,
-	       int max_iter, int max_eval):
-  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new COLINTraits())),
+	       size_t max_iter, size_t max_eval):
+  Optimizer(method_string_to_enum(method_string), model,
+	    std::shared_ptr<TraitsBase>(new COLINTraits())),
   blockingSynch(true)
 {
   // (iteratedModel initialized in Optimizer(Model&))
@@ -278,9 +279,9 @@ COLINOptimizer(const String& method_string, Model& model, int seed,
 
 COLINOptimizer::
 COLINOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new COLINTraits())),
-  rng(NULL),
-  blockingSynch(true)
+  Optimizer(method_string_to_enum(method_string), model,
+	    std::shared_ptr<TraitsBase>(new COLINTraits())),
+  rng(NULL), blockingSynch(true)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
@@ -736,7 +737,8 @@ void COLINOptimizer::set_solver_parameters()
 
     const String& crossover_type =
       probDescDB.get_string("method.crossover_type");
-    if (colinSolver->has_property("realarray_xover_type") && colinSolver->has_property("intarray_xover_type")) {
+    if (colinSolver->has_property("realarray_xover_type") &&
+	colinSolver->has_property("intarray_xover_type")) {
       if (crossover_type == "blend") {
 	colinSolver->property("realarray_xover_type") = string("blend");
 	colinSolver->property("intarray_xover_type") = string("twopoint");
@@ -915,15 +917,17 @@ void COLINOptimizer::set_solver_parameters()
     maxEvalConcurrency *= total_pattern_size;
   }
 
+  // See ColinSolver.h for data types expected for max {iter,eval}
   if (solverType != COBYLA) {
     if (colinSolver->has_property("max_function_evaluations_this_trial"))
-      colinSolver->property("max_function_evaluations_this_trial") = maxFunctionEvals;
+      colinSolver->property("max_function_evaluations_this_trial")
+	= (int)maxFunctionEvals;
     if (colinSolver->has_property("max_iterations"))
-      colinSolver->property("max_iterations") = maxIterations;
+      colinSolver->property("max_iterations") = (unsigned int)maxIterations;
   }
   else {
     if (colinSolver->has_property("max-neval"))
-      colinSolver->property("max-neval") = maxFunctionEvals;
+      colinSolver->property("max-neval") = (int)maxFunctionEvals;
   }
   if (colinSolver->has_property("function_value_tolerance"))
     colinSolver->property("function_value_tolerance") = convergenceTol;
