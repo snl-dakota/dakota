@@ -427,7 +427,9 @@ void ROLOptimizer::set_rol_parameters()
 	);
   optSolverParams.sublist("Status Test").
     set("Step Tolerance", probDescDB.get_real("method.variable_tolerance"));
-  optSolverParams.sublist("Status Test").set("Iteration Limit", maxIterations);
+  // ROL enforces an int; cast is Ok since SZ_MAX default removed at Minimizer
+  optSolverParams.sublist("Status Test").
+    set("Iteration Limit", (int)maxIterations);
 
   // PRECEDENCE 3: power-user advanced options
 
