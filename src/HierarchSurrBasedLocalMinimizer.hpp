@@ -150,7 +150,7 @@ private:
 
   void multigrid_driver(const Variables &x0);
 
-  RealVector optimize(const RealVector &x, int max_iter, int index);
+  RealVector optimize(const RealVector &x, size_t max_iter, int index);
 
   RealVector linesearch(const RealVector &xk, const RealVector &pk,
                         double alpha0);

@@ -117,9 +117,8 @@ void SNLLBase::snll_pre_instantiate(bool bound_constr_flag, int num_constr)
 void SNLLBase::
 snll_post_instantiate(int num_cv, bool vendor_num_grad_flag,
 		      const String& finite_diff_type, const RealVector& fdss,
-		      int max_iter, int max_fn_evals,
-		      Real conv_tol, Real grad_tol,
-		      Real max_step, bool bound_constr_flag,
+		      size_t max_iter, size_t max_eval, Real conv_tol,
+		      Real grad_tol, Real max_step, bool bound_constr_flag,
 		      int num_constr, short output_lev,
 		      OPTPP::OptimizeClass* the_optimizer, 
 		      OPTPP::NLP0* nlf_objective,
@@ -164,7 +163,7 @@ snll_post_instantiate(int num_cv, bool vendor_num_grad_flag,
   the_optimizer->setGradTol(grad_tol); 
 
   the_optimizer->setMaxStep(max_step);
-  the_optimizer->setMaxFeval(max_fn_evals);
+  the_optimizer->setMaxFeval(max_eval);
   the_optimizer->setMaxIter(max_iter);
 
   if (output_lev == DEBUG_OUTPUT)

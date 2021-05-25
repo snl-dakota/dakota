@@ -66,7 +66,7 @@ protected:
   /// Sets SOL method options using calls to npoptn2 / nloptn2.
   void set_options(bool speculative_flag, bool vendor_num_grad_flag, 
 		   short output_lev, int verify_lev, Real fn_prec,
-		   Real linesrch_tol, int max_iter, Real constr_tol,
+		   Real linesrch_tol, size_t max_iter, Real constr_tol,
 		   Real conv_tol, const std::string& grad_type,
 		   const RealVector& fdss);
 

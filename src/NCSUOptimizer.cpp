@@ -65,7 +65,7 @@ NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, Model& model):
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 NCSUOptimizer::
-NCSUOptimizer(Model& model, const int& max_iter, const int& max_eval,
+NCSUOptimizer(Model& model, size_t max_iter, size_t max_eval,
 	      double min_box_size, double vol_box_size, double solution_target):
   Optimizer(NCSU_DIRECT, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
   setUpType(SETUP_MODEL),
@@ -93,9 +93,8 @@ NCSUOptimizer::NCSUOptimizer(Model& model):
 /** This is an alternate constructor for performing an optimization using
     the passed in objective function pointer. */
 NCSUOptimizer::
-NCSUOptimizer(const RealVector& var_l_bnds,
-	      const RealVector& var_u_bnds, const int& max_iter,
-	      const int& max_eval,
+NCSUOptimizer(const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+	      size_t max_iter, size_t max_eval,
 	      double (*user_obj_eval) (const RealVector &x),
 	      double min_box_size, double vol_box_size, double solution_target):
   Optimizer(NCSU_DIRECT, var_l_bnds.length(), 0, 0, 0, 0, 0, 0, 0, std::shared_ptr<TraitsBase>(new NCSUTraits())),
@@ -303,8 +302,7 @@ void NCSUOptimizer::core_run()
   else
     local_des_vars.size(num_cv);
 
-  int max_iter = maxIterations;
-  int max_eval = maxFunctionEvals;
+  int max_iter = maxIterations, max_eval = maxFunctionEvals;
   NCSU_DIRECT_F77(objective_eval, local_des_vars.values(), num_cv, eps,
 		  max_eval, max_iter, fmin, lowerBounds.values(),
 		  upperBounds.values(), algmethod, ierror, logfile,

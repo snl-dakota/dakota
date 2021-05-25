@@ -713,7 +713,7 @@ void HierarchSurrBasedLocalMinimizer::multigrid_driver(const Variables &x0)
 {
   RealVector vars_star = x0.continuous_variables();
 
-  int max_iter = 10, iter = 0;
+  size_t max_iter = 10, iter = 0;
   while (!converged() && iter < max_iter) {
     // Perform one complete V cycle:
     // recursively applied MG/Opt to all levels w/ line search
@@ -769,13 +769,13 @@ multigrid_recursion(const RealVector& x0_k, int k)
     // Either need to add trust region control or continue poor-man's control
     // with max iterations to avoid leaving region of correction accuracy.
     // **********************************************************************
-    int max_iter = 30; // until convergence...  (tune or expose?)
+    size_t max_iter = 30; // until convergence...  (tune or expose?)
     return optimize(x0_k, max_iter, k); // Steps 3,4
   }
   else { // Partial optimization
 
     // Step 6: pre-optimization
-    int max_iter = 3;
+    size_t max_iter = 3;
     RealVector x1_k = optimize(x0_k, max_iter, k); // pre-opt / step 1, level k
 
     // Step 7: Restriction: x1_km1 = R[x1_k]
@@ -827,7 +827,7 @@ linesearch(const RealVector &xk, const RealVector &pk, double alpha0)
 
 
 RealVector HierarchSurrBasedLocalMinimizer::
-optimize(const RealVector &x, int max_iter, int index)
+optimize(const RealVector &x, size_t max_iter, int index)
 {
   // Update starting point for optimization:
   approxSubProbModel.continuous_variables(x);

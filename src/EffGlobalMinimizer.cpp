@@ -75,12 +75,9 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type;
   switch (probDescDB.get_short("method.nond.emulator")) {
-  case GP_EMULATOR:     approx_type = "global_gaussian";
-                        break;
-  case EXPGP_EMULATOR:  approx_type = "global_exp_gauss_proc";
-                        break;
-  default:              approx_type = "global_kriging";
-                        break;
+  case GP_EMULATOR:     approx_type = "global_gaussian";        break;
+  case EXPGP_EMULATOR:  approx_type = "global_exp_gauss_proc";  break;
+  default:              approx_type = "global_kriging";         break;
   }
 
   String sample_reuse = "none"; // TO DO: allow reuse separate from import
@@ -131,8 +128,8 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.export_approx_format")));
 
   if (approx_type == "global_exp_gauss_proc") {
-    String advanced_options_file
-        = problem_db.get_string("method.advanced_options_file");
+    const String& advanced_options_file
+      = problem_db.get_string("method.advanced_options_file");
     if (!advanced_options_file.empty())
       set_model_gp_options(fHatModel, advanced_options_file);
   }
@@ -162,12 +159,11 @@ EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     recast_resp_order));
 
   // must use alternate NoDB ctor chain
-  int max_iterations = 10000, max_fn_evals = 50000;
+  size_t max_iter = 10000, max_eval = 50000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU
   approxSubProbMinimizer.assign_rep(std::make_shared<NCSUOptimizer>(
-    approxSubProbModel, max_iterations, max_fn_evals,
-    min_box_size, vol_box_size));
+    approxSubProbModel, max_iter, max_eval, min_box_size, vol_box_size));
 #else
   Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
        << "Aborting process." << std::endl;

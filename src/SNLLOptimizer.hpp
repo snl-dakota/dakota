@@ -147,9 +147,8 @@ public:
          RealVector& grad_f, int& result_mode),
     void (*user_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
          RealMatrix& grad_g, int& result_mode), 
-    const int max_iter, const int max_fn_evals,
-    const Real conv_tol, const Real grad_tol,
-    Real max_step);
+    size_t max_iter, size_t max_eval, const Real conv_tol,
+    const Real grad_tol, Real max_step);
 
 
   ~SNLLOptimizer(); ///< destructor

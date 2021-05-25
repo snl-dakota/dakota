@@ -63,7 +63,7 @@ public:
   NCSUOptimizer(ProblemDescDB& problem_db, Model& model);
 
   /// alternate constructor for instantiations "on the fly"
-  NCSUOptimizer(Model& model, const int& max_iter, const int& max_eval,
+  NCSUOptimizer(Model& model, size_t max_iter, size_t max_eval,
 		double min_box_size = -1., double vol_box_size = -1.,
 		double solution_target = -DBL_MAX);
 
@@ -71,9 +71,8 @@ public:
   NCSUOptimizer(Model& model);
 
   /// alternate constructor for instantiations "on the fly"
-  NCSUOptimizer(const RealVector& var_l_bnds,
-		const RealVector& var_u_bnds, const int& max_iter,
-		const int& max_eval, 
+  NCSUOptimizer(const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+		size_t max_iter, size_t max_eval,
   	        double (*user_obj_eval) (const RealVector &x),
 		double min_box_size = -1., double vol_box_size = -1.,
 		double solution_target = -DBL_MAX);

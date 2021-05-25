@@ -386,10 +386,9 @@ void GaussProcApproximation::optimize_theta_global()
 #ifdef HAVE_NCSU  
   // NCSU DIRECT optimize of Negative Log Likelihood
   // Uses default convergence tolerance settings in NCSUOptimizer wrapper!
-  int max_iterations = 1000, max_fn_evals = 10000;
-  nll_optimizer.assign_rep
-    (std::make_shared<NCSUOptimizer>(theta_lbnds, theta_ubnds, max_iterations,
-				     max_fn_evals, negloglikNCSU));
+  size_t max_iter = 1000, max_eval = 10000;
+  nll_optimizer.assign_rep(std::make_shared<NCSUOptimizer>
+    (theta_lbnds, theta_ubnds, max_iter, max_eval, negloglikNCSU));
   nll_optimizer.run(); // no pl_iter needed for this optimization
   const Variables& vars_star = nll_optimizer.variables_results();
   const Response&  resp_star = nll_optimizer.response_results();
