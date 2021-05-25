@@ -1346,20 +1346,15 @@ void DataFitSurrModel::run_dace()
 void DataFitSurrModel::refine_surrogate()
 {
   StringArray diag_metrics(1, refineCVMetric);
-  int curr_iter = 0; // initial surrogate build is iteration 0
-    
+  size_t curr_iter = 0; // initial surrogate build is iteration 0
+
   // accumulate num_samples in each iteration in total_evals.
   int total_evals = 0, num_samples;
 
-  // Disable the soft convergence limit by setting it to maxIterations if
-  // the user didn't set it
-  int soft_conv_limit = (softConvergenceLimit) ?
-    softConvergenceLimit : maxIterations;
-
-  // accumulator for rolling average of length soft_conv_limit 
+  // accumulator for rolling average of length softConvergenceLimit
   using namespace boost::accumulators;
-  accumulator_set<Real, stats<tag::rolling_mean> > mean_err(
-      tag::rolling_window::window_size = soft_conv_limit);
+  accumulator_set<Real, stats<tag::rolling_mean> >
+    mean_err(tag::rolling_window::window_size = softConvergenceLimit);
 
   num_samples = daceIterator.num_samples();
   total_evals += num_samples;
@@ -1380,24 +1375,24 @@ void DataFitSurrModel::refine_surrogate()
   while (true) {
     // convergence conditions. messages will need to be fixed if we add
     // challenge error
-    if(curr_err <= convergenceTolerance) {
+    if (curr_err <= convergenceTolerance) {
       Cout << "\n------------\nAuto-refined surrogate(s) converged: "
-        << "Cross-validation error criterion met.\n";
+	   << "Cross-validation error criterion met.\n";
       break;
-    } else if(curr_iter++ == maxIterations) {
+    } else if (curr_iter++ == maxIterations) {
       Cout << "\n------------\nAuto-refinment halted: Maximum iterations "
-        << "met or exceeded.\n";
+	   << "met or exceeded.\n";
       break;
-    } else if( curr_iter >= soft_conv_limit && 
-        rolling_mean(mean_err) < convergenceTolerance) {
+    } else if (softConvergenceLimit && curr_iter >= softConvergenceLimit &&
+	       rolling_mean(mean_err) < convergenceTolerance) {
       Cout << "\n------------\nAuto-refinment halted: Average reduction in "
-        << "cross-validation error over\nprevious " << soft_conv_limit 
-        << " iterations less than " << "convergence_tolerance (" 
-        << convergenceTolerance << ")\n";
+	   << "cross-validation error over\nprevious " << softConvergenceLimit
+	   << " iterations less than " << "convergence_tolerance ("
+	   << convergenceTolerance << ")\n";
       break;
-    } else if(total_evals >= maxFuncEvals) {
+    } else if (total_evals >= maxFuncEvals) {
       Cout << "\n------------\nAuto-refinment halted: Maximum function "
-	<< "evaluations met or exceeded.\n";
+	   << "evaluations met or exceeded.\n";
       break;
     }
 
