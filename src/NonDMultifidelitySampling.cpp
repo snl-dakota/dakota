@@ -185,12 +185,11 @@ void NonDMultifidelitySampling::control_variate_mc()
 	  lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {
 	accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
 	raw_N_lf += numSamples; //lf_sample_incr = numSamples;
+	compute_equivalent_cost(raw_N_hf, raw_N_lf, cost_ratio); // updated LF
       }
     }
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
     ++mlmfIter;
-    // update equivalent number of HF evaluations (no credit for failed evals)
-    compute_equivalent_cost(raw_N_hf, raw_N_lf, cost_ratio);
   } // end while
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
