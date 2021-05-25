@@ -179,7 +179,7 @@ void NonDMultifidelitySampling::control_variate_mc()
       // -------------------------------------------------------------------
       // How to allow user to stop after pilot only:
       // > lf_increment() includes finalCVRefinement flag (hard-wired true)
-      // > maxFunctionEvals throttle
+      // > maxFunctionEvals throttle <= pilot expense
       compute_equivalent_cost(raw_N_hf, raw_N_lf, cost_ratio);
       if (equivHFEvals <= maxFunctionEvals &&
 	  lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {

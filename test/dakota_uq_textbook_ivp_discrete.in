@@ -14,7 +14,7 @@ method,
 #	global_interval_est ea			#s2
 #	sampling			
         samples = 10 seed = 12347		#s0,#s1
-#       max_iterations = 20 seed =234	        #s2
+#       max_iterations = 20 seed = 234	        #s2
 
 model,
 	id_model = 'EPIST_M'
