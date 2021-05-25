@@ -308,8 +308,7 @@ VectorXd GaussianProcess::value(const MatrixXd& eval_points, const int qoi) {
   }
 
   VectorXd resid, chol_solve_resid;
-  MatrixXd mixed_pred_gram, pred_basis_matrix;
-  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
+  compute_gram(cwiseMixedDists2, false, false, predMixedGramMatrix);
 
   if (estimateTrend) {
     resid = targetValues - basisMatrix * betaValues;
@@ -317,12 +316,12 @@ VectorXd GaussianProcess::value(const MatrixXd& eval_points, const int qoi) {
     resid = targetValues;
 
   chol_solve_resid = CholFact.solve(resid);
-  approx_values = (mixed_pred_gram * chol_solve_resid);
+  approx_values = predMixedGramMatrix * chol_solve_resid;
 
   if (estimateTrend) {
-    polyRegression->compute_basis_matrix(scaled_pred_points, pred_basis_matrix);
+    polyRegression->compute_basis_matrix(scaled_pred_points, predBasisMatrix);
     MatrixXd z = CholFact.solve(basisMatrix);
-    approx_values += (pred_basis_matrix * betaValues);
+    approx_values += predBasisMatrix * betaValues;
   }
   return responseScaleFactor * approx_values.array() + responseOffset;
 }
@@ -354,16 +353,15 @@ MatrixXd GaussianProcess::gradient(const MatrixXd& eval_points, const int qoi) {
     CholFact.compute(GramMatrix);
   }
 
-  MatrixXd mixed_pred_gram, chol_solve_resid, first_deriv_pred_gram,
-      grad_components, resid;
-  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
+  MatrixXd chol_solve_resid, first_deriv_pred_gram, grad_components, resid;
+  compute_gram(cwiseMixedDists2, false, false, predMixedGramMatrix);
   resid = targetValues;
   if (estimateTrend) resid -= basisMatrix * betaValues;
   chol_solve_resid = CholFact.solve(resid);
 
   for (int i = 0; i < numVariables; i++) {
     first_deriv_pred_gram = kernel->compute_first_deriv_pred_gram(
-        mixed_pred_gram, cwiseMixedDists, thetaValues, i);
+        predMixedGramMatrix, cwiseMixedDists, thetaValues, i);
     grad_components = first_deriv_pred_gram * chol_solve_resid;
     gradient.col(i) = grad_components.col(0);
   }
@@ -400,8 +398,8 @@ MatrixXd GaussianProcess::hessian(const MatrixXd& eval_point, const int qoi) {
     CholFact.compute(GramMatrix);
   }
 
-  MatrixXd mixed_pred_gram, chol_solve_resid, second_deriv_pred_gram, resid;
-  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
+  MatrixXd chol_solve_resid, second_deriv_pred_gram, resid;
+  compute_gram(cwiseMixedDists2, false, false, predMixedGramMatrix);
   resid = targetValues;
   if (estimateTrend) resid -= basisMatrix * betaValues;
   chol_solve_resid = CholFact.solve(resid);
@@ -410,7 +408,7 @@ MatrixXd GaussianProcess::hessian(const MatrixXd& eval_point, const int qoi) {
   for (int i = 0; i < numVariables; i++) {
     for (int j = i; j < numVariables; j++) {
       second_deriv_pred_gram = kernel->compute_second_deriv_pred_gram(
-          mixed_pred_gram, cwiseMixedDists, thetaValues, i, j);
+          predMixedGramMatrix, cwiseMixedDists, thetaValues, i, j);
       hessian(i, j) = (second_deriv_pred_gram * chol_solve_resid)(0, 0);
       if (i != j) hessian(j, i) = hessian(i, j);
     }
@@ -436,8 +434,8 @@ MatrixXd GaussianProcess::covariance(const MatrixXd& eval_points,
         " Dimension of the feature space for the evaluation point and Gaussian "
         "Process do not match"));
   }
-
-  MatrixXd covariance;
+  int num_eval_points = eval_points.rows();
+  predCovariance.resize(num_eval_points, num_eval_points);
   /* scale the eval_points (prediction points) */
   const MatrixXd& scaled_pred_points = dataScaler.scale_samples(eval_points);
   compute_pred_dists(scaled_pred_points);
@@ -449,30 +447,29 @@ MatrixXd GaussianProcess::covariance(const MatrixXd& eval_points,
   }
 
   VectorXd resid;
-  MatrixXd mixed_pred_gram, pred_basis_matrix, chol_solve_pred_mat;
-  compute_gram(cwiseMixedDists2, false, false, mixed_pred_gram);
+  MatrixXd chol_solve_pred_mat;
+  compute_gram(cwiseMixedDists2, false, false, predMixedGramMatrix);
 
   if (estimateTrend)
     resid = targetValues - basisMatrix * betaValues;
   else
     resid = targetValues;
 
-  chol_solve_pred_mat = CholFact.solve(mixed_pred_gram.transpose());
+  chol_solve_pred_mat = CholFact.solve(predMixedGramMatrix.transpose());
 
-  MatrixXd pred_gram;
-  compute_gram(cwisePredDists2, true, false, pred_gram);
-  covariance = (pred_gram - mixed_pred_gram * chol_solve_pred_mat);
+  compute_gram(cwisePredDists2, true, false, predGramMatrix);
+  predCovariance = predGramMatrix - predMixedGramMatrix * chol_solve_pred_mat;
 
   if (estimateTrend) {
     MatrixXd chol_solve_resid = CholFact.solve(resid);
-    polyRegression->compute_basis_matrix(scaled_pred_points, pred_basis_matrix);
+    polyRegression->compute_basis_matrix(scaled_pred_points, predBasisMatrix);
     MatrixXd z = CholFact.solve(basisMatrix);
-    MatrixXd R_mat = pred_basis_matrix - mixed_pred_gram * (z);
+    MatrixXd R_mat = predBasisMatrix - predMixedGramMatrix * (z);
     MatrixXd h_mat = basisMatrix.transpose() * z;
-    covariance += (R_mat * (h_mat.ldlt().solve(R_mat.transpose())));
+    predCovariance += R_mat * (h_mat.ldlt().solve(R_mat.transpose()));
   }
 
-  return pow(responseScaleFactor, 2) * covariance;
+  return pow(responseScaleFactor, 2) * predCovariance;
 }
 
 VectorXd GaussianProcess::variance(const MatrixXd& eval_points, const int qoi) {
@@ -703,10 +700,13 @@ void GaussianProcess::compute_pred_dists(const MatrixXd& scaled_pred_pts) {
 void GaussianProcess::compute_gram(const std::vector<MatrixXd>& dists2,
                                    bool add_nugget, bool compute_derivs,
                                    MatrixXd& gram) {
-  gram = kernel->compute_gram(dists2, thetaValues);
+  const int num_rows = dists2[0].rows();
+  const int num_cols = dists2[0].cols();
+  gram.resize(num_rows, num_cols);
+  kernel->compute_gram(dists2, thetaValues, gram);
 
   if (compute_derivs)
-    GramMatrixDerivs = kernel->compute_gram_derivs(gram, dists2, thetaValues);
+    kernel->compute_gram_derivs(gram, dists2, thetaValues, GramMatrixDerivs);
 
   if (add_nugget) {
     /* add in the fixed nugget */

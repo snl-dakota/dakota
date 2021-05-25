@@ -29,10 +29,11 @@ class Kernel {
    *  kernel hyperparameters.
    *  \param[in] dists2 Vector of squared distance matrices.
    *  \param[in] theta_values Vector of hyperparameters.
+   *  \param[inout] gram Gram matrix.
    *  \returns Gram matrix.
    */
-  virtual MatrixXd compute_gram(const std::vector<MatrixXd>& dists2,
-                                const VectorXd& theta_values) = 0;
+  virtual void compute_gram(const std::vector<MatrixXd>& dists2,
+                            const VectorXd& theta_values, MatrixXd& gram) = 0;
 
   /**
    *  \brief Compute the derivatives of the Gram matrix with respect to the
@@ -40,11 +41,13 @@ class Kernel {
    *  \param[in] gram Gram Matrix
    *  \param[in] dists2 Vector of squared distance matrices.
    *  \param[in] theta_values Vector of hyperparameters.
+   *  \param[inout] gram_derivs Vector of Gram matrix derivatives.
    *  \returns Derivatives of the Gram matrix w.r.t. the hyperparameters.
    */
-  virtual std::vector<MatrixXd> compute_gram_derivs(
-      const MatrixXd& gram, const std::vector<MatrixXd>& dists2,
-      const VectorXd& theta_values) = 0;
+  virtual void compute_gram_derivs(const MatrixXd& gram,
+                                   const std::vector<MatrixXd>& dists2,
+                                   const VectorXd& theta_values,
+                                   std::vector<MatrixXd>& gram_derivs) = 0;
 
   /**
    *  \brief Compute the first derivatve of the prediction matrix for a given
@@ -79,6 +82,19 @@ class Kernel {
   virtual MatrixXd compute_second_deriv_pred_gram(
       const MatrixXd& pred_gram, const std::vector<MatrixXd>& mixed_dists,
       const VectorXd& theta_values, const int index_i, const int index_j) = 0;
+
+ protected:
+  /**
+   *  \brief Compute the ``Dbar'' matrices of scaled distances
+   *  \param[in] cw_dists2 Vector of component-wise squared distance matrices.
+   *  \param[in] theta_values Vector of hyperparameters.
+   *  \param[in] take_sqrt Flag for computing the square root of Dbar2.
+   *  \returns Matrix of hyperparameter-scaled distances.
+   */
+  void compute_Dbar(const std::vector<MatrixXd>& cw_dists2,
+                    const VectorXd& theta_values, bool take_sqrt = true);
+
+  MatrixXd Dbar, Dbar2;
 };
 
 /// Stationary kernel with C^\infty smooth realizations.
@@ -88,12 +104,13 @@ class SquaredExponentialKernel : public Kernel {
 
   ~SquaredExponentialKernel();
 
-  MatrixXd compute_gram(const std::vector<MatrixXd>& dists2,
-                        const VectorXd& theta_values) override;
+  void compute_gram(const std::vector<MatrixXd>& dists2,
+                    const VectorXd& theta_values, MatrixXd& gram) override;
 
-  std::vector<MatrixXd> compute_gram_derivs(
-      const MatrixXd& gram, const std::vector<MatrixXd>& dists2,
-      const VectorXd& theta_values) override;
+  void compute_gram_derivs(const MatrixXd& gram,
+                           const std::vector<MatrixXd>& dists2,
+                           const VectorXd& theta_values,
+                           std::vector<MatrixXd>& gram_derivs) override;
 
   MatrixXd compute_first_deriv_pred_gram(
       const MatrixXd& pred_gram, const std::vector<MatrixXd>& mixed_dists,
@@ -112,12 +129,13 @@ class Matern32Kernel : public Kernel {
 
   ~Matern32Kernel();
 
-  MatrixXd compute_gram(const std::vector<MatrixXd>& dists2,
-                        const VectorXd& theta_values) override;
+  void compute_gram(const std::vector<MatrixXd>& dists2,
+                    const VectorXd& theta_values, MatrixXd& gram) override;
 
-  std::vector<MatrixXd> compute_gram_derivs(
-      const MatrixXd& gram, const std::vector<MatrixXd>& dists2,
-      const VectorXd& theta_values) override;
+  void compute_gram_derivs(const MatrixXd& gram,
+                           const std::vector<MatrixXd>& dists2,
+                           const VectorXd& theta_values,
+                           std::vector<MatrixXd>& gram_derivs) override;
 
   MatrixXd compute_first_deriv_pred_gram(
       const MatrixXd& pred_gram, const std::vector<MatrixXd>& mixed_dists,
@@ -139,12 +157,13 @@ class Matern52Kernel : public Kernel {
 
   ~Matern52Kernel();
 
-  MatrixXd compute_gram(const std::vector<MatrixXd>& dists2,
-                        const VectorXd& theta_values) override;
+  void compute_gram(const std::vector<MatrixXd>& dists2,
+                    const VectorXd& theta_values, MatrixXd& gram) override;
 
-  std::vector<MatrixXd> compute_gram_derivs(
-      const MatrixXd& gram, const std::vector<MatrixXd>& dists2,
-      const VectorXd& theta_values) override;
+  void compute_gram_derivs(const MatrixXd& gram,
+                           const std::vector<MatrixXd>& dists2,
+                           const VectorXd& theta_values,
+                           std::vector<MatrixXd>& gram_derivs) override;
 
   MatrixXd compute_first_deriv_pred_gram(
       const MatrixXd& pred_gram, const std::vector<MatrixXd>& mixed_dists,
@@ -167,16 +186,6 @@ class Matern52Kernel : public Kernel {
  */
 std::vector<MatrixXd> compute_cw_dists_squared(
     const std::vector<MatrixXd>& cw_dists);
-
-/**
- *  \brief Compute the ``Dbar'' matrix of scaled distances
- *  \param[in] cw_dists2 Vector of component-wise squared distance matrices.
- *  \param[in] theta_values Vector of hyperparameters.
- *  \param[in] take_sqrt Flag for returning the square root of Dbar.
- *  \returns Matrix of hyperparameter-scaled distances.
- */
-MatrixXd compute_Dbar(const std::vector<MatrixXd>& cw_dists2,
-                      const VectorXd& theta_values, bool take_sqrt = true);
 
 /**
  *  \brief Creates a derived Kernel class.
