@@ -120,11 +120,11 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
 
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
-    lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_costs(),
     lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev);
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
+    lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
   RealVectorArray eval_ratios(num_cv_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -165,7 +165,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
       // aggregate variances across QoI for estimating N_hf (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
-      if (numSamples) {
+      if (numSamples) {// && equivHFEvals <= maxFunctionEvals) {
 
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(lev);
@@ -199,7 +199,9 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 		 << sum_L_refined[1] << sum_L_refined[2]
 		 << sum_LH[1] << sum_LH[2];
 	  // update raw evaluation counts
-	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
+	  raw_N_hf[lev] += numSamples;  raw_N_lf[lev] += numSamples;
+	  increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
+					 numSamples, lf_lev_cost, hf_ref_cost);
 
 	  // compute the average evaluation ratio and Lambda factor
 	  RealVector& eval_ratios_l = eval_ratios[lev];
@@ -226,6 +228,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 	    Cout << "Accumulated sums (H[1], H[2], HH):\n"
 		 << sum_H[1] << sum_H[2] << sum_HH1;
 	  raw_N_hf[lev] += numSamples;
+	  increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
 	    Cout << "variance of Y[" << lev << "]: ";
@@ -263,9 +266,12 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
 	// execute additional LF sample increment, if needed
-	if (lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
+	if (//equivHFEvals <= maxFunctionEvals &&
+	    lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
+	  increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
+				       hf_ref_cost);
 	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (L_refined[1,2]):\n"
 		 << sum_L_refined[1] << sum_L_refined[2];
@@ -285,8 +291,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
     ++mlmfIter;
     Cout << "\nMLMF MC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_hf << std::endl;
-    // update equivalent number of HF evaluations (includes any sim faults)
-    compute_equivalent_cost(raw_N_hf, hf_cost, raw_N_lf, lf_cost);
   }
 
   // Iteration complete.  Now roll up raw moments from CVMC and MLMC estimators.
@@ -338,11 +342,11 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
   size_t qoi, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
 
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
-    lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_costs(),
     lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev);
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
+    lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
   RealVectorArray eval_ratios(num_cv_lev);
 
   // CV requires cross-level covariance combinations in Qcorr approach
@@ -394,7 +398,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
       // aggregate variances across QoI for estimating N_hf (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
-      if (numSamples) {
+      if (numSamples) {// && equivHFEvals <= maxFunctionEvals) {
 
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(lev);
@@ -431,6 +435,8 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 		 << sum_Ll_refined[2] << sum_Hl[1] << sum_Hl[2];
 	  // update raw evaluation counts
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
+	  increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
+					 numSamples, lf_lev_cost, hf_ref_cost);
 
 	  // compute the average evaluation ratio and Lambda factor
 	  RealVector& eval_ratios_l = eval_ratios[lev];
@@ -461,6 +467,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n"
 		 << sum_Hl[1] << sum_Hl[2] << sum_HH1;
 	  raw_N_hf[lev] += numSamples;
+	  increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
 	    Cout << "variance of Y[" << lev << "]: ";
@@ -505,10 +512,13 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
 	// now execute additional LF sample increment, if needed
-	if (lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
+	if (//equivHFEvals <= maxFunctionEvals &&
+	    lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
 				N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
+	  increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
+				       hf_ref_cost);
 	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (L_refined[1,2]):\n"
 		 << sum_Ll_refined[1] << sum_Ll_refined[2];
@@ -528,8 +538,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
     ++mlmfIter;
     Cout << "\nMLMF MC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_hf << std::endl;
-    // update equivalent number of HF evaluations (includes any sim faults)
-    compute_equivalent_cost(raw_N_hf, hf_cost, raw_N_lf, lf_cost);
   }
 
   // Iteration complete. Now roll up raw moments from CVMC and MLMC estimators.
