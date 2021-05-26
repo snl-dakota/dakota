@@ -2814,6 +2814,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       cost_constraint {N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT)}
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
       |
@@ -2858,6 +2859,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
       |
@@ -2902,6 +2904,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
       |

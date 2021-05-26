@@ -163,6 +163,7 @@ void NonDMultifidelitySampling::control_variate_mc()
       accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 			 sum_HH, mu_hat, N_lf, N_hf);
       raw_N_lf += numSamples; raw_N_hf += numSamples;
+      increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
       // Compute the LF/HF evaluation ratio using shared samples, averaged
       // over QoI.  This includes updating var_H and rho2_LH.
       compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
@@ -180,12 +181,11 @@ void NonDMultifidelitySampling::control_variate_mc()
       // How to allow user to stop after pilot only:
       // > lf_increment() includes finalCVRefinement flag (hard-wired true)
       // > maxFunctionEvals throttle <= pilot expense
-      compute_equivalent_cost(raw_N_hf, raw_N_lf, cost_ratio);
       if (equivHFEvals <= maxFunctionEvals &&
 	  lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {
 	accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
 	raw_N_lf += numSamples; //lf_sample_incr = numSamples;
-	compute_equivalent_cost(raw_N_hf, raw_N_lf, cost_ratio); // updated LF
+	increment_mf_equivalent_cost(numSamples, cost_ratio);
       }
     }
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
@@ -236,7 +236,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
 
     ++mlmfIter;
     // compute the equivalent number of HF evaluations
-    compute_equivalent_cost(raw_N_l, cost);
+    compute_mf_equivalent_cost(raw_N_l, cost);
   } // end while
 
   // Compute/apply control variate parameter to estimate uncentered raw moments

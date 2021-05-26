@@ -127,7 +127,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   //      of resolution reqmts?)
   // 2. Better: select N_l based on convergence in aggregated variance.
 
-
   // Allow either model forms or discretization levels, but not both
   size_t num_steps, form, lev, secondary_index; short seq_type;
   configure_sequence(num_steps, secondary_index, seq_type);
@@ -137,10 +136,11 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost, agg_var(num_steps);
   configure_cost(num_steps, multilev, cost);
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost,
+    ref_cost = cost[num_steps-1];
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (sum_Y[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -169,7 +169,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     sum_sqrt_var_cost = 0.;
     for (step=0; step<num_steps; ++step) { // step is reference to lev
 
-      configure_indices(step, form, lev, seq_type); // *** size_t --> unsigned short (manage special values)
+      configure_indices(step, form, lev, seq_type); // step,form,lev as size_t
       lev_cost = level_cost(cost, step);
 
       // set the number of current samples from the defined increment
@@ -178,7 +178,12 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       // aggregate variances across QoI for estimating N_l (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_l = agg_var[step]; // carried over from prev iter if no samp
-      if (numSamples) {
+      if (numSamples) {// && equivHFEvals <= maxFunctionEvals) {
+	// Don't include per level check on maxFunctionEvals, since it would be
+	// preferable to instead scale the sample profile to match the budget.
+	// Prior to this, checking only at outer loop preserves correct profile
+	// shape though it can overshoot.
+
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(step);
 
@@ -191,6 +196,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 	       << sum_Y[2] << sum_Y[3] << sum_Y[4] << sum_YY << std::endl;
 	// update raw evaluation counts
 	raw_N_l[step] += numSamples;
+	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
 
 	// compute estimator variance from current sample accumulation:
 	if (outputLevel >= DEBUG_OUTPUT)
@@ -228,8 +234,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_l << std::endl;
-    // update equivalent number of HF evaluations (no credit for failed evals)
-    compute_equivalent_cost(raw_N_l, cost);
   }
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondary_index, NLev);
@@ -275,9 +279,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost;  configure_cost(num_steps, multilev, cost);
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost,
+    ref_cost = cost[num_steps-1];
 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector agg_var(num_steps), agg_var_of_var(num_steps),
@@ -323,7 +328,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     for (step=0; step<num_steps; ++step) {
 
       configure_indices(step, form, lev, seq_type);
-      level_cost_vec[step] = level_cost(cost, step);
+      lev_cost = level_cost_vec[step] = level_cost(cost, step);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[step];
@@ -331,7 +336,12 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
       // aggregate variances across QoI for estimating N_l (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       //Real &agg_var_l = agg_var[step];//carried over from prev iter if no samp
-      if (numSamples) {
+      if (numSamples) {// && equivHFEvals <= maxFunctionEvals) {
+	// Don't include per level check on maxFunctionEvals, since it would be
+	// preferable to instead scale the sample profile to match the budget.
+	// Prior to scaling the profile, checking only at outer loop preserves
+	// correct profile shape even though it can overshoot.
+
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(step);
 
@@ -339,6 +349,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 
 	// update raw evaluation counts
 	raw_N_l[step] += numSamples;
+	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
 
 	aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l,
 				       step, agg_var_qoi);
@@ -352,10 +363,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 			  eps_sq_div_2_qoi);
 
     // update targets based on variance estimates
-    //if(target_mean){
-    if (outputLevel == DEBUG_OUTPUT)
-      Cout << "N_target: " << std::endl;
-
+    if (outputLevel == DEBUG_OUTPUT) Cout << "N_target: " << std::endl;
     compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1,
 				     eps_sq_div_2_qoi, agg_var_qoi,
 				     cost, N_l, delta_N_l);
@@ -363,8 +371,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_l << std::endl;
-    // update equivalent number of HF evaluations (includes any sim faults)
-    compute_equivalent_cost(raw_N_l, cost);
   }
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondary_index, NLev);

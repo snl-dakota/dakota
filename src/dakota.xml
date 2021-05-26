@@ -2930,6 +2930,7 @@
 	    </oneOf>
 	  </keyword>
 	  &method_max_iterations;
+          &method_max_function_evaluations;
 	  &default_final_moments;
 	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
 	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
@@ -2949,6 +2950,7 @@
 	  </keyword>
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
+          &method_max_function_evaluations;
 	  &default_final_moments;
 	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
 	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
@@ -2968,6 +2970,7 @@
 	  </keyword>
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
+          &method_max_function_evaluations;
 	  &default_final_moments;
 	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
 	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->

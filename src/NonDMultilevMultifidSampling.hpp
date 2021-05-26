@@ -69,11 +69,15 @@ private:
   /// computes correlations for Q (LH correlations for QoI)
   void multilevel_control_variate_mc_Qcorr();
 
-  // compute the equivalent number of HF evaluations (includes any sim faults)
-  void compute_equivalent_cost(const SizetArray& raw_N_hf,
-			       const RealVector& hf_cost,
-			       const SizetArray& raw_N_lf,
-			       const RealVector& lf_cost);
+  /// compute the equivalent number of HF evaluations (includes any sim faults)
+  void compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
+				    const RealVector& hf_cost,
+				    const SizetArray& raw_N_lf,
+				    const RealVector& lf_cost);
+  /// increment the equivalent number of HF evaluations
+  void increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
+				      size_t new_N_lf, Real lf_lev_cost,
+				      Real hf_ref_cost);
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   void compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
@@ -261,17 +265,35 @@ inline NonDMultilevMultifidSampling::~NonDMultilevMultifidSampling()
 
 
 inline void NonDMultilevMultifidSampling::
-compute_equivalent_cost(const SizetArray& raw_N_hf, const RealVector& hf_cost,
-			const SizetArray& raw_N_lf, const RealVector& lf_cost)
+compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
+			     const RealVector& hf_cost,
+			     const SizetArray& raw_N_lf,
+			     const RealVector& lf_cost)
 {
-  // compute the equivalent number of HF evaluations
-  equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
+  equivHFEvals = 0.;
+  if (raw_N_hf[0]) equivHFEvals += raw_N_hf[0] * hf_cost[0]; // 1st level
+  if (raw_N_lf[0]) equivHFEvals += raw_N_lf[0] * lf_cost[0]; // 1st level
   size_t lev, num_hf_lev = raw_N_hf.size(), num_cv_lev = raw_N_lf.size();
   for (lev=1; lev<num_hf_lev; ++lev) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_hf[lev] * (hf_cost[lev] + hf_cost[lev-1]);
+    if (raw_N_hf[lev])
+      equivHFEvals += raw_N_hf[lev] * (hf_cost[lev] + hf_cost[lev-1]);
   for (lev=1; lev<num_cv_lev; ++lev) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
-  equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equivalent HF evals
+    if (raw_N_lf[lev])
+      equivHFEvals += raw_N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
+  equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equiv HF evals
+}
+
+
+inline void NonDMultilevMultifidSampling::
+increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
+			       size_t new_N_lf, Real lf_lev_cost,
+			       Real hf_ref_cost)
+{
+  // increment the equivalent number of HF evaluations
+  Real incr = 0.;
+  if (new_N_hf) incr += new_N_hf * hf_lev_cost;
+  if (new_N_lf) incr += new_N_lf * lf_lev_cost;
+  equivHFEvals += incr / hf_ref_cost; // normalize into equiv HF evals
 }
 
 
