@@ -265,8 +265,10 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
       if (delta_N_hf[lev]) {
 	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
-	// execute additional LF sample increment, if needed
-	if (//equivHFEvals <= maxFunctionEvals &&
+	// execute additional LF sample increment
+	// Note: check on maxFunctionEvals enables one to throttle down to
+	// only the pilot sample if desired, as for NonDMultifidelitySampling.
+	if (equivHFEvals <= maxFunctionEvals &&
 	    lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
@@ -511,8 +513,10 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
       if (delta_N_hf[lev]) {
 	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
 
-	// now execute additional LF sample increment, if needed
-	if (//equivHFEvals <= maxFunctionEvals &&
+	// now execute additional LF sample increment
+	// Note: check on maxFunctionEvals enables one to throttle down to
+	// only the pilot sample if desired, as for NonDMultifidelitySampling.
+	if (equivHFEvals <= maxFunctionEvals &&
 	    lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
 				N_lf[lev]);
