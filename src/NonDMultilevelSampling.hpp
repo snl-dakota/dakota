@@ -68,6 +68,11 @@ protected:
   /// sample export, and sample evaluation
   void evaluate_ml_sample_increment(unsigned short step);
 
+  /// increment the equivalent number of HF evaluations based on new
+  /// model evaluations
+  void increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost,
+				    Real ref_cost);
+
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
@@ -128,8 +133,8 @@ private:
 			   const RealVector& offset, SizetArray& num_Q);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
-  void compute_equivalent_cost(const SizetArray& raw_N_l,
-			       const RealVector& cost);
+  void compute_ml_equivalent_cost(const SizetArray& raw_N_l,
+				  const RealVector& cost);
 
   /// populate finalStatErrors for MLMC based on Q sums
   void compute_error_estimates(const IntRealMatrixMap& sum_Ql,
@@ -596,7 +601,16 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 }
 
 inline void NonDMultilevelSampling::
-compute_equivalent_cost(const SizetArray& raw_N_l, const RealVector& cost)
+increment_ml_equivalent_cost(size_t new_N_l, Real lev_cost, Real ref_cost)
+{
+  // increment the equivalent number of HF evaluations
+  if (new_N_l)
+    equivHFEvals += new_N_l * lev_cost / ref_cost; // normalize into equiv HF
+}
+
+
+inline void NonDMultilevelSampling::
+compute_ml_equivalent_cost(const SizetArray& raw_N_l, const RealVector& cost)
 {
   size_t step, num_steps = raw_N_l.size();
   equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
