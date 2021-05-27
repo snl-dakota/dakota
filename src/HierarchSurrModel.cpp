@@ -93,7 +93,6 @@ void HierarchSurrModel::assign_default_keys()
     // with NonDExpansion::configure_{sequence,indices}() and key definition
     // for NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX
     // usage, since this suppresses allocation of a solution level array.
-    size_t SZ_MAX = std::numeric_limits<size_t>::max(); 
     truthModelKey = Pecos::ActiveKey(id, r_type, last_m, SZ_MAX);
     surrModelKey  = Pecos::ActiveKey(id, r_type,      0, SZ_MAX);
   }
@@ -1317,7 +1316,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
   case FULL_SOLUTION_LEVEL_CORRECTION: {
     // assume a consistent model index from surrModelKey
     size_t lf_lev = surrModelKey.retrieve_resolution_level();
-    if (lf_lev == std::numeric_limits<size_t>::max()) {
+    if (lf_lev == SZ_MAX) {
       Cerr << "Error: FULL_SOLUTION_LEVEL_CORRECTION requires solution level "
 	   << "within model key." << std::endl;
       abort_handler(MODEL_ERROR);

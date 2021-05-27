@@ -48,8 +48,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     problem_db.get_string("model.surrogate.export_approx_variance_file")),
   exportVarianceFormat(problem_db.get_ushort("model.surrogate.export_approx_variance_format")),
   autoRefine(problem_db.get_bool("model.surrogate.auto_refine")),
-  maxIterations(problem_db.get_int("model.max_iterations")),
-  maxFuncEvals(problem_db.get_int("model.max_function_evals")),
+  maxIterations(problem_db.get_sizet("model.max_iterations")),
+  maxFuncEvals(problem_db.get_sizet("model.max_function_evals")),
   convergenceTolerance(problem_db.get_real("model.convergence_tolerance")),
   softConvergenceLimit(problem_db.get_int("model.soft_convergence_limit")),
   refineCVMetric(problem_db.get_string("model.surrogate.refine_cv_metric")),
@@ -1263,7 +1263,7 @@ void DataFitSurrModel::rebuild_global()
   // *******************************************
   // Evaluate new data points using daceIterator
   // *******************************************
-  size_t pts_i, curr_points = std::numeric_limits<size_t>::max();
+  size_t pts_i, curr_points = SZ_MAX;
   StSIter it;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     pts_i = approxInterface.approximation_data(*it).points();
@@ -1346,21 +1346,15 @@ void DataFitSurrModel::run_dace()
 void DataFitSurrModel::refine_surrogate()
 {
   StringArray diag_metrics(1, refineCVMetric);
-  int curr_iter = 0; // initial surrogate build is iteration 0
-    
+  size_t curr_iter = 0; // initial surrogate build is iteration 0
+
   // accumulate num_samples in each iteration in total_evals.
   int total_evals = 0, num_samples;
 
-  // Disable the soft convergence limit by setting it to maxIterations if
-  // the user didn't set it
-  int soft_conv_limit = maxIterations;
-  if(softConvergenceLimit != 0)
-    soft_conv_limit = softConvergenceLimit;
-
-  // accumulator for rolling average of length soft_conv_limit 
+  // accumulator for rolling average of length softConvergenceLimit
   using namespace boost::accumulators;
-  accumulator_set<Real, stats<tag::rolling_mean> > mean_err(
-      tag::rolling_window::window_size = soft_conv_limit);
+  accumulator_set<Real, stats<tag::rolling_mean> >
+    mean_err(tag::rolling_window::window_size = softConvergenceLimit);
 
   num_samples = daceIterator.num_samples();
   total_evals += num_samples;
@@ -1381,24 +1375,24 @@ void DataFitSurrModel::refine_surrogate()
   while (true) {
     // convergence conditions. messages will need to be fixed if we add
     // challenge error
-    if(curr_err <= convergenceTolerance) {
+    if (curr_err <= convergenceTolerance) {
       Cout << "\n------------\nAuto-refined surrogate(s) converged: "
-        << "Cross-validation error criterion met.\n";
+	   << "Cross-validation error criterion met.\n";
       break;
-    } else if(curr_iter++ == maxIterations) {
+    } else if (curr_iter++ == maxIterations) {
       Cout << "\n------------\nAuto-refinment halted: Maximum iterations "
-        << "met or exceeded.\n";
+	   << "met or exceeded.\n";
       break;
-    } else if( curr_iter >= soft_conv_limit && 
-        rolling_mean(mean_err) < convergenceTolerance) {
+    } else if (softConvergenceLimit && curr_iter >= softConvergenceLimit &&
+	       rolling_mean(mean_err) < convergenceTolerance) {
       Cout << "\n------------\nAuto-refinment halted: Average reduction in "
-        << "cross-validation error over\nprevious " << soft_conv_limit 
-        << " iterations less than " << "convergence_tolerance (" 
-        << convergenceTolerance << ")\n";
+	   << "cross-validation error over\nprevious " << softConvergenceLimit
+	   << " iterations less than " << "convergence_tolerance ("
+	   << convergenceTolerance << ")\n";
       break;
-    } else if(total_evals >= maxFuncEvals) {
+    } else if (total_evals >= maxFuncEvals) {
       Cout << "\n------------\nAuto-refinment halted: Maximum function "
-	<< "evaluations met or exceeded.\n";
+	   << "evaluations met or exceeded.\n";
       break;
     }
 

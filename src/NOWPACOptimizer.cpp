@@ -102,7 +102,7 @@ void NOWPACOptimizer::initialize_options()
   }
 
   // Maximum number of total accepted steps
-  nowpacSolver.set_option("max_nb_accepted_steps", maxIterations);// inf default
+  nowpacSolver.set_option("max_nb_accepted_steps", (int) maxIterations);// inf default
   // Within special context of meta-iteration like MG/Opt, ensure that we
   // have at least 2 successful steps
   //if (subIteratorFlag && ...)

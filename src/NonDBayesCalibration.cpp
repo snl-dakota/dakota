@@ -181,11 +181,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     }
   }
 
-  // assign default maxIterations (DataMethod default is -1)
+  // assign default maxIterations (DataMethod default is SZ_MAX)
   if (adaptPosteriorRefine) {
     // BMA --> MSE: Why 5? Fix magic constant
     batchSize = 5;
-    if (maxIterations < 0)
+    if (maxIterations == SZ_MAX) // default
       maxIterations = 25;
   }
 
@@ -430,7 +430,7 @@ void NonDBayesCalibration::construct_mcmc_model()
     // for adaptive exp refinement, propagate controls from Bayes method spec:
     se_rep->maximum_iterations(maxIterations);
     se_rep->maximum_refinement_iterations(
-      probDescDB.get_int("method.nond.max_refinement_iterations"));
+      probDescDB.get_sizet("method.nond.max_refinement_iterations"));
     se_rep->convergence_tolerance(convergenceTol);
 
     stochExpIterator.assign_rep(se_rep);
@@ -1057,7 +1057,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 				 mcmcModel.continuous_variables().length());
   int random_seed = randomSeed;  // locally incremented
   int num_exp;
-  int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : numCandidates;
+  int max_hifi = (maxHifiEvals >= 0) ? maxHifiEvals : numCandidates;
   int num_hifi = 0;
   int num_it = 1;
   bool stop_metric = false;

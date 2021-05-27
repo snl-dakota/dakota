@@ -195,8 +195,7 @@ void C3Approximation::build()
   // Set up C3 FT regression
   // -----------------------
 
-  size_t i, j, SZ_MAX = std::numeric_limits<size_t>::max(),
-    num_v = sharedDataRep->numVars, kick_r, max_cv_r,
+  size_t i, j, num_v = sharedDataRep->numVars, kick_r, max_cv_r,
     max_r = data_rep->max_rank(), // upper bound for adapt_rank
     start_r = std::min(data_rep->start_rank(), max_r),
     adapt_r = (data_rep->adaptRank && max_r > start_r) ? 1 : 0;
@@ -312,7 +311,7 @@ void C3Approximation::build()
 
   struct c3Opt* optimizer = c3opt_create(BFGS);
   int max_solver_iter = data_rep->maxSolverIterations;
-  if (max_solver_iter >= 0) { // Dakota default is -1 -> leave at C3 default
+  if (max_solver_iter != SZ_MAX) { // if Dakota default, leave at C3 default
     c3opt_set_maxiter(   optimizer, max_solver_iter);
     c3opt_ls_set_maxiter(optimizer, max_solver_iter); // line search
   }

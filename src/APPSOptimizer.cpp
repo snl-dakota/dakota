@@ -182,7 +182,8 @@ void APPSOptimizer::set_apps_parameters()
   // citizen (generalized set search, formerly APPS).
 
   mediatorParams->setParameter("Citizen Count", 1);
-  mediatorParams->setParameter("Maximum Evaluations", maxFunctionEvals);
+  if (maxFunctionEvals != SZ_MAX)
+    mediatorParams->setParameter("Maximum Evaluations", (int)maxFunctionEvals);
 
   // Set GSS variant based on presence or not of nonlinear
   // constraints.

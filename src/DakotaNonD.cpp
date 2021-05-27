@@ -437,7 +437,7 @@ configure_sequence(//unsigned short hierarch_dim,
       seq_type  = Pecos::MODEL_FORM_SEQUENCE;
       num_steps = num_mf;
       // retain each model's active solution control index:
-      secondary_index = std::numeric_limits<size_t>::max();
+      secondary_index = SZ_MAX;
       if (num_hf_lev > 1)
 	Cerr << "Warning: solution control levels will be ignored by "
 	     << "NonD::configure_sequence().\n";
@@ -577,7 +577,7 @@ inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
   if (multilev) // ML case
     N_l_3D[fixed_index] = N_l_2D;
   else { // MF case
-    if (fixed_index == std::numeric_limits<size_t>::max()) {
+    if (fixed_index == SZ_MAX) {
       ModelList& ordered_models = iteratedModel.subordinate_models(false);
       ModelLIter m_iter = ordered_models.begin();
       size_t m_soln_lev, active_lev;

@@ -43,9 +43,9 @@ OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, Model& model):
      randomSeed = probDescDB.get_int("method.random_seed");
           
      // Set Max # of BB Evaluations
-     maxBlackBoxEvals = probDescDB.get_int("method.max_function_evaluations");
+     //maxBlackBoxEvals = probDescDB.get_sizet("method.max_function_evaluations");
           
-     maxIterations = probDescDB.get_int("method.max_iterations");
+     //maxIterations = probDescDB.get_sizet("method.max_iterations");
      if (methodName == GENIE_OPT_DARTS) 
        use_DIRECT = false;
      else 
@@ -67,7 +67,7 @@ void OptDartsOptimizer::core_run()
     
     size_t num_dim = numTotalVars;
     
-    size_t budget = maxBlackBoxEvals;
+    size_t budget = maxFunctionEvals;//maxBlackBoxEvals;
     
     double* xmin = new double[num_dim];
     double* xmax = new double[num_dim];

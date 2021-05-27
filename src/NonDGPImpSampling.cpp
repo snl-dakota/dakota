@@ -86,10 +86,8 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
     numEmulEval = 10000;
   construct_lhs(gpEval, gpModel, sample_type, numEmulEval, randomSeed,
 		rngName, vary_pattern);
-  if (maxIterations < 0) 
-    numPtsAdd = 150;
-  else
-    numPtsAdd = maxIterations;
+  // assign a method-specific default for maxIterations
+  numPtsAdd = (maxIterations == SZ_MAX) ? 150 : maxIterations;
 
   //construct sampler to generate one draw from rhoOne distribution, with 
   //seed varying between invocations

@@ -83,8 +83,7 @@ protected:
 
   void assign_instance();
 
-  void update_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void update_from_subordinate_model(size_t depth = SZ_MAX);
 
   // ---
   // Construct time convenience functions
@@ -250,7 +249,7 @@ inline void DataTransformModel::assign_instance()
 inline void DataTransformModel::update_from_subordinate_model(size_t depth)
 {
   // data flows from the bottom-up, so recurse first
-  if (depth == std::numeric_limits<size_t>::max())
+  if (depth == SZ_MAX)
     subModel.update_from_subordinate_model(depth); // retain special value (inf)
   else if (depth)
     subModel.update_from_subordinate_model(depth - 1); // decrement

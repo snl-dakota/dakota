@@ -357,7 +357,7 @@ public:
   /// refinement samples to add in each batch
   IntVector refineSamples;
   /// maximum number of subspace build iterations
-  int maxIterations;
+  size_t maxIterations;
   /// convergence tolerance on build process
   Real convergenceTolerance;
 
@@ -408,7 +408,7 @@ public:
   /// penalty parameter for regularized regression (FT_RLS2)
   Real regressionL2Penalty;
   /// max iterations for optimization solver used in FT regression
-  int maxSolverIterations;
+  size_t maxSolverIterations;
   /// maximum number of cross iterations
   int maxCrossIterations;
   /// optimization tolerance for FT regression
@@ -455,7 +455,7 @@ public:
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;
   /// maximum evals in refinement
-  int maxFunctionEvals;
+  size_t maxFunctionEvals;
   /// metric to use in cross-validation guided refinement
   String refineCVMetric;
   /// max number of iterations in refinement without improvement

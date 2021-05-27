@@ -140,11 +140,9 @@ public:
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// resize vars/resp if needed from the bottom up
-  virtual void resize_from_subordinate_model(size_t depth = 
-    std::numeric_limits<size_t>::max());
+  virtual void resize_from_subordinate_model(size_t depth = SZ_MAX);
   /// propagate vars/labels/bounds/targets from the bottom up
-  virtual void update_from_subordinate_model(size_t depth = 
-    std::numeric_limits<size_t>::max());
+  virtual void update_from_subordinate_model(size_t depth = SZ_MAX);
   /// return the interface employed by the derived model class, if present:
   /// SimulationModel::userDefinedInterface, DataFitSurrModel::approxInterface,
   /// or NestedModel::optionalInterface

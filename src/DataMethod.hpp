@@ -280,17 +280,17 @@ public:
 
   /// maximum number of iterations allowed for the method (from the \c
   /// max_iterations specification in \ref MethodIndControl)
-  int maxIterations;
+  size_t maxIterations;
   /// maximum number of refinement iterations allowed for a uniform/adaptive
   /// refinement approach (from the \c max_refinement_iterations specification
   /// in \ref MethodIndControl)
-  int maxRefineIterations;
+  size_t maxRefineIterations;
   /// maximum number of internal solver iterations allowed for the method
   /// (from the \c max_solver_iterations specification in \ref MethodIndControl)
-  int maxSolverIterations;
+  size_t maxSolverIterations;
   /// maximum number of function evaluations allowed for the method (from
   /// the \c max_function_evaluations specification in \ref MethodIndControl)
-  int maxFunctionEvaluations;
+  size_t maxFunctionEvals;
 
   /// flag for use of speculative gradient approaches for maintaining parallel
   /// load balance during the line search portion of optimization algorithms
@@ -631,7 +631,7 @@ public:
   // using crossoverRate from COLINY
   // using populationSize from COLINY
   // using maxIterations from method independent controls
-  // using maxFunctionEvaluations from method independent controls
+  // using maxFunctionEvals from method independent controls
   // using convergenceTolerance for percentChange from method ind. controls
   // mainLoopType defined in JEGAOptimizer.cpp
   // evaluationType defined in JEGAOptimizer.cpp

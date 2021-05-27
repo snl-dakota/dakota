@@ -137,7 +137,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost, agg_var(num_steps);
@@ -163,8 +162,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     N_l[step].assign(numFunctions, 0);
 
   // now converge on sample counts per level (N_l)
-  mlmfIter = 0;
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= max_iter) {
+  mlmfIter = 0;  equivHFEvals = 0.;
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
+	 equivHFEvals <= maxFunctionEvals) {
 
     sum_sqrt_var_cost = 0.;
     for (step=0; step<num_steps; ++step) { // step is reference to lev
@@ -228,6 +228,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_l << std::endl;
+    // update equivalent number of HF evaluations (no credit for failed evals)
+    compute_equivalent_cost(raw_N_l, cost);
   }
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondary_index, NLev);
@@ -249,12 +251,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(Q_raw_mom, momentStats);
-
-  // compute the equivalent number of HF evaluations (includes any sim faults)
-  equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
-  for (step=1; step<num_steps; ++step) // subsequent levels incur 2 model costs
-    equivHFEvals += raw_N_l[step] * (cost[step] + cost[step-1]);
-  equivHFEvals /= cost[num_steps-1]; // normalize into equivalent HF evals
 }
 
 
@@ -279,7 +275,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  const size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost;  configure_cost(num_steps, multilev, cost);
@@ -321,95 +316,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   for(size_t qoi = 0; qoi < numFunctions; ++qoi)
     convergenceTolVec[qoi] = convergenceTol;
 
-  //// Cantilever
-    /*
-      Real w = iteratedModel.current_variables().all_continuous_variables()[0];
-      Real t = iteratedModel.current_variables().all_continuous_variables()[1];
-      
-      int num_resamples = 10000;
-      RealMatrix estimator_matrix;
-      estimator_matrix.shape(num_resamples, 2);
-      RealVector mean(3);
-      RealVector var(3);
-      for(int cur_resample = 0; cur_resample < num_resamples; ++cur_resample){  
-        IntRealMatrixMap sum_Ql_ref, sum_Qlm1_ref;
-        IntIntPairRealMatrixMap sum_QlQlm1_ref;
-        initialize_ml_Qsums(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, num_steps);
-        RealVectorArray mu_hat_ref(num_steps);
-
-        numSamples = 1000;
-        Sizet2DArray num_samples_array;
-        num_samples_array.resize(num_steps);
-        for (step = 0; step < num_steps; ++step) {
-          num_samples_array[step].resize(numFunctions);
-        }
-        for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-          num_samples_array[0][qoi] = 0;
-          num_samples_array[1][qoi] = numSamples;
-        }
-        
-        for (step = 0; step < num_steps; ++step) {
-          configure_indices(step, model_form, lev, seq_index);
-
-          if (numSamples) {
-            evaluate_sample_increment(step);
-
-            accumulate_sums(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, step, mu_hat_ref, num_samples_array);
-          }
-        }
-
-        //compute_moments(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, num_samples_array);
-      
-        double num_samples = numSamples;
-        mean[1] = sum_Ql_ref[1](1, num_steps-1)/num_samples;
-        var[1]  = sum_Ql_ref[2](1, num_steps-1)/(num_samples-1.) - num_samples/(num_samples-1.)*mean[1]*mean[1];
-
-        mean[2] = sum_Ql_ref[1](2, num_steps-1)/num_samples;
-        var[2]  = sum_Ql_ref[2](2, num_steps-1)/(num_samples-1.) - num_samples/(num_samples-1.)*mean[2]*mean[2];
-
-        if(allocationTarget==TARGET_MEAN){
-          estimator_matrix(cur_resample, 0) = mean[1];
-          estimator_matrix(cur_resample, 1) = mean[2];
-        }
-        if(allocationTarget==TARGET_SIGMA){
-          estimator_matrix(cur_resample, 0) = 3.*std::sqrt(var[1]);
-          estimator_matrix(cur_resample, 1) = 3.*std::sqrt(var[2]);
-        }
-        if(allocationTarget==TARGET_SCALARIZATION){
-          estimator_matrix(cur_resample, 0) = mean[1] + 3.*std::sqrt(var[1]);
-          estimator_matrix(cur_resample, 1) = mean[2] + 3.*std::sqrt(var[2]);
-        }
-      }
-      RealVector estim_mean(2);
-      RealVector estim_std(2);
-      for(size_t qoi = 0; qoi < 2; ++qoi){
-        estim_mean[qoi] = 0;
-        estim_std[qoi] = 0;
-      }
-      for(int cur_resample = 0; cur_resample < num_resamples; ++cur_resample){  
-        estim_mean[0] += estimator_matrix(cur_resample, 0);
-        estim_mean[1] += estimator_matrix(cur_resample, 1);
-      }
-      estim_mean[0] /= num_resamples;
-      estim_mean[1] /= num_resamples;
-      for(int cur_resample = 0; cur_resample < num_resamples; ++cur_resample){  
-        estim_std[0] += (estimator_matrix(cur_resample, 0) - estim_mean[0])*
-                        (estimator_matrix(cur_resample, 0) - estim_mean[0]);
-        estim_std[1] += (estimator_matrix(cur_resample, 1) - estim_mean[1])*
-                       (estimator_matrix(cur_resample, 1) - estim_mean[1]);
-     }
-      estim_std[0] = (1./(num_resamples-1.)*estim_std[0]);
-      estim_std[1] = (1./(num_resamples-1.)*estim_std[1]);
-      
-      convergenceTol = std::min(estim_std[0], estim_std[1]);
-      convergenceTolVec[1] = estim_std[0];
-      convergenceTolVec[2] = estim_std[1];
-      Cout << "Convergence Tol: " << convergenceTolVec << std::endl;
-      */
-
   // now converge on sample counts per level (N_l)
-  mlmfIter = 0;
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= max_iter) {
+  mlmfIter = 0;  equivHFEvals = 0.;
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
+	 equivHFEvals <= maxFunctionEvals) {
     for (step=0; step<num_steps; ++step) {
 
       configure_indices(step, form, lev, seq_type);
@@ -452,6 +362,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_l << std::endl;
+    // update equivalent number of HF evaluations (includes any sim faults)
+    compute_equivalent_cost(raw_N_l, cost);
   }
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondary_index, NLev);
@@ -480,8 +392,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
-  // compute the equivalent number of HF evaluations (includes any sim faults)
-  compute_equiv_HF_evals(raw_N_l, cost);
 }
 
 

@@ -300,12 +300,11 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   //mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
 
   // must use alternate NoDB ctor chain
-  int max_iter = 1000, max_eval = 10000;
+  size_t max_iter = 1000, max_eval = 10000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU  
   mppOptimizer.assign_rep(std::make_shared<NCSUOptimizer>
-			  (mppModel, max_iter, max_eval,
-			   min_box_size, vol_box_size));
+    (mppModel, max_iter, max_eval, min_box_size, vol_box_size));
   //#ifdef HAVE_ACRO
   //int coliny_seed = 0; // system-generated, for now
   //mppOptimizer.assign_rep(new
@@ -648,8 +647,8 @@ void NonDGlobalReliability::optimize_gaussian_process()
     
 	// Check for convergence based on max EIF/EFF
 	// BMA: was previously hard-wired: convergenceTol = .001;
-        if (maxIterations < 0) 
-          maxIterations  = 25*numContinuousVars;
+        if (maxIterations == SZ_MAX) // default value
+          maxIterations = 25*numContinuousVars;
 	if (approxIters >= maxIterations || -exp_fns_star < convergenceTol)
 	  approxConverged = true;
 	else if (mppSearchType == EGRA_X) {

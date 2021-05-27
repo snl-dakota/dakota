@@ -128,8 +128,8 @@ private:
 			   const RealVector& offset, SizetArray& num_Q);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
-  void compute_equiv_HF_evals(const SizetArray& raw_N_l,
-			      const RealVector& cost);
+  void compute_equivalent_cost(const SizetArray& raw_N_l,
+			       const RealVector& cost);
 
   /// populate finalStatErrors for MLMC based on Q sums
   void compute_error_estimates(const IntRealMatrixMap& sum_Ql,
@@ -596,11 +596,11 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 }
 
 inline void NonDMultilevelSampling::
-compute_equiv_HF_evals(const SizetArray& raw_N_l, const RealVector& cost)
+compute_equivalent_cost(const SizetArray& raw_N_l, const RealVector& cost)
 {
-  size_t num_steps = raw_N_l.size();
+  size_t step, num_steps = raw_N_l.size();
   equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
-  for (size_t step=1; step<num_steps; ++step)// subsequent levels incur 2 model costs
+  for (step=1; step<num_steps; ++step) // subsequent levels incur 2 model costs
     equivHFEvals += raw_N_l[step] * (cost[step] + cost[step - 1]);
   equivHFEvals /= cost[num_steps - 1]; // normalize into equivalent HF evals
 }

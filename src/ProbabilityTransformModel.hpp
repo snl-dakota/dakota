@@ -62,8 +62,7 @@ protected:
   //bool initialize_mapping(ParLevLIter pl_iter);
   //bool finalize_mapping();
   bool resize_pending() const;
-  void update_from_subordinate_model(size_t depth =
-				     std::numeric_limits<size_t>::max());
+  void update_from_subordinate_model(size_t depth = SZ_MAX);
 
   /// set primaryACVarMapIndices and secondaryACVarMapTargets (only, for now)
   void nested_variable_mappings(const SizetArray& c_index1,
@@ -319,7 +318,7 @@ update_from_subordinate_model(size_t depth)
   // ordering problem with invMapping dependence on dist params
 
   // data flows from the bottom-up, so recurse first
-  if (depth == std::numeric_limits<size_t>::max())
+  if (depth == SZ_MAX)
     subModel.update_from_subordinate_model(depth); // retain special value (inf)
   else if (depth)
     subModel.update_from_subordinate_model(depth - 1); // decrement

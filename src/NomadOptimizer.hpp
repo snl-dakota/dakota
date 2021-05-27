@@ -141,7 +141,7 @@ private:
   int numNomadNonlinearIneqConstraints;
 	       
   /// Algorithm control parameters passed to NOMAD
-  int randomSeed, maxBlackBoxEvals, maxIterations;
+  int randomSeed;//, maxBlackBoxEvals, maxIterations;
   NOMAD::Double initMesh, minMesh, epsilon, vns;
 
   /// Output control parameters passed to NOMAD

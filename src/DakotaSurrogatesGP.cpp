@@ -189,7 +189,7 @@ Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
   return gp_model->variance(eval_point)(0);
 }
 
-void set_model_gp_options(Model& model, String& options_file) {
+void set_model_gp_options(Model& model, const String& options_file) {
   auto custom_param_list = Teuchos::getParametersFromYamlFile(options_file);
   std::vector<Approximation>& exp_gp_approxs = model.approximations();
   for (int i = 0; i < exp_gp_approxs.size(); ++i) {

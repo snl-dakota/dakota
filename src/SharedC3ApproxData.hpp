@@ -272,7 +272,7 @@ protected:
   /// for moments, combining expansions with c3axpy, etc.
   double statsRoundingTol;
   /// maximum number of iterations for regression solver
-  int maxSolverIterations;
+  size_t maxSolverIterations;
   /// maximum number of iterations for (future) cross iteration solver
   int crossMaxIter;
   /// C3 regression solver employs a random seed
@@ -576,10 +576,11 @@ inline void SharedC3ApproxData::set_parameter(String var, unsigned short val)
 
 inline void SharedC3ApproxData::set_parameter(String var, size_t val)
 {
-  if (var.compare("start_rank")     == 0)             startRank = val;
-  else if (var.compare("kick_rank") == 0)              kickRank = val;
-  else if (var.compare("max_rank")  == 0)               maxRank = val;
-  else if (var.compare("max_cv_rank") == 0) maxCVRankCandidates = val;
+  if (var.compare("start_rank")       == 0)                     startRank = val;
+  else if (var.compare("kick_rank")   == 0)                      kickRank = val;
+  else if (var.compare("max_rank")    == 0)                       maxRank = val;
+  else if (var.compare("max_cv_rank") == 0)           maxCVRankCandidates = val;
+  else if (var.compare("max_solver_iterations") == 0) maxSolverIterations = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
@@ -616,9 +617,8 @@ inline void SharedC3ApproxData::set_parameter(String var, double val)
 
 inline void SharedC3ApproxData::set_parameter(String var, int val)
 {
-  if      (var.compare("max_cross_iterations")  == 0)        crossMaxIter = val;
-  else if (var.compare("max_solver_iterations") == 0) maxSolverIterations = val;
-  else if (var.compare("random_seed")           == 0)          randomSeed = val;
+  if      (var.compare("max_cross_iterations")  == 0) crossMaxIter = val;
+  else if (var.compare("random_seed")           == 0)   randomSeed = val;
   else Cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 

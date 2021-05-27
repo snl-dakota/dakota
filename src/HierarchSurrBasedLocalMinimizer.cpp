@@ -51,8 +51,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // TODO: Only 1D for multifidelity -- need to support ML & MLMF
-  size_t num_tr = numFid - 1, // no TR for truth model (valid for global bnds)
-    SZ_MAX = std::numeric_limits<size_t>::max();
+  size_t num_tr = numFid - 1; // no TR for truth model (valid for global bnds)
   trustRegions.resize(num_tr);
   for (ml_iter=models.begin(), i=0; i<numFid-1; ++i) {
     SurrBasedLevelData& tr_data = trustRegions[i];
@@ -247,8 +246,8 @@ void HierarchSurrBasedLocalMinimizer::build()
   // --------------
   // BOTTOM UP PASS: verify, build, hard convergence
   // --------------
-  size_t num_tr = trustRegions.size(), tr_update_max_index = minimizeIndex,
-    next_index, SZ_MAX = std::numeric_limits<size_t>::max();
+  size_t num_tr = trustRegions.size(),
+    tr_update_max_index = minimizeIndex, next_index;
   int index, min = minimizeIndex; // use int due to loop decrements
   bool reset_lambda_rho = false, report_unconv = true;
   for (index=min; index<num_tr; ++index) {
@@ -631,7 +630,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_truth(size_t tr_index)
   else {
     Cout << "\nRecursively correcting truth model response (form "
 	 << tr_data.truth_model_form() + 1;
-    if (tr_data.truth_model_level() != std::numeric_limits<size_t>::max())
+    if (tr_data.truth_model_level() != SZ_MAX)
       Cout << ", level " << tr_data.truth_model_level() + 1;
     Cout << ") for trust region center.\n";
     Variables& center_vars = tr_data.vars_center();
@@ -655,7 +654,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
   else {
     Cout << "\nRecursively correcting truth model response (form "
 	 << tr_data.truth_model_form() + 1;
-    if (tr_data.truth_model_level() != std::numeric_limits<size_t>::max())
+    if (tr_data.truth_model_level() != SZ_MAX)
       Cout << ", level " << tr_data.truth_model_level() + 1;
     Cout << ") for trust region candidate.\n";
     Variables& star_vars = tr_data.vars_star();
@@ -675,7 +674,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_approx(size_t tr_index)
   size_t j, num_tr = trustRegions.size();
   Cout << "\nRecursively correcting surrogate model response (form "
        << tr_data.approx_model_form() + 1;
-  if (tr_data.approx_model_level() != std::numeric_limits<size_t>::max())
+  if (tr_data.approx_model_level() != SZ_MAX)
     Cout << ", level " << tr_data.approx_model_level() + 1;
   Cout << ") for trust region center.\n";
   // correct approximation across all levels above i
@@ -695,7 +694,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_approx(size_t tr_index)
   size_t j, num_tr = trustRegions.size();
   Cout << "\nRecursively correcting surrogate model response (form "
        << tr_data.approx_model_form() + 1;
-  if (tr_data.approx_model_level() != std::numeric_limits<size_t>::max())
+  if (tr_data.approx_model_level() != SZ_MAX)
     Cout << ", level " << tr_data.approx_model_level() + 1;
   Cout << ") for trust region candidate.\n";
   // correct approximation across all levels above i
@@ -714,7 +713,7 @@ void HierarchSurrBasedLocalMinimizer::multigrid_driver(const Variables &x0)
 {
   RealVector vars_star = x0.continuous_variables();
 
-  int max_iter = 10, iter = 0;
+  size_t max_iter = 10, iter = 0;
   while (!converged() && iter < max_iter) {
     // Perform one complete V cycle:
     // recursively applied MG/Opt to all levels w/ line search
@@ -770,13 +769,13 @@ multigrid_recursion(const RealVector& x0_k, int k)
     // Either need to add trust region control or continue poor-man's control
     // with max iterations to avoid leaving region of correction accuracy.
     // **********************************************************************
-    int max_iter = 30; // until convergence...  (tune or expose?)
+    size_t max_iter = 30; // until convergence...  (tune or expose?)
     return optimize(x0_k, max_iter, k); // Steps 3,4
   }
   else { // Partial optimization
 
     // Step 6: pre-optimization
-    int max_iter = 3;
+    size_t max_iter = 3;
     RealVector x1_k = optimize(x0_k, max_iter, k); // pre-opt / step 1, level k
 
     // Step 7: Restriction: x1_km1 = R[x1_k]
@@ -828,7 +827,7 @@ linesearch(const RealVector &xk, const RealVector &pk, double alpha0)
 
 
 RealVector HierarchSurrBasedLocalMinimizer::
-optimize(const RealVector &x, int max_iter, int index)
+optimize(const RealVector &x, size_t max_iter, int index)
 {
   // Update starting point for optimization:
   approxSubProbModel.continuous_variables(x);

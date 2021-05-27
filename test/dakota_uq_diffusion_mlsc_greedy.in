@@ -14,6 +14,7 @@ method,
 	  p_refinement dimension_adaptive generalized		#s0,#s2
 	    sparse_grid_level_sequence = 0 unrestricted		#s0,#s2
 	    convergence_tolerance 1.e-8				#s0,#s2
+	    max_refinement_iterations = 100			#s0,#s2
 #	  p_refinement uniform	       	 			#s1,#s3
 #	    sparse_grid_level_sequence = 0 unrestricted		#s1,#s3
 #	    convergence_tolerance 1.e-3				#s1,#s3

@@ -162,7 +162,7 @@ inline int NonDMultilevelPolynomialChaos::first_seed() const
 inline size_t NonDMultilevelPolynomialChaos::
 expansion_samples(size_t index) const
 {
-  if (expSamplesSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  if (expSamplesSeqSpec.empty()) return SZ_MAX;
   else
     return (index < expSamplesSeqSpec.size()) ?
       expSamplesSeqSpec[index] : expSamplesSeqSpec.back();

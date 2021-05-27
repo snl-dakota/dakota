@@ -117,6 +117,10 @@ private:
   void lf_increment_samples(const RealVector& eval_ratios,
 			    const SizetArray& N_lf, const SizetArray& N_hf);
 
+  /// update equivHFEvals from HF, LF evaluation counts
+  void compute_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
+			       Real cost_ratio);
+
   /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_mf_sums(IntRealVectorMap& sum_L_shared,
@@ -192,6 +196,11 @@ private:
 
 inline NonDMultifidelitySampling::~NonDMultifidelitySampling()
 { }
+
+
+inline void NonDMultifidelitySampling::
+compute_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf, Real cost_ratio)
+{ equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio; }
 
 
 inline void NonDMultifidelitySampling::

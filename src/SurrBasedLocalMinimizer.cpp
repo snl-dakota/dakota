@@ -462,7 +462,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   if (form != USHRT_MAX) {
     Cout << " (form "  << form + 1;
     size_t lev = tr_data.approx_model_level();
-    if (lev != std::numeric_limits<size_t>::max()) Cout << ", level " << lev+1;
+    if (lev != SZ_MAX) Cout << ", level " << lev+1;
     Cout << ")";
   }
   Cout << "\n                 ";

@@ -69,6 +69,12 @@ private:
   /// computes correlations for Q (LH correlations for QoI)
   void multilevel_control_variate_mc_Qcorr();
 
+  // compute the equivalent number of HF evaluations (includes any sim faults)
+  void compute_equivalent_cost(const SizetArray& raw_N_hf,
+			       const RealVector& hf_cost,
+			       const SizetArray& raw_N_lf,
+			       const RealVector& lf_cost);
+
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   void compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
 			   RealMatrix& sum_LL, RealMatrix& sum_LH,
@@ -252,6 +258,21 @@ private:
 
 inline NonDMultilevMultifidSampling::~NonDMultilevMultifidSampling()
 { }
+
+
+inline void NonDMultilevMultifidSampling::
+compute_equivalent_cost(const SizetArray& raw_N_hf, const RealVector& hf_cost,
+			const SizetArray& raw_N_lf, const RealVector& lf_cost)
+{
+  // compute the equivalent number of HF evaluations
+  equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
+  size_t lev, num_hf_lev = raw_N_hf.size(), num_cv_lev = raw_N_lf.size();
+  for (lev=1; lev<num_hf_lev; ++lev) // subsequent levels incur 2 model costs
+    equivHFEvals += raw_N_hf[lev] * (hf_cost[lev] + hf_cost[lev-1]);
+  for (lev=1; lev<num_cv_lev; ++lev) // subsequent levels incur 2 model costs
+    equivHFEvals += raw_N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
+  equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equivalent HF evals
+}
 
 
 inline void NonDMultilevMultifidSampling::

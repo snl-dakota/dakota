@@ -184,12 +184,12 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     // preserve these EGO settings for now, but eventually map through
     // from spec (and update test baselines)
     convergenceTol = 1.e-12; distanceTol = 1.e-8;
-    if (maxIterations < 0) 
+    if (maxIterations == SZ_MAX) // default value
       maxIterations  = 25*numContinuousVars;
     
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-    int max_direct_iter = 1000, max_direct_eval = 10000; // 10*defaults
-#ifdef HAVE_NCSU  
+    size_t max_direct_iter = 1000, max_direct_eval = 10000; // 10*defaults
+#ifdef HAVE_NCSU
     // EGO with DIRECT (exploits GP variance)
     intervalOptimizer.assign_rep(std::make_shared<NCSUOptimizer>
 				 (intervalOptModel, max_direct_iter,
@@ -201,11 +201,13 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
 #endif // HAVE_NCSU
   }
   else { // EAminlp, with or without GP emulation
-    int max_ea_iter, max_ea_eval;
+    size_t max_ea_iter, max_ea_eval;
     if (gpModelFlag) // SBGO controls from user spec; EA controls hard-wired
       { max_ea_iter = 50; max_ea_eval = 5000; } // default EA pop_size = 100
-    else // EA controls from user spec
-      { max_ea_iter = maxIterations; max_ea_eval = maxFunctionEvals; }
+    else { // EA controls from user spec
+      max_ea_iter = (maxIterations    == SZ_MAX) ? 100  : maxIterations;
+      max_ea_eval = (maxFunctionEvals == SZ_MAX) ? 1000 : maxFunctionEvals;
+    }
 
 #ifdef HAVE_ACRO
     // mixed EA (ignores GP variance)
