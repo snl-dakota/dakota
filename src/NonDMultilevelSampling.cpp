@@ -374,26 +374,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   // post final N_l back to NLev (needed for final eval summary)
   inflate_final_samples(N_l, multilev, secondary_index, NLev);
 
-  /* Cantilever
-  myfile.open("cantilever_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
-  myfile         << w                     << "\t" << t     
-         << "\t" << N_l[0][0]             << "\t" << N_l[1][0] 
-         << "\t" << NTargetQoi(1, 0)    << "\t" << (NTargetQoi(1, 1))
-         << "\t" << NTargetQoiFN(1, 0) << "\t" << (NTargetQoiFN(1, 1))
-         << "\t" << NTargetQoi(2, 0)    << "\t" << (NTargetQoi(2, 1))
-         << "\t" << NTargetQoiFN(2, 0) << "\t" << (NTargetQoiFN(2, 1)) 
-         << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
-  */
-  //Problem18
-  /*
-  std::ofstream myfile;
-  myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
-  myfile << N_l[0][0]             << "\t" << N_l[1][0] 
-         << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))
-         << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1)) << "\n";
-  myfile.close();
-  */
-
   // roll up moment contributions
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
   // populate finalStatErrors
