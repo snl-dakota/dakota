@@ -149,9 +149,9 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
   add_custom_target(dakota-diffs
     "${CMAKE_COMMAND}"
-      -D CMAKE_MODULE_PATH:STRING="${Dakota_SOURCE_DIR}/cmake/utilities"
+      -D CMAKE_MODULE_PATH:STRING="${Dakota_SOURCE_DIR}/cmake"
       -D Dakota_BINARY_DIR:FILEPATH="${Dakota_BINARY_DIR}"
-      -P "${Dakota_SOURCE_DIR}/cmake/utilities/DakotaConcatDiffs.cmake"
+      -P "${Dakota_SOURCE_DIR}/cmake/DakotaConcatDiffs.cmake"
     COMMENT "Concatenate all dakota_[p]diffs.out files from test/ subdirs."
     )
 
