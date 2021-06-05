@@ -73,19 +73,20 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  size_t i, j, num_mf = ordered_models.size(), num_lev, prev_lev = SZ_MAX,
-    pilot_size = pilotSamples.size();
-  ModelLRevIter ml_rit; bool err_flag = false;
+  size_t i, num_mf = ordered_models.size(), num_lev, prev_lev = SZ_MAX;
+  ModelLRevIter ml_rit;
+  bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
   NLev.resize(num_mf);
   for (i=num_mf-1, ml_rit=ordered_models.rbegin();
        ml_rit!=ordered_models.rend(); --i, ++ml_rit) { // high fid to low fid
     // for now, only SimulationModel supports solution_{levels,costs}()
     num_lev = ml_rit->solution_levels(); // lower bound is 1 soln level
 
-    if (num_lev > prev_lev) {
-      Cerr << "\nWarning: unused solution levels in multilevel sampling for "
-	   << "model " << ml_rit->model_id() << ".\n         Ignoring "
-	   << num_lev - prev_lev << " of " << num_lev << " levels."<< std::endl;
+    if (mlmf && num_lev > prev_lev) {
+      Cerr << "\nWarning: unused solution levels in multilevel-multifidelity "
+	   << "sampling for model " << ml_rit->model_id()
+	   << ".\n         Ignoring " << num_lev - prev_lev << " of "
+	   << num_lev << " levels." << std::endl;
       num_lev = prev_lev;
     }
 
@@ -116,6 +117,7 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
+  size_t pilot_size = pilotSamples.size();
   switch (pilot_size) {
     case 0: maxEvalConcurrency *= 100;             break;
   //case 1: maxEvalConcurrency *= pilotSamples[0]; break;

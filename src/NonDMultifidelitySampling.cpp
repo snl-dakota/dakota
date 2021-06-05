@@ -63,12 +63,9 @@ void NonDMultifidelitySampling::core_run()
   control_variate_mc();   // Ng and Willcox, 2014
   //else
   //  multifidelity_mc(); // Peherstorfer, Willcox, Gunzburger, 2016
-
+  //
   // Note: MFMC uses a nested sampling pattern which does not mesh with the
-  // model pairing assumed in HierarchSurrModel --> either support MFMC under
-  // NonDEnsembleSampling or subsume HierarchSurrModel as a special case of
-  // NonHierarchSurrModel (in which case, SurrogateModel alignment becomes
-  // unimportant).
+  // model pairing assumed in HierarchSurrModel
 }
 
 
@@ -164,6 +161,7 @@ void NonDMultifidelitySampling::control_variate_mc()
 			 sum_HH, mu_hat, N_lf, N_hf);
       raw_N_lf += numSamples; raw_N_hf += numSamples;
       increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
+
       // Compute the LF/HF evaluation ratio using shared samples, averaged
       // over QoI.  This includes updating var_H and rho2_LH.
       compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
@@ -201,54 +199,6 @@ void NonDMultifidelitySampling::control_variate_mc()
 }
 
 
-/** This function performs control variate MC across two combinations of 
-    model form and discretization level.
-void NonDMultifidelitySampling::multifidelity_mc()
-{
-  // Performs pilot + LF increment and then iterates with additional shared
-  // increment + LF increment batches until prescribed MSE reduction is obtained
-
-  size_t qoi, num_steps, form, lev, fixed_index;  short seq_type;
-  configure_sequence(num_steps, fixed_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-
-  // 1D sequence: either lev varies and form is fixed, or vice versa:
-  size_t& step = (multilev) ? lev : form;
-  if (multilev) form = secondary_index;
-  else          lev  = secondary_index;
-
-  // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost; configure_cost(num_steps, multilev, cost);
-
-  // Initialize for pilot sample
-  SizetArray delta_N_l;
-  load_pilot_sample(pilotSamples, num_steps, delta_N_l);
-  size_t hf_sample_incr = delta_N_l[hf_form];
-  numSamples = hf_sample_incr;
-
-  mlmfIter = 0;  equivHFEvals = 0.;
-  while (hf_sample_incr && mlmfIter <= maxIterations &&
-	 equivHFEvals <= maxFunctionEvals) {
-
-   shared_increment(); // spans models {i, i+1, ..., M}
-   // to support with HierarchSurrModel, might be simplest to sample one model 
-   // at a time using a nested sample set...
-
-    ++mlmfIter;
-    // compute the equivalent number of HF evaluations
-    compute_mf_equivalent_cost(raw_N_l, cost);
-  } // end while
-
-  // Compute/apply control variate parameter to estimate uncentered raw moments
-  RealMatrix H_raw_mom(numFunctions, 4);
-  cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined, N_lf,
-		 rho2_LH, H_raw_mom);
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(H_raw_mom, momentStats);
-}
-*/
-
-
 void NonDMultifidelitySampling::
 initialize_mf_sums(IntRealVectorMap& sum_L_shared,
 		   IntRealVectorMap& sum_L_refined, IntRealVectorMap& sum_H,
@@ -258,7 +208,7 @@ initialize_mf_sums(IntRealVectorMap& sum_L_shared,
   // sum_* are running sums across all increments
   std::pair<int, RealVector> empty_pr;
   for (int i=1; i<=4; ++i) {
-    empty_pr.first = i;
+    empty_pr.first = i; // moment number
     // std::map::insert() returns std::pair<IntRVMIter, bool>:
     // use iterator to size RealVector in place and init sums to 0
     sum_L_shared.insert(empty_pr).first->second.size(numFunctions);
@@ -285,7 +235,9 @@ accumulate_mf_sums(IntRealVectorMap& sum_L, const RealVector& offset,
   bool os = !offset.empty();
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    //const Response& resp    = r_it->second;
     const RealVector& fn_vals = r_it->second.function_values();
+    //const ShortArray& asv   = resp.active_set_request_vector();
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
       prod = fn_val = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];

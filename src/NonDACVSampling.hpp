@@ -130,7 +130,7 @@ inline void NonDACVSampling::aggregated_models_mode()
   if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
     iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set truth + LFs
     // synch activeSet with iteratedModel.response_size()
-    activeSet.reshape(num_mf * numFunctions);
+    activeSet.reshape(iteratedModel.response_size());
     activeSet.request_values(1);
   }
 }
@@ -153,17 +153,34 @@ inline void NonDACVSampling::uncorrected_surrogate_mode()
     activeSet.reshape(numFunctions);// synch with model.response_size()
   }
 }
-
-
-inline Real NonDACVSampling::
-level_cost(const RealVector& cost, size_t step)
-{
-  // discrepancies incur two level costs
-  return (step) ?
-    cost[step] + cost[step-1] : // aggregated {HF,LF} mode
-    cost[step];                 //     uncorrected LF mode
-}
 */
+
+
+inline void NonDACVSampling::
+increment_mf_samples(size_t new_N, size_t start, size_t end, SizetArray& N_l)
+{
+  size_t i, len = N_l.size();
+  if (start > end || end >= len) {
+    Cerr << "Error: bad index in NonDACVSampling::increment_mf_samples()"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (i=start; i<end; ++i)
+    N_l[i] += new_N;
+}
+
+
+inline void NonDACVSampling::
+increment_mf_equivalent_cost(size_t new_samp, size_t start, size_t end,
+			     const RealVector& cost)
+{
+  size_t i, len = cost.length(), hf_index = len-1;
+  Real cost_ref = cost[hf_index];
+  if (end == len)
+    { equivHFEvals += new_samp; --end; }
+  for (i=start; i<end; ++i)
+    equivHFEvals += (Real)new_samp * cost[i] / cost_ref;
+}
 
 
 /** extract an active seed from a seed sequence */
@@ -179,6 +196,17 @@ inline int NonDACVSampling::random_seed(size_t index) const
   else if (mlmfIter == 0 && index < randomSeedSeqSpec.size()) // pilot iter only
     return randomSeedSeqSpec[index];
   else return 0; // seed sequence exhausted, do not update
+}
+
+
+void NonDACVSampling::
+compute_MSE(const RealVector& var_l, const SizetArray& N_l, RealVector& mse)
+{
+  // Defines mcMSEIter0 for use as a fixed reference (MC variance from pilot
+  // sample) for comparing against convergenceTol
+  mse.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    mse[qoi] = var_l[qoi] / N_l[qoi];
 }
 
 } // namespace Dakota
