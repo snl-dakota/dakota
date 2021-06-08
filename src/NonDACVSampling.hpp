@@ -16,7 +16,7 @@
 #ifndef NOND_ACV_SAMPLING_H
 #define NOND_ACV_SAMPLING_H
 
-#include "NonDMLMFSampling.hpp"
+#include "NonDEnsembleSampling.hpp"
 
 
 namespace Dakota {
@@ -27,7 +27,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDACVSampling: public NonDSampling
+class NonDACVSampling: public NonDEnsembleSampling
 {
 public:
 
@@ -44,7 +44,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  //bool resize();
 
 protected:
 
@@ -52,10 +52,23 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  //void pre_run();
   void core_run();
-  void post_run(std::ostream& s);
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  //void post_run(std::ostream& s);
+  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+
+  //
+  //- Heading: member functions
+  //
+
+  void multifidelity_mc();
+  void approx_control_variate_multifidelity();
+
+  void shared_increment(size_t iter, size_t step);
+  bool approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_lf,
+			const SizetArray& N_hf, size_t iter, size_t start,
+			size_t end);
+  void ensemble_sample_increment(size_t iter, size_t step);
 
 private:
 
@@ -63,97 +76,49 @@ private:
   //- Heading: Helper functions
   //
 
-  /// synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
-  void aggregated_models_mode();
-  /// synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
-  void bypass_surrogate_mode();
-  /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
-  void uncorrected_surrogate_mode();
+  // manage response mode and active model key from {group,form,lev} triplet.
+  // seq_type defines the active dimension for a model sequence.
+  //void configure_indices(size_t group,size_t form,size_t lev,short seq_type);
 
-  /// return (aggregate) level cost
-  Real level_cost(const RealVector& cost, size_t step);
+  void initialize_mf_sums(IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  IntRealVectorMap& sum_H,
+			  IntRealMatrixMap& sum_LL, //IntRealVectorMap& sum_HH,
+			  IntRealMatrixMap& sum_LH);
+  void accumulate_mf_sums(IntRealMatrixMap& sum_L, const RealVector& offset,
+			  Sizet2DArray& num_L);
+  void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
+			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
+			  const RealVector& offset, Sizet2DArray& num_L,
+			  SizetArray& num_H, Sizet2DArray& num_LH);
 
-  /// advance any sequence specifications
-  void assign_specification_sequence(size_t index);
-  /// extract current random seed from randomSeedSeqSpec
-  int random_seed(size_t index) const;
+  void increment_mf_samples(size_t new_N, size_t start, size_t end,
+			    SizetArray& N_l);
+  void increment_mf_equivalent_cost(size_t new_samp, size_t start, size_t end,
+				    const RealVector& cost);
 
-  /// manage response mode and active model key from {group,form,lev} triplet.
-  /// s_index is the sequence index that defines the active dimension for a
-  /// model sequence.
-  void configure_indices(size_t group, size_t form, size_t lev, short seq_type);
-
-  /// export allSamples to tagged tabular file
-  void export_all_samples(String root_prepend, const Model& model,
-			  size_t iter, size_t lev);
+  void compute_eval_ratios(const RealMatrix& sum_L_shared,
+			   const RealVector& sum_H,  const RealMatrix& sum_LL,
+			   const RealMatrix& sum_LH, const RealVector& sum_HH,
+			   const RealVector& cost,   const Sizet2DArray& N_L,
+			   const SizetArray& N_H,    const Sizet2DArray& N_LH,
+			   RealVector& var_H, RealMatrix& rho2_LH,
+			   RealMatrix& eval_ratios);
+  void compute_MSE_ratios(const RealMatrix& eval_ratios,
+			  const RealMatrix& rho2_LH, RealMatrix& mse_ratios);
+  void compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+			      Real sum_HH, size_t N_L, size_t N_H, size_t N_LH,
+			      Real& var_H, Real& rho2_LH);
 
   //
   //- Heading: Data
   //
 
-  /// total number of successful sample evaluations (excluding faults)
-  /// for each model form, discretization level, and QoI
-  Sizet3DArray NLev;
-
-  /// store the pilot_samples input specification, prior to run-time
-  /// invocation of load_pilot_sample()
-  SizetArray pilotSamples;
-
-  /// user specification for seed_sequence
-  SizetArray randomSeedSeqSpec;
-
-  /// major iteration counter
-  size_t mlmfIter;
-
-  /// store the allocation_target input specification, prior to run-time
-  /// Options right now:
-  ///   - Mean = First moment (Mean)
-  ///   - Variance = Second moment (Variance or standard deviation depending on moments central or standard)
-  short allocationTarget;
-
-  /// store the qoi_aggregation_norm input specification, prior to run-time
-  /// Options right now:
-  ///   - sum = aggregate the variance over all QoIs, compute samples from that
-  ///   - max = take maximum sample allocation over QoIs for each level
-  short qoiAggregation;
-
-  /// if defined, export each of the sample increments in ML, CV, MLCV
-  /// using tagged tabular files
-  bool exportSampleSets;
-  /// format for exporting sample increments using tagged tabular files
-  unsigned short exportSamplesFormat;
+  /// number of approximation models managed by non-hierarchical iteratedModel
+  size_t numApprox;
 };
-
-
-inline void NonDACVSampling::aggregated_models_mode()
-{
-  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set truth + LFs
-    // synch activeSet with iteratedModel.response_size()
-    activeSet.reshape(iteratedModel.response_size());
-    activeSet.request_values(1);
-  }
-}
-
-
-inline void NonDACVSampling::bypass_surrogate_mode()
-{
-  if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // HF only
-    activeSet.reshape(numFunctions);// synch with model.response_size()
-  }
-}
-
-
-/*
-inline void NonDACVSampling::uncorrected_surrogate_mode()
-{
-  if (iteratedModel.surrogate_response_mode() != UNCORRECTED_SURROGATE) {
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-    activeSet.reshape(numFunctions);// synch with model.response_size()
-  }
-}
-*/
 
 
 inline void NonDACVSampling::
@@ -183,32 +148,26 @@ increment_mf_equivalent_cost(size_t new_samp, size_t start, size_t end,
 }
 
 
-/** extract an active seed from a seed sequence */
-inline int NonDACVSampling::random_seed(size_t index) const
+inline void NonDACVSampling::
+compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+		       Real sum_HH, size_t N_L, size_t N_H, size_t N_LH,
+		       Real& var_H, Real& rho2_LH)
 {
-  // return 0 for cases where seed is undefined or will not be updated
+  Real bessel_corr_L  = (Real)N_L  / (Real)(N_L  - 1),
+       bessel_corr_H  = (Real)N_H  / (Real)(N_H  - 1),
+       bessel_corr_LH = (Real)N_LH / (Real)(N_LH - 1);
 
-  if (randomSeedSeqSpec.empty()) return 0; // no spec -> non-repeatable samples
-  else if (!varyPattern) // continually reset seed to specified value
-    return (index < randomSeedSeqSpec.size()) ?
-      randomSeedSeqSpec[index] : randomSeedSeqSpec.back();
-  // only set sequence of seeds for first pass, then let RNG state continue
-  else if (mlmfIter == 0 && index < randomSeedSeqSpec.size()) // pilot iter only
-    return randomSeedSeqSpec[index];
-  else return 0; // seed sequence exhausted, do not update
+  // unbiased mean estimator X-bar = 1/N * sum
+  Real mu_L = sum_L / N_L, mu_H = sum_H / N_H;
+  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
+  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
+  Real var_L = (sum_LL / N_L  - mu_L * mu_L) * bessel_corr_L,
+      cov_LH = (sum_LH / N_LH - mu_L * mu_H) * bessel_corr_LH; // *** TO DO: potential inconsistency
+  var_H      = (sum_HH / N_H  - mu_H * mu_H) * bessel_corr_H;
+
+  //beta  = cov_LH / var_L;
+  rho2_LH = cov_LH / var_L * cov_LH / var_H;
 }
-
-
-void NonDACVSampling::
-compute_MSE(const RealVector& var_l, const SizetArray& N_l, RealVector& mse)
-{
-  // Defines mcMSEIter0 for use as a fixed reference (MC variance from pilot
-  // sample) for comparing against convergenceTol
-  mse.sizeUninitialized(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    mse[qoi] = var_l[qoi] / N_l[qoi];
-}
-
 } // namespace Dakota
 
 #endif

@@ -249,9 +249,9 @@ protected:
   void clear_model_keys();
 
   /// return surrogate model, if present, within subModel
-  Model& surrogate_model();
+  Model& surrogate_model(size_t i = _NPOS);
   /// return surrogate model, if present, within subModel
-  const Model& surrogate_model() const;
+  const Model& surrogate_model(size_t i = _NPOS) const;
 
   /// return truth model, if present, within subModel
   Model& truth_model();
@@ -717,12 +717,12 @@ inline void RecastModel::clear_model_keys()
 { subModel.clear_model_keys(); }
 
 
-inline Model& RecastModel::surrogate_model()
-{ return subModel.surrogate_model(); }
+inline Model& RecastModel::surrogate_model(size_t i)
+{ return subModel.surrogate_model(i); }
 
 
-inline const Model& RecastModel::surrogate_model() const
-{ return subModel.surrogate_model(); }
+inline const Model& RecastModel::surrogate_model(size_t i) const
+{ return subModel.surrogate_model(i); }
 
 
 inline Model& RecastModel::truth_model()

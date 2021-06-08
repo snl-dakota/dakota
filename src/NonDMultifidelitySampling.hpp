@@ -194,8 +194,6 @@ private:
   //- Heading: Data
   //
 
-  /// mean squared error of mean estimator from pilot sample MC on HF model
-  RealVector mcMSEIter0;
 };
 
 

@@ -95,6 +95,16 @@ protected:
   Real aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY,
 			  const SizetArray& N_l);
 
+  /// manage response mode and active model key from {group,form,lev} triplet.
+  /// seq_type defines the active dimension for a 1D model sequence.
+  void configure_indices(unsigned short group, unsigned short form,
+			 size_t lev, short seq_type);
+  /// convert group and form and call overload
+  void configure_indices(size_t group, size_t form, size_t lev, short seq_type);
+
+  /// return (aggregate) level cost
+  Real level_cost(const RealVector& cost, size_t step);
+
 private:
 
   //
@@ -347,6 +357,26 @@ private:
 
 inline NonDMultilevelSampling::~NonDMultilevelSampling()
 { }
+
+
+inline void NonDMultilevelSampling::
+configure_indices(size_t group, size_t form, size_t lev, short seq_type)
+{
+  // preserve special values across type conversions
+  unsigned short grp = (group == SZ_MAX) ? USHRT_MAX : (unsigned short)group,
+                 frm = (form  == SZ_MAX) ? USHRT_MAX : (unsigned short)form;
+  configure_indices(grp, frm, lev, seq_type);
+}
+
+
+inline Real NonDMultilevelSampling::
+level_cost(const RealVector& cost, size_t step)
+{
+  // discrepancies incur two level costs
+  return (step) ?
+    cost[step] + cost[step-1] : // aggregated {HF,LF} mode
+    cost[step];                 //     uncorrected LF mode
+}
 
 
 inline void NonDMultilevelSampling::

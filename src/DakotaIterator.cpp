@@ -491,10 +491,10 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case ADAPTIVE_SAMPLING:
     return std::make_shared<NonDAdaptiveSampling>(problem_db, model); break;
 #endif
-#ifdef HAVE_MUQ
-  case MUQ_SAMPLING:
-    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model); break;
-#endif
+//#ifdef HAVE_MUQ
+//  case MUQ_SAMPLING:
+//    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model); break;
+//#endif
   case RANDOM_SAMPLING:
     return std::make_shared<NonDLHSSampling>(problem_db, model); break;
   case MULTILEVEL_SAMPLING:

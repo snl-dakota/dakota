@@ -139,9 +139,9 @@ protected:
   void clear_model_keys();
 
   /// return this model instance
-  Model& surrogate_model();
+  Model& surrogate_model(size_t i = _NPOS);
   /// return this model instance
-  const Model& surrogate_model() const;
+  const Model& surrogate_model(size_t i = _NPOS) const;
   /// return actualModel
   Model& truth_model();
   /// return actualModel
@@ -599,10 +599,14 @@ inline void DataFitSurrModel::clear_model_keys()
 { approxInterface.clear_model_keys(); }
 
 
-inline Model& DataFitSurrModel::surrogate_model()
+inline Model& DataFitSurrModel::surrogate_model(size_t i)
 {
-  // return by reference: OK to return letter instance
-  return *this;
+  if (i && i != _NPOS) { // allow either 0 or no index
+    Cerr << "Error: bad index (" << i << ") in DataFitSurrModel::"
+	 << "surrogate_model()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return *this; // return by reference: OK to return letter instance
 
   // return by value: letter instance must be returned within an envelope for
   // representation sharing/reference counting to work properly
@@ -612,8 +616,15 @@ inline Model& DataFitSurrModel::surrogate_model()
 }
 
 
-inline const Model& DataFitSurrModel::surrogate_model() const
-{ return *this; } // return of letter (see above)
+inline const Model& DataFitSurrModel::surrogate_model(size_t i) const
+{
+  if (i && i != _NPOS) { // allow either 0 or no index
+    Cerr << "Error: bad index (" << i << ") in DataFitSurrModel::"
+	 << "surrogate_model()." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return *this; // return of letter (see above)
+}
 
 
 inline Model& DataFitSurrModel::truth_model()

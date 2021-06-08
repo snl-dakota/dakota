@@ -107,9 +107,9 @@ protected:
   void multifidelity_precedence(bool mf_prec, bool update_default = false);
 
   /// return the active low fidelity model
-  Model& surrogate_model();
+  Model& surrogate_model(size_t i = _NPOS);
   /// return the active low fidelity model
-  const Model& surrogate_model() const;
+  const Model& surrogate_model(size_t i = _NPOS) const;
 
   /// return the active high fidelity model
   Model& truth_model();
@@ -427,35 +427,35 @@ inline void HierarchSurrModel::correction_type(short corr_type)
 }
 
 
-inline Model& HierarchSurrModel::surrogate_model()
+inline Model& HierarchSurrModel::surrogate_model(size_t i)
 {
-  unsigned short lf_form = surrModelKey.retrieve_model_form();
-  if (lf_form == USHRT_MAX) // either empty key or undefined model form
-    return orderedModels.front();
-  else {
-    if (lf_form >= orderedModels.size()) {
-      Cerr << "Error: model form (" << lf_form << ") out of range in "
-	   << "HierarchSurrModel::surrogate_model()" << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-    return orderedModels[lf_form];
+  if (i == _NPOS) { // retrieve active surrogate, else indexed one
+    unsigned short lf_form = surrModelKey.retrieve_model_form();
+    i = (lf_form == USHRT_MAX) // empty key or undefined model form
+      ? 0 : lf_form;
   }
+  if (i >= orderedModels.size()) {
+    Cerr << "Error: model index (" << i << ") out of range in "
+	 << "HierarchSurrModel::surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return orderedModels[i];
 }
 
 
-inline const Model& HierarchSurrModel::surrogate_model() const
+inline const Model& HierarchSurrModel::surrogate_model(size_t i) const
 {
-  unsigned short lf_form = surrModelKey.retrieve_model_form();
-  if (lf_form == USHRT_MAX) // either empty key or undefined model form
-    return orderedModels.front();
-  else {
-    if (lf_form >= orderedModels.size()) {
-      Cerr << "Error: model form (" << lf_form << ") out of range in "
-	   << "HierarchSurrModel::surrogate_model()" << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-    return orderedModels[lf_form];
+  if (i == _NPOS) { // retrieve active surrogate, else indexed one
+    unsigned short lf_form = surrModelKey.retrieve_model_form();
+    i = (lf_form == USHRT_MAX) // empty key or undefined model form
+      ? 0 : lf_form;
   }
+  if (i >= orderedModels.size()) {
+    Cerr << "Error: model index (" << i << ") out of range in "
+	 << "HierarchSurrModel::surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return orderedModels[i];
 }
 
 
@@ -466,7 +466,7 @@ inline Model& HierarchSurrModel::truth_model()
     return orderedModels.back();
   else {
     if (hf_form >= orderedModels.size()) {
-      Cerr << "Error: model form (" << hf_form << ") out of range in "
+      Cerr << "Error: model index (" << hf_form << ") out of range in "
 	   << "HierarchSurrModel::truth_model()" << std::endl;
       abort_handler(MODEL_ERROR);
     }

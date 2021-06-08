@@ -3353,19 +3353,19 @@ size_t Model::qoi() const
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-Model& Model::surrogate_model()
+Model& Model::surrogate_model(size_t i)
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->surrogate_model();
+    return modelRep->surrogate_model(i);
   else // letter lacking redefinition of virtual fn.
     return dummy_model; // default is no surrogate -> return empty envelope
 }
 
 
-const Model& Model::surrogate_model() const
+const Model& Model::surrogate_model(size_t i) const
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->surrogate_model();
+    return modelRep->surrogate_model(i);
   else // letter lacking redefinition of virtual fn.
     return dummy_model; // default is no surrogate -> return empty envelope
 }

@@ -127,7 +127,7 @@ void NonDMultifidelitySampling::control_variate_mc()
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions), var_H(numFunctions, false),
-    rho2_LH(numFunctions, false), mu_hat, eval_ratios, mse_ratios;
+    rho2_LH(numFunctions, false), mu_hat, eval_ratios, mse_iter0, mse_ratios;
 
   // Initialize for pilot sample
   SizetArray delta_N_l;
@@ -143,13 +143,13 @@ void NonDMultifidelitySampling::control_variate_mc()
     // Compute shared increment targeting specified MSE reduction
     // ----------------------------------------------------------
     if (mlmfIter) {
-      // CV MSE target = convTol * mcMSEIter0 = mse_ratio * var_H / N_hf
-      // N_hf = mse_ratio * var_H / convTol / mcMSEIter0
-      // Note: don't simplify further since mcMSEIter0 is based on pilot
+      // CV MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_hf
+      // N_hf = mse_ratio * var_H / convTol / mse_iter0
+      // Note: don't simplify further since mse_iter0 is based on pilot
       //       estimate of var_H / N_hf
       RealVector hf_targets = mse_ratios;
       for (qoi=0; qoi<numFunctions; ++qoi)
-	hf_targets[qoi] *= var_H[qoi] / mcMSEIter0[qoi] / convergenceTol;
+	hf_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
       // Power mean choice: average, max (desire would be to balance overshoot
       // vs. additional iteration)
       hf_sample_incr = numSamples = one_sided_delta(N_hf, hf_targets, 1); //avg
@@ -170,6 +170,8 @@ void NonDMultifidelitySampling::control_variate_mc()
       // Compute the ratio of MC and CVMC mean squared errors (for convergence).
       // This ratio incorporates the anticipated variance reduction from the
       // upcoming application of eval_ratios.
+      if (mlmfIter == 0)
+	compute_mc_estimator_variance(var_H, N_hf, mse_iter0);
       compute_MSE_ratios(eval_ratios, var_H, rho2_LH, mlmfIter, N_hf,
 			 mse_ratios);
 
@@ -500,18 +502,9 @@ compute_MSE_ratios(const RealVector& eval_ratios, const RealVector& var_H,
 		   const RealVector& rho2_LH, size_t iter,
 		   const SizetArray& N_hf, RealVector& mse_ratios)
 {
-  size_t qoi;
-  if (iter == 0) {
-    // Define mcMSEIter0 for use as a fixed reference (MC variance from pilot
-    // sample) for comparing against convergenceTol
-    mcMSEIter0.sizeUninitialized(numFunctions);
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      mcMSEIter0[qoi] = var_H[qoi] / N_hf[qoi];
-  }
-
   //Real curr_mc_mse, curr_cvmc_mse, curr_mse_ratio, avg_mse_ratio = 0.;
   if (mse_ratios.empty()) mse_ratios.sizeUninitialized(numFunctions);
-  for (qoi=0; qoi<numFunctions; ++qoi) {
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     // Compute ratio of MSE for high fidelity MC and multifidelity CVMC
     // > Estimator Var for MC = sigma_hf^2 / N_hf = MSE (neglect HF bias)
     // > Estimator Var for CV = (1+r/w) [1-rho^2(1-1/r)] sigma_hf^2 / p

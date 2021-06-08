@@ -381,6 +381,36 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 }
 
 
+void NonDMultilevelSampling::
+configure_indices(unsigned short group, unsigned short form,
+		  size_t lev, short seq_type)
+{
+  // Notes:
+  // > could consolidate with NonDExpansion::configure_indices() with a passed
+  //   model and virtual *_mode() assignments.  Leaving separate for now...
+  // > group index is assigned based on step in model form/resolution sequence
+  // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
+
+  Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, lev);
+
+  if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
+       (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0)) {
+    // step 0 in the sequence
+    bypass_surrogate_mode();
+    iteratedModel.active_model_key(hf_key);      // one active fidelity
+  }
+  else {
+    aggregated_models_mode();
+
+    Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
+    lf_key.decrement_key(seq_type); // seq_index defaults to 0
+    // For MLMC/MFMC/MLMFMC, we aggregate levels but don't reduce them
+    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
+    iteratedModel.active_model_key(discrep_key); // two active fidelities
+  }
+}
+
+
 void NonDMultilevelSampling::evaluate_ml_sample_increment(unsigned short step)
 {
   // advance any sequence specifications (seed_sequence)

@@ -78,10 +78,10 @@ protected:
   const IntResponseMap& derived_synchronize();
   const IntResponseMap& derived_synchronize_nowait();
 
-  // return the active low fidelity model
-  //Model& surrogate_model();
-  // return the active low fidelity model
-  //const Model& surrogate_model() const;
+  /// return the indexed approximate model from unorderedModels
+  Model& surrogate_model(size_t i = _NPOS);
+  /// return the indexed approximate model from unorderedModels
+  const Model& surrogate_model(size_t i = _NPOS) const;
 
   /// return the high fidelity model
   Model& truth_model();
@@ -341,38 +341,42 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
 }
 
 
-/*
-inline Model& NonHierarchSurrModel::surrogate_model()
+inline Model& NonHierarchSurrModel::surrogate_model(size_t i)
 {
-  unsigned short lf_form = (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[1];
-  if (lf_form == USHRT_MAX) // either empty key or undefined model form
-    return orderedModels.front();
-  else {
-    if (lf_form >= orderedModels.size()) {
-      Cerr << "Error: model form (" << lf_form << ") out of range in "
-	   << "NonHierarchSurrModel::surrogate_model()" << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-    return orderedModels[lf_form];
+  if (i == _NPOS) {
+    //unsigned short lf_form = unorderedModelKeys[0].retrieve_model_form();
+    //i = (lf_form == USHRT_MAX) // empty key or undefined model form
+    //  ? 0 : lf_form;
+    Cerr << "Error: model form must be specified in NonHierarchSurrModel::"
+	 << "surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
   }
+  else if (i >= unorderedModels.size()) {
+    Cerr << "Error: model form (" << i << ") out of range in "
+	 << "NonHierarchSurrModel::surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return unorderedModels[i];
 }
 
 
-inline const Model& NonHierarchSurrModel::surrogate_model() const
+inline const Model& NonHierarchSurrModel::surrogate_model(size_t i) const
 {
-  unsigned short lf_form = (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[1];
-  if (lf_form == USHRT_MAX) // either empty key or undefined model form
-    return orderedModels.front();
-  else {
-    if (lf_form >= orderedModels.size()) {
-      Cerr << "Error: model form (" << lf_form << ") out of range in "
-	   << "NonHierarchSurrModel::surrogate_model()" << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-    return orderedModels[lf_form];
+  if (i == _NPOS) {
+    //unsigned short lf_form = unorderedModelKeys[0].retrieve_model_form();
+    //i = (lf_form == USHRT_MAX) // empty key or undefined model form
+    //  ? 0 : lf_form;
+    Cerr << "Error: model index must be specified in NonHierarchSurrModel::"
+	 << "surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
   }
+  if (i >= unorderedModels.size()) {
+    Cerr << "Error: model index (" << i << ") out of range in "
+	 << "NonHierarchSurrModel::surrogate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return unorderedModels[i];
 }
-*/
 
 
 inline Model& NonHierarchSurrModel::truth_model()
