@@ -78,6 +78,13 @@ protected:
   const IntResponseMap& derived_synchronize();
   const IntResponseMap& derived_synchronize_nowait();
 
+  bool multifidelity() const;
+  bool multilevel() const;
+  //bool multilevel_multifidelity() const;
+
+  bool multifidelity_precedence() const;
+  void multifidelity_precedence(bool mf_prec, bool update_default = false);
+
   /// return the indexed approximate model from unorderedModels
   Model& surrogate_model(size_t i = _NPOS);
   /// return the indexed approximate model from unorderedModels
@@ -247,6 +254,8 @@ private:
   /// employ the same interface instance, requiring modifications to evaluation
   /// scheduling processes
   bool sameInterfaceInstance;
+  /// tie breaker for type of model hierarchy when forms and levels are present
+  bool mfPrecedence;
 
   /// store aggregate model key that is active in component_parallel_mode()
   Pecos::ActiveKey componentParallelKey;
@@ -339,6 +348,41 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
 	{ sameInterfaceInstance = false; break; }
   }
 }
+
+
+inline bool NonHierarchSurrModel::multifidelity_precedence() const
+{ return mfPrecedence; }
+
+
+inline void NonHierarchSurrModel::
+multifidelity_precedence(bool mf_prec, bool update_default)
+{
+  mfPrecedence = mf_prec;
+  if (update_default) assign_default_keys();
+}
+
+
+inline bool NonHierarchSurrModel::multifidelity() const
+{
+  // This function is used when we don't want to alter logic at run-time based
+  // on a deactivated key (as for same{Model,Interface}Instance)
+  // > we rely on mfPrecedence passed from NonDExpansion::configure_sequence()
+  //   based on the ML/MF algorithm selection; otherwise defaults to true
+
+  return ( !unorderedModels.empty() && // truth + at least 1 approx
+	   ( mfPrecedence || truthModel.solution_levels() <= 1 ) );
+}
+
+
+inline bool NonHierarchSurrModel::multilevel() const
+{
+  return ( truthModel.solution_levels() > 1 &&
+	   ( !mfPrecedence || unorderedModels.empty() ) );
+}
+
+
+//inline bool HierarchSurrModel::multilevel_multifidelity() const
+//{ return ( unorderedModels.size() && truthModel.solution_levels() > 1 ); }
 
 
 inline Model& NonHierarchSurrModel::surrogate_model(size_t i)

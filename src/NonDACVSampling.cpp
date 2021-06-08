@@ -124,7 +124,7 @@ void NonDACVSampling::core_run()
   // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
   iteratedModel.clear_model_keys();
   // prefer MF over ML if both available
-  iteratedModel.multifidelity_precedence(true);//_enforcement(); *** ???
+  iteratedModel.multifidelity_precedence(true);//_enforcement(); *** TO DO
 
   switch (methodName) {
   case MULTIFIDELITY_SAMPLING:
@@ -171,10 +171,10 @@ void NonDACVSampling::multifidelity_mc()
     //truth_form = fixed_form;  truth_lev = numApprox;
   }
   else {
-    truth_key.form_key(0, num_steps-1, secondary_index);
+    truth_key.form_key(0, numApprox, secondary_index);
     for (i=0; i<numApprox; ++i)
       approx_keys[i].form_key(0, i, secondary_index);
-    //truth_form = num_steps-1;  truth_lev = secondary_index;
+    //truth_form = numApprox;  truth_lev = secondary_index;
   }
   active_key.aggregate_keys(truth_key, approx_keys, Pecos::RAW_DATA);
   aggregated_models_mode();
@@ -263,7 +263,7 @@ void NonDACVSampling::multifidelity_mc()
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
   //cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_H, sum_L_refined,
-  //		 N_L, rho2_LH, H_raw_mom); // *** TO DO----------------
+  //		   N_L, rho2_LH, H_raw_mom); // *** TO DO
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
 }

@@ -420,9 +420,9 @@ configure_sequence(//unsigned short hierarch_dim,
 {
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ML/MF calling algorithm)
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  ModelLIter m_iter = --ordered_models.end(); // HF model
-  size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
+  ModelList& sub_models = iteratedModel.subordinate_models(false);
+  ModelLIter m_iter = --sub_models.end(); // HF model
+  size_t num_mf = sub_models.size(), num_hf_lev = m_iter->solution_levels();
 
   //switch (hierarch_dim) {
   //case 1:
@@ -470,17 +470,17 @@ bool NonD::
 query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 {
   bool cost_defined = true;
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
+  ModelList& sub_models = iteratedModel.subordinate_models(false);
   ModelLIter m_iter;
   if (multilevel) {
-    ModelLIter m_iter = --ordered_models.end(); // HF model
+    ModelLIter m_iter = --sub_models.end(); // HF model
     cost = m_iter->solution_level_costs();      // can be empty
     if (cost.length() != num_steps)
       cost_defined = false;
   }
   else  {
     cost.sizeUninitialized(num_steps);
-    m_iter = ordered_models.begin();
+    m_iter = sub_models.begin();
     for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
       cost[i] = m_iter->solution_level_cost(); // cost for active soln index
       if (cost[i] <= 0.) cost_defined = false;
@@ -578,10 +578,10 @@ inflate_final_samples(const Sizet2DArray& N_l_2D, bool multilev,
     N_l_3D[fixed_index] = N_l_2D;
   else { // MF case
     if (fixed_index == SZ_MAX) {
-      ModelList& ordered_models = iteratedModel.subordinate_models(false);
-      ModelLIter m_iter = ordered_models.begin();
+      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelLIter m_iter = sub_models.begin();
       size_t m_soln_lev, active_lev;
-      for (i=0; i<num_mf && m_iter != ordered_models.end(); ++i, ++m_iter) {
+      for (i=0; i<num_mf && m_iter != sub_models.end(); ++i, ++m_iter) {
 	m_soln_lev = m_iter->solution_level_cost_index();
 	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
 	N_l_3D[i][active_lev] = N_l_2D[i];  // assign vector of qoi samples

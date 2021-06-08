@@ -36,6 +36,7 @@
 #include "NonDMultilevelSampling.hpp"
 #include "NonDMultifidelitySampling.hpp"
 #include "NonDMultilevMultifidSampling.hpp"
+#include "NonDACVSampling.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
 #include "NonDLHSEvidence.hpp"
@@ -500,7 +501,11 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MULTILEVEL_SAMPLING:
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
-    return std::make_shared<NonDMultifidelitySampling>(problem_db, model);break;
+    if (model.subordinate_models(false).size() > 2) // *** for now ***
+      return std::make_shared<NonDACVSampling>(problem_db, model);
+    else
+      return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
+    break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevMultifidSampling>(problem_db, model);
     break;

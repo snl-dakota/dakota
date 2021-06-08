@@ -26,7 +26,8 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db),
   //corrOrder(problem_db.get_short("model.surrogate.correction_order")),
   //correctionMode(SINGLE_CORRECTION),
-  modeKeyBufferSize(0)
+  sameModelInstance(false), sameInterfaceInstance(false),
+  mfPrecedence(true), modeKeyBufferSize(0)
 {
   // NonHierarchical surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
@@ -62,23 +63,28 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
 
 void NonHierarchSurrModel::assign_default_keys()
 {
-  // default key values, to be overridden at run time
-  unsigned short id = 0;
-  size_t soln_lev = truthModel.solution_levels(),
-    lev = (soln_lev) ? soln_lev - 1 : SZ_MAX;
-  truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0, lev);// form, lev
-
-  if (responseMode == BYPASS_SURROGATE)
-    unorderedModelKeys.clear();
-  else {
-    size_t i, num_unord = unorderedModels.size(), lf_soln_lev;
-    unorderedModelKeys.resize(num_unord);
-    for (i=0; i<num_unord; ++i) {
-      soln_lev = unorderedModels[i].solution_levels();
-      lev = (soln_lev) ? soln_lev - 1 : SZ_MAX;
-      unorderedModelKeys[i]
-	= Pecos::ActiveKey(id, Pecos::RAW_DATA, i+1, lev);// form, lev
-    }
+  // default key data values, to be overridden at run time
+  unsigned short id = 0, num_approx = unorderedModels.size();
+  if (multifidelity()) { // first and last model form (no soln levels)
+    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, SZ_MAX);
+    //if (responseMode == AGGREGATED_MODELS) {
+      unorderedModelKeys.resize(num_approx);
+      for (unsigned short i=0; i<num_approx; ++i)
+	unorderedModelKeys[i]
+	  = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, SZ_MAX);
+    //}
+  }
+  else if (multilevel()) { // first and last solution level (last model)
+    size_t truth_soln_lev = truthModel.solution_levels(),
+      truth_index = truth_soln_lev - 1;
+    truthModelKey
+      = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
+    //if (responseMode == AGGREGATED_MODELS) {
+      unorderedModelKeys.resize(truth_index);
+      for (size_t i=0; i<truth_index; ++i)
+	unorderedModelKeys[i]
+	  = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, i);
+    //}
   }
   activeKey.aggregate_keys(truthModelKey, unorderedModelKeys,
 			   Pecos::RAW_DATA); // no data reduction

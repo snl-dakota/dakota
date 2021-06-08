@@ -125,9 +125,9 @@ inline void NonDACVSampling::
 increment_mf_samples(size_t new_N, size_t start, size_t end, SizetArray& N_l)
 {
   size_t i, len = N_l.size();
-  if (start > end || end >= len) {
-    Cerr << "Error: bad index in NonDACVSampling::increment_mf_samples()"
-	 << std::endl;
+  if (start > end || end > len) {
+    Cerr << "Error: index range [" << start << "," << end << ") violates size ("
+	 << len << ") in NonDACVSampling::increment_mf_samples()" << std::endl;
     abort_handler(METHOD_ERROR);
   }
   for (i=start; i<end; ++i)
