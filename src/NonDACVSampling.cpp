@@ -193,8 +193,8 @@ void NonDACVSampling::multifidelity_mc()
   IntRealMatrixMap sum_L_shared, sum_L_refined, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions), var_H(numFunctions, false),
-    mu_hat, mse_iter0;
-  RealMatrix rho2_LH(numFunctions, false), eval_ratios, mse_ratios;
+    mu_hat, mse_iter0, mse_ratios;
+  RealMatrix rho2_LH(numFunctions, false), eval_ratios;
   SizetArray N_H, delta_N; Sizet2DArray N_L(numApprox), N_LH(numApprox);
   N_H.assign(numFunctions, 0);
   for (approx=0; approx<numApprox; ++approx)
@@ -216,16 +216,13 @@ void NonDACVSampling::multifidelity_mc()
       // ---------------------------------------------------
       // Option 1: iterate until relative tolerance achieved
       // ---------------------------------------------------
-      // CV MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
+      // MFMC MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
       //           N_H = mse_ratio * var_H / convTol / mse_iter0
       // Note: don't simplify further since mse_iter0 is fixed based on pilot
       //       estimate of var_H / N_H
-      RealMatrix truth_targets = mse_ratios;  Real factor;
-      for (qoi=0; qoi<numFunctions; ++qoi) {
-	factor = var_H[qoi] / mse_iter0[qoi] / convergenceTol;
-	for (approx=0; approx<numApprox; ++approx)
-	  truth_targets(qoi, approx) *= factor;
-      }
+      RealVector truth_targets = mse_ratios;
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	truth_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
       // Power mean choice: average, max (desire would be to balance overshoot
       // vs. additional iteration)
       truth_sample_incr = numSamples = one_sided_delta(N_H, truth_targets, 1);
@@ -236,7 +233,7 @@ void NonDACVSampling::multifidelity_mc()
     }
 
     if (numSamples) {
-      shared_increment(mlmfIter, numApprox); // spans ALL models
+      shared_increment(mlmfIter, numApprox); // spans ALL models, blocking
       accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 			 sum_HH, mu_hat, N_L, N_H, N_LH);
       increment_mf_samples(numSamples, 0, num_steps, raw_N);
@@ -252,24 +249,30 @@ void NonDACVSampling::multifidelity_mc()
       // Compute the ratio of MC and CVMC mean squared errors (for convergence).
       // This ratio incorporates the anticipated variance reduction from the
       // upcoming application of eval_ratios.
-      compute_MSE_ratios(eval_ratios, rho2_LH, mse_ratios); // *** TO DO: update
+      compute_MSE_ratios(eval_ratios, rho2_LH, cost, mse_ratios);
 
       // -------------------------------------------------------------------
       // Compute N_approx increments based on new eval ratio for new N_truth
       // -------------------------------------------------------------------
-      for (approx=0; approx<numApprox; ++approx) {
-	// approx_increment() spans models {i, i+1, ..., #approx}
+      // Pyramid/nested sampling: at step i, we sample approximation range
+      // [0,numApprox-1-i] using the delta relative to the previous step
+      // 
+      for (approx=numApprox; approx>0; --approx) {
+	// pyramid sampling increments span models {0, ..., approx}
 	if (equivHFEvals <= maxFunctionEvals &&
-	    approx_increment(eval_ratios,N_L,N_H,mlmfIter,approx,numApprox)) { // *** TO DO: NON_BLOCKING: MOVE 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
+	    approx_increment(eval_ratios, N_L, N_H, mlmfIter, 0, approx)) { // *** TO DO: NON_BLOCKING: MOVE 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
 	  accumulate_mf_sums(sum_L_refined, mu_hat, N_L);
 	  increment_mf_samples(numSamples, approx, numApprox, raw_N);
 	  increment_mf_equivalent_cost(numSamples, approx, numApprox, cost);
 	}
       }
     }
-    //Cout << "\nMFMC iteration " << mlmfIter << " complete." << std::endl;
+    else
+      Cout << "\nMFMC iteration " << mlmfIter << ": no shared sample increment"
+	   << std::endl;
+
     ++mlmfIter;
-  } // end while
+  }
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
@@ -305,9 +308,8 @@ void NonDACVSampling::approx_control_variate_multifidelity()
 void NonDACVSampling::
 shared_increment(/*const Pecos::ActiveKey& agg_key,*/ size_t iter, size_t step)
 {
-  if (iter == _NPOS)  Cout << "\nMFMC sample increments: ";
-  else if (iter == 0) Cout << "\nMFMC pilot sample: ";
-  else Cout << "\nMFMC iteration " << iter << " sample increments: ";
+  if (iter == 0) Cout << "\nMFMC pilot sample: ";
+  else Cout << "\nMFMC iteration " << iter << ": shared sample increment = ";
   Cout << numSamples << '\n';
 
   if (numSamples) {
@@ -321,25 +323,32 @@ shared_increment(/*const Pecos::ActiveKey& agg_key,*/ size_t iter, size_t step)
 
 
 bool NonDACVSampling::
-approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_lf,
-		 const SizetArray& N_hf, size_t iter, size_t start, size_t end)
+approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_L,
+		 const SizetArray& N_H, size_t iter, size_t start, size_t end)
 {
-  // update LF samples based on evaluation ratio
-  //   r = m/n -> m = r*n -> delta = m-n = (r-1)*n
-  //   or with inverse r  -> delta = m-n = n/inverse_r - n
-  RealMatrix lf_targets(numApprox, numFunctions, false);
+  // Update LF samples based on evaluation ratio
+  //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
+  // IMPORTANT NOTES:
+  // > the sample increment for the approx range is determined by approx[end-1]
+  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
+  // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
+  //   allowing use of one_sided_delta() with latest counts
+  size_t approx = end - 1;
+  RealVector lf_targets(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    const Real* ev_ratio_q = eval_ratios[qoi];  size_t N_hf_q = N_hf[qoi];
-    Real* lf_tgt_q = lf_targets[qoi];
-    for (size_t approx=0; approx<numApprox; ++approx)
-      lf_tgt_q[approx] = ev_ratio_q[approx] * N_hf_q;
+    const Real* ev_ratio_q = eval_ratios[qoi];
+    lf_targets[qoi] = eval_ratios(qoi, approx) * N_H[qoi];
   }
-  // Choose average, RMS, max of difference?
-  // Trade-off: Possible overshoot vs. more iteration...
-  numSamples = one_sided_delta(N_lf, lf_targets, 1); // average
+  // Choose avg, RMS, max? (trade-off: possible overshoot vs. more iteration)
+  numSamples = one_sided_delta(N_L[approx], lf_targets, 1); // average
 
   if (numSamples && start < end) {
-    Cout << "\nMFMC approx sample increment = " << numSamples << std::endl;
+    Cout << "\nMFMC sample increment = " << numSamples
+	 << " for approximations [" << start+1 << ", " << end << ']';
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << " computed from average delta between target:\n" << lf_targets
+	   << "and current counts:\n" << N_L[approx];
+    Cout << std::endl;
     size_t start_qoi = start * numFunctions, end_qoi = end * numFunctions;
     activeSet.request_values(0, 0,         start_qoi);
     activeSet.request_values(1, start_qoi, end_qoi);
@@ -348,7 +357,8 @@ approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_lf,
     return true;
   }
   else {
-    Cout << "\nNo MFMC approx sample increment" << std::endl;
+    Cout << "\nNo MFMC approx sample increment for approximations ["
+	 << start+1 << ", " << end << ']' << std::endl;
     return false;
   }
 }
@@ -545,6 +555,7 @@ compute_eval_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 		    RealMatrix& rho2_LH, RealMatrix& eval_ratios)
 {
   size_t approx, qoi;
+  if (var_H.empty())     var_H.sizeUninitialized(numFunctions);
   if (rho2_LH.empty()) rho2_LH.shapeUninitialized(numFunctions, numApprox);
   if (eval_ratios.empty())
     eval_ratios.shapeUninitialized(numFunctions, numApprox);
@@ -597,28 +608,28 @@ compute_eval_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 
 void NonDACVSampling::
 compute_MSE_ratios(const RealMatrix& eval_ratios, const RealMatrix& rho2_LH,
-		   RealMatrix& mse_ratios)
+		   const RealVector& cost, RealVector& mse_ratios)
 {
   size_t qoi, approx;
-  if (mse_ratios.empty())
-    mse_ratios.shapeUninitialized(numFunctions, numApprox);
+  if (mse_ratios.empty()) mse_ratios.sizeUninitialized(numFunctions);
 
-  for (approx=0; approx<numApprox; ++approx) {
-    const Real* rho2_LH_a     =     rho2_LH[approx];
-    const Real* eval_ratios_a = eval_ratios[approx];
-    Real*        mse_ratios_a =  mse_ratios[approx];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      // Compute ratio of MSE for high fidelity MC and multifidelity CVMC
-      // > Estimator Var for MC = sigma_hf^2 / N_hf = MSE (neglect HF bias)
-      // > Estimator Var for CV = (1+r/w) [1-rho^2(1-1/r)] sigma_hf^2 / p
-      //   where p = (1+r/w)N_hf -> Var = [1-rho^2(1-1/r)] sigma_hf^2 / N_hf
-      // MSE ratio = Var_CV / Var_MC = [1-rho^2(1-1/r)]
-      mse_ratios_a[qoi] = 1. - rho2_LH_a[qoi] * (1. - 1. / eval_ratios_a[qoi]);
-      if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "Approx " << approx+1 << " QoI " << qoi+1
-	     << ": CV variance reduction factor = " << mse_ratios_a[qoi]
-	     << " for eval ratio " << eval_ratios_a[qoi] << '\n';
-    }
+  // Compute ratio of MSE for high fidelity MC and multifidelity CVMC
+  // > Estimator Var for MC = var_H / N_H = MSE (neglect HF bias)
+  // > Estimator Var for MFMC = var_H (1-rho_LH(am1)^2) p / N_H^2 cost_H
+  //   where budget p = cost^T eval_ratios N_H,  am1 = most-correlated approx
+  //   --> EstVar = var_H (1-rho_LH(am1)^2) cost^T eval_ratios / N_H cost_H
+  // > MSE ratio = EstVar_MFMC / EstVar_MC
+  //   = (1-rho_LH(am1)^2) cost^T eval_ratios / cost_H
+
+  Real cost_H = cost[numApprox], inner_prod;  size_t num_am1 = numApprox - 1;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    inner_prod = cost_H; // include cost_H * w_H
+    for (approx=0; approx<numApprox; ++approx)
+      inner_prod += cost[approx] * eval_ratios(qoi, approx); // cost_i * w_i
+    mse_ratios[qoi] = (1. - rho2_LH(qoi, num_am1)) * inner_prod / cost_H;
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "QoI " << qoi+1 << ": MFMC variance reduction factor = "
+	   << mse_ratios[qoi] << '\n';
   }
 }
 

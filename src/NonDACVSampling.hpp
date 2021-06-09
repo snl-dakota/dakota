@@ -107,7 +107,8 @@ private:
 			   RealVector& var_H, RealMatrix& rho2_LH,
 			   RealMatrix& eval_ratios);
   void compute_MSE_ratios(const RealMatrix& eval_ratios,
-			  const RealMatrix& rho2_LH, RealMatrix& mse_ratios);
+			  const RealMatrix& rho2_LH, const RealVector& cost,
+			  RealVector& mse_ratios);
   void compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			      Real sum_HH, size_t N_L, size_t N_H, size_t N_LH,
 			      Real& var_H, Real& rho2_LH);
