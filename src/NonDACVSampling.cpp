@@ -213,6 +213,9 @@ void NonDACVSampling::multifidelity_mc()
     // Compute shared increment targeting specified MSE reduction
     // ----------------------------------------------------------
     if (mlmfIter) {
+      // ---------------------------------------------------
+      // Option 1: iterate until relative tolerance achieved
+      // ---------------------------------------------------
       // CV MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
       //           N_H = mse_ratio * var_H / convTol / mse_iter0
       // Note: don't simplify further since mse_iter0 is fixed based on pilot
@@ -226,6 +229,10 @@ void NonDACVSampling::multifidelity_mc()
       // Power mean choice: average, max (desire would be to balance overshoot
       // vs. additional iteration)
       truth_sample_incr = numSamples = one_sided_delta(N_H, truth_targets, 1);
+      // ------------------------------------------------------
+      // Option 2: assign complete budget based on pilot sample
+      // ------------------------------------------------------
+      // *** TO DO ***
     }
 
     if (numSamples) {
@@ -240,11 +247,12 @@ void NonDACVSampling::multifidelity_mc()
       compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, cost, N_L, N_H, N_LH, var_H, rho2_LH,
 			  eval_ratios);
+      // *** TO DO: mse_iter0 only uses HF pilot sample: inconsistent with MLMC?
+      if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_H, mse_iter0);
       // Compute the ratio of MC and CVMC mean squared errors (for convergence).
       // This ratio incorporates the anticipated variance reduction from the
       // upcoming application of eval_ratios.
-      if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_H, mse_iter0);
-      compute_MSE_ratios(eval_ratios, rho2_LH, mse_ratios);
+      compute_MSE_ratios(eval_ratios, rho2_LH, mse_ratios); // *** TO DO: update
 
       // -------------------------------------------------------------------
       // Compute N_approx increments based on new eval ratio for new N_truth
@@ -252,7 +260,7 @@ void NonDACVSampling::multifidelity_mc()
       for (approx=0; approx<numApprox; ++approx) {
 	// approx_increment() spans models {i, i+1, ..., #approx}
 	if (equivHFEvals <= maxFunctionEvals &&
-	    approx_increment(eval_ratios,N_L,N_H,mlmfIter,approx,numApprox)) {
+	    approx_increment(eval_ratios,N_L,N_H,mlmfIter,approx,numApprox)) { // *** TO DO: NON_BLOCKING: MOVE 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
 	  accumulate_mf_sums(sum_L_refined, mu_hat, N_L);
 	  increment_mf_samples(numSamples, approx, numApprox, raw_N);
 	  increment_mf_equivalent_cost(numSamples, approx, numApprox, cost);
@@ -540,50 +548,50 @@ compute_eval_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
   if (rho2_LH.empty()) rho2_LH.shapeUninitialized(numFunctions, numApprox);
   if (eval_ratios.empty())
     eval_ratios.shapeUninitialized(numFunctions, numApprox);
-  Real cost_L, cost_ratio, cost_H = cost[numApprox]; // HF cost
-
+  Real cost_ratio, cost_H = cost[numApprox]; // HF cost
   //Real avg_eval_ratio = 0.;  size_t num_avg = 0;
+
+  // first sweep to compute all of rho2_LH
   for (approx=0; approx<numApprox; ++approx) {
-
-    const SizetArray&   N_L_a =         N_L[approx];
-    const SizetArray&  N_LH_a =        N_LH[approx];
-    Real*           rho2_LH_a =     rho2_LH[approx];
-    Real*       eval_ratios_a = eval_ratios[approx];
-    Real               cost_L =        cost[approx];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-
-      Real& rho_sq = rho2_LH_a[qoi];
-      compute_mf_correlation(sum_L_shared(qoi,approx), sum_H[qoi],
-			     sum_LL(qoi,approx), sum_LH(qoi,approx),
-			     sum_HH[qoi], N_L_a[qoi], N_H[qoi], N_LH_a[qoi],
-			     var_H[qoi], rho_sq);
-
-      // compute evaluation ratio which determines increment for LF samples
-      // > the sample increment optimizes the total computational budget and is
-      //   not treated as a worst case accuracy reqmt --> use the QoI average
-      // > refinement based only on QoI mean statistics
-      // Given use of 1/r in MSE_ratio, one approach would average 1/r, but
-      // this does not seem to behave as well in limited numerical experience.
-      //if (rho_sq > Pecos::SMALL_NUMBER) {
-      //  avg_inv_eval_ratio += std::sqrt((1. - rho_sq)/(cost_ratio * rho_sq));
-      if (rho_sq < 1.) { // protect against division by 0, sqrt(negative)
-	cost_ratio = cost_H / cost_L;
-	eval_ratios_a[qoi] = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
-	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "Approx " << approx+1 << " QoI " << qoi+1
-	       << ": cost_ratio = " << cost_ratio << " rho_sq = " << rho_sq
-	       << " eval_ratio = "  << eval_ratios_a[qoi] << std::endl;
-	//avg_eval_ratio += eval_ratios[qoi];
-	//++num_avg;
-      }
-      else // should not happen, but provide a reasonable upper bound
-	eval_ratios_a[qoi] = (Real)maxFunctionEvals / average(N_H);
-    }
+    const Real* sum_L_shared_a = sum_L_shared[approx];
+    const Real*       sum_LL_a =       sum_LL[approx];
+    const Real*       sum_LH_a =       sum_LH[approx];
+    const SizetArray&    N_L_a =          N_L[approx];
+    const SizetArray&   N_LH_a =         N_LH[approx];
+    Real*            rho2_LH_a =      rho2_LH[approx];
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      compute_mf_correlation(sum_L_shared_a[qoi], sum_H[qoi], sum_LL_a[qoi],
+			     sum_LH_a[qoi], sum_HH[qoi], N_L_a[qoi], N_H[qoi],
+			     N_LH_a[qoi], var_H[qoi], rho2_LH_a[qoi]);
   }
 
-  //if (num_avg) avg_eval_ratio /= num_avg;
-  //else         avg_eval_ratio  = (Real)maxFunctionEvals / average(N_H);
-  //return avg_eval_ratio;
+  // precompute a factor based on most-correlated model
+  RealVector factor(numFunctions, false);
+  size_t num_am1 = numApprox - 1;
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    factor[qoi] = cost_H / (1. - rho2_LH(qoi, num_am1));
+  // second sweep to compute eval_ratios including rho2 look-{ahead,back}
+  for (approx=0; approx<numApprox; ++approx) {
+    Real* eval_ratios_a = eval_ratios[approx];
+    Real*     rho2_LH_a =     rho2_LH[approx];
+    Real         cost_L =        cost[approx];
+    // TO DO: MUST PROTECT AGAINST sqrt(negative) BY SEQUENCING CORRELATIONS
+    // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
+    // > i+1 becomes i-1 and most correlated ref is rho2_LH(qoi, num_am1)
+    if (approx)
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L *
+	  (rho2_LH_a[qoi] - rho2_LH(qoi, approx-1)));
+    else // rho2_LH for approx-1 (non-existent model) is zero
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
+
+    if (outputLevel >= DEBUG_OUTPUT)
+      for (qoi=0; qoi<numFunctions; ++qoi)
+    	Cout << "Approx " << approx+1 << " QoI " << qoi+1 << ": cost_ratio = "
+	     << cost_H / cost_L << " rho_sq = " << rho2_LH_a[qoi]
+	     << " eval_ratio = " << eval_ratios_a[qoi] << std::endl;
+  }
 }
 
 
@@ -607,9 +615,9 @@ compute_MSE_ratios(const RealMatrix& eval_ratios, const RealMatrix& rho2_LH,
       // MSE ratio = Var_CV / Var_MC = [1-rho^2(1-1/r)]
       mse_ratios_a[qoi] = 1. - rho2_LH_a[qoi] * (1. - 1. / eval_ratios_a[qoi]);
       if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "QoI " << qoi+1 << ": CV variance reduction factor = "
-	     << mse_ratios_a[qoi] << " for eval ratio " << eval_ratios_a[qoi]
-	     << '\n';
+	Cout << "Approx " << approx+1 << " QoI " << qoi+1
+	     << ": CV variance reduction factor = " << mse_ratios_a[qoi]
+	     << " for eval ratio " << eval_ratios_a[qoi] << '\n';
     }
   }
 }
