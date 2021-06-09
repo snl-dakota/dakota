@@ -45,7 +45,7 @@ model,
 #	interface_pointer = 'MF_INT'			#s5
 	simulation
 	  solution_level_control = 'mesh_size'
-	  solution_level_cost = 6.4
+	  solution_level_cost = 64.
 
 model,
 	id_model = 'HF'

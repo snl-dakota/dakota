@@ -290,14 +290,14 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& dr_target2)
 {
   // forward along to subordinate models:
-  truthModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
-				      dr_index1, c_target2, di_target2,
-				      ds_target2, dr_target2);
   size_t i, num_approx_models = unorderedModels.size();
   for (i=0; i<num_approx_models; ++i)
     unorderedModels[i].nested_variable_mappings(c_index1, di_index1, ds_index1,
 					      dr_index1, c_target2, di_target2,
 					      ds_target2, dr_target2);
+  truthModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+				      dr_index1, c_target2, di_target2,
+				      ds_target2, dr_target2);
 }
 
 
@@ -329,12 +329,12 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
 {
   unsigned short hf_form = truthModelKey.retrieve_model_form();
 
-  size_t i, num_unord = unorderedModelKeys.size();
-  if (hf_form == USHRT_MAX || num_unord == 0)
+  size_t i, num_approx = unorderedModelKeys.size();
+  if (hf_form == USHRT_MAX || num_approx == 0)
     sameModelInstance = sameInterfaceInstance = false;
   else {
     sameModelInstance = true;
-    for (i=0; i<num_unord; ++i)
+    for (i=0; i<num_approx; ++i)
       if (unorderedModelKeys[i].retrieve_model_form() != hf_form)
 	{ sameModelInstance = false; break; }
   }
@@ -343,7 +343,7 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
   else {
     const String& hf_id = truthModel.interface_id();
     sameInterfaceInstance = true;
-    for (i=0; i<num_unord; ++i)
+    for (i=0; i<num_approx; ++i)
       if (unorderedModels[i].interface_id() != hf_id)
 	{ sameInterfaceInstance = false; break; }
   }
@@ -435,7 +435,8 @@ inline void NonHierarchSurrModel::assign_key(const Pecos::ActiveKey& key)
 {
   unsigned short form = key.retrieve_model_form();
   if (form != USHRT_MAX) {
-    Model& model = (form) ? unorderedModels[form-1] : truthModel;
+    Model& model = (form < unorderedModels.size()) ?
+      unorderedModels[form] : truthModel;
     model.solution_level_cost_index(key.retrieve_resolution_level());
   }
 }
@@ -443,8 +444,8 @@ inline void NonHierarchSurrModel::assign_key(const Pecos::ActiveKey& key)
 
 inline void NonHierarchSurrModel::assign_key(size_t i)
 {
-  if      (i == 0)     assign_key(truthModelKey);
-  else if (i != _NPOS) assign_key(unorderedModelKeys[i-1]);
+  if      (i  < unorderedModels.size()) assign_key(unorderedModelKeys[i]);
+  else if (i != _NPOS)                  assign_key(truthModelKey);
 }
 
 
@@ -462,8 +463,8 @@ inline void NonHierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
   check_model_interface_instance();
 
   // Unconditional for now (no sameModelInstance)
-  size_t i, num_unordered_models = unorderedModelKeys.size();
-  for (i=0; i<num_unordered_models; ++i)
+  size_t i, num_approx = unorderedModelKeys.size();
+  for (i=0; i<num_approx; ++i)
     assign_key(unorderedModelKeys[i]);
   assign_key(truthModelKey);
 
@@ -478,8 +479,8 @@ inline void NonHierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
 
 inline void NonHierarchSurrModel::clear_model_keys()
 {
-  size_t i, num_unordered_models = unorderedModels.size();
-  for (i=0; i<num_unordered_models; ++i)
+  size_t i, num_approx = unorderedModels.size();
+  for (i=0; i<num_approx; ++i)
     unorderedModels[i].clear_model_keys();
   truthModel.clear_model_keys();
 }
@@ -518,8 +519,8 @@ inline size_t NonHierarchSurrModel::count_id_maps(const IntIntMapArray& id_maps)
 inline void NonHierarchSurrModel::
 derived_subordinate_models(ModelList& ml, bool recurse_flag)
 {
-  size_t i, num_approx_models = unorderedModels.size();
-  for (i=0; i<num_approx_models; ++i) {
+  size_t i, num_approx = unorderedModels.size();
+  for (i=0; i<num_approx; ++i) {
     ml.push_back(unorderedModels[i]);
     if (recurse_flag)
       unorderedModels[i].derived_subordinate_models(ml, true);
@@ -541,8 +542,8 @@ inline void NonHierarchSurrModel::resize_from_subordinate_model(size_t depth)
 
   // bottom-up data flow, so recurse first
   if (approx_resize) {
-    size_t i, num_approx_models = unorderedModels.size();
-    for (i=0; i<num_approx_models; ++i) {
+    size_t i, num_approx = unorderedModels.size();
+    for (i=0; i<num_approx; ++i) {
       Model& model_i = unorderedModels[i];
       if (depth == SZ_MAX)
 	model_i.resize_from_subordinate_model(depth);// retain special val (inf)
@@ -579,10 +580,10 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 {
   primaryRespFnWts = wts;
   if (recurse_flag) {
-    truthModel.primary_response_fn_weights(wts, recurse_flag);
-    size_t i, num_approx_models = unorderedModels.size();
-    for (i=0; i<num_approx_models; ++i)
+    size_t i, num_approx = unorderedModels.size();
+    for (i=0; i<num_approx; ++i)
       unorderedModels[i].primary_response_fn_weights(wts, recurse_flag);
+    truthModel.primary_response_fn_weights(wts, recurse_flag);
   }
 }
 
@@ -614,21 +615,19 @@ estimate_partition_bounds(int max_eval_concurrency)
   // responseMode is a run-time setting, so we are conservative on usage of
   // max_eval_concurrency as in derived_init_communicators()
 
-  size_t i, num_approx_models = unorderedModels.size();
-  IntIntPair min_max(INT_MAX, INT_MIN), min_max_i;
-  
   probDescDB.set_db_model_nodes(truthModel.model_id());
-  min_max_i = truthModel.estimate_partition_bounds(max_eval_concurrency);
-  if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
-  if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
+  IntIntPair min_max_i,
+    min_max = truthModel.estimate_partition_bounds(max_eval_concurrency);
 
-  for (i=0; i<num_approx_models; ++i) {
+  size_t i, num_approx = unorderedModels.size();
+  for (i=0; i<num_approx; ++i) {
     Model& model_i = unorderedModels[i];
     probDescDB.set_db_model_nodes(model_i.model_id());
     min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
     if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
     if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
   }
+
   return min_max;
 
   // list nodes are reset at the calling level after completion of recursion
@@ -637,10 +636,10 @@ estimate_partition_bounds(int max_eval_concurrency)
 
 inline void NonHierarchSurrModel::derived_init_serial()
 {
-  truthModel.init_serial();
   size_t i, num_approx_models = unorderedModels.size();
   for (i=0; i<num_approx_models; ++i)
     unorderedModels[i].init_serial();
+  truthModel.init_serial();
 }
 
 
@@ -651,8 +650,9 @@ inline void NonHierarchSurrModel::stop_servers()
 inline void NonHierarchSurrModel::stop_model(short model_id)
 {
   if (model_id) {
-    short model_index = model_id - 1; // id to index
-    Model& model = (model_index) ? unorderedModels[model_index-1] : truthModel;
+    short  model_index = model_id - 1; // id to index
+    Model& model = (model_index < unorderedModels.size()) ?
+      unorderedModels[model_index] : truthModel;
     ParConfigLIter pc_it = model.parallel_configuration_iterator();
     size_t pl_index = model.mi_parallel_level_index();
     if (pc_it->mi_parallel_level_defined(pl_index) &&
@@ -667,10 +667,10 @@ inline void NonHierarchSurrModel::inactive_view(short view, bool recurse_flag)
   currentVariables.inactive_view(view);
   userDefinedConstraints.inactive_view(view);
   if (recurse_flag) {
-    truthModel.inactive_view(view, recurse_flag);
-    size_t i, num_approx_models = unorderedModels.size();
-    for (i=0; i<num_approx_models; ++i)
+    size_t i, num_approx = unorderedModels.size();
+    for (i=0; i<num_approx; ++i)
       unorderedModels[i].inactive_view(view, recurse_flag);
+    truthModel.inactive_view(view, recurse_flag);
   }
 }
 
@@ -682,9 +682,10 @@ inline void NonHierarchSurrModel::inactive_view(short view, bool recurse_flag)
 inline bool NonHierarchSurrModel::evaluation_cache(bool recurse_flag) const
 {
   if (recurse_flag) {
-    if (truthModel.evaluation_cache(recurse_flag)) return true;
-    size_t i, num_approx_models = unorderedModels.size();
-    for (i=0; i<num_approx_models; ++i)
+    if (truthModel.evaluation_cache(recurse_flag))
+      return true;
+    size_t i, num_approx = unorderedModels.size();
+    for (i=0; i<num_approx; ++i)
       if (unorderedModels[i].evaluation_cache(recurse_flag))
 	return true;
     return false;
@@ -697,9 +698,10 @@ inline bool NonHierarchSurrModel::evaluation_cache(bool recurse_flag) const
 inline bool NonHierarchSurrModel::restart_file(bool recurse_flag) const
 {
   if (recurse_flag) {
-    if (truthModel.restart_file(recurse_flag)) return true;
-    size_t i, num_approx_models = unorderedModels.size();
-    for (i=0; i<num_approx_models; ++i)
+    if (truthModel.restart_file(recurse_flag))
+      return true;
+    size_t i, num_approx = unorderedModels.size();
+    for (i=0; i<num_approx; ++i)
       if (unorderedModels[i].restart_file(recurse_flag))
 	return true;
     return false;
@@ -724,10 +726,10 @@ inline void NonHierarchSurrModel::set_evaluation_reference()
 
 inline void NonHierarchSurrModel::fine_grained_evaluation_counters()
 {
-  truthModel.fine_grained_evaluation_counters();
-  size_t i, num_approx_models = unorderedModels.size();
-  for (i=0; i<num_approx_models; ++i)
+  size_t i, num_approx = unorderedModels.size();
+  for (i=0; i<num_approx; ++i)
     unorderedModels[i].fine_grained_evaluation_counters();
+  truthModel.fine_grained_evaluation_counters();
 }
 
 
@@ -735,8 +737,8 @@ inline void NonHierarchSurrModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
                          bool relative_count) const
 {
-  size_t i, num_approx_models = unorderedModels.size();
-  for (i=0; i<num_approx_models; ++i)
+  size_t i, num_approx = unorderedModels.size();
+  for (i=0; i<num_approx; ++i)
     unorderedModels[i].print_evaluation_summary(s, minimal_header,
 						relative_count);
   // emulate low to high ordering as in HierarchSurrModel
@@ -749,10 +751,10 @@ inline void NonHierarchSurrModel::warm_start_flag(const bool flag)
   // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
   warmStartFlag = flag; // for completeness
 
-  truthModel.warm_start_flag(flag);
-  size_t i, num_approx_models = unorderedModels.size();
-  for (i=0; i<num_approx_models; ++i)
+  size_t i, num_approx = unorderedModels.size();
+  for (i=0; i<num_approx; ++i)
     unorderedModels[i].warm_start_flag(flag);
+  truthModel.warm_start_flag(flag);
 }
 
 } // namespace Dakota

@@ -153,7 +153,7 @@ void NonDACVSampling::multifidelity_mc()
   // Performs pilot + LF increment and then iterates with additional shared
   // increment + LF increment batches until prescribed MSE reduction is obtained
 
-  short seq_type;  size_t i, num_steps, secondary_index;//, qoi, form, lev;
+  short seq_type;  size_t num_steps, secondary_index, qoi, approx;
   configure_sequence(num_steps, secondary_index, seq_type); // MF if #models > 1
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);//(false);
   numApprox = num_steps - 1;
@@ -166,14 +166,14 @@ void NonDACVSampling::multifidelity_mc()
     unsigned short fixed_form = (secondary_index == SZ_MAX) ?
       USHRT_MAX : secondary_index;
     truth_key.form_key(0, fixed_form, numApprox);
-    for (i=0; i<numApprox; ++i)
-      approx_keys[i].form_key(0, fixed_form, i);
+    for (approx=0; approx<numApprox; ++approx)
+      approx_keys[approx].form_key(0, fixed_form, approx);
     //truth_form = fixed_form;  truth_lev = numApprox;
   }
   else {
     truth_key.form_key(0, numApprox, secondary_index);
-    for (i=0; i<numApprox; ++i)
-      approx_keys[i].form_key(0, i, secondary_index);
+    for (approx=0; approx<numApprox; ++approx)
+      approx_keys[approx].form_key(0, approx, secondary_index);
     //truth_form = numApprox;  truth_lev = secondary_index;
   }
   active_key.aggregate_keys(truth_key, approx_keys, Pecos::RAW_DATA);
@@ -197,8 +197,8 @@ void NonDACVSampling::multifidelity_mc()
   RealMatrix rho2_LH(numFunctions, false), eval_ratios, mse_ratios;
   SizetArray N_H, delta_N; Sizet2DArray N_L(numApprox), N_LH(numApprox);
   N_H.assign(numFunctions, 0);
-  for (i=0; i<numApprox; ++i)
-    { N_L[i].assign(numFunctions, 0); N_LH[i].assign(numFunctions, 0); }
+  for (approx=0; approx<numApprox; ++approx)
+    { N_L[approx].assign(numFunctions,0); N_LH[approx].assign(numFunctions,0); }
 
   // Initialize for pilot sample
   load_pilot_sample(pilotSamples, num_steps, delta_N);
@@ -213,13 +213,16 @@ void NonDACVSampling::multifidelity_mc()
     // Compute shared increment targeting specified MSE reduction
     // ----------------------------------------------------------
     if (mlmfIter) {
-      // CV MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_truth
-      // N_truth = mse_ratio * var_H / convTol / mse_iter0
-      // Note: don't simplify further since mse_iter0 is based on pilot
-      //       estimate of var_H / N_truth
-      RealVector truth_targets; //= mse_ratios; *** TO DO
-      //for (qoi=0; qoi<numFunctions; ++qoi)    *** TO DO
-      //  truth_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
+      // CV MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
+      //           N_H = mse_ratio * var_H / convTol / mse_iter0
+      // Note: don't simplify further since mse_iter0 is fixed based on pilot
+      //       estimate of var_H / N_H
+      RealMatrix truth_targets = mse_ratios;  Real factor;
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	factor = var_H[qoi] / mse_iter0[qoi] / convergenceTol;
+	for (approx=0; approx<numApprox; ++approx)
+	  truth_targets(qoi, approx) *= factor;
+      }
       // Power mean choice: average, max (desire would be to balance overshoot
       // vs. additional iteration)
       truth_sample_incr = numSamples = one_sided_delta(N_H, truth_targets, 1);
@@ -246,13 +249,13 @@ void NonDACVSampling::multifidelity_mc()
       // -------------------------------------------------------------------
       // Compute N_approx increments based on new eval ratio for new N_truth
       // -------------------------------------------------------------------
-      for (i=0; i<numApprox; ++i) {
+      for (approx=0; approx<numApprox; ++approx) {
 	// approx_increment() spans models {i, i+1, ..., #approx}
 	if (equivHFEvals <= maxFunctionEvals &&
-	    approx_increment(eval_ratios, N_L, N_H, mlmfIter, i, numApprox)) {
+	    approx_increment(eval_ratios,N_L,N_H,mlmfIter,approx,numApprox)) {
 	  accumulate_mf_sums(sum_L_refined, mu_hat, N_L);
-	  increment_mf_samples(numSamples, i, numApprox, raw_N);
-	  increment_mf_equivalent_cost(numSamples, i, numApprox, cost);
+	  increment_mf_samples(numSamples, approx, numApprox, raw_N);
+	  increment_mf_equivalent_cost(numSamples, approx, numApprox, cost);
 	}
       }
     }
@@ -544,12 +547,12 @@ compute_eval_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 
     const SizetArray&   N_L_a =         N_L[approx];
     const SizetArray&  N_LH_a =        N_LH[approx];
-    const Real*     rho2_LH_a =     rho2_LH[approx];
+    Real*           rho2_LH_a =     rho2_LH[approx];
     Real*       eval_ratios_a = eval_ratios[approx];
     Real               cost_L =        cost[approx];
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      Real rho_sq = rho2_LH_a[qoi];
+      Real& rho_sq = rho2_LH_a[qoi];
       compute_mf_correlation(sum_L_shared(qoi,approx), sum_H[qoi],
 			     sum_LL(qoi,approx), sum_LH(qoi,approx),
 			     sum_HH[qoi], N_L_a[qoi], N_H[qoi], N_LH_a[qoi],
@@ -567,9 +570,9 @@ compute_eval_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 	cost_ratio = cost_H / cost_L;
 	eval_ratios_a[qoi] = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
 	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "evaluation_ratios() QoI " << qoi+1 << ": cost_ratio = "
-	       << cost_ratio << " rho_sq = " << rho_sq << " eval_ratio = "
-	       << eval_ratios_a[qoi] << std::endl;
+	  Cout << "Approx " << approx+1 << " QoI " << qoi+1
+	       << ": cost_ratio = " << cost_ratio << " rho_sq = " << rho_sq
+	       << " eval_ratio = "  << eval_ratios_a[qoi] << std::endl;
 	//avg_eval_ratio += eval_ratios[qoi];
 	//++num_avg;
       }
@@ -577,8 +580,6 @@ compute_eval_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 	eval_ratios_a[qoi] = (Real)maxFunctionEvals / average(N_H);
     }
   }
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "variance of HF Q:\n" << var_H;
 
   //if (num_avg) avg_eval_ratio /= num_avg;
   //else         avg_eval_ratio  = (Real)maxFunctionEvals / average(N_H);
@@ -605,9 +606,10 @@ compute_MSE_ratios(const RealMatrix& eval_ratios, const RealMatrix& rho2_LH,
       //   where p = (1+r/w)N_hf -> Var = [1-rho^2(1-1/r)] sigma_hf^2 / N_hf
       // MSE ratio = Var_CV / Var_MC = [1-rho^2(1-1/r)]
       mse_ratios_a[qoi] = 1. - rho2_LH_a[qoi] * (1. - 1. / eval_ratios_a[qoi]);
-      Cout << "QoI " << qoi+1 << ": CV variance reduction factor = "
-	   << mse_ratios_a[qoi] << " for eval ratio " << eval_ratios_a[qoi]
-	   << '\n';
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "QoI " << qoi+1 << ": CV variance reduction factor = "
+	     << mse_ratios_a[qoi] << " for eval ratio " << eval_ratios_a[qoi]
+	     << '\n';
     }
   }
 }

@@ -205,6 +205,10 @@ protected:
   /// move current sampling level to a new target
   size_t one_sided_delta(const Sizet2DArray& current,
 			 const RealMatrix& targets, size_t power);
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
+  size_t one_sided_delta(const SizetArray& current,
+			 const RealMatrix& targets, size_t power);
 
   /// allocate results array storage for distribution mappings
   void archive_allocate_mappings();
@@ -480,6 +484,42 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
       const SizetArray& curr_r = current[r];
       for (c=0; c<cols; ++c) {
 	diff = targets(r,c) - curr_r[c];
+	if (diff > pow_mean) pow_mean = diff;
+      }
+    }
+    break;
+  default:
+    Cerr << "Error: power " << power << " not supported in NonD::"
+	 << "one_sided_delta()." << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
+  // see notes on other finite norms above
+
+  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+}
+
+
+inline size_t NonD::
+one_sided_delta(const SizetArray& current, const RealMatrix& targets,
+		size_t power)
+{
+  size_t r, c, rows = targets.numRows(), cols = targets.numCols();
+  Real diff, pow_mean = 0.;
+  switch (power) {
+  case 1: // average difference same as difference of averages
+    for (r=0; r<rows; ++r) {
+      size_t curr_r = current[r]; // vector over numFns aligns with row indexing
+      for (c=0; c<cols; ++c)
+	pow_mean += targets(r,c) - curr_r;
+    }
+    pow_mean /= rows * cols;
+    break;
+  case SZ_MAX: // find one-sided max difference
+    for (r=0; r<rows; ++r) {
+      size_t curr_r = current[r]; // vector over numFns aligns with row indexing
+      for (c=0; c<cols; ++c) {
+	diff = targets(r,c) - curr_r;
 	if (diff > pow_mean) pow_mean = diff;
       }
     }
