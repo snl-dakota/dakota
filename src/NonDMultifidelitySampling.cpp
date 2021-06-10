@@ -122,7 +122,7 @@ void NonDMultifidelitySampling::control_variate_mc()
   SizetArray& N_hf = NLev[hf_form_index][hf_lev_index];
   SizetArray& N_lf = NLev[lf_form_index][lf_lev_index];
   N_hf.assign(numFunctions, 0);  N_lf.assign(numFunctions, 0);
-  size_t raw_N_hf = 0, raw_N_lf = 0;
+  //size_t raw_N_hf = 0, raw_N_lf = 0;
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
@@ -159,7 +159,7 @@ void NonDMultifidelitySampling::control_variate_mc()
       shared_increment(active_key, mlmfIter, 0);
       accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 			 sum_HH, mu_hat, N_lf, N_hf);
-      raw_N_lf += numSamples; raw_N_hf += numSamples;
+      //raw_N_lf += numSamples; raw_N_hf += numSamples;
       increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
 
       // Compute the LF/HF evaluation ratio using shared samples, averaged
@@ -184,7 +184,7 @@ void NonDMultifidelitySampling::control_variate_mc()
       if (equivHFEvals <= maxFunctionEvals &&
 	  lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {
 	accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
-	raw_N_lf += numSamples; //lf_sample_incr = numSamples;
+	//raw_N_lf += numSamples; lf_sample_incr = numSamples;
 	increment_mf_equivalent_cost(numSamples, cost_ratio);
       }
     }

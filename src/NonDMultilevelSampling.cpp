@@ -153,7 +153,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   load_pilot_sample(pilotSamples, num_steps, delta_N_l);
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  SizetArray raw_N_l(num_steps, 0);
+  //SizetArray raw_N_l(num_steps, 0);
   RealVectorArray mu_hat(num_steps);
   //Sizet2DArray& N_l = NLev[form]; // slice only valid for ML
   // define a new 2D array and then post back to NLev at end
@@ -195,7 +195,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n" << sum_Y[1]
 	       << sum_Y[2] << sum_Y[3] << sum_Y[4] << sum_YY << std::endl;
 	// update raw evaluation counts
-	raw_N_l[step] += numSamples;
+	//raw_N_l[step] += numSamples;
 	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
 
 	// compute estimator variance from current sample accumulation:
@@ -308,7 +308,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   load_pilot_sample(pilotSamples, num_steps, delta_N_l);
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  SizetArray raw_N_l(num_steps, 0);
+  //SizetArray raw_N_l(num_steps, 0);
   RealVectorArray mu_hat(num_steps);
   //Sizet2DArray& N_l = NLev[form]; // *** VALID ONLY FOR ML
   // define a new 2D array and then post back to NLev at end
@@ -348,7 +348,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 	accumulate_sums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, mu_hat, N_l);
 
 	// update raw evaluation counts
-	raw_N_l[step] += numSamples;
+	//raw_N_l[step] += numSamples;
 	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
 
 	aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l,

@@ -187,7 +187,7 @@ void NonDACVSampling::multifidelity_mc()
 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost;  configure_cost(num_steps, multilev, cost);
-  SizetArray raw_N; raw_N.assign(num_steps, 0);
+  //SizetArray raw_N; raw_N.assign(num_steps, 0);
 
   IntRealVectorMap sum_H;
   IntRealMatrixMap sum_L_shared, sum_L_refined, sum_LL, sum_LH;
@@ -236,7 +236,7 @@ void NonDACVSampling::multifidelity_mc()
       shared_increment(mlmfIter, numApprox); // spans ALL models, blocking
       accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 			 sum_HH, mu_hat, N_L, N_H, N_LH);
-      increment_mf_samples(numSamples, 0, num_steps, raw_N);
+      //increment_mf_samples(numSamples, 0, num_steps, raw_N);
       increment_mf_equivalent_cost(numSamples, 0, num_steps, cost);
 
       // Compute the LF/HF evaluation ratio using shared samples, averaged
@@ -262,8 +262,8 @@ void NonDACVSampling::multifidelity_mc()
 	if (equivHFEvals <= maxFunctionEvals &&
 	    approx_increment(eval_ratios, N_L, N_H, mlmfIter, 0, approx)) { // *** TO DO: NON_BLOCKING: MOVE 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
 	  accumulate_mf_sums(sum_L_refined, mu_hat, N_L);
-	  increment_mf_samples(numSamples, approx, numApprox, raw_N);
-	  increment_mf_equivalent_cost(numSamples, approx, numApprox, cost);
+	  //increment_mf_samples(numSamples,       0, approx, raw_N);
+	  increment_mf_equivalent_cost(numSamples, 0, approx, cost);
 	}
       }
     }
@@ -280,6 +280,18 @@ void NonDACVSampling::multifidelity_mc()
   //		   N_L, rho2_LH, H_raw_mom); // *** TO DO
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
+
+  // post final sample counts back to NLev (needed for final eval summary)
+  N_L.push_back(N_H); // aggregate into a single Sizet2DArray
+  inflate_final_samples(N_L, multilev, secondary_index, NLev);
+  /*
+  // Alternate print_results():
+  print_multilevel_evaluation_summary(s, N_L);
+  print_multilevel_evaluation_summary(s, N_H);
+  s << "<<<<< Equivalent number of high fidelity evaluations: "
+    << equivHFEvals << "\n\nStatistics based on multilevel sample set:\n";
+  */
+
 }
 
 
@@ -581,6 +593,7 @@ compute_eval_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
   size_t num_am1 = numApprox - 1;
   for (qoi=0; qoi<numFunctions; ++qoi)
     factor[qoi] = cost_H / (1. - rho2_LH(qoi, num_am1));
+
   // second sweep to compute eval_ratios including rho2 look-{ahead,back}
   for (approx=0; approx<numApprox; ++approx) {
     Real* eval_ratios_a = eval_ratios[approx];

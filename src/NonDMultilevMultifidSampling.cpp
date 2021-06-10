@@ -144,7 +144,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
   SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
+  //SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
   RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
@@ -198,7 +198,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 		 << sum_L_refined[1] << sum_L_refined[2]
 		 << sum_LH[1] << sum_LH[2];
 	  // update raw evaluation counts
-	  raw_N_hf[lev] += numSamples;  raw_N_lf[lev] += numSamples;
+	  //raw_N_hf[lev] += numSamples;  raw_N_lf[lev] += numSamples;
 	  increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
 					 numSamples, lf_lev_cost, hf_ref_cost);
 
@@ -226,7 +226,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (H[1], H[2], HH):\n"
 		 << sum_H[1] << sum_H[2] << sum_HH1;
-	  raw_N_hf[lev] += numSamples;
+	  //raw_N_hf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
@@ -270,7 +270,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 	if (equivHFEvals <= maxFunctionEvals &&
 	    lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
-	  raw_N_lf[lev] += numSamples;
+	  //raw_N_lf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
 				       hf_ref_cost);
 	  if (outputLevel == DEBUG_OUTPUT)
@@ -379,7 +379,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
   SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
+  //SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
   RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
@@ -435,7 +435,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 		 << sum_Ll[1] << sum_Ll[2] << sum_Ll_refined[1]
 		 << sum_Ll_refined[2] << sum_Hl[1] << sum_Hl[2];
 	  // update raw evaluation counts
-	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
+	  //raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 	  increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
 					 numSamples, lf_lev_cost, hf_ref_cost);
 
@@ -467,7 +467,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n"
 		 << sum_Hl[1] << sum_Hl[2] << sum_HH1;
-	  raw_N_hf[lev] += numSamples;
+	  //raw_N_hf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
@@ -519,7 +519,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 	    lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
 				N_lf[lev]);
-	  raw_N_lf[lev] += numSamples;
+	  //raw_N_lf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
 				       hf_ref_cost);
 	  if (outputLevel == DEBUG_OUTPUT)

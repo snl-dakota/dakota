@@ -356,11 +356,6 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  // define eval reqmts, with unorderedModels followed by truthModel at end
-  Short2DArray indiv_asv;
-  asv_split(set.request_vector(), indiv_asv);
-  size_t num_models = indiv_asv.size();
-
   /*
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
@@ -373,10 +368,16 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
   }
   */
 
+  currentResponse.active_set(set);
+  size_t num_approx = unorderedModels.size();
   switch (responseMode) {
   case AGGREGATED_MODELS: {
+    // define eval reqmts, with unorderedModels followed by truthModel at end
+    Short2DArray indiv_asv;
+    asv_split(set.request_vector(), indiv_asv);
+    size_t i, num_models = indiv_asv.size();
+
     ActiveSet set_i(set); // copy DVV
-    size_t i, num_approx = unorderedModels.size();
     for (i=0; i<num_models; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       if (test_asv(asv_i)) {
@@ -386,22 +387,22 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
 	else                   update_model(model_i);
 	set_i.request_vector(asv_i);
 	model_i.evaluate(set_i);
+	// insert i-th contribution to currentResponse asrv/fns/grads/hessians
 	insert_response(model_i.current_response(), i, currentResponse);
       }
     }
     break;
   }
   case BYPASS_SURROGATE:
-    if (num_models > 1) {
-      Cerr << "Error: wrong aggregate ASV size for BYPASS_SURROGATE mode in "
+    if (set.request_vector().size() != qoi()) {
+      Cerr << "Error: wrong ASV size for BYPASS_SURROGATE mode in "
 	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    component_parallel_mode(num_models); // model id (0 is reserved)
+    component_parallel_mode(num_approx+1); // truth model id
     if (sameModelInstance) assign_key(truthModelKey);
     else                   update_model(truthModel);
     truthModel.evaluate(set);
-    currentResponse.active_set(set);
     currentResponse.update(truthModel.current_response());
     break;
   }
@@ -417,12 +418,6 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  // define eval reqmts, with unorderedModels followed by truthModel at end
-  Short2DArray indiv_asv;
-  asv_split(set.request_vector(), indiv_asv);
-
-  size_t num_models = indiv_asv.size();
-
   // NonHierarchSurrModel's asynchEvalFlag is set if any model supports
   // asynchronous, resulting in use of derived_evaluate_nowait().
   // To manage general case of mixed asynch, launch nonblocking evals first,
@@ -432,8 +427,13 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
   switch (responseMode) {
   case AGGREGATED_MODELS: {
+    // define eval reqmts, with unorderedModels followed by truthModel at end
+    Short2DArray indiv_asv;
+    asv_split(set.request_vector(), indiv_asv);
+    size_t i, num_models = indiv_asv.size(),
+      num_approx = unorderedModels.size();
     ActiveSet set_i(set); // copy DVV
-    size_t i, num_approx = unorderedModels.size();
+
     // first pass for nonblocking models
     for (i=0; i<num_models; ++i) {
       ShortArray& asv_i = indiv_asv[i];
@@ -463,8 +463,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     break;
   }
   case BYPASS_SURROGATE:
-    if (num_models > 1) {
-      Cerr << "Error: wrong aggregate ASV size for BYPASS_SURROGATE mode in "
+    if (set.request_vector().size() != qoi()) {
+      Cerr << "Error: wrong ASV size for BYPASS_SURROGATE mode in "
 	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
