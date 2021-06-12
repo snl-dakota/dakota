@@ -193,7 +193,7 @@ void NonDACVSampling::multifidelity_mc()
   IntRealMatrixMap sum_L_shared, sum_L_refined, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions), var_H(numFunctions, false),
-    mu_hat, mse_iter0, mse_ratios;
+    /*mu_hat,*/ mse_iter0, mse_ratios;
   RealMatrix rho2_LH(numFunctions, false), eval_ratios;
   SizetArray N_H, delta_N; Sizet2DArray N_L(numApprox), N_LH(numApprox);
   N_H.assign(numFunctions, 0);
@@ -235,7 +235,7 @@ void NonDACVSampling::multifidelity_mc()
     if (numSamples) {
       shared_increment(mlmfIter, numApprox); // spans ALL models, blocking
       accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
-			 sum_HH, mu_hat, N_L, N_H, N_LH);
+			 sum_HH, /*mu_hat,*/ N_L, N_H, N_LH);
       //increment_mf_samples(numSamples, 0, num_steps, raw_N);
       increment_mf_equivalent_cost(numSamples, 0, num_steps, cost);
 
@@ -261,7 +261,8 @@ void NonDACVSampling::multifidelity_mc()
 	// pyramid sampling increments span models {0, ..., approx}
 	if (equivHFEvals <= maxFunctionEvals &&
 	    approx_increment(eval_ratios, N_L, N_H, mlmfIter, 0, approx)) { // *** TO DO: NON_BLOCKING: MOVE 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
-	  accumulate_mf_sums(sum_L_refined, mu_hat, N_L);
+	  accumulate_mf_sums(sum_L_shared, sum_L_refined, /*mu_hat,*/
+			     approx, N_L);
 	  //increment_mf_samples(numSamples,       0, approx, raw_N);
 	  increment_mf_equivalent_cost(numSamples, 0, approx, cost);
 	}
@@ -276,8 +277,8 @@ void NonDACVSampling::multifidelity_mc()
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
-  //cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_H, sum_L_refined,
-  //		   N_L, rho2_LH, H_raw_mom); // *** TO DO
+  cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, sum_L_refined, rho2_LH,
+		 N_L, N_H, N_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
 
@@ -362,9 +363,10 @@ approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_L,
 	   << "and current counts:\n" << N_L[approx];
     Cout << std::endl;
     size_t start_qoi = start * numFunctions, end_qoi = end * numFunctions;
-    activeSet.request_values(0, 0,         start_qoi);
+    activeSet.request_values(0);
+    //activeSet.request_values(0, 0, start_qoi);
     activeSet.request_values(1, start_qoi, end_qoi);
-    activeSet.request_values(0, end_qoi,   iteratedModel.response_size());
+    //activeSet.request_values(0, end_qoi, iteratedModel.response_size());
     ensemble_sample_increment(iter, start); // NON-BLOCK
     return true;
   }
@@ -417,46 +419,63 @@ initialize_mf_sums(IntRealMatrixMap& sum_L_shared,
 
 
 void NonDACVSampling::
-accumulate_mf_sums(IntRealMatrixMap& sum_L, const RealVector& offset,
+accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
+		   IntRealMatrixMap& sum_L_refined, size_t approx_end,
+		   //const RealVector& offset,
 		   Sizet2DArray& num_L)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
   // led by the approx Model responses of interest
 
   using std::isfinite;
-  Real fn_val, prod;  int ord, active_ord;  size_t qoi, fn_index, approx;
-  IntRespMCIter r_it; IntRMMIter l_it;      bool os = !offset.empty();
+  Real fn_val, prod;
+  int ls_ord, lr_ord, active_ord;
+  size_t qoi, fn_index, approx, shared_end = approx_end - 1;
+  IntRespMCIter r_it; IntRMMIter ls_it, lr_it;  //bool os = !offset.empty();
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const Response&   resp    = r_it->second;
     const RealVector& fn_vals = resp.function_values();
-    const ShortArray& asv     = resp.active_set_request_vector();
+    //const ShortArray& asv   = resp.active_set_request_vector();
     fn_index = 0;
 
     // accumulate for leading set of models (omit trailing truth),
     // but note that resp and asv are full aggregated length
-    for (approx=0; approx<numApprox; ++approx) {
+    for (approx=0; approx<approx_end; ++approx) {
 
       SizetArray& num_L_a = num_L[approx];
       for (qoi=0; qoi<numFunctions; ++qoi, ++fn_index) {
-	if (asv[fn_index] & 1) {
-	  prod = fn_val = (os) ? fn_vals[fn_index] - offset[fn_index]
-	                       : fn_vals[fn_index];
+	//if (asv[fn_index] & 1) {
+	  prod = fn_val = //(os) ? fn_vals[fn_index] - offset[fn_index] :
+	                           fn_vals[fn_index];
 	  if (isfinite(fn_val)) { // neither NaN nor +/-Inf
 	    ++num_L_a[qoi]; // number of recovered response observations
 
-	    l_it = sum_L.begin(); ord = l_it->first; active_ord = 1;
-	    while (l_it!=sum_L.end()) {
-    
-	      if (ord == active_ord) { // support general key sequence
-		l_it->second(qoi,approx) += prod; ++l_it;
-		ord = (l_it == sum_L.end()) ? 0 : l_it->first;
+	    // for pyramid sampling, shared accumulation lags refined by 1
+	    if (approx < shared_end) {
+	      ls_it = sum_L_shared.begin(); ls_ord = ls_it->first;
+	      active_ord = 1;
+	      while (ls_it!=sum_L_shared.end()) { // Low shared
+		if (ls_ord == active_ord) { // support general key sequence
+		  ls_it->second(qoi,approx) += prod;  ++ls_it;
+		  ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
+		}
+		prod *= fn_val;  ++active_ord;
 	      }
+	    }
 
-	      prod *= fn_val; ++active_ord;
+	    // index for refined accumulation is 1 more than last shared
+	    lr_it = sum_L_refined.begin(); lr_ord = lr_it->first;
+	    active_ord = 1;
+	    while (lr_it!=sum_L_refined.end()) { // Low refined
+	      if (lr_ord == active_ord) { // support general key sequence
+		lr_it->second(qoi,approx) += prod;  ++lr_it;
+		lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
+	      }
+	      prod *= fn_val;  ++active_ord;
 	    }
 	  }
-	}
+	//}
       }
     }
   }
@@ -467,7 +486,7 @@ void NonDACVSampling::
 accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 		   IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
 		   IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
-		   RealVector& sum_HH, const RealVector& offset,
+		   RealVector& sum_HH, //const RealVector& offset,
 		   Sizet2DArray& num_L, SizetArray& num_H, Sizet2DArray& num_LH)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
@@ -477,16 +496,17 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
   Real lf_fn, hf_fn, lf_prod, hf_prod;
   IntRespMCIter r_it; IntRVMIter h_it; IntRMMIter ls_it, lr_it, ll_it, lh_it;
   int ls_ord, lr_ord, h_ord, ll_ord, lh_ord, active_ord;
-  size_t qoi, approx, lf_index, hf_index;  bool os = !offset.empty();
+  size_t qoi, approx, lf_index, hf_index;  //bool os = !offset.empty();
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const Response&   resp    = r_it->second;
     const RealVector& fn_vals = resp.function_values();
-    const ShortArray& asv     = resp.active_set_request_vector();
+    //const ShortArray& asv   = resp.active_set_request_vector();
     hf_index = numApprox * numFunctions;
 
     for (qoi=0; qoi<numFunctions; ++qoi, ++hf_index) {
-      hf_fn = (os) ? fn_vals[hf_index] - offset[hf_index] : fn_vals[hf_index];
+      hf_fn = //(os) ? fn_vals[hf_index] - offset[hf_index] :
+	fn_vals[hf_index];
       // High accumulations:
       if (isfinite(hf_fn)) { // neither NaN nor +/-Inf
 	++num_H[qoi];
@@ -506,7 +526,8 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 	
       for (approx=0; approx<numApprox; ++approx) {
 	lf_index = approx * numFunctions + qoi;
-	lf_fn = (os) ? fn_vals[lf_index] - offset[lf_index] : fn_vals[lf_index];
+	lf_fn = //(os) ? fn_vals[lf_index] - offset[lf_index] :
+	  fn_vals[lf_index];
 
 	// Low accumulations:
 	if (isfinite(lf_fn)) {
@@ -643,6 +664,49 @@ compute_MSE_ratios(const RealMatrix& eval_ratios, const RealMatrix& rho2_LH,
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "QoI " << qoi+1 << ": MFMC variance reduction factor = "
 	   << mse_ratios[qoi] << '\n';
+  }
+}
+
+
+void NonDACVSampling::
+cv_raw_moments(IntRealMatrixMap& sum_L_shared,  IntRealVectorMap& sum_H,
+	       IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
+	       IntRealMatrixMap& sum_L_refined, const RealMatrix& rho2_LH,
+	       const Sizet2DArray& N_L,         const SizetArray& N_H,
+	       const Sizet2DArray& N_LH,        RealMatrix& H_raw_mom)
+{
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+
+  Real beta, sum_H_mq;
+  size_t approx, qoi, N_L_aq, N_H_q, N_LH_aq, N_shared;
+  for (int mom=1; mom<=4; ++mom) {
+    RealMatrix& sum_L_sh_m  = sum_L_shared[mom];
+    RealVector& sum_H_m     = sum_H[mom];
+    RealMatrix& sum_LL_m    = sum_LL[mom];
+    RealMatrix& sum_LH_m    = sum_LH[mom];
+    RealMatrix& sum_L_ref_m = sum_L_refined[mom];
+
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << ":\n";
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      sum_H_mq = sum_H_m[qoi];  N_H_q = N_H[qoi];
+      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
+      for (approx=0; approx<numApprox; ++approx) {
+	N_L_aq = N_L[approx][qoi];  N_LH_aq = N_LH[approx][qoi];
+	compute_mf_control(sum_L_sh_m(qoi,approx), sum_H_mq,
+			   sum_LL_m(qoi,approx), sum_LH_m(qoi,approx),
+			   /*N_L_sh_aq*/N_H_q, N_H_q, N_LH_aq, beta); //shared
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1
+	       << ": control variate beta = " << std::setw(9) << beta << '\n';
+	// shared accumulators and counts must telescope
+	N_shared = (approx == numApprox-1) ? N_H_q : N_L[approx+1][qoi];
+	apply_mf_control(sum_L_sh_m(qoi,approx),  N_shared, // shared
+			 sum_L_ref_m(qoi,approx), N_L_aq,  // refined
+			 beta, H_raw_mq);
+      }
+    }
   }
 }
 

@@ -223,11 +223,13 @@ compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   // unbiased mean estimator X-bar = 1/N * sum
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  //Real mu_L = sum_L / N_shared, mu_H = sum_H / N_shared;
+  //Real  mu_L =  sum_L  / N_shared,  mu_H = sum_H / N_shared;
   //Real var_L = (sum_LL / N_shared - mu_L * mu_L) * bessel_corr,
   //    cov_LH = (sum_LH / N_shared - mu_L * mu_H) * bessel_corr;
 
-  // Cancel repeated N_shared and bessel_corr within beta = cov_LH / var_L:
+  // beta^* = rho_LH sigma_H / sigma_L
+  //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
+  // Cancel one repeated N_shared and bessel_corr within cov_LH / var_L:
   beta = (sum_LH - sum_L * sum_H / N_shared)
        / (sum_LL - sum_L * sum_L / N_shared);
 }

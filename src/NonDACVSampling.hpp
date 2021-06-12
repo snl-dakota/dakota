@@ -85,14 +85,17 @@ private:
 			  IntRealVectorMap& sum_H,
 			  IntRealMatrixMap& sum_LL, //IntRealVectorMap& sum_HH,
 			  IntRealMatrixMap& sum_LH);
-  void accumulate_mf_sums(IntRealMatrixMap& sum_L, const RealVector& offset,
+  void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined, size_t approx_end,
+			  //const RealVector& offset,
 			  Sizet2DArray& num_L);
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 			  IntRealMatrixMap& sum_L_refined,
 			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
-			  const RealVector& offset, Sizet2DArray& num_L,
-			  SizetArray& num_H, Sizet2DArray& num_LH);
+			  //const RealVector& offset,
+			  Sizet2DArray& num_L, SizetArray& num_H,
+			  Sizet2DArray& num_LH);
 
   void increment_mf_samples(size_t new_N, size_t start, size_t end,
 			    SizetArray& N_l);
@@ -112,6 +115,17 @@ private:
   void compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			      Real sum_HH, size_t N_L, size_t N_H, size_t N_LH,
 			      Real& var_H, Real& rho2_LH);
+
+  void cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
+		      IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
+		      IntRealMatrixMap& sum_L_refined,
+		      const RealMatrix& rho2_LH, const Sizet2DArray& N_L,
+		      const SizetArray& N_H,     const Sizet2DArray& N_LH,
+		      RealMatrix& H_raw_mom);
+  void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+			  size_t N_L, size_t N_H, size_t N_LH, Real& beta);
+  void apply_mf_control(Real sum_L_shared, size_t N_shared, Real sum_L_refined,
+			size_t N_refined, Real beta, Real& H_raw_mom);
 
   //
   //- Heading: Data
@@ -163,12 +177,76 @@ compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
   Real var_L = (sum_LL / N_L  - mu_L * mu_L) * bessel_corr_L,
-      cov_LH = (sum_LH / N_LH - mu_L * mu_H) * bessel_corr_LH; // *** TO DO: potential inconsistency
+      cov_LH = (sum_LH / N_LH - mu_L * mu_H) * bessel_corr_LH; // *** TO DO: review Bessel correction online --> not the same N to pull out over N-1 ...
   var_H      = (sum_HH / N_H  - mu_H * mu_H) * bessel_corr_H;
 
   //beta  = cov_LH / var_L;
   rho2_LH = cov_LH / var_L * cov_LH / var_H;
 }
+
+
+inline void NonDACVSampling::
+compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+		   size_t N_L, size_t N_H, size_t N_LH, Real& beta)
+{
+  // unbiased mean estimator X-bar = 1/N * sum
+  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
+  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
+  Real bessel_corr_L  = (Real)N_L  / (Real)(N_L  - 1),
+     //bessel_corr_H  = (Real)N_H  / (Real)(N_H  - 1);
+       bessel_corr_LH = (Real)N_LH / (Real)(N_LH - 1);
+  Real  mu_L  =  sum_L  / N_L,   mu_H = sum_H / N_H,
+       var_L  = (sum_LL / N_L  - mu_L * mu_L) * bessel_corr_L,
+     //var_H  = (sum_HH / N_H  - mu_H * mu_H) * bessel_corr_H,
+       cov_LH = (sum_LH / N_LH - mu_L * mu_H) * bessel_corr_LH;
+
+  // beta^* = rho_LH sigma_H / sigma_L (same expression as two model case)
+  //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
+  // Allow different sample counts --> don't cancel bessel_corr:
+  beta = cov_LH / var_L;
+}
+
+
+inline void NonDACVSampling::
+apply_mf_control(Real sum_L_shared, size_t N_shared, Real sum_L_refined,
+		 size_t N_refined, Real beta, Real& H_raw_mom)
+{
+  // apply control for HF uncentered raw moment estimates:
+  H_raw_mom -= beta * (sum_L_shared  / N_shared -  // mu from shared samples
+		       sum_L_refined / N_refined); // refined mu incl increment
+}
+
+
+/*
+inline void NonDACVSampling::
+compute_mf_control(const RealMatrix& sum_L,  const RealVector& sum_H,
+		   const RealMatrix& sum_LL, const RealMatrix& sum_LH,
+		   const SizetArray& N_shared, size_t approx, RealVector& beta)
+{
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_mf_control(sum_L(qoi,approx), sum_H[qoi], sum_LL(qoi,approx),
+		       sum_LH(qoi,approx), N_shared[qoi], beta[qoi]);
+}
+
+
+inline void NonDACVSampling::
+apply_mf_control(const RealVector& sum_H,    const RealMatrix& sum_L_shared,
+		 const SizetArray& N_shared, const RealMatrix& sum_L_refined,
+		 const Sizet2DArray& N_refined, size_t approx,
+		 const RealVector& beta, RealVector& H_raw_mom)
+{
+  const SizetArray& N_ref_a = N_refined[approx];
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    Cout << "   QoI " << qoi+1 << ": control variate beta = "
+	 << std::setw(9) << beta[qoi] << '\n';
+    apply_mf_control(sum_H[qoi], sum_L_shared(qoi,approx), N_shared[qoi],
+		     sum_L_refined(qoi,approx), N_ref_a[qoi], beta[qoi],
+		     H_raw_mom[qoi]);
+  }
+  if (numFunctions > 1) Cout << '\n';
+}
+*/
+
 } // namespace Dakota
 
 #endif
