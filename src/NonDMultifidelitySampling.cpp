@@ -165,13 +165,14 @@ void NonDMultifidelitySampling::control_variate_mc()
       // Compute the LF/HF evaluation ratio using shared samples, averaged
       // over QoI.  This includes updating var_H and rho2_LH.
       compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-			  sum_HH, cost_ratio, N_hf, var_H, rho2_LH,
-			  eval_ratios);
+			  sum_HH, cost_ratio, N_hf, var_H, rho2_LH,eval_ratios);
+      // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
+      // sum_L_refined / N_refined is zero for CV prior to sample refinement.
+      // (This differs from MLMC MSE^0 which uses pilot for all levels.)
+      if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_hf, mse_iter0);
       // Compute the ratio of MC and CVMC mean squared errors (for convergence).
       // This ratio incorporates the anticipated variance reduction from the
       // upcoming application of eval_ratios.
-      if (mlmfIter == 0)
-	compute_mc_estimator_variance(var_H, N_hf, mse_iter0);
       compute_MSE_ratios(eval_ratios, var_H, rho2_LH, mlmfIter, N_hf,
 			 mse_ratios);
 

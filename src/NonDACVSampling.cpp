@@ -15,7 +15,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
-#include "dakota_tabular_io.hpp"
+//#include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDACVSampling.hpp"
@@ -23,11 +23,11 @@
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
-#ifdef HAVE_NPSOL
-#include "NPSOLOptimizer.hpp"
-#elif HAVE_OPTPP
-#include "SNLLOptimizer.hpp"
-#endif
+//#ifdef HAVE_NPSOL
+//#include "NPSOLOptimizer.hpp"
+//#elif HAVE_OPTPP
+//#include "SNLLOptimizer.hpp"
+//#endif
 
 static const char rcsId[]="@(#) $Id: NonDACVSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -124,7 +124,7 @@ void NonDACVSampling::core_run()
   // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
   iteratedModel.clear_model_keys();
   // prefer MF over ML if both available
-  iteratedModel.multifidelity_precedence(true);//_enforcement(); *** TO DO
+  iteratedModel.multifidelity_precedence(true);
 
   switch (methodName) {
   case MULTIFIDELITY_SAMPLING:
@@ -153,6 +153,8 @@ void NonDACVSampling::multifidelity_mc()
   // Performs pilot + LF increment and then iterates with additional shared
   // increment + LF increment batches until prescribed MSE reduction is obtained
 
+  // *** TO DO: test for #Models = 2 and then retire DakotaIterator switch...
+
   short seq_type;  size_t num_steps, secondary_index, qoi, approx;
   configure_sequence(num_steps, secondary_index, seq_type); // MF if #models > 1
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);//(false);
@@ -180,11 +182,6 @@ void NonDACVSampling::multifidelity_mc()
   aggregated_models_mode();
   iteratedModel.active_model_key(active_key); // data group 0
 
-  // 1D sequence: either lev varies and form is fixed, or vice versa:
-  //size_t& step = (multilev) ? lev : form;
-  //if (multilev) form = secondary_index;
-  //else          lev  = secondary_index;
-
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost;  configure_cost(num_steps, multilev, cost);
   //SizetArray raw_N; raw_N.assign(num_steps, 0);
@@ -193,7 +190,7 @@ void NonDACVSampling::multifidelity_mc()
   IntRealMatrixMap sum_L_shared, sum_L_refined, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions), var_H(numFunctions, false),
-    /*mu_hat,*/ mse_iter0, mse_ratios;
+    mse_iter0, mse_ratios, hf_targets;
   RealMatrix rho2_LH(numFunctions, false), eval_ratios;
   SizetArray N_H, delta_N; Sizet2DArray N_L(numApprox), N_LH(numApprox);
   N_H.assign(numFunctions, 0);
@@ -202,40 +199,52 @@ void NonDACVSampling::multifidelity_mc()
 
   // Initialize for pilot sample
   load_pilot_sample(pilotSamples, num_steps, delta_N);
-  size_t truth_sample_incr = delta_N[numApprox]; // last in array
-  numSamples = truth_sample_incr;
+  numSamples = delta_N[numApprox]; // last in array
 
-  mlmfIter = 0;  equivHFEvals = 0.;
-  while (truth_sample_incr && mlmfIter <= maxIterations &&
-	 equivHFEvals <= maxFunctionEvals) {
+  mlmfIter = 0;  bool converged = false;
+  while (!converged) {
 
-    // ----------------------------------------------------------
-    // Compute shared increment targeting specified MSE reduction
-    // ----------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Compute shared increment targeting specified budget and/or MSE reduction
+    // ------------------------------------------------------------------------
+    // Scale sample profile based on maxFunctionEvals or convergenceTol,
+    // but not both (for now)
     if (mlmfIter) {
+      // ------------------------------------------------------
+      // Option 1: assign complete budget based on pilot sample
+      // ------------------------------------------------------
+      // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L 
+      // > could consider under-relaxing the budget allocation to enable
+      //   additional N_H increments + associated updates to shared samples
+      //   for improving rho2_LH et al.
+      if (maxFunctionEvals != SZ_MAX) {
+	Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
+	allocate_budget(eval_ratios, cost, hf_targets);
+      }
       // ---------------------------------------------------
-      // Option 1: iterate until relative tolerance achieved
+      // Option 2: iterate until relative tolerance achieved
       // ---------------------------------------------------
       // MFMC MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
       //           N_H = mse_ratio * var_H / convTol / mse_iter0
       // Note: don't simplify further since mse_iter0 is fixed based on pilot
-      //       estimate of var_H / N_H
-      RealVector truth_targets = mse_ratios;
-      for (qoi=0; qoi<numFunctions; ++qoi)
-	truth_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
-      // Power mean choice: average, max (desire would be to balance overshoot
-      // vs. additional iteration)
-      truth_sample_incr = numSamples = one_sided_delta(N_H, truth_targets, 1);
-      // ------------------------------------------------------
-      // Option 2: assign complete budget based on pilot sample
-      // ------------------------------------------------------
-      // *** TO DO ***
+      else {
+	Cout << "Scaling profile for convergenceTol = " << convergenceTol;
+	hf_targets = mse_ratios;
+	for (qoi=0; qoi<numFunctions; ++qoi)
+	  hf_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
+	// Power mean choice: average, max (desire would be to balance
+	// overshoot vs. additional iteration)
+      }
+      // numSamples is relative to N_H, but the approx_increments() below are
+      // computed relative to hf_targets (independent of sunk cost for pilot)
+      Cout << ": average HF target = " << average(hf_targets) << std::endl;
+      numSamples = one_sided_delta(N_H, hf_targets, 1);
     }
 
     if (numSamples) {
       shared_increment(mlmfIter, numApprox); // spans ALL models, blocking
       accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
-			 sum_HH, /*mu_hat,*/ N_L, N_H, N_LH);
+			 sum_HH, N_L, N_H, N_LH);
       //increment_mf_samples(numSamples, 0, num_steps, raw_N);
       increment_mf_equivalent_cost(numSamples, 0, num_steps, cost);
 
@@ -244,35 +253,41 @@ void NonDACVSampling::multifidelity_mc()
       compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, cost, N_L, N_H, N_LH, var_H, rho2_LH,
 			  eval_ratios);
-      // *** TO DO: mse_iter0 only uses HF pilot sample: inconsistent with MLMC?
+      // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
+      // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
+      // (This differs from MLMC MSE^0 which uses pilot for all levels.)
       if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_H, mse_iter0);
       // Compute the ratio of MC and CVMC mean squared errors (for convergence).
       // This ratio incorporates the anticipated variance reduction from the
       // upcoming application of eval_ratios.
       compute_MSE_ratios(eval_ratios, rho2_LH, cost, mse_ratios);
-
-      // -------------------------------------------------------------------
-      // Compute N_approx increments based on new eval ratio for new N_truth
-      // -------------------------------------------------------------------
-      // Pyramid/nested sampling: at step i, we sample approximation range
-      // [0,numApprox-1-i] using the delta relative to the previous step
-      // 
-      for (approx=numApprox; approx>0; --approx) {
-	// pyramid sampling increments span models {0, ..., approx}
-	if (equivHFEvals <= maxFunctionEvals &&
-	    approx_increment(eval_ratios, N_L, N_H, mlmfIter, 0, approx)) { // *** TO DO: NON_BLOCKING: MOVE 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
-	  accumulate_mf_sums(sum_L_shared, sum_L_refined, /*mu_hat,*/
-			     approx, N_L);
-	  //increment_mf_samples(numSamples,       0, approx, raw_N);
-	  increment_mf_equivalent_cost(numSamples, 0, approx, cost);
-	}
-      }
     }
-    else
-      Cout << "\nMFMC iteration " << mlmfIter << ": no shared sample increment"
-	   << std::endl;
+    else {
+      converged = true;
+      //Cout << "\nMFMC iteration " << mlmfIter
+      //     << ": no shared sample increment" << std::endl;
+    }
 
     ++mlmfIter;
+    if (mlmfIter > maxIterations) converged = true;
+  }
+
+  // ---------------------------------------------------------------
+  // Compute N_L increments based on eval ratio applied to final N_H
+  // ---------------------------------------------------------------
+  // Note: these results do not affect the iteration above and can be performed
+  // after N_H has converged, which simplifies maxFnEvals / convTol logic
+  // (no need to further interrogate these throttles below)
+
+  // Pyramid/nested sampling: at step i, we sample approximation range
+  // [0,numApprox-1-i] using the delta relative to the previous step
+  for (approx=numApprox; approx>0; --approx) {
+    // pyramid sampling increments span models {0, ..., approx}
+    if (approx_increment(eval_ratios, N_L, hf_targets, mlmfIter, 0, approx)) { // *** TO DO: NON_BLOCKING: PERFORM A 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
+      accumulate_mf_sums(sum_L_shared, sum_L_refined, approx, N_L);
+      //increment_mf_samples(numSamples,       0, approx, raw_N);
+      increment_mf_equivalent_cost(numSamples, 0, approx, cost);
+    }
   }
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
@@ -335,23 +350,49 @@ shared_increment(/*const Pecos::ActiveKey& agg_key,*/ size_t iter, size_t step)
 }
 
 
+void NonDACVSampling::
+allocate_budget(const RealMatrix& eval_ratios, const RealVector& cost,
+		RealVector& hf_targets)
+{
+  // Scale this profile based on specified budget (maxFunctionEvals) if needed
+  // using N_H = maxFunctionEvals / cost^T eval_ratios
+  // > Pilot case iter = 0: can only scale back after shared_increment().
+  //   Optimal profile can be hidden by one_sided_delta() with pilot --> optimal
+  //   shape emerges from initialization cost as for ML cases controlled by
+  //   convTol (allow budget overshoot due to overlap of optimal with pilot,
+  //   rather than strictly allocating remaining budget)
+
+  if (hf_targets.empty()) hf_targets.sizeUninitialized(numFunctions);
+  size_t qoi, approx;
+  Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    inner_prod = cost_H; // raw cost (un-normalized)
+    for (approx=0; approx<numApprox; ++approx)
+      inner_prod += cost[approx] * eval_ratios(qoi, approx);
+    hf_targets[qoi] = budget / inner_prod * cost_H; // normalized to equivHF
+  }
+}
+
+
 bool NonDACVSampling::
 approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_L,
-		 const SizetArray& N_H, size_t iter, size_t start, size_t end)
+		 const RealVector& hf_targets, size_t iter,
+		 size_t start, size_t end)
 {
   // Update LF samples based on evaluation ratio
   //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
-  // IMPORTANT NOTES:
+  // Notes:
   // > the sample increment for the approx range is determined by approx[end-1]
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
-  size_t approx = end - 1;
+  // > eval_ratios have been scaled if needed to satisfy specified budget
+  //   (maxFunctionEvals) in
+  size_t qoi, approx = end - 1;
   RealVector lf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    const Real* ev_ratio_q = eval_ratios[qoi];
-    lf_targets[qoi] = eval_ratios(qoi, approx) * N_H[qoi];
-  }
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
+
   // Choose avg, RMS, max? (trade-off: possible overshoot vs. more iteration)
   numSamples = one_sided_delta(N_L[approx], lf_targets, 1); // average
 

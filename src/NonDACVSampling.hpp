@@ -66,9 +66,12 @@ protected:
 
   void shared_increment(size_t iter, size_t step);
   bool approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_lf,
-			const SizetArray& N_hf, size_t iter, size_t start,
+			const RealVector& hf_targets, size_t iter, size_t start,
 			size_t end);
   void ensemble_sample_increment(size_t iter, size_t step);
+
+  void allocate_budget(const RealMatrix& eval_ratios, const RealVector& cost,
+		       RealVector& hf_targets);
 
 private:
 
