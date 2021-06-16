@@ -501,10 +501,10 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MULTILEVEL_SAMPLING:
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
-    if (model.subordinate_models(false).size() > 2) // *** for now ***
-      return std::make_shared<NonDACVSampling>(problem_db, model);
-    else
+    if (model.surrogate_type() == "hierarchical")
       return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
+    else // non-hierarchical sampling supports #models > 2
+      return std::make_shared<NonDACVSampling>(problem_db, model);
     break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevMultifidSampling>(problem_db, model);

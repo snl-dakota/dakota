@@ -153,7 +153,7 @@ void NonDACVSampling::multifidelity_mc()
   // Performs pilot + LF increment and then iterates with additional shared
   // increment + LF increment batches until prescribed MSE reduction is obtained
 
-  // *** TO DO: test for #Models = 2 and then retire DakotaIterator switch...
+  // *** TO DO: test for #Models = 2; add tests/baselines
 
   short seq_type;  size_t num_steps, secondary_index, qoi, approx;
   configure_sequence(num_steps, secondary_index, seq_type); // MF if #models > 1
@@ -227,7 +227,7 @@ void NonDACVSampling::multifidelity_mc()
       // MFMC MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
       //           N_H = mse_ratio * var_H / convTol / mse_iter0
       // Note: don't simplify further since mse_iter0 is fixed based on pilot
-      else {
+      else { // *** TO DO: to support both, need to retain default special value (-DBL_MAX) to detect a user spec for convergenceTol ***
 	Cout << "Scaling profile for convergenceTol = " << convergenceTol;
 	hf_targets = mse_ratios;
 	for (qoi=0; qoi<numFunctions; ++qoi)
@@ -239,6 +239,7 @@ void NonDACVSampling::multifidelity_mc()
       // computed relative to hf_targets (independent of sunk cost for pilot)
       Cout << ": average HF target = " << average(hf_targets) << std::endl;
       numSamples = one_sided_delta(N_H, hf_targets, 1);
+      //numSamples = std::min(num_samp_budget, num_samp_ctol);
     }
 
     if (numSamples) {
