@@ -383,9 +383,6 @@ private:
   static void target_scalarization_objective_eval_logscale_npsol(int& mode, 
   								int& n, double* x, double& f, double* gradf, int& nstate);
 
-  static void target_scalarization_objective_eval_optpp_fd(int mode, int n, const RealVector& x, double& f,
-                                        RealVector& grad_f, int& result_mode);
-
   void assign_static_member(const Real &conv_tol, size_t &qoi, 
   								const size_t &qoi_aggregation, const size_t &num_functions, 
   								const RealVector &level_cost_vec, 
