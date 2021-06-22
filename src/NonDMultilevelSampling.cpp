@@ -398,14 +398,14 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
   */
   //Problem18
-  /*
+  
   std::ofstream myfile;
   myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      //2                  //3                  //4
   myfile << N_l[0][0]             << "\t" << N_l[1][0] 
          << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))
          << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1)) << "\n";
   myfile.close();
-  */
+  
 
   // roll up moment contributions
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
@@ -790,10 +790,10 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
     var_of_mean_l = aggregate_variance_mean_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, cur_qoi);
     var_of_sigma_l = aggregate_variance_sigma_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l, step, cur_qoi);
     upper_bound_cov_of_mean_sigma = std::sqrt(var_of_mean_l*var_of_sigma_l); // * N_l[step][cur_qoi];
-    cov_bootstrap = bootstrap_covariance(step, qoi, levQoisamplesmatrixMap, false, dummy_grad);
+    cov_bootstrap = bootstrap_covariance(step, cur_qoi, levQoisamplesmatrixMap, N_l[step][cur_qoi], false, dummy_grad, randomSeed);
 
-    Cout << "aggregate_variance_scalarization_Qsum: step: " << step << " qoi: " << cur_qoi 
-      << " variances: " << var_of_mean_l << ", " << var_of_sigma_l << ", " << upper_bound_cov_of_mean_sigma << ", " << cov_bootstrap << std::endl;
+    //Cout << "aggregate_variance_scalarization_Qsum: step: " << step << " qoi: " << cur_qoi 
+    //  << " variances: " << var_of_mean_l << ", " << var_of_sigma_l << ", " << upper_bound_cov_of_mean_sigma << ", " << cov_bootstrap << std::endl;
 
     upper_bound_cov_of_mean_sigma = cov_bootstrap;
     var_of_scalarization_cur = scalarizationCoeffs(qoi, cur_qoi_offset) * scalarizationCoeffs(qoi, cur_qoi_offset) * var_of_mean_l 
@@ -806,14 +806,24 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
 
 Real NonDMultilevelSampling::bootstrap_covariance(const size_t step, 
                 const size_t qoi, 
-                const IntRealMatrixMap& lev_qoisamplematrix_map,
-                const bool compute_gradient, Real& grad){
-  int nb_bs_samples = 1000, nb_samples, nb_functions, bs_sample_idx;
+                const IntRealMatrixMap& lev_qoisamplematrix_map, const Real N,
+                const bool compute_gradient, Real& grad, const int seed){
+  int nb_bs_samples = 100, nb_samples, nb_functions, bs_sample_idx;
   RealVector bs_samples_l, bs_samples_lm1;
   RealVector meanl_bs(nb_bs_samples), meanlm1_bs(nb_bs_samples);
   RealVector sigmal_bs(nb_bs_samples), sigmalm1_bs(nb_bs_samples);
-  RealVector meanl_bs_grad(nb_bs_samples), meanlm1_bs_grad(nb_bs_samples);
-  RealVector sigmal_bs_grad(nb_bs_samples), sigmalm1_bs_grad(nb_bs_samples);
+  RealVector meanl_bs_fdplus(nb_bs_samples), meanlm1_bs_fdplus(nb_bs_samples);
+  RealVector sigmal_bs_fdplus(nb_bs_samples), sigmalm1_bs_fdplus(nb_bs_samples);
+  RealVector meanl_bs_fdminus(nb_bs_samples), meanlm1_bs_fdminus(nb_bs_samples);
+  RealVector sigmal_bs_fdminus(nb_bs_samples), sigmalm1_bs_fdminus(nb_bs_samples);
+  Real h = 1e-4;
+  RealVector meanl_bs_grad, meanlm1_bs_grad, sigmal_bs_grad, sigmalm1_bs_grad;
+  if(compute_gradient){
+    meanl_bs_grad.size(nb_bs_samples);
+    meanlm1_bs_grad.size(nb_bs_samples);
+    sigmal_bs_grad.size(nb_bs_samples);
+    sigmalm1_bs_grad.size(nb_bs_samples);
+  }
   Real covmeanlsigmal, covmeanlm1sigmal, covmeanlsigmalm1, covmeanlm1sigmalm1;
   Real covmeanlsigmal_grad = 0, covmeanlm1sigmal_grad = 0, 
         covmeanlsigmalm1_grad = 0, covmeanlm1sigmalm1_grad = 0;
@@ -827,7 +837,7 @@ Real NonDMultilevelSampling::bootstrap_covariance(const size_t step,
   //  Cout << "nb_samples: " << nb_samples << " matrix: " << it->second.numCols() << ", " << it->second.numRows()<< std::endl;
   //}
 
-  RNGType rng(std::time(0));
+  RNGType rng(seed);
   boost::uniform_int<> rand_int_range( 0, nb_samples-1);
   boost::variate_generator< RNGType, boost::uniform_int<> >
     rand_int(rng, rand_int_range);
@@ -842,14 +852,25 @@ Real NonDMultilevelSampling::bootstrap_covariance(const size_t step,
 
     //if (qoi == 1) Cout << "Bs idx: " << bs_resample << " l: " << bs_samples_l << " lm1: " << bs_samples_lm1 << std::endl;
 
-    meanl_bs[bs_resample] = compute_mean(bs_samples_l, compute_gradient, 
+    meanl_bs[bs_resample] = compute_mean(bs_samples_l, N, compute_gradient, 
                                           meanl_bs_grad[bs_resample]);
-    meanlm1_bs[bs_resample] = compute_mean(bs_samples_lm1, compute_gradient, 
+    meanlm1_bs[bs_resample] = compute_mean(bs_samples_lm1, N, compute_gradient, 
                                             meanlm1_bs_grad[bs_resample]);
-    sigmal_bs[bs_resample] = compute_std(bs_samples_l, compute_gradient, 
+    sigmal_bs[bs_resample] = compute_std(bs_samples_l, N, compute_gradient, 
                                             sigmal_bs_grad[bs_resample]);
-    sigmalm1_bs[bs_resample] = compute_std(bs_samples_lm1, compute_gradient, 
+    sigmalm1_bs[bs_resample] = compute_std(bs_samples_lm1, N, compute_gradient, 
                                             sigmalm1_bs_grad[bs_resample]);
+    
+    meanl_bs_fdplus[bs_resample] = compute_mean(bs_samples_l, N+h);
+    meanlm1_bs_fdplus[bs_resample] = compute_mean(bs_samples_lm1, N+h);
+    sigmal_bs_fdplus[bs_resample] = compute_std(bs_samples_l, N+h);
+    sigmalm1_bs_fdplus[bs_resample] = compute_std(bs_samples_lm1, N+h);
+
+    meanl_bs_fdminus[bs_resample] = compute_mean(bs_samples_l, N-h);
+    meanlm1_bs_fdminus[bs_resample] = compute_mean(bs_samples_lm1, N-h);
+    sigmal_bs_fdminus[bs_resample] = compute_std(bs_samples_l, N-h);
+    sigmalm1_bs_fdminus[bs_resample] = compute_std(bs_samples_lm1, N-h);
+    
   }
 
   //if (qoi == 1 && step == 1) {
@@ -866,24 +887,31 @@ Real NonDMultilevelSampling::bootstrap_covariance(const size_t step,
     Real mean_meanlm1_bs = compute_mean(meanlm1_bs);
     Real mean_sigmal_bs = compute_mean(sigmal_bs);
     Real mean_sigmalm1_bs = compute_mean(sigmalm1_bs);
-    for(int bs_resample = 0; bs_resample < nb_bs_samples
-                              && compute_gradient; ++bs_resample){
-      covmeanlsigmal_grad += meanl_bs_grad[bs_resample] * 
+    Real mean_meanl_bs_grad = compute_mean(meanl_bs_grad);
+    Real mean_meanlm1_bs_grad = compute_mean(meanlm1_bs_grad);
+    Real mean_sigmal_bs_grad = compute_mean(sigmal_bs_grad);
+    Real mean_sigmalm1_bs_grad = compute_mean(sigmalm1_bs_grad);
+    for(int bs_resample = 0; bs_resample < nb_bs_samples; ++bs_resample){
+      covmeanlsigmal_grad += (meanl_bs_grad[bs_resample] - mean_meanlm1_bs_grad) *
                               (sigmal_bs[bs_resample] - mean_sigmal_bs) +
                              (meanl_bs[bs_resample] - mean_meanl_bs) *
-                              sigmal_bs_grad[bs_resample];
-      covmeanlm1sigmal_grad += meanlm1_bs_grad[bs_resample] * 
+                              (sigmal_bs_grad[bs_resample] - mean_sigmal_bs_grad);
+
+      covmeanlm1sigmal_grad += (meanlm1_bs_grad[bs_resample] - mean_meanlm1_bs_grad) *
                               (sigmal_bs[bs_resample] - mean_sigmal_bs) +
                              (meanlm1_bs[bs_resample] - mean_meanlm1_bs) *
-                              sigmal_bs_grad[bs_resample];
-      covmeanlsigmalm1_grad += meanl_bs_grad[bs_resample] * 
+                              (sigmal_bs_grad[bs_resample] - mean_sigmal_bs_grad);
+
+      covmeanlsigmalm1_grad += (meanl_bs_grad[bs_resample] - mean_meanl_bs_grad) *
                               (sigmalm1_bs[bs_resample] - mean_sigmalm1_bs) +
                              (meanl_bs[bs_resample] - mean_meanl_bs) *
-                              sigmalm1_bs_grad[bs_resample];
-      covmeanlm1sigmalm1_grad += meanlm1_bs_grad[bs_resample] * 
+                              (sigmalm1_bs_grad[bs_resample] - mean_sigmalm1_bs_grad);
+
+      covmeanlm1sigmalm1_grad += (meanlm1_bs_grad[bs_resample] - mean_meanlm1_bs_grad) * 
                               (sigmalm1_bs[bs_resample] - mean_sigmalm1_bs) +
                              (meanlm1_bs[bs_resample] - mean_meanlm1_bs) *
-                              sigmalm1_bs_grad[bs_resample];
+                              (sigmalm1_bs_grad[bs_resample] - mean_sigmalm1_bs_grad);
+
     }
     covmeanlsigmal_grad /= (nb_bs_samples - 1.);
     covmeanlm1sigmal_grad /= (nb_bs_samples - 1.);
@@ -892,6 +920,23 @@ Real NonDMultilevelSampling::bootstrap_covariance(const size_t step,
 
     grad = covmeanlsigmal_grad - covmeanlm1sigmal_grad - covmeanlsigmalm1_grad +
             covmeanlm1sigmalm1_grad;
+    
+    Real covmeanlsigmal_grad_fd = 1./(2*h)*(compute_cov(meanl_bs_fdplus, sigmal_bs_fdplus) - compute_cov(meanl_bs_fdminus, sigmal_bs_fdminus));
+    Real covmeanlm1sigmal_grad_fd = 1./(2*h)*(compute_cov(meanlm1_bs_fdplus, sigmal_bs_fdplus) - compute_cov(meanlm1_bs_fdminus, sigmal_bs_fdminus));
+    Real covmeanlsigmalm1_grad_fd = 1./(2*h)*(compute_cov(meanl_bs_fdplus, sigmalm1_bs_fdplus) - compute_cov(meanl_bs_fdminus, sigmalm1_bs_fdminus));
+    Real covmeanlm1sigmalm1_grad_fd = 1./(2*h)*(compute_cov(meanlm1_bs_fdplus, sigmalm1_bs_fdplus) - compute_cov(meanlm1_bs_fdminus, sigmalm1_bs_fdminus));
+    /*
+    Cout << "----------------------------" << std::endl;
+    Cout << "######Gradients of Cov bs: " << std::endl;
+    Cout << "l l: " << covmeanlsigmal_grad << " vs. " << covmeanlsigmal_grad_fd << std::endl;
+    Cout << "lm1 l: " << covmeanlm1sigmal_grad << " vs. " << covmeanlm1sigmal_grad_fd << std::endl;
+    Cout << "l lm1: " << covmeanlsigmalm1_grad << " vs. " << covmeanlsigmalm1_grad_fd << std::endl;
+    Cout << "lm1 lm1: " << covmeanlm1sigmalm1_grad << " vs. " << covmeanlm1sigmalm1_grad_fd << std::endl;
+    Cout << "------" << std::endl;
+    Cout << "grad: " << grad << " vs. " << covmeanlsigmal_grad_fd- covmeanlm1sigmal_grad_fd - covmeanlsigmalm1_grad_fd + covmeanlm1sigmalm1_grad_fd<< std::endl;
+    Cout << "----------------------------" << std::endl;
+    */
+    
   }
 
   return covmeanlsigmal - covmeanlm1sigmal - 
@@ -899,9 +944,12 @@ Real NonDMultilevelSampling::bootstrap_covariance(const size_t step,
 }
 
 Real NonDMultilevelSampling::compute_mean(const RealVector& samples){
+  return compute_mean(samples, samples.length());
+}
+
+Real NonDMultilevelSampling::compute_mean(const RealVector& samples, const Real N){
   Real mean = 0;
-  int N = samples.length();
-  for(int i = 0; i < N; ++i){
+  for(int i = 0; i < samples.length(); ++i){
     mean += samples[i];
   }
   return mean/N;
@@ -909,22 +957,28 @@ Real NonDMultilevelSampling::compute_mean(const RealVector& samples){
 
 Real NonDMultilevelSampling::compute_mean(const RealVector& samples, 
               const bool compute_gradient, Real& grad){
-  Real mean = 0;
-  int N = samples.length();
-  for(int i = 0; i < N; ++i){
-    mean += samples[i];
-  }
+  return compute_mean(samples, samples.length(), compute_gradient, grad);
+}
+
+Real NonDMultilevelSampling::compute_mean(const RealVector& samples, const Real N, 
+              const bool compute_gradient, Real& grad){
+
+  Real mean = compute_mean(samples, N);
 
   if(compute_gradient) grad = - 1./(N*N) * mean;
 
   return mean/N;
 }
 
+Real NonDMultilevelSampling::compute_std(const RealVector& samples){
+  return compute_std(samples, samples.length());
+}
+
 Real NonDMultilevelSampling::compute_std(const RealVector& samples, 
-              const Real mean_hat){
+              const Real N){
   Real sigma = 0;
-  int N = samples.length();
-  for(int i = 0; i < N; ++i){
+  Real mean_hat = compute_mean(samples, N);
+  for(int i = 0; i < samples.length(); ++i){
     sigma += (samples[i] - mean_hat)*(samples[i] - mean_hat);
   }
   return std::sqrt(sigma/(N-1.));
@@ -932,39 +986,39 @@ Real NonDMultilevelSampling::compute_std(const RealVector& samples,
 
 Real NonDMultilevelSampling::compute_std(const RealVector& samples, 
               const bool compute_gradient, Real& grad){
-  Real sigma = 0;
+  return compute_std(samples, samples.length(), compute_gradient, grad);
+}
+
+
+Real NonDMultilevelSampling::compute_std(const RealVector& samples, 
+                const Real N, const bool compute_gradient, Real& grad){
   Real sumXisquared = 0;
   Real sumXij = 0;
   Real sigma_partial = 0;
-  int N = samples.length();
-  Real mean_hat = compute_mean(samples);
-  for(int i = 0; i < N; ++i){
-    sigma += (samples[i] - mean_hat)*(samples[i] - mean_hat);
-  }
+  Real mean_hat = compute_mean(samples, N);
+  Real sigma = compute_std(samples, N);
 
   if(compute_gradient){
-    for(int i = 0; i < N; ++i){
-      sumXisquared += samples[i]*samples[i];
-      for(int j = 0; j < N; ++j){
-        sumXij += samples[i]*samples[j];
-      }
+    Real sigma_inner = 0;
+    for(int i = 0; i < samples.length(); ++i){
+      sigma_inner += (samples[i] - mean_hat)*(samples[i] - mean_hat);
     }
-    sigma_partial = -1./((N-1)*(N-1))*sumXisquared  
-                   - (1.-2.*N)/((N-1)*(N-1)*N*N)*sumXij;
-    grad = sigma_partial/(2.*sigma);
+    sigma_partial = -1./((N-1.)*(N-1.))*sigma_inner;
+    grad = (sigma == 0) ? 0 : sigma_partial/(2.*sigma);
   }
   return sigma;
 }
 
 Real NonDMultilevelSampling::compute_cov(const RealVector& samples_X, const RealVector& samples_Y){
+  int N = samples_X.length();
   Real mean_X = compute_mean(samples_X);
   Real mean_Y = compute_mean(samples_Y);
   Real cov = 0;
 
-  for(int i = 0; i < samples_X.length(); ++i){
+  for(int i = 0; i < N; ++i){
     cov += (samples_X[i] - mean_X)*(samples_Y[i] - mean_Y);
   }
-  return cov/(samples_X.length() - 1.);
+  return cov/(N - 1.);
 }
 
 void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
@@ -1538,6 +1592,7 @@ static const Real *static_eps_sq_div_2(NULL);
 static const RealVector *static_Nlq_pilot(NULL);
 static const size_t *static_numFunctions(NULL);
 static const size_t  *static_qoiAggregation(NULL);
+static const int *static_randomSeed(NULL);
 
 static const IntRealMatrixMap *static_sum_Ql(NULL);
 static const IntRealMatrixMap *static_sum_Qlm1(NULL);
@@ -1562,6 +1617,7 @@ void NonDMultilevelSampling::assign_static_member(const Real &conv_tol, size_t &
     static_Nlq_pilot = &pilot_samples;
     static_scalarization_response_mapping = &scalarization_response_mapping;
     static_levQoisamplesmatrixMap = &levQoisamplesmatrixMap;
+    static_randomSeed = &randomSeed;
 }
 
 static const Real *static_mu_four_L(NULL);
@@ -2264,7 +2320,7 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
       agg_estim_var += agg_estim_var_l[0];
 
       if(compute_gradient){
-      grad_f[0] += agg_estim_var_l[0] > 0 ? 1./4. * 
+        grad_f[0] += agg_estim_var_l[0] > 0 ? 1./4. * 
                     ( 
                       -1./(agg_estim_var_l[0] * agg_estim_var_l[0]) * gradient_var * agg_estim_var_of_var_l[0] 
                       +
@@ -2306,6 +2362,25 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
 
     agg_estim_var += agg_estim_var_l[0];
 
+    //------FD to be removed later
+    
+    Real h = 1e-4;
+    Nlq = x[lev] + h;
+    RealVector agg_estim_var_of_var_l_fdplus(num_lev), agg_estim_var_of_var_l_fdminus(num_lev);
+    RealVector agg_estim_var_l_fdplus(num_lev), agg_estim_var_l_fdminus(num_lev);
+    agg_estim_var_of_var_l_fdplus[0] = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
+                                   compute_gradient, gradient_var_var);
+    agg_estim_var_l_fdplus[0] = var_lev_l_static((*static_sum_Ql).at(1)[lev][qoi], (*static_sum_Qlm1).at(1)[lev][qoi], (*static_sum_Ql).at(2)[lev][qoi], 
+                    (*static_sum_Qlm1).at(2)[lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+
+    Real Nlq = x[lev] - h;
+    agg_estim_var_of_var_l_fdminus[0] = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
+                                   compute_gradient, gradient_var_var);
+    agg_estim_var_l_fdminus[0] = var_lev_l_static((*static_sum_Ql).at(1)[lev][qoi], (*static_sum_Qlm1).at(1)[lev][qoi], (*static_sum_Ql).at(2)[lev][qoi], 
+                    (*static_sum_Qlm1).at(2)[lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+    
+    //
+
     for (lev = 1; lev < num_lev; ++lev) {
       Nlq = x[lev];
       Nlq_pilot = (*static_Nlq_pilot)[lev];
@@ -2321,13 +2396,49 @@ void NonDMultilevelSampling::target_sigma_objective_eval_optpp(int mode, int n, 
                     (*static_sum_Qlm1).at(2)[lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
       agg_estim_var += agg_estim_var_l[lev];
       grad_var[lev] = gradient_var;
+
+      //------FD to be removed later
+      
+      Nlq = x[lev] + h;
+      agg_estim_var_of_var_l_fdplus[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
+                                       compute_gradient, gradient_var_var);
+      agg_estim_var_l_fdplus[lev] = var_lev_l_static((*static_sum_Ql).at(1)[lev][qoi], (*static_sum_Qlm1).at(1)[lev][qoi], (*static_sum_Ql).at(2)[lev][qoi], 
+                    (*static_sum_Qlm1).at(2)[lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+
+      Nlq = x[lev] - h;
+      agg_estim_var_of_var_l_fdminus[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
+                                       compute_gradient, gradient_var_var);
+      agg_estim_var_l_fdminus[lev] = var_lev_l_static((*static_sum_Ql).at(1)[lev][qoi], (*static_sum_Qlm1).at(1)[lev][qoi], (*static_sum_Ql).at(2)[lev][qoi], 
+                    (*static_sum_Qlm1).at(2)[lev][qoi], Nlq_pilot, Nlq, compute_gradient, gradient_var);
+      
+      //
+
     }
     if(compute_gradient){
+
       for (lev = 0; lev < num_lev; ++lev) {
         grad_f[lev] = agg_estim_var > 0 ? 
                           1./4. * ( (grad_var_var[lev] * agg_estim_var - agg_estim_var_of_var * grad_var[lev])/(agg_estim_var*agg_estim_var) ) 
                           : 0;
       }
+      /*
+      Cout << "----------------------------" << std::endl;
+      Cout << "######Gradients of Sigma: " << std::endl;
+      for (int lev_grad = 0; lev_grad < num_lev; ++lev_grad) {
+        Real agg_estim_var_of_var_fdplus = 0, agg_estim_var_of_var_fdminus = 0;
+        Real agg_estim_var_fdplus = 0, agg_estim_var_fdminus = 0;
+        for (lev = 0; lev < num_lev; ++lev) {
+          agg_estim_var_of_var_fdplus += (lev == lev_grad) ? agg_estim_var_of_var_l_fdplus[lev] : agg_estim_var_of_var_l[lev];
+          agg_estim_var_of_var_fdminus += (lev == lev_grad) ? agg_estim_var_of_var_l_fdminus[lev] : agg_estim_var_of_var_l[lev];
+          agg_estim_var_fdplus += (lev == lev_grad) ? agg_estim_var_l_fdplus[lev] : agg_estim_var_l[lev];
+          agg_estim_var_fdminus += (lev == lev_grad) ? agg_estim_var_l_fdminus[lev] : agg_estim_var_l[lev];
+        }
+        Real grad_f_fdplus = agg_estim_var_fdplus > 0 ? 1./4. * agg_estim_var_of_var_fdplus/agg_estim_var_fdplus : 0;
+        Real grad_f_fdminus = agg_estim_var_fdminus > 0 ? 1./4. * agg_estim_var_of_var_fdminus/agg_estim_var_fdminus : 0;
+        Cout << grad_f[lev_grad] << " vs. " << 1./(2*h)*(grad_f_fdplus-grad_f_fdminus) << std::endl;
+      }
+      Cout << "----------------------------" << std::endl;
+      */
     }
   }else{
     Cout << "NonDMultilevelSampling::target_sigma_objective_eval_optpp: qoiAggregation is not known.\n";
@@ -2366,6 +2477,214 @@ void NonDMultilevelSampling::target_scalarization_constraint_eval_optpp(int mode
 }
 
 void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode)
+{
+
+  bool compute_gradient = false;
+#ifdef HAVE_NPSOL
+  compute_gradient = mode; //if mode == 0, NPSOL ignores gradients
+#elif HAVE_OPTPP
+  if(mode & OPTPP::NLPFunction) {
+    result_mode = OPTPP::NLPFunction;
+  }
+  if(mode & OPTPP::NLPGradient){
+    compute_gradient = true;
+    result_mode = OPTPP::NLPGradient;
+  }
+#endif
+
+  // std error in variance or std deviation estimate
+  size_t lev, Nlq_pilot;
+  Real Nlq;
+  size_t qoi = *static_qoi;
+  size_t nb_qois = *static_numFunctions;
+  short  qoiAggregation = *static_qoiAggregation;
+  size_t num_lev = n;
+  IntIntPair pr11(1, 1);
+
+  Real h = 1e-4;
+  
+  f = 0;
+  RealVector grad_f_fd(num_lev);
+  for (lev = 0; lev < num_lev; ++lev) {
+    grad_f[lev] = 0;
+    grad_f_fd[lev] = 0;
+  }
+  size_t cur_qoi_offset = 0;
+  for(size_t cur_qoi = 0; cur_qoi < nb_qois; ++cur_qoi){
+    cur_qoi_offset = cur_qoi*2;
+
+    //Mean
+    Real f_mean = 0;
+    Real f_var = 0;
+    Real cur_grad_var = 0;
+    RealVector grad_f_mean;
+    grad_f_mean.resize(num_lev);
+    if (qoiAggregation==QOI_AGGREGATION_SUM) {
+      for(size_t sum_qoi = 0; sum_qoi < nb_qois; ++sum_qoi){
+        for (lev = 0; lev < num_lev; ++lev) {
+          Nlq = x[lev];
+          Nlq_pilot = (*static_Nlq_pilot)[lev];
+
+          f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql).at(1)[0][sum_qoi], (*static_sum_Ql).at(2)[0][sum_qoi], Nlq_pilot, Nlq,
+                                         compute_gradient, cur_grad_var) :
+                      variance_Qsum_static((*static_sum_Ql).at(1)[lev][sum_qoi], (*static_sum_Qlm1).at(1)[lev][sum_qoi], (*static_sum_Ql).at(2)[lev][sum_qoi], 
+                        (*static_sum_QlQlm1).at(pr11)[lev][sum_qoi], (*static_sum_Qlm1).at(2)[lev][sum_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+          
+          f_mean += f_var/Nlq;
+
+          if(compute_gradient){
+            grad_f_mean[lev] += (Nlq * cur_grad_var - f_var)/(Nlq*Nlq);
+          }
+        }
+      }
+    }else if(qoiAggregation==QOI_AGGREGATION_MAX){
+      for (lev = 0; lev < num_lev; ++lev) {
+        Nlq = x[lev];
+        Nlq_pilot = (*static_Nlq_pilot)[lev];
+        f_var = (lev == 0) ? variance_Ysum_static((*static_sum_Ql).at(1)[0][cur_qoi], (*static_sum_Ql).at(2)[0][cur_qoi], Nlq_pilot, Nlq,
+                                         compute_gradient, cur_grad_var) :
+                             variance_Qsum_static((*static_sum_Ql).at(1)[lev][cur_qoi], (*static_sum_Qlm1).at(1)[lev][cur_qoi], (*static_sum_Ql).at(2)[lev][cur_qoi], 
+                        (*static_sum_QlQlm1).at(pr11)[lev][cur_qoi], (*static_sum_Qlm1).at(2)[lev][cur_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+        f_mean += f_var/Nlq;
+        
+        if(compute_gradient){
+          grad_f_mean[lev] = (Nlq * cur_grad_var - f_var)/(Nlq*Nlq);
+        }
+        //------------FD
+        
+        Nlq = x[lev] + h;
+        Real f_var_fdplus = (lev == 0) ? variance_Ysum_static((*static_sum_Ql).at(1)[0][cur_qoi], (*static_sum_Ql).at(2)[0][cur_qoi], Nlq_pilot, Nlq,
+                                         compute_gradient, cur_grad_var) :
+                             variance_Qsum_static((*static_sum_Ql).at(1)[lev][cur_qoi], (*static_sum_Qlm1).at(1)[lev][cur_qoi], (*static_sum_Ql).at(2)[lev][cur_qoi], 
+                        (*static_sum_QlQlm1).at(pr11)[lev][cur_qoi], (*static_sum_Qlm1).at(2)[lev][cur_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+        Real f_mean_fdplus = f_var_fdplus/Nlq;
+        Nlq = x[lev] - h;
+        Real f_var_fdminus = (lev == 0) ? variance_Ysum_static((*static_sum_Ql).at(1)[0][cur_qoi], (*static_sum_Ql).at(2)[0][cur_qoi], Nlq_pilot, Nlq,
+                                         compute_gradient, cur_grad_var) :
+                             variance_Qsum_static((*static_sum_Ql).at(1)[lev][cur_qoi], (*static_sum_Qlm1).at(1)[lev][cur_qoi], (*static_sum_Ql).at(2)[lev][cur_qoi], 
+                        (*static_sum_QlQlm1).at(pr11)[lev][cur_qoi], (*static_sum_Qlm1).at(2)[lev][cur_qoi], Nlq_pilot, Nlq, compute_gradient, cur_grad_var);
+        Real f_mean_fdminus = f_var_fdminus/Nlq;
+        /*
+        if(compute_gradient){
+          Cout << "----------------------------" << std::endl;
+          Cout << "######Gradients of Mean: " << std::endl;
+          Cout << grad_f_mean[lev] << " vs. " << 1./(2*h)*(f_mean_fdplus-f_mean_fdminus) << std::endl;
+        }
+        */
+        //--------------
+      }
+    }else{
+      Cout << "NonDMultilevelSampling::target_scalarization_objective_eval_optpp: qoiAggregation is not known.\n";
+      abort_handler(INTERFACE_ERROR);
+    }
+    /*
+    if(compute_gradient){
+      Cout << "----------------------------" << std::endl;
+    }
+    */
+
+    //Sigma
+    Real f_sigma = 0;
+    RealVector grad_f_sigma;
+    grad_f_sigma.resize(num_lev);
+    for (lev = 0; lev < num_lev; ++lev) {
+      grad_f_sigma[lev] = 0;
+    }
+    *static_qoi = cur_qoi;
+    target_sigma_objective_eval_optpp(mode, n, x, f_sigma, grad_f_sigma, result_mode);
+    *static_qoi = qoi; //Reset pointer
+
+    //Cov
+    Real f_upper_bound_cov = std::sqrt(f_mean * f_sigma);
+    RealVector grad_f_upper_bound_cov;
+    grad_f_upper_bound_cov.resize(num_lev);
+    if(compute_gradient){
+      for (lev = 0; lev < num_lev; ++lev) {
+        grad_f_upper_bound_cov[lev] = f_upper_bound_cov > 0. ? 1./(2.*f_upper_bound_cov)*(grad_f_mean[lev]*f_sigma + f_mean*grad_f_sigma[lev]) : 0;
+      }
+    }
+    Real f_bootstrap_cov = 0;
+    RealVector grad_f_bootstrap_cov(num_lev);
+    Real grad_f_bootstrap_cov_tmp = 0;
+    for (lev = 0; lev < num_lev; ++lev) {
+      f_bootstrap_cov += bootstrap_covariance(lev, cur_qoi, *static_levQoisamplesmatrixMap, x[lev], compute_gradient, grad_f_bootstrap_cov_tmp, *static_randomSeed);
+      if(compute_gradient){
+        grad_f_bootstrap_cov[lev] = grad_f_bootstrap_cov_tmp;
+      }
+    }
+
+    //Overwrite varvar by bootstrap
+    f_upper_bound_cov = f_bootstrap_cov;
+    for (lev = 0; lev < num_lev && compute_gradient; ++lev) {
+      grad_f_upper_bound_cov[lev] = grad_f_bootstrap_cov[lev];
+    }
+
+    Real cov_scaling = 1.0;
+    Real f_tmp = (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * f_mean 
+          + (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * f_sigma 
+          + cov_scaling * 2.0 * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * f_upper_bound_cov;
+    f += f_tmp; //f_tmp > 0 ? f_tmp : 0;
+    if(compute_gradient){
+      for (lev = 0; lev < num_lev; ++lev) {
+        //Cout << "----------------------------" << std::endl;
+        //Cout << "######Gradients of Scalarization Parts for qoi: " << cur_qoi << " lev: " << lev << std::endl;
+        //Cout << (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) << ", " << (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) << std::endl;
+        //Cout << grad_f_mean[lev] << ", " << grad_f_sigma[lev] << ", " << grad_f_upper_bound_cov[lev];
+        grad_f[lev] += (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * grad_f_mean[lev] 
+          + (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * grad_f_sigma[lev]
+          + cov_scaling * 2.0 * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * grad_f_upper_bound_cov[lev];
+      }
+      
+      //-------------------FD to be removed later
+      Real h = 1e-4;
+      Real f_fdtmp;
+      RealVector grad_f_dummy(num_lev);
+      RealVector x_fdplus(x), x_fdminus(x);
+      RealVector f_fdplus(num_lev), f_fdminus(num_lev);
+      for (lev = 0; lev < num_lev; ++lev) {
+        grad_f_dummy[lev] = 0;
+        f_fdplus[lev] = 0;
+        f_fdminus[lev] = 0;
+      }
+      //Cout << "----------------------------" << std::endl;
+      //Cout << "######Gradients of Scalarization: " << std::endl;
+      for (lev = 0; lev < num_lev; ++lev) {
+        //Cout << "Scalar: curqoi: before " << cur_qoi << " lev:" << lev << " x+: " << x_fdplus[lev] << " x- " << x_fdminus[lev] << " h " << h <<  std::endl;
+        x_fdplus[lev] = x_fdplus[lev] + h;
+        x_fdminus[lev] = x_fdminus[lev] - h;
+        //Cout << "Scalar: curqoi: after " << cur_qoi << " lev:" << lev << " x+: " << x_fdplus[lev] << " x- " << x_fdminus[lev] << " h " << h << std::endl;
+        *static_qoi = cur_qoi;
+        target_scalarization_objective_eval_optpp_fd(mode, n, x_fdplus, f_fdtmp, grad_f_dummy, result_mode);
+        f_fdplus[lev] = f_fdtmp;
+        //Cout << "Scalar: curqoi: after " << cur_qoi << " lev:" << lev << " fdtmp " << f_fdtmp << std::endl;
+        target_scalarization_objective_eval_optpp_fd(mode, n, x_fdminus, f_fdtmp, grad_f_dummy, result_mode);
+        //Cout << "Scalar: curqoi: after " << cur_qoi << " lev:" << lev << " fdtmp " << f_fdtmp<< std::endl;
+        *static_qoi = qoi; //Reset pointer
+        f_fdminus[lev] = f_fdtmp;
+        x_fdplus[lev] = x_fdplus[lev] - h;
+        x_fdminus[lev] = x_fdminus[lev] + h;
+        grad_f_fd[lev] += 1./(2.*h) * (f_fdplus[lev] - f_fdminus[lev]);
+        //Cout << "Scalar: curqoi: " << cur_qoi << " lev:" << lev << " grad: " << grad_f[lev] << " vs. " << grad_f_fd[lev] << " fdplus " << f_fdplus[lev] << " fdminus " << f_fdminus[lev] << std::endl;
+      }
+      //-------------------FD to be removed later
+    }
+  } 
+  
+  if(compute_gradient && qoi==1){
+    Cout << "----------------------------" << std::endl;
+    Cout << "######Gradients of Scalarization: " << std::endl;
+    for (lev = 0; lev < num_lev; ++lev) {
+      Cout << "Scalar: " << grad_f[lev] << " vs. " << grad_f_fd[lev] << std::endl;
+      //grad_f[lev] = grad_f_fd[lev];
+    }  
+    Cout << "----------------------------" << std::endl;
+    //exit(-1);
+  }
+  
+}
+
+void NonDMultilevelSampling::target_scalarization_objective_eval_optpp_fd(int mode, int n, const RealVector& x, double& f,
                                         RealVector& grad_f, int& result_mode)
 {
 
@@ -2466,7 +2785,7 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
     RealVector grad_f_bootstrap_cov(num_lev);
     Real grad_f_bootstrap_cov_tmp = 0;
     for (lev = 0; lev < num_lev; ++lev) {
-      f_bootstrap_cov += bootstrap_covariance(lev, qoi, *static_levQoisamplesmatrixMap, compute_gradient, grad_f_bootstrap_cov_tmp);
+      f_bootstrap_cov += bootstrap_covariance(lev, cur_qoi, *static_levQoisamplesmatrixMap, x[lev], false, grad_f_bootstrap_cov_tmp, *static_randomSeed);
       if(compute_gradient){
         grad_f_bootstrap_cov[lev] = grad_f_bootstrap_cov_tmp;
       }
@@ -2477,10 +2796,11 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
     }
 
     Real cov_scaling = 1.0;
+    //Cout << "cov terms: " << std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) << ", "<< std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) << ", " << f_upper_bound_cov << std::endl;
     Real f_tmp = (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * f_mean 
-          + (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * f_sigma 
+          + (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1) * f_sigma
           + cov_scaling * 2.0 * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset)) * std::abs((*static_scalarization_response_mapping)(qoi, cur_qoi_offset+1)) * f_upper_bound_cov;
-    f += f_tmp > 0 ? f_tmp : 0;
+    f += f_tmp; //f_tmp > 0 ? f_tmp : 0;
     if(compute_gradient){
       for (lev = 0; lev < num_lev; ++lev) {
         grad_f[lev] += (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * (*static_scalarization_response_mapping)(qoi, cur_qoi_offset) * grad_f_mean[lev] 

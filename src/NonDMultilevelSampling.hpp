@@ -212,16 +212,24 @@ private:
 									const Sizet2DArray& N_l, const size_t step, const size_t qoi);
 
   static Real bootstrap_covariance(const size_t step, const size_t qoi, 
-  								const IntRealMatrixMap& lev_qoisamplematrix_map,
-  								const bool compute_gradient, Real& grad);
+  								const IntRealMatrixMap& lev_qoisamplematrix_map, const Real N,
+  								const bool compute_gradient, Real& grad, const int seed);
 
   static Real compute_mean(const RealVector& samples);
 
   static Real compute_mean(const RealVector& samples, const bool compute_gradient, Real& grad);
 
-  static Real compute_std(const RealVector& samples, const Real mean_hat);
+  static Real compute_mean(const RealVector& samples, const Real N);
+
+  static Real compute_mean(const RealVector& samples, const Real N, const bool compute_gradient, Real& grad);
+
+  static Real compute_std(const RealVector& samples);
 
   static Real compute_std(const RealVector& samples, const bool compute_gradient, Real& grad);
+
+  static Real compute_std(const RealVector& samples, const Real N);
+
+  static Real compute_std(const RealVector& samples, const Real N, const bool compute_gradient, Real& grad);
 
   static Real compute_cov(const RealVector& samples_X, const RealVector& samples_hat);
 
@@ -374,6 +382,9 @@ private:
   								double* x, double& f, double* gradf, int& nstate);
   static void target_scalarization_objective_eval_logscale_npsol(int& mode, 
   								int& n, double* x, double& f, double* gradf, int& nstate);
+
+  static void target_scalarization_objective_eval_optpp_fd(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
 
   void assign_static_member(const Real &conv_tol, size_t &qoi, 
   								const size_t &qoi_aggregation, const size_t &num_functions, 
