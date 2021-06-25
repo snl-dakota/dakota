@@ -126,8 +126,9 @@ void NonDMultifidelitySampling::control_variate_mc()
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
-  RealVector sum_HH(numFunctions), var_H(numFunctions, false),
-    rho2_LH(numFunctions, false), mu_hat, eval_ratios, mse_iter0, mse_ratios;
+  RealVector eval_ratios, mse_iter0, mse_ratios, mu_hat, hf_targets,
+    sum_HH(numFunctions), var_H(numFunctions, false),
+    rho2_LH(numFunctions, false);
 
   // Initialize for pilot sample
   SizetArray delta_N_l;
@@ -136,25 +137,35 @@ void NonDMultifidelitySampling::control_variate_mc()
   numSamples = hf_sample_incr;
 
   mlmfIter = 0;  equivHFEvals = 0.;
-  while (hf_sample_incr && mlmfIter <= maxIterations &&
+  while (numSamples && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
-    // ----------------------------------------------------------
-    // Compute shared increment targeting specified MSE reduction
-    // ----------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Compute shared increment targeting specified budget and/or MSE reduction
+    // ------------------------------------------------------------------------
     if (mlmfIter) {
-      // CV MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_hf
-      // N_hf = mse_ratio * var_H / convTol / mse_iter0
-      // Note: don't simplify further since mse_iter0 is based on pilot
-      //       estimate of var_H / N_hf
-      RealVector hf_targets = mse_ratios;
-      for (qoi=0; qoi<numFunctions; ++qoi)
-	hf_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
-      // Power mean choice: average, max (desire would be to balance overshoot
-      // vs. additional iteration)
-      hf_sample_incr = numSamples = one_sided_delta(N_hf, hf_targets, 1); //avg
+      if (maxFunctionEvals != SZ_MAX) {
+	Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
+	allocate_budget(eval_ratios, cost_ratio, hf_targets);
+      }
+      else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: support both
+	// N_hf = mse_ratio * var_H / convTol / mse_iter0
+	// Note: don't simplify further since mse_iter0 is fixed based on pilot
+	Cout << "Scaling profile for convergenceTol = " << convergenceTol;
+	hf_targets = mse_ratios;
+	for (qoi=0; qoi<numFunctions; ++qoi)
+	  hf_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
+      }
+      // numSamples is relative to N_H, but the approx_increments() below are
+      // computed relative to hf_targets (independent of sunk cost for pilot)
+      Cout << ": average HF target = " << average(hf_targets) << std::endl;
+      numSamples = one_sided_delta(N_hf, hf_targets, 1); //avg
+      //numSamples = std::min(num_samp_budget, num_samp_ctol);
     }
 
+    // --------------------------------------------------------------------
+    // Evaluate shared increment and update correlations, {eval,MSE}_ratios
+    // --------------------------------------------------------------------
     if (numSamples) {
       shared_increment(active_key, mlmfIter, 0);
       accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
@@ -175,23 +186,22 @@ void NonDMultifidelitySampling::control_variate_mc()
       // upcoming application of eval_ratios.
       compute_MSE_ratios(eval_ratios, var_H, rho2_LH, mlmfIter, N_hf,
 			 mse_ratios);
-
-      // -------------------------------------------------------------------
-      // Compute new LF increment based on new evaluation ratio for new N_hf
-      // -------------------------------------------------------------------
-      // How to allow user to stop after pilot only:
-      // > lf_increment() includes finalCVRefinement flag (hard-wired true)
-      // > maxFunctionEvals throttle <= pilot expense
-      if (equivHFEvals <= maxFunctionEvals &&
-	  lf_increment(lf_key, eval_ratios, N_lf, N_hf, mlmfIter, 0)) {
-	accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
-	//raw_N_lf += numSamples; lf_sample_incr = numSamples;
-	increment_mf_equivalent_cost(numSamples, cost_ratio);
-      }
     }
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
     ++mlmfIter;
   } // end while
+
+  // -------------------------------------------------------------------
+  // Compute new LF increment based on new evaluation ratio for new N_hf
+  // -------------------------------------------------------------------
+  // How to allow user to stop after pilot only:
+  // > lf_increment() includes finalCVRefinement flag (hard-wired true)
+  // > maxFunctionEvals throttle <= pilot expense
+  if (lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
+    accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
+    //raw_N_lf += numSamples; lf_sample_incr = numSamples;
+    increment_mf_equivalent_cost(numSamples, cost_ratio);
+  }
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
@@ -374,10 +384,10 @@ shared_increment(const Pecos::ActiveKey& agg_key, size_t iter, size_t lev)
 /** version with LF key */
 bool NonDMultifidelitySampling::
 lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
-	     const SizetArray& N_lf, const SizetArray& N_hf,
+	     const SizetArray& N_lf, const RealVector& hf_targets,
 	     size_t iter, size_t lev)
 {
-  lf_increment_samples(eval_ratios, N_lf, N_hf);
+  lf_increment_samples(eval_ratios, N_lf, hf_targets);
   if (numSamples) {
     uncorrected_surrogate_mode(); // also needed for lf_key assignment below
     iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
@@ -394,7 +404,12 @@ bool NonDMultifidelitySampling::
 lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
 	     const SizetArray& N_hf, size_t iter, size_t lev)
 {
-  lf_increment_samples(eval_ratios, N_lf, N_hf);
+  // NonDMLMFSampling applies eval_ratio to N_H[lev] as allocated by ML portion
+
+  RealVector hf_targets(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    hf_targets[qoi] = (Real)N_hf[qoi];
+  lf_increment_samples(eval_ratios, N_lf, hf_targets);
   return (numSamples) ? lf_increment(iter, lev) : false;
 }
 
@@ -402,14 +417,14 @@ lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
 /** shared helper */
 void NonDMultifidelitySampling::
 lf_increment_samples(const RealVector& eval_ratios, const SizetArray& N_lf,
-		     const SizetArray& N_hf)
+		     const RealVector& hf_targets)
 {
   // update LF samples based on evaluation ratio
   //   r = m/n -> m = r*n -> delta = m-n = (r-1)*n
   //   or with inverse r  -> delta = m-n = n/inverse_r - n
   RealVector lf_targets(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    lf_targets[qoi] = eval_ratios[qoi] * N_hf[qoi];
+    lf_targets[qoi] = eval_ratios[qoi] * hf_targets[qoi];
   // Choose average, RMS, max of difference?
   // Trade-off: Possible overshoot vs. more iteration...
   numSamples = one_sided_delta(N_lf, lf_targets, 1); // average
@@ -417,8 +432,8 @@ lf_increment_samples(const RealVector& eval_ratios, const SizetArray& N_lf,
   if (numSamples) Cout << "\nCVMC LF sample increment = " << numSamples;
   else            Cout << "\nNo CVMC LF sample increment";
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
-	 << average(N_hf) << ", avg eval_ratio = " << average(eval_ratios);
+    Cout << " from avg LF = " << average(N_lf) << ", avg HF targets = "
+	 << average(hf_targets) << ", avg eval_ratio = "<< average(eval_ratios);
   Cout << std::endl;
 }
 
@@ -449,6 +464,25 @@ bool NonDMultifidelitySampling::lf_increment(size_t iter, size_t lev)
   }
   else
     return false;
+}
+
+
+void NonDMultifidelitySampling::
+allocate_budget(const RealVector& eval_ratios, Real cost_ratio,
+		RealVector& hf_targets)
+{
+  // Scale this profile based on specified budget (maxFunctionEvals) if needed
+  // using N_H = maxFunctionEvals / cost^T eval_ratios
+  // > Pilot case iter = 0: can only scale back after shared_increment().
+  //   Optimal profile can be hidden by one_sided_delta() with pilot --> optimal
+  //   shape emerges from initialization cost as for ML cases controlled by
+  //   convTol (allow budget overshoot due to overlap of optimal with pilot,
+  //   rather than strictly allocating remaining budget)
+
+  if (hf_targets.empty()) hf_targets.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    hf_targets[qoi] = (Real)maxFunctionEvals
+                    / (1. + eval_ratios[qoi] / cost_ratio);
 }
 
 

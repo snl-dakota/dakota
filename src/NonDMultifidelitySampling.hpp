@@ -55,7 +55,7 @@ protected:
   //- Heading: Member functions
   //
 
-  /// perform final LF sample increment as indicated by the evaluation ratio
+  /// perform LF sample increment as indicated by the evaluation ratio
   bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
 		    const SizetArray& N_hf, size_t iter, size_t lev);
 
@@ -110,12 +110,13 @@ private:
   /// perform final LF sample increment as indicated by the evaluation ratio
   bool lf_increment(const Pecos::ActiveKey& lf_key,
 		    const RealVector& eval_ratios, const SizetArray& N_lf,
-		    const SizetArray& N_hf, size_t iter, size_t lev);
+		    const RealVector& hf_targets, size_t iter, size_t lev);
   /// core parameter set definition and evaluation for LF sample increment
   bool lf_increment(size_t iter, size_t lev);
   /// output information header for LF sample increment
   void lf_increment_samples(const RealVector& eval_ratios,
-			    const SizetArray& N_lf, const SizetArray& N_hf);
+			    const SizetArray& N_lf,
+			    const RealVector& hf_targets);
 
   /// update equivHFEvals from HF, LF evaluation counts
   void compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,
@@ -145,6 +146,10 @@ private:
 			  IntRealVectorMap& sum_LH, RealVector& sum_HH,
 			  const RealVector& offset, SizetArray& num_L,
 			  SizetArray& num_H);
+
+  /// scale sample profile to meeet a specified budget
+  void allocate_budget(const RealVector& eval_ratios, Real cost_ratio,
+		       RealVector& hf_targets);
 
   /// compute the LF/HF evaluation ratios across the QoI vector
   void compute_eval_ratios(const RealVector& sum_L_shared,

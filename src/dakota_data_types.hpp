@@ -48,12 +48,13 @@ typedef std::string String;
 // Numerical arrays (serial/parallel):
 // -----------------------------------
 
-typedef Teuchos::SerialDenseVector<int, Real>    RealVector;
-typedef Teuchos::SerialDenseMatrix<int, Real>    RealMatrix;
-typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
-typedef Teuchos::SerialDenseVector<int, int>     IntVector;
-typedef Teuchos::SerialDenseMatrix<int, int>     IntMatrix;
-typedef Teuchos::SerialDenseVector<int, size_t>  SizetVector;
+typedef Teuchos::SerialDenseVector<int, Real>      RealVector;
+typedef Teuchos::SerialDenseMatrix<int, Real>      RealMatrix;
+typedef Teuchos::SerialSymDenseMatrix<int, Real>   RealSymMatrix;
+typedef Teuchos::SerialDenseVector<int, int>       IntVector;
+typedef Teuchos::SerialDenseMatrix<int, int>       IntMatrix;
+typedef Teuchos::SerialDenseVector<int, size_t>    SizetVector;
+typedef Teuchos::SerialSymDenseMatrix<int, size_t> SizetSymMatrix;
 
 //typedef Tpetra::CrsMatrix<int, Real>             RealSparseMatrix
 //typedef Tpetra::Vector<int, Real>                RealParallelVector
@@ -101,6 +102,7 @@ typedef std::vector<RealVector>        RealVectorArray;
 typedef std::vector<RealVectorArray>   RealVector2DArray;
 typedef std::vector<RealMatrix>        RealMatrixArray;
 typedef std::vector<RealSymMatrix>     RealSymMatrixArray;
+typedef std::vector<SizetSymMatrix>    SizetSymMatrixArray;
 typedef std::vector<IntVector>         IntVectorArray;
 typedef std::vector<Variables>         VariablesArray;
 typedef std::vector<Response>          ResponseArray;
@@ -158,6 +160,8 @@ typedef std::vector<RealRealMap>       RealRealMapArray;
 typedef std::vector<StringRealMap>     StringRealMapArray;
 typedef std::map<int, RealVector>      IntRealVectorMap;
 typedef std::map<int, RealMatrix>      IntRealMatrixMap;
+typedef std::map<int, RealSymMatrix>   IntRealSymMatrixMap;
+typedef std::map<int, RealSymMatrixArray> IntRealSymMatrixArrayMap;
 typedef std::map<int, ActiveSet>       IntActiveSetMap;
 typedef std::map<int, Variables>       IntVariablesMap;
 typedef std::map<int, Response>        IntResponseMap;
@@ -223,6 +227,7 @@ typedef IntRealVectorMap::iterator             IntRVMIter;
 typedef IntRealVectorMap::const_iterator       IntRVMCIter;
 typedef IntRealMatrixMap::iterator             IntRMMIter;
 typedef IntRealMatrixMap::const_iterator       IntRMMCIter;
+typedef IntRealSymMatrixArrayMap::iterator     IntRSMAMIter;
 typedef IntActiveSetMap::iterator              IntASMIter;
 typedef IntVariablesMap::iterator              IntVarsMIter;
 typedef IntVariablesMap::const_iterator        IntVarsMCIter;

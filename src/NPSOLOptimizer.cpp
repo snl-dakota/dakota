@@ -524,7 +524,7 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
   double     local_f_val = 0.;
   RealVector local_f_grad(numContinuousVars, true);
   RealVector local_c_vals(nlnConstraintArraySize);
-  
+
   NPSOL_F77( num_cv, num_linear_constraints, num_nonlinear_constraints, 
 	     linConstraintArraySize, nlnConstraintArraySize, num_cv, 
 	     linConstraintMatrixF77, lowerBounds.values(), upperBounds.values(),
