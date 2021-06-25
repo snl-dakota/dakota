@@ -2,9 +2,9 @@
 #
 # Generates dakota_results.log, dakota_diffs.out, and dakota_pdiffs.out
 
-include(DakotaProcessTestResults)
+include(DakotaCreateDiffFile)
 
-create_diff_file("${Dakota_BINARY_DIR}" "test/dakota_results.log"
+dakota_create_diff_file("${Dakota_BINARY_DIR}" "test/dakota_results.log"
   "dakota_diffs.out")
-create_diff_file("${Dakota_BINARY_DIR}" "test/dakota_results.log"
+dakota_create_diff_file("${Dakota_BINARY_DIR}" "test/dakota_results.log"
   "dakota_pdiffs.out")
