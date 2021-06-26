@@ -233,7 +233,7 @@ void NonDACVSampling::multifidelity_mc()
 
   IntRealVectorMap sum_H;
   IntRealMatrixMap sum_L_shared, sum_L_refined, sum_LL, sum_LH;
-  RealVector cost, sum_HH, mse_iter0, mse_ratios, hf_targets;
+  RealVector cost, sum_HH, var_H, mse_iter0, mse_ratios, hf_targets;
   RealMatrix rho2_LH, eval_ratios;
   SizetArray N_H, delta_N; Sizet2DArray N_L, N_LH;
   configure_cost(num_steps, multilev, cost);
@@ -253,7 +253,7 @@ void NonDACVSampling::multifidelity_mc()
     // Scale sample profile based on maxFunctionEvals or convergenceTol,
     // but not both (for now)
     if (mlmfIter)
-      update_hf_targets(eval_ratios, cost, mse_ratios, varH, N_H, mse_iter0,
+      update_hf_targets(eval_ratios, cost, mse_ratios, var_H, N_H, mse_iter0,
 			hf_targets);
 
     // --------------------------------------------------------------------
@@ -266,17 +266,17 @@ void NonDACVSampling::multifidelity_mc()
       increment_equivalent_cost(numSamples, cost, 0, num_steps);
 
       // First, compute the LF/HF evaluation ratio using shared samples,
-      // averaged over QoI.  This includes updating varH and rho2_LH.  Then,
+      // averaged over QoI.  This includes updating var_H and rho2_LH.  Then,
       // compute the ratio of MC and ACV mean squared errors (for convergence).
       // This ratio incorporates the anticipated variance reduction from the
       // upcoming application of eval_ratios.
       compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-		     sum_HH, cost, N_L, N_H, N_LH, varH, rho2_LH,
+		     sum_HH, cost, N_L, N_H, N_LH, var_H, rho2_LH,
 		     eval_ratios, mse_ratios);
       // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
       // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-      if (mlmfIter == 0) compute_mc_estimator_variance(varH, N_H, mse_iter0);
+      if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_H, mse_iter0);
     }
     //else
     //  Cout << "\nMFMC iteration " << mlmfIter
@@ -305,8 +305,8 @@ void NonDACVSampling::multifidelity_mc()
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
-  cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, sum_L_refined, rho2_LH,
-		 N_L, N_H, N_LH, H_raw_mom);
+  mfmc_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,//rho2_LH,
+		   N_L, N_H, N_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
 
@@ -345,6 +345,7 @@ void NonDACVSampling::approximate_control_variate()
   configure_cost(num_steps, multilev, cost);
   initialize_acv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL,sum_LH,sum_HH);
   initialize_acv_counts(N_L, N_H, N_LL, N_LH);
+  initialize_acv_covariances(covLL, covLH, varH);
 
   // Initialize for pilot sample
   size_t hf_shared_pilot, lf_shared_pilot, start = 0;
@@ -360,9 +361,10 @@ void NonDACVSampling::approximate_control_variate()
     // ------------------------------------------------------------------------
     // Scale sample profile based on maxFunctionEvals or convergenceTol,
     // but not both (for now)
+    RealVector& var_H_1 = varH[1];
     if (mlmfIter)
-      update_hf_target(avg_eval_ratios, cost, mse_ratio, varH, N_H, mse_iter0,
-		       avg_hf_target);
+      update_hf_target(avg_eval_ratios, cost, mse_ratio, var_H_1, N_H,
+		       mse_iter0, avg_hf_target);
 
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,MSE}_ratios
@@ -380,17 +382,18 @@ void NonDACVSampling::approximate_control_variate()
       }
 
       // First, compute the LF/HF evaluation ratio using shared samples,
-      // averaged over QoI.  This includes updating varH and rho2_LH.  Then,
-      // compute the ratio of MC and ACV mean squared errors (for convergence).
-      // This ratio incorporates the anticipated variance reduction from the
-      // upcoming application of eval_ratios.
+      // averaged over QoI.  This includes updating varH, covLL, covLH.
+      // Then, compute ratio of MC and ACV mean sq errors (for convergence),
+      // which incorporates the anticipated variance reduction from the
+      // upcoming application of avg_eval_ratios.
       compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-		     sum_HH, cost, N_L, N_H, N_LL, N_LH, varH, covLL,
-		     covLH, avg_eval_ratios, mse_ratio);
+		     sum_HH, cost, N_L, N_H, N_LL, N_LH, var_H_1, covLL[1],
+		     covLH[1], avg_eval_ratios, mse_ratio);
       // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
       // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-      if (mlmfIter == 0) compute_mc_estimator_variance(varH, N_H, mse_iter0);
+      // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
+      if (mlmfIter == 0) compute_mc_estimator_variance(var_H_1, N_H, mse_iter0);
     }
     //else
     //  Cout << "\nMFMC iteration " << mlmfIter
@@ -422,8 +425,8 @@ void NonDACVSampling::approximate_control_variate()
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
-  cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, sum_L_refined, rho2_LH,
-		 N_L, N_H, N_LH, H_raw_mom); // ***
+  acv_raw_moments(sum_L_shared, sum_L_refined, sum_H, covLL, covLH, varH,
+		  avg_eval_ratios, N_L, N_H, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
 
@@ -1116,7 +1119,7 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
   compute_LH_correlation(sum_L_shared, sum_H, sum_LL, sum_LH, sum_HH, N_L,
 			 N_H, N_LH, var_H, rho2_LH);
 
-  compute_mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
+  mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
 
   // Compute ratio of MSE for single-fidelity MC and MFMC
   // > Estimator Var for MC = var_H / N_H = MSE (neglect HF bias)
@@ -1167,14 +1170,14 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
   // previous solution
   if (mlmfIter == 0) {
     RealMatrix rho2_LH, eval_ratios; //covariance_to_correlation_sq(cov_LH, rho2_LH); *** TO DO
-    compute_mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
-    avg_eval_ratios = average(eval_ratios); // average over qoi for each approx
+    mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
+    average(eval_ratios, 0, avg_eval_ratios);// average over qoi for each approx
   }
   //else {
     // consider scaling prev soln to feasibility with updated N_H
     // (similar to NonDLocalRel)
   //}
-  varianceMinimizer.initial_point(avg_eval_ratios);
+  //varianceMinimizer.initial_point(avg_eval_ratios); // *** TO DO: can't post to Model
   varianceMinimizer.run();  // fn pointer call-backs configured upstream
 
   // Recover optimizer results for average {eval,mse} ratios
@@ -1201,8 +1204,8 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 
 
 void NonDACVSampling::
-compute_mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
-			 RealMatrix& eval_ratios)
+mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
+		 RealMatrix& eval_ratios)
 {
   if (eval_ratios.empty())
     eval_ratios.shapeUninitialized(numFunctions, numApprox);
@@ -1236,11 +1239,12 @@ compute_mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
 
 
 void NonDACVSampling::
-cv_raw_moments(IntRealMatrixMap& sum_L_shared,  IntRealVectorMap& sum_H,
-	       IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
-	       IntRealMatrixMap& sum_L_refined, const RealMatrix& rho2_LH,
-	       const Sizet2DArray& N_L,         const SizetArray& N_H,
-	       const Sizet2DArray& N_LH,        RealMatrix& H_raw_mom)
+mfmc_raw_moments(IntRealMatrixMap& sum_L_shared,
+		 IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
+		 IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
+		 //const RealMatrix& rho2_LH,
+		 const Sizet2DArray& N_L,         const SizetArray& N_H,
+		 const Sizet2DArray& N_LH,        RealMatrix& H_raw_mom)
 {
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
 
@@ -1248,10 +1252,10 @@ cv_raw_moments(IntRealMatrixMap& sum_L_shared,  IntRealVectorMap& sum_H,
   size_t approx, qoi, N_L_aq, N_H_q, N_LH_aq, N_shared;
   for (int mom=1; mom<=4; ++mom) {
     RealMatrix& sum_L_sh_m  = sum_L_shared[mom];
+    RealMatrix& sum_L_ref_m = sum_L_refined[mom];
     RealVector& sum_H_m     = sum_H[mom];
     RealMatrix& sum_LL_m    = sum_LL[mom];
     RealMatrix& sum_LH_m    = sum_LH[mom];
-    RealMatrix& sum_L_ref_m = sum_L_refined[mom];
 
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << ":\n";
@@ -1261,61 +1265,81 @@ cv_raw_moments(IntRealMatrixMap& sum_L_shared,  IntRealVectorMap& sum_H,
       H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
       for (approx=0; approx<numApprox; ++approx) {
 	N_L_aq = N_L[approx][qoi];  N_LH_aq = N_LH[approx][qoi];
-	compute_mf_control(sum_L_sh_m(qoi,approx), sum_H_mq,
-			   sum_LL_m(qoi,approx), sum_LH_m(qoi,approx),
-			   /*N_L_sh_aq*/N_H_q, N_H_q, N_LH_aq, beta); //shared
+	compute_mfmc_control(sum_L_sh_m(qoi,approx), sum_H_mq,
+			     sum_LL_m(qoi,approx), sum_LH_m(qoi,approx),
+			     /*N_L_sh_aq*/N_H_q, N_H_q, N_LH_aq, beta); //shared
 	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1
 	       << ": control variate beta = " << std::setw(9) << beta << '\n';
-	// shared accumulators and counts must telescope
+	// For MFMC, shared accumulators and counts telescope
 	N_shared = (approx == numApprox-1) ? N_H_q : N_L[approx+1][qoi];
-	apply_mf_control(sum_L_sh_m(qoi,approx),  N_shared, // shared
-			 sum_L_ref_m(qoi,approx), N_L_aq,  // refined
-			 beta, H_raw_mq);
+	apply_control(sum_L_sh_m(qoi,approx),  N_shared, // shared
+		      sum_L_ref_m(qoi,approx), N_L_aq,  // refined
+		      beta, H_raw_mq);
       }
     }
   }
 }
 
 
-Real NonDACVSampling::objective_evaluator(const Real* w, int num_approx)
+void NonDACVSampling::
+acv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
+		IntRealVectorMap& sum_H, IntRealSymMatrixArrayMap& cov_LL,
+		IntRealMatrixMap& cov_LH, IntRealVectorMap& var_H,
+		const RealVector& avg_eval_ratios, const Sizet2DArray& N_L,
+		const SizetArray& N_H, RealMatrix& H_raw_mom)
 {
-  RealSymMatrix F(num_approx,num_approx);  size_t i, j;
-  switch (methodName) {
-  case ACV_INDEPENDENT_SAMPLING: {
-    Real wi_ratio;
-    for (i=0; i<num_approx; ++i) {
-      F(i,i) = wi_ratio = (w[i] - 1.) / w[i];
-      for (j=0; j<i; ++j)
-	F(i,j) = wi_ratio * (w[j] - 1.) / w[j];
-    }
-    break;
-  }
-  case ACV_MULTIFIDELITY_SAMPLING: {
-    Real wi, min_w;
-    for (i=0; i<num_approx; ++i) {
-      wi = w[i];  F(i,i) = (wi - 1.) / wi;
-      for (j=0; j<i; ++j) {
-	min_w = std::min(wi, w[j]);
-	F(i,j) = (min_w - 1.) / min_w;
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+
+  RealSymMatrix F, CF_inv;
+  compute_F_matrix(avg_eval_ratios, F);
+
+  RealVector beta(numApprox);
+  size_t approx, qoi, N_H_q;
+  for (int mom=1; mom<=4; ++mom) {
+    RealMatrix&       sum_L_sh_m =  sum_L_shared[mom];
+    RealMatrix&      sum_L_ref_m = sum_L_refined[mom];
+    RealVector&          sum_H_m =         sum_H[mom];
+    RealMatrix&         cov_LH_m =        cov_LH[mom]; // *** TO DO mom > 1
+    RealSymMatrixArray& cov_LL_m =        cov_LL[mom]; // *** TO DO mom > 1
+    RealVector&          var_H_m =         var_H[mom]; // *** TO DO mom > 1
+
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << ":\n";
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      compute_acv_control(cov_LL_m[qoi], F, cov_LH_m, qoi, var_H_m[qoi], beta);
+
+      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      N_H_q = N_H[qoi];
+      H_raw_mq = sum_H_m[qoi] / N_H_q; // first term to be augmented
+      for (approx=0; approx<numApprox; ++approx) {
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
+	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
+	// For ACV, shared counts are fixed at N_H for all approx
+	apply_control(sum_L_sh_m(qoi,approx),  N_H_q,            //  shared
+		      sum_L_ref_m(qoi,approx), N_L[approx][qoi], // refined
+		      beta[approx], H_raw_mq);
       }
     }
-    break;
   }
-  }
+}
 
-  RealVector a_term(num_approx), R_sq(numFunctions);
+
+Real NonDACVSampling::objective_evaluator(const RealVector& avg_eval_ratios)
+{
+  RealSymMatrix F, CF_inv;
+  compute_F_matrix(avg_eval_ratios, F);
+
+  RealVector A, R_sq(numFunctions);
+  const RealSymMatrixArray& cov_LL_m = covLL[1];
+  const RealMatrix&         cov_LH_m = covLH[1];
+  const RealVector&          var_H_m =  varH[1];
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    for (i=0; i<num_approx; ++i)
-      a_term[i] = F(i,i) * covLH(qoi, i);// / sigma_H (defer normalization)
-    const RealSymMatrix& C_q = covLL[qoi];
-    Real& R_sq_q = R_sq[qoi];  R_sq_q = 0.;
-    for (i=0; i<num_approx; ++i)
-      for (j=0; j<num_approx; ++j)
-	R_sq_q += a_term[i] * C_q(i,j) * F(i,j) * a_term[j];
-    R_sq_q /= varH[qoi]; // c-bar normalization
+    invert_CF(cov_LL_m[qoi], F, CF_inv);
+    compute_A_vector(F, cov_LH_m, qoi, A);
+    compute_Rsq(CF_inv, A, var_H_m[qoi], R_sq[qoi]);
   }
-
   return -std::log(average(R_sq)); // maximize R_sq; use log to flatten contours
 }
 
@@ -1331,9 +1355,10 @@ npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
   // NPSOL mode: 0 = get f, 1 = get grad_f, 2 = get both
   // promote mode to standard asv request codes
   short asv_request = mode + 1;
-  if (asv_request & 1)
-    f = acvInstance->objective_evaluator(x, n);
-
+  if (asv_request & 1) {
+    RealVector x_rv(Teuchos::View, x, n);
+    f = acvInstance->objective_evaluator(x_rv);
+  }
   // Rely on numerical gradients for R_sq...
   //if (asv_request & 2)
   //  for (int i=0; i<n; ++i)
@@ -1346,7 +1371,7 @@ optpp_objective_evaluator(int mode, int n, const RealVector& x, double& f,
 			  RealVector& grad_f, int& result_mode)
 {
   if (mode & 1) { // 1st bit is present, mode = 1 or 3
-    f = acvInstance->objective_evaluator(x.values(), n);
+    f = acvInstance->objective_evaluator(x);
     result_mode = OPTPP::NLPFunction;
   }
   //if (mode & 2) { // 2nd bit is present, mode = 2 or 3

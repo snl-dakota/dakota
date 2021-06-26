@@ -109,6 +109,9 @@ protected:
   Real average(const RealVector& vec) const;
   /// compute average of a set of observations
   Real average(const SizetArray& sa) const;
+  /// compute row-averages for each column or column-averages for each row
+  void average(const RealMatrix& mat, size_t avg_index,
+	       RealVector& avg_vec) const;
 
   //
   //- Heading: Data
@@ -324,6 +327,33 @@ average(const Real* vec, size_t vec_len) const
 
 inline Real NonDEnsembleSampling::average(const RealVector& vec) const
 { return average(vec.values(), vec.length()); }
+
+
+inline void NonDEnsembleSampling::
+average(const RealMatrix& mat, size_t avg_index, RealVector& avg_vec) const
+{
+  size_t i, j, nr = mat.numRows(), nc = mat.numCols();
+  switch (avg_index) {
+  case 0: // average over index 0, retaining index 1
+    avg_vec.sizeUninitialized(nc);
+    for (i=0; i<nc; ++i)
+      avg_vec[i] = average(mat[i], nr); // average over rows for each col vec
+    break;
+  case 1:
+    avg_vec.size(nr); // init to 0
+    for (i=0; i<nr; ++i) {
+      Real& avg_i = avg_vec[i];
+      for (j=0; j<nc; ++j)              // average over cols for each row vec
+	avg_i += mat(i,j);
+      avg_i /= nc;
+    }
+    break;
+  default:
+    Cerr << "Error: bad averaging index (" << avg_index
+	 << ") in NonDEnsembleSampling::average(RealMatrix)." << std::endl;
+    abort_handler(-1); break;
+  }
+}
 
 
 inline Real NonDEnsembleSampling::average(const SizetArray& sa) const

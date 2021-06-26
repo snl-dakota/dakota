@@ -132,6 +132,10 @@ private:
   void initialize_acv_counts(Sizet2DArray&        N_L,  SizetArray&   N_H,
 			     SizetSymMatrixArray& N_LL, Sizet2DArray& N_LH);
 
+  void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
+				  IntRealMatrixMap& cov_LH,
+				  IntRealVectorMap& var_H);
+
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 			  IntRealMatrixMap& sum_L_refined,
 			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
@@ -163,10 +167,6 @@ private:
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t start, size_t end);
 
-  void compute_mfmc_eval_ratios(const RealMatrix& rho2_LH,
-				const RealVector& cost,
-				RealMatrix& eval_ratios);
-
   void compute_H_variance(const RealVector& sum_H, const RealVector& sum_HH,
 			  const SizetArray& N_H,   RealVector& var_H);
   void compute_LH_correlation(const RealMatrix& sum_L_shared,
@@ -193,20 +193,42 @@ private:
 			  size_t N_Q2, size_t N_Q1Q2, Real& cov_Q1Q2);
   void compute_variance(Real sum_Q, Real sum_QQ, size_t N_Q, Real& var_Q);
   
-  void cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
-		      IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
-		      IntRealMatrixMap& sum_L_refined,
-		      const RealMatrix& rho2_LH, const Sizet2DArray& N_L,
-		      const SizetArray& N_H,     const Sizet2DArray& N_LH,
-		      RealMatrix& H_raw_mom);
+  void mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
+			RealMatrix& eval_ratios);
 
-  void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-			  size_t N_L, size_t N_H, size_t N_LH, Real& beta);
-  void apply_mf_control(Real sum_L_shared, size_t N_shared, Real sum_L_refined,
-			size_t N_refined, Real beta, Real& H_raw_mom);
+  void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
+  void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
+		 RealSymMatrix& CF_inv);
+  void compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
+			size_t qoi, RealVector& A);
+  void compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A,
+		   Real var_H_q, Real& R_sq_q);
+
+  void mfmc_raw_moments(IntRealMatrixMap& sum_L_shared,
+			IntRealMatrixMap& sum_L_refined,
+			IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
+			IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
+			const Sizet2DArray& N_L,  const SizetArray& N_H,
+			const Sizet2DArray& N_LH, RealMatrix& H_raw_mom);
+  void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
+		       IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
+		       IntRealSymMatrixArrayMap& cov_LL,
+		       IntRealMatrixMap& cov_LH, IntRealVectorMap& var_H,
+		       const RealVector& avg_eval_ratios,
+		       const Sizet2DArray& N_L, const SizetArray& N_H,
+		       RealMatrix& H_raw_mom);
+
+  void compute_mfmc_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+			    size_t N_L, size_t N_H, size_t N_LH, Real& beta);
+  void compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
+			   const RealMatrix& cov_LH, size_t qoi, Real var_H,
+			   RealVector& beta);
+
+  void apply_control(Real sum_L_shared, size_t N_shared, Real sum_L_refined,
+		     size_t N_refined, Real beta, Real& H_raw_mom);
 
   /// helper function shared by NPSOL/OPT++ static evaluators
-  Real objective_evaluator(const Real* w, int num_approx);
+  Real objective_evaluator(const RealVector& avg_eval_ratios);
   /// static function used by NPSOL for the objective function
   static void npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
 					double* grad_f, int& nstate);
@@ -231,13 +253,13 @@ private:
   size_t numApprox;
 
   /// variances for HF truth (length numFunctions)
-  RealVector varH;
+  IntRealVectorMap varH;
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
-  RealMatrix covLH;
+  IntRealMatrixMap covLH;
   /// covariances among all LF approximations (the C matrix in ACV); organized
   /// as a numFunctions array of symmetic numApprox x numApprox matrices
-  RealSymMatrixArray covLL;
+  IntRealSymMatrixArrayMap covLL;
 
   /// the minimizer used to minimize the estimator variance over parameters
   /// of number of truth model samples and approximation eval_ratios
@@ -285,16 +307,15 @@ initialize_mf_sums(IntRealMatrixMap& sum_L_shared,
 
 inline void NonDACVSampling::
 initialize_acv_sums(IntRealMatrixMap& sum_L_shared,
-		    IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
-		    IntRealSymMatrixArrayMap& sum_LL_all,
-		    IntRealMatrixMap& sum_LH, RealVector& sum_HH)
+		    IntRealMatrixMap& sum_L_refined,  IntRealVectorMap& sum_H,
+		    IntRealSymMatrixArrayMap& sum_LL, IntRealMatrixMap& sum_LH,
+		    RealVector& sum_HH)
 {
   initialize_sums(sum_L_shared, sum_L_refined, sum_H, sum_LH, sum_HH);
   std::pair<int, RealSymMatrixArray> mat_array_pr;
   for (int i=1; i<=4; ++i) {
     mat_array_pr.first = i; // moment number
-    RealSymMatrixArray& mat_array
-      = sum_LL_all.insert(mat_array_pr).first->second;
+    RealSymMatrixArray& mat_array = sum_LL.insert(mat_array_pr).first->second;
     mat_array.resize(numFunctions);
     for (size_t j=0; j<numFunctions; ++j)
       mat_array[i].shape(numApprox);
@@ -320,6 +341,24 @@ initialize_acv_counts(Sizet2DArray&        N_L,  SizetArray&   N_H,
   N_LL.resize(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     N_LL[qoi].shape(numApprox);
+}
+
+
+inline void NonDACVSampling::
+initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
+			   IntRealMatrixMap& cov_LH, IntRealVectorMap& var_H)
+{
+  std::pair<int, RealVector> vec_pr;  std::pair<int, RealMatrix> mat_pr;
+  std::pair<int, RealSymMatrixArray> mat_array_pr;
+  for (int i=1; i<=4; ++i) {
+    vec_pr.first = mat_pr.first = mat_array_pr.first = i; // moment number
+    var_H.insert(vec_pr).first->second.size(numFunctions);
+    cov_LH.insert(mat_pr).first->second.shape(numFunctions, numApprox);
+    RealSymMatrixArray& mat_array = covLL.insert(mat_array_pr).first->second;
+    mat_array.resize(numFunctions);
+    for (size_t j=0; j<numFunctions; ++j)
+      mat_array[i].shape(numApprox);
+  }
 }
 
 
@@ -444,8 +483,8 @@ compute_variance(Real sum_Q, Real sum_QQ, size_t N_Q, Real& var_Q)
 
 
 inline void NonDACVSampling::
-compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-		   size_t N_L, size_t N_H, size_t N_LH, Real& beta)
+compute_mfmc_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+		     size_t N_L, size_t N_H, size_t N_LH, Real& beta)
 {
   // unbiased mean estimator X-bar = 1/N * sum
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
@@ -466,8 +505,104 @@ compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 
 
 inline void NonDACVSampling::
-apply_mf_control(Real sum_L_shared, size_t N_shared, Real sum_L_refined,
-		 size_t N_refined, Real beta, Real& H_raw_mom)
+compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F)
+{
+  size_t i, j, num_approx = avg_eval_ratios.length();
+  if (F.empty()) F.shapeUninitialized(num_approx);
+
+  switch (methodName) {
+  case ACV_INDEPENDENT_SAMPLING: {
+    Real wi_ratio;
+    for (i=0; i<num_approx; ++i) {
+      F(i,i) = wi_ratio = (avg_eval_ratios[i] - 1.) / avg_eval_ratios[i];
+      for (j=0; j<i; ++j)
+	F(i,j) = wi_ratio * (avg_eval_ratios[j] - 1.) / avg_eval_ratios[j];
+    }
+    break;
+  }
+  case ACV_MULTIFIDELITY_SAMPLING: {
+    Real wi, min_w;
+    for (i=0; i<num_approx; ++i) {
+      wi = avg_eval_ratios[i];  F(i,i) = (wi - 1.) / wi;
+      for (j=0; j<i; ++j) {
+	min_w = std::min(wi, avg_eval_ratios[j]);
+	F(i,j) = (min_w - 1.) / min_w;
+      }
+    }
+    break;
+  }
+  }
+}
+
+
+inline void NonDACVSampling::
+invert_CF(const RealSymMatrix& C, const RealSymMatrix& F, RealSymMatrix& CF_inv)
+{
+  size_t i, j, n = C.numRows();
+  if (CF_inv.empty()) CF_inv.shapeUninitialized(n);
+
+  for (i=0; i<n; ++i)
+    for (j=0; j<=i; ++j)
+      CF_inv(i,j) = C(i,j) * F(i,j);
+  RealSpdSolver spd_solver;
+  spd_solver.setMatrix(Teuchos::rcp(&CF_inv, false));
+  spd_solver.invert(); // in place
+}
+
+
+inline void NonDACVSampling::
+compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
+		 size_t qoi, RealVector& A)
+{
+  size_t i, num_approx = F.numRows();
+  if (A.length() != num_approx) A.sizeUninitialized(num_approx);
+
+  for (i=0; i<num_approx; ++i) // diag(F) o c-bar
+    A[i] = F(i,i) * c(qoi, i); // / std::sqrt(varH[qoi]); defer c-bar for Rsq
+}
+
+
+inline void NonDACVSampling::
+compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A, Real var_H_q,
+	    Real& R_sq_q)
+{
+  RealSymMatrix trip(1, false);
+  Teuchos::symMatTripleProduct(Teuchos::TRANS, 1./var_H_q, CF_inv, A, trip);
+  R_sq_q = trip(0,0);
+
+  /*
+  size_t i, j, num_approx = CF_inv.numRows();
+  R_sq_q = 0.;
+  for (i=0; i<num_approx; ++i)
+    for (j=0; j<num_approx; ++j)
+      R_sq_q += A[i] * CF_inv(i,j) * A[j];
+  R_sq_q /= varH[qoi]; // c-bar normalization
+  */
+}
+
+
+inline void NonDACVSampling::
+compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
+		    const RealMatrix& cov_LH, size_t qoi, Real var_H,
+		    RealVector& beta)
+{
+  RealSymMatrix CF_inv;  RealVector A;
+  invert_CF(cov_LL, F, CF_inv);
+  compute_A_vector(F, cov_LH, qoi, A);
+  A.scale(1./std::sqrt(var_H)); // from c to c-bar
+
+  size_t n = F.numRows();
+  if (beta.length() != n) beta.size(n);
+  beta.multiply(Teuchos::LEFT_SIDE, 1., CF_inv, A, 0.); // for SymMatrix mult
+  //for (i=0; i<n; ++i)
+  //  for (j=0; j<n; ++j)
+  //    beta[i] += CF_inv(i,j) * A[j];
+}
+
+
+inline void NonDACVSampling::
+apply_control(Real sum_L_shared, size_t N_shared, Real sum_L_refined,
+	      size_t N_refined, Real beta, Real& H_raw_mom)
 {
   // apply control for HF uncentered raw moment estimates:
   H_raw_mom -= beta * (sum_L_shared  / N_shared -  // mu from shared samples

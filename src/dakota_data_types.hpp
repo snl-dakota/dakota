@@ -13,6 +13,8 @@
 #include "dakota_system_defs.hpp"
 #include "Teuchos_config.h"
 #include "Teuchos_SerialDenseVector.hpp"
+#include "Teuchos_SerialDenseSolver.hpp"
+#include "Teuchos_SerialSpdDenseSolver.hpp"
 #include <boost/multi_array.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <deque>
@@ -59,6 +61,12 @@ typedef Teuchos::SerialSymDenseMatrix<int, size_t> SizetSymMatrix;
 //typedef Tpetra::CrsMatrix<int, Real>             RealSparseMatrix
 //typedef Tpetra::Vector<int, Real>                RealParallelVector
 //typedef Tpetra::MultiVector<int, Real>           RealParallelMatrix
+
+// ---------------------------------
+// Numerical solvers (serial dense):
+// ---------------------------------
+typedef Teuchos::SerialDenseSolver<int, Real>    RealSolver;
+typedef Teuchos::SerialSpdDenseSolver<int, Real> RealSpdSolver;
 
 // ---------------------------------------
 // Admin/bookkeeping arrays (serial only):
