@@ -509,6 +509,9 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevMultifidSampling>(problem_db, model);
     break;
+  case APPROXIMATE_CONTROL_VARIATE:
+    return std::make_shared<NonDACVSampling>(problem_db, model);
+    break;
   case DATA_FIT_SURROGATE_BASED_LOCAL:
     return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
     break;

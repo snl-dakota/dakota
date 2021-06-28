@@ -17,6 +17,7 @@
 #define NOND_ACV_SAMPLING_H
 
 #include "NonDEnsembleSampling.hpp"
+//#include "DataMethod.hpp"
 
 
 namespace Dakota {
@@ -248,6 +249,9 @@ private:
   //
   //- Heading: Data
   //
+
+  /// approximate control variate algorithm selection: SUBMETHOD_ACV_{IS,MF,KL}
+  unsigned short acvSubMethod;
 
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
@@ -511,7 +515,7 @@ compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F)
   if (F.empty()) F.shapeUninitialized(num_approx);
 
   switch (methodName) {
-  case ACV_INDEPENDENT_SAMPLING: {
+  case SUBMETHOD_ACV_IS: {
     Real wi_ratio;
     for (i=0; i<num_approx; ++i) {
       F(i,i) = wi_ratio = (avg_eval_ratios[i] - 1.) / avg_eval_ratios[i];
@@ -520,7 +524,7 @@ compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F)
     }
     break;
   }
-  case ACV_MULTIFIDELITY_SAMPLING: {
+  case SUBMETHOD_ACV_MF: {
     Real wi, min_w;
     for (i=0; i<num_approx; ++i) {
       wi = avg_eval_ratios[i];  F(i,i) = (wi - 1.) / wi;

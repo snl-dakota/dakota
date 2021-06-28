@@ -32,15 +32,19 @@
 
 static const char rcsId[]="@(#) $Id: NonDACVSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
-
 namespace Dakota {
+
+// initialization of statics
+NonDACVSampling* NonDACVSampling::acvInstance(NULL);
+
 
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, Model& model):
-  NonDEnsembleSampling(problem_db, model)
+  NonDEnsembleSampling(problem_db, model),
+  acvSubMethod(problem_db.get_ushort("method.sub_method"))
 {
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -202,10 +206,13 @@ void NonDACVSampling::core_run()
   case MULTIFIDELITY_SAMPLING: // Peherstorfer, Willcox, Gunzburger, 2016
     //sequence_models(); // enforce correlation condition (*** AFTER PILOT ***)
     multifidelity_mc();            break;
-  case ACV_MULTIFIDELITY_SAMPLING:  case ACV_INDEPENDENT_SAMPLING:
-    approximate_control_variate(); break;
-  case ACV_KL_SAMPLING:
-    //for () { for () { approximate_control_variate(...); } } ???
+  case APPROXIMATE_CONTROL_VARIATE:
+    switch (acvSubMethod) {
+    case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_MF:
+      approximate_control_variate(); break;
+    //case SUBMETHOD_ACV_KL:
+    //for (k) for (l) approximate_control_variate(...); ???
+    }
     break;
   }
   // Notes on ACV + ensemble model classes:
@@ -413,7 +420,7 @@ void NonDACVSampling::approximate_control_variate()
   // [0,numApprox-1-i] using the delta relative to the previous step
   for (approx=numApprox; approx>0; --approx) {
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
-    start = (methodName == ACV_INDEPENDENT_SAMPLING) ? approx - 1 : 0;
+    start = (acvSubMethod == SUBMETHOD_ACV_IS) ? approx - 1 : 0;
     if (approx_increment(avg_eval_ratios, N_L, avg_hf_target, mlmfIter,
 			 start, approx)) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined

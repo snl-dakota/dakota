@@ -2925,6 +2925,56 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
+  ( approximate_control_variate ALIAS acv_sampling {N_mdm(utype,methodName_APPROXIMATE_CONTROL_VARIATE)}
+    acv_independent_sampling {N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}
+    |
+    acv_multifidelity {N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}
+    |
+    acv_kl_hybrid {N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
+      [ 
+        ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+          [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+          [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+         )
+        |
+        annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+        |
+        freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
   ( importance_sampling ALIAS nond_importance_sampling {N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}
     [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
