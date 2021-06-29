@@ -431,7 +431,7 @@ void NonDACVSampling::approximate_control_variate()
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
-  acv_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH, //covLL, covLH, varH,
+  acv_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH, sum_HH,
 		  avg_eval_ratios, N_L, N_H, N_LL, N_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
@@ -1302,7 +1302,7 @@ mfmc_raw_moments(IntRealMatrixMap& sum_L_shared,
 void NonDACVSampling::
 acv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
 		IntRealVectorMap& sum_H, IntRealSymMatrixArrayMap& sum_LL,
-		IntRealMatrixMap& sum_LH, //IntRealVectorMap& var_H,
+		IntRealMatrixMap& sum_LH, RealVector& sum_HH,
 		const RealVector& avg_eval_ratios, const Sizet2DArray& N_L,
 		const SizetArray& N_H, const SizetSymMatrixArray& N_LL,
 		const Sizet2DArray& N_LH, RealMatrix& H_raw_mom)
@@ -1312,24 +1312,27 @@ acv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
   RealSymMatrix F, CF_inv;
   compute_F_matrix(avg_eval_ratios, F);
 
-  RealVector beta(numApprox);
   size_t approx, qoi, N_H_q;
+  RealVector beta(numApprox);
   for (int mom=1; mom<=4; ++mom) {
     RealMatrix&       sum_L_sh_m =  sum_L_shared[mom];
     RealMatrix&      sum_L_ref_m = sum_L_refined[mom];
     RealVector&          sum_H_m =         sum_H[mom];
     RealSymMatrixArray& sum_LL_m =        sum_LL[mom];
     RealMatrix&         sum_LH_m =        sum_LH[mom];
-    //RealVector&        var_H_m =         var_H[mom]; // *** TO DO mom > 1
-
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Moment " << mom << ":\n";
+    if (outputLevel >= NORMAL_OUTPUT) Cout << "Moment " << mom << ":\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      //compute_acv_control(cov_LL_m[qoi], F, cov_LH_m, qoi, var_H_m[qoi], beta);
+      Real sum_H_mq = sum_H_m[qoi];
+      if (mom == 1) // 
+	compute_acv_control(covLL[qoi], F, covLH, qoi, varH[qoi], beta);
+      else // compute variances/covariances from accumulated sums
+	compute_acv_control(sum_L_sh_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
+			    sum_HH[qoi], N_L, N_H[qoi], N_LL[qoi], N_LH, F,
+			    qoi, beta);
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
       N_H_q = N_H[qoi];
-      H_raw_mq = sum_H_m[qoi] / N_H_q; // first term to be augmented
+      H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
       for (approx=0; approx<numApprox; ++approx) {
 	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
