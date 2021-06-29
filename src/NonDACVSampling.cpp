@@ -352,7 +352,7 @@ void NonDACVSampling::approximate_control_variate()
   configure_cost(num_steps, multilev, cost);
   initialize_acv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL,sum_LH,sum_HH);
   initialize_acv_counts(N_L, N_H, N_LL, N_LH);
-  initialize_acv_covariances(covLL, covLH, varH);
+  //initialize_acv_covariances(covLL, covLH, varH);
 
   // Initialize for pilot sample
   size_t hf_shared_pilot, lf_shared_pilot, start = 0;
@@ -368,9 +368,8 @@ void NonDACVSampling::approximate_control_variate()
     // ------------------------------------------------------------------------
     // Scale sample profile based on maxFunctionEvals or convergenceTol,
     // but not both (for now)
-    RealVector& var_H_1 = varH[1];
     if (mlmfIter)
-      update_hf_target(avg_eval_ratios, cost, mse_ratio, var_H_1, N_H,
+      update_hf_target(avg_eval_ratios, cost, mse_ratio, varH, N_H,
 		       mse_iter0, avg_hf_target);
 
     // --------------------------------------------------------------------
@@ -394,13 +393,13 @@ void NonDACVSampling::approximate_control_variate()
       // which incorporates the anticipated variance reduction from the
       // upcoming application of avg_eval_ratios.
       compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-		     sum_HH, cost, N_L, N_H, N_LL, N_LH, var_H_1, covLL[1],
-		     covLH[1], avg_eval_ratios, mse_ratio);
+		     sum_HH, cost, N_L, N_H, N_LL, N_LH, varH, covLL,
+		     covLH, avg_eval_ratios, mse_ratio);
       // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
       // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
       // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
-      if (mlmfIter == 0) compute_mc_estimator_variance(var_H_1, N_H, mse_iter0);
+      if (mlmfIter == 0) compute_mc_estimator_variance(varH, N_H, mse_iter0);
     }
     //else
     //  Cout << "\nMFMC iteration " << mlmfIter
@@ -432,8 +431,8 @@ void NonDACVSampling::approximate_control_variate()
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
-  acv_raw_moments(sum_L_shared, sum_L_refined, sum_H, covLL, covLH, varH,
-		  avg_eval_ratios, N_L, N_H, H_raw_mom);
+  acv_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH, //covLL, covLH, varH,
+		  avg_eval_ratios, N_L, N_H, N_LL, N_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
 
@@ -655,6 +654,7 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
   IntRespMCIter r_it; IntRVMIter h_it; IntRMMIter ls_it, lr_it, ll_it, lh_it;
   int ls_ord, lr_ord, h_ord, ll_ord, lh_ord, active_ord, m;
   size_t qoi, approx, lf_index, hf_index;
+  bool hf_is_finite;
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const Response&   resp    = r_it->second;
@@ -664,8 +664,9 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 
     for (qoi=0; qoi<numFunctions; ++qoi, ++hf_index) {
       hf_fn = fn_vals[hf_index];
+      hf_is_finite = isfinite(hf_fn);
       // High accumulations:
-      if (isfinite(hf_fn)) { // neither NaN nor +/-Inf
+      if (hf_is_finite) { // neither NaN nor +/-Inf
 	++num_H[qoi];
 	// High-High:
 	sum_HH[qoi] += hf_fn * hf_fn; // a single vector for ord 1
@@ -688,9 +689,11 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 	// Low accumulations:
 	if (isfinite(lf_fn)) {
 	  ++num_L[approx][qoi];
+	  if (hf_is_finite) ++num_LH[approx][qoi];
 	  ls_it = sum_L_shared.begin();	  ls_ord = ls_it->first;
 	  lr_it = sum_L_refined.begin();  lr_ord = lr_it->first;
 	  ll_it = sum_LL.begin();         ll_ord = ll_it->first;
+	  lh_it = sum_LH.begin();         lh_ord = lh_it->first;
 	  lf_prod = lf_fn;	          active_ord = 1;
 	  while (ls_it!=sum_L_shared.end() || lr_it!=sum_L_refined.end() ||
 		 ll_it!=sum_LL.end() || lh_it!=sum_LH.end() || active_ord <= 1){
@@ -711,8 +714,7 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 	      ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
 	    }
 	    // Low-High
-	    if (lh_ord == active_ord && isfinite(hf_fn)) {
-	      ++num_LH[approx][qoi];
+	    if (lh_ord == active_ord && hf_is_finite) {
 	      hf_prod = hf_fn;
 	      for (m=1; m<active_ord; ++m)
 		hf_prod *= hf_fn;
@@ -747,6 +749,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
   IntRMMIter ls_it, lr_it, lh_it;  IntRSMAMIter ll_it;
   int ls_ord, lr_ord, h_ord, ll_ord, lh_ord, active_ord, m;
   size_t qoi, approx, approx2, lf_index, lf2_index, hf_index;
+  bool hf_is_finite;
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const Response&   resp    = r_it->second;
@@ -756,8 +759,9 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 
     for (qoi=0; qoi<numFunctions; ++qoi, ++hf_index) {
       hf_fn = fn_vals[hf_index];
+      hf_is_finite = isfinite(hf_fn);
       // High accumulations:
-      if (isfinite(hf_fn)) { // neither NaN nor +/-Inf
+      if (hf_is_finite) { // neither NaN nor +/-Inf
 	++num_H[qoi];
 	// High-High:
 	sum_HH[qoi] += hf_fn * hf_fn; // a single vector for ord 1
@@ -780,6 +784,11 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 	// Low accumulations:
 	if (isfinite(lf_fn)) {
 	  ++num_L[approx][qoi];
+	  if (hf_is_finite) ++num_LH[approx][qoi]; // pull out of moment loop
+	  for (approx2=0; approx2<approx; ++approx2)
+	    if (isfinite(fn_vals[approx2 * numFunctions + qoi]))
+	      ++num_LL[qoi](approx2,approx); // pull out of moment loop
+
 	  ls_it = sum_L_shared.begin();	  ls_ord = ls_it->first;
 	  lr_it = sum_L_refined.begin();  lr_ord = lr_it->first;
 	  ll_it = sum_LL.begin();         ll_ord = ll_it->first;
@@ -810,7 +819,6 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 		lf2_fn = fn_vals[lf2_index];
 
 		if (isfinite(lf2_fn)) { // both are finite
-		  ++num_LL[qoi](approx2,approx);
 		  lf2_prod = lf2_fn;
 		  for (m=1; m<active_ord; ++m)
 		    lf2_prod *= lf2_fn;
@@ -820,8 +828,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 	      ++ll_it;  ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
 	    }
 	    // Low-High (c vector for each QoI):
-	    if (lh_ord == active_ord && isfinite(hf_fn)) {
-	      ++num_LH[approx][qoi];
+	    if (lh_ord == active_ord && hf_is_finite) {
 	      hf_prod = hf_fn;
 	      for (m=1; m<active_ord; ++m)
 		hf_prod *= hf_fn;
@@ -868,6 +875,10 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 	// Low accumulations:
 	if (isfinite(lf_fn)) {
 	  ++num_L[approx][qoi];
+	  for (approx2=0; approx2<approx; ++approx2)
+	    if (isfinite(fn_vals[approx2 * numFunctions + qoi]))
+	      ++num_LL[qoi](approx2,approx); // pull out of moment loop
+
 	  ls_it = sum_L_shared.begin();	  ls_ord = ls_it->first;
 	  lr_it = sum_L_refined.begin();  lr_ord = lr_it->first;
 	  ll_it = sum_LL.begin();         ll_ord = ll_it->first;
@@ -897,7 +908,6 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 		lf2_fn = fn_vals[lf2_index];
 
 		if (isfinite(lf2_fn)) { // both are finite
-		  ++num_LL[qoi](approx2,approx);
 		  lf2_prod = lf2_fn;
 		  for (m=1; m<active_ord; ++m)
 		    lf2_prod *= lf2_fn;
@@ -1148,7 +1158,7 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
   if (outputLevel >= NORMAL_OUTPUT) {
     for (qoi=0; qoi<numFunctions; ++qoi) {
       for (approx=0; approx<numApprox; ++approx)
-	Cout << "  QoI " << qoi+1 << "Approx " << approx+1
+	Cout << "  QoI " << qoi+1 << " Approx " << approx+1
 	   //<< ": cost_ratio = " << cost_H / cost_L
 	     << ": rho_sq = "     << rho2_LH(qoi,approx)
 	     << " eval_ratio = "  << eval_ratios(qoi,approx) << '\n';
@@ -1291,10 +1301,11 @@ mfmc_raw_moments(IntRealMatrixMap& sum_L_shared,
 
 void NonDACVSampling::
 acv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
-		IntRealVectorMap& sum_H, IntRealSymMatrixArrayMap& cov_LL,
-		IntRealMatrixMap& cov_LH, IntRealVectorMap& var_H,
+		IntRealVectorMap& sum_H, IntRealSymMatrixArrayMap& sum_LL,
+		IntRealMatrixMap& sum_LH, //IntRealVectorMap& var_H,
 		const RealVector& avg_eval_ratios, const Sizet2DArray& N_L,
-		const SizetArray& N_H, RealMatrix& H_raw_mom)
+		const SizetArray& N_H, const SizetSymMatrixArray& N_LL,
+		const Sizet2DArray& N_LH, RealMatrix& H_raw_mom)
 {
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
 
@@ -1307,14 +1318,14 @@ acv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
     RealMatrix&       sum_L_sh_m =  sum_L_shared[mom];
     RealMatrix&      sum_L_ref_m = sum_L_refined[mom];
     RealVector&          sum_H_m =         sum_H[mom];
-    RealMatrix&         cov_LH_m =        cov_LH[mom]; // *** TO DO mom > 1
-    RealSymMatrixArray& cov_LL_m =        cov_LL[mom]; // *** TO DO mom > 1
-    RealVector&          var_H_m =         var_H[mom]; // *** TO DO mom > 1
+    RealSymMatrixArray& sum_LL_m =        sum_LL[mom];
+    RealMatrix&         sum_LH_m =        sum_LH[mom];
+    //RealVector&        var_H_m =         var_H[mom]; // *** TO DO mom > 1
 
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << ":\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      compute_acv_control(cov_LL_m[qoi], F, cov_LH_m, qoi, var_H_m[qoi], beta);
+      //compute_acv_control(cov_LL_m[qoi], F, cov_LH_m, qoi, var_H_m[qoi], beta);
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
       N_H_q = N_H[qoi];
@@ -1339,13 +1350,10 @@ Real NonDACVSampling::objective_evaluator(const RealVector& avg_eval_ratios)
   compute_F_matrix(avg_eval_ratios, F);
 
   RealVector A, R_sq(numFunctions);
-  const RealSymMatrixArray& cov_LL_m = covLL[1];
-  const RealMatrix&         cov_LH_m = covLH[1];
-  const RealVector&          var_H_m =  varH[1];
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    invert_CF(cov_LL_m[qoi], F, CF_inv);
-    compute_A_vector(F, cov_LH_m, qoi, A);
-    compute_Rsq(CF_inv, A, var_H_m[qoi], R_sq[qoi]);
+    invert_CF(covLL[qoi], F, CF_inv);
+    compute_A_vector(F, covLH, qoi, A);
+    compute_Rsq(CF_inv, A, varH[qoi], R_sq[qoi]);
   }
   return -std::log(average(R_sq)); // maximize R_sq; use log to flatten contours
 }

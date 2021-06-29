@@ -133,9 +133,9 @@ private:
   void initialize_acv_counts(Sizet2DArray&        N_L,  SizetArray&   N_H,
 			     SizetSymMatrixArray& N_LL, Sizet2DArray& N_LH);
 
-  void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
-				  IntRealMatrixMap& cov_LH,
-				  IntRealVectorMap& var_H);
+  //void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
+  //				  IntRealMatrixMap& cov_LH,
+  //				  IntRealVectorMap& var_H);
 
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 			  IntRealMatrixMap& sum_L_refined,
@@ -213,11 +213,12 @@ private:
 			const Sizet2DArray& N_LH, RealMatrix& H_raw_mom);
   void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
-		       IntRealSymMatrixArrayMap& cov_LL,
-		       IntRealMatrixMap& cov_LH, IntRealVectorMap& var_H,
+		       IntRealSymMatrixArrayMap& sum_LL,
+		       IntRealMatrixMap& sum_LH, //IntRealVectorMap& var_H,
 		       const RealVector& avg_eval_ratios,
 		       const Sizet2DArray& N_L, const SizetArray& N_H,
-		       RealMatrix& H_raw_mom);
+		       const SizetSymMatrixArray& N_LL,
+		       const Sizet2DArray& N_LH, RealMatrix& H_raw_mom);
 
   void compute_mfmc_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			    size_t N_L, size_t N_H, size_t N_LH, Real& beta);
@@ -257,13 +258,13 @@ private:
   size_t numApprox;
 
   /// variances for HF truth (length numFunctions)
-  IntRealVectorMap varH;
+  RealVector varH;
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
-  IntRealMatrixMap covLH;
+  RealMatrix covLH;
   /// covariances among all LF approximations (the C matrix in ACV); organized
   /// as a numFunctions array of symmetic numApprox x numApprox matrices
-  IntRealSymMatrixArrayMap covLL;
+  RealSymMatrixArray covLL;
 
   /// the minimizer used to minimize the estimator variance over parameters
   /// of number of truth model samples and approximation eval_ratios
@@ -348,6 +349,7 @@ initialize_acv_counts(Sizet2DArray&        N_L,  SizetArray&   N_H,
 }
 
 
+/*
 inline void NonDACVSampling::
 initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
 			   IntRealMatrixMap& cov_LH, IntRealVectorMap& var_H)
@@ -364,6 +366,7 @@ initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
       mat_array[i].shape(numApprox);
   }
 }
+*/
 
 
 inline void NonDACVSampling::
