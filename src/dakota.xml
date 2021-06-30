@@ -2984,7 +2984,9 @@
 	  <oneOf label="Solution Approach">
 	    <keyword  id="acv_independent_sampling" name="acv_independent_sampling" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}" label="acv_is"   />
 	    <keyword  id="acv_multifidelity" name="acv_multifidelity" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}" label="acv_mf"   />
-	    <keyword  id="acv_kl_hybrid" name="acv_kl_hybrid" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}" label="acv_kl"   />
+	    <keyword  id="acv_kl" name="acv_kl" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}" label="acv_kl" >
+	      <alias name="acv_adaptive"/>
+	    </keyword>
 	  </oneOf>
 	  &method_seed_sequence;
 	  &mc_pilot_samples;

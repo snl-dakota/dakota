@@ -2930,7 +2930,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     |
     acv_multifidelity {N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}
     |
-    acv_kl_hybrid {N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}
+    acv_kl ALIAS acv_adaptive {N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
