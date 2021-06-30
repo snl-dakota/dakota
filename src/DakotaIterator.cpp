@@ -1425,6 +1425,71 @@ const RealVector& Iterator::response_error_estimates() const
 }
 
 
+void Iterator::initial_point(const Variables& pt)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->initial_point(pt);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine initial_point() virtual fn."
+	 << "\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void Iterator::initial_point(const RealVector& pt)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->initial_point(pt);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine initial_point() virtual fn."
+	 << "\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void Iterator::initial_points(const VariablesArray& pts)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->initial_points(pts);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine initial_points() virtual fn."
+	 << "\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+const VariablesArray& Iterator::initial_points() const
+{
+  if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine initial_points "
+            "virtual fn.\nNo default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->initial_points(); // envelope fwd to letter
+}
+
+
+void Iterator::
+linear_constraints(const RealMatrix& lin_ineq_coeffs,
+		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
+		   const RealMatrix& lin_eq_coeffs,
+		   const RealVector& lin_eq_tgt)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->linear_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
+				    lin_eq_coeffs, lin_eq_tgt);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine linear_constraints() virtual"
+	 << " fn.\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
 bool Iterator::accepts_multiple_points() const
 {
   if (iteratorRep) // envelope fwd to letter
@@ -1440,30 +1505,6 @@ bool Iterator::returns_multiple_points() const
     return iteratorRep->returns_multiple_points();
   else // default for letter lacking virtual fn redefinition
     return false;
-}
-
-
-void Iterator::initial_points(const VariablesArray& pts)
-{
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->initial_points(pts);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_points virtual fn.\n"
-	 << "No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
-const VariablesArray& Iterator::initial_points() const
-{
-  if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_points "
-            "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->initial_points(); // envelope fwd to letter
 }
 
 

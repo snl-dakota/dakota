@@ -97,9 +97,8 @@ protected:
 		      const RealMatrix& sum_LH, const RealVector& sum_HH,
 		      const RealVector& cost,   const Sizet2DArray& N_L,
 		      const SizetArray& N_H,    const SizetSymMatrixArray& N_LL,
-		      const Sizet2DArray& N_LH, RealVector& var_H,
-		      RealSymMatrixArray& cov_LL, RealMatrix& cov_LH,
-		      RealVector& avg_eval_ratios, Real& mse_ratio);
+		      const Sizet2DArray& N_LH, RealVector& avg_eval_ratios,
+		      Real& mse_ratio);
 
 private:
 
@@ -168,8 +167,6 @@ private:
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t start, size_t end);
 
-  void compute_H_variance(const RealVector& sum_H, const RealVector& sum_HH,
-			  const SizetArray& N_H,   RealVector& var_H);
   void compute_LH_correlation(const RealMatrix& sum_L_shared,
 			      const RealVector& sum_H, const RealMatrix& sum_LL,
 			      const RealMatrix& sum_LH,const RealVector& sum_HH,
@@ -185,7 +182,16 @@ private:
 			     const Sizet2DArray& N_L,
 			     const SizetSymMatrixArray& N_LL,
 			     RealSymMatrixArray& cov_LL);
-  
+  void compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
+			const SizetArray& N_Q,   RealVector& var_Q);
+  void compute_variance(const RealMatrix& sum_L,
+			const RealSymMatrixArray& sum_LL,
+			const Sizet2DArray& N_L, RealMatrix& var_L);
+  void covariance_to_correlation_sq(const RealMatrix& cov_LH,
+				    const RealMatrix& var_L,
+				    const RealVector& var_H,
+				    RealMatrix& rho2_LH);
+
   void compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1,
 			   Real sum_Q1Q2, Real sum_Q2Q2, size_t N_Q1,
 			   size_t N_Q2, size_t N_Q1Q2, Real& var_Q2,
@@ -493,6 +499,48 @@ compute_variance(Real sum_Q, Real sum_QQ, size_t N_Q, Real& var_Q)
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
   var_Q = (sum_QQ / N_Q - mu_Q * mu_Q) * bessel_corr_Q;
+}
+
+
+inline void NonDACVSampling::
+compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
+		 const SizetArray& N_Q,   RealVector& var_Q)
+{
+  if (var_Q.empty()) var_Q.sizeUninitialized(numFunctions);
+
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_variance(sum_Q[qoi], sum_QQ[qoi], N_Q[qoi], var_Q[qoi]);
+}
+
+
+inline void NonDACVSampling::
+compute_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
+		 const Sizet2DArray& N_L, RealMatrix& var_L)
+{
+  if (var_L.empty()) var_L.shapeUninitialized(numFunctions, numApprox);
+
+  size_t qoi, approx;
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    for (approx=0; approx<numApprox; ++approx)
+      compute_variance(sum_L(qoi,approx), sum_LL[qoi](approx,approx),
+		       N_L[approx][qoi], var_L(qoi,approx));
+}
+
+
+inline void NonDACVSampling::
+covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
+			     const RealVector& var_H, RealMatrix& rho2_LH)
+{
+  if (rho2_LH.empty()) rho2_LH.shapeUninitialized(numFunctions, numApprox);
+
+  size_t qoi, approx;  Real var_H_q, cov_LH_aq;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    var_H_q = var_H[qoi];
+    for (approx=0; approx<numApprox; ++approx) {
+      cov_LH_aq = cov_LH(qoi,approx);
+      rho2_LH(qoi,approx) = cov_LH_aq / var_L(qoi,approx) * cov_LH_aq / var_H_q;
+    }
+  }
 }
 
 

@@ -164,6 +164,8 @@ public:
 
   void declare_sources();
 
+  void initial_point(const RealVector& pt);
+
 protected:
 
   //
@@ -303,6 +305,10 @@ private:
   /// holds variable upper bounds passed in for "user_functions" mode.
   RealVector upperBounds;
 };
+
+
+inline void SNLLOptimizer::initial_point(const RealVector& pt)
+{ copy_data(pt, initialPoint); } // protect from incoming view
 
 } // namespace Dakota
 

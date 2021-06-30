@@ -135,9 +135,9 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
     x0   = 1.; // start from MFMC analytic soln (AFTER PILOT), then warm start
     x_lb = 1.;  x_ub = DBL_MAX; // no upper bounds
     lin_ineq_lb[0] =  -DBL_MAX; // no lower bound
-    lin_ineq_ub[0] = (Real)maxFunctionEvals;// / average(N_H) - cost[numApprox]; *** move downstream
+    lin_ineq_ub[0] = 1.; // updated in compute_ratios()
     for (i=0; i<numApprox; ++i)
-      lin_ineq_coeffs(0,i) = 1.;// cost[i]; *** move downstream
+      lin_ineq_coeffs(0,i) = 1.; // updated in compute_ratios()
     if (npsol) {
       int deriv_level =  3;  // user supplied derivatives (?)
       Real conv_tol   = -1.; // use NPSOL default
@@ -277,9 +277,9 @@ void NonDACVSampling::multifidelity_mc()
       // compute the ratio of MC and ACV mean squared errors (for convergence).
       // This ratio incorporates the anticipated variance reduction from the
       // upcoming application of eval_ratios.
-      compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-		     sum_HH, cost, N_L, N_H, N_LH, var_H, rho2_LH,
-		     eval_ratios, mse_ratios);
+      compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
+		     cost, N_L, N_H, N_LH, var_H, rho2_LH, eval_ratios,
+		     mse_ratios);
       // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
       // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
@@ -392,9 +392,8 @@ void NonDACVSampling::approximate_control_variate()
       // Then, compute ratio of MC and ACV mean sq errors (for convergence),
       // which incorporates the anticipated variance reduction from the
       // upcoming application of avg_eval_ratios.
-      compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-		     sum_HH, cost, N_L, N_H, N_LL, N_LH, varH, covLL,
-		     covLH, avg_eval_ratios, mse_ratio);
+      compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
+		     cost, N_L, N_H, N_LL, N_LH, avg_eval_ratios, mse_ratio);
       // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
       // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
@@ -785,9 +784,6 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 	if (isfinite(lf_fn)) {
 	  ++num_L[approx][qoi];
 	  if (hf_is_finite) ++num_LH[approx][qoi]; // pull out of moment loop
-	  for (approx2=0; approx2<approx; ++approx2)
-	    if (isfinite(fn_vals[approx2 * numFunctions + qoi]))
-	      ++num_LL[qoi](approx2,approx); // pull out of moment loop
 
 	  ls_it = sum_L_shared.begin();	  ls_ord = ls_it->first;
 	  lr_it = sum_L_refined.begin();  lr_ord = lr_it->first;
@@ -819,6 +815,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 		lf2_fn = fn_vals[lf2_index];
 
 		if (isfinite(lf2_fn)) { // both are finite
+		  if (active_ord == 1) ++num_LL[qoi](approx2,approx);
 		  lf2_prod = lf2_fn;
 		  for (m=1; m<active_ord; ++m)
 		    lf2_prod *= lf2_fn;
@@ -875,9 +872,6 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 	// Low accumulations:
 	if (isfinite(lf_fn)) {
 	  ++num_L[approx][qoi];
-	  for (approx2=0; approx2<approx; ++approx2)
-	    if (isfinite(fn_vals[approx2 * numFunctions + qoi]))
-	      ++num_LL[qoi](approx2,approx); // pull out of moment loop
 
 	  ls_it = sum_L_shared.begin();	  ls_ord = ls_it->first;
 	  lr_it = sum_L_refined.begin();  lr_ord = lr_it->first;
@@ -908,6 +902,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 		lf2_fn = fn_vals[lf2_index];
 
 		if (isfinite(lf2_fn)) { // both are finite
+		  if (active_ord == 1) ++num_LL[qoi](approx2,approx);
 		  lf2_prod = lf2_fn;
 		  for (m=1; m<active_ord; ++m)
 		    lf2_prod *= lf2_fn;
@@ -1040,17 +1035,6 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& num_L,
 
 
 void NonDACVSampling::
-compute_H_variance(const RealVector& sum_H, const RealVector& sum_HH,
-		   const SizetArray& N_H,   RealVector& var_H)
-{
-  if (var_H.empty()) var_H.sizeUninitialized(numFunctions);
-
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_variance(sum_H[qoi], sum_HH[qoi], N_H[qoi], var_H[qoi]);
-}
-
-
-void NonDACVSampling::
 compute_LH_correlation(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 		       const RealMatrix& sum_LL, const RealMatrix& sum_LH,
 		       const RealVector& sum_HH, const Sizet2DArray& N_L,
@@ -1176,17 +1160,18 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 	       const RealVector& sum_HH, const RealVector& cost,
 	       const Sizet2DArray& N_L, const SizetArray& N_H,
 	       const SizetSymMatrixArray& N_LL, const Sizet2DArray& N_LH,
-	       RealVector& var_H, RealSymMatrixArray& cov_LL,
-	       RealMatrix& cov_LH, RealVector& avg_eval_ratios, Real& mse_ratio)
+	       RealVector& avg_eval_ratios, Real& mse_ratio)
 {
-  compute_H_variance(sum_H, sum_HH, N_H, var_H);
-  compute_LH_covariance(sum_L_shared, sum_H, sum_LH, N_L, N_H, N_LH, cov_LH);
-  compute_LL_covariance(sum_L_shared, sum_LL, N_L, N_LL, cov_LL);
+  compute_variance(sum_H, sum_HH, N_H, varH);
+  compute_LH_covariance(sum_L_shared, sum_H, sum_LH, N_L, N_H, N_LH, covLH);
+  compute_LL_covariance(sum_L_shared, sum_LL, N_L, N_LL, covLL);
 
   // Set initial guess based on MFMC eval ratios (iter 0) or warm started from
   // previous solution
   if (mlmfIter == 0) {
-    RealMatrix rho2_LH, eval_ratios; //covariance_to_correlation_sq(cov_LH, rho2_LH); *** TO DO
+    RealMatrix rho2_LH, eval_ratios;  RealMatrix var_L;
+    compute_variance(sum_L_shared, sum_LL, N_L, var_L);
+    covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
     mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
     average(eval_ratios, 0, avg_eval_ratios);// average over qoi for each approx
   }
@@ -1194,8 +1179,23 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
     // consider scaling prev soln to feasibility with updated N_H
     // (similar to NonDLocalRel)
   //}
-  //varianceMinimizer.initial_point(avg_eval_ratios); // *** TO DO: can't post to Model
-  varianceMinimizer.run();  // fn pointer call-backs configured upstream
+  varianceMinimizer.initial_point(avg_eval_ratios);
+
+  // set linear inequality constraint
+  RealVector lin_ineq_lb(1), lin_ineq_ub(1), lin_eq_tgt;
+  RealMatrix lin_ineq_coeffs(1, numApprox), lin_eq_coeffs;
+  lin_ineq_lb[0] = -DBL_MAX; // no lower bound
+  lin_ineq_ub[0] = (Real)maxFunctionEvals / average(N_H) - cost[numApprox];
+  for (size_t approx=0; approx<numApprox; ++approx)
+    lin_ineq_coeffs(0,approx) = cost[approx];
+  // rather than update an iteratedModel, we must update the Minimizer for
+  // use by user-functions mode
+  varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
+				       lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt);
+
+  // solve the sub-problem to compute the optimal r* that maximizes
+  // the variance reduction for fixed N_H
+  varianceMinimizer.run();
 
   // Recover optimizer results for average {eval,mse} ratios
   copy_data(varianceMinimizer.variables_results().continuous_variables(),

@@ -139,14 +139,28 @@ public:
   ~NPSOLOptimizer(); ///< destructor
     
   //
-  //- Heading: Member functions
+  //- Heading: Virtual function redefinitions
   //
 
   void core_run();
 
   void declare_sources();
 
+  // updaters for user-functions mode:
+
+  void initial_point(const RealVector& pt);
+  void linear_constraints(const RealMatrix& lin_ineq_coeffs,
+			  const RealVector& lin_ineq_lb,
+			  const RealVector& lin_ineq_ub,
+			  const RealMatrix& lin_eq_coeffs,
+			  const RealVector& lin_eq_tgt);
+
 protected:
+
+  //
+  //- Heading: Member functions
+  //
+
   void send_sol_option(std::string sol_option) override;
 
 private:
@@ -195,6 +209,27 @@ private:
   void (*userConstraintEval) (int&, int&, int&, int&, int*, double*, double*,
 			      double*, int&);
 };
+
+
+inline void NPSOLOptimizer::initial_point(const RealVector& pt)
+{ copy_data(pt, initialPoint); } // protect from incoming view
+
+
+inline void NPSOLOptimizer::
+linear_constraints(const RealMatrix& lin_ineq_coeffs,
+		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
+		   const RealMatrix& lin_eq_coeffs,
+		   const RealVector& lin_eq_tgt)
+{
+  //allocate_arrays(numContinuousVars, numNonlinearConstraints,
+  // 		  lin_ineq_coeffs, lin_eq_coeffs);
+  //augment_bounds(lowerBounds, upperBounds, lin_ineq_lb, lin_ineq_ub,
+  // 		 lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
+  replace_linear_arrays(numContinuousVars, numNonlinearConstraints,
+			lin_ineq_coeffs, lin_eq_coeffs);
+  replace_linear_bounds(numContinuousVars, numNonlinearConstraints, lowerBounds,
+			upperBounds, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt);
+}
 
 
 #ifdef HAVE_DYNLIB_FACTORIES

@@ -55,6 +55,10 @@ protected:
   void allocate_arrays(int num_cv, size_t num_nln_con,
 		       const RealMatrix& lin_ineq_coeffs,
 		       const RealMatrix& lin_eq_coeffs);
+  /// update linear constraint arrays
+  void replace_linear_arrays(size_t num_cv, size_t num_nln_con,
+			     const RealMatrix& lin_ineq_coeffs,
+			     const RealMatrix& lin_eq_coeffs);
 
   /// Deallocates memory previously allocated by allocate_arrays().
   void deallocate_arrays();
@@ -75,19 +79,25 @@ protected:
   virtual void send_sol_option(std::string sol_option) = 0;
 
   /// augments variable bounds with linear and nonlinear constraint bounds.
-  void augment_bounds(RealVector& augmented_l_bnds, 
-		      RealVector& augmented_u_bnds,
+  void augment_bounds(RealVector& aggregate_l_bnds,
+		      RealVector& aggregate_u_bnds,
 		      const Model& model);
-
   /// augments variable bounds with linear and nonlinear constraint bounds.
-  void augment_bounds(RealVector& augmented_l_bnds, 
-		      RealVector& augmented_u_bnds,
+  void augment_bounds(RealVector& aggregate_l_bnds,
+		      RealVector& aggregate_u_bnds,
 		      const RealVector& lin_ineq_l_bnds,
 		      const RealVector& lin_ineq_u_bnds,
 		      const RealVector& lin_eq_targets,
 		      const RealVector& nln_ineq_l_bnds,
 		      const RealVector& nln_ineq_u_bnds,
 		      const RealVector& nln_eq_targets);
+  /// replace linear bounds within aggregate arrays
+  void replace_linear_bounds(size_t num_cv, size_t num_nln_con,
+			     RealVector& aggregate_l_bnds,
+			     RealVector& aggregate_u_bnds,
+			     const RealVector& lin_ineq_l_bnds,
+			     const RealVector& lin_ineq_u_bnds,
+			     const RealVector& lin_eq_targets);
 
   //
   //- Heading: Static member functions passed by pointer to NPSOL/NLSSOL
@@ -129,7 +139,7 @@ protected:
   int informResult;
   /// ITER from NPSOL manual: number of (major) iterations performed
   int numberIterations;
-  /// length of augmented bounds arrays (variable bounds plus linear and
+  /// length of aggregated bounds arrays (variable bounds plus linear and
   /// nonlinear constraint bounds)
   int boundsArraySize;
 
@@ -158,10 +168,10 @@ inline SOLBase::~SOLBase() { }
 
 
 inline void SOLBase::
-augment_bounds(RealVector& augmented_l_bnds, RealVector& augmented_u_bnds,
+augment_bounds(RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds,
 	       const Model& model)
 {
-  augment_bounds(augmented_l_bnds, augmented_u_bnds,
+  augment_bounds(aggregate_l_bnds, aggregate_u_bnds,
 		 model.linear_ineq_constraint_lower_bounds(),
 		 model.linear_ineq_constraint_upper_bounds(),
 		 model.linear_eq_constraint_targets(),

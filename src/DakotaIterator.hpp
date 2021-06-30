@@ -174,9 +174,23 @@ public:
   /// return is false.  Override to return true if appropriate.
   virtual bool returns_multiple_points() const;
 
+  /// sets the initial point for this iterator (user-functions mode
+  /// for which Model updating is not used)
+  virtual void initial_point(const Variables& pt);
+  /// sets the initial point (active continuous variables) for this iterator
+  /// (user-functions mode for which Model updating is not used)
+  virtual void initial_point(const RealVector& pt);
   /// sets the multiple initial points for this iterator.  This should
   /// only be used if accepts_multiple_points() returns true.
   virtual void initial_points(const VariablesArray& pts);
+
+  /// assign linear inequality and linear equality constraints for this
+  /// iterator (user-functions mode for which Model updating is not used)
+  virtual void linear_constraints(const RealMatrix& lin_ineq_coeffs,
+				  const RealVector& lin_ineq_lb,
+				  const RealVector& lin_ineq_ub,
+				  const RealMatrix& lin_eq_coeffs,
+				  const RealVector& lin_eq_tgt);
 
   /// initialize the 2D graphics window and the tabular graphics data
   virtual void initialize_graphics(int iterator_server_id = 1);
