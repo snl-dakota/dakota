@@ -1165,6 +1165,47 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp)
 }
 
 
+unsigned short NonD::sub_optimizer_select(unsigned short requested_sub_method)
+{
+  unsigned short assigned_sub_method = requested_sub_method;
+  switch (requested_sub_method) {
+  case SUBMETHOD_SQP:
+#ifndef HAVE_NPSOL
+    Cerr << "\nError: this executable not configured with NPSOL SQP."
+	 << "\n       Please select alternate sub-method solver." << std::endl;
+    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
+#endif
+    break;
+  case SUBMETHOD_NIP:
+#ifndef HAVE_OPTPP
+    Cerr << "\nError: this executable not configured with OPT++ NIP."
+	 << "\n       Please select alternate sub-method solver." << std::endl;
+    assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
+#endif
+    break;
+  case SUBMETHOD_DEFAULT: // use NPSOL SQP if available
+#ifdef HAVE_NPSOL
+    assigned_sub_method = SUBMETHOD_SQP;
+#elif HAVE_OPTPP
+    assigned_sub_method = SUBMETHOD_NIP;
+#else
+    Cerr << "\nError: this executable not configured with an available "
+	 << "sub-method solver." << std::endl;
+    assigned_sub_method = SUBMETHOD_NONE;
+#endif
+    break;
+  //case SUBMETHOD_NONE:
+  //  break;
+  default:
+    Cerr << "\nError: sub-method not recognized in NonD::"
+	 << "sub_optimizer_select()." << std::endl;
+    assigned_sub_method = SUBMETHOD_NONE;
+    break;
+  }
+  return assigned_sub_method;
+}
+
+
 void NonD::archive_allocate_mappings()
 {
   if (!resultsDB.active())  return;

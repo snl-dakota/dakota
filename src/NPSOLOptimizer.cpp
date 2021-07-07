@@ -93,7 +93,7 @@ NPSOLOptimizer::NPSOLOptimizer(Model& model):
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 NPSOLOptimizer::
-NPSOLOptimizer(Model& model, const int& derivative_level, const Real& conv_tol):
+NPSOLOptimizer(Model& model, int derivative_level, Real conv_tol):
   Optimizer(NPSOL_SQP, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
   SOLBase(model), setUpType("model")
 {
@@ -131,7 +131,7 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
   void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
 			 double*, int&),
-  const int& derivative_level, const Real& conv_tol): // SOLBase default ctor
+  int derivative_level, Real conv_tol): // SOLBase default ctor
   Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length(),
@@ -184,7 +184,7 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
   void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
        double*, int&),
-  const int& derivative_level, const Real& conv_tol,
+  int derivative_level, Real conv_tol,
   const Real function_precision, const Real feas_tol, 
   const Real lin_feas_tol, const Real nonlin_feas_tol): // SOLBase default ctor
   Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
@@ -269,8 +269,8 @@ NPSOLOptimizer* new_NPSOLOptimizer1(Model& model)
 #endif
 }
 
-NPSOLOptimizer* new_NPSOLOptimizer2(Model& model, const int& derivative_level,
-                                    const Real& conv_tol)
+NPSOLOptimizer* new_NPSOLOptimizer2(Model& model, int derivative_level,
+                                    Real conv_tol)
 {
 #ifdef DAKOTA_DYNLIB
   not_available("NPSOL");
@@ -294,7 +294,7 @@ NPSOLOptimizer* new_NPSOLOptimizer3(const RealVector& initial_point,
   void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
   void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
                          double*, int&),
-  const int& derivative_level, const Real& conv_tol)
+  int derivative_level, Real conv_tol)
 {
 #ifdef DAKOTA_DYNLIB
   not_available("NPSOL");
@@ -549,12 +549,12 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
               local_c_vals.values() + nlnConstraintArraySize,
               best_fns.values() + 1);
   bestResponseArray.front().function_values(best_fns);
-
 }
 
-// This override exists purely to prevent an optimizer/minimizer from declaring sources 
-// when it's being used to evaluate a user-defined function (e.g. finding the correlation
-// lengths of Dakota's GP). 
+
+// This override exists purely to prevent an optimizer/minimizer from
+// declaring sources when it's being used to evaluate a user-defined
+// function (e.g. finding the correlation lengths of Dakota's GP).
 void NPSOLOptimizer::declare_sources() {
   if(setUpType == "user_functions") 
     return;

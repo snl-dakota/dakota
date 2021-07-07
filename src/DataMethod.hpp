@@ -105,6 +105,14 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBO,
+       // Local reliability sub-method selections: (MV is 0)
+       SUBMETHOD_AMV_X,       SUBMETHOD_AMV_U,
+       SUBMETHOD_AMV_PLUS_X,  SUBMETHOD_AMV_PLUS_U,
+       SUBMETHOD_TANA_X,      SUBMETHOD_TANA_U,
+       SUBMETHOD_QMEA_X,      SUBMETHOD_QMEA_U,
+       SUBMETHOD_NO_APPROX,
+       // Global reliability sub-method selections:
+       SUBMETHOD_EGRA_X,      SUBMETHOD_EGRA_U,
        // verification approaches:
        SUBMETHOD_CONVERGE_ORDER,  SUBMETHOD_CONVERGE_QOI,
        SUBMETHOD_ESTIMATE_ORDER };
@@ -218,8 +226,8 @@ enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT, CONVERGENCE_TOLERANCE_T
 // NonDReliability
 // ---------------
 // define special values for mppSearchType
-enum { MV=0, AMV_X, AMV_U, AMV_PLUS_X, AMV_PLUS_U, TANA_X, TANA_U,
-       QMEA_X, QMEA_U, NO_APPROX, EGRA_X, EGRA_U };
+//enum { MV=0, AMV_X, AMV_U, AMV_PLUS_X, AMV_PLUS_U, TANA_X, TANA_U,
+//       QMEA_X, QMEA_U, NO_APPROX, EGRA_X, EGRA_U };
 // define special values for secondOrderIntType
 enum { BREITUNG, HOHENRACK, HONG };
 
@@ -976,11 +984,11 @@ public:
   bool dOptimal;
   /// number of candidate designss in D-optimal design selection
   size_t numCandidateDesigns;
-  /// the type of limit state search in \ref MethodNonDLocalRel
-  /// (\c x_taylor_mean, \c x_taylor_mpp, \c x_two_point, \c u_taylor_mean,
-  /// \c u_taylor_mpp, \c u_two_point, or \c no_approx) or
-  /// \ref MethodNonDGlobalRel (\c x_gaussian_process or \c u_gaussian_process)
-  unsigned short reliabilitySearchType;
+  // the type of limit state search in \ref MethodNonDLocalRel
+  // (\c x_taylor_mean, \c x_taylor_mpp, \c x_two_point, \c u_taylor_mean,
+  // \c u_taylor_mpp, \c u_two_point, or \c no_approx) or
+  // \ref MethodNonDGlobalRel (\c x_gaussian_process or \c u_gaussian_process)
+  //unsigned short reliabilitySearchType;
   /// the \c first_order or \c second_order integration selection in
   /// \ref MethodNonDLocalRel
   String reliabilityIntegration;
@@ -1072,8 +1080,9 @@ public:
   int evidenceSamples;
   /// flag indicating use of Laplace approximation for evidence calc.
   bool modelEvidLaplace;
-  /// the method used for performing a pre-solve for the MAP point
-  unsigned short preSolveMethod;
+  /// the method used for solving an optimization sub-problem (e.g.,
+  /// pre-solve for the MAP point)
+  unsigned short optSubProbSolver;
   /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
   /// optional multiplier for prior-based proposal covariance

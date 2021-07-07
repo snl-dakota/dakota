@@ -194,6 +194,10 @@ protected:
 		     const String& rng, bool vary_pattern,
 		     short sampling_vars_mode = ACTIVE);
 
+  /// utility for vetting sub-method request against optimizers within
+  /// the package configuration
+  unsigned short sub_optimizer_select(unsigned short requested_sub_method);
+
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
   size_t one_sided_delta(Real current, Real target);

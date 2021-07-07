@@ -61,55 +61,28 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 			 (iteratedModel, recast_vars_comps_total, all_relax_di,
 			  all_relax_dr, 1, 0, 0, recast_resp_order));
 
-  unsigned short opt_algorithm = probDescDB.get_ushort("method.sub_method");
-  if (opt_algorithm == SUBMETHOD_SQP) {
-#ifdef HAVE_NPSOL
-    npsolFlag = true;
-#else
-    Cerr << "\nError: this executable not configured with NPSOL SQP.\n         "
-	 << "Please select OPT++ NIP within local_interval_est." << std::endl;
-    err_flag = true;
-#endif
-  }
-  else if (opt_algorithm == SUBMETHOD_NIP) {
-#ifdef HAVE_OPTPP
-    npsolFlag = false;
-#else
-    Cerr << "\nError: this executable not configured with OPT++ NIP.\n         "
-	 << "please select NPSOL SQP within local_interval_est." << std::endl;
-    err_flag = true;
-#endif
-  }
-  else if (opt_algorithm == SUBMETHOD_DEFAULT) {
-#ifdef HAVE_NPSOL
-    npsolFlag = true;
-#elif HAVE_OPTPP
-    npsolFlag = false;
-#else
-    Cerr << "\nError: this executable not configured with NPSOL or OPT++.\n"
-	 << "       NonDLocalInterval requires a gradient-based optimizer."
-	 << std::endl;
-    err_flag = true;
-#endif
-  }
- 
-  if (err_flag)
-    abort_handler(-1);
-
   // instantiate the optimizer used to compute the output interval bounds
-  if (npsolFlag) {
-#ifdef HAVE_NPSOL  
-    int npsol_deriv_level = 3;
+  switch (sub_optimizer_select(probDescDB.get_ushort("method.sub_method"))) {
+  case SUBMETHOD_SQP: {
+#ifdef HAVE_NPSOL
+    int deriv_level = 3;
     minMaxOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
-			       (minMaxModel, npsol_deriv_level, convergenceTol));
+			       (minMaxModel, deriv_level, convergenceTol));
 #endif // HAVE_NPSOL
+    npsolFlag =  true; break;
   }
-  else {
+  case SUBMETHOD_NIP:
 #ifdef HAVE_OPTPP
     minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
 			       ("optpp_q_newton", minMaxModel));
 #endif // HAVE_OPTPP
+    npsolFlag = false; break;
+  default:
+    npsolFlag = false; err_flag = true; break;
   }
+
+  if (err_flag)
+    abort_handler(METHOD_ERROR);
 
   // Prevent nesting of an instance of a Fortran iterator within another
   // instance of the same iterator (which would result in data clashes since

@@ -70,6 +70,9 @@ protected:
   bool approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_lf,
 			const RealVector& hf_targets, size_t iter, size_t start,
 			size_t end);
+  bool approx_increment(const RealVector& avg_eval_ratios,
+			const Sizet2DArray& N_lf, Real hf_target,
+			size_t iter, size_t start, size_t end);
 
   void allocate_budget(const RealMatrix& eval_ratios, const RealVector& cost,
 		       RealVector& hf_targets);
@@ -124,7 +127,7 @@ private:
   void initialize_acv_sums(IntRealMatrixMap& sum_L_shared,
 			   IntRealMatrixMap& sum_L_refined,
 			   IntRealVectorMap& sum_H,
-			   IntRealSymMatrixArrayMap& sum_LL_all,
+			   IntRealSymMatrixArrayMap& sum_LL,
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH);
 
   void initialize_mf_counts(Sizet2DArray& N_L, SizetArray& N_H,
@@ -243,6 +246,8 @@ private:
 
   /// helper function shared by NPSOL/OPT++ static evaluators
   Real objective_evaluator(const RealVector& avg_eval_ratios);
+  /// dummy gradient evaluator function (throws an error for now)
+  void gradient_evaluator(const RealVector& avg_eval_ratios,RealVector& grad_f);
 
   /// static function used by NPSOL for the objective function
   static void npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
@@ -269,6 +274,11 @@ private:
 
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
+  /// type of model sequence enumerated with primary MF/ACV loop over steps
+  short sequenceType;
+  /// setting for the inactive model dimension not traversed by primary MF/ACV
+  /// loop over steps
+  size_t secondaryIndex;
 
   /// variances for HF truth (length numFunctions)
   RealVector varH;
@@ -336,7 +346,7 @@ initialize_acv_sums(IntRealMatrixMap& sum_L_shared,
     RealSymMatrixArray& mat_array = sum_LL.insert(mat_array_pr).first->second;
     mat_array.resize(numFunctions);
     for (size_t j=0; j<numFunctions; ++j)
-      mat_array[i].shape(numApprox);
+      mat_array[j].shape(numApprox);
   }
 }
 
@@ -572,11 +582,11 @@ compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F)
   size_t i, j, num_approx = avg_eval_ratios.length();
   if (F.empty()) F.shapeUninitialized(num_approx);
 
-  switch (methodName) {
+  switch (acvSubMethod) {
   case SUBMETHOD_ACV_IS: {
     Real wi_ratio;
     for (i=0; i<num_approx; ++i) {
-      F(i,i) = wi_ratio = (avg_eval_ratios[i] - 1.) / avg_eval_ratios[i];
+      F(i,i)   = wi_ratio = (avg_eval_ratios[i] - 1.) / avg_eval_ratios[i];
       for (j=0; j<i; ++j)
 	F(i,j) = wi_ratio * (avg_eval_ratios[j] - 1.) / avg_eval_ratios[j];
     }
@@ -593,6 +603,10 @@ compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F)
     }
     break;
   }
+  default:
+    Cerr << "Error: bad sub-method name (" << acvSubMethod
+	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
+    abort_handler(METHOD_ERROR); break;
   }
 }
 
@@ -604,8 +618,13 @@ invert_CF(const RealSymMatrix& C, const RealSymMatrix& F, RealSymMatrix& CF_inv)
   if (CF_inv.empty()) CF_inv.shapeUninitialized(n);
 
   for (i=0; i<n; ++i)
-    for (j=0; j<=i; ++j)
+    for (j=0; j<=i; ++j) {
       CF_inv(i,j) = C(i,j) * F(i,j);
+      //Cout << "invert_CF: C(" << i << ',' << j << ") = " << C(i,j)
+      //     << " F("  << i << ',' << j << ") = " << F(i,j)
+      //     << " CF(" << i << ',' << j << ") = " << CF_inv(i,j) << '\n';
+    }
+
   RealSpdSolver spd_solver;
   spd_solver.setMatrix(Teuchos::rcp(&CF_inv, false));
   spd_solver.invert(); // in place

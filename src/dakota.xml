@@ -3246,9 +3246,9 @@
 	      </optional>
 	      <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
 		<oneOf label="Pre-solve Optimizer">
-		  <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}" label="sqp"   />
-		  <keyword  id="nip" name="nip" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}" label="nip"   />
-		  <keyword  id="none" name="none" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}" label="none"   />
+		  <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp"   />
+		  <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip"   />
+		  <keyword  id="none" name="none" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}" label="none"   />
 		</oneOf>
 	      </keyword>
 	      &bayes_proposal_covariance;
@@ -3643,26 +3643,26 @@
           <alias name="nond_local_reliability"/>
           <keyword  id="mpp_search" name="mpp_search" code="{0}" label="MPP search type"  minOccurs="0" default="No MPP search (MV method)" >
             <oneOf label="MPP Approximation">
-              <keyword  id="x_taylor_mean" name="x_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_X)}" label="x_taylor_mean"   />
-              <keyword  id="u_taylor_mean" name="u_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_U)}" label="u_taylor_mean"   />
-              <keyword  id="x_taylor_mpp" name="x_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}" label="x_taylor_mpp"   >
+              <keyword  id="x_taylor_mean" name="x_taylor_mean" code="{N_mdm(utype,subMethod_SUBMETHOD_AMV_X)}" label="x_taylor_mean"   />
+              <keyword  id="u_taylor_mean" name="u_taylor_mean" code="{N_mdm(utype,subMethod_SUBMETHOD_AMV_U)}" label="u_taylor_mean"   />
+              <keyword  id="x_taylor_mpp" name="x_taylor_mpp" code="{N_mdm(utype,subMethod_SUBMETHOD_AMV_PLUS_X)}" label="x_taylor_mpp"   >
               </keyword>
-              <keyword  id="u_taylor_mpp" name="u_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}" label="u_taylor_mpp"   >
+              <keyword  id="u_taylor_mpp" name="u_taylor_mpp" code="{N_mdm(utype,subMethod_SUBMETHOD_AMV_PLUS_U)}" label="u_taylor_mpp"   >
               </keyword>
-              <keyword  id="x_two_point" name="x_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_X)}" label="x_two_point"   >
+              <keyword  id="x_two_point" name="x_two_point" code="{N_mdm(utype,subMethod_SUBMETHOD_TANA_X)}" label="x_two_point"   >
               </keyword>
-              <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_U)}" label="u_two_point"   >
+              <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,subMethod_SUBMETHOD_TANA_U)}" label="u_two_point"   >
               </keyword>
-              <keyword  id="x_multi_point" name="x_multi_point" code="{N_mdm(utype,reliabilitySearchType_QMEA_X)}" label="x_multi_point"   >
+              <keyword  id="x_multi_point" name="x_multi_point" code="{N_mdm(utype,subMethod_SUBMETHOD_QMEA_X)}" label="x_multi_point"   >
               </keyword>
-              <keyword  id="u_multi_point" name="u_multi_point" code="{N_mdm(utype,reliabilitySearchType_QMEA_U)}" label="u_multi_point"   >
+              <keyword  id="u_multi_point" name="u_multi_point" code="{N_mdm(utype,subMethod_SUBMETHOD_QMEA_U)}" label="u_multi_point"   >
               </keyword>
-              <keyword  id="no_approx" name="no_approx" code="{N_mdm(utype,reliabilitySearchType_NO_APPROX)}" label="no_approx"   />
+              <keyword  id="no_approx" name="no_approx" code="{N_mdm(utype,subMethod_SUBMETHOD_NO_APPROX)}" label="no_approx"   />
             </oneOf>
             <optional>
               <oneOf label="Optimization Solver">
-                <keyword  id="sqp4" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp"  default="sqp" />
-                <keyword  id="nip3" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip"  default="sqp" />
+                <keyword  id="sqp4" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}" label="sqp"  default="sqp" />
+                <keyword  id="nip3" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}" label="nip"  default="sqp" />
               </oneOf>
             </optional>
             <keyword  id="integration" name="integration" code="{0}" label="Integration method"  minOccurs="0" default="First-order integration" >
@@ -3701,10 +3701,10 @@
 	    <param type="INTEGER" />
 	  </keyword>
           <oneOf label="Approximation">
-            <keyword  id="x_gaussian_process" name="x_gaussian_process" code="{N_mdm(utype,reliabilitySearchType_EGRA_X)}" label="x_gaussian_process"   >
+            <keyword  id="x_gaussian_process" name="x_gaussian_process" code="{N_mdm(utype,subMethod_SUBMETHOD_EGRA_X)}" label="x_gaussian_process"   >
               <alias name="x_kriging"/>
             </keyword>
-            <keyword  id="u_gaussian_process" name="u_gaussian_process" code="{N_mdm(utype,reliabilitySearchType_EGRA_U)}" label="u_gaussian_process"   >
+            <keyword  id="u_gaussian_process" name="u_gaussian_process" code="{N_mdm(utype,subMethod_SUBMETHOD_EGRA_U)}" label="u_gaussian_process"   >
               <alias name="u_kriging"/>
             </keyword>
           </oneOf>

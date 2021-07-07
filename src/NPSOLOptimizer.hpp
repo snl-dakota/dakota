@@ -102,8 +102,7 @@ public:
   NPSOLOptimizer(Model& model);
 
   /// alternate constructor for instantiations "on the fly"
-  NPSOLOptimizer(Model& model, const int& derivative_level,
-    const Real& conv_tol);
+  NPSOLOptimizer(Model& model, int derivative_level, Real conv_tol);
 
   /// alternate constructor for instantiations "on the fly"
   NPSOLOptimizer(const RealVector& initial_point,
@@ -116,7 +115,7 @@ public:
     void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
     void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
 			   double*, int&),
-    const int& derivative_level, const Real& conv_tol);
+    int derivative_level, Real conv_tol);
 
   /// alternate constructor for instantiations "on the fly" with additional NPSOL settings
   NPSOLOptimizer(const RealVector& initial_point, 
@@ -132,7 +131,7 @@ public:
   void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
   void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
        double*, int&),
-  const int& derivative_level, const Real& conv_tol,
+  int derivative_level, Real conv_tol,
   const Real function_precision, const Real feas_tol, 
   const Real lin_feas_tol, const Real nonlin_feas_tol);
 
@@ -239,7 +238,7 @@ linear_constraints(const RealMatrix& lin_ineq_coeffs,
 
 NPSOLOptimizer* new_NPSOLOptimizer(ProblemDescDB& problem_db, Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model);
-NPSOLOptimizer* new_NPSOLOptimizer(Model& model, const int&, const Real&);
+NPSOLOptimizer* new_NPSOLOptimizer(Model& model, int, Real);
 NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& initial_point,
     const RealVector& var_lower_bnds,
     const RealVector& var_upper_bnds,
@@ -254,7 +253,7 @@ NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& initial_point,
     void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
     void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
 			   double*, int&),
-    const int& derivative_level, const Real& conv_tol);
+    int derivative_level, Real conv_tol);
 
 #endif // HAVE_DYNLIB_FACTORIES
 
