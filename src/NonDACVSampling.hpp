@@ -67,11 +67,11 @@ protected:
 
   void shared_increment(size_t iter);
   void shared_approx_increment(size_t iter);
-  bool approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_lf,
+  bool approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_L,
 			const RealVector& hf_targets, size_t iter, size_t start,
 			size_t end);
   bool approx_increment(const RealVector& avg_eval_ratios,
-			const Sizet2DArray& N_lf, Real hf_target,
+			const Sizet2DArray& N_L, Real hf_target,
 			size_t iter, size_t start, size_t end);
 
   void allocate_budget(const RealMatrix& eval_ratios, const RealVector& cost,
