@@ -1415,8 +1415,8 @@ Real NonDACVSampling::objective_evaluator(const RealVector& avg_eval_ratios)
 void NonDACVSampling::
 gradient_evaluator(const RealVector& avg_eval_ratios, RealVector& grad_f)
 {
-  // This is still called for deriv level 0 to identify the set of terms that
-  // must be numerically estimated.
+  // This would still be called for deriv level 0 to identify the set of terms
+  // that must be numerically estimated.
 
   //Cerr << "Warning: gradient of the objective not supported." << std::endl;
   //abort_handler(METHOD_ERROR);
@@ -1437,7 +1437,6 @@ npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
   RealVector x_rv(Teuchos::View, x, n);
   if (asv_request & 1)
     f = acvInstance->objective_evaluator(x_rv);
-  // Rely on numerical gradients for R_sq
   //if (asv_request & 2) {
   //  RealVector grad_f_rv(Teuchos::View, grad_f, n);
   //  acvInstance->gradient_evaluator(x_rv, grad_f_rv);
@@ -1465,11 +1464,11 @@ npsol_constraint_evaluator(int& mode, int& ncnln, int& n, int& nrowj,
 			   int* needc, double* x, double* c, double* cjac,
 			   int& nstate)
 {
+  // Current formulation takes advantage of linear constraints
   Cout << "Error: nonlinear constraints not specified." << std::endl;
   abort_handler(METHOD_ERROR);
 
-  /* Current formulation takes advantage of linear constraints
-
+  /*
   // inequality constraint: Sum(w_i r_i) <= budget / N_H - cost_H:
   const RealVector& cost = acvInstance->approxCost;
 
@@ -1491,6 +1490,10 @@ npsol_constraint_evaluator(int& mode, int& ncnln, int& n, int& nrowj,
 void NonDACVSampling::
 optpp_constraint_evaluator(int mode, int n, const RealVector& x, RealVector& g,
 			   RealMatrix& grad_g, int& result_mode)
-{ } // Current formulation takes advantage of linear constraints
+{
+  // Current formulation takes advantage of linear constraints
+  Cout << "Error: nonlinear constraints not specified." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
 
 } // namespace Dakota

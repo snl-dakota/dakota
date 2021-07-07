@@ -161,7 +161,10 @@ protected:
 };
 
 
-inline SOLBase::SOLBase()  { }
+inline SOLBase::SOLBase():
+  linConstraintMatrixF77(NULL), upperFactorHessianF77(NULL),
+  constraintJacMatrixF77(NULL)
+{ }
 
 
 inline SOLBase::~SOLBase() { }

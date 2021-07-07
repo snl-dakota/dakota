@@ -143,9 +143,9 @@ replace_linear_arrays(size_t num_cv, size_t num_nln_con,
 void SOLBase::deallocate_arrays()
 {
   // Delete double* matrix allocations
-  delete [] linConstraintMatrixF77;
-  delete [] upperFactorHessianF77;
-  delete [] constraintJacMatrixF77;
+  delete [] linConstraintMatrixF77;  linConstraintMatrixF77 = NULL;
+  delete [] upperFactorHessianF77;   upperFactorHessianF77  = NULL;
+  delete [] constraintJacMatrixF77;  constraintJacMatrixF77 = NULL;
 }
 
 
