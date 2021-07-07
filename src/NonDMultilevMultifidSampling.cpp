@@ -50,7 +50,7 @@ NonDMultilevMultifidSampling(ProblemDescDB& problem_db, Model& model):
 
 void NonDMultilevMultifidSampling::pre_run()
 {
-  NonDSampling::pre_run();
+  NonDEnsembleSampling::pre_run();
 
   // reset sample counters to 0
   size_t i, j, num_mf = NLev.size(), num_lev;
@@ -80,9 +80,6 @@ void NonDMultilevMultifidSampling::core_run()
 
   // multiple model forms (currently limited to 2) + multiple solutions levels
 
-  // remove default key (empty activeKey) since this interferes with approx
-  // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
-  iteratedModel.clear_model_keys();
   // prefer ML over MF if both available
   //iteratedModel.multifidelity_precedence(false);
 
@@ -148,7 +145,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
   RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
-  mlmfIter = 0;  equivHFEvals = 0.;
   while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
@@ -383,7 +379,6 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
   RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
-  mlmfIter = 0;  equivHFEvals = 0.;
   while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 

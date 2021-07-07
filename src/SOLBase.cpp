@@ -80,9 +80,9 @@ allocate_arrays(int num_cv, size_t num_nln_con,
   linConstraintArraySize = (num_lin_con) ? num_lin_con : 1;
 
   // Matrix memory passed to Fortran must be contiguous
-  if (linConstraintMatrixF77) delete linConstraintMatrixF77;
-  if (upperFactorHessianF77)  delete upperFactorHessianF77;
-  if (constraintJacMatrixF77) delete constraintJacMatrixF77;
+  if (linConstraintMatrixF77) delete [] linConstraintMatrixF77;
+  if (upperFactorHessianF77)  delete [] upperFactorHessianF77;
+  if (constraintJacMatrixF77) delete [] constraintJacMatrixF77;
   linConstraintMatrixF77 = new double[linConstraintArraySize * num_cv];
   upperFactorHessianF77  = new double[num_cv * num_cv];
   constraintJacMatrixF77 = new double[nlnConstraintArraySize * num_cv];
@@ -119,7 +119,7 @@ replace_linear_arrays(size_t num_cv, size_t num_nln_con,
   linConstraintArraySize = (num_lin_con) ? num_lin_con : 1;
 
   // Matrix memory passed to Fortran must be contiguous
-  if (linConstraintMatrixF77) delete linConstraintMatrixF77;
+  if (linConstraintMatrixF77) delete [] linConstraintMatrixF77;
   linConstraintMatrixF77 = new double[linConstraintArraySize * num_cv];
 
   // Populate linConstraintMatrixF77 with linear coefficients. Loop order is

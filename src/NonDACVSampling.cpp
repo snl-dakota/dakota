@@ -164,7 +164,7 @@ bool NonDACVSampling::resize()
 
 void NonDACVSampling::pre_run()
 {
-  NonDSampling::pre_run();
+  NonDEnsembleSampling::pre_run();
 
   // reset sample counters to 0
   acvInstance = this;
@@ -176,9 +176,6 @@ void NonDACVSampling::pre_run()
     each of which may contain multiple discretization levels. */
 void NonDACVSampling::core_run()
 {
-  // remove default key (empty activeKey) since this interferes with approx
-  // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
-  iteratedModel.clear_model_keys();
   // prefer MF over ML if both available
   iteratedModel.multifidelity_precedence(true);
   // assign an aggregate model key that persists for core_run()
@@ -229,7 +226,6 @@ void NonDACVSampling::multifidelity_mc()
   load_pilot_sample(pilotSamples, num_steps, delta_N);
   numSamples = delta_N[numApprox]; // last in array
 
-  mlmfIter = 0;
   while (numSamples && mlmfIter <= maxIterations) {
 
     // ------------------------------------------------------------------------
@@ -327,7 +323,6 @@ void NonDACVSampling::approximate_control_variate()
   numSamples = hf_shared_pilot = delta_N[numApprox]; // last in array
   lf_shared_pilot = find_min(delta_N, start, numApprox-1);
 
-  mlmfIter = 0;
   while (numSamples && mlmfIter <= maxIterations) {
 
     // ------------------------------------------------------------------------

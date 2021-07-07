@@ -36,7 +36,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
-  mlmfIter(0),
+  mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
@@ -182,6 +182,19 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
 
   TabularIO::close_file(tabular_stream, tabular_filename, context_message);
   //write_precision = save_wp; // restore
+}
+
+
+void NonDEnsembleSampling::pre_run()
+{
+  NonDSampling::pre_run();
+
+  // remove default key (empty activeKey) since this interferes with approx
+  // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
+  iteratedModel.clear_model_keys();
+
+  // reset shared accumulators
+  mlmfIter = 0;  equivHFEvals = 0.;
 }
 
 

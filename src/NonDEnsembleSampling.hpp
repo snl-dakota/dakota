@@ -54,7 +54,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
+  void pre_run();
   //void core_run();
   void post_run(std::ostream& s);
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);

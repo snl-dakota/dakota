@@ -50,9 +50,6 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
     each of which may contain multiple discretization levels. */
 void NonDMultifidelitySampling::core_run()
 {
-  // remove default key (empty activeKey) since this interferes with approx
-  // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
-  iteratedModel.clear_model_keys();
   // prefer ML over MF if both available
   iteratedModel.multifidelity_precedence(true);
 
@@ -136,7 +133,6 @@ void NonDMultifidelitySampling::control_variate_mc()
   size_t hf_sample_incr = std::min(delta_N_l[lf_form], delta_N_l[hf_form]);
   numSamples = hf_sample_incr;
 
-  mlmfIter = 0;  equivHFEvals = 0.;
   while (numSamples && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 

@@ -80,9 +80,6 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     each of which may contain multiple discretization levels. */
 void NonDMultilevelSampling::core_run()
 {
-  // remove default key (empty activeKey) since this interferes with approx
-  // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
-  iteratedModel.clear_model_keys();
   // prefer ML over MF if both available
   iteratedModel.multifidelity_precedence(false);
 
@@ -162,7 +159,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     N_l[step].assign(numFunctions, 0);
 
   // now converge on sample counts per level (N_l)
-  mlmfIter = 0;  equivHFEvals = 0.;
   while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
@@ -322,7 +318,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     convergenceTolVec[qoi] = convergenceTol;
 
   // now converge on sample counts per level (N_l)
-  mlmfIter = 0;  equivHFEvals = 0.;
   while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
     for (step=0; step<num_steps; ++step) {
