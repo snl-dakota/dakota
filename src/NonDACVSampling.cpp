@@ -392,7 +392,7 @@ void NonDACVSampling::approximate_control_variate()
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
-  acv_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH, sum_HH,
+  acv_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 		  avg_eval_ratios, N_L, N_H, N_LL, N_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
@@ -1299,7 +1299,7 @@ mfmc_raw_moments(IntRealMatrixMap& sum_L_shared,
 	compute_mfmc_control(sum_L_sh_m(qoi,approx), sum_H_mq,
 			     sum_LL_m(qoi,approx), sum_LH_m(qoi,approx),
 			     /*N_L_sh_aq*/N_H_q, N_H_q, N_LH_aq, beta); //shared
-	if (outputLevel >= NORMAL_OUTPUT)
+	//if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1
 	       << ": control variate beta = " << std::setw(9) << beta << '\n';
 	// For MFMC, shared accumulators and counts telescope
@@ -1316,10 +1316,10 @@ mfmc_raw_moments(IntRealMatrixMap& sum_L_shared,
 void NonDACVSampling::
 acv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
 		IntRealVectorMap& sum_H, IntRealSymMatrixArrayMap& sum_LL,
-		IntRealMatrixMap& sum_LH, RealVector& sum_HH,
-		const RealVector& avg_eval_ratios, const Sizet2DArray& N_L,
-		const SizetArray& N_H, const SizetSymMatrixArray& N_LL,
-		const Sizet2DArray& N_LH, RealMatrix& H_raw_mom)
+		IntRealMatrixMap& sum_LH, const RealVector& avg_eval_ratios,
+		const Sizet2DArray& N_L, const SizetArray& N_H,
+		const SizetSymMatrixArray& N_LL, const Sizet2DArray& N_LH,
+		RealMatrix& H_raw_mom)
 {
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
 
@@ -1337,12 +1337,11 @@ acv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
     if (outputLevel >= NORMAL_OUTPUT) Cout << "Moment " << mom << ":\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
       Real sum_H_mq = sum_H_m[qoi];
-      if (mom == 1) // 
-	compute_acv_control(covLL[qoi], F, covLH, qoi, varH[qoi], beta);
-      else // compute variances/covariances from accumulated sums
+      if (mom == 1) // variances/covariances already computed for mean estimator
+	compute_acv_control(covLL[qoi], F, covLH, qoi, beta);
+      else // compute variances/covariances for higher-order moment estimators
 	compute_acv_control(sum_L_sh_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
-			    sum_HH[qoi], N_L, N_H[qoi], N_LL[qoi], N_LH, F,
-			    qoi, beta);
+			    N_L, N_H[qoi], N_LL[qoi], N_LH, F, qoi, beta); // *** need to all be based on shared counts *** TO DO: special care with shared_approx_increment()
 
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
       N_H_q = N_H[qoi];
@@ -1352,7 +1351,7 @@ acv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
 	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
 	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
 	// For ACV, shared counts are fixed at N_H for all approx
-	apply_control(sum_L_sh_m(qoi,approx),  N_H_q,            //  shared
+	apply_control(sum_L_sh_m(qoi,approx),  N_H_q,            //  shared *** TO DO: H may have different failures than shared L ***
 		      sum_L_ref_m(qoi,approx), N_L[approx][qoi], // refined
 		      beta[approx], H_raw_mq);
       }
@@ -1392,18 +1391,18 @@ Real NonDACVSampling::objective_evaluator(const RealVector& avg_eval_ratios)
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     invert_CF(covLL[qoi], F, CF_inv);
     //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
-    compute_A_vector(F, covLH, qoi, A);
+    compute_A_vector(F, covLH, qoi, A);     // defer c-bar scaling
     //Cout << "Objective eval: A =\n" << A << std::endl;
-    compute_Rsq(CF_inv, A, varH[qoi], R_sq[qoi]);
+    compute_Rsq(CF_inv, A, varH[qoi], R_sq[qoi]); // apply scaling^2
     //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
     //     << " Rsq[" << qoi << "] =\n" << R_sq[qoi] << std::endl;
   }
 
+  Real obj = -std::log(average(R_sq));
   //if (outputLevel >= DEBUG_OUTPUT)
     Cout << "objective_evaluator: design vars:\n" << avg_eval_ratios
-	 << "R squared:\n" << R_sq
-	 << " -log(average(Rsq)) = " << -std::log(average(R_sq)) << std::endl;
-  return -std::log(average(R_sq)); // maximize R_sq; use log to flatten contours
+	 << "R squared:\n" << R_sq << "-log(avg(Rsq)) = " << obj << std::endl;
+  return obj; // maximize R_sq; use log to flatten contours
 }
 
 

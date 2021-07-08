@@ -211,6 +211,8 @@ private:
 		 RealSymMatrix& CF_inv);
   void compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
 			size_t qoi, RealVector& A);
+  void compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
+			size_t qoi, Real var_H_q, RealVector& A);
   void compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A,
 		   Real var_H_q, Real& R_sq_q);
 
@@ -223,7 +225,7 @@ private:
   void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
 		       IntRealSymMatrixArrayMap& sum_LL,
-		       IntRealMatrixMap& sum_LH, RealVector& sum_HH,
+		       IntRealMatrixMap& sum_LH,
 		       const RealVector& avg_eval_ratios,
 		       const Sizet2DArray& N_L, const SizetArray& N_H,
 		       const SizetSymMatrixArray& N_LL,
@@ -232,12 +234,12 @@ private:
   void compute_mfmc_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			    size_t N_L, size_t N_H, size_t N_LH, Real& beta);
   void compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
-			   const RealMatrix& cov_LH, size_t qoi, Real var_H_q,
+			   const RealMatrix& cov_LH, size_t qoi,
 			   RealVector& beta);
   void compute_acv_control(RealMatrix& sum_L, Real sum_H_q,
 			   RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
-			   Real sum_HH_q, const Sizet2DArray& N_L,
-			   size_t N_H_q, const SizetSymMatrix& N_LL_q,
+			   const Sizet2DArray& N_L, size_t N_H_q,
+			   const SizetSymMatrix& N_LL_q,
 			   const Sizet2DArray& N_LH, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
 
@@ -495,6 +497,9 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
   cov_Q1Q2 = (sum_Q1Q2 / N_Q1Q2 - mu_Q1 * mu_Q2) * bessel_corr_Q1Q2; // *** TO DO: review Bessel correction online --> not the same N to pull out over N-1 ...
+  //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " N_Q1 = " << N_Q1
+  //     << " sum_Q2 = " << sum_Q2 << " N_Q2 = " << N_Q2
+  //     << " sum_Q1Q2 = " << sum_Q1Q2 << " N_Q1Q2 = " << N_Q1Q2 << std::endl;
 }
 
 
@@ -509,6 +514,8 @@ compute_variance(Real sum_Q, Real sum_QQ, size_t N_Q, Real& var_Q)
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
   var_Q = (sum_QQ / N_Q - mu_Q * mu_Q) * bessel_corr_Q;
+  //Cout << "compute_variance: sum_Q = " << sum_Q << " N_Q = " << N_Q
+  //     << " sum_QQ = " << sum_QQ << " N_QQ = " << N_Q << std::endl;
 }
 
 
@@ -639,7 +646,16 @@ compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
   if (A.length() != num_approx) A.sizeUninitialized(num_approx);
 
   for (i=0; i<num_approx; ++i) // diag(F) o c-bar
-    A[i] = F(i,i) * c(qoi, i); // / std::sqrt(varH[qoi]); defer c-bar for Rsq
+    A[i] = F(i,i) * c(qoi, i); // this version defers c-bar scaling
+}
+
+
+inline void NonDACVSampling::
+compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
+		 size_t qoi, Real var_H_q, RealVector& A)
+{
+  compute_A_vector(F, c, qoi, A); // first use unscaled overload
+  A.scale(1./std::sqrt(var_H_q)); // scale from c to c-bar
 }
 
 
@@ -664,50 +680,46 @@ compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A, Real var_H_q,
 
 inline void NonDACVSampling::
 compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
-		    const RealMatrix& cov_LH, size_t qoi, Real var_H_q,
-		    RealVector& beta)
+		    const RealMatrix& cov_LH, size_t qoi, RealVector& beta)
 {
   RealSymMatrix CF_inv;  RealVector A;
   invert_CF(cov_LL, F, CF_inv);
-  compute_A_vector(F, cov_LH, qoi, A);
-  A.scale(1./std::sqrt(var_H_q)); // from c to c-bar
+  //Cout << "compute_acv_control qoi " << qoi+1 << ": CF_inv\n" << CF_inv;
+  compute_A_vector(F, cov_LH, qoi, A); // no scaling (uses c, not c-bar)
+  //Cout << "compute_acv_control qoi " << qoi+1 << ": A\n" << A;
 
   size_t n = F.numRows();
   if (beta.length() != n) beta.size(n);
   beta.multiply(Teuchos::LEFT_SIDE, 1., CF_inv, A, 0.); // for SymMatrix mult
-  //for (i=0; i<n; ++i)
-  //  for (j=0; j<n; ++j)
-  //    beta[i] += CF_inv(i,j) * A[j];
+  //Cout << "compute_acv_control qoi " << qoi+1 << ": beta\n" << beta;
 }
 
 
 inline void NonDACVSampling::
 compute_acv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
-		    RealMatrix& sum_LH, Real sum_HH_q, const Sizet2DArray& N_L,
-		    size_t N_H_q, const SizetSymMatrix& N_LL_q,
-		    const Sizet2DArray& N_LH, const RealSymMatrix& F,
-		    size_t qoi, RealVector& beta)
+		    RealMatrix& sum_LH, const Sizet2DArray& N_L, size_t N_H_q,
+		    const SizetSymMatrix& N_LL_q, const Sizet2DArray& N_LH,
+		    const RealSymMatrix& F, size_t qoi, RealVector& beta)
 {
   // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
   // > cov_LH is sized for all qoi but only 1 row is used
-  size_t approx, approx2, N_L_aq;  Real var_H_q, sum_L_aq;
+  size_t approx, approx2, N_L_aq;  Real sum_L_aq;
   RealSymMatrix cov_LL(numApprox); RealMatrix cov_LH(numFunctions, numApprox);
 
-  compute_variance(sum_H_q, sum_HH_q, N_H_q, var_H_q);
   for (approx=0; approx<numApprox; ++approx) {
     N_L_aq = N_L[approx][qoi];  sum_L_aq = sum_L(qoi,approx);
-    compute_covariance(sum_L_aq, sum_H_q, sum_LH(qoi,approx), N_L_aq,
+    compute_covariance(sum_L_aq, sum_H_q, sum_LH(qoi,approx), /*N_L_aq*/N_H_q,
 		       N_H_q, N_LH[approx][qoi], cov_LH(qoi,approx));
-    compute_variance(sum_L_aq, sum_LL_q(approx,approx), N_L_aq,
+    compute_variance(sum_L_aq, sum_LL_q(approx,approx), /*N_L_aq*/N_H_q,
 		     cov_LL(approx,approx));
     for (approx2=0; approx2<approx; ++approx2)
       compute_covariance(sum_L_aq, sum_L(qoi,approx2), sum_LL_q(approx,approx2),
-			 N_L_aq, N_L[approx2][qoi], N_LL_q(approx,approx2),
+			 /*N_L_aq*/N_H_q, /*N_L[approx2][qoi]*/N_H_q, N_LL_q(approx,approx2),
 			 cov_LL(approx,approx2));
   }
 
   // forward to overload:
-  compute_acv_control(cov_LL, F, cov_LH, qoi, var_H_q, beta);
+  compute_acv_control(cov_LL, F, cov_LH, qoi, beta);
 }
 
 
