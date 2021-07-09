@@ -1,3 +1,39 @@
+# More widely distributed packages exclude more content
+# So smaller number implies less content
+set(DAKOTA_DISTRO_snlfull 3)   # Complete checkout
+set(DAKOTA_DISTRO_snlsuper 2)  # Less some of local/
+set(DAKOTA_DISTRO_snlweb 1)    # Also less DOT
+set(DAKOTA_DISTRO_public 0)    # Also less NPSOL, NLPQL
+
+# 0-based faked enum to map integers to strings
+set(DAKOTA_DISTRO_enum "public" "snlweb" "snlsuper" "snlfull")
+
+# Transition wrapper to allow distro as integer or string
+function(dakota_distro_as_integer _retval_distro_int)
+  if(DAKOTA_DISTRO STREQUAL "snlfull" OR DAKOTA_DISTRO STREQUAL "snlsuper" OR
+      DAKOTA_DISTRO STREQUAL "snlweb" OR DAKOTA_DISTRO STREQUAL "public")
+    set(${_retval_distro_int} "${DAKOTA_DISTRO_${DAKOTA_DISTRO}}" PARENT_SCOPE)
+  elseif(DAKOTA_DISTRO GREATER_EQUAL 0 AND DAKOTA_DISTRO LESS_EQUAL 3)
+    set(${_retval_distro_int} "${DAKOTA_DISTRO}" PARENT_SCOPE)
+  else()
+    message(FATAL_ERROR "Invalid DAKOTA_DISTRO = ${DAKOTA_DISTRO}")
+  endif()
+endfunction()
+
+# Transition wrapper to allow distro as integer or string
+function(dakota_distro_as_string _retval_distro_string)
+  if(DAKOTA_DISTRO STREQUAL "snlfull" OR DAKOTA_DISTRO STREQUAL "snlsuper" OR
+      DAKOTA_DISTRO STREQUAL "snlweb" OR DAKOTA_DISTRO STREQUAL "public")
+    set(${_retval_distro_string} "${DAKOTA_DISTRO}" PARENT_SCOPE)
+  elseif(DAKOTA_DISTRO GREATER_EQUAL 0 AND DAKOTA_DISTRO LESS_EQUAL 3)
+    list(GET DAKOTA_DISTRO_enum ${DAKOTA_DISTRO} _distro_str)
+    set(${_retval_distro_string} "${_distro_str}" PARENT_SCOPE)
+  else()
+    message(FATAL_ERROR "Invalid DAKOTA_DISTRO = ${DAKOTA_DISTRO}")
+  endif()
+endfunction()
+
+
 # Initialize basic CPack settings unconditionally
 macro(dakota_cpack_initialize)
   # Initial CPack Settings.  Done here as affects configuration in packages/
@@ -41,19 +77,21 @@ macro(dakota_cpack_prune_distro)
     "^${Dakota_SOURCE_DIR}/packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/"
     )
 
+  dakota_distro_as_integer(_dakota_distro_integer)
+
   # Only internal full (developer version) has these things
-  if(DAKOTA_DISTRO LESS ${DAKOTA_InternalFull})
+  if(_dakota_distro_integer LESS ${DAKOTA_DISTRO_snlfull})
     list(APPEND CPACK_SOURCE_IGNORE_FILES "^${Dakota_SOURCE_DIR}/local/")
   endif()
 
-  if(DAKOTA_DISTRO LESS ${DAKOTA_InternalSupervised})
+  if(_dakota_distro_integer LESS ${DAKOTA_DISTRO_snlsuper})
     message(STATUS "Removing DOT for less than InternalSupervised build")
     # When building InternalWeb, don't want DOT in the binaries
     # Be aggressive and remove from source tree
     file(REMOVE_RECURSE ${Dakota_SOURCE_DIR}/packages/local/DOT/)
   endif()
 
-  if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
+  if(_dakota_distro_integer LESS ${DAKOTA_DISTRO_snlweb})
     message(STATUS "Removing NLPQL, NPSOL for less than InternalWeb build")
     # When building ExternalWeb, don't want NLPQL, NPSOL in the binaries
     # Be aggressive and remove from source tree

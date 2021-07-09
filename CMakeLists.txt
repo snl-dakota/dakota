@@ -97,22 +97,18 @@ else()
 endif()
 
 
-# More widely distributed packages exclude more content
-# So smaller number implies less content
-set(DAKOTA_InternalFull 3)       # Complete checkout
-set(DAKOTA_InternalSupervised 2) # Less some of local/
-set(DAKOTA_InternalWeb 1)        # Also less DOT
-set(DAKOTA_ExternalWeb 0)        # Also less NPSOL, NLPQL
+
+include(DakotaCPack)
 
 # The permission level of the distribution (to be made an option)
 # TODO: change default to DAKOTA_ExternalWeb?
 # BMA TODO: Publish this option in options directory
-set(DAKOTA_DISTRO ${DAKOTA_InternalFull} CACHE STRING
-  "Dakota Distribution Type")
+if(NOT DEFINED DAKOTA_DISTRO)
+  set(DAKOTA_DISTRO "snlfull" CACHE STRING "Dakota Distribution Type")
+endif()
 
 # Initial CPack settings and source exclusions
 # Depends on DAKOTA_DISTRO for file filtering
-include(DakotaCPack)
 dakota_cpack_initialize()
 
 # Prune local and non-distributable TPLs based on DAKOTA_DISTRO
