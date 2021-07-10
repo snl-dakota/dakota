@@ -474,7 +474,7 @@ query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
   ModelLIter m_iter;
   if (multilevel) {
     ModelLIter m_iter = --sub_models.end(); // HF model
-    cost = m_iter->solution_level_costs();      // can be empty
+    cost = m_iter->solution_level_costs();  // can be empty
     if (cost.length() != num_steps)
       cost_defined = false;
   }
