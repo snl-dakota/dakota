@@ -34,7 +34,7 @@ namespace Dakota {
 NonDEnsembleSampling::
 NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
-  pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
+  //pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
@@ -60,25 +60,6 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   // method-specific default: don't let allocator get stuck in fine-tuning
   if (maxIterations == SZ_MAX) maxIterations = 25;
   //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // inf is good
-
-  if ( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples),
-		     [](int i){ return i > 0; }) ) {
-    Cerr << "\nError: Some levels have pilot samples of size 0 in "
-       << method_enum_to_string(methodName) << '.' << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  size_t pilot_size = pilotSamples.size();
-  switch (pilot_size) {
-    case 0: maxEvalConcurrency *= 100;             break;
-  //case 1: maxEvalConcurrency *= pilotSamples[0]; break;
-    default: {
-      size_t max_ps = find_max(pilotSamples);
-      if (max_ps)
-        maxEvalConcurrency *= max_ps;
-      break;
-    }
-  }
 }
 
 

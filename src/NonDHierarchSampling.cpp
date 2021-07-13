@@ -85,6 +85,22 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   }
   if (err_flag)
     abort_handler(METHOD_ERROR);
+
+  pilotSamples = problem_db.get_sza("method.nond.pilot_samples");
+  if ( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples),
+		     [](int i){ return i > 0; }) ) {
+    Cerr << "\nError: Some levels have pilot samples of size 0 in "
+       << method_enum_to_string(methodName) << '.' << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  switch (pilotSamples.size()) {
+    case 0:  maxEvalConcurrency *= 100;  break;
+    default: {
+      size_t max_ps = find_max(pilotSamples);
+      if (max_ps) maxEvalConcurrency *= max_ps;
+      break;
+    }
+  }
 }
 
 

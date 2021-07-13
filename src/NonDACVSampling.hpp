@@ -92,6 +92,7 @@ protected:
 			 const RealVector& mse_ratios,  const RealVector& var_H,
 			 const SizetArray& N_H, const RealVector& mse_iter0,
 			 RealVector& hf_targets);
+  void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
 
   void compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 		      const RealMatrix& sum_LL,       const RealMatrix& sum_LH,
@@ -494,6 +495,16 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     { equivHFEvals += new_samp; --end; }
   for (i=start; i<end; ++i)
     equivHFEvals += (Real)new_samp * cost[i] / cost_ref;
+}
+
+
+inline void NonDACVSampling::
+update_hf_targets(const SizetArray& N_H, RealVector& hf_targets)
+{
+  size_t i, len = N_H.size();
+  if (hf_targets.length() != len) hf_targets.sizeUninitialized(len);
+  for (i=0; i<len; ++i)
+    hf_targets[i] = (Real)N_H[i];
 }
 
 

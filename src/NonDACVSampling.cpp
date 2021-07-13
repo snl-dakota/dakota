@@ -45,7 +45,8 @@ NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDEnsembleSampling(problem_db, model),
   acvSubMethod(problem_db.get_ushort("method.sub_method")),
-  optSubProblemForm(R_AND_N_NONLINEAR_CONSTRAINT) // *** TO DO: also support option for fixed N_H ("fixed_truth_evaluations" or similar) + equivHF budget
+  optSubProblemForm(R_AND_N_NONLINEAR_CONSTRAINT)
+  //optSubProblemForm(R_ONLY_LINEAR_CONSTRAINT) // option for prescribed N_H ("fixed_truth_evaluations" or similar) + equivHF budget
 {
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -89,6 +90,11 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   numApprox = num_steps - 1;
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   configure_cost(num_steps, multilev, sequenceCost);
+  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
+		    num_steps, pilotSamples);
+
+  size_t max_ps = find_max(pilotSamples);
+  if (max_ps) maxEvalConcurrency *= max_ps;
 
   // Use NPSOL/OPT++ with obj/constr callbacks to minmize estimator variance
   // > TO DO: add sqp | nip specification
@@ -125,9 +131,10 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
       nln_ineq_ub.sizeUninitialized(1); nln_ineq_ub[0] = (Real)maxFunctionEvals;
       break;
     }
-    RealVector x0(num_cdv), x_lb(num_cdv), x_ub(num_cdv);
-    x0   = 1.; // updated in compute_ratios() with warm start || MFMC init guess
-    x_lb = 1.; x_ub = DBL_MAX; // no upper bounds
+    RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false);
+    x0 = 1.;  x_lb = 1.;  x_ub = DBL_MAX; // no upper bounds
+    if (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT)
+      x0[numApprox] = x_lb[numApprox] = pilotSamples[numApprox]; // pilot <= N* <= inf
 
     switch (sub_optimizer_select(
 	    probDescDB.get_ushort("method.nond.opt_subproblem_solver"))) {
@@ -231,14 +238,13 @@ void NonDACVSampling::multifidelity_mc()
   IntRealMatrixMap sum_L_shared, sum_L_refined, sum_LL, sum_LH;
   RealVector sum_HH, var_H, mse_iter0, mse_ratios, hf_targets;
   RealMatrix rho2_LH, eval_ratios;
-  SizetArray N_H, delta_N; Sizet2DArray N_L_shared, N_L_refined, N_LH;
+  SizetArray N_H; Sizet2DArray N_L_shared, N_L_refined, N_LH;
   size_t num_steps = numApprox + 1;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,sum_HH);
   initialize_mf_counts(N_L_shared, N_L_refined, N_H, N_LH);
 
   // Initialize for pilot sample
-  load_pilot_sample(pilotSamples, num_steps, delta_N);
-  numSamples = delta_N[numApprox]; // last in array
+  numSamples = pilotSamples[numApprox]; // last in array
 
   while (numSamples && mlmfIter <= maxIterations) {
 
@@ -289,6 +295,7 @@ void NonDACVSampling::multifidelity_mc()
 
   // Pyramid/nested sampling: at step i, we sample approximation range
   // [0,numApprox-1-i] using the delta relative to the previous step
+  if (hf_targets.empty()) update_hf_targets(N_H, hf_targets); // pilot only
   for (size_t approx=numApprox; approx>0; --approx) {
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
     if (approx_increment(eval_ratios, N_L_refined, hf_targets, mlmfIter,
@@ -326,8 +333,8 @@ void NonDACVSampling::approximate_control_variate()
   IntRealMatrixMap sum_L_shared, sum_L_refined, sum_LH;
   IntRealSymMatrixArrayMap sum_LL;
   RealVector sum_HH, mse_iter0, avg_eval_ratios;
-  Real avg_hf_target, mse_ratio;  size_t num_steps = numApprox + 1;
-  SizetArray N_H, delta_N;  Sizet2DArray N_L_shared, N_L_refined, N_LH;
+  Real avg_hf_target = 0., mse_ratio;  size_t num_steps = numApprox + 1;
+  SizetArray N_H;  Sizet2DArray N_L_shared, N_L_refined, N_LH;
   SizetSymMatrixArray N_LL;
   initialize_acv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL,sum_LH,sum_HH);
   initialize_acv_counts(N_L_shared, N_L_refined, N_H, N_LL, N_LH);
@@ -335,9 +342,8 @@ void NonDACVSampling::approximate_control_variate()
 
   // Initialize for pilot sample
   size_t hf_shared_pilot, lf_shared_pilot, start = 0;
-  load_pilot_sample(pilotSamples, num_steps, delta_N);
-  numSamples = hf_shared_pilot = delta_N[numApprox]; // last in array
-  lf_shared_pilot = find_min(delta_N, start, numApprox-1);
+  numSamples = hf_shared_pilot = pilotSamples[numApprox]; // last in array
+  lf_shared_pilot = find_min(pilotSamples, start, numApprox-1);
 
   while (numSamples && mlmfIter <= maxIterations) {
 
@@ -411,6 +417,7 @@ void NonDACVSampling::approximate_control_variate()
 
   // Pyramid/nested sampling: at step i, we sample approximation range
   // [0,numApprox-1-i] using the delta relative to the previous step
+  if (avg_hf_target == 0.) avg_hf_target = average(N_H); // pilot only
   for (size_t approx=numApprox; approx>0; --approx) {
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
     start = (acvSubMethod == SUBMETHOD_ACV_IS) ? approx - 1 : 0;
@@ -1234,10 +1241,12 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
     // consider scaling prev soln to feasibility with updated N_H
     // (similar to NonDLocalRel)
   //}
-  varianceMinimizer.initial_point(avg_eval_ratios);
 
+  Real avg_N_H = average(N_H);
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: {
+    varianceMinimizer.initial_point(avg_eval_ratios);
+
     // set linear inequality constraint:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   \Sum_i w_i   r_i <= equivHF * w / N - w
@@ -1246,7 +1255,7 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
     RealMatrix lin_ineq_coeffs(1, numApprox), lin_eq_coeffs;
     Real cost_H = cost[numApprox];
     lin_ineq_lb[0] = -DBL_MAX; // no lower bound
-    lin_ineq_ub[0] = (Real)maxFunctionEvals / average(N_H) - 1.;
+    lin_ineq_ub[0] = (Real)maxFunctionEvals / avg_N_H - 1.;
     for (size_t approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
     // rather than update an iteratedModel, we must update the Minimizer for
@@ -1255,10 +1264,22 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
     break;
   }
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    // update x_lb[numApprox] = N_H pilot ?
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
+    RealVector cv0(numApprox+1); copy_data_partial(avg_eval_ratios, cv0, 0);
+    cv0[numApprox] = avg_N_H;
+    varianceMinimizer.initial_point(cv0);
+
+    /*
+    // Update x_lb[numApprox] = latest N_H pilot? (init to pilot in ctor)
     // or allow optimal profile to emerge from pilot?
+    size_t num_cdv = numApprox + 1; // evaluation ratios, N_H
+    RealVector  x_lb(num_cdv, false), x_ub(num_cdv, false);
+    x_lb = 1.;  x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5);
+    x_ub = DBL_MAX; // no upper bounds
+    varianceMinimizer.variable_bounds(x_lb, x_ub);
+    */
     break;
+  }
   }
 
   // solve the sub-problem to compute the optimal r* that maximizes
@@ -1274,14 +1295,14 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
   case R_AND_N_NONLINEAR_CONSTRAINT: {
     copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios);
     Real avg_hf_target = cv_star[numApprox]; // N*
-    numSamples = one_sided_delta(average(N_H), avg_hf_target);
+    numSamples = one_sided_delta(avg_N_H, avg_hf_target);
     break;
   }
   }
   // Recovery from optimizer provides average R^2 for individual QoI
   // (NonDACVSampling::objective_evaluator() maximizes std::log(average(R^2)))
   Real log_avg_Rsq = -varianceMinimizer.response_results().function_value(0);
-  Cout << "log_avg_Rsq = " << log_avg_Rsq << std::endl;
+  //Cout << "log_avg_Rsq = " << log_avg_Rsq << std::endl;
   mse_ratio = 1. - std::exp(log_avg_Rsq); // ratio = 1 - R^2
   // Alt approach: recompute scalar mse_ratio from avg_eval_ratios[approx]
   //for (size_t approx=0; approx<numApprox; ++approx)
@@ -1294,7 +1315,7 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
     //for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     //  Cout << "QoI " << qoi+1 << ": variance reduction factor = "
     //	     << mse_ratios[qoi] << '\n';
-    Cout << "Variance reduction factor = " << mse_ratio << std::endl;
+    Cout << "ACV variance / pilot MC variance = " << mse_ratio << std::endl;
   //}
 }
 
@@ -1466,8 +1487,8 @@ Real NonDACVSampling::objective_function(const RealVector& r_and_N)
 
   Real obj_fn = -std::log(average(R_sq));
   //if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "objective_evaluator: design vars:\n" << r_and_N << "R squared:\n"
-	 << R_sq << "-log(avg(Rsq)) = " << obj_fn << std::endl;
+    Cout << "objective_function: design vars:\n" << r_and_N << "R squared:\n"
+	 << R_sq << "obj = -log(avg(Rsq)) = " << obj_fn << '\n' << std::endl;
   return obj_fn; // maximize R_sq; use log to flatten contours
 }
 
@@ -1493,7 +1514,13 @@ Real NonDACVSampling::nonlinear_constraint(const RealVector& r_and_N)
   for (size_t i=0; i<numApprox; ++i)
     inner_prod += sequenceCost[i] * r_and_N[i];  //         Sum(w_i r_i)
   inner_prod /= sequenceCost[numApprox];         //         Sum(w_i r_i) / w
-  return r_and_N[numApprox] * (1. + inner_prod); // N ( 1 + Sum(w_i r_i) / w )
+
+  Real nln_con
+    = r_and_N[numApprox] * (1. + inner_prod);    // N ( 1 + Sum(w_i r_i) / w )
+  //if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "nonlinear_constraint: design vars:\n" << r_and_N
+	 << "budget constr = " << nln_con << std::endl;
+  return nln_con;
 }
 
 
@@ -1514,6 +1541,8 @@ nonlinear_constraint_gradient(const RealVector& r_and_N, RealVector& grad_c)
   for (i=0; i<numApprox; ++i)
     inner_prod += sequenceCost[i] * r_and_N[i]; //     Sum(w_i r_i)
   grad_c[r_len] = 1. + inner_prod / cost_H;     // 1 + Sum(w_i r_i) / w
+  //if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "nonlinear_constraint gradient:\n" << grad_c << std::endl;
 }
 
 
