@@ -46,7 +46,7 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDEnsembleSampling(problem_db, model),
   acvSubMethod(problem_db.get_ushort("method.sub_method")),
   optSubProblemForm(R_AND_N_NONLINEAR_CONSTRAINT)
-  //optSubProblemForm(R_ONLY_LINEAR_CONSTRAINT) // option for prescribed N_H ("fixed_truth_evaluations" or similar) + equivHF budget
+  //optSubProblemForm(R_ONLY_LINEAR_CONSTRAINT) // option for prescribed numH ("fixed_truth_evaluations" or similar) + equivHF budget
 {
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -101,11 +101,11 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   if (methodName != MULTIFIDELITY_SAMPLING) { // ACV_*
 
     // Notes on optimization:
-    // > Budget C is fixed and N_H is fixed for this iteration --> design vars
+    // > Budget C is fixed and numH is fixed for this iteration --> design vars
     //   are eval_ratios for 1:numApprox.  eval_ratio lower bounds are set to 1
     //   for now, but could also reflect the pilot sample investment (C and c
     //   can use different pilot sample sizes).
-    //   >> if N_H were also a design variable, then lower bounds should be 1.
+    //   >> if numH is also a design variable, then lower bounds should be 1.
     //   >> when an optimal ratio is 1, this model drops from apply_control(),
     //      although it may still influence the other model weightings.
     // > a linear inequality is used for the cost constraint and can also be
@@ -125,7 +125,7 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
       lin_ineq_coeffs = 1.; // updated in compute_ratios()
       break;
     case R_AND_N_NONLINEAR_CONSTRAINT:
-      num_cdv = numApprox + 1; // evaluation ratios and N_H
+      num_cdv = numApprox + 1; // evaluation ratios and numH
       deriv_level = 2; // user-supplied constraint Jacobian
       nln_ineq_lb.sizeUninitialized(1); nln_ineq_lb[0] = -DBL_MAX; // no low bnd
       nln_ineq_ub.sizeUninitialized(1); nln_ineq_ub[0] = (Real)maxFunctionEvals;
@@ -238,10 +238,10 @@ void NonDACVSampling::multifidelity_mc()
   IntRealMatrixMap sum_L_shared, sum_L_refined, sum_LL, sum_LH;
   RealVector sum_HH, var_H, mse_iter0, mse_ratios, hf_targets;
   RealMatrix rho2_LH, eval_ratios;
-  SizetArray N_H; Sizet2DArray N_L_shared, N_L_refined, N_LH;
+  Sizet2DArray N_L_shared, N_L_refined, N_LH;
   size_t num_steps = numApprox + 1;
   initialize_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,sum_HH);
-  initialize_mf_counts(N_L_shared, N_L_refined, N_H, N_LH);
+  initialize_mf_counts(N_L_shared, N_L_refined, numH, N_LH);
 
   // Initialize for pilot sample
   numSamples = pilotSamples[numApprox]; // last in array
@@ -254,7 +254,7 @@ void NonDACVSampling::multifidelity_mc()
     // Scale sample profile based on maxFunctionEvals or convergenceTol,
     // but not both (for now)
     if (mlmfIter)
-      update_hf_targets(eval_ratios, sequenceCost, mse_ratios, var_H, N_H,
+      update_hf_targets(eval_ratios, sequenceCost, mse_ratios, var_H, numH,
 			mse_iter0, hf_targets);
 
     // --------------------------------------------------------------------
@@ -263,7 +263,7 @@ void NonDACVSampling::multifidelity_mc()
     if (numSamples) {
       shared_increment(mlmfIter); // spans ALL models, blocking
       accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
-			 sum_HH, N_L_shared, N_L_refined, N_H, N_LH);
+			 sum_HH, N_L_shared, N_L_refined, numH, N_LH);
       increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
 
       // First, compute the LF/HF evaluation ratio using shared samples,
@@ -272,12 +272,12 @@ void NonDACVSampling::multifidelity_mc()
       // This ratio incorporates the anticipated variance reduction from the
       // upcoming application of eval_ratios.
       compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
-		     sequenceCost, N_L_shared, N_H, N_LH, var_H, rho2_LH,
+		     sequenceCost, N_L_shared, numH, N_LH, var_H, rho2_LH,
 		     eval_ratios, mse_ratios);
       // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
       // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-      if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_H, mse_iter0);
+      if (mlmfIter == 0) compute_mc_estimator_variance(var_H, numH, mse_iter0);
     }
     //else
     //  Cout << "\nMFMC iteration " << mlmfIter
@@ -286,16 +286,16 @@ void NonDACVSampling::multifidelity_mc()
     ++mlmfIter;
   }
 
-  // ---------------------------------------------------------------
-  // Compute N_L increments based on eval ratio applied to final N_H
-  // ---------------------------------------------------------------
+  // ----------------------------------------------------------------
+  // Compute N_L increments based on eval ratio applied to final numH
+  // ----------------------------------------------------------------
   // Note: these results do not affect the iteration above and can be performed
-  // after N_H has converged, which simplifies maxFnEvals / convTol logic
+  // after numH has converged, which simplifies maxFnEvals / convTol logic
   // (no need to further interrogate these throttles below)
 
+  if (hf_targets.empty()) update_hf_targets(numH, hf_targets); // pilot only
   // Pyramid/nested sampling: at step i, we sample approximation range
   // [0,numApprox-1-i] using the delta relative to the previous step
-  if (hf_targets.empty()) update_hf_targets(N_H, hf_targets); // pilot only
   for (size_t approx=numApprox; approx>0; --approx) {
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
     if (approx_increment(eval_ratios, N_L_refined, hf_targets, mlmfIter,
@@ -310,12 +310,12 @@ void NonDACVSampling::multifidelity_mc()
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
   mfmc_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,//rho2_LH,
-		   N_L_shared, N_L_refined, N_H, N_LH, H_raw_mom);
+		   N_L_shared, N_L_refined, numH, N_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
 
   // post final sample counts back to NLev (needed for final eval summary)
-  N_L_refined.push_back(N_H); // aggregate into a single Sizet2DArray
+  N_L_refined.push_back(numH); // aggregate into a single Sizet2DArray
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_L_refined, multilev, secondaryIndex, NLev);
 }
@@ -334,10 +334,10 @@ void NonDACVSampling::approximate_control_variate()
   IntRealSymMatrixArrayMap sum_LL;
   RealVector sum_HH, mse_iter0, avg_eval_ratios;
   Real avg_hf_target = 0., mse_ratio;  size_t num_steps = numApprox + 1;
-  SizetArray N_H;  Sizet2DArray N_L_shared, N_L_refined, N_LH;
+  Sizet2DArray N_L_shared, N_L_refined, N_LH;
   SizetSymMatrixArray N_LL;
   initialize_acv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL,sum_LH,sum_HH);
-  initialize_acv_counts(N_L_shared, N_L_refined, N_H, N_LL, N_LH);
+  initialize_acv_counts(N_L_shared, N_L_refined, numH, N_LL, N_LH);
   //initialize_acv_covariances(covLL, covLH, varH);
 
   // Initialize for pilot sample
@@ -360,8 +360,8 @@ void NonDACVSampling::approximate_control_variate()
 	// since larger eval ratios will increase R^2.
 	// Important: r* for fixed N is suboptimal w.r.t. r*,N* --> unlike MFMC,
 	// this approach does not converge to the desired sample profile, except
-	// for special case where the user specifies a fixed N_H + total budget.
-	update_hf_target(avg_eval_ratios, sequenceCost, mse_ratio, varH, N_H,
+	// for special case where user specifies a fixed numH + total budget.
+	update_hf_target(avg_eval_ratios, sequenceCost, mse_ratio, varH, numH,
 			 mse_iter0, avg_hf_target);
 	break;
       case R_AND_N_NONLINEAR_CONSTRAINT:
@@ -378,7 +378,7 @@ void NonDACVSampling::approximate_control_variate()
     if (numSamples) {
       shared_increment(mlmfIter); // spans ALL models, blocking
       accumulate_acv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
-			  sum_HH, N_L_shared, N_L_refined, N_H, N_LL, N_LH);
+			  sum_HH, N_L_shared, N_L_refined, numH, N_LL, N_LH);
       increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
       if (lf_shared_pilot > hf_shared_pilot) {// allow pilot to vary for C vs c
 	numSamples = lf_shared_pilot - hf_shared_pilot;
@@ -392,14 +392,14 @@ void NonDACVSampling::approximate_control_variate()
       // Then, compute ratio of MC and ACV mean sq errors (for convergence),
       // which incorporates the anticipated variance reduction from the
       // upcoming application of avg_eval_ratios.
-      compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
-		     sequenceCost, N_L_shared, N_H, N_LL, N_LH, avg_eval_ratios,
-		     mse_ratio);
+      compute_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
+		     sum_HH, sequenceCost, N_L_shared, numH, N_LL, N_LH,
+		     avg_eval_ratios, mse_ratio);
       // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
       // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
       // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
-      if (mlmfIter == 0) compute_mc_estimator_variance(varH, N_H, mse_iter0);
+      if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, mse_iter0);
     }
     //else
     //  Cout << "\nMFMC iteration " << mlmfIter
@@ -408,16 +408,14 @@ void NonDACVSampling::approximate_control_variate()
     ++mlmfIter;
   }
 
-  // ---------------------------------------------------------------
-  // Compute N_L increments based on eval ratio applied to final N_H
-  // ---------------------------------------------------------------
+  // ----------------------------------------------------------------
+  // Compute N_L increments based on eval ratio applied to final numH
+  // ----------------------------------------------------------------
   // Note: these results do not affect the iteration above and can be performed
-  // after N_H has converged, which simplifies maxFnEvals / convTol logic
+  // after numH has converged, which simplifies maxFnEvals / convTol logic
   // (no need to further interrogate these throttles below)
 
-  // Pyramid/nested sampling: at step i, we sample approximation range
-  // [0,numApprox-1-i] using the delta relative to the previous step
-  if (avg_hf_target == 0.) avg_hf_target = average(N_H); // pilot only
+  if (avg_hf_target == 0.) avg_hf_target = average(numH);// pilot only,no update
   for (size_t approx=numApprox; approx>0; --approx) {
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
     start = (acvSubMethod == SUBMETHOD_ACV_IS) ? approx - 1 : 0;
@@ -433,13 +431,13 @@ void NonDACVSampling::approximate_control_variate()
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
   acv_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
-		  avg_eval_ratios, N_L_shared, N_L_refined, N_H, N_LL,
+		  avg_eval_ratios, N_L_shared, N_L_refined, numH, N_LL,
 		  N_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
 
   // post final sample counts back to NLev (needed for final eval summary)
-  N_L_refined.push_back(N_H); // aggregate into a single Sizet2DArray
+  N_L_refined.push_back(numH); // aggregate into a single Sizet2DArray
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_L_refined, multilev, secondaryIndex, NLev);
 }
@@ -1178,7 +1176,7 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
   //Cout << "Average eval ratios from MFMC:\n" << avg_eval_ratios << std::endl;
 
   // Compute ratio of MSE for single-fidelity MC and MFMC
-  // > Estimator Var for MC = var_H / N_H = MSE (neglect HF bias)
+  // > Estimator Var for   MC = var_H / N_H = MSE (neglect HF bias)
   // > Estimator Var for MFMC = var_H (1-rho_LH(am1)^2) p / N_H^2 cost_H
   //   where budget p = cost^T eval_ratios N_H,  am1 = most-correlated approx
   //   --> EstVar = var_H (1-rho_LH(am1)^2) cost^T eval_ratios / N_H cost_H
@@ -1289,34 +1287,41 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
   // Recover optimizer results for average {eval,mse} ratios
   const RealVector& cv_star
     = varianceMinimizer.variables_results().continuous_variables();
+  const RealVector& fn_star
+    = varianceMinimizer.response_results().function_values();
+  Real avg_mc_est_var;
   switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT:
-    copy_data(cv_star, avg_eval_ratios); break;
+  case R_ONLY_LINEAR_CONSTRAINT: {
+    // simple copy to avg_eval_ratios:
+    copy_data(cv_star, avg_eval_ratios);
+    // compute average of MC estimator variance for fixed numH
+    RealVector mc_est_var;
+    compute_mc_estimator_variance(varH, numH, mc_est_var);
+    avg_mc_est_var = average(mc_est_var);
+    break;
+  }
   case R_AND_N_NONLINEAR_CONSTRAINT: {
-    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios);
-    Real avg_hf_target = cv_star[numApprox]; // N*
-    numSamples = one_sided_delta(avg_N_H, avg_hf_target);
+    // r* is leading part of r_and_N and N* is trailing part:
+    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r*
+    Real N_star = cv_star[numApprox];                               // N*
+    // compute sample increment from current to N*:
+    numSamples = one_sided_delta(avg_N_H, N_star);
+    // compute average of MC est var for final N* (used in final ACV est var)
+    avg_mc_est_var = average(varH) / N_star;
     break;
   }
   }
-  // Recovery from optimizer provides average R^2 for individual QoI
-  // (NonDACVSampling::objective_evaluator() maximizes std::log(average(R^2)))
-  Real log_avg_Rsq = -varianceMinimizer.response_results().function_value(0);
-  //Cout << "log_avg_Rsq = " << log_avg_Rsq << std::endl;
-  mse_ratio = 1. - std::exp(log_avg_Rsq); // ratio = 1 - R^2
-  // Alt approach: recompute scalar mse_ratio from avg_eval_ratios[approx]
-  //for (size_t approx=0; approx<numApprox; ++approx)
-  //  mse_ratio = ... avg_eval_ratios[approx] ...;
+  // Objective recovery from optimizer provides std::log(average(est_var))
+  // (avoid recomputation from r*,N*)
+  Real avg_acv_est_var = std::exp(fn_star(0)); // varH / numH (1 - R^2)
+  mse_ratio = avg_acv_est_var / avg_mc_est_var; // (1 - R^2)
 
-  //if (outputLevel >= NORMAL_OUTPUT) {
+  if (outputLevel >= NORMAL_OUTPUT) {
     for (size_t approx=0; approx<numApprox; ++approx)
       Cout << "Approx " << approx+1 << ": average evaluation ratio = "
 	   << avg_eval_ratios[approx] << '\n';
-    //for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    //  Cout << "QoI " << qoi+1 << ": variance reduction factor = "
-    //	     << mse_ratios[qoi] << '\n';
     Cout << "ACV variance / pilot MC variance = " << mse_ratio << std::endl;
-  //}
+  }
 }
 
 
@@ -1386,7 +1391,7 @@ mfmc_raw_moments(IntRealMatrixMap& sum_L_shared,
 	compute_mfmc_control(sum_L_sh_m(qoi,approx), sum_H_mq,
 			     sum_LL_m(qoi,approx), sum_LH_m(qoi,approx),
 			     N_L_sh_aq, N_H_q, N_LH_aq, beta); //shared
-	//if (outputLevel >= NORMAL_OUTPUT)
+	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1
 	       << ": control variate beta = " << std::setw(9) << beta << '\n';
 	// For MFMC, shared accumulators and counts telescope
@@ -1474,8 +1479,8 @@ Real NonDACVSampling::objective_function(const RealVector& r_and_N)
   compute_F_matrix(r_and_N, F); // admits r || r_and_N sub-problems
   //Cout << "Objective evaluator: F =\n" << F << std::endl;
 
-  RealVector A, R_sq(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+  RealVector A, R_sq(numFunctions, false);  size_t qoi;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
     invert_CF(covLL[qoi], F, CF_inv);
     //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
     compute_A_vector(F, covLH, qoi, A);     // defer c-bar scaling
@@ -1485,10 +1490,25 @@ Real NonDACVSampling::objective_function(const RealVector& r_and_N)
     //     << " Rsq[" << qoi << "] =\n" << R_sq[qoi] << std::endl;
   }
 
-  Real obj_fn = -std::log(average(R_sq));
-  //if (outputLevel >= DEBUG_OUTPUT)
+  // form estimator variances to pick up dependence on N
+  RealVector est_var(numFunctions, false);
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      est_var[qoi] = varH[qoi] / numH[qoi] * (1. - R_sq[qoi]);
+    break;
+  case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
+    Real N = r_and_N[numApprox];
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      est_var[qoi] = varH[qoi] / N         * (1. - R_sq[qoi]);
+    break;
+  }
+  }
+  Real obj_fn = std::log(average(est_var));
+  if (outputLevel >= DEBUG_OUTPUT)
     Cout << "objective_function: design vars:\n" << r_and_N << "R squared:\n"
-	 << R_sq << "obj = -log(avg(Rsq)) = " << obj_fn << '\n' << std::endl;
+	 << R_sq << "obj = log(average((1.-Rsq)varH/N)) = " << obj_fn << '\n'
+	 << std::endl;
   return obj_fn; // maximize R_sq; use log to flatten contours
 }
 
@@ -1517,7 +1537,7 @@ Real NonDACVSampling::nonlinear_constraint(const RealVector& r_and_N)
 
   Real nln_con
     = r_and_N[numApprox] * (1. + inner_prod);    // N ( 1 + Sum(w_i r_i) / w )
-  //if (outputLevel >= DEBUG_OUTPUT)
+  if (outputLevel >= DEBUG_OUTPUT)
     Cout << "nonlinear_constraint: design vars:\n" << r_and_N
 	 << "budget constr = " << nln_con << std::endl;
   return nln_con;
@@ -1541,7 +1561,7 @@ nonlinear_constraint_gradient(const RealVector& r_and_N, RealVector& grad_c)
   for (i=0; i<numApprox; ++i)
     inner_prod += sequenceCost[i] * r_and_N[i]; //     Sum(w_i r_i)
   grad_c[r_len] = 1. + inner_prod / cost_H;     // 1 + Sum(w_i r_i) / w
-  //if (outputLevel >= DEBUG_OUTPUT)
+  if (outputLevel >= DEBUG_OUTPUT)
     Cout << "nonlinear_constraint gradient:\n" << grad_c << std::endl;
 }
 

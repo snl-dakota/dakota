@@ -315,6 +315,8 @@ private:
 
   /// variances for HF truth (length numFunctions)
   RealVector varH;
+  /// number of evaluations of HF truth model (length numFunctions)
+  SizetArray numH;
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
   RealMatrix covLH;
