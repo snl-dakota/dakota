@@ -664,7 +664,7 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
     abort_handler(METHOD_ERROR); break;
   }
 
-  if (outputLevel >= DEBUG_OUTOUT)
+  if (outputLevel >= DEBUG_OUTPUT)
     Cout << "F matrix for sub-method " << acvSubMethod << ":\n" << F
 	 << std::endl;
 }
