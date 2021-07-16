@@ -2688,6 +2688,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"nond.response_scaling", P_MET respScalingFlag},
       {"nond.standardized_space", P_MET standardizedSpace},
       {"nond.tensor_grid", P_MET tensorGridFlag},
+      {"nond.truth_fixed_by_pilot", P_MET truthPilotConstraint},
       {"posterior_stats.kde", P_MET posteriorStatsKDE},
       {"posterior_stats.kl_divergence", P_MET posteriorStatsKL},
       {"posterior_stats.mutual_info", P_MET posteriorStatsMutual},

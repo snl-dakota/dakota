@@ -1002,6 +1002,8 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c truth_fixed_by_pilot flag for ACV methods
+  bool truthPilotConstraint;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC
   short allocationTarget;
   /// the \c useTargetVarianceOptimizationFlag selection in \ref MethodMultilevelMC

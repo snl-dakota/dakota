@@ -148,11 +148,16 @@ public:
   // updaters for user-functions mode:
 
   void initial_point(const RealVector& pt);
+  void variable_bounds(const RealVector& cv_lower_bnds,
+		       const RealVector& cv_upper_bnds);
   void linear_constraints(const RealMatrix& lin_ineq_coeffs,
 			  const RealVector& lin_ineq_lb,
 			  const RealVector& lin_ineq_ub,
 			  const RealMatrix& lin_eq_coeffs,
 			  const RealVector& lin_eq_tgt);
+  void nonlinear_constraints(const RealVector& nln_ineq_lb,
+			     const RealVector& nln_ineq_ub,
+			     const RealVector& nln_eq_tgt);
 
 protected:
 
@@ -215,19 +220,37 @@ inline void NPSOLOptimizer::initial_point(const RealVector& pt)
 
 
 inline void NPSOLOptimizer::
+variable_bounds(const RealVector& cv_lower_bnds,
+		const RealVector& cv_upper_bnds)
+{
+  replace_variable_bounds(numLinearConstraints, numNonlinearConstraints,
+			  lowerBounds, upperBounds, cv_lower_bnds,
+			  cv_upper_bnds);
+}
+
+
+inline void NPSOLOptimizer::
 linear_constraints(const RealMatrix& lin_ineq_coeffs,
 		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
 		   const RealMatrix& lin_eq_coeffs,
 		   const RealVector& lin_eq_tgt)
 {
-  //allocate_arrays(numContinuousVars, numNonlinearConstraints,
-  // 		  lin_ineq_coeffs, lin_eq_coeffs);
-  //augment_bounds(lowerBounds, upperBounds, lin_ineq_lb, lin_ineq_ub,
-  // 		 lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
   replace_linear_arrays(numContinuousVars, numNonlinearConstraints,
 			lin_ineq_coeffs, lin_eq_coeffs);
   replace_linear_bounds(numContinuousVars, numNonlinearConstraints, lowerBounds,
 			upperBounds, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt);
+}
+
+
+inline void NPSOLOptimizer::
+nonlinear_constraints(const RealVector& nln_ineq_lb,
+		      const RealVector& nln_ineq_ub,
+		      const RealVector& nln_eq_tgt)
+{
+  replace_nonlinear_arrays(numContinuousVars, numLinearConstraints,
+			   nln_ineq_lb.length() + nln_eq_tgt.length());
+  replace_nonlinear_bounds(numContinuousVars, numLinearConstraints, lowerBounds,
+			   upperBounds, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
 }
 
 

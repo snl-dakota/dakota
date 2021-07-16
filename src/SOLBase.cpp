@@ -65,9 +65,8 @@ SOLBase::SOLBase(Model& model)
 
 
 void SOLBase::
-allocate_arrays(int num_cv, size_t num_nln_con,
-		const RealMatrix& lin_ineq_coeffs,
-		const RealMatrix& lin_eq_coeffs)
+allocate_linear_arrays(int num_cv, const RealMatrix& lin_ineq_coeffs,
+		       const RealMatrix& lin_eq_coeffs)
 {
   // NPSOL directly handles equality constraints and 1- or 2-sided inequalities
   size_t num_lin_ineq_con = lin_ineq_coeffs.numRows(),
@@ -76,16 +75,11 @@ allocate_arrays(int num_cv, size_t num_nln_con,
 
   // The Fortran optimizers' need for a nonzero array size is handled with 
   // nlnConstraintArraySize & linConstraintArraySize.
-  nlnConstraintArraySize = (num_nln_con) ? num_nln_con : 1;
   linConstraintArraySize = (num_lin_con) ? num_lin_con : 1;
 
   // Matrix memory passed to Fortran must be contiguous
   if (linConstraintMatrixF77) delete [] linConstraintMatrixF77;
-  if (upperFactorHessianF77)  delete [] upperFactorHessianF77;
-  if (constraintJacMatrixF77) delete [] constraintJacMatrixF77;
   linConstraintMatrixF77 = new double[linConstraintArraySize * num_cv];
-  upperFactorHessianF77  = new double[num_cv * num_cv];
-  constraintJacMatrixF77 = new double[nlnConstraintArraySize * num_cv];
 
   // Populate linConstraintMatrixF77 with linear coefficients from PDDB. Loop
   // order is reversed (j, then i) since Fortran matrix ordering is reversed 
@@ -98,45 +92,36 @@ allocate_arrays(int num_cv, size_t num_nln_con,
     for (i=0; i<num_lin_eq_con; i++) // loop over equality rows
       linConstraintMatrixF77[cntr++] = lin_eq_coeffs(i,j);
   }
-
-  boundsArraySize = num_cv + num_lin_con + num_nln_con;
-  cLambda.resize(boundsArraySize);          // clambda[bnd_size]
-  constraintState.resize(boundsArraySize);  // istate[bnd_size]
 }
 
 
 void SOLBase::
-replace_linear_arrays(size_t num_cv, size_t num_nln_con,
-		      const RealMatrix& lin_ineq_coeffs,
-		      const RealMatrix& lin_eq_coeffs)
+allocate_nonlinear_arrays(int num_cv, size_t num_nln_con)
 {
-  // NPSOL directly handles equality constraints and 1- or 2-sided inequalities
-  size_t num_lin_ineq_con = lin_ineq_coeffs.numRows(),
-         num_lin_eq_con   = lin_eq_coeffs.numRows(),
-         num_lin_con      = num_lin_ineq_con + num_lin_eq_con;
-
-  // Manage Fortran optimizers' need for a nonzero array size
-  linConstraintArraySize = (num_lin_con) ? num_lin_con : 1;
+  // The Fortran optimizers' need for a nonzero array size is handled with 
+  // nlnConstraintArraySize & linConstraintArraySize.
+  nlnConstraintArraySize = (num_nln_con) ? num_nln_con : 1;
 
   // Matrix memory passed to Fortran must be contiguous
-  if (linConstraintMatrixF77) delete [] linConstraintMatrixF77;
-  linConstraintMatrixF77 = new double[linConstraintArraySize * num_cv];
+  if (constraintJacMatrixF77) delete [] constraintJacMatrixF77;
+  constraintJacMatrixF77 = new double[nlnConstraintArraySize * num_cv];
+}
 
-  // Populate linConstraintMatrixF77 with linear coefficients. Loop order is
-  // reversed (j, then i) since Fortran matrix ordering is column-major.
-  size_t i, j, cntr = 0;
-  for (j=0; j<num_cv; j++) { // loop over columns
-    for (i=0; i<num_lin_ineq_con; i++) // loop over inequality rows
-      linConstraintMatrixF77[cntr++] = lin_ineq_coeffs(i,j);
-    for (i=0; i<num_lin_eq_con; i++) // loop over equality rows
-      linConstraintMatrixF77[cntr++] = lin_eq_coeffs(i,j);
-  }
 
-  if (boundsArraySize != num_cv + num_lin_con + num_nln_con) {
-    boundsArraySize = num_cv + num_lin_con + num_nln_con;
-    cLambda.resize(boundsArraySize);          // clambda[bnd_size]
-    constraintState.resize(boundsArraySize);  // istate[bnd_size]
-  }
+void SOLBase::
+allocate_arrays(int num_cv, size_t num_nln_con,
+		const RealMatrix& lin_ineq_coeffs,
+		const RealMatrix& lin_eq_coeffs)
+{
+  allocate_linear_arrays(num_cv, lin_ineq_coeffs, lin_eq_coeffs);
+  allocate_nonlinear_arrays(num_cv, num_nln_con);
+
+  // Matrix memory passed to Fortran must be contiguous
+  if (upperFactorHessianF77)  delete [] upperFactorHessianF77;
+  upperFactorHessianF77  = new double[num_cv * num_cv];
+
+  size_bounds_array(num_cv + lin_ineq_coeffs.numRows() +
+		    lin_eq_coeffs.numRows() + num_nln_con);
 }
 
 
@@ -382,6 +367,33 @@ augment_bounds(RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds,
 
 
 void SOLBase::
+replace_variable_bounds(size_t num_lin_con, size_t num_nln_con,
+			RealVector& aggregate_l_bnds,
+			RealVector& aggregate_u_bnds,
+			const RealVector& cv_lower_bnds,
+			const RealVector& cv_upper_bnds)
+{
+  size_t num_cv = cv_lower_bnds.length(), old_cv,
+    num_con = num_lin_con + num_nln_con, new_bnds_size = num_cv + num_con;
+
+  if (boundsArraySize != new_bnds_size) {
+    size_bounds_array(new_bnds_size);
+
+    RealVector old_l_bnds(aggregate_l_bnds), old_u_bnds(aggregate_u_bnds);
+    aggregate_l_bnds.resize(new_bnds_size);
+    aggregate_u_bnds.resize(new_bnds_size);
+    // migrate linear/nonlinear bnds/targets:
+    old_cv = old_l_bnds.length() - num_con;
+    copy_data_partial(old_l_bnds, old_cv, aggregate_l_bnds, num_cv, num_con);
+    copy_data_partial(old_u_bnds, old_cv, aggregate_u_bnds, num_cv, num_con);
+  }
+  // assign new variable bnds:
+  copy_data_partial(cv_lower_bnds, 0, aggregate_l_bnds, 0, num_cv);
+  copy_data_partial(cv_upper_bnds, 0, aggregate_u_bnds, 0, num_cv);
+}
+
+
+void SOLBase::
 replace_linear_bounds(size_t num_cv, size_t num_nln_con,
 		      RealVector& aggregate_l_bnds,
 		      RealVector& aggregate_u_bnds,
@@ -389,17 +401,18 @@ replace_linear_bounds(size_t num_cv, size_t num_nln_con,
 		      const RealVector& lin_ineq_u_bnds,
 		      const RealVector& lin_eq_targets)
 {
-  size_t num_lin_ineq = lin_ineq_l_bnds.length(),
-         num_lin_eq   = lin_eq_targets.length(),
-    num_lin_con  = num_lin_ineq + num_lin_eq, new_offset, old_offset;
+  size_t num_lin_ineq  = lin_ineq_l_bnds.length(),
+         num_lin_eq    = lin_eq_targets.length(),
+         num_lin_con   = num_lin_ineq + num_lin_eq, new_offset, old_offset,
+         new_bnds_size = num_cv + num_lin_con + num_nln_con;
 
-  if (boundsArraySize != num_cv + num_lin_con + num_nln_con) {
+  if (boundsArraySize != new_bnds_size) {
+    size_bounds_array(new_bnds_size);
+
     RealVector old_l_bnds(aggregate_l_bnds), old_u_bnds(aggregate_u_bnds);
-    boundsArraySize = num_cv + num_lin_con + num_nln_con;
-    aggregate_l_bnds.resize(boundsArraySize); // retains variables data
-    aggregate_u_bnds.resize(boundsArraySize); // retains variables data
-    copy_data_partial(old_l_bnds, 0, aggregate_l_bnds, 0, num_cv);
-    copy_data_partial(old_u_bnds, 0, aggregate_u_bnds, 0, num_cv);
+    aggregate_l_bnds.resize(new_bnds_size); // retains variables data
+    aggregate_u_bnds.resize(new_bnds_size); // retains variables data
+    // migrate nonlinear bnds/targets:
     old_offset = old_l_bnds.length() - num_nln_con;
     new_offset = num_cv + num_lin_con;
     copy_data_partial(old_l_bnds, old_offset, aggregate_l_bnds,
@@ -407,6 +420,7 @@ replace_linear_bounds(size_t num_cv, size_t num_nln_con,
     copy_data_partial(old_u_bnds, old_offset, aggregate_u_bnds,
 		      new_offset, num_nln_con);
   }
+  // assign new linear bnds/targets:
   new_offset = num_cv;
   copy_data_partial(lin_ineq_l_bnds, 0, aggregate_l_bnds,
 		    new_offset, num_lin_ineq);
@@ -417,6 +431,34 @@ replace_linear_bounds(size_t num_cv, size_t num_nln_con,
 		    new_offset, num_lin_eq);
   copy_data_partial(lin_eq_targets, 0, aggregate_u_bnds,
 		    new_offset, num_lin_eq);
+}
+
+
+void SOLBase::
+replace_nonlinear_bounds(size_t num_cv, size_t num_lin_con,
+			 RealVector& aggregate_l_bnds,
+			 RealVector& aggregate_u_bnds,
+			 const RealVector& nln_ineq_l_bnds,
+			 const RealVector& nln_ineq_u_bnds,
+			 const RealVector& nln_eq_targets)
+{
+  size_t num_nln_ineq  = nln_ineq_l_bnds.length(),
+         num_nln_eq    = nln_eq_targets.length(),
+         num_nln_con   = num_nln_ineq + num_nln_eq, offset,
+         new_bnds_size = num_cv + num_lin_con + num_nln_con;
+
+  if (boundsArraySize != new_bnds_size) {
+    size_bounds_array(new_bnds_size);
+    aggregate_l_bnds.resize(new_bnds_size); // retains vars, lin cons data
+    aggregate_u_bnds.resize(new_bnds_size); // retains vars, lin cons data
+  }
+  // assign new nonlinear bnds/targets:
+  offset = num_cv + num_lin_con;
+  copy_data_partial(nln_ineq_l_bnds, 0, aggregate_l_bnds, offset, num_nln_ineq);
+  copy_data_partial(nln_ineq_u_bnds, 0, aggregate_u_bnds, offset, num_nln_ineq);
+  offset += num_nln_ineq;
+  copy_data_partial(nln_eq_targets,  0, aggregate_l_bnds, offset, num_nln_eq);
+  copy_data_partial(nln_eq_targets,  0, aggregate_u_bnds, offset, num_nln_eq);
 }
 
 

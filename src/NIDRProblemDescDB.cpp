@@ -6920,6 +6920,7 @@ static bool
 	MP_(tensorGridFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
+	MP_(truthPilotConstraint),
 	MP_(vbdFlag),
 	MP_(volQualityFlag),
 	MP_(wilksFlag);

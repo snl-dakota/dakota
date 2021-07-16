@@ -1478,6 +1478,20 @@ const VariablesArray& Iterator::initial_points() const
 
 
 void Iterator::
+variable_bounds(const RealVector& cv_lower_bnds,
+		const RealVector& cv_upper_bnds)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->variable_bounds(cv_lower_bnds, cv_upper_bnds);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine variable_bounds() virtual "
+	 << "fn.\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void Iterator::
 linear_constraints(const RealMatrix& lin_ineq_coeffs,
 		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
 		   const RealMatrix& lin_eq_coeffs,
@@ -1489,6 +1503,21 @@ linear_constraints(const RealMatrix& lin_ineq_coeffs,
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine linear_constraints() virtual"
 	 << " fn.\n       No default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void Iterator::
+nonlinear_constraints(const RealVector& nln_ineq_lb,
+		      const RealVector& nln_ineq_ub,
+		      const RealVector& nln_eq_tgt)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine nonlinear_constraints() "
+	 << "virtual fn.\n       No default defined at base class."<< std::endl;
     abort_handler(METHOD_ERROR);
   }
 }

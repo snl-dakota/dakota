@@ -663,6 +663,10 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
 	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
     abort_handler(METHOD_ERROR); break;
   }
+
+  if (outputLevel >= DEBUG_OUTOUT)
+    Cout << "F matrix for sub-method " << acvSubMethod << ":\n" << F
+	 << std::endl;
 }
 
 

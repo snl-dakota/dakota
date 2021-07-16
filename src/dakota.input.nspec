@@ -2926,14 +2926,20 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( approximate_control_variate ALIAS acv_sampling {N_mdm(utype,methodName_APPROXIMATE_CONTROL_VARIATE)}
-    acv_independent_sampling {N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}
+    acv_independent_sampling ALIAS acv_is {N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}
     |
-    acv_multifidelity {N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}
+    acv_multifidelity ALIAS acv_mf {N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}
     |
     acv_kl ALIAS acv_adaptive {N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}
+    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ truth_fixed_by_pilot {N_mdm(true,truthPilotConstraint)} ]
+    [ 
+      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_SQP)}
+      |
+      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_NIP)}
+     ]
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |

@@ -139,8 +139,9 @@ DataMethodRep::DataMethodRep():
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
-  expansionSamples(SZ_MAX), allocationTarget(TARGET_MEAN),
-  useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
+  expansionSamples(SZ_MAX), truthPilotConstraint(false),
+  allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
+  qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
   convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
   //expansionSampleType("lhs"),
@@ -311,7 +312,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << multilevAllocControl << multilevEstimatorRate
+    << pilotSamples << truthPilotConstraint
+    << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
@@ -478,7 +480,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
     >> numCandidateDesigns //>> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> pilotSamples >> multilevAllocControl >> multilevEstimatorRate
+    >> pilotSamples >> truthPilotConstraint
+    >> multilevAllocControl >> multilevEstimatorRate
     >> multilevDiscrepEmulation >> finalMomentsType >> distributionType
     >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
     >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
@@ -645,7 +648,8 @@ void DataMethodRep::write(std::ostream& s) const
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << multilevAllocControl << multilevEstimatorRate
+    << pilotSamples << truthPilotConstraint
+    << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels

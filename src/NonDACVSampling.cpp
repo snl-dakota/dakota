@@ -45,8 +45,7 @@ NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDEnsembleSampling(problem_db, model),
   acvSubMethod(problem_db.get_ushort("method.sub_method")),
-  optSubProblemForm(R_AND_N_NONLINEAR_CONSTRAINT)
-  //optSubProblemForm(R_ONLY_LINEAR_CONSTRAINT) // option for prescribed numH ("fixed_truth_evaluations" or similar) + equivHF budget
+  optSubProblemForm(R_AND_N_NONLINEAR_CONSTRAINT) // default is to increment N
 {
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -57,6 +56,17 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
          << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
+
+  // option for fixing the number of HF samples (those from the pilot)
+  // where equivHF budget is allocated by optimizing r* for fixed N
+  if (problem_db.get_bool("method.nond.truth_fixed_by_pilot"))
+    optSubProblemForm = R_ONLY_LINEAR_CONSTRAINT;
+  unsigned short opt_subprob_solver = sub_optimizer_select(
+    probDescDB.get_ushort("method.nond.opt_subproblem_solver"));
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "ACV sub-method selection = " << acvSubMethod
+	 << " sub-method formulation = "  << optSubProblemForm
+	 << " sub-problem solver = "      << opt_subprob_solver << std::endl;
 
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
   size_t i, num_mf = model_ensemble.size(), num_lev;
@@ -134,10 +144,9 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
     RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false);
     x0 = 1.;  x_lb = 1.;  x_ub = DBL_MAX; // no upper bounds
     if (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT)
-      x0[numApprox] = x_lb[numApprox] = pilotSamples[numApprox]; // pilot <= N* <= inf
+      x0[numApprox] = x_lb[numApprox] = pilotSamples[numApprox]; // pilot <= N*
 
-    switch (sub_optimizer_select(
-	    probDescDB.get_ushort("method.nond.opt_subproblem_solver"))) {
+    switch (opt_subprob_solver) {
     case SUBMETHOD_SQP: {
       Real conv_tol = -1.; // use NPSOL default
 #ifdef HAVE_NPSOL
@@ -360,7 +369,8 @@ void NonDACVSampling::approximate_control_variate()
 	// since larger eval ratios will increase R^2.
 	// Important: r* for fixed N is suboptimal w.r.t. r*,N* --> unlike MFMC,
 	// this approach does not converge to the desired sample profile, except
-	// for special case where user specifies a fixed numH + total budget.
+	// for special case where user specifies a fixed numH + total budget
+	// (see option "truth_fixed_by_pilot").
 	update_hf_target(avg_eval_ratios, sequenceCost, mse_ratio, varH, numH,
 			 mse_iter0, avg_hf_target);
 	break;
@@ -1258,24 +1268,29 @@ compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
     // rather than update an iteratedModel, we must update the Minimizer for
     // use by user-functions mode
+    // *** TO DO ***: implementation required for SNLL{Base,Optimizer}
     varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
 					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: {
     RealVector cv0(numApprox+1); copy_data_partial(avg_eval_ratios, cv0, 0);
-    cv0[numApprox] = avg_N_H;
+    cv0[numApprox] = avg_N_H;// + 1.; // bump off of updated lower bound?
+    // *** TO DO ***: verify for SNLLOptimizer (appears to need nlf_obj->setX())
     varianceMinimizer.initial_point(cv0);
 
-    /*
-    // Update x_lb[numApprox] = latest N_H pilot? (init to pilot in ctor)
-    // or allow optimal profile to emerge from pilot?
+    // For this case, could allow the optimal profile to emerge from pilot by
+    // allowing N* less than the incurred cost (e.g., setting N_lb to 1), but
+    // instead we target r*,N* subject to the incurred cost of shared samples
+    // by updating N_lb = latest N_H and retaining r_lb = 1.
     size_t num_cdv = numApprox + 1; // evaluation ratios, N_H
     RealVector  x_lb(num_cdv, false), x_ub(num_cdv, false);
     x_lb = 1.;  x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5);
     x_ub = DBL_MAX; // no upper bounds
-    varianceMinimizer.variable_bounds(x_lb, x_ub);
-    */
+    // *** TO DO ***: implementation required for SNLL{Base,Optimizer}
+    //varianceMinimizer.variable_bounds(x_lb, x_ub);
+
+    // Consider adding linear constraints suggested in ACV paper
     break;
   }
   }
