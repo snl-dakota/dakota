@@ -322,7 +322,7 @@ inline Real NonDEnsembleSampling::sum(const Real* vec, size_t vec_len) const
 
 inline Real NonDEnsembleSampling::
 average(const Real* vec, size_t vec_len) const
-{ return sum(vec, vec_len) / (Real)vec_len; }
+{ return (vec_len == 1) ? vec[0] : sum(vec, vec_len) / (Real)vec_len; }
 
 
 inline Real NonDEnsembleSampling::average(const RealVector& vec) const
@@ -342,10 +342,14 @@ average(const RealMatrix& mat, size_t avg_index, RealVector& avg_vec) const
   case 1:
     avg_vec.size(nr); // init to 0
     for (i=0; i<nr; ++i) {
-      Real& avg_i = avg_vec[i];
-      for (j=0; j<nc; ++j)              // average over cols for each row vec
-	avg_i += mat(i,j);
-      avg_i /= nc;
+      Real& avg_i = avg_vec[i];         // average over cols for each row vec
+      if (nc == 1)
+	avg_i = mat(i,0);
+      else {
+	for (j=0; j<nc; ++j)
+	  avg_i += mat(i,j);
+	avg_i /= nc;
+      }
     }
     break;
   default:
@@ -358,10 +362,15 @@ average(const RealMatrix& mat, size_t avg_index, RealVector& avg_vec) const
 
 inline Real NonDEnsembleSampling::average(const SizetArray& sa) const
 {
-  size_t i, len = sa.size(), sum = 0;
-  for (i=0; i<len; ++i)
-    sum += sa[i];
-  return (Real)sum / (Real)len;
+  size_t len = sa.size();
+  if (len == 1)
+    return (Real)sa[0];
+  else {
+    size_t sum = 0;
+    for (size_t i=0; i<len; ++i)
+      sum += sa[i];
+    return (Real)sum / (Real)len;
+  }
 }
 
 } // namespace Dakota
