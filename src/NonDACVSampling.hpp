@@ -94,12 +94,12 @@ protected:
 			 RealVector& hf_targets);
   void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
 
-  void compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
-		      const RealMatrix& sum_LL,       const RealMatrix& sum_LH,
-		      const RealVector& sum_HH,       const RealVector& cost,
-		      const Sizet2DArray& N_L,        const SizetArray& N_H,
-		      const Sizet2DArray& N_LH,       RealVector& var_H,
-		      RealMatrix& rho2_LH,            RealMatrix& eval_ratios,
+  void compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
+		      const RealMatrix& sum_LL, const RealMatrix& sum_LH,
+		      const RealVector& sum_HH, const RealVector& cost,
+		      const Sizet2DArray& N_L_baseline, const SizetArray& N_H,
+		      const Sizet2DArray& N_LH, RealVector& var_H,
+		      RealMatrix& rho2_LH,      RealMatrix& eval_ratios,
 		      RealVector& mse_ratios);
   void compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 		      const RealSymMatrixArray& sum_LL,
@@ -122,53 +122,45 @@ private:
   void assign_active_key(size_t num_steps, size_t secondary_index,
 			 bool multilev);
 
-  void initialize_sums(IntRealMatrixMap& sum_L_shared,
-		       IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
-		       IntRealMatrixMap& sum_LH, RealVector& sum_HH);
-  void initialize_mf_sums(IntRealMatrixMap& sum_L_shared,
-			  IntRealMatrixMap& sum_L_refined,
+  void initialize_sums(IntRealMatrixMap& sum_L_baseline,
+		       IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,
+		       RealVector& sum_HH);
+  void initialize_mf_sums(IntRealMatrixMap& sum_L_baseline,
 			  IntRealVectorMap& sum_H,
 			  IntRealMatrixMap& sum_LL,
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH);
-  void initialize_acv_sums(IntRealMatrixMap& sum_L_shared,
-			   IntRealMatrixMap& sum_L_refined,
+  void initialize_acv_sums(IntRealMatrixMap& sum_L_baseline,
 			   IntRealVectorMap& sum_H,
 			   IntRealSymMatrixArrayMap& sum_LL,
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH);
 
-  void initialize_mf_counts(Sizet2DArray& num_L_shared,
-			    Sizet2DArray& num_L_refined, SizetArray& num_H,
+  void initialize_mf_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			    Sizet2DArray& num_LH);
-  void initialize_acv_counts(Sizet2DArray& num_L_shared,
-			     Sizet2DArray& num_L_refined, SizetArray&   num_H,
+  void initialize_acv_counts(Sizet2DArray& num_L_baseline, SizetArray&  num_H,
 			     SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH);
 
   //void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
   //				  IntRealMatrixMap& cov_LH,
   //				  IntRealVectorMap& var_H);
 
-  void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
-			  IntRealMatrixMap& sum_L_refined,
+  // shared_increment() cases:
+  void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
 			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
-			  Sizet2DArray& num_L_shared,
-			  Sizet2DArray& num_L_refined, SizetArray& num_H,
+			  Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			  Sizet2DArray& num_LH);
-  void accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
-			   IntRealMatrixMap& sum_L_refined,
+  void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
 			   IntRealVectorMap& sum_H,
 			   IntRealSymMatrixArrayMap& sum_LL,
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH,
-			   Sizet2DArray& num_L_shared,
-			   Sizet2DArray& num_L_refined,  SizetArray& num_H,
+			   Sizet2DArray& num_L_baseline,  SizetArray& num_H,
 			   SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH);
-  void accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
-			   IntRealMatrixMap& sum_L_refined,
+  // shared_approx_increment() case:
+  void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
 			   IntRealSymMatrixArrayMap& sum_LL,
-			   Sizet2DArray& num_L_shared,
-			   Sizet2DArray& num_L_refined,
+			   Sizet2DArray& num_L_baseline,
 			   SizetSymMatrixArray& num_LL);
-
+  // approx_increment() cases:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 			  IntRealMatrixMap& sum_L_refined,
 			  Sizet2DArray& num_L_shared,
@@ -232,10 +224,12 @@ private:
   void compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A,
 		   Real var_H_q, Real& R_sq_q);
 
-  void mfmc_raw_moments(IntRealMatrixMap& sum_L_shared,
+  void mfmc_raw_moments(IntRealMatrixMap& sum_L_baseline,
+			IntRealMatrixMap& sum_L_shared,
 			IntRealMatrixMap& sum_L_refined,
 			IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
 			IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
+			const Sizet2DArray& num_L_baseline,
 			const Sizet2DArray& num_L_shared,
 			const Sizet2DArray& num_L_refined,
 			const SizetArray& num_H,
@@ -334,9 +328,8 @@ private:
 
 
 inline void NonDACVSampling::
-initialize_sums(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
-		IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,
-		RealVector& sum_HH)
+initialize_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
+		IntRealMatrixMap& sum_LH,         RealVector&       sum_HH)
 {
   // sum_* are running sums across all increments
   std::pair<int, RealVector> vec_pr; std::pair<int, RealMatrix> mat_pr;
@@ -344,8 +337,7 @@ initialize_sums(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
     vec_pr.first = mat_pr.first = i; // moment number
     // std::map::insert() returns std::pair<IntRVMIter, bool>:
     // use iterator to size Real{Vector,Matrix} in place and init sums to 0
-    sum_L_shared.insert(mat_pr).first->second.shape(numFunctions, numApprox);
-    sum_L_refined.insert(mat_pr).first->second.shape(numFunctions, numApprox);
+    sum_L_baseline.insert(mat_pr).first->second.shape(numFunctions, numApprox);
     sum_H.insert(vec_pr).first->second.size(numFunctions);
     sum_LH.insert(mat_pr).first->second.shape(numFunctions, numApprox);
   }
@@ -354,12 +346,11 @@ initialize_sums(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
 
 
 inline void NonDACVSampling::
-initialize_mf_sums(IntRealMatrixMap& sum_L_shared,
-		   IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
+initialize_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		   IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
 		   RealVector& sum_HH)
 {
-  initialize_sums(sum_L_shared, sum_L_refined, sum_H, sum_LH, sum_HH);
+  initialize_sums(sum_L_baseline, sum_H, sum_LH, sum_HH);
   std::pair<int, RealMatrix> mat_pr;
   for (int i=1; i<=4; ++i) {
     mat_pr.first = i; // moment number
@@ -369,12 +360,11 @@ initialize_mf_sums(IntRealMatrixMap& sum_L_shared,
 
 
 inline void NonDACVSampling::
-initialize_acv_sums(IntRealMatrixMap& sum_L_shared,
-		    IntRealMatrixMap& sum_L_refined,  IntRealVectorMap& sum_H,
+initialize_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		    IntRealSymMatrixArrayMap& sum_LL, IntRealMatrixMap& sum_LH,
 		    RealVector& sum_HH)
 {
-  initialize_sums(sum_L_shared, sum_L_refined, sum_H, sum_LH, sum_HH);
+  initialize_sums(sum_L_baseline, sum_H, sum_LH, sum_HH);
   std::pair<int, RealSymMatrixArray> mat_array_pr;
   for (int i=1; i<=4; ++i) {
     mat_array_pr.first = i; // moment number
@@ -387,25 +377,23 @@ initialize_acv_sums(IntRealMatrixMap& sum_L_shared,
 
 
 inline void NonDACVSampling::
-initialize_mf_counts(Sizet2DArray& num_L_shared, Sizet2DArray& num_L_refined,
-		     SizetArray&   num_H,        Sizet2DArray& num_LH)
+initialize_mf_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
+		     Sizet2DArray& num_LH)
 {
-  num_H.assign(numFunctions, 0);  num_LH.resize(numApprox);
-  num_L_shared.resize(numApprox); num_L_refined.resize(numApprox);
+  num_H.assign(numFunctions, 0);
+  num_L_baseline.resize(numApprox);  num_LH.resize(numApprox);
   for (size_t approx=0; approx<numApprox; ++approx) {
-    num_L_shared[approx].assign(numFunctions,0);
-    num_L_refined[approx].assign(numFunctions,0);
+    num_L_baseline[approx].assign(numFunctions,0);
     num_LH[approx].assign(numFunctions,0);
   }
 }
 
 
 inline void NonDACVSampling::
-initialize_acv_counts(Sizet2DArray& num_L_shared, Sizet2DArray& num_L_refined,
-		      SizetArray&   num_H,        SizetSymMatrixArray& num_LL,
-		      Sizet2DArray& num_LH)
+initialize_acv_counts(Sizet2DArray& num_L_baseline,  SizetArray& num_H,
+		      SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH)
 {
-  initialize_mf_counts(num_L_shared, num_L_refined, num_H, num_LH);
+  initialize_mf_counts(num_L_baseline, num_H, num_LH);
   num_LL.resize(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     num_LL[qoi].shape(numApprox);
@@ -515,20 +503,31 @@ compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 		    Real sum_Q2Q2, size_t num_Q1, size_t num_Q2, size_t num_Q1Q2,
 		    Real& var_Q2, Real& rho2_Q1Q2)
 {
-  Real bessel_corr_Q1   = (Real)num_Q1   / (Real)(num_Q1   - 1),
-       bessel_corr_Q2   = (Real)num_Q2   / (Real)(num_Q2   - 1),
-       bessel_corr_Q1Q2 = (Real)num_Q1Q2 / (Real)(num_Q1Q2 - 1);
+  Real //bessel_corr_Q1   = (Real)num_Q1   / (Real)(num_Q1   - 1),
+         bessel_corr_Q2   = (Real)num_Q2   / (Real)(num_Q2   - 1);
+       //bessel_corr_Q1Q2 = (Real)num_Q1Q2 / (Real)(num_Q1Q2 - 1);
 
   // unbiased mean estimator X-bar = 1/N * sum
   Real mu_Q1 = sum_Q1 / num_Q1, mu_Q2 = sum_Q2 / num_Q2;
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  Real var_Q1 = (sum_Q1Q1 / num_Q1   - mu_Q1 * mu_Q1) * bessel_corr_Q1,
-     cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2) * bessel_corr_Q1Q2; // *** TO DO: review Bessel correction online --> not the same N to pull out over N-1
-  var_Q2      = (sum_Q2Q2 / num_Q2   - mu_Q2 * mu_Q2) * bessel_corr_Q2;
+  Real var_Q1 = (sum_Q1Q1 / num_Q1   - mu_Q1 * mu_Q1),// * bessel_corr_Q1,
+     cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2);// * bessel_corr_Q1Q2; // *** TO DO: review Bessel correction derivation for fault tolerance --> not the same N to pull out over N-1
+  var_Q2      = (sum_Q2Q2 / num_Q2   - mu_Q2 * mu_Q2);// * bessel_corr_Q2;
 
   //beta  = cov_Q1Q2 / var_Q1;
-  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2;
+  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // bessel corrs cancel
+  var_Q2   *= bessel_corr_Q2; // now apply corr where required
+  //Cout << "compute_correlation: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
+  //     << " sum_Q1Q2 = " << sum_Q1Q2  << " num_Q1 = " << num_Q1 <<" num_Q2 = "
+  //     << num_Q2 << " num_Q1Q2 = " << num_Q1Q2 << std::endl;
+
+  //Cout << "compute_correlation: rho2_Q1Q2 w/o bessel = " << rho2_Q1Q2;
+  //var_Q1   *= bessel_corr_Q1;
+  //cov_Q1Q2 *= bessel_corr_Q1Q2;
+  //Real rho2_Q1Q2_incl = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // incl bessel
+  //Cout << " rho2_Q1Q2 w/ bessel = " << rho2_Q1Q2_incl << " ratio = "
+  //     << rho2_Q1Q2/rho2_Q1Q2_incl << std::endl;
 }
 
 
@@ -536,18 +535,20 @@ inline void NonDACVSampling::
 compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t num_Q1,
 		   size_t num_Q2, size_t num_Q1Q2, Real& cov_Q1Q2)
 {
-  Real bessel_corr_Q1   = (Real)num_Q1   / (Real)(num_Q1   - 1),
-       bessel_corr_Q2   = (Real)num_Q2   / (Real)(num_Q2   - 1),
+  Real //bessel_corr_Q1 = (Real)num_Q1   / (Real)(num_Q1   - 1),
+       //bessel_corr_Q2 = (Real)num_Q2   / (Real)(num_Q2   - 1),
        bessel_corr_Q1Q2 = (Real)num_Q1Q2 / (Real)(num_Q1Q2 - 1);
 
   // unbiased mean estimator X-bar = 1/N * sum
   Real mu_Q1 = sum_Q1 / num_Q1,  mu_Q2 = sum_Q2 / num_Q2;
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2) * bessel_corr_Q1Q2; // *** TO DO: review Bessel correction online --> not the same N to pull out over N-1 ...
-  //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " num_Q1 = " << num_Q1
-  //     << " sum_Q2 = " << sum_Q2 << " num_Q2 = " << num_Q2
-  //     << " sum_Q1Q2 = " << sum_Q1Q2 << " num_Q1Q2 = " << num_Q1Q2 << std::endl;
+  cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2) * bessel_corr_Q1Q2; // *** TO DO: review Bessel correction derivation for fault tolerance --> not the same N to pull out over N-1
+
+  //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
+  //     << " sum_Q1Q2 = " << sum_Q1Q2 << " num_Q1 = " << num_Q1 << " num_Q2 = "
+  //     << num_Q2 << " num_Q1Q2 = " << num_Q1Q2 << " cov_Q1Q2 = " << cov_Q1Q2
+  //     << std::endl;
 }
 
 
@@ -562,8 +563,9 @@ compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
   var_Q = (sum_QQ / num_Q - mu_Q * mu_Q) * bessel_corr_Q;
-  //Cout << "compute_variance: sum_Q = " << sum_Q << " num_Q = " << num_Q
-  //     << " sum_QQ = " << sum_QQ << " num_QQ = " << num_Q << std::endl;
+
+  //Cout << "compute_variance: sum_Q = " << sum_Q << " sum_QQ = " << sum_QQ
+  //     << " num_Q = " << num_Q << " var_Q = " << var_Q << std::endl;
 }
 
 
@@ -616,18 +618,26 @@ compute_mfmc_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   // unbiased mean estimator X-bar = 1/N * sum
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  Real bessel_corr_L  = (Real)num_L  / (Real)(num_L  - 1),
-     //bessel_corr_H  = (Real)num_H  / (Real)(num_H  - 1);
-       bessel_corr_LH = (Real)num_LH / (Real)(num_LH - 1);
+  //Real bessel_corr_L  = (Real)num_L  / (Real)(num_L  - 1),
+  //     bessel_corr_H  = (Real)num_H  / (Real)(num_H  - 1);
+  //     bessel_corr_LH = (Real)num_LH / (Real)(num_LH - 1);
   Real  mu_L  =  sum_L  / num_L,   mu_H = sum_H / num_H,
-       var_L  = (sum_LL / num_L  - mu_L * mu_L) * bessel_corr_L,
-     //var_H  = (sum_HH / num_H  - mu_H * mu_H) * bessel_corr_H,
-       cov_LH = (sum_LH / num_LH - mu_L * mu_H) * bessel_corr_LH;
+       var_L  = (sum_LL / num_L  - mu_L * mu_L),// * bessel_corr_L, // defer
+     //var_H  = (sum_HH / num_H  - mu_H * mu_H),// * bessel_corr_H, // defer
+       cov_LH = (sum_LH / num_LH - mu_L * mu_H);// * bessel_corr_LH;// defer
 
   // beta^* = rho_LH sigma_H / sigma_L (same expression as two model case)
   //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
   // Allow different sample counts --> don't cancel bessel_corr:
   beta = cov_LH / var_L;
+
+  //Cout << "compute_mfmc_control: num_L = " << num_L << " num_H = " << num_H
+  //     << " num_LH = " << num_LH << std::endl;
+  //Cout << "compute_mfmc_control: beta w/o bessel = " << beta;
+  //var_L  *= bessel_corr_L;
+  //cov_LH *= bessel_corr_LH;
+  //Real beta_incl = cov_LH / var_L; // includes bessel corrs
+  //Cout << " beta w/ bessel = " << beta_incl << " ratio = " << beta/beta_incl << std::endl;
 }
 
 
@@ -783,6 +793,11 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
   // apply control for HF uncentered raw moment estimates:
   H_raw_mom -= beta * (sum_L_shared  / num_L_shared - // mu from shared samples
 		       sum_L_refined / num_L_refined);// refined mu w/ increment
+
+  //Cout <<  "sum_L_shared = "  << sum_L_shared
+  //     << " sum_L_refined = " << sum_L_refined
+  //     << " num_L_shared = "  << num_L_shared
+  //     << " num_L_refined = " << num_L_refined << std::endl; 
 }
 
 } // namespace Dakota
