@@ -1,0 +1,229 @@
+#@ s*: TimeoutAbsolute=36000
+#@ s*: TimeoutDelay=36000
+
+environment
+	output_precision = 16
+
+method,
+	model_pointer = 'NONHIER'
+	multifidelity_sampling
+	  max_function_evaluations = 100	#s0,#s1,#s2
+#	  max_function_evaluations = 250
+#	  max_function_evaluations = 500	#s3,#s4,#s5
+#	  max_function_evaluations = 1000
+#	  max_function_evaluations = 2500	#s6,#s7,#s8
+	  pilot_samples =   5			#s0,#s3,#s6
+#	  pilot_samples =  10
+#	  pilot_samples =  25			#s1,#s4,#s7
+#	  pilot_samples =  50
+#	  pilot_samples = 100			#s2,#s5,#s8
+	  seed = 8674132
+#	  convergence_tolerance = .1
+	output silent
+
+model,
+	id_model = 'NONHIER'
+	variables_pointer = 'HF_VARS'
+	surrogate model_ensemble #non_hierarchical
+	  truth_model = 'HF'
+	  unordered_model_fidelities = 'LF1' 'LF2' 'LF3' 'LF4'
+
+model,
+	id_model = 'LF1'
+	variables_pointer = 'LF1_VARS'
+	interface_pointer = 'LF1_INT'
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 1.
+
+model,
+	id_model = 'LF2'
+	variables_pointer = 'LF2_VARS'
+	interface_pointer = 'LF2_INT'
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 4.
+
+model,
+	id_model = 'LF3'
+	variables_pointer = 'LF3_VARS'
+	interface_pointer = 'LF3_INT'
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 16.
+
+model,
+	id_model = 'LF4'
+	variables_pointer = 'LF4_VARS'
+	interface_pointer = 'LF4_INT'
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 64.
+
+model,
+	id_model = 'HF'
+	variables_pointer = 'HF_VARS'
+	interface_pointer = 'HF_INT'
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 256.
+
+variables,
+	id_variables = 'LF1_VARS'
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
+	  lower_bounds    = 9*-1.
+	  upper_bounds    = 9* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+	    initial_state = 4
+	    set_values = 4
+     	    descriptors = 'mesh_size'
+    	  real = 4
+      	    elements_per_variable = 2 2 1 1
+      	    set_values = 0.1 1 # field mean
+                         0.5 4 # field std dev
+                  	 1     # kernel order
+                   	 0.2   # kernel length
+      	    descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+     	    initial_state = 1 4 1 0.2
+	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      	    elements_per_variable = 2 2
+	    initial_state = 'cosine' 'off'
+      	    set_values = 'cosine' 'exponential'
+                       	 'off' 'on'
+      	    descriptors = 'kernel_type' 'positivity'
+
+variables,
+	id_variables = 'LF2_VARS'
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
+	  lower_bounds    = 9*-1.
+	  upper_bounds    = 9* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+	    initial_state = 8
+	    set_values = 8
+     	    descriptors = 'mesh_size'
+    	  real = 4
+      	    elements_per_variable = 2 2 1 1
+      	    set_values = 0.1 1 # field mean
+                         0.5 4 # field std dev
+                  	 1     # kernel order
+                   	 0.2   # kernel length
+      	    descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+     	    initial_state = 1 4 1 0.2
+	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      	    elements_per_variable = 2 2
+	    initial_state = 'cosine' 'off'
+      	    set_values = 'cosine' 'exponential'
+                       	 'off' 'on'
+      	    descriptors = 'kernel_type' 'positivity'
+
+variables,
+	id_variables = 'LF3_VARS'
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
+	  lower_bounds    = 9*-1.
+	  upper_bounds    = 9* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+	    initial_state = 16
+	    set_values = 16
+     	    descriptors = 'mesh_size'
+    	  real = 4
+      	    elements_per_variable = 2 2 1 1
+      	    set_values = 0.1 1 # field mean
+                         0.5 4 # field std dev
+                  	 1     # kernel order
+                   	 0.2   # kernel length
+      	    descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+     	    initial_state = 1   4   1 0.2
+	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      	    elements_per_variable = 2 2
+	    initial_state = 'cosine' 'off'
+      	    set_values = 'cosine' 'exponential'
+                       	 'off' 'on'
+      	    descriptors = 'kernel_type' 'positivity'
+
+variables,
+	id_variables = 'LF4_VARS'
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
+	  lower_bounds    = 9*-1.
+	  upper_bounds    = 9* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+	    initial_state = 32
+	    set_values = 32
+     	    descriptors = 'mesh_size'
+    	  real = 4
+      	    elements_per_variable = 2 2 1 1
+      	    set_values = 0.1 1 # field mean
+                         0.5 4 # field std dev
+                  	 1     # kernel order
+                   	 0.2   # kernel length
+      	    descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+     	    initial_state = 1   4   1 0.2
+	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      	    elements_per_variable = 2 2
+	    initial_state = 'cosine' 'off'
+      	    set_values = 'cosine' 'exponential'
+                       	 'off' 'on'
+      	    descriptors = 'kernel_type' 'positivity'
+
+variables,
+	id_variables = 'HF_VARS'
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
+	  lower_bounds    = 9*-1.
+	  upper_bounds    = 9* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+	    initial_state = 64
+      	    set_values = 64
+      	    descriptors = 'mesh_size'
+    	  real = 4
+      	    elements_per_variable = 2 2 1 1
+      	    set_values = 0.1 1 # field mean
+                       	 0.5 4 # field std dev
+                   	 1     # kernel order
+                   	 0.2   # kernel length
+      	    descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+      	    initial_state = 1 4 1 0.2
+	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      	    elements_per_variable = 2 2
+	    initial_state = 'cosine' 'off'
+      	    set_values = 'cosine' 'exponential'
+                       	 'off' 'on'
+      	    descriptors = 'kernel_type' 'positivity'
+
+interface,
+	id_interface = 'LF1_INT'
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate evaluation_cache restart_file
+
+interface,
+	id_interface = 'LF2_INT'
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate evaluation_cache restart_file
+
+interface,
+	id_interface = 'LF3_INT'
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate evaluation_cache restart_file
+
+interface,
+	id_interface = 'LF4_INT'
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate evaluation_cache restart_file
+
+interface,
+	id_interface = 'HF_INT'
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)
+	no_gradients
+	no_hessians
