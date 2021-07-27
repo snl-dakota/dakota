@@ -34,9 +34,10 @@
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevelSampling.hpp"
-#include "NonDMultifidelitySampling.hpp"
-#include "NonDMultilevMultifidSampling.hpp"
+#include "NonDControlVariateSampling.hpp"
+#include "NonDMultilevControlVarSampling.hpp"
 #include "NonDACVSampling.hpp"
+#include "NonDMultifidelitySampling.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
 #include "NonDLHSEvidence.hpp"
@@ -502,12 +503,12 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
   case MULTIFIDELITY_SAMPLING:
     if (model.surrogate_type() == "hierarchical")
-      return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
+      return std::make_shared<NonDControlVariateSampling>(problem_db, model);
     else // non-hierarchical sampling supports #models > 2
-      return std::make_shared<NonDACVSampling>(problem_db, model);
+      return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
     break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
-    return std::make_shared<NonDMultilevMultifidSampling>(problem_db, model);
+    return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
     break;
   case APPROXIMATE_CONTROL_VARIATE:
     return std::make_shared<NonDACVSampling>(problem_db, model);

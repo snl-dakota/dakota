@@ -16,7 +16,7 @@
 #ifndef NOND_ACV_SAMPLING_H
 #define NOND_ACV_SAMPLING_H
 
-#include "NonDEnsembleSampling.hpp"
+#include "NonDNonHierarchSampling.hpp"
 //#include "DataMethod.hpp"
 
 
@@ -32,7 +32,7 @@ enum { R_ONLY_LINEAR_CONSTRAINT=1, R_AND_N_NONLINEAR_CONSTRAINT };
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDACVSampling: public NonDEnsembleSampling
+class NonDACVSampling: public NonDNonHierarchSampling
 {
 public:
 
@@ -66,21 +66,12 @@ protected:
   //- Heading: member functions
   //
 
-  void multifidelity_mc();
   void approximate_control_variate();
 
-  void shared_increment(size_t iter);
-  void shared_approx_increment(size_t iter);
-  bool approx_increment(const RealMatrix& eval_ratios,
-			const Sizet2DArray& N_L_refined,
-			const RealVector& hf_targets, size_t iter,
-			size_t start, size_t end);
   bool approx_increment(const RealVector& avg_eval_ratios,
 			const Sizet2DArray& N_L_refined, Real hf_target,
 			size_t iter, size_t start, size_t end);
 
-  void allocate_budget(const RealMatrix& eval_ratios, const RealVector& cost,
-		       RealVector& hf_targets);
   void allocate_budget(const RealVector& eval_ratios, const RealVector& cost,
 		       Real& hf_target);
 
@@ -88,19 +79,7 @@ protected:
 			const RealVector& cost, Real mse_ratio,
 			const RealVector& var_H, const SizetArray& N_H,
 			const RealVector& mse_iter0, Real& avg_hf_target);
-  void update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
-			 const RealVector& mse_ratios,  const RealVector& var_H,
-			 const SizetArray& N_H, const RealVector& mse_iter0,
-			 RealVector& hf_targets);
-  void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
 
-  void compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
-		      const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-		      const RealVector& sum_HH, const RealVector& cost,
-		      const Sizet2DArray& N_L_baseline, const SizetArray& N_H,
-		      const Sizet2DArray& N_LH, RealVector& var_H,
-		      RealMatrix& rho2_LH,      RealMatrix& eval_ratios,
-		      RealVector& mse_ratios);
   void compute_ratios(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 		      const RealSymMatrixArray& sum_LL,
 		      const RealMatrix& sum_LH, const RealVector& sum_HH,
@@ -115,27 +94,11 @@ private:
   //- Heading: Helper functions
   //
 
-  // manage response mode and active model key from {group,form,lev} triplet.
-  // seq_type defines the active dimension for a model sequence.
-  //void configure_indices(size_t group,size_t form,size_t lev,short seq_type);
-
-  void assign_active_key(size_t num_steps, size_t secondary_index,
-			 bool multilev);
-
-  void initialize_sums(IntRealMatrixMap& sum_L_baseline,
-		       IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,
-		       RealVector& sum_HH);
-  void initialize_mf_sums(IntRealMatrixMap& sum_L_baseline,
-			  IntRealVectorMap& sum_H,
-			  IntRealMatrixMap& sum_LL,
-			  IntRealMatrixMap& sum_LH, RealVector& sum_HH);
   void initialize_acv_sums(IntRealMatrixMap& sum_L_baseline,
 			   IntRealVectorMap& sum_H,
 			   IntRealSymMatrixArrayMap& sum_LL,
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH);
 
-  void initialize_mf_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
-			    Sizet2DArray& num_LH);
   void initialize_acv_counts(Sizet2DArray& num_L_baseline, SizetArray&  num_H,
 			     SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH);
 
@@ -144,11 +107,6 @@ private:
   //				  IntRealVectorMap& var_H);
 
   // shared_increment() cases:
-  void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
-			  IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
-			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
-			  Sizet2DArray& num_L_baseline, SizetArray& num_H,
-			  Sizet2DArray& num_LH);
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
 			   IntRealVectorMap& sum_H,
 			   IntRealSymMatrixArrayMap& sum_LL,
@@ -161,28 +119,10 @@ private:
 			   Sizet2DArray& num_L_baseline,
 			   SizetSymMatrixArray& num_LL);
   // approx_increment() cases:
-  void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
-			  IntRealMatrixMap& sum_L_refined,
-			  Sizet2DArray& num_L_shared,
-			  Sizet2DArray& num_L_refined,
-			  size_t approx_start, size_t approx_end);
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
 			   Sizet2DArray& num_L_refined,
 			   size_t approx_start, size_t approx_end);
 
-  void ensemble_sample_increment(size_t iter, size_t step);
-
-  //void increment_samples(size_t new_N, size_t start, size_t end,
-  //			   SizetArray& N_l);
-  void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
-				 size_t start, size_t end);
-
-  void compute_LH_correlation(const RealMatrix& sum_L_shared,
-			      const RealVector& sum_H, const RealMatrix& sum_LL,
-			      const RealMatrix& sum_LH,const RealVector& sum_HH,
-			      const Sizet2DArray& num_L,const SizetArray& num_H,
-			      const Sizet2DArray& num_LH, RealVector& var_H,
-			      RealMatrix& rho2_LH);
   void compute_LH_covariance(const RealMatrix& sum_L_shared,
 			     const RealVector& sum_H,  const RealMatrix& sum_LH,
 			     const Sizet2DArray& num_L, const SizetArray& num_H,
@@ -192,27 +132,17 @@ private:
 			     const Sizet2DArray& num_L,
 			     const SizetSymMatrixArray& num_LL,
 			     RealSymMatrixArray& cov_LL);
-  void compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
-			const SizetArray& num_Q,   RealVector& var_Q);
-  void compute_variance(const RealMatrix& sum_L,
-			const RealSymMatrixArray& sum_LL,
-			const Sizet2DArray& num_L, RealMatrix& var_L);
   void covariance_to_correlation_sq(const RealMatrix& cov_LH,
 				    const RealMatrix& var_L,
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
 
-  void compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1,
-			   Real sum_Q1Q2, Real sum_Q2Q2, size_t num_Q1,
-			   size_t num_Q2, size_t num_Q1Q2, Real& var_Q2,
-			   Real& rho2_Q1Q2);
-  void compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
-			  size_t num_Q1, size_t num_Q2, size_t num_Q1Q2,
-			  Real& cov_Q1Q2);
   void compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q);
-  
-  void mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
-			RealMatrix& eval_ratios);
+  void compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
+			const SizetArray& num_Q,       RealVector& var_Q);
+  void compute_variance(const RealMatrix& sum_L,
+			const RealSymMatrixArray& sum_LL,
+			const Sizet2DArray& num_L, RealMatrix& var_L);
 
   void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
@@ -224,16 +154,6 @@ private:
   void compute_Rsq(const RealSymMatrix& CF_inv, const RealVector& A,
 		   Real var_H_q, Real& R_sq_q);
 
-  void mfmc_raw_moments(IntRealMatrixMap& sum_L_baseline,
-			IntRealMatrixMap& sum_L_shared,
-			IntRealMatrixMap& sum_L_refined,
-			IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
-			IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
-			const Sizet2DArray& num_L_baseline,
-			const Sizet2DArray& num_L_shared,
-			const Sizet2DArray& num_L_refined,
-			const SizetArray& num_H,
-			const Sizet2DArray& num_LH, RealMatrix& H_raw_mom);
   void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
 		       IntRealSymMatrixArrayMap& sum_LL,
@@ -245,9 +165,6 @@ private:
 		       const SizetSymMatrixArray& num_LL,
 		       const Sizet2DArray& num_LH, RealMatrix& H_raw_mom);
 
-  void compute_mfmc_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-			    size_t num_L, size_t num_H, size_t num_LH,
-			    Real& beta);
   void compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 			   const RealMatrix& cov_LH, size_t qoi,
 			   RealVector& beta);
@@ -257,9 +174,6 @@ private:
 			   const SizetSymMatrix& num_LL_q,
 			   const Sizet2DArray& num_LH, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
-
-  void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
-		     size_t num_refined, Real beta, Real& H_raw_mom);
 
   /// objective helper function shared by NPSOL/OPT++ static evaluators
   Real objective_function(const RealVector& r_and_N);
@@ -297,16 +211,6 @@ private:
   /// to different variable sets and different linear/nonlinear constraints
   unsigned short optSubProblemForm;
 
-  /// number of approximation models managed by non-hierarchical iteratedModel
-  size_t numApprox;
-  /// type of model sequence enumerated with primary MF/ACV loop over steps
-  short sequenceType;
-  /// setting for the inactive model dimension not traversed by primary MF/ACV
-  /// loop over steps
-  size_t secondaryIndex;
-  /// relative costs of models within sequence of steps
-  RealVector sequenceCost;
-
   /// variances for HF truth (length numFunctions)
   RealVector varH;
   /// number of evaluations of HF truth model (length numFunctions)
@@ -328,38 +232,6 @@ private:
 
 
 inline void NonDACVSampling::
-initialize_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
-		IntRealMatrixMap& sum_LH,         RealVector&       sum_HH)
-{
-  // sum_* are running sums across all increments
-  std::pair<int, RealVector> vec_pr; std::pair<int, RealMatrix> mat_pr;
-  for (int i=1; i<=4; ++i) {
-    vec_pr.first = mat_pr.first = i; // moment number
-    // std::map::insert() returns std::pair<IntRVMIter, bool>:
-    // use iterator to size Real{Vector,Matrix} in place and init sums to 0
-    sum_L_baseline.insert(mat_pr).first->second.shape(numFunctions, numApprox);
-    sum_H.insert(vec_pr).first->second.size(numFunctions);
-    sum_LH.insert(mat_pr).first->second.shape(numFunctions, numApprox);
-  }
-  sum_HH.size(numFunctions);
-}
-
-
-inline void NonDACVSampling::
-initialize_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
-		   IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
-		   RealVector& sum_HH)
-{
-  initialize_sums(sum_L_baseline, sum_H, sum_LH, sum_HH);
-  std::pair<int, RealMatrix> mat_pr;
-  for (int i=1; i<=4; ++i) {
-    mat_pr.first = i; // moment number
-    sum_LL.insert(mat_pr).first->second.shape(numFunctions, numApprox);
-  }
-}
-
-
-inline void NonDACVSampling::
 initialize_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		    IntRealSymMatrixArrayMap& sum_LL, IntRealMatrixMap& sum_LH,
 		    RealVector& sum_HH)
@@ -377,23 +249,10 @@ initialize_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 
 
 inline void NonDACVSampling::
-initialize_mf_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
-		     Sizet2DArray& num_LH)
-{
-  num_H.assign(numFunctions, 0);
-  num_L_baseline.resize(numApprox);  num_LH.resize(numApprox);
-  for (size_t approx=0; approx<numApprox; ++approx) {
-    num_L_baseline[approx].assign(numFunctions,0);
-    num_LH[approx].assign(numFunctions,0);
-  }
-}
-
-
-inline void NonDACVSampling::
 initialize_acv_counts(Sizet2DArray& num_L_baseline,  SizetArray& num_H,
 		      SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH)
 {
-  initialize_mf_counts(num_L_baseline, num_H, num_LH);
+  initialize_counts(num_L_baseline, num_H, num_LH);
   num_LL.resize(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     num_LL[qoi].shape(numApprox);
@@ -421,30 +280,6 @@ initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
 
 
 inline void NonDACVSampling::
-allocate_budget(const RealMatrix& eval_ratios, const RealVector& cost,
-		RealVector& hf_targets)
-{
-  // Scale this profile based on specified budget (maxFunctionEvals) if needed
-  // using N_H = maxFunctionEvals / cost^T eval_ratios
-  // > Pilot case iter = 0: can only scale back after shared_increment().
-  //   Optimal profile can be hidden by one_sided_delta() with pilot --> optimal
-  //   shape emerges from initialization cost as for ML cases controlled by
-  //   convTol (allow budget overshoot due to overlap of optimal with pilot,
-  //   rather than strictly allocating remaining budget)
-
-  if (hf_targets.empty()) hf_targets.sizeUninitialized(numFunctions);
-  size_t qoi, approx;
-  Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    inner_prod = cost_H; // raw cost (un-normalized)
-    for (approx=0; approx<numApprox; ++approx)
-      inner_prod += cost[approx] * eval_ratios(qoi, approx);
-    hf_targets[qoi] = budget / inner_prod * cost_H; // normalized to equivHF
-  }
-}
-
-
-inline void NonDACVSampling::
 allocate_budget(const RealVector& eval_ratios, const RealVector& cost,
 		Real& hf_target)
 {
@@ -456,99 +291,6 @@ allocate_budget(const RealVector& eval_ratios, const RealVector& cost,
   for (size_t approx=0; approx<numApprox; ++approx)
     inner_prod += cost[approx] * eval_ratios[approx];
   hf_target = budget / inner_prod * cost_H; // normalized to equivHF
-}
-
-
-/*
-inline void NonDACVSampling::
-increment_samples(size_t new_N, size_t start, size_t end, SizetArray& N_l)
-{
-  size_t i, len = N_l.size();
-  if (start > end || end > len) {
-    Cerr << "Error: index range [" << start << "," << end << ") violates size ("
-	 << len << ") in NonDACVSampling::increment_samples()" << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  for (i=start; i<end; ++i)
-    N_l[i] += new_N;
-}
-*/
-
-
-inline void NonDACVSampling::
-increment_equivalent_cost(size_t new_samp, const RealVector& cost,
-			  size_t start, size_t end)
-{
-  size_t i, len = cost.length(), hf_index = len-1;
-  Real cost_ref = cost[hf_index];
-  if (end == len)
-    { equivHFEvals += new_samp; --end; }
-  for (i=start; i<end; ++i)
-    equivHFEvals += (Real)new_samp * cost[i] / cost_ref;
-}
-
-
-inline void NonDACVSampling::
-update_hf_targets(const SizetArray& N_H, RealVector& hf_targets)
-{
-  size_t i, len = N_H.size();
-  if (hf_targets.length() != len) hf_targets.sizeUninitialized(len);
-  for (i=0; i<len; ++i)
-    hf_targets[i] = (Real)N_H[i];
-}
-
-
-inline void NonDACVSampling::
-compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
-		    Real sum_Q2Q2, size_t num_Q1, size_t num_Q2, size_t num_Q1Q2,
-		    Real& var_Q2, Real& rho2_Q1Q2)
-{
-  Real //bessel_corr_Q1   = (Real)num_Q1   / (Real)(num_Q1   - 1),
-         bessel_corr_Q2   = (Real)num_Q2   / (Real)(num_Q2   - 1);
-       //bessel_corr_Q1Q2 = (Real)num_Q1Q2 / (Real)(num_Q1Q2 - 1);
-
-  // unbiased mean estimator X-bar = 1/N * sum
-  Real mu_Q1 = sum_Q1 / num_Q1, mu_Q2 = sum_Q2 / num_Q2;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  Real var_Q1 = (sum_Q1Q1 / num_Q1   - mu_Q1 * mu_Q1),// * bessel_corr_Q1,
-     cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2);// * bessel_corr_Q1Q2; // *** TO DO: review Bessel correction derivation for fault tolerance --> not the same N to pull out over N-1
-  var_Q2      = (sum_Q2Q2 / num_Q2   - mu_Q2 * mu_Q2);// * bessel_corr_Q2;
-
-  //beta  = cov_Q1Q2 / var_Q1;
-  rho2_Q1Q2 = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // bessel corrs cancel
-  var_Q2   *= bessel_corr_Q2; // now apply corr where required
-  //Cout << "compute_correlation: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
-  //     << " sum_Q1Q2 = " << sum_Q1Q2  << " num_Q1 = " << num_Q1 <<" num_Q2 = "
-  //     << num_Q2 << " num_Q1Q2 = " << num_Q1Q2 << std::endl;
-
-  //Cout << "compute_correlation: rho2_Q1Q2 w/o bessel = " << rho2_Q1Q2;
-  //var_Q1   *= bessel_corr_Q1;
-  //cov_Q1Q2 *= bessel_corr_Q1Q2;
-  //Real rho2_Q1Q2_incl = cov_Q1Q2 / var_Q1 * cov_Q1Q2 / var_Q2; // incl bessel
-  //Cout << " rho2_Q1Q2 w/ bessel = " << rho2_Q1Q2_incl << " ratio = "
-  //     << rho2_Q1Q2/rho2_Q1Q2_incl << std::endl;
-}
-
-
-inline void NonDACVSampling::
-compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t num_Q1,
-		   size_t num_Q2, size_t num_Q1Q2, Real& cov_Q1Q2)
-{
-  Real //bessel_corr_Q1 = (Real)num_Q1   / (Real)(num_Q1   - 1),
-       //bessel_corr_Q2 = (Real)num_Q2   / (Real)(num_Q2   - 1),
-       bessel_corr_Q1Q2 = (Real)num_Q1Q2 / (Real)(num_Q1Q2 - 1);
-
-  // unbiased mean estimator X-bar = 1/N * sum
-  Real mu_Q1 = sum_Q1 / num_Q1,  mu_Q2 = sum_Q2 / num_Q2;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  cov_Q1Q2 = (sum_Q1Q2 / num_Q1Q2 - mu_Q1 * mu_Q2) * bessel_corr_Q1Q2; // *** TO DO: review Bessel correction derivation for fault tolerance --> not the same N to pull out over N-1
-
-  //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
-  //     << " sum_Q1Q2 = " << sum_Q1Q2 << " num_Q1 = " << num_Q1 << " num_Q2 = "
-  //     << num_Q2 << " num_Q1Q2 = " << num_Q1Q2 << " cov_Q1Q2 = " << cov_Q1Q2
-  //     << std::endl;
 }
 
 
@@ -608,36 +350,6 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
       rho2_LH(qoi,approx) = cov_LH_aq / var_L(qoi,approx) * cov_LH_aq / var_H_q;
     }
   }
-}
-
-
-inline void NonDACVSampling::
-compute_mfmc_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-		     size_t num_L, size_t num_H, size_t num_LH, Real& beta)
-{
-  // unbiased mean estimator X-bar = 1/N * sum
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  //Real bessel_corr_L  = (Real)num_L  / (Real)(num_L  - 1),
-  //     bessel_corr_H  = (Real)num_H  / (Real)(num_H  - 1);
-  //     bessel_corr_LH = (Real)num_LH / (Real)(num_LH - 1);
-  Real  mu_L  =  sum_L  / num_L,   mu_H = sum_H / num_H,
-       var_L  = (sum_LL / num_L  - mu_L * mu_L),// * bessel_corr_L, // defer
-     //var_H  = (sum_HH / num_H  - mu_H * mu_H),// * bessel_corr_H, // defer
-       cov_LH = (sum_LH / num_LH - mu_L * mu_H);// * bessel_corr_LH;// defer
-
-  // beta^* = rho_LH sigma_H / sigma_L (same expression as two model case)
-  //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
-  // Allow different sample counts --> don't cancel bessel_corr:
-  beta = cov_LH / var_L;
-
-  //Cout << "compute_mfmc_control: num_L = " << num_L << " num_H = " << num_H
-  //     << " num_LH = " << num_LH << std::endl;
-  //Cout << "compute_mfmc_control: beta w/o bessel = " << beta;
-  //var_L  *= bessel_corr_L;
-  //cov_LH *= bessel_corr_LH;
-  //Real beta_incl = cov_LH / var_L; // includes bessel corrs
-  //Cout << " beta w/ bessel = " << beta_incl << " ratio = " << beta/beta_incl << std::endl;
 }
 
 
@@ -783,21 +495,6 @@ compute_acv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
 
   // forward to overload:
   compute_acv_control(cov_LL, F, cov_LH, qoi, beta);
-}
-
-
-inline void NonDACVSampling::
-apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
-	      size_t num_L_refined, Real beta, Real& H_raw_mom)
-{
-  // apply control for HF uncentered raw moment estimates:
-  H_raw_mom -= beta * (sum_L_shared  / num_L_shared - // mu from shared samples
-		       sum_L_refined / num_L_refined);// refined mu w/ increment
-
-  //Cout <<  "sum_L_shared = "  << sum_L_shared
-  //     << " sum_L_refined = " << sum_L_refined
-  //     << " num_L_shared = "  << num_L_shared
-  //     << " num_L_refined = " << num_L_refined << std::endl; 
 }
 
 } // namespace Dakota
