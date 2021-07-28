@@ -187,8 +187,8 @@ protected:
 
 
 inline SOLBase::SOLBase():
-  linConstraintMatrixF77(NULL), upperFactorHessianF77(NULL),
-  constraintJacMatrixF77(NULL)
+  boundsArraySize(0), linConstraintMatrixF77(NULL),
+  upperFactorHessianF77(NULL), constraintJacMatrixF77(NULL)
 { }
 
 

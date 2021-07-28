@@ -27,7 +27,9 @@ SOLBase*   SOLBase::solInstance(NULL);
 Minimizer* SOLBase::optLSqInstance(NULL);
 
 
-SOLBase::SOLBase(Model& model)
+SOLBase::SOLBase(Model& model):
+  boundsArraySize(0), linConstraintMatrixF77(NULL),
+  upperFactorHessianF77(NULL), constraintJacMatrixF77(NULL)
 {
   // Prevent nesting of an instance of a Fortran iterator within another
   // instance of the same iterator (which would result in data clashes since
