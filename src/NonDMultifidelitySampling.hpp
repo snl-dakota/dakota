@@ -118,20 +118,19 @@ private:
 			      const Sizet2DArray& num_LH, RealVector& var_H,
 			      RealMatrix& rho2_LH);
   
-  void mfmc_raw_moments(IntRealMatrixMap& sum_L_baseline,
-			IntRealMatrixMap& sum_L_shared,
-			IntRealMatrixMap& sum_L_refined,
-			IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
-			IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
-			const Sizet2DArray& num_L_baseline,
-			const Sizet2DArray& num_L_shared,
-			const Sizet2DArray& num_L_refined,
-			const SizetArray& num_H,
-			const Sizet2DArray& num_LH, RealMatrix& H_raw_mom);
+  void mf_raw_moments(IntRealMatrixMap& sum_L_baseline,
+		      IntRealMatrixMap& sum_L_shared,
+		      IntRealMatrixMap& sum_L_refined,
+		      IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
+		      IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
+		      const Sizet2DArray& num_L_baseline,
+		      const Sizet2DArray& num_L_shared,
+		      const Sizet2DArray& num_L_refined,
+		      const SizetArray& num_H, const Sizet2DArray& num_LH,
+		      RealMatrix& H_raw_mom);
 
-  void compute_mfmc_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-			    size_t num_L, size_t num_H, size_t num_LH,
-			    Real& beta);
+  void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
 
   //
   //- Heading: Data
@@ -189,32 +188,28 @@ update_hf_targets(const SizetArray& N_H, RealVector& hf_targets)
 
 
 inline void NonDMultifidelitySampling::
-compute_mfmc_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-		     size_t num_L, size_t num_H, size_t num_LH, Real& beta)
+compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+		   size_t num_L, size_t num_H, size_t num_LH, Real& beta)
 {
   // unbiased mean estimator X-bar = 1/N * sum
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  //Real bessel_corr_L  = (Real)num_L  / (Real)(num_L  - 1),
-  //     bessel_corr_H  = (Real)num_H  / (Real)(num_H  - 1);
-  //     bessel_corr_LH = (Real)num_LH / (Real)(num_LH - 1);
-  Real  mu_L  =  sum_L  / num_L,   mu_H = sum_H / num_H,
-       var_L  = (sum_LL / num_L  - mu_L * mu_L),// * bessel_corr_L, // defer
-     //var_H  = (sum_HH / num_H  - mu_H * mu_H),// * bessel_corr_H, // defer
-       cov_LH = (sum_LH / num_LH - mu_L * mu_H);// * bessel_corr_LH;// defer
 
   // beta^* = rho_LH sigma_H / sigma_L (same expression as two model case)
   //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
-  // Allow different sample counts --> don't cancel bessel_corr:
-  beta = cov_LH / var_L;
 
-  //Cout << "compute_mfmc_control: num_L = " << num_L << " num_H = " << num_H
-  //     << " num_LH = " << num_LH << std::endl;
-  //Cout << "compute_mfmc_control: beta w/o bessel = " << beta;
-  //var_L  *= bessel_corr_L;
-  //cov_LH *= bessel_corr_LH;
-  //Real beta_incl = cov_LH / var_L; // includes bessel corrs
-  //Cout << " beta w/ bessel = " << beta_incl << " ratio = " << beta/beta_incl << std::endl;
+  Real mu_L = sum_L / num_L;
+  if (num_L != num_LH || num_H != num_LH) {
+    Real mu_H = sum_H / num_H,
+      var_L  = (sum_LL - mu_L * sum_L) / (Real)(num_L - 1), // bessel corr for L
+    //var_H  = (sum_HH - mu_H * sum_H) / (Real)(num_H - 1), // bessel corr for H
+      cov_LH = (sum_LH - mu_L * mu_H * num_LH) / (Real)(num_LH - 1);// bessel LH
+    beta = cov_LH / var_L;
+  }
+  else // simplify: cancel shared terms
+    beta = (sum_LH - mu_L * sum_H) / (sum_LL - mu_L * sum_L);
+
+  //Cout << "compute_mf_control: num_L = " << num_L << " num_H = " << num_H
+  //     << " num_LH = " << num_LH << " beta = " << beta;
 }
 
 } // namespace Dakota

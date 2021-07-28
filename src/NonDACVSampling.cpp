@@ -692,7 +692,6 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
     // rather than update an iteratedModel, we must update the Minimizer for
     // use by user-functions mode
-    // *** TO DO ***: implementation required for SNLL{Base,Optimizer}
     varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
 					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
     break;
@@ -703,6 +702,7 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
     // *** TO DO ***: verify for SNLLOptimizer (appears to need nlf_obj->setX())
     varianceMinimizer.initial_point(cv0);
 
+    /*
     // For this case, could allow the optimal profile to emerge from pilot by
     // allowing N* less than the incurred cost (e.g., setting N_lb to 1), but
     // instead we target r*,N* subject to the incurred cost of shared samples
@@ -711,8 +711,8 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
     RealVector  x_lb(num_cdv, false), x_ub(num_cdv, false);
     x_lb = 1.;  x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5);
     x_ub = DBL_MAX; // no upper bounds
-    // *** TO DO ***: implementation required for SNLL{Base,Optimizer}
-    //varianceMinimizer.variable_bounds(x_lb, x_ub);
+    varianceMinimizer.variable_bounds(x_lb, x_ub);
+    */
 
     // Consider adding linear constraints suggested in ACV paper
     break;

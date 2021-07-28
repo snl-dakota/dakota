@@ -106,34 +106,23 @@ public:
 
   /// alternate constructor for instantiations "on the fly"
   NPSOLOptimizer(const RealVector& initial_point,
-    const RealVector& var_lower_bnds,  const RealVector& var_upper_bnds,
-    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lower_bnds,
-    const RealVector& lin_ineq_upper_bnds, const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_targets, const RealVector& nonlin_ineq_lower_bnds,
-    const RealVector& nonlin_ineq_upper_bnds,
-    const RealVector& nonlin_eq_targets, 
-    void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
-    void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
-			   double*, int&),
-    int derivative_level, Real conv_tol);
-
-  /// alternate constructor for instantiations "on the fly" with additional NPSOL settings
-  NPSOLOptimizer(const RealVector& initial_point, 
-  const RealVector& var_lower_bnds, const RealVector& var_upper_bnds,
-  const RealMatrix& lin_ineq_coeffs,
-  const RealVector& lin_ineq_lower_bnds,
-  const RealVector& lin_ineq_upper_bnds,
-  const RealMatrix& lin_eq_coeffs,
-  const RealVector& lin_eq_targets,
-  const RealVector& nonlin_ineq_lower_bnds,
-  const RealVector& nonlin_ineq_upper_bnds,
-  const RealVector& nonlin_eq_targets,
-  void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
-  void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
-       double*, int&),
-  int derivative_level, Real conv_tol,
-  const Real function_precision, const Real feas_tol, 
-  const Real lin_feas_tol, const Real nonlin_feas_tol);
+		 const RealVector& var_lower_bnds,
+		 const RealVector& var_upper_bnds,
+		 const RealMatrix& lin_ineq_coeffs,
+		 const RealVector& lin_ineq_lower_bnds,
+		 const RealVector& lin_ineq_upper_bnds,
+		 const RealMatrix& lin_eq_coeffs,
+		 const RealVector& lin_eq_targets,
+		 const RealVector& nonlin_ineq_lower_bnds,
+		 const RealVector& nonlin_ineq_upper_bnds,
+		 const RealVector& nonlin_eq_targets,
+		 void (*user_obj_eval) (int&, int&, double*, double&,
+					double*, int&),
+		 void (*user_con_eval) (int&, int&, int&, int&, int*,
+					double*, double*, double*, int&),
+		 int derivative_level,   Real conv_tol = 0.,
+		 Real fn_precision = 0., Real feas_tol = 0.,
+		 Real lin_feas_tol = 0., Real nonlin_feas_tol = 0.);
 
   ~NPSOLOptimizer(); ///< destructor
     

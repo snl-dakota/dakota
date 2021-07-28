@@ -228,15 +228,14 @@ compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   // unbiased mean estimator X-bar = 1/N * sum
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  //Real  mu_L =  sum_L  / N_shared,  mu_H = sum_H / N_shared;
-  //Real var_L = (sum_LL / N_shared - mu_L * mu_L) * bessel_corr,
-  //    cov_LH = (sum_LH / N_shared - mu_L * mu_H) * bessel_corr;
+  Real  mu_L =  sum_L  / N_shared; //, mu_H = sum_H / N_shared,
+  //   var_L = (sum_LL / N_shared - mu_L * mu_L) * bessel_corr,
+  //  cov_LH = (sum_LH / N_shared - mu_L * mu_H) * bessel_corr;
 
   // beta^* = rho_LH sigma_H / sigma_L
   //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
-  // Cancel one repeated N_shared and bessel_corr within cov_LH / var_L:
-  beta = (sum_LH - sum_L * sum_H / N_shared)
-       / (sum_LL - sum_L * sum_L / N_shared);
+  // Cancel shared terms within cov_LH / var_L:
+  beta = (sum_LH - mu_L * sum_H) / (sum_LL - mu_L * sum_L);
 }
 
 
@@ -266,18 +265,18 @@ inline void NonDControlVariateSampling::
 compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 		       Real sum_HH, size_t N_shared, Real& var_H, Real& rho2_LH)
 {
-  Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
+  //Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
 
   // unbiased mean estimator X-bar = 1/N * sum
   Real mu_L = sum_L / N_shared, mu_H = sum_H / N_shared;
   // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
   // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  Real var_L = (sum_LL / N_shared - mu_L * mu_L) * bessel_corr,
-      cov_LH = (sum_LH / N_shared - mu_L * mu_H) * bessel_corr;
-  var_H      = (sum_HH / N_shared - mu_H * mu_H) * bessel_corr;
+  Real var_L = (sum_LL - mu_L * sum_L),// / (Real)(N_shared - 1),
+      cov_LH = (sum_LH - mu_L * sum_H);// / (Real)(N_shared - 1);
+  var_H      = (sum_HH - mu_H * sum_H);// / (Real)(N_shared - 1);
 
-  //beta  = cov_LH / var_L;
-  rho2_LH = cov_LH / var_L * cov_LH / var_H;
+  rho2_LH = cov_LH / var_L * cov_LH / var_H; // bessel corrs would cancel
+  var_H  /= (Real)(N_shared - 1); // now apply denom portion of bessel
 }
 
 

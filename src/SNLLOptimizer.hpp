@@ -132,24 +132,11 @@ public:
     const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
     const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
     void (*user_obj_eval) (int mode, int n, const RealVector& x, double& f,
-			   RealVector& grad_f, int& result_mode),
-    void (*user_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
-			   RealMatrix& grad_g, int& result_mode));
-
-  /// alternate constructor for instantiations "on the fly", also specifying different optimizer properties
-  SNLLOptimizer(const RealVector& initial_pt,
-    const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
-    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
-    const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
-    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
-    void (*user_obj_eval) (int mode, int n, const RealVector& x, double& f,
          RealVector& grad_f, int& result_mode),
     void (*user_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
          RealMatrix& grad_g, int& result_mode), 
-    size_t max_iter, size_t max_eval, const Real conv_tol,
-    const Real grad_tol, Real max_step);
-
+    size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
+    Real grad_tol = 1.e-4, Real   max_step = 1000.);
 
   ~SNLLOptimizer(); ///< destructor
     
@@ -165,6 +152,16 @@ public:
   void declare_sources();
 
   void initial_point(const RealVector& pt);
+  void variable_bounds(const RealVector& cv_lower_bnds,
+		       const RealVector& cv_upper_bnds);
+  void linear_constraints(const RealMatrix& lin_ineq_coeffs,
+			  const RealVector& lin_ineq_l_bnds,
+			  const RealVector& lin_ineq_u_bnds,
+			  const RealMatrix& lin_eq_coeffs,
+			  const RealVector& lin_eq_targets);
+  void nonlinear_constraints(const RealVector& nln_ineq_l_bnds,
+			     const RealVector& nln_ineq_u_bnds,
+			     const RealVector& nln_eq_targets);
 
 protected:
 
@@ -298,17 +295,66 @@ private:
   /// (user-supplied functions mode for "on the fly" instantiations).
   /// NonDReliability currently uses the user_functions mode.
   String setUpType;
-  /// holds initial point passed in for "user_functions" mode.
+  /// initial point used in "user_functions" mode
   RealVector initialPoint;
-  /// holds variable lower bounds passed in for "user_functions" mode.
+  /// variable lower bounds used in "user_functions" mode
   RealVector lowerBounds;
-  /// holds variable upper bounds passed in for "user_functions" mode.
+  /// variable upper bounds used in "user_functions" mode
   RealVector upperBounds;
+  /// linear inequality constraint coefficients used in "user_functions" mode
+  RealMatrix linIneqCoeffs;
+  /// linear inequality constraint lower bounds used in "user_functions" mode
+  RealVector linIneqLowerBnds;
+  /// linear inequality constraint upper bounds used in "user_functions" mode
+  RealVector linIneqUpperBnds;
+  /// linear equality constraint coefficients used in "user_functions" mode
+  RealMatrix linEqCoeffs;
+  /// linear equality constraint targets used in "user_functions" mode
+  RealVector linEqTargets;
+  /// nonlinear inequality constraint lower bounds used in "user_functions" mode
+  RealVector nlnIneqLowerBnds;
+  /// nonlinear inequality constraint upper bounds used in "user_functions" mode
+  RealVector nlnIneqUpperBnds;
+  /// nonlinear equality constraint targets used in "user_functions" mode
+  RealVector nlnEqTargets;
 };
 
 
 inline void SNLLOptimizer::initial_point(const RealVector& pt)
 { copy_data(pt, initialPoint); } // protect from incoming view
+
+
+inline void SNLLOptimizer::
+variable_bounds(const RealVector& cv_lower_bnds,
+		const RealVector& cv_upper_bnds)
+{
+  copy_data(cv_lower_bnds, lowerBounds); // protect from incoming view
+  copy_data(cv_upper_bnds, upperBounds); // protect from incoming view
+}
+
+
+inline void SNLLOptimizer::
+linear_constraints(const RealMatrix& lin_ineq_coeffs,
+		   const RealVector& lin_ineq_l_bnds,
+		   const RealVector& lin_ineq_u_bnds,
+		   const RealMatrix& lin_eq_coeffs,
+		   const RealVector& lin_eq_targets)
+{
+  linIneqCoeffs    = lin_ineq_coeffs;  linEqCoeffs      = lin_eq_coeffs;
+  linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
+  linEqTargets     = lin_eq_targets;
+}
+
+
+inline void SNLLOptimizer::
+nonlinear_constraints(const RealVector& nln_ineq_l_bnds,
+		      const RealVector& nln_ineq_u_bnds,
+		      const RealVector& nln_eq_targets)
+{
+  nlnIneqLowerBnds = nln_ineq_l_bnds;
+  nlnIneqUpperBnds = nln_ineq_u_bnds;
+  nlnEqTargets     = nln_eq_targets;
+}
 
 } // namespace Dakota
 

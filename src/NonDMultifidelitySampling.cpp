@@ -143,9 +143,9 @@ void NonDMultifidelitySampling::multifidelity_mc()
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
-  mfmc_raw_moments(sum_L_baseline, sum_L_shared, sum_L_refined, sum_H, sum_LL,
-		   sum_LH, N_L_baseline, N_L_shared, N_L_refined, num_H, N_LH,
-		   H_raw_mom);
+  mf_raw_moments(sum_L_baseline, sum_L_shared, sum_L_refined, sum_H, sum_LL,
+		 sum_LH, N_L_baseline, N_L_shared, N_L_refined, num_H, N_LH,
+		 H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
 
@@ -390,35 +390,6 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 	      }
 	      prod *= fn_val;  ++active_ord;
 	    }
-
-	    /*
-	    if (approx < shared_end) {
-	      ++num_L_sh_a[qoi];
-	      ls_it = sum_L_shared.begin();
-	      ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
-	      active_ord = 1;
-	      while (ls_ord) { // Low shared
-		if (ls_ord == active_ord) { // support general key sequence
-		  ls_it->second(qoi,approx) += prod;  ++ls_it;
-		  ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
-		}
-		prod *= fn_val;  ++active_ord; // ***
-	      }
-	    }
-
-	    // index for refined accumulation is 1 more than last shared
-	    ++num_L_ref_a[qoi];
-	    lr_it = sum_L_refined.begin();
-	    lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
-	    active_ord = 1;
-	    while (lr_ord) { // Low refined
-	      if (lr_ord == active_ord) { // support general key sequence
-		lr_it->second(qoi,approx) += prod;  ++lr_it;
-		lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
-	      }
-	      prod *= fn_val;  ++active_ord; // ***
-	    }
-	    */
 	  }
 	//}
       }
@@ -502,15 +473,13 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
 
 
 void NonDMultifidelitySampling::
-mfmc_raw_moments(IntRealMatrixMap& sum_L_baseline,
-		 IntRealMatrixMap& sum_L_shared,
-		 IntRealMatrixMap& sum_L_refined, IntRealVectorMap& sum_H,
-		 IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
-		 //const RealMatrix& rho2_LH,
-		 const Sizet2DArray& N_L_baseline,
-		 const Sizet2DArray& N_L_shared,
-		 const Sizet2DArray& N_L_refined, const SizetArray& N_H,
-		 const Sizet2DArray& N_LH,        RealMatrix& H_raw_mom)
+mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
+	       IntRealMatrixMap& sum_L_refined,  IntRealVectorMap& sum_H,
+	       IntRealMatrixMap& sum_LL,         IntRealMatrixMap& sum_LH,
+	       //const RealMatrix& rho2_LH,
+	       const Sizet2DArray& N_L_baseline, const Sizet2DArray& N_L_shared,
+	       const Sizet2DArray& N_L_refined,  const SizetArray& N_H,
+	       const Sizet2DArray& N_LH,         RealMatrix& H_raw_mom)
 {
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
 
@@ -532,10 +501,10 @@ mfmc_raw_moments(IntRealMatrixMap& sum_L_baseline,
       H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
       for (approx=0; approx<numApprox; ++approx) {
 	// Uses a baseline {sum,N}_L consistent with H,LL,LH accumulators:
-	compute_mfmc_control(sum_L_base_m(qoi,approx), sum_H_mq,
-			     sum_LL_m(qoi,approx), sum_LH_m(qoi,approx),
-			     N_L_baseline[approx][qoi], N_H_q,
-			     N_LH[approx][qoi], beta); // shared HF baseline
+	compute_mf_control(sum_L_base_m(qoi,approx), sum_H_mq,
+			   sum_LL_m(qoi,approx), sum_LH_m(qoi,approx),
+			   N_L_baseline[approx][qoi], N_H_q,
+			   N_LH[approx][qoi], beta); // shared HF baseline
 	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1
 	       << ": control variate beta = " << std::setw(9) << beta << '\n';

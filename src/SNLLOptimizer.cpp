@@ -262,7 +262,8 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
+  Optimizer(method_string_to_enum(method_string), model,
+	    std::shared_ptr<TraitsBase>(new SNLLTraits())),
   // use default SNLLBase ctor
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
   theOptimizer(NULL), setUpType("model")
@@ -294,54 +295,6 @@ SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
 
 /** This is an alternate constructor for performing an optimization using
     the passed in objective function and constraint function pointers. */
-SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt, 
-  const RealVector& var_l_bnds, const RealVector& var_u_bnds,
-  const RealMatrix& lin_ineq_coeffs,
-  const RealVector& lin_ineq_l_bnds,
-  const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
-  const RealVector& lin_eq_tgts, const RealVector& nln_ineq_l_bnds,
-  const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
-  void (*user_obj_eval) (int mode, int n, const RealVector& x,
-			 double& f, RealVector& grad_f,
-			 int& result_mode),
-  void (*user_con_eval) (int mode, int n, const RealVector& x, 
-			 RealVector& g, RealMatrix& grad_g,
-			 int& result_mode) ): // use default SNLLBase ctor
-  Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0, 0,
-	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
-	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
-            std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"), initialPoint(initial_pt),
-  lowerBounds(var_l_bnds), upperBounds(var_u_bnds)
-{
-  for (size_t i=0; i<numContinuousVars; i++)
-    if (lowerBounds[i] > -bigRealBoundSize || upperBounds[i] < bigRealBoundSize)
-      { boundConstraintFlag = true; break; }
-
-  // convenience function from SNLLBase: use defaults since no specification
-  snll_pre_instantiate(boundConstraintFlag, numConstraints);
-
-  // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
-  default_instantiate_q_newton(user_obj_eval, user_con_eval);
-
-  // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., 100, 1000, 1.e-4,
-			1.e-4, 1000., boundConstraintFlag, numConstraints,
-			outputLevel, theOptimizer, nlfObjective, NULL, NULL);
-
-  // this can be called from the ctor (avoids caching of constraint arrays
-  // within the class) since no Model updates need to be captured
-  snll_initialize_run(nlfObjective, nlpConstraint, initialPoint,
-		      boundConstraintFlag, lowerBounds, upperBounds,
-		      lin_ineq_coeffs, lin_ineq_l_bnds, lin_ineq_u_bnds,
-		      lin_eq_coeffs, lin_eq_tgts, nln_ineq_l_bnds,
-		      nln_ineq_u_bnds, nln_eq_tgts);
-}
-
-/** This is an alternate constructor for performing an optimization using
-    the passed in objective function and constraint function pointers additionally
-    specifing optimizaton settings. */
 SNLLOptimizer::
 SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      const RealVector& var_u_bnds, const RealMatrix& lin_ineq_coeffs,
@@ -355,17 +308,25 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 				     int& result_mode),
 	      void (*user_con_eval) (int mode, int n, const RealVector& x, 
 				     RealVector& g, RealMatrix& grad_g,
-				     int& result_mode), 
-	      size_t max_iter, size_t max_eval, const Real conv_tol,
-	      const Real grad_tol, Real max_step): // use default SNLLBase ctor
+				     int& result_mode),
+	      size_t max_iter, size_t max_eval, Real conv_tol,
+	      Real grad_tol, Real max_step):
+  // use default SNLLBase ctor
   Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0, 0,
-      lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
-      nln_ineq_l_bnds.length(), nln_eq_tgts.length(),
+	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
+	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
             std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"), initialPoint(initial_pt),
-  lowerBounds(var_l_bnds), upperBounds(var_u_bnds)
+  theOptimizer(NULL), setUpType("user_functions"),
+  linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
+  linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
+  linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
+  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
 {
+  copy_data(initial_pt, initialPoint); // protect from incoming view
+  copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
+  copy_data(var_u_bnds, upperBounds);  // protect from incoming view
+
   for (size_t i=0; i<numContinuousVars; i++)
     if (lowerBounds[i] > -bigRealBoundSize || upperBounds[i] < bigRealBoundSize)
       { boundConstraintFlag = true; break; }
@@ -378,15 +339,9 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 
   // convenience function from SNLLBase: use defaults since no specification
   snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
-    conv_tol, grad_tol, max_step, boundConstraintFlag, numConstraints,
-    outputLevel, theOptimizer, nlfObjective, NULL, NULL);
-
-  // this can be called from the ctor (avoids caching of constraint arrays
-  // within the class) since no Model updates need to be captured
-  snll_initialize_run(nlfObjective, nlpConstraint, initialPoint,
-    boundConstraintFlag, lowerBounds, upperBounds, lin_ineq_coeffs,
-    lin_ineq_l_bnds, lin_ineq_u_bnds, lin_eq_coeffs, lin_eq_tgts,
-    nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_tgts);
+			conv_tol, grad_tol, max_step, boundConstraintFlag,
+			numConstraints, outputLevel, theOptimizer,
+			nlfObjective, NULL, NULL);
 }
 
 
@@ -857,29 +812,39 @@ void SNLLOptimizer::initialize_run()
     //   objective and constraint evaluator calls, which previously led to bad
     //   data when the objective evaluator assumed that the constraint evaluator
     //   was called previously w/ the same mode (more checks are now in place).
-    // > For now, we will not activate the OPTPP mode override when 
-    //   OPTPP computes the finite difference approximations, 
-    //   because it results in an inordinate amount of duplicate function 
-    //   evaluations.
+    // > For now, we will not activate the OPTPP mode override when OPTPP
+    //   computes the finite difference approximations, because it results
+    //   in an inordinate amount of duplicate function evaluations.
     if ( ( speculativeFlag || constantASVFlag || numNonlinearConstraints ||
 	   methodName == OPTPP_CG || ( methodName == OPTPP_Q_NEWTON &&
 	   searchMethod == "gradient_based_line_search" && !numConstraints)) &&
 	 iteratedModel.method_source() != "vendor" )
       nlfObjective->setModeOverride(true);
   }
+  else {
+    // pass latest cached data
+    snll_initialize_run(nlfObjective, nlpConstraint, initialPoint,
+			boundConstraintFlag, lowerBounds, upperBounds,
+			linIneqCoeffs, linIneqLowerBnds, linIneqUpperBnds,
+			linEqCoeffs, linEqTargets, nlnIneqLowerBnds,
+			nlnIneqUpperBnds, nlnEqTargets);
+
+    // Note: gradient mode is vendor for user-functions, so no mode override
+    // based on logic above (see note about inordinate amount of duplicates)
+  }
 }
 
 
-void SNLLOptimizer::core_run(){
-  theOptimizer->optimize();
-}
+void SNLLOptimizer::core_run()
+{ theOptimizer->optimize(); }
 
 
 void SNLLOptimizer::post_run(std::ostream& s)
 {
   Cout << "********************************************************" <<  '\n';
   Cout << "             OPT++ TERMINATION CRITERION                " <<  '\n';
-  Cout << "             Return Code                " << theOptimizer->getReturnCode() <<  '\n';
+  Cout << "             Return Code                "
+       << theOptimizer->getReturnCode() <<  '\n';
   if(theOptimizer->getReturnCode() > 0)
      Cout << "\t  SUCCESS - " << method_enum_to_string(methodName)
 	  << " converged to a solution\n";
@@ -933,14 +898,8 @@ void SNLLOptimizer::reset()
   // reset in case of recursion
   theOptimizer->reset();
 
-  // Compound constraint doesn't get managed in an Optpp::SmartPtr;
-  // mirror the alloc in snll_initialize_run() with this delete in
-  // finalize_run()
-  OPTPP::CompoundConstraint* cc = nlfObjective->getConstraints();
-  if (cc) {
-    delete cc;
-    nlfObjective->setConstraints(NULL);
-  }
+  // clear constraints
+  snll_finalize_run(nlfObjective);
 
   // reset last{FnEvalLocn,EvalMode,EvalVars}
   reset_base();

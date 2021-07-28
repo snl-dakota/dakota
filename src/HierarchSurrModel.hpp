@@ -321,11 +321,9 @@ private:
   /// (trailing portion of activeKey, if aggregated models)
   Pecos::ActiveKey surrModelKey;
 
-  /// map from actualModel/highFidelityModel evaluation ids to
-  /// DataFitSurrModel/HierarchSurrModel ids
+  /// map from truth model evaluation ids to HierarchSurrModel ids
   IntIntMap truthIdMap;
-  /// map from approxInterface/lowFidelityModel evaluation ids to
-  /// DataFitSurrModel/HierarchSurrModel ids
+  /// map from approximation model evaluation ids to HierarchSurrModel ids
   IntIntMap surrIdMap;
 
   /// map of approximate responses retrieved in derived_synchronize_nowait()

@@ -266,12 +266,13 @@ private:
   // build_approximation() and used for calculating corrections
   //std::map<Pecos::ActiveKey, Response> truthResponseRef;
 
-  IntIntMapArray modelIdMap; // *** TO DO: demote base-class IdMaps or promote MapArray
-
+  /// map from evaluation ids of truthModel/unorderedModels to
+  /// NonHierarchSurrModel ids
+  IntIntMapArray modelIdMap;
   /// maps of responses retrieved in derived_synchronize_nowait() that
   /// could not be returned since corresponding response portions were
   /// still pending, blocking response aggregation
-  IntResponseMapArray cachedRespMaps; // *** TO DO: demote base-class cache maps or promote MapArray
+  IntResponseMapArray cachedRespMaps;
 };
 
 
