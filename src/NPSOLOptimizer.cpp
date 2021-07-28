@@ -137,10 +137,13 @@ NPSOLOptimizer(const RealVector& initial_point,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length(),
             std::shared_ptr<TraitsBase>(new NPSOLTraits())),
-  setUpType("user_functions"), initialPoint(initial_point), 
-  lowerBounds(var_lower_bnds), upperBounds(var_upper_bnds), 
-  userObjectiveEval(user_obj_eval), userConstraintEval(user_con_eval)
+  setUpType("user_functions"), userObjectiveEval(user_obj_eval),
+  userConstraintEval(user_con_eval)
 {
+  copy_data(initial_point, initialPoint); // protect from incoming view
+  copy_data(var_lower_bnds, lowerBounds); // protect from incoming view
+  copy_data(var_upper_bnds, upperBounds); // protect from incoming view
+
   // invoke SOLBase allocate/set functions (shared with NLSSOLLeastSq)
   allocate_arrays(numContinuousVars, numNonlinearConstraints, lin_ineq_coeffs,
 		  lin_eq_coeffs);

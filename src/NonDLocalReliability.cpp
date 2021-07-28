@@ -73,8 +73,11 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     switch (sub_optimizer_select(
 	    probDescDB.get_ushort("method.nond.opt_subproblem_solver"))) {
     case SUBMETHOD_SQP: npsolFlag =  true; break;
-  //case SUBMETHOD_NIP: npsolFlag = false; break;
-    default: err_flag = true; break; //npsolFlag = false;
+    case SUBMETHOD_NIP: npsolFlag = false; break;
+    default:
+      Cerr << "\nError: invalid MPP optimizer selection in NonDLocalReliability"
+	   << std::endl;
+      err_flag = true; break; //npsolFlag = false;
     }
 
     // Error check for a specification of at least 1 level for MPP methods
