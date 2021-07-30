@@ -120,9 +120,10 @@ public:
 					double*, int&),
 		 void (*user_con_eval) (int&, int&, int&, int&, int*,
 					double*, double*, double*, int&),
-		 int derivative_level,   Real conv_tol = 0.,
-		 Real fn_precision = 0., Real feas_tol = 0.,
-		 Real lin_feas_tol = 0., Real nonlin_feas_tol = 0.);
+		 int derivative_level,  Real conv_tol = 0.,
+		 size_t max_iter = 0,   Real fn_precision = 0.,
+		 Real feas_tol = 0.,    Real lin_feas_tol = 0.,
+		 Real nonlin_feas_tol = 0.);
 
   ~NPSOLOptimizer(); ///< destructor
     

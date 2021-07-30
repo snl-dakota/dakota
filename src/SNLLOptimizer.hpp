@@ -124,17 +124,60 @@ public:
   /// alternate constructor for instantiations "on the fly"
   SNLLOptimizer(const String& method_string, Model& model);
 
-  /// alternate constructor for instantiations "on the fly"
+  /// alternate constructor for objective/constraint call-backs;
+  /// analytic gradient case
   SNLLOptimizer(const RealVector& initial_pt,
     const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
     const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
     const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
     const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
-    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
-    void (*user_obj_eval) (int mode, int n, const RealVector& x, double& f,
-         RealVector& grad_f, int& result_mode),
-    void (*user_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
-         RealMatrix& grad_g, int& result_mode), 
+    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
+    void (*nlf1_obj_eval) (int mode, int n, const RealVector& x, double& f,
+			   RealVector& grad_f, int& result_mode),
+    void (*nlf1_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
+			   RealMatrix& grad_g, int& result_mode),
+    size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
+    Real grad_tol = 1.e-4, Real   max_step = 1000.);
+  /// alternate constructor for objective/constraint call-backs;
+  /// gradient case: numerical objective, analytic constraints
+  SNLLOptimizer(const RealVector& initial_pt,
+    const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
+    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
+    const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
+    const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
+    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
+    void (*nlf0_obj_eval) (int n, const RealVector& x, double& f,
+			   int& result_mode),
+    void (*nlf1_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
+			   RealMatrix& grad_g, int& result_mode),
+    size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
+    Real grad_tol = 1.e-4, Real   max_step = 1000.);
+  /// alternate constructor for objective/constraint call-backs;
+  /// gradient case: analytic objective, numerical constraints
+  SNLLOptimizer(const RealVector& initial_pt,
+    const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
+    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
+    const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
+    const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
+    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
+    void (*nlf1_obj_eval) (int mode, int n, const RealVector& x, double& f,
+			   RealVector& grad_f, int& result_mode),
+    void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
+			   int& result_mode),
+    size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
+    Real grad_tol = 1.e-4, Real   max_step = 1000.);
+  /// alternate constructor for objective/constraint call-backs;
+  /// numerical gradient case
+  SNLLOptimizer(const RealVector& initial_pt,
+    const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
+    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
+    const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
+    const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
+    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
+    void (*nlf0_obj_eval) (int n, const RealVector& x, double& f,
+			   int& result_mode),
+    void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
+			   int& result_mode),
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
 
@@ -188,9 +231,18 @@ private:
   /// instantiate an OPTPP_Q_NEWTON solver using standard settings
   void default_instantiate_q_newton(
     void (*obj_eval) (int mode, int n, const RealVector& x, double& f,
-		      RealVector& grad_f, int& result_mode),
+		      RealVector& grad_f, int& result_mode) );
+  /// instantiate an OPTPP_Q_NEWTON solver using standard settings
+  void default_instantiate_q_newton(
+    void (*obj_eval) (int n, const RealVector& x, double& f, int& result_mode));
+  /// instantiate constraint objectives using standard settings
+  void default_instantiate_constraint(
     void (*con_eval) (int mode, int n, const RealVector& x, RealVector& g,
 		      RealMatrix& grad_g, int& result_mode) );
+  /// instantiate constraint objectives using standard settings
+  void default_instantiate_constraint(
+    void (*con_eval) (int n, const RealVector& x, RealVector& g,
+		      int& result_mode) );
   /// instantiate an OPTPP_NEWTON solver using standard settings
   void default_instantiate_newton(
     void (*obj_eval) (int mode, int n, const RealVector& x, double& f,

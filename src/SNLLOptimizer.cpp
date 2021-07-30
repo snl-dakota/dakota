@@ -159,8 +159,11 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
         }
       }
     }
-    else
-      default_instantiate_q_newton(nlf1_evaluator, constraint1_evaluator);
+    else {
+      default_instantiate_q_newton(nlf1_evaluator);
+      if (numConstraints)
+	default_instantiate_constraint(constraint1_evaluator);
+    }
     break;
 
   // finite-difference Newton: unconstrained, bound-constrained, & nonlinear
@@ -273,9 +276,13 @@ SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
 
   switch (methodName) {
   case OPTPP_Q_NEWTON:
-    default_instantiate_q_newton(nlf1_evaluator, constraint1_evaluator);  break;
+    default_instantiate_q_newton(nlf1_evaluator);
+    if (numConstraints)
+      default_instantiate_constraint(constraint1_evaluator);
+    break;
   case OPTPP_NEWTON:
-    default_instantiate_newton(nlf2_evaluator, constraint2_evaluator);    break;
+    default_instantiate_newton(nlf2_evaluator, constraint2_evaluator);
+    break;
   default:
     Cerr << "Method name " << method_enum_to_string(methodName)
 	 << " currently unavailable within SNLLOptimizer\nlightweight "
@@ -302,11 +309,11 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      const RealVector& lin_ineq_u_bnds,
 	      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
 	      const RealVector& nln_ineq_l_bnds,
-	      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
-	      void (*user_obj_eval) (int mode, int n, const RealVector& x,
+	      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
+	      void (*nlf1_obj_eval) (int mode, int n, const RealVector& x,
 				     double& f, RealVector& grad_f,
 				     int& result_mode),
-	      void (*user_con_eval) (int mode, int n, const RealVector& x, 
+	      void (*nlf1_con_eval) (int mode, int n, const RealVector& x,
 				     RealVector& g, RealMatrix& grad_g,
 				     int& result_mode),
 	      size_t max_iter, size_t max_eval, Real conv_tol,
@@ -335,7 +342,167 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
   snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
   // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
-  default_instantiate_q_newton(user_obj_eval, user_con_eval);
+  default_instantiate_q_newton(nlf1_obj_eval);
+  if (numConstraints)
+    default_instantiate_constraint(nlf1_con_eval);
+
+  // convenience function from SNLLBase: use defaults since no specification
+  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+			conv_tol, grad_tol, max_step, boundConstraintFlag,
+			numConstraints, outputLevel, theOptimizer,
+			nlfObjective, NULL, NULL);
+}
+
+
+/** This is an alternate constructor for performing an optimization using
+    the passed in objective function and constraint function pointers. */
+SNLLOptimizer::
+SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
+	      const RealVector& var_u_bnds, const RealMatrix& lin_ineq_coeffs,
+	      const RealVector& lin_ineq_l_bnds,
+	      const RealVector& lin_ineq_u_bnds,
+	      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+	      const RealVector& nln_ineq_l_bnds,
+	      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
+	      void (*nlf0_obj_eval) (int n, const RealVector& x, double& f,
+				     int& result_mode),
+	      void (*nlf1_con_eval) (int mode, int n, const RealVector& x,
+				     RealVector& g, RealMatrix& grad_g,
+				     int& result_mode),
+	      size_t max_iter, size_t max_eval, Real conv_tol,
+	      Real grad_tol, Real max_step):
+  // use default SNLLBase ctor
+  Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0, 0,
+	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
+	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
+            std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
+  theOptimizer(NULL), setUpType("user_functions"),
+  linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
+  linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
+  linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
+  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
+{
+  copy_data(initial_pt, initialPoint); // protect from incoming view
+  copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
+  copy_data(var_u_bnds, upperBounds);  // protect from incoming view
+
+  for (size_t i=0; i<numContinuousVars; i++)
+    if (lowerBounds[i] > -bigRealBoundSize || upperBounds[i] < bigRealBoundSize)
+      { boundConstraintFlag = true; break; }
+
+  // convenience function from SNLLBase: use defaults since no specification
+  snll_pre_instantiate(boundConstraintFlag, numConstraints);
+
+  // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
+  default_instantiate_q_newton(nlf0_obj_eval);
+  if (numConstraints)
+    default_instantiate_constraint(nlf1_con_eval);
+
+  // convenience function from SNLLBase: use defaults since no specification
+  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+			conv_tol, grad_tol, max_step, boundConstraintFlag,
+			numConstraints, outputLevel, theOptimizer,
+			nlfObjective, NULL, NULL);
+}
+
+
+/** This is an alternate constructor for performing an optimization using
+    the passed in objective function and constraint function pointers. */
+SNLLOptimizer::
+SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
+	      const RealVector& var_u_bnds, const RealMatrix& lin_ineq_coeffs,
+	      const RealVector& lin_ineq_l_bnds,
+	      const RealVector& lin_ineq_u_bnds,
+	      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+	      const RealVector& nln_ineq_l_bnds,
+	      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
+	      void (*nlf1_obj_eval) (int mode, int n, const RealVector& x,
+				     double& f, RealVector& grad_f,
+				     int& result_mode),
+	      void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
+				     int& result_mode),
+	      size_t max_iter, size_t max_eval, Real conv_tol,
+	      Real grad_tol, Real max_step):
+  // use default SNLLBase ctor
+  Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0, 0,
+	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
+	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
+            std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
+  theOptimizer(NULL), setUpType("user_functions"),
+  linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
+  linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
+  linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
+  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
+{
+  copy_data(initial_pt, initialPoint); // protect from incoming view
+  copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
+  copy_data(var_u_bnds, upperBounds);  // protect from incoming view
+
+  for (size_t i=0; i<numContinuousVars; i++)
+    if (lowerBounds[i] > -bigRealBoundSize || upperBounds[i] < bigRealBoundSize)
+      { boundConstraintFlag = true; break; }
+
+  // convenience function from SNLLBase: use defaults since no specification
+  snll_pre_instantiate(boundConstraintFlag, numConstraints);
+
+  // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
+  default_instantiate_q_newton(nlf1_obj_eval);
+  if (numConstraints)
+    default_instantiate_constraint(nlf0_con_eval);
+
+  // convenience function from SNLLBase: use defaults since no specification
+  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+			conv_tol, grad_tol, max_step, boundConstraintFlag,
+			numConstraints, outputLevel, theOptimizer,
+			nlfObjective, NULL, NULL);
+}
+
+
+/** This is an alternate constructor for performing an optimization using
+    the passed in objective function and constraint function pointers. */
+SNLLOptimizer::
+SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
+	      const RealVector& var_u_bnds, const RealMatrix& lin_ineq_coeffs,
+	      const RealVector& lin_ineq_l_bnds,
+	      const RealVector& lin_ineq_u_bnds,
+	      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+	      const RealVector& nln_ineq_l_bnds,
+	      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
+	      void (*nlf0_obj_eval) (int n, const RealVector& x, double& f,
+				     int& result_mode),
+	      void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
+			   int& result_mode),
+	      size_t max_iter, size_t max_eval, Real conv_tol,
+	      Real grad_tol, Real max_step):
+  // use default SNLLBase ctor
+  Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0, 0,
+	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
+	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
+            std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
+  theOptimizer(NULL), setUpType("user_functions"),
+  linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
+  linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
+  linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
+  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
+{
+  copy_data(initial_pt, initialPoint); // protect from incoming view
+  copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
+  copy_data(var_u_bnds, upperBounds);  // protect from incoming view
+
+  for (size_t i=0; i<numContinuousVars; i++)
+    if (lowerBounds[i] > -bigRealBoundSize || upperBounds[i] < bigRealBoundSize)
+      { boundConstraintFlag = true; break; }
+
+  // convenience function from SNLLBase: use defaults since no specification
+  snll_pre_instantiate(boundConstraintFlag, numConstraints);
+
+  // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
+  default_instantiate_q_newton(nlf0_obj_eval);
+  if (numConstraints)
+    default_instantiate_constraint(nlf0_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
   snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
@@ -364,13 +531,10 @@ SNLLOptimizer::~SNLLOptimizer()
 
 void SNLLOptimizer::default_instantiate_q_newton(
   void (*obj_eval) (int mode, int n, const RealVector& x, double& f,
-		    RealVector& grad_f, int& result_mode),
-  void (*con_eval) (int mode, int n, const RealVector& x, RealVector& g,
-		    RealMatrix& grad_g, int& result_mode) )
+		    RealVector& grad_f, int& result_mode) )
 {
   // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
-  nlfObjective = nlf1
-    = new OPTPP::NLF1(numContinuousVars, obj_eval, init_fn);
+  nlfObjective = nlf1 = new OPTPP::NLF1(numContinuousVars, obj_eval, init_fn);
   if (numConstraints) { // nonlinear interior-point
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "Instantiating OptQNIPS optimizer with NLF1 evaluator.\n";
@@ -379,11 +543,6 @@ void SNLLOptimizer::default_instantiate_q_newton(
     optqnips->setMeritFcn(meritFn);
     optqnips->setStepLengthToBdry(stepLenToBndry);
     optqnips->setCenteringParameter(centeringParam);
-
-    nlfConstraint = nlf1Con
-      = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
-			con_eval, init_fn);
-    nlpConstraint = new OPTPP::NLP(nlf1Con);
   }
   else if (boundConstraintFlag) { // bound-constrained
     if (outputLevel == DEBUG_OUTPUT)
@@ -407,6 +566,66 @@ void SNLLOptimizer::default_instantiate_q_newton(
       //optlbfgs->setSearchStrategy(searchStrat); // not supported
     }
   }
+}
+
+
+void SNLLOptimizer::default_instantiate_q_newton(
+  void (*obj_eval) (int n, const RealVector& x, double& f, int& result_mode) )
+{
+  // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
+  nlfObjective = fdnlf1
+    = new OPTPP::FDNLF1(numContinuousVars, obj_eval, init_fn);
+  if (numConstraints) { // nonlinear interior-point
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptQNIPS optimizer with FDNLF1 evaluator.\n";
+    theOptimizer = optqnips = new OPTPP::OptQNIPS(fdnlf1);
+    //optqnips->setSearchStrategy(searchStrat);      // not supported
+    optqnips->setMeritFcn(meritFn);
+    optqnips->setStepLengthToBdry(stepLenToBndry);
+    optqnips->setCenteringParameter(centeringParam);
+  }
+  else if (boundConstraintFlag) { // bound-constrained
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptBCQNewton optimizer with FDNLF1 evaluator.\n";
+    theOptimizer = optbcqnewton = new OPTPP::OptBCQNewton(fdnlf1);
+    optbcqnewton->setSearchStrategy(searchStrat); // see snll_pre_instantiate
+    if (searchStrat == OPTPP::TrustRegion) optbcqnewton->setTRSize(maxStep);
+  }
+  else { // unconstrained
+    if (numContinuousVars < LARGE_SCALE) {
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Instantiating OptQNewton optimizer with FDNLF1 evaluator.\n";
+      theOptimizer = optqnewton = new OPTPP::OptQNewton(fdnlf1);
+      optqnewton->setSearchStrategy(searchStrat); // see snll_pre_instantiate
+      if (searchStrat == OPTPP::TrustRegion) optqnewton->setTRSize(maxStep);
+    }
+    else {
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Instantiating OptLBFGS optimizer with FDNLF1 evaluator.\n";
+      theOptimizer = optlbfgs = new OPTPP::OptLBFGS(fdnlf1);
+      //optlbfgs->setSearchStrategy(searchStrat); // not supported
+    }
+  }
+}
+
+
+void SNLLOptimizer::default_instantiate_constraint(
+  void (*con_eval) (int n, const RealVector& x, RealVector& g,
+		    int& result_mode) )
+{
+  nlfConstraint = fdnlf1Con = new OPTPP::FDNLF1(numContinuousVars,
+    numNonlinearConstraints, con_eval, init_fn);
+  nlpConstraint = new OPTPP::NLP(fdnlf1Con);
+}
+
+
+void SNLLOptimizer::default_instantiate_constraint(
+  void (*con_eval) (int mode, int n, const RealVector& x, RealVector& g,
+		    RealMatrix& grad_g, int& result_mode) )
+{
+  nlfConstraint = nlf1Con = new OPTPP::NLF1(numContinuousVars,
+    numNonlinearConstraints, con_eval, init_fn);
+  nlpConstraint = new OPTPP::NLP(nlf1Con);
 }
 
 

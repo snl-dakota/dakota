@@ -23,7 +23,8 @@
 namespace Dakota {
 
 // special values for optSubProblemForm
-enum { R_ONLY_LINEAR_CONSTRAINT=1, R_AND_N_NONLINEAR_CONSTRAINT };
+enum { R_ONLY_LINEAR_CONSTRAINT=1, N_VECTOR_LINEAR_CONSTRAINT,
+       R_AND_N_NONLINEAR_CONSTRAINT };
 
 
 /// Perform Approximate Control Variate Monte Carlo sampling for UQ.
@@ -72,8 +73,10 @@ protected:
 			const Sizet2DArray& N_L_refined, Real hf_target,
 			size_t iter, size_t start, size_t end);
 
-  void allocate_budget(const RealVector& eval_ratios, const RealVector& cost,
-		       Real& hf_target);
+  Real allocate_budget(const RealVector& avg_eval_ratios,
+		       const RealVector& cost);
+  void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
+				  const RealVector& cost, Real avg_N_H);
 
   void update_hf_target(const RealVector& avg_eval_ratios,
 			const RealVector& cost, Real mse_ratio,
@@ -189,9 +192,8 @@ private:
   static void npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
 					double* grad_f, int& nstate);
   /// static function used by OPT++ for the objective function
-  static void optpp_objective_evaluator(int mode, int n, const RealVector& x,
-					double& f, RealVector& grad_f,
-					int& result_mode);
+  static void optpp_objective_evaluator(int n, const RealVector& x,
+					double& f, int& result_mode);
   /// static function used by NPSOL for the nonlinear constraints, if present
   static void npsol_constraint_evaluator(int& mode, int& ncnln, int& n,
 					 int& nrowj, int* needc, double* x,
@@ -279,9 +281,8 @@ initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
 */
 
 
-inline void NonDACVSampling::
-allocate_budget(const RealVector& eval_ratios, const RealVector& cost,
-		Real& hf_target)
+inline Real NonDACVSampling::
+allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 {
   // version with scalar HF target (eval_ratios already averaged over QoI
   // due to formulation of optimization sub-problem)
@@ -289,8 +290,24 @@ allocate_budget(const RealVector& eval_ratios, const RealVector& cost,
   Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
   inner_prod = cost_H; // raw cost (un-normalized)
   for (size_t approx=0; approx<numApprox; ++approx)
-    inner_prod += cost[approx] * eval_ratios[approx];
-  hf_target = budget / inner_prod * cost_H; // normalized to equivHF
+    inner_prod += cost[approx] * avg_eval_ratios[approx];
+  Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
+  return avg_hf_target;
+}
+
+
+inline void NonDACVSampling::
+scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
+			   Real avg_N_H)
+{
+  // retain the shape of an r* profile, but scale to budget constrained by
+  // incurred pilot cost
+
+  Real budget = (Real)maxFunctionEvals, inner_prod = 0.;
+  for (size_t approx=0; approx<numApprox; ++approx)
+    inner_prod += cost[approx] * avg_eval_ratios[approx]; // Sum(w_i r_i)
+  Real factor = (budget / avg_N_H - 1.) / inner_prod * cost[numApprox];
+  avg_eval_ratios.scale(factor);
 }
 
 

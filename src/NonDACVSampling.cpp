@@ -45,7 +45,8 @@ NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDNonHierarchSampling(problem_db, model),
   acvSubMethod(problem_db.get_ushort("method.sub_method")),
-  optSubProblemForm(R_AND_N_NONLINEAR_CONSTRAINT) // default is to increment N
+  //optSubProblemForm(R_AND_N_NONLINEAR_CONSTRAINT) // default is to increment N
+  optSubProblemForm(N_VECTOR_LINEAR_CONSTRAINT) // default is to increment N
 {
   // option for fixing the number of HF samples (those from the pilot)
   // where equivHF budget is allocated by optimizing r* for fixed N
@@ -75,48 +76,62 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   RealVector lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
              nln_ineq_lb, nln_ineq_ub, nln_eq_tgt;
   RealMatrix lin_ineq_coeffs, lin_eq_coeffs;
-  size_t num_cdv;  int deriv_level;
+  size_t num_cdv = (optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT) ?
+    numApprox : numApprox + 1, max_iter = 100000;
+  RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false);
+  x_ub = DBL_MAX; // no upper bounds
+  Real conv_tol   = 1.e-8; // tight convergence
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
-    num_cdv = numApprox; // r-only: evaluation ratios
-    deriv_level = 0; // no user-supplied derivatives
     lin_ineq_lb.sizeUninitialized(1); lin_ineq_lb[0] = -DBL_MAX; // no low bnd
     lin_ineq_ub.sizeUninitialized(1); lin_ineq_ub[0] = (Real)maxFunctionEvals;
     lin_ineq_coeffs.shapeUninitialized(1, numApprox);
     lin_ineq_coeffs = 1.; // updated in compute_ratios()
+    x0 = x_lb = 1.;
     break;
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    num_cdv = numApprox + 1; // evaluation ratios and numH
-    deriv_level = 2; // user-supplied constraint Jacobian
-    nln_ineq_lb.sizeUninitialized(1); nln_ineq_lb[0] = -DBL_MAX; // no low bnd
-    nln_ineq_ub.sizeUninitialized(1); nln_ineq_ub[0] = (Real)maxFunctionEvals;
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    size_t num_lin_con = numApprox + 1;
+    lin_ineq_lb.sizeUninitialized(num_lin_con);
+    lin_ineq_lb = -DBL_MAX; // no lower bnds
+    lin_ineq_ub.size(num_lin_con); // init to 0
+    lin_ineq_ub[0] = (Real)maxFunctionEvals; // 1st is budget constraint
+    lin_ineq_coeffs.shapeUninitialized(num_lin_con, num_cdv);
+    lin_ineq_coeffs = 1.; // dummy updated in compute_ratios()
+    x0 = x_lb = (Real)pilotSamples[numApprox]; break; // *** TO DO: copy array
     break;
   }
-  RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false);
-  x0 = 1.;  x_lb = 1.;  x_ub = DBL_MAX; // no upper bounds
-  if (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT)
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    nln_ineq_lb.sizeUninitialized(1); nln_ineq_lb[0] = -DBL_MAX; // no low bnd
+    nln_ineq_ub.sizeUninitialized(1); nln_ineq_ub[0] = (Real)maxFunctionEvals;
+    x0 = x_lb = 1.; // r_i
     x0[numApprox] = x_lb[numApprox] = pilotSamples[numApprox]; // pilot <= N*
+    break;
+  }
 
   switch (opt_subprob_solver) {
   case SUBMETHOD_SQP: {
-    Real conv_tol = -1.; // use NPSOL default
+    int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT)
+      ? 2 : 0; // 0 neither, 1 obj, 2 constr, 3 both
 #ifdef HAVE_NPSOL
     varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
       x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
       lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-      npsol_objective_evaluator, npsol_constraint_evaluator,
-      deriv_level, conv_tol));
+      npsol_objective_evaluator, npsol_constraint_evaluator, deriv_level,
+      conv_tol, max_iter));
 #endif
     break;
   }
-  case SUBMETHOD_NIP:
+  case SUBMETHOD_NIP: {
+    size_t max_eval = 500000;  Real max_step = 100000.;
 #ifdef HAVE_OPTPP
     varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0,x_lb,x_ub,
       lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt,
       nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, optpp_objective_evaluator,
-      optpp_constraint_evaluator));
+      optpp_constraint_evaluator, max_iter, max_eval, conv_tol, conv_tol,
+      max_step));
 #endif
     break;
+  }
   default: // SUBMETHOD_NONE, ...
     Cerr << "Error: sub-problem solver undefined in NonDACVSampling."
 	 << std::endl;
@@ -294,7 +309,7 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& cost,
   //   for improving rho2_LH et al.
   if (maxFunctionEvals != SZ_MAX) {
     Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
-    allocate_budget(avg_eval_ratios, cost, avg_hf_target);
+    avg_hf_target = allocate_budget(avg_eval_ratios, cost);
   }
   // MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
   // --> N_H = mse_ratio * var_H / convTol / mse_iter0
@@ -659,22 +674,32 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
 
   // Set initial guess based on MFMC eval ratios (iter 0) or warm started from
   // previous solution
+  Real avg_N_H = average(N_H), avg_hf_target;
   if (mlmfIter == 0) {
+    // compute initial estimate of r* from MFMC
     RealMatrix rho2_LH, eval_ratios;  RealMatrix var_L;
     compute_variance(sum_L_baseline, sum_LL, N_L_baseline, var_L);
     covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
     mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
     average(eval_ratios, 0, avg_eval_ratios);// average over qoi for each approx
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Evaluation ratios initial guess from MFMC:\n" << avg_eval_ratios
+    //if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Initial guess from MFMC (avg eval ratios):\n" << avg_eval_ratios
 	   << std::endl;
+    // scale to enforce budget constraint.  Since the profile does not emerge
+    // from pilot in ACV, our best initial guess is active on budget constraint:
+    // > if N* < N_pilot, then scale back r* for use initial = scaled_r*,N_pilot
+    // > if N* > N_pilot, then use r* and use initial = r*,N*
+    avg_hf_target = allocate_budget(avg_eval_ratios, cost);
+    if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
+      scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_N_H);
+      avg_hf_target = avg_N_H;
+    }
   }
-  //else {
-    // consider scaling prev soln to feasibility with updated N_H
-    // (similar to NonDLocalRel)
-  //}
+  // else warm start from previous solution
+  // > no scaling needed from prev soln (as in NonDLocalReliability) since
+  //   updated avg_N_H now includes allocation from previous solution and is
+  //   active on constraint bound (excepting integer sample rounding)
 
-  Real avg_N_H = average(N_H);
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: {
     varianceMinimizer.initial_point(avg_eval_ratios);
@@ -683,23 +708,55 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   \Sum_i w_i   r_i <= equivHF * w / N - w
     //   \Sum_i w_i/w r_i <= equivHF / N - 1
-    RealVector lin_ineq_lb(1), lin_ineq_ub(1), lin_eq_tgt;
-    RealMatrix lin_ineq_coeffs(1, numApprox), lin_eq_coeffs;
+    RealVector lin_ineq_lb(1, false), lin_ineq_ub(1, false), lin_eq_tgt;
+    RealMatrix lin_ineq_coeffs(1, numApprox, false), lin_eq_coeffs;
     Real cost_H = cost[numApprox];
     lin_ineq_lb[0] = -DBL_MAX; // no lower bound
     lin_ineq_ub[0] = (Real)maxFunctionEvals / avg_N_H - 1.;
     for (size_t approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
-    // rather than update an iteratedModel, we must update the Minimizer for
-    // use by user-functions mode
+    // we update the Minimizer for user-functions mode (no iteratedModel)
+    varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
+					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
+    break;
+  }
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    size_t num_cdv = numApprox+1, num_lin_con = numApprox+1;
+    RealVector cv0(num_cdv);
+    copy_data_partial(avg_eval_ratios, cv0, 0);  cv0[numApprox] = 1.;
+    if (mlmfIter) cv0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
+    else          cv0.scale(avg_hf_target);
+    varianceMinimizer.initial_point(cv0);
+
+    RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con),
+               lin_eq_tgt;
+    RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
+    lin_ineq_lb = -DBL_MAX; // no lower bounds
+    // linear inequality constraint on budget:
+    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+    //   N w + \Sum_i w_i N_i <= equivHF * w
+    //   N + \Sum_i w_i/w N_i <= equivHF
+    lin_ineq_ub[0] = (Real)maxFunctionEvals;
+    Real cost_H = cost[numApprox];
+    for (size_t approx=0; approx<numApprox; ++approx)
+      lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
+    lin_ineq_coeffs(0,numApprox) = 1.;
+    // linear inequality constraints on N_i >= N prevent numerical exceptions:
+    for (size_t approx=1; approx<=numApprox; ++approx) {
+      //lin_ineq_ub[approx] = 0.; // already initialized to zero
+      lin_ineq_coeffs(approx,approx-1)  = -1.;
+      lin_ineq_coeffs(approx,numApprox) =  1.;// enforce N_i >= N (r_i >= 1)
+      //lin_ineq_coeffs(approx,approx)  =  1.;// enforce N_i >= N_{i+1}
+    }
+    // we update the Minimizer for user-functions mode (no iteratedModel)
     varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
 					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: {
-    RealVector cv0(numApprox+1); copy_data_partial(avg_eval_ratios, cv0, 0);
-    cv0[numApprox] = avg_N_H;// + 1.; // bump off of updated lower bound?
-    // *** TO DO ***: verify for SNLLOptimizer (appears to need nlf_obj->setX())
+    RealVector cv0(numApprox+1);
+    copy_data_partial(avg_eval_ratios, cv0, 0);          // r_i
+    cv0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
     varianceMinimizer.initial_point(cv0);
 
     /*
@@ -737,6 +794,17 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
     RealVector mc_est_var;
     compute_mc_estimator_variance(varH, numH, mc_est_var);
     avg_mc_est_var = average(mc_est_var);
+    break;
+  }
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    // N*_i is leading part of r_and_N and N* is trailing part:
+    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r * N
+    Real N_star = cv_star[numApprox];                               // N
+    avg_eval_ratios.scale(1./N_star);                               // r
+    // compute sample increment from current to N*:
+    numSamples = one_sided_delta(avg_N_H, N_star);
+    // compute average of MC est var for final N* (used in final ACV est var)
+    avg_mc_est_var = average(varH) / N_star;
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: {
@@ -818,7 +886,18 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 Real NonDACVSampling::objective_function(const RealVector& r_and_N)
 {
   RealSymMatrix F, CF_inv;
-  compute_F_matrix(r_and_N, F); // admits r || r_and_N sub-problems
+  switch (optSubProblemForm) {
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
+    r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
+    compute_F_matrix(r, F);
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    compute_F_matrix(r_and_N, F); // admits r as leading numApprox terms
+    break;
+  }
   //Cout << "Objective evaluator: F =\n" << F << std::endl;
 
   RealVector A, R_sq(numFunctions, false);  size_t qoi;
@@ -839,6 +918,7 @@ Real NonDACVSampling::objective_function(const RealVector& r_and_N)
     for (qoi=0; qoi<numFunctions; ++qoi)
       est_var[qoi] = varH[qoi] / numH[qoi] * (1. - R_sq[qoi]);
     break;
+  case N_VECTOR_LINEAR_CONSTRAINT:
   case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
     Real N = r_and_N[numApprox];
     for (qoi=0; qoi<numFunctions; ++qoi)
@@ -846,11 +926,15 @@ Real NonDACVSampling::objective_function(const RealVector& r_and_N)
     break;
   }
   }
-  Real obj_fn = std::log(average(est_var));
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "objective_function: design vars:\n" << r_and_N << "R squared:\n"
-	 << R_sq << "obj = log(average((1.-Rsq)varH/N)) = " << obj_fn << '\n'
-	 << std::endl;
+
+  // protect against R_sq blow-up for N_i < N (if not enforced by linear constr)
+  Real avg_est_var = average(est_var), obj_fn = (avg_est_var > 0.) ?
+    std::log(avg_est_var) :
+    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+  //if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "objective_function: "
+         << "design vars:\n" << r_and_N << "R squared:\n" << R_sq
+	 << "obj = log(average((1.-Rsq)varH/N)) = " << obj_fn << '\n';
   return obj_fn; // maximize R_sq; use log to flatten contours
 }
 
@@ -862,8 +946,8 @@ objective_gradient(const RealVector& r_and_N, RealVector& obj_grad)
   // This would still be called for deriv level 0 to identify the set of terms
   // that must be numerically estimated.
 
-  //Cerr << "Warning: gradient of the objective not supported." << std::endl;
-  //abort_handler(METHOD_ERROR);
+  Cerr << "Warning: gradient of the objective not supported." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 */
 
@@ -922,6 +1006,8 @@ npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
   RealVector x_rv(Teuchos::View, x, n);
   if (asv_request & 1)
     f = acvInstance->objective_function(x_rv);
+  // NPSOL estimates unspecified components of the obj grad, so ASV grad
+  // request is not an error -- just don't specify anything
   //if (asv_request & 2) {
   //  RealVector grad_f_rv(Teuchos::View, grad_f, n);
   //  acvInstance->objective_gradient(x_rv, grad_f_rv);
@@ -947,33 +1033,47 @@ npsol_constraint_evaluator(int& mode, int& ncnln, int& n, int& nrowj,
 }
 
 
+/* API for NLF1 objective (see SNLLOptimizer::nlf1_evaluator())
 void NonDACVSampling::
 optpp_objective_evaluator(int mode, int n, const RealVector& x, double& f, 
 			  RealVector& grad_f, int& result_mode)
 {
-  if (mode & 1) { // 1st bit is present, mode = 1 or 3
+  if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
     f = acvInstance->objective_function(x);
     result_mode = OPTPP::NLPFunction;
   }
-  //if (mode & 2) { // 2nd bit is present, mode = 2 or 3
-  //  acvInstance->objective_gradient(x, grad_f);
-  //  result_mode |= OPTPP::NLPGradient;
-  //}
+  if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
+    acvInstance->objective_gradient(x, grad_f);
+    result_mode |= OPTPP::NLPGradient;
+  }
+}
+*/
+
+
+/** API for FDNLF1 objective (see SNLLOptimizer::nlf0_evaluator()) */
+void NonDACVSampling::
+optpp_objective_evaluator(int n, const RealVector& x, double& f,
+			  int& result_mode)
+{
+  f = acvInstance->objective_function(x);
+  result_mode = OPTPP::NLPFunction; // 1 bit
 }
 
 
+/** API for NLF1 constraint (see SNLLOptimizer::constraint1_evaluator()) */
 void NonDACVSampling::
 optpp_constraint_evaluator(int mode, int n, const RealVector& x, RealVector& c,
 			   RealMatrix& grad_c, int& result_mode)
 {
-  if (mode & 1) {
+  result_mode = OPTPP::NLPNoOp; // 0
+  if (mode & OPTPP::NLPFunction) { // 1 bit is present, mode = 1 or 3
     c[0] = acvInstance->nonlinear_constraint(x);
-    result_mode = OPTPP::NLPFunction;
+    result_mode |= OPTPP::NLPFunction; // adds 1 bit
   }
-  if (mode & 2) { // 2nd bit is present, mode = 2 or 3
+  if (mode & OPTPP::NLPGradient) { // 2 bit is present, mode = 2 or 3
     RealVector grad_c_rv(Teuchos::View, grad_c[0], n); // 0-th col vec
     acvInstance->nonlinear_constraint_gradient(x, grad_c_rv);
-    result_mode |= OPTPP::NLPGradient;
+    result_mode |= OPTPP::NLPGradient; // adds 2 bit
   }
 }
 

@@ -130,8 +130,9 @@ NPSOLOptimizer(const RealVector& initial_point,
 				      double*, int&),
 	       void (*user_con_eval) (int&, int&, int&, int&, int*,
 				      double*, double*, double*, int&),
-	       int derivative_level, Real conv_tol, Real fn_precision,
-	       Real feas_tol, Real lin_feas_tol, Real nonlin_feas_tol):
+	       int derivative_level, Real conv_tol, size_t max_iter,
+	       Real fn_precision, Real feas_tol, Real lin_feas_tol,
+	       Real nonlin_feas_tol):
   // use SOLBase default ctor
   Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
@@ -166,6 +167,9 @@ NPSOLOptimizer(const RealVector& initial_point,
   send_sol_option(  "Derivative Level            = " +
 		  std::to_string(derivative_level));
 
+  if (max_iter > 0)
+    send_sol_option("Major Iteration Limit       = " +
+		    std::to_string(max_iter));
   if (conv_tol > 0.) // conv_tol <= 0. results in internal NPSOL default
     send_sol_option("Optimality Tolerance        = " +
 		    std::to_string(conv_tol));

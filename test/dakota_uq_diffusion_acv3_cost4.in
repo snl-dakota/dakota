@@ -7,20 +7,22 @@ environment
 method,
 	model_pointer = 'HIERARCH'
 	approximate_control_variate
-	  acv_mf sqp		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
-#	  acv_is sqp #nip	#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
-#	  truth_fixed_by_pilot
+	  acv_mf sqp		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s22
+#	  acv_is sqp		#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+#	  acv_mf nip		#s18,#s19,#s23
+#	  acv_is nip		#s20,#s21
+#	  truth_fixed_by_pilot	#s22,#s23
 #	multifidelity_sampling
 	  max_function_evaluations = 100	#s0,#s1,#s2,#s9,#s10,#s11
-#	  max_function_evaluations = 250
-#	  max_function_evaluations = 500	#s3,#s4,#s5,#s12,#s13,#s14
-#	  max_function_evaluations = 1000
-#	  max_function_evaluations = 2500	#s6,#s7,#s8,#s15,#s16,#s17
-	  pilot_samples =   5			#s0,#s3,#s6,#s9,#s12,#s15
-#	  pilot_samples =  10
-#	  pilot_samples =  25			#s1,#s4,#s7,#s10,#s13,#s16
-#	  pilot_samples =  50
-#	  pilot_samples = 100			#s2,#s5,#s8,#s11,#s14,#s17
+#	  max_function_evaluations = 250	#s22
+#	  max_function_evaluations = 500	#s3,#s4,#s5,#s12,#s13,#s14,#s18,#s20
+#	  max_function_evaluations = 1000	#s23
+#	  max_function_evaluations = 2500	#s6,#s7,#s8,#s15,#s16,#s17,#s19,#s21
+	  pilot_samples =   5		#s0,#s3,#s6,#s9,#s12,#s15
+#	  pilot_samples =  10		#s22
+#	  pilot_samples =  25		#s1,#s4,#s7,#s10,#s13,#s16,#s18,#s20
+#	  pilot_samples =  50		#s23
+#	  pilot_samples = 100		#s2,#s5,#s8,#s11,#s14,#s17,#s19,#s21
 	  seed = 8674132
 #	  convergence_tolerance = .1
 	output silent
