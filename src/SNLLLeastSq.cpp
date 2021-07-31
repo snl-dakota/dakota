@@ -574,14 +574,8 @@ void SNLLLeastSq::reset()
   // reset in case of recursion
   theOptimizer->reset();
 
-  // Compound constraint doesn't get managed in an Optpp::SmartPtr;
-  // mirror the alloc in snll_initialize_run() with this delete in
-  // finalize_run()
-  OPTPP::CompoundConstraint* cc = nlfObjective->getConstraints();
-  if (cc) {
-    delete cc;
-    nlfObjective->setConstraints(NULL);
-  }
+  // clear constraints
+  snll_finalize_run(nlfObjective);
 
   // reset last{FnEvalLocn,EvalMode,EvalVars}
   reset_base();

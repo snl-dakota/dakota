@@ -63,7 +63,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   mcmcModelHasSurrogate(false),
-  mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
+  mapOptAlgOverride(probDescDB.get_ushort("method.nond.opt_subproblem_solver")),
   chainSamples(probDescDB.get_int("method.nond.chain_samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
   mcmcDerivOrder(1),

@@ -121,10 +121,10 @@ protected:
 			   const RealVector& nln_ineq_l_bnds,
 			   const RealVector& nln_ineq_u_bnds,
 			   const RealVector& nln_eq_targets);
-  
-  /// convenience function for setting OPT++ options after the
-  /// method instantiations
+  /// convenience function for managing OPT++ results after method execution
   void snll_post_run(OPTPP::NLP0* nlf_objective);
+  /// convenience function for clearing OPT++ data after method execution
+  void snll_finalize_run(OPTPP::NLP0* nlf_objective);
 
   /// reset last{FnEvalLocn,EvalMode,EvalVars}
   void reset_base();

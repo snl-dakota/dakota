@@ -15,7 +15,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
-#include "dakota_tabular_io.hpp"
+//#include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDACVSampling.hpp"
@@ -25,103 +25,119 @@
 
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
-#elif HAVE_OPTPP
+#endif
+#ifdef HAVE_OPTPP
 #include "SNLLOptimizer.hpp"
 #endif
 
 static const char rcsId[]="@(#) $Id: NonDACVSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
-
 namespace Dakota {
+
+// initialization of statics
+NonDACVSampling* NonDACVSampling::acvInstance(NULL);
+
 
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, Model& model):
-  NonDSampling(problem_db, model),
-  pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
-  randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
-  mlmfIter(0),
-  allocationTarget(problem_db.get_short("method.nond.allocation_target")),
-  qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
-  useTargetVarianceOptimizationFlag(
-    problem_db.get_bool("method.nond.allocation_target.variance.optimization")),
-  finalCVRefinement(true),
-  exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
-  exportSamplesFormat(
-    problem_db.get_ushort("method.nond.export_samples_format"))
+  NonDNonHierarchSampling(problem_db, model),
+  acvSubMethod(problem_db.get_ushort("method.sub_method")),
+  //optSubProblemForm(R_AND_N_NONLINEAR_CONSTRAINT) // default is to increment N
+  optSubProblemForm(N_VECTOR_LINEAR_CONSTRAINT) // default is to increment N
 {
-  // initialize scalars from sequence
-  seedSpec = randomSeed = random_seed(0);
+  // option for fixing the number of HF samples (those from the pilot)
+  // where equivHF budget is allocated by optimizing r* for fixed N
+  if (problem_db.get_bool("method.nond.truth_fixed_by_pilot"))
+    optSubProblemForm = R_ONLY_LINEAR_CONSTRAINT;
+  unsigned short opt_subprob_solver = sub_optimizer_select(
+    probDescDB.get_ushort("method.nond.opt_subproblem_solver"));
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "ACV sub-method selection = " << acvSubMethod
+	 << " sub-method formulation = "  << optSubProblemForm
+	 << " sub-problem solver = "      << opt_subprob_solver << std::endl;
 
-  // Support multilevel LHS as a specification override.  The estimator variance
-  // is known/correct for MC and an assumption/approximation for LHS.  To get an
-  // accurate LHS estimator variance, one would need:
-  // (a) assumptions about separability -> analytic variance reduction by a
-  //     constant factor
-  // (b) similarly, assumptions about the form relative to MC (e.g., a constant
-  //     factor largely cancels out within the relative sample allocation.)
-  // (c) numerically-generated estimator variance (from, e.g., replicated LHS)
-  if (!sampleType) // SUBMETHOD_DEFAULT
-    sampleType = SUBMETHOD_RANDOM;
+  // Use NPSOL/OPT++ with obj/constr callbacks to minmize estimator variance
+  // > TO DO: add sqp | nip specification
 
-  // check iteratedModel for model form hierarchy and/or discretization levels;
-  // set initial response mode for set_communicators() (precedes core_run()).
-  if (iteratedModel.surrogate_type() == "non_hierarchical")
-    aggregated_models_mode();
-  else {
-    Cerr << "Error: Approximate Control Variate sampling requires a non-"
-         << "hierarchical surrogate model specification." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  ModelList& model_ensemble = iteratedModel.subordinate_models(false);
-  size_t i, j, num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
-    pilot_size = pilotSamples.size();
-  ModelLRevIter ml_it; bool err_flag = false;
-  NLev.resize(num_mf);
-  for (i=0, ml_it=model_ensemble.begin(); ml_it!=model_ensemble.end();
-       ++i, ++ml_it) {
-    // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev = ml_rit->solution_levels(); // lower bound is 1 soln level
-
-    // Ensure there is consistent cost data available as SimulationModel must
-    // be allowed to have empty solnCntlCostMap (when optional solution control
-    // is not specified).  Passing false bypasses lower bound of 1.
-    if (num_lev > ml_rit->solution_levels(false)) { // default is 0 soln costs
-      Cerr << "Error: insufficient cost data provided for multilevel sampling."
-	   << "\n       Please provide solution_level_cost estimates for model "
-	   << ml_rit->model_id() << '.' << std::endl;
-      err_flag = true;
-    }
-
-    //Sizet2DArray& Nl_i = NLev[i];
-    NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
-    //for (j=0; j<num_lev; ++j)
-    //  Nl_i[j].resize(numFunctions); // defer to pre_run()
-
-    prev_lev = num_lev;
-  }
-  if (err_flag)
-    abort_handler(METHOD_ERROR);
-
-  switch (pilot_size) {
-  case 0: maxEvalConcurrency *= 100;             break;
-  case 1: maxEvalConcurrency *= pilotSamples[0]; break;
-  default: {
-    size_t max_ps = 0;
-    for (i=0; i<pilot_size; ++i)
-      if (pilotSamples[i] > max_ps)
-	max_ps = pilotSamples[i];
-    if (max_ps)
-      maxEvalConcurrency *= max_ps;
+  // Notes on optimization:
+  // > Budget C is fixed and numH is fixed for this iteration --> design vars
+  //   are eval_ratios for 1:numApprox.  eval_ratio lower bounds are set to 1
+  //   for now, but could also reflect the pilot sample investment (C and c
+  //   can use different pilot sample sizes).
+  //   >> if numH is also a design variable, then lower bounds should be 1.
+  //   >> when an optimal ratio is 1, this model drops from apply_control(),
+  //      although it may still influence the other model weightings.
+  // > a linear inequality is used for the cost constraint and can also be
+  //   used for eval_ratio(i) > eval_ratio(i+1), but omit for now (restricts
+  //   optimizer search space = most appropriate when sequencing models)
+  RealVector lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
+             nln_ineq_lb, nln_ineq_ub, nln_eq_tgt;
+  RealMatrix lin_ineq_coeffs, lin_eq_coeffs;
+  size_t num_cdv = (optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT) ?
+    numApprox : numApprox + 1, max_iter = 100000;
+  RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false);
+  x_ub = DBL_MAX; // no upper bounds
+  Real conv_tol   = 1.e-8; // tight convergence
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT:
+    lin_ineq_lb.sizeUninitialized(1); lin_ineq_lb[0] = -DBL_MAX; // no low bnd
+    lin_ineq_ub.sizeUninitialized(1); lin_ineq_ub[0] = (Real)maxFunctionEvals;
+    lin_ineq_coeffs.shapeUninitialized(1, numApprox);
+    lin_ineq_coeffs = 1.; // updated in compute_ratios()
+    x0 = x_lb = 1.;
+    break;
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    size_t num_lin_con = numApprox + 1;
+    lin_ineq_lb.sizeUninitialized(num_lin_con);
+    lin_ineq_lb = -DBL_MAX; // no lower bnds
+    lin_ineq_ub.size(num_lin_con); // init to 0
+    lin_ineq_ub[0] = (Real)maxFunctionEvals; // 1st is budget constraint
+    lin_ineq_coeffs.shapeUninitialized(num_lin_con, num_cdv);
+    lin_ineq_coeffs = 1.; // dummy updated in compute_ratios()
+    x0 = x_lb = (Real)pilotSamples[numApprox]; break; // *** TO DO: copy array
     break;
   }
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    nln_ineq_lb.sizeUninitialized(1); nln_ineq_lb[0] = -DBL_MAX; // no low bnd
+    nln_ineq_ub.sizeUninitialized(1); nln_ineq_ub[0] = (Real)maxFunctionEvals;
+    x0 = x_lb = 1.; // r_i
+    x0[numApprox] = x_lb[numApprox] = pilotSamples[numApprox]; // pilot <= N*
+    break;
   }
 
-  // For testing multilevel_mc_Qsum():
-  //subIteratorFlag = true;
+  switch (opt_subprob_solver) {
+  case SUBMETHOD_SQP: {
+    int deriv_level = (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT)
+      ? 2 : 0; // 0 neither, 1 obj, 2 constr, 3 both
+#ifdef HAVE_NPSOL
+    varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
+      x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+      npsol_objective_evaluator, npsol_constraint_evaluator, deriv_level,
+      conv_tol, max_iter));
+#endif
+    break;
+  }
+  case SUBMETHOD_NIP: {
+    size_t max_eval = 500000;  Real max_step = 100000.;
+#ifdef HAVE_OPTPP
+    varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0,x_lb,x_ub,
+      lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt,
+      nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, optpp_objective_evaluator,
+      optpp_constraint_evaluator, max_iter, max_eval, conv_tol, conv_tol,
+      max_step));
+#endif
+    break;
+  }
+  default: // SUBMETHOD_NONE, ...
+    Cerr << "Error: sub-problem solver undefined in NonDACVSampling."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
 }
 
 
@@ -129,30 +145,12 @@ NonDACVSampling::~NonDACVSampling()
 { }
 
 
-bool NonDACVSampling::resize()
-{
-  bool parent_reinit_comms = NonDSampling::resize();
-
-  Cerr << "\nError: Resizing is not yet supported in method "
-       << method_enum_to_string(methodName) << "." << std::endl;
-  abort_handler(METHOD_ERROR);
-
-  return parent_reinit_comms;
-}
-
-
 void NonDACVSampling::pre_run()
 {
-  NonDSampling::pre_run();
+  NonDNonHierarchSampling::pre_run();
 
   // reset sample counters to 0
-  size_t i, j, num_mf = NLev.size(), num_lev;
-  for (i=0; i<num_mf; ++i) {
-    Sizet2DArray& Nl_i = NLev[i];
-    num_lev = Nl_i.size();
-    for (j=0; j<num_lev; ++j)
-      Nl_i[j].assign(numFunctions, 0);
-  }
+  acvInstance = this;
 }
 
 
@@ -161,130 +159,921 @@ void NonDACVSampling::pre_run()
     each of which may contain multiple discretization levels. */
 void NonDACVSampling::core_run()
 {
-  size_t num_mf = NLev.size();
-  switch (acvAlgorithmOption) {
-  case ACV_MF:
-  case ACV_IS:
-  case ACV_KL:
+  switch (acvSubMethod) {
+  case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_MF:
+    approximate_control_variate(); break;
+  //case SUBMETHOD_ACV_KL:
+    //for (k) for (l) approximate_control_variate(...); ???
   }
-  // Notes on ACV + ensemble model classes:
-  // > HierarchSurrModel is limiting (see MFMC) such that we may want to
-  //   subsume it with NonHierarchSurrModel --> consider generalizations
-  //   that can be deployed across the algorithm set:
-  //   >> enhanced parallel usage --> avoid sync points in ACV clients
-  //   >> enable sampling over shared + distinct model variable sets
+}
+
+
+/** This function performs control variate MC across two combinations of 
+    model form and discretization level. */
+void NonDACVSampling::approximate_control_variate()
+{
+  // Performs pilot + LF increment and then iterates with additional shared
+  // increment + LF increment batches until prescribed MSE reduction is obtained
+
+  // retrieve cost estimates across soln levels for a particular model form
+  IntRealVectorMap sum_H;
+  IntRealMatrixMap sum_L_baselineH, sum_LH;
+  IntRealSymMatrixArrayMap sum_LL;
+  RealVector sum_HH, mse_iter0, avg_eval_ratios;
+  Real avg_hf_target = 0., mse_ratio;  size_t num_steps = numApprox + 1;
+  Sizet2DArray N_L_baselineH, N_LH;
+  SizetSymMatrixArray N_LL;
+  initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
+  initialize_acv_counts(N_L_baselineH,  numH,   N_LL,   N_LH);
+  //initialize_acv_covariances(covLL, covLH, varH);
+
+  // Initialize for pilot sample
+  size_t hf_shared_pilot, lf_shared_pilot, start = 0;
+  numSamples = hf_shared_pilot = pilotSamples[numApprox]; // last in array
+  lf_shared_pilot = find_min(pilotSamples, start, numApprox-1);
+
+  while (numSamples && mlmfIter <= maxIterations) {
+
+    // ------------------------------------------------------------------------
+    // Compute shared increment targeting specified budget and/or MSE reduction
+    // ------------------------------------------------------------------------
+    // Scale sample profile based on maxFunctionEvals or convergenceTol,
+    // but not both (for now)
+    if (mlmfIter)
+      switch (optSubProblemForm) {
+      case R_ONLY_LINEAR_CONSTRAINT:
+	// Allow for constraint to be inactive at optimum, but generally the
+	// opt sub-prob will allocate full budget (--> numSamples = deltaN = 0)
+	// since larger eval ratios will increase R^2.
+	// Important: r* for fixed N is suboptimal w.r.t. r*,N* --> unlike MFMC,
+	// this approach does not converge to the desired sample profile, except
+	// for special case where user specifies a fixed numH + total budget
+	// (see option "truth_fixed_by_pilot").
+	update_hf_target(avg_eval_ratios, sequenceCost, mse_ratio, varH, numH,
+			 mse_iter0, avg_hf_target);
+	break;
+      case R_AND_N_NONLINEAR_CONSTRAINT:
+	// In this case, the opt-solution for N* for prescribed budget induces
+	// a one-sided shared_increment and this continues until conv (shared
+	// increment = 0).  Final r*'s are then applied in approx_increment's.
+	//numSamples = one_sided_delta(); // performed in compute_ratios()
+	break;
+      }
+
+    // --------------------------------------------------------------------
+    // Evaluate shared increment and update correlations, {eval,MSE}_ratios
+    // --------------------------------------------------------------------
+    if (numSamples) {
+      shared_increment(mlmfIter); // spans ALL models, blocking
+      accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+			  sum_LH, sum_HH, N_L_baselineH, /*N_L_baselineL,*/
+			  numH, N_LL, N_LH);
+      increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
+      // allow pilot to vary for C vs c
+      // *** TO DO: numSamples logic after pilot (mlmfIter >= 1)
+      // *** Will likely require _baselineL and _baselineH
+      //if (mlmfIter == 0 && lf_shared_pilot > hf_shared_pilot) {
+      //  numSamples = lf_shared_pilot - hf_shared_pilot;
+      //  shared_approx_increment(mlmfIter); // spans all approx models
+      //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
+      //                      N_L_baselineL, N_LL);//_baselineL);
+      //  increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox);
+      //}
+
+      // First, compute the LF/HF evaluation ratio using shared samples,
+      // averaged over QoI.  This includes updating varH, covLL, covLH.
+      // Then, compute ratio of MC and ACV mean sq errors (for convergence),
+      // which incorporates the anticipated variance reduction from the
+      // upcoming application of avg_eval_ratios.
+      compute_ratios(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
+		     sum_HH, sequenceCost, N_L_baselineH, numH, N_LL, N_LH,
+		     avg_eval_ratios, mse_ratio);
+      // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
+      // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
+      // (This differs from MLMC MSE^0 which uses pilot for all levels.)
+      // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
+      if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, mse_iter0);
+    }
+    //else
+    //  Cout << "\nACV iteration " << mlmfIter << ": no shared sample increment"
+    //       << std::endl;
+
+    ++mlmfIter;
+  }
+
+  // ----------------------------------------------------------------
+  // Compute N_L increments based on eval ratio applied to final numH
+  // ----------------------------------------------------------------
+  // Note: these results do not affect the iteration above and can be performed
+  // after numH has converged, which simplifies maxFnEvals / convTol logic
+  // (no need to further interrogate these throttles below)
+
+  if (avg_hf_target == 0.) avg_hf_target = average(numH);// pilot only,no update
+  IntRealMatrixMap sum_L_refined = sum_L_baselineH;//baselineL;
+  Sizet2DArray       N_L_refined =   N_L_baselineH;//baselineL;
+  for (size_t approx=numApprox; approx>0; --approx) {
+    // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
+    start = (acvSubMethod == SUBMETHOD_ACV_IS) ? approx - 1 : 0;
+    if (approx_increment(avg_eval_ratios, N_L_refined, avg_hf_target, mlmfIter,
+			 start, approx)) {
+      // ACV_IS samples on [approx-1,approx) --> sum_L_refined
+      // ACV_MF samples on [0, approx)       --> sum_L_refined
+      accumulate_acv_sums(sum_L_refined, N_L_refined, start, approx);
+      increment_equivalent_cost(numSamples, sequenceCost, start, approx);
+    }
+  }
+
+  // Compute/apply control variate parameter to estimate uncentered raw moments
+  RealMatrix H_raw_mom(numFunctions, 4);
+  acv_raw_moments(sum_L_baselineH, sum_L_refined, sum_H, sum_LL, sum_LH,
+		  avg_eval_ratios, N_L_baselineH, N_L_refined, numH, N_LL,
+		  N_LH, H_raw_mom);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(H_raw_mom, momentStats);
+
+  // post final sample counts back to NLev (needed for final eval summary)
+  N_L_refined.push_back(numH); // aggregate into a single Sizet2DArray
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  inflate_final_samples(N_L_refined, multilev, secondaryIndex, NLev);
 }
 
 
 void NonDACVSampling::
-configure_indices(size_t group, size_t form, size_t lev, short seq_type)
+update_hf_target(const RealVector& avg_eval_ratios, const RealVector& cost,
+		 Real mse_ratio, const RealVector& var_H, const SizetArray& N_H,
+		 const RealVector& mse_iter0, Real& avg_hf_target)
 {
+  // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L 
+  // > could consider under-relaxing the budget allocation to enable
+  //   additional N_H increments + associated updates to shared samples
+  //   for improving rho2_LH et al.
+  if (maxFunctionEvals != SZ_MAX) {
+    Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
+    avg_hf_target = allocate_budget(avg_eval_ratios, cost);
+  }
+  // MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
+  // --> N_H = mse_ratio * var_H / convTol / mse_iter0
+  // Note: don't simplify further since mse_iter0 is fixed based on pilot
+  else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: to support both, need to retain default special value (-DBL_MAX) to detect a user spec
+    Cout << "Scaling profile for convergenceTol = " << convergenceTol;
+    Real avg_varH_div_mse0 = 0.;
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      avg_varH_div_mse0 += var_H[qoi] / mse_iter0[qoi];
+    avg_varH_div_mse0 /= numFunctions;
+    avg_hf_target = mse_ratio * avg_varH_div_mse0 / convergenceTol;
+  }
+  // numSamples is relative to N_H, but the approx_increments() below are
+  // computed relative to hf_targets (independent of sunk cost for pilot)
+  Cout << ": average HF target = " << avg_hf_target << std::endl;
+  numSamples = one_sided_delta(average(N_H), avg_hf_target);
+  //numSamples = std::min(num_samp_budget, num_samp_ctol); // enforce both
+}
+
+
+bool NonDACVSampling::
+approx_increment(const RealVector& avg_eval_ratios,
+		 const Sizet2DArray& N_L_refined, Real hf_target,
+		 size_t iter, size_t start, size_t end)
+{
+  // Update LF samples based on evaluation ratio
+  //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
   // Notes:
-  // > could consolidate with NonDExpansion::configure_indices() with a passed
-  //   model and virtual *_mode() assignments.  Leaving separate for now...
-  // > group index is assigned based on step in model form/resolution sequence
-  // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
+  // > the sample increment for the approx range is determined by approx[end-1]
+  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
+  // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
+  //   allowing use of one_sided_delta() with latest counts
+  // > eval_ratios have been scaled if needed to satisfy specified budget
+  //   (maxFunctionEvals) in
+  size_t qoi, approx = end - 1;
+  Real lf_target = avg_eval_ratios[approx] * hf_target;
+  // Choose avg, RMS, max? (trade-off: possible overshoot vs. more iteration)
+  numSamples = one_sided_delta(average(N_L_refined[approx]), lf_target);
 
-  // preserve special values across type conversions
-  unsigned short grp = (group == SZ_MAX) ? USHRT_MAX : (unsigned short)group,
-                 frm = (form  == SZ_MAX) ? USHRT_MAX : (unsigned short)form;
-  Pecos::ActiveKey hf_key;  hf_key.form_key(grp, frm, lev);
-
-  if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
-       (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0)) {
-    // step 0 in the sequence
-    bypass_surrogate_mode();
-    iteratedModel.active_model_key(hf_key);      // one active fidelity
+  if (numSamples && start < end) {
+    Cout << "\nACV sample increment = " << numSamples
+	 << " for approximations [" << start+1 << ", " << end << ']';
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << " computed from average delta between target " << lf_target
+	   << " and current average count " << average(N_L_refined[approx]);
+    Cout << std::endl;
+    size_t start_qoi = start * numFunctions, end_qoi = end * numFunctions;
+    activeSet.request_values(0);
+    //activeSet.request_values(0, 0, start_qoi);
+    activeSet.request_values(1, start_qoi, end_qoi);
+    //activeSet.request_values(0, end_qoi, iteratedModel.response_size());
+    ensemble_sample_increment(iter, start); // NON-BLOCK
+    return true;
   }
   else {
-    aggregated_models_mode();
-
-    /* TO DO
-    Pecos::ActiveKey lf_key(hf_key.copy()), agg_key;
-    lf_key.decrement_key(seq_type); // seq_index defaults to 0
-    // For MLMC/MFMC/MLMFMC, we aggregate levels but don't reduce them
-    agg_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
-    iteratedModel.active_model_key(agg_key); // two active fidelities
-    */
+    Cout << "\nNo ACV approx sample increment for approximations ["
+	 << start+1 << ", " << end << ']' << std::endl;
+    return false;
   }
 }
 
 
-void NonDACVSampling::assign_specification_sequence(size_t index)
+/** This version used by ACV following shared_increment() */
+void NonDACVSampling::
+accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
+		    IntRealSymMatrixArrayMap& sum_LL, // L w/ itself + other L
+		    IntRealMatrixMap&         sum_LH, // each L with H
+		    RealVector& sum_HH, Sizet2DArray& num_L_baseline,
+		    SizetArray& num_H,  SizetSymMatrixArray& num_LL,
+		    Sizet2DArray& num_LH)
 {
-  // Note: seedSpec/randomSeed initialized from randomSeedSeqSpec in ctor
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
-  // advance any sequence specifications, as admissible
-  // Note: no colloc pts sequence as load_pilot_sample() handles this separately
-  int seed_i = random_seed(index);
-  if (seed_i) randomSeed = seed_i;// propagate to NonDSampling::initialize_lhs()
-  // else previous value will allow existing RNG to continue for varyPattern
+  using std::isfinite;
+  Real lf_fn, lf2_fn, hf_fn, lf_prod, lf2_prod, hf_prod;
+  IntRespMCIter r_it;              IntRVMIter    h_it;
+  IntRMMIter lb_it, lr_it, lh_it;  IntRSMAMIter ll_it;
+  int lb_ord, lr_ord, h_ord, ll_ord, lh_ord, active_ord, m;
+  size_t qoi, approx, approx2, lf_index, lf2_index, hf_index;
+  bool hf_is_finite;
+
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    const Response&   resp    = r_it->second;
+    const RealVector& fn_vals = resp.function_values();
+    //const ShortArray& asv   = resp.active_set_request_vector();
+    hf_index = numApprox * numFunctions;
+
+    for (qoi=0; qoi<numFunctions; ++qoi, ++hf_index) {
+      hf_fn = fn_vals[hf_index];
+      hf_is_finite = isfinite(hf_fn);
+      // High accumulations:
+      if (hf_is_finite) { // neither NaN nor +/-Inf
+	++num_H[qoi];
+	// High-High:
+	sum_HH[qoi] += hf_fn * hf_fn; // a single vector for ord 1
+	// High:
+	h_it = sum_H.begin();  h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
+	hf_prod = hf_fn;       active_ord = 1;
+	while (h_ord) {
+	  if (h_ord == active_ord) { // support general key sequence
+	    h_it->second[qoi] += hf_prod;
+	    ++h_it; h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
+	  }
+	  hf_prod *= hf_fn;  ++active_ord;
+	}
+      }
+	
+      SizetSymMatrix& num_LL_q = num_LL[qoi];
+      for (approx=0; approx<numApprox; ++approx) {
+	lf_index = approx * numFunctions + qoi;
+	lf_fn = fn_vals[lf_index];
+
+	// Low accumulations:
+	if (isfinite(lf_fn)) {
+	  ++num_L_baseline[approx][qoi];
+	  ++num_LL_q(approx,approx); // Diagonal of C matrix
+	  if (hf_is_finite) ++num_LH[approx][qoi]; // pull out of moment loop
+
+	  lb_it = sum_L_baseline.begin();
+	  ll_it = sum_LL.begin();  lh_it = sum_LH.begin();
+	  lb_ord = (lb_it == sum_L_baseline.end()) ? 0 : lb_it->first;
+	  ll_ord = (ll_it == sum_LL.end())         ? 0 : ll_it->first;
+	  lh_ord = (lh_it == sum_LH.end())         ? 0 : lh_it->first;
+	  lf_prod = lf_fn;  active_ord = 1;
+	  while (lb_ord || ll_ord || lh_ord) {
+    
+	    // Low baseline
+	    if (lb_ord == active_ord) { // support general key sequence
+	      lb_it->second(qoi,approx) += lf_prod;  ++lb_it;
+	      lb_ord = (lb_it == sum_L_baseline.end()) ? 0 : lb_it->first;
+	    }
+	    // Low-Low
+	    if (ll_ord == active_ord) { // support general key sequence
+	      ll_it->second[qoi](approx,approx) += lf_prod * lf_prod;
+	      // Off-diagonal of C matrix:
+	      // look back (only) for single capture of each combination
+	      for (approx2=0; approx2<approx; ++approx2) {
+		lf2_index = approx2 * numFunctions + qoi;
+		lf2_fn = fn_vals[lf2_index];
+
+		if (isfinite(lf2_fn)) { // both are finite
+		  if (active_ord == 1) ++num_LL_q(approx,approx2);
+		  lf2_prod = lf2_fn;
+		  for (m=1; m<active_ord; ++m)
+		    lf2_prod *= lf2_fn;
+		  ll_it->second[qoi](approx,approx2) += lf_prod * lf2_prod;
+		}
+	      }
+	      ++ll_it; ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
+	    }
+	    // Low-High (c vector for each QoI):
+	    if (lh_ord == active_ord) {
+	      if (hf_is_finite) {
+		hf_prod = hf_fn;
+		for (m=1; m<active_ord; ++m)
+		  hf_prod *= hf_fn;
+		lh_it->second(qoi,approx) += lf_prod * hf_prod;
+	      }
+	      ++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
+	    }
+
+	    lf_prod *= lf_fn;  ++active_ord;
+	  }
+	}
+      }
+    }
+  }
+}
+
+
+/** This version used by ACV following shared_approx_increment() */
+void NonDACVSampling::
+accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
+		    IntRealSymMatrixArrayMap& sum_LL, // L w/ itself + other L
+		    Sizet2DArray& num_L_shared, SizetSymMatrixArray& num_LL)
+{
+  // uses one set of allResponses with QoI aggregation across all approx Models,
+  // corresponding to unorderedModels[i-1], i=1:numApprox (omits truthModel)
+
+  using std::isfinite;
+  Real lf_fn, lf2_fn, lf_prod, lf2_prod;
+  IntRespMCIter r_it; IntRMMIter ls_it; IntRSMAMIter ll_it;
+  int ls_ord, ll_ord, active_ord, m;
+  size_t qoi, approx, approx2, lf_index, lf2_index;
+
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    const Response&   resp    = r_it->second;
+    const RealVector& fn_vals = resp.function_values();
+    //const ShortArray& asv   = resp.active_set_request_vector();
+
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+
+      SizetSymMatrix& num_LL_q = num_LL[qoi];
+      for (approx=0; approx<numApprox; ++approx) {
+	lf_index = approx * numFunctions + qoi;
+	lf_fn = fn_vals[lf_index];
+
+	// Low accumulations:
+	if (isfinite(lf_fn)) {
+	  ++num_L_shared[approx][qoi];
+	  ++num_LL_q(approx,approx); // Diagonal of C matrix
+
+	  ls_it = sum_L_shared.begin();  ll_it = sum_LL.begin();
+	  ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
+	  ll_ord = (ll_it == sum_LL.end())       ? 0 : ll_it->first;
+	  lf_prod = lf_fn;  active_ord = 1;
+	  while (ls_ord || ll_ord) {
+    
+	    // Low shared
+	    if (ls_ord == active_ord) { // support general key sequence
+	      ls_it->second(qoi,approx) += lf_prod;  ++ls_it;
+	      ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
+	    }
+	    // Low-Low
+	    if (ll_ord == active_ord) { // support general key sequence
+	      ll_it->second[qoi](approx,approx) += lf_prod * lf_prod;
+	      // Off-diagonal of C matrix:
+	      // look back (only) for single capture of each combination
+	      for (approx2=0; approx2<approx; ++approx2) {
+		lf2_index = approx2 * numFunctions + qoi;
+		lf2_fn = fn_vals[lf2_index];
+
+		if (isfinite(lf2_fn)) { // both are finite
+		  if (active_ord == 1) ++num_LL_q(approx,approx2);
+		  lf2_prod = lf2_fn;
+		  for (m=1; m<active_ord; ++m)
+		    lf2_prod *= lf2_fn;
+		  ll_it->second[qoi](approx,approx2) += lf_prod * lf2_prod;
+		}
+	      }
+	      ++ll_it;  ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
+	    }
+
+	    lf_prod *= lf_fn;  ++active_ord;
+	  }
+	}
+      }
+    }
+  }
+}
+
+
+/** This version used by ACV following approx_increment() */
+void NonDACVSampling::
+accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
+		    Sizet2DArray& num_L_refined,
+		    size_t approx_start, size_t approx_end)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // led by the approx Model responses of interest
+
+  using std::isfinite;
+  Real lf_fn, lf_prod;
+  int lr_ord, active_ord;
+  size_t qoi, lf_index, approx;
+  IntRespMCIter r_it; IntRMMIter lr_it;
+
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    const Response&   resp    = r_it->second;
+    const RealVector& fn_vals = resp.function_values();
+    //const ShortArray& asv   = resp.active_set_request_vector();
+
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+
+      for (approx=approx_start; approx<approx_end; ++approx) {
+	lf_index = approx * numFunctions + qoi;
+	lf_fn = fn_vals[lf_index];
+
+	// Low accumulations:
+	if (isfinite(lf_fn)) {
+	  ++num_L_refined[approx][qoi];
+	  lr_it = sum_L_refined.begin();
+	  lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
+	  lf_prod = lf_fn;  active_ord = 1;
+	  while (lr_ord) {
+    
+	    // Low refined
+	    if (lr_ord == active_ord) { // support general key sequence
+	      lr_it->second(qoi,approx) += lf_prod;  ++lr_it;
+	      lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
+	    }
+
+	    lf_prod *= lf_fn;  ++active_ord;
+	  }
+	}
+      }
+    }
+  }
 }
 
 
 void NonDACVSampling::
-export_all_samples(String root_prepend, const Model& model, size_t iter,
-		   size_t lev)
+compute_LH_covariance(const RealMatrix& sum_L_shared, const RealVector& sum_H,
+		      const RealMatrix& sum_LH, const Sizet2DArray& N_L_shared,
+		      const SizetArray& N_H,    const Sizet2DArray& N_LH,
+		      RealMatrix& cov_LH)
 {
-  String tabular_filename(root_prepend);
-  const String& iface_id = model.interface_id();
-  size_t i, num_samp = allSamples.numCols();
-  if (iface_id.empty()) tabular_filename += "NO_ID_i";
-  else                  tabular_filename += iface_id + "_i";
-  tabular_filename += std::to_string(iter)     +  "_l"
-                   +  std::to_string(lev)      +  '_'
-                   +  std::to_string(num_samp) + ".dat";
-  Variables vars(model.current_variables().copy());
+  if (cov_LH.empty()) cov_LH.shapeUninitialized(numFunctions, numApprox);
 
-  String context_message("NonDACVSampling::export_all_samples");
-  StringArray no_resp_labels;
-  String cntr_label("sample_id"), interf_label("interface");
+  size_t approx, qoi;
+  for (approx=0; approx<numApprox; ++approx) {
+    const Real* sum_L_shared_a = sum_L_shared[approx];
+    const Real*       sum_LH_a =       sum_LH[approx];
+    const SizetArray&    N_L_a =   N_L_shared[approx];
+    const SizetArray&   N_LH_a =         N_LH[approx];
+    Real*             cov_LH_a =       cov_LH[approx];
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      compute_covariance(sum_L_shared_a[qoi], sum_H[qoi], sum_LH_a[qoi],
+			 N_L_a[qoi], N_H[qoi], N_LH_a[qoi], cov_LH_a[qoi]);
+  }
+}
 
-  // Rather than hard override, rely on output_precision user spec
-  //int save_wp = write_precision;
-  //write_precision = 16; // override
-  std::ofstream tabular_stream;
-  TabularIO::open_file(tabular_stream, tabular_filename, context_message);
-  TabularIO::write_header_tabular(tabular_stream, vars, no_resp_labels,
-				  cntr_label, interf_label,exportSamplesFormat);
-  for (i=0; i<num_samp; ++i) {
-    sample_to_variables(allSamples[i], vars); // NonDSampling version
-    TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1,
-				  exportSamplesFormat);
+
+void NonDACVSampling::
+compute_LL_covariance(const RealMatrix& sum_L_shared,
+		      const RealSymMatrixArray& sum_LL,
+		      const Sizet2DArray& N_L_shared,
+		      const SizetSymMatrixArray& N_LL,
+		      RealSymMatrixArray& cov_LL)
+{
+  size_t qoi, approx, approx2, N_L_aq;
+  if (cov_LL.empty()) {
+    cov_LL.resize(numFunctions);
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      cov_LL[qoi].shapeUninitialized(numApprox);
   }
 
-  TabularIO::close_file(tabular_stream, tabular_filename, context_message);
-  //write_precision = save_wp; // restore
+  Real sum_L_aq;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    const RealSymMatrix& sum_LL_q = sum_LL[qoi];
+    const SizetSymMatrix&  N_LL_q =   N_LL[qoi];
+    RealSymMatrix&       cov_LL_q = cov_LL[qoi];
+    for (approx=0; approx<numApprox; ++approx) {
+      N_L_aq = N_L_shared[approx][qoi];  sum_L_aq = sum_L_shared(qoi,approx);
+      for (approx2=0; approx2<=approx; ++approx2)
+	compute_covariance(sum_L_aq, sum_L_shared(qoi,approx2),
+			   sum_LL_q(approx,approx2), N_L_aq,
+			   N_L_shared[approx2][qoi], N_LL_q(approx,approx2),
+			   cov_LL_q(approx,approx2));
+    }
+  }
 }
 
 
-void NonDACVSampling::post_run(std::ostream& s)
+void NonDACVSampling::
+compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
+	       const RealSymMatrixArray& sum_LL, const RealMatrix& sum_LH,
+	       const RealVector& sum_HH, const RealVector& cost,
+	       const Sizet2DArray& N_L_baseline, const SizetArray& N_H,
+	       const SizetSymMatrixArray& N_LL, const Sizet2DArray& N_LH,
+	       RealVector& avg_eval_ratios, Real& mse_ratio)
 {
-  // Final moments are generated within core_run() by convert_moments().
-  // No addtional stats are currently supported.
-  //if (statsFlag) // calculate statistics on allResponses
-  //  compute_statistics(allSamples, allResponses);
+  compute_variance(sum_H, sum_HH, N_H, varH);
+  //Cout << "varH:\n" << varH;
+  compute_LH_covariance(sum_L_baseline/*H*/, sum_H, sum_LH,
+			N_L_baseline/*H*/, N_H, N_LH, covLH);
+  //Cout << "covLH:\n" << covLH;
+  compute_LL_covariance(sum_L_baseline/*L*/, sum_LL, N_L_baseline/*L*/,
+			N_LL, covLL);
+  //Cout << "covLL:\n" << covLL;
 
-  // NonD::update_aleatory_final_statistics() pushes momentStats into
-  // finalStatistics
-  update_final_statistics();
+  // Set initial guess based on MFMC eval ratios (iter 0) or warm started from
+  // previous solution
+  Real avg_N_H = average(N_H), avg_hf_target;
+  if (mlmfIter == 0) {
+    // compute initial estimate of r* from MFMC
+    RealMatrix rho2_LH, eval_ratios;  RealMatrix var_L;
+    compute_variance(sum_L_baseline, sum_LL, N_L_baseline, var_L);
+    covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
+    mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
+    average(eval_ratios, 0, avg_eval_ratios);// average over qoi for each approx
+    //if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Initial guess from MFMC (avg eval ratios):\n" << avg_eval_ratios
+	   << std::endl;
+    // scale to enforce budget constraint.  Since the profile does not emerge
+    // from pilot in ACV, our best initial guess is active on budget constraint:
+    // > if N* < N_pilot, then scale back r* for use initial = scaled_r*,N_pilot
+    // > if N* > N_pilot, then use r* and use initial = r*,N*
+    avg_hf_target = allocate_budget(avg_eval_ratios, cost);
+    if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
+      scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_N_H);
+      avg_hf_target = avg_N_H;
+    }
+  }
+  // else warm start from previous solution
+  // > no scaling needed from prev soln (as in NonDLocalReliability) since
+  //   updated avg_N_H now includes allocation from previous solution and is
+  //   active on constraint bound (excepting integer sample rounding)
 
-  Analyzer::post_run(s);
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: {
+    varianceMinimizer.initial_point(avg_eval_ratios);
+
+    // set linear inequality constraint:
+    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+    //   \Sum_i w_i   r_i <= equivHF * w / N - w
+    //   \Sum_i w_i/w r_i <= equivHF / N - 1
+    RealVector lin_ineq_lb(1, false), lin_ineq_ub(1, false), lin_eq_tgt;
+    RealMatrix lin_ineq_coeffs(1, numApprox, false), lin_eq_coeffs;
+    Real cost_H = cost[numApprox];
+    lin_ineq_lb[0] = -DBL_MAX; // no lower bound
+    lin_ineq_ub[0] = (Real)maxFunctionEvals / avg_N_H - 1.;
+    for (size_t approx=0; approx<numApprox; ++approx)
+      lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
+    // we update the Minimizer for user-functions mode (no iteratedModel)
+    varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
+					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
+    break;
+  }
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    size_t num_cdv = numApprox+1, num_lin_con = numApprox+1;
+    RealVector cv0(num_cdv);
+    copy_data_partial(avg_eval_ratios, cv0, 0);  cv0[numApprox] = 1.;
+    if (mlmfIter) cv0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
+    else          cv0.scale(avg_hf_target);
+    varianceMinimizer.initial_point(cv0);
+
+    RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con),
+               lin_eq_tgt;
+    RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
+    lin_ineq_lb = -DBL_MAX; // no lower bounds
+    // linear inequality constraint on budget:
+    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+    //   N w + \Sum_i w_i N_i <= equivHF * w
+    //   N + \Sum_i w_i/w N_i <= equivHF
+    lin_ineq_ub[0] = (Real)maxFunctionEvals;
+    Real cost_H = cost[numApprox];
+    for (size_t approx=0; approx<numApprox; ++approx)
+      lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
+    lin_ineq_coeffs(0,numApprox) = 1.;
+    // linear inequality constraints on N_i >= N prevent numerical exceptions:
+    for (size_t approx=1; approx<=numApprox; ++approx) {
+      //lin_ineq_ub[approx] = 0.; // already initialized to zero
+      lin_ineq_coeffs(approx,approx-1)  = -1.;
+      lin_ineq_coeffs(approx,numApprox) =  1.;// enforce N_i >= N (r_i >= 1)
+      //lin_ineq_coeffs(approx,approx)  =  1.;// enforce N_i >= N_{i+1}
+    }
+    // we update the Minimizer for user-functions mode (no iteratedModel)
+    varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
+					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
+    break;
+  }
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
+    RealVector cv0(numApprox+1);
+    copy_data_partial(avg_eval_ratios, cv0, 0);          // r_i
+    cv0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
+    varianceMinimizer.initial_point(cv0);
+
+    /*
+    // For this case, could allow the optimal profile to emerge from pilot by
+    // allowing N* less than the incurred cost (e.g., setting N_lb to 1), but
+    // instead we target r*,N* subject to the incurred cost of shared samples
+    // by updating N_lb = latest N_H and retaining r_lb = 1.
+    size_t num_cdv = numApprox + 1; // evaluation ratios, N_H
+    RealVector  x_lb(num_cdv, false), x_ub(num_cdv, false);
+    x_lb = 1.;  x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5);
+    x_ub = DBL_MAX; // no upper bounds
+    varianceMinimizer.variable_bounds(x_lb, x_ub);
+    */
+
+    // Consider adding linear constraints suggested in ACV paper
+    break;
+  }
+  }
+
+  // solve the sub-problem to compute the optimal r* that maximizes
+  // the variance reduction for fixed N_H
+  varianceMinimizer.run();
+
+  // Recover optimizer results for average {eval,mse} ratios
+  const RealVector& cv_star
+    = varianceMinimizer.variables_results().continuous_variables();
+  const RealVector& fn_star
+    = varianceMinimizer.response_results().function_values();
+  Real avg_mc_est_var;
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: {
+    // simple copy to avg_eval_ratios:
+    copy_data(cv_star, avg_eval_ratios);
+    // compute average of MC estimator variance for fixed numH
+    RealVector mc_est_var;
+    compute_mc_estimator_variance(varH, numH, mc_est_var);
+    avg_mc_est_var = average(mc_est_var);
+    break;
+  }
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    // N*_i is leading part of r_and_N and N* is trailing part:
+    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r * N
+    Real N_star = cv_star[numApprox];                               // N
+    avg_eval_ratios.scale(1./N_star);                               // r
+    // compute sample increment from current to N*:
+    numSamples = one_sided_delta(avg_N_H, N_star);
+    // compute average of MC est var for final N* (used in final ACV est var)
+    avg_mc_est_var = average(varH) / N_star;
+    break;
+  }
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
+    // r* is leading part of r_and_N and N* is trailing part:
+    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r*
+    Real N_star = cv_star[numApprox];                               // N*
+    // compute sample increment from current to N*:
+    numSamples = one_sided_delta(avg_N_H, N_star);
+    // compute average of MC est var for final N* (used in final ACV est var)
+    avg_mc_est_var = average(varH) / N_star;
+    break;
+  }
+  }
+  // Objective recovery from optimizer provides std::log(average(est_var))
+  // (avoid recomputation from r*,N*)
+  Real avg_acv_est_var = std::exp(fn_star(0)); // varH / numH (1 - R^2)
+  mse_ratio = avg_acv_est_var / avg_mc_est_var; // (1 - R^2)
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    for (size_t approx=0; approx<numApprox; ++approx)
+      Cout << "Approx " << approx+1 << ": average evaluation ratio = "
+	   << avg_eval_ratios[approx] << '\n';
+    Cout << "ACV variance / pilot MC variance = " << mse_ratio << std::endl;
+  }
 }
 
 
-void NonDACVSampling::print_results(std::ostream& s, short results_state)
+void NonDACVSampling::
+acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
+		IntRealMatrixMap& sum_L_refined,  IntRealVectorMap& sum_H,
+		IntRealSymMatrixArrayMap& sum_LL, IntRealMatrixMap& sum_LH,
+		const RealVector& avg_eval_ratios,
+		const Sizet2DArray& N_L_baseline,
+		const Sizet2DArray& N_L_refined,  const SizetArray&   N_H,
+		const SizetSymMatrixArray& N_LL,  const Sizet2DArray& N_LH,
+		RealMatrix& H_raw_mom)
 {
-  if (statsFlag) {
-    print_multilevel_evaluation_summary(s, NLev);
-    s << "<<<<< Equivalent number of high fidelity evaluations: "
-      << equivHFEvals << "\n\nStatistics based on multilevel sample set:\n";
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
 
-  //print_statistics(s);
-    print_moments(s, "response function",
-		  iteratedModel.truth_model().response_labels());
-    archive_moments();
-    archive_equiv_hf_evals(equivHFEvals); 
+  RealSymMatrix F, CF_inv;
+  compute_F_matrix(avg_eval_ratios, F);
+
+  size_t approx, qoi, N_H_q;
+  RealVector beta(numApprox);
+  for (int mom=1; mom<=4; ++mom) {
+    RealMatrix&     sum_L_base_m = sum_L_baseline[mom];
+    RealMatrix&      sum_L_ref_m = sum_L_refined[mom];
+    RealVector&          sum_H_m =         sum_H[mom];
+    RealSymMatrixArray& sum_LL_m =        sum_LL[mom];
+    RealMatrix&         sum_LH_m =        sum_LH[mom];
+    if (outputLevel >= NORMAL_OUTPUT) Cout << "Moment " << mom << ":\n";
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      Real sum_H_mq = sum_H_m[qoi];
+      if (mom == 1) // variances/covariances already computed for mean estimator
+	compute_acv_control(covLL[qoi], F, covLH, qoi, beta);
+      else // compute variances/covariances for higher-order moment estimators
+	compute_acv_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
+			    N_L_baseline, N_H[qoi], N_LL[qoi], N_LH, F,
+			    qoi, beta); // need to all be based on shared counts
+        // *** TO DO: support shared_approx_increment() --> baselineL
+
+      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      N_H_q = N_H[qoi];
+      H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
+      for (approx=0; approx<numApprox; ++approx) {
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
+	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
+	// For ACV, shared counts are fixed at N_H for all approx
+	apply_control(sum_L_base_m(qoi,approx), N_L_baseline[approx][qoi],
+		      sum_L_ref_m(qoi,approx),  N_L_refined[approx][qoi],
+		      beta[approx], H_raw_mq);
+      }
+    }
+  }
+}
+
+
+Real NonDACVSampling::objective_function(const RealVector& r_and_N)
+{
+  RealSymMatrix F, CF_inv;
+  switch (optSubProblemForm) {
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    RealVector r;  copy_data_partial(r_and_N, 0, (int)numApprox, r); // N_i
+    r.scale(1./r_and_N[numApprox]); // r_i = N_i / N
+    compute_F_matrix(r, F);
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    compute_F_matrix(r_and_N, F); // admits r as leading numApprox terms
+    break;
+  }
+  //Cout << "Objective evaluator: F =\n" << F << std::endl;
+
+  RealVector A, R_sq(numFunctions, false);  size_t qoi;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    invert_CF(covLL[qoi], F, CF_inv);
+    //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
+    compute_A_vector(F, covLH, qoi, A);     // defer c-bar scaling
+    //Cout << "Objective eval: A =\n" << A << std::endl;
+    compute_Rsq(CF_inv, A, varH[qoi], R_sq[qoi]); // apply scaling^2
+    //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
+    //     << " Rsq[" << qoi << "] =\n" << R_sq[qoi] << std::endl;
+  }
+
+  // form estimator variances to pick up dependence on N
+  RealVector est_var(numFunctions, false);
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      est_var[qoi] = varH[qoi] / numH[qoi] * (1. - R_sq[qoi]);
+    break;
+  case N_VECTOR_LINEAR_CONSTRAINT:
+  case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
+    Real N = r_and_N[numApprox];
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      est_var[qoi] = varH[qoi] / N         * (1. - R_sq[qoi]);
+    break;
+  }
+  }
+
+  // protect against R_sq blow-up for N_i < N (if not enforced by linear constr)
+  Real avg_est_var = average(est_var), obj_fn = (avg_est_var > 0.) ?
+    std::log(avg_est_var) :
+    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+  //if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "objective_function: "
+         << "design vars:\n" << r_and_N << "R squared:\n" << R_sq
+	 << "obj = log(average((1.-Rsq)varH/N)) = " << obj_fn << '\n';
+  return obj_fn; // maximize R_sq; use log to flatten contours
+}
+
+
+/*
+void NonDACVSampling::
+objective_gradient(const RealVector& r_and_N, RealVector& obj_grad)
+{
+  // This would still be called for deriv level 0 to identify the set of terms
+  // that must be numerically estimated.
+
+  Cerr << "Warning: gradient of the objective not supported." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+*/
+
+
+Real NonDACVSampling::nonlinear_constraint(const RealVector& r_and_N)
+{
+  // nln ineq constraint: N ( w + Sum(w_i r_i) ) <= C, where C = equivHF * w
+  // -->  N ( 1 + Sum(w_i r_i) / w ) <= equivHF
+  Real inner_prod = 0.;
+  for (size_t i=0; i<numApprox; ++i)
+    inner_prod += sequenceCost[i] * r_and_N[i];  //         Sum(w_i r_i)
+  inner_prod /= sequenceCost[numApprox];         //         Sum(w_i r_i) / w
+
+  Real nln_con
+    = r_and_N[numApprox] * (1. + inner_prod);    // N ( 1 + Sum(w_i r_i) / w )
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "nonlinear_constraint: design vars:\n" << r_and_N
+	 << "budget constr = " << nln_con << std::endl;
+  return nln_con;
+}
+
+
+void NonDACVSampling::
+nonlinear_constraint_gradient(const RealVector& r_and_N, RealVector& grad_c)
+{
+  // inequality constraint: N ( 1 + Sum(w_i r_i) / w ) <= equivHF
+  // > grad w.r.t. r_i = N w_i / w
+  // > grad w.r.t. N   = 1 + Sum(w_i r_i) / w
+  size_t i, len = r_and_N.length(), r_len = len-1;
+  //if (grad_c.length() != len) grad_c.sizeUninitialized(len); // don't own
+
+  Real cost_H = sequenceCost[r_len], N_over_w = r_and_N[r_len] / cost_H;
+  for (i=0; i<r_len; ++i)
+    grad_c[i] = N_over_w * sequenceCost[i];
+
+  Real inner_prod = 0.;
+  for (i=0; i<numApprox; ++i)
+    inner_prod += sequenceCost[i] * r_and_N[i]; //     Sum(w_i r_i)
+  grad_c[r_len] = 1. + inner_prod / cost_H;     // 1 + Sum(w_i r_i) / w
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "nonlinear_constraint gradient:\n" << grad_c << std::endl;
+}
+
+
+/** NPSOL objective functions evaluator for solution of homotopy constraint 
+    relaxation parameter optimization. This constrained optimization problem
+    performs the update of the tau parameter in the homotopy heuristic 
+    approach used to relax the constraints in the original problem . */
+void NonDACVSampling::
+npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
+			  double* grad_f, int& nstate)
+{
+  // NPSOL mode: 0 = get f, 1 = get grad_f, 2 = get both
+  // promote mode to standard asv request codes
+  short asv_request = mode + 1;
+  RealVector x_rv(Teuchos::View, x, n);
+  if (asv_request & 1)
+    f = acvInstance->objective_function(x_rv);
+  // NPSOL estimates unspecified components of the obj grad, so ASV grad
+  // request is not an error -- just don't specify anything
+  //if (asv_request & 2) {
+  //  RealVector grad_f_rv(Teuchos::View, grad_f, n);
+  //  acvInstance->objective_gradient(x_rv, grad_f_rv);
+  //}
+}
+
+
+void NonDACVSampling::
+npsol_constraint_evaluator(int& mode, int& ncnln, int& n, int& nrowj,
+			   int* needc, double* x, double* c, double* cjac,
+			   int& nstate)
+{
+  // NPSOL mode: 0 = get f, 1 = get grad_f, 2 = get both
+  // promote mode to standard asv request codes
+  short asv_request = mode + 1;
+  RealVector x_rv(Teuchos::View, x, n);
+  if (asv_request & 1)
+    c[0] = acvInstance->nonlinear_constraint(x_rv);
+  if (asv_request & 2) {
+    RealVector grad_c_rv(Teuchos::View, cjac, n);
+    acvInstance->nonlinear_constraint_gradient(x_rv, grad_c_rv);
+  }
+}
+
+
+/* API for NLF1 objective (see SNLLOptimizer::nlf1_evaluator())
+void NonDACVSampling::
+optpp_objective_evaluator(int mode, int n, const RealVector& x, double& f, 
+			  RealVector& grad_f, int& result_mode)
+{
+  if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
+    f = acvInstance->objective_function(x);
+    result_mode = OPTPP::NLPFunction;
+  }
+  if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
+    acvInstance->objective_gradient(x, grad_f);
+    result_mode |= OPTPP::NLPGradient;
+  }
+}
+*/
+
+
+/** API for FDNLF1 objective (see SNLLOptimizer::nlf0_evaluator()) */
+void NonDACVSampling::
+optpp_objective_evaluator(int n, const RealVector& x, double& f,
+			  int& result_mode)
+{
+  f = acvInstance->objective_function(x);
+  result_mode = OPTPP::NLPFunction; // 1 bit
+}
+
+
+/** API for NLF1 constraint (see SNLLOptimizer::constraint1_evaluator()) */
+void NonDACVSampling::
+optpp_constraint_evaluator(int mode, int n, const RealVector& x, RealVector& c,
+			   RealMatrix& grad_c, int& result_mode)
+{
+  result_mode = OPTPP::NLPNoOp; // 0
+  if (mode & OPTPP::NLPFunction) { // 1 bit is present, mode = 1 or 3
+    c[0] = acvInstance->nonlinear_constraint(x);
+    result_mode |= OPTPP::NLPFunction; // adds 1 bit
+  }
+  if (mode & OPTPP::NLPGradient) { // 2 bit is present, mode = 2 or 3
+    RealVector grad_c_rv(Teuchos::View, grad_c[0], n); // 0-th col vec
+    acvInstance->nonlinear_constraint_gradient(x, grad_c_rv);
+    result_mode |= OPTPP::NLPGradient; // adds 2 bit
   }
 }
 

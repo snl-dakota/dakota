@@ -102,51 +102,59 @@ public:
   NPSOLOptimizer(Model& model);
 
   /// alternate constructor for instantiations "on the fly"
-  NPSOLOptimizer(Model& model, const int& derivative_level,
-    const Real& conv_tol);
+  NPSOLOptimizer(Model& model, int derivative_level, Real conv_tol);
 
   /// alternate constructor for instantiations "on the fly"
   NPSOLOptimizer(const RealVector& initial_point,
-    const RealVector& var_lower_bnds,  const RealVector& var_upper_bnds,
-    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lower_bnds,
-    const RealVector& lin_ineq_upper_bnds, const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_targets, const RealVector& nonlin_ineq_lower_bnds,
-    const RealVector& nonlin_ineq_upper_bnds,
-    const RealVector& nonlin_eq_targets, 
-    void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
-    void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
-			   double*, int&),
-    const int& derivative_level, const Real& conv_tol);
-
-  /// alternate constructor for instantiations "on the fly" with additional NPSOL settings
-  NPSOLOptimizer(const RealVector& initial_point, 
-  const RealVector& var_lower_bnds, const RealVector& var_upper_bnds,
-  const RealMatrix& lin_ineq_coeffs,
-  const RealVector& lin_ineq_lower_bnds,
-  const RealVector& lin_ineq_upper_bnds,
-  const RealMatrix& lin_eq_coeffs,
-  const RealVector& lin_eq_targets,
-  const RealVector& nonlin_ineq_lower_bnds,
-  const RealVector& nonlin_ineq_upper_bnds,
-  const RealVector& nonlin_eq_targets,
-  void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
-  void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
-       double*, int&),
-  const int& derivative_level, const Real& conv_tol,
-  const Real function_precision, const Real feas_tol, 
-  const Real lin_feas_tol, const Real nonlin_feas_tol);
+		 const RealVector& var_lower_bnds,
+		 const RealVector& var_upper_bnds,
+		 const RealMatrix& lin_ineq_coeffs,
+		 const RealVector& lin_ineq_lower_bnds,
+		 const RealVector& lin_ineq_upper_bnds,
+		 const RealMatrix& lin_eq_coeffs,
+		 const RealVector& lin_eq_targets,
+		 const RealVector& nonlin_ineq_lower_bnds,
+		 const RealVector& nonlin_ineq_upper_bnds,
+		 const RealVector& nonlin_eq_targets,
+		 void (*user_obj_eval) (int&, int&, double*, double&,
+					double*, int&),
+		 void (*user_con_eval) (int&, int&, int&, int&, int*,
+					double*, double*, double*, int&),
+		 int derivative_level,  Real conv_tol = 0.,
+		 size_t max_iter = 0,   Real fn_precision = 0.,
+		 Real feas_tol = 0.,    Real lin_feas_tol = 0.,
+		 Real nonlin_feas_tol = 0.);
 
   ~NPSOLOptimizer(); ///< destructor
     
   //
-  //- Heading: Member functions
+  //- Heading: Virtual function redefinitions
   //
 
   void core_run();
 
   void declare_sources();
 
+  // updaters for user-functions mode:
+
+  void initial_point(const RealVector& pt);
+  void variable_bounds(const RealVector& cv_lower_bnds,
+		       const RealVector& cv_upper_bnds);
+  void linear_constraints(const RealMatrix& lin_ineq_coeffs,
+			  const RealVector& lin_ineq_lb,
+			  const RealVector& lin_ineq_ub,
+			  const RealMatrix& lin_eq_coeffs,
+			  const RealVector& lin_eq_tgt);
+  void nonlinear_constraints(const RealVector& nln_ineq_lb,
+			     const RealVector& nln_ineq_ub,
+			     const RealVector& nln_eq_tgt);
+
 protected:
+
+  //
+  //- Heading: Member functions
+  //
+
   void send_sol_option(std::string sol_option) override;
 
 private:
@@ -197,6 +205,45 @@ private:
 };
 
 
+inline void NPSOLOptimizer::initial_point(const RealVector& pt)
+{ copy_data(pt, initialPoint); } // protect from incoming view
+
+
+inline void NPSOLOptimizer::
+variable_bounds(const RealVector& cv_lower_bnds,
+		const RealVector& cv_upper_bnds)
+{
+  replace_variable_bounds(numLinearConstraints, numNonlinearConstraints,
+			  lowerBounds, upperBounds, cv_lower_bnds,
+			  cv_upper_bnds);
+}
+
+
+inline void NPSOLOptimizer::
+linear_constraints(const RealMatrix& lin_ineq_coeffs,
+		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
+		   const RealMatrix& lin_eq_coeffs,
+		   const RealVector& lin_eq_tgt)
+{
+  replace_linear_arrays(numContinuousVars, numNonlinearConstraints,
+			lin_ineq_coeffs, lin_eq_coeffs);
+  replace_linear_bounds(numContinuousVars, numNonlinearConstraints, lowerBounds,
+			upperBounds, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt);
+}
+
+
+inline void NPSOLOptimizer::
+nonlinear_constraints(const RealVector& nln_ineq_lb,
+		      const RealVector& nln_ineq_ub,
+		      const RealVector& nln_eq_tgt)
+{
+  replace_nonlinear_arrays(numContinuousVars, numLinearConstraints,
+			   nln_ineq_lb.length() + nln_eq_tgt.length());
+  replace_nonlinear_bounds(numContinuousVars, numLinearConstraints, lowerBounds,
+			   upperBounds, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
+}
+
+
 #ifdef HAVE_DYNLIB_FACTORIES
 // ---------------------------------------------------------
 // Factory functions for dynamic loading of solver libraries
@@ -204,7 +251,7 @@ private:
 
 NPSOLOptimizer* new_NPSOLOptimizer(ProblemDescDB& problem_db, Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model);
-NPSOLOptimizer* new_NPSOLOptimizer(Model& model, const int&, const Real&);
+NPSOLOptimizer* new_NPSOLOptimizer(Model& model, int, Real);
 NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& initial_point,
     const RealVector& var_lower_bnds,
     const RealVector& var_upper_bnds,
@@ -219,7 +266,7 @@ NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& initial_point,
     void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
     void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
 			   double*, int&),
-    const int& derivative_level, const Real& conv_tol);
+    int derivative_level, Real conv_tol);
 
 #endif // HAVE_DYNLIB_FACTORIES
 

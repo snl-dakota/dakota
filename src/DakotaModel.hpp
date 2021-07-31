@@ -114,9 +114,9 @@ public:
   virtual size_t qoi() const;
 
   /// return the active approximation sub-model in surrogate models
-  virtual Model& surrogate_model();
+  virtual Model& surrogate_model(size_t i = _NPOS);
   /// return the active approximation sub-model in surrogate models
-  virtual const Model& surrogate_model() const;
+  virtual const Model& surrogate_model(size_t i = _NPOS) const;
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
   /// return the active truth sub-model in surrogate models

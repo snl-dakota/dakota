@@ -80,9 +80,6 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     each of which may contain multiple discretization levels. */
 void NonDMultilevelSampling::core_run()
 {
-  // remove default key (empty activeKey) since this interferes with approx
-  // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
-  iteratedModel.clear_model_keys();
   // prefer ML over MF if both available
   iteratedModel.multifidelity_precedence(false);
 
@@ -153,7 +150,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   load_pilot_sample(pilotSamples, num_steps, delta_N_l);
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  SizetArray raw_N_l(num_steps, 0);
+  //SizetArray raw_N_l(num_steps, 0);
   RealVectorArray mu_hat(num_steps);
   //Sizet2DArray& N_l = NLev[form]; // slice only valid for ML
   // define a new 2D array and then post back to NLev at end
@@ -162,7 +159,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     N_l[step].assign(numFunctions, 0);
 
   // now converge on sample counts per level (N_l)
-  mlmfIter = 0;  equivHFEvals = 0.;
   while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
@@ -195,7 +191,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n" << sum_Y[1]
 	       << sum_Y[2] << sum_Y[3] << sum_Y[4] << sum_YY << std::endl;
 	// update raw evaluation counts
-	raw_N_l[step] += numSamples;
+	//raw_N_l[step] += numSamples;
 	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
 
 	// compute estimator variance from current sample accumulation:
@@ -308,7 +304,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   load_pilot_sample(pilotSamples, num_steps, delta_N_l);
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  SizetArray raw_N_l(num_steps, 0);
+  //SizetArray raw_N_l(num_steps, 0);
   RealVectorArray mu_hat(num_steps);
   //Sizet2DArray& N_l = NLev[form]; // *** VALID ONLY FOR ML
   // define a new 2D array and then post back to NLev at end
@@ -322,7 +318,6 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     convergenceTolVec[qoi] = convergenceTol;
 
   // now converge on sample counts per level (N_l)
-  mlmfIter = 0;  equivHFEvals = 0.;
   while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
     for (step=0; step<num_steps; ++step) {
@@ -348,7 +343,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 	accumulate_sums(sum_Ql, sum_Qlm1, sum_QlQlm1, step, mu_hat, N_l);
 
 	// update raw evaluation counts
-	raw_N_l[step] += numSamples;
+	//raw_N_l[step] += numSamples;
 	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
 
 	aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l,
@@ -378,6 +373,36 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
+}
+
+
+void NonDMultilevelSampling::
+configure_indices(unsigned short group, unsigned short form,
+		  size_t lev, short seq_type)
+{
+  // Notes:
+  // > could consolidate with NonDExpansion::configure_indices() with a passed
+  //   model and virtual *_mode() assignments.  Leaving separate for now...
+  // > group index is assigned based on step in model form/resolution sequence
+  // > CVMC does not use this helper; it requires uncorrected_surrogate_mode()
+
+  Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, lev);
+
+  if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
+       (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0)) {
+    // step 0 in the sequence
+    bypass_surrogate_mode();
+    iteratedModel.active_model_key(hf_key);      // one active fidelity
+  }
+  else {
+    aggregated_models_mode();
+
+    Pecos::ActiveKey lf_key(hf_key.copy()), discrep_key;
+    lf_key.decrement_key(seq_type); // seq_index defaults to 0
+    // For MLMC/MFMC/MLMFMC, we aggregate levels but don't reduce them
+    discrep_key.aggregate_keys(hf_key, lf_key, Pecos::RAW_DATA);
+    iteratedModel.active_model_key(discrep_key); // two active fidelities
+  }
 }
 
 

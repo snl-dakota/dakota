@@ -7,17 +7,17 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDMultilevMultifidSampling
+//- Class:	 NonDMultilevControlVarSampling
 //- Description: class for multilevel-multifidelity sampling
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
 
-#ifndef NOND_MULTILEV_MULTIFID_SAMPLING_H
-#define NOND_MULTILEV_MULTIFID_SAMPLING_H
+#ifndef NOND_MULTILEV_CONTROL_VAR_SAMPLING_H
+#define NOND_MULTILEV_CONTROL_VAR_SAMPLING_H
 
 #include "NonDMultilevelSampling.hpp"
-#include "NonDMultifidelitySampling.hpp"
+#include "NonDControlVariateSampling.hpp"
 #include "DataMethod.hpp"
 
 namespace Dakota {
@@ -29,8 +29,8 @@ namespace Dakota {
     decay across model resolutions with variance reduction from a
     control variate across model fidelities. */
 
-class NonDMultilevMultifidSampling: public NonDMultilevelSampling,
-				    public NonDMultifidelitySampling
+class NonDMultilevControlVarSampling: public NonDMultilevelSampling,
+				      public NonDControlVariateSampling
 {
 public:
 
@@ -39,9 +39,9 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevMultifidSampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDMultilevMultifidSampling();
+  ~NonDMultilevControlVarSampling();
 
 protected:
 
@@ -260,11 +260,11 @@ private:
 };
 
 
-inline NonDMultilevMultifidSampling::~NonDMultilevMultifidSampling()
+inline NonDMultilevControlVarSampling::~NonDMultilevControlVarSampling()
 { }
 
 
-inline void NonDMultilevMultifidSampling::
+inline void NonDMultilevControlVarSampling::
 compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
 			     const RealVector& hf_cost,
 			     const SizetArray& raw_N_lf,
@@ -284,7 +284,7 @@ compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,
 }
 
 
-inline void NonDMultilevMultifidSampling::
+inline void NonDMultilevControlVarSampling::
 increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
 			       size_t new_N_lf, Real lf_lev_cost,
 			       Real hf_ref_cost)
@@ -297,7 +297,7 @@ increment_mlmf_equivalent_cost(size_t new_N_hf, Real hf_lev_cost,
 }
 
 
-inline void NonDMultilevMultifidSampling::
+inline void NonDMultilevControlVarSampling::
 compute_mlmf_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 		     const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 		     const RealMatrix& sum_Ll_Ll, const RealMatrix& sum_Ll_Llm1,
@@ -323,7 +323,7 @@ compute_mlmf_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 }
 
 
-inline void NonDMultilevMultifidSampling::
+inline void NonDMultilevControlVarSampling::
 apply_mlmf_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 		   const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
 		   const SizetArray& N_shared, const RealMatrix& sum_Ll_refined,

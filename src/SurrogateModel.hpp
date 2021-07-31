@@ -164,8 +164,8 @@ protected:
   /// aggregate {HF,LF} response data to create a new response with 2x size
   void aggregate_response(const Response& hf_resp, const Response& lf_resp,
 			  Response& agg_resp);
-  /// aggregate response array to create a new response with accumulated size
-  void aggregate_response(const ResponseArray& resp_array, Response& agg_resp);
+  // aggregate response array to create a new response with accumulated size
+  //void aggregate_response(const ResponseArray& resp_array,Response& agg_resp);
   /// insert a single response into an aggregated response in the
   /// specified position
   void insert_response(const Response& response, size_t position,

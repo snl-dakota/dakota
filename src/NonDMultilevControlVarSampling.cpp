@@ -7,8 +7,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDMultilevMultifidSampling
-//- Description: Implementation code for NonDMultilevMultifidSampling class
+//- Class:	 NonDMultilevControlVarSampling
+//- Description: Implementation code for NonDMultilevControlVarSampling class
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
@@ -18,11 +18,11 @@
 #include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
-#include "NonDMultilevMultifidSampling.hpp"
+#include "NonDMultilevControlVarSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
 
-static const char rcsId[]="@(#) $Id: NonDMultilevMultifidSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
+static const char rcsId[]="@(#) $Id: NonDMultilevControlVarSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 
 namespace Dakota {
@@ -30,10 +30,10 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDMultilevMultifidSampling::
-NonDMultilevMultifidSampling(ProblemDescDB& problem_db, Model& model):
+NonDMultilevControlVarSampling::
+NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
   NonDMultilevelSampling(problem_db, model),
-  NonDMultifidelitySampling(problem_db, model),
+  NonDControlVariateSampling(problem_db, model),
   NonDHierarchSampling(problem_db, model) // top of virtual inheritance
 {
   // For now...
@@ -41,16 +41,16 @@ NonDMultilevMultifidSampling(ProblemDescDB& problem_db, Model& model):
   //           with num_hf_lev == 1
   // *** Note: DIFFs since previously this case was delegated to MLMC
   if ( !iteratedModel.multilevel_multifidelity() ) {
-    Cerr << "Warning: NonDMultilevMultifidSampling assumes multiple model "
+    Cerr << "Warning: NonDMultilevControlVarSampling assumes multiple model "
 	 << "forms and multiple HF solution levels." << std::endl;
     //abort_handler(METHOD_ERROR);
   }
 }
 
 
-void NonDMultilevMultifidSampling::pre_run()
+void NonDMultilevControlVarSampling::pre_run()
 {
-  NonDSampling::pre_run();
+  NonDEnsembleSampling::pre_run();
 
   // reset sample counters to 0
   size_t i, j, num_mf = NLev.size(), num_lev;
@@ -66,24 +66,20 @@ void NonDMultilevMultifidSampling::pre_run()
 /** The primary run function manages the general case: a hierarchy of model 
     forms (from the ordered model fidelities within a HierarchSurrModel), 
     each of which may contain multiple discretization levels. */
-void NonDMultilevMultifidSampling::core_run()
+void NonDMultilevControlVarSampling::core_run()
 {
-  // Can potentially trap mis-specification of the MLMF method and delegate
-  // to inherited core_run() implementations
-  // Note: might not want the 2nd trap since CVMC does not currently iterate
+  // Can trap mis-specification of the MLMF method and delegate to
+  // inherited core_run() implementations:
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
   if (model_ensemble.size() <= 1)
-    { NonDMultilevelSampling::core_run(); return; }
+    { NonDMultilevelSampling::core_run();    return; } // delegate to MLMC
   ModelList::iterator last_m_it = --model_ensemble.end();
   size_t num_hf_lev = last_m_it->solution_levels();
   if (num_hf_lev <= 1)
-    { NonDMultifidelitySampling::core_run(); return; }
+    { NonDControlVariateSampling::core_run(); return; } // delegate to CVMC
 
   // multiple model forms (currently limited to 2) + multiple solutions levels
 
-  // remove default key (empty activeKey) since this interferes with approx
-  // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
-  iteratedModel.clear_model_keys();
   // prefer ML over MF if both available
   //iteratedModel.multifidelity_precedence(false);
 
@@ -101,7 +97,7 @@ void NonDMultilevMultifidSampling::core_run()
     levels for the high fidelity model form where CVMC si employed
     across two model forms to exploit correlation in the discrepancies
     at each level (Y_l). */
-void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
+void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 {
   // For two-model control variate methods, select lowest,highest fidelities
   size_t num_mf = NLev.size();
@@ -145,11 +141,10 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
   SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
+  //SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
   RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
-  mlmfIter = 0;  equivHFEvals = 0.;
   while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
@@ -199,7 +194,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 		 << sum_L_refined[1] << sum_L_refined[2]
 		 << sum_LH[1] << sum_LH[2];
 	  // update raw evaluation counts
-	  raw_N_hf[lev] += numSamples;  raw_N_lf[lev] += numSamples;
+	  //raw_N_hf[lev] += numSamples;  raw_N_lf[lev] += numSamples;
 	  increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
 					 numSamples, lf_lev_cost, hf_ref_cost);
 
@@ -227,7 +222,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (H[1], H[2], HH):\n"
 		 << sum_H[1] << sum_H[2] << sum_HH1;
-	  raw_N_hf[lev] += numSamples;
+	  //raw_N_hf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
@@ -267,11 +262,11 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
 
 	// execute additional LF sample increment
 	// Note: check on maxFunctionEvals enables one to throttle down to
-	// only the pilot sample if desired, as for NonDMultifidelitySampling.
+	// only the pilot sample if desired, as for NonDControlVariateSampling.
 	if (equivHFEvals <= maxFunctionEvals &&
 	    lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
-	  raw_N_lf[lev] += numSamples;
+	  //raw_N_lf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
 				       hf_ref_cost);
 	  if (outputLevel == DEBUG_OUTPUT)
@@ -325,7 +320,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Ycorr()
     across two model forms.  It generalizes the Y_l correlation case
     to separately target correlations for each QoI level embedded
     within the level discrepancies. */
-void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
+void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 {
   // For two-model control variate methods, select lowest,highest fidelities
   size_t num_mf = NLev.size();
@@ -380,11 +375,10 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
   SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
-  SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
+  //SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
   RealVector mu_L_hat, mu_H_hat, lambda_l(numFunctions, false);
 
   // now converge on sample counts per level (N_hf)
-  mlmfIter = 0;  equivHFEvals = 0.;
   while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations &&
 	 equivHFEvals <= maxFunctionEvals) {
 
@@ -436,7 +430,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 		 << sum_Ll[1] << sum_Ll[2] << sum_Ll_refined[1]
 		 << sum_Ll_refined[2] << sum_Hl[1] << sum_Hl[2];
 	  // update raw evaluation counts
-	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
+	  //raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 	  increment_mlmf_equivalent_cost(numSamples, hf_lev_cost,
 					 numSamples, lf_lev_cost, hf_ref_cost);
 
@@ -468,7 +462,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n"
 		 << sum_Hl[1] << sum_Hl[2] << sum_HH1;
-	  raw_N_hf[lev] += numSamples;
+	  //raw_N_hf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost);
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
@@ -515,12 +509,12 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 
 	// now execute additional LF sample increment
 	// Note: check on maxFunctionEvals enables one to throttle down to
-	// only the pilot sample if desired, as for NonDMultifidelitySampling.
+	// only the pilot sample if desired, as for NonDControlVariateSampling.
 	if (equivHFEvals <= maxFunctionEvals &&
 	    lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
 	  accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
 				N_lf[lev]);
-	  raw_N_lf[lev] += numSamples;
+	  //raw_N_lf[lev] += numSamples;
 	  increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
 				       hf_ref_cost);
 	  if (outputLevel == DEBUG_OUTPUT)
@@ -573,7 +567,7 @@ void NonDMultilevMultifidSampling::multilevel_control_variate_mc_Qcorr()
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
 		    RealMatrix& sum_LL, RealMatrix& sum_LH, RealMatrix& sum_HH,
 		    Real cost_ratio, size_t lev, const SizetArray& N_shared,
@@ -613,7 +607,7 @@ compute_eval_ratios(RealMatrix& sum_L_shared, RealMatrix& sum_H,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 compute_eval_ratios(RealMatrix& sum_Ll,        RealMatrix& sum_Llm1,
 		    RealMatrix& sum_Hl,        RealMatrix& sum_Hlm1,
 		    RealMatrix& sum_Ll_Ll,     RealMatrix& sum_Ll_Llm1,
@@ -668,7 +662,7 @@ compute_eval_ratios(RealMatrix& sum_Ll,        RealMatrix& sum_Llm1,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_H,
 	       IntRealMatrixMap& sum_LL,       IntRealMatrixMap& sum_LH,
 	       const SizetArray& N_shared,     IntRealMatrixMap& sum_L_refined,
@@ -696,7 +690,7 @@ cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_H,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
 	       IntRealMatrixMap& sum_Hl,        IntRealMatrixMap& sum_Hlm1,
 	       IntRealMatrixMap& sum_Ll_Ll,     IntRealMatrixMap& sum_Ll_Llm1,
@@ -739,7 +733,7 @@ cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 compute_mlmf_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
 		     Real sum_Ll_Ll, Real sum_Ll_Llm1, Real sum_Llm1_Llm1,
 		     Real sum_Hl_Ll, Real sum_Hl_Llm1, Real sum_Hlm1_Ll,
@@ -807,7 +801,7 @@ compute_mlmf_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 apply_mlmf_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 		   size_t N_shared,  Real sum_Ll_refined,
 		   Real sum_Llm1_refined, size_t N_refined, Real beta_dot,
@@ -827,7 +821,7 @@ apply_mlmf_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 initialize_mlmf_sums(IntRealMatrixMap& sum_L_shared,
 		     IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_H,
 		     IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
@@ -857,7 +851,7 @@ initialize_mlmf_sums(IntRealMatrixMap& sum_L_shared,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 initialize_mlmf_sums(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
 		     IntRealMatrixMap& sum_Ll_refined,
 		     IntRealMatrixMap& sum_Llm1_refined,
@@ -902,7 +896,7 @@ initialize_mlmf_sums(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 accumulate_mlmf_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		      size_t lev, const RealVector& offset, SizetArray& num_Q)
 {
@@ -957,7 +951,7 @@ accumulate_mlmf_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 accumulate_mlmf_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
 		      const RealVector& offset, SizetArray& num_Y)
 {
@@ -1006,7 +1000,7 @@ accumulate_mlmf_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 		      const IntResponseMap& hf_resp_map,
 		      IntRealMatrixMap& sum_L_shared,
@@ -1096,7 +1090,7 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 accumulate_mlmf_Ysums(const IntResponseMap& lf_resp_map,
 		      const IntResponseMap& hf_resp_map,
 		      IntRealMatrixMap& sum_L_shared,
@@ -1211,7 +1205,7 @@ accumulate_mlmf_Ysums(const IntResponseMap& lf_resp_map,
 }
 
 
-void NonDMultilevMultifidSampling::
+void NonDMultilevControlVarSampling::
 accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 		      const IntResponseMap& hf_resp_map,
 		      IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,

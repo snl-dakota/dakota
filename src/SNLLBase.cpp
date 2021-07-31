@@ -214,7 +214,7 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
 
   // perform a deep copy to disconnect from Dakota's Teuchos::View
   RealVector x(Teuchos::Copy, init_pt.values(), init_pt.length());
-  nlf_objective->setX(x);  // setX accepts a ColumnVector
+  nlf_objective->setX(x);
   size_t num_cv = init_pt.length();
 
   // Instantiate bound, linear, and nonlinear constraints and append them to
@@ -321,13 +321,19 @@ void SNLLBase::snll_post_run(OPTPP::NLP0* nlf_objective)
   optLSqInstance->
     bestVariablesArray.front().continuous_variables(nlf_objective->getXc());
 
-  // TO DO: Deallocate local memory allocations (is this needed w/ SmartPtr?).
-  //if (bc) delete bc;
-  //if (li) delete li;
-  //if (le) delete le;
-  //if (ni) delete ni;
-  //if (ne) delete ne;
-  //delete cc;
+  // See SNLL{Optimizer,LeastSq}::reset() for constraint deallocation
+}
+
+
+void SNLLBase::snll_finalize_run(OPTPP::NLP0* nlf_objective)
+{
+  // Compound constraint doesn't get managed in an Optpp::SmartPtr;
+  // mirrors the alloc in snll_initialize_run() above
+  OPTPP::CompoundConstraint* cc = nlf_objective->getConstraints();
+  if (cc) {
+    delete cc;
+    nlf_objective->setConstraints(NULL);
+  }
 }
 
 

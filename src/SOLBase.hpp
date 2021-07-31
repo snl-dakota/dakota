@@ -51,10 +51,25 @@ protected:
   //- Heading: Convenience member functions
   //
 
-  /// Allocates miscellaneous arrays for the SOL algorithms.
+  /// Allocates F77 linear constraint arrays for the SOL algorithms
+  void allocate_linear_arrays(int num_cv, const RealMatrix& lin_ineq_coeffs,
+			      const RealMatrix& lin_eq_coeffs);
+  /// Allocates F77 nonlinear constraint arrays for the SOL algorithms.
+  void allocate_nonlinear_arrays(int num_cv, size_t num_nln_con);
+  /// Updates arrays dependent on combined bounds size
+  void size_bounds_array(size_t new_bnds_size);
+  /// Allocates F77 arrays for the SOL algorithms.
   void allocate_arrays(int num_cv, size_t num_nln_con,
 		       const RealMatrix& lin_ineq_coeffs,
 		       const RealMatrix& lin_eq_coeffs);
+
+  /// update linear constraint arrays
+  void replace_linear_arrays(size_t num_cv, size_t num_nln_con,
+			     const RealMatrix& lin_ineq_coeffs,
+			     const RealMatrix& lin_eq_coeffs);
+  /// update nonlinear constraint arrays
+  void replace_nonlinear_arrays(int num_cv, size_t num_lin_con,
+				size_t num_nln_con);
 
   /// Deallocates memory previously allocated by allocate_arrays().
   void deallocate_arrays();
@@ -75,19 +90,39 @@ protected:
   virtual void send_sol_option(std::string sol_option) = 0;
 
   /// augments variable bounds with linear and nonlinear constraint bounds.
-  void augment_bounds(RealVector& augmented_l_bnds, 
-		      RealVector& augmented_u_bnds,
+  void augment_bounds(RealVector& aggregate_l_bnds,
+		      RealVector& aggregate_u_bnds,
 		      const Model& model);
-
   /// augments variable bounds with linear and nonlinear constraint bounds.
-  void augment_bounds(RealVector& augmented_l_bnds, 
-		      RealVector& augmented_u_bnds,
+  void augment_bounds(RealVector& aggregate_l_bnds,
+		      RealVector& aggregate_u_bnds,
 		      const RealVector& lin_ineq_l_bnds,
 		      const RealVector& lin_ineq_u_bnds,
 		      const RealVector& lin_eq_targets,
 		      const RealVector& nln_ineq_l_bnds,
 		      const RealVector& nln_ineq_u_bnds,
 		      const RealVector& nln_eq_targets);
+
+  /// replace variable bounds within aggregate arrays
+  void replace_variable_bounds(size_t num_lin_con, size_t num_nln_con,
+			       RealVector& aggregate_l_bnds,
+			       RealVector& aggregate_u_bnds,
+			       const RealVector& cv_lower_bnds,
+			       const RealVector& cv_upper_bnds);
+  /// replace linear bounds within aggregate arrays
+  void replace_linear_bounds(size_t num_cv, size_t num_nln_con,
+			     RealVector& aggregate_l_bnds,
+			     RealVector& aggregate_u_bnds,
+			     const RealVector& lin_ineq_l_bnds,
+			     const RealVector& lin_ineq_u_bnds,
+			     const RealVector& lin_eq_targets);
+  /// replace nonlinear bounds within aggregate arrays
+  void replace_nonlinear_bounds(size_t num_cv, size_t num_lin_con,
+				RealVector& aggregate_l_bnds,
+				RealVector& aggregate_u_bnds,
+				const RealVector& nln_ineq_l_bnds,
+				const RealVector& nln_ineq_u_bnds,
+				const RealVector& nln_eq_targets);
 
   //
   //- Heading: Static member functions passed by pointer to NPSOL/NLSSOL
@@ -129,7 +164,7 @@ protected:
   int informResult;
   /// ITER from NPSOL manual: number of (major) iterations performed
   int numberIterations;
-  /// length of augmented bounds arrays (variable bounds plus linear and
+  /// length of aggregated bounds arrays (variable bounds plus linear and
   /// nonlinear constraint bounds)
   int boundsArraySize;
 
@@ -151,17 +186,49 @@ protected:
 };
 
 
-inline SOLBase::SOLBase()  { }
+inline SOLBase::SOLBase():
+  boundsArraySize(0), linConstraintMatrixF77(NULL),
+  upperFactorHessianF77(NULL), constraintJacMatrixF77(NULL)
+{ }
 
 
 inline SOLBase::~SOLBase() { }
 
 
+inline void SOLBase::size_bounds_array(size_t new_bnds_size)
+{
+  if (boundsArraySize != new_bnds_size) {
+    boundsArraySize = new_bnds_size;
+    cLambda.resize(boundsArraySize);          // clambda[bnd_size]
+    constraintState.resize(boundsArraySize);  // istate[bnd_size]
+  }
+}
+
+
 inline void SOLBase::
-augment_bounds(RealVector& augmented_l_bnds, RealVector& augmented_u_bnds,
+replace_linear_arrays(size_t num_cv, size_t num_nln_con,
+		      const RealMatrix& lin_ineq_coeffs,
+		      const RealMatrix& lin_eq_coeffs)
+{
+  allocate_linear_arrays(num_cv, lin_ineq_coeffs, lin_eq_coeffs);
+  size_bounds_array(num_cv + lin_ineq_coeffs.numRows() +
+		    lin_eq_coeffs.numRows() + num_nln_con);
+}
+
+
+inline void SOLBase::
+replace_nonlinear_arrays(int num_cv, size_t num_lin_con, size_t num_nln_con)
+{
+  allocate_nonlinear_arrays(num_cv, num_nln_con);
+  size_bounds_array(num_cv + num_lin_con + num_nln_con);
+}
+
+
+inline void SOLBase::
+augment_bounds(RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds,
 	       const Model& model)
 {
-  augment_bounds(augmented_l_bnds, augmented_u_bnds,
+  augment_bounds(aggregate_l_bnds, aggregate_u_bnds,
 		 model.linear_ineq_constraint_lower_bounds(),
 		 model.linear_ineq_constraint_upper_bounds(),
 		 model.linear_eq_constraint_targets(),

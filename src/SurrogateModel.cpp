@@ -1305,6 +1305,7 @@ aggregate_response(const Response& hf_resp, const Response& lf_resp,
 }
 
 
+/* Note: insert_response() eliminates need for ResponseArray accumulation
 void SurrogateModel::
 aggregate_response(const ResponseArray& resp_array, Response& agg_response)
 {
@@ -1330,6 +1331,7 @@ aggregate_response(const ResponseArray& resp_array, Response& agg_response)
     }
   }
 }
+*/
 
 
 void SurrogateModel::

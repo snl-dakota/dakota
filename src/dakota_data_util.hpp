@@ -1257,6 +1257,20 @@ inline ScalarType find_min(const std::vector<ScalarType>& vec)
 
 
 template <typename OrdinalType, typename ScalarType>
+inline ScalarType find_min(const std::vector<ScalarType>& vec,
+			   OrdinalType start, OrdinalType end)
+{
+  OrdinalType i, len = vec.size(), stop = std::min(len, end);
+  ScalarType min = (start<len) ? vec[start] :
+    std::numeric_limits<ScalarType>::max();
+  for (i=start+1; i<stop; ++i)
+    if (vec[i] < min)
+      min = vec[i];
+  return min;
+}
+
+
+template <typename OrdinalType, typename ScalarType>
 inline ScalarType find_min(
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec)
 {

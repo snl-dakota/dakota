@@ -13,6 +13,8 @@
 #include "dakota_system_defs.hpp"
 #include "Teuchos_config.h"
 #include "Teuchos_SerialDenseVector.hpp"
+#include "Teuchos_SerialDenseSolver.hpp"
+#include "Teuchos_SerialSpdDenseSolver.hpp"
 #include <boost/multi_array.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <deque>
@@ -48,16 +50,23 @@ typedef std::string String;
 // Numerical arrays (serial/parallel):
 // -----------------------------------
 
-typedef Teuchos::SerialDenseVector<int, Real>    RealVector;
-typedef Teuchos::SerialDenseMatrix<int, Real>    RealMatrix;
-typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
-typedef Teuchos::SerialDenseVector<int, int>     IntVector;
-typedef Teuchos::SerialDenseMatrix<int, int>     IntMatrix;
-typedef Teuchos::SerialDenseVector<int, size_t>  SizetVector;
+typedef Teuchos::SerialDenseVector<int, Real>      RealVector;
+typedef Teuchos::SerialDenseMatrix<int, Real>      RealMatrix;
+typedef Teuchos::SerialSymDenseMatrix<int, Real>   RealSymMatrix;
+typedef Teuchos::SerialDenseVector<int, int>       IntVector;
+typedef Teuchos::SerialDenseMatrix<int, int>       IntMatrix;
+typedef Teuchos::SerialDenseVector<int, size_t>    SizetVector;
+typedef Teuchos::SerialSymDenseMatrix<int, size_t> SizetSymMatrix;
 
 //typedef Tpetra::CrsMatrix<int, Real>             RealSparseMatrix
 //typedef Tpetra::Vector<int, Real>                RealParallelVector
 //typedef Tpetra::MultiVector<int, Real>           RealParallelMatrix
+
+// ---------------------------------
+// Numerical solvers (serial dense):
+// ---------------------------------
+typedef Teuchos::SerialDenseSolver<int, Real>    RealSolver;
+typedef Teuchos::SerialSpdDenseSolver<int, Real> RealSpdSolver;
 
 // ---------------------------------------
 // Admin/bookkeeping arrays (serial only):
@@ -101,6 +110,7 @@ typedef std::vector<RealVector>        RealVectorArray;
 typedef std::vector<RealVectorArray>   RealVector2DArray;
 typedef std::vector<RealMatrix>        RealMatrixArray;
 typedef std::vector<RealSymMatrix>     RealSymMatrixArray;
+typedef std::vector<SizetSymMatrix>    SizetSymMatrixArray;
 typedef std::vector<IntVector>         IntVectorArray;
 typedef std::vector<Variables>         VariablesArray;
 typedef std::vector<Response>          ResponseArray;
@@ -158,6 +168,8 @@ typedef std::vector<RealRealMap>       RealRealMapArray;
 typedef std::vector<StringRealMap>     StringRealMapArray;
 typedef std::map<int, RealVector>      IntRealVectorMap;
 typedef std::map<int, RealMatrix>      IntRealMatrixMap;
+typedef std::map<int, RealSymMatrix>   IntRealSymMatrixMap;
+typedef std::map<int, RealSymMatrixArray> IntRealSymMatrixArrayMap;
 typedef std::map<int, ActiveSet>       IntActiveSetMap;
 typedef std::map<int, Variables>       IntVariablesMap;
 typedef std::map<int, Response>        IntResponseMap;
@@ -223,6 +235,7 @@ typedef IntRealVectorMap::iterator             IntRVMIter;
 typedef IntRealVectorMap::const_iterator       IntRVMCIter;
 typedef IntRealMatrixMap::iterator             IntRMMIter;
 typedef IntRealMatrixMap::const_iterator       IntRMMCIter;
+typedef IntRealSymMatrixArrayMap::iterator     IntRSMAMIter;
 typedef IntActiveSetMap::iterator              IntASMIter;
 typedef IntVariablesMap::iterator              IntVarsMIter;
 typedef IntVariablesMap::const_iterator        IntVarsMCIter;

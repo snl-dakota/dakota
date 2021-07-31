@@ -93,7 +93,7 @@ NPSOLOptimizer::NPSOLOptimizer(Model& model):
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 NPSOLOptimizer::
-NPSOLOptimizer(Model& model, const int& derivative_level, const Real& conv_tol):
+NPSOLOptimizer(Model& model, int derivative_level, Real conv_tol):
   Optimizer(NPSOL_SQP, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
   SOLBase(model), setUpType("model")
 {
@@ -102,44 +102,49 @@ NPSOLOptimizer(Model& model, const int& derivative_level, const Real& conv_tol):
   send_sol_option("Major Print Level           = 0");
 
   // assign the derivative_level passed in
-  std::string dlevel_s("Derivative Level            = ");
-  dlevel_s += std::to_string(derivative_level);
-  send_sol_option(dlevel_s);
+  send_sol_option("Derivative Level            = " +
+		  std::to_string(derivative_level));
 
   // assign the conv_tol passed in
-  if (conv_tol > 0.) { // conv_tol < 0 can be passed to use the NPSOL default
-    std::ostringstream ctol_stream;
-    ctol_stream << "Optimality Tolerance        = "
-                << std::setiosflags(std::ios::left) << std::setw(26)<< conv_tol;
-    send_sol_option(ctol_stream.str());
-  }
+  if (conv_tol > 0.) // conv_tol < 0 can be passed to use the NPSOL default
+    send_sol_option("Optimality Tolerance        = " +
+		    std::to_string(conv_tol));
 }
 
 
 /** This is an alternate constructor for performing an optimization using
     the passed in objective function and constraint function pointers. */
-NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point, 
-  const RealVector& var_lower_bnds, const RealVector& var_upper_bnds,
-  const RealMatrix& lin_ineq_coeffs,
-  const RealVector& lin_ineq_lower_bnds,
-  const RealVector& lin_ineq_upper_bnds,
-  const RealMatrix& lin_eq_coeffs,
-  const RealVector& lin_eq_targets,
-  const RealVector& nonlin_ineq_lower_bnds,
-  const RealVector& nonlin_ineq_upper_bnds,
-  const RealVector& nonlin_eq_targets,
-  void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
-  void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
-			 double*, int&),
-  const int& derivative_level, const Real& conv_tol): // SOLBase default ctor
+NPSOLOptimizer::
+NPSOLOptimizer(const RealVector& initial_point,
+	       const RealVector& var_lower_bnds,
+	       const RealVector& var_upper_bnds,
+	       const RealMatrix& lin_ineq_coeffs,
+	       const RealVector& lin_ineq_lower_bnds,
+	       const RealVector& lin_ineq_upper_bnds,
+	       const RealMatrix& lin_eq_coeffs,
+	       const RealVector& lin_eq_targets,
+	       const RealVector& nonlin_ineq_lower_bnds,
+	       const RealVector& nonlin_ineq_upper_bnds,
+	       const RealVector& nonlin_eq_targets,
+	       void (*user_obj_eval) (int&, int&, double*, double&,
+				      double*, int&),
+	       void (*user_con_eval) (int&, int&, int&, int&, int*,
+				      double*, double*, double*, int&),
+	       int derivative_level, Real conv_tol, size_t max_iter,
+	       Real fn_precision, Real feas_tol, Real lin_feas_tol,
+	       Real nonlin_feas_tol):
+  // use SOLBase default ctor
   Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length(),
             std::shared_ptr<TraitsBase>(new NPSOLTraits())),
-  setUpType("user_functions"), initialPoint(initial_point), 
-  lowerBounds(var_lower_bnds), upperBounds(var_upper_bnds), 
-  userObjectiveEval(user_obj_eval), userConstraintEval(user_con_eval)
+  setUpType("user_functions"), userObjectiveEval(user_obj_eval),
+  userConstraintEval(user_con_eval)
 {
+  copy_data(initial_point, initialPoint); // protect from incoming view
+  copy_data(var_lower_bnds, lowerBounds); // protect from incoming view
+  copy_data(var_upper_bnds, upperBounds); // protect from incoming view
+
   // invoke SOLBase allocate/set functions (shared with NLSSOLLeastSq)
   allocate_arrays(numContinuousVars, numNonlinearConstraints, lin_ineq_coeffs,
 		  lin_eq_coeffs);
@@ -150,93 +155,36 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
                  nonlin_ineq_upper_bnds, nonlin_eq_targets);
 
   // Set NPSOL options (mostly use defaults)
-  send_sol_option("Verify Level                = -1");
-  send_sol_option("Major Print Level           = 0");
+  send_sol_option(  "Verify Level                = -1");
+
+  if (outputLevel >= QUIET_OUTPUT)
+    send_sol_option("Major Print Level           = 0");
+  if (outputLevel >= NORMAL_OUTPUT)
+    send_sol_option("Minor Print Level           = 0");
 
   // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
   // vendor-numerical, ...
-  std::string dlevel_s("Derivative Level            = ");
-  dlevel_s += std::to_string(derivative_level);
-  send_sol_option(dlevel_s);
+  send_sol_option(  "Derivative Level            = " +
+		  std::to_string(derivative_level));
 
-  // assign the conv_tol passed in.
-  if (conv_tol > 0.) { // conv_tol < 0 can be passed to use the NPSOL default
-    std::ostringstream ctol_stream;
-    ctol_stream << "Optimality Tolerance        = "
-                << std::setiosflags(std::ios::left) << std::setw(26)<< conv_tol;
-    send_sol_option(ctol_stream.str());
-  }
-}
-
-/** This is an alternate constructor for performing an optimization using
-    the passed in objective function and constraint function pointers. Also
-    more detail in output. */
-NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point, 
-  const RealVector& var_lower_bnds, const RealVector& var_upper_bnds,
-  const RealMatrix& lin_ineq_coeffs,
-  const RealVector& lin_ineq_lower_bnds,
-  const RealVector& lin_ineq_upper_bnds,
-  const RealMatrix& lin_eq_coeffs,
-  const RealVector& lin_eq_targets,
-  const RealVector& nonlin_ineq_lower_bnds,
-  const RealVector& nonlin_ineq_upper_bnds,
-  const RealVector& nonlin_eq_targets,
-  void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
-  void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
-       double*, int&),
-  const int& derivative_level, const Real& conv_tol,
-  const Real function_precision, const Real feas_tol, 
-  const Real lin_feas_tol, const Real nonlin_feas_tol): // SOLBase default ctor
-  Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
-      lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
-      nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length(),
-            std::shared_ptr<TraitsBase>(new NPSOLTraits())),
-  setUpType("user_functions"), initialPoint(initial_point), 
-  lowerBounds(var_lower_bnds), upperBounds(var_upper_bnds), 
-  userObjectiveEval(user_obj_eval), userConstraintEval(user_con_eval)
-{
-  // invoke SOLBase allocate/set functions (shared with NLSSOLLeastSq)
-  allocate_arrays(numContinuousVars, numNonlinearConstraints, lin_ineq_coeffs,
-      lin_eq_coeffs);
-  allocate_workspace(numContinuousVars, numNonlinearConstraints,
-         numLinearConstraints, 0);
-  augment_bounds(lowerBounds, upperBounds, lin_ineq_lower_bnds,
-                 lin_ineq_upper_bnds, lin_eq_targets, nonlin_ineq_lower_bnds,
-                 nonlin_ineq_upper_bnds, nonlin_eq_targets);
-
-  // Set NPSOL options (mostly use defaults)
-  send_sol_option("Verify Level                = -1");
-
-  send_sol_option("Major Print Level           = 0");
-
-  send_sol_option("Minor Print Level           = 0");
-
-  send_sol_option("Function Precision           = " +
-		  std::to_string(function_precision));
-
-  send_sol_option("Feasibility Tolerance           = " +
-		  std::to_string(feas_tol));
-
-  send_sol_option("Linear Feasibility Tolerance           = " +
-		  std::to_string(lin_feas_tol));
-
-  send_sol_option("Nonlinear Feasibility Tolerance           = " +
-		  std::to_string(nonlin_feas_tol));
-
-  // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
-  // vendor-numerical, ...
-  std::string dlevel_s("Derivative Level            = ");
-  dlevel_s += std::to_string(derivative_level);
-  send_sol_option(dlevel_s);
-
-  // assign the conv_tol passed in.
-  if (conv_tol > 0.) { // conv_tol < 0 can be passed to use the NPSOL default
-    std::ostringstream ctol_stream;
-    ctol_stream << "Optimality Tolerance        = "
-                << std::setiosflags(std::ios::left) << std::setw(26)<< conv_tol;
-    std::string ctol_s( ctol_stream.str() );
-    send_sol_option(ctol_s);
-  }
+  if (max_iter > 0)
+    send_sol_option("Major Iteration Limit       = " +
+		    std::to_string(max_iter));
+  if (conv_tol > 0.) // conv_tol <= 0. results in internal NPSOL default
+    send_sol_option("Optimality Tolerance        = " +
+		    std::to_string(conv_tol));
+  if (fn_precision > 0.)
+    send_sol_option("Function Precision          = " +
+		    std::to_string(fn_precision));
+  if (feas_tol > 0.)
+    send_sol_option("Feasibility Tolerance       = " +
+		    std::to_string(feas_tol));
+  if (lin_feas_tol > 0.)
+    send_sol_option("Linear Feasibility Tolerance = " +
+		    std::to_string(lin_feas_tol));
+  if (nonlin_feas_tol > 0.)
+    send_sol_option("Nonlinear Feasibility Tolerance = " +
+		    std::to_string(nonlin_feas_tol));
 }
 
 
@@ -269,8 +217,8 @@ NPSOLOptimizer* new_NPSOLOptimizer1(Model& model)
 #endif
 }
 
-NPSOLOptimizer* new_NPSOLOptimizer2(Model& model, const int& derivative_level,
-                                    const Real& conv_tol)
+NPSOLOptimizer* new_NPSOLOptimizer2(Model& model, int derivative_level,
+                                    Real conv_tol)
 {
 #ifdef DAKOTA_DYNLIB
   not_available("NPSOL");
@@ -294,7 +242,7 @@ NPSOLOptimizer* new_NPSOLOptimizer3(const RealVector& initial_point,
   void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
   void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
                          double*, int&),
-  const int& derivative_level, const Real& conv_tol)
+  int derivative_level, Real conv_tol)
 {
 #ifdef DAKOTA_DYNLIB
   not_available("NPSOL");
@@ -397,7 +345,6 @@ void NPSOLOptimizer::send_sol_option(std::string sol_option)
   // to be of length 72 (thus, the use of data() rather than c_str()).
   sol_option.resize(72, ' ');
   NPOPTN2_F77(sol_option.data()); // NO Null terminator with std::string::data()
-
 }
 
 
@@ -524,7 +471,7 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
   double     local_f_val = 0.;
   RealVector local_f_grad(numContinuousVars, true);
   RealVector local_c_vals(nlnConstraintArraySize);
-  
+
   NPSOL_F77( num_cv, num_linear_constraints, num_nonlinear_constraints, 
 	     linConstraintArraySize, nlnConstraintArraySize, num_cv, 
 	     linConstraintMatrixF77, lowerBounds.values(), upperBounds.values(),
@@ -549,12 +496,12 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
               local_c_vals.values() + nlnConstraintArraySize,
               best_fns.values() + 1);
   bestResponseArray.front().function_values(best_fns);
-
 }
 
-// This override exists purely to prevent an optimizer/minimizer from declaring sources 
-// when it's being used to evaluate a user-defined function (e.g. finding the correlation
-// lengths of Dakota's GP). 
+
+// This override exists purely to prevent an optimizer/minimizer from
+// declaring sources when it's being used to evaluate a user-defined
+// function (e.g. finding the correlation lengths of Dakota's GP).
 void NPSOLOptimizer::declare_sources() {
   if(setUpType == "user_functions") 
     return;

@@ -81,6 +81,8 @@ public:
   void request_vector(const ShortArray& rv);
   /// set all request vector values
   void request_values(const short rv_val);
+  /// set all request vector values in a range
+  void request_values(const short rv_val, size_t start, size_t end);
   /// get the value of an entry in the request vector
   short request_value(const size_t index) const;
   /// set the value of an entry in the request vector
@@ -205,6 +207,14 @@ inline void ActiveSet::request_vector(const ShortArray& rv)
 
 inline void ActiveSet::request_values(const short rv_val)
 { requestVector.assign(requestVector.size(), rv_val); }
+
+
+inline void ActiveSet::
+request_values(const short rv_val, size_t start, size_t end)
+{
+  for (size_t i=start; i<end; ++i)
+    requestVector[i] = rv_val;
+}
 
 
 inline short ActiveSet::request_value(const size_t index) const

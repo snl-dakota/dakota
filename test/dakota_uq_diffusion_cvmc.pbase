@@ -1,36 +1,37 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 3004 total (3004 new, 0 duplicate)
-<<<<< Function evaluation summary: 3004 total (3004 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 8.1573437500e+01
+<<<<< Function evaluation summary: 650 total (650 new, 0 duplicate)
+<<<<< Function evaluation summary: 650 total (650 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 9.2843750000e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5941246453e-02  7.2361934110e-03  7.2139531089e-01  6.4555041241e-01
- response_fn_2  1.2976018448e-01  1.5736588465e-02 -3.5179985256e-01  1.2012960166e+00
- response_fn_3  2.5288495411e-02  7.5736401391e-03  8.4936020905e-01 -3.1263644126e-01
+ response_fn_1  2.5222167789e-02  7.1774838113e-03  8.7972518351e-01 -8.5463812442e-01
+ response_fn_2  1.2886045480e-01  1.4362655861e-02  4.6467607335e-01 -2.2321504099e+00
+ response_fn_3  2.5217587422e-02  6.8110275718e-03  1.0430737810e+00  7.3081082224e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 21944 total (21944 new, 0 duplicate)
-<<<<< Function evaluation summary: 21944 total (21944 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5352539062e+01
+<<<<< Function evaluation summary: 1982 total (1982 new, 0 duplicate)
+<<<<< Function evaluation summary: 1982 total (1982 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.0479003906e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5225571176e-02  6.5767003331e-03  7.6644079999e-01 -1.4075286846e-01
- response_fn_2  1.2968378243e-01  1.3595190642e-02  1.3818246847e+00  1.5479136290e+00
- response_fn_3  2.5225571176e-02  6.5767003336e-03  7.6644079988e-01 -1.4075286924e-01
+ response_fn_1  2.5143733208e-02  6.5185027861e-03  7.8619585282e-01 -5.1341571284e-02
+ response_fn_2  1.2944801796e-01  1.3516006821e-02  1.4485600738e+00  1.6142394761e+00
+ response_fn_3  2.5143733208e-02  6.5185027866e-03  7.8619585271e-01 -5.1341572130e-02
 Test Number 2 succeeded
-<<<<< Function evaluation summary (LF_INT): 21924 total (21924 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 1962 total (1962 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 20 total (20 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5352539062e+01
+<<<<< Equivalent number of high fidelity evaluations: 2.0479003906e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5225571176e-02  6.5767003331e-03  7.6644079999e-01 -1.4075286846e-01
- response_fn_2  1.2968378243e-01  1.3595190642e-02  1.3818246847e+00  1.5479136290e+00
- response_fn_3  2.5225571176e-02  6.5767003336e-03  7.6644079988e-01 -1.4075286924e-01
+ response_fn_1  2.5143733208e-02  6.5185027861e-03  7.8619585282e-01 -5.1341571284e-02
+ response_fn_2  1.2944801796e-01  1.3516006821e-02  1.4485600738e+00  1.6142394761e+00
+ response_fn_3  2.5143733208e-02  6.5185027866e-03  7.8619585271e-01 -5.1341572130e-02
 Test Number 3 succeeded
-<<<<< Function evaluation summary (LF_INT): 21924 total (21924 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 1962 total (1962 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 20 total (20 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5352539062e+01
+<<<<< Equivalent number of high fidelity evaluations: 2.0479003906e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5225571176e-02  6.5767003331e-03  7.6644079999e-01 -1.4075286846e-01
- response_fn_2  1.2968378243e-01  1.3595190642e-02  1.3818246847e+00  1.5479136290e+00
- response_fn_3  2.5225571176e-02  6.5767003336e-03  7.6644079988e-01 -1.4075286924e-01
+ response_fn_1  2.5143733208e-02  6.5185027861e-03  7.8619585282e-01 -5.1341571284e-02
+ response_fn_2  1.2944801796e-01  1.3516006821e-02  1.4485600738e+00  1.6142394761e+00
+ response_fn_3  2.5143733208e-02  6.5185027866e-03  7.8619585271e-01 -5.1341572130e-02
+Test Number 4 failed with exit code 139
