@@ -450,6 +450,7 @@ private:
   RealMatrix NTargetQoiFN;
 
   IntRealMatrixMap levQoisamplesmatrixMap;
+  bool storeEvals;
 };
 
 
@@ -461,26 +462,51 @@ inline void NonDMultilevelSampling::
 nested_response_mappings(const RealMatrix& primary_coeffs,
 			 const RealMatrix& secondary_coeffs)
 {
-  if (scalarizationCoeffs.empty() && allocationTarget == TARGET_SCALARIZATION){
-    if (primary_coeffs.numCols() != 2*numFunctions ||
-	primary_coeffs.numRows() != 1 ||
-	secondary_coeffs.numCols() != 2*numFunctions ||
-	secondary_coeffs.numRows() != numFunctions-1){
-      Cerr << "\nWrong size for primary or secondary_response_mapping. If you are sure, they are the right size, e.g.,"
-	   << " you are interested in quantiles, you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
+  if (scalarizationCoeffs.empty()){// && allocationTarget == TARGET_SCALARIZATION){
+    if(primary_coeffs.empty()){
+      Cerr << "\nPrimary_response_mapping should not be empty at this point. If you are sure this is correct, "
+     << "you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
+    if (primary_coeffs.numCols() != 2*numFunctions ||
+          primary_coeffs.numRows() != 1){
+      Cerr << "\nWrong size for primary_response_mapping. If you are sure, it is the right size, e.g.,"
+     << " you are interested in quantiles, you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    if (!secondary_coeffs.empty()){
+      if (secondary_coeffs.numCols() != 2*numFunctions){
+      Cerr << "\nWrong size for columns of secondary_response_mapping. If you are sure, it is the right size, e.g.,"
+     << " you are interested in quantiles, you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
+      abort_handler(METHOD_ERROR);
+      }
+    }
+    size_t nb_rows = primary_coeffs.numRows() + secondary_coeffs.numRows();
+    if (nb_rows > numFunctions){
+      Cerr << "\nWrong size for rows of response_mapping. If you are sure, it is the right size, e.g.,"
+     << ", you need to specify scalarization_response_mapping seperately in multilevel_sampling." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    size_t nb_cols = primary_coeffs.numCols();
+    scalarizationCoeffs.reshape(numFunctions, nb_cols);
     for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
       scalarizationCoeffs(0, row_qoi*2) = primary_coeffs(0, row_qoi*2);
       scalarizationCoeffs(0, row_qoi*2+1) = primary_coeffs(0, row_qoi*2+1);
     }
-    for(size_t qoi = 1; qoi < numFunctions; ++qoi){
+    for(size_t qoi = 1; qoi < nb_rows; ++qoi){
       for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
-	scalarizationCoeffs(qoi, row_qoi*2)
-	  = secondary_coeffs(qoi-1, row_qoi*2);
-	scalarizationCoeffs(qoi, row_qoi*2+1)
-	  = secondary_coeffs(qoi-1, row_qoi*2+1);
+	      scalarizationCoeffs(qoi, row_qoi*2)
+	                    = secondary_coeffs(qoi-1, row_qoi*2);
+	      scalarizationCoeffs(qoi, row_qoi*2+1)
+	                    = secondary_coeffs(qoi-1, row_qoi*2+1);
+      }
+    }
+    for(size_t qoi = nb_rows; qoi < numFunctions; ++qoi){
+      for(size_t row_qoi = 0; row_qoi < numFunctions; ++row_qoi){
+        scalarizationCoeffs(qoi, row_qoi*2)
+                      = 0.;
+        scalarizationCoeffs(qoi, row_qoi*2+1)
+                      = 0.;
       }
     }
   }

@@ -764,10 +764,10 @@ int TestDriverInterface::cantilever_ml()
     std::map<var_t, int>::iterator area_type_iter = xDIM.find(VAR_area_type);
     int area_type = (area_type_iter == xDIM.end()) ? 1. : area_type_iter->second; // Correlation Af for objective
 
-    Real D0 = 2.2535, L = 100., area, w_sq, t_sq, R_sq, X_sq, Y_sq;
+    Real D0 = 2.2535, L = 100., w_sq, t_sq, R_sq, X_sq, Y_sq;
     Real stress;
     Real D1, D2, D3, displ;
-    area = w*t;
+    Real area = w*t;
     if(area_type == 1){// Rectangle
       w_sq = w*w; t_sq = t*t;
       R_sq = R*R; X_sq = X*X; Y_sq = Y*Y;
@@ -801,11 +801,11 @@ int TestDriverInterface::cantilever_ml()
 
     // **** c1:
     if (directFnASV[c1i] & 1)
-      fnVals[c1i] = stress - R; //stress/R - 1.;
+      fnVals[c1i] = stress/R - 1.; //stress - R; //stress/R - 1.;
 
     // **** c2:
     if (directFnASV[c2i] & 1)
-      fnVals[c2i] = displ - D0; //displ/D0 - 1.;
+      fnVals[c2i] = displ/D0 - 1.; //displ - D0; //displ/D0 - 1.;
 
     // **** df/dx:
     if (objective && (directFnASV[0] & 2))
