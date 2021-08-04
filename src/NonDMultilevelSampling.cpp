@@ -1616,7 +1616,7 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
     return;
 
   if (finalStatErrors.empty())
-    finalStatErrors.size(finalStatistics.num_functions() + numFunctions); // init to 0.
+    finalStatErrors.shape(2*finalStatistics.num_functions()); // init to 0.
 
   Real agg_estim_var, var_Yl, cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
       cm3lm1, cm4lm1, cm1l_sq, cm1lm1_sq, cm2l_sq, cm2lm1_sq, var_Ql, var_Qlm1,
@@ -1657,9 +1657,9 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
     // and store errors in mean and sigma terms
 
     check_negative(agg_estim_var);
-    finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
+    finalStatErrors(2*qoi, 2*qoi) = std::sqrt(agg_estim_var); // std error
     if (outputLevel >= DEBUG_OUTPUT) {
-      Cout << "Estimator SE for mean = " << finalStatErrors[cntr - 1] << "\n";
+      Cout << "Estimator SE for mean = " << finalStatErrors(2*qoi, 2*qoi) << "\n";
     }
 
     // std error in variance or std deviation estimate
@@ -1692,12 +1692,12 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
         //Cov term of sigma
         //agg_estim_var += a_div_b*cov_bootstrap[lev];
       }
-      finalStatErrors[cntr++] = std::sqrt(agg_estim_var);
+      finalStatErrors(2*qoi+1, 2*qoi+1) = std::sqrt(agg_estim_var);
 
       if (outputLevel >= DEBUG_OUTPUT)
-        Cout << "Estimator SE for stddev = " << finalStatErrors[cntr - 1] << "\n\n";
+        Cout << "Estimator SE for stddev = " << finalStatErrors(2*qoi+1, 2*qoi+1) << "\n\n";
     } else // std error of variance estimator
-      finalStatErrors[cntr++] = std::sqrt(agg_estim_var);
+      finalStatErrors(2*qoi+1, 2*qoi+1) = std::sqrt(agg_estim_var);
 
     if(scalarizationCoeffs(qoi, 2*qoi) != 0 && scalarizationCoeffs(qoi, 2*qoi+1) != 0
          && finalMomentsType == STANDARD_MOMENTS){ 
@@ -1705,15 +1705,15 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
       for (lev = 0; lev < num_lev; ++lev) {
         agg_estim_var += bootstrap_covariance(lev, qoi, levQoisamplesmatrixMap, num_Q[lev][qoi], false, dummy_grad, randomSeed);
       }
-      finalStatErrors[cntr++] = agg_estim_var; //Can be negative
+      finalStatErrors(2*qoi+1, 2*qoi) = agg_estim_var; //Can be negative
     }else{
-      finalStatErrors[cntr++] = 0;
+      finalStatErrors(2*qoi+1, 2*qoi) = 0;
     }
 
     // level mapping errors not implemented at this time
-    cntr +=
-        requestedRespLevels[qoi].length() + requestedProbLevels[qoi].length() +
-        requestedRelLevels[qoi].length() + requestedGenRelLevels[qoi].length();
+    //cntr +=
+    //    requestedRespLevels[qoi].length() + requestedProbLevels[qoi].length() +
+    //    requestedRelLevels[qoi].length() + requestedGenRelLevels[qoi].length();
   }
 }
 
