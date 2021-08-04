@@ -728,7 +728,7 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
     else          cv0.scale(avg_hf_target);
     varianceMinimizer.initial_point(cv0);
 
-    RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con),
+    RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con, false),
                lin_eq_tgt;
     RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
     lin_ineq_lb = -DBL_MAX; // no lower bounds
@@ -743,7 +743,7 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
     lin_ineq_coeffs(0,numApprox) = 1.;
     // linear inequality constraints on N_i >= N prevent numerical exceptions:
     for (size_t approx=1; approx<=numApprox; ++approx) {
-      //lin_ineq_ub[approx] = 0.; // already initialized to zero
+      lin_ineq_ub[approx] = -0.0001; // push off to avoid r_i = 1 exceptions
       lin_ineq_coeffs(approx,approx-1)  = -1.;
       lin_ineq_coeffs(approx,numApprox) =  1.;// enforce N_i >= N (r_i >= 1)
       //lin_ineq_coeffs(approx,approx)  =  1.;// enforce N_i >= N_{i+1}
