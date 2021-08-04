@@ -99,6 +99,7 @@ private:
                                   ///< across two consecutive resolutions
   int transient_diffusion_1d(); ///< solve the 1d transient diffusion equation
                                 ///< with uncertain scalar diffusivity
+  int tunable_model(); /// 3 model hierarchy with tunable hyper-parameter(s)
   int predator_prey(); /// solve a predator prey population dynamics model
 
   int steel_column_cost(); ///< the steel_column_cost UQ/OUU test function

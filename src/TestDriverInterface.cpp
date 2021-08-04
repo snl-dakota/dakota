@@ -100,6 +100,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["steady_state_diffusion_1d"] = STEADY_STATE_DIFFUSION_1D;
   driverTypeMap["ss_diffusion_discrepancy"]  = SS_DIFFUSION_DISCREPANCY;
   driverTypeMap["transient_diffusion_1d"] = TRANSIENT_DIFFUSION_1D;
+  driverTypeMap["tunable_model"]          = TUNABLE_MODEL;
   driverTypeMap["predator_prey"]          = PREDATOR_PREY;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
   driverTypeMap["bayes_linear"]           = BAYES_LINEAR;
@@ -149,10 +150,11 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   for (size_t i=0; i<numAnalysisDrivers; ++i)
     switch (analysisDriverTypes[i]) {
     case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM: case CANTILEVER_BEAM_ML:
-    case ROSENBROCK:   case LF_ROSENBROCK:    case EXTRA_LF_ROSENBROCK:
-    case MF_ROSENBROCK:    case MODIFIED_ROSENBROCK: case PROBLEM18:
-    case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
-    case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE: 
+    case ROSENBROCK:      case LF_ROSENBROCK:       case EXTRA_LF_ROSENBROCK:
+    case MF_ROSENBROCK:   case MODIFIED_ROSENBROCK: case PROBLEM18:
+    case SHORT_COLUMN:    case LF_SHORT_COLUMN:     case MF_SHORT_COLUMN:
+    case SOBOL_ISHIGAMI:  case STEEL_COLUMN_COST:
+    case STEEL_COLUMN_PERFORMANCE:  case TUNABLE_MODEL:
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
     case CYLINDER_HEAD:       case LOGNORMAL_RATIO:     case MULTIMODAL:
@@ -189,11 +191,12 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
       varTypeMap["b"] = VAR_b; varTypeMap["h"] = VAR_h;
       varTypeMap["P"] = VAR_P; varTypeMap["M"] = VAR_M; varTypeMap["Y"] = VAR_Y;
       //break;
-    //case MF_ROSENBROCK: case MF_SHORT_COLUMN: (add to previous)
+    //case MF_ROSENBROCK: case MF_SHORT_COLUMN:
       varTypeMap["ModelForm"] = VAR_MForm;
     //case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
-      varTypeMap["w"] = VAR_w; varTypeMap["t"] = VAR_t; varTypeMap["R"] = VAR_R;
-      varTypeMap["E"] = VAR_E; varTypeMap["X"] = VAR_X; varTypeMap["area_type"] = VAR_area_type;
+      varTypeMap["w"] = VAR_w; varTypeMap["t"] = VAR_t;
+      varTypeMap["R"] = VAR_R; varTypeMap["E"] = VAR_E;
+      varTypeMap["X"] = VAR_X; varTypeMap["area_type"] = VAR_area_type;
       //varTypeMap["Y"] = VAR_Y; break;
     //case STEEL_COLUMN:
       varTypeMap["Fs"] = VAR_Fs; varTypeMap["P1"] = VAR_P1;
@@ -203,8 +206,10 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
       varTypeMap["d"]  = VAR_d;  //varTypeMap["h"] = VAR_h;
       varTypeMap["F0"] = VAR_F0; //varTypeMap["E"] = VAR_E; break;
     //case PROBLEM18:
-      varTypeMap["x"] = VAR_x; varTypeMap["xi"] = VAR_xi; 
+      varTypeMap["x"]  = VAR_x;  varTypeMap["xi"] = VAR_xi; 
       varTypeMap["Af"] = VAR_Af; varTypeMap["Ac"] = VAR_Ac;
+    //case TUNABLE_MODEL:
+      varTypeMap["y"]  = VAR_y;  varTypeMap["theta"] = VAR_theta;
     //}
   }
 }
@@ -335,6 +340,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = ss_diffusion_discrepancy(); break;
   case TRANSIENT_DIFFUSION_1D:
     fail_code = transient_diffusion_1d(); break;
+  case TUNABLE_MODEL:
+    fail_code = tunable_model(); break;
   case PREDATOR_PREY:
     fail_code = predator_prey(); break;
   case ANISOTROPIC_QUADRATIC_FORM:
@@ -2119,6 +2126,45 @@ int TestDriverInterface::transient_diffusion_1d()
 
   return 0;
 }
+
+
+int TestDriverInterface::tunable_model()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: tunable_model direct fn does not support multiprocessor "
+	 << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numACV != 3 || numADIV != 1) { // x,y,theta and model form
+    Cerr << "Error: unsupported variable counts in tunable_model direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns != 1) {
+    Cerr << "Error: unsupported function counts in tunable_model direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag || gradFlag) {
+    Cerr << "Error: gradients and Hessians are not supported in tunable_model "
+	 << "direct fn." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // Check state variable for ModelForm
+
+  Real A, xy_pow, theta = xCM[VAR_theta]; // continuous state variable
+  switch (xDIM[VAR_MForm]) {
+  case 0:  A = std::sqrt(11.); xy_pow = 5;  break;//theta = Pi/2.;
+  case 1:  A = std::sqrt(7.);  xy_pow = 3;  break;//theta = xCM[VAR_theta];
+  case 2:  A = std::sqrt(3.);  xy_pow = 1;  break;//theta = Pi/6.;
+  }
+  fnVals[0] = A * (std::cos(theta) * std::pow(xCM[VAR_x], xy_pow) +
+		   std::sin(theta) * std::pow(xCM[VAR_y], xy_pow));
+
+  return 0;
+}
+
 
 int TestDriverInterface::predator_prey()
 {
