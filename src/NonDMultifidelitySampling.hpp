@@ -47,6 +47,7 @@ public:
   //
 
   //bool resize();
+  void print_variance_reduction(std::ostream& s);
 
 protected:
 
@@ -136,6 +137,8 @@ private:
   //- Heading: Data
   //
 
+  /// ratio of MFMC estimator variance to mseIter0, one per QoI
+  RealVector mseRatios;
 };
 
 

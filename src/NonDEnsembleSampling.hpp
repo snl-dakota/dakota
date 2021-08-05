@@ -51,6 +51,12 @@ public:
 protected:
 
   //
+  //- Heading: New virtual functions
+  //
+
+  virtual void print_variance_reduction(std::ostream& s);
+
+  //
   //- Heading: Virtual function redefinitions
   //
 
@@ -161,6 +167,10 @@ private:
   //
 
 };
+
+
+inline void NonDEnsembleSampling::print_variance_reduction(std::ostream& s)
+{ } // default is no-op
 
 
 inline void NonDEnsembleSampling::aggregated_models_mode()

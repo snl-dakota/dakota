@@ -176,13 +176,11 @@ void NonDACVSampling::approximate_control_variate()
   // increment + LF increment batches until prescribed MSE reduction is obtained
 
   // retrieve cost estimates across soln levels for a particular model form
-  IntRealVectorMap sum_H;
-  IntRealMatrixMap sum_L_baselineH, sum_LH;
+  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
   IntRealSymMatrixArrayMap sum_LL;
-  RealVector sum_HH, mse_iter0, avg_eval_ratios;
+  RealVector sum_HH, avg_eval_ratios;
   Real avg_hf_target = 0., mse_ratio;  size_t num_steps = numApprox + 1;
-  Sizet2DArray N_L_baselineH, N_LH;
-  SizetSymMatrixArray N_LL;
+  Sizet2DArray N_L_baselineH, N_LH;    SizetSymMatrixArray N_LL;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   initialize_acv_counts(N_L_baselineH,  numH,   N_LL,   N_LH);
   //initialize_acv_covariances(covLL, covLH, varH);
@@ -210,7 +208,7 @@ void NonDACVSampling::approximate_control_variate()
 	// for special case where user specifies a fixed numH + total budget
 	// (see option "truth_fixed_by_pilot").
 	update_hf_target(avg_eval_ratios, sequenceCost, mse_ratio, varH, numH,
-			 mse_iter0, avg_hf_target);
+			 mseIter0, avg_hf_target);
 	break;
       case R_AND_N_NONLINEAR_CONSTRAINT:
 	// In this case, the opt-solution for N* for prescribed budget induces
@@ -248,11 +246,11 @@ void NonDACVSampling::approximate_control_variate()
       compute_ratios(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 		     sum_HH, sequenceCost, N_L_baselineH, numH, N_LL, N_LH,
 		     avg_eval_ratios, mse_ratio);
-      // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
+      // mseIter0 only uses HF pilot since sum_L_shared / N_shared minus
       // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
       // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
-      if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, mse_iter0);
+      if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, mseIter0);
     }
     //else
     //  Cout << "\nACV iteration " << mlmfIter << ": no shared sample increment"
@@ -820,14 +818,14 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
   }
   // Objective recovery from optimizer provides std::log(average(est_var))
   // (avoid recomputation from r*,N*)
-  Real avg_acv_est_var = std::exp(fn_star(0)); // varH / numH (1 - R^2)
-  mse_ratio = avg_acv_est_var / avg_mc_est_var; // (1 - R^2)
+  avgACVEstVar = std::exp(fn_star(0)); // varH / numH (1 - R^2)
+  mse_ratio = avgACVEstVar / avg_mc_est_var; // (1 - R^2)
 
   if (outputLevel >= NORMAL_OUTPUT) {
     for (size_t approx=0; approx<numApprox; ++approx)
       Cout << "Approx " << approx+1 << ": average evaluation ratio = "
 	   << avg_eval_ratios[approx] << '\n';
-    Cout << "ACV variance / pilot MC variance = " << mse_ratio << std::endl;
+    Cout << "ACV variance / MC variance = " << mse_ratio << std::endl;
   }
 }
 
@@ -855,7 +853,8 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
     RealVector&          sum_H_m =         sum_H[mom];
     RealSymMatrixArray& sum_LL_m =        sum_LL[mom];
     RealMatrix&         sum_LH_m =        sum_LH[mom];
-    if (outputLevel >= NORMAL_OUTPUT) Cout << "Moment " << mom << ":\n";
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
       Real sum_H_mq = sum_H_m[qoi];
       if (mom == 1) // variances/covariances already computed for mean estimator
@@ -880,6 +879,14 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
       }
     }
   }
+  if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
+}
+
+
+void NonDACVSampling::print_variance_reduction(std::ostream& s)
+{
+  s << "<<<<< Variance for mean estimator reduced from " << average(mseIter0)
+    << " (pilot) to " << avgACVEstVar << '\n';
 }
 
 

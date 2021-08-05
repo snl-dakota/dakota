@@ -113,6 +113,14 @@ protected:
   size_t secondaryIndex;
   /// relative costs of models within sequence of steps
   RealVector sequenceCost;
+
+  /// variances for HF truth (length numFunctions)
+  RealVector varH;
+  /// number of evaluations of HF truth model (length numFunctions)
+  SizetArray numH;
+
+  /// initial estimator variance from shared pilot (no CV reduction)
+  RealVector mseIter0;
 };
 
 

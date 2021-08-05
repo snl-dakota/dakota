@@ -65,14 +65,12 @@ void NonDMultifidelitySampling::multifidelity_mc()
   // Performs pilot + LF increment and then iterates with additional shared
   // increment + LF increment batches until prescribed MSE reduction is obtained
 
-  IntRealVectorMap sum_H;
-  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
-  RealVector sum_HH, var_H, mse_iter0, mse_ratios, hf_targets;
-  RealMatrix rho2_LH, eval_ratios;
-  Sizet2DArray N_L_baseline, N_LH;  SizetArray num_H;
+  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
+  RealVector sum_HH, hf_targets;  RealMatrix rho2_LH, eval_ratios;
+  Sizet2DArray N_L_baseline, N_LH;
   size_t num_steps = numApprox + 1;
   initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
-  initialize_counts(N_L_baseline, num_H, N_LH);
+  initialize_counts(N_L_baseline, numH, N_LH);
 
   // Initialize for pilot sample
   numSamples = pilotSamples[numApprox]; // last in array
@@ -85,8 +83,8 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // Scale sample profile based on maxFunctionEvals or convergenceTol,
     // but not both (for now)
     if (mlmfIter)
-      update_hf_targets(eval_ratios, sequenceCost, mse_ratios, var_H, num_H,
-			mse_iter0, hf_targets);
+      update_hf_targets(eval_ratios, sequenceCost, mseRatios, varH, numH,
+			mseIter0, hf_targets);
 
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,MSE}_ratios
@@ -94,21 +92,21 @@ void NonDMultifidelitySampling::multifidelity_mc()
     if (numSamples) {
       shared_increment(mlmfIter); // spans ALL models, blocking
       accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
-			 N_L_baseline, num_H, N_LH);
+			 N_L_baseline, numH, N_LH);
       increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
 
       // First, compute the LF/HF evaluation ratio using shared samples,
-      // averaged over QoI.  This includes updating var_H and rho2_LH.  Then,
+      // averaged over QoI.  This includes updating varH and rho2_LH.  Then,
       // compute the ratio of MC and ACV mean squared errors (for convergence).
       // This ratio incorporates the anticipated variance reduction from the
       // upcoming application of eval_ratios.
       compute_ratios(sum_L_baseline[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
-		     sequenceCost, N_L_baseline, num_H, N_LH, var_H, rho2_LH,
-		     eval_ratios, mse_ratios);
-      // mse_iter0 only uses HF pilot since CV terms (sum_L_shared / N_shared -
+		     sequenceCost, N_L_baseline, numH, N_LH, varH, rho2_LH,
+		     eval_ratios, mseRatios);
+      // mseIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared -
       // sum_L_refined / N_refined) are zero prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-      if (mlmfIter == 0) compute_mc_estimator_variance(var_H, num_H, mse_iter0);
+      if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, mseIter0);
     }
     //else
     //  Cout << "\nMFMC iteration " << mlmfIter
@@ -117,14 +115,14 @@ void NonDMultifidelitySampling::multifidelity_mc()
     ++mlmfIter;
   }
 
-  // -----------------------------------------------------------------
-  // Compute N_L increments based on eval ratio applied to final num_H
-  // -----------------------------------------------------------------
+  // ----------------------------------------------------------------
+  // Compute N_L increments based on eval ratio applied to final numH
+  // ----------------------------------------------------------------
   // Note: these results do not affect the iteration above and can be performed
-  // after num_H has converged, which simplifies maxFnEvals / convTol logic
+  // after numH has converged, which simplifies maxFnEvals / convTol logic
   // (no need to further interrogate these throttles below)
 
-  if (hf_targets.empty()) update_hf_targets(num_H, hf_targets); // pilot only
+  if (hf_targets.empty()) update_hf_targets(numH, hf_targets); // pilot only
   // Pyramid/nested sampling: at step i, we sample approximation range
   // [0,numApprox-1-i] using the delta relative to the previous step
   IntRealMatrixMap sum_L_shared  = sum_L_baseline,
@@ -144,13 +142,13 @@ void NonDMultifidelitySampling::multifidelity_mc()
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(numFunctions, 4);
   mf_raw_moments(sum_L_baseline, sum_L_shared, sum_L_refined, sum_H, sum_LL,
-		 sum_LH, N_L_baseline, N_L_shared, N_L_refined, num_H, N_LH,
+		 sum_LH, N_L_baseline, N_L_shared, N_L_refined, numH, N_LH,
 		 H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);
 
   // post final sample counts back to NLev (needed for final eval summary)
-  N_L_refined.push_back(num_H); // aggregate into a single Sizet2DArray
+  N_L_refined.push_back(numH); // aggregate into a single Sizet2DArray
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_L_refined, multilev, secondaryIndex, NLev);
 }
@@ -494,7 +492,7 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
     RealMatrix& sum_LH_m     = sum_LH[mom];
 
     if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Moment " << mom << ":\n";
+      Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
       sum_H_mq = sum_H_m[qoi];  N_H_q = N_H[qoi];
       Real& H_raw_mq = H_raw_mom(qoi, mom-1);
@@ -517,6 +515,18 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
       }
     }
   }
+  if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
+}
+
+
+void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
+{
+  RealVector est_var(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    est_var[qoi] = mseRatios[qoi] * varH[qoi] / numH[qoi];
+  s << "<<<<< Variance for mean estimator reduced from " << average(mseIter0)
+    << " (pilot) to " << average(est_var) << '\n';
+  //<< ": factor of " << average(mseRatios) << '\n';
 }
 
 } // namespace Dakota

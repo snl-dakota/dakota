@@ -199,8 +199,10 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   if (statsFlag) {
     print_multilevel_evaluation_summary(s, NLev);
     s << "<<<<< Equivalent number of high fidelity evaluations: "
-      << equivHFEvals << "\n\nStatistics based on multilevel sample set:\n";
+      << equivHFEvals << '\n';
+    print_variance_reduction(s);
 
+    s << "\nStatistics based on multilevel sample set:\n";
   //print_statistics(s);
     print_moments(s, "response function",
 		  iteratedModel.truth_model().response_labels());

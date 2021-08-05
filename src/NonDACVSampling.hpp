@@ -51,6 +51,7 @@ public:
   //
 
   //bool resize();
+  void print_variance_reduction(std::ostream& s);
 
 protected:
 
@@ -213,10 +214,6 @@ private:
   /// to different variable sets and different linear/nonlinear constraints
   unsigned short optSubProblemForm;
 
-  /// variances for HF truth (length numFunctions)
-  RealVector varH;
-  /// number of evaluations of HF truth model (length numFunctions)
-  SizetArray numH;
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
   RealMatrix covLH;
@@ -227,6 +224,9 @@ private:
   /// the minimizer used to minimize the estimator variance over parameters
   /// of number of truth model samples and approximation eval_ratios
   Iterator varianceMinimizer;
+
+  /// final estimator variance (minimization result), averaged across QoI
+  Real avgACVEstVar;
 
   /// pointer to NonDACV instance used in static member functions
   static NonDACVSampling* acvInstance;
