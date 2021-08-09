@@ -179,7 +179,7 @@ void NonDACVSampling::approximate_control_variate()
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
   IntRealSymMatrixArrayMap sum_LL;
   RealVector sum_HH, avg_eval_ratios;
-  Real avg_hf_target = 0., mse_ratio;  size_t num_steps = numApprox + 1;
+  Real avg_hf_target = 0.;  size_t num_steps = numApprox + 1;
   Sizet2DArray N_L_baselineH, N_LH;    SizetSymMatrixArray N_LL;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   initialize_acv_counts(N_L_baselineH,  numH,   N_LL,   N_LH);
@@ -207,8 +207,8 @@ void NonDACVSampling::approximate_control_variate()
 	// this approach does not converge to the desired sample profile, except
 	// for special case where user specifies a fixed numH + total budget
 	// (see option "truth_fixed_by_pilot").
-	update_hf_target(avg_eval_ratios, sequenceCost, mse_ratio, varH, numH,
-			 mseIter0, avg_hf_target);
+	update_hf_target(avg_eval_ratios, sequenceCost, avgMSERatio,
+			 varH, numH, mseIter0, avg_hf_target);
 	break;
       case R_AND_N_NONLINEAR_CONSTRAINT:
 	// In this case, the opt-solution for N* for prescribed budget induces
@@ -245,7 +245,7 @@ void NonDACVSampling::approximate_control_variate()
       // upcoming application of avg_eval_ratios.
       compute_ratios(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 		     sum_HH, sequenceCost, N_L_baselineH, numH, N_LL, N_LH,
-		     avg_eval_ratios, mse_ratio);
+		     avg_eval_ratios, avgMSERatio);
       // mseIter0 only uses HF pilot since sum_L_shared / N_shared minus
       // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
       // (This differs from MLMC MSE^0 which uses pilot for all levels.)
@@ -680,7 +680,7 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
     covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
     mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
     average(eval_ratios, 0, avg_eval_ratios);// average over qoi for each approx
-    //if (outputLevel >= NORMAL_OUTPUT)
+    if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Initial guess from MFMC (avg eval ratios):\n" << avg_eval_ratios
 	   << std::endl;
     // scale to enforce budget constraint.  Since the profile does not emerge
@@ -885,8 +885,17 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 
 void NonDACVSampling::print_variance_reduction(std::ostream& s)
 {
-  s << "<<<<< Variance for mean estimator reduced from " << average(mseIter0)
-    << " (pilot) to " << avgACVEstVar << '\n';
+  size_t wpp7 = write_precision + 7;
+  s << "<<<<< Variance for mean estimator:"
+    << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
+    << " pilot samples): " << std::setw(wpp7) << average(mseIter0)
+    << "\n      Final   MC (" << std::setw(4)
+    << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
+    << std::setw(wpp7) << avgACVEstVar / avgMSERatio
+    << "\n      Final  ACV (sample profile):     "
+    << std::setw(wpp7) << avgACVEstVar
+    << "\n      Final  ACV / Final MC ratio:     "
+    << std::setw(wpp7) << avgMSERatio << '\n';
 }
 
 
@@ -938,7 +947,7 @@ Real NonDACVSampling::objective_function(const RealVector& r_and_N)
   Real avg_est_var = average(est_var), obj_fn = (avg_est_var > 0.) ?
     std::log(avg_est_var) :
     std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
-  //if (outputLevel >= DEBUG_OUTPUT)
+  if (outputLevel >= DEBUG_OUTPUT)
     Cout << "objective_function: "
          << "design vars:\n" << r_and_N << "R squared:\n" << R_sq
 	 << "obj = log(average((1.-Rsq)varH/N)) = " << obj_fn << '\n';

@@ -227,6 +227,9 @@ private:
 
   /// final estimator variance (minimization result), averaged across QoI
   Real avgACVEstVar;
+  /// ratio of final ACV estimator variance (minimization result averaged
+  /// across QoI) and final MC estimator variance (final varH / numH)
+  Real avgMSERatio;
 
   /// pointer to NonDACV instance used in static member functions
   static NonDACVSampling* acvInstance;

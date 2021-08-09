@@ -1314,12 +1314,23 @@ sub parse_test_output {
       print;
       print TEST_OUT;
     }
-    
+
+    if (/^<<<<< Variance for mean estimator/) {
+      print;
+      print TEST_OUT;
+      $_ = <OUTPUT>; # grab next line (table data)
+      while (/\s+$e/) {
+        print;
+        print TEST_OUT;
+        $_ = <OUTPUT>; # grab next line
+      }
+    }
+
     if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =|Information gained from prior to posterior|Mutual information =|Model evidence \()/) {
       print;
       print TEST_OUT;
     }
-    
+
     if (/^\w+:\s+Min =\s+$e\s+Max =\s+$e$/) {
       print;
       print TEST_OUT;

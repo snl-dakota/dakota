@@ -6,14 +6,17 @@ environment
 
 method,
 	model_pointer = 'NONHIER'
-	multifidelity_sampling
-	  max_function_evaluations = 100	#s0
-#	  max_function_evaluations = 250	#s1
-#	  max_function_evaluations = 500	#s2
-#	  max_function_evaluations = 1000	#s3
-#	  max_function_evaluations = 2500	#s4
-#	  max_function_evaluations = 5000	#s5
-#	  max_function_evaluations = 10000	#s6
+	approximate_control_variate acv_mf sqp	#s0,#s1,#s2,#s3,#s4,#s5,#s6
+#	approximate_control_variate acv_mf nip	#s7,#s8,#s9,#s10,#s11,#s12,#s13
+#	approximate_control_variate acv_is sqp	
+#	approximate_control_variate acv_is nip	
+	  max_function_evaluations = 100	#s0,#s7
+#	  max_function_evaluations = 250	#s1,#s8
+#	  max_function_evaluations = 500	#s2,#s9
+#	  max_function_evaluations = 1000	#s3,#s10
+#	  max_function_evaluations = 2500	#s4,#s11
+#	  max_function_evaluations = 5000	#s5,#s12
+#	  max_function_evaluations = 10000	#s6,#s13
 #	  pilot_samples =   5
 	  pilot_samples =  10
 #	  pilot_samples =  25

@@ -521,12 +521,26 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
 
 void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
 {
-  RealVector est_var(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    est_var[qoi] = mseRatios[qoi] * varH[qoi] / numH[qoi];
-  s << "<<<<< Variance for mean estimator reduced from " << average(mseIter0)
-    << " (pilot) to " << average(est_var) << '\n';
-  //<< ": factor of " << average(mseRatios) << '\n';
+  RealVector mc_est_var(numFunctions, false), mfmc_est_var(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    mfmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / numH[qoi];
+    mfmc_est_var[qoi] *= mseRatios[qoi];
+  }
+  Real avg_mfmc_est_var = average(mfmc_est_var),
+         avg_mc_est_var = average(mc_est_var);
+  size_t wpp7 = write_precision + 7;
+  s << "<<<<< Variance for mean estimator:"
+    << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
+    << " pilot samples): " << std::setw(wpp7) << average(mseIter0)
+    << "\n      Final   MC (" << std::setw(4)
+    << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
+    << std::setw(wpp7) << avg_mc_est_var
+    << "\n      Final MFMC (sample profile):     "
+    << std::setw(wpp7) << avg_mfmc_est_var
+    << "\n      Final MFMC / Final MC ratio:     "
+    << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var << '\n';
+    // average each set of est variances rather than averaging ratios
+    // (consistent with ACV definition of avgMSERatio)
 }
 
 } // namespace Dakota
