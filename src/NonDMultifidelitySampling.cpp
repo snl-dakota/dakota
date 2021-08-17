@@ -77,40 +77,67 @@ void NonDMultifidelitySampling::multifidelity_mc()
 
   while (numSamples && mlmfIter <= maxIterations) {
 
-    // ------------------------------------------------------------------------
-    // Compute shared increment targeting specified budget and/or MSE reduction
-    // ------------------------------------------------------------------------
-    // Scale sample profile based on maxFunctionEvals or convergenceTol,
-    // but not both (for now)
-    if (mlmfIter)
-      update_hf_targets(eval_ratios, sequenceCost, mseRatios, varH, numH,
-			mseIter0, hf_targets);
+    // ----------------------------------------------------
+    // Evaluate shared increment and increment accumulators
+    // ----------------------------------------------------
+    shared_increment(mlmfIter); // spans ALL models, blocking
+    accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
+		       N_L_baseline, numH, N_LH);
+    increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
 
-    // --------------------------------------------------------------------
-    // Evaluate shared increment and update correlations, {eval,MSE}_ratios
-    // --------------------------------------------------------------------
-    if (numSamples) {
-      shared_increment(mlmfIter); // spans ALL models, blocking
-      accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
-			 N_L_baseline, numH, N_LH);
-      increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
+    // -------------------------------------------
+    // Compute correlations and evaluation ratios:
+    // -------------------------------------------
+    // First, compute the LF/HF evaluation ratio using shared samples,
+    // averaged over QoI.  This includes updating varH and rho2_LH.
+    compute_LH_correlation(sum_L_baseline[1], sum_H[1], sum_LL[1], sum_LH[1],
+			   sum_HH, N_L_baseline, numH, N_LH, varH, rho2_LH);
+    // mseIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared -
+    // sum_L_refined / N_refined) cancel out prior to sample refinement.
+    // (This differs from MLMC MSE^0 which uses pilot for all levels.)
+    if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, mseIter0);
+    // compute r* from rho2 and cost
+    mfmc_eval_ratios(rho2_LH, sequenceCost, eval_ratios);
 
-      // First, compute the LF/HF evaluation ratio using shared samples,
-      // averaged over QoI.  This includes updating varH and rho2_LH.  Then,
-      // compute the ratio of MC and ACV mean squared errors (for convergence).
-      // This ratio incorporates the anticipated variance reduction from the
-      // upcoming application of eval_ratios.
-      compute_ratios(sum_L_baseline[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
-		     sequenceCost, N_L_baseline, numH, N_LH, varH, rho2_LH,
-		     eval_ratios, mseRatios);
-      // mseIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared -
-      // sum_L_refined / N_refined) are zero prior to sample refinement.
-      // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-      if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, mseIter0);
+    // ----------------------------------
+    // Compute HF targets and MSE ratios:
+    // ----------------------------------
+    // Update hf_targets based on maxFnEvals || convTol, but not both (for now)
+    if (maxFunctionEvals != SZ_MAX) {
+      update_hf_targets(eval_ratios, sequenceCost, hf_targets); // budget-based
+
+      // For reference, compute est_var if pilot over-sample is ignored
+      //compute_mse_ratios(rho2_LH, eval_ratios, mseRatios);// MSE* from r*,rho2
+      //RealVector est_var(numFunctions);
+      //Real rnd_hf_target = std::floor(average(hf_targets) + .5);
+      //for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      //  est_var[qoi] = mseRatios[qoi] * varH[qoi] / rnd_hf_target;
+      //Cout << "Avg est var neglecting pilot = " << average(est_var) << '\n';
     }
-    //else
-    //  Cout << "\nMFMC iteration " << mlmfIter
-    //       << ": no shared sample increment" << std::endl;
+    else { //if (convergenceTol != -DBL_MAX) {
+      // *** TO DO: need special default value (-DBL_MAX) to detect user spec
+
+      // Note: there is a circular dependency between mse_ratios and hf_targets
+      // > 1st compute r*,rho2 --> MSE*, then compute MSE*,tol --> m1* target
+      // > if pilot > m1*, then done (numSamples = 0) other than reporting
+      //   _actual_ MSE including additional pilot (actual MSE should be < MSE*,
+      //   although mseRatios may be > mseRatio* due to decrease in MC MSE)
+      // > if m1* > pilot, then increment numSamples and continue
+      compute_mse_ratios(rho2_LH, eval_ratios, mseRatios); // MSE* from r*,rho2
+      update_hf_targets(mseRatios, varH, mseIter0, hf_targets); // m1* from MSE*
+    }
+    // Compute the ratio of MC and MFMC mean squared errors, which incorporates
+    // anticipated variance reduction from upcoming application of eval_ratios.
+    // > Note: this could be redundant for tol-based targets with m1* > pilot
+    compute_mse_ratios(rho2_LH, numH, hf_targets, eval_ratios, mseRatios);
+
+    // --------------------------------
+    // Compute shared sample increment:
+    // --------------------------------
+    // numSamples is relative to numH, but the approx_increments() below are
+    // computed relative to hf_targets (independent of sunk cost for pilot)
+    numSamples = one_sided_delta(numH, hf_targets, 1);
+    //numSamples = std::min(num_samp_budget, num_samp_ctol); // enforce both
 
     ++mlmfIter;
   }
@@ -122,7 +149,6 @@ void NonDMultifidelitySampling::multifidelity_mc()
   // after numH has converged, which simplifies maxFnEvals / convTol logic
   // (no need to further interrogate these throttles below)
 
-  if (hf_targets.empty()) update_hf_targets(numH, hf_targets); // pilot only
   // Pyramid/nested sampling: at step i, we sample approximation range
   // [0,numApprox-1-i] using the delta relative to the previous step
   IntRealMatrixMap sum_L_shared  = sum_L_baseline,
@@ -156,32 +182,46 @@ void NonDMultifidelitySampling::multifidelity_mc()
 
 void NonDMultifidelitySampling::
 update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
-		  const RealVector& mse_ratios,  const RealVector& var_H,
-		  const SizetArray& N_H, const RealVector& mse_iter0,
 		  RealVector& hf_targets)
 {
   // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L 
   // > could consider under-relaxing the budget allocation to enable
   //   additional N_H increments + associated updates to shared samples
   //   for improving rho2_LH et al.
-  if (maxFunctionEvals != SZ_MAX) {
-    Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
-    allocate_budget(eval_ratios, cost, hf_targets);
+
+  if (hf_targets.empty()) hf_targets.sizeUninitialized(numFunctions);
+  // Scale this profile based on specified budget (maxFunctionEvals) if needed
+  // using N_H = maxFunctionEvals / cost^T eval_ratios
+  // > Pilot case iter = 0: can only scale back after shared_increment().
+  //   Optimal profile can be hidden by one_sided_delta() with pilot --> optimal
+  //   shape emerges from initialization cost as for ML cases controlled by
+  //   convTol (allow budget overshoot due to overlap of optimal with pilot,
+  //   rather than strictly allocating remaining budget)
+  size_t qoi, approx;
+  Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    inner_prod = cost_H; // raw cost (un-normalized)
+    for (approx=0; approx<numApprox; ++approx)
+      inner_prod += cost[approx] * eval_ratios(qoi, approx);
+    hf_targets[qoi] = budget / inner_prod * cost_H; // normalized to equivHF
   }
+  Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals
+       << ": average HF target = " << average(hf_targets) << std::endl;
+}
+
+
+void NonDMultifidelitySampling::
+update_hf_targets(const RealVector& mse_ratios, const RealVector& var_H,
+		  const RealVector& mse_iter0,  RealVector& hf_targets)
+{
   // MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
   // --> N_H = mse_ratio * var_H / convTol / mse_iter0
   // Note: don't simplify further since mse_iter0 is fixed based on pilot
-  else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: to support both, need to retain default special value (-DBL_MAX) to detect a user spec
-    Cout << "Scaling profile for convergenceTol = " << convergenceTol;
-    hf_targets = mse_ratios;
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      hf_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
-  }
-  // numSamples is relative to N_H, but the approx_increments() below are
-  // computed relative to hf_targets (independent of sunk cost for pilot)
-  Cout << ": average HF target = " << average(hf_targets) << std::endl;
-  numSamples = one_sided_delta(N_H, hf_targets, 1);
-  //numSamples = std::min(num_samp_budget, num_samp_ctol); // enforce both
+  hf_targets = mse_ratios;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    hf_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
+  Cout << "Scaling profile for convergenceTol = " << convergenceTol
+       << ": average HF target = " << average(hf_targets) << std::endl;
 }
 
 
@@ -197,12 +237,22 @@ approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_L_refined,
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
-  // > eval_ratios have been scaled if needed to satisfy specified budget
-  //   (maxFunctionEvals) in
   size_t qoi, approx = end - 1;
   RealVector lf_targets(numFunctions, false);
+  // The following is too fine-grained since all HF QoI get sampled together:
+  //for (qoi=0; qoi<numFunctions; ++qoi)
+  //  lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
+  // > HF targets are computed per QoI based on budget | conv tol to avoid any
+  //   premature consolidation, but we should average HF targets when computing
+  //   LF targets for consistency with current sample profile consolidation.
+  // > In particular, using N*_L(q) = r*(q) N*_H(q) is non-optimal when HF
+  //   sample set uses average(N*_H) samples.
+  // > LF targets then subsequently get averaged by one_sided_delta()
+  // > This is consistent with NonDACVSampling::approx_increment(), and note
+  //   that both defer rounding until needed for numSamples estimation
+  Real avg_hf_target = average(hf_targets);//std::floor(average(hf_targets)+.5);
   for (qoi=0; qoi<numFunctions; ++qoi)
-    lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
+    lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
 
   // Choose avg, RMS, max? (trade-off: possible overshoot vs. more iteration)
   numSamples = one_sided_delta(N_L_refined[approx], lf_targets, 1); // average
@@ -423,37 +473,123 @@ compute_LH_correlation(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 
 
 void NonDMultifidelitySampling::
-compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
-	       const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-	       const RealVector& sum_HH, const RealVector& cost,
-	       const Sizet2DArray& N_L_baseline, const SizetArray& N_H,
-	       const Sizet2DArray& N_LH, RealVector& var_H, RealMatrix& rho2_LH,
-	       RealMatrix& eval_ratios,  RealVector& mse_ratios)
+compute_mse_ratios(const RealMatrix& rho2_LH, const RealMatrix& eval_ratios,
+		   RealVector& mse_ratios)
 {
-  compute_LH_correlation(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
-			 N_L_baseline, N_H, N_LH, var_H, rho2_LH);
-
-  mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
-  //RealVector avg_eval_ratios;
-  //average(eval_ratios, 0, avg_eval_ratios);// average over qoi for each approx
-  //Cout << "Average eval ratios from MFMC:\n" << avg_eval_ratios << std::endl;
-
-  // Compute ratio of MSE for single-fidelity MC and MFMC
-  // > Estimator Var for   MC = var_H / N_H = MSE (neglect HF bias)
-  // > Estimator Var for MFMC = var_H (1-rho_LH(am1)^2) p / N_H^2 cost_H
-  //   where budget p = cost^T eval_ratios N_H,  am1 = most-correlated approx
-  //   --> EstVar = var_H (1-rho_LH(am1)^2) cost^T eval_ratios / N_H cost_H
-  // > MSE ratio = EstVar_MFMC / EstVar_MC
-  //   = (1-rho_LH(am1)^2) cost^T eval_ratios / cost_H
   if (mse_ratios.empty()) mse_ratios.sizeUninitialized(numFunctions);
-  Real inner_prod, cost_H = cost[numApprox];
+  // Compute ratio of MSE for single-fidelity MC and MFMC
+  // > Estimator Var for MC = var_H / N_H = MSE (neglect HF bias)
+  // > Estimator Var for MFMC = (1 - R^2) var_H / N_H
+  // > MSE ratio = EstVar_MFMC / EstVar_MC = (1 - R^2)
+
+  // Peherstorfer paper: ratios derived for N_H = m1* = the optimal # of HF
+  // samples, not the actual # (when optimal is hidden by pilot):
+  // > Estimator Var for MFMC = var_H (1-rho_LH(am1)^2) p / (N_H^2 cost_H)
+  //   where budget p = cost^T eval_ratios N_H,  am1 = most-correlated approx
+  //   --> EstVar = var_H (1-rho_LH(am1)^2) cost^T eval_ratios / (N_H cost_H)
+  //   --> MSE ratio = EstVar_MFMC / EstVar_MC
+  //                 = (1-rho_LH(am1)^2) cost^T eval_ratios / cost_H
+  // For this expression, final MFMC estimator variance should use m1*
+  // (ignoring pilot) and not the actual N_H (which includes pilot).  This
+  // avoids a bug where MFMC est var doesn't change until m1* emerges from
+  // pilot.  We can't take credit for N_H > pilot since r* is applied to m1*,
+  // not N_H (see update_hf_targets() -> approx_increment() -> lf_targets).
+  /*
+  Real inner_prod, cost_H = sequenceCost[numApprox];
   size_t qoi, approx, num_am1 = numApprox - 1;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     inner_prod = cost_H; // include cost_H * w_H
     for (approx=0; approx<numApprox; ++approx)
-      inner_prod += cost[approx] * eval_ratios(qoi, approx); // cost_i * w_i
+      inner_prod += sequenceCost[approx] * eval_ratios(qoi, approx);
     mse_ratios[qoi] = (1. - rho2_LH(qoi, num_am1)) * inner_prod / cost_H;
   }
+  if (outputLevel >= NORMAL_OUTPUT) {
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      for (approx=0; approx<numApprox; ++approx)
+	Cout << "  QoI " << qoi+1 << " Approx " << approx+1
+	   //<< ": cost_ratio = " << cost_H / cost_L
+	     << ": rho2_LH = "    <<     rho2_LH(qoi,approx)
+	     << " eval_ratio = "  << eval_ratios(qoi,approx) << '\n';
+      Cout << "QoI " << qoi+1 << ": Peherstorfer variance reduction factor = "
+	   << mse_ratios[qoi] << '\n';
+    }
+    Cout << std::endl;
+  }
+  */
+
+  // Appendix B of JCP paper on ACV:
+  // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
+  // > Reorder differences since eval ratios/correlations ordered from LF to HF
+  //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
+  Real R_sq, r_i, r_ip1;  size_t qoi, approx;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    R_sq = 0.;  r_i = eval_ratios(qoi, 0);
+    for (approx=0; approx<numApprox; ++approx) {
+      r_ip1 = (approx+1 < numApprox) ? eval_ratios(qoi, approx+1) : 1.;
+      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
+      r_i = r_ip1;
+    }
+    mse_ratios[qoi] = (1. - R_sq);
+  }
+
+  /*
+  if (outputLevel >= NORMAL_OUTPUT) {
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      for (approx=0; approx<numApprox; ++approx)
+	Cout << "  QoI " << qoi+1 << " Approx " << approx+1
+	   //<< ": cost_ratio = " << cost_H / cost_L
+	     << ": rho2_LH = "    <<     rho2_LH(qoi,approx)
+	     << " eval_ratio = "  << eval_ratios(qoi,approx) << '\n';
+      Cout << "QoI " << qoi+1 << ": JCP variance reduction factor = "
+	   << mse_ratios[qoi] << '\n';
+    }
+    Cout << std::endl;
+  }
+  */
+}
+
+
+void NonDMultifidelitySampling::
+compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
+		   const RealVector& hf_targets, const RealMatrix& eval_ratios,
+		   RealVector& mse_ratios)
+{
+  if (mse_ratios.empty()) mse_ratios.sizeUninitialized(numFunctions);
+
+  // Appendix B of JCP paper on ACV:
+  // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
+  //   --> take credit for N_H > N* by using r_actual < r* for N_H > m1*
+  //   --> N_L is kept fixed at r* m1* (see lf_targets in approx_increment()),
+  //       but r_actual = N_L / N_H = r* m1* / N_H
+  bool scale_to_N_H = false;  size_t qoi, approx;
+  Real   avg_hf_target = average(hf_targets);
+  size_t rnd_hf_target = (size_t)std::floor(avg_hf_target + .5);
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    if (N_H[qoi] > rnd_hf_target) // over-shoot of target from pilot | iteration
+      scale_to_N_H = true;
+
+  if (scale_to_N_H) {
+    Real R_sq, star_to_actual, r_i, r_ip1, N_H_q;
+    //RealVector N_L(numApprox); // init to 0
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      R_sq = 0.;  N_H_q = (Real)N_H[qoi];
+      star_to_actual = avg_hf_target / N_H_q;
+      r_i  = eval_ratios(qoi, 0) * star_to_actual;
+      for (approx=0; approx<numApprox; ++approx) {
+	//N_L[approx] += r_i * N_H_q;
+	r_ip1 = (approx+1 < numApprox) ?
+	  eval_ratios(qoi, approx+1) * star_to_actual : 1.; // r* -> r_actual
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
+	r_i = r_ip1;
+      }
+      mse_ratios[qoi] = (1. - R_sq);
+    }
+    // verify correct N_L is preserved after star_to_actual:
+    //for (approx=0; approx<numApprox; ++approx) 
+    //  Cout << "avg N_L[" << approx << "] = "<< N_L[approx]/numFunctions<<'\n';
+  }
+  else
+    compute_mse_ratios(rho2_LH, eval_ratios, mse_ratios);
 
   if (outputLevel >= NORMAL_OUTPUT) {
     for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -523,7 +659,7 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
 {
   RealVector mc_est_var(numFunctions, false), mfmc_est_var(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    mfmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / numH[qoi];
+    mfmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / numH[qoi]; // incl. pilot
     mfmc_est_var[qoi] *= mseRatios[qoi];
   }
   Real avg_mfmc_est_var = average(mfmc_est_var),
@@ -537,10 +673,11 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     << std::setw(wpp7) << avg_mc_est_var
     << "\n      Final MFMC (sample profile):     "
     << std::setw(wpp7) << avg_mfmc_est_var
-    << "\n      Final MFMC / Final MC ratio:     "
-    << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var << '\n';
+    << "\n      Final MFMC ratio (1 - R^2):      "
     // average each set of est variances rather than averaging ratios
-    // (consistent with ACV definition of avgMSERatio)
+    // (consistent with ACV definition which recovers a scalar avgACVEstVar
+    // as sub-problem objective)
+    << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var << '\n';
 }
 
 } // namespace Dakota

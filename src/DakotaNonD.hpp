@@ -423,12 +423,12 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
   switch (power) {
   case 1: // average difference same as difference of averages
     for (i=0; i<len; ++i)
-      pow_mean += targets[i] - current[i];
+      pow_mean += targets[i] - (Real)current[i]; // Note: not one-sided 
     pow_mean /= len;
     break;
   case SZ_MAX: // find max difference
     for (i=0; i<len; ++i) {
-      diff = targets[i] - current[i];
+      diff = targets[i] - (Real)current[i];
       if (diff > pow_mean) pow_mean = diff;
     }
     break;
