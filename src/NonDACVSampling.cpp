@@ -178,7 +178,7 @@ void NonDACVSampling::approximate_control_variate()
   // retrieve cost estimates across soln levels for a particular model form
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
   IntRealSymMatrixArrayMap sum_LL;
-  RealVector sum_HH, avg_eval_ratios;
+  RealVector sum_HH, avg_eval_ratios;  RealMatrix var_L;
   Real avg_hf_target = 0.;  size_t num_steps = numApprox + 1;
   Sizet2DArray N_L_baselineH, N_LH;    SizetSymMatrixArray N_LL;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
@@ -211,12 +211,22 @@ void NonDACVSampling::approximate_control_variate()
     //  increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox);
     //}
 
+    const RealMatrix&         sum_L_1  = sum_L_baselineH[1];
+    const RealVector&         sum_H_1  = sum_H[1];
+    const RealSymMatrixArray& sum_LL_1 = sum_LL[1];
+    compute_variance(sum_H_1, sum_HH, numH, varH);
+    if (mlmfIter==0) compute_variance(sum_L_1, sum_LL_1, N_L_baselineH, var_L);
+    compute_LH_covariance(sum_L_1/*baseH*/, sum_H_1, sum_LH[1], N_L_baselineH,
+			  numH, N_LH, covLH);
+    compute_LL_covariance(sum_L_1/*baseL*/, sum_LL_1, N_L_baselineH/*baseL*/,
+			  N_LL, covLL);
+    //Cout << "var_H:\n"<< var_H << "cov_LH:\n"<< cov_LH << "cov_LL:\n"<<cov_LL;
+
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
-    compute_ratios(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
-		   sequenceCost, N_L_baselineH, numH, N_LL, N_LH, varH,
-		   avg_eval_ratios, avgACVEstVar, avgMSERatio, avg_hf_target);
+    compute_ratios(numH, var_L, varH, covLH, sequenceCost, avg_eval_ratios,
+		   avgACVEstVar, avgMSERatio, avg_hf_target);
 
     ++mlmfIter;
   }
@@ -614,27 +624,12 @@ compute_LL_covariance(const RealMatrix& sum_L_shared,
 
 
 void NonDACVSampling::
-compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
-	       const RealSymMatrixArray& sum_LL, const RealMatrix& sum_LH,
-	       const RealVector& sum_HH, const RealVector& cost,
-	       const Sizet2DArray& N_L_baseline, const SizetArray& N_H,
-	       const SizetSymMatrixArray& N_LL, const Sizet2DArray& N_LH,
-	       RealVector& var_H, RealVector& avg_eval_ratios,
-	       Real& avg_acv_estvar, Real& avg_estvar_ratio,
+compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
+	       const RealVector& var_H, const RealMatrix& cov_LH,
+	       const RealVector& cost,  RealVector& avg_eval_ratios,
+	       Real& avg_acv_estvar,    Real& avg_estvar_ratio,
 	       Real& avg_hf_target)
 {
-  // ---------------------------------
-  // Compute variances and covariances
-  // ---------------------------------
-  compute_variance(sum_H, sum_HH, N_H, var_H);
-  //Cout << "var_H:\n" << var_H;
-  compute_LH_covariance(sum_L_baseline/*H*/, sum_H, sum_LH,
-			N_L_baseline/*H*/, N_H, N_LH, covLH);
-  //Cout << "covLH:\n" << covLH;
-  compute_LL_covariance(sum_L_baseline/*L*/, sum_LL, N_L_baseline/*L*/,
-			N_LL, covLL);
-  //Cout << "covLL:\n" << covLL;
-
   // --------------------------------------
   // Configure the optimization sub-problem
   // --------------------------------------
@@ -649,9 +644,8 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
     compute_mc_estimator_variance(var_H, N_H, mseIter0);
 
     // compute initial estimate of r* from MFMC
-    RealMatrix rho2_LH, eval_ratios;  RealMatrix var_L;
-    compute_variance(sum_L_baseline, sum_LL, N_L_baseline, var_L);
-    covariance_to_correlation_sq(covLH, var_L, var_H, rho2_LH);
+    RealMatrix rho2_LH, eval_ratios;
+    covariance_to_correlation_sq(cov_LH, var_L, var_H, rho2_LH);
     mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
     average(eval_ratios, 0, avg_eval_ratios);// average over qoi for each approx
     if (outputLevel >= NORMAL_OUTPUT)
