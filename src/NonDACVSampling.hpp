@@ -89,8 +89,9 @@ protected:
 		      const RealMatrix& sum_LH, const RealVector& sum_HH,
 		      const RealVector& cost,   const Sizet2DArray& N_L,
 		      const SizetArray& N_H,    const SizetSymMatrixArray& N_LL,
-		      const Sizet2DArray& N_LH, RealVector& avg_eval_ratios,
-		      Real& mse_ratio);
+		      const Sizet2DArray& N_LH,    RealVector& var_H,
+		      RealVector& avg_eval_ratios, Real& avg_acv_estvar,
+		      Real& avg_estvar_ratio,      Real& avg_hf_target);
 
 private:
 

@@ -192,69 +192,31 @@ void NonDACVSampling::approximate_control_variate()
 
   while (numSamples && mlmfIter <= maxIterations) {
 
-    // ------------------------------------------------------------------------
-    // Compute shared increment targeting specified budget and/or MSE reduction
-    // ------------------------------------------------------------------------
-    // Scale sample profile based on maxFunctionEvals or convergenceTol,
-    // but not both (for now)
-    if (mlmfIter)
-      switch (optSubProblemForm) {
-      case R_ONLY_LINEAR_CONSTRAINT:
-	// Allow for constraint to be inactive at optimum, but generally the
-	// opt sub-prob will allocate full budget (--> numSamples = deltaN = 0)
-	// since larger eval ratios will increase R^2.
-	// Important: r* for fixed N is suboptimal w.r.t. r*,N* --> unlike MFMC,
-	// this approach does not converge to the desired sample profile, except
-	// for special case where user specifies a fixed numH + total budget
-	// (see option "truth_fixed_by_pilot").
-	update_hf_target(avg_eval_ratios, sequenceCost, avgMSERatio,
-			 varH, numH, mseIter0, avg_hf_target);
-	break;
-      case R_AND_N_NONLINEAR_CONSTRAINT:
-	// In this case, the opt-solution for N* for prescribed budget induces
-	// a one-sided shared_increment and this continues until conv (shared
-	// increment = 0).  Final r*'s are then applied in approx_increment's.
-	//numSamples = one_sided_delta(); // performed in compute_ratios()
-	break;
-      }
-
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,MSE}_ratios
     // --------------------------------------------------------------------
-    if (numSamples) {
-      shared_increment(mlmfIter); // spans ALL models, blocking
-      accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-			  sum_LH, sum_HH, N_L_baselineH, /*N_L_baselineL,*/
-			  numH, N_LL, N_LH);
-      increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
-      // allow pilot to vary for C vs c
-      // *** TO DO: numSamples logic after pilot (mlmfIter >= 1)
-      // *** Will likely require _baselineL and _baselineH
-      //if (mlmfIter == 0 && lf_shared_pilot > hf_shared_pilot) {
-      //  numSamples = lf_shared_pilot - hf_shared_pilot;
-      //  shared_approx_increment(mlmfIter); // spans all approx models
-      //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
-      //                      N_L_baselineL, N_LL);//_baselineL);
-      //  increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox);
-      //}
+    shared_increment(mlmfIter); // spans ALL models, blocking
+    accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+			sum_LH, sum_HH, N_L_baselineH, /*N_L_baselineL,*/
+			numH, N_LL, N_LH);
+    increment_equivalent_cost(numSamples, sequenceCost, 0, num_steps);
+    // allow pilot to vary for C vs c
+    // *** TO DO: numSamples logic after pilot (mlmfIter >= 1)
+    // *** Will likely require _baselineL and _baselineH
+    //if (mlmfIter == 0 && lf_shared_pilot > hf_shared_pilot) {
+    //  numSamples = lf_shared_pilot - hf_shared_pilot;
+    //  shared_approx_increment(mlmfIter); // spans all approx models
+    //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
+    //                      N_L_baselineL, N_LL);//_baselineL);
+    //  increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox);
+    //}
 
-      // First, compute the LF/HF evaluation ratio using shared samples,
-      // averaged over QoI.  This includes updating varH, covLL, covLH.
-      // Then, compute ratio of MC and ACV mean sq errors (for convergence),
-      // which incorporates the anticipated variance reduction from the
-      // upcoming application of avg_eval_ratios.
-      compute_ratios(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
-		     sum_HH, sequenceCost, N_L_baselineH, numH, N_LL, N_LH,
-		     avg_eval_ratios, avgMSERatio);
-      // mseIter0 only uses HF pilot since sum_L_shared / N_shared minus
-      // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
-      // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-      // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
-      if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, mseIter0);
-    }
-    //else
-    //  Cout << "\nACV iteration " << mlmfIter << ": no shared sample increment"
-    //       << std::endl;
+    // compute the LF/HF evaluation ratios from shared samples and compute
+    // ratio of MC and ACV mean sq errors (which incorporates anticipated
+    // variance reduction from application of avg_eval_ratios).
+    compute_ratios(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
+		   sequenceCost, N_L_baselineH, numH, N_LL, N_LH, varH,
+		   avg_eval_ratios, avgACVEstVar, avgMSERatio, avg_hf_target);
 
     ++mlmfIter;
   }
@@ -265,8 +227,6 @@ void NonDACVSampling::approximate_control_variate()
   // Note: these results do not affect the iteration above and can be performed
   // after numH has converged, which simplifies maxFnEvals / convTol logic
   // (no need to further interrogate these throttles below)
-
-  if (avg_hf_target == 0.) avg_hf_target = average(numH);// pilot only,no update
   IntRealMatrixMap sum_L_refined = sum_L_baselineH;//baselineL;
   Sizet2DArray       N_L_refined =   N_L_baselineH;//baselineL;
   for (size_t approx=numApprox; approx>0; --approx) {
@@ -281,7 +241,9 @@ void NonDACVSampling::approximate_control_variate()
     }
   }
 
-  // Compute/apply control variate parameter to estimate uncentered raw moments
+  // -----------------------------------------------------------
+  // Compute/apply control variate parameter to estimate moments
+  // -----------------------------------------------------------
   RealMatrix H_raw_mom(numFunctions, 4);
   acv_raw_moments(sum_L_baselineH, sum_L_refined, sum_H, sum_LL, sum_LH,
 		  avg_eval_ratios, N_L_baselineH, N_L_refined, numH, N_LL,
@@ -312,7 +274,8 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& cost,
   // MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
   // --> N_H = mse_ratio * var_H / convTol / mse_iter0
   // Note: don't simplify further since mse_iter0 is fixed based on pilot
-  else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: to support both, need to retain default special value (-DBL_MAX) to detect a user spec
+  else { //if (convergenceTol != -DBL_MAX) {
+    // *** TO DO: need special default value (-DBL_MAX) to detect user spec
     Cout << "Scaling profile for convergenceTol = " << convergenceTol;
     Real avg_varH_div_mse0 = 0.;
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
@@ -320,11 +283,8 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& cost,
     avg_varH_div_mse0 /= numFunctions;
     avg_hf_target = mse_ratio * avg_varH_div_mse0 / convergenceTol;
   }
-  // numSamples is relative to N_H, but the approx_increments() below are
-  // computed relative to hf_targets (independent of sunk cost for pilot)
+  //avg_hf_target = std::min(budget_target, ctol_target); // enforce both
   Cout << ": average HF target = " << avg_hf_target << std::endl;
-  numSamples = one_sided_delta(average(N_H), avg_hf_target);
-  //numSamples = std::min(num_samp_budget, num_samp_ctol); // enforce both
 }
 
 
@@ -659,10 +619,15 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
 	       const RealVector& sum_HH, const RealVector& cost,
 	       const Sizet2DArray& N_L_baseline, const SizetArray& N_H,
 	       const SizetSymMatrixArray& N_LL, const Sizet2DArray& N_LH,
-	       RealVector& avg_eval_ratios, Real& mse_ratio)
+	       RealVector& var_H, RealVector& avg_eval_ratios,
+	       Real& avg_acv_estvar, Real& avg_estvar_ratio,
+	       Real& avg_hf_target)
 {
-  compute_variance(sum_H, sum_HH, N_H, varH);
-  //Cout << "varH:\n" << varH;
+  // ---------------------------------
+  // Compute variances and covariances
+  // ---------------------------------
+  compute_variance(sum_H, sum_HH, N_H, var_H);
+  //Cout << "var_H:\n" << var_H;
   compute_LH_covariance(sum_L_baseline/*H*/, sum_H, sum_LH,
 			N_L_baseline/*H*/, N_H, N_LH, covLH);
   //Cout << "covLH:\n" << covLH;
@@ -670,14 +635,23 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
 			N_LL, covLL);
   //Cout << "covLL:\n" << covLL;
 
+  // --------------------------------------
+  // Configure the optimization sub-problem
+  // --------------------------------------
   // Set initial guess based on MFMC eval ratios (iter 0) or warm started from
   // previous solution
-  Real avg_N_H = average(N_H), avg_hf_target;
+  Real avg_N_H = average(N_H);
   if (mlmfIter == 0) {
+    // mseIter0 only uses HF pilot since sum_L_shared / N_shared minus
+    // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
+    // (This differs from MLMC MSE^0 which uses pilot for all levels.)
+    // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
+    compute_mc_estimator_variance(var_H, N_H, mseIter0);
+
     // compute initial estimate of r* from MFMC
     RealMatrix rho2_LH, eval_ratios;  RealMatrix var_L;
     compute_variance(sum_L_baseline, sum_LL, N_L_baseline, var_L);
-    covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
+    covariance_to_correlation_sq(covLH, var_L, var_H, rho2_LH);
     mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
     average(eval_ratios, 0, avg_eval_ratios);// average over qoi for each approx
     if (outputLevel >= NORMAL_OUTPUT)
@@ -774,11 +748,17 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
   }
   }
 
-  // solve the sub-problem to compute the optimal r* that maximizes
-  // the variance reduction for fixed N_H
+  // ----------------------------------
+  // Solve the optimization sub-problem
+  // ----------------------------------
+  // compute optimal r*,N* (or r* for fixed N) that maximizes variance reduction
   varianceMinimizer.run();
 
-  // Recover optimizer results for average {eval,mse} ratios
+  // -------------------------------------
+  // Post-process the optimization results
+  // -------------------------------------
+  // Recover optimizer results for average {eval,mse} ratios.  Also compute
+  // shared increment from N* or from targeting specified budget or MSE.
   const RealVector& cv_star
     = varianceMinimizer.variables_results().continuous_variables();
   const RealVector& fn_star
@@ -788,44 +768,51 @@ compute_ratios(const RealMatrix& sum_L_baseline, const RealVector& sum_H,
   case R_ONLY_LINEAR_CONSTRAINT: {
     // simple copy to avg_eval_ratios:
     copy_data(cv_star, avg_eval_ratios);
-    // compute average of MC estimator variance for fixed numH
+    // compute average of MC estimator variance for fixed N_H
     RealVector mc_est_var;
-    compute_mc_estimator_variance(varH, numH, mc_est_var);
+    compute_mc_estimator_variance(var_H, N_H, mc_est_var);
     avg_mc_est_var = average(mc_est_var);
     break;
   }
-  case N_VECTOR_LINEAR_CONSTRAINT: {
-    // N*_i is leading part of r_and_N and N* is trailing part:
-    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r * N
-    Real N_star = cv_star[numApprox];                               // N
-    avg_eval_ratios.scale(1./N_star);                               // r
+  case N_VECTOR_LINEAR_CONSTRAINT:  case R_AND_N_NONLINEAR_CONSTRAINT:
+    // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
+    // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
+    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r_i | N_i
+    avg_hf_target = cv_star[numApprox];                             // N*
+    if (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT)
+      avg_eval_ratios.scale(1./avg_hf_target); // N_i -> r_i
     // compute sample increment from current to N*:
-    numSamples = one_sided_delta(avg_N_H, N_star);
+    numSamples = one_sided_delta(avg_N_H, avg_hf_target);
     // compute average of MC est var for final N* (used in final ACV est var)
-    avg_mc_est_var = average(varH) / N_star;
+    avg_mc_est_var = average(var_H) / avg_hf_target;
     break;
   }
-  case R_AND_N_NONLINEAR_CONSTRAINT: {
-    // r* is leading part of r_and_N and N* is trailing part:
-    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r*
-    Real N_star = cv_star[numApprox];                               // N*
-    // compute sample increment from current to N*:
-    numSamples = one_sided_delta(avg_N_H, N_star);
-    // compute average of MC est var for final N* (used in final ACV est var)
-    avg_mc_est_var = average(varH) / N_star;
-    break;
-  }
-  }
+
   // Objective recovery from optimizer provides std::log(average(est_var))
   // (avoid recomputation from r*,N*)
-  avgACVEstVar = std::exp(fn_star(0)); // varH / numH (1 - R^2)
-  mse_ratio = avgACVEstVar / avg_mc_est_var; // (1 - R^2)
-
+  avg_acv_estvar   = std::exp(fn_star(0)); // var_H / N_H (1 - R^2)
+  avg_estvar_ratio = avg_acv_estvar / avg_mc_est_var;  // (1 - R^2)
   if (outputLevel >= NORMAL_OUTPUT) {
     for (size_t approx=0; approx<numApprox; ++approx)
       Cout << "Approx " << approx+1 << ": average evaluation ratio = "
 	   << avg_eval_ratios[approx] << '\n';
-    Cout << "ACV variance / MC variance = " << mse_ratio << std::endl;
+    Cout << "ACV variance / MC variance = " << avg_estvar_ratio << std::endl;
+  }
+
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT:
+    // Allow for constraint to be inactive at optimum, but generally the
+    // opt sub-prob will allocate full budget (--> numSamples = deltaN = 0)
+    // since larger eval ratios will increase R^2.
+    // Important: r* for fixed N is suboptimal w.r.t. r*,N* --> unlike MFMC,
+    // this approach does not converge to the desired sample profile, except
+    // for special case where user specifies a fixed N_H + total budget
+    // (see option "truth_fixed_by_pilot").
+    update_hf_target(avg_eval_ratios, cost, avg_estvar_ratio, var_H, N_H,
+		     mseIter0, avg_hf_target);
+    // compute numSamples increment relative to average(N_H)
+    numSamples = one_sided_delta(avg_N_H, avg_hf_target);
+    break;
   }
 }
 
