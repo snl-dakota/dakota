@@ -1165,7 +1165,8 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp)
 }
 
 
-unsigned short NonD::sub_optimizer_select(unsigned short requested_sub_method)
+unsigned short NonD::
+sub_optimizer_select(unsigned short requested_sub_method, bool sqp_default)
 {
   unsigned short assigned_sub_method = requested_sub_method;
   switch (requested_sub_method) {
@@ -1183,19 +1184,32 @@ unsigned short NonD::sub_optimizer_select(unsigned short requested_sub_method)
     assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
     break;
-  case SUBMETHOD_DEFAULT: // use NPSOL SQP if available
+  case SUBMETHOD_DEFAULT:
+    if (sqp_default) { // use SUBMETHOD_SQP if available
 #ifdef HAVE_NPSOL
-    assigned_sub_method = SUBMETHOD_SQP;
+      assigned_sub_method = SUBMETHOD_SQP;
 #elif HAVE_OPTPP
-    assigned_sub_method = SUBMETHOD_NIP;
-#else
-    Cerr << "\nError: this executable not configured with an available "
-	 << "sub-method solver." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE;
+      assigned_sub_method = SUBMETHOD_NIP;
 #endif
+    }
+    else {
+#ifdef HAVE_OPTPP
+      assigned_sub_method = SUBMETHOD_NIP;
+#elif HAVE_NPSOL
+      assigned_sub_method = SUBMETHOD_SQP;
+#endif
+    }
+    if (assigned_sub_method == SUBMETHOD_DEFAULT) {
+      Cerr << "\nError: this executable not configured with an available "
+	   << "sub-method solver." << std::endl;
+      assigned_sub_method = SUBMETHOD_NONE;
+    }
     break;
-  //case SUBMETHOD_NONE:
-  //  break;
+  case SUBMETHOD_NONE:
+    // assigned = requested = SUBMETHOD_NONE is valid for the case where a
+    // sub-method solve is to be suppressed; clients are free to treat this
+    // return value as an error
+    break;
   default:
     Cerr << "\nError: sub-method not recognized in NonD::"
 	 << "sub_optimizer_select()." << std::endl;

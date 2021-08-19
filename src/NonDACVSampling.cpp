@@ -52,8 +52,9 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   // where equivHF budget is allocated by optimizing r* for fixed N
   if (problem_db.get_bool("method.nond.truth_fixed_by_pilot"))
     optSubProblemForm = R_ONLY_LINEAR_CONSTRAINT;
+  // default solver to OPT++ NIP based on numerical experience
   unsigned short opt_subprob_solver = sub_optimizer_select(
-    probDescDB.get_ushort("method.nond.opt_subproblem_solver"));
+    probDescDB.get_ushort("method.nond.opt_subproblem_solver"), false);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "ACV sub-method selection = " << acvSubMethod
 	 << " sub-method formulation = "  << optSubProblemForm
@@ -875,7 +876,7 @@ void NonDACVSampling::print_variance_reduction(std::ostream& s)
     << std::setw(wpp7) << avgACVEstVar / avgMSERatio
     << "\n      Final  ACV (sample profile):     "
     << std::setw(wpp7) << avgACVEstVar
-    << "\n      Final  ACV / Final MC ratio:     "
+    << "\n      Final  ACV ratio (1 - R^2):      "
     << std::setw(wpp7) << avgMSERatio << '\n';
 }
 

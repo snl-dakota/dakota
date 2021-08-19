@@ -196,7 +196,8 @@ protected:
 
   /// utility for vetting sub-method request against optimizers within
   /// the package configuration
-  unsigned short sub_optimizer_select(unsigned short requested_sub_method);
+  unsigned short sub_optimizer_select(unsigned short requested_sub_method,
+				      bool sqp_default = true);
 
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
