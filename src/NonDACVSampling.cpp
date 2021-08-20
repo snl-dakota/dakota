@@ -81,7 +81,7 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
     numApprox : numApprox + 1, max_iter = 100000;
   RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false);
   x_ub = DBL_MAX; // no upper bounds
-  Real conv_tol   = 1.e-8; // tight convergence
+  Real conv_tol = 1.e-8; // tight convergence
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
     lin_ineq_lb.sizeUninitialized(1); lin_ineq_lb[0] = -DBL_MAX; // no low bnd
@@ -105,7 +105,8 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
     nln_ineq_lb.sizeUninitialized(1); nln_ineq_lb[0] = -DBL_MAX; // no low bnd
     nln_ineq_ub.sizeUninitialized(1); nln_ineq_ub[0] = (Real)maxFunctionEvals;
     x0 = x_lb = 1.; // r_i
-    x0[numApprox] = x_lb[numApprox] = pilotSamples[numApprox]; // pilot <= N*
+    x0[numApprox] = x_lb[numApprox]
+      = (Real)pilotSamples[numApprox]; // pilot <= N*
     break;
   }
 
@@ -637,6 +638,11 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
   // Set initial guess based on MFMC eval ratios (iter 0) or warm started from
   // previous solution
   Real avg_N_H = average(N_H);
+  // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H).
+  // Can happen if shared pilot rolls up to exceed budget spec.
+  Real     budget = (Real)maxFunctionEvals;
+  bool overbudget = (equivHFEvals > budget);
+  if (overbudget) budget = equivHFEvals;
   if (mlmfIter == 0) {
     // mseIter0 only uses HF pilot since sum_L_shared / N_shared minus
     // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
@@ -644,22 +650,32 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
     // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
     compute_mc_estimator_variance(var_H, N_H, mseIter0);
 
-    // compute initial estimate of r* from MFMC
-    RealMatrix rho2_LH, eval_ratios;
-    covariance_to_correlation_sq(cov_LH, var_L, var_H, rho2_LH);
-    mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
-    average(eval_ratios, 0, avg_eval_ratios);// average over qoi for each approx
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Initial guess from MFMC (avg eval ratios):\n" << avg_eval_ratios
-	   << std::endl;
-    // scale to enforce budget constraint.  Since the profile does not emerge
-    // from pilot in ACV, our best initial guess is active on budget constraint:
-    // > if N* < N_pilot, then scale back r* for use initial = scaled_r*,N_pilot
-    // > if N* > N_pilot, then use r* and use initial = r*,N*
-    avg_hf_target = allocate_budget(avg_eval_ratios, cost);
-    if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
-      scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_N_H);
-      avg_hf_target = avg_N_H;
+    if (overbudget) { // there is only one feasible point, no need for solve
+      if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
+      numSamples = 0;  avg_eval_ratios = 1.;  avg_hf_target = avg_N_H;
+      avg_acv_estvar = average(mseIter0);     avg_estvar_ratio = 1.;
+      return;
+    }
+    else { // compute initial estimate of r* from MFMC
+      RealMatrix rho2_LH, eval_ratios;
+      covariance_to_correlation_sq(cov_LH, var_L, var_H, rho2_LH);
+      mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
+      average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
+      if (outputLevel >= NORMAL_OUTPUT)
+        Cout << "Initial guess from MFMC (avg eval ratios):\n"
+	     << avg_eval_ratios << std::endl;
+      // scale to enforce budget constraint.  Since the profile does not emerge
+      // from pilot in ACV, don't select an infeasible initial guess:
+      // > if N* < N_pilot, scale back r* for use initial = scaled_r*,N_pilot
+      // > if N* > N_pilot, use initial = r*,N*
+      avg_hf_target = allocate_budget(avg_eval_ratios, cost);
+      if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
+	scale_to_budget_with_pilot(budget, avg_eval_ratios, cost, avg_N_H);
+	avg_hf_target = avg_N_H;
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "MFMC initial guess rescaled to budget:\n" << avg_eval_ratios
+	       << std::endl;
+      }
     }
   }
   // else warm start from previous solution
@@ -679,7 +695,7 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
     RealMatrix lin_ineq_coeffs(1, numApprox, false), lin_eq_coeffs;
     Real cost_H = cost[numApprox];
     lin_ineq_lb[0] = -DBL_MAX; // no lower bound
-    lin_ineq_ub[0] = (Real)maxFunctionEvals / avg_N_H - 1.;
+    lin_ineq_ub[0] = budget / avg_N_H - 1.;
     for (size_t approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
     // we update the Minimizer for user-functions mode (no iteratedModel)
@@ -694,6 +710,7 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
     if (mlmfIter) cv0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
     else          cv0.scale(avg_hf_target);
     varianceMinimizer.initial_point(cv0);
+    //Cout << "Variance minimizer initial guess cv0 =\n" << cv0;
 
     RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con, false),
                lin_eq_tgt;
@@ -703,7 +720,7 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   N w + \Sum_i w_i N_i <= equivHF * w
     //   N + \Sum_i w_i/w N_i <= equivHF
-    lin_ineq_ub[0] = (Real)maxFunctionEvals;
+    lin_ineq_ub[0] = budget;
     Real cost_H = cost[numApprox];
     for (size_t approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
@@ -725,6 +742,14 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
     copy_data_partial(avg_eval_ratios, cv0, 0);          // r_i
     cv0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
     varianceMinimizer.initial_point(cv0);
+
+    // increase nln ineq upper bnd if accumulated cost has exceeded maxFnEvals
+    if (overbudget) {
+      RealVector nln_ineq_lb(1), nln_ineq_ub(1), nln_eq_tgt;
+      nln_ineq_lb[0] = -DBL_MAX;  nln_ineq_ub[0] = budget;
+      varianceMinimizer.nonlinear_constraints(nln_ineq_lb, nln_ineq_ub,
+					      nln_eq_tgt);
+    }
 
     /*
     // For this case, could allow the optimal profile to emerge from pilot by
@@ -758,6 +783,8 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
     = varianceMinimizer.variables_results().continuous_variables();
   const RealVector& fn_star
     = varianceMinimizer.response_results().function_values();
+  //Cout << "Variance minimization results:\ncv_star =\n" << cv_star
+  //     << "fn_star =\n" << fn_star;
   Real avg_mc_est_var;
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: {
