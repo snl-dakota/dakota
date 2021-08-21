@@ -205,6 +205,16 @@ update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
       inner_prod += cost[approx] * eval_ratios(qoi, approx);
     hf_targets[qoi] = budget / inner_prod * cost_H; // normalized to equivHF
   }
+
+  /* Alternate Scalar estimation (as in ACV)
+  RealVector avg_eval_ratios; // *** change incoming API to avoid repeated avg
+  average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
+  inner_prod = cost_H; // raw cost (un-normalized)
+  for (approx=0; approx<numApprox; ++approx)
+    inner_prod += cost[approx] * avg_eval_ratios[approx];
+  hf_target = budget / inner_prod * cost_H; // normalized to equivHF
+  */
+
   Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals
        << ": average HF target = " << average(hf_targets) << std::endl;
 }
@@ -226,9 +236,9 @@ update_hf_targets(const RealVector& mse_ratios, const RealVector& var_H,
 
 
 bool NonDMultifidelitySampling::
-approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_L_refined,
-		 const RealVector& hf_targets, size_t iter,
-		 size_t start, size_t end)
+approx_increment(const RealMatrix& eval_ratios,
+		 const Sizet2DArray& N_L_refined, const RealVector& hf_targets,
+		 size_t iter, size_t start, size_t end)
 {
   // Update LF samples based on evaluation ratio
   //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
@@ -238,24 +248,28 @@ approx_increment(const RealMatrix& eval_ratios, const Sizet2DArray& N_L_refined,
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
   size_t qoi, approx = end - 1;
-  RealVector lf_targets(numFunctions, false);
-  // The following is too fine-grained since all HF QoI get sampled together:
-  //for (qoi=0; qoi<numFunctions; ++qoi)
-  //  lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
-  // > HF targets are computed per QoI based on budget | conv tol to avoid any
-  //   premature consolidation, but we should average HF targets when computing
-  //   LF targets for consistency with current sample profile consolidation.
-  // > In particular, using N*_L(q) = r*(q) N*_H(q) is non-optimal when HF
-  //   sample set uses average(N*_H) samples.
-  // > LF targets then subsequently get averaged by one_sided_delta()
-  // > This is consistent with NonDACVSampling::approx_increment(), and note
-  //   that both defer rounding until needed for numSamples estimation
-  Real avg_hf_target = average(hf_targets);//std::floor(average(hf_targets)+.5);
-  for (qoi=0; qoi<numFunctions; ++qoi)
-    lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
 
-  // Choose avg, RMS, max? (trade-off: possible overshoot vs. more iteration)
+  // When to apply averaging requires some care.  To properly enforce scalar
+  // budget for vector QoI, need to either scalarize to average targets from
+  // the beginning (scalar hf_target -> scalar lf_target as in ACV) or retain
+  // per-QoI targets until the very end (i.e., at numSamples estimation).
+  // > all HF QoI get sampled together using a scalar count (average(N*_H))
+  //   such that using N*_L(q) = r*(q) N*_H(q) seems non-optimal in isolation,
+  //   but vector estimation in update_hf_targets() (avoiding any premature
+  //   consolidation) requires vector estimation here to hit budget target.
+  //   These LF targets subsequently get averaged by one_sided_delta().
+  // > would be interesting to compare averaging from the start vs. averaging
+  //   at the very end. *** TO DO ***
+  //   Probably will be similar, in which case we will prefer the latter since
+  //   it leaves the door open for per-QoI optimized sample profiles.
+  // > Both MFMC and ACV defer rounding until the end (numSamples estimation).
+  RealVector lf_targets(numFunctions, false);
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
   numSamples = one_sided_delta(N_L_refined[approx], lf_targets, 1); // average
+  // These approaches overshoot when combined with vector update_hf_targets():
+  //   lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
+  //   lf_target = avg_eval_ratios[approx] * avg_hf_target;
 
   if (numSamples && start < end) {
     Cout << "\nMFMC sample increment = " << numSamples
@@ -570,13 +584,13 @@ compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
 
   if (scale_to_N_H) {
     Real R_sq, star_to_actual, r_i, r_ip1, N_H_q;
-    //RealVector N_L(numApprox); // init to 0
+    //RealVector N_L(numApprox); // for verification
     for (qoi=0; qoi<numFunctions; ++qoi) {
       R_sq = 0.;  N_H_q = (Real)N_H[qoi];
       star_to_actual = avg_hf_target / N_H_q;
       r_i  = eval_ratios(qoi, 0) * star_to_actual;
       for (approx=0; approx<numApprox; ++approx) {
-	//N_L[approx] += r_i * N_H_q;
+	//N_L[approx] += r_i * N_H_q; // for verification
 	r_ip1 = (approx+1 < numApprox) ?
 	  eval_ratios(qoi, approx+1) * star_to_actual : 1.; // r* -> r_actual
 	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
