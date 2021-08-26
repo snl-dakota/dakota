@@ -54,7 +54,7 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
     optSubProblemForm = R_ONLY_LINEAR_CONSTRAINT;
   // default solver to OPT++ NIP based on numerical experience
   unsigned short opt_subprob_solver = sub_optimizer_select(
-    probDescDB.get_ushort("method.nond.opt_subproblem_solver"), false);
+    probDescDB.get_ushort("method.nond.opt_subproblem_solver"), SUBMETHOD_NIP);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "ACV sub-method selection = " << acvSubMethod
 	 << " sub-method formulation = "  << optSubProblemForm

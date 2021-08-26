@@ -1166,7 +1166,8 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp)
 
 
 unsigned short NonD::
-sub_optimizer_select(unsigned short requested_sub_method, bool sqp_default)
+sub_optimizer_select(unsigned short requested_sub_method,
+		     unsigned short   default_sub_method)
 {
   unsigned short assigned_sub_method = requested_sub_method;
   switch (requested_sub_method) {
@@ -1185,19 +1186,21 @@ sub_optimizer_select(unsigned short requested_sub_method, bool sqp_default)
 #endif
     break;
   case SUBMETHOD_DEFAULT:
-    if (sqp_default) { // use SUBMETHOD_SQP if available
+    switch (default_sub_method) {
+    case SUBMETHOD_SQP: // use SUBMETHOD_SQP if available
 #ifdef HAVE_NPSOL
       assigned_sub_method = SUBMETHOD_SQP;
 #elif HAVE_OPTPP
       assigned_sub_method = SUBMETHOD_NIP;
 #endif
-    }
-    else {
+      break;
+    case SUBMETHOD_NIP:
 #ifdef HAVE_OPTPP
       assigned_sub_method = SUBMETHOD_NIP;
 #elif HAVE_NPSOL
       assigned_sub_method = SUBMETHOD_SQP;
 #endif
+      break;
     }
     if (assigned_sub_method == SUBMETHOD_DEFAULT) {
       Cerr << "\nError: this executable not configured with an available "
