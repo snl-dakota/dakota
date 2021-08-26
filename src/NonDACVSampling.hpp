@@ -26,6 +26,8 @@ namespace Dakota {
 enum { R_ONLY_LINEAR_CONSTRAINT=1, N_VECTOR_LINEAR_CONSTRAINT,
        R_AND_N_NONLINEAR_CONSTRAINT };
 
+#define RATIO_NUDGE 1.e-4
+
 
 /// Perform Approximate Control Variate Monte Carlo sampling for UQ.
 
@@ -304,7 +306,7 @@ scale_to_budget_with_pilot(Real budget, RealVector& avg_eval_ratios,
   // retain the shape of an r* profile, but scale to budget constrained by
   // incurred pilot cost
 
-  Real inner_prod = 0., cost_H = cost[numApprox], r_i, factor;
+  Real inner_prod = 0., cost_H = cost[numApprox], r_i, cost_r_i, factor;
   for (size_t approx=0; approx<numApprox; ++approx)
     inner_prod += cost[approx] * avg_eval_ratios[approx]; // Sum(w_i r_i)
   factor = (budget / avg_N_H - 1.) / inner_prod * cost_H;
@@ -312,9 +314,10 @@ scale_to_budget_with_pilot(Real budget, RealVector& avg_eval_ratios,
 
   for (int i=numApprox-1; i>=0; --i) {
     r_i = avg_eval_ratios[i] * factor;
-    if (r_i < 1.) { // fix at 1 and scale remaining r_i to reduced budget
-      avg_eval_ratios[i] = 1.;
-      budget -= avg_N_H * cost[i] / cost_H;  inner_prod -= cost[i];
+    if (r_i <= 1.) { // fix at 1+NUDGE and scale remaining r_i to reduced budget
+      avg_eval_ratios[i] = r_i = 1. + RATIO_NUDGE;
+      cost_r_i = cost[i] * r_i;
+      budget -= avg_N_H * cost_r_i / cost_H;  inner_prod -= cost_r_i;
       factor = (budget / avg_N_H - 1.) / inner_prod * cost_H;
     }
     else
