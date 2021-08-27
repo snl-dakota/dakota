@@ -523,7 +523,7 @@ derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
 			       bool block)
 {
   size_t i, num_models = model_resp_maps_rekey.size(),
-      num_approx_models = unorderedModels.size();
+     num_approx_models = unorderedModels.size();
   for (i=0; i<num_models; ++i) {
     Model& model = (i < unorderedModels.size()) ?
       unorderedModels[i] : truthModel;

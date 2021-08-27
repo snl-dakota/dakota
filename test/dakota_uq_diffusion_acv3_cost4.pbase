@@ -1,0 +1,30 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (LF_INT): 3734 total (3734 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 967 total (967 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 1.0002343750000000e+02
+<<<<< Variance for mean estimator:
+      Initial MC (  25 pilot samples):  4.1006897417589495e-06
+      Final   MC (  25 HF samples):     4.1006897417589495e-06
+      Final  ACV (sample profile):      7.6139108954296461e-08
+      Final  ACV ratio (1 - R^2):       1.8567390792563927e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5078770519148242e-02  6.5335476651875862e-03  8.2612808676986438e-01 -1.1163584542196547e-01
+ response_fn_2  1.2852823225388516e-01  1.3565785459097228e-02  8.0720457908769072e-01 -4.4271750517677910e-01
+ response_fn_3  2.5078770519190399e-02  6.5335476653789696e-03  8.2612808714313113e-01 -1.1163584470764576e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (LF_INT): 17888 total (17888 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 6238 total (6238 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 41 total (41 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 5.0075000000000000e+02
+<<<<< Variance for mean estimator:
+      Initial MC (  25 pilot samples):  4.1006897417589495e-06
+      Final   MC (  41 HF samples):     2.3663148900393071e-06
+      Final  ACV (sample profile):      1.3069842903068567e-08
+      Final  ACV ratio (1 - R^2):       5.5232898030960972e-03
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5338194056130418e-02  6.6121454682250211e-03  7.8662766184981392e-01 -1.4098715513666971e-01
+ response_fn_2  1.2930959672162129e-01  1.3705162980403309e-02  6.8063480758846906e-01 -6.5902928498688018e-01
+ response_fn_3  2.5338194056418812e-02  6.6121454685797894e-03  7.8662766197319922e-01 -1.4098715471372492e-01
