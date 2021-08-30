@@ -315,8 +315,8 @@ scale_to_budget_with_pilot(Real budget, RealVector& avg_eval_ratios,
   for (int i=numApprox-1; i>=0; --i) {
     r_i = avg_eval_ratios[i] * factor;
     if (r_i <= 1.) { // fix at 1+NUDGE and scale remaining r_i to reduced budget
-      avg_eval_ratios[i] = r_i = 1. + RATIO_NUDGE;
-      cost_r_i = cost[i] * r_i;
+      cost_r_i  = avg_eval_ratios[i] = 1. + RATIO_NUDGE;
+      cost_r_i *= cost[i];
       budget -= avg_N_H * cost_r_i / cost_H;  inner_prod -= cost_r_i;
       factor = (budget / avg_N_H - 1.) / inner_prod * cost_H;
     }

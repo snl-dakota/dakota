@@ -726,7 +726,7 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
     lin_ineq_coeffs(0,numApprox) = 1.;
     // linear inequality constraints on N_i > N prevent numerical exceptions:
-    // N_i >= N trasnformed to N_i > N using RATIO_NUDGE
+    // N_i >= N transformed to N_i > N using RATIO_NUDGE
     for (size_t approx=1; approx<=numApprox; ++approx) {
       lin_ineq_coeffs(approx, approx-1) = -1.;
       lin_ineq_coeffs(approx,numApprox) =  1. + RATIO_NUDGE;// N_i > N (r_i > 1)
