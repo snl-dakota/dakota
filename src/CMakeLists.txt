@@ -839,20 +839,18 @@ endif(HAVE_AMPL)
 # with gslcblas
 if(DAKOTA_HAVE_GSL)
   list(APPEND EXT_TPL_INCDIRS "${GSL_INCLUDE_DIRS}")
-  list(APPEND EXT_TPL_LIBDIRS "${GSL_LIBRARY_DIRS}")
-  # GSL_LIBRARIES may or may not include a CBLAS library, depending on
-  # top-level option GSL_WITHOUT_CBLAS
-  list(APPEND EXT_TPL_LIBS ${GSL_LIBRARIES})
   if(DAKOTA_CBLAS_LIBS) 
-    list(APPEND EXT_TPL_LIBS ${DAKOTA_CBLAS_LIBS})
+    list(APPEND EXT_TPL_LIBS ${GSL_LIBRARY} ${DAKOTA_CBLAS_LIBS})
+  else()
+    list(APPEND EXT_TPL_LIBS ${GSL_LIBRARIES})
   endif()
 endif(DAKOTA_HAVE_GSL)
 
 list(APPEND EXT_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
 # BMA: Should probably use only ATLAS when enabling C3...
-if(HAVE_C3)
+if(HAVE_C3 AND c3_atlas_lib)
   message(WARNING "Dakota/C3: Duplicate include of ATLAS and BLAS/LAPACK")
-  list(INSERT EXT_TPL_LIBS 0 "${atlas_lib}")
+  list(INSERT EXT_TPL_LIBS 0 "${c3_atlas_lib}")
 endif()
 
 # Now that packages and TPLs are processed, set include/link directories
