@@ -75,7 +75,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 
 NonD::NonD(unsigned short method_name, Model& model):
   Analyzer(method_name, model), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), finalMomentsType(STANDARD_MOMENTS)
+  pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -91,7 +91,7 @@ NonD::NonD(unsigned short method_name, Model& model):
 NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 	   const RealVector& upper_bnds):
   Analyzer(method_name), epistemicStats(false), totalLevelRequests(0),
-  cdfFlag(true), pdfOutput(false), finalMomentsType(STANDARD_MOMENTS)
+  cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.
@@ -313,7 +313,7 @@ void NonD::initialize_final_statistics()
       std::sprintf(resp_tag, "_r%zu", i+1);
       if (finalMomentsType) {
 	stats_labels[cntr++] = String("mean") + String(resp_tag);
-	stats_labels[cntr++] = (finalMomentsType == CENTRAL_MOMENTS) ?
+	stats_labels[cntr++] = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
 	  String("variance") + String(resp_tag) :
 	  String("std_dev")  + String(resp_tag);
       }

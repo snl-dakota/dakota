@@ -280,19 +280,6 @@ protected:
   void mode_bits(const Variables& vars, BitArray& active_vars,
 		 BitArray& active_corr) const;
 
-  /// helper to accumulate sum of finite samples
-  static void accumulate_mean(const RealVectorArray& fn_samples, size_t q,
-			      size_t& num_samp, Real& mean);
-  /// helper to accumulate higher order sums of finite samples
-  static void accumulate_moments(const RealVectorArray& fn_samples, size_t q,
-				 short moments_type, Real* moments);
-  /// helper to accumulate gradient sums
-  static void accumulate_moment_gradients(const RealVectorArray& fn_samples,
-					  const RealMatrixArray& grad_samples,
-					  size_t q, short moments_type,
-					  Real mean, Real mom2, Real* mean_grad,
-					  Real* mom2_grad);
-
   //
   //- Heading: Data members
   //

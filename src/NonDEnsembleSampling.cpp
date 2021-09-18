@@ -99,14 +99,14 @@ convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom)
     final_mom.shapeUninitialized(4, numFunctions);
 
   // Convert uncentered raw moment estimates to central moments
-  if (finalMomentsType == CENTRAL_MOMENTS) {
+  if (finalMomentsType == Pecos::CENTRAL_MOMENTS) {
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
 			     raw_mom(qoi,3), final_mom(0,qoi), final_mom(1,qoi),
 			     final_mom(2,qoi), final_mom(3,qoi));
   }
   // Convert uncentered raw moment estimates to standardized moments
-  else { //if (finalMomentsType == STANDARD_MOMENTS) {
+  else { //if (finalMomentsType == Pecos::STANDARD_MOMENTS) {
     Real cm1, cm2, cm3, cm4;
     for (size_t qoi=0; qoi<numFunctions; ++qoi) {
       uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),

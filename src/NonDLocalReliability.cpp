@@ -609,7 +609,7 @@ void NonDLocalReliability::mean_value()
         total_lev = rl_len + pl_len + bl_len + gl_len;
 
     mean = momentStats(0,respFnCount); mom2 = momentStats(1,respFnCount);
-    if (finalMomentsType == CENTRAL_MOMENTS)
+    if (finalMomentsType == Pecos::CENTRAL_MOMENTS)
       { var = mom2; std_dev = std::sqrt(mom2); }
     else
       { std_dev = mom2; var = mom2 * mom2; }
@@ -1150,7 +1150,8 @@ void NonDLocalReliability::initial_taylor_series()
 	  }
 	}
 	if (t2nq) mean += v1/2.;
-	mom2 = (finalMomentsType == CENTRAL_MOMENTS) ? v2 : std::sqrt(v2);
+	mom2 = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
+	  v2 : std::sqrt(v2);
       }
     }
 
@@ -1160,7 +1161,7 @@ void NonDLocalReliability::initial_taylor_series()
     //RealSymMatrix variance(numFunctions, false);
     //Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, 1., covariance,
     //                             fnGradsMeanX, variance);
-    //if (finalMomentsType == CENTRAL_MOMENTS)
+    //if (finalMomentsType == Pecos::CENTRAL_MOMENTS)
     //  for (i=0; i<numFunctions; i++)
     //    momentStats(1,i) = variance(i,i);
     //else
@@ -2781,7 +2782,7 @@ void NonDLocalReliability::print_results(std::ostream& s, short results_state)
     for (i=0; i<numFunctions; i++) {
       s << "MV Statistics for " << fn_labels[i] << ":\n";
       // approximate response means and std deviations and importance factors
-      std_dev = (finalMomentsType == CENTRAL_MOMENTS) ?
+      std_dev = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
 	std::sqrt(momentStats(1,i)) : momentStats(1,i);
       s << "  Approximate Mean Response                  = "
 	<< std::setw(width) << momentStats(0,i)
@@ -2817,7 +2818,7 @@ void NonDLocalReliability::print_results(std::ostream& s, short results_state)
 
     size_t num_levels = computedRespLevels[i].length();
     if (num_levels) {
-      Real std_dev = (finalMomentsType == CENTRAL_MOMENTS) ?
+      Real std_dev = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
 	std::sqrt(momentStats(1,i)) : momentStats(1,i);
       if (!mppSearchType && std_dev < Pecos::SMALL_NUMBER)
         s << "\nWarning: negligible standard deviation renders CDF results "

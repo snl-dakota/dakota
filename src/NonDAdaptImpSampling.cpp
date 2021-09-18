@@ -48,7 +48,7 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   if (!sampleType)
     sampleType = SUBMETHOD_LHS;
 
-  finalMomentsType = NO_MOMENTS;
+  finalMomentsType = Pecos::NO_MOMENTS;
 
   // size of refinement batches is separate from initial LHS size (numSamples)
   const IntVector& db_refine_samples = 
@@ -86,7 +86,7 @@ NonDAdaptImpSampling(Model& model, unsigned short sample_type,
   useModelBounds(use_model_bounds), invertProb(false),
   trackExtremeValues(track_extreme), refineSamples(refine_samples)
 {
-  finalMomentsType = NO_MOMENTS;
+  finalMomentsType = Pecos::NO_MOMENTS;
 
   if (x_space_model)
     // This option is currently unused.  If used in the future, care must be
