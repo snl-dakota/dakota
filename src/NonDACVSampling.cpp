@@ -244,8 +244,9 @@ void NonDACVSampling::approximate_control_variate()
   for (size_t approx=numApprox; approx>0; --approx) {
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
     start = (acvSubMethod == SUBMETHOD_ACV_IS) ? approx - 1 : 0;
-    if (approx_increment(avg_eval_ratios, N_L_refined, avg_hf_target, mlmfIter,
-			 start, approx)) {
+    if (maxIterations &&
+	approx_increment(avg_eval_ratios, N_L_refined, avg_hf_target,
+			 mlmfIter, start, approx)) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined
       // ACV_MF samples on [0, approx)       --> sum_L_refined
       accumulate_acv_sums(sum_L_refined, N_L_refined, start, approx);
@@ -896,14 +897,15 @@ void NonDACVSampling::print_variance_reduction(std::ostream& s)
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:"
     << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
-    << " pilot samples): " << std::setw(wpp7) << average(mseIter0)
-    << "\n      Final   MC (" << std::setw(4)
-    << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
-    << std::setw(wpp7) << avgACVEstVar / avgMSERatio
-    << "\n      Final  ACV (sample profile):     "
-    << std::setw(wpp7) << avgACVEstVar
-    << "\n      Final  ACV ratio (1 - R^2):      "
-    << std::setw(wpp7) << avgMSERatio << '\n';
+    << " pilot samples): " << std::setw(wpp7) << average(mseIter0) << '\n';
+  if (maxIterations)
+    s << "      Final   MC (" << std::setw(4)
+      << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
+      << std::setw(wpp7) << avgACVEstVar / avgMSERatio
+      << "\n      Final  ACV (sample profile):     "
+      << std::setw(wpp7) << avgACVEstVar
+      << "\n      Final  ACV ratio (1 - R^2):      "
+      << std::setw(wpp7) << avgMSERatio << '\n';
 }
 
 

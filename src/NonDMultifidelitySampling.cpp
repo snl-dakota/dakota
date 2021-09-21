@@ -156,8 +156,8 @@ void NonDMultifidelitySampling::multifidelity_mc()
   Sizet2DArray N_L_shared = N_L_baseline, N_L_refined = N_L_baseline; // copies
   for (size_t approx=numApprox; approx>0; --approx) {
     // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
-    if (approx_increment(eval_ratios, N_L_refined, hf_targets, mlmfIter,
-			 0, approx)) {
+    if (maxIterations && approx_increment(eval_ratios, N_L_refined, hf_targets,
+					  mlmfIter, 0, approx)) {
       // MFMC samples on [0, approx) --> sum_L_{shared,refined}
       accumulate_mf_sums(sum_L_shared, sum_L_refined, N_L_shared, N_L_refined,
 			 0, approx);
@@ -671,27 +671,31 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
 
 void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
 {
-  RealVector mc_est_var(numFunctions, false), mfmc_est_var(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    mfmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / numH[qoi]; // incl. pilot
-    mfmc_est_var[qoi] *= mseRatios[qoi];
-  }
-  Real avg_mfmc_est_var = average(mfmc_est_var),
-         avg_mc_est_var = average(mc_est_var);
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:"
     << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
-    << " pilot samples): " << std::setw(wpp7) << average(mseIter0)
-    << "\n      Final   MC (" << std::setw(4)
-    << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
-    << std::setw(wpp7) << avg_mc_est_var
-    << "\n      Final MFMC (sample profile):     "
-    << std::setw(wpp7) << avg_mfmc_est_var
-    << "\n      Final MFMC ratio (1 - R^2):      "
-    // average each set of est variances rather than averaging ratios
-    // (consistent with ACV definition which recovers a scalar avgACVEstVar
-    // as sub-problem objective)
-    << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var << '\n';
+    << " pilot samples): " << std::setw(wpp7) << average(mseIter0) << '\n';
+
+  if (maxIterations) {
+    RealVector mc_est_var(numFunctions, false),
+             mfmc_est_var(numFunctions, false);
+    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+      mfmc_est_var[qoi]  = mc_est_var[qoi] = varH[qoi] / numH[qoi];// incl pilot
+      mfmc_est_var[qoi] *= mseRatios[qoi];
+    }
+    Real avg_mfmc_est_var = average(mfmc_est_var),
+         avg_mc_est_var   = average(mc_est_var);
+    s << "      Final   MC (" << std::setw(4)
+      << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
+      << std::setw(wpp7) << avg_mc_est_var
+      << "\n      Final MFMC (sample profile):     "
+      << std::setw(wpp7) << avg_mfmc_est_var
+      << "\n      Final MFMC ratio (1 - R^2):      "
+      // average each set of est variances rather than averaging ratios
+      // (consistent with ACV definition which recovers a scalar avgACVEstVar
+      // as sub-problem objective)
+      << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var << '\n';
+  }
 }
 
 } // namespace Dakota
