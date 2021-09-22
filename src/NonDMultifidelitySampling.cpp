@@ -149,6 +149,14 @@ void NonDMultifidelitySampling::multifidelity_mc()
   // after numH has converged, which simplifies maxFnEvals / convTol logic
   // (no need to further interrogate these throttles below)
 
+  // maxIterations == 0 is specially reserved for the pilot only case.  Unlike
+  // all other throttle values, it does not follow the HF iteration with LF
+  // increments.  Other ideas (some used in the past):
+  // > reserve max iter = -1 (not size_t) for pilot only (SZ_MAX = no limit)
+  // > NonDControlVarSampling::finalCVRefinement (can be hard-wired false)
+  // > maxFunctionEvals could be used as a second throttle (e.g., set equal to
+  //   pilot) with additional checks embedded below
+
   // Pyramid/nested sampling: at step i, we sample approximation range
   // [0,numApprox-1-i] using the delta relative to the previous step
   IntRealMatrixMap sum_L_shared  = sum_L_baseline,

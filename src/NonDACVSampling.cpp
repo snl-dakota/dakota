@@ -239,6 +239,11 @@ void NonDACVSampling::approximate_control_variate()
   // Note: these results do not affect the iteration above and can be performed
   // after numH has converged, which simplifies maxFnEvals / convTol logic
   // (no need to further interrogate these throttles below)
+
+  // maxIterations == 0 is specially reserved for the pilot only case.  Unlike
+  // all other throttle values, it does not follow the HF iteration with LF
+  // increments.  See notes in NonDMultifidelitySampling::multifidelity_mc().
+
   IntRealMatrixMap sum_L_refined = sum_L_baselineH;//baselineL;
   Sizet2DArray       N_L_refined =   N_L_baselineH;//baselineL;
   for (size_t approx=numApprox; approx>0; --approx) {

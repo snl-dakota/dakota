@@ -133,8 +133,7 @@ void NonDControlVariateSampling::control_variate_mc()
   size_t hf_sample_incr = std::min(delta_N_l[lf_form], delta_N_l[hf_form]);
   numSamples = hf_sample_incr;
 
-  while (numSamples && mlmfIter <= maxIterations &&
-	 equivHFEvals <= maxFunctionEvals) {
+  while (numSamples && mlmfIter <= maxIterations) {
 
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,MSE}_ratios
@@ -186,9 +185,13 @@ void NonDControlVariateSampling::control_variate_mc()
   // -------------------------------------------------------------------
   // Compute new LF increment based on new evaluation ratio for new N_hf
   // -------------------------------------------------------------------
-  // How to allow user to stop after pilot only:
-  // > lf_increment() includes finalCVRefinement flag (hard-wired true)
-  // > maxFunctionEvals throttle <= pilot expense
+  // Note: these results do not affect the iteration above and can be performed
+  // after N_hf has converged, which simplifies maxFnEvals / convTol logic
+  // (no need to further interrogate these throttles below)
+
+  // maxIterations == 0 is specially reserved for the pilot only case.  Unlike
+  // all other throttle values, it does not follow the HF iteration with LF
+  // increments.  See notes in NonDMultifidelitySampling::multifidelity_mc().
   if (maxIterations &&
       lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
     accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
