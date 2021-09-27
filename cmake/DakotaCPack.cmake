@@ -91,6 +91,7 @@ macro(dakota_cpack_initialize)
 
     dakota_parse_package_label("${DAKOTA_PACKAGE_LABEL}"
       Dakota_FINAL_PACKAGE_LABEL)
+    file(WRITE "${Dakota_BINARY_DIR}/generated/label/label.txt" "${Dakota_FINAL_PACKAGE_LABEL}")
     dakota_distro_as_string(_distro_string)
     set(_dakota_package_prefix
       "dakota-${Dakota_FINAL_PACKAGE_LABEL}-${_distro_string}")
