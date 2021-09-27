@@ -334,8 +334,9 @@ void C3Approximation::build()
   // Manage scaling in a localized manner for now: scale the data here and then
   // unscale the FT at bottom.  Scaling is important for FT regression with
   // absolute tolerances, especially for small ML/MF discrepancy expansions.
-  bool apply_scaling = (data_rep->respScaling) ?
-    approxData.compute_response_function_scaling() : false;
+  if (data_rep->respScaling) approxData.compute_response_function_scaling();
+  else                       approxData.clear_response_function_scaling();
+  bool apply_scaling       = approxData.valid_response_scaling();
 
   // Training data for 1 QoI: transfer data from approxData to double* for C3
   double* xtrain = (double*)calloc(num_v*ndata, sizeof(double)); // vars

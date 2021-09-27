@@ -133,56 +133,51 @@ void NonDControlVariateSampling::control_variate_mc()
   size_t hf_sample_incr = std::min(delta_N_l[lf_form], delta_N_l[hf_form]);
   numSamples = hf_sample_incr;
 
-  while (numSamples && mlmfIter <= maxIterations &&
-	 equivHFEvals <= maxFunctionEvals) {
-
-    // ------------------------------------------------------------------------
-    // Compute shared increment targeting specified budget and/or MSE reduction
-    // ------------------------------------------------------------------------
-    if (mlmfIter) {
-      if (maxFunctionEvals != SZ_MAX) {
-	Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
-	allocate_budget(eval_ratios, cost_ratio, hf_targets);
-      }
-      else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: support both
-	// N_hf = mse_ratio * var_H / convTol / mse_iter0
-	// Note: don't simplify further since mse_iter0 is fixed based on pilot
-	Cout << "Scaling profile for convergenceTol = " << convergenceTol;
-	hf_targets = mse_ratios;
-	for (qoi=0; qoi<numFunctions; ++qoi)
-	  hf_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
-      }
-      // numSamples is relative to N_H, but the approx_increments() below are
-      // computed relative to hf_targets (independent of sunk cost for pilot)
-      Cout << ": average HF target = " << average(hf_targets) << std::endl;
-      numSamples = one_sided_delta(N_hf, hf_targets, 1); //avg
-      //numSamples = std::min(num_samp_budget, num_samp_ctol);
-    }
+  while (numSamples && mlmfIter <= maxIterations) {
 
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,MSE}_ratios
     // --------------------------------------------------------------------
-    if (numSamples) {
-      shared_increment(active_key, mlmfIter, 0);
-      accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
-			 sum_HH, mu_hat, N_lf, N_hf);
-      //raw_N_lf += numSamples; raw_N_hf += numSamples;
-      increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
+    shared_increment(active_key, mlmfIter, 0);
+    accumulate_mf_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
+		       sum_HH, mu_hat, N_lf, N_hf);
+    //raw_N_lf += numSamples; raw_N_hf += numSamples;
+    increment_mf_equivalent_cost(numSamples, numSamples, cost_ratio);
 
-      // Compute the LF/HF evaluation ratio using shared samples, averaged
-      // over QoI.  This includes updating var_H and rho2_LH.
-      compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-			  sum_HH, cost_ratio, N_hf, var_H, rho2_LH,eval_ratios);
-      // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
-      // sum_L_refined / N_refined is zero for CV prior to sample refinement.
-      // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-      if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_hf, mse_iter0);
-      // Compute the ratio of MC and CVMC mean squared errors (for convergence).
-      // This ratio incorporates the anticipated variance reduction from the
-      // upcoming application of eval_ratios.
-      compute_MSE_ratios(eval_ratios, var_H, rho2_LH, mlmfIter, N_hf,
-			 mse_ratios);
+    // Compute the LF/HF evaluation ratio using shared samples, averaged
+    // over QoI.  This includes updating var_H and rho2_LH.
+    compute_eval_ratios(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1], sum_HH,
+			cost_ratio, N_hf, var_H, rho2_LH, eval_ratios);
+    // mse_iter0 only uses HF pilot since sum_L_shared / N_shared minus
+    // sum_L_refined / N_refined is zero for CV prior to sample refinement.
+    // (This differs from MLMC MSE^0 which uses pilot for all levels.)
+    if (mlmfIter == 0) compute_mc_estimator_variance(var_H, N_hf, mse_iter0);
+    // Compute the ratio of MC and CVMC mean squared errors (for convergence).
+    // This ratio incorporates the anticipated variance reduction from the
+    // upcoming application of eval_ratios.
+    compute_MSE_ratios(eval_ratios, var_H, rho2_LH, mlmfIter, N_hf, mse_ratios);
+
+    // ------------------------------------------------------------------------
+    // Compute shared increment targeting specified budget and/or MSE reduction
+    // ------------------------------------------------------------------------
+    if (maxFunctionEvals != SZ_MAX) {
+      Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
+      allocate_budget(eval_ratios, cost_ratio, hf_targets);
     }
+    else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: support both
+      // N_hf = mse_ratio * var_H / convTol / mse_iter0
+      // Note: don't simplify further since mse_iter0 is fixed based on pilot
+      Cout << "Scaling profile for convergenceTol = " << convergenceTol;
+      hf_targets = mse_ratios;
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	hf_targets[qoi] *= var_H[qoi] / mse_iter0[qoi] / convergenceTol;
+    }
+    // numSamples is relative to N_H, but the approx_increments() below are
+    // computed relative to hf_targets (independent of sunk cost for pilot)
+    Cout << ": average HF target = " << average(hf_targets) << std::endl;
+    numSamples = one_sided_delta(N_hf, hf_targets, 1); //avg
+    //numSamples = std::min(num_samp_budget, num_samp_ctol);
+
     //Cout << "\nCVMC iteration " << mlmfIter << " complete." << std::endl;
     ++mlmfIter;
   } // end while
@@ -190,10 +185,15 @@ void NonDControlVariateSampling::control_variate_mc()
   // -------------------------------------------------------------------
   // Compute new LF increment based on new evaluation ratio for new N_hf
   // -------------------------------------------------------------------
-  // How to allow user to stop after pilot only:
-  // > lf_increment() includes finalCVRefinement flag (hard-wired true)
-  // > maxFunctionEvals throttle <= pilot expense
-  if (lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
+  // Note: these results do not affect the iteration above and can be performed
+  // after N_hf has converged, which simplifies maxFnEvals / convTol logic
+  // (no need to further interrogate these throttles below)
+
+  // maxIterations == 0 is specially reserved for the pilot only case.  Unlike
+  // all other throttle values, it does not follow the HF iteration with LF
+  // increments.  See notes in NonDMultifidelitySampling::multifidelity_mc().
+  if (maxIterations &&
+      lf_increment(lf_key, eval_ratios, N_lf, hf_targets, mlmfIter, 0)) {
     accumulate_mf_sums(sum_L_refined, mu_hat, N_lf);
     //raw_N_lf += numSamples; lf_sample_incr = numSamples;
     increment_mf_equivalent_cost(numSamples, cost_ratio);

@@ -405,7 +405,7 @@ print_results(std::ostream& s, short results_state)
   // WASABI-specific output
   StringArray resp_labels = mcmcModel.current_response().function_labels();
   NonDSampling::print_moments(s, momentStatistics, RealMatrix(),
-      "response function", STANDARD_MOMENTS, resp_labels, false);
+      "response function", Pecos::STANDARD_MOMENTS, resp_labels, false);
 }
 
 

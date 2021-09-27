@@ -908,7 +908,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 
       // As for compute_delta_covariance(), print level mapping deltas:
       if (print_metric) {
-        bool moments = (finalMomentsType > NO_MOMENTS);
+        bool moments = (finalMomentsType > Pecos::NO_MOMENTS);
 	print_level_mappings(Cout, delta_final_stats, moments, "Change in");
       }
       // Final stats: revert to previous or promote to new

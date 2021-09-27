@@ -155,8 +155,6 @@ enum { PROBABILITIES, RELIABILITIES, GEN_RELIABILITIES };
 enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 // define special values for distributionType
 enum { CUMULATIVE, COMPLEMENTARY };
-// define special values for finalMomentsType
-enum { NO_MOMENTS=0, STANDARD_MOMENTS, CENTRAL_MOMENTS };
 
 // -------------
 // NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)
