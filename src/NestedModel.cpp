@@ -1902,7 +1902,7 @@ iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
 
   if (sub_iterator_errors.empty()) {
     Cerr << "Error: sub_iterator_errors are undefined in NestedModel::"
-   << "iterator_error_estimation().\n       Check error estimation "
+   << "`().\n       Check error estimation "
    << "support in sub-method." << std::endl;
     abort_handler(MODEL_ERROR);
   }
@@ -1946,23 +1946,7 @@ iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
           term = 2. * coeff1 * coeff2 * sub_iterator_errors(2*j+1, 2*j); // [W]{S} Cov (Subdiagonal)
           sum += term;
         }
-        Cout << "Primary: coeffs: " << coeff1 << ", "<< coeff2 << std::endl;
-        Cout << "Primary: errors: " << sub_iterator_errors(2*j, 2*j) << ", "<< sub_iterator_errors(2*j+1, 2*j+1) << ", "<< sub_iterator_errors(2*j+1, 2*j) << std::endl; 
-      }
-      Cout << "Primary: sum: " << std::sqrt(sum) << std::endl; 
-      //FM: Covariance part for primary response 2*Cov(a X1, b X2) <= 2*|a|*|b|*sqrt{V[X1]*V[X2]}
-      /*
-      for (j=0; j<numSubIterFns-1; ++j) {
-        coeff = primaryRespCoeffs(i,j);
-        for (k=j+1; k<numSubIterFns; ++k) {
-          coeff2 = primaryRespCoeffs(i,k);
-          if (coeff != 0. && coeff2 != 0.) { // avoid propagation of nan/inf for no mapping
-            term = 2. * std::abs(coeff) * std::abs(coeff2) * std::sqrt(sub_iterator_errors[j]*sub_iterator_errors[j] * sub_iterator_errors[k]*sub_iterator_errors[k]); // 2*Cov(a X1, b X2) <= 2*|a|*|b|*sqrt{V[X1]*V[X2]}
-            sum += term;
-          }
-        }
-      }
-      */
+         }
       mapped_errors[i] = (sum == 0) ? 0 : std::sqrt(sum);
     }
   }
@@ -1992,23 +1976,7 @@ iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
           term = 2. * coeff1 * coeff2 * sub_iterator_errors(2*j+1, 2*j); // [W]{S} Cov
           sum += term;
         }
-        Cout << "Secondary: coeffs: " << coeff1 << ", "<< coeff2 << std::endl;
-        Cout << "Secondary: errors: " << sub_iterator_errors(2*j, 2*j) << ", "<< sub_iterator_errors(2*j+1, 2*j+1) << ", "<< sub_iterator_errors(2*j+1, 2*j) << std::endl; 
       }
-      Cout << "Secondary: sum: " << std::sqrt(sum) << std::endl; 
-      //FM: Covariance bound for secondary response 2*Cov(a X1, b X2) <= 2*|a|*|b|*sqrt{V[X1]*V[X2]}
-      /*
-      for (j=0; j<numSubIterFns-1; ++j) {
-        coeff = secondaryRespCoeffs(i,j);
-        for (k=j+1; k<numSubIterFns; ++k) {
-          coeff2 = secondaryRespCoeffs(i,k);
-          if (coeff != 0. && coeff2 != 0.) { // avoid propagation of nan/inf for no mapping
-            term = 2. * std::abs(coeff) * std::abs(coeff2) * std::sqrt(sub_iterator_errors[j]*sub_iterator_errors[j] * sub_iterator_errors[k]*sub_iterator_errors[k]); // 2*Cov(a X1, b X2) <= 2*a|*|b|*sqrt{V[X1]*V[X2]}
-            sum += term;
-          }
-        }
-      }
-      */
       mapped_errors[m_index] = (sum == 0) ? 0 : std::sqrt(sum);
     }
   }
