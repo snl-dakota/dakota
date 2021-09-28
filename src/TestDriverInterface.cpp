@@ -772,7 +772,7 @@ int TestDriverInterface::cantilever_ml()
       w_sq = w*w; t_sq = t*t;
       R_sq = R*R; X_sq = X*X; Y_sq = Y*Y;
 
-      stress = 6.*L*Y/w/t_sq + 6.*L*X/w_sq/t;
+      stress = 600*Y/w/t_sq + 600*X/w_sq/t;
 
       D1 = 4.*pow(L, 3)/E/area;
       D2 = pow(Y/t_sq, 2)+pow(X/w_sq, 2);
@@ -791,6 +791,18 @@ int TestDriverInterface::cantilever_ml()
           pow((pow(L, 3) * X)/(3.*E*I_y), 2) +
           pow((pow(L, 3) * Y)/(3.*E*I_x), 2)
       );
+    }else if(area_type == 3 || area_type == 4){
+      // 3: Circle with radius to be inscribed in rectangle
+      // 4: Circle with same area as rectangle
+      const Real m_pi = 3.14159265358979323846;
+
+      Real radius = (area_type == 3) ? std::sqrt(w*t)/2. : std::sqrt(w*t/m_pi);
+
+      Real I_c = m_pi/4.*pow(radius, 4);
+      Real C = std::sqrt(X*X + Y*Y);
+
+      stress = (C*L*radius/(2.*I_c));
+      displ = (C*pow(L, 3))/(3.*E*I_c);
     }else{
       Cout << "TestDriverInterface::mod_cantilever_ml(): wrong area type.\n";
       abort_handler(INTERFACE_ERROR);
@@ -4616,6 +4628,10 @@ double TestDriverInterface::problem18_Ax(const double &A, const double &x){
     return 0.5/6. * log(x) + 0.4;
   else if(A == -4)
     return 0.69*1./exp(2.*x)+0.3;
+  else if(A== -5)
+    return 0.1/6. * x + 0.5;
+  else if(A== -6)
+    return 0.1/6. * x + 1.6;
   else
     throw INTERFACE_ERROR;
 }
