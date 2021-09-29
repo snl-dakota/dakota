@@ -2,6 +2,7 @@
 #@ p1: MPIProcs=3
 #@ s*: TimeoutAbsolute=36000
 #@ s*: TimeoutDelay=36000
+#@ p0: DakotaConfig=HAVE_NPSOL
 #@ s0: DakotaConfig=HAVE_NPSOL
 #@ s1: DakotaConfig=HAVE_NPSOL
 #@ s2: DakotaConfig=HAVE_NPSOL
