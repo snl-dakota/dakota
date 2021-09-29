@@ -217,7 +217,7 @@ void NonDACVSampling::approximate_control_variate()
     const RealVector&         sum_H_1  = sum_H[1];
     const RealSymMatrixArray& sum_LL_1 = sum_LL[1];
     compute_variance(sum_H_1, sum_HH, numH, varH);
-    if (mlmfIter==0) compute_variance(sum_L_1, sum_LL_1, N_L_baselineH, var_L);
+    if (mlmfIter==0) compute_L_variance(sum_L_1, sum_LL_1, N_L_baselineH,var_L);
     compute_LH_covariance(sum_L_1/*baseH*/, sum_H_1, sum_LH[1], N_L_baselineH,
 			  numH, N_LH, covLH);
     compute_LL_covariance(sum_L_1/*baseL*/, sum_LL_1, N_L_baselineH/*baseL*/,

@@ -65,7 +65,16 @@ protected:
   //
 
   void multifidelity_mc();
+  void multifidelity_mc_exclude_pilot();
+  void multifidelity_mc_pilot_projection();
 
+  void approx_increments(IntRealMatrixMap& sum_L_baseline,
+			 IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
+			 IntRealMatrixMap& sum_LH,
+			 const Sizet2DArray& N_L_baseline,
+			 const Sizet2DArray& N_LH,
+			 const RealMatrix& eval_ratios,
+			 const RealVector& hf_targets);
   bool approx_increment(const RealMatrix& eval_ratios,
 			const Sizet2DArray& N_L_refined,
 			const RealVector& hf_targets, size_t iter,
@@ -73,8 +82,10 @@ protected:
 
   void update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
 			 RealVector& hf_targets);
-  void update_hf_targets(const RealVector& mse_ratios, const RealVector& var_H,
-			 const RealVector& mse_iter0,  RealVector& hf_targets);
+  void update_hf_targets(const RealMatrix& rho2_LH,
+			 const RealMatrix& eval_ratios, const RealVector& var_H,
+			 const RealVector& mse_iter0,   RealVector& mse_ratios,
+			 RealVector& hf_targets);
   //void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
 
   void compute_mse_ratios(const RealMatrix& rho2_LH,
@@ -84,6 +95,8 @@ protected:
 			  const RealVector& hf_targets,
 			  const RealMatrix& eval_ratios,
 			  RealVector& mse_ratios);
+
+  void finalize_samples(Sizet2DArray& N_L_refined);
 
 private:
 
@@ -102,6 +115,10 @@ private:
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH,
 			  Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			  Sizet2DArray& num_LH);
+  void accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
+			  RealMatrix& sum_LL, RealMatrix& sum_LH,
+			  RealVector& sum_HH, Sizet2DArray& num_L_baseline,
+			  SizetArray& num_H,  Sizet2DArray& num_LH);
   // approx_increment() cases:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 			  IntRealMatrixMap& sum_L_refined,

@@ -86,6 +86,10 @@ protected:
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t start, size_t end);
 
+  void compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q);
+  void compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
+			const SizetArray& num_Q,       RealVector& var_Q);
+
   void compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1,
 			   Real sum_Q1Q2, Real sum_Q2Q2, size_t num_Q1,
 			   size_t num_Q2, size_t num_Q1Q2, Real& var_Q2,
@@ -106,6 +110,11 @@ protected:
 
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
+
+  /// enumeration for solution modes: INCLUDE_PILOT (default), EXCLUDE_PILOT,
+  /// PILOT_PROJECTION, ...
+  short solutionMode;
+
   /// type of model sequence enumerated with primary MF/ACV loop over steps
   short sequenceType;
   /// setting for the inactive model dimension not traversed by primary MF/ACV
@@ -182,6 +191,34 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     { equivHFEvals += new_samp; --end; }
   for (i=start; i<end; ++i)
     equivHFEvals += (Real)new_samp * cost[i] / cost_ref;
+}
+
+
+inline void NonDNonHierarchSampling::
+compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
+		 //size_t num_QQ, // this count is the same as num_Q
+{
+  Real bessel_corr_Q = (Real)num_Q / (Real)(num_Q - 1); // num_QQ same as num_Q
+
+  // unbiased mean estimator X-bar = 1/N * sum
+  Real mu_Q = sum_Q / num_Q;
+  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
+  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
+  var_Q = (sum_QQ / num_Q - mu_Q * mu_Q) * bessel_corr_Q;
+
+  //Cout << "compute_variance: sum_Q = " << sum_Q << " sum_QQ = " << sum_QQ
+  //     << " num_Q = " << num_Q << " var_Q = " << var_Q << std::endl;
+}
+
+
+inline void NonDNonHierarchSampling::
+compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
+		 const SizetArray& num_Q,   RealVector& var_Q)
+{
+  if (var_Q.empty()) var_Q.sizeUninitialized(numFunctions);
+
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_variance(sum_Q[qoi], sum_QQ[qoi], num_Q[qoi], var_Q[qoi]);
 }
 
 

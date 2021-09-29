@@ -141,12 +141,9 @@ private:
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
 
-  void compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q);
-  void compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
-			const SizetArray& num_Q,       RealVector& var_Q);
-  void compute_variance(const RealMatrix& sum_L,
-			const RealSymMatrixArray& sum_LL,
-			const Sizet2DArray& num_L, RealMatrix& var_L);
+  void compute_L_variance(const RealMatrix& sum_L,
+			  const RealSymMatrixArray& sum_LL,
+			  const Sizet2DArray& num_L, RealMatrix& var_L);
 
   void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
@@ -328,36 +325,8 @@ scale_to_budget_with_pilot(Real budget, RealVector& avg_eval_ratios,
 
 
 inline void NonDACVSampling::
-compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
-		 //size_t num_QQ, // this count is the same as num_Q
-{
-  Real bessel_corr_Q = (Real)num_Q / (Real)(num_Q - 1); // num_QQ same as num_Q
-
-  // unbiased mean estimator X-bar = 1/N * sum
-  Real mu_Q = sum_Q / num_Q;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  var_Q = (sum_QQ / num_Q - mu_Q * mu_Q) * bessel_corr_Q;
-
-  //Cout << "compute_variance: sum_Q = " << sum_Q << " sum_QQ = " << sum_QQ
-  //     << " num_Q = " << num_Q << " var_Q = " << var_Q << std::endl;
-}
-
-
-inline void NonDACVSampling::
-compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
-		 const SizetArray& num_Q,   RealVector& var_Q)
-{
-  if (var_Q.empty()) var_Q.sizeUninitialized(numFunctions);
-
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_variance(sum_Q[qoi], sum_QQ[qoi], num_Q[qoi], var_Q[qoi]);
-}
-
-
-inline void NonDACVSampling::
-compute_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
-		 const Sizet2DArray& num_L, RealMatrix& var_L)
+compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
+		   const Sizet2DArray& num_L, RealMatrix& var_L)
 {
   if (var_L.empty()) var_L.shapeUninitialized(numFunctions, numApprox);
 
