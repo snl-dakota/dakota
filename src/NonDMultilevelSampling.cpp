@@ -920,7 +920,7 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
                     (scalarizationCoeffs(qoi, cur_qoi_offset+1) == 0) ? 0 :
       bootstrap_covariance(step, cur_qoi, levQoisamplesmatrixMap, 
         N_l[step][cur_qoi], false, dummy_grad, randomSeed);
-    cov_estim = cov_bootstrap;
+    cov_estim = upper_bound_cov_of_mean_sigma;
 
     //Cout << "aggregate_variance_scalarization_Qsum: step: " << step << " qoi: " << cur_qoi 
     //  << " variances: " << var_of_mean_l << ", " << var_of_sigma_l << ", " << upper_bound_cov_of_mean_sigma << ", " << cov_bootstrap << std::endl;
@@ -1229,7 +1229,7 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
       pilot_samples.size(num_steps);
       for (size_t step = 0; step < num_steps; ++step) {
         pilot_samples[step] = N_l[step][qoi];
-        initial_point[step] = N_l[step][qoi]; //8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); //pilot_samples[step]; //8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); 
+        initial_point[step] = 8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); //pilot_samples[step]; //8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); 
       }
 
       RealVector var_lower_bnds, var_upper_bnds, lin_ineq_lower_bnds, lin_ineq_upper_bnds, lin_eq_targets,
@@ -1390,10 +1390,12 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
         Cout << "\n";
       }
 
+        Cout << "Relative Constraint violation: " << std::abs(1 - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) << std::endl;
+
       if(std::abs(1. - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) > 1.0e-5){
         //if (outputLevel == DEBUG_OUTPUT) Cout << "Relative Constraint violation violated: Switching to log scale " << std::endl;
         for (size_t step = 0; step < num_steps; ++step) {
-          initial_point[step] = N_l[step][qoi]; //8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); //pilot_samples[step]; //8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); //optimizer->variables_results().continuous_variable(step) > pilot_samples[step] ? optimizer->variables_results().continuous_variable(step) : pilot_samples[step];
+          initial_point[step] = 8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); //pilot_samples[step]; //8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); //optimizer->variables_results().continuous_variable(step) > pilot_samples[step] ? optimizer->variables_results().continuous_variable(step) : pilot_samples[step];
         }
         nonlin_eq_targets[0] = std::log(eps_sq_div_2[qoi]); //std::log(convergenceTol);
         #ifdef HAVE_NPSOL
@@ -1500,6 +1502,7 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
           Cout << "Relative Constraint violation: " << std::abs(1 - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) << std::endl;
           Cout << "\n";
         }
+        Cout << "Relative Log-Constraint violation: " << std::abs(1 - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) << std::endl;
       }
 
       for (size_t step=0; step<num_steps; ++step) {
@@ -2682,10 +2685,10 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
     }
     //Cout << "Varvar vs bootstrap Opt: qoi: " << qoi << ": " << f_mean << ", " << f_sigma << ", " << f_upper_bound_cov << " vs. " << f_bootstrap_cov << std::endl;
     //Overwrite varvar by bootstrap
-    Real f_cov_estimate = f_bootstrap_cov;
+    Real f_cov_estimate = f_upper_bound_cov;
     RealVector grad_f_cov_estimate(num_lev);
     for (lev = 0; lev < num_lev && compute_gradient; ++lev) {
-      grad_f_cov_estimate[lev] = grad_f_bootstrap_cov[lev];
+      grad_f_cov_estimate[lev] = grad_f_upper_bound_cov[lev];
     }
     
     Real cov_scaling = 1.0;
