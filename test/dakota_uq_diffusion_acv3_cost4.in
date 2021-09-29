@@ -2,6 +2,25 @@
 #@ p1: MPIProcs=3
 #@ s*: TimeoutAbsolute=36000
 #@ s*: TimeoutDelay=36000
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_NPSOL
+#@ s3: DakotaConfig=HAVE_NPSOL
+#@ s4: DakotaConfig=HAVE_NPSOL
+#@ s5: DakotaConfig=HAVE_NPSOL
+#@ s6: DakotaConfig=HAVE_NPSOL
+#@ s7: DakotaConfig=HAVE_NPSOL
+#@ s8: DakotaConfig=HAVE_NPSOL
+#@ s9: DakotaConfig=HAVE_NPSOL
+#@ s10: DakotaConfig=HAVE_NPSOL
+#@ s11: DakotaConfig=HAVE_NPSOL
+#@ s12: DakotaConfig=HAVE_NPSOL
+#@ s13: DakotaConfig=HAVE_NPSOL
+#@ s14: DakotaConfig=HAVE_NPSOL
+#@ s15: DakotaConfig=HAVE_NPSOL
+#@ s16: DakotaConfig=HAVE_NPSOL
+#@ s17: DakotaConfig=HAVE_NPSOL
+#@ s22: DakotaConfig=HAVE_NPSOL
 
 environment
 	output_precision = 16
