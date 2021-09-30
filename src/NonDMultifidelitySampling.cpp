@@ -150,9 +150,6 @@ void NonDMultifidelitySampling::multifidelity_mc_exclude_pilot()
     abort_handler(METHOD_ERROR);
   }
   else update_hf_targets(eval_ratios, sequenceCost, hf_targets);// budget-driven
-  // exclude pilot from R^2 benefit.  Note: ratio is relative to MC estimator
-  // variance for hf_targets (varH, numH recomputed "online" below --> mseIter0)
-  compute_mse_ratios(rho2_LH, eval_ratios, mseRatios);
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -171,11 +168,15 @@ void NonDMultifidelitySampling::multifidelity_mc_exclude_pilot()
 		     N_L_baseline, numH, N_LH);
   increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1);
 
-  // mseIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared -
-  // sum_L_refined / N_refined) cancel out prior to sample refinement.
-  // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-  compute_variance(sum_H[1], sum_HH, numH, varH); // replace pilot-based varH
+  // mseIter0 only uses HF pilot since CV terms cancel prior to increments.
+  // Note: don't replace pilot-based varH (retain "oracle" rho2_LH, varH) since
+  //       this introduces noise in the final MFMC estvar.  It does however
+  //       result in mixing offline varH with online numH for mseIter0.
+  //compute_variance(sum_H[1], sum_HH, numH, varH); // online varH
   compute_mc_estimator_variance(varH, numH, mseIter0);
+  // exclude pilot from R^2 benefit.  Note: ratio is relative to MC estimator
+  // variance for hf_targets (varH, numH recomputed "online" below --> mseIter0)
+  compute_mse_ratios(rho2_LH, numH, hf_targets, eval_ratios, mseRatios);
 
   // numH is converged --> finalize with LF increments and post-processing
   approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_L_baseline, N_LH,
@@ -372,7 +373,7 @@ update_hf_targets(const RealMatrix& rho2_LH, const RealMatrix& eval_ratios,
   //   although mseRatios may be > mseRatio* due to decrease in MC MSE)
   // > if m1* > pilot, then increment numSamples and continue
   compute_mse_ratios(rho2_LH, eval_ratios, mse_ratios);// MSE* from r*,rho2
-                                                       // Next, m1* from MSE*:
+  // Next, m1* from MSE*; then these mse_ratios get replaced for actual profile
 
   // MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
   // --> N_H = mse_ratio * var_H / convTol / mse_iter0
