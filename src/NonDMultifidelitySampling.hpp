@@ -58,7 +58,7 @@ protected:
   //void pre_run();
   void core_run();
   //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: member functions
@@ -88,6 +88,11 @@ protected:
 			 RealVector& hf_targets);
   //void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
 
+  void update_projected_samples(const RealVector& hf_targets,
+				const RealMatrix& eval_ratios,
+				SizetArray& N_H_projected,
+				Sizet2DArray& N_L_projected);
+
   void compute_mse_ratios(const RealMatrix& rho2_LH,
 			  const RealMatrix& eval_ratios,
 			  RealVector& mse_ratios);
@@ -95,8 +100,6 @@ protected:
 			  const RealVector& hf_targets,
 			  const RealMatrix& eval_ratios,
 			  RealVector& mse_ratios);
-
-  void finalize_samples(Sizet2DArray& N_L_refined);
 
 private:
 
@@ -146,6 +149,8 @@ private:
 
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
+
+  void finalize_counts(Sizet2DArray& N_L);
 
   //
   //- Heading: Data

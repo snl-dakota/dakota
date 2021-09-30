@@ -33,7 +33,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDNonHierarchSampling::
 NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
-  NonDEnsembleSampling(problem_db, model), solutionMode(INCLUDE_PILOT)
+  NonDEnsembleSampling(problem_db, model),
+  solutionMode(INCLUDE_PILOT)//(EXCLUDE_PILOT)//(PILOT_PROJECTION)
 {
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
