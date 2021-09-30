@@ -84,9 +84,22 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
   bool have_lsq = (model.primary_fn_type() == CALIB_TERMS);
   if (methodName == OPTPP_NEWTON) { // || ...) {
     require_hessians = true;
-    if ( ( !have_lsq && iteratedModel.hessian_type()  == "none" ) ||
-	 (  have_lsq && iteratedModel.gradient_type() == "none" ) ) {
-      Cerr << "\nError: full Newton optimization requires objective Hessians."
+    if( have_lsq ) {
+      if (iteratedModel.gradient_type() == "none" ) {
+        Cerr << "\nError: full Newton optimization of least-squares requires objective Gradients."
+             << std::endl;
+        err_flag = true;
+      }
+      if( numNonlinearConstraints && ( iteratedModel.hessian_type()  == "none" ) ) {
+        Cerr << "\nError: full Newton optimization of least-squares with nonlinear constraints "
+             << "requires objective Hessians.  Alternatively, consider using optpp_g_newton."
+             << std::endl;
+        err_flag = true;
+      }
+    }
+    else if ( iteratedModel.hessian_type()  == "none" ) {
+      Cerr << "\nError: full Newton optimization requires objective Hessians. "
+           << "Alternatively, consider using optpp_q_newton."
 	   << std::endl;
       err_flag = true;
     }
