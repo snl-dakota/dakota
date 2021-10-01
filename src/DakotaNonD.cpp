@@ -1153,11 +1153,12 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
 
 
 void NonD::
-print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp)
+print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp,
+				    String type)
 {
   size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
-  if (num_mf == 1)  s << "<<<<< Final samples per level:\n";
-  else              s << "<<<<< Final samples per model form:\n";
+  if (num_mf == 1)  s << "<<<<< " << type << " samples per level:\n";
+  else              s << "<<<<< " << type << " samples per model form:\n";
   for (i=0; i<num_mf; ++i) {
     if (num_mf > 1) s << "      Model Form " << i+1 << ":\n";
     print_multilevel_evaluation_summary(s, N_samp[i]);

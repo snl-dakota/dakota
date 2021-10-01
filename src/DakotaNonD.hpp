@@ -186,7 +186,8 @@ protected:
 					   const Sizet2DArray& N_samp);
   /// print evaluation summary for multilevel sampling across 3D profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const Sizet3DArray& N_samp);
+					   const Sizet3DArray& N_samp,
+					   String type = "Final");
 
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,

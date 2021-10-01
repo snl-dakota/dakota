@@ -78,13 +78,17 @@ protected:
 		       RealVector& sum_HH);
   void initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			 Sizet2DArray& num_LH);
+  void finalize_counts(Sizet2DArray& N_L);
 
   void ensemble_sample_increment(size_t iter, size_t step);
 
-  //void increment_samples(size_t new_N, size_t start, size_t end,
-  //			   SizetArray& N_l);
+  void increment_samples(SizetArray& N_l, size_t num_samples);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t start, size_t end);
+
+  void compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q);
+  void compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
+			const SizetArray& num_Q,       RealVector& var_Q);
 
   void compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1,
 			   Real sum_Q1Q2, Real sum_Q2Q2, size_t num_Q1,
@@ -106,6 +110,11 @@ protected:
 
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
+
+  /// enumeration for solution modes: ONLINE_PILOT (default), OFFLINE_PILOT,
+  /// PILOT_PROJECTION
+  short solutionMode;
+
   /// type of model sequence enumerated with primary MF/ACV loop over steps
   short sequenceType;
   /// setting for the inactive model dimension not traversed by primary MF/ACV
@@ -155,22 +164,26 @@ initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 }
 
 
-/*
-inline void NonDNonHierarchSampling::
-increment_samples(size_t new_N, size_t start, size_t end, SizetArray& N_l)
+inline void NonDNonHierarchSampling::finalize_counts(Sizet2DArray& N_L)
 {
-  size_t i, len = N_l.size();
-  if (start > end || end > len) {
-    Cerr << "Error: index range [" << start << "," << end << ") violates size ("
-	 << len << ") in NonDNonHierarchSampling::increment_samples()"
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  for (i=start; i<end; ++i)
-    N_l[i] += new_N;
+  // post final sample counts back to NLev (needed for final eval summary) by
+  // aggregated into 2D array and then inserting into 3D
+  N_L.push_back(numH);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  inflate_final_samples(N_L, multilev, secondaryIndex, NLev);
 }
-*/
 
+
+inline void NonDNonHierarchSampling::
+increment_samples(SizetArray& N_l, size_t new_samples)
+{
+  if (new_samples) {
+    size_t q, nq = N_l.size();
+    for (q=0; q<nq; ++q)
+      N_l[q] += new_samples;
+  }
+}
+  
 
 inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
@@ -182,6 +195,34 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     { equivHFEvals += new_samp; --end; }
   for (i=start; i<end; ++i)
     equivHFEvals += (Real)new_samp * cost[i] / cost_ref;
+}
+
+
+inline void NonDNonHierarchSampling::
+compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
+		 //size_t num_QQ, // this count is the same as num_Q
+{
+  Real bessel_corr_Q = (Real)num_Q / (Real)(num_Q - 1); // num_QQ same as num_Q
+
+  // unbiased mean estimator X-bar = 1/N * sum
+  Real mu_Q = sum_Q / num_Q;
+  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
+  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
+  var_Q = (sum_QQ / num_Q - mu_Q * mu_Q) * bessel_corr_Q;
+
+  //Cout << "compute_variance: sum_Q = " << sum_Q << " sum_QQ = " << sum_QQ
+  //     << " num_Q = " << num_Q << " var_Q = " << var_Q << std::endl;
+}
+
+
+inline void NonDNonHierarchSampling::
+compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
+		 const SizetArray& num_Q,   RealVector& var_Q)
+{
+  if (var_Q.empty()) var_Q.sizeUninitialized(numFunctions);
+
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_variance(sum_Q[qoi], sum_QQ[qoi], num_Q[qoi], var_Q[qoi]);
 }
 
 

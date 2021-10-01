@@ -140,8 +140,8 @@ DataMethodRep::DataMethodRep():
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX), truthPilotConstraint(false),
-  allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
-  qoiAggregation(QOI_AGGREGATION_SUM),
+  ensembleSampSolnMode(ONLINE_PILOT), allocationTarget(TARGET_MEAN),
+  useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
   convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
   //expansionSampleType("lhs"),
@@ -312,7 +312,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << truthPilotConstraint
+    << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
     << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
@@ -480,7 +480,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
     >> numCandidateDesigns //>> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> pilotSamples >> truthPilotConstraint
+    >> pilotSamples >> ensembleSampSolnMode >> truthPilotConstraint
     >> multilevAllocControl >> multilevEstimatorRate
     >> multilevDiscrepEmulation >> finalMomentsType >> distributionType
     >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
@@ -648,7 +648,7 @@ void DataMethodRep::write(std::ostream& s) const
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << truthPilotConstraint
+    << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
     << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels

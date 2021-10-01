@@ -205,6 +205,7 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 // (6) ALL_UNIFORM: sample over All variables using uniform distributions.
 // Note that ACTIVE modes will overlap with either UNCERTAIN or ALL modes
 // depending on whether the Model/Variables employ an All or Distinct view.
+
 // Wilks type of confidence interval
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
@@ -215,10 +216,15 @@ enum { QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM };
 enum { TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION };
 
 // define special values for computation of convergence tolerance, either absolute or relative 
-enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE, CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
+enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE,
+       CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
 
 // define optimization formulation for MLMC sample allocation by specifing equality constraint, either variance or cost 
-enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT, CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
+enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
+       CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
+
+// MFMC modes
+enum { ONLINE_PILOT, OFFLINE_PILOT, PILOT_PROJECTION };
 
 // ---------------
 // NonDReliability
@@ -1000,6 +1006,8 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c solution_mode selection for ML/MF sampling methods
+  short ensembleSampSolnMode;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC

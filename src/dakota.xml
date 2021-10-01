@@ -556,6 +556,16 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY mc_solution_mode '
+      	     <keyword  id="solution_mode" name="solution_mode" code="{0}" label="solution_mode" help="" minOccurs="0" default="online pilot" >
+	       <oneOf label="Ensemble Sampling Solution Mode">
+		 <keyword  id="online_pilot" name="online_pilot" code="{N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}" label="online_pilot" help="" />
+		 <keyword  id="offline_pilot" name="offline_pilot" code="{N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}" label="offline_pilot" help="" />
+		 <keyword  id="pilot_projection" name="pilot_projection" code="{N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}" label="pilot_projection" help="" />
+	       </oneOf>
+	     </keyword>
+	     ' >
+
     <!ENTITY colloc_ratio_pts_sequence_with_pce_regress '
 	     <!-- Note: options within this entity are limited by NIDR requirements for an unambiguous anchor: cannot support ratio or pts or both, so anchoring with the more useful of the two.  With a new regression anchor, could mirror ft_method_regression_sequence and allow both to be optional. -->
 	     <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" >
@@ -2953,6 +2963,7 @@
 	  <alias name="mfmc"/>
 	  &method_seed_sequence;
 	  &mc_pilot_samples;
+	  &mc_solution_mode;
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
@@ -3002,6 +3013,7 @@
 	    </keyword>
 	  </oneOf>
 	  &mc_pilot_samples;
+	  &mc_solution_mode;
 	  <!--
 	  <keyword  id="constraints" name="constraints" code="{0}" label="constraints" >
 	    <oneOf label="Additional ACV solver constraints">

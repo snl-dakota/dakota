@@ -53,7 +53,6 @@ public:
   //
 
   //bool resize();
-  void print_variance_reduction(std::ostream& s);
 
 protected:
 
@@ -65,16 +64,27 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_variance_reduction(std::ostream& s);
 
   //
   //- Heading: member functions
   //
 
   void approximate_control_variate();
+  void approximate_control_variate_offline_pilot();
+  void approximate_control_variate_pilot_projection();
 
   bool approx_increment(const RealVector& avg_eval_ratios,
 			const Sizet2DArray& N_L_refined, Real hf_target,
 			size_t iter, size_t start, size_t end);
+  void approx_increments(IntRealMatrixMap& sum_L_baselineH,
+			 IntRealVectorMap& sum_H,
+			 IntRealSymMatrixArrayMap& sum_LL,
+			 IntRealMatrixMap& sum_LH,
+			 const Sizet2DArray& N_L_baselineH,
+			 const SizetSymMatrixArray& N_LL,
+			 const Sizet2DArray& N_LH,
+			 const RealVector& avg_eval_ratios, Real avg_hf_target);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
@@ -117,6 +127,11 @@ private:
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH,
 			   Sizet2DArray& num_L_baseline,  SizetArray& num_H,
 			   SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH);
+  void accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
+			   RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
+			   RealVector& sum_HH, Sizet2DArray& num_L_baseline,
+			   SizetArray& num_H,  SizetSymMatrixArray& num_LL,
+			   Sizet2DArray& num_LH);
   // shared_approx_increment() case:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
 			   IntRealSymMatrixArrayMap& sum_LL,
@@ -141,12 +156,9 @@ private:
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
 
-  void compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q);
-  void compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
-			const SizetArray& num_Q,       RealVector& var_Q);
-  void compute_variance(const RealMatrix& sum_L,
-			const RealSymMatrixArray& sum_LL,
-			const Sizet2DArray& num_L, RealMatrix& var_L);
+  void compute_L_variance(const RealMatrix& sum_L,
+			  const RealSymMatrixArray& sum_LL,
+			  const Sizet2DArray& num_L, RealMatrix& var_L);
 
   void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
@@ -178,6 +190,11 @@ private:
 			   const SizetSymMatrix& num_LL_q,
 			   const Sizet2DArray& num_LH, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
+
+  void update_projected_samples(Real avg_hf_target,
+				const RealVector& avg_eval_ratios,
+				SizetArray& N_H_projected,
+				Sizet2DArray& N_L_projected);
 
   /// objective helper function shared by NPSOL/OPT++ static evaluators
   Real objective_function(const RealVector& r_and_N);
@@ -315,8 +332,8 @@ scale_to_budget_with_pilot(Real budget, RealVector& avg_eval_ratios,
   for (int i=numApprox-1; i>=0; --i) {
     r_i = avg_eval_ratios[i] * factor;
     if (r_i <= 1.) { // fix at 1+NUDGE and scale remaining r_i to reduced budget
-      avg_eval_ratios[i] = r_i = 1. + RATIO_NUDGE;
-      cost_r_i = cost[i] * r_i;
+      cost_r_i  = avg_eval_ratios[i] = 1. + RATIO_NUDGE;
+      cost_r_i *= cost[i];
       budget -= avg_N_H * cost_r_i / cost_H;  inner_prod -= cost_r_i;
       factor = (budget / avg_N_H - 1.) / inner_prod * cost_H;
     }
@@ -328,36 +345,8 @@ scale_to_budget_with_pilot(Real budget, RealVector& avg_eval_ratios,
 
 
 inline void NonDACVSampling::
-compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
-		 //size_t num_QQ, // this count is the same as num_Q
-{
-  Real bessel_corr_Q = (Real)num_Q / (Real)(num_Q - 1); // num_QQ same as num_Q
-
-  // unbiased mean estimator X-bar = 1/N * sum
-  Real mu_Q = sum_Q / num_Q;
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-  // = 1/(N-1) [ N Raw_X - N X-bar^2 ] = bessel * [Raw_X - X-bar^2]
-  var_Q = (sum_QQ / num_Q - mu_Q * mu_Q) * bessel_corr_Q;
-
-  //Cout << "compute_variance: sum_Q = " << sum_Q << " sum_QQ = " << sum_QQ
-  //     << " num_Q = " << num_Q << " var_Q = " << var_Q << std::endl;
-}
-
-
-inline void NonDACVSampling::
-compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
-		 const SizetArray& num_Q,   RealVector& var_Q)
-{
-  if (var_Q.empty()) var_Q.sizeUninitialized(numFunctions);
-
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_variance(sum_Q[qoi], sum_QQ[qoi], num_Q[qoi], var_Q[qoi]);
-}
-
-
-inline void NonDACVSampling::
-compute_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
-		 const Sizet2DArray& num_L, RealMatrix& var_L)
+compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
+		   const Sizet2DArray& num_L, RealMatrix& var_L)
 {
   if (var_L.empty()) var_L.shapeUninitialized(numFunctions, numApprox);
 
