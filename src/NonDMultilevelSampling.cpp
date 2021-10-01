@@ -920,7 +920,7 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
                     (scalarizationCoeffs(qoi, cur_qoi_offset+1) == 0) ? 0 :
       bootstrap_covariance(step, cur_qoi, levQoisamplesmatrixMap, 
         N_l[step][cur_qoi], false, dummy_grad, randomSeed);
-    cov_estim = upper_bound_cov_of_mean_sigma;
+    cov_estim = cov_bootstrap;
 
     //Cout << "aggregate_variance_scalarization_Qsum: step: " << step << " qoi: " << cur_qoi 
     //  << " variances: " << var_of_mean_l << ", " << var_of_sigma_l << ", " << upper_bound_cov_of_mean_sigma << ", " << cov_bootstrap << std::endl;
@@ -2685,10 +2685,10 @@ void NonDMultilevelSampling::target_scalarization_objective_eval_optpp(int mode,
     }
     //Cout << "Varvar vs bootstrap Opt: qoi: " << qoi << ": " << f_mean << ", " << f_sigma << ", " << f_upper_bound_cov << " vs. " << f_bootstrap_cov << std::endl;
     //Overwrite varvar by bootstrap
-    Real f_cov_estimate = f_upper_bound_cov;
+    Real f_cov_estimate = f_bootstrap_cov;
     RealVector grad_f_cov_estimate(num_lev);
     for (lev = 0; lev < num_lev && compute_gradient; ++lev) {
-      grad_f_cov_estimate[lev] = grad_f_upper_bound_cov[lev];
+      grad_f_cov_estimate[lev] = grad_f_bootstrap_cov[lev];
     }
     
     Real cov_scaling = 1.0;
