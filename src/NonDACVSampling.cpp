@@ -175,10 +175,10 @@ void NonDACVSampling::core_run()
   }
 
   switch (solutionMode) {
-  case INCLUDE_PILOT: // iterated ACV (default)
+  case  ONLINE_PILOT: // iterated ACV (default)
     approximate_control_variate();                  break;
-  case EXCLUDE_PILOT: // computes perf for offline pilot/Oracle correlation
-    approximate_control_variate_exclude_pilot();    break;
+  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
+    approximate_control_variate_offline_pilot();    break;
   case PILOT_PROJECTION: // for algorithm assessment/selection
     approximate_control_variate_pilot_projection(); break;
   }
@@ -255,7 +255,7 @@ void NonDACVSampling::approximate_control_variate()
 
 /** This function performs control variate MC across two combinations of 
     model form and discretization level. */
-void NonDACVSampling::approximate_control_variate_exclude_pilot()
+void NonDACVSampling::approximate_control_variate_offline_pilot()
 {
   RealVector sum_H_pilot(numFunctions), sum_HH_pilot(numFunctions);
   RealMatrix sum_L_pilot(numFunctions, numApprox),

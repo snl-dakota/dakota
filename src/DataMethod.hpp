@@ -224,7 +224,7 @@ enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
        CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
 
 // MFMC modes
-enum { INCLUDE_PILOT, EXCLUDE_PILOT, PILOT_PROJECTION };
+enum { ONLINE_PILOT, OFFLINE_PILOT, PILOT_PROJECTION };
 
 // ---------------
 // NonDReliability
@@ -1006,6 +1006,8 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c solution_mode selection for ML/MF sampling methods
+  short ensembleSampSolnMode;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC

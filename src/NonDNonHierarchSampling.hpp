@@ -111,8 +111,8 @@ protected:
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
 
-  /// enumeration for solution modes: INCLUDE_PILOT (default), EXCLUDE_PILOT,
-  /// PILOT_PROJECTION, ...
+  /// enumeration for solution modes: ONLINE_PILOT (default), OFFLINE_PILOT,
+  /// PILOT_PROJECTION
   short solutionMode;
 
   /// type of model sequence enumerated with primary MF/ACV loop over steps
@@ -168,7 +168,7 @@ inline void NonDNonHierarchSampling::finalize_counts(Sizet2DArray& N_L)
 {
   // post final sample counts back to NLev (needed for final eval summary) by
   // aggregated into 2D array and then inserting into 3D
-  N_L.push_back(numH); // Note: EXCLUDE_PILOT recomputes numH
+  N_L.push_back(numH);
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   inflate_final_samples(N_L, multilev, secondaryIndex, NLev);
 }

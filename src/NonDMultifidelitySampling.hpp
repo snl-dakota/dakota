@@ -65,7 +65,7 @@ protected:
   //
 
   void multifidelity_mc();
-  void multifidelity_mc_exclude_pilot();
+  void multifidelity_mc_offline_pilot();
   void multifidelity_mc_pilot_projection();
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,

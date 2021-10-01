@@ -71,7 +71,7 @@ protected:
   //
 
   void approximate_control_variate();
-  void approximate_control_variate_exclude_pilot();
+  void approximate_control_variate_offline_pilot();
   void approximate_control_variate_pilot_projection();
 
   bool approx_increment(const RealVector& avg_eval_ratios,

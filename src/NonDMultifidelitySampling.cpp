@@ -49,10 +49,10 @@ void NonDMultifidelitySampling::core_run()
   //sequence_models(); // enforce correlation condition (*** AFTER PILOT ***)
 
   switch (solutionMode) {
-  case INCLUDE_PILOT: // iterated MFMC (default)
+  case  ONLINE_PILOT: // iterated MFMC (default)
     multifidelity_mc();                  break;
-  case EXCLUDE_PILOT: // computes perf for offline pilot/Oracle correlation
-    multifidelity_mc_exclude_pilot();    break;
+  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
+    multifidelity_mc_offline_pilot();    break;
   case PILOT_PROJECTION: // for algorithm assessment/selection
     multifidelity_mc_pilot_projection(); break;
   }
@@ -137,7 +137,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
 
 
 /** This MFMC version treats the pilot sample as a separate offline process. */
-void NonDMultifidelitySampling::multifidelity_mc_exclude_pilot()
+void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
 {
   RealVector sum_H_pilot(numFunctions), sum_HH_pilot(numFunctions), hf_targets;
   RealMatrix sum_L_pilot(numFunctions, numApprox),
@@ -914,7 +914,7 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
 
-  if (solutionMode != EXCLUDE_PILOT)
+  if (solutionMode != OFFLINE_PILOT)
     s << "      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
       << " pilot samples): " << std::setw(wpp7) << average(mseIter0) << '\n';
 
