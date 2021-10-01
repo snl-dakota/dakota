@@ -53,7 +53,6 @@ public:
   //
 
   //bool resize();
-  void print_variance_reduction(std::ostream& s);
 
 protected:
 
@@ -65,16 +64,27 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_variance_reduction(std::ostream& s);
 
   //
   //- Heading: member functions
   //
 
   void approximate_control_variate();
+  void approximate_control_variate_exclude_pilot();
+  void approximate_control_variate_pilot_projection();
 
   bool approx_increment(const RealVector& avg_eval_ratios,
 			const Sizet2DArray& N_L_refined, Real hf_target,
 			size_t iter, size_t start, size_t end);
+  void approx_increments(IntRealMatrixMap& sum_L_baselineH,
+			 IntRealVectorMap& sum_H,
+			 IntRealSymMatrixArrayMap& sum_LL,
+			 IntRealMatrixMap& sum_LH,
+			 const Sizet2DArray& N_L_baselineH,
+			 const SizetSymMatrixArray& N_LL,
+			 const Sizet2DArray& N_LH,
+			 const RealVector& avg_eval_ratios, Real avg_hf_target);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
@@ -117,6 +127,11 @@ private:
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH,
 			   Sizet2DArray& num_L_baseline,  SizetArray& num_H,
 			   SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH);
+  void accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
+			   RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
+			   RealVector& sum_HH, Sizet2DArray& num_L_baseline,
+			   SizetArray& num_H,  SizetSymMatrixArray& num_LL,
+			   Sizet2DArray& num_LH);
   // shared_approx_increment() case:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
 			   IntRealSymMatrixArrayMap& sum_LL,
@@ -175,6 +190,11 @@ private:
 			   const SizetSymMatrix& num_LL_q,
 			   const Sizet2DArray& num_LH, const RealSymMatrix& F,
 			   size_t qoi, RealVector& beta);
+
+  void update_projected_samples(Real avg_hf_target,
+				const RealVector& avg_eval_ratios,
+				SizetArray& N_H_projected,
+				Sizet2DArray& N_L_projected);
 
   /// objective helper function shared by NPSOL/OPT++ static evaluators
   Real objective_function(const RealVector& r_and_N);

@@ -78,11 +78,11 @@ protected:
 		       RealVector& sum_HH);
   void initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			 Sizet2DArray& num_LH);
+  void finalize_counts(Sizet2DArray& N_L);
 
   void ensemble_sample_increment(size_t iter, size_t step);
 
-  //void increment_samples(size_t new_N, size_t start, size_t end,
-  //			   SizetArray& N_l);
+  void increment_samples(SizetArray& N_l, size_t num_samples);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t start, size_t end);
 
@@ -164,22 +164,26 @@ initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 }
 
 
-/*
-inline void NonDNonHierarchSampling::
-increment_samples(size_t new_N, size_t start, size_t end, SizetArray& N_l)
+inline void NonDNonHierarchSampling::finalize_counts(Sizet2DArray& N_L)
 {
-  size_t i, len = N_l.size();
-  if (start > end || end > len) {
-    Cerr << "Error: index range [" << start << "," << end << ") violates size ("
-	 << len << ") in NonDNonHierarchSampling::increment_samples()"
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  for (i=start; i<end; ++i)
-    N_l[i] += new_N;
+  // post final sample counts back to NLev (needed for final eval summary) by
+  // aggregated into 2D array and then inserting into 3D
+  N_L.push_back(numH); // Note: EXCLUDE_PILOT recomputes numH
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  inflate_final_samples(N_L, multilev, secondaryIndex, NLev);
 }
-*/
 
+
+inline void NonDNonHierarchSampling::
+increment_samples(SizetArray& N_l, size_t new_samples)
+{
+  if (new_samples) {
+    size_t q, nq = N_l.size();
+    for (q=0; q<nq; ++q)
+      N_l[q] += new_samples;
+  }
+}
+  
 
 inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,

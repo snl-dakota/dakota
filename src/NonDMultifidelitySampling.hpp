@@ -150,8 +150,6 @@ private:
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
 
-  void finalize_counts(Sizet2DArray& N_L);
-
   //
   //- Heading: Data
   //
