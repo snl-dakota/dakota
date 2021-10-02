@@ -47,7 +47,6 @@ public:
   //
 
   //bool resize();
-  void print_variance_reduction(std::ostream& s);
 
 protected:
 
@@ -59,6 +58,7 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_variance_reduction(std::ostream& s);
 
   //
   //- Heading: member functions

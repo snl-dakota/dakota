@@ -901,7 +901,7 @@ print_results(std::ostream& s, short results_state)
     //print_moments(s, "response function",
     //		  iteratedModel.truth_model().response_labels());
     //archive_moments();
-    //archive_equiv_hf_evals(equivHFEvals); 
+    //archive_equiv_hf_evals(equivHFEvals);
     break;
   default:
     NonDEnsembleSampling::print_results(s, results_state); break;

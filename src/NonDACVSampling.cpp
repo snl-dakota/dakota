@@ -1121,20 +1121,45 @@ update_projected_samples(Real avg_hf_target, const RealVector& avg_eval_ratios,
 }
 
 
+void NonDACVSampling::
+print_results(std::ostream& s, short results_state)
+{
+  switch (solutionMode) {
+  case PILOT_PROJECTION:
+    print_multilevel_evaluation_summary(s, NLev, "Projected");
+    //s << "<<<<< Equivalent number of high fidelity evaluations: "
+    //  << equivHFEvals << '\n';
+    print_variance_reduction(s);
+
+    //s << "\nStatistics based on multilevel sample set:\n";
+    //print_moments(s, "response function",
+    //		  iteratedModel.truth_model().response_labels());
+    //archive_moments();
+    //archive_equiv_hf_evals(equivHFEvals);
+    break;
+  default:
+    NonDEnsembleSampling::print_results(s, results_state); break;
+  }
+}
+
+
 void NonDACVSampling::print_variance_reduction(std::ostream& s)
 {
   size_t wpp7 = write_precision + 7;
-  s << "<<<<< Variance for mean estimator:"
-    << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
-    << " pilot samples): " << std::setw(wpp7) << average(mseIter0) << '\n';
-  if (maxIterations)
-    s << "      Final   MC (" << std::setw(4)
-      << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
-      << std::setw(wpp7) << avgACVEstVar / avgMSERatio
-      << "\n      Final  ACV (sample profile):     "
-      << std::setw(wpp7) << avgACVEstVar
-      << "\n      Final  ACV ratio (1 - R^2):      "
-      << std::setw(wpp7) << avgMSERatio << '\n';
+  s << "<<<<< Variance for mean estimator:";
+
+  if (solutionMode != OFFLINE_PILOT)
+    s << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
+      << " pilot samples): " << std::setw(wpp7) << average(mseIter0);
+
+  String type = (solutionMode == PILOT_PROJECTION) ? "Projected" : "    Final";
+  s << "\n  " << type << "   MC (" << std::setw(4)
+    << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
+    << std::setw(wpp7) << avgACVEstVar / avgMSERatio
+    << "\n  " << type << "  ACV (sample profile):     "
+    << std::setw(wpp7) << avgACVEstVar
+    << "\n  " << type << "  ACV ratio (1 - R^2):      "
+    << std::setw(wpp7) << avgMSERatio << '\n';
 }
 
 
