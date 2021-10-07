@@ -225,8 +225,11 @@ compute_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
   // Defines initial MSE for use as a fixed reference (MC variance from
   // iteration 0 pilot sample) for comparing against convergenceTol
   mc_est_var.sizeUninitialized(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    mc_est_var[qoi] = var_l[qoi] / N_l[qoi];
+  size_t qoi, N_l_q;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    N_l_q = N_l[qoi]; // can be zero in offline pilot cases
+    mc_est_var[qoi] = (N_l_q) ? var_l[qoi] / N_l_q : DBL_MAX;
+  }
 }
 
 

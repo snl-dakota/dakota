@@ -98,15 +98,16 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
     lin_ineq_ub[0] = (Real)maxFunctionEvals; // 1st is budget constraint
     lin_ineq_coeffs.shapeUninitialized(num_lin_con, num_cdv);
     lin_ineq_coeffs = 1.; // dummy updated in compute_ratios()
-    x0 = x_lb = (Real)pilotSamples[numApprox]; break; // *** TO DO: copy array
+    x0 = x_lb = (solutionMode == OFFLINE_PILOT) ? 1. :
+      (Real)pilotSamples[numApprox]; // *** TO DO: copy array
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT:
     nln_ineq_lb.sizeUninitialized(1); nln_ineq_lb[0] = -DBL_MAX; // no low bnd
     nln_ineq_ub.sizeUninitialized(1); nln_ineq_ub[0] = (Real)maxFunctionEvals;
     x0 = x_lb = 1.; // r_i
-    x0[numApprox] = x_lb[numApprox]
-      = (Real)pilotSamples[numApprox]; // pilot <= N*
+    x0[numApprox] = x_lb[numApprox] = (solutionMode == OFFLINE_PILOT) ? 1. :
+      (Real)pilotSamples[numApprox]; // pilot <= N*
     break;
   }
 
@@ -855,16 +856,16 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
   // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H).
   // Can happen if shared pilot rolls up to exceed budget spec.
   Real     budget = (Real)maxFunctionEvals;
-  bool overbudget = (equivHFEvals > budget);
-  if (overbudget) budget = equivHFEvals;
+  bool budget_exhausted = (equivHFEvals >= budget);
+  if (budget_exhausted) budget = equivHFEvals;
   if (mlmfIter == 0) {
     // mseIter0 only uses HF pilot since sum_L_shared / N_shared minus
     // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
     // (This differs from MLMC MSE^0 which uses pilot for all levels.)
     // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
-    compute_mc_estimator_variance(var_H, N_H, mseIter0);
+    compute_mc_estimator_variance(var_H, N_H, mseIter0); // N_H==0 is protected
 
-    if (overbudget) { // there is only one feasible point, no need for solve
+    if (budget_exhausted) { // there is only 1 feasible pt, no need for solve
       if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
       numSamples = 0;  avg_eval_ratios = 1.;  avg_hf_target = avg_N_H;
       avg_acv_estvar = average(mseIter0);     avg_estvar_ratio = 1.;
@@ -901,15 +902,17 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
   case R_ONLY_LINEAR_CONSTRAINT: {
     varianceMinimizer.initial_point(avg_eval_ratios);
 
-    // set linear inequality constraint:
+    // set linear inequality constraint for fixed N:
     //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
     //   \Sum_i w_i   r_i <= equivHF * w / N - w
     //   \Sum_i w_i/w r_i <= equivHF / N - 1
     RealVector lin_ineq_lb(1, false), lin_ineq_ub(1, false), lin_eq_tgt;
     RealMatrix lin_ineq_coeffs(1, numApprox, false), lin_eq_coeffs;
     Real cost_H = cost[numApprox];
-    lin_ineq_lb[0] = -DBL_MAX; // no lower bound
-    lin_ineq_ub[0] = budget / avg_N_H - 1.;
+    lin_ineq_lb[0] = -DBL_MAX;        // no lower bound
+    lin_ineq_ub[0] = (avg_N_H > 1.) ? // protect N_H==0 for offline pilot
+      budget / avg_N_H - 1. : // normal case
+      budget - 1.;            // bound N_H at 1 (TO DO: need to perform sample)
     for (size_t approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
     // we update the Minimizer for user-functions mode (no iteratedModel)
@@ -958,7 +961,7 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
     varianceMinimizer.initial_point(cv0);
 
     // increase nln ineq upper bnd if accumulated cost has exceeded maxFnEvals
-    if (overbudget) {
+    if (budget_exhausted) {
       RealVector nln_ineq_lb(1), nln_ineq_ub(1), nln_eq_tgt;
       nln_ineq_lb[0] = -DBL_MAX;  nln_ineq_ub[0] = budget;
       varianceMinimizer.nonlinear_constraints(nln_ineq_lb, nln_ineq_ub,
@@ -1005,7 +1008,7 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
     copy_data(cv_star, avg_eval_ratios);
     // compute average of MC estimator variance for fixed N_H
     RealVector mc_est_var;
-    compute_mc_estimator_variance(var_H, N_H, mc_est_var);
+    compute_mc_estimator_variance(var_H, N_H, mc_est_var);// N_H==0 is protected
     avg_mc_est_var = average(mc_est_var);
     break;
   }
