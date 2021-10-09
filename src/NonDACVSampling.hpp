@@ -91,11 +91,6 @@ protected:
   void scale_to_budget_with_pilot(Real budget, RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H);
 
-  void update_hf_target(const RealVector& avg_eval_ratios,
-			const RealVector& cost, Real mse_ratio,
-			const RealVector& var_H, const SizetArray& N_H,
-			const RealVector& mse_iter0, Real& avg_hf_target);
-
   void compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
 		      const RealVector& var_H, const RealMatrix& cov_LH,
 		      const RealVector& cost,  RealVector& avg_eval_ratios,
@@ -230,6 +225,9 @@ private:
   /// formulation for optimization sub-problem that minimizes R^2 subject
   /// to different variable sets and different linear/nonlinear constraints
   unsigned short optSubProblemForm;
+  /// user specification to suppress any increments in the number of HF
+  /// evaluations (e.g., because too expensive and no more can be performed)
+  bool truthFixedByPilot;
 
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
