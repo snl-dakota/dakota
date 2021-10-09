@@ -85,6 +85,11 @@ protected:
   void compute_mc_estimator_variance(const RealVector& var_l,
 				     const SizetArray& N_l,
 				     RealVector& mc_est_var);
+  /// compute the variance of the mean estimator (Monte Carlo sample average)
+  /// after projection with additional samples (var_l remains fixed)
+  void project_mc_estimator_variance(const RealVector& var_l,
+				     const SizetArray& N_l, size_t new_samp,
+				     RealVector& mc_est_var);
 
   /// export allSamples to tagged tabular file
   void export_all_samples(String root_prepend, const Model& model,
@@ -225,8 +230,26 @@ compute_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
   // Defines initial MSE for use as a fixed reference (MC variance from
   // iteration 0 pilot sample) for comparing against convergenceTol
   mc_est_var.sizeUninitialized(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    mc_est_var[qoi] = var_l[qoi] / N_l[qoi];
+  size_t qoi, N_l_q;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    N_l_q = N_l[qoi]; // can be zero in offline pilot cases
+    mc_est_var[qoi] = (N_l_q) ? var_l[qoi] / N_l_q : DBL_MAX;
+  }
+}
+
+
+inline void NonDEnsembleSampling::
+project_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
+			      size_t new_samp, RealVector& mc_est_var)
+{
+  // Defines initial MSE for use as a fixed reference (MC variance from
+  // iteration 0 pilot sample) for comparing against convergenceTol
+  mc_est_var.sizeUninitialized(numFunctions);
+  size_t qoi, N_l_q;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    N_l_q = N_l[qoi] + new_samp;
+    mc_est_var[qoi] = (N_l_q) ? var_l[qoi] / N_l_q : DBL_MAX;
+  }
 }
 
 

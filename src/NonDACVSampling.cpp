@@ -45,13 +45,13 @@ NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   NonDNonHierarchSampling(problem_db, model),
   acvSubMethod(problem_db.get_ushort("method.sub_method")),
-  //optSubProblemForm(R_AND_N_NONLINEAR_CONSTRAINT) // default is to increment N
-  optSubProblemForm(N_VECTOR_LINEAR_CONSTRAINT) // default is to increment N
+  truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot"))
 {
-  // option for fixing the number of HF samples (those from the pilot)
-  // where equivHF budget is allocated by optimizing r* for fixed N
-  if (problem_db.get_bool("method.nond.truth_fixed_by_pilot"))
-    optSubProblemForm = R_ONLY_LINEAR_CONSTRAINT;
+  // truthFixedByPilot is a user-specified option for fixing the number of HF
+  // samples (those from the pilot).  In this case, equivHF budget is allocated
+  // by optimizing r* for fixed N.
+  optSubProblemForm = (truthFixedByPilot && solutionMode != OFFLINE_PILOT) ?
+    R_ONLY_LINEAR_CONSTRAINT : N_VECTOR_LINEAR_CONSTRAINT;
   // default solver to OPT++ NIP based on numerical experience
   unsigned short opt_subprob_solver = sub_optimizer_select(
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"), SUBMETHOD_NIP);
@@ -98,15 +98,16 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
     lin_ineq_ub[0] = (Real)maxFunctionEvals; // 1st is budget constraint
     lin_ineq_coeffs.shapeUninitialized(num_lin_con, num_cdv);
     lin_ineq_coeffs = 1.; // dummy updated in compute_ratios()
-    x0 = x_lb = (Real)pilotSamples[numApprox]; break; // *** TO DO: copy array
+    x0 = x_lb = (solutionMode == OFFLINE_PILOT) ? 1. :
+      (Real)pilotSamples[numApprox]; // *** TO DO: copy array
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT:
     nln_ineq_lb.sizeUninitialized(1); nln_ineq_lb[0] = -DBL_MAX; // no low bnd
     nln_ineq_ub.sizeUninitialized(1); nln_ineq_ub[0] = (Real)maxFunctionEvals;
     x0 = x_lb = 1.; // r_i
-    x0[numApprox] = x_lb[numApprox]
-      = (Real)pilotSamples[numApprox]; // pilot <= N*
+    x0[numApprox] = x_lb[numApprox] = (solutionMode == OFFLINE_PILOT) ? 1. :
+      (Real)pilotSamples[numApprox]; // pilot <= N*
     break;
   }
 
@@ -319,8 +320,6 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
     model form and discretization level. */
 void NonDACVSampling::approximate_control_variate_pilot_projection()
 {
-  // *** TO DO: FOR MEAN PROJECTION, DON'T NEED HGHER ORDER ACCUMULATORS...
-
   RealVector sum_H(numFunctions), sum_HH(numFunctions), avg_eval_ratios;
   RealMatrix sum_L_baselineH(numFunctions, numApprox),
     sum_LH(numFunctions, numApprox), var_L;
@@ -415,36 +414,6 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 }
 
 
-void NonDACVSampling::
-update_hf_target(const RealVector& avg_eval_ratios, const RealVector& cost,
-		 Real mse_ratio, const RealVector& var_H, const SizetArray& N_H,
-		 const RealVector& mse_iter0, Real& avg_hf_target)
-{
-  // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L 
-  // > could consider under-relaxing the budget allocation to enable
-  //   additional N_H increments + associated updates to shared samples
-  //   for improving rho2_LH et al.
-  if (maxFunctionEvals != SZ_MAX) {
-    Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
-    avg_hf_target = allocate_budget(avg_eval_ratios, cost);
-  }
-  // MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
-  // --> N_H = mse_ratio * var_H / convTol / mse_iter0
-  // Note: don't simplify further since mse_iter0 is fixed based on pilot
-  else { //if (convergenceTol != -DBL_MAX) {
-    // *** TO DO: need special default value (-DBL_MAX) to detect user spec
-    Cout << "Scaling profile for convergenceTol = " << convergenceTol;
-    Real avg_varH_div_mse0 = 0.;
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      avg_varH_div_mse0 += var_H[qoi] / mse_iter0[qoi];
-    avg_varH_div_mse0 /= numFunctions;
-    avg_hf_target = mse_ratio * avg_varH_div_mse0 / convergenceTol;
-  }
-  //avg_hf_target = std::min(budget_target, ctol_target); // enforce both
-  Cout << ": average HF target = " << avg_hf_target << std::endl;
-}
-
-
 bool NonDACVSampling::
 approx_increment(const RealVector& avg_eval_ratios,
 		 const Sizet2DArray& N_L_refined, Real hf_target,
@@ -483,6 +452,244 @@ approx_increment(const RealVector& avg_eval_ratios,
     Cout << "\nNo ACV approx sample increment for approximations ["
 	 << start+1 << ", " << end << ']' << std::endl;
     return false;
+  }
+}
+
+
+void NonDACVSampling::
+compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
+	       const RealVector& var_H, const RealMatrix& cov_LH,
+	       const RealVector& cost,  RealVector& avg_eval_ratios,
+	       Real& avg_acv_estvar,    Real& avg_estvar_ratio,
+	       Real& avg_hf_target)
+{
+  // --------------------------------------
+  // Configure the optimization sub-problem
+  // --------------------------------------
+  // Set initial guess based on MFMC eval ratios (iter 0) or warm started from
+  // previous solution
+  Real avg_N_H = average(N_H);
+  // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H).
+  // Can happen if shared pilot rolls up to exceed budget spec.
+  Real     budget = (Real)maxFunctionEvals;
+  bool budget_exhausted = (equivHFEvals >= budget);
+  if (budget_exhausted) budget = equivHFEvals;
+  if (mlmfIter == 0) {
+    // mseIter0 only uses HF pilot since sum_L_shared / N_shared minus
+    // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
+    // (This differs from MLMC MSE^0 which uses pilot for all levels.)
+    // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
+    compute_mc_estimator_variance(var_H, N_H, mseIter0); // N_H==0 is protected
+
+    if (budget_exhausted) { // there is only 1 feasible pt, no need for solve
+      if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
+      numSamples = 0;  avg_eval_ratios = 1.;  avg_hf_target = avg_N_H;
+      avg_acv_estvar = average(mseIter0);     avg_estvar_ratio = 1.;
+      return;
+    }
+    else { // compute initial estimate of r* from MFMC
+      RealMatrix rho2_LH, eval_ratios;
+      covariance_to_correlation_sq(cov_LH, var_L, var_H, rho2_LH);
+      mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
+      average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
+      if (outputLevel >= NORMAL_OUTPUT)
+        Cout << "Initial guess from MFMC (avg eval ratios):\n"
+	     << avg_eval_ratios << std::endl;
+      // scale to enforce budget constraint.  Since the profile does not emerge
+      // from pilot in ACV, don't select an infeasible initial guess:
+      // > if N* < N_pilot, scale back r* for use initial = scaled_r*,N_pilot
+      // > if N* > N_pilot, use initial = r*,N*
+      avg_hf_target = allocate_budget(avg_eval_ratios, cost);
+      if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
+	scale_to_budget_with_pilot(budget, avg_eval_ratios, cost, avg_N_H);
+	avg_hf_target = avg_N_H;
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "MFMC initial guess rescaled to budget:\n" << avg_eval_ratios
+	       << std::endl;
+      }
+    }
+  }
+  // else warm start from previous solution
+  // > no scaling needed from prev soln (as in NonDLocalReliability) since
+  //   updated avg_N_H now includes allocation from previous solution and is
+  //   active on constraint bound (excepting integer sample rounding)
+
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: {
+    varianceMinimizer.initial_point(avg_eval_ratios);
+
+    // set linear inequality constraint for fixed N:
+    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+    //   \Sum_i w_i   r_i <= equivHF * w / N - w
+    //   \Sum_i w_i/w r_i <= equivHF / N - 1
+    RealVector lin_ineq_lb(1, false), lin_ineq_ub(1, false), lin_eq_tgt;
+    RealMatrix lin_ineq_coeffs(1, numApprox, false), lin_eq_coeffs;
+    Real cost_H = cost[numApprox];
+    lin_ineq_lb[0] = -DBL_MAX;        // no lower bound
+    lin_ineq_ub[0] = (avg_N_H > 1.) ? // protect N_H==0 for offline pilot
+      budget / avg_N_H - 1. : // normal case
+      budget - 1.;            // bound N_H at 1 (TO DO: need to perform sample)
+    for (size_t approx=0; approx<numApprox; ++approx)
+      lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
+    // we update the Minimizer for user-functions mode (no iteratedModel)
+    varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
+					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
+    break;
+  }
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    size_t num_cdv = numApprox+1, num_lin_con = numApprox+1;
+    RealVector cv0(num_cdv);
+    copy_data_partial(avg_eval_ratios, cv0, 0);  cv0[numApprox] = 1.;
+    if (mlmfIter) cv0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
+    else          cv0.scale(avg_hf_target);
+    varianceMinimizer.initial_point(cv0);
+    //Cout << "Variance minimizer initial guess cv0 =\n" << cv0;
+
+    RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con),
+               lin_eq_tgt;
+    RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
+    lin_ineq_lb = -DBL_MAX; // no lower bounds
+    // linear inequality constraint on budget:
+    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+    //   N w + \Sum_i w_i N_i <= equivHF * w
+    //   N + \Sum_i w_i/w N_i <= equivHF
+    lin_ineq_ub[0] = budget;
+    Real cost_H = cost[numApprox];
+    for (size_t approx=0; approx<numApprox; ++approx)
+      lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
+    lin_ineq_coeffs(0,numApprox) = 1.;
+    // linear inequality constraints on N_i > N prevent numerical exceptions:
+    // N_i >= N transformed to N_i > N using RATIO_NUDGE
+    for (size_t approx=1; approx<=numApprox; ++approx) {
+      lin_ineq_coeffs(approx, approx-1) = -1.;
+      lin_ineq_coeffs(approx,numApprox) =  1. + RATIO_NUDGE;// N_i > N (r_i > 1)
+      //lin_ineq_coeffs(approx,approx)  =  1.;// enforce N_i >= N_{i+1}
+    }
+    // we update the Minimizer for user-functions mode (no iteratedModel)
+    varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
+					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
+    break;
+  }
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
+    RealVector cv0(numApprox+1);
+    copy_data_partial(avg_eval_ratios, cv0, 0);          // r_i
+    cv0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
+    varianceMinimizer.initial_point(cv0);
+
+    // increase nln ineq upper bnd if accumulated cost has exceeded maxFnEvals
+    if (budget_exhausted) {
+      RealVector nln_ineq_lb(1), nln_ineq_ub(1), nln_eq_tgt;
+      nln_ineq_lb[0] = -DBL_MAX;  nln_ineq_ub[0] = budget;
+      varianceMinimizer.nonlinear_constraints(nln_ineq_lb, nln_ineq_ub,
+					      nln_eq_tgt);
+    }
+
+    /*
+    // For this case, could allow the optimal profile to emerge from pilot by
+    // allowing N* less than the incurred cost (e.g., setting N_lb to 1), but
+    // instead we target r*,N* subject to the incurred cost of shared samples
+    // by updating N_lb = latest N_H and retaining r_lb = 1.
+    size_t num_cdv = numApprox + 1; // evaluation ratios, N_H
+    RealVector  x_lb(num_cdv, false), x_ub(num_cdv, false);
+    x_lb = 1.;  x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5);
+    x_ub = DBL_MAX; // no upper bounds
+    varianceMinimizer.variable_bounds(x_lb, x_ub);
+    */
+
+    // Consider adding linear constraints suggested in ACV paper
+    break;
+  }
+  }
+
+  // ----------------------------------
+  // Solve the optimization sub-problem
+  // ----------------------------------
+  // compute optimal r*,N* (or r* for fixed N) that maximizes variance reduction
+  varianceMinimizer.run();
+
+  // -------------------------------------
+  // Post-process the optimization results
+  // -------------------------------------
+  // Recover optimizer results for average {eval,mse} ratios.  Also compute
+  // shared increment from N* or from targeting specified budget or MSE.
+  const RealVector& cv_star
+    = varianceMinimizer.variables_results().continuous_variables();
+  const RealVector& fn_star
+    = varianceMinimizer.response_results().function_values();
+  //Cout << "Minimizer results:\ncv_star =\n"<<cv_star<<"fn_star =\n"<<fn_star;
+
+  // Objective recovery from optimizer provides std::log(average(acv_estvar))
+  // (a QoI-vector prior to averaging would require recomputation from r*,N*)
+  // Note: this value corresponds to N* (_after_ numSamples applied)
+  avg_acv_estvar = std::exp(fn_star(0)); // var_H / N_H (1 - R^2)
+
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT:
+    copy_data(cv_star, avg_eval_ratios); // r*
+    // Allow for constraint to be inactive at optimum, but generally the
+    // opt sub-prob will allocate full budget (--> numSamples = deltaN = 0)
+    // since larger eval ratios will increase R^2.
+    // Important: r* for fixed N is suboptimal w.r.t. r*,N* --> unlike MFMC,
+    // this approach does not converge to the desired sample profile, except
+    // for special case where user specifies a fixed N_H + total budget
+    // (see option "truth_fixed_by_pilot").
+    if (maxFunctionEvals != SZ_MAX) {
+      // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L
+      // > can also under-relax the budget allocation to enable additional N_H
+      //   increments + associated shared sample sets to refine rho2_LH et al.
+      Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals;
+      avg_hf_target = allocate_budget(avg_eval_ratios, cost);
+    }
+    else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: detect user spec
+      // MSE target = convTol * mse_iter0 = mse_ratio * varH / N_target
+      //            = curr_mse * N_curr / N_target
+      // --> N_target = curr_mse * N_curr / (convTol * mse_iter0)
+      // Note: mse_iter0 is fixed based on pilot
+      Cout << "Scaling profile for convergenceTol = " << convergenceTol;
+      avg_hf_target = avg_acv_estvar * avg_N_H
+	            / (convergenceTol * average(mseIter0));
+    }
+    //avg_hf_target = std::min(budget_target, ctol_target); // enforce both
+    Cout << ": average HF target = " << avg_hf_target << std::endl;
+    break;
+  case N_VECTOR_LINEAR_CONSTRAINT:  case R_AND_N_NONLINEAR_CONSTRAINT:
+    // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
+    // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
+    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r_i | N_i
+    avg_hf_target = cv_star[numApprox];                             // N*
+    if (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT)
+      avg_eval_ratios.scale(1./avg_hf_target); // N_i -> r_i
+    break;
+  }
+
+  // compute sample increment for HF from current to target:
+  numSamples = (truthFixedByPilot) ? 0 :
+    one_sided_delta(avg_N_H, avg_hf_target);
+
+  //if (finished) { // metrics not needed unless print_variance_reduction()
+
+  // All cases employ a projected MC MSE to match the projected ACV MSE from N*
+  // (N* may include a numSamples increment not yet performed)
+  RealVector mc_estvar;
+  project_mc_estimator_variance(var_H, N_H, numSamples, mc_estvar);
+  Real avg_mc_estvar = average(mc_estvar);
+
+  // Report ratio of averages rather that average of ratios (see notes in
+  // print_variance_reduction())
+  avg_estvar_ratio = avg_acv_estvar / avg_mc_estvar;  // (1 - R^2)
+  //RealVector estvar_ratio(numFunctions, false);
+  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
+  //  estvar_ratio[qoi] = 1. - R_sq[qoi];// compute from CF_inv,A->compute_Rsq()
+  //avg_estvar_ratio = average(estvar_ratio);
+
+  //}
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    for (size_t approx=0; approx<numApprox; ++approx)
+      Cout << "Approx " << approx+1 << ": average evaluation ratio = "
+	   << avg_eval_ratios[approx] << '\n';
+    Cout << "Average ACV variance / average MC variance = "
+	 << avg_estvar_ratio << std::endl;
   }
 }
 
@@ -840,219 +1047,6 @@ compute_LL_covariance(const RealMatrix& sum_L_shared,
 
 
 void NonDACVSampling::
-compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
-	       const RealVector& var_H, const RealMatrix& cov_LH,
-	       const RealVector& cost,  RealVector& avg_eval_ratios,
-	       Real& avg_acv_estvar,    Real& avg_estvar_ratio,
-	       Real& avg_hf_target)
-{
-  // --------------------------------------
-  // Configure the optimization sub-problem
-  // --------------------------------------
-  // Set initial guess based on MFMC eval ratios (iter 0) or warm started from
-  // previous solution
-  Real avg_N_H = average(N_H);
-  // Modify budget to allow a feasible soln (var lower bnds: r_i > 1, N > N_H).
-  // Can happen if shared pilot rolls up to exceed budget spec.
-  Real     budget = (Real)maxFunctionEvals;
-  bool overbudget = (equivHFEvals > budget);
-  if (overbudget) budget = equivHFEvals;
-  if (mlmfIter == 0) {
-    // mseIter0 only uses HF pilot since sum_L_shared / N_shared minus
-    // sum_L_refined / N_refined are zero for CVs prior to sample refinement.
-    // (This differs from MLMC MSE^0 which uses pilot for all levels.)
-    // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
-    compute_mc_estimator_variance(var_H, N_H, mseIter0);
-
-    if (overbudget) { // there is only one feasible point, no need for solve
-      if (avg_eval_ratios.empty()) avg_eval_ratios.sizeUninitialized(numApprox);
-      numSamples = 0;  avg_eval_ratios = 1.;  avg_hf_target = avg_N_H;
-      avg_acv_estvar = average(mseIter0);     avg_estvar_ratio = 1.;
-      return;
-    }
-    else { // compute initial estimate of r* from MFMC
-      RealMatrix rho2_LH, eval_ratios;
-      covariance_to_correlation_sq(cov_LH, var_L, var_H, rho2_LH);
-      mfmc_eval_ratios(rho2_LH, cost, eval_ratios);
-      average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
-      if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "Initial guess from MFMC (avg eval ratios):\n"
-	     << avg_eval_ratios << std::endl;
-      // scale to enforce budget constraint.  Since the profile does not emerge
-      // from pilot in ACV, don't select an infeasible initial guess:
-      // > if N* < N_pilot, scale back r* for use initial = scaled_r*,N_pilot
-      // > if N* > N_pilot, use initial = r*,N*
-      avg_hf_target = allocate_budget(avg_eval_ratios, cost);
-      if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
-	scale_to_budget_with_pilot(budget, avg_eval_ratios, cost, avg_N_H);
-	avg_hf_target = avg_N_H;
-	if (outputLevel >= NORMAL_OUTPUT)
-	  Cout << "MFMC initial guess rescaled to budget:\n" << avg_eval_ratios
-	       << std::endl;
-      }
-    }
-  }
-  // else warm start from previous solution
-  // > no scaling needed from prev soln (as in NonDLocalReliability) since
-  //   updated avg_N_H now includes allocation from previous solution and is
-  //   active on constraint bound (excepting integer sample rounding)
-
-  switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT: {
-    varianceMinimizer.initial_point(avg_eval_ratios);
-
-    // set linear inequality constraint:
-    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
-    //   \Sum_i w_i   r_i <= equivHF * w / N - w
-    //   \Sum_i w_i/w r_i <= equivHF / N - 1
-    RealVector lin_ineq_lb(1, false), lin_ineq_ub(1, false), lin_eq_tgt;
-    RealMatrix lin_ineq_coeffs(1, numApprox, false), lin_eq_coeffs;
-    Real cost_H = cost[numApprox];
-    lin_ineq_lb[0] = -DBL_MAX; // no lower bound
-    lin_ineq_ub[0] = budget / avg_N_H - 1.;
-    for (size_t approx=0; approx<numApprox; ++approx)
-      lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
-    // we update the Minimizer for user-functions mode (no iteratedModel)
-    varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
-					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
-    break;
-  }
-  case N_VECTOR_LINEAR_CONSTRAINT: {
-    size_t num_cdv = numApprox+1, num_lin_con = numApprox+1;
-    RealVector cv0(num_cdv);
-    copy_data_partial(avg_eval_ratios, cv0, 0);  cv0[numApprox] = 1.;
-    if (mlmfIter) cv0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
-    else          cv0.scale(avg_hf_target);
-    varianceMinimizer.initial_point(cv0);
-    //Cout << "Variance minimizer initial guess cv0 =\n" << cv0;
-
-    RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con),
-               lin_eq_tgt;
-    RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
-    lin_ineq_lb = -DBL_MAX; // no lower bounds
-    // linear inequality constraint on budget:
-    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
-    //   N w + \Sum_i w_i N_i <= equivHF * w
-    //   N + \Sum_i w_i/w N_i <= equivHF
-    lin_ineq_ub[0] = budget;
-    Real cost_H = cost[numApprox];
-    for (size_t approx=0; approx<numApprox; ++approx)
-      lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
-    lin_ineq_coeffs(0,numApprox) = 1.;
-    // linear inequality constraints on N_i > N prevent numerical exceptions:
-    // N_i >= N transformed to N_i > N using RATIO_NUDGE
-    for (size_t approx=1; approx<=numApprox; ++approx) {
-      lin_ineq_coeffs(approx, approx-1) = -1.;
-      lin_ineq_coeffs(approx,numApprox) =  1. + RATIO_NUDGE;// N_i > N (r_i > 1)
-      //lin_ineq_coeffs(approx,approx)  =  1.;// enforce N_i >= N_{i+1}
-    }
-    // we update the Minimizer for user-functions mode (no iteratedModel)
-    varianceMinimizer.linear_constraints(lin_ineq_coeffs, lin_ineq_lb,
-					 lin_ineq_ub, lin_eq_coeffs,lin_eq_tgt);
-    break;
-  }
-  case R_AND_N_NONLINEAR_CONSTRAINT: {
-    RealVector cv0(numApprox+1);
-    copy_data_partial(avg_eval_ratios, cv0, 0);          // r_i
-    cv0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
-    varianceMinimizer.initial_point(cv0);
-
-    // increase nln ineq upper bnd if accumulated cost has exceeded maxFnEvals
-    if (overbudget) {
-      RealVector nln_ineq_lb(1), nln_ineq_ub(1), nln_eq_tgt;
-      nln_ineq_lb[0] = -DBL_MAX;  nln_ineq_ub[0] = budget;
-      varianceMinimizer.nonlinear_constraints(nln_ineq_lb, nln_ineq_ub,
-					      nln_eq_tgt);
-    }
-
-    /*
-    // For this case, could allow the optimal profile to emerge from pilot by
-    // allowing N* less than the incurred cost (e.g., setting N_lb to 1), but
-    // instead we target r*,N* subject to the incurred cost of shared samples
-    // by updating N_lb = latest N_H and retaining r_lb = 1.
-    size_t num_cdv = numApprox + 1; // evaluation ratios, N_H
-    RealVector  x_lb(num_cdv, false), x_ub(num_cdv, false);
-    x_lb = 1.;  x_lb[numApprox] = avg_N_H;//std::floor(avg_N_H + .5);
-    x_ub = DBL_MAX; // no upper bounds
-    varianceMinimizer.variable_bounds(x_lb, x_ub);
-    */
-
-    // Consider adding linear constraints suggested in ACV paper
-    break;
-  }
-  }
-
-  // ----------------------------------
-  // Solve the optimization sub-problem
-  // ----------------------------------
-  // compute optimal r*,N* (or r* for fixed N) that maximizes variance reduction
-  varianceMinimizer.run();
-
-  // -------------------------------------
-  // Post-process the optimization results
-  // -------------------------------------
-  // Recover optimizer results for average {eval,mse} ratios.  Also compute
-  // shared increment from N* or from targeting specified budget or MSE.
-  const RealVector& cv_star
-    = varianceMinimizer.variables_results().continuous_variables();
-  const RealVector& fn_star
-    = varianceMinimizer.response_results().function_values();
-  //Cout << "Minimizer results:\ncv_star =\n"<<cv_star<<"fn_star =\n"<<fn_star;
-  Real avg_mc_est_var;
-  switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT: {
-    // simple copy to avg_eval_ratios:
-    copy_data(cv_star, avg_eval_ratios);
-    // compute average of MC estimator variance for fixed N_H
-    RealVector mc_est_var;
-    compute_mc_estimator_variance(var_H, N_H, mc_est_var);
-    avg_mc_est_var = average(mc_est_var);
-    break;
-  }
-  case N_VECTOR_LINEAR_CONSTRAINT:  case R_AND_N_NONLINEAR_CONSTRAINT:
-    // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
-    // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
-    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r_i | N_i
-    avg_hf_target = cv_star[numApprox];                             // N*
-    if (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT)
-      avg_eval_ratios.scale(1./avg_hf_target); // N_i -> r_i
-    // compute sample increment from current to N*:
-    numSamples = one_sided_delta(avg_N_H, avg_hf_target);
-    // compute average of MC est var for final N* (used in final ACV est var)
-    avg_mc_est_var = average(var_H) / avg_hf_target;
-    break;
-  }
-
-  // Objective recovery from optimizer provides std::log(average(est_var))
-  // (avoid recomputation from r*,N*)
-  avg_acv_estvar   = std::exp(fn_star(0)); // var_H / N_H (1 - R^2)
-  avg_estvar_ratio = avg_acv_estvar / avg_mc_est_var;  // (1 - R^2)
-  if (outputLevel >= NORMAL_OUTPUT) {
-    for (size_t approx=0; approx<numApprox; ++approx)
-      Cout << "Approx " << approx+1 << ": average evaluation ratio = "
-	   << avg_eval_ratios[approx] << '\n';
-    Cout << "ACV variance / MC variance = " << avg_estvar_ratio << std::endl;
-  }
-
-  switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT:
-    // Allow for constraint to be inactive at optimum, but generally the
-    // opt sub-prob will allocate full budget (--> numSamples = deltaN = 0)
-    // since larger eval ratios will increase R^2.
-    // Important: r* for fixed N is suboptimal w.r.t. r*,N* --> unlike MFMC,
-    // this approach does not converge to the desired sample profile, except
-    // for special case where user specifies a fixed N_H + total budget
-    // (see option "truth_fixed_by_pilot").
-    update_hf_target(avg_eval_ratios, cost, avg_estvar_ratio, var_H, N_H,
-		     mseIter0, avg_hf_target);
-    // compute numSamples increment relative to average(N_H)
-    numSamples = one_sided_delta(avg_N_H, avg_hf_target);
-    break;
-  }
-}
-
-
-void NonDACVSampling::
 acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 		IntRealMatrixMap& sum_L_refined,  IntRealVectorMap& sum_H,
 		IntRealSymMatrixArrayMap& sum_LL, IntRealMatrixMap& sum_LH,
@@ -1121,20 +1115,54 @@ update_projected_samples(Real avg_hf_target, const RealVector& avg_eval_ratios,
 }
 
 
+void NonDACVSampling::
+print_results(std::ostream& s, short results_state)
+{
+  switch (solutionMode) {
+  case PILOT_PROJECTION:
+    print_multilevel_evaluation_summary(s, NLev, "Projected");
+    //s << "<<<<< Equivalent number of high fidelity evaluations: "
+    //  << equivHFEvals << '\n';
+    print_variance_reduction(s);
+
+    //s << "\nStatistics based on multilevel sample set:\n";
+    //print_moments(s, "response function",
+    //		  iteratedModel.truth_model().response_labels());
+    //archive_moments();
+    //archive_equiv_hf_evals(equivHFEvals);
+    break;
+  default:
+    NonDEnsembleSampling::print_results(s, results_state); break;
+  }
+}
+
+
 void NonDACVSampling::print_variance_reduction(std::ostream& s)
 {
   size_t wpp7 = write_precision + 7;
-  s << "<<<<< Variance for mean estimator:"
-    << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
-    << " pilot samples): " << std::setw(wpp7) << average(mseIter0) << '\n';
-  if (maxIterations)
-    s << "      Final   MC (" << std::setw(4)
-      << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
-      << std::setw(wpp7) << avgACVEstVar / avgMSERatio
-      << "\n      Final  ACV (sample profile):     "
-      << std::setw(wpp7) << avgACVEstVar
-      << "\n      Final  ACV ratio (1 - R^2):      "
-      << std::setw(wpp7) << avgMSERatio << '\n';
+  s << "<<<<< Variance for mean estimator:";
+
+  if (solutionMode != OFFLINE_PILOT)
+    s << "\n      Initial MC (" << std::setw(4) << pilotSamples[numApprox]
+      << " pilot samples): " << std::setw(wpp7) << average(mseIter0);
+
+  String type = (solutionMode == PILOT_PROJECTION) ? "Projected" : "    Final";
+  // Ordering of averages:
+  // > recomputing final MC MSE, rather than dividing the two averages, gives
+  //   a result that is consistent with average(mseIter0) when N* = pilot.
+  // > The ACV ratio then differs from final ACV / final MC (due to recovering
+  //   avgACVEstVar from the optimizer obj fn), but the difference is small and
+  //   less immediately evident.
+  // > General preference is to delay averaging as long as possible.
+  RealVector final_mc_mse;
+  compute_mc_estimator_variance(varH, numH, final_mc_mse);
+  s << "\n  " << type << "   MC (" << std::setw(4)
+    << (size_t)std::floor(average(numH) + .5) << " HF samples):    "
+    << std::setw(wpp7) << average(final_mc_mse) //avgACVEstVar / avgMSERatio
+    << "\n  " << type << "  ACV (sample profile):     "
+    << std::setw(wpp7) << avgACVEstVar
+    << "\n  " << type << "  ACV ratio (1 - R^2):      "
+    << std::setw(wpp7) << avgMSERatio << '\n';
 }
 
 

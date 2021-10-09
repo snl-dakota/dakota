@@ -901,7 +901,7 @@ print_results(std::ostream& s, short results_state)
     //print_moments(s, "response function",
     //		  iteratedModel.truth_model().response_labels());
     //archive_moments();
-    //archive_equiv_hf_evals(equivHFEvals); 
+    //archive_equiv_hf_evals(equivHFEvals);
     break;
   default:
     NonDEnsembleSampling::print_results(s, results_state); break;
@@ -933,9 +933,8 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     << "\n  " << type << " MFMC (sample profile):     "
     << std::setw(wpp7) << avg_mfmc_est_var
     << "\n  " << type << " MFMC ratio (1 - R^2):      "
-    // average each set of est variances rather than averaging ratios
-    // (consistent with ACV definition which recovers a scalar avgACVEstVar
-    // as sub-problem objective)
+    // report ratio of averages rather than average of ratios
+    // (consistent with ACV definition which would have to recompute the latter)
     << std::setw(wpp7) << avg_mfmc_est_var / avg_mc_est_var << '\n';
 }
 
