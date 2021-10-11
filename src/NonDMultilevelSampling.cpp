@@ -508,25 +508,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
          << "\t" << NTargetQoiFN(2, 0) << "\t" << (NTargetQoiFN(2, 1)) << "\t" << NTargetQoiFN(2, 2) << "\t" << (NTargetQoiFN(2, 3)) 
          << "\t" << convergenceTolVec[1]  << "\t" << convergenceTolVec[2] << "\n";
   */
-  //Problem18
-  if(num_steps == 2){
-  myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                     
-  myfile << N_l[0][0]             << "\t" << N_l[1][0] 
-         << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1))
-         << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1)) << "\n";
-  }else if(num_steps == 3){
-  //3 levels
-  myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      
-  myfile << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]
-         << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1)) << "\t" << (NTargetQoi(0, 2))
-         << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1)) << "\t" << (NTargetQoiFN(0, 2)) << "\n";
-  }else if(num_steps == 4){
-  //4 levels
-  myfile.open("problem18_sampleallocation_sigma.txt", std::ofstream::out | std::ofstream::app);                      
-  myfile << N_l[0][0]             << "\t" << N_l[1][0] << "\t" << N_l[2][0]<< "\t" << N_l[3][0]
-         << "\t" << NTargetQoi(0, 0)    << "\t" << (NTargetQoi(0, 1)) << "\t" << (NTargetQoi(0, 2))<< "\t" << (NTargetQoi(0, 3))
-         << "\t" << NTargetQoiFN(0, 0) << "\t" << (NTargetQoiFN(0, 1)) << "\t" << (NTargetQoiFN(0, 2))<< "\t" << (NTargetQoiFN(0, 3)) << "\n";
-  }
+
   myfile.close();
   // roll up moment contributions
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
