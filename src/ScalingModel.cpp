@@ -126,7 +126,8 @@ ScalingModel(Model& sub_model):
   }
 
   // callbacks for RecastModel transformations: default maps when not needed
-  void (*variables_map) (const Variables&, Variables&) = variables_scaler;
+  void (*variables_map) (const Variables&, Variables&) =
+    varsScaleFlag ? variables_scaler : NULL;
   void (*set_map)  (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
   // register primary response scaler if requested, or variables scaled
   void (*primary_resp_map) 
@@ -779,6 +780,11 @@ variables_scaler(const Variables& scaled_vars, Variables& native_vars)
                                     scaleModelInstance->cvScaleTypes,
                                     scaleModelInstance->cvScaleMultipliers, 
                                     scaleModelInstance->cvScaleOffsets));
+
+  // scaling only supports continuous variables, but rest need to come along
+  native_vars.discrete_int_variables(scaled_vars.discrete_int_variables());
+  native_vars.discrete_string_variables(scaled_vars.discrete_string_variables());
+  native_vars.discrete_real_variables(scaled_vars.discrete_real_variables());
 }
 
 void ScalingModel::
@@ -789,6 +795,10 @@ variables_unscaler(const Variables& native_vars, Variables& scaled_vars)
                                     scaleModelInstance->cvScaleTypes,
                                     scaleModelInstance->cvScaleMultipliers,
                                     scaleModelInstance->cvScaleOffsets));
+  // scaling only supports continuous variables, but rest need to come along
+  scaled_vars.discrete_int_variables(native_vars.discrete_int_variables());
+  scaled_vars.discrete_string_variables(native_vars.discrete_string_variables());
+  scaled_vars.discrete_real_variables(native_vars.discrete_real_variables());
 }
 
 
