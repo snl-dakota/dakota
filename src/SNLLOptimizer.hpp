@@ -139,7 +139,7 @@ public:
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
-  /// gradient case: numerical objective, analytic constraints
+  /// mixed gradient case: numerical objective, analytic constraints
   SNLLOptimizer(const RealVector& initial_pt,
     const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
     const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
@@ -153,7 +153,7 @@ public:
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
-  /// gradient case: analytic objective, numerical constraints
+  /// mixed gradient case: analytic objective, numerical constraints
   SNLLOptimizer(const RealVector& initial_pt,
     const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
     const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,

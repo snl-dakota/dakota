@@ -75,7 +75,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 
 NonD::NonD(unsigned short method_name, Model& model):
   Analyzer(method_name, model), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), finalMomentsType(STANDARD_MOMENTS)
+  pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -91,7 +91,7 @@ NonD::NonD(unsigned short method_name, Model& model):
 NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 	   const RealVector& upper_bnds):
   Analyzer(method_name), epistemicStats(false), totalLevelRequests(0),
-  cdfFlag(true), pdfOutput(false), finalMomentsType(STANDARD_MOMENTS)
+  cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.
@@ -313,7 +313,7 @@ void NonD::initialize_final_statistics()
       std::sprintf(resp_tag, "_r%zu", i+1);
       if (finalMomentsType) {
 	stats_labels[cntr++] = String("mean") + String(resp_tag);
-	stats_labels[cntr++] = (finalMomentsType == CENTRAL_MOMENTS) ?
+	stats_labels[cntr++] = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
 	  String("variance") + String(resp_tag) :
 	  String("std_dev")  + String(resp_tag);
       }
@@ -1153,11 +1153,12 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
 
 
 void NonD::
-print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp)
+print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp,
+				    String type)
 {
   size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
-  if (num_mf == 1)  s << "<<<<< Final samples per level:\n";
-  else              s << "<<<<< Final samples per model form:\n";
+  if (num_mf == 1)  s << "<<<<< " << type << " samples per level:\n";
+  else              s << "<<<<< " << type << " samples per model form:\n";
   for (i=0; i<num_mf; ++i) {
     if (num_mf > 1) s << "      Model Form " << i+1 << ":\n";
     print_multilevel_evaluation_summary(s, N_samp[i]);
@@ -1165,7 +1166,9 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp)
 }
 
 
-unsigned short NonD::sub_optimizer_select(unsigned short requested_sub_method)
+unsigned short NonD::
+sub_optimizer_select(unsigned short requested_sub_method,
+		     unsigned short   default_sub_method)
 {
   unsigned short assigned_sub_method = requested_sub_method;
   switch (requested_sub_method) {
@@ -1183,19 +1186,34 @@ unsigned short NonD::sub_optimizer_select(unsigned short requested_sub_method)
     assigned_sub_method = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
     break;
-  case SUBMETHOD_DEFAULT: // use NPSOL SQP if available
+  case SUBMETHOD_DEFAULT:
+    switch (default_sub_method) {
+    case SUBMETHOD_SQP: // use SUBMETHOD_SQP if available
 #ifdef HAVE_NPSOL
-    assigned_sub_method = SUBMETHOD_SQP;
+      assigned_sub_method = SUBMETHOD_SQP;
 #elif HAVE_OPTPP
-    assigned_sub_method = SUBMETHOD_NIP;
-#else
-    Cerr << "\nError: this executable not configured with an available "
-	 << "sub-method solver." << std::endl;
-    assigned_sub_method = SUBMETHOD_NONE;
+      assigned_sub_method = SUBMETHOD_NIP;
 #endif
+      break;
+    case SUBMETHOD_NIP:
+#ifdef HAVE_OPTPP
+      assigned_sub_method = SUBMETHOD_NIP;
+#elif HAVE_NPSOL
+      assigned_sub_method = SUBMETHOD_SQP;
+#endif
+      break;
+    }
+    if (assigned_sub_method == SUBMETHOD_DEFAULT) {
+      Cerr << "\nError: this executable not configured with an available "
+	   << "sub-method solver." << std::endl;
+      assigned_sub_method = SUBMETHOD_NONE;
+    }
     break;
-  //case SUBMETHOD_NONE:
-  //  break;
+  case SUBMETHOD_NONE:
+    // assigned = requested = SUBMETHOD_NONE is valid for the case where a
+    // sub-method solve is to be suppressed; clients are free to treat this
+    // return value as an error
+    break;
   default:
     Cerr << "\nError: sub-method not recognized in NonD::"
 	 << "sub_optimizer_select()." << std::endl;

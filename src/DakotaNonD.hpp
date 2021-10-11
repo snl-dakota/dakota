@@ -186,7 +186,8 @@ protected:
 					   const Sizet2DArray& N_samp);
   /// print evaluation summary for multilevel sampling across 3D profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const Sizet3DArray& N_samp);
+					   const Sizet3DArray& N_samp,
+					   String type = "Final");
 
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
@@ -196,7 +197,8 @@ protected:
 
   /// utility for vetting sub-method request against optimizers within
   /// the package configuration
-  unsigned short sub_optimizer_select(unsigned short requested_sub_method);
+  unsigned short sub_optimizer_select(unsigned short requested_sub_method,
+    unsigned short default_sub_method = SUBMETHOD_SQP);
 
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
@@ -423,12 +425,12 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
   switch (power) {
   case 1: // average difference same as difference of averages
     for (i=0; i<len; ++i)
-      pow_mean += targets[i] - current[i];
+      pow_mean += targets[i] - (Real)current[i]; // Note: not one-sided 
     pow_mean /= len;
     break;
   case SZ_MAX: // find max difference
     for (i=0; i<len; ++i) {
-      diff = targets[i] - current[i];
+      diff = targets[i] - (Real)current[i];
       if (diff > pow_mean) pow_mean = diff;
     }
     break;

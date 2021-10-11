@@ -1235,7 +1235,7 @@ void NonDMultilevelSampling::compute_moments(const IntRealMatrixMap& sum_Ql, con
     check_negative(cm2);
     check_negative(cm4);
     Real *mom_q = momentStats[qoi];
-    if (finalMomentsType == CENTRAL_MOMENTS) {
+    if (finalMomentsType == Pecos::CENTRAL_MOMENTS) {
       mom_q[0] = cm1;
       mom_q[1] = cm2;
       mom_q[2] = cm3;
@@ -1301,7 +1301,7 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
     }
 
     Real mom2 = momentStats(1, qoi);
-    if (finalMomentsType == STANDARD_MOMENTS && mom2 > 0.) {
+    if (finalMomentsType == Pecos::STANDARD_MOMENTS && mom2 > 0.) {
       // std error of std deviation estimator
 
       // An approximation for std error of a fn of another std error estimator

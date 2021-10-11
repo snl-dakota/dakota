@@ -364,7 +364,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   // inactive vars would not be properly captured); rather, all of vars must be
   // mapped through.  This is important in particular for OUU since the inactive
   // variables are carrying data from the outer loop.
-  numACV = vars.acv();
+  numACV  = vars.acv();
   numADIV = vars.adiv(); 
   numADRV = vars.adrv();
   numADSV = vars.adsv();
@@ -375,7 +375,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   if (localDataView & VARIABLES_MAP) {
     size_t i;
     // set labels once (all processors)
-    if (xCMLabels.size()  != numACV || xDIMLabels.size() != numADIV ||
+    if (xCMLabels.size()  != numACV  || xDIMLabels.size() != numADIV ||
 	xDRMLabels.size() != numADRV || xDSMLabels.size() != numADSV) {
       StringMultiArrayConstView acv_labels
 	= vars.all_continuous_variable_labels();
@@ -413,7 +413,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   }
   if (localDataView & VARIABLES_VECTOR) {
     // set labels once (all processors)
-    if (xCLabels.size()  != numACV || xDILabels.size() != numADIV ||
+    if (xCLabels.size()  != numACV  || xDILabels.size() != numADIV ||
 	xDRLabels.size() != numADRV || xDSLabels.size() != numADSV) {
       xCLabels.resize(boost::extents[numACV]);
       xCLabels = vars.all_continuous_variable_labels();

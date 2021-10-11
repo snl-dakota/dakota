@@ -1,5 +1,27 @@
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=3
 #@ s*: TimeoutAbsolute=36000
 #@ s*: TimeoutDelay=36000
+#@ p0: DakotaConfig=HAVE_NPSOL
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_NPSOL
+#@ s3: DakotaConfig=HAVE_NPSOL
+#@ s4: DakotaConfig=HAVE_NPSOL
+#@ s5: DakotaConfig=HAVE_NPSOL
+#@ s6: DakotaConfig=HAVE_NPSOL
+#@ s7: DakotaConfig=HAVE_NPSOL
+#@ s8: DakotaConfig=HAVE_NPSOL
+#@ s9: DakotaConfig=HAVE_NPSOL
+#@ s10: DakotaConfig=HAVE_NPSOL
+#@ s11: DakotaConfig=HAVE_NPSOL
+#@ s12: DakotaConfig=HAVE_NPSOL
+#@ s13: DakotaConfig=HAVE_NPSOL
+#@ s14: DakotaConfig=HAVE_NPSOL
+#@ s15: DakotaConfig=HAVE_NPSOL
+#@ s16: DakotaConfig=HAVE_NPSOL
+#@ s17: DakotaConfig=HAVE_NPSOL
+#@ s22: DakotaConfig=HAVE_NPSOL
 
 environment
 	output_precision = 16
@@ -7,20 +29,20 @@ environment
 method,
 	model_pointer = 'HIERARCH'
 	approximate_control_variate
-	  acv_mf sqp		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s22
+	  acv_mf sqp		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s22,#p0
 #	  acv_is sqp		#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
-#	  acv_mf nip		#s18,#s19,#s23
+#	  acv_mf nip		#s18,#s19,#s23,#p1
 #	  acv_is nip		#s20,#s21
 #	  truth_fixed_by_pilot	#s22,#s23
 #	multifidelity_sampling
-	  max_function_evaluations = 100	#s0,#s1,#s2,#s9,#s10,#s11
+	  max_function_evaluations = 100	#s0,#s1,#s2,#s9,#s10,#s11,#p0
 #	  max_function_evaluations = 250	#s22
-#	  max_function_evaluations = 500	#s3,#s4,#s5,#s12,#s13,#s14,#s18,#s20
+#	  max_function_evaluations = 500	#s3,#s4,#s5,#s12,#s13,#s14,#s18,#s20,#p1
 #	  max_function_evaluations = 1000	#s23
 #	  max_function_evaluations = 2500	#s6,#s7,#s8,#s15,#s16,#s17,#s19,#s21
 	  pilot_samples =   5		#s0,#s3,#s6,#s9,#s12,#s15
 #	  pilot_samples =  10		#s22
-#	  pilot_samples =  25		#s1,#s4,#s7,#s10,#s13,#s16,#s18,#s20
+#	  pilot_samples =  25		#s1,#s4,#s7,#s10,#s13,#s16,#s18,#s20,#p0,#p1
 #	  pilot_samples =  50		#s23
 #	  pilot_samples = 100		#s2,#s5,#s8,#s11,#s14,#s17,#s19,#s21
 	  seed = 8674132

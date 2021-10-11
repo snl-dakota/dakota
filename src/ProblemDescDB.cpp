@@ -2358,6 +2358,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.covariance_control", P_MET covarianceControl},
       {"nond.distribution", P_MET distributionType},
       {"nond.emulator", P_MET emulatorType},
+      {"nond.ensemble_sampling_solution_mode", P_MET ensembleSampSolnMode},
       {"nond.expansion_basis_type", P_MET expansionBasisType},
       {"nond.expansion_refinement_control", P_MET refinementControl},
       {"nond.expansion_refinement_type", P_MET refinementType},

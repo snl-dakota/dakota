@@ -7021,6 +7021,9 @@ static Method_mp_type
 	MP2s(emulatorType,PCE_EMULATOR),
 	MP2s(emulatorType,SC_EMULATOR),
 	MP2s(emulatorType,VPS_EMULATOR),
+	MP2s(ensembleSampSolnMode,OFFLINE_PILOT),
+	MP2s(ensembleSampSolnMode,ONLINE_PILOT),
+	MP2s(ensembleSampSolnMode,PILOT_PROJECTION),
 	MP2s(evalSynchronize,BLOCKING_SYNCHRONIZATION),
 	MP2s(evalSynchronize,NONBLOCKING_SYNCHRONIZATION),
 	MP2p(expansionBasisType,ADAPTED_BASIS_EXPANDING_FRONT),
@@ -7031,9 +7034,9 @@ static Method_mp_type
 	MP2p(expansionBasisType,TOTAL_ORDER_BASIS),
 	MP2s(expansionType,ASKEY_U),
 	MP2s(expansionType,STD_NORMAL_U),
-	MP2s(finalMomentsType,CENTRAL_MOMENTS),
-	MP2s(finalMomentsType,NO_MOMENTS),
-	MP2s(finalMomentsType,STANDARD_MOMENTS),
+	MP2p(finalMomentsType,CENTRAL_MOMENTS),            // Pecos enumeration
+	MP2p(finalMomentsType,NO_MOMENTS),                 // Pecos enumeration
+	MP2p(finalMomentsType,STANDARD_MOMENTS),           // Pecos enumeration
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(iteratorScheduling,MASTER_SCHEDULING),

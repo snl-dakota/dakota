@@ -219,6 +219,8 @@ private:
 
   /// check whether incoming ASV has any active content
   bool test_asv(const ShortArray& asv);
+  /// size id_maps and cached_resp_maps arrays according to responseMode
+  void resize_maps();
   /// check whether there are any non-empty maps
   bool test_id_maps(const IntIntMapArray& id_maps);
   /// count number of non-empty maps
@@ -497,6 +499,18 @@ inline bool NonHierarchSurrModel::test_asv(const ShortArray& asv)
 }
 
 
+inline void NonHierarchSurrModel::resize_maps()
+{
+  size_t num_models = 1;
+  if (responseMode == AGGREGATED_MODELS)
+    num_models += unorderedModels.size();
+  if (modelIdMap.size() != num_models)
+    modelIdMap.resize(num_models);
+  if (cachedRespMaps.size() != num_models)
+    cachedRespMaps.resize(num_models);
+}
+
+
 inline bool NonHierarchSurrModel::test_id_maps(const IntIntMapArray& id_maps)
 {
   size_t i, num_map = id_maps.size();
@@ -597,6 +611,9 @@ inline void NonHierarchSurrModel::surrogate_response_mode(short mode)
   // Since parallel job scheduling only involves either the LF or HF model at
   // any given time, this call does not need to be matched on serve_run() procs.
   resize_response();
+
+  /// allocate modelIdMap and cachedRespMaps arrays based on responseMode
+  resize_maps();
 
   // don't pass to approx models since point of a surrogate bypass is to get
   // a surrogate-free truth evaluation
