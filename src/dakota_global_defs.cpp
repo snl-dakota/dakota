@@ -24,6 +24,10 @@
 #include "ResultsManager.hpp"
 #include "EvaluationStore.hpp"
 
+#ifdef DAKOTA_DISABLE_FPE_TRAPS
+#include <fenv.h>
+#endif
+
 // Toggle for MPI debug hold
 //#define MPI_DEBUG
 
@@ -152,6 +156,11 @@ void register_signal_handlers()
 #endif
   std::signal(SIGTERM,  Dakota::abort_handler);
   std::signal(SIGINT,   Dakota::abort_handler);
+
+#ifdef DAKOTA_DISABLE_FPE_TRAPS
+  // some platforms raise SIGFPE instead of allowing flow to IEEE NaN/Inf
+  fedisableexcept(FE_ALL_EXCEPT);
+#endif
 }
 
 

@@ -141,6 +141,10 @@ endif()
 
 option(DAKOTA_GCOV "GNU gcov for Dakota core" OFF)
 
+option(DAKOTA_DISABLE_FPE_TRAPS
+  "Globally disable traps that raise SIGFPE; use with caution" OFF)
+
+
 # -----
 # System TPLs
 # -----
