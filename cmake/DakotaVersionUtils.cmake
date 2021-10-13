@@ -53,6 +53,7 @@ macro(dakota_version_from_git)
 
   else()
 
+    set(Dakota_GIT_ABBREV_SHA1 "xxxxxxx")
     set(Dakota_GIT_REV "Unknown")
 
   endif()

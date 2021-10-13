@@ -879,6 +879,9 @@ if(DAKOTA_MODULE_SURROGATES)
 endif()
 
 DakotaApplyMPISettings(dakota_src)
+if(DAKOTA_DISABLE_FPE_TRAPS)
+  target_compile_definitions(dakota_src PUBLIC DAKOTA_DISABLE_FPE_TRAPS)
+endif()
 if(HAVE_AMPL)
   # Enforce AMPL config header creation prior to compiling dakota sources
   add_dependencies(dakota_src amplsolver)
