@@ -139,9 +139,9 @@ distributions):
   HDF5 (optional)   BSD-style Open Source License (variant)
     zlib            ZLib License
 
-GPL/Other: Dakota may optionally depend on GNU GPL-licensed
-components, which are disabled by default, resulting in an
-LGPL-compatible Dakota.  Optional GPL capabilities include:
+GPL/Other: Dakota may optionally depend on GNU GPL-licensed components, 
+which are disabled by default, resulting in an LGPL-compatible Dakota.
+Optional GPL capabilities include:
 
  * packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/:
    enable with CMake setting HAVE_CDDLIB.
