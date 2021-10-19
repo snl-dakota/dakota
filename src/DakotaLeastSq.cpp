@@ -532,17 +532,19 @@ void LeastSq::post_run(std::ostream& s)
 
   // All derived solvers return constraints in best_resp; unscale
   // in-place if needed
-  // BMA TODO: constrained LSQ with scaling test
   if (scaleFlag && numNonlinearConstraints > 0) {
     std::shared_ptr<ScalingModel> scale_model_rep =
       std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
     RealVector best_fns = best_resp.function_values_view();
     // only requesting scaling of constraints, so no need for variable Jacobian
     activeSet.request_values(1);
+    // the size of the Iterator's primary fns may differ from the
+    // user/best size due, e.g., to data transformations, so call with
+    // a start index for number of user primary fns.
     scale_model_rep->
-      secondary_resp_scaled2native(best_resp.function_values(),
+      secondary_resp_scaled2native(iter_resp.function_values(),
 				   activeSet.request_vector(),
-				   best_fns);
+				   numUserPrimaryFns, best_fns);
   }
 
   // confidence intervals require

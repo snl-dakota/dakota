@@ -208,10 +208,19 @@ void ScalingModel::resp_scaled2native(const Variables& native_vars,
 
 /** Since this convenience function is public, it must have a
     fall-through to return a copy for when this scaling type isn't
-    active. */
+    active.
+
+    scaled_nln_cons contains num_primary_fns(), followed by the
+    nonlinear constraints to conditionally scale.
+
+    num_native_primary is the number of primary functions on the
+    original user-provided Model, for example before data
+    transformation, and is the starting index for populating nonlinear
+    constraints in the native_fns vector.
+*/
 void ScalingModel::
 secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
-                             const ShortArray& asv,
+                             const ShortArray& asv, size_t num_native_primary,
                              RealVector& native_fns) const
 {
   size_t num_nln_cons = 
@@ -222,11 +231,11 @@ secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
     copy_data_partial
       (modify_s2n(scaled_nln_cons, responseScaleTypes, responseScaleMultipliers,
                   responseScaleOffsets),
-       num_primary_fns(), num_nln_cons, native_fns, num_primary_fns());
+       num_primary_fns(), num_nln_cons, native_fns, num_native_primary);
   }
   else 
     copy_data_partial(scaled_nln_cons, num_primary_fns(), num_nln_cons, 
-                      native_fns, num_primary_fns());
+                      native_fns, num_native_primary);
 }
 
 
