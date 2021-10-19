@@ -712,6 +712,16 @@ sub compare_output {
 	push @test_diffs, $test;
       }
     }
+    elsif ( ( ($t_ev) = $test =~
+	      /^\s+(Initial|Final|Projected)\s+(MC|MFMC|ACV)\s+\w*\s*\(.*?\):\s+($e)\s*$/ ) &&
+	    ( ($b_ev) = $base =~
+	      /^\s+(Initial|Final|Projected)\s+(MC|MFMC|ACV)\s+\w*\s*\(.*?\):\s+($e)\s*$/ ) ) {
+      if ( diff($t_ev, $b_ev) ) {
+	$test_diff = 1;
+	push @base_diffs, $base;
+	push @test_diffs, $test;
+      }
+    }
     # Sampling-based VBD
     #elsif ( ( ($t_si, $t_ti)
     #		= $test =~ /^\s+\w+:\s+Si =\s+($e)\s+Ti =\s+($e)$/ ) &&

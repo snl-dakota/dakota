@@ -1,5 +1,12 @@
 #@ s*: TimeoutAbsolute=36000
 #@ s*: TimeoutDelay=36000
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_NPSOL
+#@ s3: DakotaConfig=HAVE_NPSOL
+#@ s4: DakotaConfig=HAVE_NPSOL
+#@ s5: DakotaConfig=HAVE_NPSOL
+#@ s6: DakotaConfig=HAVE_NPSOL
 
 environment
 	output_precision = 16
