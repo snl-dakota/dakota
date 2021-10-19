@@ -9,6 +9,8 @@ environment
 method,
 	model_pointer = 'NONHIER'
 	multifidelity_sampling
+#	  solution_mode pilot_projection	#s4,#s7
+#	  solution_mode offline_pilot		#s5,#s8
 	  max_function_evaluations = 100	#s0,#s1,#s2,#p0
 #	  max_function_evaluations = 250
 #	  max_function_evaluations = 500	#s3,#s4,#s5,#p1
