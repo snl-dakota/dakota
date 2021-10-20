@@ -7,6 +7,9 @@ set(ENABLE_SPEC_MAINT TRUE CACHE BOOL
   "Enable DAKOTA specification maintenance mode?")
 set(PECOS_ENABLE_TESTS TRUE CACHE BOOL "Enable Pecos-specific tests?")
 
+set(DAKOTA_TEST_EXAMPLES_REPO TRUE CACHE BOOL
+  "Enable Dakota Examples Library tests")
+
 # Not included from Mike's configs, but may help some
 
 # Disable optional X graphics
