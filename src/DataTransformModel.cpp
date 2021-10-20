@@ -536,6 +536,11 @@ void DataTransformModel::vars_mapping(const Variables& recast_vars,
   RealVector sm_cv = submodel_vars.continuous_variables_view();
   copy_data_partial(recast_vars.continuous_variables(), 0, 
 		    (int)submodel_vars.cv(), sm_cv);
+
+  // this map only supports continuous variables, but rest need to come along
+  submodel_vars.discrete_int_variables(recast_vars.discrete_int_variables());
+  submodel_vars.discrete_string_variables(recast_vars.discrete_string_variables());
+  submodel_vars.discrete_real_variables(recast_vars.discrete_real_variables());
 }
 
 

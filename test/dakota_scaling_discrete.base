@@ -1,0 +1,16 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 943 total (822 new, 121 duplicate)
+<<<<< Best parameters          =
+                      9.9358474184e-01 x1
+                                     1 x2
+<<<<< Best objective function  =
+                      1.6937782521e-09
+<<<<< Best data captured at function evaluation 854
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 16 total (16 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     1 x1
+                                     1 x2
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 6

@@ -58,6 +58,7 @@ public:
   /// native_fns array
   void secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
                                     const ShortArray& asv,
+				    size_t num_native_primary,
                                     RealVector& native_fns) const;
 
   /// map responses from scaled to native space

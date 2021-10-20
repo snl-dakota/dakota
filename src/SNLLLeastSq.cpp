@@ -330,7 +330,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       for (j=0; j<snllLSqInstance->numLeastSqTerms; j++)
         grad_f(i) += 2. * local_fn_grads(i,j) * local_fn_vals[j];
       if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
-	Cout << std::setw(write_precision+7) << grad_f(i+1) << ' ';
+	Cout << std::setw(write_precision+7) << grad_f(i) << ' ';
     }
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
       Cout << "]\n";
