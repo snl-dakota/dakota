@@ -713,9 +713,9 @@ sub compare_output {
       }
     }
     elsif ( ( ($t_ev) = $test =~
-	      /^\s+(Initial|Final|Projected)\s+(MC|MFMC|ACV)\s+\w*\s*\(.*?\):\s+($e)\s*$/ ) &&
+	      /^\s+(?:Initial|Final|Projected)\s+(?:MC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) &&
 	    ( ($b_ev) = $base =~
-	      /^\s+(Initial|Final|Projected)\s+(MC|MFMC|ACV)\s+\w*\s*\(.*?\):\s+($e)\s*$/ ) ) {
+	      /^\s+(?:Initial|Final|Projected)\s+(?:MC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) ) {
       if ( diff($t_ev, $b_ev) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;

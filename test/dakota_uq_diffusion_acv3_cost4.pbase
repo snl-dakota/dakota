@@ -20,9 +20,9 @@ Test Number 1 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 5.0075000000000000e+02
 <<<<< Variance for mean estimator:
       Initial MC (  25 pilot samples):  4.1006897417589495e-06
-      Final   MC (  41 HF samples):     2.3663148900393071e-06
+      Final   MC (  41 HF samples):     2.3204453238880167e-06
       Final  ACV (sample profile):      1.3069842903068567e-08
-      Final  ACV ratio (1 - R^2):       5.5232898030960972e-03
+      Final  ACV ratio (1 - R^2):       5.6324718227660810e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  2.5338194056130418e-02  6.6121454682250211e-03  7.8662766184981392e-01 -1.4098715513666971e-01

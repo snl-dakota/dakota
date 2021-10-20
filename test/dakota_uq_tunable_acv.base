@@ -5,9 +5,9 @@ Test Number 0 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 1.0055000000000001e+02
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC (  56 HF samples):     1.1276801250038495e-02
+      Final   MC (  56 HF samples):     1.1175976161093611e-02
       Final  ACV (sample profile):      3.0473028968379871e-03
-      Final  ACV ratio (1 - R^2):       2.7022759639641469e-01
+      Final  ACV ratio (1 - R^2):       2.7266547932040303e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  3.7060812959027127e-02  9.8450163801590695e-01 -3.2662981590089202e-01  4.4515842020070489e+00
@@ -18,9 +18,9 @@ Test Number 1 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 2.5068000000000001e+02
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC ( 142 HF samples):     6.2290679326701161e-03
+      Final   MC ( 142 HF samples):     6.2010584781800691e-03
       Final  ACV (sample profile):      1.5511749078896664e-03
-      Final  ACV ratio (1 - R^2):       2.4902199248046228e-01
+      Final  ACV ratio (1 - R^2):       2.5014679563946257e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1 -1.0295695614796957e-02  9.3513864557347148e-01 -3.7025627215320756e-01  2.6766942939391756e+00
@@ -31,9 +31,9 @@ Test Number 2 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 5.0056999999999994e+02
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC ( 260 HF samples):     3.2992289400128921e-03
+      Final   MC ( 260 HF samples):     3.2915800078995527e-03
       Final  ACV (sample profile):      7.2292518914556729e-04
-      Final  ACV ratio (1 - R^2):       2.1911943738670719e-01
+      Final  ACV ratio (1 - R^2):       2.1962862437206429e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  1.7938147718061896e-02  1.0082645899831715e+00  2.8212986022341630e-01  1.9354238372153167e+00
@@ -44,9 +44,9 @@ Test Number 3 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 1.0003600000000000e+03
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC ( 486 HF samples):     2.2290580347899096e-03
+      Final   MC ( 486 HF samples):     2.2273978611791583e-03
       Final  ACV (sample profile):      4.2983098835745330e-04
-      Final  ACV ratio (1 - R^2):       1.9283077499503740e-01
+      Final  ACV ratio (1 - R^2):       1.9297449990811513e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1 -1.7146553704443835e-02  1.0342481489423165e+00  2.4402822162676382e-01  2.4393129398200237e+00
@@ -57,9 +57,9 @@ Test Number 4 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 2.5006300000000001e+03
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC (1221 HF samples):     7.4937029552177466e-04
+      Final   MC (1221 HF samples):     7.4901152730602334e-04
       Final  ACV (sample profile):      1.5648979171999525e-04
-      Final  ACV ratio (1 - R^2):       2.0882838918913099e-01
+      Final  ACV ratio (1 - R^2):       2.0892841567184356e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  1.8030607919795570e-03  9.7779949031958846e-01  9.6740444274875104e-03  2.8786703325113834e+00
@@ -70,9 +70,9 @@ Test Number 5 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 5.0007999999999993e+03
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC (2330 HF samples):     4.4130969302516777e-04
+      Final   MC (2330 HF samples):     4.4114922681201465e-04
       Final  ACV (sample profile):      8.4370242251208534e-05
-      Final  ACV ratio (1 - R^2):       1.9118148453267017e-01
+      Final  ACV ratio (1 - R^2):       1.9125102600975638e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1 -2.1408731396126051e-03  9.9249875302958313e-01  2.6920914997748024e-02  2.9466515147052306e+00
@@ -83,9 +83,9 @@ Test Number 6 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 1.0000850000000000e+04
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC (4892 HF samples):     2.1735989948127386e-04
+      Final   MC (4892 HF samples):     2.1732033061856279e-04
       Final  ACV (sample profile):      4.2596918943166323e-05
-      Final  ACV ratio (1 - R^2):       1.9597413803016669e-01
+      Final  ACV ratio (1 - R^2):       1.9600982025897873e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1 -5.9611439503807762e-03  1.0035583671170489e+00  1.3253817269202545e-02  2.8077756478928295e+00
@@ -96,9 +96,9 @@ Test Number 7 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 1.0429000000000002e+02
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC (  56 HF samples):     1.4549762436463746e-02
+      Final   MC (  56 HF samples):     1.3466150442309758e-02
       Final  ACV (sample profile):      3.5035180613715304e-03
-      Final  ACV ratio (1 - R^2):       2.4079555090131385e-01
+      Final  ACV ratio (1 - R^2):       2.6017220558918658e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  1.8965346459083238e-02  9.8836509836887754e-01 -3.2750858068623362e-01  5.9969000388035152e+00
@@ -109,9 +109,9 @@ Test Number 8 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 2.6234000000000003e+02
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC ( 131 HF samples):     6.5726558562476441e-03
+      Final   MC ( 131 HF samples):     5.9617652054595703e-03
       Final  ACV (sample profile):      1.3754537059039334e-03
-      Final  ACV ratio (1 - R^2):       2.0926908938895600e-01
+      Final  ACV ratio (1 - R^2):       2.3071249177078332e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1 -2.3551696138044698e-03  8.9782939026917941e-01  1.6356014750306094e-02  2.7726641943307513e+00
@@ -122,9 +122,9 @@ Test Number 9 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 6.0748000000000002e+02
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC ( 258 HF samples):     6.2411597168827038e-03
+      Final   MC ( 258 HF samples):     3.6338063936347731e-03
       Final  ACV (sample profile):      1.0328763216111174e-03
-      Final  ACV ratio (1 - R^2):       1.6549429408401875e-01
+      Final  ACV ratio (1 - R^2):       2.8424087849599666e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  3.7578674098406178e-02  9.8094001103942385e-01 -9.8096677007838390e-02  3.1035495218644495e+00
@@ -135,9 +135,9 @@ Test Number 10 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 1.2772400000000002e+03
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC ( 513 HF samples):     4.1653208551786893e-03
+      Final   MC ( 513 HF samples):     1.9146569276539233e-03
       Final  ACV (sample profile):      6.0460299258345584e-04
-      Final  ACV ratio (1 - R^2):       1.4515160142627687e-01
+      Final  ACV ratio (1 - R^2):       3.1577614968562062e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1 -9.5242082172740210e-03  1.0146803745098811e+00  7.3775922328179880e-02  2.9217602340308284e+00
@@ -148,9 +148,9 @@ Test Number 11 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 2.6015600000000004e+03
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC ( 911 HF samples):     1.2818666830480391e-03
+      Final   MC ( 911 HF samples):     1.1386339766659356e-03
       Final  ACV (sample profile):      3.3618673850116434e-04
-      Final  ACV ratio (1 - R^2):       2.6226341861212521e-01
+      Final  ACV ratio (1 - R^2):       2.9525444119062882e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1 -9.0253238062071289e-03  1.0150050717014218e+00  4.2314911697726679e-02  2.8636640380231650e+00
@@ -161,9 +161,9 @@ Test Number 12 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 5.3018900000000003e+03
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC (1934 HF samples):     6.1037672530729950e-04
+      Final   MC (1934 HF samples):     5.1455917062006977e-04
       Final  ACV (sample profile):      1.5779254827146756e-04
-      Final  ACV ratio (1 - R^2):       2.5851665328822215e-01
+      Final  ACV ratio (1 - R^2):       3.0665578864588028e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1 -3.5761156919316799e-03  1.0142526050661993e+00  7.5173107513068757e-02  2.7967220821239804e+00
@@ -174,9 +174,9 @@ Test Number 13 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 1.0437000000000000e+04
 <<<<< Variance for mean estimator:
       Initial MC (  10 pilot samples):  5.6033560944958559e-02
-      Final   MC (3845 HF samples):     3.0344035228192985e-04
+      Final   MC (3845 HF samples):     2.6798963495208407e-04
       Final  ACV (sample profile):      7.3038247300896708e-05
-      Final  ACV ratio (1 - R^2):       2.4070050918289224e-01
+      Final  ACV ratio (1 - R^2):       2.7254131419655758e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1 -4.3746402738531831e-03  1.0012149097201615e+00  3.2712453666926017e-02  2.8154601775872399e+00
