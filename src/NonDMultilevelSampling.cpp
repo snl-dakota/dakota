@@ -824,7 +824,7 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
   delta_N_l_qoi.shape(nb_aggregation_qois, num_steps);
 
   for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
-    Real fact_qoi = sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
+    Real fact_qoi = (eps_sq_div_2[qoi] == 0) ? 0 : sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
     if (outputLevel == DEBUG_OUTPUT){
       Cout << "\n\tN_target for Qoi: " << qoi << ", with sum_sqrt_var_cost: " << sum_sqrt_var_cost[qoi] << std::endl;
       Cout << "\n\tN_target for Qoi: " << qoi << ", with eps_sq_div_2: " << eps_sq_div_2[qoi] << std::endl;
