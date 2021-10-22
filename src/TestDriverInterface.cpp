@@ -4631,7 +4631,7 @@ double TestDriverInterface::problem18_Ax(const double &A, const double &x){
   else if(A== -5)
     return 0.1/6. * x + 0.5;
   else if(A== -6)
-    return 0.1/6. * x + 1.6;
+    return 0.1/6. * x + 1.2; //Old version: 1.6 New version: 1.2
   else
     throw INTERFACE_ERROR;
 }
