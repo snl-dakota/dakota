@@ -78,6 +78,8 @@ protected:
 
   void assign_instance();
 
+  bool update_variables_from_model(Model& model) override;
+
   // ---
   // Scaling initialization helper functions
   // ---

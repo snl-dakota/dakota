@@ -468,7 +468,7 @@ protected:
   /// update current variables/bounds/labels/constraints from subModel
   void update_from_model(Model& model);
   /// update active variables/bounds/labels from subModel
-  bool update_variables_from_model(Model& model);
+  virtual bool update_variables_from_model(Model& model);
   /// update complement of active variables/bounds/labels from subModel
   void update_variables_active_complement_from_model(Model& model);
   /// update nonlinear constraint bounds/targets from subModel

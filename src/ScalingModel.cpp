@@ -63,10 +63,15 @@ ScalingModel(Model& sub_model):
   // the nonlinearity of the mapping is determined by the scales
   // themselves.
 
-  // initialize_scaling function needs to modify the iteratedModel
-  // compute needed class data...
-  initialize_scaling(sub_model);
+  // ScalingModel may update bounds on Model and mvDist; copy when
+  // needed to avoid changing bounds in subModel::mvDist
+  // TODO: consider separating computing scaling from adjusting
+  // initial values and bounds...
+  varsScaleFlag = scaling_active(scalingOpts.cvScaleTypes);
+  mvDist = varsScaleFlag ? subModel.multivariate_distribution().copy() :
+    subModel.multivariate_distribution();
 
+  initialize_scaling(sub_model);
 
   // No change in sizes for scaling
   size_t num_primary = sub_model.num_primary_fns(),
@@ -144,7 +149,9 @@ ScalingModel(Model& sub_model):
 	      nonlinear_resp_mapping, primary_resp_map, secondary_resp_map);
 
   // need inverse vars mapping for use with late updates from sub-model
-  inverse_mappings(variables_unscaler, NULL, NULL, NULL);
+  // TODO: for some reason, this is needed for ROL scaling tests even when vars not scaled...
+  //  if (varsScaleFlag)
+    inverse_mappings(variables_unscaler, NULL, NULL, NULL);
 
   // Preserve weights through scaling transformation
   primary_response_fn_weights(sub_model.primary_response_fn_weights());
@@ -237,6 +244,80 @@ secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
     copy_data_partial(scaled_nln_cons, num_primary_fns(), num_nln_cons, 
                       native_fns, num_native_primary);
 }
+
+
+bool ScalingModel::update_variables_from_model(Model& model)
+{
+  // ScalingModel doesn't change the size of any of the variable arrays
+  if (varsScaleFlag) {
+
+    // RATIONALE: This is a runtime update. Update values and bounds
+    // based on contruct-time scaling, but don't recompute
+    // scaling. ScalingModel doesn't change the number of variables,
+    // so pull up all updates, then override select values/bounds.
+
+    // variable values
+    currentVariables.all_continuous_variables(
+      model.all_continuous_variables());
+    currentVariables.all_discrete_int_variables(
+      model.all_discrete_int_variables());
+    currentVariables.all_discrete_string_variables(
+      model.all_discrete_string_variables());
+    currentVariables.all_discrete_real_variables(
+      model.all_discrete_real_variables());
+    // variable bounds
+    userDefinedConstraints.all_continuous_lower_bounds(
+      model.all_continuous_lower_bounds());
+    userDefinedConstraints.all_continuous_upper_bounds(
+      model.all_continuous_upper_bounds());
+    userDefinedConstraints.all_discrete_int_lower_bounds(
+      model.all_discrete_int_lower_bounds());
+    userDefinedConstraints.all_discrete_int_upper_bounds(
+      model.all_discrete_int_upper_bounds());
+    userDefinedConstraints.all_discrete_real_lower_bounds(
+      model.all_discrete_real_lower_bounds());
+    userDefinedConstraints.all_discrete_real_upper_bounds(
+      model.all_discrete_real_upper_bounds());
+    // variable labels
+    currentVariables.all_continuous_variable_labels(
+      model.all_continuous_variable_labels());
+    currentVariables.all_discrete_int_variable_labels(
+      model.all_discrete_int_variable_labels());
+    currentVariables.all_discrete_string_variable_labels(
+      model.all_discrete_string_variable_labels());
+    currentVariables.all_discrete_real_variable_labels(
+      model.all_discrete_real_variable_labels());
+
+    // the mvDist is already copied (has it's own rep) if needed in ctor
+    //mvDist = subModel.multivariate_distribution();
+
+    // pull up variable values and bounds, transforming
+    continuous_variables(modify_n2s(model.continuous_variables(),
+				    cvScaleTypes, cvScaleMultipliers,
+				    cvScaleOffsets));
+
+    continuous_lower_bounds(modify_n2s(model.continuous_lower_bounds(),
+				       cvScaleTypes, cvScaleMultipliers,
+				       cvScaleOffsets));
+    continuous_upper_bounds(modify_n2s(model.continuous_upper_bounds(),
+				       cvScaleTypes, cvScaleMultipliers,
+				       cvScaleOffsets));
+
+    // TODO: Are the linear constraint coefficients and bounds allowed
+    // to change on the subModel at runtime, as RecastModel
+    // implementation implies? If so, need to pull them up and
+    // transform them to account for any active continuous variable
+    // scaling.
+
+    // TODO: There may be a doc error or bug w.r.t. whether linear
+    // constraints are affinely scaled (they appear to be in the code).
+
+    return false;
+
+  }
+  return RecastModel::update_variables_from_model(model);
+}
+
 
 
 /** Initialize scaling types, multipliers, and offsets.  Update the
@@ -537,6 +618,7 @@ compute_scaling(int object_type, // type of object being scaled
     if (tmp_scl_type > SCALE_NONE) {
       size_t num_lin_cons =
         num_linear_ineq_constraints() + num_linear_eq_constraints();
+      // Handle this check separately: if any log scale and linear cons, error
       if (object_type == CDV && num_lin_cons > 0 && tmp_scl_type == SCALE_LOG) {
         Cerr << "Error: Continuous design variables cannot be logarithmically "
              << "scaled when linear\nconstraints are present.\n";
@@ -784,12 +866,16 @@ variables_scaler(const Variables& scaled_vars, Variables& native_vars)
                scaled_vars.continuous_variable_labels());
     Cout << std::endl;
   }
-  native_vars.continuous_variables
-    (scaleModelInstance->modify_s2n(scaled_vars.continuous_variables(), 
-                                    scaleModelInstance->cvScaleTypes,
-                                    scaleModelInstance->cvScaleMultipliers, 
-                                    scaleModelInstance->cvScaleOffsets));
-
+  if (scaleModelInstance->varsScaleFlag) {
+    native_vars.continuous_variables
+      (scaleModelInstance->modify_s2n(scaled_vars.continuous_variables(), 
+				      scaleModelInstance->cvScaleTypes,
+				      scaleModelInstance->cvScaleMultipliers, 
+				      scaleModelInstance->cvScaleOffsets));
+  }
+  else {
+    native_vars.continuous_variables(scaled_vars.continuous_variables());
+  }
   // scaling only supports continuous variables, but rest need to come along
   native_vars.discrete_int_variables(scaled_vars.discrete_int_variables());
   native_vars.discrete_string_variables(scaled_vars.discrete_string_variables());
@@ -799,11 +885,16 @@ variables_scaler(const Variables& scaled_vars, Variables& native_vars)
 void ScalingModel::
 variables_unscaler(const Variables& native_vars, Variables& scaled_vars)
 {
-  scaled_vars.continuous_variables
-    (scaleModelInstance->modify_n2s(native_vars.continuous_variables(),
-                                    scaleModelInstance->cvScaleTypes,
-                                    scaleModelInstance->cvScaleMultipliers,
-                                    scaleModelInstance->cvScaleOffsets));
+  if (scaleModelInstance->varsScaleFlag) {
+    scaled_vars.continuous_variables
+      (scaleModelInstance->modify_n2s(native_vars.continuous_variables(),
+				      scaleModelInstance->cvScaleTypes,
+				      scaleModelInstance->cvScaleMultipliers,
+				      scaleModelInstance->cvScaleOffsets));
+  }
+  else {
+    scaled_vars.continuous_variables(native_vars.continuous_variables());
+  }
   // scaling only supports continuous variables, but rest need to come along
   scaled_vars.discrete_int_variables(native_vars.discrete_int_variables());
   scaled_vars.discrete_string_variables(native_vars.discrete_string_variables());
