@@ -32,8 +32,6 @@ const double SCALING_LOGBASE = 10.0;
 /// ln(SCALING_LOGBASE); needed in transforming variables in several places
 const double SCALING_LN_LOGBASE = std::log(SCALING_LOGBASE);
 
-/// to indicate type of object being scaled
-enum { CDV, LINEAR, NONLIN, FN_LSQ };
 /// to restrict type of auto scaling allowed
 enum { DISALLOW, TARGET, BOUNDS };
 
@@ -339,13 +337,13 @@ void ScalingModel::initialize_scaling(Model& sub_model)
     num_nln_ineq = num_nonlinear_ineq_constraints(),
     num_nln_eq = num_nonlinear_eq_constraints(),
     num_lin_ineq = num_linear_ineq_constraints(),
-    num_lin_eq = num_linear_eq_constraints();
+    num_lin_eq = num_linear_eq_constraints(),
+    num_lin_cons = num_lin_ineq + num_lin_eq;
 
   // temporary arrays
   UShortArray tmp_types;
   RealVector tmp_multipliers, tmp_offsets;
   RealVector lbs, ubs, targets;
-  //RealMatrix linear_constraint_coeffs;
 
   // NOTE: When retrieving scaling vectors from database, excepting linear 
   //       constraints, they've already been checked at input to have length 0, 
@@ -362,7 +360,13 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   copy_data(sub_model.continuous_upper_bounds(), ubs); // view->copy
 
   
-  compute_scaling(CDV, BOUNDS, num_cv, lbs, ubs, targets,
+  if (contains(cdv_spec_types, SCALE_LOG) && num_lin_cons > 0) {
+    Cerr << "Error: Continuous design variables cannot be logarithmically "
+	 << "scaled when linear\nconstraints are present.\n";
+    abort_handler(-1);
+  }
+
+  compute_scaling(BOUNDS, num_cv, lbs, ubs, targets,
                   cdv_spec_types, cdv_scales, cvScaleTypes,
                   cvScaleMultipliers, cvScaleOffsets);
 
@@ -394,7 +398,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   primaryRespScaleFlag = scaling_active(primary_spec_types);
 
   lbs.size(0); ubs.size(0);
-  compute_scaling(FN_LSQ, DISALLOW, num_primary, lbs, ubs, targets,
+  compute_scaling(DISALLOW, num_primary, lbs, ubs, targets,
                   primary_spec_types, primary_scales, tmp_types,
                   tmp_multipliers, tmp_offsets);
 
@@ -414,7 +418,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   lbs = sub_model.nonlinear_ineq_constraint_lower_bounds();
   ubs = sub_model.nonlinear_ineq_constraint_upper_bounds();
 
-  compute_scaling(NONLIN, BOUNDS, num_nln_ineq, lbs, ubs,
+  compute_scaling(BOUNDS, num_nln_ineq, lbs, ubs,
                   targets, nln_ineq_spec_types, nln_ineq_scales, tmp_types,
                   tmp_multipliers, tmp_offsets);
 
@@ -437,7 +441,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
 
   lbs.size(0); ubs.size(0);
   targets = sub_model.nonlinear_eq_constraint_targets();
-  compute_scaling(NONLIN, TARGET, num_nln_eq,
+  compute_scaling(TARGET, num_nln_eq,
                   lbs, ubs, targets, nln_eq_spec_types, nln_eq_scales,
                   tmp_types, tmp_multipliers, tmp_offsets);
 
@@ -501,7 +505,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
     ubs[i] -= linearIneqScaleOffsets[i];
 
   }
-  compute_scaling(LINEAR, BOUNDS, num_lin_ineq,
+  compute_scaling(BOUNDS, num_lin_ineq,
                   lbs, ubs, targets, lin_ineq_spec_types, lin_ineq_scales,
                   linearIneqScaleTypes, linearIneqScaleMultipliers, 
                   tmp_offsets);
@@ -547,7 +551,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
    
     targets[i] -= linearEqScaleOffsets[i];
   }
-  compute_scaling(LINEAR, TARGET, num_lin_eq,
+  compute_scaling(TARGET, num_lin_eq,
                   lbs, ubs, targets, lin_eq_spec_types, lin_eq_scales,
                   linearEqScaleTypes, linearEqScaleMultipliers, 
                   tmp_offsets);
@@ -580,8 +584,7 @@ bool ScalingModel::scaling_active(const UShortArray& scale_types)
 // compute_scaling will potentially modify lbs, ubs, and targets; will resize
 // and set class data referenced by scale_types, scale_mults, and scale_offsets
 void ScalingModel::
-compute_scaling(int object_type, // type of object being scaled 
-                int auto_type,   // option for auto scaling type
+compute_scaling(int auto_type,   // option for auto scaling type
                 int num_vars,    // length of object being scaled
                 RealVector& lbs,     RealVector& ubs,
                 RealVector& targets, const UShortArray& spec_types,
@@ -591,7 +594,6 @@ compute_scaling(int object_type, // type of object being scaled
   // temporary arrays
   unsigned short tmp_scl_type;
   Real tmp_bound, tmp_mult, tmp_offset;
-  //RealMatrix linear_constraint_coeffs;
 
   const int num_scale_types = spec_types.size();
   const int num_scales      = scales.length();
@@ -615,18 +617,8 @@ compute_scaling(int object_type, // type of object being scaled
     else if (num_scale_types > 1)
       tmp_scl_type = spec_types[i];
 
-    if (tmp_scl_type > SCALE_NONE) {
-      size_t num_lin_cons =
-        num_linear_ineq_constraints() + num_linear_eq_constraints();
-      // Handle this check separately: if any log scale and linear cons, error
-      if (object_type == CDV && num_lin_cons > 0 && tmp_scl_type == SCALE_LOG) {
-        Cerr << "Error: Continuous design variables cannot be logarithmically "
-             << "scaled when linear\nconstraints are present.\n";
-        abort_handler(-1);
-      } 
-      else if ( num_scales > 0 ) {
-	
-        // process scale_values for all types of scaling 
+    // first apply any characteristic value scaling (for all types of scaling)
+    if (tmp_scl_type > SCALE_NONE && num_scales > 0) {
         // indicate that scale values are active, update bounds, poss. negating
         scale_types[i] |= SCALE_VALUE;
         scale_mults[i] = (num_scales == 1) ? scales[0] : scales[i];
@@ -648,13 +640,11 @@ compute_scaling(int object_type, // type of object being scaled
         } 
         else if (!targets.empty())
           targets[i] /= scale_mults[i];
-      }
+    } // endif for characteristic value scaling
 
-    } // endif for generic scaling preprocessing
-
-      // At this point bounds/targets are scaled with user-provided values and
-      // scale_mults are set to user-provided values.
-      // Now auto or log scale as relevant and allowed:
+    // At this point bounds/targets are scaled with user-provided values and
+    // scale_mults are set to user-provided values.
+    // Now auto or log scale as relevant and allowed:
     if ( tmp_scl_type == SCALE_AUTO && auto_type > DISALLOW ) {
       bool scale_flag = false; // will be true for valid auto-scaling
       if ( auto_type == TARGET ) {

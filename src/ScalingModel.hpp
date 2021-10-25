@@ -94,7 +94,7 @@ protected:
 
   /// general helper function for initializing scaling types and factors on a 
   /// vector of variables, functions, constraints, etc.
-  void compute_scaling(int object_type, int auto_type, int num_vars,
+  void compute_scaling(int auto_type, int num_vars,
                        RealVector& lbs, RealVector& ubs,
                        RealVector& targets,
                        const UShortArray& spec_types,
