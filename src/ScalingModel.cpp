@@ -63,8 +63,9 @@ ScalingModel(Model& sub_model):
 
   // ScalingModel may update bounds on Model and mvDist; copy when
   // needed to avoid changing bounds in subModel::mvDist
-  // TODO: consider separating computing scaling from adjusting
-  // initial values and bounds...
+  //
+  // TODO: review whether disconnecting the mvDist can cause problems
+  // for clients of Model.
   varsScaleFlag = scaling_active(scalingOpts.cvScaleTypes);
   mvDist = varsScaleFlag ? subModel.multivariate_distribution().copy() :
     subModel.multivariate_distribution();
@@ -249,10 +250,10 @@ bool ScalingModel::update_variables_from_model(Model& model)
   // ScalingModel doesn't change the size of any of the variable arrays
   if (varsScaleFlag) {
 
-    // RATIONALE: This is a runtime update. Update values and bounds
-    // based on contruct-time scaling, but don't recompute
-    // scaling. ScalingModel doesn't change the number of variables,
-    // so pull up all updates, then override select values/bounds.
+    // RATIONALE: This is a runtime update and will now update
+    // computed scaling at runtime.  ScalingModel doesn't change the
+    // number of variables, so pull up all updates, then override
+    // select values/bounds.
 
     // variable values
     currentVariables.all_continuous_variables(
@@ -289,28 +290,11 @@ bool ScalingModel::update_variables_from_model(Model& model)
     // the mvDist is already copied (has it's own rep) if needed in ctor
     //mvDist = subModel.multivariate_distribution();
 
-    // pull up variable values and bounds, transforming
-    continuous_variables(modify_n2s(model.continuous_variables(),
-				    cvScaleTypes, cvScaleMultipliers,
-				    cvScaleOffsets));
+    // Now update any scaling, values, and bounds on *this by
+    // re-initializing scaling from the start...
+    initialize_scaling(model);
 
-    continuous_lower_bounds(modify_n2s(model.continuous_lower_bounds(),
-				       cvScaleTypes, cvScaleMultipliers,
-				       cvScaleOffsets));
-    continuous_upper_bounds(modify_n2s(model.continuous_upper_bounds(),
-				       cvScaleTypes, cvScaleMultipliers,
-				       cvScaleOffsets));
-
-    // TODO: Are the linear constraint coefficients and bounds allowed
-    // to change on the subModel at runtime, as RecastModel
-    // implementation implies? If so, need to pull them up and
-    // transform them to account for any active continuous variable
-    // scaling.
-
-    // TODO: There may be a doc error or bug w.r.t. whether linear
-    // constraints are affinely scaled (they appear to be in the code).
-
-    return false;
+    return false;  // no need to update active complement as all updated above
 
   }
   return RecastModel::update_variables_from_model(model);
