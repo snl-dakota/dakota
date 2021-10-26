@@ -836,6 +836,42 @@ field_coords_view(size_t response, size_t experiment) const
   return(allExperiments[experiment].field_coords_view(response));
 }
 
+
+void ExperimentData::
+fill_primary_function_labels(StringArray& expanded_labels) const
+{
+  const StringArray& all_sim_labels = simulationSRD.function_labels();
+
+  if (interpolateFlag) {
+    // field lengths may differ between simulation and experiment;
+    // need to renumber the residuals
+    size_t dt_ind = 0;
+    for (size_t i=0; i<num_experiments(); ++i) {
+
+      for (size_t j=0; j<num_scalar_primary(); ++j)
+	expanded_labels[dt_ind++] =
+	  all_sim_labels[j] + '_' + std::to_string(i+1);
+
+      const StringArray& field_labels = simulationSRD.field_group_labels();
+      const IntVector field_lens  = field_lengths(i);
+      for (size_t j=0; j<num_fields(); ++j)
+	for (size_t k=0; k<field_lens[j]; ++k)
+	  expanded_labels[dt_ind++] = field_labels[j] + '_' +
+	    std::to_string(k+1) + '_' + std::to_string(i+1);
+
+    }
+  }
+  else {
+    // simulation and each experiment have same length
+    size_t dt_ind = 0;
+    for (size_t i=0; i<num_experiments(); ++i)
+      for (size_t j=0; j<simulationSRD.num_primary_functions(); ++j)
+	expanded_labels[dt_ind++] =
+	  all_sim_labels[j] + '_' + std::to_string(i+1);
+  }
+}
+
+
 bool ExperimentData::variance_type_active(short variance_type) const
 {
   UShortArray::const_iterator vt_it = 

@@ -91,6 +91,9 @@ protected:
   /// expand linear constraints from sub-model to account for hyper-parameters
   void expand_linear_constraints(const Model& model);
 
+  /// update currentResponse based on replicate experiment data
+  void update_expanded_response(const Model& model);
+
 
   // ---
   // Construct time convenience functions

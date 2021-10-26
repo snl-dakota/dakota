@@ -485,8 +485,11 @@ protected:
   void update_linear_constraints(const Model& model);
   /// update complement of active variables/bounds/labels from subModel
   void update_variables_active_complement_from_model(Model& model);
-  /// update nonlinear constraint bounds/targets from subModel
+  /// update labels and nonlinear constraint bounds/targets from subModel
   void update_response_from_model(Model& model);
+  /// update just secondary response from subModel
+  void update_secondary_response(const Model& model);
+
 
   //
   //- Heading: Data members

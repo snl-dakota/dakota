@@ -234,7 +234,7 @@ public:
   void function_labels(const StringArray& labels);
 
   /// return the coarse (per-group) primary field response labels
-  const StringArray& field_group_labels();
+  const StringArray& field_group_labels() const;
   /// set the coarse primary field group labels (must agree with number fields)
   void field_group_labels(const StringArray& field_labels);
 
@@ -396,7 +396,7 @@ inline void SharedResponseData::function_labels(const StringArray& labels)
 { srdRep->functionLabels = labels; }
 
 
-inline const StringArray& SharedResponseData::field_group_labels()
+inline const StringArray& SharedResponseData::field_group_labels() const
 { return srdRep->priFieldLabels; }
 
 

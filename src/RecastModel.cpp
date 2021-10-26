@@ -1030,28 +1030,34 @@ void RecastModel::update_response_from_model(Model& model)
     // update currentResponse from model secondary fns
   }
   else {
-    // secondary response function labels
-    const StringArray& sm_resp_labels = model.response_labels();
-    size_t i,
-      num_nln_con = userDefinedConstraints.num_nonlinear_eq_constraints() +
-        userDefinedConstraints.num_nonlinear_ineq_constraints(),
-      num_primary    = numFns - num_nln_con,
-      num_sm_primary = model.response_size() - num_nln_con;
-    for (i=0; i<num_nln_con; i++)
-      currentResponse.shared_data().function_label(
-	sm_resp_labels[num_sm_primary+i], num_primary+i);
-
-    // nonlinear constraint bounds/targets
-    if (model.num_nonlinear_ineq_constraints()) {
-      userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds(
-        model.nonlinear_ineq_constraint_lower_bounds());
-      userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds(
-        model.nonlinear_ineq_constraint_upper_bounds());
-    }
-    if (model.num_nonlinear_eq_constraints())
-      userDefinedConstraints.nonlinear_eq_constraint_targets(
-        model.nonlinear_eq_constraint_targets());
+    update_secondary_response(model);
   }
+}
+
+
+void RecastModel::update_secondary_response(const Model& model)
+{
+  // secondary response function labels
+  const StringArray& sm_resp_labels = model.response_labels();
+  size_t i,
+    num_nln_con = userDefinedConstraints.num_nonlinear_eq_constraints() +
+    userDefinedConstraints.num_nonlinear_ineq_constraints(),
+    num_primary    = numFns - num_nln_con,
+    num_sm_primary = model.response_size() - num_nln_con;
+  for (i=0; i<num_nln_con; i++)
+    currentResponse.shared_data().function_label
+      (sm_resp_labels[num_sm_primary+i], num_primary+i);
+
+  // nonlinear constraint bounds/targets
+  if (model.num_nonlinear_ineq_constraints()) {
+    userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds
+      (model.nonlinear_ineq_constraint_lower_bounds());
+    userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds
+      (model.nonlinear_ineq_constraint_upper_bounds());
+  }
+  if (model.num_nonlinear_eq_constraints())
+    userDefinedConstraints.nonlinear_eq_constraint_targets
+      (model.nonlinear_eq_constraint_targets());
 }
 
 

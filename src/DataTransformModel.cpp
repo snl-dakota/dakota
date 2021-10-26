@@ -152,37 +152,9 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // Expand any submodel Response data to the expanded residual size
   // ---
 
-  // NOTE: RecastModel pulls ScalingOpts from subModel
-  //
-  //  * CV scales don't change in this recasting; base RecastModel captures them
-  //    BMA TODO: What if there are hyper-parameters active?
-  //  * Overrides are not needed for nonlinear or linear constraints;
-  //    they aren't affected by data transforms
+  // Need to update when multiple experiments and/or interpolation
+  update_expanded_response(subModel);
 
-  // NOTE: The following expansions are conservative.  Could be skipped when
-  // only scalar data present and no replicates.
-  //
-  // For all primary should be able to just leave as 1 or num_elts
-
-  // Preserve weights through data transformations
-  // Weights are always by group, expanded in DakotaModel; just need to replicate
-  expand_primary_array(sub_model.primary_response_fn_weights().length(),
-			sub_model.primary_response_fn_weights(),
-			num_recast_primary, primaryRespFnWts);
-
-  // TODO: Sense is 1 or group, and NOT currently properly expanded for fields in DakotaModel
-  // Preserve sense through data transformations
-  expand_primary_array(sub_model.primary_response_fn_sense().size(),
-		       sub_model.primary_response_fn_sense(),
-		       num_recast_primary, primaryRespFnSense);
-
-  // Adjust each scaling type to right size, leaving as length 1 if needed
-  expand_primary_array(sub_model.scaling_options().priScaleTypes.size(), 
-		       sub_model.scaling_options().priScaleTypes, 
-		       num_recast_primary, scalingOpts.priScaleTypes);
-  expand_primary_array(sub_model.scaling_options().priScales.length(),
-		       sub_model.scaling_options().priScales, 
-		       num_recast_primary, scalingOpts.priScales);
 
   // For this derivation of RecastModel, all resizing can occur at construct
   // time --> Variables/Response are up to date for estimate_message_lengths()
@@ -268,9 +240,8 @@ void DataTransformModel::update_from_subordinate_model(size_t depth)
       update_variables_active_complement_from_model(subModel);
   }
 
-  // always need to carefully update response due to size change
-  // BMA TODO: This needs update to avoid overwriting expanded response names
-  update_response_from_model(subModel);
+  // Need to update when multiple experiments and/or interpolation
+  update_expanded_response(subModel);
 }
 
 
@@ -341,6 +312,52 @@ void DataTransformModel::expand_linear_constraints(const Model& model)
     userDefinedConstraints.linear_eq_constraint_targets
       (model.linear_eq_constraint_targets());
   }
+}
+
+
+/** Expand response-related arrays, accounting for multiple
+    experiments and/or interpolation. */
+void DataTransformModel::update_expanded_response(const Model& model)
+{
+  size_t num_recast_primary = expData.num_total_exppoints();
+
+  // TODO: verify that clients of this Model will properly work with
+  // expanded weights, sense, scales.
+
+  // Preserve weights through data transformations
+  // Weights are always by group, expanded in DakotaModel; just replicate
+  expand_primary_array(model.primary_response_fn_weights().length(),
+		       model.primary_response_fn_weights(),
+		       num_recast_primary, primaryRespFnWts);
+
+  // TODO: Sense is 1 or group, and NOT currently properly expanded
+  // for fields in DakotaModel
+  // TODO: Moreover sense does not apply to calibration_terms?!?
+  // Preserve sense through data transformations
+  expand_primary_array(model.primary_response_fn_sense().size(),
+		       model.primary_response_fn_sense(),
+		       num_recast_primary, primaryRespFnSense);
+
+  // Scaling-related notes:
+  //  * RecastModel pulls ScalingOpts from subModel
+  //  * CV scales don't change in this recasting; base RecastModel captures them
+  //  * TODO: What if there are hyper-parameters active?
+
+  // Adjust each scaling type to right size, leaving as length 1 if needed
+  // TODO: This will break with interpolation as scales can be num_elements
+  expand_primary_array(model.scaling_options().priScaleTypes.size(),
+		       model.scaling_options().priScaleTypes,
+		       num_recast_primary, scalingOpts.priScaleTypes);
+  expand_primary_array(model.scaling_options().priScales.length(),
+		       model.scaling_options().priScales,
+		       num_recast_primary, scalingOpts.priScales);
+
+  // update primary labels in-place
+  expData.fill_primary_function_labels
+    (currentResponse.shared_data().function_labels());
+
+  // nonlinear constraints aren't affected by data transforms
+  update_secondary_response(model);
 }
 
 
@@ -963,6 +980,7 @@ expand_primary_array(size_t submodel_size, const T& submodel_array,
     // For num_elements case, just fill the recast_array with copies
     size_t num_exp = expData.num_experiments();
 
+    // TODO: this will fail in general for interpolation-active cases
     assert(submodel_size * num_exp == recast_size);
 
     recast_array.resize(recast_size);
