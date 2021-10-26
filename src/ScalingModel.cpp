@@ -255,40 +255,14 @@ bool ScalingModel::update_variables_from_model(Model& model)
     // number of variables, so pull up all updates, then override
     // select values/bounds.
 
-    // variable values
-    currentVariables.all_continuous_variables(
-      model.all_continuous_variables());
-    currentVariables.all_discrete_int_variables(
-      model.all_discrete_int_variables());
-    currentVariables.all_discrete_string_variables(
-      model.all_discrete_string_variables());
-    currentVariables.all_discrete_real_variables(
-      model.all_discrete_real_variables());
-    // variable bounds
-    userDefinedConstraints.all_continuous_lower_bounds(
-      model.all_continuous_lower_bounds());
-    userDefinedConstraints.all_continuous_upper_bounds(
-      model.all_continuous_upper_bounds());
-    userDefinedConstraints.all_discrete_int_lower_bounds(
-      model.all_discrete_int_lower_bounds());
-    userDefinedConstraints.all_discrete_int_upper_bounds(
-      model.all_discrete_int_upper_bounds());
-    userDefinedConstraints.all_discrete_real_lower_bounds(
-      model.all_discrete_real_lower_bounds());
-    userDefinedConstraints.all_discrete_real_upper_bounds(
-      model.all_discrete_real_upper_bounds());
-    // variable labels
-    currentVariables.all_continuous_variable_labels(
-      model.all_continuous_variable_labels());
-    currentVariables.all_discrete_int_variable_labels(
-      model.all_discrete_int_variable_labels());
-    currentVariables.all_discrete_string_variable_labels(
-      model.all_discrete_string_variable_labels());
-    currentVariables.all_discrete_real_variable_labels(
-      model.all_discrete_real_variable_labels());
+    update_variable_values(model);
+    update_variable_bounds(model);
+    update_variable_labels(model);
 
     // the mvDist is already copied (has it's own rep) if needed in ctor
     //mvDist = subModel.multivariate_distribution();
+
+    update_linear_constraints(model);
 
     // Now update any scaling, values, and bounds on *this by
     // re-initializing scaling from the start...

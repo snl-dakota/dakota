@@ -469,6 +469,14 @@ protected:
   void update_from_model(Model& model);
   /// update active variables/bounds/labels from subModel
   virtual bool update_variables_from_model(Model& model);
+  /// update all variable values from passed sub-model
+  void update_variable_values(const Model& model);
+  /// update all variable bounds from passed sub-model
+  void update_variable_bounds(const Model& model);
+  /// update all variable labels from passed sub-model
+  void update_variable_labels(const Model& model);
+  /// update linear constraints from passed sub-model
+  void update_linear_constraints(const Model& model);
   /// update complement of active variables/bounds/labels from subModel
   void update_variables_active_complement_from_model(Model& model);
   /// update nonlinear constraint bounds/targets from subModel
