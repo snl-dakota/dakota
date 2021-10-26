@@ -471,10 +471,16 @@ protected:
   virtual bool update_variables_from_model(Model& model);
   /// update all variable values from passed sub-model
   void update_variable_values(const Model& model);
+  /// update discrete variable values from passed sub-model
+  void update_discrete_variable_values(const Model& model);
   /// update all variable bounds from passed sub-model
   void update_variable_bounds(const Model& model);
+  /// update discrete variable bounds from passed sub-model
+  void update_discrete_variable_bounds(const Model& model);
   /// update all variable labels from passed sub-model
   void update_variable_labels(const Model& model);
+  /// update discrete variable labels from passed sub-model
+  void update_discrete_variable_labels(const Model& model);
   /// update linear constraints from passed sub-model
   void update_linear_constraints(const Model& model);
   /// update complement of active variables/bounds/labels from subModel

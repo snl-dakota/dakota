@@ -844,6 +844,12 @@ void RecastModel::update_variable_values(const Model& model)
 {
   currentVariables.all_continuous_variables
     (model.all_continuous_variables());
+  update_discrete_variable_values(model);
+}
+
+
+void RecastModel::update_discrete_variable_values(const Model& model)
+{
   currentVariables.all_discrete_int_variables
     (model.all_discrete_int_variables());
   currentVariables.all_discrete_string_variables
@@ -859,6 +865,12 @@ void RecastModel::update_variable_bounds(const Model& model)
     (model.all_continuous_lower_bounds());
   userDefinedConstraints.all_continuous_upper_bounds
     (model.all_continuous_upper_bounds());
+  update_discrete_variable_bounds(model);
+}
+
+
+void RecastModel::update_discrete_variable_bounds(const Model& model)
+{
   userDefinedConstraints.all_discrete_int_lower_bounds
     (model.all_discrete_int_lower_bounds());
   userDefinedConstraints.all_discrete_int_upper_bounds
@@ -874,6 +886,12 @@ void RecastModel::update_variable_labels(const Model& model)
 {
   currentVariables.all_continuous_variable_labels
     ( model.all_continuous_variable_labels());
+  update_discrete_variable_labels(model);
+}
+
+
+void RecastModel::update_discrete_variable_labels(const Model& model)
+{
   currentVariables.all_discrete_int_variable_labels
     (model.all_discrete_int_variable_labels());
   currentVariables.all_discrete_string_variable_labels

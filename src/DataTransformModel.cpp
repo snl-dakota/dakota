@@ -234,6 +234,115 @@ void DataTransformModel::data_resize()
 }
 
 
+void DataTransformModel::update_from_subordinate_model(size_t depth)
+{
+  // data flows from the bottom-up, so recurse first
+  if (depth == SZ_MAX)
+    subModel.update_from_subordinate_model(depth); // retain special value (inf)
+  else if (depth)
+    subModel.update_from_subordinate_model(depth - 1); // decrement
+  //else depth exhausted --> update this level only
+
+  if (numHyperparams > 0) {
+
+    update_cv_skip_hyperparams(subModel);
+
+    // for discrete, update all
+    update_discrete_variable_values(subModel);
+    update_discrete_variable_bounds(subModel);
+    update_discrete_variable_labels(subModel);
+
+    // TODO: mvDist likely needs size change. Its bounds need updating
+    // too; above variable updates bypass mvDist as sets on
+    // constraints object only instead of Model's setters...
+    mvDist = subModel.multivariate_distribution(); // shared rep
+
+    // Add column of zeroes corresponding to the hyper-parameters
+    expand_linear_constraints(subModel);
+
+  }
+  else {
+    // base class implementation should suffice for variables
+    bool update_active_complement = update_variables_from_model(subModel);
+    if (update_active_complement)
+      update_variables_active_complement_from_model(subModel);
+  }
+
+  // always need to carefully update response due to size change
+  // BMA TODO: This needs update to avoid overwriting expanded response names
+  update_response_from_model(subModel);
+}
+
+
+void DataTransformModel::update_cv_skip_hyperparams(const Model& model)
+{
+  // update active cv from submodel, leave hyper params as-is,
+  // update active complement
+  const Variables& sm_vars = model.current_variables();
+  size_t i,  // indexes the model's all continuous variables
+    cv_begin = sm_vars.cv_start(),
+    num_cv  = sm_vars.cv(), // omits any hyper-parameters
+    cv_end = cv_begin + num_cv,
+    num_acv = sm_vars.acv();
+  const RealVector& acv = model.all_continuous_variables();
+  const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
+  const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
+  StringMultiArrayConstView acv_labels
+    = model.all_continuous_variable_labels();
+
+  // active complement [0, cv_begin), followed by active [cv_begin, cv_end)
+  for (i=0; i<cv_end; ++i) {
+    currentVariables.all_continuous_variable(acv[i], i);
+    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
+    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
+    currentVariables.all_continuous_variable_label(acv_labels[i], i);
+  }
+  // skip hyper-parameters on *this
+  // active complement [cv_end, num_acv)
+  for (i=cv_end; i<num_acv; ++i) {
+    currentVariables.all_continuous_variable(acv[i], numHyperparams + i);
+    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i],
+						      numHyperparams + i);
+    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i],
+						      numHyperparams + i);
+    currentVariables.all_continuous_variable_label(acv_labels[i],
+						   numHyperparams + i);
+  }
+}
+
+void DataTransformModel::expand_linear_constraints(const Model& model)
+{
+  if (model.num_linear_ineq_constraints()) {
+
+    const RealMatrix& sm_coeffs = model.linear_ineq_constraint_coeffs();
+    RealMatrix dt_coeffs(sm_coeffs.numRows(),
+			 sm_coeffs.numCols() + numHyperparams);
+    RealMatrix sm_subset(Teuchos::View, dt_coeffs, sm_coeffs.numRows(),
+			 sm_coeffs.numCols(), 0, 0);
+    sm_subset.assign(sm_coeffs);
+    userDefinedConstraints.linear_ineq_constraint_coeffs(dt_coeffs);
+
+    userDefinedConstraints.linear_ineq_constraint_lower_bounds
+      (model.linear_ineq_constraint_lower_bounds());
+    userDefinedConstraints.linear_ineq_constraint_upper_bounds
+      (model.linear_ineq_constraint_upper_bounds());
+  }
+
+  if (model.num_linear_eq_constraints()) {
+
+    const RealMatrix& sm_coeffs = model.linear_eq_constraint_coeffs();
+    RealMatrix dt_coeffs(sm_coeffs.numRows(),
+			 sm_coeffs.numCols() + numHyperparams);
+    RealMatrix sm_subset(Teuchos::View, dt_coeffs, sm_coeffs.numRows(),
+			 sm_coeffs.numCols(), 0, 0);
+    sm_subset.assign(sm_coeffs);
+    userDefinedConstraints.linear_eq_constraint_coeffs(dt_coeffs);
+
+    userDefinedConstraints.linear_eq_constraint_targets
+      (model.linear_eq_constraint_targets());
+  }
+}
+
 
 /** Incorporate the hyper parameters into Variables, assuming they are at the 
     end of the active continuous variables.  For example, append them to 
