@@ -42,6 +42,15 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     abort_handler(-1);
   }
 
+  if (iteratedModel.truth_model().is_null()) {
+    Cerr << "Method surrogate_based_global requires a surrogate model that "
+            "has an underlying truth model via actual_model_pointer or indirectly "
+            "through dace_method_pointer. To optimize on build-once surrogates, "
+            "e.g., from imported training data, apply a normal global optimizer "
+            "like the moga or soga method to the surrogate model directly.\n";
+    abort_handler(METHOD_ERROR);
+  }
+
   // historical default convergence tolerance
   if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
 
