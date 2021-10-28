@@ -472,17 +472,18 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     	// update raw evaluation counts
     	raw_N_l[step] += numSamples;
     	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost);
+      }
     }
 
     //For target sigma and target scalarization we need to do this in an extra
     //step since variances over all levels have to be known
-    for (step=0; step<num_steps; ++step) {
+    for (step=0; step<num_steps && delta_N_l[step]; ++step) {
       aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l,
                    step, agg_var_qoi);
+      //Cout << "Agg var: "<< step << " " << agg_var_qoi << "\n";
       // MSE reference is MC applied to HF
       if (mlmfIter == 0)
         aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
-      }
     }
 
     if (mlmfIter == 0){ // eps^2 / 2 = var * relative factor
@@ -1253,9 +1254,9 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
       }
       for (size_t step = 0; step < num_steps; ++step) {
         if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
-          NTargetQoi(qoi, step) = std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
+          NTargetQoi(qoi, step) = (fact_qoi == 0) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
         }else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
-          NTargetQoi(qoi, step) = std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * (1./fact_qoi);
+          NTargetQoi(qoi, step) = (fact_qoi == 0) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * (1./fact_qoi);
         }else{
           Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
           abort_handler(INTERFACE_ERROR);
@@ -1293,10 +1294,11 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
         if(allocationTarget == TARGET_VARIANCE){
           initial_point[step] = 8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step);
         }else{
-          initial_point[step] = (step == 0) ? 1000 : 
-                                  ((step == 1) ? 500 : 
-                                    ((step == 2) ? 100 : 50)); //pilot_samples[step]; //8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); 
-          initial_point[step] = pilot_samples[step];
+          //initial_point[step] = (step == 0) ? 1000 : 
+          //                        ((step == 1) ? 500 : 
+          //                          ((step == 2) ? 100 : 50)); //pilot_samples[step]; //8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); 
+          //initial_point[step] = pilot_samples[step];
+          initial_point[step] = 8. > NTargetQoi(qoi, step) ? 8 : NTargetQoi(qoi, step); 
         }
       }
 
@@ -1773,11 +1775,6 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
       // been observed to contain bias in numerical experiments, whereas bias
       // in the derivative approx goes to zero asymptotically.
       agg_estim_var = agg_estim_var / (4. * mom2 * mom2);
-      for (lev = 0; lev < num_lev && 
-                        allocationTarget == TARGET_SCALARIZATION; ++lev){
-        //Cov term of sigma
-        //agg_estim_var += a_div_b*cov_bootstrap[lev];
-      }
       finalStatErrors(2*qoi+1, 2*qoi+1) = std::sqrt(agg_estim_var);
 
       if (outputLevel >= DEBUG_OUTPUT)
@@ -1794,7 +1791,6 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
       finalStatErrors(2*qoi+1, 2*qoi) = agg_estim_var; //Can be negative
       if (outputLevel >= DEBUG_OUTPUT)
         Cout << "Estimator Cov for Cov[mean, stddev] = " << finalStatErrors(2*qoi+1, 2*qoi) << "\n";
-
     }else{
       finalStatErrors(2*qoi+1, 2*qoi) = 0;
     }
