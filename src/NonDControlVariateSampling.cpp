@@ -505,7 +505,7 @@ compute_eval_ratios(const RealVector& sum_L_shared, const RealVector& sum_H,
     // > refinement based only on QoI mean statistics
     // Given use of 1/r in MSE_ratio, one approach would average 1/r, but
     // this does not seem to behave as well in limited numerical experience.
-    //if (rho_sq > Pecos::SMALL_NUMBER) {
+    //if (rho_sq > Pecos::SMALL_NUMBER_SQ) {
     //  avg_inv_eval_ratio += std::sqrt((1. - rho_sq)/(cost_ratio * rho_sq));
     if (rho_sq < 1.) { // protect against division by 0, sqrt(negative)
       eval_ratios[qoi] = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));

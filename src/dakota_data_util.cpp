@@ -115,7 +115,7 @@ Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv)
       norm    += std::pow(curr_rv[i] - prev_rv[i], 2.);
       scaling += std::pow(prev_rv[i], 2.);
     }
-    return (scaling > Pecos::SMALL_NUMBER) ?
+    return (scaling > Pecos::SMALL_NUMBER_SQ) ?
       std::sqrt(norm / scaling) : std::sqrt(norm);
   }
 }
@@ -190,7 +190,7 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
       norm    += std::pow(curr_rv2[i] - prev_rv2[i], 2.);
       scaling += prev_rv2[i] * prev_rv2[i];
     }
-    return (scaling > Pecos::SMALL_NUMBER) ?
+    return (scaling > Pecos::SMALL_NUMBER_SQ) ?
       std::sqrt(norm / scaling) : std::sqrt(norm);
   }
 }
