@@ -99,7 +99,7 @@ protected:
 			  Real& cov_Q1Q2);
   
   void mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
-			RealMatrix& eval_ratios);
+			Sizet2DArray& model_sequence, RealMatrix& eval_ratios);
 
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);

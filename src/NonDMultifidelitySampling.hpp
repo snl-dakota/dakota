@@ -83,6 +83,7 @@ protected:
   void update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
 			 RealVector& hf_targets);
   void update_hf_targets(const RealMatrix& rho2_LH,
+			 const Sizet2DArray& model_sequence,
 			 const RealMatrix& eval_ratios, const RealVector& var_H,
 			 const RealVector& mse_iter0,   RealVector& mse_ratios,
 			 RealVector& hf_targets);
@@ -94,10 +95,12 @@ protected:
 				Sizet2DArray& N_L_projected);
 
   void compute_mse_ratios(const RealMatrix& rho2_LH,
+			  const Sizet2DArray& model_sequence,
 			  const RealMatrix& eval_ratios,
 			  RealVector& mse_ratios);
   void compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
 			  const RealVector& hf_targets,
+			  const Sizet2DArray& model_sequence,
 			  const RealMatrix& eval_ratios,
 			  RealVector& mse_ratios);
 

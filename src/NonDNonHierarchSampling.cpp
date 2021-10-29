@@ -206,26 +206,75 @@ ensemble_sample_increment(size_t iter, size_t step)
 
 void NonDNonHierarchSampling::
 mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
-		 RealMatrix& eval_ratios)
+		 Sizet2DArray& model_sequence, RealMatrix& eval_ratios)
 {
   if (eval_ratios.empty())
     eval_ratios.shapeUninitialized(numFunctions, numApprox);
+  size_t qoi, approx, i, num_am1 = numApprox - 1, corr_order, most_corr;
+  bool ordered;
+
+  // compute a model sequence sorted by Low-High correlation
+  // > rho2, N_L, N_H, {eval,mse}_ratios, etc. are all ordered based on the
+  //   user-provided model list ordering
+  // > we employ model_sequence to pair approximations using a different order
+  //   for computing rho2_diff, cost --> eval_ratios --> mse_ratios, but the
+  //   results are indexed by the original approx ordering
+  // > control variate compute/apply are per approx, so sequencing not required
+  // > approx_increment requires model sequence to define the sample pyramid
+  model_sequence.resize(numFunctions);
+  std::map<Real, size_t> rho_approx_map; std::map<Real, size_t>::iterator it;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    rho_approx_map.clear();
+    for (approx=0; approx<numApprox; ++approx)
+      rho_approx_map[rho2_LH(qoi, approx)] = approx; // order by increasing corr
+    if (rho_approx_map.size() != numApprox) { // unexpected redundancy
+      Cerr << "Error: redundant correlation in MFMC model ordering."<<std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    SizetArray& mod_seq_q = model_sequence[qoi];
+    mod_seq_q.resize(numApprox);
+    ordered = true;
+    for (approx=0, it=rho_approx_map.begin(); it!=rho_approx_map.end();
+	 ++it, ++approx) {
+      corr_order = it->second;
+      mod_seq_q[approx] = corr_order;
+      if (approx != corr_order) ordered = false;
+    }
+    // not necessary to retain sequencing array if already ordered
+    if (ordered) mod_seq_q.clear();
+  }
 
   // precompute a factor based on most-correlated model
+  Real factor, rho2, prev_rho2, rho2_diff, cost_ratio, cost_L,
+    cost_H = cost[numApprox];
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    SizetArray& mod_seq_q = model_sequence[qoi];
+    ordered = mod_seq_q.empty();
+    most_corr = (ordered) ? num_am1 : mod_seq_q[num_am1];
+    factor = cost_H / (1. - rho2_LH(qoi, most_corr));// most correlated
+
+    // second sweep to compute eval_ratios including rho2 look-{ahead,back}
+    for (i=0; i<numApprox; ++i) {
+      approx = (ordered) ? i : mod_seq_q[i];
+      cost_L = cost[approx];
+      // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
+      // > i+1 becomes i-1 and most correlated is rho2_LH(qoi, most_corr)
+      rho2_diff = rho2  = rho2_LH(qoi, approx);
+      if (i) rho2_diff -= prev_rho2;
+      eval_ratios(qoi,approx) = std::sqrt(factor / cost_L * rho2_diff);
+      prev_rho2 = rho2;
+    }
+  }
+
+  /* OLD: Does not sequence rho2_LH to protect against sqrt(rho_diff < 0)
   RealVector factor(numFunctions, false);
   Real cost_ratio, cost_H = cost[numApprox]; // HF cost
-  size_t qoi, approx, num_am1 = numApprox - 1;
   for (qoi=0; qoi<numFunctions; ++qoi)
     factor[qoi] = cost_H / (1. - rho2_LH(qoi, num_am1));
-  // second sweep to compute eval_ratios including rho2 look-{ahead,back}
   for (approx=0; approx<numApprox; ++approx) {
     Real*   eval_ratios_a = eval_ratios[approx];
     const Real* rho2_LH_a =     rho2_LH[approx];
     Real           cost_L =        cost[approx];
-
-    // *** TO DO: MUST PROTECT AGAINST sqrt(< 0) BY SEQUENCING CORRELATIONS
-    // *** At least screen for condition each iter and abort prior to FPE
-
     // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
     // > i+1 becomes i-1 and most correlated ref is rho2_LH(qoi, num_am1)
     if (approx)
@@ -236,6 +285,7 @@ mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
       for (qoi=0; qoi<numFunctions; ++qoi)
 	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
   }
+  */
 }
 
 

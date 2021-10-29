@@ -75,7 +75,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
 
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
   RealVector sum_HH, hf_targets;  RealMatrix rho2_LH, eval_ratios;
-  Sizet2DArray N_L_baseline, N_LH;
+  Sizet2DArray N_L_baseline, N_LH, model_sequence;
   size_t num_steps = numApprox + 1;
   initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
   initialize_counts(N_L_baseline, numH, N_LH);
@@ -105,7 +105,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // (This differs from MLMC MSE^0 which uses pilot for all levels.)
     if (mlmfIter == 0) compute_mc_estimator_variance(varH, numH, mseIter0);
     // compute r* from rho2 and cost
-    mfmc_eval_ratios(rho2_LH, sequenceCost, eval_ratios);
+    mfmc_eval_ratios(rho2_LH, sequenceCost, model_sequence, eval_ratios);
 
     // ----------------------------------
     // Compute HF targets and MSE ratios:
@@ -113,11 +113,13 @@ void NonDMultifidelitySampling::multifidelity_mc()
     if (maxFunctionEvals != SZ_MAX)
       update_hf_targets(eval_ratios, sequenceCost, hf_targets);
     else //if (convergenceTol != -DBL_MAX) *** TO DO: need special default value
-      update_hf_targets(rho2_LH,eval_ratios,varH,mseIter0,mseRatios,hf_targets);
+      update_hf_targets(rho2_LH, model_sequence, eval_ratios, varH, mseIter0,
+			mseRatios, hf_targets);
     // Compute the ratio of MC and MFMC mean squared errors, which incorporates
     // anticipated variance reduction from upcoming application of eval_ratios.
     // > Note: this could be redundant for tol-based targets with m1* > pilot
-    compute_mse_ratios(rho2_LH, numH, hf_targets, eval_ratios, mseRatios);
+    compute_mse_ratios(rho2_LH, numH, hf_targets, model_sequence, eval_ratios,
+		       mseRatios);
 
     // --------------------------------
     // Compute shared sample increment:
@@ -132,7 +134,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
 
   // numH is converged --> finalize with LF increments and post-processing
   approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_L_baseline, N_LH,
-		    eval_ratios, hf_targets);
+		    eval_ratios, hf_targets); // ***
 }
 
 
@@ -143,7 +145,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   RealMatrix sum_L_pilot(numFunctions, numApprox),
     sum_LL_pilot(numFunctions, numApprox),
     sum_LH_pilot(numFunctions, numApprox), rho2_LH, eval_ratios;
-  Sizet2DArray N_L_pilot, N_LH_pilot;  SizetArray N_H_pilot;
+  Sizet2DArray N_L_pilot, N_LH_pilot, model_sequence;  SizetArray N_H_pilot;
   initialize_counts(N_L_pilot, N_H_pilot, N_LH_pilot);
   // ------------------------------------------------------------------
   // Compute final rho2_LH, varH, {eval,mse} ratios from (oracle) pilot
@@ -158,7 +160,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
 			 sum_HH_pilot, N_L_pilot, N_H_pilot, N_LH_pilot,
 			 varH, rho2_LH);
   // compute r* from rho2 and cost
-  mfmc_eval_ratios(rho2_LH, sequenceCost, eval_ratios);
+  mfmc_eval_ratios(rho2_LH, sequenceCost, model_sequence, eval_ratios);
   // Update hf_targets based on maxFunctionEvals (convTol option is problematic
   // since current reference MSE reflects overkill N for Oracle corr)
   if (maxFunctionEvals == SZ_MAX) {
@@ -192,11 +194,12 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   //compute_mc_estimator_variance(varH, numH, mseIter0);
   // Exclude pilot from R^2 benefit, but include any difference between numH
   // and hf_targets:
-  compute_mse_ratios(rho2_LH, numH, hf_targets, eval_ratios, mseRatios);
+  compute_mse_ratios(rho2_LH, numH, hf_targets, model_sequence, eval_ratios,
+		     mseRatios);
 
   // numH is converged --> finalize with LF increments and post-processing
   approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_L_baseline, N_LH,
-		    eval_ratios, hf_targets);
+		    eval_ratios, hf_targets); // ***
 }
 
 
@@ -207,7 +210,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   RealVector sum_H(numFunctions), sum_HH(numFunctions), hf_targets;
   RealMatrix rho2_LH, eval_ratios, sum_L_baseline(numFunctions, numApprox),
     sum_LL(numFunctions, numApprox), sum_LH(numFunctions, numApprox);
-  Sizet2DArray N_L_baseline, N_LH;
+  Sizet2DArray N_L_baseline, N_LH, model_sequence;
   initialize_counts(N_L_baseline, numH, N_LH);
 
   // ----------------------------------------------------
@@ -231,7 +234,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // (This differs from MLMC MSE^0 which uses pilot for all levels.)
   compute_mc_estimator_variance(varH, numH, mseIter0);
   // compute r* from rho2 and cost
-  mfmc_eval_ratios(rho2_LH, sequenceCost, eval_ratios);
+  mfmc_eval_ratios(rho2_LH, sequenceCost, model_sequence, eval_ratios);
 
   // ----------------------------------
   // Compute HF targets and MSE ratios:
@@ -239,14 +242,16 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   if (maxFunctionEvals != SZ_MAX)
     update_hf_targets(eval_ratios, sequenceCost, hf_targets);
   else //if (convergenceTol != -DBL_MAX) *** TO DO: need special default value
-    update_hf_targets(rho2_LH,eval_ratios,varH,mseIter0,mseRatios,hf_targets);
+    update_hf_targets(rho2_LH, model_sequence, eval_ratios, varH, mseIter0,
+		      mseRatios, hf_targets);
   // update projected numH
   Sizet2DArray N_L_projected = N_L_baseline;
   update_projected_samples(hf_targets, eval_ratios, numH, N_L_projected);
   // Compute the ratio of MC and MFMC mean squared errors, which incorporates
   // anticipated variance reduction from upcoming application of eval_ratios.
   // > Note: this could be redundant for tol-based targets with m1* > pilot
-  compute_mse_ratios(rho2_LH, numH, hf_targets, eval_ratios, mseRatios);
+  compute_mse_ratios(rho2_LH, numH, hf_targets, model_sequence, eval_ratios,
+		     mseRatios);
 
   // No LF increments or final moments for pilot projection
 
@@ -258,6 +263,7 @@ void NonDMultifidelitySampling::
 approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		  IntRealMatrixMap& sum_LL,         IntRealMatrixMap& sum_LH,
 		  const Sizet2DArray& N_L_baseline, const Sizet2DArray& N_LH,
+		  //const Sizet2DArray& model_sequence,
 		  const RealMatrix& eval_ratios, const RealVector& hf_targets)
 {
   // ----------------------------------------------------------------
@@ -280,14 +286,15 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   IntRealMatrixMap sum_L_shared  = sum_L_baseline,
                    sum_L_refined = sum_L_baseline; // copies
   Sizet2DArray N_L_shared = N_L_baseline, N_L_refined = N_L_baseline; // copies
-  for (size_t approx=numApprox; approx>0; --approx) {
+  for (size_t i=numApprox; i>0; --i) {
     // *** TO DO NON_BLOCKING: 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
     if (approx_increment(eval_ratios, N_L_refined, hf_targets, mlmfIter,
-			 0, approx)) {
+			 /*model_sequence,*/ 0, i)) { // ***
       // MFMC samples on [0, approx) --> sum_L_{shared,refined}
       accumulate_mf_sums(sum_L_shared, sum_L_refined, N_L_shared, N_L_refined,
-			 0, approx);
-      increment_equivalent_cost(numSamples, sequenceCost, 0, approx);
+			 /*model_sequence,*/ 0, i); // ***
+      increment_equivalent_cost(numSamples, sequenceCost, /*model_sequence,*/
+				0, i); // ***
     }
   }
 
@@ -342,7 +349,7 @@ update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
        << ": average HF target = " << average(hf_targets) << std::endl;
 
   // For reference, compute est_var if pilot over-sample is ignored
-  //compute_mse_ratios(rho2_LH, eval_ratios, mseRatios);// MSE* from r*,rho2
+  //compute_mse_ratios(rho2_LH, model_sequence, eval_ratios, mseRatios);
   //RealVector est_var(numFunctions);
   //Real rnd_hf_target = std::floor(average(hf_targets) + .5);
   //for (size_t qoi=0; qoi<numFunctions; ++qoi)
@@ -352,9 +359,10 @@ update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
 
 
 void NonDMultifidelitySampling::
-update_hf_targets(const RealMatrix& rho2_LH, const RealMatrix& eval_ratios,
-		  const RealVector& var_H,   const RealVector& mse_iter0,
-		  RealVector& mse_ratios,    RealVector& hf_targets)
+update_hf_targets(const RealMatrix& rho2_LH, const Sizet2DArray& model_sequence,
+		  const RealMatrix& eval_ratios, const RealVector& var_H,
+		  const RealVector& mse_iter0,   RealVector& mse_ratios,
+		  RealVector& hf_targets)
 {
   // Note: there is a circular dependency between mse_ratios and hf_targets
   // > 1st compute r*,rho2 --> MSE*, then compute MSE*,tol --> m1* target
@@ -362,7 +370,8 @@ update_hf_targets(const RealMatrix& rho2_LH, const RealMatrix& eval_ratios,
   //   _actual_ MSE including additional pilot (actual MSE should be < MSE*,
   //   although mseRatios may be > mseRatio* due to decrease in MC MSE)
   // > if m1* > pilot, then increment numSamples and continue
-  compute_mse_ratios(rho2_LH, eval_ratios, mse_ratios);// MSE* from r*,rho2
+  compute_mse_ratios(rho2_LH, model_sequence, eval_ratios, mse_ratios);
+  // This computes MSE* from r*,rho2
   // Next, m1* from MSE*; then these mse_ratios get replaced for actual profile
 
   // MSE target = convTol * mse_iter0 = mse_ratio * var_H / N_H
@@ -398,7 +407,8 @@ update_projected_samples(const RealVector& hf_targets,
 bool NonDMultifidelitySampling::
 approx_increment(const RealMatrix& eval_ratios,
 		 const Sizet2DArray& N_L_refined, const RealVector& hf_targets,
-		 size_t iter, size_t start, size_t end)
+		 size_t iter, //const Sizet2DArray& model_sequence,
+		 size_t start, size_t end)
 {
   // Update LF samples based on evaluation ratio
   //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
@@ -407,7 +417,7 @@ approx_increment(const RealMatrix& eval_ratios,
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
-  size_t qoi, approx = end - 1;
+  size_t qoi, approx;  bool ordered;
 
   // When to apply averaging requires some care.  To properly enforce scalar
   // budget for vector QoI, need to either scalarize to average targets from
@@ -427,6 +437,26 @@ approx_increment(const RealMatrix& eval_ratios,
   for (qoi=0; qoi<numFunctions; ++qoi)
     lf_targets[qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
   numSamples = one_sided_delta(N_L_refined[approx], lf_targets, 1); // average
+  /* This initial attempt at sequencing is problematic --> can't retain the
+     pyramid sampling and manage different sequences per QoI without averaging
+     further upstream (e.g., averaged correlations).  See Notes...
+  // compute full 2D since different QoI can use different orderings
+  RealVectorArray lf_targets(numApprox);
+  for (i=0; i<numApprox; ++i)
+    lf_targets[i].resize(numFunctions);
+
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    const SizetArray& mod_seq_q = model_sequence[qoi];
+    ordered = mod_seq_q.empty();
+    for (i=0; i<numApprox; ++i) {
+      approx = (ordered) ? i : mod_seq_q[i];
+      lf_targets[approx][qoi] = eval_ratios(qoi, approx) * hf_targets[qoi];
+    }
+  }
+  approx = (mod_seq_q.empty()) ? end-1 : mod_seq_q[end-1]; // [start,end)
+  numSamples = one_sided_delta(N_L_refined[approx], lf_targets[approx], 1);//avg
+  */
+
   // These approaches overshoot when combined with vector update_hf_targets():
   //   lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
   //   lf_target = avg_eval_ratios[approx] * avg_hf_target;
@@ -705,8 +735,9 @@ compute_LH_correlation(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 
 
 void NonDMultifidelitySampling::
-compute_mse_ratios(const RealMatrix& rho2_LH, const RealMatrix& eval_ratios,
-		   RealVector& mse_ratios)
+compute_mse_ratios(const RealMatrix& rho2_LH,
+		   const Sizet2DArray& model_sequence,
+		   const RealMatrix& eval_ratios, RealVector& mse_ratios)
 {
   if (mse_ratios.empty()) mse_ratios.sizeUninitialized(numFunctions);
   // Compute ratio of MSE for single-fidelity MC and MFMC
@@ -753,13 +784,18 @@ compute_mse_ratios(const RealMatrix& rho2_LH, const RealMatrix& eval_ratios,
   // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
   // > Reorder differences since eval ratios/correlations ordered from LF to HF
   //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
-  Real R_sq, r_i, r_ip1;  size_t qoi, approx;
+  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i;  bool ordered;
   for (qoi=0; qoi<numFunctions; ++qoi) {
-    R_sq = 0.;  r_i = eval_ratios(qoi, 0);
-    for (approx=0; approx<numApprox; ++approx) {
-      r_ip1 = (approx+1 < numApprox) ? eval_ratios(qoi, approx+1) : 1.;
+    R_sq = 0.;
+    const SizetArray& mod_seq_q = model_sequence[qoi];
+    ordered = mod_seq_q.empty();
+    approx = (ordered) ? 0 : mod_seq_q[0];
+    r_i = eval_ratios(qoi, approx);
+    for (i=0; i<numApprox; ++i) {
+      approx_ip1 = (ordered) ? i+1 : mod_seq_q[i+1];
+      r_ip1 = (approx_ip1 < numApprox) ? eval_ratios(qoi, approx_ip1) : 1.;
       R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
-      r_i = r_ip1;
+      r_i = r_ip1;  approx = approx_ip1;
     }
     mse_ratios[qoi] = (1. - R_sq);
   }
@@ -783,8 +819,9 @@ compute_mse_ratios(const RealMatrix& rho2_LH, const RealMatrix& eval_ratios,
 
 void NonDMultifidelitySampling::
 compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
-		   const RealVector& hf_targets, const RealMatrix& eval_ratios,
-		   RealVector& mse_ratios)
+		   const RealVector& hf_targets,
+		   const Sizet2DArray& model_sequence,
+		   const RealMatrix& eval_ratios, RealVector& mse_ratios)
 {
   if (mse_ratios.empty()) mse_ratios.sizeUninitialized(numFunctions);
 
@@ -793,11 +830,11 @@ compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
   //   --> take credit for N_H > N* by using r_actual < r* for N_H > m1*
   //   --> N_L is kept fixed at r* m1* (see lf_targets in approx_increment()),
   //       but r_actual = N_L / N_H = r* m1* / N_H
-  bool scale_to_N_H = false;  size_t qoi, approx;
+  bool scale_to_N_H = false, ordered;  size_t qoi, approx, approx_ip1, i;
   Real avg_hf_target = average(hf_targets);
   size_t rnd_hf_target = (size_t)std::floor(avg_hf_target + .5);
   for (qoi=0; qoi<numFunctions; ++qoi)
-    if (N_H[qoi] > rnd_hf_target)//over-shoot of target from pilot | iteration
+    if (N_H[qoi] > rnd_hf_target)// over-shoot of target from pilot | iteration
       scale_to_N_H = true;
 
   if (scale_to_N_H) {
@@ -806,13 +843,17 @@ compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
     for (qoi=0; qoi<numFunctions; ++qoi) {
       R_sq = 0.;  N_H_q = (Real)N_H[qoi];
       star_to_actual = avg_hf_target / N_H_q;
-      r_i  = eval_ratios(qoi, 0) * star_to_actual;
-      for (approx=0; approx<numApprox; ++approx) {
+      const SizetArray& mod_seq_q = model_sequence[qoi];
+      ordered = mod_seq_q.empty();
+      approx = (ordered) ? 0 : mod_seq_q[0];
+      r_i = eval_ratios(qoi, approx) * star_to_actual;
+      for (i=0; i<numApprox; ++i) {
+	approx_ip1 = (ordered) ? i+1 : mod_seq_q[i+1];
 	//N_L[approx] += r_i * N_H_q; // for verification
-	r_ip1 = (approx+1 < numApprox) ?
-	  eval_ratios(qoi, approx+1) * star_to_actual : 1.; // r* -> r_actual
+	r_ip1 = (approx_ip1 < numApprox) ?
+	  eval_ratios(qoi, approx_ip1) * star_to_actual : 1.; // r* -> r_actual
 	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
-	r_i = r_ip1;
+	r_i = r_ip1;  approx = approx_ip1;
       }
       mse_ratios[qoi] = (1. - R_sq);
     }
@@ -821,15 +862,19 @@ compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
     //  Cout << "avg N_L[" << approx << "] = "<< N_L[approx]/numFunctions<<'\n';
   }
   else
-    compute_mse_ratios(rho2_LH, eval_ratios, mse_ratios);
+    compute_mse_ratios(rho2_LH, model_sequence, eval_ratios, mse_ratios);
 
   if (outputLevel >= NORMAL_OUTPUT) {
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      for (approx=0; approx<numApprox; ++approx)
+      const SizetArray& mod_seq_q = model_sequence[qoi];
+      ordered = mod_seq_q.empty();
+      for (i=0; i<numApprox; ++i) {
+	approx = (ordered) ? i : mod_seq_q[i];
 	Cout << "  QoI " << qoi+1 << " Approx " << approx+1
 	   //<< ": cost_ratio = " << cost_H / cost_L
 	     << ": rho2_LH = "    <<     rho2_LH(qoi,approx)
 	     << " eval_ratio = "  << eval_ratios(qoi,approx) << '\n';
+      }
       Cout << "QoI " << qoi+1 << ": variance reduction factor = "
 	   << mse_ratios[qoi] << '\n';
     }
