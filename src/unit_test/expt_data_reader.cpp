@@ -68,8 +68,10 @@ TEUCHOS_UNIT_TEST(expt_data_reader, read_bad_config_vars_size)
   const std::string base_name = "expt_data_test_files/voltage";
 
   std::vector<Variables> config_data(NUM_EXPTS, gen_mock_vars(NCV+1));
+  Dakota::abort_mode = ABORT_THROWS;
   TEST_THROW( read_config_vars_multifile( base_name, NUM_EXPTS, NCV+1, config_data), Dakota::TabularDataTruncated );
   TEST_THROW( read_config_vars_singlefile(base_name, NUM_EXPTS, NCV+1, config_data), Dakota::TabularDataTruncated );
+  Dakota::abort_mode = ABORT_EXITS;
 }
 
 //----------------------------------------------------------------

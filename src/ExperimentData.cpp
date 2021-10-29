@@ -370,15 +370,12 @@ void ExperimentData::load_data(const std::string& context_message,
       read_config_vars_multifile(config_vars_basepath.string(), numExperiments, 
           numConfigVars, allConfigVars);
     }
-    catch(std::runtime_error & e)
-    {
-      if( numConfigVars > 0 )
-        throw
-          std::runtime_error("Expected to read " +
-                             convert_to_string(numConfigVars) +
-                             " experiment config variables, but required file(s) \"" +
-                             config_vars_basepath.string() +
-                             ".*.config\" not found.");
+    catch(const std::runtime_error& e) {
+      Cerr << "\nError: Cannot read " << convert_to_string(numConfigVars)
+	   << " experiment config variables\nfrom file(s) '"
+	   << config_vars_basepath.string() << ".*.config'; details:\n"
+	   << e.what();
+      abort_handler(IO_ERROR);
     }
   }
 
@@ -396,16 +393,24 @@ void ExperimentData::load_data(const std::string& context_message,
 
     // Need to decide what to do if both scalar_data_file and "experiment.#" files exist - RWH
     if ( (numConfigVars > 0) && scalar_data_file ) {
-      // TODO: try/catch
       scalar_data_stream >> std::ws;
       if ( scalar_data_stream.eof() ) {
-        Cerr << "\nError: End of file '" << scalarDataFilename
-          << "' reached before reading " 
-          << numExperiments << " sets of values."
-          << std::endl;
-        abort_handler(-1);
+	Cerr << "\nError: End of file '" << scalarDataFilename
+	     << "' reached before reading "
+	     << numExperiments << " sets of values.\n";
+	abort_handler(IO_ERROR);
       }
-      allConfigVars[exp_index].read_tabular(scalar_data_stream, INACTIVE_VARS);
+      try {
+	allConfigVars[exp_index].read_tabular(scalar_data_stream, INACTIVE_VARS);
+      }
+      catch (const std::exception& e) {
+	// could catch TabularDataTruncated, but message would be the same
+	Cerr << "\nError: Could not read configuration (state) variable values "
+	     << "for experiment " << exp_index + 1 << "\nfrom file '"
+	     << scalarDataFilename << "'; details:\n" << e.what()
+	     << std::endl;
+	abort_handler(IO_ERROR);
+      }
     }
     // TODO: else validate scalar vs. field configs?
 
