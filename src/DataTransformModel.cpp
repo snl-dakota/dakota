@@ -147,6 +147,12 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // ---
   init_continuous_vars();
 
+  // TODO: mvDist likely needs size change for hyper-parameters. Its
+  // bounds need updating too; above variable updates bypass mvDist
+  // as sets on constraints object only instead of Model's
+  // setters...
+  mvDist = subModel.multivariate_distribution(); // shared rep
+
 
   // ---
   // Expand any submodel Response data to the expanded residual size
@@ -224,9 +230,10 @@ void DataTransformModel::update_from_subordinate_model(size_t depth)
     update_discrete_variable_bounds(subModel);
     update_discrete_variable_labels(subModel);
 
-    // TODO: mvDist likely needs size change. Its bounds need updating
-    // too; above variable updates bypass mvDist as sets on
-    // constraints object only instead of Model's setters...
+    // TODO: mvDist likely needs size change for hyper-parameters. Its
+    // bounds need updating too; above variable updates bypass mvDist
+    // as sets on constraints object only instead of Model's
+    // setters...
     mvDist = subModel.multivariate_distribution(); // shared rep
 
     // Add column of zeroes corresponding to the hyper-parameters
@@ -343,8 +350,17 @@ void DataTransformModel::update_expanded_response(const Model& model)
   //  * CV scales don't change in this recasting; base RecastModel captures them
   //  * TODO: What if there are hyper-parameters active?
 
+  // Ideally, disallow per-element response scaling when interpolation
+  // is active, however user might have toggled "scaling" off in
+  // method, so don't make fatal. TODO: needs tighter check
+  if (scalingOpts.priScales.length() == model.num_primary_fns() &&
+      expData.interpolate_flag()) {
+    Cout << "\nWarning: When interpolating simulation to calibration data, "
+	 << "primary\nresponse scales should not be specified per field element,"
+	 << "rather\nper response group, or a single value." << std::endl;
+  }
+
   // Adjust each scaling type to right size, leaving as length 1 if needed
-  // TODO: This will break with interpolation as scales can be num_elements
   expand_primary_array(model.scaling_options().priScaleTypes.size(),
 		       model.scaling_options().priScaleTypes,
 		       num_recast_primary, scalingOpts.priScaleTypes);
