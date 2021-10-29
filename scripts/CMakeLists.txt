@@ -16,6 +16,7 @@ endif()
 # dakota.sh is useful for all except native windows builds
 if(NOT MSVC)
   install(PROGRAMS "dakota.sh" DESTINATION "bin")
+  install(PROGRAMS "dakota-ui.sh" DESTINATION "bin")
 endif()
 
 
