@@ -213,7 +213,7 @@ private:
 
   static Real bootstrap_covariance(const size_t step, const size_t qoi, 
   								const IntRealMatrixMap& lev_qoisamplematrix_map, const Real N,
-  								const bool compute_gradient, Real& grad, const int seed);
+  								const bool compute_gradient, Real& grad, int* seed);
 
   static Real compute_mean(const RealVector& samples);
 
@@ -340,6 +340,9 @@ private:
   								int n, const RealVector& x, double& f, RealVector& grad_f, 
   								int& result_mode);
 
+
+  static void target_scalarization_objective_eval_optpp_fd(int mode, int n, const RealVector& x, double& f, int& result_mode);
+
   /// NPSOL definition (Wrapper using OPTPP implementation above under the hood)
   static void target_cost_objective_eval_npsol(int& mode, int& n, double* x, 
   								double& f, double* gradf, int& nstate);
@@ -390,7 +393,7 @@ private:
                   const IntRealMatrixMap &sum_Qlm1, 
                   const IntIntPairRealMatrixMap &sum_QlQlm1,
                   const RealVector &pilot_samples, 
-                  const RealMatrix &scalarization_response_mapping) const;
+                  const RealMatrix &scalarization_response_mapping);
 
   void assign_static_member_problem18(Real &var_L_exact, Real &var_H_exact, 
   								Real &mu_four_L_exact, Real &mu_four_H_exact, 
@@ -451,6 +454,7 @@ private:
 
   IntRealMatrixMap levQoisamplesmatrixMap;
   bool storeEvals;
+  int bootstrapSeed;
 };
 
 
@@ -543,10 +547,13 @@ variance_Ysum_static(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq_pilot,
   // instead of (Y-mean)^2 since mean is updated on each iteration.
   Real variance_tmp = (sum_YY / Nlq_pilot - mu_Y * mu_Y); 
 
+ 
   if(compute_gradient){
   	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+    grad = 0;  //TODO_SCALARBUGFIX
   }
 
+  Nlq = Nlq_pilot;  //TODO_SCALARBUGFIX
   Real var_Y = variance_tmp * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
   check_negative(var_Y);
   return var_Y;
@@ -584,10 +591,14 @@ variance_Qsum_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
   Real variance_tmp = (       sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql     // var_Ql
     - 2. * (   sum_QlQlm1 / Nlq_pilot - mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
     +        sum_Qlm1Qlm1 / Nlq_pilot - mu_Qlm1 * mu_Qlm1 ); // var_Qlm1
+ 
   if(compute_gradient){
-  	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+  	grad = variance_tmp * (-1.) / ((Real)(Nlq_pilot - 1.) * (Real)(Nlq_pilot - 1.));
+    grad = 0; //TODO_SCALARBUGFIX
   }
   check_negative(variance_tmp);
+
+  Nlq = Nlq_pilot;  //TODO_SCALARBUGFIX
   return variance_tmp * (Real)Nlq / (Real)(Nlq - 1.); // Bessel's correction
 }
 
@@ -599,7 +610,10 @@ var_lev_l(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
   Real var_lev_Q = (sum_QlQl / Nlq - mu_Ql * mu_Ql)     // var_Ql
     			- (sum_Qlm1Qlm1 / Nlq - mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
     * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
-  check_negative(var_lev_Q);
+  if(var_lev_Q < 0){
+    Cerr << "NonDMultilevelSampling::var_lev_l: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
+    //check_negative(var_of_var);
+  }
   return var_lev_Q; 
 }
 
@@ -609,13 +623,22 @@ var_lev_l_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
 {
   Real mu_Ql = sum_Ql / Nlq_pilot, mu_Qlm1 = sum_Qlm1 / Nlq_pilot;
   //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-  Real variance_tmp = (sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql)     // var_Ql
+  //Cerr << "1NonDMultilevelSampling::var_lev_l_static: " << sum_QlQl << ", " << Nlq_pilot << ", " << mu_Ql << ", " <<" \n";
+  //Cerr << "1NonDMultilevelSampling::var_lev_l_static: " << sum_Qlm1Qlm1 << ", " << Nlq_pilot << ", " << mu_Qlm1 << ", " <<" \n";
+  Real var_lev_Q = (sum_QlQl / Nlq_pilot - mu_Ql   * mu_Ql)     // var_Ql
     										- (sum_Qlm1Qlm1 / Nlq_pilot - mu_Qlm1 * mu_Qlm1 ); // var_Qlm1
+  //sCerr << "2NonDMultilevelSampling::var_lev_l_static: " << var_lev_Q << ", " << Nlq << " But that should be fine.\n";
   if(compute_gradient){
-  	grad = variance_tmp * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+  	grad = var_lev_Q * (-1.) / ((Real)(Nlq - 1.) * (Real)(Nlq - 1.));
+    grad = 0;  //TODO_SCALARBUGFIX
   }
-  check_negative(variance_tmp);
-  return variance_tmp * (Real)Nlq / (Real)(Nlq - 1.); // Bessel's correction
+  var_lev_Q *= (Real)Nlq / (Real)(Nlq - 1.);
+
+  if(var_lev_Q < 0){
+    Cerr << "NonDMultilevelSampling::var_lev_l_static: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
+    //check_negative(var_of_var);
+  }
+  return var_lev_Q; // Bessel's correction
 }
 
 inline Real NonDMultilevelSampling::
@@ -799,7 +822,10 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(const IntRealMatrixMap& sum
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
   }
 
-  check_negative(var_of_var);
+  if(var_of_var < 0){
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_l0: var_of_var < 0.";
+    check_negative(var_of_var);
+  }
   return var_of_var;
 }
 
@@ -831,7 +857,10 @@ inline Real NonDMultilevelSampling::var_of_var_ml_lmax(const IntRealMatrixMap& s
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
   }
 
-  check_negative(var_of_var);
+  if(var_of_var < 0){
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_lmax: var_of_var < 0.";
+    check_negative(var_of_var);
+  }
   return var_of_var;
 }
 
@@ -866,9 +895,8 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
 
 
   // [fm] bias correction for var_P2l and var_P2lm1
-  var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
-  var_P2lm1 =
-      Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
+  var_P2l = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+  var_P2lm1 = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
 
   //[fm] unbiased products of mean
   mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi, lev) / Nlq_pilot;
@@ -912,9 +940,9 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
 
   //[fm] Using only unbiased estimators the sum is also unbiased
   covar_P2lP2lm1
-      = mu_P2lP2lm1 + term / (Nlq - 1.);
+      = (mu_P2lP2lm1 + term / (Nlq - 1.)) / Nlq;
 
-  var_of_var = (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
+  var_of_var = var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1 ;
 
   if(compute_gradient) {
     grad_g = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
@@ -929,7 +957,10 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(const IntRealMatrixMap& sum_
                              (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
     }
 
-  check_negative(var_of_var);
+  if(var_of_var < 0){
+    Cerr << "NonDMultilevelSampling::var_of_var_ml_l: var_of_var < 0.";
+    check_negative(var_of_var);
+  }
   return var_of_var;
 }
 

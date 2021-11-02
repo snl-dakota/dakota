@@ -1923,7 +1923,6 @@ iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
   // of Gaussian errors = Sqrt[ Sum [ coeff^2 sigma_i^2 ] ]
   // Note: final moments may be central or standard, but error estimates are
   //       always standard (sqrt of estimator variance of central/std moment)
-
   // [W]{S}:
   Real sum, term, coeff, coeff2;
   for (i=0; i<subIterMappedPri; ++i) {
@@ -1946,8 +1945,8 @@ iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
           term = 2. * coeff1 * coeff2 * sub_iterator_errors(2*j+1, 2*j); // [W]{S} Cov (Subdiagonal)
           sum += term;
         }
-         }
-      mapped_errors[i] = (sum == 0) ? 0 : std::sqrt(sum);
+      }
+      mapped_errors[i] = std::sqrt(sum);
     }
   }
 
@@ -1977,10 +1976,9 @@ iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
           sum += term;
         }
       }
-      mapped_errors[m_index] = (sum == 0) ? 0 : std::sqrt(sum);
+      mapped_errors[m_index] = std::sqrt(sum);
     }
   }
-  //exit(-1);
 }
 
 
