@@ -1,8 +1,11 @@
-Blurb:: Initial set of samples for multilevel sampling methods.
+Blurb:: Initial set of samples for multilevel/multifidelity sampling methods.
 
-Description:: The pilot sample provides initial estimates of variance and/or
-correlation within the first iteration of a multilevel and/or control variate
-approach.
+Description:: The pilot sample provides initial estimates of variance
+and/or correlation within the first iteration of a
+multilevel/multifidelity sampling approach.  These initial estimates
+then guide the algorithm toward additional sample increments in order
+to iteratively achieve a prescribed error at minimum total cost, or
+alternatively, minimum error for a prescribed budget.
 
 <b> Default Behavior </b>
 

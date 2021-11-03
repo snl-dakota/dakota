@@ -1,4 +1,4 @@
-Blurb:: Sequence of seed values for a multi-stage random sampling
+Blurb:: Sequence of seed values for multi-stage random sampling
 
 Description::
 This specification allows the stipulation of seed values (passed to a
@@ -9,9 +9,10 @@ This is particularly useful for reusing sample sets (via restart) that
 were generated in some other context (e.g., from a single-stage study)
 within a multi-stage algorithm execution.  Normally the random number
 sequence would continue from a seed specified for the initial sample
-set, making subsequent sample sets more difficult to recreate.  With
-finer granularity in the seed specification for multi-stage samplers,
-any part of the sequence can now be more readily recreated.
+set, making subsequent sample sets more difficult to recreate outside
+of their original context.  With finer granularity in the seed
+specification for multi-stage samplers, intermediate portions of a
+sampling sequence can now be more readily recreated and reused.
 
 <b> Default Behavior </b>
 
