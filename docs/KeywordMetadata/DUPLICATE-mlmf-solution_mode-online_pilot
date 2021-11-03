@@ -11,9 +11,9 @@ the optimal sample allocation logic.  This mode is the default.
 It is typically advantageous to start from a smaller pilot sample and
 then rely on the adaptive logic to increase the sample levels to the
 optimal level required to achieve the desired accuracy or enforce the
-prescribed budget.  Over-estimation of the pilot, while more robust,
-can hide the optimal profile and result in a non-optimal allocation of
-resources.
+prescribed budget.  Over-estimation of the pilot, while supporting more
+robust estimation of correlations and variances, can hide the optimal
+profile and result in a non-optimal allocation of resources.
 
 Topics::
 
