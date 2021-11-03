@@ -1,0 +1,43 @@
+Blurb:: Option to suppress any increment to the number of truth samples
+
+Description::
+In some cases, it may be impractical to increment an initial set of
+truth model samples, for example due to their extreme computational
+cost or due to the use of legacy data sets that can no longer be
+augmented.  To fix the number of truth model evaluations to only those
+prescribed in the pilot sample, the \c truth_fixed_by_pilot keyword
+can be used.
+
+<b> Default Behavior </b>
+
+The default is to allow the number of truth samples to advance beyond those
+specified in the pilot, while seeking an optimal sample profile.
+
+<b> Additional Discussion </b>
+
+The optimization problem is formulated using linear constraints and
+a reduced set of design variables, one per approximation model.
+
+This option is most relevant in the default \c online_pilot solution
+mode, which would normally iterate to determine the optimal number of
+truth samples.  With \c truth_fixed_by_pilot, the number of truth
+samples is fixed within the optimization and no iteration occurs.
+
+For the \c pilot_projection solution mode, the optimization
+formulation searches only over the approximation samples, providing
+an optimal projection subject to the fixed truth constraint.
+
+The \c offline_pilot solution mode is not iterative and assumes that
+the offline pilot has accurately estimated the correlations and
+variances.  In this case, the online profile is independent and it is
+not necessary to refine the truth model samples beyond the initial
+estimate of the optimal allocation.  The \c truth_fixed_by_pilot
+specification has no additional effect beyond these existing constraints.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::
