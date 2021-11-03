@@ -1,0 +1,73 @@
+Blurb:: Multilevel methods for sampling-based UQ
+
+Description:: A nascent sampling method that utilizes both multifidelity and
+multilevel relationships within a hierarchical surrogate model in order to
+improve convergence behavior in sampling methods.   
+
+In the case of a multilevel relationship, multilevel Monte Carlo
+methods are used to compute an optimal sample allocation per level,
+and in the case of a multifidelity relationship, control variate Monte
+Carlo methods are used to compute an optimal sample allocation per
+fidelity.  These two approaches can also be combined, resulting in the
+approach below.
+
+<b> Multilevel Control Variate Monte Carlo </b>
+
+If both multifidelity and multilevel structure
+are included within the hierarchical model specification, then a control
+variate can be applied across fidelities for each level within an
+outer multilevel approach.
+
+On each level a control variate is active for the discrepancy \f$Y_{\ell}\f$
+based on
+\f[ Y_{\ell}^\star = Y_{\ell} + \alpha_\ell \left( \hat{Y}^{\mathrm{LF}}_\ell - \mathbb{E}\left[ Y^{\mathrm{LF}}_\ell \right] \right), \f]
+where \f$Y^{\mathrm{LF}}_\ell = \gamma_\ell Q^{\mathrm{LF}}_\ell - Q^{\mathrm{HF}}_\ell\f$.
+
+The optimal parameter \f$\gamma_\ell\f$ is computed from the correlation properties 
+between model forms and discretization levels (see the theory manual for further details) 
+and the optimal allocation \f$N_\ell\f$ (per level) is finally obtained from it. 
+
+<b> Default Behavior </b> 
+
+The multilevel sampling method employs Monte Carlo sampling be
+default, but this default can be overridden to use Latin hypercube
+sampling using \c sample_type \c lhs.
+
+<b> Expected Output </b> 
+
+The multilevel sampling method reports estimates of the first four
+moments and a summary of the evaluations performed for each model
+fidelity and discretization level.  The method does not support any
+level mappings (response, probability, reliability, generalized
+reliability) at this time.
+
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-sampling_moments (moments only, not confidence intervals)
+
+In addition, the execution group has the attribute \c equiv_hf_evals, which
+records the equivalent number of high-fidelity evaluations.
+
+<b> Usage Tips </b>
+
+The multilevel sampling method must be used in combination with a
+hierarchical model specification.  When exploiting multiple
+discretization levels, it is necessary to identify the variable string
+identifier that controls these levels using \c solution_level_control.
+Associated relative costs also need to be supplied using \c
+solution_level_cost.
+
+<b> Additional Discussion </b>
+
+Also see multilevel regression in \ref method-polynomial_chaos.
+
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also:: method-polynomial_chaos

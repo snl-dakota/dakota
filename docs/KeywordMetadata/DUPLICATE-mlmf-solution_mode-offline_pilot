@@ -1,0 +1,20 @@
+Blurb:: Specify a solution mode that excludes the pilot cost from sample allocation logic
+
+Description:: Multilevel / multifidelity sampling methods are adaptive
+UQ methods that utilize a pilot sample to estimate an initial set of
+correlations or variances, and then augment the pilot with additional
+sample increments to optimally allocate resources.  In this mode, the
+cost of pilot sampling is treated as offline cost and is excluded from
+the optimal sample allocation logic.  This mode is typically used for
+generating reference performance using an "oracle" approach, i.e.,
+specifying a large pilot sample in order to obtain best-case
+correlation or variance estimates prior to generating a sample profile.
+
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::
