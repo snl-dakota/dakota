@@ -12,7 +12,7 @@ variance with each control variate pair.  While the ensemble of
 control variates appears identical to MFMC:
 
 \f[ \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
-- \Sum_{i=1}^M \beta_i (\hat{Q}_{LF_i}^{MC} - \mathbb{E}[Q_{LF_i}]) \f]
+- \sum_{i=1}^M \beta_i (\hat{Q}_{LF_i}^{MC} - \mathbb{E}[Q_{LF_i}]) \f]
 
 the sample patterns used for the constituent estimators differ as
 depicted in Gorodetsky et al. (2020), Figure 2.  Two ACV variants
@@ -103,8 +103,10 @@ Refer to \c dakota/test/dakota_uq_diffusion_acv3_cost4.in and
 \c dakota/test/dakota_uq_tunable_acv.in in the source distribution
 for this case as well as additional examples.
 
-Theory::
-Faq::
-See_Also:: Refer to [Gorodetsky et al., JCP (408), 2020] for more
+Refer to [Gorodetsky et al., JCP (408), 2020] for more
 detailed algorithm descriptions, theoretical considerations, and
 a helpful sample set diagram.
+
+Theory::
+Faq::
+See_Also::	method-multifidelity_sampling

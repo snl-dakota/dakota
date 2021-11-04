@@ -69,7 +69,7 @@ The following method block
 \verbatim
 method,
 	model_pointer = 'HIERARCH'
-        multilevel_multifidelity_sampling
+	multilevel_multifidelity_sampling
 	  pilot_samples = 20 seed = 1237		#s0,#s1,#s2,#s3,#p0,#p1
 	  convergence_tolerance = .01			#s0,#s2,#s3,#p0,#p1
 \endverbatim
@@ -104,4 +104,4 @@ distribution for this case as well as additional examples.
 
 Theory::
 Faq::
-See_Also:: method-multilevel_sampling, method-multifidelity_sampling
+See_Also::	method-multilevel_sampling, method-multifidelity_sampling
