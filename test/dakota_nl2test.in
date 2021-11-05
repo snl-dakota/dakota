@@ -1,4 +1,7 @@
 #@ s*: Label=FastTest
+#@ s0: TimeoutDelay=180
+#@ s1: TimeoutDelay=180
+
 # DAKOTA INPUT FILE - dakota_nl2test.in
 
 # Run DAKOTA/nl2sol on several test problems (Osborne 1, Watson 6, Chebyquad 8,

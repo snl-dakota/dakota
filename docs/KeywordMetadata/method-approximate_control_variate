@@ -1,0 +1,112 @@
+Blurb:: Approximate control variate (ACV) sampling methods for UQ
+
+Description::
+An adaptive sampling method that utilizes multifidelity
+relationships in order to improve efficiency through variance reduction.
+It employs a non-hierarchical model to manage an unordered set of
+lower-fidelity approximations to a single truth model.
+
+Compared to multifidelity Monte Carlo (MFMC), ACV relaxes the nested
+sampling of a recursive emulator, instead targeting the truth model's
+variance with each control variate pair.  While the ensemble of
+control variates appears identical to MFMC:
+
+\f[ \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
+- \sum_{i=1}^M \beta_i (\hat{Q}_{LF_i}^{MC} - \mathbb{E}[Q_{LF_i}]) \f]
+
+the sample patterns used for the constituent estimators differ as
+depicted in Gorodetsky et al. (2020), Figure 2.  Two ACV variants
+are currently implemented, ACV-MF and ACV-IS, with ACV-KL to follow.
+
+<b> Default Behavior </b>
+
+The \c approximate_control_variate method employs Monte Carlo sample
+sets by default, but this default can be overridden to use Latin
+hypercube sample sets using \c sample_type \c lhs.
+
+<b> Expected Output </b> 
+
+The \c approximate_control_variate method reports estimates of the
+first four moments and a summary of the evaluations performed for each
+model fidelity and discretization level.  The method does not support
+any level mappings (response, probability, reliability, generalized
+reliability) at this time.
+
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-sampling_moments (moments only, not confidence intervals)
+
+In addition, the execution group has the attribute \c equiv_hf_evals, which
+records the equivalent number of high-fidelity evaluations.
+
+<b> Usage Tips </b>
+
+The \c approximate_control_variate method must be used in combination
+with a non-hierarchical model specification that defines either a
+model form sequence or a discretization level sequence.  For a model
+form sequence, each model must provide a scalar \c
+solution_level_cost.  For a discretization level sequence, \c
+solution_level_control must identify the variable string descriptor
+that controls the resolution levels and the associated array of
+relative costs must be provided using \c solution_level_cost.
+
+Topics::
+
+Examples::
+The following method block:
+\verbatim
+method,
+	model_pointer = 'NONHIER'
+	approximate_control_variate				
+	  acv_mf nip
+	  pilot_samples = 20 seed = 1237
+	  max_iterations = 10
+	  convergence_tolerance = .001
+\endverbatim
+specifies ACV-MF using the nonlinear interior point (NIP) solver in
+combination with the model identified by the NONHIER pointer.
+
+This NONHIER model specification provides a one-dimensional sequence,
+here defined by a single truth model and a set of unordered approximation
+models, each with a single (or default) discretization level:
+\verbatim
+model,
+	id_model = 'NONHIER'
+	surrogate non_hierarchical
+	  truth_model = 'HF'
+	  unordered_model_fidelities = 'LF1' 'LF2'
+
+model,
+	id_model = 'LF1'
+	interface_pointer = 'LF1_INT'
+	simulation
+	  solution_level_cost = 1
+
+model,
+	id_model = 'LF2'
+	interface_pointer = 'LF2_INT'
+	simulation
+	  solution_level_cost = 16
+
+model,
+	id_model = 'HF'
+	interface_pointer = 'HF_INT'
+	simulation
+	  solution_level_cost = 256.
+\endverbatim
+
+Refer to \c dakota/test/dakota_uq_diffusion_acv3_cost4.in and
+\c dakota/test/dakota_uq_tunable_acv.in in the source distribution
+for this case as well as additional examples.
+
+Refer to [Gorodetsky et al., JCP (408), 2020] for more
+detailed algorithm descriptions, theoretical considerations, and
+a helpful sample set diagram.
+
+Theory::
+Faq::
+See_Also::	method-multifidelity_sampling

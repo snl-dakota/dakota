@@ -1,0 +1,29 @@
+Blurb:: Stopping criterion based on relative error reduction
+
+Description::
+The \c convergence_tolerance specification provides a real value for
+controlling the termination of iteration through satisfaction of a
+specified accuracy at minimum total cost.
+
+For multilevel and multifidelity sampling methods, it is a <b>relative
+convergence tolerance</b> on the mean squared error (MSE), where the
+MSE is typically comprised of known estimator variance (stochastic
+error), neglecting unknown residual bias (deterministic error).
+
+The reference estimator variance is then defined as follows:
+\li Multilevel approaches (\c multilevel_sampling and \c multilevel_multifidelity_sampling): tolerance relative to initial multilevel Monte Carlo (MLMC) error after pilot sample
+\li Control variate approaches (\c multifidelity_sampling and \c approximate_control_variate): relative to Monte Carlo (MC) error from pilot sample
+where these are all initial estimator variances fot the algorithm,
+recognizing that control variate approaches can extract no benefit
+from low-fidelity pilot samples prior to the definition of
+corresponding sample increments.
+
+Permissible values are between 0 and 1, non-inclusive.
+Default value is 1.e-4.
+
+
+Topics::	method_independent_controls
+Examples::
+Theory::
+Faq::
+See_Also::	

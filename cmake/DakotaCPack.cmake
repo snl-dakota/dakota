@@ -53,21 +53,21 @@ function(dakota_architecture_string _retval_arch)
 endfunction()
 
 
-# Substitute %key tokens with configure-time values to build a package label
+# Substitute @key tokens with configure-time values to build a package label
 #
-# %version: the Dakota version
-# %sha1: Dakota sha1
-# %date: Date at configure time(?) in YYYY_MM_DD format.
+# @version: the Dakota version
+# @sha1: Dakota sha1
+# @date: Date at configure time(?) in YYYY_MM_DD format.
 function(dakota_parse_package_label _label_with_tokens _retval_subbed_label)
 
-  string(REPLACE "%version" "${Dakota_VERSION_TRIPLE}" _subbed_label
+  string(REPLACE "@version" "${Dakota_VERSION_TRIPLE}" _subbed_label
     "${_label_with_tokens}")
 
-  string(REPLACE "%sha1" "${Dakota_GIT_ABBREV_SHA1}" _subbed_label
+  string(REPLACE "@sha1" "${Dakota_GIT_ABBREV_SHA1}" _subbed_label
     "${_subbed_label}")
 
   string(TIMESTAMP Dakota_CONFIG_DATE "%Y_%m_%d")
-  string(REPLACE "%date" "${Dakota_CONFIG_DATE}" _subbed_label
+  string(REPLACE "@date" "${Dakota_CONFIG_DATE}" _subbed_label
     "${_subbed_label}")
  
   set(${_retval_subbed_label} "${_subbed_label}" PARENT_SCOPE)

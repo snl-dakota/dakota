@@ -29,4 +29,4 @@ uses the scalarization as sample allocation target and solves the resulting opti
 
 Theory::
 Faq::
-See_Also:: \ref method-multilevel_sampling-allocation_target-scalarization
+See_Also:: method-multilevel_sampling-allocation_target-scalarization

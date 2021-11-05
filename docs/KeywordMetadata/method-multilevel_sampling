@@ -1,15 +1,11 @@
-Blurb:: Multilevel methods for sampling-based UQ
+Blurb:: Multilevel sampling methods for UQ
 
-Description:: A nascent sampling method that utilizes both multifidelity and
-multilevel relationships within a hierarchical surrogate model in order to
-improve convergence behavior in sampling methods.   
+Description:: An adaptive sampling method that utilizes multilevel
+relationships within a hierarchical surrogate model in order to
+improve efficiency through variance reduction.
 
 In the case of a multilevel relationship, multilevel Monte Carlo
-methods are used to compute an optimal sample allocation per level,
-and in the case of a multifidelity relationship, control variate Monte
-Carlo methods are used to compute an optimal sample allocation per
-fidelity.  These two approaches can also be combined, resulting in the
-three approaches below.
+methods are used to compute an optimal sample allocation per level.
 
 <b> Multilevel Monte Carlo </b>
 
@@ -29,49 +25,15 @@ allocated for each level (\f$N_l\f$) is based on a total cost minimization
 procedure that incorporates the relative cost and observed variance for each 
 of the \f$Y_\ell\f$.
 
-<b> Control Variate Monte Carlo </b>
-
-In the case of two model fidelities (low fidelity denoted as LF and
-high fidelity denoted as HF), we employ a control variate approach:
-
-\f[ \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
-- \beta (\hat{Q}_{LF}^{MC} - \mathbb{E}[Q_{LF}]) \f]
-
-As opposed to the traditional control variate approach, we do not know
-\f$\mathbb{E}[Q_{LF}]\f$ precisely, but rather estimate it more
-accurately than \f$\hat{Q}_{LF}^{MC}\f$ based on a sampling increment
-applied to the LF model.  This sampling increment is based again on
-a total cost minimization procedure that incorporates the relative LF
-and HF costs and the observed Pearson correlation coefficient
-\f$\rho_{LH}\f$ between \f$Q_{LF}\f$ and \f$Q_{HF}\f$.  The
-coefficient \f$\beta\f$ is then determined from the observed LF-HF
-covariance and LF variance.
-
-<b> Multilevel Control Variate Monte Carlo </b>
-
-If both multifidelity and multilevel structure
-are included within the hierarchical model specification, then a control
-variate can be applied across fidelities for each level within an
-outer multilevel approach.
-
-On each level a control variate is active for the discrepancy \f$Y_{\ell}\f$
-based on
-\f[ Y_{\ell}^\star = Y_{\ell} + \alpha_\ell \left( \hat{Y}^{\mathrm{LF}}_\ell - \mathbb{E}\left[ Y^{\mathrm{LF}}_\ell \right] \right), \f]
-where \f$Y^{\mathrm{LF}}_\ell = \gamma_\ell Q^{\mathrm{LF}}_\ell - Q^{\mathrm{HF}}_\ell\f$.
-
-The optimal parameter \f$\gamma_\ell\f$ is computed from the correlation properties 
-between model forms and discretization levels (see the theory manual for further details) 
-and the optimal allocation \f$N_\ell\f$ (per level) is finally obtained from it. 
-
 <b> Default Behavior </b> 
 
-The multilevel sampling method employs Monte Carlo sampling be
+The \c multilevel_sampling method employs Monte Carlo sample sets by
 default, but this default can be overridden to use Latin hypercube
-sampling using \c sample_type \c lhs.
+sample sets using \c sample_type \c lhs.
 
 <b> Expected Output </b> 
 
-The multilevel sampling method reports estimates of the first four
+The \c multilevel_sampling method reports estimates of the first four
 moments and a summary of the evaluations performed for each model
 fidelity and discretization level.  The method does not support any
 level mappings (response, probability, reliability, generalized
@@ -91,15 +53,12 @@ records the equivalent number of high-fidelity evaluations.
 <b> Usage Tips </b>
 
 The multilevel sampling method must be used in combination with a
-hierarchical model specification.  When exploiting multiple
-discretization levels, it is necessary to identify the variable string
-identifier that controls these levels using \c solution_level_control.
-Associated relative costs also need to be supplied using \c
-solution_level_cost.
-
-<b> Additional Discussion </b>
-
-Also see multilevel regression in \ref method-polynomial_chaos.
+hierarchical model specification, and supports either a sequence of
+model forms or a sequence of discretization levels.  For the former,
+each model form must provide a scalar \c solution_level_cost and for the
+latter, it is necessary to identify the variable string descriptor that
+controls the resolution levels using \c solution_level_control as well
+as the associated array of relative costs using \c solution_level_cost.
 
 
 Topics::
@@ -115,16 +74,13 @@ method,
 	  convergence_tolerance = .001
 \endverbatim
 
-results in multilevel Monte Carlo when the HIERARCH model
-specification contains a single model fidelity with multiple discretization
-levels, in control variate Monte Carlo when the HIERARCH model
-specification has multiple ordered model fidelities each with a single
-discretization level, and multilevel control variate Monte Carlo when
-the HIERARCH model specification contains multiple model fidelities
-each with multiple discretization levels.
-
-An example of the former (single model fidelity with multiple discretization
-levels) follows:
+specifies a multilevel Monte Carlo study in combination with the model
+identified by the HIERARCH pointer.  This model specification provides
+a one-dimensional hierarchy, typically defined by a single model
+fidelity with multiple discretization levels, but may also be provided
+as multiple ordered model fidelities, each with a single (or default)
+discretization level.  An example of the former (single model fidelity
+with multiple discretization levels) follows:
 \verbatim
 model,
 	id_model = 'HIERARCH'
@@ -138,9 +94,10 @@ model,
 	  solution_level_control = 'N_x'
 	  solution_level_cost = 630. 1260. 2100. 4200.
 \endverbatim
-Refer to \c dakota/share/dakota/test/dakota_uq_heat_eq_{mlmc,cvmc,mlcvmc}.in for 
-additional examples.
+
+Refer to \c dakota/test/dakota_uq_*_mlmc.in in the source distribution
+for additional examples.
 
 Theory::
 Faq::
-See_Also:: method-polynomial_chaos
+See_Also::	method-multifidelity_sampling, method-multilevel_multifidelity_sampling

@@ -14,3 +14,11 @@ Test Number 1 succeeded
 <<<<< Best objective function  =
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 6
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 1401 total (1170 new, 231 duplicate)
+<<<<< Best parameters          =
+                      9.9932595063e-01 x1
+                      1.0000000000e+00 x2
+<<<<< Best objective function  =
+                      2.0642715602e-13
+<<<<< Best data captured at function evaluation 607

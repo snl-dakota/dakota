@@ -242,6 +242,14 @@ III. Test Binary Distribution installation.
    on using the dakota executables or see the Quick Start page on the Dakota
    web site.
 
+3. For distributions with Graphical User Interface (GUI) support, the
+   GUI can be launched using the following command:
+
+       Windows Command Terminal: $INSTALL_DIR/gui/DakotaUI.exe
+       Linux:                    dakota-ui.sh
+       Mac OS X:                 dakota-ui.sh
+
+
 ==================
 Source Quick Start
 ==================

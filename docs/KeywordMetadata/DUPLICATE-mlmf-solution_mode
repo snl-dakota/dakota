@@ -1,0 +1,19 @@
+Blurb:: Solution mode for multilevel/multifidelity methods
+
+Description:: Multilevel / multifidelity sampling methods are adaptive
+UQ methods that utilize a pilot sample to estimate an initial set of
+correlations or variances, and then augment the pilot with additional
+sample increments to optimally allocate resources.  The pilot sample
+can be integrated according to one of three solution modes:
+\li \c online_pilot: include pilot sample cost within sample allocation (default)
+\li \c offline_pilot: treat pilot cost as offline and exclude from sample allocation
+\li \c pilot_projection: only perform the pilot sample and only estimate the expected performance based on a projection of the pilot statistics (useful for method selection)
+
+<b> Default Behavior </b>
+Online pilot
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

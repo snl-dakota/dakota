@@ -199,7 +199,9 @@ TEUCHOS_UNIT_TEST(expt_data, allowNoConfigFile)
   const std::string working_dir = "no_such_dir";
   ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, working_dir, 
 			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);
+  Dakota::abort_mode = ABORT_THROWS;
   TEST_THROW( 
       expt_data.load_data("expt_data unit test call", gen_mock_vars()),
       std::runtime_error );
+  Dakota::abort_mode = ABORT_EXITS;
 }

@@ -2,6 +2,7 @@
 #@ s1: TimeoutDelay=360
 #@ s2: TimeoutDelay=360
 #@ s3: TimeoutDelay=360
+#@ s5: TimeoutDelay=360
 #@ s0: UserMan=mogatest1
 #@ s1: UserMan=mogatest2
 #@ s2: UserMan=mogatest3

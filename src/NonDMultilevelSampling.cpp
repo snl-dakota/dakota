@@ -127,7 +127,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   // Allow either model forms or discretization levels, but not both
   size_t num_steps, form, lev, secondary_index; short seq_type;
   configure_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE),
+    budget_constrained = (maxFunctionEvals != SZ_MAX);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
   if (multilev) form = secondary_index;
@@ -136,8 +137,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost, agg_var(num_steps);
   configure_cost(num_steps, multilev, cost);
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost,
-    ref_cost = cost[num_steps-1];
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost, budget,
+    ref_cost = cost[num_steps-1]; // HF cost (1 level)
+  if (budget_constrained) budget = (Real)maxFunctionEvals * ref_cost;
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (sum_Y[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -159,14 +161,13 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     N_l[step].assign(numFunctions, 0);
 
   // now converge on sample counts per level (N_l)
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
-	 equivHFEvals <= maxFunctionEvals) {
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations) {
 
     sum_sqrt_var_cost = 0.;
     for (step=0; step<num_steps; ++step) { // step is reference to lev
 
       configure_indices(step, form, lev, seq_type); // step,form,lev as size_t
-      lev_cost = level_cost(cost, step);
+      lev_cost = level_cost(cost, step); // raw cost (not equiv HF)
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[step];
@@ -174,11 +175,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       // aggregate variances across QoI for estimating N_l (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_l = agg_var[step]; // carried over from prev iter if no samp
-      if (numSamples) {// && equivHFEvals <= maxFunctionEvals) {
-	// Don't include per level check on maxFunctionEvals, since it would be
-	// preferable to instead scale the sample profile to match the budget.
-	// Prior to this, checking only at outer loop preserves correct profile
-	// shape though it can overshoot.
+      if (numSamples) {
 
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(step);
@@ -203,7 +200,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
       // MSE reference is MLMC with pilot sample, prior to any N_l adaptation:
-      if (mlmfIter == 0)
+      if (mlmfIter == 0 && !budget_constrained)
 	estimator_var0
 	  += aggregate_mse_Ysum(sum_Y[1][step], sum_YY[step], N_l[step]);
     }
@@ -212,14 +209,16 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
     // discretization error, we compute an initial estimator variance from MLMC
     // on the pilot sample and then seek to reduce it by a relative_factor <= 1.
-    if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
+    if (mlmfIter == 0 && !budget_constrained) { // eps^2 / 2 = est var * rel tol
       eps_sq_div_2 = estimator_var0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
     }
 
-    // update targets based on variance estimates
-    Real fact = sum_sqrt_var_cost / eps_sq_div_2, N_target;
+    // update sample targets based on latest variance estimates
+    Real N_target, fact = (budget_constrained) ?
+      budget / sum_sqrt_var_cost :      // budget constraint
+      sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
     for (step=0; step<num_steps; ++step) {
       // Equation 3.9 in CTR Annual Research Briefs:
       // "A multifidelity control variate approach for the multilevel Monte 
@@ -269,7 +268,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   // Allow either model forms or discretization levels, but not both
   size_t num_steps, form, lev, secondary_index; short seq_type;
   configure_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE),
+    budget_constrained = (maxFunctionEvals != SZ_MAX);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
   if (multilev) form = secondary_index;
@@ -278,7 +278,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost;  configure_cost(num_steps, multilev, cost);
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost,
-    ref_cost = cost[num_steps-1];
+    ref_cost = cost[num_steps-1]; // HF cost (1 level)
 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector agg_var(num_steps), agg_var_of_var(num_steps),
@@ -318,8 +318,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
     convergenceTolVec[qoi] = convergenceTol;
 
   // now converge on sample counts per level (N_l)
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations &&
-	 equivHFEvals <= maxFunctionEvals) {
+  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations) {
+
     for (step=0; step<num_steps; ++step) {
 
       configure_indices(step, form, lev, seq_type);
@@ -331,11 +331,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
       // aggregate variances across QoI for estimating N_l (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       //Real &agg_var_l = agg_var[step];//carried over from prev iter if no samp
-      if (numSamples) {// && equivHFEvals <= maxFunctionEvals) {
-	// Don't include per level check on maxFunctionEvals, since it would be
-	// preferable to instead scale the sample profile to match the budget.
-	// Prior to scaling the profile, checking only at outer loop preserves
-	// correct profile shape even though it can overshoot.
+      if (numSamples) {
 
 	// assign sequence, get samples, export, evaluate
 	evaluate_ml_sample_increment(step);
@@ -349,18 +345,20 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
 	aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l,
 				       step, agg_var_qoi);
 	// MSE reference is MC applied to HF
-	if (mlmfIter == 0)
+	if (mlmfIter == 0 && !budget_constrained)
 	  aggregate_mse_target_Qsum(agg_var_qoi, N_l, step, estimator_var0_qoi);
       }
     }
-    if (mlmfIter == 0) // eps^2 / 2 = var * relative factor
+    if (mlmfIter == 0 && !budget_constrained) // eps^2 / 2 = est var * conv tol
       set_convergence_tol(estimator_var0_qoi, cost, eps_sq_div_2_qoi);
 
     // update targets based on variance estimates
-    if (outputLevel == DEBUG_OUTPUT) Cout << "N_target: " << std::endl;
-    compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1,
-				     eps_sq_div_2_qoi, agg_var_qoi,
-				     cost, N_l, delta_N_l);
+    if (budget_constrained)
+      compute_sample_allocation_target(agg_var_qoi, cost, N_l, delta_N_l);
+    else
+      compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1,
+				       eps_sq_div_2_qoi, agg_var_qoi,
+				       cost, N_l, delta_N_l);
 
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
@@ -761,6 +759,32 @@ Real NonDMultilevelSampling::aggregate_variance_scalarization_Qsum(const IntReal
   return var_of_scalarization_l; //Multiplication by N_l as described in the paper by Krumscheid, Pisaroni, Nobile is already done in submethods
 }
 
+void NonDMultilevelSampling::
+compute_sample_allocation_target(const RealMatrix& agg_var_qoi_in,
+				 const RealVector& cost,
+				 const Sizet2DArray& N_l, SizetArray& delta_N_l)
+{
+  size_t qoi, step, num_steps = N_l.size();
+  Real sum_sqrt_var_cost = 0.;
+  RealVector agg_var(num_steps); // init to 0
+  RealVector lev_cost(num_steps, false);
+  for (step = 0; step < num_steps ; ++step) {
+    Real& agg_var_l = agg_var[step];  Real& lev_cost_l = lev_cost[step];
+    lev_cost_l = level_cost(cost, step);
+    for (qoi = 0; qoi < numFunctions ; ++qoi)
+      agg_var_l += agg_var_qoi_in(qoi, step);
+    sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost_l);
+  }
+
+  Real budget = (Real)maxFunctionEvals * cost[num_steps-1],
+    N_target, fact = budget / sum_sqrt_var_cost;
+  for (step=0; step<num_steps; ++step) {
+    N_target = std::sqrt(agg_var[step] / lev_cost[step]) * fact;
+    delta_N_l[step] = one_sided_delta(average(N_l[step]), N_target);
+  }
+}
+
+
 void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
                   const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2_in, 
                       const RealMatrix& agg_var_qoi_in, const RealVector& cost, 
@@ -775,6 +799,9 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
 
   size_t nb_aggregation_qois = 0;
   double underrelaxation_factor = static_cast<double>(mlmfIter + 1)/static_cast<double>(max_iter + 1);
+
+  if (outputLevel == DEBUG_OUTPUT) Cout << "N_target: " << std::endl;
+
   if (qoiAggregation==QOI_AGGREGATION_SUM) {
     nb_aggregation_qois = 1;
     eps_sq_div_2.size(nb_aggregation_qois);
@@ -824,7 +851,7 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
   delta_N_l_qoi.shape(nb_aggregation_qois, num_steps);
 
   for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
-    Real fact_qoi = sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
+    Real fact_qoi = (eps_sq_div_2[qoi] <= Pecos::SMALL_NUMBER) ? 0 : sum_sqrt_var_cost[qoi]/eps_sq_div_2[qoi];
     if (outputLevel == DEBUG_OUTPUT){
       Cout << "\n\tN_target for Qoi: " << qoi << ", with sum_sqrt_var_cost: " << sum_sqrt_var_cost[qoi] << std::endl;
       Cout << "\n\tN_target for Qoi: " << qoi << ", with eps_sq_div_2: " << eps_sq_div_2[qoi] << std::endl;
@@ -833,9 +860,9 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
     for (size_t step = 0; step < num_steps; ++step) {
       level_cost_vec[step] = level_cost(cost, step);
       if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
-        NTargetQoi(qoi, step) = std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
+        NTargetQoi(qoi, step) = (fact_qoi <= Pecos::SMALL_NUMBER) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
       }else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
-        NTargetQoi(qoi, step) = std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * (1./fact_qoi);
+        NTargetQoi(qoi, step) = (fact_qoi <= Pecos::SMALL_NUMBER) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * (1./fact_qoi);
       }else{
         Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
         abort_handler(INTERFACE_ERROR);

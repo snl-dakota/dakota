@@ -5,6 +5,7 @@
 #
 # Test 0: mixed continuous/discrete (scaling continuous)
 # Test 1: all discrete (scaling should have no effect on vars) 
+# Test 2: mixed continuous/discrete with design set covering another bug
 
 environment
   tabular_data tabular_data_file 'dsd.dat'
@@ -15,12 +16,12 @@ method
   scaling
 
 variables
-  continuous_design = 1   #s0
-    descriptors    'x1'	  #s0
-    upper_bounds   3.0	  #s0
-    initial_point  0.0	  #s0
-    lower_bounds  -1.0	  #s0
-    scale_types = 'auto'  #s0
+  continuous_design = 1   #s0,#s2
+    descriptors    'x1'	  #s0,#s2
+    upper_bounds   3.0	  #s0,#s2
+    initial_point  0.0	  #s0,#s2
+    lower_bounds  -1.0	  #s0,#s2
+    scale_types = 'auto'  #s0,#s2
 
   discrete_design_range = 1  #s0
     descriptors   'x2'	     #s0
@@ -34,11 +35,10 @@ variables
 #    upper_bounds    3	  3    #s1
 #    lower_bounds   -1	 -1    #s1
 
-# Prefer this for x2, but there may be a bug with scaling + design set variables
-#  discrete_design_set real = 1
-#    descriptors   'x2'
-#    elements -1.0 0.0 1.0 2.0 3.0
-#    initial_point 0.0
+#  discrete_design_set real = 1	     #s2
+#    descriptors   'x2'	      	     #s2
+#    elements -1.0 0.0 1.0 2.0 3.0   #s2
+#    initial_point 0.0 	       	     #s2
 
 interface
   direct

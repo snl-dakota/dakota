@@ -213,6 +213,9 @@ private:
   /// compute epsilon^2/2 term for each qoi based on reference estimator_var0 and relative convergence tolereance
   void set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi);
 
+  /// compute sample allocation delta based on a budget constraint
+  void compute_sample_allocation_target(const RealMatrix& agg_var_qoi, 
+    const RealVector& cost, const Sizet2DArray& N_l, SizetArray& delta_N_l);
   /// compute sample allocation delta based on current samples and based on allocation target. Single allocation target for each qoi, aggregated using max operation.
   void compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& sum_Qlm1, 
  									const IntIntPairRealMatrixMap& sum_QlQlm1, const RealVector& eps_sq_div_2, const RealMatrix& agg_var_qoi, 
@@ -529,7 +532,7 @@ aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
 }
 
 inline Real NonDMultilevelSampling::
-aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+aggregate_variance_Qsum(const Real* sum_Ql,      const Real* sum_Qlm1,
                        const Real* sum_QlQl,     const Real* sum_QlQlm1,
                        const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
                        const size_t lev)
@@ -537,7 +540,7 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   Real agg_var_l = 0., var_Y;
   //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
   for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
-  	agg_var_l += aggregate_variance_Qsum(sum_Ql, sum_Qlm1, sum_QlQl, sum_QlQlm1, sum_Qlm1Qlm1, N_l, lev, qoi);
+    agg_var_l += aggregate_variance_Qsum(sum_Ql, sum_Qlm1, sum_QlQl, sum_QlQlm1, sum_Qlm1Qlm1, N_l, lev, qoi);
     //if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
   //}
   //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";

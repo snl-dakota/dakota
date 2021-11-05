@@ -45,6 +45,14 @@ information on software structure, refer to the Developers Manual
 \cite DevMan, and for a tour of %Dakota features and capabilities,
 including a tutorial, refer to the User's Manual \cite UsersMan.
 
+Dakota 6.14 and newer include a refreshed Examples Library, ranging
+from examples of Dakota input files and basic studies through complete
+case studies. These can be found in binary distributions in \c
+dakota/share/dakota/examples/official (\c dakota/dakota-examples in
+source distributions). Legacy examples, including many from the Dakota
+software manuals appear in other directories in \c
+dakota/share/dakota/examples (\c dakota/examples for source).
+
 \section main-how_to How to Use this Manual
 
 \li To learn how to run Dakota from the command line, see \subpage running_dakota

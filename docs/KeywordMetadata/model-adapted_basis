@@ -65,4 +65,4 @@ where \f$ e_i \f$ is the \f$d-\f$dimensional multi-index with 1 at the \f$i\f$th
 See the theory manual for more details.
 
 Faq::
-See_Also:: \ref model-active_subspace
+See_Also:: model-active_subspace
