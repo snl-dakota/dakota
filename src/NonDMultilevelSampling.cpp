@@ -1161,7 +1161,7 @@ void NonDMultilevelSampling::compute_sample_allocation_target(const IntRealMatri
 
   size_t nb_aggregation_qois = 0;
   double underrelaxation_bound = 10;
-  double underrelaxation_factor = static_cast<double>(max_iter) <= underrelaxation_factor ?
+  double underrelaxation_factor = static_cast<double>(max_iter) <= underrelaxation_bound ?
                                     static_cast<double>(mlmfIter + 1)/static_cast<double>(max_iter) :
                                     static_cast<double>(mlmfIter + 1)/underrelaxation_bound;
   if(static_cast<double>(mlmfIter + 1) >= underrelaxation_bound) underrelaxation_factor = 1;

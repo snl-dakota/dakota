@@ -722,16 +722,16 @@ aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi,
 
 inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi)
 {
-	// compute epsilon target based on relative tolerance: total MSE = eps^2
-	// which is equally apportioned (eps^2 / 2) among discretization MSE and
-	// estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
-	// discretization error, we compute an initial estimator variance and
-	// then seek to reduce it by a relative_factor <= 1.
 	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-
 	  if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+      // compute epsilon target based on relative tolerance: total MSE = eps^2
+      // which is equally apportioned (eps^2 / 2) among discretization MSE and
+      // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
+      // discretization error, we compute an initial estimator variance and
+      // then seek to reduce it by a relative_factor <= 1.
 		  if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
 				eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTolVec[qoi];
+      // compute epsilon target based on absolute tolerance which is given.
 			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
 				eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi];
 			}else{
@@ -739,10 +739,12 @@ inline void NonDMultilevelSampling::set_convergence_tol(const RealVector& estima
 	  	  abort_handler(INTERFACE_ERROR);
 			}
 		}else if (convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+      //Relative cost with respect to convergenceTol evaluations on finest grid
 			if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
-				eps_sq_div_2_qoi[qoi] = cost[cost.length()-1] * convergenceTolVec[qoi]; //Relative cost with respect to convergenceTol evaluations on finest grid
+				eps_sq_div_2_qoi[qoi] = cost[cost.length()-1] * convergenceTolVec[qoi]; 
+      //Absolute cost which is given.
 			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
-				eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi]; //Direct cost
+				eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi]; 
 			}else{
 	  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
 	  	  abort_handler(INTERFACE_ERROR);
