@@ -57,7 +57,11 @@ protected:
 
   /// perform LF sample increment as indicated by the evaluation ratio
   bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
-		    const SizetArray& N_hf, size_t iter, size_t lev);
+		    Real hf_target, size_t iter, size_t lev);
+  /// perform final LF sample increment as indicated by the evaluation ratio
+  bool lf_increment(const Pecos::ActiveKey& lf_key,
+		    const RealVector& eval_ratios, const SizetArray& N_lf,
+		    const RealVector& hf_targets, size_t iter, size_t lev);
 
   /// compute scalar control variate parameters
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
@@ -107,16 +111,8 @@ private:
   /// computing/updating the evaluation ratio and the MSE ratio
   void shared_increment(const Pecos::ActiveKey& agg_key,size_t iter,size_t lev);
 
-  /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(const Pecos::ActiveKey& lf_key,
-		    const RealVector& eval_ratios, const SizetArray& N_lf,
-		    const RealVector& hf_targets, size_t iter, size_t lev);
   /// core parameter set definition and evaluation for LF sample increment
   bool lf_increment(size_t iter, size_t lev);
-  /// output information header for LF sample increment
-  void lf_increment_samples(const RealVector& eval_ratios,
-			    const SizetArray& N_lf,
-			    const RealVector& hf_targets);
 
   /// update equivHFEvals from HF, LF evaluation counts
   void compute_mf_equivalent_cost(size_t raw_N_hf, size_t raw_N_lf,

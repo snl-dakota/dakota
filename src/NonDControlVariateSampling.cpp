@@ -383,38 +383,6 @@ lf_increment(const Pecos::ActiveKey& lf_key, const RealVector& eval_ratios,
 	     const SizetArray& N_lf, const RealVector& hf_targets,
 	     size_t iter, size_t lev)
 {
-  lf_increment_samples(eval_ratios, N_lf, hf_targets);
-  if (numSamples) {
-    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
-    iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
-
-    return lf_increment(iter, lev);
-  }
-  else
-    return false;
-}
-
-
-/** version without LF key */
-bool NonDControlVariateSampling::
-lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
-	     const SizetArray& N_hf, size_t iter, size_t lev)
-{
-  // NonDMLMFSampling applies eval_ratio to N_H[lev] as allocated by ML portion
-
-  RealVector hf_targets(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    hf_targets[qoi] = (Real)N_hf[qoi];
-  lf_increment_samples(eval_ratios, N_lf, hf_targets);
-  return (numSamples) ? lf_increment(iter, lev) : false;
-}
-
-
-/** shared helper */
-void NonDControlVariateSampling::
-lf_increment_samples(const RealVector& eval_ratios, const SizetArray& N_lf,
-		     const RealVector& hf_targets)
-{
   // update LF samples based on evaluation ratio
   //   r = m/n -> m = r*n -> delta = m-n = (r-1)*n
   //   or with inverse r  -> delta = m-n = n/inverse_r - n
@@ -431,6 +399,43 @@ lf_increment_samples(const RealVector& eval_ratios, const SizetArray& N_lf,
     Cout << " from avg LF = " << average(N_lf) << ", avg HF targets = "
 	 << average(hf_targets) << ", avg eval_ratio = "<< average(eval_ratios);
   Cout << std::endl;
+
+  if (numSamples) {
+    uncorrected_surrogate_mode(); // also needed for lf_key assignment below
+    iteratedModel.active_model_key(lf_key); // sets activeKey and surrModelKey
+
+    return lf_increment(iter, lev);
+  }
+  else
+    return false;
+}
+
+
+/** version without LF key */
+bool NonDControlVariateSampling::
+lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
+	     Real hf_target, size_t iter, size_t lev)
+{
+  // NonDMLCVSampling applies eval_ratio to hf_target as allocated by ML portion
+
+  // update LF samples based on evaluation ratio
+  //   r = m/n -> m = r*n -> delta = m-n = (r-1)*n
+  //   or with inverse r  -> delta = m-n = n/inverse_r - n
+  RealVector lf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    lf_targets[qoi] = eval_ratios[qoi] * hf_target;
+  // Choose average, RMS, max of difference?
+  // Trade-off: Possible overshoot vs. more iteration...
+  numSamples = one_sided_delta(N_lf, lf_targets, 1); // average
+
+  if (numSamples) Cout << "\nCVMC LF sample increment = " << numSamples;
+  else            Cout << "\nNo CVMC LF sample increment";
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << " from avg LF = " << average(N_lf) << ", HF target = " << hf_target
+	 << ", avg eval_ratio = "<< average(eval_ratios);
+  Cout << std::endl;
+
+  return (numSamples) ? lf_increment(iter, lev) : false;
 }
 
 
