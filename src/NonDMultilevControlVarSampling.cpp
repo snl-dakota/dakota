@@ -118,8 +118,9 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   bool budget_constrained = (maxFunctionEvals != SZ_MAX);
 
   // retrieve cost estimates across solution levels for HF model
-  RealVector hf_cost = truth_model.solution_level_costs(),
-    lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev);
+  RealVector hf_targets(num_hf_lev), agg_var_hf(num_hf_lev),
+    hf_cost = truth_model.solution_level_costs(),
+    lf_cost =  surr_model.solution_level_costs();
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., budget,
     lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
   if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
@@ -238,7 +239,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 	Real om_rho2 = 1. - avg_rho2_LH[lev];
 	sum_sqrt_var_cost += (budget_constrained) ?
 	  std::sqrt(agg_var_hf_l / hf_lev_cost * om_rho2) *
-	    (hf_lev_cost + average(eval_ratios[lev]) * lf_lev_cost) :
+	  (hf_lev_cost + (1. + average(eval_ratios[lev])) * lf_lev_cost) :
 	  std::sqrt(agg_var_hf_l * hf_lev_cost / om_rho2) * Lambda[lev];
       }
       else
@@ -263,39 +264,39 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
     }
 
-    // All CV lf_increment() calls now follow all ML level evals:
-    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-      if (delta_N_hf[lev]) {
-	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
-
-	// execute additional LF sample increment
-	if (lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
-	  accumulate_mlmf_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
-	  //raw_N_lf[lev] += numSamples;
-	  increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
-				       hf_ref_cost);
-	  if (outputLevel == DEBUG_OUTPUT)
-	    Cout << "Accumulated sums (L_refined[1,2]):\n"
-		 << sum_L_refined[1] << sum_L_refined[2];
-	}
-      }
-    }
-
     // update sample targets based on variance estimates
     // Note: sum_sqrt_var_cost is defined differently for the two cases
-    Real N_target, fact = (budget_constrained) ?
+    Real fact = (budget_constrained) ?
       budget / sum_sqrt_var_cost :      // budget constraint
       sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
     for (lev=0; lev<num_hf_lev; ++lev) {
       hf_lev_cost = (lev) ? hf_cost[lev] + hf_cost[lev-1] : hf_cost[lev];
-      N_target = (lev < num_cv_lev) ? fact *
+      hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-      delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), N_target);
+      delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), hf_targets[lev]);
     }
+
     ++mlmfIter;
     Cout << "\nMLMF MC iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_hf << std::endl;
+  }
+
+  // All CV lf_increment() calls now follow convergence of ML iteration:
+  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
+    configure_indices(group, lf_form, lev, seq_type);
+
+    // execute additional LF sample increment
+    if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
+		     mlmfIter, lev)) {
+      accumulate_mlmf_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
+      //raw_N_lf[lev] += numSamples;
+      increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
+				   hf_ref_cost);
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_L_refined[1]
+	     << sum_L_refined[2];
+    }
   }
 
   // Iteration complete.  Now roll up raw moments from CVMC and MLMC estimators.
@@ -349,8 +350,9 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
   bool budget_constrained = (maxFunctionEvals != SZ_MAX);
 
   // retrieve cost estimates across solution levels for HF model
-  RealVector hf_cost = truth_model.solution_level_costs(),
-    lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev);
+  RealVector hf_targets(num_hf_lev), agg_var_hf(num_hf_lev),
+    hf_cost = truth_model.solution_level_costs(),
+    lf_cost =  surr_model.solution_level_costs();
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., budget,
     lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
   if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
@@ -382,7 +384,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
   Sizet2DArray&       N_hf =      NLev[hf_form]; 
   Sizet2DArray  delta_N_l;   load_pilot_sample(pilotSamples, NLev, delta_N_l);
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
-  SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
+  SizetArray&   delta_N_hf = delta_N_l[hf_form];
 
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   //SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
@@ -486,7 +488,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	Real om_rho2 = 1. - avg_rho_dot2_LH[lev];
 	sum_sqrt_var_cost += (budget_constrained) ?
 	  std::sqrt(agg_var_hf_l / hf_lev_cost * om_rho2) *
-	    (hf_lev_cost + average(eval_ratios[lev]) * lf_lev_cost) :
+	  (hf_lev_cost + (1. + average(eval_ratios[lev])) * lf_lev_cost) :
 	  std::sqrt(agg_var_hf_l * hf_lev_cost / om_rho2) * Lambda[lev];
       }
       else
@@ -511,47 +513,42 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	     Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
     }
 
-    // All CV lf_increment() calls now follow all ML level evals:
-    // > Provides separation of pilot sample from refinements (simplifying
-    //   offline execution with data importing w/o undesirable seed progression)
-    // > Improves application of maxIterations control in general: user
-    //   specification results in consistent count for ML and CV refinements
-    // > Incurs a bit more overhead: eval_ratios array, mode resetting
-    // > Could potentially have parallel scheduling benefits by grouping
-    //   similar Model eval sets for aggregated scheduling
-    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-      if (delta_N_hf[lev]) {
-	configure_indices(group, lf_form, lev, seq_type);//augment LF grp
-
-	// now execute additional LF sample increment
-	if (lf_increment(eval_ratios[lev], N_lf[lev], N_hf[lev],mlmfIter,lev)) {
-	  accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
-				N_lf[lev]);
-	  //raw_N_lf[lev] += numSamples;
-	  increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
-				       hf_ref_cost);
-	  if (outputLevel == DEBUG_OUTPUT)
-	    Cout << "Accumulated sums (L_refined[1,2]):\n"
-		 << sum_Ll_refined[1] << sum_Ll_refined[2];
-	}
-      }
-    }
-
     // update sample targets based on variance estimates
     // Note: sum_sqrt_var_cost is defined differently for the two cases
-    Real N_target, fact = (budget_constrained) ?
-      budget / sum_sqrt_var_cost :      // budget constraint
+    Real fact = (budget_constrained) ?
+      budget / sum_sqrt_var_cost :      //        budget constraint
       sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
     for (lev=0; lev<num_hf_lev; ++lev) {
       hf_lev_cost = (lev) ? hf_cost[lev] + hf_cost[lev-1] : hf_cost[lev];
-      N_target = (lev < num_cv_lev) ? fact *
+      hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-      delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), N_target);
+      delta_N_hf[lev] = one_sided_delta(average(N_hf[lev]), hf_targets[lev]);
     }
+
     ++mlmfIter;
-    Cout << "\nMLMF MC iteration " << mlmfIter << " sample increments:\n"
+    Cout << "\nMLMF MC iteration " << mlmfIter << " HF sample increments:\n"
 	 << delta_N_hf << std::endl;
+  }
+
+  // All CV lf_increment() calls now follow convergence of ML iteration:
+  // > Avoids early mis-estimation of LF increments
+  // > Parallel scheduling benefits from one final large batch of refinements
+  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
+    configure_indices(group, lf_form, lev, seq_type);
+
+    // now execute additional LF sample increment
+    if (lf_increment(eval_ratios[lev], N_lf[lev], hf_targets[lev],
+		     mlmfIter, lev)) {
+      accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
+			    N_lf[lev]);
+      //raw_N_lf[lev] += numSamples;
+      increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
+				   hf_ref_cost);
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_Ll_refined[1]
+	     << sum_Ll_refined[2];
+    }
   }
 
   // Iteration complete. Now roll up raw moments from CVMC and MLMC estimators.
