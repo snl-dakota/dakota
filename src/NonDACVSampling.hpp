@@ -22,10 +22,6 @@
 
 namespace Dakota {
 
-// special values for optSubProblemForm
-enum { R_ONLY_LINEAR_CONSTRAINT=1, N_VECTOR_LINEAR_CONSTRAINT,
-       R_AND_N_NONLINEAR_CONSTRAINT };
-
 #define RATIO_NUDGE 1.e-4
 
 
@@ -222,9 +218,6 @@ private:
 
   /// approximate control variate algorithm selection: SUBMETHOD_ACV_{IS,MF,KL}
   unsigned short acvSubMethod;
-  /// formulation for optimization sub-problem that minimizes R^2 subject
-  /// to different variable sets and different linear/nonlinear constraints
-  unsigned short optSubProblemForm;
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;

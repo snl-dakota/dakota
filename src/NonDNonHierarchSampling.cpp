@@ -35,7 +35,8 @@ NonDNonHierarchSampling::
 NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   NonDEnsembleSampling(problem_db, model),
   solutionMode(
-    problem_db.get_short("method.nond.ensemble_sampling_solution_mode"))
+    problem_db.get_short("method.nond.ensemble_sampling_solution_mode")),
+  optSubProblemForm(0)
 {
   // check iteratedModel for model form hi1erarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
@@ -206,13 +207,15 @@ ensemble_sample_increment(size_t iter, size_t step)
 
 void NonDNonHierarchSampling::
 mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
-		 Sizet2DArray& model_sequence, RealMatrix& eval_ratios)
+		 SizetArray& model_sequence, RealMatrix& eval_ratios,
+		 short& subprob_form, bool for_warm_start)
 {
   if (eval_ratios.empty())
     eval_ratios.shapeUninitialized(numFunctions, numApprox);
-  size_t qoi, approx, i, num_am1 = numApprox - 1, corr_order, most_corr;
-  bool ordered;
 
+  // -------------------------------------------------------------
+  // Based on rho2_LH sequencing, determine best solution approach
+  // -------------------------------------------------------------
   // compute a model sequence sorted by Low-High correlation
   // > rho2, N_L, N_H, {eval,mse}_ratios, etc. are all ordered based on the
   //   user-provided model list ordering
@@ -221,71 +224,77 @@ mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
   //   results are indexed by the original approx ordering
   // > control variate compute/apply are per approx, so sequencing not required
   // > approx_increment requires model sequence to define the sample pyramid
-  model_sequence.resize(numFunctions);
-  std::map<Real, size_t> rho_approx_map; std::map<Real, size_t>::iterator it;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    rho_approx_map.clear();
-    for (approx=0; approx<numApprox; ++approx)
-      rho_approx_map[rho2_LH(qoi, approx)] = approx; // order by increasing corr
-    if (rho_approx_map.size() != numApprox) { // unexpected redundancy
-      Cerr << "Error: redundant correlation in MFMC model ordering."<<std::endl;
-      abort_handler(METHOD_ERROR);
+
+  bool ordered = ordered_model_sequence(rho2_LH); // for all QoI and all Approx
+  if (ordered) // not necessary to retain sequencing array
+    { model_sequence.clear(); subprob_form = ANALYTIC_SOLUTION; }
+  else if (for_warm_start)    subprob_form = REORDERED_ANALYTIC_SOLUTION;
+  else                        subprob_form = N_VECTOR_LINEAR_CONSTRAINT;
+
+  size_t qoi, approx, num_am1 = numApprox - 1;
+  Real cost_L, cost_H = cost[numApprox]; // HF cost
+  switch (subprob_form) {
+  case ANALYTIC_SOLUTION: { // standard approach for well-ordered models
+    RealVector factor(numFunctions, false);
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      factor[qoi] = cost_H / (1. - rho2_LH(qoi, num_am1));
+    for (approx=0; approx<numApprox; ++approx) {
+      Real*   eval_ratios_a = eval_ratios[approx];
+      const Real* rho2_LH_a =     rho2_LH[approx];
+      cost_L                =        cost[approx];
+      // NOTE: indexing is reversed from Peherstorfer (HF = 1, MF = 2, LF = 3)
+      // > becomes Approx LF = 0 and MF = 1, Truth HF = 2
+      // > i+1 becomes i-1 and most correlated ref is rho2_LH(qoi, num_am1)
+      if (approx)
+	for (qoi=0; qoi<numFunctions; ++qoi)
+	  eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L *
+	    (rho2_LH_a[qoi] - rho2_LH(qoi, approx-1)));
+      else // rho2_LH for approx-1 (non-existent model) is zero
+	for (qoi=0; qoi<numFunctions; ++qoi)
+	  eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
     }
-    SizetArray& mod_seq_q = model_sequence[qoi];
-    mod_seq_q.resize(numApprox);
-    ordered = true;
-    for (approx=0, it=rho_approx_map.begin(); it!=rho_approx_map.end();
-	 ++it, ++approx) {
-      corr_order = it->second;
-      mod_seq_q[approx] = corr_order;
-      if (approx != corr_order) ordered = false;
-    }
-    // not necessary to retain sequencing array if already ordered
-    if (ordered) mod_seq_q.clear();
+    break;
   }
+  case REORDERED_ANALYTIC_SOLUTION: {
+    // employ a single model reordering that is shared across the QoI
+    RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
+    ordered = ordered_model_sequence(avg_rho2_LH, model_sequence);
+    // Note even if avg_rho2_LH is now ordered, rho2_LH is not for all QoI,
+    // so we stick with this formulation
 
-  // precompute a factor based on most-correlated model
-  Real factor, rho2, prev_rho2, rho2_diff, cost_ratio, cost_L,
-    cost_H = cost[numApprox];
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    SizetArray& mod_seq_q = model_sequence[qoi];
-    ordered = mod_seq_q.empty();
-    most_corr = (ordered) ? num_am1 : mod_seq_q[num_am1];
-    factor = cost_H / (1. - rho2_LH(qoi, most_corr));// most correlated
-
-    // second sweep to compute eval_ratios including rho2 look-{ahead,back}
+    // precompute a factor based on most-correlated model
+    size_t most_corr = (ordered) ? num_am1 : model_sequence[num_am1];  int i;
+    Real rho2, prev_rho2, rho2_diff, r_i, prev_ri,
+      factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
+    // Compute averaged eval_ratios using averaged rho2 for model_sequence
+    RealVector r_unconstrained(numApprox, false);
     for (i=0; i<numApprox; ++i) {
-      approx = (ordered) ? i : mod_seq_q[i];
+      approx = (ordered) ? i : model_sequence[i];
       cost_L = cost[approx];
       // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
       // > i+1 becomes i-1 and most correlated is rho2_LH(qoi, most_corr)
-      rho2_diff = rho2  = rho2_LH(qoi, approx);
+      rho2_diff = rho2  = avg_rho2_LH[approx];
       if (i) rho2_diff -= prev_rho2;
-      eval_ratios(qoi,approx) = std::sqrt(factor / cost_L * rho2_diff);
+      r_unconstrained[i] = std::sqrt(factor / cost_L * rho2_diff);
       prev_rho2 = rho2;
     }
-  }
-
-  /* OLD: Does not sequence rho2_LH to protect against sqrt(rho_diff < 0)
-  RealVector factor(numFunctions, false);
-  Real cost_ratio, cost_H = cost[numApprox]; // HF cost
-  for (qoi=0; qoi<numFunctions; ++qoi)
-    factor[qoi] = cost_H / (1. - rho2_LH(qoi, num_am1));
-  for (approx=0; approx<numApprox; ++approx) {
-    Real*   eval_ratios_a = eval_ratios[approx];
-    const Real* rho2_LH_a =     rho2_LH[approx];
-    Real           cost_L =        cost[approx];
-    // NOTE: indexing is inverted from Peherstorfer: HF = 1, MF = 2, LF = 3
-    // > i+1 becomes i-1 and most correlated ref is rho2_LH(qoi, num_am1)
-    if (approx)
+    // Reverse loop order and enforce monotonicity in reordered r_i
+    prev_ri = 1.;
+    for (i=numApprox-1; i>=0; --i) {
+      r_i = std::max(r_unconstrained[i], prev_ri);
+      approx = (ordered) ? i : model_sequence[i];
+      Real* eval_ratios_a = eval_ratios[approx];
       for (qoi=0; qoi<numFunctions; ++qoi)
-	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L *
-	  (rho2_LH_a[qoi] - rho2_LH(qoi, approx-1)));
-    else // rho2_LH for approx-1 (non-existent model) is zero
-      for (qoi=0; qoi<numFunctions; ++qoi)
-	eval_ratios_a[qoi] = std::sqrt(factor[qoi] / cost_L * rho2_LH_a[qoi]);
+	eval_ratios_a[qoi] = r_i; // eval_ratios shared across QoI
+      prev_ri = r_i;
+    }
+    break;
   }
-  */
+  case N_VECTOR_LINEAR_CONSTRAINT: {
+    // TO DO
+    break;
+  }
+  }
 }
 
 

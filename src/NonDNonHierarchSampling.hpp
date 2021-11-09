@@ -22,6 +22,11 @@
 
 namespace Dakota {
 
+// special values for optSubProblemForm
+enum { ANALYTIC_SOLUTION = 1, REORDERED_ANALYTIC_SOLUTION,
+       R_ONLY_LINEAR_CONSTRAINT, N_VECTOR_LINEAR_CONSTRAINT,
+       R_AND_N_NONLINEAR_CONSTRAINT };
+
 
 /// Perform Approximate Control Variate Monte Carlo sampling for UQ.
 
@@ -83,7 +88,11 @@ protected:
   void ensemble_sample_increment(size_t iter, size_t step);
 
   void increment_samples(SizetArray& N_l, size_t num_samples);
+
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+				 size_t start, size_t end);
+  void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+				 const SizetArray& model_sequence,
 				 size_t start, size_t end);
 
   void compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q);
@@ -99,7 +108,8 @@ protected:
 			  Real& cov_Q1Q2);
   
   void mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
-			Sizet2DArray& model_sequence, RealMatrix& eval_ratios);
+			SizetArray& model_sequence, RealMatrix& eval_ratios,
+			short& subprob_form, bool for_warm_start = false);
 
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
@@ -114,6 +124,9 @@ protected:
   /// enumeration for solution modes: ONLINE_PILOT (default), OFFLINE_PILOT,
   /// PILOT_PROJECTION
   short solutionMode;
+  /// formulation for optimization sub-problem that minimizes R^2 subject
+  /// to different variable sets and different linear/nonlinear constraints
+  short optSubProblemForm;
 
   /// type of model sequence enumerated with primary MF/ACV loop over steps
   short sequenceType;
@@ -130,6 +143,18 @@ protected:
 
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector mseIter0;
+
+private:
+
+  //
+  //- Heading: helper functions
+  //
+
+  /// define model_sequence in increasing metric order
+  bool ordered_model_sequence(const RealVector& metric,
+			      SizetArray& model_sequence);
+  /// determine whether metric is in increasing order for all columns
+  bool ordered_model_sequence(const RealMatrix& metric);
 };
 
 
@@ -183,7 +208,7 @@ increment_samples(SizetArray& N_l, size_t new_samples)
       N_l[q] += new_samples;
   }
 }
-  
+
 
 inline void NonDNonHierarchSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
@@ -195,6 +220,69 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     { equivHFEvals += new_samp; --end; }
   for (i=start; i<end; ++i)
     equivHFEvals += (Real)new_samp * cost[i] / cost_ref;
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+			  const SizetArray& model_sequence,
+			  size_t start, size_t end)
+{
+  if (model_sequence.empty())
+    increment_equivalent_cost(new_samp, cost, start, end);
+  else {
+    size_t i, len = cost.length(), hf_index = len-1, approx;
+    Real cost_ref = cost[hf_index];
+    if (end == len) // truth is always last
+      { equivHFEvals += new_samp; --end; }
+    for (i=start; i<end; ++i) {
+      approx = model_sequence[i];
+      equivHFEvals += (Real)new_samp * cost[approx] / cost_ref;
+    }
+  }
+}
+
+
+inline bool NonDNonHierarchSampling::
+ordered_model_sequence(const RealVector& metric, SizetArray& model_sequence)
+{
+  size_t i, len = metric.length(), metric_order;  bool ordered = true;
+  std::map<Real, size_t> metric_map; std::map<Real, size_t>::iterator it;
+  for (i=0; i<len; ++i)
+    metric_map[metric[i]] = i; // increasing order (e.g. correlation)
+  if (metric_map.size() != len) { // unexpected redundancy
+    Cerr << "Error: redundant correlation in MFMC model ordering." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  ordered = true;  model_sequence.resize(len);
+  for (i=0, it=metric_map.begin(); it!=metric_map.end(); ++it, ++i) {
+    model_sequence[i] = metric_order = it->second;
+    if (i != metric_order) ordered = false;
+  }
+  if (ordered) model_sequence.clear();
+  return ordered;
+}
+
+
+inline bool NonDNonHierarchSampling::
+ordered_model_sequence(const RealMatrix& metric)
+{
+  size_t r, c, nr = metric.numRows(), nc = metric.numCols(), metric_order;
+  std::map<Real, size_t> metric_map; std::map<Real, size_t>::iterator it;
+  bool ordered = true;
+  for (r=0; r<nr; ++r) {  // numFunctions
+    metric_map.clear();
+    for (c=0; c<nc; ++nc) // numApprox
+      metric_map[metric(r,c)] = c; // order by increasing corr
+    if (metric_map.size() != nc) { // unexpected redundancy
+      Cerr << "Error: redundant metric in model ordering." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    for (c=0, it=metric_map.begin(); it!=metric_map.end(); ++it, ++c)
+      if (c != it->second) { ordered = false; break; }
+    if (!ordered) break;
+  }
+  return ordered;
 }
 
 

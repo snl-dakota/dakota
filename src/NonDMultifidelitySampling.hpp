@@ -73,17 +73,19 @@ protected:
 			 IntRealMatrixMap& sum_LH,
 			 const Sizet2DArray& N_L_baseline,
 			 const Sizet2DArray& N_LH,
+			 const SizetArray& model_sequence,
 			 const RealMatrix& eval_ratios,
 			 const RealVector& hf_targets);
   bool approx_increment(const RealMatrix& eval_ratios,
 			const Sizet2DArray& N_L_refined,
 			const RealVector& hf_targets, size_t iter,
+			const SizetArray& model_sequence,
 			size_t start, size_t end);
 
   void update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
 			 RealVector& hf_targets);
   void update_hf_targets(const RealMatrix& rho2_LH,
-			 const Sizet2DArray& model_sequence,
+			 const SizetArray& model_sequence,
 			 const RealMatrix& eval_ratios, const RealVector& var_H,
 			 const RealVector& mse_iter0,   RealVector& mse_ratios,
 			 RealVector& hf_targets);
@@ -95,12 +97,12 @@ protected:
 				Sizet2DArray& N_L_projected);
 
   void compute_mse_ratios(const RealMatrix& rho2_LH,
-			  const Sizet2DArray& model_sequence,
+			  const SizetArray& model_sequence,
 			  const RealMatrix& eval_ratios,
 			  RealVector& mse_ratios);
   void compute_mse_ratios(const RealMatrix& rho2_LH, const SizetArray& N_H,
 			  const RealVector& hf_targets,
-			  const Sizet2DArray& model_sequence,
+			  const SizetArray& model_sequence,
 			  const RealMatrix& eval_ratios,
 			  RealVector& mse_ratios);
 
@@ -125,12 +127,13 @@ private:
 			  RealMatrix& sum_LL, RealMatrix& sum_LH,
 			  RealVector& sum_HH, Sizet2DArray& num_L_baseline,
 			  SizetArray& num_H,  Sizet2DArray& num_LH);
-  // approx_increment() cases:
+  // approx_increment() case:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 			  IntRealMatrixMap& sum_L_refined,
 			  Sizet2DArray& num_L_shared,
 			  Sizet2DArray& num_L_refined,
-			  size_t approx_start, size_t approx_end);
+			  const SizetArray& model_sequence,
+			  size_t sequence_start, size_t sequence_end);
 
   void compute_LH_correlation(const RealMatrix& sum_L_shared,
 			      const RealVector& sum_H, const RealMatrix& sum_LL,
