@@ -226,10 +226,19 @@ mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
   // > approx_increment requires model sequence to define the sample pyramid
 
   bool ordered = ordered_model_sequence(rho2_LH); // for all QoI and all Approx
-  if (ordered) // not necessary to retain sequencing array
-    { model_sequence.clear(); subprob_form = ANALYTIC_SOLUTION; }
-  else if (for_warm_start)    subprob_form = REORDERED_ANALYTIC_SOLUTION;
-  else                        subprob_form = N_VECTOR_LINEAR_CONSTRAINT;
+  if (ordered) { // not necessary to retain sequencing array
+    Cout << "MFMC: model sequence provided is ordered in Low-High correlation "
+	 << "for all QoI.\n      Computing standard analytic solution.\n"
+	 << std::endl;
+    subprob_form = ANALYTIC_SOLUTION;  model_sequence.clear();
+  }
+  else {
+    Cout << "MFMC: model sequence provided is out of order with respect to "
+	 << "Low-High\n      correlation for at least one QoI.  Switching to "
+	 << "alternate solution.\n";
+    subprob_form = //(for_warm_start) ?
+      REORDERED_ANALYTIC_SOLUTION; // : N_VECTOR_LINEAR_CONSTRAINT;
+  }
 
   size_t qoi, approx, num_am1 = numApprox - 1;
   Real cost_L, cost_H = cost[numApprox]; // HF cost
@@ -259,8 +268,13 @@ mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
     // employ a single model reordering that is shared across the QoI
     RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
     ordered = ordered_model_sequence(avg_rho2_LH, model_sequence);
-    // Note even if avg_rho2_LH is now ordered, rho2_LH is not for all QoI,
-    // so we stick with this formulation
+    // Note: even if avg_rho2_LH is now ordered, rho2_LH is not for all QoI,
+    //       so we stick with this alternate formulation.
+    if (ordered)
+      Cout << "MFMC: averaged correlations are now ordered.\n" << std::endl;
+    else
+      Cout << "MFMC: reordered approximation model sequence (low to high):\n"
+	   << model_sequence << std::endl;
 
     // precompute a factor based on most-correlated model
     size_t most_corr = (ordered) ? num_am1 : model_sequence[num_am1];  int i;
@@ -291,7 +305,9 @@ mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
     break;
   }
   case N_VECTOR_LINEAR_CONSTRAINT: {
-    // TO DO
+    Cerr << "MFMC: N_VECTOR_LINEAR_CONSTRAINT not yet supported. Coming soon!"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
     break;
   }
   }

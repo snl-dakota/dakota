@@ -11,17 +11,19 @@ method,
 	multifidelity_sampling
 #	  solution_mode pilot_projection	#s4,#s7
 #	  solution_mode offline_pilot		#s5,#s8
-	  max_function_evaluations = 100	#s0,#s1,#s2,#p0
+	  max_function_evaluations = 100	#s0,#s1,#s2,#s9,#p0
 #	  max_function_evaluations = 250
 #	  max_function_evaluations = 500	#s3,#s4,#s5,#p1
 #	  max_function_evaluations = 1000
 #	  max_function_evaluations = 2500	#s6,#s7,#s8
-	  pilot_samples =   5			#s0,#s3,#s6
+	  pilot_samples =   5			#s0,#s3,#s6,#s9
 #	  pilot_samples =  10
 #	  pilot_samples =  25			#s1,#s4,#s7,#p0
 #	  pilot_samples =  50
 #	  pilot_samples = 100			#s2,#s5,#s8,#p1
 	  seed = 8674132
+# LF correlations out for order for 5 samples at this seed:
+#	  seed = 1237				#s9
 #	  convergence_tolerance = .1
 	output silent
 
