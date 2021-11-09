@@ -272,7 +272,7 @@ ordered_model_sequence(const RealMatrix& metric)
   bool ordered = true;
   for (r=0; r<nr; ++r) {  // numFunctions
     metric_map.clear();
-    for (c=0; c<nc; ++nc) // numApprox
+    for (c=0; c<nc; ++c) // numApprox
       metric_map[metric(r,c)] = c; // order by increasing corr
     if (metric_map.size() != nc) { // unexpected redundancy
       Cerr << "Error: redundant metric in model ordering." << std::endl;
