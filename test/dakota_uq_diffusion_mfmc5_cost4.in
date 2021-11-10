@@ -21,7 +21,7 @@ method,
 #	  pilot_samples =  25			#s1,#s4,#s7,#p0
 #	  pilot_samples =  50
 #	  pilot_samples = 100			#s2,#s5,#s8,#p1
-	  seed = 8674132
+	  seed = 8674132  			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#p0,#p1
 # LF correlations out for order for 5 samples at this seed:
 #	  seed = 1237				#s9
 #	  convergence_tolerance = .1
