@@ -2166,7 +2166,8 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"interval_type", P_RES intervalType},
       {"method_source", P_RES methodSource},
       {"quasi_hessian_type", P_RES quasiHessianType},
-      {"scalar_data_filename", P_RES scalarDataFileName}
+      {"scalar_data_filename", P_RES scalarDataFileName},
+      {"data_directory", P_RES dataPathPrefix}
     },
     entry_name, dbRep);
 }

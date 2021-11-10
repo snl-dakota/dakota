@@ -7610,6 +7610,7 @@ static Resp_mp_lit
 	MP2(quasiHessianType,sr1);
 
 static String
+	MP_(dataPathPrefix),
 	MP_(scalarDataFileName),
         MP_(idResponses);
 
