@@ -107,6 +107,23 @@ void ExperimentData::initialize(const StringArray& variance_types,
   // only initialize data if needed; TODO: consider always initializing
   if (calibrationDataFlag || !scalarDataFilename.empty()) {
 
+    if (!dataPathPrefix.empty()) {
+      // Disallow scalar_data_file using absolute path together with data_directory spec
+      boost::filesystem::path check_scalar_data_file_path = scalarDataFilename;
+      if( !dataPathPrefix.empty() && check_scalar_data_file_path.is_absolute() ) {
+        Cerr << "\nError: Cannot specify \"data_directory\" together "
+                "with \"scalar_data_filename\" having an absolute path."
+             << std::endl;
+        abort_handler(-1);
+      }
+      if (!scalarDataFilename.empty())
+        scalarDataFilename = dataPathPrefix.string() + "/" + scalarDataFilename;
+
+      if (outputLevel >= VERBOSE_OUTPUT)
+        Cout << "Reading experimental data from directory: \""
+             << dataPathPrefix.string() << "\"." << std::endl;
+    }
+
     if (outputLevel > NORMAL_OUTPUT) {
       Cout << "Constructing ExperimentData with " << numExperiments 
 	   << " experiment(s).";
