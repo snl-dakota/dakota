@@ -150,9 +150,8 @@ NonDACVSampling::~NonDACVSampling()
 
 void NonDACVSampling::pre_run()
 {
-  NonDNonHierarchSampling::pre_run();
+  NonDNonHierarchSampling::pre_run(); // resets some counters
 
-  // reset sample counters to 0
   acvInstance = this;
 }
 
@@ -489,14 +488,18 @@ compute_ratios(const SizetArray& N_H,   const RealMatrix& var_L,
     }
     else { // compute initial estimate of r* from MFMC
       RealMatrix rho2_LH, eval_ratios;  SizetArray model_sequence;
-      short mfmc_subprob_form;
       covariance_to_correlation_sq(cov_LH, var_L, var_H, rho2_LH);
-      mfmc_eval_ratios(rho2_LH, cost, model_sequence, eval_ratios,
-		       mfmc_subprob_form, true); // analytic soln for warm start
+
+      if (ordered_model_sequence(rho2_LH)) // for all QoI across Approx sequence
+	mfmc_analytic_solution(rho2_LH, cost, eval_ratios);
+      else
+	mfmc_reordered_analytic_solution(rho2_LH, cost, model_sequence,
+					 eval_ratios);
       average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "Initial guess from MFMC (avg eval ratios):\n"
 	     << avg_eval_ratios << std::endl;
+
       // scale to enforce budget constraint.  Since the profile does not emerge
       // from pilot in ACV, don't select an infeasible initial guess:
       // > if N* < N_pilot, scale back r* for use initial = scaled_r*,N_pilot

@@ -23,9 +23,19 @@
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
 
+#ifdef HAVE_NPSOL
+#include "NPSOLOptimizer.hpp"
+#endif
+#ifdef HAVE_OPTPP
+#include "SNLLOptimizer.hpp"
+#endif
+
 static const char rcsId[]="@(#) $Id: NonDMultifidelitySampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 namespace Dakota {
+
+// initialization of statics
+NonDMultifidelitySampling* NonDMultifidelitySampling::mfmcInstance(NULL);
 
 
 /** This constructor is called for a standard letter-envelope iterator 
@@ -34,11 +44,22 @@ namespace Dakota {
 NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
   NonDNonHierarchSampling(problem_db, model)
-{ }
+{
+  optSubProblemSolver = sub_optimizer_select(
+    probDescDB.get_ushort("method.nond.opt_subproblem_solver"), SUBMETHOD_NIP);
+}
 
 
 NonDMultifidelitySampling::~NonDMultifidelitySampling()
 { }
+
+
+void NonDMultifidelitySampling::pre_run()
+{
+  NonDNonHierarchSampling::pre_run(); // resets some counters
+
+  mfmcInstance = this;
+}
 
 
 /** The primary run function manages the general case: a hierarchy of model 
@@ -946,6 +967,313 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
     }
   }
   if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
+}
+
+
+void NonDMultifidelitySampling::
+mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
+		 SizetArray& model_sequence, RealMatrix& eval_ratios,
+		 bool for_warm_start)
+{
+  if (eval_ratios.empty())
+    eval_ratios.shapeUninitialized(numFunctions, numApprox);
+
+  // -------------------------------------------------------------
+  // Based on rho2_LH sequencing, determine best solution approach
+  // -------------------------------------------------------------
+  // compute a model sequence sorted by Low-High correlation
+  // > rho2, N_L, N_H, {eval,mse}_ratios, etc. are all ordered based on the
+  //   user-provided model list ordering
+  // > we employ model_sequence to pair approximations using a different order
+  //   for computing rho2_diff, cost --> eval_ratios --> mse_ratios, but the
+  //   results are indexed by the original approx ordering
+  // > control variate compute/apply are per approx, so sequencing not required
+  // > approx_increment requires model sequence to define the sample pyramid
+
+  // Bomarito & Warner (NASA LaRC): stay within a numerical ACV-like approach
+  // by defining F for this graph (hierarchical MFMC rather than peer ACV).
+  // Encounter singularity when models are not sequenced for this graph,
+  // which is addressed numerically by introducing a (diagonal) nugget.
+
+  if (ordered_model_sequence(rho2_LH)) // for all QoI across Approx sequence
+    optSubProblemForm = ANALYTIC_SOLUTION;  
+  else
+    optSubProblemForm = (for_warm_start) ?
+      REORDERED_ANALYTIC_SOLUTION : N_VECTOR_LINEAR_CONSTRAINT;
+
+  switch (optSubProblemForm) {
+  case ANALYTIC_SOLUTION:
+    Cout << "MFMC: model sequence provided is ordered in Low-High correlation "
+	 << "for all QoI.\n      Computing standard analytic solution.\n"
+	 << std::endl;
+    model_sequence.clear();
+    mfmc_analytic_solution(rho2_LH, cost, eval_ratios);
+    break;
+  case REORDERED_ANALYTIC_SOLUTION:
+    Cout << "MFMC: model sequence provided is out of order with respect to "
+	 << "Low-High\n      correlation for at least one QoI.  Switching to "
+	 << "alternate analyic solution.\n";
+    mfmc_reordered_analytic_solution(rho2_LH, cost, model_sequence,
+				     eval_ratios);
+    break;
+  default: // any of several numerical optimization formulations
+    Cout << "MFMC: model sequence provided is out of order with respect to "
+	 << "Low-High\n      correlation for at least one QoI.  Switching to "
+	 << "numerical solution.\n";
+    mfmc_numerical_solution(rho2_LH, cost, model_sequence, eval_ratios);
+    break;
+  }
+}
+
+
+void NonDMultifidelitySampling::
+mfmc_numerical_solution(const RealMatrix& rho2_LH,  const RealVector& cost,
+			SizetArray& model_sequence, RealMatrix& eval_ratios)
+{
+  size_t qoi, approx, num_am1 = numApprox - 1;
+  Real cost_L, cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
+    avg_hf_target, avg_N_H = average(numH), r_i;
+  RealVector avg_eval_ratios(numApprox, false);
+
+  if (mlmfIter == 0) {
+
+    if (equivHFEvals >= budget) // only 1 feasible pt, no need for solve
+      { eval_ratios = 1.;  return; }
+    else { // compute initial estimate of r* from analytic MFMC
+      // generate an initial guess using reordered approach (we know ordered
+      // analytic can't be used or we wouldn't be using the numerical option)
+      mfmc_reordered_analytic_solution(rho2_LH, cost, model_sequence,
+				       eval_ratios);
+      average(eval_ratios, 0, avg_eval_ratios);// avg over qoi for each approx
+      if (outputLevel >= NORMAL_OUTPUT)
+        Cout << "Initial guess from MFMC (avg eval ratios):\n"
+	     << avg_eval_ratios << std::endl;
+
+      /* *** TO DO ***
+      // scale to enforce budget constraint.  Since the profile does not emerge
+      // (make numerical MFMC more resilient to pilot over-estimation like ACV),
+      // don't select an infeasible initial guess:
+      // > if N* < N_pilot, scale back r* for use initial = scaled_r*,N_pilot
+      // > if N* > N_pilot, use initial = r*,N*
+      avg_hf_target = allocate_budget(avg_eval_ratios, cost);
+      if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
+	scale_to_budget_with_pilot(budget, avg_eval_ratios, cost, avg_N_H);
+	avg_hf_target = avg_N_H;
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "MFMC initial guess rescaled to budget:\n" << avg_eval_ratios
+	       << std::endl;
+      }
+      */
+    }
+  }
+  else // warm start from previous solution
+    average(eval_ratios, 0, avg_eval_ratios); // avg over qoi for each approx
+
+  // --------------------------------------
+  // Formulate the optimization sub-problem
+  // --------------------------------------
+
+  // *** TO DO ***: honor the model_sequence     (for mlmfIter == 0)
+  // *** TO DO ***: recompute the model_sequence (for mlmfIter >  1)
+
+  size_t num_cdv = numApprox + 1, max_iter = 100000, num_lin_con = num_cdv;
+  Real conv_tol = 1.e-8; // tight convergence
+
+  RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false);
+  copy_data_partial(avg_eval_ratios, x0, 0);  x0[numApprox] = 1.;
+  if (mlmfIter) x0.scale(avg_N_H); // {N} = [ {r_i}, 1 ] * N_hf
+  else          x0.scale(avg_hf_target);
+  //Cout << "Variance minimizer initial guess x0 =\n" << x0;
+  x_ub = DBL_MAX; // no upper bounds
+  x_lb = //(solutionMode == OFFLINE_PILOT) ? 1. :
+    (Real)pilotSamples[numApprox]; // *** TO DO: copy array
+
+  RealVector lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con),
+    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt;
+  RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
+  // linear inequality constraint on budget:
+  //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+  //   N w + \Sum_i w_i N_i <= equivHF * w
+  //   N + \Sum_i w_i/w N_i <= equivHF
+  lin_ineq_lb = -DBL_MAX;  // no lower bnds
+  lin_ineq_ub[0] = budget; // remaining ub initialized to 0
+  for (size_t approx=0; approx<numApprox; ++approx)
+    lin_ineq_coeffs(0, approx) = cost[approx] / cost_H;
+  lin_ineq_coeffs(0, numApprox) = 1.;
+  // linear inequality constraints on N_i > N prevent numerical exceptions:
+  // N_i >= N transformed to N_i > N using RATIO_NUDGE
+  for (size_t approx=1; approx<=numApprox; ++approx) {
+    lin_ineq_coeffs(approx, approx-1) = -1.;
+    lin_ineq_coeffs(approx,numApprox) =  1. + RATIO_NUDGE;// N_i > N (r_i > 1)
+    //lin_ineq_coeffs(approx,approx)  =  1.;// enforce N_i >= N_{i+1}
+  }
+
+  switch (optSubProblemSolver) {
+  case SUBMETHOD_SQP: {
+    int deriv_level = 0; // 0 neither, 1 obj, 2 constr, 3 both
+#ifdef HAVE_NPSOL
+    varianceMinimizer.assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb,
+      x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+      npsol_objective_evaluator, npsol_constraint_evaluator, deriv_level,
+      conv_tol, max_iter));
+#endif
+    break;
+  }
+  case SUBMETHOD_NIP: {
+    size_t max_eval = 500000;  Real max_step = 100000.;
+#ifdef HAVE_OPTPP
+    varianceMinimizer.assign_rep(std::make_shared<SNLLOptimizer>(x0,x_lb,x_ub,
+      lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt,
+      nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, optpp_objective_evaluator,
+      optpp_constraint_evaluator, max_iter, max_eval, conv_tol,
+      conv_tol, max_step));
+#endif
+    break;
+  }
+  default: // SUBMETHOD_NONE, ...
+    Cerr << "Error: sub-problem solver undefined in NonDMultifidelitySampling."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
+
+  // ----------------------------------
+  // Solve the optimization sub-problem
+  // ----------------------------------
+  // compute optimal r*,N* (or r* for fixed N) that maximizes variance reduction
+  varianceMinimizer.run();
+
+  // -------------------------------------
+  // Post-process the optimization results
+  // -------------------------------------
+  // Recover optimizer results for average {eval,mse} ratios.  Also compute
+  // shared increment from N* or from targeting specified budget or MSE.
+  const RealVector& cv_star
+    = varianceMinimizer.variables_results().continuous_variables();
+  const RealVector& fn_star
+    = varianceMinimizer.response_results().function_values();
+  //Cout << "Minimizer results:\ncv_star =\n"<<cv_star<<"fn_star =\n"<<fn_star;
+
+  // Objective recovery from optimizer provides std::log(average(mfmc_estvar))
+  // (a QoI-vector prior to averaging would require recomputation from r*,N*)
+  // Note: this value corresponds to N* (_after_ numSamples applied)
+  Real avg_mfmc_estvar = std::exp(fn_star(0)); // var_H / N_H (1 - R^2)
+
+  // N_VECTOR: N*_i is leading part of r_and_N and N* is trailing part
+  // R_AND_N:  r*   is leading part of r_and_N and N* is trailing part
+  copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r_i | N_i
+  avg_hf_target = cv_star[numApprox];                             // N*
+  avg_eval_ratios.scale(1./avg_hf_target); // N_i -> r_i
+  // inflate avg_eval_ratios back to eval_ratios
+  for (approx=0; approx<numApprox; ++approx) {
+    r_i = avg_eval_ratios[approx];
+    Real* eval_ratios_a = eval_ratios[approx];
+    for (qoi=0; qoi<numFunctions; ++qoi)
+      eval_ratios_a[qoi] = r_i;
+  }
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    for (size_t approx=0; approx<numApprox; ++approx)
+      Cout << "Approx " << approx+1 << ": average evaluation ratio = "
+	   << avg_eval_ratios[approx] << '\n';
+    Cout << "Average MFMC estimator variance = " << avg_mfmc_estvar <<std::endl;
+    //Cout << "Average MFMC variance / average MC variance = "
+    //     << avg_estvar_ratio << std::endl;
+  }
+  // Note: assigned rep uses smart ptr in varianceMinimizer;
+  //       will be deleted when replacedas ref count goes to 0
+}
+
+
+Real NonDMultifidelitySampling::objective_function(const RealVector& N_vec)
+{
+  //RealSymMatrix F, CF_inv;
+  RealVector r;  copy_data_partial(N_vec, 0, (int)numApprox, r); // N_i
+  r.scale(1./N_vec[numApprox]); // r_i = N_i / N
+
+  //compute_F_matrix(r, F);
+  RealVector A, R_sq(numFunctions, false);  size_t qoi;
+  /*
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    invert_CF(covLL[qoi], F, CF_inv);
+    //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
+    compute_A_vector(F, covLH, qoi, A);     // defer c-bar scaling
+    //Cout << "Objective eval: A =\n" << A << std::endl;
+    compute_Rsq(CF_inv, A, varH[qoi], R_sq[qoi]); // apply scaling^2
+    //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
+    //     << " Rsq[" << qoi << "] =\n" << R_sq[qoi] << std::endl;
+  }
+  */
+
+  // form estimator variances to pick up dependence on N
+  RealVector est_var(numFunctions, false);
+  Real N = N_vec[numApprox];
+  //for (qoi=0; qoi<numFunctions; ++qoi)
+  //  est_var[qoi] = varH[qoi] / N         * (1. - R_sq[qoi]);
+
+  // protect against R_sq blow-up for N_i < N (if not enforced by linear constr)
+  Real avg_est_var = average(est_var), obj_fn = (avg_est_var > 0.) ?
+    std::log(avg_est_var) :
+    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "objective_function: design vars:\n" << N_vec << "R squared:\n"
+	 << R_sq << "obj = log(average((1.-Rsq)varH/N)) = " << obj_fn << '\n';
+  return obj_fn; // maximize R_sq; use log to flatten contours
+}
+
+
+void NonDMultifidelitySampling::
+npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
+			  double* grad_f, int& nstate)
+{
+  // NPSOL mode: 0 = get f, 1 = get grad_f, 2 = get both
+  // promote mode to standard asv request codes
+  short asv_request = mode + 1;
+  RealVector x_rv(Teuchos::View, x, n);
+  if (asv_request & 1)
+    f = mfmcInstance->objective_function(x_rv);
+  // NPSOL estimates unspecified components of the obj grad, so ASV grad
+  // request is not an error -- just don't specify anything
+  //if (asv_request & 2) {
+  //  RealVector grad_f_rv(Teuchos::View, grad_f, n);
+  //  mfmcInstance->objective_gradient(x_rv, grad_f_rv);
+  //}
+}
+
+
+/** API for FDNLF1 objective (see SNLLOptimizer::nlf0_evaluator()) */
+void NonDMultifidelitySampling::
+optpp_objective_evaluator(int n, const RealVector& x, double& f,
+			  int& result_mode)
+{
+  f = mfmcInstance->objective_function(x);
+  result_mode = OPTPP::NLPFunction; // 1 bit
+}
+
+
+void NonDMultifidelitySampling::
+npsol_constraint_evaluator(int& mode, int& ncnln, int& n, int& nrowj,
+			   int* needc, double* x, double* c, double* cjac,
+			   int& nstate)
+{
+  // NPSOL mode: 0 = get f, 1 = get grad_f, 2 = get both
+  short asv_request = mode + 1;
+  if (asv_request && ncnln) {
+    Cerr << "Error: MFMC variance min has no nonlin constraints." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void NonDMultifidelitySampling::
+optpp_constraint_evaluator(int mode, int n, const RealVector& x, RealVector& c,
+			   RealMatrix& grad_c, int& result_mode)
+{
+  if (mode) {
+    Cerr << "Error: MFMC variance min has no nonlin constraints." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 }
 
 

@@ -22,6 +22,8 @@
 
 namespace Dakota {
 
+#define RATIO_NUDGE 1.e-4
+
 // special values for optSubProblemForm
 enum { ANALYTIC_SOLUTION = 1, REORDERED_ANALYTIC_SOLUTION,
        R_ONLY_LINEAR_CONSTRAINT, N_VECTOR_LINEAR_CONSTRAINT,
@@ -107,9 +109,18 @@ protected:
 			  size_t num_Q1, size_t num_Q2, size_t num_Q1Q2,
 			  Real& cov_Q1Q2);
   
-  void mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
-			SizetArray& model_sequence, RealMatrix& eval_ratios,
-			short& subprob_form, bool for_warm_start = false);
+  void mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
+			      RealMatrix& eval_ratios);
+  void mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
+					const RealVector& cost,
+					SizetArray& model_sequence,
+					RealMatrix& eval_ratios);
+
+  /// define model_sequence in increasing metric order
+  bool ordered_model_sequence(const RealVector& metric,
+			      SizetArray& model_sequence);
+  /// determine whether metric is in increasing order for all columns
+  bool ordered_model_sequence(const RealMatrix& metric);
 
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
@@ -144,17 +155,16 @@ protected:
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector mseIter0;
 
+  /// the minimizer used to minimize the estimator variance over parameters
+  /// of number of truth model samples and approximation eval_ratios
+  Iterator varianceMinimizer;
+
 private:
 
   //
   //- Heading: helper functions
   //
 
-  /// define model_sequence in increasing metric order
-  bool ordered_model_sequence(const RealVector& metric,
-			      SizetArray& model_sequence);
-  /// determine whether metric is in increasing order for all columns
-  bool ordered_model_sequence(const RealMatrix& metric);
 };
 
 

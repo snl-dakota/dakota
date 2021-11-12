@@ -54,7 +54,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
+  void pre_run();
   void core_run();
   //void post_run(std::ostream& s);
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -67,6 +67,14 @@ protected:
   void multifidelity_mc();
   void multifidelity_mc_offline_pilot();
   void multifidelity_mc_pilot_projection();
+
+  void mfmc_eval_ratios(const RealMatrix& rho2_LH, const RealVector& cost,
+			SizetArray& model_sequence, RealMatrix& eval_ratios,
+			bool for_warm_start = false);
+  void mfmc_numerical_solution(const RealMatrix& rho2_LH,
+			       const RealVector& cost,
+			       SizetArray& model_sequence,
+			       RealMatrix& eval_ratios);
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
@@ -156,12 +164,35 @@ private:
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
 
+  /// objective helper function shared by NPSOL/OPT++ static evaluators
+  Real objective_function(const RealVector& r_and_N);
+  /// static function used by NPSOL for the objective function
+  static void npsol_objective_evaluator(int& mode, int& n, double* x, double& f,
+					double* grad_f, int& nstate);
+  /// static function used by OPT++ for the objective function
+  static void optpp_objective_evaluator(int n, const RealVector& x,
+					double& f, int& result_mode);
+  /// static function used by NPSOL for the nonlinear constraints, if present
+  static void npsol_constraint_evaluator(int& mode, int& ncnln, int& n,
+					 int& nrowj, int* needc, double* x,
+					 double* c, double* cjac, int& nstate);
+  /// static function used by OPT++ for the nonlinear constraints, if present
+  static void optpp_constraint_evaluator(int mode, int n, const RealVector& x,
+					 RealVector& g, RealMatrix& grad_g,
+					 int& result_mode);
+
   //
   //- Heading: Data
   //
 
   /// ratio of MFMC estimator variance to mseIter0, one per QoI
   RealVector mseRatios;
+
+  /// SQP or NIP
+  unsigned short optSubProblemSolver;
+
+  /// pointer to NonDACV instance used in static member functions
+  static NonDMultifidelitySampling* mfmcInstance;
 };
 
 

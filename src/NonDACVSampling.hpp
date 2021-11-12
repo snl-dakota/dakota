@@ -22,8 +22,6 @@
 
 namespace Dakota {
 
-#define RATIO_NUDGE 1.e-4
-
 
 /// Perform Approximate Control Variate Monte Carlo sampling for UQ.
 
@@ -228,10 +226,6 @@ private:
   /// covariances among all LF approximations (the C matrix in ACV); organized
   /// as a numFunctions array of symmetic numApprox x numApprox matrices
   RealSymMatrixArray covLL;
-
-  /// the minimizer used to minimize the estimator variance over parameters
-  /// of number of truth model samples and approximation eval_ratios
-  Iterator varianceMinimizer;
 
   /// final estimator variance (minimization result), averaged across QoI
   Real avgACVEstVar;
