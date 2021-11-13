@@ -4334,7 +4334,7 @@
 		<alias name="actual_model_pointer"/>
             	<param type="STRING" in_taglist="model" />
               </keyword>
-              <keyword  id="unordered_model_fidelities" name="unordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (unordered peer models)"   >
+              <keyword  id="unordered_model_fidelities" name="unordered_model_fidelities" code="{N_mom(strL,ensembleModelPointers)}" label="Model Pointers (unordered peer models)"  minOccurs="0"  >
                 <alias name="approximation_models"/>
                 <param type="STRINGLIST" in_taglist="model" />
               </keyword>
