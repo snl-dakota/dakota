@@ -68,10 +68,9 @@ void NonHierarchSurrModel::assign_default_keys()
   if (multifidelity()) { // first and last model form (no soln levels)
     truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord, SZ_MAX);
     //if (responseMode == AGGREGATED_MODELS) {
-      unorderedModelKeys.resize(num_unord);
+      surrModelKeys.resize(num_unord);
       for (unsigned short i=0; i<num_unord; ++i)
-	unorderedModelKeys[i]
-	  = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, SZ_MAX);
+	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, SZ_MAX);
     //}
   }
   else if (multilevel()) { // first and last solution level (last model)
@@ -80,14 +79,13 @@ void NonHierarchSurrModel::assign_default_keys()
     truthModelKey
       = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord, truth_index);
     //if (responseMode == AGGREGATED_MODELS) {
-      unorderedModelKeys.resize(truth_index);
+      surrModelKeys.resize(truth_index);
       for (size_t i=0; i<truth_index; ++i)
-	unorderedModelKeys[i]
-	  = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord, i);
+	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord, i);
     //}
   }
-  activeKey.aggregate_keys(truthModelKey, unorderedModelKeys,
-			   Pecos::RAW_DATA); // no data reduction
+  // raw data only (no data reduction)
+  activeKey.aggregate_keys(truthModelKey, surrModelKeys, Pecos::RAW_DATA);
 
   if (parallelLib.mpirun_flag()) {
     MPIPackBuffer send_buff;  short mode;
@@ -642,7 +640,7 @@ derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
 
 void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 {
-  size_t num_approx = unorderedModelKeys.size(), // model forms or resolutions
+  size_t num_approx = surrModelKeys.size(), // model forms or resolutions
     num_truth = (use_virtual_counts) ?
     truthModel.qoi() : // allow models to consume lower-level aggregations
     truthModel.response_size(); // raw counts align w/ currentResponse raw count

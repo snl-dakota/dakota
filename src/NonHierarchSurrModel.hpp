@@ -184,7 +184,7 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// initialize truthModelKey and unorderedModelKeys to default values
+  /// initialize truthModelKey and surrModelKeys to default values
   void assign_default_keys();
 
   /// assign the resolution level for the model form indicated by the key
@@ -235,18 +235,11 @@ private:
   /// unordered set of model approximations
   ModelArray unorderedModels;
 
-  //////////////////////////////////////////////////////////////////////////////
-  /// W.r.t. active keys, also need to manage active resolutions for each
-  /// model instance.  As a first cut, just need to carry them along
-  /// (as tunable hyper-parameters rather than dimensions of the hierarchy).
-  //////////////////////////////////////////////////////////////////////////////
-  /// key defining active resolution level for truthModel.  Note: model form
-  /// component is maintained for consistency but is redundant in this case.
+  /// key defining active model form / resolution level for the truth model
   Pecos::ActiveKey truthModelKey;
-  /// keys defining active resolution levels for unorderedModels.  Note: model
-  /// form components are maintained for consistency but are redundant since
-  /// order across unorderedModel{s,Keys} is consistent.
-  std::vector<Pecos::ActiveKey> unorderedModelKeys;
+  /// keys defining model forms / resolution levels for the active set of
+  /// approximations
+  std::vector<Pecos::ActiveKey> surrModelKeys;
 
   /// flag indicating that the {low,high}FidelityKey correspond to the
   /// same model instance, requiring modifications to updating and evaluation
@@ -332,13 +325,13 @@ inline void NonHierarchSurrModel::check_model_interface_instance()
 {
   unsigned short hf_form = truthModelKey.retrieve_model_form();
 
-  size_t i, num_approx = unorderedModelKeys.size();
+  size_t i, num_approx = surrModelKeys.size();
   if (hf_form == USHRT_MAX || num_approx == 0)
     sameModelInstance = sameInterfaceInstance = false;
   else {
     sameModelInstance = true;
     for (i=0; i<num_approx; ++i)
-      if (unorderedModelKeys[i].retrieve_model_form() != hf_form)
+      if (surrModelKeys[i].retrieve_model_form() != hf_form)
 	{ sameModelInstance = false; break; }
   }
 
@@ -391,7 +384,7 @@ inline bool NonHierarchSurrModel::multilevel() const
 inline Model& NonHierarchSurrModel::surrogate_model(size_t i)
 {
   if (i == _NPOS) {
-    //unsigned short lf_form = unorderedModelKeys[0].retrieve_model_form();
+    //unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
     //i = (lf_form == USHRT_MAX) // empty key or undefined model form
     //  ? 0 : lf_form;
     Cerr << "Error: model form must be specified in NonHierarchSurrModel::"
@@ -410,7 +403,7 @@ inline Model& NonHierarchSurrModel::surrogate_model(size_t i)
 inline const Model& NonHierarchSurrModel::surrogate_model(size_t i) const
 {
   if (i == _NPOS) {
-    //unsigned short lf_form = unorderedModelKeys[0].retrieve_model_form();
+    //unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
     //i = (lf_form == USHRT_MAX) // empty key or undefined model form
     //  ? 0 : lf_form;
     Cerr << "Error: model index must be specified in NonHierarchSurrModel::"
@@ -447,7 +440,7 @@ inline void NonHierarchSurrModel::assign_key(const Pecos::ActiveKey& key)
 
 inline void NonHierarchSurrModel::assign_key(size_t i)
 {
-  if      (i  < unorderedModels.size()) assign_key(unorderedModelKeys[i]);
+  if      (i  < unorderedModels.size()) assign_key(surrModelKeys[i]);
   else if (i != _NPOS)                  assign_key(truthModelKey);
 }
 
@@ -457,10 +450,10 @@ inline void NonHierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
   // assign activeKey
   SurrogateModel::active_model_key(key);
 
-  // update truthModelKey and unorderedModelKeys
+  // update truthModelKey and surrModelKeys
   // TO DO: support group comprised only of approximations (no truth);
   //        implement extra logic as in HierarchSurrModel::extract_model_keys()
-  key.extract_keys(truthModelKey, unorderedModelKeys);
+  key.extract_keys(truthModelKey, surrModelKeys);
 
   // assign same{Model,Interface}Instance
   check_model_interface_instance();
@@ -473,9 +466,9 @@ inline void NonHierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
     }
   }
   else { // approximations are separate models
-    size_t i, num_approx = unorderedModelKeys.size();
+    size_t i, num_approx = surrModelKeys.size();
     for (i=0; i<num_approx; ++i)
-      assign_key(unorderedModelKeys[i]);
+      assign_key(surrModelKeys[i]);
     assign_key(truthModelKey);
   }
 
