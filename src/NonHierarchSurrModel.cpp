@@ -41,11 +41,11 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
   const StringArray& unordered_model_ptrs
     = problem_db.get_sa("model.surrogate.ensemble_model_pointers");
 
-  size_t i, num_approx = unordered_model_ptrs.size(),
+  size_t i, num_unord = unordered_model_ptrs.size(),
     model_index = problem_db.get_db_model_node(); // for restoration
 
-  unorderedModels.resize(num_approx);
-  for (i=0; i<num_approx; ++i) {
+  unorderedModels.resize(num_unord);
+  for (i=0; i<num_unord; ++i) {
     problem_db.set_db_model_nodes(unordered_model_ptrs[i]);
     unorderedModels[i] = problem_db.get_model();
     check_submodel_compatibility(unorderedModels[i]);
@@ -64,12 +64,12 @@ NonHierarchSurrModel::NonHierarchSurrModel(ProblemDescDB& problem_db):
 void NonHierarchSurrModel::assign_default_keys()
 {
   // default key data values, to be overridden at run time
-  unsigned short id = 0, num_approx = unorderedModels.size();
+  unsigned short id = 0, num_unord = unorderedModels.size();
   if (multifidelity()) { // first and last model form (no soln levels)
-    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, SZ_MAX);
+    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord, SZ_MAX);
     //if (responseMode == AGGREGATED_MODELS) {
-      unorderedModelKeys.resize(num_approx);
-      for (unsigned short i=0; i<num_approx; ++i)
+      unorderedModelKeys.resize(num_unord);
+      for (unsigned short i=0; i<num_unord; ++i)
 	unorderedModelKeys[i]
 	  = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, SZ_MAX);
     //}
@@ -78,12 +78,12 @@ void NonHierarchSurrModel::assign_default_keys()
     size_t truth_soln_lev = truthModel.solution_levels(),
       truth_index = truth_soln_lev - 1;
     truthModelKey
-      = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
+      = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord, truth_index);
     //if (responseMode == AGGREGATED_MODELS) {
       unorderedModelKeys.resize(truth_index);
       for (size_t i=0; i<truth_index; ++i)
 	unorderedModelKeys[i]
-	  = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, i);
+	  = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_unord, i);
     //}
   }
   activeKey.aggregate_keys(truthModelKey, unorderedModelKeys,
@@ -123,7 +123,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   if (recurse_flag) {
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
-      num_approx = unorderedModels.size();
+      num_unord = unorderedModels.size();
 
     // init and free must cover possible subset of active responseModes and
     // ordered model fidelities, but only 2 models at mpst will be active at
@@ -143,7 +143,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // responseMode == BYPASS_SURROGATE ||
     // responseMode == AUTO_CORRECTED_SURROGATE);
 
-    for (i=0; i<num_approx; ++i) {
+    for (i=0; i<num_unord; ++i) {
       Model& model_i = unorderedModels[i];
       // superset of possible init calls (two configurations for i > 0)
       probDescDB.set_db_model_nodes(model_i.model_id());
@@ -193,10 +193,10 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     }
 
     case AGGREGATED_MODELS: {
-      size_t i, num_approx = unorderedModels.size(); int cap_i;
+      size_t i, num_unord = unorderedModels.size(); int cap_i;
       asynchEvalFlag = false; evaluationCapacity = 1;
 
-      for (i=0; i<num_approx; ++i) {
+      for (i=0; i<num_unord; ++i) {
 	Model& model_i = unorderedModels[i];
 	model_i.set_communicators(pl_iter, max_eval_concurrency);
 	if (model_i.asynch_flag()) asynchEvalFlag = true;
@@ -222,11 +222,11 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   if (recurse_flag) {
 
-    size_t i, num_approx = unorderedModels.size();
+    size_t i, num_unord = unorderedModels.size();
     bool extra_deriv_config = true;//(responseMode == UNCORRECTED_SURROGATE ||
                                    // responseMode == BYPASS_SURROGATE ||
                                    // responseMode == AUTO_CORRECTED_SURROGATE);
-    for (i=0; i<num_approx; ++i) {
+    for (i=0; i<num_unord; ++i) {
       Model& model_i = unorderedModels[i];
       // superset of possible init calls (two configurations for i > 0)
       model_i.free_communicators(pl_iter, max_eval_concurrency);
@@ -252,8 +252,8 @@ bool NonHierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
 
   // push inactive variable values/bounds from currentVariables and
   // userDefinedConstraints into orderedModels
-  size_t i, num_approx = unorderedModels.size();
-  for (i=0; i<num_approx; ++i) {
+  size_t i, num_unord = unorderedModels.size();
+  for (i=0; i<num_unord; ++i) {
     unorderedModels[i].initialize_mapping(pl_iter);
     init_model(unorderedModels[i]);
   }
@@ -271,8 +271,8 @@ bool NonHierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
     execution within Model::initialize_mapping(). */
 bool NonHierarchSurrModel::finalize_mapping()
 {
-  size_t i, num_approx = unorderedModels.size();
-  for (i=0; i<num_approx; ++i)
+  size_t i, num_unord = unorderedModels.size();
+  for (i=0; i<num_unord; ++i)
     unorderedModels[i].finalize_mapping();
 
   truthModel.finalize_mapping();
@@ -369,19 +369,18 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
   */
 
   currentResponse.active_set(set);
-  size_t num_approx = unorderedModels.size();
+  size_t num_unord = unorderedModels.size();
   switch (responseMode) {
   case AGGREGATED_MODELS: {
     // define eval reqmts, with unorderedModels followed by truthModel at end
     Short2DArray indiv_asv;
     asv_split(set.request_vector(), indiv_asv);
     size_t i, num_models = indiv_asv.size();
-
     ActiveSet set_i(set); // copy DVV
     for (i=0; i<num_models; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       if (test_asv(asv_i)) {
-	Model& model_i = (i<num_approx) ? unorderedModels[i] : truthModel;
+	Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
 	component_parallel_mode(i+1); // index to id (0 is reserved)
 	if (sameModelInstance) assign_key(i);
 	else                   update_model(model_i);
@@ -399,7 +398,7 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
 	   << "NonHierarchSurrModel::derived_evaluate()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    component_parallel_mode(num_approx+1); // truth model id
+    component_parallel_mode(num_unord+1); // truth model id
     if (sameModelInstance) assign_key(truthModelKey);
     else                   update_model(truthModel);
     truthModel.evaluate(set);
@@ -430,14 +429,13 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     // define eval reqmts, with unorderedModels followed by truthModel at end
     Short2DArray indiv_asv;
     asv_split(set.request_vector(), indiv_asv);
-    size_t i, num_models = indiv_asv.size(),
-      num_approx = unorderedModels.size();
+    size_t i, num_models = indiv_asv.size(), num_unord = unorderedModels.size();
     ActiveSet set_i(set); // copy DVV
 
     // first pass for nonblocking models
     for (i=0; i<num_models; ++i) {
       ShortArray& asv_i = indiv_asv[i];
-      Model& model_i = (i<num_approx) ? unorderedModels[i] : truthModel;
+      Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
       if (model_i.asynch_flag() && test_asv(asv_i)) {
 	if (sameModelInstance) assign_key(i);
 	else                   update_model(model_i);
@@ -449,7 +447,7 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     // second pass for blocking models
     for (i=0; i<num_models; ++i) {
       ShortArray& asv_i = indiv_asv[i];
-      Model& model_i = (i<num_approx) ? unorderedModels[i] : truthModel;
+      Model& model_i = (i<num_unord) ? unorderedModels[i] : truthModel;
       if (!model_i.asynch_flag() && test_asv(asv_i)) {
 	component_parallel_mode(i+1); // model id (0 is reserved)
 	if (sameModelInstance) assign_key(i);
@@ -522,8 +520,7 @@ void NonHierarchSurrModel::
 derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
 			       bool block)
 {
-  size_t i, num_models = model_resp_maps_rekey.size(),
-     num_approx_models = unorderedModels.size();
+  size_t i, num_models = model_resp_maps_rekey.size();
   for (i=0; i<num_models; ++i) {
     Model& model = (i < unorderedModels.size()) ?
       unorderedModels[i] : truthModel;
@@ -645,15 +642,14 @@ derived_synchronize_combine(const IntResponseMapArray& model_resp_maps,
 
 void NonHierarchSurrModel::resize_response(bool use_virtual_counts)
 {
-  size_t num_truth = (use_virtual_counts) ?
+  size_t num_approx = unorderedModelKeys.size(), // model forms or resolutions
+    num_truth = (use_virtual_counts) ?
     truthModel.qoi() : // allow models to consume lower-level aggregations
     truthModel.response_size(); // raw counts align w/ currentResponse raw count
 
   switch (responseMode) {
-  case AGGREGATED_MODELS:
-    numFns = (unorderedModels.size() + 1) * num_truth;  break;
-  case BYPASS_SURROGATE:
-    numFns = num_truth;  break;
+  case AGGREGATED_MODELS: numFns = (num_approx + 1) * num_truth;  break;
+  case BYPASS_SURROGATE:  numFns =                    num_truth;  break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
