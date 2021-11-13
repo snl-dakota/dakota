@@ -5642,6 +5642,9 @@
 	  <optional>
 	    <oneOf label="Calibration Data">
               <keyword  id="calibration_data1" name="calibration_data" code="{N_rem(true,calibrationDataFlag)}" label="calibration data"  >
+		<keyword  id="data_directory" name="data_directory" code="{N_rem(str,dataPathPrefix)}" label="Path to prepend to any data file names"  minOccurs="0" >
+		  <param type="STRING" />
+		</keyword>
 		<keyword  id="num_experiments" name="num_experiments" code="{N_rem(sizet,numExperiments)}" label="Experiments in file"  minOccurs="0" default="1" >
                   <param type="INTEGER" constraint=">= 0" />
 		</keyword>
