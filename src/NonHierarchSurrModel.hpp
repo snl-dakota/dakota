@@ -440,8 +440,8 @@ inline void NonHierarchSurrModel::assign_key(const Pecos::ActiveKey& key)
 
 inline void NonHierarchSurrModel::assign_key(size_t i)
 {
-  if      (i  < unorderedModels.size()) assign_key(surrModelKeys[i]);
-  else if (i != _NPOS)                  assign_key(truthModelKey);
+  if      (i  < surrModelKeys.size()) assign_key(surrModelKeys[i]);
+  else if (i != _NPOS)                assign_key(truthModelKey);
 }
 
 
