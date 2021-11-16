@@ -560,6 +560,7 @@ inline void HierarchSurrModel::active_model_key(const Pecos::ActiveKey& key)
       assign_truth_key();     break;
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
       assign_surrogate_key(); break;
+  //case AGGREGATED_MODELS: break; // defer setting active solution levels
     }
   }
   else {

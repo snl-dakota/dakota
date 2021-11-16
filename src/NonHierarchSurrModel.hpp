@@ -252,8 +252,8 @@ private:
   /// tie breaker for type of model hierarchy when forms and levels are present
   bool mfPrecedence;
 
-  /// store aggregate model key that is active in component_parallel_mode()
-  Pecos::ActiveKey componentParallelKey;
+  // store aggregate model key that is active in component_parallel_mode()
+  //Pecos::ActiveKey componentParallelKey;
   /// size of MPI buffer containing responseMode and an aggregated activeKey
   int modeKeyBufferSize;
 

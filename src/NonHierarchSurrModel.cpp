@@ -697,14 +697,18 @@ void NonHierarchSurrModel::component_parallel_mode(short model_id)
   // -----------------------------
   // TO DO: restarting servers for a change in soln control index w/o change
   // in model may be overkill (send of state vars in vars buffer sufficient?)
-  if (componentParallelMode != model_id || componentParallelKey != activeKey) {
+  if (componentParallelMode != model_id) {//||componentParallelKey != activeKey)
     //Pecos::ActiveKey old_truth;  std::vector<Pecos::ActiveKey> old_surr;
     //componentParallelKey.extract_keys(old_truth, old_surr);
     //switch (componentParallelMode) {
     //case SURROGATE_MODEL_MODE:  stop_model(old_surr[model_id][1]);  break;
     //case     TRUTH_MODEL_MODE:  stop_model(old_truth[1]);  break;
     //}
-    stop_model(componentParallelMode);
+
+    // for either a model form or a resolution level update (sameModelInstance
+    // or not), serve_run() for the subordinate truth/approx model must be
+    // ended to process the update in NonHierarchSurrModel::serve_run()
+    /* if (!sameModelInstance) */ stop_model(componentParallelMode);
 
     // -----------------------
     // activate new serve mode: matches NonHierarchSurrModel::serve_run(pl_iter)
@@ -725,7 +729,7 @@ void NonHierarchSurrModel::component_parallel_mode(short model_id)
     }
   }
 
-  componentParallelMode = model_id;  componentParallelKey = activeKey;
+  componentParallelMode = model_id;  //componentParallelKey = activeKey;
 }
 
 
@@ -751,9 +755,11 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       MPIUnpackBuffer recv_buffer(modeKeyBufferSize);
       parallelLib.bcast(recv_buffer, *pl_iter);
       recv_buffer >> responseMode >> activeKey; // replace previous/initial key
-
+      // extract {truth,surr}ModelKeys, assign same{Model,Interface}Instance:
       active_model_key(activeKey);
+
       size_t m_index = componentParallelMode - 1; // id to index
+      assign_key(m_index); // propagate resolution level
       Model& model = (m_index < unorderedModels.size()) ?
 	unorderedModels[m_index] : truthModel;
       model.serve_run(pl_iter, max_eval_concurrency);

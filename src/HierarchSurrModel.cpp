@@ -1476,11 +1476,15 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
       active_model_key(activeKey); // updates {truth,surr}ModelKey
       if (componentParallelMode == SURROGATE_MODEL_MODE) {
+	if (sameModelInstance) assign_surrogate_key(); // may have been deferred
+
 	// serve active LF model:
 	surrogate_model().serve_run(pl_iter, max_eval_concurrency);
 	// Note: ignores erroneous BYPASS_SURROGATE
       }
       else if (componentParallelMode == TRUTH_MODEL_MODE) {
+	if (sameModelInstance) assign_truth_key(); // may have been deferred
+
 	// serve active HF model, employing correct iterator concurrency:
 	Model& hf_model = truth_model();
 	switch (responseMode) {
