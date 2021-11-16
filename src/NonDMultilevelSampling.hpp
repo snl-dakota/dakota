@@ -610,10 +610,10 @@ var_lev_l(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
   Real var_lev_Q = (sum_QlQl / Nlq - mu_Ql * mu_Ql)     // var_Ql
     			- (sum_Qlm1Qlm1 / Nlq - mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
     * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
-  if(var_lev_Q < 0){
-    Cerr << "NonDMultilevelSampling::var_lev_l: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
+  //if(var_lev_Q < 0){
+  //  Cerr << "NonDMultilevelSampling::var_lev_l: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
     //check_negative(var_of_var);
-  }
+  //}
   return var_lev_Q; 
 }
 
@@ -634,10 +634,10 @@ var_lev_l_static(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl,
   }
   var_lev_Q *= (Real)Nlq / (Real)(Nlq - 1.);
 
-  if(var_lev_Q < 0){
-    Cerr << "NonDMultilevelSampling::var_lev_l_static: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
+  //if(var_lev_Q < 0){
+  //  Cerr << "NonDMultilevelSampling::var_lev_l_static: var_lev_Q < 0: " << var_lev_Q << " But that should be fine.\n";
     //check_negative(var_of_var);
-  }
+  //}
   return var_lev_Q; // Bessel's correction
 }
 
