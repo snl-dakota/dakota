@@ -366,6 +366,8 @@ void NonHierarchSurrModel::derived_evaluate(const ActiveSet& set)
   }
   */
 
+  if (sameModelInstance) update_model(truthModel);
+
   currentResponse.active_set(set);
   size_t num_unord = unorderedModels.size();
   switch (responseMode) {
@@ -421,6 +423,8 @@ void NonHierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // followed by blocking evals.
 
   // For notes on repetitive use of assign_key(), see derived_evaluate() above
+
+  if (sameModelInstance) update_model(truthModel);
 
   switch (responseMode) {
   case AGGREGATED_MODELS: {
